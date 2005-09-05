@@ -1,0 +1,23 @@
+{% extends "standard" %}
+{% block content %}
+{% for year in years %}
+	<h2><a name="year{{ year }}">{{ year }}</a></h2>
+	<ul class="camplist">
+	{% for camp in camps %}
+		{% ifequal camp.year year %}
+			<li><a href="{{ camp.get_absolute_url }}" title="Camp {{camp.number}}, Year {{ camp.year }}">
+				Camp {{ camp.number }}</a>,
+				led by {{ camp.get_person_list|join:", "|escape }}, 
+				chaplain {{ camp.get_chaplain }}
+				<ul>
+					<li><a href="{{ camp.get_absolute_url }}forum/" 
+						title="Message board for camp {{ camp.number }}, year {{ camp.year }}">Message board</a></li>
+					<li><a href="{{ camp.get_absolute_url }}photos/"
+						title="Photo gallery for camp {{ camp.number }}, year {{ camp.year }}">Photos</a></li>
+				</ul>
+			</li>
+		{% endifequal %}
+	{% endfor %}
+	</ul>
+{% endfor %}
+{% endblock %}

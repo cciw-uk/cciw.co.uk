@@ -3,6 +3,8 @@
 from main import *
 
 TEMPLATE_DIRS = (
+    r'/home/httpd/www.cciw.co.uk/django/admin/templates',
+    r'/home/httpd/www.cciw.co.uk/django_src/django/conf/admin_templates',
     r'/usr/lib/python2.4/site-packages/django/conf/admin_templates',
     # Put strings here, like "/home/html/django_templates".
 )

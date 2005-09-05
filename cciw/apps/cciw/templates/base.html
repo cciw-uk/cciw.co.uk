@@ -1,0 +1,16 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<link rel="stylesheet" href="media/style.css" type="text/css" />
+<title>{% block title %}{{ page.title }}{% endblock %}</title>
+</head>
+<body>
+<div id="sidebar">{% block sidebar %}
+{% endblock %}</div>
+<div id="content">
+{% block pagetitle %}<h1>{{ page.title }}</h1>{% endblock %}
+{% block content %}{% endblock %}
+</div>
+</body>
+</html>

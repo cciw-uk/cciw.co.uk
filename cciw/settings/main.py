@@ -3,7 +3,7 @@
 DEBUG = True
 
 ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
+    ('Luke Plant', 'L.Plant.98@cantab.net'),
 )
 
 MANAGERS = ADMINS
@@ -37,7 +37,8 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'cciw.settings.urls.main'
 
 TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates".
+	'/home/httpd/www.cciw.co.uk/django/cciw/apps/cciw/templates/',
+	# Put strings here, like "/home/html/django_templates".
 )
 
 INSTALLED_APPS = (
