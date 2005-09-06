@@ -1,0 +1,17 @@
+{% extends "standard" %}
+{% block content %}
+<p>CCIW currently use the following camp sites:</p>
+<ul class="sitelist">
+	{% for site in sites %}
+		<li><a href="{{ site.get_absolute_url }}">{{ site.long_name }}</a></li>
+	{% endfor %}
+</ul>
+<p>Click on the thumbnails below for maps of the location of the camp sites:</p>
+<p>
+Map of wales:<br/>
+<a href="{{ page.mediaRootUrl }}/media/images/wales2.gif">
+<img alt="thumbnail map of Wales" src="{{ page.mediaRootUrl }}/media/images/wales2-th.gif" width="100" height="128" /></a></p>
+<p>Detail of map:<br/>
+<a href="{{ page.mediaRootUrl }}/media/images/wales3.gif"><img alt="thumbnail of map detail" src="{{ page.mediaRootUrl }}/media/images/wales3-th.gif" width="100" height="99" /></a></p>
+
+{% endblock %}

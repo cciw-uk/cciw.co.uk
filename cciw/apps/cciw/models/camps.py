@@ -1,14 +1,26 @@
 from django.core import meta
 
 class Site(meta.Model):
-	short_name = meta.CharField("Short name", maxlength="25", blank=False)
+	short_name = meta.CharField("Short name", maxlength="25", blank=False, unique=True)
+	slug_name = meta.CharField("Machine name", maxlength="25", blank=True, unique=True)
 	long_name = meta.CharField("Long name", maxlength="50", blank=False)
 	info = meta.TextField("Description (HTML)")
 	class META:
-		admin = meta.Admin()
+		admin = meta.Admin(
+			fields = (
+				(None, {'fields': ('short_name', 'long_name', 'info')}),
+			)
+		)
 	
 	def __repr__(self):
 		return self.short_name
+		
+	def get_absolute_url(self):
+		return "/sites/" + self.slug_name
+	
+	def _pre_save(self):
+		from django.core.defaultfilters import slugify
+		self.slug_name = slugify(self.short_name, "")
 	
 class Person(meta.Model):
 	name = meta.CharField("Name", maxlength=40)
@@ -57,6 +69,9 @@ class Camp(meta.Model):
 	
 	def __repr__(self):
 		return str(self.year) + "-" + str(self.number)
+		
+	def niceName(self):
+		return "Camp " + str(self.number) + ", year " + str(self.year)
 	
 	def get_absolute_url(self):
 		return "/camps/" + str(self.year) + "/" + str(self.number) + "/"

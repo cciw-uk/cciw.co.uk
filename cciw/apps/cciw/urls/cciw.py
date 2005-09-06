@@ -1,7 +1,9 @@
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('cciw.apps.cciw.views.camps',
-	(r'^camps/$', 'index'),
-	(r'^camps/(?P<year>\d{4})/?$', 'yearindex'),
-	(r'^camps/(?P<year>\d{4})/(?P<number>\d+)/?$', 'detail')
+urlpatterns = patterns('cciw.apps.cciw.views',
+	(r'^camps/$', 'camps.index'),
+	(r'^camps/(?P<year>\d{4})/?$', 'camps.index'),
+	(r'^camps/(?P<year>\d{4})/(?P<number>\d+)/?$', 'camps.detail'),
+	(r'^sites/$', 'sites.index'),
+	(r'^sites/(?P<name>.*)/$', 'sites.detail')
 )

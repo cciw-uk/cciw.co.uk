@@ -1,0 +1,44 @@
+{% extends "standard" %}
+{% block content %}
+<h2>Links</h2>
+<p>TODO</p>
+<h2>Information</h2>
+<table class="sideheaders">
+	<tr>
+		<th>Location:</th>
+		<td><a href="{{ camp.get_site.get_absolute_url }}">{{ camp.get_site.short_name }}</a></td>
+	</tr>
+	{% if camp.get_previousCamp %}
+	<tr>
+		<th>Previous camp:</th>
+		<td>
+			<a href="{{ camp.get_previousCamp.get_absolute_url }}">{{ camp.niceName }}</a>
+		</td>
+	</tr>
+	{% endif %}
+	{% if camp.get_nextCamps_list %}
+	<tr>
+		<th>Following camp:</th>
+		<td>
+			{% for nextCamp in camp.get_nextCamps_list %}
+				<a href="{{ nextCamp.get_absolute_url }}">{{ nextCamp.niceName }}</a><br/>
+			{% endfor %}
+		</td>
+	</tr>
+	{% endif %}
+	<tr>
+		<th>Leaders:</th>
+		<td>
+			<ul class="leaderlist">
+				{% for leader in camp.get_person_list %}
+					<li>{{ leader.name }}:<br/>
+					{{ leader.info|escape|linebreaksbr }}</li>
+				{% endfor %}
+				<li>{{ camp.get_chaplain.name }}:<br/>
+				{{ camp.get_chaplain.info|escape|linebreaksbr }}	</li>
+			</ul>
+		</td>
+	</tr>
+</table>
+
+{% endblock %}

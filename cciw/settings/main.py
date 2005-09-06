@@ -20,11 +20,11 @@ SITE_ID = 1
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = ''
+MEDIA_ROOT = '/home/httpd/www.cciw.co.uk/django/media/'
 
 # URL that handles the media served from MEDIA_ROOT.
 # Example: "http://media.lawrence.com"
-MEDIA_URL = ''
+MEDIA_URL = 'http://cciw_django_local/media/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '__=9o22)i0c=ci+9u$@g77tvdsg9y-wu6v6#f4iott(@jgwig+'
