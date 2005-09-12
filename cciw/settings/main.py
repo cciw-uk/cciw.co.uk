@@ -37,7 +37,7 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'cciw.settings.urls.main'
 
 TEMPLATE_DIRS = (
-	'/home/httpd/www.cciw.co.uk/django/cciw/apps/cciw/templates/',
+	'/home/httpd/www.cciw.co.uk/django/templates/cciw/',
 	# Put strings here, like "/home/html/django_templates".
 )
 

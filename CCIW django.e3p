@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.5.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2005-09-03, 22:40:44 -->
+<!-- Saved: 2005-09-08, 19:12:18 -->
 <!-- Copyright (C) 2005 ,  -->
 <Project version="3.5">
   <Description></Description>
@@ -53,13 +53,6 @@
       <Dir>cciw</Dir>
       <Dir>apps</Dir>
       <Dir>cciw</Dir>
-      <Dir>models</Dir>
-      <Name>cciw.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
       <Dir>views</Dir>
       <Name>__init__.py</Name>
     </Source>
@@ -98,6 +91,46 @@
       <Dir>cciw</Dir>
       <Dir>views</Dir>
       <Name>camps.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Dir>models</Dir>
+      <Name>camps.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Name>common.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Dir>views</Dir>
+      <Name>sites.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Dir>models</Dir>
+      <Name>forums.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Name>settings.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Dir>models</Dir>
+      <Name>users.py</Name>
     </Source>
   </Sources>
   <Forms>

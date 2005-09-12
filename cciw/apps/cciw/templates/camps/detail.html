@@ -16,11 +16,11 @@
 		</td>
 	</tr>
 	{% endif %}
-	{% if camp.get_nextCamps_list %}
+	{% if camp.get_nextCamp_list %}
 	<tr>
 		<th>Following camp:</th>
 		<td>
-			{% for nextCamp in camp.get_nextCamps_list %}
+			{% for nextCamp in camp.get_nextCamp_list %}
 				<a href="{{ nextCamp.get_absolute_url }}">{{ nextCamp.niceName }}</a><br/>
 			{% endfor %}
 		</td>

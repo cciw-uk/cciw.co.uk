@@ -1,0 +1,32 @@
+
+table.sideheaders
+{
+	border-collapse: collapse;
+	width: 100%
+}
+
+table.sideheaders th
+{
+	text-align: left;
+}
+
+table.sideheaders th,
+table.sideheaders td
+{
+	border: solid 1px green;
+	padding: 0.2em;
+	vertical-align: top;
+}
+
+ul.leaderlist
+{
+	margin: 0px;
+	padding: 0px;
+	list-style: none;
+}
+ul.leaderlist li
+{
+	margin: 0 0 1em 0;
+	padding: 0px;
+}
+
