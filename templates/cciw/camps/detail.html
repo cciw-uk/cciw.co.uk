@@ -8,14 +8,6 @@
 		<th>Location:</th>
 		<td><a href="{{ camp.get_site.get_absolute_url }}">{{ camp.get_site.short_name }}</a></td>
 	</tr>
-	{% if camp.get_previousCamp %}
-	<tr>
-		<th>Previous camp:</th>
-		<td>
-			<a href="{{ camp.get_previousCamp.get_absolute_url }}">{{ camp.niceName }}</a>
-		</td>
-	</tr>
-	{% endif %}
 	{% if camp.get_nextCamp_list %}
 	<tr>
 		<th>Following camp:</th>
@@ -26,11 +18,19 @@
 		</td>
 	</tr>
 	{% endif %}
+	{% if camp.get_previousCamp %}
+	<tr>
+		<th>Previous camp:</th>
+		<td>
+			<a href="{{ camp.get_previousCamp.get_absolute_url }}">{{ camp.get_previousCamp.niceName }}</a>
+		</td>
+	</tr>
+	{% endif %}
 	<tr>
 		<th>Leaders:</th>
 		<td>
 			<ul class="leaderlist">
-				{% for leader in camp.get_person_list %}
+				{% for leader in camp.get_leader_list %}
 					<li>{{ leader.name }}:<br/>
 					{{ leader.info|escape|linebreaksbr }}</li>
 				{% endfor %}

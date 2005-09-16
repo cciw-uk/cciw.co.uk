@@ -1,1 +1,26 @@
 {% extends "base" %}
+{% block sidebar %}
+	<h1>Contents</h1>
+	<ul
+	>{% for menulink in menulinks %}<li
+			{% ifequal menulink.url page.request.path %}
+				class="currentPage"
+			{% endifequal %}
+			><a href="{{ menulink.url }}"
+			{% if menulink.extraTitle %}
+				title="{{ menulink.extraTitle }}"
+			{% endif %}
+			{% if menulink.isCurrentPage %}
+				class="currentPage"
+			{% endif %}
+			{% if menulink.isCurrentSection %}
+				class="currentSection"
+			{% endif %}
+			>{{ menulink.title }}</a></li
+	>{% endfor %}</ul
+	>
+{% endblock %}
+{% block content %}
+	{{ contentBody }}
+{% endblock %}
+

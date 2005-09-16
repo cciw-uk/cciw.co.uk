@@ -1,0 +1,34 @@
+{% extends "standard" %}
+{% block content %}
+	{% if camps %}
+		{{ introtext }}
+		<h2>Dates</h2>
+		<p>Click on the number of the camp for more information</p>
+		<table class="topheaders">
+			<tr>
+				<th>#</th>
+				<th>Age</th>
+				<th>Dates</th>
+				<th>Leaders</th>
+				<th>Chaplain</th>
+				<th>Site</th>
+			</tr>
+			{% for camp in camps %}
+			<tr>
+				<td><a href="{{ camp.get_absolute_url }}" 
+					title="{{ camp.niceName }}">{{ camp.number }}</a></td>
+				<td>{{ camp.age	}}</td>
+				<td>{{ camp.startDate|date:"d M"}} - {{ camp.endDate|date:"d M" }}</td>
+				<td>{{ camp.get_leader_list|join:", " }}</td>
+				<td>{{ camp.get_chaplain }}</td>
+				<td><a href="{{ camp.get_site.get_absolute_url }}">{{ camp.get_site.shortName }}</a></td>
+			</tr>
+			{% endfor %}
+		</table>
+		{{ outrotext }}
+	{% else %}
+	<p>Information for camps in {{thisyear}} is not yet available.</p>
+	{% endif %}
+
+
+{% endblock %}

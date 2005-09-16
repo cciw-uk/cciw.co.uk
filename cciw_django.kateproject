@@ -1,0 +1,27 @@
+[Dir media]
+Dirs=
+Files=style.css
+
+[Dir templates]
+Dirs=cciw
+Files=
+
+[Dir templates/cciw]
+Dirs=camps/sites/members
+Files=base.html/standard.html
+
+[Dir templates/cciw/camps]
+Dirs=
+Files=detail.html/index.html/thisyear.html
+
+[Dir templates/cciw/members]
+Dirs=
+Files=index.html
+
+[Dir templates/cciw/sites]
+Dirs=
+Files=detail.html/index.html
+
+[Project Dir]
+Dirs=templates/media
+Files=

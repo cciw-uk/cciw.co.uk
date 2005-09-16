@@ -3,14 +3,35 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <title>{% block title %}CCIW: {{ page.title }}{% endblock %}</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" href="{{ page.styleSheetUrl }}" type="text/css" />
 </head>
 <body>
-<div id="sidebar">{% block sidebar %}
-{% endblock %}</div>
-<div id="content">
-{% block pagetitle %}<h1>{{ page.title }}</h1>{% endblock %}
-{% block content %}{% endblock %}
+<div id="header">
+	<div id="headerlogo">
+	</div>
 </div>
+<div id="main">
+	<div id="sidebarOuter">
+		<div id="sidebar">
+			{% block sidebar %}
+			{% endblock %}
+		</div>
+	</div>
+	<div id="contentOuter">
+		<div id="content">
+			<div id="pageTitle">
+				{% block pagetitle %}
+					<h1>{{ page.title }}</h1>
+				{% endblock %}
+			</div>
+			<div id="contentBody">
+				{% block content %}
+				{% endblock %}
+			</div>
+		</div>
+	</div>
+</div>
+<div id="footer"></div>
 </body>
 </html>

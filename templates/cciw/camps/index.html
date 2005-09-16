@@ -7,7 +7,7 @@
 		{% ifequal camp.year year %}
 			<li><a href="{{ camp.get_absolute_url }}" title="{{ camp.niceName }}">
 				Camp {{ camp.number }}</a>,
-				led by {{ camp.get_person_list|join:", "|escape }}, 
+				led by {{ camp.get_leader_list|join:", "|escape }}, 
 				chaplain {{ camp.get_chaplain }}
 				<ul>
 					<li><a href="{{ camp.get_absolute_url }}forum/" 

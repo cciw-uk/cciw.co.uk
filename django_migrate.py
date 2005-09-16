@@ -5,6 +5,8 @@ import os
 from datetime import datetime
 from datetime import date
 
+from migrate_html import *
+
 # import model *modules* from *packages*
 from django.models.camps import *
 from django.models.users import *
@@ -12,6 +14,7 @@ from django.models.polls import *
 from django.models.posts import *
 from django.models.photos import *
 from django.models.forums import *
+from django.models.sitecontent import *
 
 # Config
 PREFIX = '/home/httpd/www.cciw.co.uk/web/data/'
@@ -55,10 +58,11 @@ def getTable(filename, fieldSep="\t"):
 #                   SITES
 # mainly manual
 def migrateSites():
+	
 	try:
-		site1 = sites.get_object(short_name__exact="Brynglas Farm")
+		site1 = sites.get_object(shortName__exact="Brynglas Farm")
 	except sites.SiteDoesNotExist:
-		site1 = sites.Site(short_name="Brynglas Farm", long_name="Brynglas Farm, Tywyn")
+		site1 = sites.Site(shortName="Brynglas Farm", longName="Brynglas Farm, Tywyn")
 	site1.info = """
 	<address>Brynglas Farm,<br/>
 	Bryncug,<br/>
@@ -76,9 +80,9 @@ def migrateSites():
 	site1.save()
 	
 	try:
-		site2 = sites.get_object(short_name__exact="Llys Andreas")
+		site2 = sites.get_object(shortName__exact="Llys Andreas")
 	except sites.SiteDoesNotExist:
-		site2 = sites.Site(short_name="Llys Andreas", long_name="Llys Andreas, Barmouth")
+		site2 = sites.Site(shortName="Llys Andreas", longName="Llys Andreas, Barmouth")
 	site2.info = """
 	<address>Llys Andreas Camp Site,<br/>
 	Ffordd Tyddyn Felin<br/>
@@ -97,14 +101,11 @@ def migrateSites():
 ###########################################################################################
 #                 LEADERS + CHAPLAINS
 def migrateLeaders():
+	for p in persons.get_list():
+		p.delete()
 	for pdata in getTable(PREFIX+'leaders.data'):
-		name = pdata[0]
-		info = pdata[1]
-		try:
-			p = persons.get_object(name__iexact = name)
-		except persons.PersonDoesNotExist:
-			p = persons.Person(name = name, info = info)
-			p.save()
+		p = persons.Person(name = pdata[0], info = pdata[1])
+		p.save()
 
 ###########################################################################################
 #                PAST CAMPS
@@ -513,10 +514,56 @@ def migrateForums():
 				p.save()
 		# end for topicline in topiclist
 	# end for line in board			
+	
+def migrateMainMenu():
+	for m in menulinks.get_list():
+		m.delete()
+	
+	links = (
+		('Home','/',0,''),
+		('News','/news/',100, ''),
+		('Camps {{thisyear}}', '/thisyear/',200, ''),
+		('Booking', '/thisyear/booking/', 210, '/thisyear/'),
+		('Coming on camp', '/thisyear/coming-on-camp/', 220, '/thisyear/'),
+		('All camps', '/camps/',400, ''),
+		('Camp sites', '/sites/', 500, ''),
+		('Members', '/members/', 500, ''),
+		('About CCIW', '/info/', 600, ''),
+		('About camp', '/info/about-camp/', 602, '/info/'),
+		('Directors', '/info/directors/', 610, '/info/'),
+		('Doctrinal basis', '/info/doctrinal-basis/', 620, '/info/'),
+		('Legal', '/info/legal/', 630, '/info/'),
+		('About website', '/website/', 700, ''),
+		('Terms','/website/terms/', 710, '/website/'),
+		('Forum','/website/forum/', 720, '/website/'),
+		('Help','/website/help/', 730, '/website/'),
+		('Contact us','/contact/', 800, '')
+	)
+	
+	for i in range(0, len(links)):
+		title, url, order, parentUrl = links[i]
+		m = menulinks.MenuLink(title = title, url = url, listorder=order)
+		if parentUrl != '':
+			m.parentItem_id = menulinks.get_object(url__exact=parentUrl).id
+		m.save()
+		
+
+def migrateHtml():
+	for h in htmlchunks.get_list():
+		h.delete()
+	for name, url, pageTitle, htmlChunk in html:
+		h = htmlchunks.HtmlChunk(name = name)
+		h.html = htmlChunk
+		h.pageTitle = pageTitle
+		if url != "":
+			h.menuLink_id = menulinks.get_object(url__exact=url).id
+		h.save()
+	
 ##########################################################
 
-migrateSites()
+
 migrateLeaders()
+migrateSites()
 migrateCamps()
 migrateUsers()
 migratePermissions()
@@ -524,4 +571,6 @@ migrateMessages()
 migrateAwards()
 migratePolls()
 migrateForums()
+migrateMainMenu()
+migrateHtml()
 

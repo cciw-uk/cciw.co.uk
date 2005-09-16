@@ -1,8 +1,176 @@
+/* General  */
 
-table.sideheaders
+body {
+	background-color: black;
+	color: white;
+	margin: 0;
+	margin-bottom: 10px;
+	padding: 0;
+	font-family: verdana, arial, sans;
+
+}
+
+a:link {
+	color: #008800;
+}
+
+
+a:visited {
+	color: #008800;
+}
+a:hover {
+	color: #00ff00;
+}
+
+h1,h2,h3,h4,h5,h6
+{
+	margin-top: 0;
+	margin-bottom: 0.6em;
+}
+
+
+/* Header and positioning */
+
+#header
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 72px;
+	background-image: url('http://cciw_django_local/media/images/header.png');
+	background-repeat: repeat-x;
+}
+
+#headerlogo
+{
+	background-image: url('http://cciw_django_local/media/images/headerlogo.png');
+	background-repeat: no-repeat;
+	margin-left: 5px;
+	height: 72px;
+	width: 100%;
+}
+
+
+#main
+{
+	margin-top: 72px;
+}
+
+#sidebarOuter
+{
+	float: left;
+	width: 14em;	
+}
+
+#sidebar
+{
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+#contentOuter
+{
+	margin-left: 14em;
+	padding-left: 0em;
+	padding-right: 10px;
+}
+
+#contentBody, #pageTitle, #sidebar
+{
+	background-color: #262626;
+	border-top: 1px solid #666666;
+	border-bottom: 1px solid #666666;
+}
+
+#pageTitle
+{
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+#pageTitle h1
+{
+	margin: 0;
+	padding: 0.2em;
+	text-align: center;
+}
+
+#contentBody
+{
+	margin-top: 1em;
+	padding: 0.8em;
+}
+/* Sidebar styles */
+#sidebar h1
+{
+	font-size: 1.1em;
+	text-align: center;
+	padding: 2px;
+	border-bottom: 1px solid #666666;
+	margin: 0;
+
+}
+
+#sidebar ul,
+#sidebar li
+{
+	padding: 0px;
+	margin: 0px;
+	list-style-type: none;
+}
+#sidebar a
+{
+	padding-left: 8px;
+	padding-right: 8px;
+	padding-top: 2px;
+	padding-bottom: 3px;
+	display: block;
+	color: white;
+	text-decoration: none;
+	border-left: 2px solid #262626;
+	border-right: 2px solid #262626;
+
+}
+
+#sidebar a.currentPage
+{
+	background-color: #444444;
+	border-left: 2px solid #808080;
+	border-right: 2px solid #808080;
+
+}
+#sidebar a.currentSection
+{
+	background-color: #333333;
+	border-left: 2px solid #808080;
+	border-right: 2px solid #808080;
+
+}
+
+#sidebar a:hover
+{
+	background-color: #004800;
+	text-decoration: none;
+	border-left: 2px solid #008000;
+	border-right: 2px solid #008000;
+
+}
+
+/* Content styles */
+
+#contentBody h2
+{
+	border-bottom: 2px solid #114411;
+}
+
+/* Tables */
+
+table.sideheaders,
+table.topheaders
 {
 	border-collapse: collapse;
-	width: 100%
+	width: 100%;
+	color: #d0d0d0;
 }
 
 table.sideheaders th
@@ -10,11 +178,19 @@ table.sideheaders th
 	text-align: left;
 }
 
-table.sideheaders th,
-table.sideheaders td
+table.sideheaders td,
+table.topheaders td
 {
-	border: solid 1px green;
-	padding: 0.2em;
+	background-color: #181818;
+}
+
+table.sideheaders th,
+table.sideheaders td,
+table.topheaders th,
+table.topheaders td
+{
+	border: solid 1px #336633;
+	padding: 3px;
 	vertical-align: top;
 }
 

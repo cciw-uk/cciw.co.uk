@@ -1,9 +1,14 @@
 from django.core import template_loader
 
-from django.models.camps import camps
 from django.utils.httpwrappers import HttpResponse
 from django.core.exceptions import Http404
+
+from django.models.camps import camps
+from django.models.sitecontent import htmlchunks
+
 from cciw.apps.cciw.common import StandardContext
+from cciw.apps.cciw.settings import *
+
 
 def index(request, year = None):
 	if (year == None):
@@ -22,7 +27,7 @@ def index(request, year = None):
 	t = template_loader.get_template('camps/index')
 	c = StandardContext(request, {'camps': all_camps, 
 						'years': uniqueyears},
-					title="Past Camps")
+					title="All Camps")
 	return HttpResponse(t.render(c))
 
 def detail(request, year, number):
@@ -39,6 +44,15 @@ def detail(request, year, number):
 	return HttpResponse(t.render(c))
 
 	
-
+def thisyear(request):
+	c = StandardContext(request, title="Camps " + str(THISYEAR))
+	htmlchunks.renderIntoContext(c, {
+		'introtext': 'camp_dates_intro_text',
+		'outrotext': 'camp_dates_outro_text'})
 	
+	c['camps'] = camps.get_list(year__exact=THISYEAR, order_by=['site_id', 'number'])
+	
+	t = template_loader.get_template('camps/thisyear')
+	return HttpResponse(t.render(c))
+
 	
