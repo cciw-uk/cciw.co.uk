@@ -1,5 +1,5 @@
 from django.core import meta
-from users import *
+from members import *
 from polls import *
 from photos import *
 
@@ -14,7 +14,7 @@ class Forum(meta.Model):
 		admin = meta.Admin()
 
 class NewsItem(meta.Model):
-	createdBy = meta.ForeignKey(User, related_name="newsItemCreated")
+	createdBy = meta.ForeignKey(Member, related_name="newsItemCreated")
 	createdAt = meta.DateTimeField("Posted")
 	summary = meta.TextField("Summary")
 	fullItem = meta.TextField("Full post", blank=True)
@@ -29,12 +29,12 @@ class NewsItem(meta.Model):
 
 class Topic(meta.Model):
 	subject = meta.CharField("Subject", maxlength=100)
-	startedBy = meta.ForeignKey(User, related_name="topicStarted",
+	startedBy = meta.ForeignKey(Member, related_name="topicStarted",
 		verbose_name="started by")
 	createdAt = meta.DateTimeField("Started", null=True)
 	open = meta.BooleanField("Open")
 	hidden = meta.BooleanField("Hidden")
-	checkedBy = meta.ForeignKey(User,
+	checkedBy = meta.ForeignKey(Member,
 		null=True, blank=True, related_name="topicChecked",
 		verbose_name="checked by")
 	approved = meta.BooleanField("Approved", null=True, blank=True)
@@ -57,13 +57,13 @@ class Topic(meta.Model):
 		return  self.subject
 	
 class Post(meta.Model):
-	postedBy = meta.ForeignKey(User, 
+	postedBy = meta.ForeignKey(Member, 
 		related_name="post")
 	subject = meta.CharField("Subject", maxlength=100) # deprecated, supports legacy boards
 	message = meta.TextField("Message")
 	postedAt = meta.DateTimeField("Posted at", null=True)
 	hidden = meta.BooleanField("Hidden", default=False)
-	checkedBy = meta.ForeignKey(User,
+	checkedBy = meta.ForeignKey(Member,
 		verbose_name="checked by",
 		null=True, blank=True, related_name="checkedPost")
 	approved = meta.BooleanField("Approved", null=True)

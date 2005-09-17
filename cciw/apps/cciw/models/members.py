@@ -36,8 +36,8 @@ MODERATE_OPTIONS = (
 	(2, "Fully moderated")
 )
 
-class User(meta.Model):
-	userName   = meta.CharField("User name", maxlength=30, db_index=True, unique=True)
+class Member(meta.Model):
+	userName   = meta.CharField("Member name", maxlength=30, db_index=True, unique=True)
 	realName   = meta.CharField("Real name", maxlength=20, blank=True)
 	email      = meta.EmailField("Email address")
 	password   = meta.CharField("Password", maxlength=30)
@@ -57,10 +57,10 @@ class User(meta.Model):
 	bookmarksNotify = meta.BooleanField("Bookmark notifcations enabled", default=False)
 	permissions = meta.ManyToManyField(Permission,
 		verbose_name="permissions",
-		related_name="userWithPermission",
+		related_name="memberWithPermission",
 		blank=True,
 		null=True)
-	dummyUser = meta.BooleanField("Is dummy user", default=False) # supports ancient posts in message boards
+	dummyMember = meta.BooleanField("Is dummy member", default=False) # supports ancient posts in message boards
 		
 	def __repr__(self):
 		return self.userName
@@ -102,11 +102,11 @@ class User(meta.Model):
 		random.seed(datetime.datetime.today().microsecond)
 		return rand64[int(random.random()*64)] + rand64[int(random.random()*64)]
 	
-	def _module_encryptPassword(userPass):
+	def _module_encryptPassword(memberPass):
 		import crypt
-		"""Encrypt a users password"""
+		"""Encrypt a members password"""
 		# written to maintain compatibility with existing password file
-		return crypt.crypt(userPass, generateSalt())
+		return crypt.crypt(memberPass, generateSalt())
 
 class Award(meta.Model):
 	name = meta.CharField("Award name", maxlength=50)
@@ -127,17 +127,17 @@ class PersonalAward(meta.Model):
 	award = meta.ForeignKey(Award,
 		verbose_name="award", 
 		related_name="personalAward")
-	user = meta.ForeignKey(User,
-		verbose_name="user",
+	member = meta.ForeignKey(Member,
+		verbose_name="member",
 		related_name="personalAward")
 		
 	def __repr__(self):
-		return self.get_award().name + " to " + self.get_user().userName
+		return self.get_award().name + " to " + self.get_member().userName
 		
 		
 	class META:
 		admin = meta.Admin(
-			list_display = ('award', 'user','reason', 'dateAwarded')
+			list_display = ('award', 'member','reason', 'dateAwarded')
 		)
 		ordering = ('dateAwarded',)
 
@@ -149,7 +149,7 @@ BOOKMARK_CATEGORIES = (
 class Bookmark(meta.Model):
 	url = meta.CharField("URL", maxlength="60") # 60?
 	title = meta.CharField("Title", maxlength="50") # 100?
-	user = meta.ForeignKey(User, verbose_name="user",
+	member = meta.ForeignKey(Member, verbose_name="member",
 		related_name="bookmark")
 	lastUpdated = meta.DateTimeField("Last updated",
 		null=True, blank=True)
@@ -171,12 +171,12 @@ MESSAGE_BOXES = (
 )
 
 class Message(meta.Model):
-	fromUser = meta.ForeignKey(User,
-		verbose_name="from user",
+	fromMember = meta.ForeignKey(Member,
+		verbose_name="from member",
 		related_name="messageSent"
 	)
-	toUser = meta.ForeignKey(User, 
-		verbose_name="to user",
+	toMember = meta.ForeignKey(Member, 
+		verbose_name="to member",
 		related_name="messageReceived")
 	time = meta.DateTimeField("At")
 	text = meta.TextField("Message")
@@ -185,10 +185,10 @@ class Message(meta.Model):
 	
 	def __repr__(self):
 		#return str(self.id)
-		return "[" + str(self.id) + "] to " + repr(self.get_toUser())  + " from " + repr(self.get_fromUser())
+		return "[" + str(self.id) + "] to " + repr(self.get_toMember())  + " from " + repr(self.get_fromMember())
 	
 	class META:
 		admin = meta.Admin(
-			list_display = ('toUser', 'fromUser', 'time')
+			list_display = ('toMember', 'fromMember', 'time')
 		)
 		ordering = ('-time',)

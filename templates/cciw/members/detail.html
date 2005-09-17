@@ -1,16 +1,16 @@
 {% extends "standard" %}
 {% block content %}
-	<div class="userinfo">
+	<div class="memberinfo">
 		<h2>Information</h2>
 		<table class="sideheaders">
 			<tr>
 				<th>'Real' name</th>
-				<td>{{ user.realName }}</td>
+				<td>{{ member.realName }}</td>
 			</tr>
 			{% if showEmail %}
 			<tr>
 				<th>Email</th>
-				<td>{{ user.realName }}</td>
+				<td>{{ member.realName }}</td>
 			</tr>
 			{% endif %}
 		</table>
@@ -19,7 +19,7 @@
 
 		{% if awards %}
 		<h2>Awards</h2>
-		<p>{{ user.get_link }} has received the following awards:</p>
+		<p>{{ member.get_link }} has received the following awards:</p>
 			TODO
 
 

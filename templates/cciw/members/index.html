@@ -10,7 +10,7 @@
 	<table class="topheaders">
 		<tr>
 			<th>Icon</th>
-			<th>User name&nbsp;{% sorting_control "aun" "dun" %}</th>
+			<th>Member name&nbsp;{% sorting_control "aun" "dun" %}</th>
 			<th>'Real' name&nbsp;{% sorting_control "arn" "drn" %}</th>
 			<th>Comments</th>
 			<th>Joined&nbsp;{% sorting_control "adj" "ddj" %}</th>
@@ -38,7 +38,7 @@
 	</table>
 	<div class="paging">{% paging_control %}</div>
 	{% else %}
-	<p>No users found.</p>
+	<p>No members found.</p>
 	{% endif %}
 
 {% endblock %}

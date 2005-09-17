@@ -9,7 +9,7 @@ from migrate_html import *
 
 # import model *modules* from *packages*
 from django.models.camps import *
-from django.models.users import *
+from django.models.members import *
 from django.models.polls import *
 from django.models.posts import *
 from django.models.photos import *
@@ -264,25 +264,25 @@ def migrateCamps():
 	
 ###########################################################################################
 #             USERS
-def migrateUsers():
-	for u in users.get_list(): u.delete()
-	def createUser(data, passwordsDict, lastSeenData):
-		user = users.User(userName=data[0])
-		user.realName = data[1]
-		user.email = data[3]
-		user.password = passwordsDict.get(user.userName, users.encryptPassword('password1'))
-		user.dateJoined = datetime.fromtimestamp(int(data[6]))
-		user.lastSeen = lastSeenData.get(user.userName, user.dateJoined)
-		user.showEmail = getBool(data[4])
-		user.messageOption = getInt(data[5])
-		user.comments = data[9]
-		user.confirmSecret = data[13]
-		user.moderated = getInt(data[15])
-		user.hidden = getBool(data[17])
-		user.banned = getBool(data[16])
-		user.newEmail = data[22]
-		user.bookmarksNotify = not getBool(data[18])
-		return user
+def migrateMembers():
+	for u in members.get_list(): u.delete()
+	def createMember(data, passwordsDict, lastSeenData):
+		member = members.Member(userName=data[0])
+		member.realName = data[1]
+		member.email = data[3]
+		member.password = passwordsDict.get(member.userName, members.encryptPassword('password1'))
+		member.dateJoined = datetime.fromtimestamp(int(data[6]))
+		member.lastSeen = lastSeenData.get(member.userName, member.dateJoined)
+		member.showEmail = getBool(data[4])
+		member.messageOption = getInt(data[5])
+		member.comments = data[9]
+		member.confirmSecret = data[13]
+		member.moderated = getInt(data[15])
+		member.hidden = getBool(data[17])
+		member.banned = getBool(data[16])
+		member.newEmail = data[22]
+		member.bookmarksNotify = not getBool(data[18])
+		return member
 	
 	# first get passwords from separate table
 	passwords = {}
@@ -296,7 +296,7 @@ def migrateUsers():
 	# Now parse members.data and pending_members.data
 	for line in getTable(PREFIX+"members.data"):
 		try:
-			u = createUser(line,passwords, lastSeenData)
+			u = createMember(line,passwords, lastSeenData)
 		except:
 			print "Invalid data:"
 			print line
@@ -306,7 +306,7 @@ def migrateUsers():
 	
 	for line in getTable(PREFIX+"pending_members.data"):
 		try:
-			u = createUser(line,passwords, lastSeenData)
+			u = createMember(line,passwords, lastSeenData)
 		except:
 			print "Invalid data:"
 			print line
@@ -322,7 +322,7 @@ def migratePermissions():
 	
 	for id, description in ( 
 		(permissions.SUPERUSER, "Administrator"),
-		(permissions.USER_MODERATOR, "User moderator"),
+		(permissions.USER_MODERATOR, "Member moderator"),
 		(permissions.POST_MODERATOR, "Post moderator"),
 		(permissions.PHOTO_APPROVER, "Photo approver"),
 		(permissions.POLL_CREATOR, "Poll creator"),
@@ -343,7 +343,7 @@ def migratePermissions():
 		
 			if line[0] == groupname:
 				for userName in line[2].split(","):
-					u = users.get_object(userName__exact=userName.strip())
+					u = members.get_object(userName__exact=userName.strip())
 					perms = [p.id for p in u.get_permission_list()]
 					perms += permsList
 					u.set_permissions(perms)
@@ -361,15 +361,15 @@ def migrateMessages():
 	for message in messages.get_list():
 		message.delete()
 		
-	for user in users.get_list():
+	for member in members.get_list():
 		for boxNumber, boxName in ( (0,'inbox'), (1,'saved') ):
 			try:
-				data = getTable(PREFIX+"../members/" + user.userName + "." + boxName)
+				data = getTable(PREFIX+"../members/" + member.userName + "." + boxName)
 			except IOError:
 				data = []
 			for line in data:
-				message = messages.Message(toUser_id = user.id)
-				message.fromUser_id = users.get_object(userName__exact=line[1]).id
+				message = messages.Message(toMember_id = member.id)
+				message.fromMember_id = members.get_object(userName__exact=line[1]).id
 				message.time = datetime.fromtimestamp(int(line[3]))
 				message.text = line[2]
 				message.box = boxNumber
@@ -393,7 +393,7 @@ def migrateAwards():
 			award.save()
 		pa = personalawards.PersonalAward(award_id=award.id)
 		pa.reason = line[3]
-		pa.user_id = users.get_object(userName__exact=line[0]).id
+		pa.member_id = members.get_object(userName__exact=line[0]).id
 		pa.save()
 	
 ###########################################################################################
@@ -435,7 +435,7 @@ def migratePolls():
 		poll.rules = getInt(line[3])
 		poll.ruleParameter = getInt(line[4])
 		poll.haveVoteInfo = False
-		poll.createdBy_id = users.get_object(userName__exact=line[5]).id
+		poll.createdBy_id = members.get_object(userName__exact=line[5]).id
 		poll.save()
 		
 		for i in range(0,len(options)):
@@ -450,7 +450,7 @@ def migratePolls():
 
 # Forums in different places - Camps, news, website
 
-def getDummyOrRealUser(userName):
+def getDummyOrRealMember(userName):
 	userName = userName.strip()[0:20]
 	if len(userName) == 0: userName = "''"
 	# specifc hack for bad data:
@@ -459,17 +459,17 @@ def getDummyOrRealUser(userName):
 	if userName == '"ecky2702':
 		userName = "'ecky2702'"
 	try:
-		u = users.get_object(userName__exact=userName)
+		u = members.get_object(userName__exact=userName)
 		return u
-	except users.UserDoesNotExist:
+	except members.MemberDoesNotExist:
 		if userName.startswith("'"):
-			u = users.User(userName = userName)
+			u = members.Member(userName = userName)
 			u.realName = ""
 			u.email = ""
 			u.password = ""
 			u.dateJoined = None
 			u.lastSeen = None
-			u.dummyUser = True
+			u.dummyMember = True
 			u.hidden = True
 			u.save()
 			return u
@@ -528,7 +528,7 @@ def migrateForums():
 				
 				
 				topic.subject = topicline[1]
-				topic.startedBy_id = getDummyOrRealUser(topicline[2]).id
+				topic.startedBy_id = getDummyOrRealMember(topicline[2]).id
 				# Create news item if necessary
 				topictype = getInt(topicline[10])
 				if topictype == 1 or topictype == 2:
@@ -587,7 +587,7 @@ def migrateForums():
 				postdata = []
 			for postline in postdata:
 				p = posts.Post(subject="")
-				p.postedBy_id = getDummyOrRealUser(postline[1].strip()).id
+				p.postedBy_id = getDummyOrRealMember(postline[1].strip()).id
 				p.subject = postline[2]
 				
 				p.message = fix_bbcode(postline[3])
@@ -650,15 +650,15 @@ def migrateHtml():
 ##########################################################
 
 
-#migrateLeaders()
-#migrateSites()
-#migrateCamps()
-#migrateUsers()
-#migratePermissions()
-#migrateMessages()
-#migrateAwards()
-#migratePolls()
-#migrateForums()
+migrateLeaders()
+migrateSites()
+migrateCamps()
+migrateMembers()
+migratePermissions()
+migrateMessages()
+migrateAwards()
+migratePolls()
+migrateForums()
 migrateMainMenu()
 migrateHtml()
 

@@ -1,4 +1,3 @@
-"Site Content"
 from django.core import meta
 
 class MenuLink(meta.Model):

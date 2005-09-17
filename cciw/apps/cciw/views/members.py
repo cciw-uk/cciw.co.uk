@@ -3,11 +3,11 @@ from django.utils.httpwrappers import HttpResponse
 from django.core.exceptions import Http404
 from django.core import template_loader
 
-from django.models.users import users
+from django.models.members import members
 from cciw.apps.cciw.common import *
 
 def index(request):
-	lookup_args = {'dummyUser__exact' : 'False', 'hidden__exact': 'False'} # TODO - depends on authorisation
+	lookup_args = {'dummyMember__exact' : 'False', 'hidden__exact': 'False'} # TODO - depends on authorisation
 	order_options = \
 		{'adj': 'dateJoined',
 		'ddj': '-dateJoined',
@@ -31,7 +31,7 @@ def index(request):
 		pass
 
 	
-	return list_detail.object_list(request, 'users', 'users', 
+	return list_detail.object_list(request, 'members', 'members', 
 		extra_context =  standard_extra_context(request, title='Members'), 
 		template_name = 'members/index',
 		paginate_by=100, extra_lookup_kwargs = lookup_args,
@@ -39,12 +39,12 @@ def index(request):
 
 def detail(request, userName):
 	try:
-		user = users.get_object(userName__exact = userName)
-	except users.UserDoesNotExist:
+		member = members.get_object(userName__exact = userName)
+	except members.MemberDoesNotExist:
 		raise Http404
 	
-	c = StandardContext(request, title="Members: " + user.userName)
-	c['user'] = user
-	c['awards'] = user.get_personalAward_list()
+	c = StandardContext(request, title="Members: " + member.userName)
+	c['member'] = member
+	c['awards'] = member.get_personalAward_list()
 	t = template_loader.get_template('members/detail')
 	return HttpResponse(t.render(c))

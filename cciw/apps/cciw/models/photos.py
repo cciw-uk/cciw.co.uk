@@ -1,5 +1,5 @@
 from django.core import meta
-from users import *
+from members import *
 
 class Gallery(meta.Model):
 	location = meta.CharField("Location/URL", maxlength=50)
@@ -21,7 +21,7 @@ class Photo(meta.Model):
 	gallery = meta.ForeignKey(Gallery,
 		verbose_name="gallery",
 		related_name="photo")
-	checkedBy = meta.ForeignKey(User,
+	checkedBy = meta.ForeignKey(Member,
 		null=True, blank=True, related_name="checkedPhoto")
 	approved = meta.BooleanField("Approved", null=True, blank=True)
 	needsApproval = meta.BooleanField("Needs approval", default=False)

@@ -1,10 +1,10 @@
 from django.core import meta
-from users import *
+from members import *
 
 VOTING_RULES = (
 	(0, "Unlimited"),
-	(1, "'X' votes per user"),
-	(2, "'X' votes per user per day")
+	(1, "'X' votes per member"),
+	(2, "'X' votes per member per day")
 )
 
 class Poll(meta.Model):
@@ -18,7 +18,7 @@ class Poll(meta.Model):
 		choices = VOTING_RULES)
 	ruleParameter = meta.PositiveSmallIntegerField("Parameter for rule", default=1)
 	haveVoteInfo = meta.BooleanField("Full vote information available", default=True)
-	createdBy = meta.ForeignKey(User, verbose_name="created by",
+	createdBy = meta.ForeignKey(Member, verbose_name="created by",
 		related_name="pollCreated")
 	
 	def __repr__(self):
@@ -58,7 +58,7 @@ class VoteInfo(meta.Model):
 	pollOption = meta.ForeignKey(PollOption, 
 		verbose_name="pollOption",
 		related_name="vote")
-	user = meta.ForeignKey(User,
-		verbose_name="user",
+	member = meta.ForeignKey(Member,
+		verbose_name="member",
 		related_name="pollVote")
 	date = meta.DateTimeField("Date")
