@@ -54,6 +54,31 @@ def getTable(filename, fieldSep="\t"):
 		rows.append(lineData)
 	return rows
 
+def fix_bbcode(message):
+	emoticonreplacements = (
+		('[:anvil:]', ':anvil:'),
+		('[:bandit:]', ':bandit'),
+		('[:chop:]', ':chop:'),
+		('[:biggun:]', ':biggun:'),
+		('[:mouthful:]', ':mouthful:'),
+		('[:gun:]', ':gun:'),
+		('[:box:]', ':box:'),
+		('[:gallows:]', ':gallows:'),
+		('[:jedi:]', ':jedi:'),
+		('[:bosh:]', ':bosh:'),
+		('[:jonisanidiot:]', ':saw:'),
+		('[:iwin:]', ':stupid:')
+	)
+	for icon in emoticonreplacements:
+		message = message.replace(icon[0], icon[1])
+	# TODO - misc transformations on messages, especially URLs
+	return message
+
+def remap_url(url):
+	# TODO - probably easiest is a manual list, since
+	# there are v few in current DB
+	return url
+
 ###########################################################################################
 #                   SITES
 # mainly manual
@@ -64,19 +89,69 @@ def migrateSites():
 	except sites.SiteDoesNotExist:
 		site1 = sites.Site(shortName="Brynglas Farm", longName="Brynglas Farm, Tywyn")
 	site1.info = """
-	<address>Brynglas Farm,<br/>
-	Bryncug,<br/>
-	Tywyn, <br/>
-	Gwynedd, <br/>
-	LL36 9PY, <br/>
-	Phone 01654 710544 <br/>
-	</address>
-		 
-	<p>The Brynglas site is a large field on Brynglas farm, very close to the Tal-y-Llyn railway - in fact you have to cross the railway (twice!) as you come through the farm onto the campsite. The campers and officers are all in tents, with the exception of some of the more pampered leaders and chaplains, and the kitchen and toilets are also under canvas. The ample space means that the camps have a nominal capacity of 75, but more can be accomodated.
-	photo 1 The camp site provides plenty to do with a large football pitch, volleyball area, small hills to climb, a stream , as well as table tennis and other games in the main marquee. The site, along with the surrounding fields, make it a great place for wide games.
-	</p>
-	<p>The site is close to Tywyn (a small town with most amenities including a well served railway station) - It only takes 10 minutes by car from camp to Tywyn. The shops there, particularly the honey ice-cream factory, are popular with campers, and the leisure centre with its swimming pool and showers are increasingly popular as the week progresses (since the campsite does not have showers )! Just past Tywyn is Broadwater, which is a great site for canoing and raft-building. The camp site is also quite close to Cader Idris, which is usually climbed during the course of the week, and also to the picturesque Dolgoch Falls.
-	</p>"""
+	 <address>Brynglas Farm,<br/>
+Bryncug,<br/>
+ Tywyn, <br/>
+ Gwynedd, <br/>
+ LL36 9PY, <br/>
+ Phone 01654 710544 <br/>
+ </address>
+   
+ <p>The Brynglas site is a large field on Brynglas farm, very close to the Tal-y-Llyn 
+ railway - in fact you have to cross the railway (twice!) as you come through the 
+ farm onto the campsite. The campers and officers are all in tents, with the exception 
+ of some of the more pampered leaders and chaplains, and the kitchen and toilets are 
+ also under canvas. The ample space means that the camps have a nominal capacity of 75, 
+ but more can be accomodated.
+</p>
+ <div class='sitephoto'>
+  <img src="{{media}}photos/2000-tywyn-site1b.jpeg" width="500" height="375" alt="Brynglas Farm photo 1" />
+ </div>
+ <br/>
+ 
+ <p>The camp site provides plenty to do with a large football pitch, volleyball area,
+ small hills to climb, a stream , as well as table tennis and other games in the main 
+ marquee. The site, along with the surrounding fields, make it a great place for wide games.
+ </p>
+ 
+ <div class='sitephoto'>
+  <img src="{{media}}photos/1999-bg-pyramids.jpeg" width="400" height="283" alt="Brynglas Farm photo 2" />
+  <p><b>"It doesn't hurt, honest!"</b></p>
+ </div>
+ 
+ <p>The site is close to Tywyn (a small town with most amenities including a well served 
+ railway station) - it only takes 10 minutes by car from camp to Tywyn. The shops there, 
+ particularly the honey ice-cream factory, are popular with campers, and the leisure 
+ centre with its swimming pool and showers are increasingly popular as the week progresses 
+ (since the camp site does not have showers )! Just past Tywyn is Broadwater, which 
+ is a great site for canoing and raft-building. The camp site is also 
+ quite close to Cader Idris, which is usually climbed during the course of 
+ the week, and also to the picturesque Dolgoch Falls.
+</p>
+ 
+<div class='sitephoto'>
+  <img src="{{media}}photos/1999-dolgoch_falls.jpeg" width="387" height="262" alt="Brynglas Farm photo 3" />
+  <p><b>Dolgoch Falls</b></p>
+ </div>
+ <br/>
+
+
+ <h2><a name="aerialphoto">Aerial photo</a></h2>
+
+ <p>Many thanks to W. Williams. Wynne for this fantastic aerial photograph of the Brynglas site</p>
+ <div class='sitephoto'>
+  <img src="{{media}}photos/2002-site1-aerial_400x300.jpeg" alt="aerial photo" />
+  <p class="note" style="text-align: right">&copy;  W.Williams.Wynne (reproduced with permission).</p>
+ </div>
+
+ <p>Want this larger?  Try it in the following sizes, one of which should match your desktop.</p>
+ <div class="sitephoto">
+  <p><a href="{{media}}photos/2002-site1-aerial_640x480.jpeg">Small - 640 x 480, 55 kB</a></p>
+  <p><a href="{{media}}photos/2002-site1-aerial_800x600.jpeg">Medium - 800 x 600, 80 kB</a></p>
+  <p><a href="{{media}}photos/2002-site1-aerial_1024x768.jpeg">Large - 1024 x 768, 131 kB</a></p>
+ </div>
+
+"""
 	site1.save()
 	
 	try:
@@ -84,17 +159,28 @@ def migrateSites():
 	except sites.SiteDoesNotExist:
 		site2 = sites.Site(shortName="Llys Andreas", longName="Llys Andreas, Barmouth")
 	site2.info = """
-	<address>Llys Andreas Camp Site,<br/>
-	Ffordd Tyddyn Felin<br/>
-	Tal-y-bont<br/>
-	Barmouth<br/>
-	LL43 2AU<br/>
-	Pay phone: 01341 247526<br/>
-	</address>
-	<p>This site in Tal-y-bont is a smaller site than Tywyn, but still has plenty of room for the 50 campers it can accomodate. It has a main marquee for services and campsite activities, and a good sized playing space including a volleyball area. There is also a picturesque river just on the edge of the campsite.
-	There is a multi-purpose building which houses a kitchen and eating/games areas. The site also has a toilet and wash-block, (including showers) for both males and females.
-	Llys Andreas is very accessible, just two minutes off the main road between Barmouth & Harlech and just 10 mins from Tal-y-bont railway station. Barmouth also has a leisure centre, which has a five-a-side football pitch, as well a beach, a fair and plenty of shops. There is also a very pleasant beach much closer to Llys Andreas, which is a great spot for barbeques, bathing or bivouacking!
-	</p>
+	 <address>Llys Andreas Camp Site,<br/>
+Ffordd Tyddyn Felin<br/>
+ Tal-y-bont<br/>
+ Barmouth<br/>
+ LL43 2AU<br/>
+ Pay phone: 01341 247526<br/>
+ </address>
+ <p>This site in Tal-y-bont is a smaller site than Tywyn, but still has plenty of room for the 50 campers it can accomodate. It has a main marquee for services and campsite activities, and a good sized playing space including a volleyball area. There is also a picturesque river just on the edge of the campsite.</p>
+
+<p>There is a multi-purpose building which houses a kitchen and eating/games areas. The site also has a toilet and wash-block, (including showers) for both males and females.</p>
+
+<p>Llys Andreas is very accessible, just two minutes off the main road between Barmouth & Harlech and just 10 mins from Tal-y-bont railway station. Barmouth also has a leisure centre, which has a five-a-side football pitch, as well a beach, a fair and plenty of shops. There is also a very pleasant beach much closer to Llys Andreas, which is a great spot for barbeques, bathing or bivouacking!
+</p>
+
+<div class='sitephoto'>
+<img src="{{media}}photos/1999-la-volleyball.jpeg" width="352" height="288"  alt="photo 5" /><p><b>Volley Ball on site</b></p>
+</div>
+
+<div class='sitephoto'>
+<img src="{{media}}photos/1999-la-river_bank.jpeg" width="352" height="288"  alt="photo 6" />
+<p><b>River Bank near the site</b></p>
+</div>
 	"""
 	site2.save()
 
@@ -384,6 +470,7 @@ def getDummyOrRealUser(userName):
 			u.dateJoined = None
 			u.lastSeen = None
 			u.dummyUser = True
+			u.hidden = True
 			u.save()
 			return u
 		return None
@@ -502,7 +589,8 @@ def migrateForums():
 				p = posts.Post(subject="")
 				p.postedBy_id = getDummyOrRealUser(postline[1].strip()).id
 				p.subject = postline[2]
-				p.message = postline[3]
+				
+				p.message = fix_bbcode(postline[3])
 				try:
 					p.postedAt = datetime.fromtimestamp(int(postline[4]))
 				except:
@@ -562,15 +650,15 @@ def migrateHtml():
 ##########################################################
 
 
-migrateLeaders()
-migrateSites()
-migrateCamps()
-migrateUsers()
-migratePermissions()
-migrateMessages()
-migrateAwards()
-migratePolls()
-migrateForums()
+#migrateLeaders()
+#migrateSites()
+#migrateCamps()
+#migrateUsers()
+#migratePermissions()
+#migrateMessages()
+#migrateAwards()
+#migratePolls()
+#migrateForums()
 migrateMainMenu()
 migrateHtml()
 

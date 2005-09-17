@@ -2,7 +2,6 @@ from django.core import meta
 from users import *
 from polls import *
 from photos import *
-from posts import *
 
 class Forum(meta.Model):
 	open = meta.BooleanField("Open", default=True)

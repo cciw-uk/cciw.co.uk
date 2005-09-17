@@ -44,7 +44,7 @@ class HtmlChunk(meta.Model):
 	def render(self, context):
 		"""render the HTML chunk as if it were a Django template"""
 		from django.core import template
-		t = template.Template(self.html)
+		t = template.Template('{% load standardpage %}' + self.html)
 		return t.render(context)
 	# render 1: using chunk as a django template
 

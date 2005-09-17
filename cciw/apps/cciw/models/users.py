@@ -55,13 +55,21 @@ class User(meta.Model):
 	banned     = meta.BooleanField("Banned", default=False)
 	newEmail   = meta.EmailField("New email address (unconfirmed)", blank=True)
 	bookmarksNotify = meta.BooleanField("Bookmark notifcations enabled", default=False)
-	publicBookmarks = meta.BooleanField("Bookmarks are public", default=True)
 	permissions = meta.ManyToManyField(Permission,
 		verbose_name="permissions",
 		related_name="userWithPermission",
 		blank=True,
 		null=True)
 	dummyUser = meta.BooleanField("Is dummy user", default=False) # supports ancient posts in message boards
+		
+	def __repr__(self):
+		return self.userName
+		
+	def get_absolute_url(self):
+		return "/members/" + self.userName + "/"
+		
+	def get_link(self):
+		return '<a href="' + self.get_absolute_url() + '">' + self.userName + '</a>'
 	
 	class META:
 		admin = meta.Admin(
@@ -82,9 +90,6 @@ class User(meta.Model):
 			'MODERATE_ALL': 2
 		}
 		ordering = ('userName',)
-	
-	def __repr__(self):
-		return self.userName
 		
 	def _module_checkPassword(plaintextPass, encryptedPass):
 		import crypt
@@ -150,6 +155,7 @@ class Bookmark(meta.Model):
 		null=True, blank=True)
 	lastSeen = meta.DateTimeField("Last seen",
 		null=True, blank=True)
+	public = meta.BooleanField("Public")
 	category = meta.PositiveSmallIntegerField("Category", choices = BOOKMARK_CATEGORIES)
 	
 	class META:

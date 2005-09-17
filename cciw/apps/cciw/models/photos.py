@@ -1,6 +1,5 @@
 from django.core import meta
 from users import *
-from posts import *
 
 class Gallery(meta.Model):
 	location = meta.CharField("Location/URL", maxlength=50)

@@ -7,10 +7,10 @@ html.append(
 <p>Click on the thumbnails below for maps of the location of the camp sites:</p>
 <p>
 Map of wales:<br/>
-<a href="{{ page.mediaRootUrl }}/media/images/wales2.gif">
-<img alt="thumbnail map of Wales" src="{{ page.mediaRootUrl }}/media/images/wales2-th.gif" width="100" height="128" /></a></p>
+<a href="{{ pagevars.mediaRootUrl }}images/wales2.gif">
+<img alt="thumbnail map of Wales" src="{{ pagevars.mediaRootUrl }}images/wales2-th.gif" width="100" height="128" /></a></p>
 <p>Detail of map:<br/>
-<a href="{{ page.mediaRootUrl }}/media/images/wales3.gif"><img alt="thumbnail of map detail" src="{{ page.mediaRootUrl }}/media/images/wales3-th.gif" width="100" height="99" /></a></p>
+<a href="{{ pagevars.mediaRootUrl }}images/wales3.gif"><img alt="thumbnail of map detail" src="{{ pagevars.mediaRootUrl }}images/wales3-th.gif" width="100" height="99" /></a></p>
 	""")
 )
 
@@ -160,7 +160,7 @@ Cardiff<br>
 CF14 1AS<br>
 Tel: 029 2065 8426<br>
 Mob: 07867 987930<br>
-e-mail: {% emailstart %}cciw@cciw.co.uk{% emailend %}<br>
+e-mail: {% email %}cciw@cciw.co.uk{% endemail %}<br>
 </ADDRESS>
 <br>
 <br>
@@ -202,7 +202,7 @@ Occupation - Engineer<br>
 Bradford<br>
 Elder of Pollard Park Evangelical Church<br>
 Occupation - Professional Engineering Manager<br>
-e-mail: {% emailstart %}bobplant@aol.com{% emailend %}
+e-mail: {% email %}bobplant@aol.com{% endemail %}
 </ADDRESS>
 <br>
 <br>

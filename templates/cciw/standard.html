@@ -1,11 +1,9 @@
 {% extends "base" %}
+{% load standardpage %}
 {% block sidebar %}
 	<h1>Contents</h1>
 	<ul
 	>{% for menulink in menulinks %}<li
-			{% ifequal menulink.url page.request.path %}
-				class="currentPage"
-			{% endifequal %}
 			><a href="{{ menulink.url }}"
 			{% if menulink.extraTitle %}
 				title="{{ menulink.extraTitle }}"

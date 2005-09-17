@@ -13,20 +13,14 @@ from cciw.apps.cciw.settings import *
 def index(request, year = None):
 	if (year == None):
 		all_camps = camps.get_list(order_by=['-year','number'])
-		years = [camp.year for camp in all_camps]
-		uniqueyears = []
-		for year in years:
-			if not year in uniqueyears: uniqueyears.append(year)
 	else:
 		year = int(year)  # year is result of regex match
-		uniqueyears = [year]
 		all_camps = camps.get_list(year__exact=year, order_by=['number'])
 		if len(all_camps) == 0:
 			raise Http404
 	
 	t = template_loader.get_template('camps/index')
-	c = StandardContext(request, {'camps': all_camps, 
-						'years': uniqueyears},
+	c = StandardContext(request, {'camps': all_camps},
 					title="All Camps")
 	return HttpResponse(t.render(c))
 

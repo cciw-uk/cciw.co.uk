@@ -1,0 +1,44 @@
+{% extends "standard" %}
+{% load view_extras %}
+{%  block content %}
+	<form method='get' action='{{ pagevars.request.path }}'>
+		<p><label>Search:
+		<input type='text' name='search' id='search' value="{{ pagevars.request.search|escape }}" /></label></p>
+	</form>
+	{% if object_list %}
+	<div class="paging">{% paging_control %}</div>
+	<table class="topheaders">
+		<tr>
+			<th>Icon</th>
+			<th>User name&nbsp;{% sorting_control "aun" "dun" %}</th>
+			<th>'Real' name&nbsp;{% sorting_control "arn" "drn" %}</th>
+			<th>Comments</th>
+			<th>Joined&nbsp;{% sorting_control "adj" "ddj" %}</th>
+			<th>Last seen&nbsp;{% sorting_control "als" "dls" %}</th>
+		</tr>
+
+		{% for member in object_list %}
+		<tr>
+			<td>TODO</td>
+			<td><a href="{{ member.get_absolute_url }}">{{ member.userName }}</a></td>
+			<td>{{ member.realName|escape }}</td>
+			<td>{{ member.comments|escape }}</td>
+			<td>
+			{% if member.dateJoined %}
+				{{ member.dateJoined|date:"d M Y" }}
+			{% endif %}
+			</td>
+			<td>
+			{% if member.lastSeen %}
+				{{ member.lastSeen|date:"d M Y h:m" }}
+			{% endif %}
+			</td>
+		</tr>
+		{% endfor %}
+	</table>
+	<div class="paging">{% paging_control %}</div>
+	{% else %}
+	<p>No users found.</p>
+	{% endif %}
+
+{% endblock %}

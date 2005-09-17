@@ -16,7 +16,7 @@ Files=detail.html/index.html/thisyear.html
 
 [Dir templates/cciw/members]
 Dirs=
-Files=index.html
+Files=index.html/detail.html
 
 [Dir templates/cciw/sites]
 Dirs=

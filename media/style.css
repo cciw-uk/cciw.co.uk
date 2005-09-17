@@ -78,7 +78,7 @@ h1,h2,h3,h4,h5,h6
 
 #contentBody, #pageTitle, #sidebar
 {
-	background-color: #262626;
+	background-color: #181818;
 	border-top: 1px solid #666666;
 	border-bottom: 1px solid #666666;
 }
@@ -142,8 +142,8 @@ h1,h2,h3,h4,h5,h6
 #sidebar a.currentSection
 {
 	background-color: #333333;
-	border-left: 2px solid #808080;
-	border-right: 2px solid #808080;
+	border-left: 2px solid #505050;
+	border-right: 2px solid #505050;
 
 }
 
@@ -169,8 +169,13 @@ table.sideheaders,
 table.topheaders
 {
 	border-collapse: collapse;
-	width: 100%;
+	width: auto; /* IE can't handle '100%' correctly */
 	color: #d0d0d0;
+}
+table.sideheaders td,
+table.topheaders td
+{
+	overflow: hidden;
 }
 
 table.sideheaders th
@@ -181,7 +186,13 @@ table.sideheaders th
 table.sideheaders td,
 table.topheaders td
 {
-	background-color: #181818;
+	background-color: #000000;
+}
+
+table.sideheaders th,
+table.topheaders th
+{
+	background-color: #383838;
 }
 
 table.sideheaders th,
@@ -191,7 +202,18 @@ table.topheaders td
 {
 	border: solid 1px #336633;
 	padding: 3px;
+}
+table.sideheaders th,
+table.sideheaders td,
+table.topheaders td
+{
 	vertical-align: top;
+}
+
+table.topheaders th
+{
+	white-space: nowrap;
+}
 }
 
 ul.leaderlist
@@ -206,3 +228,32 @@ ul.leaderlist li
 	padding: 0px;
 }
 
+div.paging {
+	text-align: right;
+	padding: 5px 0px 5px 0px;
+	position: relative; /* IE bug */
+}
+
+span.sortingControl
+{
+	white-space: nowrap;
+}
+
+span.sortingControl img
+{
+	border: 0px;
+	padding-bottom: 2px;
+	border-bottom: 1px solid #808080;
+	vertical-align: middle;
+}
+span.sortingControl img.sortAscActive,
+span.sortingControl img.sortDescActive
+{
+	border-bottom: 2px solid #00ff00;
+
+}
+
+div.sitephoto
+{
+	text-align: center;
+}

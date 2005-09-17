@@ -1,4 +1,5 @@
 {% extends "standard" %}
+{% load standardpage %}
 {% block content %}
-	{{ site.info }}
+	{{ site.info|standard_subs }}
 {% endblock %}
