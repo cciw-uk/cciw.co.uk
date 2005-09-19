@@ -257,3 +257,19 @@ div.sitephoto
 {
 	text-align: center;
 }
+
+div.formrow label
+{
+	display: block;
+	float: left;
+	width: 10em;
+}
+
+div.userError
+{
+	border: 1px solid #cc0000;
+	padding: 5px;
+	text-align: center;
+	background-color: #330000;
+
+}

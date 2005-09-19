@@ -1,9 +1,10 @@
 {% extends "standard" %}
 {% load view_extras %}
 {%  block content %}
-	<form method='get' action='{{ pagevars.request.path }}'>
+	<form method='get' action='/members/'>
 		<p><label>Search:
 		<input type='text' name='search' id='search' value="{{ pagevars.request.search|escape }}" /></label></p>
+		{% forward_query_param "o" %}
 	</form>
 	{% if object_list %}
 	<div class="paging">{% paging_control %}</div>

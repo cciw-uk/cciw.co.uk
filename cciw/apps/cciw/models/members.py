@@ -37,7 +37,7 @@ MODERATE_OPTIONS = (
 )
 
 class Member(meta.Model):
-	userName   = meta.CharField("Member name", maxlength=30, db_index=True, unique=True)
+	userName   = meta.CharField("User name", maxlength=30, db_index=True, unique=True)
 	realName   = meta.CharField("Real name", maxlength=20, blank=True)
 	email      = meta.EmailField("Email address")
 	password   = meta.CharField("Password", maxlength=30)
@@ -70,6 +70,11 @@ class Member(meta.Model):
 		
 	def get_link(self):
 		return '<a href="' + self.get_absolute_url() + '">' + self.userName + '</a>'
+		
+	def checkPassword(self, plaintextPass):
+		"""Checks a password is correct"""
+		import crypt
+		return crypt.crypt(plaintextPass, self.password) == self.password
 	
 	class META:
 		admin = meta.Admin(
@@ -91,10 +96,6 @@ class Member(meta.Model):
 		}
 		ordering = ('userName',)
 		
-	def _module_checkPassword(plaintextPass, encryptedPass):
-		import crypt
-		"""Checks a password is valid"""
-		return crypt.crypt(plaintextPass, encryptedPass) == encryptedPass
 	
 	def _module_generateSalt():
 		import random, datetime

@@ -77,5 +77,5 @@ def standard_subs_filter(value, _):
 	return standard_subs(value)
 
 template.register_filter('standard_subs', standard_subs_filter, False)
-template.register_filter('email_obfuscate', obfuscate_email_filter, False)
+template.register_filter('obfuscate_email', obfuscate_email_filter, False)
 template.register_tag('email', do_email)

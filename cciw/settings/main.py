@@ -30,8 +30,9 @@ MEDIA_URL = 'http://cciw_django_local/media/'
 SECRET_KEY = '__=9o22)i0c=ci+9u$@g77tvdsg9y-wu6v6#f4iott(@jgwig+'
 
 MIDDLEWARE_CLASSES = (
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.doc.XViewMiddleware",
+	"django.middleware.common.CommonMiddleware",
+	"django.middleware.doc.XViewMiddleware",
+	"django.middleware.sessions.SessionMiddleware"
 )
 
 ROOT_URLCONF = 'cciw.settings.urls.main'

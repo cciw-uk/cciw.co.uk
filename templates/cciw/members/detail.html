@@ -1,21 +1,40 @@
 {% extends "standard" %}
 {% block content %}
+	{% if currentMember %}
+		{% ifequal currentMember.userName member.userName %}
+		<h2>Links</h2>
+
+
+		{% endifequal %}
+	{% endif %}
+
 	<div class="memberinfo">
 		<h2>Information</h2>
 		<table class="sideheaders">
 			<tr>
+				<th>User name</th>
+				<td>{{ member.userName }}</td>
+			</tr>
+			<tr>
 				<th>'Real' name</th>
 				<td>{{ member.realName }}</td>
 			</tr>
-			{% if showEmail %}
+			{% if member.showEmail %}
 			<tr>
 				<th>Email</th>
-				<td>{{ member.realName }}</td>
+				<td>{{ member.email|obfuscate_email }}</td>
 			</tr>
 			{% endif %}
+			<tr>
+				<th>Date joined</th>
+				<td>{{ member.dateJoined|date:"d M Y H:i:s" }}</td>
+			</tr>
+			<tr>
+				<th>Last seen</th>
+				<td>{{ member.lastSeen|date:"d M Y H:i:s" }}</td>
+			</tr>
 		</table>
-		
-		
+		<br>
 
 		{% if awards %}
 		<h2>Awards</h2>
@@ -24,6 +43,5 @@
 
 
 		{% endif %}
-
 	</div>
 {% endblock %}

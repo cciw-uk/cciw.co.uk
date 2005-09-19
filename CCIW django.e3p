@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.5.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2005-09-17, 19:25:06 -->
+<!-- Saved: 2005-09-19, 20:47:44 -->
 <!-- Copyright (C) 2005 ,  -->
 <Project version="3.5">
   <Description></Description>
@@ -130,13 +130,6 @@
       <Dir>apps</Dir>
       <Dir>cciw</Dir>
       <Dir>models</Dir>
-      <Name>users.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>models</Dir>
       <Name>polls.py</Name>
     </Source>
     <Source>
@@ -152,13 +145,6 @@
       <Dir>cciw</Dir>
       <Dir>models</Dir>
       <Name>photos.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>views</Dir>
-      <Name>users.py</Name>
     </Source>
     <Source>
       <Name>django_migrate.py</Name>
@@ -193,6 +179,39 @@
       <Dir>cciw</Dir>
       <Dir>templatetags</Dir>
       <Name>forums.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Dir>models</Dir>
+      <Name>members.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Dir>views</Dir>
+      <Name>members.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Name>auth.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Dir>views</Dir>
+      <Name>auth.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Name>utils.py</Name>
     </Source>
   </Sources>
   <Forms>
