@@ -2,8 +2,9 @@
 # to django
 import devel
 import os
-from datetime import datetime
-from datetime import date
+import shutil
+import re
+from datetime import datetime, date
 
 from migrate_html import *
 
@@ -16,8 +17,12 @@ from django.models.photos import *
 from django.models.forums import *
 from django.models.sitecontent import *
 
+from cciw.apps.cciw.utils import strip_control_chars
+
 # Config
 PREFIX = '/home/httpd/www.cciw.co.uk/web/data/'
+ICONDIR = '/home/httpd/www.cciw.co.uk/web/images/members/'
+NEW_ICONDIR = '/home/httpd/www.cciw.co.uk/django/media/images/members/'
 
 # Utility functions
 
@@ -50,12 +55,12 @@ def getTable(filename, fieldSep="\t"):
 	for line in file(filename):
 		line = line.strip("\r\n")
 		if len(line) == 0: continue
-		lineData = LazyList(line.split(fieldSep))
+		lineData = LazyList([s.decode('windows-1252').encode('UTF-8') for s in line.split(fieldSep)])
 		rows.append(lineData)
 	return rows
 
 def fix_bbcode(message):
-	emoticonreplacements = (
+	replacements = (
 		('[:anvil:]', ':anvil:'),
 		('[:bandit:]', ':bandit'),
 		('[:chop:]', ':chop:'),
@@ -67,16 +72,33 @@ def fix_bbcode(message):
 		('[:jedi:]', ':jedi:'),
 		('[:bosh:]', ':bosh:'),
 		('[:jonisanidiot:]', ':saw:'),
-		('[:iwin:]', ':stupid:')
+		('[:iwin:]', ':stupid:'),
+		('<br>', '[br]'),
+		('&lt;', '<'),
+		('&gt;', '>'),
+		('&quot;', '"'),
+		('&amp;', '&'),
 	)
-	for icon in emoticonreplacements:
-		message = message.replace(icon[0], icon[1])
+	
+	for s in replacements:
+		message = message.replace(s[0], s[1])
 	# TODO - misc transformations on messages, especially URLs
+	message = strip_control_chars(message)
+	
 	return message
+
+def fix_news_items(html):
+	html = re.sub(r'members.php\?sp=([^\'"]*)',r'/members/\1/', html)
+	html = html.replace('src="news/', 'src="{{media}}news/').replace("src='news/", "src='{{media}}news/")
+	return html
+	
 
 def remap_url(url):
 	# TODO - probably easiest is a manual list, since
 	# there are v few in current DB
+	m = re.match(r'members.php\?sp=([^\'"]*)', url)
+	if not m is None:
+		url = '/members/' + m.groups()[0]
 	return url
 
 ###########################################################################################
@@ -282,6 +304,12 @@ def migrateMembers():
 		member.banned = getBool(data[16])
 		member.newEmail = data[22]
 		member.bookmarksNotify = not getBool(data[18])
+		for suffix in ('jpeg', 'png', 'gif'):
+			imagefile = member.userName + '.' + suffix
+			if os.path.isfile(ICONDIR + imagefile):
+				shutil.copyfile(ICONDIR + imagefile, NEW_ICONDIR + imagefile)
+				member.icon = imagefile
+				
 		return member
 	
 	# first get passwords from separate table
@@ -368,10 +396,10 @@ def migrateMessages():
 			except IOError:
 				data = []
 			for line in data:
-				message = messages.Message(toMember_id = member.id)
-				message.fromMember_id = members.get_object(userName__exact=line[1]).id
+				message = messages.Message(toMember_id = member.userName)
+				message.fromMember_id = members.get_object(userName__exact=line[1]).userName
 				message.time = datetime.fromtimestamp(int(line[3]))
-				message.text = line[2]
+				message.text = fix_bbcode(line[2])
 				message.box = boxNumber
 				message.save()
 
@@ -384,16 +412,24 @@ def migrateAwards():
 		pa.delete()
 		
 	for line in getTable(PREFIX+"awards.data"):
-		awardname = line[2]
+		awardname,year = line[2].split(" ")
 		try:
-			award = awards.get_object(name__exact=awardname)
+			award = awards.get_object(name__exact = awardname, year__exact = year)
 		except awards.AwardDoesNotExist:
 			award = awards.Award(name = awardname)
+			award.year = year
+			descriptions = {
+				"Hero": "'Bronze' award - sterling effort and achievement",
+				"Addict": "'Silver' award - slightly worrying levels of website activity going on here.", 
+				"Ubergeek": "'Gold' award - definitely time to take a break from the computer.",
+				"Numpton": "'Black' - we noticed you, at least you have that."
+			}
+			award.description = descriptions[awardname]
 			award.image = "award_"+ line[1] + ".gif"
 			award.save()
 		pa = personalawards.PersonalAward(award_id=award.id)
 		pa.reason = line[3]
-		pa.member_id = members.get_object(userName__exact=line[0]).id
+		pa.member_id = members.get_object(userName__exact=line[0]).userName
 		pa.save()
 	
 ###########################################################################################
@@ -435,7 +471,7 @@ def migratePolls():
 		poll.rules = getInt(line[3])
 		poll.ruleParameter = getInt(line[4])
 		poll.haveVoteInfo = False
-		poll.createdBy_id = members.get_object(userName__exact=line[5]).id
+		poll.createdBy_id = members.get_object(userName__exact=line[5]).userName
 		poll.save()
 		
 		for i in range(0,len(options)):
@@ -503,6 +539,8 @@ def migrateForums():
 				location = "camps" + line[0].replace("mb-","/").replace("-", "/") + "/forum/"
 			else:
 				location = line[0] + "/"
+			if location == "website/":
+				location = "website/forum/"
 			f = forums.Forum(location = location)
 			f.open = bool(int(line[1]))
 			f.save()
@@ -528,20 +566,20 @@ def migrateForums():
 				
 				
 				topic.subject = topicline[1]
-				topic.startedBy_id = getDummyOrRealMember(topicline[2]).id
+				topic.startedBy_id = getDummyOrRealMember(topicline[2]).userName
 				# Create news item if necessary
 				topictype = getInt(topicline[10])
 				if topictype == 1 or topictype == 2:
 					# news item
 					ni = newsitems.NewsItem(summary="")
-					ni.createdBy_d = topic.startedBy_id
+					ni.createdBy_id = topic.startedBy_id
 					ni.createdAt = topic.createdAt
 					ni.summary = topicline[11]
 					
 					if topictype == 2:
 						# long news item
 						try: 
-							ni.fullItem = "".join(file(PREFIX+"../news/" + topicline[12]))
+							ni.fullItem = fix_news_items("".join(file(PREFIX+"../news/" + topicline[12])))
 						except IOError:
 							print "Migration of news items: '" + topicline[12] + "' data is missing"
 							ni.fullItem = "ERROR - '" + topicline[12] + "' data was missing at migration time"
@@ -587,7 +625,7 @@ def migrateForums():
 				postdata = []
 			for postline in postdata:
 				p = posts.Post(subject="")
-				p.postedBy_id = getDummyOrRealMember(postline[1].strip()).id
+				p.postedBy_id = getDummyOrRealMember(postline[1].strip()).userName
 				p.subject = postline[2]
 				
 				p.message = fix_bbcode(postline[3])
@@ -613,8 +651,8 @@ def migrateMainMenu():
 		('Camps {{thisyear}}', '/thisyear/',200, ''),
 		('Booking', '/thisyear/booking/', 210, '/thisyear/'),
 		('Coming on camp', '/thisyear/coming-on-camp/', 220, '/thisyear/'),
-		('All camps', '/camps/',400, ''),
-		('Camp sites', '/sites/', 500, ''),
+		('Camp sites', '/sites/', 300, ''),
+		('Forums and photos', '/camps/',400, ''),
 		('Members', '/members/', 500, ''),
 		('About CCIW', '/info/', 600, ''),
 		('About camp', '/info/about-camp/', 602, '/info/'),
@@ -650,15 +688,15 @@ def migrateHtml():
 ##########################################################
 
 
-migrateLeaders()
-migrateSites()
-migrateCamps()
-migrateMembers()
-migratePermissions()
+#migrateLeaders()
+#migrateSites()
+#migrateCamps()
+#migrateMembers()
+#migratePermissions()
 migrateMessages()
-migrateAwards()
-migratePolls()
+#migrateAwards()
+#migratePolls()
 migrateForums()
-migrateMainMenu()
-migrateHtml()
+#migrateMainMenu()
+#migrateHtml()
 

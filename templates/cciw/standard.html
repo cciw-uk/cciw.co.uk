@@ -22,3 +22,16 @@
 	{{ contentBody }}
 {% endblock %}
 
+{% block footer %}
+	<h1>Quick Links</h1>
+	<ul>
+	{% if currentMember %}	
+		<li>Logged in as :  <a href="{{currentMember.get_absolute_url}}">{{currentMember.userName}}</a></li>
+		<li><a href="{{currentMember.get_absolute_url}}messages">{{currentMember.newMessages}} new message(s)</a></li>
+	{% else %}
+		<li><a href="/login/">Login</a></li>
+	{% endif %}
+		<li><a href="/members/?online=1"> {{ pagevars.loggedInMembers }} member(s) online</a></li>
+	</ul>
+
+{% endblock %}

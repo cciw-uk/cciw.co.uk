@@ -25,6 +25,11 @@ class Photo(meta.Model):
 		null=True, blank=True, related_name="checkedPhoto")
 	approved = meta.BooleanField("Approved", null=True, blank=True)
 	needsApproval = meta.BooleanField("Needs approval", default=False)
+	lastPostAt = meta.DateTimeField("Last post at", 
+		null=True, blank=True) # needed for performance and simplicity in templates
+	lastPostBy = meta.ForeignKey(Member, verbose_name="Last post by",
+		null=True, blank=True) # needed for performance and simplicity in templates
+	postCount = meta.PositiveSmallIntegerField("Number of posts") # since we need 'lastPost', may as well have this too
 	
 	def __repr__(self):
 		return self.filename

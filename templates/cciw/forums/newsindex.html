@@ -1,0 +1,28 @@
+{% extends "standard" %}
+{% load standardpage %}
+{% load view_extras %}
+{% load forums %}
+{% block content %}
+	{% if object_list %}
+		{% for topic in object_list %}
+			<div class="newsItem">
+				<h2>{{ topic.get_newsItem.subject }}</h2>
+				<div class="newsItemDetails">Posted: {{ topic.get_newsItem.createdAt|date:"d M Y, h:i" }}, 
+				by {% memberlink %}{{ topic.get_newsItem.createdBy_id }}{% endmemberlink %}</div>
+				<div class="newsItemSummary">
+				{{ topic.get_newsItem.summary|bb2html }}
+				</div>
+				
+				{% if topic.get_newsItem.fullItem %}
+				<div class="newsItemReadMore"><a href="{{ topic.get_absolute_url }}" 
+				title="Read full article '{{ topic.get_newsItem.subject|escape }}'" >Read more</a></div>
+				{% endif %}
+
+			</div>
+		{% endfor %}
+		<div class="paging">{% paging_control %}</div>
+	{% else %}
+		<p>There are no news items yet.</p>
+	{% endif %}
+
+{% endblock %} 

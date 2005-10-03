@@ -1,0 +1,66 @@
+{% extends "standard" %}
+{% load view_extras %}
+{% load standardpage %}
+{% load forums %}
+{% block content %}
+	{{ breadcrumb }}
+	{{ introtext }}
+	{% if newsItem %}
+	<div class="newsItem">
+		<h2>{{ newsItem.subject }}</h2>
+		<div class="newsItemDetails">Posted: {{ newsItem.createdAt|date:"d M Y, h:i" }}, 
+		by {% memberlink %}{{ newsItem.createdBy_id }}{% endmemberlink %}</div>
+		<div class="newsItemFull">
+		{% if newsItem.fullItem %}
+			{{ newsItem.fullItem|standard_subs }}
+		{% else %}
+			{{ newsItem.summary|bb2html }}
+		{% endif %}
+		</div>
+	</div>
+	{% endif %}
+	<div class="paging">{% paging_control %}</div>
+	<table class="topheaders">
+		<tr>
+		{% if newsItem %}
+			<th class="commentHeader" colspan="2">Comments</th>
+		{% else %}
+			{% if poll %}
+			<th class="commentHeader" colspan="2">Comments</th>
+			{% else %}
+			<th class="topicSubject" colspan="2"><h2>{{ topic.subject }}</h2></th>
+			{% endif %}
+		{% endif %}
+		</tr>
+
+		<tr>
+			<th class="postFromCol">From</th>
+			<th>Message</th>
+		</tr>
+		{% if object_list %}
+			{% for post in object_list %}
+			<tr>
+				<td class="postFrom">
+					<span class="postMemberIcon">{{ post.get_postedBy.iconImage }}</span>
+					{% memberlink %}{{ post.postedBy_id }}{% endmemberlink %}<br/>
+					<span class="postDate">{{ post.postedAt|date:"d M y, h:i" }}</span>
+				</td>
+				<td class="postMessage">
+					{% ifnotequal post.subject topic.subject %}
+						{% if post.subject %}<div class="postSubject">{{ post.subject }}</div>{% endif %}
+					{% endifnotequal %}
+					{{ post.message|bb2html }}
+				</td>
+			</tr>
+			{% endfor %}
+		{% else %}
+			<tr>
+				<td  colspan="2">There are no posts yet in this topic.</td>
+			</tr>
+		{% endif %}
+	</table>
+	<div class="paging">{% paging_control %}</div>
+
+		TODO - add message form
+
+{% endblock %} 

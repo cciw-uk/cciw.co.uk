@@ -1,0 +1,37 @@
+{% extends "standard" %}
+{% load standardpage %}
+{% load view_extras %}
+{% block content %}
+	{{ breadcrumb }}
+	<p>Select from the list of topics below by clicking on the topic name.</p>
+	{% if object_list %}
+		<div class="paging">{% paging_control %}</div>
+		<table class="topheaders">
+			<tr>
+				<th>Topic</th>
+				<th class="topicStartedCol">Started {% sorting_control "aca" "dca" %}</th>
+				<th>Posts {% sorting_control "apc" "dpc" %}</th>
+				<th class="topicLastPostCol">Last post {% sorting_control "alp" "dlp" %}</th>
+				<th>Status</th>
+			</tr>
+		{% for topic in object_list %}
+			<tr>
+				<td class="topicLink">
+				{% if topic.newsItem_id %}<div class="center">NEWS ITEM</div>{% endif %}
+				{{ topic.get_link }}
+				</td>
+				<td>{% if topic.createdAt %}{{ topic.createdAt|date:"d M Y h:i" }}<br/>{% endif %}
+				    {% if topic.startedBy_id %}{% memberlink %}{{ topic.startedBy_id }}{% endmemberlink %}{% endif %}</td>
+				<td>{{ topic.postCount }}</td>
+				<td>{% if topic.lastPostAt %}{{ topic.lastPostAt|date:"d M Y h:i" }}<br/>{% endif %}
+				    {% if topic.lastPostBy_id %}{% memberlink %}{{ topic.lastPostBy_id }}{% endmemberlink %}{% endif %}</td>
+				<td>{% if topic.open %}Open{% else %}Closed{% endif %}</td>
+			</tr>
+		{% endfor %}
+		</table>
+		<div class="paging">{% paging_control %}</div>
+	{% else %}
+		<p>There are no topics yet in this forum.</p>
+	{% endif %}
+
+{% endblock %} 

@@ -4,6 +4,14 @@
 		{% ifequal currentMember.userName member.userName %}
 		<h2>Links</h2>
 
+		<ul>
+			<li><a href="messages/">{{ currentMember.newMessages }} new message(s)</a></li>
+			<li><a href="messages/?box=saved">{{ currentMember.savedMessages }} saved message(s)</a></li>
+			<li><a href="bookmarks/">Bookmarks</a></li>
+		</ul>
+		<form method="post" action="{{pagevars.request.url}}">
+		<p><input type="submit" name="logout" value="Log out" /></p>
+		</form>
 
 		{% endifequal %}
 	{% endif %}
@@ -19,6 +27,12 @@
 				<th>'Real' name</th>
 				<td>{{ member.realName }}</td>
 			</tr>
+			{% if member.icon %}
+			<tr>
+				<th>Icon</th>
+				<td>{{ member.iconImage }}</td>
+			</tr>
+			{% endif %}
 			{% if member.showEmail %}
 			<tr>
 				<th>Email</th>
@@ -33,13 +47,38 @@
 				<th>Last seen</th>
 				<td>{{ member.lastSeen|date:"d M Y H:i:s" }}</td>
 			</tr>
+			{% if member.comments %}
+			<tr>
+				<th>Comments</th>
+				<td>{{ member.comments }}</td>
+			</tr>
+			{% endif %}
+			{% if member.website %}
+			<tr>
+				<th>Website</th>
+				<td>{{ member.website }}</td>
+			</tr>
+			{% endif %}
 		</table>
-		<br>
+		<br/>
 
 		{% if awards %}
-		<h2>Awards</h2>
-		<p>{{ member.get_link }} has received the following awards:</p>
-			TODO
+			<h2>Awards</h2>
+			<p>{{ member.get_link }} has received the following awards:</p>
+			{% for paward in awards %}
+			<div class="awardInfo">
+				<a href="{{paward.get_award.get_absolute_url}}" class="awardlink"><img class="award" alt="{{paward.get_award.niceName}}" src="{{paward.get_award.imageurl}}" /></a><br/>
+				<span class="awardname">
+				{{ paward.get_award.niceName }}</span>
+				{% if paward.dateAwarded %}
+ 					on {{ paward.dateAwarded|date:"d M Y" }}
+				{% endif %}
+				<br/>
+				Reason for award:
+				<p>{{ paward.reason }}</p>
+			</div>
+	
+			{% endfor %}
 
 
 		{% endif %}

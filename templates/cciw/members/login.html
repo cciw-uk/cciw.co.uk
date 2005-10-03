@@ -1,0 +1,22 @@
+{% extends "standard" %}
+
+{% block content %}
+	{% if loginFailed %}
+		<div class="userError">Login attempt failed.  Please check your user name
+		and password below - remember that both are case sensitive.</div>
+	{% endif %}
+	<p>Please enter your user name and password below:</p>
+	<form action="/login/" method="post">
+		<div class="formrow">
+			<label for='userName'>User name:</label>
+			<input type='text' name='userName' id='userName' />
+		</div>
+		<div class="formrow">
+			<label for='password'>Password:</label>
+			<input type='password' name='password' id='password' />
+		</div>
+		<div>
+		<input type="submit" name="login" value="Login" />
+		</div>
+	</form>
+{% endblock %}

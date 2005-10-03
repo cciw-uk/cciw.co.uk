@@ -7,8 +7,12 @@ Dirs=cciw
 Files=
 
 [Dir templates/cciw]
-Dirs=camps/sites/members
+Dirs=camps/sites/members/awards
 Files=base.html/standard.html
+
+[Dir templates/cciw/awards]
+Dirs=
+Files=index.html
 
 [Dir templates/cciw/camps]
 Dirs=

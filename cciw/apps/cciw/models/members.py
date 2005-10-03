@@ -5,6 +5,9 @@ class Permission(meta.Model):
 	id = meta.PositiveSmallIntegerField("ID", primary_key=True)
 	description = meta.CharField("Description", maxlength=40)
 	
+	def __repr__(self):
+		return self.description
+	
 	class META:
 		admin = meta.Admin()
 		ordering = ('id',)
@@ -20,8 +23,6 @@ class Permission(meta.Model):
 			'AWARD_CREATOR': 7
 		}
 	
-	def __repr__(self):
-		return self.description
 
 MESSAGE_OPTIONS = (
 	(0, "Don't allow messages"),
@@ -37,7 +38,7 @@ MODERATE_OPTIONS = (
 )
 
 class Member(meta.Model):
-	userName   = meta.CharField("User name", maxlength=30, db_index=True, unique=True)
+	userName   = meta.CharField("User name", primary_key=True, maxlength=30)
 	realName   = meta.CharField("Real name", maxlength=20, blank=True)
 	email      = meta.EmailField("Email address")
 	password   = meta.CharField("Password", maxlength=30)
@@ -60,6 +61,7 @@ class Member(meta.Model):
 		related_name="memberWithPermission",
 		blank=True,
 		null=True)
+	icon	      = meta.ImageField("Icon", upload_to = MEMBERS_ICONS_UPLOAD_PATH, blank=True)
 	dummyMember = meta.BooleanField("Is dummy member", default=False) # supports ancient posts in message boards
 		
 	def __repr__(self):
@@ -69,13 +71,44 @@ class Member(meta.Model):
 		return "/members/" + self.userName + "/"
 		
 	def get_link(self):
-		return '<a href="' + self.get_absolute_url() + '">' + self.userName + '</a>'
-		
+		if self.dummyMember:
+			return self.userName
+		else:
+			return '<a href="' + self.get_absolute_url() + '">' + self.userName + '</a>'
+
+	def iconImage(self):
+		from cciw.apps.cciw.settings import CCIW_MEDIA_ROOT
+		"Get an HTML image with the member's icon"
+		if self.icon and len(self.icon) > 0:
+			return '<img src="' + CCIW_MEDIA_ROOT + 'images/members/' + self.icon + '" class="userIcon" alt="icon" />'
+		else:
+			return ''
+
 	def checkPassword(self, plaintextPass):
 		"""Checks a password is correct"""
 		import crypt
 		return crypt.crypt(plaintextPass, self.password) == self.password
+		
+	def newMessages(self):
+		from django.models.members import messages
+		return self.get_messageReceived_count(box__exact=messages.MESSAGE_BOX_INBOX)
+
+	def savedMessages(self):
+		from django.models.members import messages
+		return self.get_messageReceived_count(box__exact=messages.MESSAGE_BOX_SAVED)
+		
+	def _module_generateSalt():
+		import random, datetime
+		rand64= "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+		random.seed(datetime.datetime.today().microsecond)
+		return rand64[int(random.random()*64)] + rand64[int(random.random()*64)]
 	
+	def _module_encryptPassword(memberPass):
+		import crypt
+		"""Encrypt a members password"""
+		# written to maintain compatibility with existing password file
+		return crypt.crypt(memberPass, generateSalt())
+
 	class META:
 		admin = meta.Admin(
 			search_fields = (
@@ -96,30 +129,33 @@ class Member(meta.Model):
 		}
 		ordering = ('userName',)
 		
-	
-	def _module_generateSalt():
-		import random, datetime
-		rand64= "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-		random.seed(datetime.datetime.today().microsecond)
-		return rand64[int(random.random()*64)] + rand64[int(random.random()*64)]
-	
-	def _module_encryptPassword(memberPass):
-		import crypt
-		"""Encrypt a members password"""
-		# written to maintain compatibility with existing password file
-		return crypt.crypt(memberPass, generateSalt())
 
 class Award(meta.Model):
 	name = meta.CharField("Award name", maxlength=50)
+	year = meta.PositiveSmallIntegerField("Year")
+	description = meta.CharField("Description", maxlength=200)
 	image = meta.ImageField("Award image", 
 		upload_to = AWARD_UPLOAD_PATH)
 
 	def __repr__(self):
-		return self.name
+		return self.name + " " + str(self.year)
+		
+	def niceName(self):
+		return repr(self)
+	
+	def imageurl(self):
+		from cciw.apps.cciw.settings import *
+		return CCIW_MEDIA_ROOT + "images/awards/" + self.image
+		
+	def get_absolute_url(self):
+		from django.core.defaultfilters import slugify
+		return "/awards/#" + slugify(repr(self),None)
 	
 	class META:
-		admin = meta.Admin()
-		ordering = ('name',)
+		admin = meta.Admin(
+			list_display = ('name','year'),
+		)
+		ordering = ('-year', 'name',)
 		
 	
 class PersonalAward(meta.Model):
@@ -159,13 +195,13 @@ class Bookmark(meta.Model):
 	public = meta.BooleanField("Public")
 	category = meta.PositiveSmallIntegerField("Category", choices = BOOKMARK_CATEGORIES)
 	
+	def __repr__(self):
+		return self.title
+
 	class META:
 		admin = meta.Admin()
 		ordering = ('category', '-lastUpdated')
 	
-	def __repr__(self):
-		return self.title
-
 MESSAGE_BOXES = (
 	(0, "Inbox"),
 	(1, "Saved")
@@ -193,3 +229,7 @@ class Message(meta.Model):
 			list_display = ('toMember', 'fromMember', 'time')
 		)
 		ordering = ('-time',)
+		module_constants = {
+			'MESSAGE_BOX_INBOX': 0,
+			'MESSAGE_BOX_SAVED': 1
+		}

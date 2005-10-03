@@ -16,7 +16,7 @@ class PagingControlNode(template.Node):
 		request = context['pagevars'].request
 		output = ''		
 		if (total_pages > 1):
-			output += "Pages: "
+			output += "Page " + str(cur_page+1) + " of " + str(total_pages)+ ": "
 			for i in range(0, total_pages):
 				if (i > 0):
 					output += " | "
@@ -48,15 +48,16 @@ class SortingControlNode(template.Node):
 	def render(self, context):
 		request = context['pagevars'].request
 		output = '<span class="sortingControl">'
-		current_order = request.GET.get('o','')
+		current_order = request.GET.get('order','')
 		if current_order == self.ascending_param:
-			output += '<a href="' + html.escape(modified_query_string(request, {'o': self.descending_param})) + '">' + \
+			output += '<a href="' + html.escape(modified_query_string(request, {'order': self.descending_param})) + '">' + \
 			'<img class="sortAscActive" src="' + CCIW_MEDIA_ROOT + 'images/arrow-up.gif" alt="Sorted ascending" /></a>' 
 		elif current_order == self.descending_param:
-			output += '<a href="' + html.escape(modified_query_string(request, {'o': self.ascending_param})) + '">' + \
+			output += '<a href="' + html.escape(modified_query_string(request, {'order': self.ascending_param})) + '">' + \
 			'<img class="sortDescActive" src="' + CCIW_MEDIA_ROOT + 'images/arrow-down.gif" width="10" alt="Sorted descending" /></a>'
 		else:
-			output += '<a href="' + html.escape(modified_query_string(request, {'o': self.ascending_param})) + '">' + \
+			# reset page to zero if we use a new type of sorting
+			output += '<a href="' + html.escape(modified_query_string(request, {'order': self.ascending_param, 'page': 0})) + '">' + \
 			'<img class="sortAsc" src="' + CCIW_MEDIA_ROOT + 'images/arrow-up.gif" alt="Sort ascending" /></a>'
 		
 		output += '</span>'

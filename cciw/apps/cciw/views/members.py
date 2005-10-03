@@ -1,15 +1,22 @@
 from django.views.generic import list_detail
-from django.utils.httpwrappers import HttpResponse, HttpResponseRedirect
+from django.utils.httpwrappers import HttpResponseRedirect
 from django.core.exceptions import Http404
 from django.core import template_loader
+from django.core.extensions import render_to_response
 
 from django.models.members import members
+from django.models.members.members import MemberDoesNotExist
 from cciw.apps.cciw.common import *
 from django.core.extensions import DjangoContext
+from datetime import datetime, timedelta
 
 def index(request):
-	lookup_args = {'dummyMember__exact' : 'False', 'hidden__exact': 'False'} # TODO - depends on authorisation
-	order_options = \
+	# TODO - depends on authorisation
+	lookup_args = {'dummyMember__exact' : 'False', 'hidden__exact': 'False'} 
+	if (request.GET.has_key('online')):
+		lookup_args['lastSeen__gte'] = datetime.now() - timedelta(minutes=3)
+	
+	order_option_to_lookup_arg(
 		{'adj': 'dateJoined',
 		'ddj': '-dateJoined',
 		'aun': 'userName',
@@ -17,13 +24,9 @@ def index(request):
 		'arn': 'realName',
 		'drn': '-realName',
 		'als': 'lastSeen',
-		'dls': '-lastSeen'}
-	order_request = request.GET.get('o', None)
-	try:
-		order_by = order_options[order_request]
-	except:
-		order_by = 'userName'
-	lookup_args['order_by'] = (order_by,)
+		'dls': '-lastSeen'},
+		lookup_args, request, 'userName')
+		
 	try:
 		search = '%' + request['search'] + '%'
 		lookup_args['where'] = ["(userName LIKE %s OR realName LIKE %s)"]
@@ -40,15 +43,17 @@ def index(request):
 def detail(request, userName):
 	try:
 		member = members.get_object(userName__exact = userName)
-	except members.MemberDoesNotExist:
+	except MemberDoesNotExist:
 		raise Http404
 	
+	if request.POST:
+		if request.POST.has_key('logout'):
+			del request.session['member_id']
+		
 	c = StandardContext(request, title="Members: " + member.userName)
 	c['member'] = member
 	c['awards'] = member.get_personalAward_list()
-	t = template_loader.get_template('members/detail')
-	return HttpResponse(t.render(c))
-
+	return render_to_response('members/detail', c)
 	
 def login(request):
 	c = StandardContext(request, title="Login")
@@ -56,11 +61,12 @@ def login(request):
 		try:
 			member = members.get_object(userName__exact = request.POST['userName'])
 			if member.checkPassword(request.POST['password']):
-				request.session['member_id'] = member.id
+				request.session['member_id'] = member.userName
+				member.lastSeen = datetime.now()
+				member.save()
 				return HttpResponseRedirect(member.get_absolute_url())
 			else:
 				c['loginFailed'] = True
-		except members.MemberDoesNotExist:
+		except MemberDoesNotExist:
 			c['loginFailed'] = True
-	t = template_loader.get_template('members/login')
-	return HttpResponse(t.render(c))
+	return render_to_response('members/login', c)

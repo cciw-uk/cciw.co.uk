@@ -7,19 +7,19 @@ body {
 	margin-bottom: 10px;
 	padding: 0;
 	font-family: verdana, arial, sans;
-
+	/* TODO IE 5.5 and above have v large font as default, need to shrink selectively */
 }
 
 a:link {
-	color: #008800;
+	color: #00bb55;
 }
 
 
 a:visited {
-	color: #008800;
+	color: #00bb55;
 }
 a:hover {
-	color: #00ff00;
+	color: #00ff55;
 }
 
 h1,h2,h3,h4,h5,h6
@@ -48,19 +48,17 @@ h1,h2,h3,h4,h5,h6
 	background-repeat: no-repeat;
 	margin-left: 5px;
 	height: 72px;
-	width: 100%;
 }
 
 
-#main
-{
-	margin-top: 72px;
-}
 
 #sidebarOuter
 {
-	float: left;
-	width: 14em;	
+	position: absolute;
+	left: 0px;
+	top: 72px;
+	width: 14em;
+	z-index: 2;
 }
 
 #sidebar
@@ -71,9 +69,16 @@ h1,h2,h3,h4,h5,h6
 
 #contentOuter
 {
+	position: absolute;
+	left: 0px;
+	top: 72px;
+	width: 100%;
+	z-index: 1;
+}
+#content
+{
 	margin-left: 14em;
-	padding-left: 0em;
-	padding-right: 10px;
+	margin-right: 10px;
 }
 
 #contentBody, #pageTitle, #sidebar
@@ -99,6 +104,7 @@ h1,h2,h3,h4,h5,h6
 {
 	margin-top: 1em;
 	padding: 0.8em;
+	padding-top: 0em;
 }
 /* Sidebar styles */
 #sidebar h1
@@ -156,6 +162,30 @@ h1,h2,h3,h4,h5,h6
 
 }
 
+#footer
+{
+	position: absolute;
+	top: 0px;
+	text-align: right;
+	font-size: 0.8em;
+	right: 1em;
+	padding-top: 5px;
+	padding-left: 15px;
+	background-image: url('http://cciw_django_local/media/images/headervline.png');
+	background-repeat: no-repeat;
+	background-position: top left;
+	height: 70px;
+}
+#footer h1{
+	display:none;
+}
+#footer ul, #footer li
+{
+	padding: 0px;
+	margin: 0px;
+	list-style-type: none;
+}
+
 /* Content styles */
 
 #contentBody h2
@@ -169,7 +199,7 @@ table.sideheaders,
 table.topheaders
 {
 	border-collapse: collapse;
-	width: auto; /* IE can't handle '100%' correctly */
+	width: 100%; /* TODO - IE 5.5 and below use width of page as 100% here */
 	color: #d0d0d0;
 }
 table.sideheaders td,
@@ -202,6 +232,16 @@ table.topheaders td
 {
 	border: solid 1px #336633;
 	padding: 3px;
+}
+td div.postSubject
+{
+	font-style: italic;
+	margin-top: -3px;
+	margin-left: -3px;
+	margin-right: -3px;
+	margin-bottom: 2px;
+	padding: 0px 4px;
+	border-bottom: 1px solid #336633;
 }
 table.sideheaders th,
 table.sideheaders td,
@@ -258,6 +298,11 @@ div.sitephoto
 	text-align: center;
 }
 
+div.formrow
+{
+	margin: 5px 0px;
+}
+
 div.formrow label
 {
 	display: block;
@@ -272,4 +317,98 @@ div.userError
 	text-align: center;
 	background-color: #330000;
 
+}
+
+div.awardInfo
+{
+	border-top: 1px solid #808080;
+	padding: 8px;
+}
+
+img.award 
+{
+	vertical-align: top;
+}
+
+.awardname
+{
+	font-weight: bold;
+}
+
+div.awardDescription img
+{
+	vertical-align: middle;
+	margin-right: 1em;
+}
+div.awardDescription
+{
+	margin: 1em 2em;
+	border: 1px solid #808080;
+	padding: 5px;
+	
+}
+
+div.breadcrumb
+{
+	border-bottom: 1px solid #114411;
+}
+
+/* Message boards */
+span.postMemberIcon
+{
+	float: right;
+}
+
+th.postFromCol
+{
+	width: 15em;
+}
+
+th.topicStartedCol, th.topicLastPostCol
+{
+	width: 10em;
+}
+
+table.topheaders th.topicSubject
+{
+	background-color: transparent;
+}
+
+table.topheaders th.commentHeader
+{
+	text-align: left;
+	background-color: transparent;
+}
+
+td.topicLink
+{
+	vertical-align: middle;
+}
+
+th.topicSubject h2
+{
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+	font-size: 1.1em;
+	font-style: italic;
+}
+
+td.postMessage p
+{
+	margin-top: 0px;
+	margin-bottom: 1em;
+}
+
+div.newsItem h2
+{
+	background-color: #004000;
+	border: 0px;
+	padding: 0px 4px;
+	margin: 1em -5px 0px -5px;
+
+}
+div.center
+{
+	text-align: center;
 }

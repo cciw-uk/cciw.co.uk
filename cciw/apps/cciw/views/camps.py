@@ -1,13 +1,17 @@
-from django.core import template_loader
+import datetime
 
+from django.core.extensions import render_to_response
 from django.utils.httpwrappers import HttpResponse
 from django.core.exceptions import Http404
 
 from django.models.camps import camps
 from django.models.sitecontent import htmlchunks
+from django.models.forums import forums, topics
 
-from cciw.apps.cciw.common import StandardContext
+
+from cciw.apps.cciw.common import *
 from cciw.apps.cciw.settings import *
+import forums as forums_views
 
 
 def index(request, year = None):
@@ -19,23 +23,26 @@ def index(request, year = None):
 		if len(all_camps) == 0:
 			raise Http404
 	
-	t = template_loader.get_template('camps/index')
-	c = StandardContext(request, {'camps': all_camps},
-					title="All Camps")
-	return HttpResponse(t.render(c))
+	return render_to_response('camps/index', 
+			StandardContext(request, {'camps': all_camps},
+					title="Camp forums and photos"))
 
 def detail(request, year, number):
-	year = int(year)
-	number = int(number)
 	try:
-		camp = camps.get_object(year__exact=year, number__exact=number)
+		camp = camps.get_object(year__exact=int(year), number__exact=int(number))
 	except camps.CampDoesNotExist:
 		raise Http404
 		
-	t = template_loader.get_template('camps/detail')
 	c = StandardContext(request, {'camp': camp }, 
-							title = camp.niceName)
-	return HttpResponse(t.render(c))
+							title = camp.niceName())
+	
+	
+	if camp.endDate < datetime.date.today():
+		c['camp_is_past'] = True
+		c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(str(camp.year)) + [camp.niceName()])	
+	else:
+		c['breadcrumb'] = create_breadcrumb([standard_subs('<a href="/thisyear/">Camps {{thisyear}}</a>'), "Camp " + number])
+	return render_to_response('camps/detail', c)
 
 	
 def thisyear(request):
@@ -43,10 +50,87 @@ def thisyear(request):
 	htmlchunks.renderIntoContext(c, {
 		'introtext': 'camp_dates_intro_text',
 		'outrotext': 'camp_dates_outro_text'})
+	c['camps'] = camps.get_list(year__exact=THISYEAR, order_by=['site_id', 'number'])	
 	
-	c['camps'] = camps.get_list(year__exact=THISYEAR, order_by=['site_id', 'number'])
-	
-	t = template_loader.get_template('camps/thisyear')
-	return HttpResponse(t.render(c))
+	return render_to_response('camps/thisyear',c)
 
+def get_forum_for_camp(camp):
+	location = camp.get_absolute_url()[1:] + 'forum/'
+
+	forum = None
+	try:
+		forum = forums.get_object(location__exact=location)
+	except forums.ForumDoesNotExist:
+		if not camp.endDate is None and \
+			camp.endDate <= datetime.date.today():
+			# If the forum doesn't exist, but should, we should create it
+			forum = forums.Forum(location = location, open = True)
+			forum.save()
+	return forum
+
+def forum(request, year, number):
+
+	if number == 'all':
+		camp = None
+		location = request.path[1:]
+		try:
+			forum = forums.get_object(location__exact=location)
+		except forums.ForumDoesNotExist:
+			# if any camps from that year are past, create it
+			# TODO
+			raise Http404
+		title="General forum " + str(year)
+		breadcrumb_extra = year_forum_breadcrumb(year)
+		
+	else:
+		try:
+			camp = camps.get_object(year__exact=int(year), number__exact=int(number))
+		except camps.CampDoesNotExist:
+			raise Http404
+
+		forum = get_forum_for_camp(camp)
+		if forum is None:
+			raise Http404
+		title="Forum: " + camp.niceName()
+		breadcrumb_extra = camp_forum_breadcrumb(camp)
+
+	# TODO - some extra context vars, for text to show before the topic list
 	
+	ec = standard_extra_context(request, title = title)
+	return forums_views.topicindex(request, extra_context = ec, forum = forum, 
+		template_name = 'forums/topicindex', breadcrumb_extra = breadcrumb_extra)
+
+def topic(request, year, number, topicnumber):
+
+	if number == 'all':
+		camp = None
+		title="General forum " + year
+		breadcrumb_extra = year_forum_breadcrumb(year)
+	else:
+		try:
+			camp = camps.get_object(year__exact=int(year), number__exact=int(number))
+		except camps.CampDoesNotExist:
+			raise Http404
+		title="Forum: " + camp.niceName()
+		breadcrumb_extra = camp_forum_breadcrumb(camp)
+	
+	# TODO - permissions and hidden topics
+	try:
+		topic = topics.get_object(id__exact = int(topicnumber))
+	except topics.TopicDoesNotExist:
+		raise Http404
+	
+	ec = standard_extra_context(request,title = title)
+	
+	return forums_views.topic(request, extra_context = ec, topic = topic, title = title,
+		template_name = 'forums/topic', breadcrumb_extra = breadcrumb_extra)		
+	
+def photos(request, year, number):
+	# TODO
+	pass
+
+def camp_forum_breadcrumb(camp):
+	return ['<a href="/camps/">Forums and photos</a>', '<a href="/camps/#year' + str(camp.year) + '">' + str(camp.year) + '</a>', camp.get_link()]
+	
+def year_forum_breadcrumb(year):
+	return ['<a href="/camps/">Forums and photos</a>', '<a href="/camps/#year' + year + '">' + year + '</a>']

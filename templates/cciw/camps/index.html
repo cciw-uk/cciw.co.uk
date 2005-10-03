@@ -3,12 +3,14 @@
 {% for camp in camps %}
 	{% if forloop.first %}
 		<h2><a name="year{{ camp.year }}">{{ camp.year }}</a></h2>
+		<div><a href="/camps/{{ camp.year }}/all/forum/">General forum</a></div>
 		<ul class="camplist">
 	{% else %}
 		{% ifnotequal camp.year camps.0.year %}
 			{% ifchanged %}
 		</ul>
 		<h2><a name="year{{ camp.year }}">{{ camp.year }}</a></h2>
+		<div><a href="/camps/{{ camp.year }}/all/forum/">General forum</a></div>
 		<ul class="camplist">
 			{% endifchanged %}
 		{% endifnotequal %}
@@ -19,7 +21,7 @@
 				chaplain {{ camp.get_chaplain }}
 				<ul>
 					<li><a href="{{ camp.get_absolute_url }}forum/" 
-						title="Message board for {{ camp.niceName }}">Message board</a></li>
+						title="Message board for {{ camp.niceName }}">Forum</a></li>
 					<li><a href="{{ camp.get_absolute_url }}photos/"
 						title="Photo gallery for camp {{ camp.niceName }}">Photos</a></li>
 				</ul>

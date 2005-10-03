@@ -1,10 +1,16 @@
 {% extends "standard" %}
 {% load view_extras %}
-{%  block content %}
+{% block content %}
 	<form method='get' action='/members/'>
-		<p><label>Search:
-		<input type='text' name='search' id='search' value="{{ pagevars.request.search|escape }}" /></label></p>
-		{% forward_query_param "o" %}
+		<p>
+		<label>Search:
+		<input type='text' name='search' id='search' value="{{ pagevars.request.search|escape }}" /></label><br/>
+		<label>Online users only: <input type="checkbox" name="online" value="1"
+			{% if pagevars.request.online %}
+				checked="checked"
+			{% endif %} /></label> <input type="submit" name="go" value="Go" />
+		</p>
+		{% forward_query_param "order" %}
 	</form>
 	{% if object_list %}
 	<div class="paging">{% paging_control %}</div>
@@ -20,7 +26,10 @@
 
 		{% for member in object_list %}
 		<tr>
-			<td>TODO</td>
+			<td> {% if member.icon %}
+				{{ member.iconImage }}
+			     {% endif %}
+			</td>
 			<td><a href="{{ member.get_absolute_url }}">{{ member.userName }}</a></td>
 			<td>{{ member.realName|escape }}</td>
 			<td>{{ member.comments|escape }}</td>
@@ -31,7 +40,7 @@
 			</td>
 			<td>
 			{% if member.lastSeen %}
-				{{ member.lastSeen|date:"d M Y h:m" }}
+				{{ member.lastSeen|date:"d M Y h:i" }}
 			{% endif %}
 			</td>
 		</tr>

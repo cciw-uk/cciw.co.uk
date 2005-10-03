@@ -2,6 +2,8 @@
 
 DEBUG = True
 
+INTERNAL_IPS = ('127.0.0.1')
+
 ADMINS = (
     ('Luke Plant', 'L.Plant.98@cantab.net'),
 )
@@ -45,3 +47,6 @@ TEMPLATE_DIRS = (
 INSTALLED_APPS = (
 	'cciw.apps.cciw',
 )
+
+TIME_ZONE = "Europe/London"
+

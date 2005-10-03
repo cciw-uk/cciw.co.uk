@@ -151,93 +151,93 @@ html.append(('doctrinal_basis', '/info/doctrinal-basis/', 'Doctrinal Basis', """
 
 html.append(('directors','/info/directors/', 'Directors', """
 <p> Names and addresses of the directors of CCIW:</p>
-<br>
+<br/>
 <h2>Company Address</h2>
 <ADDRESS>
-Christian Camps in Wales Ltd.<br>
-9 Ty'n-y-pwll Road<br>
-Cardiff<br>
-CF14 1AS<br>
-Tel: 029 2065 8426<br>
-Mob: 07867 987930<br>
-e-mail: {% email %}cciw@cciw.co.uk{% endemail %}<br>
+Christian Camps in Wales Ltd.<br/>
+9 Ty'n-y-pwll Road<br/>
+Cardiff<br/>
+CF14 1AS<br/>
+Tel: 029 2065 8426<br/>
+Mob: 07867 987930<br/>
+e-mail: {% email %}cciw@cciw.co.uk{% endemail %}<br/>
 </ADDRESS>
-<br>
-<br>
+<br/>
+<br/>
 <h2>Company Secretary</h2>
 <ADDRESS>
-Mrs Shirley Evans<br>
-Hayes<br>
-Middlesex<br>
-Church Office: 0181 5735200<br>
+Mrs Shirley Evans<br/>
+Hayes<br/>
+Middlesex<br/>
+Church Office: 0181 5735200<br/>
 </ADDRESS>
-<br>
-<br>
+<br/>
+<br/>
 <h2>Chairman</h2>
-<ADDRESS>Rev W Colin Davies<br>
-Cardiff<br>
+<ADDRESS>Rev W Colin Davies<br/>
+Cardiff<br/>
 Occupation - Minister
-<br>
+<br/>
 </ADDRESS>
-<br>
-<br>
+<br/>
+<br/>
 <h2>Financial Secretary</h2>
-<ADDRESS>Mr David Mark Rees<br>
-Cardiff<br>
+<ADDRESS>Mr David Mark Rees<br/>
+Cardiff<br/>
 Occupation - Audit Manager
-<br>
+<br/>
 </ADDRESS>
-<br>
-<br>
+<br/>
+<br/>
 <h2>Camps Booking Secretary</h2>
 <address>
-Mr Michael Carson<br>
-Shrewsbury<br>
-Occupation - Engineer<br>
+Mr Michael Carson<br/>
+Shrewsbury<br/>
+Occupation - Engineer<br/>
 </address>
-<br>
-<br>
+<br/>
+<br/>
 <h2>Advertising and Media Officer, Health and Safety</h2>
-<ADDRESS>Mr Robert Plant<br>
-Bradford<br>
-Elder of Pollard Park Evangelical Church<br>
-Occupation - Professional Engineering Manager<br>
+<ADDRESS>Mr Robert Plant<br/>
+Bradford<br/>
+Elder of Pollard Park Evangelical Church<br/>
+Occupation - Professional Engineering Manager<br/>
 e-mail: {% email %}bobplant@aol.com{% endemail %}
 </ADDRESS>
-<br>
-<br>
-<p>Also:<br><br>
-<br>
+<br/>
+<br/>
+<p>Also:<br/><br/>
+<br/>
 <ADDRESS>
-Rev Gwynne Evans<br>
-Hayes<br>
-Middlesex<br>
+Rev Gwynne Evans<br/>
+Hayes<br/>
+Middlesex<br/>
 Occupation - Minister
 </ADDRESS>
-<br>
-<br>
+<br/>
+<br/>
 <address>
-Rev Bryan Jones<br>
-Tivdale<br>
-Oldbury<br>
+Rev Bryan Jones<br/>
+Tivdale<br/>
+Oldbury<br/>
 Occupation - Minister
 </address>
-<br>
-<br>
+<br/>
+<br/>
 <address>
-Mr Jonathan Pearse<br>
-Llangollen<br>
+Mr Jonathan Pearse<br/>
+Llangollen<br/>
 Occupation - Assistant Minister
-<br>
+<br/>
 </address>
-<br>
-<br>
+<br/>
+<br/>
 <address>
-Mr Jason Phillips<br>
-Cardiff<br>
+Mr Jason Phillips<br/>
+Cardiff<br/>
 Occupation - Teacher
-<br>
-<br>
+<br/>
+<br/>
 </address>
 """))
 
@@ -286,7 +286,7 @@ html.append(('about_camp_general', '/info/about-camp/', 'About camp', """
 wonderful friendships formed on camps which have lasted and blossomed over 
 the years, benefitting not only the campers but also the churches to which they belong.</p>
 
-<p>Some will say <stong>fun</strong>.  Well, we certanily do have fun, with something to 
+<p>Some will say <stong>fun</strong>.  Well, we certainly do have fun, with something to 
 suit all who have a sense of adventure.  Whether it is canoeing, gorge walking, raft building, 
 wide games, bivouacking, table tennis, football, volleyball, camp concerts, tent life, 
 tent inspection, washing up, trips to the coast or even shopping, there is something for 
@@ -319,9 +319,9 @@ Sunday, which is kept special with two services and a quiet programme in between
 
 
 html.append(('camp_dates_intro_text', '', '', """
-<p>Dates for camp are below.  See also:
+<p>Dates for camp are below.  See also:</p>
 <ul>
-	<li><a href="/info/about-camp/">What is camp all about?</a>
+	<li><a href="/info/about-camp/">What is camp all about?</a></li>
 	<li><a href="/thisyear/coming-on-camp/">Coming on camp</a></li>
 	<li><a href="/thisyear/booking/">Booking</a></li>
 </ul>
@@ -374,7 +374,7 @@ cannot remain on the waiting list of your first choice as well.</p>
 
 <h2>Links</h2>
 <ul>
-	<li><a href="/thisyear/dates/">This year's camp dates</a></li>
+	<li><a href="/thisyear/">This year's camp dates</a></li>
 	<li><a href="/thisyear/booking/">Booking</a></li>	
 </ul>
 
@@ -403,48 +403,49 @@ a list of other pages to find out more about the camps.</p>
 
 <h2>Contents:</h2>
 <ul>
-<li><a href="/news/">News</a><br>
+<li><a href="/news/">News</a><br/>
 The latest news, particularly about what is available on the website,
- is here, with the opportunity to add your own comments.<br><br>
+ is here, with the opportunity to add your own comments.<br/><br/>
 </li>
 
-<li><a href="/thisyear/">Camps {{ thisyear }}</a><br>
+<li><a href="/thisyear/">Camps {{ thisyear }}</a><br/>
 Information for camps in {{ thisyear }}, including dates, leadership teams,
- and how to book.<br><br>
+ and how to book.<br/><br/>
 </li>
 
-<li><a href="/camps/">Camps past</a><br>
-Here you can find photos and messages boards from the camps that ran in the past
+<li><a href="/camps/">Camp forums and photos</a><br/>
+Here you can find photos and messages boards from the CCIW camps that have run in the past.
+Hopefully these will give you an idea of what we do, or help you stay in contact with
+friends you met on camp. <br/><br/>
 The leaders and committee members have also lead and organised camps with churches and
 other organisations (particularly EMW) for many years, and some photos of these camps
-can be found. Hopefully these will give you an idea of what we do. Also this is the
-place for you to find out about camp reunions (when they are organised).<br><br>
+can be found here. <br/><br/>
 </li>
 
-<li><a href="/sites/">Camp sites</a><br>
-Information on the different sites we run camps at.<br><br>
+<li><a href="/sites/">Camp sites</a><br/>
+Information on the different sites we run camps at.<br/><br/>
 </li>
 
 
-<li><a href="/members/">Members</a><br>
-List of currently signed up members to the website.  Look for your friends here!<br><br>
+<li><a href="/members/">Members</a><br/>
+List of currently signed up members to the website.  Look for your friends here!<br/><br/>
 </li>
 
-<li><a href="/info/">About CCIW</a><br>
+<li><a href="/info/">About CCIW</a><br/>
 Company information, including the doctrinal basis of CCIW, legal information, and the names and addresses of the directors. 
-<br>
-<br></li>
+<br/>
+<br/></li>
 
 
-<li><a href="/website/">About website</a><br>
-Information about the website, including message boards about the different features.<br><br>
+<li><a href="/website/">About website</a><br/>
+Information about the website, including message boards about the different features.<br/><br/>
 </li>
 
-<li><a href="/contact/">Feedback</a><br>
-Any comments about camp, suggestions, or other reasons to get in contact with us - find out how here.<br>
-<br>
+<li><a href="/contact/">Feedback</a><br/>
+Any comments about camp, suggestions, or other reasons to get in contact with us - find out how here.<br/>
+<br/>
 </li>
 
 </ul>
-<br>
+<br/>
 <p>CCIW is a limited company (reg. No. 3900844), and a Registered Charity (No:1079713)</p>"""))

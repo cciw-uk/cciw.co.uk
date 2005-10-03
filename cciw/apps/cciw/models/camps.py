@@ -5,12 +5,6 @@ class Site(meta.Model):
 	slugName = meta.SlugField("Machine name", maxlength="25", blank=True, unique=True)
 	longName = meta.CharField("Long name", maxlength="50", blank=False)
 	info = meta.TextField("Description (HTML)")
-	class META:
-		admin = meta.Admin(
-			fields = (
-				(None, {'fields': ('shortName', 'longName', 'info')}),
-			)
-		)
 	
 	def __repr__(self):
 		return self.shortName
@@ -22,18 +16,25 @@ class Site(meta.Model):
 		from django.core.defaultfilters import slugify
 		self.slugName = slugify(self.shortName, "")
 	
+	class META:
+		admin = meta.Admin(
+			fields = (
+				(None, {'fields': ('shortName', 'longName', 'info')}),
+			)
+		)
+		
 class Person(meta.Model):
 	name = meta.CharField("Name", maxlength=40)
 	info = meta.TextField("Information (Plain text)", 
 						blank=True)
+	def __repr__(self):
+		return self.name
+
 	class META:
 		admin = meta.Admin()
 		ordering= ('name',)
 		verbose_name_plural = 'people'
 	
-	def __repr__(self):
-		return self.name
-
 
 CAMP_AGES = (
 	('Jnr','Junior'),
@@ -61,13 +62,6 @@ class Camp(meta.Model):
 		verbose_name="leaders",
 		null=True, blank=True)
 	site = meta.ForeignKey(Site)
-	class META:
-		admin = meta.Admin(
-			fields = (
-				(None, {'fields': ('year', 'number', 'age', 'startDate', 'endDate', 'chaplain', 'leaders', 'site', 'previousCamp') }),
-			)
-		)
-		ordering = ['-year','number']
 	
 	def __repr__(self):
 		from django.models.camps import persons
@@ -84,8 +78,18 @@ class Camp(meta.Model):
 		
 	def niceName(self):
 		return "Camp " + str(self.number) + ", year " + str(self.year)
-	
+
+	def get_link(self):
+		return "<a href='" + self.get_absolute_url() + "'>" + self.niceName() + '</a>'
+
 	def get_absolute_url(self):
 		from cciw.apps.cciw.settings import *
 		return "/camps/" + str(self.year) + "/" + str(self.number) + "/"
 
+	class META:
+		admin = meta.Admin(
+			fields = (
+				(None, {'fields': ('year', 'number', 'age', 'startDate', 'endDate', 'chaplain', 'leaders', 'site', 'previousCamp') }),
+			)
+		)
+		ordering = ['-year','number']

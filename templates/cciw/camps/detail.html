@@ -1,7 +1,14 @@
 {% extends "standard" %}
 {% block content %}
-<h2>Links</h2>
-<p>TODO</p>
+{{ breadcrumb }}
+	<br/>
+{% if camp_is_past %}
+	<h2>Links</h2>
+	<ul>
+		<li><a href="{{ camp.get_absolute_url }}forum/">Forum</a></li>
+		<li><a href="{{ camp.get_absolute_url }}photos/">Photos</a></li>
+	</ul>
+{% endif %}
 <h2>Information</h2>
 <table class="sideheaders">
 	<tr>
@@ -13,7 +20,7 @@
 		<th>Following camp:</th>
 		<td>
 			{% for nextCamp in camp.get_nextCamp_list %}
-				<a href="{{ nextCamp.get_absolute_url }}">{{ nextCamp.niceName }}</a><br/>
+				{{ nextCamp.get_link }}<br/>
 			{% endfor %}
 		</td>
 	</tr>
@@ -22,7 +29,7 @@
 	<tr>
 		<th>Previous camp:</th>
 		<td>
-			<a href="{{ camp.get_previousCamp.get_absolute_url }}">{{ camp.get_previousCamp.niceName }}</a>
+			{{ camp.get_previousCamp.get_link }}
 		</td>
 	</tr>
 	{% endif %}

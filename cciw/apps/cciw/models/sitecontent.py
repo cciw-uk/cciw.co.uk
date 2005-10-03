@@ -11,7 +11,8 @@ class MenuLink(meta.Model):
 		related_name="childLink")
 
 	def __repr__(self):
-		return self.url + " [" + self.title + "]"
+		from cciw.apps.cciw.common import standard_subs
+		return self.url + " [" +  standard_subs(self.title) + "]"
 	
 	def getVisibleChildren(self, request):
 		"""Gets a list of child menu links that should be visible given the current url"""
@@ -60,7 +61,9 @@ class HtmlChunk(meta.Model):
 				pass
 		
 	class META:
-		admin = meta.Admin()
+		admin = meta.Admin(
+			list_display = ('name', 'pageTitle', 'menuLink')
+		)
 		verbose_name = "HTML chunk"
 
 

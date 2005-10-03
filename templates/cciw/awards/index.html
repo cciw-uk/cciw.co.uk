@@ -1,0 +1,24 @@
+{% extends "standard" %}
+{% block content %}
+	{% for award in object_list %}
+		<h2><a name="{{ award.niceName|slugify }}">{{award.niceName}}</a></h2>
+		<div class="awardDescription">
+		<img src="{{award.imageurl}}" alt="{{award.niceName}} image" />  {{award.description}}
+		</div>
+		<div class="awardList">
+		{% if award.get_personalAward_list %}
+			<p>Awarded to:</p>
+			<ul>
+			{% for paward in award.get_personalAward_list %}
+				<li>{{ paward.get_member.get_link }} 
+					{% if paward.dateAwarded %}, on {{ paward.dateAwarded|date:"d M Y" }} {% endif %}
+				for:<br/> {{ paward.reason }}</li>
+			{% endfor %}
+			</ul>
+		
+		{% else %}
+			<p>Not awarded to anyone yet.</p>
+		{% endif %}
+		</div>
+	{% endfor %}
+{% endblock %}
