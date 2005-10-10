@@ -40,6 +40,10 @@
 ## 2) There are some definitely web site specific extensions
 ##    e.g. [email], [member], the rendering of [quote=person]
 ## 3) 'Missing' tags - [img] - but should be easy to add
+## 4) Mostly we work on one-to-one correspondance between
+##    'bbtags' and xhtml tags, but we use some tricks to relax
+##    the nesting constraints, such as some elements being context 
+##     sensitive in the render phase, allowing them to render differently
 
 
 import re
@@ -76,10 +80,12 @@ class BBTag:
 colors = ('aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon', 'navy', 'olive', 
 	'purple', 'red', 'silver', 'teal', 'white', 'yellow')
 colorregexp = re.compile(r'#[0-9A-F]{6}')
+memberregexp = re.compile(r'^[0-9A-Za-z_]{1,30}$')
 
 # 'text' is a dummy entry for text nodes
 inline_tags = ('b', 'i', 'color', 'member', 'email', 'url', 'br', 'text', 'img', 'softbr', 'emoticon')
-block_level_tags = ('p', 'quote', 'list', 'pre', 'code')
+block_level_tags = ('p', 'quote', 'list', 'pre', 'code', 'div')
+flow_tags = inline_tags + block_level_tags
 other_tags = ('*',)
 
 anchor_tags = ('member', 'email', 'url')
@@ -88,22 +94,25 @@ anchor_tags = ('member', 'email', 'url')
 # XHTML compatible. Other rules are implicit in the parsing routines.
 # Note that some bbtags can adapt to their context in the rendering
 # phase in order to generate correct XHTML, so have slacker rules than normal
+# Also, some tags only exist to make parsing easier, and are
+# not intended for use by end user
 taginfo = (
-	BBTag('br', (), 'p', self_closing = True, discardable = True), 	# <br/>
-	BBTag('softbr', (), 'p', self_closing = True, discardable = True), # <br/>, but can adapt during render
-	BBTag('emoticon', ('text',), 'p'),							# <img/>,  but can adapt
-	BBTag('b', inline_tags, 'p'),								# <b>
-	BBTag('i', inline_tags, 'p'),								# <i>
-	BBTag('color', inline_tags, 'p'),							# <span>
-	BBTag('member', ('text',), 'p' ),							# <a>
-	BBTag('email', ('text',), 'p'),								# <a>
-	BBTag('url', ('text',), 'p'),								# <a>
+	BBTag('br', (), 'div', self_closing = True, discardable = True), 	# <br/>
+	BBTag('softbr', (), 'div', self_closing = True, discardable = True), # <br/>, but can adapt during render
+	BBTag('emoticon', ('text',), 'div'),							# <img/>,  but can adapt
+	BBTag('b', inline_tags, 'div'),								# <b>
+	BBTag('i', inline_tags, 'div'),								# <i>
+	BBTag('color', inline_tags, 'div'),							# <span>
+	BBTag('member', ('text',), 'div' ),							# <a>
+	BBTag('email', ('text',), 'div'),								# <a>
+	BBTag('url', ('text',), 'div'),								# <a>
 	BBTag('p', inline_tags, None),								# <p>
-	BBTag('quote', block_level_tags + ('softbr',), None),			# <blockquote>
+	BBTag('div', flow_tags, None),								# <div>
+	BBTag('quote', block_level_tags + ('softbr',), 'div'),						# <blockquote>
 	BBTag('list', ('*', 'softbr'), None),						# <ul>
 	BBTag('pre', inline_tags, None, prohibited_elements = ('img', 'big', 'small', 'sub', 'sup')), # <pre> (only img currently implemented out of those prohibited elements
 	BBTag('code', inline_tags, None, prohibited_elements = ('img', 'big', 'small', 'sub', 'sup')), # <pre>
-	BBTag('*', inline_tags + block_level_tags, 'list')
+	BBTag('*', flow_tags, 'list')
 )
 
 # Make a dictionary
@@ -130,8 +139,7 @@ bb2xhtml_map = {
 	'code': 'pre', # TODO - add a 'class' attribute
 	'list': 'ul',
 	'*': 'li',
-	'quote': 'blockquote', # TODO - handle the parameter
-	# TODO - the hard ones
+	'div': 'div'
 }
 
 emoticons = {
@@ -207,13 +215,11 @@ class BBRootNode(BBNode):
 		return self.renderChildrenXhtml()
 
 	def allows(self, tagname):
-		# Rule for HTML BODY element
 		if self.allow_inline:
-			return tagname in block_level_tags or \
-				tagname in inline_tags
+			return tagname in flow_tags
 		else:
+			# Rule for HTML BODY element
 			return tagname in block_level_tags
-
 	
 class BBTextNode(BBNode):
 	"A text node, containing only plain text"
@@ -256,14 +262,15 @@ class BBTagNode(BBNode):
 		htmlTag = bb2xhtml_map.get(self.bbtag.name, None)		
 		if htmlTag is None:
 			# All tags that need special work
+			tagname = self.bbtag.name
 			##############################
-			if self.bbtag.name == 'softbr':
+			if tagname == 'softbr':
 				if self.parent.allows('br'):
 					return '<br/>'
 				else:
 					return '\n'
 			##############################		
-			elif self.bbtag.name == 'emoticon':
+			elif tagname == 'emoticon':
 				if len(self.children) == 0:
 					return ''
 				emoticon = self.children[0].text   # child is always a BBTextNode
@@ -277,7 +284,7 @@ class BBTagNode(BBNode):
 				else:
 					return emoticon
 			##############################
-			elif self.bbtag.name == 'member':
+			elif tagname == 'member':
 				if len(self.children) == 0:
 					return ''
 				else:
@@ -286,7 +293,7 @@ class BBTagNode(BBNode):
 						return ''
 					return get_member_link(user)
 			##############################
-			elif self.bbtag.name == 'url':
+			elif tagname == 'url':
 				if len(self.children) == 0:
 					return ''
 				if not self.parameter is None:
@@ -296,7 +303,7 @@ class BBTagNode(BBNode):
 				linktext = self.children[0].text.strip()
 				return '<a href="' + escape(url) + '">' + escape(linktext) + '</a>'
 			##############################
-			elif self.bbtag.name == 'color':
+			elif tagname == 'color':
 				if len(self.children) > 0:
 					if self.parameter.lower() in colors or \
 						not colorregexp.match(self.parameter) is None:
@@ -305,12 +312,27 @@ class BBTagNode(BBNode):
 						return self.renderChildrenXhtml()
 				return ''
 			##############################
-			elif self.bbtag.name == 'email':
+			elif tagname == 'email':
 				if len(self.children) > 0:
 					return obfuscate_email(escape(self.children[0].text.strip()))
 				else:
 					return ''
 			
+			##############################
+			elif tagname == 'quote':
+				if self.parameter is None:
+					self.parameter = ''
+				self.parameter = self.parameter.strip()
+				if memberregexp.match(self.parameter):
+					return '<div class="memberquote">' + \
+						get_member_link(self.parameter) + ' said:</div>' + \
+					'<blockquote>' + self.renderChildrenXhtml() + \
+						'</blockquote>'
+				else:
+					return '<blockquote>' + \
+						self.renderChildrenXhtml() + \
+						'</blockquote>'
+						
 			##############################
 			else:
 				raise NotImplementedError('Unknown tag: ' + self.bbtag.name)
@@ -338,8 +360,8 @@ class BBCodeParser:
 				# Whitespace, append anyway
 				self.currentNode.children.append(BBTextNode(self.currentNode, text))
 			else:
-				if self.currentNode.allows('p'):
-					self.currentNode.children.append(BBTagNode(self.currentNode, 'p',''))
+				if self.currentNode.allows('div'):
+					self.currentNode.children.append(BBTagNode(self.currentNode, 'div',''))
 					self.descend()
 				else:
 					self.ascend()
@@ -367,7 +389,7 @@ class BBCodeParser:
 				# or inline inside root
 				# Add an implicit tag if possible
 				self.pushTagNode(newTag.implicit_tag, '')
-				self.pushTagNode(name, parameter)					
+				self.pushTagNode(name, parameter)
 			else:
 				# e.g. block level in inline etc. - traverse up the tree
 				self.currentNode = self.currentNode.parent

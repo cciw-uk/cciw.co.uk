@@ -5,38 +5,43 @@ import sys
 import os
 
 
+from cciw.apps.cciw.utils import get_member_link
 
 tests = (
 	('<test&',
-		'<p>&lt;test&amp;</p>'),
+		'<div>&lt;test&amp;</div>'),
 	('[b]Incorrectly [i]nested tags[/b] must be dealt with[/i]', 
-		'<p><b>Incorrectly <i>nested tags</i></b> must be dealt with</p>'),
-	('[quote]this must be in a para[/quote]', 
-		'<blockquote><p>this must be in a para</p></blockquote>'),
+		'<div><b>Incorrectly <i>nested tags</i></b> must be dealt with</div>'),
+	('[quote]this must be in a div[/quote]', 
+		'<blockquote><div>this must be in a div</div></blockquote>'),
 	('Newlines\nconverted\n\nto brs', 
-		'<p>Newlines<br/>converted<br/><br/>to brs</p>'),
+		'<div>Newlines<br/>converted<br/><br/>to brs</div>'),
 	('[list][br][*]brs discarded when illegal', 
 		'<ul><li>brs discarded when illegal</li></ul>'),
 	('[list]\n[*]Newlines not discarded, or converted when brs would be illegal', 
 		'<ul>\n<li>Newlines not discarded, or converted when brs would be illegal</li></ul>'),
 	('[quote]\nNewlines not discarded at beginning of quote', 
-		'<blockquote>\n<p>Newlines not discarded at beginning of quote</p></blockquote>'),
-	('[list]Text in root of list tag is moved outside[*]and put in a paragraph[/list]',
-		'<p>Text in root of list tag is moved outside</p><ul><li>and put in a paragraph</li></ul>'),
+		'<blockquote>\n<div>Newlines not discarded at beginning of quote</div></blockquote>'),
+	('[list]Text in root of list tag is moved outside[*]and put in a div[/list]',
+		'<div>Text in root of list tag is moved outside<ul><li>and put in a div</li></ul></div>'),
 	(':-) :bosh:',
-		'<p><img src="' + bbcode.EMOTICONS_ROOT + 'smile.gif" alt=":-)" /> <img src="' + bbcode.EMOTICONS_ROOT + 'mallet1.gif" alt=":bosh:" /></p>' ),
+		'<div><img src="' + bbcode.EMOTICONS_ROOT + 'smile.gif" alt=":-)" /> <img src="' + bbcode.EMOTICONS_ROOT + 'mallet1.gif" alt=":bosh:" /></div>' ),
 	('[code]:-) :bosh:[/code]',
 		'<pre>:-) :bosh:</pre>'),	
 	('[url]/foo/?a=1&b=2[/url]',
-		'<p><a href="/foo/?a=1&amp;b=2">/foo/?a=1&amp;b=2</a></p>'),
+		'<div><a href="/foo/?a=1&amp;b=2">/foo/?a=1&amp;b=2</a></div>'),
 	('[url=/foo/?a=1&b=2]bar[/url]',
-		'<p><a href="/foo/?a=1&amp;b=2">bar</a></p>'),
+		'<div><a href="/foo/?a=1&amp;b=2">bar</a></div>'),
 	('[member]Joey[/member]',
-		'<p><a href="/members/Joey/">Joey</a></p>'),
+		'<div>' + get_member_link('Joey') + '</div>'),
 	('[member]illegal " name[/member]',
-		'<p><a href="/members/illegal&quot;name/">illegal&quot;name</a></p>'),
+		'<div><a href="/members/illegal&quot;name/">illegal&quot;name</a></div>'),
 	('ok, ill go first...[br][br][color=red]b[color=orange]e[color=yellow]a[color=green]u[color=blue]t[color=purple]i[color=magenta]f[color=pink]u[color=red]l[/color]  :-) [color=black](the surroundings and everyone in it)',
-		'<p>ok, ill go first...<br/><br/><span style="color: red;">be<span style="color: yellow;">a<span style="color: green;">u<span style="color: blue;">t<span style="color: purple;">ifu<span style="color: red;">l</span>  <img src="http://cciw_django_local/media/images/emoticons/smile.gif" alt=":-)" /> <span style="color: black;">(the surroundings and everyone in it)</span></span></span></span></span></span></p>'),
+		'<div>ok, ill go first...<br/><br/><span style="color: red;">be<span style="color: yellow;">a<span style="color: green;">u<span style="color: blue;">t<span style="color: purple;">ifu<span style="color: red;">l</span>  <img src="http://cciw_django_local/media/images/emoticons/smile.gif" alt=":-)" /> <span style="color: black;">(the surroundings and everyone in it)</span></span></span></span></span></span></div>'),
+	('[quote= foo1_23 ]Blah[/quote]',
+		'<blockquote><div class="memberquote">' + get_member_link('foo1_23') + ' said:</div><div>Blah</div></blockquote>'),
+	('[quote=foo123%]Blah[/quote]',
+		'<blockquote><div>Blah</div></blockquote>')
 )
 
 class TestBBCodeParser(unittest.TestCase):
