@@ -381,6 +381,12 @@ div.breadcrumb
 	border-bottom: 1px solid #114411;
 }
 
+div.bottombreadcrumb
+{
+	margin-top: 1em;
+	border-top: 1px solid #114411;
+}
+
 /* Message boards */
 span.postMemberIcon
 {
@@ -444,4 +450,22 @@ div.center
 .photo, .photoCol
 {
 	text-align: center;
+}
+
+.postMessage blockquote
+{
+	padding: 0.5em 1em ;
+	border: 2px solid #206020;
+	margin: 0 1em 0.5em 1em;
+	background-color: #203020;
+	border-top: 1px solid #206020;
+}
+.postMessage .memberquote
+{
+	padding: 0px 2px;
+	margin: 0.5em 1em 0 1em;
+	font-style: italic;
+	background-color: #203020;
+	border: 2px solid #206020;
+	border-bottom: 0px;
 }

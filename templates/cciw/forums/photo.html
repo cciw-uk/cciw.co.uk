@@ -3,11 +3,11 @@
 {% load standardpage %}
 {% load forums %}
 {% block content %}
-	TODO - page to next photo
 	<div class="photo">
 		<img class="photo" src="{{ pagevars.mediaRootUrl }}photos/{{ photo.filename }}" alt="Photo {{photo.filename}}" />
 	</div>
-	<div class="paging">{% paging_control %}</div>
+	<a name="comments"></a>
+	<div class="paging">{% paging_control #comments %}</div>
 	<table class="topheaders">
 		<tr>
 			<th class="commentHeader" colspan="2">Comments</th>
@@ -37,9 +37,12 @@
 			</tr>
 		{% endif %}
 	</table>
-	<div class="paging">{% paging_control %}</div>
+	<div class="paging">{% paging_control #comments %}</div>
 
 		TODO - add message form</br>
 		TODO - refactor common template code from forums into
+
+	<div class='bottombreadcrumb'>{{ breadcrumb }}</div>
+
 
 {% endblock %} 

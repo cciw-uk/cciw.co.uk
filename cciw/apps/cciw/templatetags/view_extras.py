@@ -3,11 +3,14 @@ from django.utils import html
 from cciw.apps.cciw.settings import *
 from cciw.apps.cciw.utils import *
 
-def page_link(request, page_number):
+def page_link(request, page_number, fragment = ''):
 	"""Constructs a link to a specific page using the request.  Returns HTML escaped value"""
-	return html.escape(modified_query_string(request, {'page': str(page_number)}))
+	return html.escape(modified_query_string(request, {'page': str(page_number)}, fragment))
 
 class PagingControlNode(template.Node):
+	def __init__(self, fragment = ''):
+		self.fragment = fragment
+		
 	def render(self, context):
 		# context has been populated by
 		# generic view paging mechanism
@@ -20,18 +23,19 @@ class PagingControlNode(template.Node):
 			for i in range(0, total_pages):
 				if (i > 0):
 					output += " | "
+					
 				if i == cur_page:
 					output += '<span class="pagingLinkCurrent">' + str(i+1) + '</span>'
 				else:
-					output += '<a class="pagingLink" href="' + page_link(request, i)+ '">' + str(i+1) + '</a>'
+					output += '<a class="pagingLink" href="' + page_link(request, i, self.fragment)+ '">' + str(i+1) + '</a>'
 			output += " | "
 			if cur_page > 0:
-				output += '<a class="pagingLink" title="Previous page" href="' + page_link(request, cur_page - 1) + '">&laquo;</a>'
+				output += '<a class="pagingLink" title="Previous page" href="' + page_link(request, cur_page - 1, self.fragment) + '">&laquo;</a>'
 			else:
 				output += '<span class="pagingLinkCurrent">&laquo;</span>'
 			output += "&nbsp;"
 			if cur_page < total_pages - 1:
-				output += '<a class="pagingLink" title="Next page" href="' + page_link(request, cur_page + 1) + '">&raquo;</a>'
+				output += '<a class="pagingLink" title="Next page" href="' + page_link(request, cur_page + 1, self.fragment) + '">&raquo;</a>'
 			else:
 				output += '<span class="pagingLinkCurrent">&raquo;</span>'
 		return output
@@ -43,12 +47,19 @@ def do_paging_control(parser, token):
 	The paging  control requires that the request object be in the context as 
 	by putting the standard 'pagevars' object in the context.
 	
+	An optional parameter can be used which contains the fragment to use for 
+	paging links, which allows paging to skip any initial common content on the page.
+	
 	Usage::
 
 		{% paging_control %}
 
 """
-	return PagingControlNode()
+	parts = token.contents.split(None, 1)
+	if len(parts) > 1:
+		return PagingControlNode(fragment = parts[1])
+	else:
+		return PagingControlNode()
 
 class SortingControlNode(template.Node):
 	def __init__(self, ascending_param, descending_param):
@@ -64,7 +75,7 @@ class SortingControlNode(template.Node):
 				current_order = context['default_order']
 			except KeyError:
 				current_order = ''
-			
+		
 		if current_order == self.ascending_param:
 			output += '<a href="' + html.escape(modified_query_string(request, {'order': self.descending_param})) + '">' + \
 			'<img class="sortAscActive" src="' + CCIW_MEDIA_ROOT + 'images/arrow-up.gif" alt="Sorted ascending" /></a>' 
@@ -95,8 +106,7 @@ def do_sorting_control(parser, token):
 	The sorting control requires that the request object be in the context as 
 	by putting the standard 'pagevars' object in the context. It is
 	used for various things, including passing on other query string parameters
-	in the generated URLs
-	
+	in the generated URLs.
 	
 	Usage::
 	

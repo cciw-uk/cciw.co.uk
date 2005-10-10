@@ -1,6 +1,6 @@
 from django.views.generic import list_detail
 from django.core.exceptions import Http404
-from django.models.forums import forums, topics
+from django.models.forums import forums, topics, photos
 from cciw.apps.cciw.common import *
 from django.utils.html import escape
 from cciw.apps.cciw import utils
@@ -17,8 +17,26 @@ def topic_breadcrumb(forum, topic):
 	return ['<a href="' + forum.get_absolute_url() + '">Topics</a>']
 
 def photo_breadcrumb(gallery, photo):
-	# TODO - add links for previous/next photo by ID
-	return ['<a href="' + gallery.get_absolute_url() + '">Photos</a>', str(photo.id)]
+	prev_and_next = ''
+	previous_photos = photos.get_list(id__lt = photo.id, \
+		gallery__id__exact = photo.gallery_id, 
+		order_by = ('-id',),
+		limit = 1)
+	if len(previous_photos) > 0:
+		prev_and_next += '<a href="' + previous_photos[0].get_absolute_url() + '" title="Previous photo">&laquo;</a> '
+	else:
+		prev_and_next += '&laquo; '
+		
+	next_photos = photos.get_list(id__gt = photo.id, \
+		gallery__id__exact = photo.gallery_id, 
+		order_by = ('id',),
+		limit = 1)
+	if len(next_photos) > 0:
+		prev_and_next += '<a href="' + next_photos[0].get_absolute_url() + '" title="Next photo">&raquo;</a> '
+	else:
+		prev_and_next += '&raquo; '
+		
+	return ['<a href="' + gallery.get_absolute_url() + '">Photos</a>', str(photo.id), prev_and_next]
 	
 def topicindex(request, title = None, extra_context = None, forum = None,
 	template_name = 'forums/topicindex',	breadcrumb_extra = None, paginate_by = 15, default_order = ('-lastPostAt',)):
@@ -135,11 +153,12 @@ def photo(request, photo, extra_context, breadcrumb_extra):
 	"Displays a photo"
 	extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + photo_breadcrumb(photo.get_gallery(), photo))
 	extra_context['photo'] = photo
+	
 	lookup_args = {
 		'hidden__exact': False, # TODO - lookup depends on permissions
 		'photo__id__exact': photo.id,
 	} 
-			
+	
 	return list_detail.object_list(request, 'forums', 'posts', 
 		extra_context = extra_context, 
 		template_name = 'forums/photo',

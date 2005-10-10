@@ -18,7 +18,8 @@
 		</div>
 	</div>
 	{% endif %}
-	<div class="paging">{% paging_control %}</div>
+	<a name="comments"></a>
+	<div class="paging">{% paging_control #comments %}</div>
 	<table class="topheaders">
 		<tr>
 		{% if newsItem %}
@@ -58,7 +59,7 @@
 			</tr>
 		{% endif %}
 	</table>
-	<div class="paging">{% paging_control %}</div>
+	<div class="paging">{% paging_control #comments %}</div>
 
 		TODO - add message form
 

@@ -86,4 +86,4 @@ def order_option_to_lookup_arg(order_options, lookup_args_dict, request, default
 	lookup_args_dict['order_by'] = order_by
 
 def create_breadcrumb(links):
-	return "<div class='breadcrumb'>" + " :: ".join(links) + "</div>"
+	return " :: ".join(links)

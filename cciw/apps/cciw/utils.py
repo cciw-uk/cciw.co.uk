@@ -9,14 +9,14 @@ def get_member_link(userName):
 	else:
 		return '<a href="/members/' + userName + '/">' + userName + '</a>'
 	
-def modified_query_string(request, dict):
+def modified_query_string(request, dict, fragment = ''):
 	"""Returns the query string represented by request, with key-value pairs
 	in dict added or modified.  """
 	qs = request.GET.copy()
 	# NB can't use qs.update(dict) here
 	for k,v in dict.items():
 		qs[k] = v
-	return request.path + '?' + qs.urlencode()
+	return request.path + '?' + qs.urlencode() + fragment
 	
 def strip_control_chars(text):
 	for i in range(0,32):
