@@ -64,7 +64,7 @@
 
 		{% if awards %}
 			<h2>Awards</h2>
-			<p>{{ member.get_link }} has received the following awards:</p>
+			<p><b>{{ member.userName }}</b> has received the following awards:</p>
 			{% for paward in awards %}
 			<div class="awardInfo">
 				<a href="{{paward.get_award.get_absolute_url}}" class="awardlink"><img class="award" alt="{{paward.get_award.niceName}}" src="{{paward.get_award.imageurl}}" /></a><br/>

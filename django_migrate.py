@@ -1,5 +1,4 @@
-# Migration script from old flatfiles
-# to django
+# Migration script from old flatfiles to django
 import devel
 import os
 import shutil
@@ -13,7 +12,6 @@ from django.models.camps import *
 from django.models.members import *
 from django.models.polls import *
 from django.models.posts import *
-from django.models.photos import *
 from django.models.forums import *
 from django.models.sitecontent import *
 
@@ -82,7 +80,7 @@ def fix_bbcode(message):
 	
 	for s in replacements:
 		message = message.replace(s[0], s[1])
-	# TODO - misc transformations on messages, especially URLs
+	
 	message = strip_control_chars(message)
 	
 	return message
@@ -93,13 +91,11 @@ def fix_news_items(html):
 	return html
 	
 
-def remap_url(url):
-	# TODO - probably easiest is a manual list, since
-	# there are v few in current DB
-	m = re.match(r'members.php\?sp=([^\'"]*)', url)
-	if not m is None:
-		url = '/members/' + m.groups()[0]
-	return url
+new_urls = {}
+
+old_topic_ids = {}
+
+old_photo_ids = {}
 
 ###########################################################################################
 #                   SITES
@@ -355,7 +351,8 @@ def migratePermissions():
 		(permissions.PHOTO_APPROVER, "Photo approver"),
 		(permissions.POLL_CREATOR, "Poll creator"),
 		(permissions.NEWS_CREATOR, "News creator"),
-		(permissions.AWARD_CREATOR, "Award creator") ):
+		(permissions.AWARD_CREATOR, "Award creator") 
+		):
 		p = permissions.Permission(id = id, description = description)
 		p.save()
 	
@@ -365,7 +362,8 @@ def migratePermissions():
 		("moderators", (permissions.USER_MODERATOR, permissions.POST_MODERATOR)),
 		("admins", (permissions.SUPERUSER,)),
 		("photomanagers", (permissions.PHOTO_APPROVER,)),
-		("newsposters", (permissions.NEWS_CREATOR, permissions.POLL_CREATOR)) ):
+		("newsposters", (permissions.NEWS_CREATOR, permissions.POLL_CREATOR)) 
+		):
 		found = False
 		for line in groups:
 		
@@ -379,8 +377,6 @@ def migratePermissions():
 				found = True
 		if not found:
 			raise Exception("Group " + groupname + " not found in groups.data")
-	
-	
 	
 ###########################################################################################
 #		Messages
@@ -525,31 +521,45 @@ def migrateForums():
 	boardsdir = PREFIX+ "../boards/"
 	boards = getTable(boardsdir + "boards.data")
 	for line in boards:
-		if line[0].startswith('2003'): continue # mistake
+		if line[0].startswith('2003'): continue # this was a random mistake
 		
 		if line[0].startswith('photos-'):
 			# photo gallery
-			location = "camps" + line[0].replace("photos-","/").replace("-", "/") + "/photos/"
+			location = ("camps" + line[0].replace("photos-","/").replace("-", "/") + "/photos/").lower()
+			# Old URL:
+			old_location = 'pastcamps.php?sp=' + line[0].replace("photos-","")
+			if line[0].startswith('photos-20') or line[0].startswith('photos-19'):
+				old_location = old_location + '&ssp=photos'
+			
 			g = gallerys.Gallery(location = location)
 			g.save()
+			new_urls[old_location] = g.get_absolute_url()
 			f = None
 		else: 
 			# message board
 			if line[0].startswith("mb-"):
+				old_location = 'pastcamps.php?sp=' + line[0].replace("mb-","") + '&ssp=mb'
 				location = "camps" + line[0].replace("mb-","/").replace("-", "/") + "/forum/"
 			else:
 				location = line[0] + "/"
 			if location == "website/":
+				old_location = 'about_website.php?sp=mb'
 				location = "website/forum/"
+			if location == 'news/':
+				old_location = 'news.php?sp=mb'
+			
 			f = forums.Forum(location = location)
 			f.open = bool(int(line[1]))
 			f.save()
+			
+			new_urls[old_location] = f.get_absolute_url()
 			g = None
 		try:
 			topiclist = getTable(boardsdir + line[0] + "/topiclist.data")
 		except IOError:
 			topiclist = []
-			
+		
+		# old_location is used below
 		for topicline in topiclist:
 			photo = None
 			topic = None
@@ -600,6 +610,9 @@ def migrateForums():
 				topic.forum_id = f.id
 				topic.save()
 				
+				old_topic_location = old_location + '&n=' + topicline[0]
+				new_urls[old_topic_location] = topic.get_absolute_url()
+				
 			if g != None:
 				photo = photos.Photo(open = bool(int(topicline[7])))
 				photo.hidden = getBool(topicline[9])
@@ -614,10 +627,15 @@ def migrateForums():
 				for photoline in getTable(PREFIX+line[0]+".data"):
 					if photoline[0] == topicline[0]:
 						photo.filename = photoline[1]
+						photo.description = photoline[2]
 						break
 				photo.gallery_id = g.id
 				photo.save()
-			
+				
+				old_photo_location = old_location + '&n=' + topicline[0]
+				new_urls[old_photo_location] = photo.get_absolute_url()
+
+				
 			# Now get the posts
 			try:
 				postdata = getTable(boardsdir + line[0] + "/" + topicline[0] + ".data")
@@ -628,6 +646,8 @@ def migrateForums():
 				p.postedBy_id = getDummyOrRealMember(postline[1].strip()).userName
 				p.subject = postline[2]
 				
+				if p.subject.strip() == '&nbsp;' or p.subject.strip() == '':
+					p.subject = ''
 				p.message = fix_bbcode(postline[3])
 				try:
 					p.postedAt = datetime.fromtimestamp(int(postline[4]))
@@ -635,11 +655,11 @@ def migrateForums():
 					p.postedAt = None
 				if topic != None:
 					p.topic_id = topic.id
-				elif photo != None:
+				if photo != None:
 					p.photo_id = photo.id
 				p.save()
 		# end for topicline in topiclist
-	# end for line in board			
+	# end for line in boards
 	
 def migrateMainMenu():
 	for m in menulinks.get_list():
@@ -693,10 +713,11 @@ def migrateHtml():
 #migrateCamps()
 #migrateMembers()
 #migratePermissions()
-migrateMessages()
+#migrateMessages()
 #migrateAwards()
 #migratePolls()
 migrateForums()
+#print new_urls
 #migrateMainMenu()
 #migrateHtml()
 

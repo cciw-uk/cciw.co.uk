@@ -1,0 +1,45 @@
+{% extends "standard" %}
+{% load view_extras %}
+{% load standardpage %}
+{% load forums %}
+{% block content %}
+	TODO - page to next photo
+	<div class="photo">
+		<img class="photo" src="{{ pagevars.mediaRootUrl }}photos/{{ photo.filename }}" alt="Photo {{photo.filename}}" />
+	</div>
+	<div class="paging">{% paging_control %}</div>
+	<table class="topheaders">
+		<tr>
+			<th class="commentHeader" colspan="2">Comments</th>
+		</tr>
+
+		<tr>
+			<th class="postFromCol">From</th>
+			<th>Message</th>
+		</tr>
+		{% if object_list %}
+			{% for post in object_list %}
+			<tr>
+				<td class="postFrom">
+					<span class="postMemberIcon">{{ post.get_postedBy.iconImage }}</span>
+					{% memberlink %}{{ post.postedBy_id }}{% endmemberlink %}<br/>
+					<span class="postDate">{{ post.postedAt|date:"d M y, h:i" }}</span>
+				</td>
+				<td class="postMessage">
+					{% if post.subject %}<div class="postSubject">{{ post.subject }}</div>{% endif %}
+					{{ post.message|bb2html }}
+				</td>
+			</tr>
+			{% endfor %}
+		{% else %}
+			<tr>
+				<td  colspan="2">There are no comments yet on this photo.</td>
+			</tr>
+		{% endif %}
+	</table>
+	<div class="paging">{% paging_control %}</div>
+
+		TODO - add message form</br>
+		TODO - refactor common template code from forums into
+
+{% endblock %} 

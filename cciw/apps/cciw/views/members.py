@@ -16,16 +16,19 @@ def index(request):
 	if (request.GET.has_key('online')):
 		lookup_args['lastSeen__gte'] = datetime.now() - timedelta(minutes=3)
 	
+	extra_context = standard_extra_context(request, title='Members')
 	order_option_to_lookup_arg(
-		{'adj': 'dateJoined',
-		'ddj': '-dateJoined',
-		'aun': 'userName',
-		'dun': '-userName',
-		'arn': 'realName',
-		'drn': '-realName',
-		'als': 'lastSeen',
-		'dls': '-lastSeen'},
-		lookup_args, request, 'userName')
+		{'adj': ('dateJoined',),
+		'ddj': ('-dateJoined',),
+		'aun': ('userName',),
+		'dun': ('-userName',),
+		'arn': ('realName',),
+		'drn': ('-realName',),
+		'als': ('lastSeen',),
+		'dls': ('-lastSeen',)},
+		lookup_args, request, ('userName',))
+	extra_context['default_order'] = 'aun'
+	
 		
 	try:
 		search = '%' + request['search'] + '%'
@@ -35,7 +38,7 @@ def index(request):
 		pass
 		
 	return list_detail.object_list(request, 'members', 'members', 
-		extra_context =  standard_extra_context(request, title='Members'), 
+		extra_context = extra_context, 
 		template_name = 'members/index',
 		paginate_by=50, extra_lookup_kwargs = lookup_args,
 		allow_empty = True)

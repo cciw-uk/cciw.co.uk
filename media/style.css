@@ -12,11 +12,13 @@ body {
 
 a:link {
 	color: #00bb55;
+	text-decoration: none;
 }
 
 
 a:visited {
-	color: #00bb55;
+	color: #0077dd;
+	text-decoration: none;
 }
 a:hover {
 	color: #00ff55;
@@ -50,8 +52,16 @@ h1,h2,h3,h4,h5,h6
 	height: 72px;
 }
 
+/* base template only */
+#mainbase
+{
+	position: absolute;
+	left: 0px;
+	top: 72px;
+	margin: 0px 8px;
+}
 
-
+/* standard template */
 #sidebarOuter
 {
 	position: absolute;
@@ -81,26 +91,44 @@ h1,h2,h3,h4,h5,h6
 	margin-right: 10px;
 }
 
-#contentBody, #pageTitle, #sidebar
+#mainbase #contentBody, #mainbase #pageTitle
+{
+	padding: 0 10px;
+	margin: 0px;
+}
+#mainbase
+{
+	background-color: #282828;
+}
+#mainbase h1
+{
+	margin: 0;
+	padding: 0;
+
+}
+
+
+#mainstandard #contentBody, #mainstandard #pageTitle, #mainstandard #sidebar
 {
 	background-color: #181818;
 	border-top: 1px solid #666666;
 	border-bottom: 1px solid #666666;
 }
 
-#pageTitle
+
+#mainstandard #pageTitle
 {
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
-#pageTitle h1
+#mainstandard #pageTitle h1
 {
 	margin: 0;
 	padding: 0.2em;
 	text-align: center;
 }
 
-#contentBody
+#mainstandard #contentBody
 {
 	margin-top: 1em;
 	padding: 0.8em;
@@ -138,28 +166,28 @@ h1,h2,h3,h4,h5,h6
 
 }
 
-#sidebar a.currentPage
+#sidebar a:visited
 {
-	background-color: #444444;
-	border-left: 2px solid #808080;
-	border-right: 2px solid #808080;
-
+	color: #0077dd;
 }
-#sidebar a.currentSection
+
+
+#sidebar a.currentSection,
+#sidebar a.currentPage
 {
 	background-color: #333333;
 	border-left: 2px solid #505050;
 	border-right: 2px solid #505050;
-
+	color: #ffffff;
 }
+
 
 #sidebar a:hover
 {
-	background-color: #004800;
+	background-color: #000044;
 	text-decoration: none;
-	border-left: 2px solid #008000;
-	border-right: 2px solid #008000;
-
+	border-left: 2px solid #000080;
+	border-right: 2px solid #000080;
 }
 
 #footer
@@ -364,9 +392,9 @@ th.postFromCol
 	width: 15em;
 }
 
-th.topicStartedCol, th.topicLastPostCol
+th.topicStartedCol, th.topicLastPostCol, th.photoDateAddedCol, th.photoLastPostCol
 {
-	width: 10em;
+	width: 10.5em;
 }
 
 table.topheaders th.topicSubject
@@ -409,6 +437,11 @@ div.newsItem h2
 
 }
 div.center
+{
+	text-align: center;
+}
+
+.photo, .photoCol
 {
 	text-align: center;
 }

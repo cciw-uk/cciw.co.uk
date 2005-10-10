@@ -198,16 +198,21 @@ class BBNode:
 
 class BBRootNode(BBNode):
 	"Represents a root node"
-	def __init__(self):
+	def __init__(self, allow_inline = False):
 		BBNode.__init__(self, None)
 		self.children = []
+		self.allow_inline = allow_inline
 	
 	def renderXhtml(self):	
 		return self.renderChildrenXhtml()
 
 	def allows(self, tagname):
 		# Rule for HTML BODY element
-		return tagname in block_level_tags
+		if self.allow_inline:
+			return tagname in block_level_tags or \
+				tagname in inline_tags
+		else:
+			return tagname in block_level_tags
 
 	
 class BBTextNode(BBNode):
@@ -318,8 +323,8 @@ class BBTagNode(BBNode):
 		return ''
 		
 class BBCodeParser:
-	def __init__(self, bbcode):
-		self.rootNode = BBRootNode()
+	def __init__(self, bbcode, root_allows_inline = False):
+		self.rootNode = BBRootNode(root_allows_inline)
 		self.currentNode = self.rootNode
 		self.bbcode = bbcode
 		self.parse()
@@ -426,7 +431,7 @@ class BBCodeParser:
 	def renderXhtml(self):
 		return self.rootNode.renderXhtml()
 
-def bb2xhtml(bbcode):
+def bb2xhtml(bbcode, root_allows_inline = False):
 	"Render bbcode as XHTML"
-	parser = BBCodeParser(bbcode)
+	parser = BBCodeParser(bbcode, root_allows_inline)
 	return parser.renderXhtml()

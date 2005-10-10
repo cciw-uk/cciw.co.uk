@@ -1,28 +1,48 @@
 {% extends "base" %}
 {% load standardpage %}
-{% block sidebar %}
-	<h1>Contents</h1>
-	<ul
-	>{% for menulink in menulinks %}<li
-			><a href="{{ menulink.url }}"
-			{% if menulink.extraTitle %}
-				title="{{ menulink.extraTitle }}"
-			{% endif %}
-			{% if menulink.isCurrentPage %}
-				class="currentPage"
-			{% endif %}
-			{% if menulink.isCurrentSection %}
-				class="currentSection"
-			{% endif %}
-			>{{ menulink.title }}</a></li
-	>{% endfor %}</ul
-	>
-{% endblock %}
-{% block content %}
-	{{ contentBody }}
+{% block main %}
+<div id="mainstandard">
+	<div id="sidebarOuter">
+		<div id="sidebar">
+			<h1>Contents</h1>
+			<ul
+			>{% for menulink in menulinks %}<li
+					><a href="{{ menulink.url }}"
+					{% if menulink.extraTitle %}
+						title="{{ menulink.extraTitle }}"
+					{% endif %}
+					{% if menulink.isCurrentPage %}
+						class="currentPage"
+					{% endif %}
+					{% if menulink.isCurrentSection %}
+						class="currentSection"
+					{% endif %}
+					>{{ menulink.title }}</a></li
+			>{% endfor %}</ul
+			>
+		</div>
+	</div>
+	<div id="contentOuter">
+		<div id="content">
+			<div id="pageTitle">
+				<h1>{{ pagevars.title }}</h1>
+			</div>
+			<div id="contentBody">
+				{% block breadcrumb %}
+					{{ breadcrumb }}
+				{% endblock %}
+				{% block content %}
+					{{ contentBody }}
+				{% endblock %}
+			</div>
+		</div>
+	</div>
+</div>
 {% endblock %}
 
+
 {% block footer %}
+<div id="footer">
 	<h1>Quick Links</h1>
 	<ul>
 	{% if currentMember %}	
@@ -33,5 +53,5 @@
 	{% endif %}
 		<li><a href="/members/?online=1"> {{ pagevars.loggedInMembers }} member(s) online</a></li>
 	</ul>
-
+</div>
 {% endblock %}

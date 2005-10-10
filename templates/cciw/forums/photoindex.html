@@ -1,0 +1,33 @@
+{% extends "standard" %}
+{% load standardpage %}
+{% load view_extras %}
+{% block content %}
+	<p>Click on the photo thumbnail to see the full image and comments.</p>
+	{% if object_list %}
+		<div class="paging">{% paging_control %}</div>
+		<table class="topheaders">
+			<tr>
+				<th class="photoDateAddedCol">Date added {% sorting_control "aca" "dca" %}</th>
+				<th>Thumbnail</th>
+				<th>Description</th>
+				<th>Posts {% sorting_control "apc" "dpc" %}</th>
+				<th class="photoLastPostCol">Last comment {% sorting_control "alp" "dlp" %}</th>
+			</tr>
+		{% for photo in object_list %}
+			<tr>
+				<td>{% if photo.createdAt %}{{ photo.createdAt|date:"d M Y h:i" }}{% endif %}</td>
+				<td class="photoCol"><a href="{{ photo.get_absolute_url }}"><img class="photoThumbnail" src="{{ pagevars.mediaRootUrl }}photos/thumbnails/{{ photo.filename }}" alt="Photo {{photo.filename}}" /></a>
+				</td>
+				<td>{{ photo.description }}</td>
+				<td>{{ photo.postCount }}</td>
+				<td>{% if photo.lastPostAt %}{{ photo.lastPostAt|date:"d M Y h:i" }}<br/>{% endif %}
+				    {% if photo.lastPostBy_id %}{% memberlink %}{{ photo.lastPostBy_id }}{% endmemberlink %}{% endif %}</td>
+			</tr>
+		{% endfor %}
+		</table>
+		<div class="paging">{% paging_control %}</div>
+	{% else %}
+		<p>There are no photos yet in this gallery.</p>
+	{% endif %}
+
+{% endblock %} 

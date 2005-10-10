@@ -6,8 +6,7 @@ from django.core.exceptions import Http404
 
 from django.models.camps import camps
 from django.models.sitecontent import htmlchunks
-from django.models.forums import forums, topics
-
+from django.models.forums import forums, topics, gallerys, photos
 
 from cciw.apps.cciw.common import *
 from cciw.apps.cciw.settings import *
@@ -68,6 +67,18 @@ def get_forum_for_camp(camp):
 			forum.save()
 	return forum
 
+def get_gallery_for_camp(camp):
+	location = camp.get_absolute_url()[1:] + 'photos/'
+	gallery = None
+	try:
+		gallery = gallerys.get_object(location__exact=location)
+	except gallerys.GalleryDoesNotExist:
+		if not camp.endDate <= datetime.date.today():
+			# if the gallery does not exist yet, but should, create it
+			gallery = gallerys.Gallery(location = location)
+			gallery.save()
+	return gallery
+
 def forum(request, year, number):
 
 	if number == 'all':
@@ -91,7 +102,7 @@ def forum(request, year, number):
 		forum = get_forum_for_camp(camp)
 		if forum is None:
 			raise Http404
-		title="Forum: " + camp.niceName()
+		title=camp.niceName() + " - Forum"
 		breadcrumb_extra = camp_forum_breadcrumb(camp)
 
 	# TODO - some extra context vars, for text to show before the topic list
@@ -104,30 +115,50 @@ def topic(request, year, number, topicnumber):
 
 	if number == 'all':
 		camp = None
-		title="General forum " + year
 		breadcrumb_extra = year_forum_breadcrumb(year)
 	else:
 		try:
 			camp = camps.get_object(year__exact=int(year), number__exact=int(number))
 		except camps.CampDoesNotExist:
 			raise Http404
-		title="Forum: " + camp.niceName()
 		breadcrumb_extra = camp_forum_breadcrumb(camp)
-	
-	# TODO - permissions and hidden topics
+			
+	return forums_views.topic(request, topicid = topicnumber, title_start = 'Topic',
+		template_name = 'forums/topic', breadcrumb_extra = breadcrumb_extra)		
+
+def gallery(request, year, number):
 	try:
-		topic = topics.get_object(id__exact = int(topicnumber))
-	except topics.TopicDoesNotExist:
+		camp = camps.get_object(year__exact=int(year), number__exact=int(number))
+	except camps.CampDoesNotExist:
+		raise Http404
+
+	gallery = get_gallery_for_camp(camp)
+	if gallery is None:
+		raise Http404
+
+	breadcrumb_extra = camp_forum_breadcrumb(camp)
+
+	# TODO - some extra context vars, for text to show before the topic list
+	
+	ec = standard_extra_context(request, title = camp.niceName() + " - Photos")
+	return forums_views.photoindex(request, gallery, ec, breadcrumb_extra)
+
+def photo(request, year, number, photonumber):
+	try:
+		camp = camps.get_object(year__exact=int(year), number__exact=int(number))
+	except camps.CampDoesNotExist:
+		raise Http404
+	breadcrumb_extra = camp_forum_breadcrumb(camp)
+	
+	# TODO - permissions and hidden photos
+	try:
+		photo = photos.get_object(id__exact = int(photonumber))
+	except photos.PhotoDoesNotExist:
 		raise Http404
 	
-	ec = standard_extra_context(request,title = title)
+	ec = standard_extra_context(request, title = "Photos: " + camp.niceName())
 	
-	return forums_views.topic(request, extra_context = ec, topic = topic, title = title,
-		template_name = 'forums/topic', breadcrumb_extra = breadcrumb_extra)		
-	
-def photos(request, year, number):
-	# TODO
-	pass
+	return forums_views.photo(request, photo, ec, breadcrumb_extra)
 
 def camp_forum_breadcrumb(camp):
 	return ['<a href="/camps/">Forums and photos</a>', '<a href="/camps/#year' + str(camp.year) + '">' + str(camp.year) + '</a>', camp.get_link()]

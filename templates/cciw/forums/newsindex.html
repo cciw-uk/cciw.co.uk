@@ -2,6 +2,7 @@
 {% load standardpage %}
 {% load view_extras %}
 {% load forums %}
+{% block breadcrumb %}{% endblock %}
 {% block content %}
 	{% if object_list %}
 		{% for topic in object_list %}

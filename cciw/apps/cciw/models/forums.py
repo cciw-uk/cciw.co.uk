@@ -1,7 +1,6 @@
 from django.core import meta
 from members import *
 from polls import *
-from photos import *
 
 class Forum(meta.Model):
 	open = meta.BooleanField("Open", default=True)
@@ -70,7 +69,51 @@ class Topic(meta.Model):
 			search_fields = ('subject',)
 		)
 		ordering = ('-startedBy',)
+
+class Gallery(meta.Model):
+	location = meta.CharField("Location/URL", maxlength=50)
+	needsApproval = meta.BooleanField("Photos need approval", default=False)
+
+	def __repr__(self):
+		return self.location
+		
+	def get_absolute_url(self):
+		return '/' + self.location
+		
+	class META:
+		admin = meta.Admin()
+		verbose_name_plural = "Galleries"
+		ordering = ('-location',)
+
+class Photo(meta.Model):
+	createdAt = meta.DateTimeField("Started", null=True)
+	open = meta.BooleanField("Open")
+	hidden = meta.BooleanField("Hidden")
+	filename = meta.CharField("Filename", maxlength=50)
+	description = meta.CharField("Description", blank=True, maxlength=100)
+	gallery = meta.ForeignKey(Gallery,
+		verbose_name="gallery",
+		related_name="photo")
+	checkedBy = meta.ForeignKey(Member,
+		null=True, blank=True, related_name="checkedPhoto")
+	approved = meta.BooleanField("Approved", null=True, blank=True)
+	needsApproval = meta.BooleanField("Needs approval", default=False)
+	lastPostAt = meta.DateTimeField("Last post at", 
+		null=True, blank=True) # needed for performance and simplicity in templates
+	lastPostBy = meta.ForeignKey(Member, verbose_name="Last post by",
+		null=True, blank=True) # needed for performance and simplicity in templates
+	postCount = meta.PositiveSmallIntegerField("Number of posts") # since we need 'lastPost', may as well have this too
 	
+	def __repr__(self):
+		return self.filename
+	
+	def get_absolute_url(self):
+		return self.get_gallery().get_absolute_url() + str(self.id) + '/'
+		
+	class META:
+		admin = meta.Admin()
+	
+		
 class Post(meta.Model):
 	postedBy = meta.ForeignKey(Member, 
 		related_name="post")
@@ -83,50 +126,45 @@ class Post(meta.Model):
 		null=True, blank=True, related_name="checkedPost")
 	approved = meta.BooleanField("Approved", null=True)
 	needsApproval = meta.BooleanField("Needs approval", default=False)
-	topic = meta.ForeignKey(Topic, related_name="post",
-		null=True, blank=True)
 	photo = meta.ForeignKey(Photo, related_name="post",
 		null=True, blank=True)
+	topic = meta.ForeignKey(Topic, related_name="post",
+		null=True, blank=True)
+
 		
 	def __repr__(self):
 		return "[" + str(self.id) + "]  " + self.message[:30]
 		
+	def updateParent(self, parent):
+		"Update the cached info in the parent topic/photo"
+		# Both types of parent, photos and topics,
+		# are covered by this sub since they deliberately have the same
+		# interface for this bit.
+		postCount = parent.get_post_count()
+		changed = False
+		if (parent.lastPostAt is None and not self.postedAt is None) or \
+			(not parent.lastPostAt is None and not self.postedAt is None \
+			and self.postedAt > parent.lastPostAt):
+			parent.lastPostAt = self.postedAt
+			changed = True
+		if parent.lastPostBy_id is None or \
+			parent.lastPostBy_id != self.postedBy_id:
+			parent.lastPostBy_id = self.postedBy_id
+			changed = True
+		if postCount > parent.postCount:
+			parent.postCount = postCount
+			changed = True
+		if changed:
+			parent.save()
+				
 	def _post_save(self):
 		# Update parent topic/photo
-		from django.models.forums import topics
-		from django.models.photos import photos
 		
-		def updateParent(parent, self):
-			postCount = parent.get_post_count()
-			changed = False
-			if (parent.lastPostAt is None and not self.postedAt is None) or \
-				(not parent.lastPostAt is None and not self.postedAt is None \
-				and self.postedAt > parent.lastPostAt):
-				parent.lastPostAt = self.postedAt
-				changed = True
-			if parent.lastPostBy_id is None or \
-				parent.lastPostBy_id != self.postedBy_id:
-				topic.lastPostBy_id = self.postedBy_id
-				changed = True
-			if postCount > parent.postCount:
-				parent.postCount = postCount
-				changed = True
-			if changed:
-				parent.save()
-				
-		try:
-			topic = self.get_topic()
-		except topics.TopicDoesNotExist:
-			return
-		else:
-			updateParent(topic, self)
-		
-		try:
-			photo = self.get_photo()
-		except photos.PhotoDoesNotExist:
-			return
-		else:
-			updateParent(photo, self)
+		if not self.topic_id is None:
+			self.updateParent(self.get_topic())
+			
+		if not self.photo_id is None:
+			self.updateParent(self.get_photo())
 		
 
 	

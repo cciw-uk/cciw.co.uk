@@ -31,4 +31,10 @@ def validateXML(filename):
 	reader = Sax2.Reader(parser=p)
 	dom_object = reader.fromUri(filename)
 	return True
+
+def get_extract(utf8string, maxlength):
+	u = utf8string.decode('UTF-8')
+	if len(u) > maxlength:
+		u = u[0:maxlength-3] + "..."
+	return u.encode('UTF-8')
 	

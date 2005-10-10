@@ -11,30 +11,18 @@
 	<div id="headerlogo">
 	</div>
 </div>
-<div id="main">
-	<div id="sidebarOuter">
-		<div id="sidebar">
-			{% block sidebar %}
+{% block main %}
+	<div id="mainbase">
+		<div id="pageTitle">
+			<h1>{{ pagevars.title }}</h1>
+		</div>
+		<div id="contentBody">
+			{% block content %}
 			{% endblock %}
 		</div>
 	</div>
-	<div id="contentOuter">
-		<div id="content">
-			<div id="pageTitle">
-				{% block pagetitle %}
-					<h1>{{ pagevars.title }}</h1>
-				{% endblock %}
-			</div>
-			<div id="contentBody">
-				{% block content %}
-				{% endblock %}
-			</div>
-		</div>
-	</div>
-</div>
-<div id="footer">
-	{% block footer %}
-	{% endblock %}
-</div>
+{% endblock %}
+{% block footer %}
+{% endblock %}
 </body>
 </html>

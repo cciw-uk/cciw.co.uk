@@ -1,13 +1,12 @@
 {% extends "standard" %}
-{% load view_extras %}
 {% load standardpage %}
+{% load view_extras %}
 {% load forums %}
 {% block content %}
-	{{ breadcrumb }}
 	{{ introtext }}
 	{% if newsItem %}
+	<br/>
 	<div class="newsItem">
-		<h2>{{ newsItem.subject }}</h2>
 		<div class="newsItemDetails">Posted: {{ newsItem.createdAt|date:"d M Y, h:i" }}, 
 		by {% memberlink %}{{ newsItem.createdBy_id }}{% endmemberlink %}</div>
 		<div class="newsItemFull">
