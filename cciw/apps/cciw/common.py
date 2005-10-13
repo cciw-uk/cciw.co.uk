@@ -10,6 +10,7 @@ class PageVars:
 		self.title = title
 		self.mediaRootUrl = CCIW_MEDIA_ROOT
 		self.styleSheetUrl = self.mediaRootUrl + 'style.css'
+		self.styleSheet2Url = self.mediaRootUrl + 'style2.css'
 		self.request = request
 		self.loggedInMembers = members.get_count(lastSeen__gte = datetime.datetime.now() - datetime.timedelta(minutes=3))
 

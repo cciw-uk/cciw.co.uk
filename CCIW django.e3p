@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.5.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2005-10-04, 22:24:44 -->
+<!-- Saved: 2005-10-11, 23:06:09 -->
 <!-- Copyright (C) 2005 ,  -->
 <Project version="3.5">
   <Description></Description>
@@ -140,13 +140,6 @@
       <Name>sitecontent.py</Name>
     </Source>
     <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>models</Dir>
-      <Name>photos.py</Name>
-    </Source>
-    <Source>
       <Name>django_migrate.py</Name>
     </Source>
     <Source>
@@ -193,13 +186,6 @@
       <Dir>cciw</Dir>
       <Dir>views</Dir>
       <Name>members.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>views</Dir>
-      <Name>auth.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>

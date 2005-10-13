@@ -38,21 +38,7 @@
 			<th>Message</th>
 		</tr>
 		{% if object_list %}
-			{% for post in object_list %}
-			<tr>
-				<td class="postFrom">
-					<span class="postMemberIcon">{{ post.get_postedBy.iconImage }}</span>
-					{% memberlink %}{{ post.postedBy_id }}{% endmemberlink %}<br/>
-					<span class="postDate">{{ post.postedAt|date:"d M y, h:i" }}</span>
-				</td>
-				<td class="postMessage">
-					{% ifnotequal post.subject topic.subject %}
-						{% if post.subject %}<div class="postSubject">{{ post.subject }}</div>{% endif %}
-					{% endifnotequal %}
-					{{ post.message|bb2html }}
-				</td>
-			</tr>
-			{% endfor %}
+			{% ssi forums/thread parsed %}
 		{% else %}
 			<tr>
 				<td  colspan="2">There are no posts yet in this topic.</td>

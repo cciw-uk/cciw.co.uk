@@ -2,19 +2,19 @@
 /* Include all borders here too */
 
 body {
-	background-color: black;
-	color: white;
+	background-color: white;
+	color: black;
 }
 
 a:link {
-	color: #00bb55;
+	color: #008000;
 }
 
 a:visited {
-	color: #ff7700;
+	color: #aa3300;
 }
 a:hover {
-	color: #00ff55;
+	color: #00aa00;
 }
 
 
@@ -24,67 +24,67 @@ a:hover {
 
 #header
 {
-	background-image: url('http://cciw_django_local/media/images/header.png');
+	background-image: url('http://cciw_django_local/media/images/header_inv.png');
 }
 
 #headerlogo
 {
-	background-image: url('http://cciw_django_local/media/images/headerlogo.png');
+	background-image: url('http://cciw_django_local/media/images/headerlogo_inv.png');
 }
 
 #mainbase
 {
-	background-color: #282828;
+	background-color: #d8d8d8;
 }
 
 #mainstandard #contentBody, #mainstandard #pageTitle, #mainstandard #sidebar
 {
-	background-color: #181818;
-	border-top: 1px solid #666666;
-	border-bottom: 1px solid #666666;
+	background-color: #e8e8e8;
+	border-top: 1px solid #aaaaaa;
+	border-bottom: 1px solid #aaaaaa;
 }
 
 
 /* Sidebar styles */
 #sidebar h1
 {
-	border-bottom: 1px solid #666666;
+	border-bottom: 1px solid #aaaaaa;
 }
 
 #sidebar a
 {
-	border-left: 2px solid #262626;
-	border-right: 2px solid #262626;
+	border-left: 2px solid #d8d8d8;
+	border-right: 2px solid #d8d8d8;
 }
 
 #sidebar a.currentSection,
 #sidebar a.currentPage
 {
-	background-color: #333333;
-	border-left: 2px solid #505050;
-	border-right: 2px solid #505050;
-	color: #ffffff;
+	background-color: #cccccc;
+	border-left: 2px solid #b0b0b0;
+	border-right: 2px solid #b0b0b0;
+	color: #000000;
 }
 
 #sidebar a:hover
 {
-	background-color: #441100;
-	border-left: 2px solid #662200;
-	border-right: 2px solid #662200;
-	color: white;
+	background-color: #cc8866;
+	border-left: 2px solid #996644;
+	border-right: 2px solid #996644;
+	color: black;
 }
 
 #sidebar a.currentSection:hover,
 #sidebar a.currentPage:hover
 {
-	background-color: #664433;
-	border-left: 2px solid #836150;
-	border-right: 2px solid #836150;
+	background-color: #cc8866;
+	border-left: 2px solid #996644;
+	border-right: 2px solid #996644;
 }
 
 #footer
 {
-	background-image: url('http://cciw_django_local/media/images/headervline.png');
+	background-image: url('http://cciw_django_local/media/images/headervline_inv.png');
 }
 
 
@@ -92,7 +92,7 @@ a:hover {
 
 h2
 {
-	border-bottom: 2px solid #663300;
+	border-bottom: 2px solid #cc8866;
 }
 
 /* Tables */
@@ -101,13 +101,13 @@ h2
 table.sideheaders td,
 table.topheaders td
 {
-	background-color: #000000;
+	background-color: #ffffff;
 }
 
 table.sideheaders th,
 table.topheaders th
 {
-	background-color: #383838;
+	background-color: #c8c8c8;
 }
 
 table.sideheaders th,
@@ -130,7 +130,7 @@ span.sortingControl img
 span.sortingControl img.sortAscActive,
 span.sortingControl img.sortDescActive
 {
-	border-bottom: 2px solid #00ff00;
+	border-bottom: 2px solid #008000;
 
 }
 
@@ -138,7 +138,7 @@ span.sortingControl img.sortDescActive
 div.userError
 {
 	border: 1px solid #cc0000;
-	background-color: #330000;
+	background-color: #ffcccc;
 }
 
 div.awardInfo
@@ -174,7 +174,7 @@ table.topheaders th.commentHeader
 div.newsItem h2
 {
 	border: 0px;
-	background-color: #663300;
+	background-color: #cc8866;
 }
 
 

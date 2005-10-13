@@ -3,6 +3,7 @@ import devel
 import os
 import shutil
 import re
+import copy
 from datetime import datetime, date
 
 from migrate_html import *
@@ -91,11 +92,19 @@ def fix_news_items(html):
 	return html
 	
 
-new_urls = {}
+# start with some we will struggle to determine programatically
+new_urls = {
+	'news.php': '/news/',
+	'pastcamps.php?sp=2005-all': '/camps/2005/all/forum/',
+	'pastcamps.php?sp=2004-all': '/camps/2004/all/forum/',
+	'pastcamps.php?sp=2003-all': '/camps/2003/all/forum/',
+	'pastcamps.php?sp=2002-all': '/camps/2002/all/forum/',
+	'pastcamps.php?sp=2001-all': '/camps/2001/all/forum/',
+	'about_website.php?sp=codes': '/website/help/', # TODO ?
+	'http://www.cciw.co.uk/': 'http://cciw.co.uk/',
+}
 
-old_topic_ids = {}
 
-old_photo_ids = {}
 
 ###########################################################################################
 #                   SITES
@@ -293,7 +302,7 @@ def migrateMembers():
 		member.lastSeen = lastSeenData.get(member.userName, member.dateJoined)
 		member.showEmail = getBool(data[4])
 		member.messageOption = getInt(data[5])
-		member.comments = data[9]
+		member.comments = fix_bbcode(data[9])
 		member.confirmSecret = data[13]
 		member.moderated = getInt(data[15])
 		member.hidden = getBool(data[17])
@@ -706,7 +715,43 @@ def migrateHtml():
 		h.save()
 	
 ##########################################################
+		
+	
 
+def fixupUrls():
+	# first sort new_urls by the length of the key
+	# descending, to ensure that longer more specific urls get
+	# replaced first	
+	urlpairs = copy.copy(new_urls.items())
+	urlpairs.sort(lambda x, y: len(y[0]) - len(x[0]))
+	
+	# debug
+	out = open("/home/luke/cciw_url_pairs.txt", "w")
+	for k, v in urlpairs:
+		out.write(k + ' ' + v + "\n")
+	out.close()
+
+	# Remap all references to old URLs
+	for objectlist, attrname in (
+			(posts.get_list(), 'message'),
+			(newsitems.get_list(), 'fullItem'),
+			(newsitems.get_list(), 'summary'),
+			(members.get_list(), 'comments'),
+			(messages.get_list(), 'text'),
+		):
+		for obj in objectlist:
+			sorig = obj.__dict__[attrname]
+			snew = sorig
+			for old, new in urlpairs:
+				snew = snew.replace(old, new)
+				snew = snew.replace(old.replace('&', '&amp;'), new.replace('&', '&amp;'))
+			snew = snew.replace("http://cciw.co.uk//", "http://cciw.co.uk/")
+			if snew != sorig:
+				obj.__dict__[attrname] = snew
+				obj.save()
+
+
+##########################################################
 
 #migrateLeaders()
 #migrateSites()
@@ -717,7 +762,9 @@ def migrateHtml():
 #migrateAwards()
 #migratePolls()
 migrateForums()
+
+
 #print new_urls
 #migrateMainMenu()
 #migrateHtml()
-
+fixupUrls() # must come after everything else, and needs (at least) migrateForums to work

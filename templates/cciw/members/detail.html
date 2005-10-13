@@ -1,4 +1,5 @@
 {% extends "standard" %}
+{% load forums %}
 {% block content %}
 	{% if currentMember %}
 		{% ifequal currentMember.userName member.userName %}
@@ -50,7 +51,7 @@
 			{% if member.comments %}
 			<tr>
 				<th>Comments</th>
-				<td>{{ member.comments }}</td>
+				<td>{{ member.comments|bb2html }}</td>
 			</tr>
 			{% endif %}
 			{% if member.website %}

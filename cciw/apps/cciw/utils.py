@@ -38,3 +38,6 @@ def get_extract(utf8string, maxlength):
 		u = u[0:maxlength-3] + "..."
 	return u.encode('UTF-8')
 	
+def unslugify(slug):
+	"Turns dashes and underscores into spaces and applies title casing"
+	return slug.replace("-", " ").replace("_", " ").title()

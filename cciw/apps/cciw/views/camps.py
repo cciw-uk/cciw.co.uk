@@ -10,6 +10,7 @@ from django.models.forums import forums, topics, gallerys, photos
 
 from cciw.apps.cciw.common import *
 from cciw.apps.cciw.settings import *
+import cciw.apps.cciw.utils as utils
 import forums as forums_views
 
 
@@ -87,8 +88,8 @@ def forum(request, year, number):
 		try:
 			forum = forums.get_object(location__exact=location)
 		except forums.ForumDoesNotExist:
-			# if any camps from that year are past, create it
-			# TODO
+			# TODO: if any camps from that year are past, create it
+			# TODO: but if it's an old forum, that would be closed immediately, don't bother
 			raise Http404
 		title="General forum " + str(year)
 		breadcrumb_extra = year_forum_breadcrumb(year)
@@ -143,6 +144,18 @@ def gallery(request, year, number):
 	ec = standard_extra_context(request, title = camp.niceName() + " - Photos")
 	return forums_views.photoindex(request, gallery, ec, breadcrumb_extra)
 
+def oldcampgallery(request, year, galleryname):
+	try:
+		gallery = gallerys.get_object(location__exact = 'camps/' + year + '/' + galleryname + '/photos/')
+	except gallerys.GalleryDoesNotExist:
+		raise Http404
+
+	breadcrumb_extra = year_forum_breadcrumb(year) + [utils.unslugify(galleryname)]
+	
+	ec = standard_extra_context(request, title = utils.unslugify(year+", " + galleryname) + " - Photos")
+	return forums_views.photoindex(request, gallery, ec, breadcrumb_extra)
+
+	
 def photo(request, year, number, photonumber):
 	try:
 		camp = camps.get_object(year__exact=int(year), number__exact=int(number))
@@ -160,8 +173,27 @@ def photo(request, year, number, photonumber):
 	
 	return forums_views.photo(request, photo, ec, breadcrumb_extra)
 
+def oldcampphoto(request, year, galleryname, photonumber):
+	# Do need to check the gallery exists, just for checking the URL
+	try:
+		gallery = gallerys.get_object(location__exact = 'camps/' + year + '/' + galleryname + '/photos/')
+	except gallerys.GalleryDoesNotExist:
+		raise Http404
+
+	breadcrumb_extra = year_forum_breadcrumb(year) + [utils.unslugify(galleryname)]
+	
+	# TODO - permissions and hidden photos
+	try:
+		photo = photos.get_object(id__exact = int(photonumber))
+	except photos.PhotoDoesNotExist:
+		raise Http404
+	
+	ec = standard_extra_context(request, title = utils.unslugify(year+", " + galleryname) + " - Photos")	
+	return forums_views.photo(request, photo, ec, breadcrumb_extra)
+
+	
 def camp_forum_breadcrumb(camp):
 	return ['<a href="/camps/">Forums and photos</a>', '<a href="/camps/#year' + str(camp.year) + '">' + str(camp.year) + '</a>', camp.get_link()]
 	
 def year_forum_breadcrumb(year):
-	return ['<a href="/camps/">Forums and photos</a>', '<a href="/camps/#year' + year + '">' + year + '</a>']
+	return ['<a href="/camps/">Forums and photos</a>', '<a href="/camps/#year' + year + '">' + utils.unslugify(year) + '</a>']

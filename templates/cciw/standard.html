@@ -29,7 +29,9 @@
 			</div>
 			<div id="contentBody">
 				{% block breadcrumb %}
-					<div class='breadcrumb'>{{ breadcrumb }}</div>
+					{% if breadcrumb %}
+						<div class='breadcrumb'>{{ breadcrumb }}</div>
+					{% endif %}
 				{% endblock %}
 				{% block content %}
 					{{ contentBody }}
