@@ -5,7 +5,7 @@
 {% regroup camps by year as grouped %}
 {% for yeargroup in grouped %}
 	<h2><a name="year{{ yeargroup.grouper }}">{{ yeargroup.grouper }}</a></h2>
-	<div><a href="/camps/{{ camp.year }}/all/forum/">General forum</a></div>
+	<div><a href="/camps/{{ yeargroup.grouper }}/all/forum/">General forum</a></div>
 	<ul class="camplist">
 		{% for camp in yeargroup.list %}
 			<li><a href="{{ camp.get_absolute_url }}" title="{{ camp.niceName }}">

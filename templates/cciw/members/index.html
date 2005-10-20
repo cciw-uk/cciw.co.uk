@@ -1,5 +1,6 @@
 {% extends "standard" %}
 {% load view_extras %}
+{% load forums %}
 {% block content %}
 	<form method='get' action='/members/'>
 		<p>
@@ -32,7 +33,7 @@
 			</td>
 			<td><a href="{{ member.get_absolute_url }}">{{ member.userName }}</a></td>
 			<td>{{ member.realName|escape }}</td>
-			<td>{{ member.comments|escape }}</td>
+			<td>{{ member.comments|bb2html }}</td>
 			<td>
 			{% if member.dateJoined %}
 				{{ member.dateJoined|date:"d M Y" }}

@@ -23,7 +23,7 @@ urlpatterns = patterns('cciw.apps.cciw.views',
 	(r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'}), # TODO - create different template ?
 	(r'^website/forum/$', 'forums.topicindex', {'title': 'Website forum',
 		'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-	(r'^website/forum/(?P<topicid>\d+)/$', 'forums.topic', {'title': 'Website forum',
+	(r'^website/forum/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'Website forum',
 		'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
 	(r'^sites/$', 'sites.index'),
 	(r'^sites/(?P<name>.*)/$', 'sites.detail'),

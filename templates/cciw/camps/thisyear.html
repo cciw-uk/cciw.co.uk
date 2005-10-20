@@ -4,6 +4,7 @@
 		{{ introtext }}
 		<h2>Dates</h2>
 		<p>Click on the number of the camp for more information</p>
+		<div>
 		<table class="topheaders">
 			<tr>
 				<th>#</th>
@@ -30,6 +31,7 @@
 			</tr>
 			{% endfor %}
 		</table>
+		</div>
 		{{ outrotext }}
 	{% else %}
 	<p>Information for camps in {{thisyear}} is not yet available.</p>

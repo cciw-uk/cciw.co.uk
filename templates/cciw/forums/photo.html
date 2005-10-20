@@ -18,7 +18,7 @@
 			<th>Message</th>
 		</tr>
 		{% if object_list %}
-			{% ssi forums/thread parsed %}
+			{% include 'forums/thread' %}
 		{% else %}
 			<tr>
 				<td  colspan="2">There are no comments yet on this photo.</td>
