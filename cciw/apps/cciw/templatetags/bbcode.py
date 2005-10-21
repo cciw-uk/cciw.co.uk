@@ -201,8 +201,8 @@ class BBNode:
 		self.parent = parent
 		self.children = []
 		
-	def renderChildrenXhtml(self):
-		return "".join([n.renderXhtml() for n in self.children])
+	def render_children_xhtml(self):
+		return "".join([n.render_xhtml() for n in self.children])
 
 class BBRootNode(BBNode):
 	"Represents a root node"
@@ -211,8 +211,8 @@ class BBRootNode(BBNode):
 		self.children = []
 		self.allow_inline = allow_inline
 	
-	def renderXhtml(self):	
-		return self.renderChildrenXhtml()
+	def render_xhtml(self):	
+		return self.render_children_xhtml()
 
 	def allows(self, tagname):
 		if self.allow_inline:
@@ -227,7 +227,7 @@ class BBTextNode(BBNode):
 		BBNode.__init__(self, parent)
 		self.text = text
 		
-	def renderXhtml(self):
+	def render_xhtml(self):
 		return escape(self.text)
 
 	def allows(self, tagname):
@@ -258,7 +258,7 @@ class BBTagNode(BBNode):
 		else:
 			return False
 		
-	def renderXhtml(self):
+	def render_xhtml(self):
 		htmlTag = bb2xhtml_map.get(self.bbtag.name, None)		
 		if htmlTag is None:
 			# All tags that need special work
@@ -307,9 +307,9 @@ class BBTagNode(BBNode):
 				if len(self.children) > 0:
 					if self.parameter.lower() in colors or \
 						not colorregexp.match(self.parameter) is None:
-						return '<span style="color: ' + self.parameter +  ';">' + self.renderChildrenXhtml() + '</span>'
+						return '<span style="color: ' + self.parameter +  ';">' + self.render_children_xhtml() + '</span>'
 					else:
-						return self.renderChildrenXhtml()
+						return self.render_children_xhtml()
 				return ''
 			##############################
 			elif tagname == 'email':
@@ -326,11 +326,11 @@ class BBTagNode(BBNode):
 				if memberregexp.match(self.parameter):
 					return '<div class="memberquote">' + \
 						get_member_link(self.parameter) + ' said:</div>' + \
-					'<blockquote>' + self.renderChildrenXhtml() + \
+					'<blockquote>' + self.render_children_xhtml() + \
 						'</blockquote>'
 				else:
 					return '<blockquote>' + \
-						self.renderChildrenXhtml() + \
+						self.render_children_xhtml() + \
 						'</blockquote>'
 						
 			##############################
@@ -341,7 +341,7 @@ class BBTagNode(BBNode):
 				return '<' + htmlTag + '>'
 			else:
 				if len(self.children) > 0:
-					return '<' + htmlTag + '>' + self.renderChildrenXhtml() + '</' + htmlTag + '>'
+					return '<' + htmlTag + '>' + self.render_children_xhtml() + '</' + htmlTag + '>'
 		return ''
 		
 class BBCodeParser:
@@ -351,7 +351,7 @@ class BBCodeParser:
 		self.bbcode = bbcode
 		self.parse()
 		
-	def pushTextNode(self, text):
+	def push_text_node(self, text):
 		if not self.currentNode.allows('text'):
 			# e.g. text after [list] but before [*]
 			# or after [quote].
@@ -365,7 +365,7 @@ class BBCodeParser:
 					self.descend()
 				else:
 					self.ascend()
-				self.pushTextNode(text)
+				self.push_text_node(text)
 		else:
 			self.currentNode.children.append(BBTextNode(self.currentNode, text))
 			# text nodes are never open, do don't bother descending
@@ -376,7 +376,7 @@ class BBCodeParser:
 	def ascend(self):
 		self.currentNode = self.currentNode.parent
 	
-	def pushTagNode(self, name, parameter):
+	def push_tag_node(self, name, parameter):
 		if not self.currentNode.allows(name):
 			newTag = tagdict[name]
 			if newTag.discardable:
@@ -388,19 +388,19 @@ class BBCodeParser:
 				# E.g. [*] inside root, or [*] inside [block]
 				# or inline inside root
 				# Add an implicit tag if possible
-				self.pushTagNode(newTag.implicit_tag, '')
-				self.pushTagNode(name, parameter)
+				self.push_tag_node(newTag.implicit_tag, '')
+				self.push_tag_node(name, parameter)
 			else:
 				# e.g. block level in inline etc. - traverse up the tree
 				self.currentNode = self.currentNode.parent
-				self.pushTagNode(name, parameter)
+				self.push_tag_node(name, parameter)
 		else:
 			node = BBTagNode(self.currentNode, name, parameter)
 			self.currentNode.children.append(node)
 			if not node.bbtag.self_closing:
 				self.descend()
 
-	def popTagNode(self, name):
+	def pop_tag_node(self, name):
 		"Pops the stack back to the specified tag, closing that tag"
 		tempNode = self.currentNode
 		while True:
@@ -429,7 +429,7 @@ class BBCodeParser:
 			m = bbtagregexp.search(self.bbcode, pos)
 			if not m is None:
 				# push all text up to the start of the match
-				self.pushTextNode(self.bbcode[pos:m.start()])
+				self.push_text_node(self.bbcode[pos:m.start()])
 				
 				# push the tag itself
 				tagname = m.groups()[0]
@@ -440,20 +440,20 @@ class BBCodeParser:
 					# genuine tag, push it
 					if m.group().startswith('[/'):
 						# closing
-						self.popTagNode(tagname)
+						self.pop_tag_node(tagname)
 					else:
 						# opening
-						self.pushTagNode(tagname, parameter)
+						self.push_tag_node(tagname, parameter)
 				pos = m.end()
 			else:
 				# push all remaining text
-				self.pushTextNode(self.bbcode[pos:])
+				self.push_text_node(self.bbcode[pos:])
 				pos = len(self.bbcode)
 		
-	def renderXhtml(self):
-		return self.rootNode.renderXhtml()
+	def render_xhtml(self):
+		return self.rootNode.render_xhtml()
 
 def bb2xhtml(bbcode, root_allows_inline = False):
 	"Render bbcode as XHTML"
 	parser = BBCodeParser(bbcode, root_allows_inline)
-	return parser.renderXhtml()
+	return parser.render_xhtml()

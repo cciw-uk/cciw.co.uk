@@ -28,20 +28,20 @@
 		{% for member in object_list %}
 		<tr>
 			<td> {% if member.icon %}
-				{{ member.iconImage }}
+				{{ member.icon_image }}
 			     {% endif %}
 			</td>
-			<td><a href="{{ member.get_absolute_url }}">{{ member.userName }}</a></td>
-			<td>{{ member.realName|escape }}</td>
+			<td><a href="{{ member.get_absolute_url }}">{{ member.user_name }}</a></td>
+			<td>{{ member.real_name|escape }}</td>
 			<td>{{ member.comments|bb2html }}</td>
 			<td>
-			{% if member.dateJoined %}
-				{{ member.dateJoined|date:"d M Y" }}
+			{% if member.date_joined %}
+				{{ member.date_joined|date:"d M Y" }}
 			{% endif %}
 			</td>
 			<td>
-			{% if member.lastSeen %}
-				{{ member.lastSeen|date:"d M Y h:i" }}
+			{% if member.last_seen %}
+				{{ member.last_seen|date:"d M Y h:i" }}
 			{% endif %}
 			</td>
 		</tr>

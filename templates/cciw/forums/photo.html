@@ -4,7 +4,7 @@
 {% load forums %}
 {% block content %}
 	<div class="photo">
-		<img class="photo" src="{{ pagevars.mediaRootUrl }}photos/{{ photo.filename }}" alt="Photo {{photo.filename}}" />
+		<img class="photo" src="{{ pagevars.media_root_url }}photos/{{ photo.filename }}" alt="Photo {{photo.filename}}" />
 	</div>
 	<a name="comments"></a>
 	<div class="paging">{% paging_control #comments %}</div>

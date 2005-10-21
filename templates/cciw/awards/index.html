@@ -1,9 +1,9 @@
 {% extends "standard" %}
 {% block content %}
 	{% for award in object_list %}
-		<h2><a name="{{ award.niceName|slugify }}">{{award.niceName}}</a></h2>
+		<h2><a name="{{ award.nice_name|slugify }}">{{award.nice_name}}</a></h2>
 		<div class="awardDescription">
-		<img src="{{award.imageurl}}" alt="{{award.niceName}} image" />  {{award.description}}
+		<img src="{{award.imageurl}}" alt="{{award.nice_name}} image" />  {{award.description}}
 		</div>
 		<div class="awardList">
 		{% if award.get_personalAward_list %}
@@ -11,7 +11,7 @@
 			<ul>
 			{% for paward in award.get_personalAward_list %}
 				<li>{{ paward.get_member.get_link }} 
-					{% if paward.dateAwarded %}, on {{ paward.dateAwarded|date:"d M Y" }} {% endif %}
+					{% if paward.date_awarded %}, on {{ paward.date_awarded|date:"d M Y" }} {% endif %}
 				for:<br/> {{ paward.reason }}</li>
 			{% endfor %}
 			</ul>

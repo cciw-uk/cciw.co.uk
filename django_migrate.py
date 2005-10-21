@@ -34,22 +34,22 @@ class LazyList(list):
 		else:
 			return list.__getitem__(self, index)
 
-def getBool(stringData):
+def get_bool(string_data):
 	"""Use instead of bool(int()) if empty data is allowed"""
-	if len(stringData) == 0:
+	if len(string_data) == 0:
 		return False
 	else:
-		return bool(int(stringData))
+		return bool(int(string_data))
 
 	
-def getInt(stringData):
+def get_int(string_data):
 	"""Use instead of int() if empty data is allowed"""
-	if len(stringData) == 0:
+	if len(string_data) == 0:
 		return 0
 	else:
-		return int(stringData)
+		return int(string_data)
 
-def getTable(filename, fieldSep="\t"):
+def get_table(filename, fieldSep="\t"):
 	rows = []
 	for line in file(filename):
 		line = line.strip("\r\n")
@@ -109,12 +109,12 @@ new_urls = {
 ###########################################################################################
 #                   SITES
 # mainly manual
-def migrateSites():
+def migrate_sites():
 	
 	try:
-		site1 = sites.get_object(shortName__exact="Brynglas Farm")
+		site1 = sites.get_object(short_name__exact="Brynglas Farm")
 	except sites.SiteDoesNotExist:
-		site1 = sites.Site(shortName="Brynglas Farm", longName="Brynglas Farm, Tywyn")
+		site1 = sites.Site(short_name="Brynglas Farm", long_name="Brynglas Farm, Tywyn")
 	site1.info = """
 	 <address>Brynglas Farm,<br/>
 Bryncug,<br/>
@@ -182,9 +182,9 @@ Bryncug,<br/>
 	site1.save()
 	
 	try:
-		site2 = sites.get_object(shortName__exact="Llys Andreas")
+		site2 = sites.get_object(short_name__exact="Llys Andreas")
 	except sites.SiteDoesNotExist:
-		site2 = sites.Site(shortName="Llys Andreas", longName="Llys Andreas, Barmouth")
+		site2 = sites.Site(short_name="Llys Andreas", long_name="Llys Andreas, Barmouth")
 	site2.info = """
 	 <address>Llys Andreas Camp Site,<br/>
 Ffordd Tyddyn Felin<br/>
@@ -213,18 +213,18 @@ Ffordd Tyddyn Felin<br/>
 
 ###########################################################################################
 #                 LEADERS + CHAPLAINS
-def migrateLeaders():
+def migrate_leaders():
 	for p in persons.get_list():
 		p.delete()
-	for pdata in getTable(PREFIX+'leaders.data'):
+	for pdata in get_table(PREFIX+'leaders.data'):
 		p = persons.Person(name = pdata[0], info = pdata[1])
 		p.save()
 
 ###########################################################################################
 #                PAST CAMPS
 
-def migrateCamps():
-	for c in reversed(getTable(PREFIX+'pastcamps.data')):
+def migrate_camps():
+	for c in reversed(get_table(PREFIX+'pastcamps.data')):
 		try: year = int(c[0].split("-")[0])
 		except: continue
 		if year < 2000: continue # don't store
@@ -269,14 +269,14 @@ def migrateCamps():
 				endmonth = startmonth
 		endday = int(end.strip())
 		
-		camp.startDate = date(year, startmonth, startday)
-		camp.endDate = date(year, endmonth, endday)
+		camp.start_date = date(year, startmonth, startday)
+		camp.end_date = date(year, endmonth, endday)
 		
 		camp.chaplain_id = persons.get_object(name__iexact=c[5]).id
 		if len(c[6]) > 0:
 			pcampyear, pcampnumber = map(int, c[6].split("-"))
 			try:
-				camp.previousCamp_id = camps.get_object(year__exact=pcampyear, number__exact=pcampnumber).id
+				camp.previous_camp_id = camps.get_object(year__exact=pcampyear, number__exact=pcampnumber).id
 			except:
 				pass
 			
@@ -291,26 +291,26 @@ def migrateCamps():
 	
 ###########################################################################################
 #             USERS
-def migrateMembers():
+def migrate_members():
 	for u in members.get_list(): u.delete()
-	def createMember(data, passwordsDict, lastSeenData):
-		member = members.Member(userName=data[0])
-		member.realName = data[1]
+	def create_member(data, passwords_dict, last_seen_data):
+		member = members.Member(user_name=data[0])
+		member.real_name = data[1]
 		member.email = data[3]
-		member.password = passwordsDict.get(member.userName, members.encryptPassword('password1'))
-		member.dateJoined = datetime.fromtimestamp(int(data[6]))
-		member.lastSeen = lastSeenData.get(member.userName, member.dateJoined)
-		member.showEmail = getBool(data[4])
-		member.messageOption = getInt(data[5])
+		member.password = passwords_dict.get(member.user_name, members.encrypt_password('password1'))
+		member.date_joined = datetime.fromtimestamp(int(data[6]))
+		member.last_seen = last_seen_data.get(member.user_name, member.date_joined)
+		member.show_email = get_bool(data[4])
+		member.messageOption = get_int(data[5])
 		member.comments = fix_bbcode(data[9])
-		member.confirmSecret = data[13]
-		member.moderated = getInt(data[15])
-		member.hidden = getBool(data[17])
-		member.banned = getBool(data[16])
-		member.newEmail = data[22]
-		member.bookmarksNotify = not getBool(data[18])
+		member.confirm_secret = data[13]
+		member.moderated = get_int(data[15])
+		member.hidden = get_bool(data[17])
+		member.banned = get_bool(data[16])
+		member.new_email = data[22]
+		member.bookmarks_notify = not get_bool(data[18])
 		for suffix in ('jpeg', 'png', 'gif'):
-			imagefile = member.userName + '.' + suffix
+			imagefile = member.user_name + '.' + suffix
 			if os.path.isfile(ICONDIR + imagefile):
 				shutil.copyfile(ICONDIR + imagefile, NEW_ICONDIR + imagefile)
 				member.icon = imagefile
@@ -319,17 +319,17 @@ def migrateMembers():
 	
 	# first get passwords from separate table
 	passwords = {}
-	for line in getTable(PREFIX+".htpasswd.online.2005-08-26",":"):
+	for line in get_table(PREFIX+".htpasswd.online.2005-08-26",":"):
 		passwords[line[0]] = line[1]
 	
-	lastSeenData = {}
-	for line in getTable(PREFIX+"lastseen.data"):
-		lastSeenData[line[0]] = datetime.fromtimestamp(int(line[1]))
+	last_seen_data = {}
+	for line in get_table(PREFIX+"lastseen.data"):
+		last_seen_data[line[0]] = datetime.fromtimestamp(int(line[1]))
 		
 	# Now parse members.data and pending_members.data
-	for line in getTable(PREFIX+"members.data"):
+	for line in get_table(PREFIX+"members.data"):
 		try:
-			u = createMember(line,passwords, lastSeenData)
+			u = create_member(line,passwords, last_seen_data)
 		except:
 			print "Invalid data:"
 			print line
@@ -337,9 +337,9 @@ def migrateMembers():
 		u.confirmed = True
 		u.save()
 	
-	for line in getTable(PREFIX+"pending_members.data"):
+	for line in get_table(PREFIX+"pending_members.data"):
 		try:
-			u = createMember(line,passwords, lastSeenData)
+			u = create_member(line,passwords, last_seen_data)
 		except:
 			print "Invalid data:"
 			print line
@@ -349,7 +349,7 @@ def migrateMembers():
 
 ###########################################################################################
 # Permissions (from old 'groups')
-def migratePermissions():
+def migrate_permissions():
 	for p in permissions.get_list():
 		p.delete()
 	
@@ -365,7 +365,7 @@ def migratePermissions():
 		p = permissions.Permission(id = id, description = description)
 		p.save()
 	
-	groups = getTable(PREFIX+'groups.data')
+	groups = get_table(PREFIX+'groups.data')
 	
 	for groupname, permsList in (
 		("moderators", (permissions.USER_MODERATOR, permissions.POST_MODERATOR)),
@@ -377,8 +377,8 @@ def migratePermissions():
 		for line in groups:
 		
 			if line[0] == groupname:
-				for userName in line[2].split(","):
-					u = members.get_object(userName__exact=userName.strip())
+				for user_name in line[2].split(","):
+					u = members.get_object(user_name__exact=user_name.strip())
 					perms = [p.id for p in u.get_permission_list()]
 					perms += permsList
 					u.set_permissions(perms)
@@ -390,19 +390,19 @@ def migratePermissions():
 ###########################################################################################
 #		Messages
 
-def migrateMessages():
+def migrate_messages():
 	for message in messages.get_list():
 		message.delete()
 		
 	for member in members.get_list():
 		for boxNumber, boxName in ( (0,'inbox'), (1,'saved') ):
 			try:
-				data = getTable(PREFIX+"../members/" + member.userName + "." + boxName)
+				data = get_table(PREFIX+"../members/" + member.user_name + "." + boxName)
 			except IOError:
 				data = []
 			for line in data:
-				message = messages.Message(toMember_id = member.userName)
-				message.fromMember_id = members.get_object(userName__exact=line[1]).userName
+				message = messages.Message(to_member_id = member.user_name)
+				message.from_member_id = members.get_object(user_name__exact=line[1]).user_name
 				message.time = datetime.fromtimestamp(int(line[3]))
 				message.text = fix_bbcode(line[2])
 				message.box = boxNumber
@@ -410,13 +410,13 @@ def migrateMessages():
 
 ###########################################################################################
 #        AWARDS
-def migrateAwards():
+def migrate_awards():
 	for a in awards.get_list():
 		a.delete()
 	for pa in personalawards.get_list():
 		pa.delete()
 		
-	for line in getTable(PREFIX+"awards.data"):
+	for line in get_table(PREFIX+"awards.data"):
 		awardname,year = line[2].split(" ")
 		try:
 			award = awards.get_object(name__exact = awardname, year__exact = year)
@@ -434,20 +434,20 @@ def migrateAwards():
 			award.save()
 		pa = personalawards.PersonalAward(award_id=award.id)
 		pa.reason = line[3]
-		pa.member_id = members.get_object(userName__exact=line[0]).userName
+		pa.member_id = members.get_object(user_name__exact=line[0]).user_name
 		pa.save()
 	
 ###########################################################################################
 #		POLLS
-def migratePolls():
+def migrate_polls():
 	# first delete all poll options and polls
-	for pollOption in polloptions.get_list():
-		pollOption.delete()
+	for poll_option in polloptions.get_list():
+		poll_option.delete()
 	
 	for poll in polls.get_list():
 		poll.delete()
 	
-	for line in getTable(PREFIX+"../polls/polls.data"):
+	for line in get_table(PREFIX+"../polls/polls.data"):
 		try:
 			poll = polls.get_object(title__exact = line[1])
 		except polls.PollDoesNotExist:
@@ -458,25 +458,25 @@ def migratePolls():
 				continue
 			if pollline.startswith("[option]"):
 				options.append(pollline.replace("[option]", ""))
-				# any previous additions to outroText were wrong
-				if len(poll.outroText) > 0:
-					print "Text '" + poll.outroText + "' in poll " + \
+				# any previous additions to outro_text were wrong
+				if len(poll.outro_text) > 0:
+					print "Text '" + poll.outro_text + "' in poll " + \
 						line[0] + " was discarded"
-					poll.outroText = ""
+					poll.outro_text = ""
 			else:
 				if len(options) == 0:
-					poll.introText += pollline
+					poll.intro_text += pollline
 				else:
 					# assume at end, complain later if we were wrong
-					poll.outroText += pollline
+					poll.outro_text += pollline
 		
 		poll.open = False
-		poll.votingStarts = datetime.fromtimestamp(int(line[6]))
-		poll.votingEnds = datetime.fromtimestamp(int(line[7]))
-		poll.rules = getInt(line[3])
-		poll.ruleParameter = getInt(line[4])
-		poll.haveVoteInfo = False
-		poll.createdBy_id = members.get_object(userName__exact=line[5]).userName
+		poll.voting_starts = datetime.fromtimestamp(int(line[6]))
+		poll.voting_ends = datetime.fromtimestamp(int(line[7]))
+		poll.rules = get_int(line[3])
+		poll.rule_parameter = get_int(line[4])
+		poll.have_vote_info = False
+		poll.created_by_id = members.get_object(user_name__exact=line[5]).user_name
 		poll.save()
 		
 		for i in range(0,len(options)):
@@ -491,26 +491,26 @@ def migratePolls():
 
 # Forums in different places - Camps, news, website
 
-def getDummyOrRealMember(userName):
-	userName = userName.strip()[0:20]
-	if len(userName) == 0: userName = "''"
+def get_dummy_or_real_member(user_name):
+	user_name = user_name.strip()[0:20]
+	if len(user_name) == 0: user_name = "''"
 	# specifc hack for bad data:
-	if userName == "Jen4Ste":
-		userName = "'Jen4Ste'"
-	if userName == '"ecky2702':
-		userName = "'ecky2702'"
+	if user_name == "Jen4Ste":
+		user_name = "'Jen4Ste'"
+	if user_name == '"ecky2702':
+		user_name = "'ecky2702'"
 	try:
-		u = members.get_object(userName__exact=userName)
+		u = members.get_object(user_name__exact=user_name)
 		return u
 	except members.MemberDoesNotExist:
-		if userName.startswith("'"):
-			u = members.Member(userName = userName)
-			u.realName = ""
+		if user_name.startswith("'"):
+			u = members.Member(user_name = user_name)
+			u.real_name = ""
 			u.email = ""
 			u.password = ""
-			u.dateJoined = None
-			u.lastSeen = None
-			u.dummyMember = True
+			u.date_joined = None
+			u.last_seen = None
+			u.dummy_member = True
 			u.hidden = True
 			u.save()
 			return u
@@ -518,7 +518,7 @@ def getDummyOrRealMember(userName):
 
 	
 
-def migrateForums():
+def migrate_forums():
 	# delete eveything
 	for p in posts.get_list(): p.delete()
 	for n in newsitems.get_list(): n.delete()
@@ -528,7 +528,7 @@ def migrateForums():
 	for g in gallerys.get_list(): g.delete()
 
 	boardsdir = PREFIX+ "../boards/"
-	boards = getTable(boardsdir + "boards.data")
+	boards = get_table(boardsdir + "boards.data")
 	for line in boards:
 		if line[0].startswith('2003'): continue # this was a random mistake
 		
@@ -564,7 +564,7 @@ def migrateForums():
 			new_urls[old_location] = f.get_absolute_url()
 			g = None
 		try:
-			topiclist = getTable(boardsdir + line[0] + "/topiclist.data")
+			topiclist = get_table(boardsdir + line[0] + "/topiclist.data")
 		except IOError:
 			topiclist = []
 		
@@ -574,44 +574,44 @@ def migrateForums():
 			topic = None
 			if f != None:
 				topic = topics.Topic(open = bool(int(topicline[7])))
-				topic.hidden = getBool(topicline[9])
-				topic.createdAt = None
+				topic.hidden = get_bool(topicline[9])
+				topic.created_at = None
 				try:
 					timestamp = int(topicline[3])
 					if timestamp > 0:
-						topic.createdAt = datetime.fromtimestamp(timestamp)
+						topic.created_at = datetime.fromtimestamp(timestamp)
 				except:
 					pass
 				
 				
 				topic.subject = topicline[1]
-				topic.startedBy_id = getDummyOrRealMember(topicline[2]).userName
+				topic.started_by_id = get_dummy_or_real_member(topicline[2]).user_name
 				# Create news item if necessary
-				topictype = getInt(topicline[10])
+				topictype = get_int(topicline[10])
 				if topictype == 1 or topictype == 2:
 					# news item
 					ni = newsitems.NewsItem(summary="")
-					ni.createdBy_id = topic.startedBy_id
-					ni.createdAt = topic.createdAt
+					ni.created_by_id = topic.started_by_id
+					ni.created_at = topic.created_at
 					ni.summary = topicline[11]
 					
 					if topictype == 2:
 						# long news item
 						try: 
-							ni.fullItem = fix_news_items("".join(file(PREFIX+"../news/" + topicline[12])))
+							ni.full_item = fix_news_items("".join(file(PREFIX+"../news/" + topicline[12])))
 						except IOError:
 							print "Migration of news items: '" + topicline[12] + "' data is missing"
-							ni.fullItem = "ERROR - '" + topicline[12] + "' data was missing at migration time"
+							ni.full_item = "ERROR - '" + topicline[12] + "' data was missing at migration time"
 					else:
-						ni.fullItem = ""
+						ni.full_item = ""
 					
 					ni.subject = topic.subject
 					ni.save()
-					topic.newsItem_id = ni.id
+					topic.news_item_id = ni.id
 				elif topictype == 3:
 					# poll names are unique up to now
 					pollname = ""
-					for pollline in getTable(PREFIX+"../polls/polls.data"):
+					for pollline in get_table(PREFIX+"../polls/polls.data"):
 						if pollline[0] == topicline[12]:
 							pollname = pollline[1]
 							break
@@ -624,16 +624,16 @@ def migrateForums():
 				
 			if g != None:
 				photo = photos.Photo(open = bool(int(topicline[7])))
-				photo.hidden = getBool(topicline[9])
-				photo.createdAt = None
+				photo.hidden = get_bool(topicline[9])
+				photo.created_at = None
 				try:
 					timestamp = int(topicline[3])
 					if timestamp > 0:
-						photo.createdAt = datetime.fromtimestamp(timestamp)
+						photo.created_at = datetime.fromtimestamp(timestamp)
 				except:
 					pass
 			
-				for photoline in getTable(PREFIX+line[0]+".data"):
+				for photoline in get_table(PREFIX+line[0]+".data"):
 					if photoline[0] == topicline[0]:
 						photo.filename = photoline[1]
 						photo.description = photoline[2]
@@ -647,21 +647,21 @@ def migrateForums():
 				
 			# Now get the posts
 			try:
-				postdata = getTable(boardsdir + line[0] + "/" + topicline[0] + ".data")
+				postdata = get_table(boardsdir + line[0] + "/" + topicline[0] + ".data")
 			except IOError:
 				postdata = []
 			for postline in postdata:
 				p = posts.Post(subject="")
-				p.postedBy_id = getDummyOrRealMember(postline[1].strip()).userName
+				p.posted_by_id = get_dummy_or_real_member(postline[1].strip()).user_name
 				p.subject = postline[2]
 				
 				if p.subject.strip() == '&nbsp;' or p.subject.strip() == '':
 					p.subject = ''
 				p.message = fix_bbcode(postline[3])
 				try:
-					p.postedAt = datetime.fromtimestamp(int(postline[4]))
+					p.posted_at = datetime.fromtimestamp(int(postline[4]))
 				except:
-					p.postedAt = None
+					p.posted_at = None
 				if topic != None:
 					p.topic_id = topic.id
 				if photo != None:
@@ -670,7 +670,7 @@ def migrateForums():
 		# end for topicline in topiclist
 	# end for line in boards
 	
-def migrateMainMenu():
+def migrate_main_menu():
 	for m in menulinks.get_list():
 		m.delete()
 	
@@ -699,26 +699,26 @@ def migrateMainMenu():
 		title, url, order, parentUrl = links[i]
 		m = menulinks.MenuLink(title = title, url = url, listorder=order)
 		if parentUrl != '':
-			m.parentItem_id = menulinks.get_object(url__exact=parentUrl).id
+			m.parent_item_id = menulinks.get_object(url__exact=parentUrl).id
 		m.save()
 		
 
-def migrateHtml():
+def migrate_html():
 	for h in htmlchunks.get_list():
 		h.delete()
-	for name, url, pageTitle, htmlChunk in html:
+	for name, url, page_title, htmlChunk in html:
 		h = htmlchunks.HtmlChunk(name = name)
 		h.html = htmlChunk
-		h.pageTitle = pageTitle
+		h.page_title = page_title
 		if url != "":
-			h.menuLink_id = menulinks.get_object(url__exact=url).id
+			h.menu_link_id = menulinks.get_object(url__exact=url).id
 		h.save()
 	
 ##########################################################
 		
 	
 
-def fixupUrls():
+def fixup_urls():
 	# first sort new_urls by the length of the key
 	# descending, to ensure that longer more specific urls get
 	# replaced first	
@@ -734,7 +734,7 @@ def fixupUrls():
 	# Remap all references to old URLs
 	for objectlist, attrname in (
 			(posts.get_list(), 'message'),
-			(newsitems.get_list(), 'fullItem'),
+			(newsitems.get_list(), 'full_item'),
 			(newsitems.get_list(), 'summary'),
 			(members.get_list(), 'comments'),
 			(messages.get_list(), 'text'),
@@ -753,18 +753,17 @@ def fixupUrls():
 
 ##########################################################
 
-#migrateLeaders()
-#migrateSites()
-#migrateCamps()
-#migrateMembers()
-#migratePermissions()
-#migrateMessages()
-#migrateAwards()
-#migratePolls()
-migrateForums()
+migrate_leaders()
+migrate_sites()
+migrate_camps()
+migrate_members()
+migrate_permissions()
+migrate_messages()
+migrate_awards()
+migrate_polls()
+migrate_forums()
 
+migrate_main_menu()
+migrate_html()
 
-#print new_urls
-#migrateMainMenu()
-#migrateHtml()
-fixupUrls() # must come after everything else, and needs (at least) migrateForums to work
+#fixup_urls() # must come after everything else, and needs (at least) migrate_forums to work

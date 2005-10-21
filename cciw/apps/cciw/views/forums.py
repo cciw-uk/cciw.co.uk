@@ -39,7 +39,7 @@ def photo_breadcrumb(gallery, photo):
 	return ['<a href="' + gallery.get_absolute_url() + '">Photos</a>', str(photo.id), prev_and_next]
 	
 def topicindex(request, title = None, extra_context = None, forum = None,
-	template_name = 'forums/topicindex',	breadcrumb_extra = None, paginate_by = 15, default_order = ('-lastPostAt',)):
+	template_name = 'forums/topicindex',	breadcrumb_extra = None, paginate_by = 15, default_order = ('-last_post_at',)):
 	"Displays an index of topics in a forum"
 	if extra_context is None:
 		if title is None:
@@ -65,14 +65,14 @@ def topicindex(request, title = None, extra_context = None, forum = None,
 	} 
 	
 	order_option_to_lookup_arg(
-		{'aca': ('createdAt', 'id'),
-		'dca': ('-createdAt', '-id'),
-		'apc': ('postCount',),
-		'dpc': ('-postCount',),
-		'alp': ('lastPostAt',),
-		'dlp': ('-lastPostAt',)},
+		{'aca': ('created_at', 'id'),
+		'dca': ('-created_at', '-id'),
+		'apc': ('post_count',),
+		'dpc': ('-post_count',),
+		'alp': ('last_post_at',),
+		'dlp': ('-last_post_at',)},
 		lookup_args, request, default_order)
-	extra_context['default_order'] = 'dlp' # corresonds = '-lastPostAt'
+	extra_context['default_order'] = 'dlp' # corresonds = '-last_post_at'
 		
 	return list_detail.object_list(request, 'forums', 'topics', 
 		extra_context = extra_context, 
@@ -105,8 +105,8 @@ def topic(request, title_start = None, template_name = 'forums/topic', topicid =
 	extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(topic.get_forum(), topic))
 			
 	extra_context['topic'] = topic
-	if not topic.newsItem_id is None:
-		extra_context['newsItem'] = topic.get_newsItem()
+	if not topic.news_item_id is None:
+		extra_context['news_item'] = topic.get_news_item()
 	if not topic.poll_id is None:
 		extra_context['poll'] = topic.get_poll()
 	if introtext:
@@ -134,13 +134,13 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
 	} 
 	
 	order_option_to_lookup_arg(
-		{'aca': ('createdAt','id'),
-		'dca': ('-createdAt','-id'),
-		'apc': ('postCount',),
-		'dpc': ('-postCount',),
-		'alp': ('lastPostAt',),
-		'dlp': ('-lastPostAt',)},
-		lookup_args, request, ('createdAt', 'id'))
+		{'aca': ('created_at','id'),
+		'dca': ('-created_at','-id'),
+		'apc': ('post_count',),
+		'dpc': ('-post_count',),
+		'alp': ('last_post_at',),
+		'dlp': ('-last_post_at',)},
+		lookup_args, request, ('created_at', 'id'))
 	extra_context['default_order'] = 'aca'
 		
 	return list_detail.object_list(request, 'forums', 'photos', 

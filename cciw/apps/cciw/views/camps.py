@@ -34,12 +34,12 @@ def detail(request, year, number):
 		raise Http404
 		
 	c = StandardContext(request, {'camp': camp }, 
-							title = camp.niceName())
+							title = camp.nice_name())
 	
 	
-	if camp.endDate < datetime.date.today():
+	if camp.end_date < datetime.date.today():
 		c['camp_is_past'] = True
-		c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(str(camp.year)) + [camp.niceName()])	
+		c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(str(camp.year)) + [camp.nice_name()])	
 	else:
 		c['breadcrumb'] = create_breadcrumb([standard_subs('<a href="/thisyear/">Camps {{thisyear}}</a>'), "Camp " + number])
 	return render_to_response('camps/detail', c)
@@ -47,7 +47,7 @@ def detail(request, year, number):
 	
 def thisyear(request):
 	c = StandardContext(request, title="Camps " + str(THISYEAR))
-	htmlchunks.renderIntoContext(c, {
+	htmlchunks.render_into_context(c, {
 		'introtext': 'camp_dates_intro_text',
 		'outrotext': 'camp_dates_outro_text'})
 	c['camps'] = camps.get_list(year__exact=THISYEAR, order_by=['site_id', 'number'])	
@@ -61,8 +61,8 @@ def get_forum_for_camp(camp):
 	try:
 		forum = forums.get_object(location__exact=location)
 	except forums.ForumDoesNotExist:
-		if not camp.endDate is None and \
-			camp.endDate <= datetime.date.today():
+		if not camp.end_date is None and \
+			camp.end_date <= datetime.date.today():
 			# If the forum doesn't exist, but should, we should create it
 			forum = forums.Forum(location = location, open = True)
 			forum.save()
@@ -74,7 +74,7 @@ def get_gallery_for_camp(camp):
 	try:
 		gallery = gallerys.get_object(location__exact=location)
 	except gallerys.GalleryDoesNotExist:
-		if not camp.endDate <= datetime.date.today():
+		if not camp.end_date <= datetime.date.today():
 			# if the gallery does not exist yet, but should, create it
 			gallery = gallerys.Gallery(location = location)
 			gallery.save()
@@ -103,7 +103,7 @@ def forum(request, year, number):
 		forum = get_forum_for_camp(camp)
 		if forum is None:
 			raise Http404
-		title=camp.niceName() + " - Forum"
+		title=camp.nice_name() + " - Forum"
 		breadcrumb_extra = camp_forum_breadcrumb(camp)
 
 	# TODO - some extra context vars, for text to show before the topic list
@@ -141,7 +141,7 @@ def gallery(request, year, number):
 
 	# TODO - some extra context vars, for text to show before the topic list
 	
-	ec = standard_extra_context(request, title = camp.niceName() + " - Photos")
+	ec = standard_extra_context(request, title = camp.nice_name() + " - Photos")
 	return forums_views.photoindex(request, gallery, ec, breadcrumb_extra)
 
 def oldcampgallery(request, year, galleryname):
@@ -169,7 +169,7 @@ def photo(request, year, number, photonumber):
 	except photos.PhotoDoesNotExist:
 		raise Http404
 	
-	ec = standard_extra_context(request, title = "Photos: " + camp.niceName())
+	ec = standard_extra_context(request, title = "Photos: " + camp.nice_name())
 	
 	return forums_views.photo(request, photo, ec, breadcrumb_extra)
 

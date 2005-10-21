@@ -20,8 +20,8 @@ class MemberLinkNode(template.Node):
 	def __init__(self, nodelist):
 		self.nodelist = nodelist
 	def render(self, context):
-		userName = self.nodelist.render(context)
-		return get_member_link(userName)
+		user_name = self.nodelist.render(context)
+		return get_member_link(user_name)
 	
 def do_member_link(parser, token):
 	nodelist = parser.parse(('endmemberlink',))

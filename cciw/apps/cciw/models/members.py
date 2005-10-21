@@ -38,45 +38,45 @@ MODERATE_OPTIONS = (
 )
 
 class Member(meta.Model):
-	userName   = meta.CharField("User name", primary_key=True, maxlength=30)
-	realName   = meta.CharField("Real name", maxlength=20, blank=True)
+	user_name   = meta.CharField("User name", primary_key=True, maxlength=30)
+	real_name   = meta.CharField("Real name", maxlength=20, blank=True)
 	email      = meta.EmailField("Email address")
 	password   = meta.CharField("Password", maxlength=30)
-	dateJoined = meta.DateTimeField("Date joined", null=True)
-	lastSeen   = meta.DateTimeField("Last on website", null=True)
-	showEmail  = meta.BooleanField("Show email address", default=False)
+	date_joined = meta.DateTimeField("Date joined", null=True)
+	last_seen   = meta.DateTimeField("Last on website", null=True)
+	show_email  = meta.BooleanField("Show email address", default=False)
 	messageOption = meta.PositiveSmallIntegerField("Message option",
 		choices = MESSAGE_OPTIONS)
 	comments   = meta.TextField("Comments", blank=True)
 	confirmed  = meta.BooleanField("Confirmed", default=False)
-	confirmSecret = meta.CharField("Confirmation secret", maxlength=30, blank=True)
+	confirm_secret = meta.CharField("Confirmation secret", maxlength=30, blank=True)
 	moderated  = meta.PositiveSmallIntegerField("Moderated",
 		choices = MODERATE_OPTIONS)
 	hidden     = meta.BooleanField("Hidden", default=False)
 	banned     = meta.BooleanField("Banned", default=False)
-	newEmail   = meta.EmailField("New email address (unconfirmed)", blank=True)
-	bookmarksNotify = meta.BooleanField("Bookmark notifcations enabled", default=False)
+	new_email   = meta.EmailField("New email address (unconfirmed)", blank=True)
+	bookmarks_notify = meta.BooleanField("Bookmark notifcations enabled", default=False)
 	permissions = meta.ManyToManyField(Permission,
 		verbose_name="permissions",
 		related_name="memberWithPermission",
 		blank=True,
 		null=True)
 	icon	      = meta.ImageField("Icon", upload_to = MEMBERS_ICONS_UPLOAD_PATH, blank=True)
-	dummyMember = meta.BooleanField("Is dummy member", default=False) # supports ancient posts in message boards
+	dummy_member = meta.BooleanField("Is dummy member", default=False) # supports ancient posts in message boards
 		
 	def __repr__(self):
-		return self.userName
+		return self.user_name
 		
 	def get_absolute_url(self):
-		return "/members/" + self.userName + "/"
+		return "/members/" + self.user_name + "/"
 		
 	def get_link(self):
-		if self.dummyMember:
-			return self.userName
+		if self.dummy_member:
+			return self.user_name
 		else:
-			return '<a href="' + self.get_absolute_url() + '">' + self.userName + '</a>'
+			return '<a href="' + self.get_absolute_url() + '">' + self.user_name + '</a>'
 
-	def iconImage(self):
+	def icon_image(self):
 		from cciw.apps.cciw.settings import CCIW_MEDIA_ROOT
 		"Get an HTML image with the member's icon"
 		if self.icon and len(self.icon) > 0:
@@ -84,38 +84,38 @@ class Member(meta.Model):
 		else:
 			return ''
 
-	def checkPassword(self, plaintextPass):
+	def check_password(self, plaintextPass):
 		"""Checks a password is correct"""
 		import crypt
 		return crypt.crypt(plaintextPass, self.password) == self.password
 		
-	def newMessages(self):
+	def new_messages(self):
 		from django.models.members import messages
 		return self.get_messageReceived_count(box__exact=messages.MESSAGE_BOX_INBOX)
 
-	def savedMessages(self):
+	def saved_messages(self):
 		from django.models.members import messages
 		return self.get_messageReceived_count(box__exact=messages.MESSAGE_BOX_SAVED)
 		
-	def _module_generateSalt():
+	def _module_generate_salt():
 		import random, datetime
 		rand64= "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 		random.seed(datetime.datetime.today().microsecond)
 		return rand64[int(random.random()*64)] + rand64[int(random.random()*64)]
 	
-	def _module_encryptPassword(memberPass):
+	def _module_encrypt_password(memberPass):
 		import crypt
 		"""Encrypt a members password"""
 		# written to maintain compatibility with existing password file
-		return crypt.crypt(memberPass, generateSalt())
+		return crypt.crypt(memberPass, generate_salt())
 
 	class META:
 		admin = meta.Admin(
 			search_fields = (
-				'userName', 'realName', 'email'
+				'user_name', 'real_name', 'email'
 			),
 			list_display = (
-				'userName', 'realName', 'email', 'dateJoined'
+				'user_name', 'real_name', 'email', 'date_joined'
 			)
 		)
 		module_constants = {
@@ -127,7 +127,7 @@ class Member(meta.Model):
 			'MODERATE_NOTIFY': 1,
 			'MODERATE_ALL': 2
 		}
-		ordering = ('userName',)
+		ordering = ('user_name',)
 		
 
 class Award(meta.Model):
@@ -140,7 +140,7 @@ class Award(meta.Model):
 	def __repr__(self):
 		return self.name + " " + str(self.year)
 		
-	def niceName(self):
+	def nice_name(self):
 		return repr(self)
 	
 	def imageurl(self):
@@ -160,7 +160,7 @@ class Award(meta.Model):
 	
 class PersonalAward(meta.Model):
 	reason = meta.CharField("Reason for award", maxlength=200)
-	dateAwarded = meta.DateField("Date awarded", null=True, blank=True)
+	date_awarded = meta.DateField("Date awarded", null=True, blank=True)
 	award = meta.ForeignKey(Award,
 		verbose_name="award", 
 		related_name="personalAward")
@@ -169,14 +169,14 @@ class PersonalAward(meta.Model):
 		related_name="personalAward")
 		
 	def __repr__(self):
-		return self.get_award().name + " to " + self.get_member().userName
+		return self.get_award().name + " to " + self.get_member().user_name
 		
 		
 	class META:
 		admin = meta.Admin(
-			list_display = ('award', 'member','reason', 'dateAwarded')
+			list_display = ('award', 'member','reason', 'date_awarded')
 		)
-		ordering = ('dateAwarded',)
+		ordering = ('date_awarded',)
 
 BOOKMARK_CATEGORIES = (
 	(0, "Often visited"),
@@ -188,9 +188,9 @@ class Bookmark(meta.Model):
 	title = meta.CharField("Title", maxlength="50") # 100?
 	member = meta.ForeignKey(Member, verbose_name="member",
 		related_name="bookmark")
-	lastUpdated = meta.DateTimeField("Last updated",
+	last_updated = meta.DateTimeField("Last updated",
 		null=True, blank=True)
-	lastSeen = meta.DateTimeField("Last seen",
+	last_seen = meta.DateTimeField("Last seen",
 		null=True, blank=True)
 	public = meta.BooleanField("Public")
 	category = meta.PositiveSmallIntegerField("Category", choices = BOOKMARK_CATEGORIES)
@@ -200,7 +200,7 @@ class Bookmark(meta.Model):
 
 	class META:
 		admin = meta.Admin()
-		ordering = ('category', '-lastUpdated')
+		ordering = ('category', '-last_updated')
 	
 MESSAGE_BOXES = (
 	(0, "Inbox"),
@@ -208,11 +208,11 @@ MESSAGE_BOXES = (
 )
 
 class Message(meta.Model):
-	fromMember = meta.ForeignKey(Member,
+	from_member = meta.ForeignKey(Member,
 		verbose_name="from member",
 		related_name="messageSent"
 	)
-	toMember = meta.ForeignKey(Member, 
+	to_member = meta.ForeignKey(Member, 
 		verbose_name="to member",
 		related_name="messageReceived")
 	time = meta.DateTimeField("At")
@@ -222,11 +222,11 @@ class Message(meta.Model):
 	
 	def __repr__(self):
 		#return str(self.id)
-		return "[" + str(self.id) + "] to " + repr(self.get_toMember())  + " from " + repr(self.get_fromMember())
+		return "[" + str(self.id) + "] to " + repr(self.get_to_member())  + " from " + repr(self.get_from_member())
 	
 	class META:
 		admin = meta.Admin(
-			list_display = ('toMember', 'fromMember', 'time')
+			list_display = ('to_member', 'from_member', 'time')
 		)
 		ordering = ('-time',)
 		module_constants = {

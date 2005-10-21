@@ -17,7 +17,7 @@ def find(request):
 	except htmlchunks.HtmlChunkDoesNotExist:
 		raise Http404()
 	
-	c = StandardContext(request, title = chunk.pageTitle)
+	c = StandardContext(request, title = chunk.page_title)
 	c['contentBody'] = chunk.render(c)
 	t = template_loader.get_template('standard')
 	# render 2: using the 'standard' template, reusing the context

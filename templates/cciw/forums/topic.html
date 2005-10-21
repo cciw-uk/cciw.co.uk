@@ -4,16 +4,16 @@
 {% load forums %}
 {% block content %}
 	{{ introtext }}
-	{% if newsItem %}
+	{% if news_item %}
 	<br/>
 	<div class="newsItem">
-		<div class="newsItemDetails">Posted: {{ newsItem.createdAt|date:"d M Y, h:i" }}, 
-		by {% memberlink %}{{ newsItem.createdBy_id }}{% endmemberlink %}</div>
+		<div class="newsItemDetails">Posted: {{ news_item.created_at|date:"d M Y, h:i" }}, 
+		by {% memberlink %}{{ news_item.created_by_id }}{% endmemberlink %}</div>
 		<div class="newsItemFull">
-		{% if newsItem.fullItem %}
-			{{ newsItem.fullItem|standard_subs }}
+		{% if news_item.full_item %}
+			{{ news_item.full_item|standard_subs }}
 		{% else %}
-			{{ newsItem.summary|bb2html }}
+			{{ news_item.summary|bb2html }}
 		{% endif %}
 		</div>
 	</div>
@@ -22,7 +22,7 @@
 	<div class="paging">{% paging_control #comments %}</div>
 	<table class="topheaders">
 		<tr>
-		{% if newsItem %}
+		{% if news_item %}
 			<th class="commentHeader" colspan="2">Comments</th>
 		{% else %}
 			{% if poll %}

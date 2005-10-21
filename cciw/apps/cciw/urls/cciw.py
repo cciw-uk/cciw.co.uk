@@ -3,7 +3,7 @@ from django.conf.urls.defaults import *
 urlpatterns = patterns('cciw.apps.cciw.views',
 	(r'^login/$', 'members.login'),
 	(r'^members/$', 'members.index'),
-	(r'^members/(?P<userName>[A-Za-z0-9_]+)/$', 'members.detail'),
+	(r'^members/(?P<user_name>[A-Za-z0-9_]+)/$', 'members.detail'),
 	(r'^thisyear/$', 'camps.thisyear'),
 	(r'^camps/$', 'camps.index'),
 	(r'^camps/(?P<year>\d{4})/?$', 'camps.index'),
@@ -19,7 +19,7 @@ urlpatterns = patterns('cciw.apps.cciw.views',
 		'template_name': 
 		'forums/newsindex', 
 		'paginate_by' : 6,
-		'default_order': ('-createdAt',)}), 
+		'default_order': ('-created_at',)}), 
 	(r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'}), # TODO - create different template ?
 	(r'^website/forum/$', 'forums.topicindex', {'title': 'Website forum',
 		'breadcrumb_extra': ['<a href="/website/">About website</a>']}),

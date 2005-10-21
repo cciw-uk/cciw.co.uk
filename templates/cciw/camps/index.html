@@ -1,22 +1,21 @@
 {% extends "standard" %}
 {% block content %}
 
-
 {% regroup camps by year as grouped %}
 {% for yeargroup in grouped %}
 	<h2><a name="year{{ yeargroup.grouper }}">{{ yeargroup.grouper }}</a></h2>
 	<div><a href="/camps/{{ yeargroup.grouper }}/all/forum/">General forum</a></div>
 	<ul class="camplist">
 		{% for camp in yeargroup.list %}
-			<li><a href="{{ camp.get_absolute_url }}" title="{{ camp.niceName }}">
+			<li><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">
 				Camp {{ camp.number }}</a>,
 				led by {{ camp.get_leader_list|join:", "|escape }}, 
 				chaplain {{ camp.get_chaplain }}
 				<ul>
 					<li><a href="{{ camp.get_absolute_url }}forum/" 
-						title="Message board for {{ camp.niceName }}">Forum</a></li>
+						title="Message board for {{ camp.nice_name }}">Forum</a></li>
 					<li><a href="{{ camp.get_absolute_url }}photos/"
-						title="Photo gallery for {{ camp.niceName }}">Photos</a></li>
+						title="Photo gallery for {{ camp.nice_name }}">Photos</a></li>
 				</ul>
 			</li>
 		{% endfor %}

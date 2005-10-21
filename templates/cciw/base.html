@@ -4,10 +4,10 @@
 <head>
 <title>{% block title %}CCIW: {{ pagevars.title }}{% endblock %}</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link rel="stylesheet" title="dark" href="{{ pagevars.styleSheetUrl }}" type="text/css" />
-<link rel="alternate stylesheet" title="light" href="{{ pagevars.styleSheet2Url }}" type="text/css" />
-<!--[if lt IE 6]><link rel="stylesheet" title="dark" href="{{ pagevars.mediaRootUrl }}ielt6.css" type="text/css" /><![endif]-->
-<!--[if gte IE 6]><link rel="stylesheet" title="dark" href="{{ pagevars.mediaRootUrl }}iegte6.css" type="text/css" /><![endif]-->
+<link rel="stylesheet" title="dark" href="{{ pagevars.style_sheet_url }}" type="text/css" />
+<link rel="alternate stylesheet" title="light" href="{{ pagevars.style_sheet2_url }}" type="text/css" />
+<!--[if lt IE 6]><link rel="stylesheet" title="dark" href="{{ pagevars.media_root_url }}ielt6.css" type="text/css" /><![endif]-->
+<!--[if gte IE 6]><link rel="stylesheet" title="dark" href="{{ pagevars.media_root_url }}iegte6.css" type="text/css" /><![endif]-->
 
 </head>
 <body>
@@ -17,7 +17,7 @@
 </div>
 {% block main %}
 	<div id="mainbase">
-		<div id="pageTitle">
+		<div id="page_title">
 			<h1>{{ pagevars.title }}</h1>
 		</div>
 		<div id="contentBody">

@@ -8,8 +8,8 @@
 			<ul
 			>{% for menulink in menulinks %}<li
 					><a href="{{ menulink.url }}"
-					{% if menulink.extraTitle %}
-						title="{{ menulink.extraTitle }}"
+					{% if menulink.extra_title %}
+						title="{{ menulink.extra_title }}"
 					{% endif %}
 					{% if menulink.isCurrentPage %}
 						class="currentPage"
@@ -24,7 +24,7 @@
 	</div>
 	<div id="contentOuter">
 		<div id="content">
-			<div id="pageTitle">
+			<div id="page_title">
 				<h1>{{ pagevars.title }}</h1>
 			</div>
 			<div id="contentBody">
@@ -48,12 +48,12 @@
 	<h1>Quick Links</h1>
 	<ul>
 	{% if currentMember %}	
-		<li>Logged in as :  <a href="{{currentMember.get_absolute_url}}">{{currentMember.userName}}</a></li>
-		<li><a href="{{currentMember.get_absolute_url}}messages">{{currentMember.newMessages}} new message(s)</a></li>
+		<li>Logged in as :  <a href="{{currentMember.get_absolute_url}}">{{currentMember.user_name}}</a></li>
+		<li><a href="{{currentMember.get_absolute_url}}messages">{{currentMember.new_messages}} new message(s)</a></li>
 	{% else %}
 		<li><a href="/login/">Login</a></li>
 	{% endif %}
-		<li><a href="/members/?online=1"> {{ pagevars.loggedInMembers }} member(s) online</a></li>
+		<li><a href="/members/?online=1"> {{ pagevars.logged_in_members }} member(s) online</a></li>
 	</ul>
 </div>
 {% endblock %}

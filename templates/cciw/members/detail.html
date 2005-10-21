@@ -2,12 +2,12 @@
 {% load forums %}
 {% block content %}
 	{% if currentMember %}
-		{% ifequal currentMember.userName member.userName %}
+		{% ifequal currentMember.user_name member.user_name %}
 		<h2>Links</h2>
 
 		<ul>
-			<li><a href="messages/">{{ currentMember.newMessages }} new message(s)</a></li>
-			<li><a href="messages/?box=saved">{{ currentMember.savedMessages }} saved message(s)</a></li>
+			<li><a href="messages/">{{ currentMember.new_messages }} new message(s)</a></li>
+			<li><a href="messages/?box=saved">{{ currentMember.saved_messages }} saved message(s)</a></li>
 			<li><a href="bookmarks/">Bookmarks</a></li>
 		</ul>
 		<form method="post" action="{{pagevars.request.url}}">
@@ -22,19 +22,19 @@
 		<table class="sideheaders">
 			<tr>
 				<th>User name</th>
-				<td>{{ member.userName }}</td>
+				<td>{{ member.user_name }}</td>
 			</tr>
 			<tr>
 				<th>'Real' name</th>
-				<td>{{ member.realName }}</td>
+				<td>{{ member.real_name }}</td>
 			</tr>
 			{% if member.icon %}
 			<tr>
 				<th>Icon</th>
-				<td>{{ member.iconImage }}</td>
+				<td>{{ member.icon_image }}</td>
 			</tr>
 			{% endif %}
-			{% if member.showEmail %}
+			{% if member.show_email %}
 			<tr>
 				<th>Email</th>
 				<td>{{ member.email|obfuscate_email }}</td>
@@ -42,11 +42,11 @@
 			{% endif %}
 			<tr>
 				<th>Date joined</th>
-				<td>{{ member.dateJoined|date:"d M Y H:i:s" }}</td>
+				<td>{{ member.date_joined|date:"d M Y H:i:s" }}</td>
 			</tr>
 			<tr>
 				<th>Last seen</th>
-				<td>{{ member.lastSeen|date:"d M Y H:i:s" }}</td>
+				<td>{{ member.last_seen|date:"d M Y H:i:s" }}</td>
 			</tr>
 			{% if member.comments %}
 			<tr>
@@ -65,14 +65,14 @@
 
 		{% if awards %}
 			<h2>Awards</h2>
-			<p><b>{{ member.userName }}</b> has received the following awards:</p>
+			<p><b>{{ member.user_name }}</b> has received the following awards:</p>
 			{% for paward in awards %}
 			<div class="awardInfo">
-				<a href="{{paward.get_award.get_absolute_url}}" class="awardlink"><img class="award" alt="{{paward.get_award.niceName}}" src="{{paward.get_award.imageurl}}" /></a><br/>
+				<a href="{{paward.get_award.get_absolute_url}}" class="awardlink"><img class="award" alt="{{paward.get_award.nice_name}}" src="{{paward.get_award.imageurl}}" /></a><br/>
 				<span class="awardname">
-				{{ paward.get_award.niceName }}</span>
-				{% if paward.dateAwarded %}
- 					on {{ paward.dateAwarded|date:"d M Y" }}
+				{{ paward.get_award.nice_name }}</span>
+				{% if paward.date_awarded %}
+ 					on {{ paward.date_awarded|date:"d M Y" }}
 				{% endif %}
 				<br/>
 				Reason for award:

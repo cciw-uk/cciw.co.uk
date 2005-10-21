@@ -17,15 +17,15 @@
 			{% ifchanged %}
 			<tr>
 				<th colspan="5" class="siteDivision">
-				<a href="{{ camp.get_site.get_absolute_url }}">{{ camp.get_site.shortName }}</a>
+				<a href="{{ camp.get_site.get_absolute_url }}">{{ camp.get_site.short_name }}</a>
 				</th>
 			</tr>
 			{% endifchanged %}
 			<tr>
 				<td><a href="{{ camp.get_absolute_url }}" 
-					title="{{ camp.niceName }}">{{ camp.number }}</a></td>
+					title="{{ camp.nice_name }}">{{ camp.number }}</a></td>
 				<td>{{ camp.age	}}</td>
-				<td>{{ camp.startDate|date:"d M"}} - {{ camp.endDate|date:"d M" }}</td>
+				<td>{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M" }}</td>
 				<td>{{ camp.get_leader_list|join:", " }}</td>
 				<td>{{ camp.get_chaplain }}</td>
 			</tr>

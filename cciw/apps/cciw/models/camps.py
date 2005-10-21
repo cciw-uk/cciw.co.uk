@@ -1,25 +1,25 @@
 from django.core import meta
 
 class Site(meta.Model):
-	shortName = meta.CharField("Short name", maxlength="25", blank=False, unique=True)
-	slugName = meta.SlugField("Machine name", maxlength="25", blank=True, unique=True)
-	longName = meta.CharField("Long name", maxlength="50", blank=False)
+	short_name = meta.CharField("Short name", maxlength="25", blank=False, unique=True)
+	slug_name = meta.SlugField("Machine name", maxlength="25", blank=True, unique=True)
+	long_name = meta.CharField("Long name", maxlength="50", blank=False)
 	info = meta.TextField("Description (HTML)")
 	
 	def __repr__(self):
-		return self.shortName
+		return self.short_name
 		
 	def get_absolute_url(self):
-		return "/sites/" + self.slugName
+		return "/sites/" + self.slug_name
 	
 	def _pre_save(self):
 		from django.core.defaultfilters import slugify
-		self.slugName = slugify(self.shortName, "")
+		self.slug_name = slugify(self.short_name, "")
 	
 	class META:
 		admin = meta.Admin(
 			fields = (
-				(None, {'fields': ('shortName', 'longName', 'info')}),
+				(None, {'fields': ('short_name', 'long_name', 'info')}),
 			)
 		)
 		
@@ -46,9 +46,9 @@ class Camp(meta.Model):
 	number = meta.PositiveSmallIntegerField("number")
 	age = meta.CharField("age", blank=False, maxlength=3,
 						choices=CAMP_AGES)
-	startDate = meta.DateField("start date")
-	endDate = meta.DateField("end date")
-	previousCamp = meta.ForeignKey("self", 
+	start_date = meta.DateField("start date")
+	end_date = meta.DateField("end date")
+	previous_camp = meta.ForeignKey("self", 
 		related_name="nextCamp", 
 		verbose_name="previous camp",
 		null=True, blank=True)
@@ -76,11 +76,11 @@ class Camp(meta.Model):
 			leadertext = ""
 		return str(self.year) + "-" + str(self.number) + leadertext
 		
-	def niceName(self):
+	def nice_name(self):
 		return "Camp " + str(self.number) + ", year " + str(self.year)
 
 	def get_link(self):
-		return "<a href='" + self.get_absolute_url() + "'>" + self.niceName() + '</a>'
+		return "<a href='" + self.get_absolute_url() + "'>" + self.nice_name() + '</a>'
 
 	def get_absolute_url(self):
 		from cciw.apps.cciw.settings import *
@@ -89,7 +89,7 @@ class Camp(meta.Model):
 	class META:
 		admin = meta.Admin(
 			fields = (
-				(None, {'fields': ('year', 'number', 'age', 'startDate', 'endDate', 'chaplain', 'leaders', 'site', 'previousCamp') }),
+				(None, {'fields': ('year', 'number', 'age', 'start_date', 'end_date', 'chaplain', 'leaders', 'site', 'previous_camp') }),
 			)
 		)
 		ordering = ['-year','number']

@@ -7,10 +7,10 @@ html.append(
 <p>Click on the thumbnails below for maps of the location of the camp sites:</p>
 <p>
 Map of wales:<br/>
-<a href="{{ pagevars.mediaRootUrl }}images/wales2.gif">
-<img alt="thumbnail map of Wales" src="{{ pagevars.mediaRootUrl }}images/wales2-th.gif" width="100" height="128" /></a></p>
+<a href="{{ pagevars.media_root_url }}images/wales2.gif">
+<img alt="thumbnail map of Wales" src="{{ pagevars.media_root_url }}images/wales2-th.gif" width="100" height="128" /></a></p>
 <p>Detail of map:<br/>
-<a href="{{ pagevars.mediaRootUrl }}images/wales3.gif"><img alt="thumbnail of map detail" src="{{ pagevars.mediaRootUrl }}images/wales3-th.gif" width="100" height="99" /></a></p>
+<a href="{{ pagevars.media_root_url }}images/wales3.gif"><img alt="thumbnail of map detail" src="{{ pagevars.media_root_url }}images/wales3-th.gif" width="100" height="99" /></a></p>
 	""")
 )
 

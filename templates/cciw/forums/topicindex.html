@@ -16,14 +16,14 @@
 		{% for topic in object_list %}
 			<tr>
 				<td class="topicLink">
-				{% if topic.newsItem_id %}<div class="center">NEWS ITEM</div>{% endif %}
+				{% if topic.news_item_id %}<div class="center">NEWS ITEM</div>{% endif %}
 				{{ topic.get_link }}
 				</td>
-				<td>{% if topic.createdAt %}{{ topic.createdAt|date:"d M Y h:i" }}<br/>{% endif %}
-				    {% if topic.startedBy_id %}{% memberlink %}{{ topic.startedBy_id }}{% endmemberlink %}{% endif %}</td>
-				<td>{{ topic.postCount }}</td>
-				<td>{% if topic.lastPostAt %}{{ topic.lastPostAt|date:"d M Y h:i" }}<br/>{% endif %}
-				    {% if topic.lastPostBy_id %}{% memberlink %}{{ topic.lastPostBy_id }}{% endmemberlink %}{% endif %}</td>
+				<td>{% if topic.created_at %}{{ topic.created_at|date:"d M Y h:i" }}<br/>{% endif %}
+				    {% if topic.started_by_id %}{% memberlink %}{{ topic.started_by_id }}{% endmemberlink %}{% endif %}</td>
+				<td>{{ topic.post_count }}</td>
+				<td>{% if topic.last_post_at %}{{ topic.last_post_at|date:"d M Y h:i" }}<br/>{% endif %}
+				    {% if topic.last_post_by_id %}{% memberlink %}{{ topic.last_post_by_id }}{% endmemberlink %}{% endif %}</td>
 				<td>{% if topic.open %}Open{% else %}Closed{% endif %}</td>
 			</tr>
 		{% endfor %}

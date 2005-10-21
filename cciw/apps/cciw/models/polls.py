@@ -9,16 +9,16 @@ VOTING_RULES = (
 
 class Poll(meta.Model):
 	title = meta.CharField("Title", maxlength=100)
-	introText = meta.CharField("Intro text", maxlength=200)
-	outroText = meta.CharField("Closing text", maxlength=200)
+	intro_text = meta.CharField("Intro text", maxlength=200)
+	outro_text = meta.CharField("Closing text", maxlength=200)
 	open = meta.BooleanField("Open", default=True)
-	votingStarts = meta.DateTimeField("Voting starts")
-	votingEnds = meta.DateTimeField("Voting ends")
+	voting_starts = meta.DateTimeField("Voting starts")
+	voting_ends = meta.DateTimeField("Voting ends")
 	rules = meta.PositiveSmallIntegerField("Rules",
 		choices = VOTING_RULES)
-	ruleParameter = meta.PositiveSmallIntegerField("Parameter for rule", default=1)
-	haveVoteInfo = meta.BooleanField("Full vote information available", default=True)
-	createdBy = meta.ForeignKey(Member, verbose_name="created by",
+	rule_parameter = meta.PositiveSmallIntegerField("Parameter for rule", default=1)
+	have_vote_info = meta.BooleanField("Full vote information available", default=True)
+	created_by = meta.ForeignKey(Member, verbose_name="created by",
 		related_name="pollCreated")
 	
 	def __repr__(self):
@@ -26,7 +26,7 @@ class Poll(meta.Model):
 	
 	class META:
 		admin = meta.Admin(
-			list_display = ('title', 'createdBy', 'votingStarts')
+			list_display = ('title', 'created_by', 'voting_starts')
 		)
 		module_constants = {
 			'UNLIMITED': 0,
@@ -41,7 +41,7 @@ class PollOption(meta.Model):
 	text = meta.CharField("Option text", maxlength=200)
 	total = meta.PositiveSmallIntegerField("Number of votes")
 	poll = meta.ForeignKey(Poll, verbose_name="Associated poll",
-		related_name="pollOption")
+		related_name="poll_option")
 	listorder = meta.PositiveSmallIntegerField("Order in list")
 		
 	def __repr__(self):
@@ -55,8 +55,8 @@ class PollOption(meta.Model):
 	
 
 class VoteInfo(meta.Model):
-	pollOption = meta.ForeignKey(PollOption, 
-		verbose_name="pollOption",
+	poll_option = meta.ForeignKey(PollOption, 
+		verbose_name="poll_option",
 		related_name="vote")
 	member = meta.ForeignKey(Member,
 		verbose_name="member",

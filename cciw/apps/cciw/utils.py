@@ -2,12 +2,12 @@ def obfuscate_email(email):
 	# TODO - make into javascript linky thing?
 	return email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ')
 
-def get_member_link(userName):
-	userName = userName.strip()
-	if userName.startswith("'"):
-		return userName
+def get_member_link(user_name):
+	user_name = user_name.strip()
+	if user_name.startswith("'"):
+		return user_name
 	else:
-		return '<a href="/members/' + userName + '/">' + userName + '</a>'
+		return '<a href="/members/' + user_name + '/">' + user_name + '</a>'
 	
 def modified_query_string(request, dict, fragment = ''):
 	"""Returns the query string represented by request, with key-value pairs
@@ -23,7 +23,7 @@ def strip_control_chars(text):
 		text = text.replace(chr(i),'')
 	return text
 	
-def validateXML(filename):
+def validate_xml(filename):
 	from xml.sax import sax2exts
 	from xml.dom.ext.reader import Sax2
 

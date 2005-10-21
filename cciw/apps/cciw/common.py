@@ -8,11 +8,11 @@ class PageVars:
 	"""Stores general data to be used be the 'standard' template"""
 	def __init__(self, request, title):
 		self.title = title
-		self.mediaRootUrl = CCIW_MEDIA_ROOT
-		self.styleSheetUrl = self.mediaRootUrl + 'style.css'
-		self.styleSheet2Url = self.mediaRootUrl + 'style2.css'
+		self.media_root_url = CCIW_MEDIA_ROOT
+		self.style_sheet_url = self.media_root_url + 'style.css'
+		self.style_sheet2_url = self.media_root_url + 'style2.css'
 		self.request = request
-		self.loggedInMembers = members.get_count(lastSeen__gte = datetime.datetime.now() - datetime.timedelta(minutes=3))
+		self.logged_in_members = members.get_count(last_seen__gte = datetime.datetime.now() - datetime.timedelta(minutes=3))
 
 class StandardContext(DjangoContext):
 	"""Provides simple construction of context needed for the 'standard.html' template and
@@ -38,7 +38,7 @@ def standard_extra_context(request, extra_dict=None, title=None):
 		
 
 	# TODO - filter on 'visible' attribute
-	links = menulinks.get_list(where = ['parentItem_id IS NULL'])
+	links = menulinks.get_list(where = ['parent_item_id IS NULL'])
 	for l in links:
 		l.title = standard_subs(l.title)
 		l.isCurrentPage = False
@@ -53,10 +53,10 @@ def standard_extra_context(request, extra_dict=None, title=None):
 
 def get_current_member(request):
 	try:
-		member = members.get_object(userName__exact = request.session['member_id'])
-		# use opportunity to update lastSeen data
-		if (datetime.datetime.now() - member.lastSeen).seconds > 60:
-			member.lastSeen = datetime.datetime.now()
+		member = members.get_object(user_name__exact = request.session['member_id'])
+		# use opportunity to update last_seen data
+		if (datetime.datetime.now() - member.last_seen).seconds > 60:
+			member.last_seen = datetime.datetime.now()
 			member.save()
 		return member
 	except (KeyError, members.MemberDoesNotExist):

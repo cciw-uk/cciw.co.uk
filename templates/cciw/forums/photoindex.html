@@ -15,13 +15,13 @@
 			</tr>
 		{% for photo in object_list %}
 			<tr>
-				<td>{% if photo.createdAt %}{{ photo.createdAt|date:"d M Y h:i" }}{% endif %}</td>
-				<td class="photoCol"><a href="{{ photo.get_absolute_url }}"><img class="photoThumbnail" src="{{ pagevars.mediaRootUrl }}photos/thumbnails/{{ photo.filename }}" alt="Photo {{photo.filename}}" /></a>
+				<td>{% if photo.created_at %}{{ photo.created_at|date:"d M Y h:i" }}{% endif %}</td>
+				<td class="photoCol"><a href="{{ photo.get_absolute_url }}"><img class="photoThumbnail" src="{{ pagevars.media_root_url }}photos/thumbnails/{{ photo.filename }}" alt="Photo {{photo.filename}}" /></a>
 				</td>
 				<td>{{ photo.description }}</td>
-				<td>{{ photo.postCount }}</td>
-				<td>{% if photo.lastPostAt %}{{ photo.lastPostAt|date:"d M Y h:i" }}<br/>{% endif %}
-				    {% if photo.lastPostBy_id %}{% memberlink %}{{ photo.lastPostBy_id }}{% endmemberlink %}{% endif %}</td>
+				<td>{{ photo.post_count }}</td>
+				<td>{% if photo.last_post_at %}{{ photo.last_post_at|date:"d M Y h:i" }}<br/>{% endif %}
+				    {% if photo.last_post_by_id %}{% memberlink %}{{ photo.last_post_by_id }}{% endmemberlink %}{% endif %}</td>
 			</tr>
 		{% endfor %}
 		</table>

@@ -12,7 +12,7 @@
 <table class="sideheaders">
 	<tr>
 		<th>Location:</th>
-		<td><a href="{{ camp.get_site.get_absolute_url }}">{{ camp.get_site.shortName }}</a></td>
+		<td><a href="{{ camp.get_site.get_absolute_url }}">{{ camp.get_site.short_name }}</a></td>
 	</tr>
 	{% if camp.get_nextCamp_list %}
 	<tr>
@@ -24,11 +24,11 @@
 		</td>
 	</tr>
 	{% endif %}
-	{% if camp.get_previousCamp %}
+	{% if camp.get_previous_camp %}
 	<tr>
 		<th>Previous camp:</th>
 		<td>
-			{{ camp.get_previousCamp.get_link }}
+			{{ camp.get_previous_camp.get_link }}
 		</td>
 	</tr>
 	{% endif %}

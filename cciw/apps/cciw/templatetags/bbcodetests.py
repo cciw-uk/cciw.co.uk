@@ -55,7 +55,7 @@ class TestBBCodeParser(unittest.TestCase):
 	def testRenderAllPosts(self):
 		from django.models.forums import posts
 		from django.models.members import messages
-		from cciw.apps.cciw.utils import validateXML
+		from cciw.apps.cciw.utils import validate_xml
 		f = open('/home/luke/all_cciw_posts.html', 'w')
 		f.write("""
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -72,7 +72,7 @@ class TestBBCodeParser(unittest.TestCase):
 		f.write("</body></html>")
 		f.close()		
 		
-		self.assertTrue(validateXML('/home/luke/all_cciw_posts.html'))
+		self.assertTrue(validate_xml('/home/luke/all_cciw_posts.html'))
 
 
 if __name__ == '__main__':
