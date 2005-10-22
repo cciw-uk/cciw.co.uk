@@ -19,7 +19,7 @@ class Poll(meta.Model):
 	rule_parameter = meta.PositiveSmallIntegerField("Parameter for rule", default=1)
 	have_vote_info = meta.BooleanField("Full vote information available", default=True)
 	created_by = meta.ForeignKey(Member, verbose_name="created by",
-		related_name="pollCreated")
+		related_name="poll_created")
 	
 	def __repr__(self):
 		return self.title
@@ -60,5 +60,5 @@ class VoteInfo(meta.Model):
 		related_name="vote")
 	member = meta.ForeignKey(Member,
 		verbose_name="member",
-		related_name="pollVote")
+		related_name="poll_vote")
 	date = meta.DateTimeField("Date")

@@ -19,7 +19,7 @@ class PagingControlNode(template.Node):
 		request = context['pagevars'].request
 		output = ''		
 		if (total_pages > 1):
-			output += "[Page " + str(cur_page+1) + " of " + str(total_pages)+ "]&nbsp;&nbsp; "
+			output += "&emdash; Page " + str(cur_page+1) + " of " + str(total_pages)+ " &emdash;&nbsp;&nbsp; "
 			for i in range(0, total_pages):
 				if (i > 0):
 					output += " | "

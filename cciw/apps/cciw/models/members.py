@@ -45,7 +45,7 @@ class Member(meta.Model):
 	date_joined = meta.DateTimeField("Date joined", null=True)
 	last_seen   = meta.DateTimeField("Last on website", null=True)
 	show_email  = meta.BooleanField("Show email address", default=False)
-	messageOption = meta.PositiveSmallIntegerField("Message option",
+	message_option = meta.PositiveSmallIntegerField("Message option",
 		choices = MESSAGE_OPTIONS)
 	comments   = meta.TextField("Comments", blank=True)
 	confirmed  = meta.BooleanField("Confirmed", default=False)
@@ -58,7 +58,7 @@ class Member(meta.Model):
 	bookmarks_notify = meta.BooleanField("Bookmark notifcations enabled", default=False)
 	permissions = meta.ManyToManyField(Permission,
 		verbose_name="permissions",
-		related_name="memberWithPermission",
+		related_name="member_with_permission",
 		blank=True,
 		null=True)
 	icon	      = meta.ImageField("Icon", upload_to = MEMBERS_ICONS_UPLOAD_PATH, blank=True)
@@ -91,11 +91,11 @@ class Member(meta.Model):
 		
 	def new_messages(self):
 		from django.models.members import messages
-		return self.get_messageReceived_count(box__exact=messages.MESSAGE_BOX_INBOX)
+		return self.get_message_received_count(box__exact=messages.MESSAGE_BOX_INBOX)
 
 	def saved_messages(self):
 		from django.models.members import messages
-		return self.get_messageReceived_count(box__exact=messages.MESSAGE_BOX_SAVED)
+		return self.get_message_received_count(box__exact=messages.MESSAGE_BOX_SAVED)
 		
 	def _module_generate_salt():
 		import random, datetime
@@ -148,7 +148,7 @@ class Award(meta.Model):
 		return CCIW_MEDIA_ROOT + "images/awards/" + self.image
 		
 	def get_absolute_url(self):
-		from django.core.defaultfilters import slugify
+		from django.core.template.defaultfilters import slugify
 		return "/awards/#" + slugify(repr(self),None)
 	
 	class META:
@@ -163,10 +163,10 @@ class PersonalAward(meta.Model):
 	date_awarded = meta.DateField("Date awarded", null=True, blank=True)
 	award = meta.ForeignKey(Award,
 		verbose_name="award", 
-		related_name="personalAward")
+		related_name="personal_award")
 	member = meta.ForeignKey(Member,
 		verbose_name="member",
-		related_name="personalAward")
+		related_name="personal_award")
 		
 	def __repr__(self):
 		return self.get_award().name + " to " + self.get_member().user_name
@@ -210,11 +210,11 @@ MESSAGE_BOXES = (
 class Message(meta.Model):
 	from_member = meta.ForeignKey(Member,
 		verbose_name="from member",
-		related_name="messageSent"
+		related_name="message_sent"
 	)
 	to_member = meta.ForeignKey(Member, 
 		verbose_name="to member",
-		related_name="messageReceived")
+		related_name="message_received")
 	time = meta.DateTimeField("At")
 	text = meta.TextField("Message")
 	box = meta.PositiveSmallIntegerField("Message box",

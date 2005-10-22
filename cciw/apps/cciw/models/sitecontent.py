@@ -8,7 +8,7 @@ class MenuLink(meta.Model):
 	visible = meta.BooleanField("Visible", default=True)
 	parent_item = meta.ForeignKey("self", null=True, blank=True,
 		verbose_name="Parent item (none = top level)",
-		related_name="childLink")
+		related_name="child_link")
 
 	def __repr__(self):
 		from cciw.apps.cciw.common import standard_subs
@@ -17,7 +17,7 @@ class MenuLink(meta.Model):
 	def get_visible_children(self, request):
 		"""Gets a list of child menu links that should be visible given the current url"""
 		if request.path == self.url:
-			return self.get_childLink_list()
+			return self.get_child_link_list()
 		else:
 			return []
 	

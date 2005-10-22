@@ -6,10 +6,10 @@
 		<img src="{{award.imageurl}}" alt="{{award.nice_name}} image" />  {{award.description}}
 		</div>
 		<div class="awardList">
-		{% if award.get_personalAward_list %}
+		{% if award.get_personal_award_list %}
 			<p>Awarded to:</p>
 			<ul>
-			{% for paward in award.get_personalAward_list %}
+			{% for paward in award.get_personal_award_list %}
 				<li>{{ paward.get_member.get_link }} 
 					{% if paward.date_awarded %}, on {{ paward.date_awarded|date:"d M Y" }} {% endif %}
 				for:<br/> {{ paward.reason }}</li>

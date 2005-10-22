@@ -301,7 +301,7 @@ def migrate_members():
 		member.date_joined = datetime.fromtimestamp(int(data[6]))
 		member.last_seen = last_seen_data.get(member.user_name, member.date_joined)
 		member.show_email = get_bool(data[4])
-		member.messageOption = get_int(data[5])
+		member.message_option = get_int(data[5])
 		member.comments = fix_bbcode(data[9])
 		member.confirm_secret = data[13]
 		member.moderated = get_int(data[15])
@@ -766,4 +766,4 @@ migrate_forums()
 migrate_main_menu()
 migrate_html()
 
-#fixup_urls() # must come after everything else, and needs (at least) migrate_forums to work
+fixup_urls() # must come after everything else, and needs (at least) migrate_forums to work

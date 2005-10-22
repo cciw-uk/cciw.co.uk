@@ -13,7 +13,7 @@ class Site(meta.Model):
 		return "/sites/" + self.slug_name
 	
 	def _pre_save(self):
-		from django.core.defaultfilters import slugify
+		from django.core.template.defaultfilters import slugify
 		self.slug_name = slugify(self.short_name, "")
 	
 	class META:

@@ -1,7 +1,6 @@
 from django.views.generic import list_detail
 from django.utils.httpwrappers import HttpResponseRedirect
 from django.core.exceptions import Http404
-from django.core import template_loader
 from django.core.extensions import render_to_response
 
 from django.models.members import members
@@ -55,7 +54,7 @@ def detail(request, user_name):
 		
 	c = StandardContext(request, title="Members: " + member.user_name)
 	c['member'] = member
-	c['awards'] = member.get_personalAward_list()
+	c['awards'] = member.get_personal_award_list()
 	return render_to_response('members/detail', c)
 	
 def login(request):

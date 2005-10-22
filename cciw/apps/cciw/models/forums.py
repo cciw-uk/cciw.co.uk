@@ -16,7 +16,7 @@ class Forum(meta.Model):
 		admin = meta.Admin()
 
 class NewsItem(meta.Model):
-	created_by = meta.ForeignKey(Member, related_name="news_itemCreated")
+	created_by = meta.ForeignKey(Member, related_name="news_item_created")
 	created_at = meta.DateTimeField("Posted")
 	summary = meta.TextField("Summary")
 	full_item = meta.TextField("Full post", blank=True)
@@ -32,13 +32,13 @@ class NewsItem(meta.Model):
 
 class Topic(meta.Model):
 	subject = meta.CharField("Subject", maxlength=100)
-	started_by = meta.ForeignKey(Member, related_name="topicStarted",
+	started_by = meta.ForeignKey(Member, related_name="topic_started",
 		verbose_name="started by")
 	created_at = meta.DateTimeField("Started", null=True)
 	open = meta.BooleanField("Open")
 	hidden = meta.BooleanField("Hidden")
 	checked_by = meta.ForeignKey(Member,
-		null=True, blank=True, related_name="topicChecked",
+		null=True, blank=True, related_name="topic_checked",
 		verbose_name="checked by")
 	approved = meta.BooleanField("Approved", null=True, blank=True)
 	needs_approval = meta.BooleanField("Needs approval", default=False)
@@ -95,7 +95,7 @@ class Photo(meta.Model):
 		verbose_name="gallery",
 		related_name="photo")
 	checked_by = meta.ForeignKey(Member,
-		null=True, blank=True, related_name="checkedPhoto")
+		null=True, blank=True, related_name="checked_photo")
 	approved = meta.BooleanField("Approved", null=True, blank=True)
 	needs_approval = meta.BooleanField("Needs approval", default=False)
 	last_post_at = meta.DateTimeField("Last post at", 
@@ -123,7 +123,7 @@ class Post(meta.Model):
 	hidden = meta.BooleanField("Hidden", default=False)
 	checked_by = meta.ForeignKey(Member,
 		verbose_name="checked by",
-		null=True, blank=True, related_name="checkedPost")
+		null=True, blank=True, related_name="checked_post")
 	approved = meta.BooleanField("Approved", null=True)
 	needs_approval = meta.BooleanField("Needs approval", default=False)
 	photo = meta.ForeignKey(Photo, related_name="post",
