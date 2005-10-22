@@ -7,7 +7,7 @@ from django.models.sitecontent import htmlchunks
 from cciw.apps.cciw.common import StandardContext
 
 def index(request):
-	t = template_loader.get_template('sites/index')
+	t = template_loader.get_template('cciw/sites/index')
 	c = StandardContext(request, title="Camp sites")
 	c['sites'] =  sites.get_list()
 	htmlchunks.render_into_context(c, {'sites_general': 'sites_general'})
@@ -21,6 +21,6 @@ def detail(request, name):
 	
 	c = StandardContext(request, {'site': site},
 					title = site.short_name + " camp site")
-	t = template_loader.get_template('sites/detail')
+	t = template_loader.get_template('cciw/sites/detail')
 	return HttpResponse(t.render(c))
 	

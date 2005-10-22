@@ -39,7 +39,7 @@ def photo_breadcrumb(gallery, photo):
 	return ['<a href="' + gallery.get_absolute_url() + '">Photos</a>', str(photo.id), prev_and_next]
 	
 def topicindex(request, title = None, extra_context = None, forum = None,
-	template_name = 'forums/topicindex',	breadcrumb_extra = None, paginate_by = 15, default_order = ('-last_post_at',)):
+	template_name = 'cciw/forums/topicindex',	breadcrumb_extra = None, paginate_by = 15, default_order = ('-last_post_at',)):
 	"Displays an index of topics in a forum"
 	if extra_context is None:
 		if title is None:
@@ -80,7 +80,7 @@ def topicindex(request, title = None, extra_context = None, forum = None,
 		paginate_by = paginate_by, extra_lookup_kwargs = lookup_args,
 		allow_empty = True)
 
-def topic(request, title_start = None, template_name = 'forums/topic', topicid = 0,
+def topic(request, title_start = None, template_name = 'cciw/forums/topic', topicid = 0,
 		introtext = None, breadcrumb_extra = None):
 	"Displays a topic"
 	if title_start is None:
@@ -145,7 +145,7 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
 		
 	return list_detail.object_list(request, 'forums', 'photos', 
 		extra_context = extra_context, 
-		template_name = 'forums/photoindex',
+		template_name = 'cciw/forums/photoindex',
 		paginate_by = 15, extra_lookup_kwargs = lookup_args,
 		allow_empty = True)
 
@@ -161,6 +161,6 @@ def photo(request, photo, extra_context, breadcrumb_extra):
 	
 	return list_detail.object_list(request, 'forums', 'posts', 
 		extra_context = extra_context, 
-		template_name = 'forums/photo',
+		template_name = 'cciw/forums/photo',
 		paginate_by=25, extra_lookup_kwargs = lookup_args,
 		allow_empty = True)

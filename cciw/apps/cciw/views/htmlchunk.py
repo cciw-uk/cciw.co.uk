@@ -19,6 +19,6 @@ def find(request):
 	
 	c = StandardContext(request, title = chunk.page_title)
 	c['contentBody'] = chunk.render(c)
-	t = template_loader.get_template('standard')
+	t = template_loader.get_template('cciw/standard')
 	# render 2: using the 'standard' template, reusing the context
 	return HttpResponse(t.render(c))

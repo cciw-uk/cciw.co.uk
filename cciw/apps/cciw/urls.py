@@ -16,8 +16,7 @@ urlpatterns = patterns('cciw.apps.cciw.views',
 	(r'^camps/(?P<year>.*)/(?P<galleryname>.*)/photos/(?P<photonumber>\d+)/$', 'camps.oldcampphoto'),
 	(r'^news/$', 'forums.topicindex', 
 		{'title': 'News', 
-		'template_name': 
-		'forums/newsindex', 
+		'template_name': 'cciw/forums/newsindex', 
 		'paginate_by' : 6,
 		'default_order': ('-created_at',)}), 
 	(r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'}), # TODO - create different template ?

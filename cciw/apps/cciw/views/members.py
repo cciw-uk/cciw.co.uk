@@ -38,7 +38,7 @@ def index(request):
 		
 	return list_detail.object_list(request, 'members', 'members', 
 		extra_context = extra_context, 
-		template_name = 'members/index',
+		template_name = 'cciw/members/index',
 		paginate_by=50, extra_lookup_kwargs = lookup_args,
 		allow_empty = True)
 
@@ -55,7 +55,7 @@ def detail(request, user_name):
 	c = StandardContext(request, title="Members: " + member.user_name)
 	c['member'] = member
 	c['awards'] = member.get_personal_award_list()
-	return render_to_response('members/detail', c)
+	return render_to_response('cciw/members/detail', c)
 	
 def login(request):
 	c = StandardContext(request, title="Login")
@@ -71,4 +71,4 @@ def login(request):
 				c['loginFailed'] = True
 		except MemberDoesNotExist:
 			c['loginFailed'] = True
-	return render_to_response('members/login', c)
+	return render_to_response('cciw/members/login', c)

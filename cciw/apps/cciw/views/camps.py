@@ -23,7 +23,7 @@ def index(request, year = None):
 		if len(all_camps) == 0:
 			raise Http404
 	
-	return render_to_response('camps/index', 
+	return render_to_response('cciw/camps/index', 
 			StandardContext(request, {'camps': all_camps},
 					title="Camp forums and photos"))
 
@@ -42,7 +42,7 @@ def detail(request, year, number):
 		c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(str(camp.year)) + [camp.nice_name()])	
 	else:
 		c['breadcrumb'] = create_breadcrumb([standard_subs('<a href="/thisyear/">Camps {{thisyear}}</a>'), "Camp " + number])
-	return render_to_response('camps/detail', c)
+	return render_to_response('cciw/camps/detail', c)
 
 	
 def thisyear(request):
@@ -52,7 +52,7 @@ def thisyear(request):
 		'outrotext': 'camp_dates_outro_text'})
 	c['camps'] = camps.get_list(year__exact=THISYEAR, order_by=['site_id', 'number'])	
 	
-	return render_to_response('camps/thisyear',c)
+	return render_to_response('cciw/camps/thisyear',c)
 
 def get_forum_for_camp(camp):
 	location = camp.get_absolute_url()[1:] + 'forum/'
@@ -110,7 +110,7 @@ def forum(request, year, number):
 	
 	ec = standard_extra_context(request, title = title)
 	return forums_views.topicindex(request, extra_context = ec, forum = forum, 
-		template_name = 'forums/topicindex', breadcrumb_extra = breadcrumb_extra)
+		template_name = 'cciw/forums/topicindex', breadcrumb_extra = breadcrumb_extra)
 
 def topic(request, year, number, topicnumber):
 
@@ -125,7 +125,7 @@ def topic(request, year, number, topicnumber):
 		breadcrumb_extra = camp_forum_breadcrumb(camp)
 			
 	return forums_views.topic(request, topicid = topicnumber, title_start = 'Topic',
-		template_name = 'forums/topic', breadcrumb_extra = breadcrumb_extra)		
+		template_name = 'cciw/forums/topic', breadcrumb_extra = breadcrumb_extra)		
 
 def gallery(request, year, number):
 	try:
