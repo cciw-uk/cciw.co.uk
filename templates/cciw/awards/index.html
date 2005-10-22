@@ -1,4 +1,4 @@
-{% extends "standard" %}
+{% extends "cciw/standard" %}
 {% block content %}
 	{% for award in object_list %}
 		<h2><a name="{{ award.nice_name|slugify }}">{{award.nice_name}}</a></h2>

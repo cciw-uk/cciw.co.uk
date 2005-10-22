@@ -1,4 +1,4 @@
-{% extends "standard" %}
+{% extends "cciw/standard" %}
 {% load view_extras %}
 {% load standardpage %}
 {% load forums %}
@@ -12,13 +12,12 @@
 		<tr>
 			<th class="commentHeader" colspan="2">Comments</th>
 		</tr>
-
 		<tr>
 			<th class="postFromCol">From</th>
 			<th>Message</th>
 		</tr>
 		{% if object_list %}
-			{% include 'forums/thread' %}
+			{% include 'cciw/forums/thread' %}
 		{% else %}
 			<tr>
 				<td  colspan="2">There are no comments yet on this photo.</td>

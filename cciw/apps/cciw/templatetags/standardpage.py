@@ -3,13 +3,13 @@ from cciw.apps.cciw.common import standard_subs
 from cciw.apps.cciw.utils import get_member_link, obfuscate_email
 
 def obfuscate_email_filter(email, _):
-	return obfuscate_email(email)
+    return obfuscate_email(email)
 
 class EmailNode(template.Node):
-	def __init__(self, nodelist):
-		self.nodelist = nodelist
-	def render(self, context):
-		return obfuscate_email(self.nodelist.render(context))
+    def __init__(self, nodelist):
+        self.nodelist = nodelist
+    def render(self, context):
+        return obfuscate_email(self.nodelist.render(context))
 
 def do_email(parser, token):
     nodelist = parser.parse(('endemail',))
@@ -17,19 +17,19 @@ def do_email(parser, token):
     return EmailNode(nodelist)
 
 class MemberLinkNode(template.Node):
-	def __init__(self, nodelist):
-		self.nodelist = nodelist
-	def render(self, context):
-		user_name = self.nodelist.render(context)
-		return get_member_link(user_name)
-	
+    def __init__(self, nodelist):
+        self.nodelist = nodelist
+    def render(self, context):
+        user_name = self.nodelist.render(context)
+        return get_member_link(user_name)
+    
 def do_member_link(parser, token):
-	nodelist = parser.parse(('endmemberlink',))
-	parser.delete_first_token()
-	return MemberLinkNode(nodelist)
+    nodelist = parser.parse(('endmemberlink',))
+    parser.delete_first_token()
+    return MemberLinkNode(nodelist)
 
 def standard_subs_filter(value, _):
-	return standard_subs(value)
+    return standard_subs(value)
 
 template.register_filter('standard_subs', standard_subs_filter, False)
 template.register_filter('obfuscate_email', obfuscate_email_filter, False)

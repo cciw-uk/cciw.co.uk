@@ -1,22 +1,16 @@
-{% extends "base" %}
+{% extends "cciw/base" %}
 {% load standardpage %}
 {% block main %}
 <div id="mainstandard">
 	<div id="sidebarOuter">
 		<div id="sidebar">
-			<h1>Contents</h1>
+			<h1>Site contents</h1>
 			<ul
 			>{% for menulink in menulinks %}<li
 					><a href="{{ menulink.url }}"
-					{% if menulink.extra_title %}
-						title="{{ menulink.extra_title }}"
-					{% endif %}
-					{% if menulink.isCurrentPage %}
-						class="currentPage"
-					{% endif %}
-					{% if menulink.isCurrentSection %}
-						class="currentSection"
-					{% endif %}
+					{% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
+					{% if menulink.isCurrentPage %} class="currentPage" {% endif %}
+					{% if menulink.isCurrentSection %} class="currentSection" {% endif %}
 					>{{ menulink.title }}</a></li
 			>{% endfor %}</ul
 			>

@@ -2,8 +2,8 @@
 
 html = [ ]
 html.append(
-	('sites_general','','', """
-	
+    ('sites_general','','', """
+    
 <p>Click on the thumbnails below for maps of the location of the camp sites:</p>
 <p>
 Map of wales:<br/>
@@ -11,38 +11,38 @@ Map of wales:<br/>
 <img alt="thumbnail map of Wales" src="{{ pagevars.media_root_url }}images/wales2-th.gif" width="100" height="128" /></a></p>
 <p>Detail of map:<br/>
 <a href="{{ pagevars.media_root_url }}images/wales3.gif"><img alt="thumbnail of map detail" src="{{ pagevars.media_root_url }}images/wales3-th.gif" width="100" height="99" /></a></p>
-	""")
+    """)
 )
 
 html.append(('website_general','/website/','Web site info', """
 <p>On this site, you can find:
 <ul>
-	<li>Full message board system, <a href="/camps/">a board for every camp</a>, where each board can
-	have multiple threads (topics).</li>
-	<li>Photo galleries, where you can also add your own comments.</li>
-	<li>Private messaging - send messages direct to other users, including the option to 
-	receive messages by e-mail.</li>
-	<li>User settings -  customise
-	your preferences, including a spot to put some details in about yourself and upload a personal icon.</li>
-	<li>Favorite places - have a list of your own favorite places within the website, so that you can
-	navigate to them easily.  The website will tell you if there are new things there since
-	you last visited, so by adding pages to you favorite places, you can know if anyone has replied
-	to any of your postings.</li>
+    <li>Full message board system, <a href="/camps/">a board for every camp</a>, where each board can
+    have multiple threads (topics).</li>
+    <li>Photo galleries, where you can also add your own comments.</li>
+    <li>Private messaging - send messages direct to other users, including the option to 
+    receive messages by e-mail.</li>
+    <li>User settings -  customise
+    your preferences, including a spot to put some details in about yourself and upload a personal icon.</li>
+    <li>Favorite places - have a list of your own favorite places within the website, so that you can
+    navigate to them easily.  The website will tell you if there are new things there since
+    you last visited, so by adding pages to you favorite places, you can know if anyone has replied
+    to any of your postings.</li>
 </ul>
 
 <h2>Requirements</h2>
 <ul>
-	<li>This website is designed for any web browser.  It looks best in browsers that have good
-	CSS support.</li>
+    <li>This website is designed for any web browser.  It looks best in browsers that have good
+    CSS support.</li>
 
-	<li>Cookies are required to be able to log in	as a user.  </li>
+    <li>Cookies are required to be able to log in    as a user.  </li>
 </ul>
 
 <h2>More info</h2>
 <ul>
-	<li><a href='/website/forum/'>Forum about using the site</a></li>
-	<li><a href='/website/help/'>Help pages for the website functionality</a></li>
-	<li><a href='/website/terms/'>Terms of service</a></li>
+    <li><a href='/website/forum/'>Forum about using the site</a></li>
+    <li><a href='/website/help/'>Help pages for the website functionality</a></li>
+    <li><a href='/website/terms/'>Terms of service</a></li>
 </ul>
 """))
 
@@ -139,12 +139,12 @@ html.append(('doctrinal_basis', '/info/doctrinal-basis/', 'Doctrinal Basis', """
 <p>We accept the Holy Scriptures, as originally given, as the infallible Word of God, of divine inspiration. Recognising them as our sole authority in all matters of faith and practice, we believe the doctrines taught therein. In particular we believe:</p>
 <ol style='list-style-type: lower-roman'>
 <li>in the only true and living God, the Holy Trinity of divine Persons in  perfect unity, Father, Son and Holy Spirit, each of whom is co-equal and co-eternal, and sovereign in creation, providence and redemption.</li>
-	<li>in the God and Father of our Lord Jesus Christ, who is holy, righteous, full of grace, mercy, compassion and love. In His infinite love He sent forth the Son, that the world through Him might be saved. </li>
-	<li>in the Lord Jesus Christ, the incarnate Son of God, whose true humanity and full deity were mysteriously and really joined in the unity of His divine Person. We believe in His virgin birth, in His perfect life and teaching, in His substitutionary, atoning death on the cross, where He triumphed over Satan, sin and death in His bodily resurrection and ascension into heaven, where he now sits in glory at the right hand of God.</li>
-	<li>in the Holy Spirit, the third Person of the Godhead, whose work is indispensable to regenerate the sinner, to lead him to repentance, to give him faith in Christ, to sanctify the believer in this present life and fit him to enjoy fellowship with God. For spiritual power and effectiveness His ministry is essential to the individual Christian and to the Church. </li>
-	<li>that as the result of the Fall all men are sinful by nature. Sin pollutes and controls them, infects every part of their being, renders them guilty in the sight of a holy God and subject to the penalty, which in His wrath and condemnation, He has decreed against it.</li>
-	<li>that through faith (and only faith) in the Lord Jesus Christ, whose death was a perfect oblation and satisfaction for our sins, the sinner is freely justified by God who, instead of reckoning to us our sins, reckons Christs righteousness to our account. Salvation is therefore by grace and not by human merit. </li>
-	<li>that the Lord Jesus Christ will return personally, visibly, and gloriously to this earth, to receive His saints to Himself and to be seen of all men. As the righteous Judge, He will divide all men into two, and only two, categories - the saved and the lost. Those whose faith is in Christ will be saved eternally, and will enter into the joy of their Lord, sharing with Him His inheritance in heaven. The unbelieving will be condemned by Him to hell where, eternally they will be punished for their sins under the righteous judgement of God. </li>
+    <li>in the God and Father of our Lord Jesus Christ, who is holy, righteous, full of grace, mercy, compassion and love. In His infinite love He sent forth the Son, that the world through Him might be saved. </li>
+    <li>in the Lord Jesus Christ, the incarnate Son of God, whose true humanity and full deity were mysteriously and really joined in the unity of His divine Person. We believe in His virgin birth, in His perfect life and teaching, in His substitutionary, atoning death on the cross, where He triumphed over Satan, sin and death in His bodily resurrection and ascension into heaven, where he now sits in glory at the right hand of God.</li>
+    <li>in the Holy Spirit, the third Person of the Godhead, whose work is indispensable to regenerate the sinner, to lead him to repentance, to give him faith in Christ, to sanctify the believer in this present life and fit him to enjoy fellowship with God. For spiritual power and effectiveness His ministry is essential to the individual Christian and to the Church. </li>
+    <li>that as the result of the Fall all men are sinful by nature. Sin pollutes and controls them, infects every part of their being, renders them guilty in the sight of a holy God and subject to the penalty, which in His wrath and condemnation, He has decreed against it.</li>
+    <li>that through faith (and only faith) in the Lord Jesus Christ, whose death was a perfect oblation and satisfaction for our sins, the sinner is freely justified by God who, instead of reckoning to us our sins, reckons Christs righteousness to our account. Salvation is therefore by grace and not by human merit. </li>
+    <li>that the Lord Jesus Christ will return personally, visibly, and gloriously to this earth, to receive His saints to Himself and to be seen of all men. As the righteous Judge, He will divide all men into two, and only two, categories - the saved and the lost. Those whose faith is in Christ will be saved eternally, and will enter into the joy of their Lord, sharing with Him His inheritance in heaven. The unbelieving will be condemned by Him to hell where, eternally they will be punished for their sins under the righteous judgement of God. </li>
 </ol>
 
 """))
@@ -247,8 +247,8 @@ html.append(('legal_info', '/info/legal/','Legal Information', """
 <p>Insurance for camps like this falls into 2 basic
 categories:</p>
 <ol>
-	<li>Public Liability </li>
-	<li>Personal Accident cover </li>
+    <li>Public Liability </li>
+    <li>Personal Accident cover </li>
 </ol>
 
 <p>Public Liability is a cover which provides protection for
@@ -310,9 +310,9 @@ Sunday, which is kept special with two services and a quiet programme in between
 
 <h2>Links</h2>
 <ul>
-	<li><a href="/thisyear/coming-on-camp/">Coming on camp</a></li>
-	<li><a href="/thisyear/">This year's camp dates</a></li>
-	<li><a href="/thisyear/booking/">Booking</a></li>
+    <li><a href="/thisyear/coming-on-camp/">Coming on camp</a></li>
+    <li><a href="/thisyear/">This year's camp dates</a></li>
+    <li><a href="/thisyear/booking/">Booking</a></li>
 </ul>
 
 """))
@@ -321,9 +321,9 @@ Sunday, which is kept special with two services and a quiet programme in between
 html.append(('camp_dates_intro_text', '', '', """
 <p>Dates for camp are below.  See also:</p>
 <ul>
-	<li><a href="/info/about-camp/">What is camp all about?</a></li>
-	<li><a href="/thisyear/coming-on-camp/">Coming on camp</a></li>
-	<li><a href="/thisyear/booking/">Booking</a></li>
+    <li><a href="/info/about-camp/">What is camp all about?</a></li>
+    <li><a href="/thisyear/coming-on-camp/">Coming on camp</a></li>
+    <li><a href="/thisyear/booking/">Booking</a></li>
 </ul>
 """))
 
@@ -374,8 +374,8 @@ cannot remain on the waiting list of your first choice as well.</p>
 
 <h2>Links</h2>
 <ul>
-	<li><a href="/thisyear/">This year's camp dates</a></li>
-	<li><a href="/thisyear/booking/">Booking</a></li>	
+    <li><a href="/thisyear/">This year's camp dates</a></li>
+    <li><a href="/thisyear/booking/">Booking</a></li>    
 </ul>
 
 """))
@@ -384,10 +384,10 @@ html.append(('info_index','/info/', 'Information', """
 <p>Please choose from the links below:</p>
 
 <ul>
-	<li><a href="/info/about-camp/">What is camp all about?</a></li>
-	<li><a href="/info/directors/">Directors</a></li>
-	<li><a href="/info/doctrinal-basis/">Doctrinal basis</a></li>
-	<li><a href="/info/legal/">Legal information</a></li>
+    <li><a href="/info/about-camp/">What is camp all about?</a></li>
+    <li><a href="/info/directors/">Directors</a></li>
+    <li><a href="/info/doctrinal-basis/">Doctrinal basis</a></li>
+    <li><a href="/info/legal/">Legal information</a></li>
 </ul>
 """))
 

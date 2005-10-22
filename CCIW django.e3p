@@ -1,47 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Project SYSTEM "Project-3.5.dtd">
+<!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2005-10-11, 23:06:09 -->
+<!-- Saved: 2005-10-22, 18:32:20 -->
 <!-- Copyright (C) 2005 ,  -->
-<Project version="3.5">
+<Project version="3.7">
+  <ProgLanguage mixed="0">Python</ProgLanguage>
+  <UIType>Qt</UIType>
   <Description></Description>
   <Version>0.1</Version>
   <Author></Author>
   <Email></Email>
   <Sources>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>settings</Dir>
-      <Dir>urls</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>settings</Dir>
-      <Dir>urls</Dir>
-      <Name>admin.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>settings</Dir>
-      <Dir>urls</Dir>
-      <Name>main.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>settings</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>settings</Dir>
-      <Name>admin.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>settings</Dir>
-      <Name>main.py</Name>
-    </Source>
     <Source>
       <Dir>cciw</Dir>
       <Dir>apps</Dir>
@@ -220,6 +189,27 @@
       <Dir>cciw</Dir>
       <Dir>views</Dir>
       <Name>forums.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Name>settings.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Name>urls.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Name>urls.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Dir>views</Dir>
+      <Name>htmlchunk.py</Name>
     </Source>
   </Sources>
   <Forms>
