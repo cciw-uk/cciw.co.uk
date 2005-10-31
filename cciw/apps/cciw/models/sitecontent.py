@@ -41,22 +41,37 @@ class HtmlChunk(meta.Model):
     def __repr__(self):
         return self.name
         
-    def render(self, context):
-        """render the HTML chunk as if it were a Django template"""
+    def render(self, context, context_var):
+        """render the HTML chunk as if it were a Django template, 
+        and store the result in a context object.
+        
+        The context parameter is used as the context for
+        the rendering, and also to store the 
+        result - in context[context_var]
+        
+        Also, if the context objectcontains a PageVars object, the  
+        the HtmlChunk will be added to PageVars.html_chunks list
+        
+        """
         from django.core import template
         t = template.Template('{% load standardpage %}' + self.html)
-        return t.render(context)
-    # render 1: using chunk as a django template
+        context[context_var] = t.render(context)
+        #try:
+        page_vars = context['pagevars']
+        #except KeyError:
+        #    page_vars = None
+        #if page_vars is not None:
+        page_vars.html_chunks.append(self)
 
     def _module_render_into_context(context, chunkdict):
         """Retrieve a set of HtmlChunks and render into the context object, chunks
         being defined as {contextvar: chunkname} in chunkdict"""
         # We use the context both for rendering the HtmlChunks,
         # and the destination context
-        for contextvar, chunkname in chunkdict.items():
+        for context_var, chunkname in chunkdict.items():
             try:
-                chunktext = get_object(name__exact=chunkname)
-                context[contextvar] = chunktext.render(context)
+                chunk = get_object(name__exact=chunkname)
+                chunk.render(context, context_var)
             except HtmlChunkDoesNotExist:
                 pass
         

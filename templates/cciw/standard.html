@@ -1,5 +1,8 @@
 {% extends "cciw/base" %}
 {% load standardpage %}
+{% block bodystart %}
+<div id="skiptocontentdiv"><a href="#content" id="skiptocontent">Skip to content</a></div>
+{% endblock %}
 {% block main %}
 <div id="mainstandard">
 	<div id="sidebarOuter">
@@ -31,6 +34,14 @@
 					{{ contentBody }}
 				{% endblock %}
 			</div>
+			{% if pagevars.html_chunks %}
+				<div id="editfooter">Edit HTML: 
+					{% for chunk in pagevars.html_chunks %}
+						<a href="/admin/sitecontent/htmlchunks/{{ chunk.id }}/"> {{ chunk.name }}</a>
+						{% if forloop.last %}{% else %}, {% endif %}
+					{% endfor %}
+				</div>
+			{% endif %}
 		</div>
 	</div>
 </div>
@@ -50,4 +61,5 @@
 		<li><a href="/members/?online=1"> {{ pagevars.logged_in_members }} member(s) online</a></li>
 	</ul>
 </div>
+
 {% endblock %}

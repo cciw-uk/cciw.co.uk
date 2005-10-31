@@ -7,11 +7,11 @@
 		<div class="paging">{% paging_control %}</div>
 		<table class="topheaders">
 			<tr>
-				<th>Topic</th>
-				<th class="topicStartedCol">Started {% sorting_control "aca" "dca" %}</th>
-				<th>Posts {% sorting_control "apc" "dpc" %}</th>
-				<th class="topicLastPostCol">Last post {% sorting_control "alp" "dlp" %}</th>
-				<th>Status</th>
+				<th scope="col">Topic</th>
+				<th scope="col" class="topicStartedCol">Started {% sorting_control "aca" "dca" %}</th>
+				<th scope="col">Posts {% sorting_control "apc" "dpc" %}</th>
+				<th scope="col" class="topicLastPostCol">Last post {% sorting_control "alp" "dlp" %}</th>
+				<th scope="col">Status</th>
 			</tr>
 		{% for topic in object_list %}
 			<tr>

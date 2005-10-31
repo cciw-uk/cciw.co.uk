@@ -12,6 +12,7 @@ class PageVars:
         self.style_sheet_url = self.media_root_url + 'style.css'
         self.style_sheet2_url = self.media_root_url + 'style2.css'
         self.request = request
+        self.html_chunks = []
         self.logged_in_members = members.get_count(last_seen__gte = datetime.datetime.now() - datetime.timedelta(minutes=3))
 
 class StandardContext(DjangoContext):

@@ -36,7 +36,6 @@ def detail(request, year, number):
     c = StandardContext(request, {'camp': camp }, 
                             title = camp.nice_name())
     
-    
     if camp.end_date < datetime.date.today():
         c['camp_is_past'] = True
         c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(str(camp.year)) + [camp.nice_name()])    

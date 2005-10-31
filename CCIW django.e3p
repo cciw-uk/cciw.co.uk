@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2005-10-22, 18:32:20 -->
+<!-- Saved: 2005-10-22, 19:42:15 -->
 <!-- Copyright (C) 2005 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -39,20 +39,6 @@
     <Source>
       <Dir>cciw</Dir>
       <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>urls</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>urls</Dir>
-      <Name>cciw.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
@@ -219,6 +205,9 @@
   <Interfaces>
   </Interfaces>
   <Others>
+    <Other>
+      <Name>templates</Name>
+    </Other>
   </Others>
   <Vcs>
     <VcsType>Subversion</VcsType>

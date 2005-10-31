@@ -32,10 +32,9 @@
 			{% endif %}
 		{% endif %}
 		</tr>
-
 		<tr>
-			<th class="postFromCol">From</th>
-			<th>Message</th>
+			<th scope="col" class="postFromCol">From</th>
+			<th scope="col">Message</th>
 		</tr>
 		{% if object_list %}
 			{% include 'cciw/forums/thread' %}
@@ -49,4 +48,4 @@
 
 		TODO - add message form
 
-{% endblock %} 
+{% endblock %}

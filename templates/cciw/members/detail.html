@@ -21,42 +21,42 @@
 		<h2>Information</h2>
 		<table class="sideheaders">
 			<tr>
-				<th>User name</th>
+				<th scope="row">User name</th>
 				<td>{{ member.user_name }}</td>
 			</tr>
 			<tr>
-				<th>'Real' name</th>
+				<th scope="row">'Real' name</th>
 				<td>{{ member.real_name }}</td>
 			</tr>
 			{% if member.icon %}
 			<tr>
-				<th>Icon</th>
+				<th scope="row">Icon</th>
 				<td>{{ member.icon_image }}</td>
 			</tr>
 			{% endif %}
 			{% if member.show_email %}
 			<tr>
-				<th>Email</th>
+				<th scope="row">Email</th>
 				<td>{{ member.email|obfuscate_email }}</td>
 			</tr>
 			{% endif %}
 			<tr>
-				<th>Date joined</th>
+				<th scope="row">Date joined</th>
 				<td>{{ member.date_joined|date:"d M Y H:i:s" }}</td>
 			</tr>
 			<tr>
-				<th>Last seen</th>
+				<th scope="row">Last seen</th>
 				<td>{{ member.last_seen|date:"d M Y H:i:s" }}</td>
 			</tr>
 			{% if member.comments %}
 			<tr>
-				<th>Comments</th>
+				<th scope="row">Comments</th>
 				<td>{{ member.comments|bb2html }}</td>
 			</tr>
 			{% endif %}
 			{% if member.website %}
 			<tr>
-				<th>Website</th>
+				<th scope="row">Website</th>
 				<td>{{ member.website }}</td>
 			</tr>
 			{% endif %}

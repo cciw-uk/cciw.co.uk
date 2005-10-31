@@ -11,12 +11,12 @@
 <h2>Information</h2>
 <table class="sideheaders">
 	<tr>
-		<th>Location:</th>
+		<th scope="row">Location:</th>
 		<td><a href="{{ camp.get_site.get_absolute_url }}">{{ camp.get_site.short_name }}</a></td>
 	</tr>
 	{% if camp.get_nextCamp_list %}
 	<tr>
-		<th>Following camp:</th>
+		<th scope="row">Following camp:</th>
 		<td>
 			{% for nextCamp in camp.get_nextCamp_list %}
 				{{ nextCamp.get_link }}<br/>
@@ -26,14 +26,14 @@
 	{% endif %}
 	{% if camp.get_previous_camp %}
 	<tr>
-		<th>Previous camp:</th>
+		<th scope="row">Previous camp:</th>
 		<td>
 			{{ camp.get_previous_camp.get_link }}
 		</td>
 	</tr>
 	{% endif %}
 	<tr>
-		<th>Leaders:</th>
+		<th scope="row">Leaders:</th>
 		<td>
 			<ul class="leaderlist">
 				{% for leader in camp.get_leader_list %}
@@ -46,5 +46,4 @@
 		</td>
 	</tr>
 </table>
-
 {% endblock %}

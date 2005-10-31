@@ -195,20 +195,22 @@ div.newsItem h2
 
 /************* Layout, spacing, general styles ************/
 
-body {
+body 
+{
 	margin: 0;
 	margin-bottom: 10px;
 	padding: 0;
 	font-family: verdana, arial, sans;
-	/* TODO IE 5.5 and above have v large font as default, need to shrink selectively */
 }
 
-a:link {
+a:link
+{
 	text-decoration: none;
 }
 
 
-a:visited {
+a:visited
+{
 	text-decoration: none;
 }
 
@@ -244,7 +246,10 @@ h5, h6
 	font-size: 1em;
 }
 /* Header and positioning */
-
+#skiptocontentdiv
+{
+	display: none;
+}
 #header
 {
 	position: absolute;
@@ -313,7 +318,6 @@ h5, h6
 
 }
 
-
 #mainstandard #pageTitle
 {
 	margin-top: 0px;
@@ -332,6 +336,12 @@ h5, h6
 	margin-bottom: 1em;
 	padding: 0 0.8em 0.8em 0.8em;
 }
+
+#mainstandard #editfooter
+{
+	padding: 0 5px;
+}
+
 /* Sidebar styles */
 #sidebar h1
 {
@@ -349,6 +359,7 @@ h5, h6
 	margin: 0px;
 	list-style-type: none;
 }
+
 #sidebar a
 {
 	padding-left: 8px;
@@ -372,9 +383,12 @@ h5, h6
 	background-position: top left;
 	height: 70px;
 }
-#footer h1{
+
+#footer h1
+{
 	display:none;
 }
+
 #footer ul, #footer li
 {
 	padding: 0px;
@@ -405,7 +419,6 @@ table.sideheaders th
 	text-align: left;
 }
 
-
 table.sideheaders th,
 table.sideheaders td,
 table.topheaders th,
@@ -413,6 +426,7 @@ table.topheaders td
 {
 	padding: 3px;
 }
+
 td div.postSubject
 {
 	font-style: italic;
@@ -422,6 +436,7 @@ td div.postSubject
 	margin-bottom: 2px;
 	padding: 0px 4px;
 }
+
 table.sideheaders th,
 table.sideheaders td,
 table.topheaders td
@@ -441,13 +456,15 @@ ul.leaderlist
 	padding: 0px;
 	list-style: none;
 }
+
 ul.leaderlist li
 {
 	margin: 0 0 1em 0;
 	padding: 0px;
 }
 
-div.paging {
+div.paging 
+{
 	text-align: right;
 	padding: 5px 0px 5px 0px;
 	position: relative; /* IE bug */
@@ -592,6 +609,7 @@ div.center
 	padding: 0.5em 1em ;
 	margin: 0 1em 0.5em 1em;
 }
+
 .postMessage .memberquote
 {
 	padding: 0px 2px;

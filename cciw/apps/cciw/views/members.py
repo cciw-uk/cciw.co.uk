@@ -28,7 +28,6 @@ def index(request):
         lookup_args, request, ('user_name',))
     extra_context['default_order'] = 'aun'
     
-        
     try:
         search = '%' + request['search'] + '%'
         lookup_args['where'] = ["(user_name LIKE %s OR real_name LIKE %s)"]

@@ -5,30 +5,37 @@
 		<h2>Dates</h2>
 		<p>Click on the number of the camp for more information</p>
 		<div>
-		<table class="topheaders">
+		<table class="topheaders" summary="Details of all camps running in {{ thisyear }}">
+			<thead>
 			<tr>
-				<th>#</th>
-				<th>Age</th>
-				<th>Dates</th>
-				<th>Leaders</th>
-				<th>Chaplain</th>
+				<th scope="col" abbr="Num">#</th>
+				<th scope="col">Age</th>
+				<th scope="col">Dates</th>
+				<th scope="col">Leaders</th>
+				<th scope="col">Chaplain</th>
 			</tr>
-			{% for camp in camps %}
-			{% ifchanged %}
-			<tr>
-				<th colspan="5" class="siteDivision">
-				<a href="{{ camp.get_site.get_absolute_url }}">{{ camp.get_site.short_name }}</a>
-				</th>
-			</tr>
-			{% endifchanged %}
-			<tr>
-				<td><a href="{{ camp.get_absolute_url }}" 
-					title="{{ camp.nice_name }}">{{ camp.number }}</a></td>
-				<td>{{ camp.age	}}</td>
-				<td>{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M" }}</td>
-				<td>{{ camp.get_leader_list|join:", " }}</td>
-				<td>{{ camp.get_chaplain }}</td>
-			</tr>
+			</thead>
+			{% regroup camps by site_id as campgroups %}
+			{% for campgroup in campgroups %}
+				<tbody>
+					<tr>
+						<th scope="rowgroup" colspan="5" class="siteDivision">
+						<a href="{{ campgroup.list.0.get_site.get_absolute_url }}">{{ campgroup.list.0.get_site }}</a>
+						</th>
+					</tr>
+				
+
+					{% for camp in campgroup.list %}
+					<tr>
+						<td><a href="{{ camp.get_absolute_url }}" 
+							title="{{ camp.nice_name }}">{{ camp.number }}</a></td>
+						<td>{{ camp.age	}}</td>
+						<td>{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M" }}</td>
+						<td>{{ camp.get_leader_list|join:", " }}</td>
+						<td>{{ camp.get_chaplain }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
 			{% endfor %}
 		</table>
 		</div>

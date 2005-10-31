@@ -89,7 +89,10 @@ class Camp(meta.Model):
     class META:
         admin = meta.Admin(
             fields = (
-                (None, {'fields': ('year', 'number', 'age', 'start_date', 'end_date', 'chaplain', 'leaders', 'site', 'previous_camp') }),
+                (None, {'fields': ('year', 'number', 'age', 'start_date', 'end_date', 
+                                   'chaplain', 'leaders', 'site', 'previous_camp') 
+                        }
+                ),
             )
         )
         ordering = ['-year','number']

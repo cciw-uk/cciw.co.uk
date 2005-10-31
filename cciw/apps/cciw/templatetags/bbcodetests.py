@@ -39,20 +39,20 @@ tests = (
     ('ok, ill go first...[br][br][color=red]b[color=orange]e[color=yellow]a[color=green]u[color=blue]t[color=purple]i[color=magenta]f[color=pink]u[color=red]l[/color]  :-) [color=black](the surroundings and everyone in it)',
         '<div>ok, ill go first...<br/><br/><span style="color: red;">be<span style="color: yellow;">a<span style="color: green;">u<span style="color: blue;">t<span style="color: purple;">ifu<span style="color: red;">l</span>  <img src="http://cciw_django_local/media/images/emoticons/smile.gif" alt=":-)" /> <span style="color: black;">(the surroundings and everyone in it)</span></span></span></span></span></span></div>'),
     ('[quote= foo1_23 ]Blah[/quote]',
-        '<blockquote><div class="memberquote">' + get_member_link('foo1_23') + ' said:</div><div>Blah</div></blockquote>'),
+        '<div class="memberquote">' + get_member_link('foo1_23') + ' said:</div><blockquote><div>Blah</div></blockquote>'),
     ('[quote=foo123%]Blah[/quote]',
         '<blockquote><div>Blah</div></blockquote>')
 )
 
 class TestBBCodeParser(unittest.TestCase):
     
-    def testRenderXhtml(self):
+    def test_render_xhtml(self):
         for bb, xhtml in tests:
             result = bbcode.bb2xhtml(bb)
             self.assertEqual(xhtml, result, "\n----BBcode:\n " +bb + "\n----Rendered as:\n" + result + 
                 "\n---- instead of \n" + xhtml)
                 
-    def testRenderAllPosts(self):
+    def xtest_render_all_posts(self):
         from django.models.forums import posts
         from django.models.members import messages
         from cciw.apps.cciw.utils import validate_xml

@@ -5,7 +5,7 @@
 	<form method='get' action='/members/'>
 		<p>
 		<label>Search:
-		<input type='text' name='search' id='search' value="{{ pagevars.request.search|escape }}" /></label><br/>
+		<input type='text' name='search' id='search' value="{{ pagevars.request.search|escape }}" onfocus="javascript:this.value='';" /></label><br/>
 		<label>Online users only: <input type="checkbox" name="online" value="1"
 			{% if pagevars.request.online %}
 				checked="checked"
@@ -17,12 +17,12 @@
 	<div class="paging">{% paging_control %}</div>
 	<table class="topheaders">
 		<tr>
-			<th>Icon</th>
-			<th>Member name&nbsp;{% sorting_control "aun" "dun" %}</th>
-			<th>'Real' name&nbsp;{% sorting_control "arn" "drn" %}</th>
-			<th>Comments</th>
-			<th>Joined&nbsp;{% sorting_control "adj" "ddj" %}</th>
-			<th>Last seen&nbsp;{% sorting_control "als" "dls" %}</th>
+			<th scope="col">Icon</th>
+			<th scope="col">Member name&nbsp;{% sorting_control "aun" "dun" %}</th>
+			<th scope="col">'Real' name&nbsp;{% sorting_control "arn" "drn" %}</th>
+			<th scope="col">Comments</th>
+			<th scope="col">Joined&nbsp;{% sorting_control "adj" "ddj" %}</th>
+			<th scope="col">Last seen&nbsp;{% sorting_control "als" "dls" %}</th>
 		</tr>
 
 		{% for member in object_list %}
