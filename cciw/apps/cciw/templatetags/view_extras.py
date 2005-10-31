@@ -62,9 +62,12 @@ def do_paging_control(parser, token):
         return PagingControlNode()
 
 class SortingControlNode(template.Node):
-    def __init__(self, ascending_param, descending_param):
+    def __init__(self, ascending_param, descending_param, 
+                 ascending_title, descending_title):
         self.ascending_param = ascending_param
         self.descending_param = descending_param
+        self.ascending_title = ascending_title
+        self.descending_title = descending_title
     
     def render(self, context):
         request = context['pagevars'].request
@@ -77,15 +80,22 @@ class SortingControlNode(template.Node):
                 current_order = ''
         
         if current_order == self.ascending_param:
-            output += '<a href="' + html.escape(modified_query_string(request, {'order': self.descending_param})) + '">' + \
-            '<img class="sortAscActive" src="' + CCIW_MEDIA_ROOT + 'images/arrow-up.gif" alt="Sorted ascending" /></a>' 
+            output += '<a title="' + self.descending_title +'" href="' +  \
+                html.escape(modified_query_string(request, {'order': self.descending_param})) \
+                + '"><img class="sortAscActive" src="' + CCIW_MEDIA_ROOT + \
+                'images/arrow-up.gif" alt="Sorted ascending" /></a>' 
         elif current_order == self.descending_param:
-            output += '<a href="' + html.escape(modified_query_string(request, {'order': self.ascending_param})) + '">' + \
-            '<img class="sortDescActive" src="' + CCIW_MEDIA_ROOT + 'images/arrow-down.gif" width="10" alt="Sorted descending" /></a>'
+            output += '<a title="' + self.ascending_title +'" href="' + \
+                html.escape(modified_query_string(request, {'order': self.ascending_param})) \
+                + '"><img class="sortDescActive" src="' + CCIW_MEDIA_ROOT + \
+                'images/arrow-down.gif" alt="Sorted descending" /></a>'
         else:
             # query string resets page to zero if we use a new type of sorting
-            output += '<a href="' + html.escape(modified_query_string(request, {'order': self.ascending_param, 'page': 0})) + '">' + \
-            '<img class="sortAsc" src="' + CCIW_MEDIA_ROOT + 'images/arrow-up.gif" alt="Sort ascending" /></a>'
+            output += '<a title="' + self.ascending_title +'" href="' + \
+                html.escape(modified_query_string(request, 
+                                                 {'order': self.ascending_param, 'page': 0})) \
+                + '"><img class="sortAsc" src="' + CCIW_MEDIA_ROOT + \
+                'images/arrow-up.gif" alt="Sort ascending" /></a>'
         
         output += '</span>'
         return output
@@ -94,8 +104,9 @@ class SortingControlNode(template.Node):
 def do_sorting_control(parser, token):
     """
     Creates a pair of links that are used for sorting a list on a field.
-    Two parameters are accepted, which must be the query string parameter values that should
-    be used for ascending and descending sorts on a field.
+    Four parameters are accepted, which must be the query string parameter values that 
+    should be used for ascending and descending sorts on a field, and the corresponding
+    title text for those links (in that order). All arguments must be quoted with '"'
     
     The query string parameter name is always 'order', and the view function
     will need to check that parameter and adjust accordingly.  The view function
@@ -110,17 +121,14 @@ def do_sorting_control(parser, token):
     
     Usage::
     
-        {% sorting_control "ad" "dd" %}
+        {% sorting_control "ad" "dd" "Sort date ascending" "Sort date descending" %}
         
-    This might be used for 'date ascending' and 'date descending' order
     """
-    try:
-        tag_name, ascending_param, descending_param = token.contents.split(None, 2)
-    except ValueError:
-        raise template.TemplateSyntaxError, "sorting_control tag requires two arguments"
-    ascending_param = ascending_param.strip('"')
-    descending_param = descending_param.strip('"')
-    return SortingControlNode(ascending_param, descending_param)
+    bits = token.contents.split('"')
+    if len(bits) != 9:
+        raise template.TemplateSyntaxError, "sorting_control tag requires 4 quoted arguments"
+    return SortingControlNode(bits[1].strip('"'), bits[3].strip('"'),
+                              bits[5].strip('"'), bits[7].strip('"'),)
 
 class ForwardQueryParamNode(template.Node):
     def __init__(self, param_name):

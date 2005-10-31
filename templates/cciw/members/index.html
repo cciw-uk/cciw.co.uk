@@ -18,11 +18,11 @@
 	<table class="topheaders">
 		<tr>
 			<th scope="col">Icon</th>
-			<th scope="col">Member name&nbsp;{% sorting_control "aun" "dun" %}</th>
-			<th scope="col">'Real' name&nbsp;{% sorting_control "arn" "drn" %}</th>
+			<th scope="col">Member name&nbsp;{% sorting_control "aun" "dun" "Sort by user name ascending" "Sort by user name descending" %}</th>
+			<th scope="col">'Real' name&nbsp;{% sorting_control "arn" "drn" "Sort by real name ascending" "Sort by real name descending" %}</th>
 			<th scope="col">Comments</th>
-			<th scope="col">Joined&nbsp;{% sorting_control "adj" "ddj" %}</th>
-			<th scope="col">Last seen&nbsp;{% sorting_control "als" "dls" %}</th>
+			<th scope="col">Joined&nbsp;{% sorting_control "adj" "ddj" "Sort by 'date joined' ascending" "Sort by 'date joined' descending" %}</th>
+			<th scope="col">Last seen&nbsp;{% sorting_control "als" "dls" "Sort by 'last seen' ascending" "Sort by 'last seen' descending" %}</th>
 		</tr>
 
 		{% for member in object_list %}
@@ -31,7 +31,7 @@
 				{{ member.icon_image }}
 			     {% endif %}
 			</td>
-			<td><a href="{{ member.get_absolute_url }}">{{ member.user_name }}</a></td>
+			<td>{{ member.get_link }}</td>
 			<td>{{ member.real_name|escape }}</td>
 			<td>{{ member.comments|bb2html }}</td>
 			<td>

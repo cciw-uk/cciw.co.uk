@@ -7,7 +7,7 @@ def get_member_link(user_name):
     if user_name.startswith("'"):
         return user_name
     else:
-        return '<a href="/members/' + user_name + '/">' + user_name + '</a>'
+        return '<a title="information about user \'' + user_name + '\'" href="/members/' + user_name + '/">' + user_name + '</a>'
     
 def modified_query_string(request, dict, fragment = ''):
     """Returns the query string represented by request, with key-value pairs

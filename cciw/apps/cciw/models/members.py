@@ -71,10 +71,11 @@ class Member(meta.Model):
         return "/members/" + self.user_name + "/"
         
     def get_link(self):
+        from cciw.apps.cciw.utils import get_member_link
         if self.dummy_member:
             return self.user_name
         else:
-            return '<a href="' + self.get_absolute_url() + '">' + self.user_name + '</a>'
+            return get_member_link(self.user_name)
 
     def icon_image(self):
         from cciw.apps.cciw.settings import CCIW_MEDIA_ROOT

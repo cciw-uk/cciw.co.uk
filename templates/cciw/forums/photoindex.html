@@ -7,11 +7,11 @@
 		<div class="paging">{% paging_control %}</div>
 		<table class="topheaders">
 			<tr>
-				<th class="photoDateAddedCol">Date added {% sorting_control "aca" "dca" %}</th>
-				<th>Thumbnail</th>
-				<th>Description</th>
-				<th>Posts {% sorting_control "apc" "dpc" %}</th>
-				<th class="photoLastPostCol">Last comment {% sorting_control "alp" "dlp" %}</th>
+				<th scope="col" class="photoDateAddedCol">Date added {% sorting_control "aca" "dca" "Sort by 'date added' ascending" "Sort by 'date added' descending" %}</th>
+				<th scope="col">Thumbnail</th>
+				<th scope="col">Description</th>
+				<th scope="col">Posts {% sorting_control "apc" "dpc" "Sort by number of posts ascending" "Sort by number of posts descending"%}</th>
+				<th scope="col" class="photoLastPostCol">Last comment {% sorting_control "alp" "dlp" "Sort by date of last post, ascending" "Sort by date of last post, descending" %}</th>
 			</tr>
 		{% for photo in object_list %}
 			<tr>
