@@ -49,16 +49,16 @@ class Camp(meta.Model):
     start_date = meta.DateField("start date")
     end_date = meta.DateField("end date")
     previous_camp = meta.ForeignKey("self", 
-        related_name="nextCamp", 
+        related_name="next_camp", 
         verbose_name="previous camp",
         null=True, blank=True)
     chaplain = meta.ForeignKey(Person, 
-        related_name="campAsChaplain", 
+        related_name="camp_as_chaplain", 
         verbose_name="chaplain", 
         null=True, blank=True)
     leaders = meta.ManyToManyField(Person, 
         singular="leader",
-        related_name="campAsLeader", 
+        related_name="camp_as_leader", 
         verbose_name="leaders",
         null=True, blank=True)
     site = meta.ForeignKey(Site)

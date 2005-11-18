@@ -191,8 +191,22 @@ div.newsItem h2
 	border-bottom: 0px;
 }
 
+div.pollBarChartTotal
+{
+	width: 404px;
+	border: 1px solid #114411;
+	
+}
 
+div.pollBarChart
+{
+	height: 10px; background-color: white; margin: 2px;
+}
 
+.pollresults td
+{
+	vertical-align: top;
+}
 /************* Layout, spacing, general styles ************/
 
 body 

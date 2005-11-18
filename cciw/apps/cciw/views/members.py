@@ -49,7 +49,10 @@ def detail(request, user_name):
     
     if request.POST:
         if request.POST.has_key('logout'):
-            del request.session['member_id']
+            try:
+                del request.session['member_id']
+            except KeyError:
+                pass
         
     c = StandardContext(request, title="Members: " + member.user_name)
     c['member'] = member
@@ -58,6 +61,7 @@ def detail(request, user_name):
     
 def login(request):
     c = StandardContext(request, title="Login")
+    c['referrer'] = request.META.get('HTTP_REFERER', None)
     if request.POST:
         try:
             member = members.get_object(user_name__exact = request.POST['user_name'])

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2005-10-22, 19:42:15 -->
+<!-- Saved: 2005-11-05, 00:34:13 -->
 <!-- Copyright (C) 2005 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
-  <UIType>Qt</UIType>
+  <UIType>Console</UIType>
   <Description></Description>
   <Version>0.1</Version>
   <Author></Author>
@@ -196,6 +196,17 @@
       <Dir>cciw</Dir>
       <Dir>views</Dir>
       <Name>htmlchunk.py</Name>
+    </Source>
+    <Source>
+      <Dir>templates</Dir>
+      <Dir>cciw</Dir>
+      <Dir>awards</Dir>
+      <Name>index.html</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>middleware</Dir>
+      <Name>csrf.py</Name>
     </Source>
   </Sources>
   <Forms>

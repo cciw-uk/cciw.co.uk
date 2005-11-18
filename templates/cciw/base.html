@@ -15,6 +15,9 @@
 {% endblock %}
 <div id="header">
 	<div id="headerlogo">
+		{% ifnotequal pagevars.request.path "/" %}
+			<a href="/" title="Home page" style="height: 55px; width:140px; display: block;"></a>
+		{% endifnotequal %}
 	</div>
 </div>
 {% block main %}

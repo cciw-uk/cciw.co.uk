@@ -9,23 +9,18 @@
 			<tr>
 				<th scope="col">Topic</th>
 				<th scope="col" class="topicStartedCol">Started 
-					{% sorting_control "aca" "dca" 
-						"Sort by date started, ascending" 
-						"Sort by date started, descending" %}</th>
+					{% sorting_control "aca" "dca" "Sort by date started, ascending" "Sort by date started, descending" %}</th>
 				<th scope="col">Posts 
-					{% sorting_control "apc" "dpc" 
-						"Sort by number of posts, ascending" 
-						"Sort by number of posts, descending" %}</th>
+					{% sorting_control "apc" "dpc" "Sort by number of posts, ascending" "Sort by number of posts, descending" %}</th>
 				<th scope="col" class="topicLastPostCol">Last post 
-					{% sorting_control "alp" "dlp" 
-						"Sort by date of last post, ascending" 
-						"Sort by date of last post, descending" %}</th>
+					{% sorting_control "alp" "dlp" "Sort by date of last post, ascending" "Sort by date of last post, descending" %}</th>
 				<th scope="col">Status</th>
 			</tr>
 		{% for topic in object_list %}
 			<tr>
 				<td class="topicLink">
 				{% if topic.news_item_id %}<div class="center">NEWS ITEM</div>{% endif %}
+				{% if topic.poll_id %}<div class="center">POLL</div>{% endif %}
 				{{ topic.get_link }}
 				</td>
 				<td>{% if topic.created_at %}{{ topic.created_at|date:"d M Y h:i" }}<br/>{% endif %}

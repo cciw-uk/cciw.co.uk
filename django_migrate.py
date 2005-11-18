@@ -86,8 +86,11 @@ def fix_bbcode(message):
     
     return message
 
+def fix_member_links(text):
+    return re.sub(r'members.php\?sp=([^\'"]*)',r'/members/\1/', text)
+    
 def fix_news_items(html):
-    html = re.sub(r'members.php\?sp=([^\'"]*)',r'/members/\1/', html)
+    html = fix_member_links(html)
     html = html.replace('src="news/', 'src="{{media}}news/').replace("src='news/", "src='{{media}}news/")
     return html
     
@@ -457,7 +460,7 @@ def migrate_polls():
             if len(pollline) == 0:
                 continue
             if pollline.startswith("[option]"):
-                options.append(pollline.replace("[option]", ""))
+                options.append(fix_bbcode(pollline.replace("[option]", "")))
                 # any previous additions to outro_text were wrong
                 if len(poll.outro_text) > 0:
                     print "Text '" + poll.outro_text + "' in poll " + \
@@ -479,10 +482,15 @@ def migrate_polls():
         poll.created_by_id = members.get_object(user_name__exact=line[5]).user_name
         poll.save()
         
+        # Get votes
+        pollinfo = get_table(PREFIX + "../polls/" + str(line[0]) + ".data")
+        # votes are on second row, second col
+        votes = pollinfo[1][1].split(',')
+        
         for i in range(0,len(options)):
             option = polloptions.PollOption(text=options[i])
             option.poll_id = poll.id
-            option.total = int(line[9])
+            option.total = int(votes[i])
             option.listorder = i
             option.save()
 
@@ -738,6 +746,7 @@ def fixup_urls():
             (newsitems.get_list(), 'summary'),
             (members.get_list(), 'comments'),
             (messages.get_list(), 'text'),
+            (polloptions.get_list(), 'text'),
         ):
         for obj in objectlist:
             sorig = obj.__dict__[attrname]
@@ -745,6 +754,7 @@ def fixup_urls():
             for old, new in urlpairs:
                 snew = snew.replace(old, new)
                 snew = snew.replace(old.replace('&', '&amp;'), new.replace('&', '&amp;'))
+            snew = fix_member_links(snew)
             snew = snew.replace("http://cciw.co.uk//", "http://cciw.co.uk/")
             if snew != sorig:
                 obj.__dict__[attrname] = snew

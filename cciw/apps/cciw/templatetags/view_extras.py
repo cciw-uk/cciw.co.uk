@@ -19,7 +19,9 @@ class PagingControlNode(template.Node):
         request = context['pagevars'].request
         output = ''        
         if (total_pages > 1):
-            output += "&mdash; Page " + str(cur_page+1) + " of " + str(total_pages)+ " &mdash;&nbsp;&nbsp; "
+            output += "&mdash; Page %d  of %d &mdash;&nbsp;&nbsp; " % \
+                (cur_page + 1, total_pages)
+            
             for i in range(0, total_pages):
                 if (i > 0):
                     output += " | "
@@ -27,15 +29,23 @@ class PagingControlNode(template.Node):
                 if i == cur_page:
                     output += '<span class="pagingLinkCurrent">' + str(i+1) + '</span>'
                 else:
-                    output += '<a class="pagingLink" href="' + page_link(request, i, self.fragment)+ '">' + str(i+1) + '</a>'
+                    output += \
+                        '<a title="%(title)s" class="pagingLink" href="%(href)s">%(pagenumber)d</a>' % \
+                        { 'title': 'Page ' + str(i+1),
+                          'href': page_link(request, i, self.fragment),
+                          'pagenumber': i+1 }
             output += " | "
             if cur_page > 0:
-                output += '<a class="pagingLink" title="Previous page" href="' + page_link(request, cur_page - 1, self.fragment) + '">&laquo;</a>'
+                output += \
+                    '<a class="pagingLink" title="Previous page" href="%s">&laquo;</a>' % \
+                    page_link(request, cur_page - 1, self.fragment)
             else:
                 output += '<span class="pagingLinkCurrent">&laquo;</span>'
             output += "&nbsp;"
             if cur_page < total_pages - 1:
-                output += '<a class="pagingLink" title="Next page" href="' + page_link(request, cur_page + 1, self.fragment) + '">&raquo;</a>'
+                output += \
+                    '<a class="pagingLink" title="Next page" href="%s">&raquo;</a>' % \
+                    page_link(request, cur_page + 1, self.fragment)
             else:
                 output += '<span class="pagingLinkCurrent">&raquo;</span>'
         return output

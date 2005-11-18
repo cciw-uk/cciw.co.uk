@@ -24,6 +24,17 @@ class Poll(meta.Model):
     def __repr__(self):
         return self.title
     
+    def can_vote(self, member):
+        """Returns true if member can vote on the poll"""
+        # TODO
+        return True
+        
+    def total_votes(self):
+        sum = 0
+        for option in self.get_poll_option_list():
+            sum += option.total
+        return sum
+        
     class META:
         admin = meta.Admin(
             list_display = ('title', 'created_by', 'voting_starts')
@@ -46,6 +57,29 @@ class PollOption(meta.Model):
         
     def __repr__(self):
         return self.text
+        
+    def percentage(self):
+        """
+        Get the percentage of votes this option got 
+        compared to the total number of votes in the whole. Return
+        'n/a' if total votes = 0
+        """
+        sum = self.get_poll().total_votes()
+        if sum == 0:
+            return 'n/a'
+        else:
+            if self.total == 0:
+                return '0%'
+            else:
+                return '%.1f' % (float(self.total)/sum*100) + '%'
+                
+    def bar_width(self):
+        sum = self.get_poll().total_votes()
+        if sum == 0:
+            return 0
+        else:
+            return int(float(self.total)/sum*400)
+            
         
     class META:
         admin = meta.Admin(

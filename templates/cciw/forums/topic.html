@@ -18,8 +18,34 @@
 		</div>
 	</div>
 	{% endif %}
-	<a name="comments"></a>
-	<div class="paging">{% paging_control #comments %}</div>
+	{% if poll %}
+		{% if show_poll_results %}
+		<div class="pollresults">
+			<h2>{{ poll.title }}</h2>
+			{% if poll.intro_text %}<p>{{ poll.intro_text }}</p>{% endif %}
+			<p>Results:</p>
+			<table>
+			{% for polloption in poll.get_poll_option_list %}
+				<tr>
+					<td>{{ polloption.text|bb2html }}</td>
+					<td>{{ polloption.total }} votes &nbsp;&nbsp;</td>
+					<td>{{ polloption.percentage }}</td>
+					<td><div class="pollBarChartTotal"><div style="width: {{ polloption.bar_width }}px; " class="pollBarChart"></div></div></td>
+				</tr>
+				
+			{% endfor %}
+			{% if poll.outro_text %}<p>{{ poll.outro_text }}</p>{% endif %}
+			</table>
+		</div>
+		{% else %}
+			<p>{{ poll.intro_text }}</p>
+			{% for polloption in poll.get_poll_option_list %}
+
+			{% endfor %}
+			<p>{{ poll.outro_text }}</p>
+		{% endif %}
+	{% endif %}
+	<div class="paging"><a name="comments"></a>{% paging_control #comments %}</div>
 	<table class="topheaders">
 		<tr>
 		{% if news_item %}

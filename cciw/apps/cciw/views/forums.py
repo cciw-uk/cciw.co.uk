@@ -1,3 +1,4 @@
+import datetime
 from django.views.generic import list_detail
 from django.core.exceptions import Http404
 from django.models.forums import forums, topics, photos
@@ -70,9 +71,10 @@ def topicindex(request, title = None, extra_context = None, forum = None,
         'apc': ('post_count',),
         'dpc': ('-post_count',),
         'alp': ('last_post_at',),
-        'dlp': ('-last_post_at',)},
+        'dlp': ('-last_post_at',),
+        },
         lookup_args, request, default_order)
-    extra_context['default_order'] = 'dlp' # corresonds = '-last_post_at'
+    extra_context['default_order'] = 'dlp' # corresponds = '-last_post_at'
         
     return list_detail.object_list(request, 'forums', 'topics', 
         extra_context = extra_context, 
@@ -82,7 +84,7 @@ def topicindex(request, title = None, extra_context = None, forum = None,
 
 def topic(request, title_start = None, template_name = 'cciw/forums/topic', topicid = 0,
         introtext = None, breadcrumb_extra = None):
-    "Displays a topic"
+    """Displays a topic"""
     if title_start is None:
         raise Exception("No title provided for page")
     
@@ -97,8 +99,10 @@ def topic(request, title_start = None, template_name = 'cciw/forums/topic', topi
     if len(title_start) > 0:
         title = title_start + ": " + title
     
-    
     extra_context = standard_extra_context(request, title = title)
+    
+    
+    
 
     if breadcrumb_extra is None:
         breadcrumb_extra = []
@@ -107,8 +111,15 @@ def topic(request, title_start = None, template_name = 'cciw/forums/topic', topi
     extra_context['topic'] = topic
     if not topic.news_item_id is None:
         extra_context['news_item'] = topic.get_news_item()
+        
     if not topic.poll_id is None:
-        extra_context['poll'] = topic.get_poll()
+        poll = topic.get_poll()
+        extra_context['poll'] = poll
+        if poll.voting_ends < datetime.datetime.now(): # or they just voted, or can no longer vote
+            extra_context['show_poll_results'] = True
+        # TODO handle voting on polls
+        
+        
     if introtext:
         extra_context['introtext'] = introtext
     lookup_args = {
