@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2005-11-05, 00:34:13 -->
+<!-- Saved: 2005-11-19, 00:55:00 -->
 <!-- Copyright (C) 2005 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -207,6 +207,45 @@
       <Dir>cciw</Dir>
       <Dir>middleware</Dir>
       <Name>csrf.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>validator</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>validator</Dir>
+      <Name>urls.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>validator</Dir>
+      <Dir>models</Dir>
+      <Name>validator.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>validator</Dir>
+      <Dir>models</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>validator</Dir>
+      <Name>middleware.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>validator</Dir>
+      <Dir>views</Dir>
+      <Name>all.py</Name>
     </Source>
   </Sources>
   <Forms>

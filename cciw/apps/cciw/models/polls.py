@@ -16,8 +16,10 @@ class Poll(meta.Model):
     voting_ends = meta.DateTimeField("Voting ends")
     rules = meta.PositiveSmallIntegerField("Rules",
         choices = VOTING_RULES)
-    rule_parameter = meta.PositiveSmallIntegerField("Parameter for rule", default=1)
-    have_vote_info = meta.BooleanField("Full vote information available", default=True)
+    rule_parameter = meta.PositiveSmallIntegerField("Parameter for rule", 
+        default=1)
+    have_vote_info = meta.BooleanField("Full vote information available", 
+        default=True)
     created_by = meta.ForeignKey(Member, verbose_name="created by",
         related_name="poll_created")
     

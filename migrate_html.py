@@ -15,7 +15,7 @@ Map of wales:<br/>
 )
 
 html.append(('website_general','/website/','Web site info', """
-<p>On this site, you can find:
+<p>On this site, you can find:</p>
 <ul>
     <li>Full message board system, <a href="/camps/">a board for every camp</a>, where each board can
     have multiple threads (topics).</li>
@@ -153,7 +153,7 @@ html.append(('directors','/info/directors/', 'Directors', """
 <p> Names and addresses of the directors of CCIW:</p>
 <br/>
 <h2>Company Address</h2>
-<ADDRESS>
+<address>
 Christian Camps in Wales Ltd.<br/>
 9 Ty'n-y-pwll Road<br/>
 Cardiff<br/>
@@ -161,32 +161,32 @@ CF14 1AS<br/>
 Tel: 029 2065 8426<br/>
 Mob: 07867 987930<br/>
 e-mail: {% email %}cciw@cciw.co.uk{% endemail %}<br/>
-</ADDRESS>
+</address>
 <br/>
 <br/>
 <h2>Company Secretary</h2>
-<ADDRESS>
+<address>
 Mrs Shirley Evans<br/>
 Hayes<br/>
 Middlesex<br/>
 Church Office: 0181 5735200<br/>
-</ADDRESS>
+</address>
 <br/>
 <br/>
 <h2>Chairman</h2>
-<ADDRESS>Rev W Colin Davies<br/>
+<address>Rev W Colin Davies<br/>
 Cardiff<br/>
 Occupation - Minister
 <br/>
-</ADDRESS>
+</address>
 <br/>
 <br/>
 <h2>Financial Secretary</h2>
-<ADDRESS>Mr David Mark Rees<br/>
+<address>Mr David Mark Rees<br/>
 Cardiff<br/>
 Occupation - Audit Manager
 <br/>
-</ADDRESS>
+</address>
 <br/>
 <br/>
 <h2>Camps Booking Secretary</h2>
@@ -198,22 +198,21 @@ Occupation - Engineer<br/>
 <br/>
 <br/>
 <h2>Advertising and Media Officer, Health and Safety</h2>
-<ADDRESS>Mr Robert Plant<br/>
+<address>Mr Robert Plant<br/>
 Bradford<br/>
 Elder of Pollard Park Evangelical Church<br/>
 Occupation - Professional Engineering Manager<br/>
 e-mail: {% email %}bobplant@aol.com{% endemail %}
-</ADDRESS>
+</address>
 <br/>
 <br/>
-<p>Also:<br/><br/>
-<br/>
-<ADDRESS>
+<p>Also:<br/></p>
+<address>
 Rev Gwynne Evans<br/>
 Hayes<br/>
 Middlesex<br/>
 Occupation - Minister
-</ADDRESS>
+</address>
 <br/>
 <br/>
 <address>
@@ -236,7 +235,6 @@ Occupation - Assistant Minister
 Mr Jason Phillips<br/>
 Cardiff<br/>
 Occupation - Teacher
-<br/>
 <br/>
 </address>
 """))
