@@ -22,7 +22,7 @@
 	<div id="contentOuter">
 		<div id="content">
 			<div id="pageTitle">
-				<h1>{{ pagevars.title }}</h1>
+				<h1>{{ title }}</h1>
 			</div>
 			<div id="contentBody">
 				{% block breadcrumb %}
@@ -52,9 +52,9 @@
 <div id="footer">
 	<h1>Quick Links</h1>
 	<ul>
-	{% if currentMember %}	
-		<li>Logged in as :  <a href="{{currentMember.get_absolute_url}}">{{currentMember.user_name}}</a></li>
-		<li><a href="{{currentMember.get_absolute_url}}messages">{{currentMember.new_messages}} new message(s)</a></li>
+	{% if current_member %}	
+		<li>Logged in as :  <a href="{{current_member.get_absolute_url}}">{{current_member.user_name}}</a></li>
+		<li><a href="{{current_member.get_absolute_url}}messages">{{current_member.new_messages}} new message(s)</a></li>
 	{% else %}
 		<li><a href="/login/">Login</a></li>
 	{% endif %}

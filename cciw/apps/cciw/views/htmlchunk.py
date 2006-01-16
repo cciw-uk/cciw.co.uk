@@ -3,7 +3,7 @@ from django.core.extensions import render_to_response
 from django.core.exceptions import Http404
 
 from cciw.apps.cciw.common import *
-from django.models.sitecontent import htmlchunks
+from django.models.sitecontent import htmlchunks, menulinks
 
 def find(request):
     try:

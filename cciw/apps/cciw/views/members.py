@@ -6,7 +6,6 @@ from django.core.extensions import render_to_response
 from django.models.members import members
 from django.models.members.members import MemberDoesNotExist
 from cciw.apps.cciw.common import *
-from django.core.extensions import DjangoContext
 from datetime import datetime, timedelta
 
 def index(request):
@@ -15,7 +14,7 @@ def index(request):
     if (request.GET.has_key('online')):
         lookup_args['last_seen__gte'] = datetime.now() - timedelta(minutes=3)
     
-    extra_context = standard_extra_context(request, title='Members')
+    extra_context = standard_extra_context(title='Members')
     order_option_to_lookup_arg(
         {'adj': ('date_joined',),
         'ddj': ('-date_joined',),

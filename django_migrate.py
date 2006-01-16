@@ -404,10 +404,10 @@ def migrate_messages():
             except IOError:
                 data = []
             for line in data:
-                message = messages.Message(to_member_id = member.user_name)
+                message = messages.Message(text=fix_bbcode(line[2]))
+                message.to_member_id = member.user_name
                 message.from_member_id = members.get_object(user_name__exact=line[1]).user_name
                 message.time = datetime.fromtimestamp(int(line[3]))
-                message.text = fix_bbcode(line[2])
                 message.box = boxNumber
                 message.save()
 

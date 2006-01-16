@@ -56,12 +56,8 @@ class HtmlChunk(meta.Model):
         from django.core import template
         t = template.Template('{% load standardpage %}' + self.html)
         context[context_var] = t.render(context)
-        #try:
         page_vars = context['pagevars']
-        #except KeyError:
-        #    page_vars = None
-        #if page_vars is not None:
-        page_vars.html_chunks.append(self)
+        page_vars['html_chunks'].append(self)
 
     def _module_render_into_context(context, chunkdict):
         """Retrieve a set of HtmlChunks and render into the context object, chunks

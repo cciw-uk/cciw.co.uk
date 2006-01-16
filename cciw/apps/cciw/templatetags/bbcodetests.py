@@ -1,11 +1,13 @@
-import bbcode
 import unittest
-
 import sys
 import os
 
+sys.path = sys.path + ['/home/httpd/www.cciw.co.uk/django/','/home/httpd/www.cciw.co.uk/django_src/']
+os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
 
-from cciw.apps.cciw.utils import get_member_link
+import bbcode
+from cciw.apps.cciw.utils import get_member_link   
+
 
 tests = (
     ('<test&',
@@ -35,7 +37,7 @@ tests = (
     ('[member]Joey[/member]',
         '<div>' + get_member_link('Joey') + '</div>'),
     ('[member]illegal " name[/member]',
-        '<div><a href="/members/illegal&quot;name/">illegal&quot;name</a></div>'),
+        '<div><a title="Information about user \'illegal&quot;name\'" href="/members/illegal&quot;name/">illegal&quot;name</a></div>'),
     ('ok, ill go first...[br][br][color=red]b[color=orange]e[color=yellow]a[color=green]u[color=blue]t[color=purple]i[color=magenta]f[color=pink]u[color=red]l[/color]  :-) [color=black](the surroundings and everyone in it)',
         '<div>ok, ill go first...<br/><br/><span style="color: red;">be<span style="color: yellow;">a<span style="color: green;">u<span style="color: blue;">t<span style="color: purple;">ifu<span style="color: red;">l</span>  <img src="http://cciw_django_local/media/images/emoticons/smile.gif" alt=":-)" /> <span style="color: black;">(the surroundings and everyone in it)</span></span></span></span></span></span></div>'),
     ('[quote= foo1_23 ]Blah[/quote]',
@@ -76,8 +78,6 @@ class TestBBCodeParser(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    sys.path = sys.path + ['/home/httpd/www.cciw.co.uk/django/','/home/httpd/www.cciw.co.uk/django_src/']
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings.main'
-    
+ 
     unittest.main()
 

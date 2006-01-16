@@ -45,7 +45,7 @@ def topicindex(request, title = None, extra_context = None, forum = None,
     if extra_context is None:
         if title is None:
             raise Exception("No title provided for page")
-        extra_context = standard_extra_context(request, title = title)
+        extra_context = standard_extra_context(title = title)
         
     if forum is None:
         try:
@@ -99,7 +99,7 @@ def topic(request, title_start = None, template_name = 'cciw/forums/topic', topi
     if len(title_start) > 0:
         title = title_start + ": " + title
     
-    extra_context = standard_extra_context(request, title = title)
+    extra_context = standard_extra_context(title = title)
     
     
     

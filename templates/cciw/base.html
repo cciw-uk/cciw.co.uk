@@ -15,15 +15,15 @@
 {% endblock %}
 <div id="header">
 	<div id="headerlogo">
-		{% ifnotequal pagevars.request.path "/" %}
+		{% if not homepage %}
 			<a href="/" title="Home page" style="height: 55px; width:140px; display: block;"></a>
-		{% endifnotequal %}
+		{% endif %}
 	</div>
 </div>
 {% block main %}
 	<div id="mainbase">
 		<div id="pageTitle">
-			<h1>{{ pagevars.title }}</h1>
+			<h1>{{ title }}</h1>
 		</div>
 		<div id="contentBody">
 			{% block content %}

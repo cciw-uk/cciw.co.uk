@@ -46,12 +46,12 @@ class Member(meta.Model):
     last_seen   = meta.DateTimeField("Last on website", null=True)
     show_email  = meta.BooleanField("Show email address", default=False)
     message_option = meta.PositiveSmallIntegerField("Message option",
-        choices = MESSAGE_OPTIONS)
+        choices = MESSAGE_OPTIONS, default=1)
     comments   = meta.TextField("Comments", blank=True)
     confirmed  = meta.BooleanField("Confirmed", default=False)
     confirm_secret = meta.CharField("Confirmation secret", maxlength=30, blank=True)
-    moderated  = meta.PositiveSmallIntegerField("Moderated",
-        choices = MODERATE_OPTIONS)
+    moderated  = meta.PositiveSmallIntegerField("Moderated", default=0,
+            choices = MODERATE_OPTIONS)
     hidden     = meta.BooleanField("Hidden", default=False)
     banned     = meta.BooleanField("Banned", default=False)
     new_email   = meta.EmailField("New email address (unconfirmed)", blank=True)
@@ -145,12 +145,12 @@ class Award(meta.Model):
         return repr(self)
     
     def imageurl(self):
-        from cciw.apps.cciw.settings import *
+        from cciw.apps.cciw.settings import CCIW_MEDIA_ROOT
         return CCIW_MEDIA_ROOT + "images/awards/" + self.image
         
     def get_absolute_url(self):
         from django.core.template.defaultfilters import slugify
-        return "/awards/#" + slugify(repr(self),None)
+        return "/awards/#" + slugify(repr(self))
     
     class META:
         admin = meta.Admin(

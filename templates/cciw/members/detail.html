@@ -1,16 +1,17 @@
 {% extends "cciw/standard" %}
 {% load forums %}
+{% load standardpage %}
 {% block content %}
-	{% if currentMember %}
-		{% ifequal currentMember.user_name member.user_name %}
+	{% if current_member %}
+		{% ifequal current_member.user_name member.user_name %}
 		<h2>Links</h2>
 
 		<ul>
-			<li><a href="messages/">{{ currentMember.new_messages }} new message(s)</a></li>
-			<li><a href="messages/?box=saved">{{ currentMember.saved_messages }} saved message(s)</a></li>
+			<li><a href="messages/">{{ current_member.new_messages }} new message(s)</a></li>
+			<li><a href="messages/?box=saved">{{ current_member.saved_messages }} saved message(s)</a></li>
 			<li><a href="bookmarks/">Bookmarks</a></li>
 		</ul>
-		<form method="post" action="{{pagevars.request.url}}">
+		<form method="post" action="{{request.url}}">
 		<p><input type="submit" name="logout" value="Log out" /></p>
 		</form>
 

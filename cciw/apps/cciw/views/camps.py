@@ -107,7 +107,7 @@ def forum(request, year, number):
 
     # TODO - some extra context vars, for text to show before the topic list
     
-    ec = standard_extra_context(request, title = title)
+    ec = standard_extra_context(title = title)
     return forums_views.topicindex(request, extra_context = ec, forum = forum, 
         template_name = 'cciw/forums/topicindex', breadcrumb_extra = breadcrumb_extra)
 
@@ -140,7 +140,7 @@ def gallery(request, year, number):
 
     # TODO - some extra context vars, for text to show before the topic list
     
-    ec = standard_extra_context(request, title = camp.nice_name() + " - Photos")
+    ec = standard_extra_context(title = camp.nice_name() + " - Photos")
     return forums_views.photoindex(request, gallery, ec, breadcrumb_extra)
 
 def oldcampgallery(request, year, galleryname):
@@ -151,7 +151,7 @@ def oldcampgallery(request, year, galleryname):
 
     breadcrumb_extra = year_forum_breadcrumb(year) + [utils.unslugify(galleryname)]
     
-    ec = standard_extra_context(request, title = utils.unslugify(year+", " + galleryname) + " - Photos")
+    ec = standard_extra_context(title = utils.unslugify(year+", " + galleryname) + " - Photos")
     return forums_views.photoindex(request, gallery, ec, breadcrumb_extra)
 
     
@@ -168,7 +168,7 @@ def photo(request, year, number, photonumber):
     except photos.PhotoDoesNotExist:
         raise Http404
     
-    ec = standard_extra_context(request, title = "Photos: " + camp.nice_name())
+    ec = standard_extra_context(title = "Photos: " + camp.nice_name())
     
     return forums_views.photo(request, photo, ec, breadcrumb_extra)
 
@@ -187,7 +187,7 @@ def oldcampphoto(request, year, galleryname, photonumber):
     except photos.PhotoDoesNotExist:
         raise Http404
     
-    ec = standard_extra_context(request, title = utils.unslugify(year+", " + galleryname) + " - Photos")    
+    ec = standard_extra_context(title = utils.unslugify(year+", " + galleryname) + " - Photos")    
     return forums_views.photo(request, photo, ec, breadcrumb_extra)
 
     

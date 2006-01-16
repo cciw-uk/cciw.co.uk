@@ -27,8 +27,6 @@ class NewsItem(meta.Model):
     
     class META:
         admin = meta.Admin()
-    
-    
 
 class Topic(meta.Model):
     subject = meta.CharField("Subject", maxlength=100)
@@ -52,7 +50,7 @@ class Topic(meta.Model):
         null=True, blank=True) # needed for performance and simplicity in templates
     last_post_by = meta.ForeignKey(Member, verbose_name="Last post by",
         null=True, blank=True) # needed for performance and simplicity in templates
-    post_count = meta.PositiveSmallIntegerField("Number of posts") # since we need 'lastPost', may as well have this too
+    post_count = meta.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
         
     def __repr__(self):
         return  self.subject
@@ -102,7 +100,7 @@ class Photo(meta.Model):
         null=True, blank=True) # needed for performance and simplicity in templates
     last_post_by = meta.ForeignKey(Member, verbose_name="Last post by",
         null=True, blank=True) # needed for performance and simplicity in templates
-    post_count = meta.PositiveSmallIntegerField("Number of posts") # since we need 'lastPost', may as well have this too
+    post_count = meta.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
     
     def __repr__(self):
         return self.filename
@@ -165,8 +163,6 @@ class Post(meta.Model):
             
         if not self.photo_id is None:
             self.updateParent(self.get_photo())
-        
-
     
     class META:
         admin = meta.Admin(

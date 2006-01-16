@@ -14,7 +14,7 @@ class Site(meta.Model):
     
     def _pre_save(self):
         from django.core.template.defaultfilters import slugify
-        self.slug_name = slugify(self.short_name, "")
+        self.slug_name = slugify(self.short_name)
     
     class META:
         admin = meta.Admin(
@@ -83,7 +83,6 @@ class Camp(meta.Model):
         return "<a href='" + self.get_absolute_url() + "'>" + self.nice_name() + '</a>'
 
     def get_absolute_url(self):
-        from cciw.apps.cciw.settings import *
         return "/camps/" + str(self.year) + "/" + str(self.number) + "/"
 
     class META:
