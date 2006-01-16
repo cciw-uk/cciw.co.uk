@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import *
 import cciw.apps.cciw.common as cciw_common
 
+
 urlpatterns = \
 patterns('django.views.generic',
     (r'^awards/$', 'list_detail.object_list',
@@ -11,6 +12,15 @@ patterns('django.views.generic',
          'allow_empty': True,
          }
     ),
+         
+    (r'^sites/$', 'list_detail.object_list',
+        {'app_label': 'camps',
+         'module_name': 'sites',
+         'extra_context': cciw_common.standard_extra_context(title="Camp sites"),
+         'template_name': 'cciw/sites/index'
+        }
+    ),
+ 
     (r'^sites/(?P<slug>.*)/$', 'list_detail.object_detail',
         {'app_label': 'camps',
          'module_name': 'sites',
@@ -48,8 +58,6 @@ patterns('cciw.apps.cciw.views',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
     (r'^website/forum/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-        
-    (r'^sites/$', 'sites.index'),
     
     (r'', 'htmlchunk.find'),
 ) 

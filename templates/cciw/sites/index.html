@@ -1,8 +1,10 @@
+{% load standardpage %}
+{% addhtmlchunk sites_general sites_general %}
 {% extends "cciw/standard" %}
 {% block content %}
 <p>CCIW currently use the following camp sites:</p>
 <ul class="sitelist">
-	{% for site in sites %}
+	{% for site in object_list %}
 		<li><a href="{{ site.get_absolute_url }}">{{ site.long_name }}</a></li>
 	{% endfor %}
 </ul>
