@@ -715,9 +715,8 @@ def migrate_html():
     for h in htmlchunks.get_list():
         h.delete()
     for name, url, page_title, htmlChunk in html:
-        h = htmlchunks.HtmlChunk(name = name)
-        h.html = htmlChunk
-        h.page_title = page_title
+        h = htmlchunks.HtmlChunk(name=name, html=htmlChunk, 
+                                 page_title=page_title)
         if url != "":
             h.menu_link_id = menulinks.get_object(url__exact=url).id
         h.save()
