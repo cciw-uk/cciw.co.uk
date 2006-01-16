@@ -29,7 +29,7 @@
 ## 1) full XHTML compliance, including prohibited elements
 ## 2) intelligent handling/preserving of whitespace
 ## 3) emoticons, with intelligent handling for tricky cases
-## 4) ability to render out corrected BBCode as well as XHTML
+## 4) ability to render out corrected BBCode as well as XHTML (NOT YET)
 ## 5) XHTML outputed can be inserted into <body>, <div>, <td>
 ##    and any other elements that allow block level tags
 ##
@@ -78,61 +78,61 @@ class BBTag:
 
 ###### DATA ######
 
-colors = ('aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon', 
+_COLORS = ('aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon', 
     'navy', 'olive', 'purple', 'red', 'silver', 'teal', 'white', 'yellow')
-colorregexp = re.compile(r'#[0-9A-F]{6}')
-memberregexp = re.compile(r'^[0-9A-Za-z_]{1,30}$')
+_COLOR_REGEXP = re.compile(r'#[0-9A-F]{6}')
+_MEMBER_REGEXP = re.compile(r'^[0-9A-Za-z_]{1,30}$')
 
 # 'text' is a dummy entry for text nodes
-inline_tags = ('b', 'i', 'color', 'member', 'email', 'url', 
+_INLINE_TAGS = ('b', 'i', 'color', 'member', 'email', 'url', 
     'br', 'text', 'img', 'softbr', 'emoticon')
-block_level_tags = ('p', 'quote', 'list', 'pre', 'code', 'div')
-flow_tags = inline_tags + block_level_tags
-other_tags = ('*',)
+_BLOCK_LEVEL_TAGS = ('p', 'quote', 'list', 'pre', 'code', 'div')
+_FLOW_TAGS = _INLINE_TAGS + _BLOCK_LEVEL_TAGS
+_OTHER_TAGS = ('*',)
 
-anchor_tags = ('member', 'email', 'url')
+_ANCHOR_TAGS = ('member', 'email', 'url')
 
 # Rules, defined so that the output after translation will be 
 # XHTML compatible. Other rules are implicit in the parsing routines.
 # Note that some bbtags can adapt to their context in the rendering
 # phase in order to generate correct XHTML, so have slacker rules than normal
 # Also, some tags only exist to make parsing easier, and are
-# not intended for use by end user
-taginfo = (
+# not intended for use by end user.
+_TAGS = (
     BBTag('br', (), 'div', self_closing = True, discardable = True),     # <br/>
     BBTag('softbr', (), 'div', self_closing = True, discardable = True), 
         # <br/>, but can adapt during render
     BBTag('emoticon', ('text',), 'div'),                            
         # <img/>,  but can adapt
-    BBTag('b', inline_tags, 'div'),                                # <b>
-    BBTag('i', inline_tags, 'div'),                                # <i>
-    BBTag('color', inline_tags, 'div'),                            # <span>
+    BBTag('b', _INLINE_TAGS, 'div'),                                # <b>
+    BBTag('i', _INLINE_TAGS, 'div'),                                # <i>
+    BBTag('color', _INLINE_TAGS, 'div'),                            # <span>
     BBTag('member', ('text',), 'div' ),                            # <a>
     BBTag('email', ('text',), 'div'),                              # <a>
     BBTag('url', ('text',), 'div'),                                # <a>
-    BBTag('p', inline_tags, None),                                 # <p>
-    BBTag('div', flow_tags, None),                                 # <div>
-    BBTag('quote', block_level_tags + ('softbr',), 'div'),         # <blockquote>
+    BBTag('p', _INLINE_TAGS, None),                                 # <p>
+    BBTag('div', _FLOW_TAGS, None),                                 # <div>
+    BBTag('quote', _BLOCK_LEVEL_TAGS + ('softbr',), 'div'),         # <blockquote>
     BBTag('list', ('*', 'softbr'), None),                          # <ul>
-    BBTag('pre', inline_tags, None, 
+    BBTag('pre', _INLINE_TAGS, None, 
         prohibited_elements = ('img', 'big', 'small', 'sub', 'sup')), 
         # <pre> (only img currently implemented out of those prohibited elements)
-    BBTag('code', inline_tags, None, 
+    BBTag('code', _INLINE_TAGS, None, 
         prohibited_elements = ('img', 'big', 'small', 'sub', 'sup')), # <pre>
-    BBTag('*', flow_tags, 'list')
+    BBTag('*', _FLOW_TAGS, 'list')
 )
 
 # Make a dictionary
-tagdict = {}
-for t in taginfo:
+_TAGDICT = {}
+for t in _TAGS:
     if t.name != 'text':
-        tagdict[t.name] = t
+        _TAGDICT[t.name] = t
 
 # Make list of valid tags
-validtags = [t.name for t in taginfo]
+_TAGNAMES = [t.name for t in _TAGS]
 
 # Regexp
-bbtagregexp = re.compile(r'\[\/?([A-Za-z\*]+)(=[^\]]+)?\]')
+_BBTAG_REGEXP = re.compile(r'\[\/?([A-Za-z\*]+)(=[^\]]+)?\]')
 
 # Translation tables
 # value is either the html element to output or a function
@@ -149,7 +149,7 @@ bb2xhtml_map = {
     'div': 'div'
 }
 
-emoticons = {
+_EMOTICONS = {
         '0:-)': 'angel.gif',
         'O:-)':'angel.gif',
         ':angel:':'angel.gif',
@@ -201,6 +201,8 @@ emoticons = {
         ':stupid:': 'youarestupid.gif',
 }
 
+_EMOTICON_LIST = _EMOTICONS.keys();
+
 ###### PARSING CLASSES AND FUNCTIONS ######
 class BBNode:
     """Abstract base class for a node of BBcode."""
@@ -224,11 +226,12 @@ class BBRootNode(BBNode):
         return self.render_children_xhtml()
 
     def allows(self, tagname):
+        """Returns true if the tag with 'tagname' can be added to this node"""
         if self.allow_inline:
-            return tagname in flow_tags
+            return tagname in _FLOW_TAGS
         else:
             # Rule for HTML BODY element
-            return tagname in block_level_tags
+            return tagname in _BLOCK_LEVEL_TAGS
     
 class BBTextNode(BBNode):
     """A text node, containing only plain text"""
@@ -246,7 +249,7 @@ class BBTextNode(BBNode):
 class BBTagNode(BBNode):
     def __init__(self, parent, name, parameter):
         BBNode.__init__(self, parent)
-        self.bbtag = tagdict[name]
+        self.bbtag = _TAGDICT[name]
         self.parameter = parameter
     
     def prohibited(self, tagname):
@@ -261,7 +264,7 @@ class BBTagNode(BBNode):
                 return self.parent.prohibited(tagname)
     
     def allows(self, tagname):
-        """Returns true if the tag with 'tagname' can be added to this tag"""
+        """Returns true if the tag with 'tagname' can be added to this node"""
         if tagname in self.bbtag.allowed_children:
             # Check prohibited_elements of this and parent tags
             return not self.prohibited(tagname)
@@ -287,7 +290,7 @@ class BBTagNode(BBNode):
                 emoticon = self.children[0].text   # child is always a BBTextNode
                 if self.parent.allows('img'):
                     try:
-                        imagename = emoticons.get(emoticon,'')
+                        imagename = _EMOTICONS.get(emoticon,'')
                     except KeyError:
                         ret = ''
                     else:
@@ -318,8 +321,8 @@ class BBTagNode(BBNode):
             ##############################
             elif tagname == 'color':
                 if len(self.children) > 0:
-                    if self.parameter.lower() in colors or \
-                        not colorregexp.match(self.parameter) is None:
+                    if self.parameter.lower() in _COLORS or \
+                        not _COLOR_REGEXP.match(self.parameter) is None:
                         ret = '<span style="color: ' + self.parameter +  ';">' + \
                             self.render_children_xhtml() + '</span>'
                     else:
@@ -337,7 +340,7 @@ class BBTagNode(BBNode):
                 if self.parameter is None:
                     self.parameter = ''
                 self.parameter = self.parameter.strip()
-                if memberregexp.match(self.parameter):
+                if _MEMBER_REGEXP.match(self.parameter):
                     ret = '<div class="memberquote">' + \
                         get_member_link(self.parameter) + ' said:</div>' + \
                             '<blockquote>' + self.render_children_xhtml() + \
@@ -361,48 +364,45 @@ class BBTagNode(BBNode):
         return ret
         
 class BBCodeParser:
-    def __init__(self, bbcode, root_allows_inline = False):
-        self.rootNode = BBRootNode(root_allows_inline)
-        self.currentNode = self.rootNode
-        self.bbcode = bbcode
-        self.parse()
+    def __init__(self, root_allows_inline = False):
+        self.root_node = BBRootNode(root_allows_inline)
+        self.current_node = self.root_node
         
     def push_text_node(self, text):
         """Add a text node to the current node"""
-        if not self.currentNode.allows('text'):
-            # e.g. text after [list] but before [*]
-            # or after [quote].
+        if not self.current_node.allows('text'):
+            # e.g. text after [list] but before [*] or after [quote].
             # Only get here if BBRootNode or BBTagNode is current
             if len(text.strip()) == 0:
                 # Whitespace, append anyway
-                self.currentNode.children.append(BBTextNode(self.currentNode, text))
+                self.current_node.children.append(BBTextNode(self.current_node, text))
             else:
-                if self.currentNode.allows('div'):
-                    self.currentNode.children.append(BBTagNode(self.currentNode, 'div',''))
+                if self.current_node.allows('div'):
+                    self.current_node.children.append(BBTagNode(self.current_node, 'div',''))
                     self.descend()
                 else:
                     self.ascend()
                 self.push_text_node(text)
         else:
-            self.currentNode.children.append(BBTextNode(self.currentNode, text))
+            self.current_node.children.append(BBTextNode(self.current_node, text))
             # text nodes are never open, do don't bother descending
             
     def descend(self):
         """Move to the last child of the current node"""
-        self.currentNode = self.currentNode.children[-1]
+        self.current_node = self.current_node.children[-1]
         
     def ascend(self):
         """Move to the parent node of the current node"""
-        self.currentNode = self.currentNode.parent
+        self.current_node = self.current_node.parent
     
     def push_tag_node(self, name, parameter):
         """Add a BBTagNode of name 'name' onto the tree"""
-        if not self.currentNode.allows(name):
-            new_tag = tagdict[name]
+        if not self.current_node.allows(name):
+            new_tag = _TAGDICT[name]
             if new_tag.discardable:
                 return
-            elif (self.currentNode == self.rootNode or \
-                self.currentNode.bbtag.name in block_level_tags) and\
+            elif (self.current_node == self.root_node or \
+                self.current_node.bbtag.name in _BLOCK_LEVEL_TAGS) and\
                 not new_tag.implicit_tag is None:
                 
                 # E.g. [*] inside root, or [*] inside [block]
@@ -412,53 +412,53 @@ class BBCodeParser:
                 self.push_tag_node(name, parameter)
             else:
                 # e.g. block level in inline etc. - traverse up the tree
-                self.currentNode = self.currentNode.parent
+                self.current_node = self.current_node.parent
                 self.push_tag_node(name, parameter)
         else:
-            node = BBTagNode(self.currentNode, name, parameter)
-            self.currentNode.children.append(node)
+            node = BBTagNode(self.current_node, name, parameter)
+            self.current_node.children.append(node)
             if not node.bbtag.self_closing:
                 self.descend()
 
     def close_tag_node(self, name):
-        "Pop the stack back to the specified tag, closing that tag"
-        temp_node = self.currentNode
+        """Pop the stack back to the first node with the 
+        specified tag name, and 'close' that node."""
+        temp_node = self.current_node
         while True:
-            if temp_node == self.rootNode:
+            if temp_node == self.root_node:
                 # Give up, effectively discarding the closing tag
                 break
             if hasattr(temp_node, 'bbtag'):
                 if temp_node.bbtag.name == name:
                     # found it
-                    self.currentNode = temp_node
+                    self.current_node = temp_node
                     self.ascend()
                     break
             temp_node = temp_node.parent
             continue
     
-    def parse(self):
-        """Parse the bbcode into a tree of elements"""
+    def parse(self, bbcode):
+        """Parse the bbcode into a tree of elements"""        
         # Replace newlines with 'soft' brs
-        self.bbcode = self.bbcode.replace("\n", '[softbr]')
+        bbcode = bbcode.replace("\n", '[softbr]')
         
         # Replace emoticons with context-sensitive emoticon tags
-        for emoticon in emoticons.keys():
-            self.bbcode = self.bbcode.replace(emoticon, 
-                                              '[emoticon]' + emoticon + '[/emoticon]')
+        for emoticon in _EMOTICON_LIST:
+            bbcode = bbcode.replace(emoticon, '[emoticon]' + emoticon + '[/emoticon]')
             
         pos = 0
-        while pos < len(self.bbcode):        
-            match = bbtagregexp.search(self.bbcode, pos)
+        while pos < len(bbcode):        
+            match = _BBTAG_REGEXP.search(bbcode, pos)
             if not match is None:
                 # push all text up to the start of the match
-                self.push_text_node(self.bbcode[pos:match.start()])
+                self.push_text_node(bbcode[pos:match.start()])
                 
                 # push the tag itself
                 tagname = match.groups()[0]
                 parameter = match.groups()[1]
                 if not parameter is None and len(parameter) > 0:
                     parameter = parameter[1:] # strip the equals
-                if tagname in validtags:
+                if tagname in _TAGNAMES:
                     # genuine tag, push it
                     if match.group().startswith('[/'):
                         # closing
@@ -469,14 +469,15 @@ class BBCodeParser:
                 pos = match.end()
             else:
                 # push all remaining text
-                self.push_text_node(self.bbcode[pos:])
-                pos = len(self.bbcode)
+                self.push_text_node(bbcode[pos:])
+                pos = len(bbcode)
         
     def render_xhtml(self):
         """Render the parsed tree as XHTML"""
-        return self.rootNode.render_xhtml()
+        return self.root_node.render_xhtml()
 
 def bb2xhtml(bbcode, root_allows_inline = False):
     "Render bbcode as XHTML"
-    parser = BBCodeParser(bbcode, root_allows_inline)
+    parser = BBCodeParser(root_allows_inline)
+    parser.parse(bbcode)
     return parser.render_xhtml()
