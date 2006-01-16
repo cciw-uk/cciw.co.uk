@@ -2,15 +2,25 @@ from django.conf.urls.defaults import *
 import cciw.apps.cciw.common as cciw_common
 
 urlpatterns = \
-patterns('',
-    (r'^awards/$', 'django.views.generic.list_detail.object_list',
+patterns('django.views.generic',
+    (r'^awards/$', 'list_detail.object_list',
         {'app_label': 'members',
          'module_name': 'awards',
          'extra_context': cciw_common.standard_extra_context(title="Website Awards"),
          'template_name': 'cciw/awards/index',
          'allow_empty': True,
          }
-    )
+    ),
+    (r'^sites/(?P<slug>.*)/$', 'list_detail.object_detail',
+        {'app_label': 'camps',
+         'module_name': 'sites',
+         'slug_field': 'slug_name',
+         'extra_context': cciw_common.standard_extra_context(),
+         'template_name': 'cciw/sites/detail'
+         }
+        
+    ),
+    
 ) + \
 patterns('cciw.apps.cciw.views',
     (r'^login/$', 'members.login'),
@@ -40,7 +50,6 @@ patterns('cciw.apps.cciw.views',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
         
     (r'^sites/$', 'sites.index'),
-    (r'^sites/(?P<name>.*)/$', 'sites.detail'),
     
     (r'', 'htmlchunk.find'),
 ) 

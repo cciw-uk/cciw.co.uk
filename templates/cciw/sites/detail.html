@@ -1,5 +1,7 @@
-{% extends "cciw/standard" %}
 {% load standardpage %}
+{% setvar title object.short_name %}
+{% extends "cciw/standard" %}
+
 {% block content %}
-	{{ site.info|standard_subs }}
+	{{ object.info|standard_subs }}
 {% endblock %}

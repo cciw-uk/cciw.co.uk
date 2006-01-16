@@ -24,9 +24,22 @@ def do_member_link(parser, token):
     nodelist = parser.parse(('endmemberlink',))
     parser.delete_first_token()
     return MemberLinkNode(nodelist)
-
+    
+class SetVarNode(template.Node):
+    def __init__(self, varname, varval):
+        self.varname = varname
+        self.varval = varval
+    def render(self, context):
+        context[self.varname] = template.resolve_variable(self.varval, context)
+        return ''
+        
+def do_setvar(parser, token):
+    bits = token.contents.split(" ", 2)
+    return SetVarNode(bits[1], bits[2])
+        
 register = template.Library()
 register.filter(standard_subs)
 register.filter(obfuscate_email)
 register.tag('email', do_email)
 register.tag('memberlink', do_member_link)
+register.tag('setvar', do_setvar)

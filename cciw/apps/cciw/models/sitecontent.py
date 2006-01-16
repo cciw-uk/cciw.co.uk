@@ -45,12 +45,11 @@ class HtmlChunk(meta.Model):
         """render the HTML chunk as if it were a Django template, 
         and store the result in a context object.
         
-        The context parameter is used as the context for
-        the rendering, and also to store the 
-        result - in context[context_var]
+        The context parameter is used as the context for the rendering, 
+        and also to store the result - in context[context_var]
         
-        Also, if the context objectcontains a PageVars object, the  
-        the HtmlChunk will be added to PageVars.html_chunks list
+        Also, if the context object contains a pagevars object, the  
+        the HtmlChunk will be added to pagevars['html_chunks'] list
         
         """
         from django.core import template

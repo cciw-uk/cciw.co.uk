@@ -63,9 +63,8 @@ class PagingControlNode(template.Node):
 
 def do_paging_control(parser, token):
     """
-    Creates a list of links to the pages of a generic view.
-    The paging  control requires that the request object be in the context as 
-    by putting the standard 'pagevars' object in the context.
+    Creates a list of links to the pages of a generic view. The paging control 
+    requires that the request object be in the context as 'request'
     
     An optional parameter can be used which contains the fragment to use for 
     paging links, which allows paging to skip any initial common content on the page.
@@ -134,10 +133,9 @@ def do_sorting_control(parser, token):
     sorting control to determine what the current sort order is if no
     'order' parameter exists in the query string.
     
-    The sorting control requires that the request object be in the context as 
-    by putting the standard 'pagevars' object in the context. It is
-    used for various things, including passing on other query string parameters
-    in the generated URLs.
+    The sorting control requires that the request object be in the context 
+    as 'request'. (It is used for various things, including passing on 
+    other query string parameters in the generated URLs.)
     
     Usage::
     

@@ -14,14 +14,4 @@ def index(request):
     htmlchunks.render_into_context(c, {'sites_general': 'sites_general'})
     return HttpResponse(t.render(c))
 
-def detail(request, name):
-    try:
-        site = sites.get_object(slug_name__exact=name)
-    except sites.SiteDoesNotExist:
-        raise Http404
-    
-    c = DjangoContext(request, standard_extra_context({'site': site},
-                    title = site.short_name + " camp site"))
-    t = template_loader.get_template('cciw/sites/detail')
-    return HttpResponse(t.render(c))
     
