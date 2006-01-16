@@ -1,25 +1,12 @@
 from cciw.apps.cciw.settings import *
 from django.models.members import members
 from django.models.sitecontent import menulinks
-from django.core.extensions import DjangoContext
 from cciw.apps.cciw.templatetags import view_extras
 import datetime
-    
-class StandardContext(DjangoContext):
-    """
-    Provides simple construction of context needed for the 'standard.html' template and
-    templates that inherit from it
-    """
-    def __init__(self, request, extra_dict=None, title=None, processors=None):
-        if extra_dict is None: extra_dict = {}
-        # modify the context dictionary, then construct the base class
-        extra_dict = standard_extra_context(extra_dict, title)
-        DjangoContext.__init__(self, request, extra_dict, processors=processors)
-        
+       
 def standard_extra_context(extra_dict=None, title=None):
     """
-    Can be used directly to get an extra context dictionary e.g. for generic views.
-    Normally use via StandardContext
+    Gets the 'extra_dict' dictionary used for all pages
     """
     if extra_dict is None: 
         extra_dict = {}

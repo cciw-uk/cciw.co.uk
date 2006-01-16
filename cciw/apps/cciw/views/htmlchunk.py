@@ -1,6 +1,7 @@
 from django.core import template
 from django.core.extensions import render_to_response
 from django.core.exceptions import Http404
+from django.core.extensions import DjangoContext
 
 from cciw.apps.cciw.common import *
 from django.models.sitecontent import htmlchunks, menulinks
@@ -16,6 +17,6 @@ def find(request):
     except htmlchunks.HtmlChunkDoesNotExist:
         raise Http404()
     
-    c = StandardContext(request, title = chunk.page_title)
+    c = DjangoContext(request, standard_extra_context(title = chunk.page_title))
     chunk.render(c, 'contentBody')
     return render_to_response('cciw/standard', c)

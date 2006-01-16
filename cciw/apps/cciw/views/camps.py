@@ -1,12 +1,13 @@
 import datetime
 
-from django.core.extensions import render_to_response
+from django.core.extensions import render_to_response, DjangoContext
 from django.utils.httpwrappers import HttpResponse
 from django.core.exceptions import Http404
 
 from django.models.camps import camps
 from django.models.sitecontent import htmlchunks
 from django.models.forums import forums, topics, gallerys, photos
+
 
 from cciw.apps.cciw.common import *
 from cciw.apps.cciw.settings import *
@@ -24,8 +25,8 @@ def index(request, year = None):
             raise Http404
     
     return render_to_response('cciw/camps/index', 
-            StandardContext(request, {'camps': all_camps},
-                    title="Camp forums and photos"))
+            DjangoContext(request, standard_extra_context({'camps': all_camps},
+                    title="Camp forums and photos")))
 
 def detail(request, year, number):
     try:
@@ -33,8 +34,8 @@ def detail(request, year, number):
     except camps.CampDoesNotExist:
         raise Http404
         
-    c = StandardContext(request, {'camp': camp }, 
-                            title = camp.nice_name())
+    c = DjangoContext(request, standard_extra_context({'camp': camp }, 
+                            title = camp.nice_name()))
     
     if camp.end_date < datetime.date.today():
         c['camp_is_past'] = True
@@ -45,7 +46,7 @@ def detail(request, year, number):
 
     
 def thisyear(request):
-    c = StandardContext(request, title="Camps " + str(THISYEAR))
+    c = DjangoContext(request, standard_extra_context(title="Camps " + str(THISYEAR)))
     htmlchunks.render_into_context(c, {
         'introtext': 'camp_dates_intro_text',
         'outrotext': 'camp_dates_outro_text'})

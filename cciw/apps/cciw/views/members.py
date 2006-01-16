@@ -1,7 +1,7 @@
 from django.views.generic import list_detail
 from django.utils.httpwrappers import HttpResponseRedirect
 from django.core.exceptions import Http404
-from django.core.extensions import render_to_response
+from django.core.extensions import render_to_response, DjangoContext
 
 from django.models.members import members
 from django.models.members.members import MemberDoesNotExist
@@ -53,13 +53,14 @@ def detail(request, user_name):
             except KeyError:
                 pass
         
-    c = StandardContext(request, title="Members: " + member.user_name)
+    c = DjangoContext(request, 
+        standard_extra_context(title="Members: " + member.user_name))
     c['member'] = member
     c['awards'] = member.get_personal_award_list()
     return render_to_response('cciw/members/detail', c)
     
 def login(request):
-    c = StandardContext(request, title="Login")
+    c = DjangoContext(request, standard_extra_context(title="Login"))
     c['referrer'] = request.META.get('HTTP_REFERER', None)
     if request.POST:
         try:
