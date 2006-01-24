@@ -43,7 +43,9 @@ tests = (
     ('[quote= foo1_23 ]Blah[/quote]',
         '<div class="memberquote">' + get_member_link('foo1_23') + ' said:</div><blockquote><div>Blah</div></blockquote>'),
     ('[quote=foo123%]Blah[/quote]',
-        '<blockquote><div>Blah</div></blockquote>')
+        '<blockquote><div>Blah</div></blockquote>'),
+    ('[emoticon][/emoticon]',
+        '<div></div>'),
 )
 
 class TestBBCodeParser(unittest.TestCase):
