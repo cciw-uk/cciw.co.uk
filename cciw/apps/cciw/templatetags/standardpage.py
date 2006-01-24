@@ -11,6 +11,10 @@ class EmailNode(template.Node):
         return obfuscate_email(self.nodelist.render(context))
 
 def do_email(parser, token):
+    """
+    Obfuscates the email address between the 
+    'email' and 'endemail' tags.
+    """
     nodelist = parser.parse(('endemail',))
     parser.delete_first_token()
     return EmailNode(nodelist)
@@ -23,6 +27,10 @@ class MemberLinkNode(template.Node):
         return get_member_link(user_name)
     
 def do_member_link(parser, token):
+    """
+    Creates a link to a member, using the member name between the 
+    'memberlink' and 'endmemberlink' tags.
+    """
     nodelist = parser.parse(('endmemberlink',))
     parser.delete_first_token()
     return MemberLinkNode(nodelist)
@@ -37,7 +45,8 @@ class SetVarNode(template.Node):
 
         
 def do_setvar(parser, token):
-    """Sets a variable in the context.  The first argument 
+    """
+    Sets a variable in the context.  The first argument 
     must be the variable name, the second the variable value
     as a literal or a variable."""
     bits = token.contents.split(" ", 2)
@@ -53,7 +62,8 @@ class AddHtmlChunk(template.Node):
         return ''
     
 def do_addhtmlchunk(parser, token):
-    """Adds an HtmlChunk into the context.  This should be
+    """
+    Adds an HtmlChunk into the context.  This should be
     used after 'load' statements and before 'extends'.
     It takes two arguments, the name of the context variable
     to set and the name of the HtmlChunk to find.
