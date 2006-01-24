@@ -284,7 +284,7 @@ html.append(('about_camp_general', '/info/about-camp/', 'About camp', """
 wonderful friendships formed on camps which have lasted and blossomed over 
 the years, benefitting not only the campers but also the churches to which they belong.</p>
 
-<p>Some will say <stong>fun</strong>.  Well, we certainly do have fun, with something to 
+<p>Some will say <strong>fun</strong>.  Well, we certainly do have fun, with something to 
 suit all who have a sense of adventure.  Whether it is canoeing, gorge walking, raft building, 
 wide games, bivouacking, table tennis, football, volleyball, camp concerts, tent life, 
 tent inspection, washing up, trips to the coast or even shopping, there is something for 
