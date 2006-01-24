@@ -74,14 +74,6 @@ a:hover {
 	color: white;
 }
 
-#sidebar a.currentSection:hover,
-#sidebar a.currentPage:hover
-{
-	background-color: #664433;
-	border-left: 2px solid #836150;
-	border-right: 2px solid #836150;
-}
-
 #footer
 {
 	background-image: url('http://cciw_django_local/media/images/headervline.png');
@@ -239,6 +231,12 @@ h1
 {
 	font-size: 1.5em;
 }
+#content h1
+{
+	text-shadow: 2px 2px 2px #00bb55;
+}
+
+
 
 h2
 {
