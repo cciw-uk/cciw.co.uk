@@ -1,4 +1,4 @@
-from django.core import meta
+from django.db import models
 from members import *
 
 VOTING_RULES = (
@@ -7,7 +7,7 @@ VOTING_RULES = (
     (2, "'X' votes per member per day")
 )
 
-class Poll(meta.Model):
+class Poll(models.Model):
     title = meta.CharField("Title", maxlength=100)
     intro_text = meta.CharField("Intro text", maxlength=200)
     outro_text = meta.CharField("Closing text", maxlength=200)
@@ -50,7 +50,7 @@ class Poll(meta.Model):
         
         
 
-class PollOption(meta.Model):
+class PollOption(models.Model):
     text = meta.CharField("Option text", maxlength=200)
     total = meta.PositiveSmallIntegerField("Number of votes")
     poll = meta.ForeignKey(Poll, verbose_name="Associated poll",
@@ -90,7 +90,7 @@ class PollOption(meta.Model):
         ordering = ('poll', 'listorder',)
     
 
-class VoteInfo(meta.Model):
+class VoteInfo(models.Model):
     poll_option = meta.ForeignKey(PollOption, 
         verbose_name="poll_option",
         related_name="vote")

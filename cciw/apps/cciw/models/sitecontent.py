@@ -1,6 +1,6 @@
-from django.core import meta
+from django.db import models
 
-class MenuLink(meta.Model):
+class MenuLink(models.Model):
     title = meta.CharField("title", maxlength=50)
     url = meta.CharField("URL", maxlength=100)
     extra_title = meta.CharField("Disambiguation title", maxlength=100, blank=True)
@@ -30,8 +30,8 @@ class MenuLink(meta.Model):
         
         
 
-class HtmlChunk(meta.Model):
-    name = meta.SlugField("name", db_index=True)
+class HtmlChunk(models.Model):
+    name = meta.SlugField("name", primary_key=True, db_index=True)
     html = meta.TextField("HTML")
     menu_link = meta.ForeignKey(MenuLink, verbose_name="Associated URL",
         null=True, blank=True)
@@ -55,8 +55,14 @@ class HtmlChunk(meta.Model):
         from django.core import template
         t = template.Template('{% load standardpage %}' + self.html)
         context[context_var] = t.render(context)
-        page_vars = context['pagevars']
-        page_vars['html_chunks'].append(self)
+
+        hcl = context['html_chunk_list']
+        if hcl == '':
+            hcl = []
+            
+        context['html_chunk_list'] = hcl
+        hcl.append(self)
+        
 
     def _module_render_into_context(context, chunkdict):
         """Retrieve a set of HtmlChunks and render into the context object, chunks

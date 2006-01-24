@@ -1,5 +1,5 @@
 from cciw.apps.cciw.settings import *
-from django.models.members import members
+from cciw.apps.cciw.models import members
 from django.models.sitecontent import menulinks
 from cciw.apps.cciw.templatetags import view_extras
 import datetime
@@ -20,7 +20,6 @@ def standard_extra_context(extra_dict=None, title=None):
         'media_root_url': CCIW_MEDIA_ROOT,
         'style_sheet_url': CCIW_MEDIA_ROOT + 'style.css',
         'style_sheet2_url': CCIW_MEDIA_ROOT + 'style2.css',
-        'html_chunks': [],
         'logged_in_members': 
             members.get_count(last_seen__gte=datetime.datetime.now() \
                                            - datetime.timedelta(minutes=3)),

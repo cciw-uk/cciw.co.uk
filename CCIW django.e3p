@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2005-12-27, 21:47:20 -->
-<!-- Copyright (C) 2005 ,  -->
+<!-- Saved: 2006-01-20, 23:54:07 -->
+<!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
   <UIType>Console</UIType>
@@ -59,13 +59,6 @@
       <Dir>apps</Dir>
       <Dir>cciw</Dir>
       <Name>common.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>views</Dir>
-      <Name>sites.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>

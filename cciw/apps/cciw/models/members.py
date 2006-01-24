@@ -1,7 +1,7 @@
-from django.core import meta
+from django.db import models
 from cciw.apps.cciw.settings import *
 
-class Permission(meta.Model):
+class Permission(models.Model):
     id = meta.PositiveSmallIntegerField("ID", primary_key=True)
     description = meta.CharField("Description", maxlength=40)
     
@@ -37,7 +37,7 @@ MODERATE_OPTIONS = (
     (2, "Fully moderated")
 )
 
-class Member(meta.Model):
+class Member(models.Model):
     user_name   = meta.CharField("User name", primary_key=True, maxlength=30)
     real_name   = meta.CharField("Real name", maxlength=20, blank=True)
     email      = meta.EmailField("Email address")
@@ -62,7 +62,7 @@ class Member(meta.Model):
         blank=True,
         null=True)
     icon          = meta.ImageField("Icon", upload_to = MEMBERS_ICONS_UPLOAD_PATH, blank=True)
-    dummy_member = meta.BooleanField("Is dummy member", default=False) # supports ancient posts in message boards
+    dummy_member = meta.BooleanField("Dummy member status", default=False) # supports ancient posts in message boards
         
     def __repr__(self):
         return self.user_name
@@ -117,7 +117,15 @@ class Member(meta.Model):
             ),
             list_display = (
                 'user_name', 'real_name', 'email', 'date_joined'
+            ),
+            list_filter = (
+                'dummy_member',
+                'hidden',
+                'banned',
+                'moderated',
+                'confirmed',
             )
+            
         )
         module_constants = {
             'MESSAGES_NONE': 0,
@@ -131,7 +139,7 @@ class Member(meta.Model):
         ordering = ('user_name',)
         
 
-class Award(meta.Model):
+class Award(models.Model):
     name = meta.CharField("Award name", maxlength=50)
     year = meta.PositiveSmallIntegerField("Year")
     description = meta.CharField("Description", maxlength=200)
@@ -159,7 +167,7 @@ class Award(meta.Model):
         ordering = ('-year', 'name',)
         
     
-class PersonalAward(meta.Model):
+class PersonalAward(models.Model):
     reason = meta.CharField("Reason for award", maxlength=200)
     date_awarded = meta.DateField("Date awarded", null=True, blank=True)
     award = meta.ForeignKey(Award,
@@ -184,7 +192,7 @@ BOOKMARK_CATEGORIES = (
     (1, "Classics")
 )
 
-class Bookmark(meta.Model):
+class Bookmark(models.Model):
     url = meta.CharField("URL", maxlength="60") # 60?
     title = meta.CharField("Title", maxlength="50") # 100?
     member = meta.ForeignKey(Member, verbose_name="member",
@@ -208,7 +216,7 @@ MESSAGE_BOXES = (
     (1, "Saved")
 )
 
-class Message(meta.Model):
+class Message(models.Model):
     from_member = meta.ForeignKey(Member,
         verbose_name="from member",
         related_name="message_sent"

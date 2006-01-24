@@ -1,8 +1,8 @@
-from django.core import meta
+from django.db import models
 from members import *
 from polls import *
 
-class Forum(meta.Model):
+class Forum(models.Model):
     open = meta.BooleanField("Open", default=True)
     location = meta.CharField("Location/path", db_index=True, unique=True, maxlength=50)
     
@@ -15,7 +15,7 @@ class Forum(meta.Model):
     class META:
         admin = meta.Admin()
 
-class NewsItem(meta.Model):
+class NewsItem(models.Model):
     created_by = meta.ForeignKey(Member, related_name="news_item_created")
     created_at = meta.DateTimeField("Posted")
     summary = meta.TextField("Summary")
@@ -28,7 +28,7 @@ class NewsItem(meta.Model):
     class META:
         admin = meta.Admin()
 
-class Topic(meta.Model):
+class Topic(models.Model):
     subject = meta.CharField("Subject", maxlength=100)
     started_by = meta.ForeignKey(Member, related_name="topic_started",
         verbose_name="started by")
@@ -68,7 +68,7 @@ class Topic(meta.Model):
         )
         ordering = ('-started_by',)
 
-class Gallery(meta.Model):
+class Gallery(models.Model):
     location = meta.CharField("Location/URL", maxlength=50)
     needs_approval = meta.BooleanField("Photos need approval", default=False)
 
@@ -83,7 +83,7 @@ class Gallery(meta.Model):
         verbose_name_plural = "Galleries"
         ordering = ('-location',)
 
-class Photo(meta.Model):
+class Photo(models.Model):
     created_at = meta.DateTimeField("Started", null=True)
     open = meta.BooleanField("Open")
     hidden = meta.BooleanField("Hidden")
@@ -112,7 +112,7 @@ class Photo(meta.Model):
         admin = meta.Admin()
     
         
-class Post(meta.Model):
+class Post(models.Model):
     posted_by = meta.ForeignKey(Member, 
         related_name="post")
     subject = meta.CharField("Subject", maxlength=100) # deprecated, supports legacy boards

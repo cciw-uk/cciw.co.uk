@@ -1,6 +1,6 @@
-from django.core import meta
+from django.db import models
 
-class Site(meta.Model):
+class Site(models.Model):
     short_name = meta.CharField("Short name", maxlength="25", blank=False, unique=True)
     slug_name = meta.SlugField("Machine name", maxlength="25", blank=True, unique=True)
     long_name = meta.CharField("Long name", maxlength="50", blank=False)
@@ -23,7 +23,7 @@ class Site(meta.Model):
             )
         )
         
-class Person(meta.Model):
+class Person(models.Model):
     name = meta.CharField("Name", maxlength=40)
     info = meta.TextField("Information (Plain text)", 
                         blank=True)
@@ -41,7 +41,7 @@ CAMP_AGES = (
     ('Snr','Senior')
 )
 
-class Camp(meta.Model):
+class Camp(models.Model):
     year = meta.PositiveSmallIntegerField("year")
     number = meta.PositiveSmallIntegerField("number")
     age = meta.CharField("age", blank=False, maxlength=3,
