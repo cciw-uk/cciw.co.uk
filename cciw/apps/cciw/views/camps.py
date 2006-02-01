@@ -1,14 +1,10 @@
 import datetime
 
-from django.core.extensions import render_to_response, DjangoContext
-from django.utils.httpwrappers import HttpResponse
-from django.core.exceptions import Http404
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+from django.http import HttpResponse, Http404
 
-from django.models.camps import camps
-from django.models.sitecontent import htmlchunks
-from django.models.forums import forums, topics, gallerys, photos
-
-
+from cciw.apps.cciw.models import Camp, HtmlChunk, Forum, Gallery, Photo
 from cciw.apps.cciw.common import *
 from cciw.apps.cciw.settings import *
 import cciw.apps.cciw.utils as utils
@@ -17,24 +13,25 @@ import forums as forums_views
 
 def index(request, year = None):
     if (year == None):
-        all_camps = camps.get_list(order_by=['-year','number'])
+        all_camps = Camp.objects.all().order_by('-year', 'number')
     else:
         year = int(year)  # year is result of regex match
-        all_camps = camps.get_list(year__exact=year, order_by=['number'])
+        all_camps = Camp.objects.all().filter(year__exact=year)\
+                                .order_by('-year', 'number')
         if len(all_camps) == 0:
             raise Http404
     
     return render_to_response('cciw/camps/index', 
-            DjangoContext(request, standard_extra_context({'camps': all_camps},
+            RequestContext(request, standard_extra_context({'camps': all_camps},
                     title="Camp forums and photos")))
 
 def detail(request, year, number):
     try:
-        camp = camps.get_object(year__exact=int(year), number__exact=int(number))
-    except camps.CampDoesNotExist:
+        camp = Camp.objects.get_object(year__exact=int(year), number__exact=int(number))
+    except Camp.DoesNotExist:
         raise Http404
         
-    c = DjangoContext(request, standard_extra_context({'camp': camp }, 
+    c = RequestContext(request, standard_extra_context({'camp': camp }, 
                             title = camp.nice_name()))
     
     if camp.end_date < datetime.date.today():
@@ -46,11 +43,11 @@ def detail(request, year, number):
 
     
 def thisyear(request):
-    c = DjangoContext(request, standard_extra_context(title="Camps " + str(THISYEAR)))
-    htmlchunks.render_into_context(c, {
+    c = RequestContext(request, standard_extra_context(title="Camps " + str(THISYEAR)))
+    HtmlChunk.render_into_context(c, {
         'introtext': 'camp_dates_intro_text',
         'outrotext': 'camp_dates_outro_text'})
-    c['camps'] = camps.get_list(year__exact=THISYEAR, order_by=['site_id', 'number'])    
+    c['camps'] = Camp.objects.get_list(year__exact=THISYEAR, order_by=['site_id', 'number'])    
     
     return render_to_response('cciw/camps/thisyear',c)
 
@@ -59,12 +56,12 @@ def get_forum_for_camp(camp):
 
     forum = None
     try:
-        forum = forums.get_object(location__exact=location)
-    except forums.ForumDoesNotExist:
+        forum = Forum.objects.get_object(location__exact=location)
+    except Forum.DoesNotExist:
         if not camp.end_date is None and \
             camp.end_date <= datetime.date.today():
             # If the forum doesn't exist, but should, we should create it
-            forum = forums.Forum(location = location, open = True)
+            forum = Forum(location = location, open = True)
             forum.save()
     return forum
 
@@ -72,11 +69,11 @@ def get_gallery_for_camp(camp):
     location = camp.get_absolute_url()[1:] + 'photos/'
     gallery = None
     try:
-        gallery = gallerys.get_object(location__exact=location)
-    except gallerys.GalleryDoesNotExist:
+        gallery = Gallery.objects.get_object(location__exact=location)
+    except Gallery.DoesNotExist:
         if not camp.end_date <= datetime.date.today():
             # if the gallery does not exist yet, but should, create it
-            gallery = gallerys.Gallery(location = location)
+            gallery = Gallery(location = location)
             gallery.save()
     return gallery
 
@@ -86,8 +83,8 @@ def forum(request, year, number):
         camp = None
         location = request.path[1:]
         try:
-            forum = forums.get_object(location__exact=location)
-        except forums.ForumDoesNotExist:
+            forum = Forum.objects.get_object(location__exact=location)
+        except Forum.DoesNotExist:
             # TODO: if any camps from that year are past, create it
             # TODO: but if it's an old forum, that would be closed immediately, don't bother
             raise Http404
@@ -96,8 +93,8 @@ def forum(request, year, number):
         
     else:
         try:
-            camp = camps.get_object(year__exact=int(year), number__exact=int(number))
-        except camps.CampDoesNotExist:
+            camp = Camp.objects.get_object(year__exact=int(year), number__exact=int(number))
+        except Camp.DoesNotExist:
             raise Http404
 
         forum = get_forum_for_camp(camp)
@@ -119,8 +116,8 @@ def topic(request, year, number, topicnumber):
         breadcrumb_extra = year_forum_breadcrumb(year)
     else:
         try:
-            camp = camps.get_object(year__exact=int(year), number__exact=int(number))
-        except camps.CampDoesNotExist:
+            camp = Camp.objects.get_object(year__exact=int(year), number__exact=int(number))
+        except Camp.DoesNotExist:
             raise Http404
         breadcrumb_extra = camp_forum_breadcrumb(camp)
             
@@ -129,8 +126,8 @@ def topic(request, year, number, topicnumber):
 
 def gallery(request, year, number):
     try:
-        camp = camps.get_object(year__exact=int(year), number__exact=int(number))
-    except camps.CampDoesNotExist:
+        camp = Camp.objects.get_object(year__exact=int(year), number__exact=int(number))
+    except Camp.DoesNotExist:
         raise Http404
 
     gallery = get_gallery_for_camp(camp)
@@ -146,8 +143,8 @@ def gallery(request, year, number):
 
 def oldcampgallery(request, year, galleryname):
     try:
-        gallery = gallerys.get_object(location__exact = 'camps/' + year + '/' + galleryname + '/photos/')
-    except gallerys.GalleryDoesNotExist:
+        gallery = Gallery.objects.get_object(location__exact = 'camps/' + year + '/' + galleryname + '/photos/')
+    except Gallery.DoesNotExist:
         raise Http404
 
     breadcrumb_extra = year_forum_breadcrumb(year) + [utils.unslugify(galleryname)]
@@ -158,15 +155,15 @@ def oldcampgallery(request, year, galleryname):
     
 def photo(request, year, number, photonumber):
     try:
-        camp = camps.get_object(year__exact=int(year), number__exact=int(number))
-    except camps.CampDoesNotExist:
+        camp = Camp.objects.get_object(year__exact=int(year), number__exact=int(number))
+    except Camp.DoesNotExist:
         raise Http404
     breadcrumb_extra = camp_forum_breadcrumb(camp)
     
     # TODO - permissions and hidden photos
     try:
-        photo = photos.get_object(id__exact = int(photonumber))
-    except photos.PhotoDoesNotExist:
+        photo = Photo.objects.get_object(id__exact = int(photonumber))
+    except Photo.DoesNotExist:
         raise Http404
     
     ec = standard_extra_context(title = "Photos: " + camp.nice_name())
@@ -176,16 +173,16 @@ def photo(request, year, number, photonumber):
 def oldcampphoto(request, year, galleryname, photonumber):
     # Do need to check the gallery exists, just for checking the URL
     try:
-        gallery = gallerys.get_object(location__exact = 'camps/' + year + '/' + galleryname + '/photos/')
-    except gallerys.GalleryDoesNotExist:
+        gallery = Gallery.objects.get_object(location__exact = 'camps/' + year + '/' + galleryname + '/photos/')
+    except Gallery.DoesNotExist:
         raise Http404
 
     breadcrumb_extra = year_forum_breadcrumb(year) + [utils.unslugify(galleryname)]
     
     # TODO - permissions and hidden photos
     try:
-        photo = photos.get_object(id__exact = int(photonumber))
-    except photos.PhotoDoesNotExist:
+        photo = Photo.objects.get_object(id__exact = int(photonumber))
+    except Photo.DoesNotExist:
         raise Http404
     
     ec = standard_extra_context(title = utils.unslugify(year+", " + galleryname) + " - Photos")    

@@ -57,8 +57,7 @@ class TestBBCodeParser(unittest.TestCase):
                 "\n---- instead of \n" + xhtml)
                 
     def xtest_render_all_posts(self):
-        from django.models.forums import posts
-        from django.models.members import messages
+        from cciw.apps.cciw.models import Post, Message
         from cciw.apps.cciw.utils import validate_xml
         f = open('/home/luke/all_cciw_posts.html', 'w')
         f.write("""
@@ -71,8 +70,8 @@ class TestBBCodeParser(unittest.TestCase):
 </head>
 <body>
 """)
-        f.writelines(["<!-- " + p.message.replace("-", "=") + " -->\n" + bbcode.bb2xhtml(p.message)+"\n\n" for p in posts.get_list()])
-        f.writelines(["<!-- " + m.text.replace("-", "=") + " -->\n" + bbcode.bb2xhtml(m.text)+"\n\n" for m in messages.get_list()])
+        f.writelines(["<!-- " + p.message.replace("-", "=") + " -->\n" + bbcode.bb2xhtml(p.message)+"\n\n" for p in Post.objects.get_list()])
+        f.writelines(["<!-- " + m.text.replace("-", "=") + " -->\n" + bbcode.bb2xhtml(m.text)+"\n\n" for m in Message.objects.get_list()])
         f.write("</body></html>")
         f.close()        
         

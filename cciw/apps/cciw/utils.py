@@ -59,8 +59,8 @@ class ThisYear(object):
         self.year = 0
         
     def get_year(self):
-        from django.models.camps import camps
-        lastcamp = camps.get_list(limit = 1, order_by = ('-year',))[0]
+        from cciw.apps.cciw.models import Camp
+        lastcamp = Camp.objects.get_list(limit = 1, order_by = ('-year',))[0]
         if lastcamp.end_date <= datetime.date.today():
             self.year = lastcamp.year + 1
         else:

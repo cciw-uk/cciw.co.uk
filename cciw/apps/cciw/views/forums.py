@@ -1,7 +1,7 @@
 import datetime
 from django.views.generic import list_detail
-from django.core.exceptions import Http404
-from django.models.forums import forums, topics, photos
+from django.http import Http404
+from cciw.apps.cciw.models import Forum, Topic, Photo, Post
 from cciw.apps.cciw.common import *
 from django.utils.html import escape
 from cciw.apps.cciw import utils
@@ -19,7 +19,7 @@ def topic_breadcrumb(forum, topic):
 
 def photo_breadcrumb(gallery, photo):
     prev_and_next = ''
-    previous_photos = photos.get_list(id__lt = photo.id, \
+    previous_photos = Photo.objects.get_list(id__lt = photo.id, \
         gallery__id__exact = photo.gallery_id, 
         order_by = ('-id',),
         limit = 1)
@@ -28,7 +28,7 @@ def photo_breadcrumb(gallery, photo):
     else:
         prev_and_next += '&laquo; '
         
-    next_photos = photos.get_list(id__gt = photo.id, \
+    next_photos = Photo.objects.get_list(id__gt = photo.id, \
         gallery__id__exact = photo.gallery_id, 
         order_by = ('id',),
         limit = 1)
@@ -49,8 +49,8 @@ def topicindex(request, title = None, extra_context = None, forum = None,
         
     if forum is None:
         try:
-            forum = forums.get_object(location__exact = request.path[1:])
-        except forums.ForumDoesNotExist:
+            forum = Forum.objects.get_object(location__exact = request.path[1:])
+        except Forum.DoesNotExist:
             raise Http404
     extra_context['forum'] = forum
     
@@ -76,7 +76,7 @@ def topicindex(request, title = None, extra_context = None, forum = None,
         lookup_args, request, default_order)
     extra_context['default_order'] = 'dlp' # corresponds = '-last_post_at'
         
-    return list_detail.object_list(request, 'forums', 'topics', 
+    return list_detail.object_list(request, Topic, 
         extra_context = extra_context, 
         template_name = template_name,
         paginate_by = paginate_by, extra_lookup_kwargs = lookup_args,
@@ -90,8 +90,8 @@ def topic(request, title_start = None, template_name = 'cciw/forums/topic', topi
     
     try:
         # TODO - lookup depends on permissions
-        topic = topics.get_object(id__exact = int(topicid))
-    except topics.TopicDoesNotExist:
+        topic = Topic.objects.get_object(id__exact = int(topicid))
+    except Topic.DoesNotExist:
         raise Http404
             
     # Add additional title
@@ -127,7 +127,7 @@ def topic(request, title_start = None, template_name = 'cciw/forums/topic', topi
         'topic__id__exact': topic.id,
     } 
             
-    return list_detail.object_list(request, 'forums', 'posts', 
+    return list_detail.object_list(request, Post, 
         extra_context = extra_context, 
         template_name = template_name,
         paginate_by=25, extra_lookup_kwargs = lookup_args,
@@ -154,7 +154,7 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
         lookup_args, request, ('created_at', 'id'))
     extra_context['default_order'] = 'aca'
         
-    return list_detail.object_list(request, 'forums', 'photos', 
+    return list_detail.object_list(request, Photo, 
         extra_context = extra_context, 
         template_name = 'cciw/forums/photoindex',
         paginate_by = 15, extra_lookup_kwargs = lookup_args,
@@ -170,7 +170,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
         'photo__id__exact': photo.id,
     } 
     
-    return list_detail.object_list(request, 'forums', 'posts', 
+    return list_detail.object_list(request, Post, 
         extra_context = extra_context, 
         template_name = 'cciw/forums/photo',
         paginate_by=25, extra_lookup_kwargs = lookup_args,

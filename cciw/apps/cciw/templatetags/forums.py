@@ -1,4 +1,4 @@
-from django.core import template
+from django import template
 import bbcode
 
 def bb2html(value):

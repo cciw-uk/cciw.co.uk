@@ -1,10 +1,9 @@
 from django.views.generic import list_detail
-from django.utils.httpwrappers import HttpResponseRedirect
-from django.core.exceptions import Http404
-from django.core.extensions import render_to_response, DjangoContext
+from django.http import HttpResponseRedirect, Http404
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 
-from django.models.members import members
-from django.models.members.members import MemberDoesNotExist
+from cciw.apps.cciw.models import Member
 from cciw.apps.cciw.common import *
 from datetime import datetime, timedelta
 
@@ -34,7 +33,7 @@ def index(request):
     except KeyError:
         pass
         
-    return list_detail.object_list(request, 'members', 'members', 
+    return list_detail.object_list(request, model=Member, 
         extra_context = extra_context, 
         template_name = 'cciw/members/index',
         paginate_by=50, extra_lookup_kwargs = lookup_args,
@@ -42,8 +41,8 @@ def index(request):
 
 def detail(request, user_name):
     try:
-        member = members.get_object(user_name__exact = user_name)
-    except MemberDoesNotExist:
+        member = Member.objects.get_object(user_name__exact = user_name)
+    except Member.DoesNotExist:
         raise Http404
     
     if request.POST:
@@ -53,18 +52,18 @@ def detail(request, user_name):
             except KeyError:
                 pass
         
-    c = DjangoContext(request, 
+    c = RequestContext(request, 
         standard_extra_context(title="Members: " + member.user_name))
     c['member'] = member
     c['awards'] = member.get_personal_award_list()
     return render_to_response('cciw/members/detail', c)
     
 def login(request):
-    c = DjangoContext(request, standard_extra_context(title="Login"))
+    c = RequestContext(request, standard_extra_context(title="Login"))
     c['referrer'] = request.META.get('HTTP_REFERER', None)
     if request.POST:
         try:
-            member = members.get_object(user_name__exact = request.POST['user_name'])
+            member = Member.objects.get_object(user_name__exact = request.POST['user_name'])
             if member.check_password(request.POST['password']):
                 request.session['member_id'] = member.user_name
                 member.last_seen = datetime.now()
@@ -72,6 +71,6 @@ def login(request):
                 return HttpResponseRedirect(member.get_absolute_url())
             else:
                 c['loginFailed'] = True
-        except MemberDoesNotExist:
+        except Member.DoesNotExist:
             c['loginFailed'] = True
     return render_to_response('cciw/members/login', c)

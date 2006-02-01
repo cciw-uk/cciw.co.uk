@@ -1,6 +1,5 @@
 from cciw.apps.cciw.settings import *
-from cciw.apps.cciw.models import members
-from django.models.sitecontent import menulinks
+from cciw.apps.cciw.models import Member, MenuLink
 from cciw.apps.cciw.templatetags import view_extras
 import datetime
        
@@ -21,7 +20,7 @@ def standard_extra_context(extra_dict=None, title=None):
         'style_sheet_url': CCIW_MEDIA_ROOT + 'style.css',
         'style_sheet2_url': CCIW_MEDIA_ROOT + 'style2.css',
         'logged_in_members': 
-            members.get_count(last_seen__gte=datetime.datetime.now() \
+            Member.objects.count(last_seen__gte=datetime.datetime.now() \
                                            - datetime.timedelta(minutes=3)),
     }
     
@@ -62,7 +61,7 @@ def standard_processor(request):
     context = {}
     context['homepage'] = (request.path == "/")
     # TODO - filter on 'visible' attribute
-    links = menulinks.get_list(where = ['parent_item_id IS NULL'])
+    links = MenuLink.objects.get_list(where = ['parent_item_id IS NULL'])
     for l in links:
         l.title = standard_subs(l.title)
         l.isCurrentPage = False
@@ -71,6 +70,7 @@ def standard_processor(request):
             l.isCurrentPage = True
         elif request.path.startswith(l.url) and l.url != '/':
             l.isCurrentSection = True
+    
     context['menulinks'] = links
     context['current_member'] = get_current_member(request)
 
@@ -80,12 +80,12 @@ def standard_processor(request):
 
 def get_current_member(request):
     try:
-        member = members.get_object(user_name__exact = request.session['member_id'])
+        member = Member.objects.get_object(user_name__exact = request.session['member_id'])
         # use opportunity to update last_seen data
         if (datetime.datetime.now() - member.last_seen).seconds > 60:
             member.last_seen = datetime.datetime.now()
             member.save()
         return member
-    except (KeyError, members.MemberDoesNotExist):
+    except (KeyError, Member.DoesNotExist):
         return None
  

@@ -1,5 +1,5 @@
-from django.core import template
-from django.models.sitecontent import htmlchunks
+from django import template
+from cciw.apps.cciw.models import HtmlChunk
 from cciw.apps.cciw.common import standard_subs
 from cciw.apps.cciw.utils import get_member_link, obfuscate_email
 
@@ -55,7 +55,7 @@ def do_setvar(parser, token):
 class AddHtmlChunk(template.Node):
     def __init__(self, context_var, chunk_name):
         self.context_var = context_var
-        self.chunk = htmlchunks.get_object(name__exact=chunk_name)
+        self.chunk = HtmlChunk.objects.get_object(name__exact=chunk_name)
         
     def render(self, context):
         self.chunk.render(context, self.context_var)

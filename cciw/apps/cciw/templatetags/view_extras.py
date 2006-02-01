@@ -1,4 +1,4 @@
-from django.core import template
+from django import template
 from django.utils import html
 from cciw.apps.cciw.settings import *
 from cciw.apps.cciw.utils import *

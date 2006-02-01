@@ -1,22 +1,22 @@
-from django.core import template
-from django.core.extensions import render_to_response
-from django.core.exceptions import Http404
-from django.core.extensions import DjangoContext
+from django import template
+from django.shortcuts import render_to_response
+from django.http import Http404
+from django.template import RequestContext
 
 from cciw.apps.cciw.common import *
-from django.models.sitecontent import htmlchunks, menulinks
+from cciw.apps.cciw.models import HtmlChunk, MenuLink
 
 def find(request):
     try:
-        link = menulinks.get_object(url__exact=request.path)
-    except menulinks.MenuLinkDoesNotExist:  
+        link = MenuLink.objects.get_object(url__exact=request.path)
+    except MenuLink.DoesNotExist:  
         raise Http404()
         
     try:
         chunk = link.get_htmlchunk()
-    except htmlchunks.HtmlChunkDoesNotExist:
+    except HtmlChunk.DoesNotExist:
         raise Http404()
     
-    c = DjangoContext(request, standard_extra_context(title = chunk.page_title))
+    c = RequestContext(request, standard_extra_context(title = chunk.page_title))
     chunk.render(c, 'contentBody')
     return render_to_response('cciw/standard', c)
