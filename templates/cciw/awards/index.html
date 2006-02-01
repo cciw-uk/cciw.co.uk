@@ -3,7 +3,7 @@
 	{% for award in object_list %}
 		<h2><a name="{{ award.nice_name|slugify }}">{{award.nice_name}}</a></h2>
 		<div class="awardDescription">
-		<img src="{{award.imageurl}}" alt="{{award.nice_name}} image" />  {{award.description}}
+		<img src="{{ award.imageurl }}" alt="{{ award.nice_name }} image" />  {{award.description}}
 		</div>
 		<div class="awardList">
 		{% if award.get_personal_award_list %}
