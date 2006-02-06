@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 def index(request):
     # TODO - depends on authorisation
-    lookup_args = {'dummy_member__exact' : 'False', 'hidden__exact': 'False'} 
+    lookup_args = {'dummy_member' : 'False', 'hidden': 'False'} 
     if (request.GET.has_key('online')):
         lookup_args['last_seen__gte'] = datetime.now() - timedelta(minutes=3)
     
@@ -41,7 +41,7 @@ def index(request):
 
 def detail(request, user_name):
     try:
-        member = Member.objects.get_object(user_name__exact = user_name)
+        member = Member.objects.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404
     
@@ -55,7 +55,7 @@ def detail(request, user_name):
     c = RequestContext(request, 
         standard_extra_context(title="Members: " + member.user_name))
     c['member'] = member
-    c['awards'] = member.get_personal_award_list()
+    c['awards'] = member.personal_awards.all()
     return render_to_response('cciw/members/detail', c)
     
 def login(request):
@@ -63,7 +63,7 @@ def login(request):
     c['referrer'] = request.META.get('HTTP_REFERER', None)
     if request.POST:
         try:
-            member = Member.objects.get_object(user_name__exact = request.POST['user_name'])
+            member = Member.objects.get(user_name=request.POST['user_name'])
             if member.check_password(request.POST['password']):
                 request.session['member_id'] = member.user_name
                 member.last_seen = datetime.now()

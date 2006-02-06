@@ -70,8 +70,8 @@ class TestBBCodeParser(unittest.TestCase):
 </head>
 <body>
 """)
-        f.writelines(["<!-- " + p.message.replace("-", "=") + " -->\n" + bbcode.bb2xhtml(p.message)+"\n\n" for p in Post.objects.get_list()])
-        f.writelines(["<!-- " + m.text.replace("-", "=") + " -->\n" + bbcode.bb2xhtml(m.text)+"\n\n" for m in Message.objects.get_list()])
+        f.writelines(["<!-- " + p.message.replace("-", "=") + " -->\n" + bbcode.bb2xhtml(p.message)+"\n\n" for p in Post.objects.all()])
+        f.writelines(["<!-- " + m.text.replace("-", "=") + " -->\n" + bbcode.bb2xhtml(m.text)+"\n\n" for m in Message.objects.all()])
         f.write("</body></html>")
         f.close()        
         

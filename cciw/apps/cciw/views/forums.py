@@ -19,22 +19,18 @@ def topic_breadcrumb(forum, topic):
 
 def photo_breadcrumb(gallery, photo):
     prev_and_next = ''
-    previous_photos = Photo.objects.get_list(id__lt = photo.id, \
-        gallery__id__exact = photo.gallery_id, 
-        order_by = ('-id',),
-        limit = 1)
-    if len(previous_photos) > 0:
-        prev_and_next += '<a href="' + previous_photos[0].get_absolute_url() + '" title="Previous photo">&laquo;</a> '
-    else:
+    try:
+        previous_photo = Photo.objects.filter(id__lt=photo.id, \
+            gallery__id__exact = photo.gallery_id).order_by('-id')[0]
+        prev_and_next += '<a href="%s" title="Previous photo">&laquo;</a> ' % previous_photo.get_absolute_url() 
+    except Photo.DoesNotExist:
         prev_and_next += '&laquo; '
         
-    next_photos = Photo.objects.get_list(id__gt = photo.id, \
-        gallery__id__exact = photo.gallery_id, 
-        order_by = ('id',),
-        limit = 1)
-    if len(next_photos) > 0:
-        prev_and_next += '<a href="' + next_photos[0].get_absolute_url() + '" title="Next photo">&raquo;</a> '
-    else:
+    try:
+        next_photo = Photo.objects.filter(id__gt=photo.id, \
+            gallery__id__exact = photo.gallery_id)[0].order_by('id')[0]
+        prev_and_next += '<a href="%s" title="Next photo">&raquo;</a> ' % next_photo.get_absolute_url()
+    except Photo.DoesNotExist:
         prev_and_next += '&raquo; '
         
     return ['<a href="' + gallery.get_absolute_url() + '">Photos</a>', str(photo.id), prev_and_next]
@@ -49,7 +45,7 @@ def topicindex(request, title = None, extra_context = None, forum = None,
         
     if forum is None:
         try:
-            forum = Forum.objects.get_object(location__exact = request.path[1:])
+            forum = Forum.objects.get(location=request.path[1:])
         except Forum.DoesNotExist:
             raise Http404
     extra_context['forum'] = forum
@@ -61,7 +57,7 @@ def topicindex(request, title = None, extra_context = None, forum = None,
     # TODO - searching
     
     lookup_args = {
-        'hidden__exact': False, # TODO - depends on permission
+        'hidden': False, # TODO - depends on permission
         'forum__id__exact': forum.id,
     } 
     
@@ -90,7 +86,7 @@ def topic(request, title_start = None, template_name = 'cciw/forums/topic', topi
     
     try:
         # TODO - lookup depends on permissions
-        topic = Topic.objects.get_object(id__exact = int(topicid))
+        topic = Topic.objects.get(id=int(topicid))
     except Topic.DoesNotExist:
         raise Http404
             
@@ -123,7 +119,7 @@ def topic(request, title_start = None, template_name = 'cciw/forums/topic', topi
     if introtext:
         extra_context['introtext'] = introtext
     lookup_args = {
-        'hidden__exact': False, # TODO - lookup depends on permissions
+        'hidden': False, # TODO - lookup depends on permissions
         'topic__id__exact': topic.id,
     } 
             
@@ -140,7 +136,7 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
     extra_context['breadcrumb'] =   create_breadcrumb(breadcrumb_extra + photoindex_breadcrumb(gallery))
 
     lookup_args = {
-        'hidden__exact': False, # TODO - lookup depends on permissions
+        'hidden': False, # TODO - lookup depends on permissions
         'gallery__id__exact': gallery.id,
     } 
     
@@ -166,7 +162,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     extra_context['photo'] = photo
     
     lookup_args = {
-        'hidden__exact': False, # TODO - lookup depends on permissions
+        'hidden': False, # TODO - lookup depends on permissions
         'photo__id__exact': photo.id,
     } 
     

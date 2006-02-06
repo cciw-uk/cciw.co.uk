@@ -16,7 +16,7 @@ def index(request, year = None):
         all_camps = Camp.objects.all().order_by('-year', 'number')
     else:
         year = int(year)  # year is result of regex match
-        all_camps = Camp.objects.all().filter(year__exact=year)\
+        all_camps = Camp.objects.all().filter(year=year)\
                                 .order_by('-year', 'number')
         if len(all_camps) == 0:
             raise Http404
@@ -27,7 +27,7 @@ def index(request, year = None):
 
 def detail(request, year, number):
     try:
-        camp = Camp.objects.get_object(year__exact=int(year), number__exact=int(number))
+        camp = Camp.objects.get(year=int(year), number=int(number))
     except Camp.DoesNotExist:
         raise Http404
         
@@ -47,7 +47,7 @@ def thisyear(request):
     HtmlChunk.render_into_context(c, {
         'introtext': 'camp_dates_intro_text',
         'outrotext': 'camp_dates_outro_text'})
-    c['camps'] = Camp.objects.get_list(year__exact=THISYEAR, order_by=['site_id', 'number'])    
+    c['camps'] = Camp.objects.filter(year=THISYEAR).order_by('site_id', 'number')
     
     return render_to_response('cciw/camps/thisyear',c)
 
@@ -56,7 +56,7 @@ def get_forum_for_camp(camp):
 
     forum = None
     try:
-        forum = Forum.objects.get_object(location__exact=location)
+        forum = Forum.objects.get(location=location)
     except Forum.DoesNotExist:
         if not camp.end_date is None and \
             camp.end_date <= datetime.date.today():
@@ -69,7 +69,7 @@ def get_gallery_for_camp(camp):
     location = camp.get_absolute_url()[1:] + 'photos/'
     gallery = None
     try:
-        gallery = Gallery.objects.get_object(location__exact=location)
+        gallery = Gallery.objects.get(location=location)
     except Gallery.DoesNotExist:
         if not camp.end_date <= datetime.date.today():
             # if the gallery does not exist yet, but should, create it
@@ -83,7 +83,7 @@ def forum(request, year, number):
         camp = None
         location = request.path[1:]
         try:
-            forum = Forum.objects.get_object(location__exact=location)
+            forum = Forum.objects.get(location=location)
         except Forum.DoesNotExist:
             # TODO: if any camps from that year are past, create it
             # TODO: but if it's an old forum, that would be closed immediately, don't bother
@@ -93,7 +93,7 @@ def forum(request, year, number):
         
     else:
         try:
-            camp = Camp.objects.get_object(year__exact=int(year), number__exact=int(number))
+            camp = Camp.objects.get(year=int(year), number=int(number))
         except Camp.DoesNotExist:
             raise Http404
 
@@ -116,7 +116,7 @@ def topic(request, year, number, topicnumber):
         breadcrumb_extra = year_forum_breadcrumb(year)
     else:
         try:
-            camp = Camp.objects.get_object(year__exact=int(year), number__exact=int(number))
+            camp = Camp.objects.get(year=int(year), number=int(number))
         except Camp.DoesNotExist:
             raise Http404
         breadcrumb_extra = camp_forum_breadcrumb(camp)
@@ -126,7 +126,7 @@ def topic(request, year, number, topicnumber):
 
 def gallery(request, year, number):
     try:
-        camp = Camp.objects.get_object(year__exact=int(year), number__exact=int(number))
+        camp = Camp.objects.get(year=int(year), number=int(number))
     except Camp.DoesNotExist:
         raise Http404
 
@@ -143,7 +143,7 @@ def gallery(request, year, number):
 
 def oldcampgallery(request, year, galleryname):
     try:
-        gallery = Gallery.objects.get_object(location__exact = 'camps/' + year + '/' + galleryname + '/photos/')
+        gallery = Gallery.objects.get(location='camps/%s/%s/photos/' % (year, galleryname))
     except Gallery.DoesNotExist:
         raise Http404
 
@@ -155,14 +155,14 @@ def oldcampgallery(request, year, galleryname):
     
 def photo(request, year, number, photonumber):
     try:
-        camp = Camp.objects.get_object(year__exact=int(year), number__exact=int(number))
+        camp = Camp.objects.get(year=int(year), number=int(number))
     except Camp.DoesNotExist:
         raise Http404
     breadcrumb_extra = camp_forum_breadcrumb(camp)
     
     # TODO - permissions and hidden photos
     try:
-        photo = Photo.objects.get_object(id__exact = int(photonumber))
+        photo = Photo.objects.get(id=int(photonumber))
     except Photo.DoesNotExist:
         raise Http404
     
@@ -173,7 +173,7 @@ def photo(request, year, number, photonumber):
 def oldcampphoto(request, year, galleryname, photonumber):
     # Do need to check the gallery exists, just for checking the URL
     try:
-        gallery = Gallery.objects.get_object(location__exact = 'camps/' + year + '/' + galleryname + '/photos/')
+        gallery = Gallery.objects.get(location= 'camps/%s/%s/photos/' % (year, galleryname))
     except Gallery.DoesNotExist:
         raise Http404
 
@@ -181,7 +181,7 @@ def oldcampphoto(request, year, galleryname, photonumber):
     
     # TODO - permissions and hidden photos
     try:
-        photo = Photo.objects.get_object(id__exact = int(photonumber))
+        photo = Photo.objects.get(id=int(photonumber))
     except Photo.DoesNotExist:
         raise Http404
     

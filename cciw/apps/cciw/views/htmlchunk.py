@@ -8,12 +8,12 @@ from cciw.apps.cciw.models import HtmlChunk, MenuLink
 
 def find(request):
     try:
-        link = MenuLink.objects.get_object(url__exact=request.path)
+        link = MenuLink.objects.get(url=request.path)
     except MenuLink.DoesNotExist:  
         raise Http404()
         
     try:
-        chunk = link.get_htmlchunk()
+        chunk = link.htmlchunk_set.all()[0]
     except HtmlChunk.DoesNotExist:
         raise Http404()
     

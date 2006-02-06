@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Migration script from old flatfiles to django
 import devel
 import os
@@ -109,7 +110,7 @@ new_urls = {
 def migrate_sites():
     
     try:
-        site1 = Site.objects.get_object(short_name__exact="Brynglas Farm")
+        site1 = Site.objects.get(short_name="Brynglas Farm")
     except Site.DoesNotExist:
         site1 = Site(short_name="Brynglas Farm", long_name="Brynglas Farm, Tywyn")
     site1.info = """
@@ -179,7 +180,7 @@ Bryncug,<br/>
     site1.save()
     
     try:
-        site2 = Site.objects.get_object(short_name__exact="Llys Andreas")
+        site2 = Site.objects.get(short_name="Llys Andreas")
     except Site.DoesNotExist:
         site2 = Site(short_name="Llys Andreas", long_name="Llys Andreas, Barmouth")
     site2.info = """
@@ -211,9 +212,8 @@ Ffordd Tyddyn Felin<br/>
 ###########################################################################################
 #                 LEADERS + CHAPLAINS
 def migrate_leaders():
-    for p in Person.objects.get_list():
-        p.delete()
-    for pdata in get_table(PREFIX+'leaders.data'):
+    Person.objects.delete(DELETE_ALL=True)
+    for pdata in get_table(PREFIX + 'leaders.data'):
         p = Person(name = pdata[0], info = pdata[1])
         p.save()
 
@@ -231,12 +231,12 @@ def migrate_camps():
         except:
             continue
         try:
-            camp = Camp.objects.get_object(year__exact=year, number__exact=number)
+            camp = Camp.objects.get(year=year, number=number)
         except Camp.DoesNotExist:
-            camp = Camp(year = year, number = number)
+            camp = Camp(year=year, number=number)
             
         # ids of sites are the same as before:
-        camp.site_id = Site.objects.get_object(id__exact=int(c[1])).id
+        camp.site_id = Site.objects.get(id=int(c[1])).id
         camp.age = c[2]
         
         # Create proper dates from nearly free form dates we had before
@@ -269,11 +269,11 @@ def migrate_camps():
         camp.start_date = date(year, startmonth, startday)
         camp.end_date = date(year, endmonth, endday)
         
-        camp.chaplain_id = Person.objects.get_object(name__iexact=c[5]).id
+        camp.chaplain_id = Person.objects.get(name__iexact=c[5]).id
         if len(c[6]) > 0:
             pcampyear, pcampnumber = map(int, c[6].split("-"))
             try:
-                camp.previous_camp_id = Camp.objects.get_object(year__exact=pcampyear, number__exact=pcampnumber).id
+                camp.previous_camp_id = Camp.objects.get(year=pcampyear, number=pcampnumber).id
             except:
                 pass
             
@@ -284,12 +284,13 @@ def migrate_camps():
             leaders = [leader.strip() for leader in leaders.strip('"').split(",")]
         else:
             leaders = [leaders]
-        camp.set_leaders([Person.objects.get_object(name__iexact=name).id for name in leaders])
+        for name in leaders:
+            camp.leaders.add(Person.objects.get(name__iexact=name))
     
 ###########################################################################################
 #             USERS
 def migrate_members():
-    for u in Member.objects.get_list(): u.delete()
+    Member.objects.delete(DELETE_ALL=True)
     def create_member(data, passwords_dict, last_seen_data):
         member = Member(user_name=data[0])
         member.real_name = data[1]
@@ -340,15 +341,16 @@ def migrate_members():
         except:
             print "Invalid data:"
             print line
-            continue        
+            continue
         u.confirmed = False
         u.save()
 
 ###########################################################################################
 # Permissions (from old 'groups')
 def migrate_permissions():
-    for p in Permission.objects.get_list():
-        p.delete()
+    Permission.objects.delete(DELETE_ALL=True)
+    for m in Member.objects.all():
+        m.permissions.clear()
     
     for id, description in ( 
         (Permission.SUPERUSER, "Administrator"),
@@ -375,10 +377,9 @@ def migrate_permissions():
         
             if line[0] == groupname:
                 for user_name in line[2].split(","):
-                    u = Member.objects.get_object(user_name__exact=user_name.strip())
-                    perms = [p.id for p in u.get_permission_list()]
-                    perms += permsList
-                    u.set_permissions(perms)
+                    u = Member.objects.get(user_name=user_name.strip())
+                    for p in permsList:
+                        u.permissions.add(id=p)
                     u.save()
                 found = True
         if not found:
@@ -388,10 +389,9 @@ def migrate_permissions():
 #        Messages
 
 def migrate_messages():
-    for message in Message.objects.get_list():
-        message.delete()
+    Message.objects.delete(DELETE_ALL=True)
         
-    for member in Member.objects.get_list():
+    for member in Member.objects.all():
         for boxNumber, boxName in ( (0,'inbox'), (1,'saved') ):
             try:
                 data = get_table(PREFIX+"../members/" + member.user_name + "." + boxName)
@@ -400,7 +400,7 @@ def migrate_messages():
             for line in data:
                 message = Message(text=fix_bbcode(line[2]))
                 message.to_member_id = member.user_name
-                message.from_member_id = Member.objects.get_object(user_name__exact=line[1]).user_name
+                message.from_member_id = Member.objects.get(user_name=line[1]).user_name
                 message.time = datetime.fromtimestamp(int(line[3]))
                 message.box = boxNumber
                 message.save()
@@ -408,45 +408,40 @@ def migrate_messages():
 ###########################################################################################
 #        AWARDS
 def migrate_awards():
-    for a in Award.objects.get_list():
-        a.delete()
-    for pa in PersonalAward.objects.get_list():
-        pa.delete()
+    Award.objects.delete(DELETE_ALL=True)
+    PersonalAward.objects.delete(DELETE_ALL=True)
         
     for line in get_table(PREFIX+"awards.data"):
         awardname,year = line[2].split(" ")
         try:
-            award = Award.objects.get_object(name__exact = awardname, year__exact = year)
+            award = Award.objects.get(name=awardname, year=year)
         except Award.DoesNotExist:
             award = Award(name = awardname)
             award.year = year
             descriptions = {
-                "Hero": "'Bronze' award - sterling effort and achievement",
-                "Addict": "'Silver' award - slightly worrying levels of website activity going on here.", 
-                "Ubergeek": "'Gold' award - definitely time to take a break from the computer.",
-                "Numpton": "'Black' - we noticed you, at least you have that."
+                "Hero": (1, "'Bronze' award - sterling effort and achievement"),
+                "Addict": (2, "'Silver' award - slightly worrying levels of website activity going on here."), 
+                "Ubergeek": (3, "'Gold' award - definitely time to take a break from the computer."),
+                "Numpton": (-2, "'Black' - we noticed you, at least you have that.")
             }
-            award.description = descriptions[awardname]
+            award.description, award.value = descriptions[awardname]
             award.image = "award_"+ line[1] + ".gif"
             award.save()
         pa = PersonalAward(award_id=award.id)
         pa.reason = line[3]
-        pa.member_id = Member.objects.get_object(user_name__exact=line[0]).user_name
+        pa.member_id = Member.objects.get(user_name=line[0]).user_name
         pa.save()
     
 ###########################################################################################
 #        POLLS
 def migrate_polls():
     # first delete all poll options and polls
-    for poll_option in PollOption.objects.get_list():
-        poll_option.delete()
-    
-    for poll in polls.get_list():
-        poll.delete()
+    PollOption.objects.delete(DELETE_ALL=True)
+    Poll.objects.delete(DELETE_ALL=True)
     
     for line in get_table(PREFIX+"../polls/polls.data"):
         try:
-            poll = Poll.objects.get_object(title__exact=line[1])
+            poll = Poll.objects.get(title=line[1])
         except Poll.DoesNotExist:
             poll = Poll(title=line[1])
         options = []
@@ -473,7 +468,7 @@ def migrate_polls():
         poll.rules = get_int(line[3])
         poll.rule_parameter = get_int(line[4])
         poll.have_vote_info = False
-        poll.created_by_id = Member.objects.get_object(user_name__exact=line[5]).user_name
+        poll.created_by_id = Member.objects.get(user_name=line[5]).user_name
         poll.save()
         
         # Get votes
@@ -502,7 +497,7 @@ def get_dummy_or_real_member(user_name):
     if user_name == '"ecky2702':
         user_name = "'ecky2702'"
     try:
-        u = Member.objects.get_object(user_name__exact=user_name)
+        u = Member.objects.get(user_name=user_name)
         return u
     except Member.DoesNotExist:
         if user_name.startswith("'"):
@@ -522,12 +517,12 @@ def get_dummy_or_real_member(user_name):
 
 def migrate_forums():
     # delete eveything
-    for p in Post.objects.get_list(): p.delete()
-    for n in NewsItem.objects.get_list(): n.delete()
-    for t in Topic.objects.get_list(): t.delete()
-    for p in Photo.objects.get_list(): p.delete()
-    for f in Forum.objects.get_list(): f.delete()
-    for g in Gallery.objects.get_list(): g.delete()
+    Post.objects.delete(DELETE_ALL=True)
+    NewsItem.objects.delete(DELETE_ALL=True)
+    Topic.objects.delete(DELETE_ALL=True)
+    Photo.objects.delete(DELETE_ALL=True)
+    Forum.objects.delete(DELETE_ALL=True)
+    Gallery.objects.delete(DELETE_ALL=True)
 
     boardsdir = PREFIX+ "../boards/"
     boards = get_table(boardsdir + "boards.data")
@@ -611,13 +606,13 @@ def migrate_forums():
                     ni.save()
                     topic.news_item_id = ni.id
                 elif topictype == 3:
-                    # poll names are unique up to now
+                    # poll names are unique up to now, so this will work
                     pollname = ""
                     for pollline in get_table(PREFIX+"../polls/polls.data"):
                         if pollline[0] == topicline[12]:
                             pollname = pollline[1]
                             break
-                    topic.poll_id = Poll.objects.get_object(title__exact=pollname).id
+                    topic.poll_id = Poll.objects.get(title=pollname).id
                 topic.forum_id = f.id
                 topic.save()
                 
@@ -673,8 +668,7 @@ def migrate_forums():
     # end for line in boards
     
 def migrate_main_menu():
-    for m in MenuLink.objects.get_list():
-        m.delete()
+    MenuLink.objects.delete(DELETE_ALL=True)
     
     links = (
         ('Home','/',0,''),
@@ -701,18 +695,17 @@ def migrate_main_menu():
         title, url, order, parentUrl = links[i]
         m = MenuLink(title = title, url = url, listorder=order)
         if parentUrl != '':
-            m.parent_item_id = MenuLink.objects.get_object(url__exact=parentUrl).id
+            m.parent_item_id = MenuLink.objects.get(url=parentUrl).id
         m.save()
         
 
 def migrate_html():
-    for h in htmlchunks.get_list():
-        h.delete()
+    HtmlChunk.objects.delete(DELETE_ALL=True)
     for name, url, page_title, htmlChunk in html:
         h = HtmlChunk(name=name, html=htmlChunk, 
                                  page_title=page_title)
         if url != "":
-            h.menu_link_id = MenuLink.objects.get_object(url__exact=url).id
+            h.menu_link_id = MenuLink.objects.get(url=url).id
         h.save()
     
 ##########################################################
@@ -734,11 +727,11 @@ def fixup_urls():
 
     # Remap all references to old URLs
     for objectlist, attrlist in (
-            (Post.objects.get_list(), ['message']),
-            (NewsItem.objects.get_list(), ['full_item', 'summary']),
-            (Member.objects.get_list(), ['comments']),
-            (Message.objects.get_list(), ['text']),
-            (PollOption.objects.get_list(), ['text']),
+            (Post.objects.all(), ['message']),
+            (NewsItem.objects.all(), ['full_item', 'summary']),
+            (Member.objects.all(), ['comments']),
+            (Message.objects.all(), ['text']),
+            (PollOption.objects.all(), ['text']),
         ):
         for obj in objectlist:
             for attrname in attrlist:

@@ -1,4 +1,4 @@
-from cciw.apps.cciw.settings import *
+from cciw.apps.cciw.settings import CCIW_MEDIA_ROOT, THISYEAR
 from cciw.apps.cciw.models import Member, MenuLink
 from cciw.apps.cciw.templatetags import view_extras
 import datetime
@@ -20,8 +20,8 @@ def standard_extra_context(extra_dict=None, title=None):
         'style_sheet_url': CCIW_MEDIA_ROOT + 'style.css',
         'style_sheet2_url': CCIW_MEDIA_ROOT + 'style2.css',
         'logged_in_members': 
-            Member.objects.count(last_seen__gte=datetime.datetime.now() \
-                                           - datetime.timedelta(minutes=3)),
+            Member.objects.filter(last_seen__gte=datetime.datetime.now() \
+                                           - datetime.timedelta(minutes=3)).count(),
     }
     
     return extra_dict
@@ -61,7 +61,7 @@ def standard_processor(request):
     context = {}
     context['homepage'] = (request.path == "/")
     # TODO - filter on 'visible' attribute
-    links = MenuLink.objects.get_list(where = ['parent_item_id IS NULL'])
+    links = MenuLink.objects.filter(parent_item__isnull=True)
     for l in links:
         l.title = standard_subs(l.title)
         l.isCurrentPage = False
@@ -80,7 +80,7 @@ def standard_processor(request):
 
 def get_current_member(request):
     try:
-        member = Member.objects.get_object(user_name__exact = request.session['member_id'])
+        member = Member.objects.get(user_name = request.session['member_id'])
         # use opportunity to update last_seen data
         if (datetime.datetime.now() - member.last_seen).seconds > 60:
             member.last_seen = datetime.datetime.now()

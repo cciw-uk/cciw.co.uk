@@ -56,6 +56,6 @@ patterns('cciw.apps.cciw.views',
     (r'^website/forum/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
     
-    (r'', 'htmlchunk.find'),
+    (r'^$', 'htmlchunk.find'),
 ) 
 

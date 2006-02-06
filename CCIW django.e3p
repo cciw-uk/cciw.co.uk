@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2006-01-31, 21:35:42 -->
+<!-- Saved: 2006-02-05, 01:09:07 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -151,49 +151,43 @@
       <Dir>cciw</Dir>
       <Dir>apps</Dir>
       <Dir>cciw</Dir>
-      <Dir>modelsdir</Dir>
+      <Dir>models</Dir>
       <Name>forums.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
       <Dir>apps</Dir>
       <Dir>cciw</Dir>
-      <Dir>modelsdir</Dir>
+      <Dir>models</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
       <Dir>apps</Dir>
       <Dir>cciw</Dir>
-      <Dir>modelsdir</Dir>
+      <Dir>models</Dir>
       <Name>camps.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
       <Dir>apps</Dir>
       <Dir>cciw</Dir>
-      <Dir>modelsdir</Dir>
+      <Dir>models</Dir>
       <Name>polls.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
       <Dir>apps</Dir>
       <Dir>cciw</Dir>
-      <Dir>modelsdir</Dir>
+      <Dir>models</Dir>
       <Name>members.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
       <Dir>apps</Dir>
       <Dir>cciw</Dir>
-      <Dir>modelsdir</Dir>
+      <Dir>models</Dir>
       <Name>sitecontent.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Name>models.py</Name>
     </Source>
   </Sources>
   <Forms>
