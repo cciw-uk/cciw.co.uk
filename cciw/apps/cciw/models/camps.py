@@ -54,7 +54,7 @@ class Camp(models.Model):
     start_date = models.DateField("start date")
     end_date = models.DateField("end date")
     previous_camp = models.ForeignKey("self", 
-        related_name="next_camp", 
+        related_name="next_camps", 
         verbose_name="previous camp",
         null=True, blank=True)
     chaplain = models.ForeignKey(Person, 
@@ -71,7 +71,7 @@ class Camp(models.Model):
     def __repr__(self):
         leaders = list(self.leaders.all())
         try:
-            leaders.extend(self.chaplain)
+            leaders.append(self.chaplain)
         except Person.DoesNotExist:
             pass
         if len(leaders) > 0:

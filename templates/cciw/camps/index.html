@@ -9,8 +9,8 @@
 		{% for camp in yeargroup.list %}
 			<li><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">
 				Camp {{ camp.number }}</a>,
-				led by {{ camp.get_leader_list|join:", "|escape }}, 
-				chaplain {{ camp.get_chaplain }}
+				led by {{ camp.leaders.all|join:", "|escape }}, 
+				chaplain {{ camp.chaplain }}
 				<ul>
 					<li><a href="{{ camp.get_absolute_url }}forum/" 
 						title="Message board for {{ camp.nice_name }}">Forum</a></li>

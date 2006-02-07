@@ -171,10 +171,10 @@ class PersonalAward(models.Model):
     date_awarded = models.DateField("Date awarded", null=True, blank=True)
     award = models.ForeignKey(Award,
         verbose_name="award", 
-        related_name="personal_award")
+        related_name="personal_awards")
     member = models.ForeignKey(Member,
         verbose_name="member",
-        related_name="personal_award")
+        related_name="personal_awards")
         
     def __repr__(self):
         return self.award.name + " to " + self.member.user_name

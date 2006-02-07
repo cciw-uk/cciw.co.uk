@@ -12,23 +12,23 @@
 <table class="sideheaders">
 	<tr>
 		<th scope="row">Location:</th>
-		<td><a href="{{ camp.get_site.get_absolute_url }}">{{ camp.get_site.short_name }}</a></td>
+		<td><a href="{{ camp.site.get_absolute_url }}">{{ camp.site.short_name }}</a></td>
 	</tr>
-	{% if camp.get_nextCamp_list %}
+	{% if camp.next_camps %}
 	<tr>
 		<th scope="row">Following camp:</th>
 		<td>
-			{% for next_camp in camp.get_next_camp_list %}
+			{% for next_camp in camp.next_camps.all %}
 				{{ next_camp.get_link }}<br/>
 			{% endfor %}
 		</td>
 	</tr>
 	{% endif %}
-	{% if camp.get_previous_camp %}
+	{% if camp.previous_camp %}
 	<tr>
 		<th scope="row">Previous camp:</th>
 		<td>
-			{{ camp.get_previous_camp.get_link }}
+			{{ camp.previous_camp.get_link }}
 		</td>
 	</tr>
 	{% endif %}
@@ -36,12 +36,12 @@
 		<th scope="row">Leaders:</th>
 		<td>
 			<ul class="leaderlist">
-				{% for leader in camp.get_leader_list %}
+				{% for leader in camp.leaders.all %}
 					<li>{{ leader.name }}:<br/>
 					{{ leader.info|escape|linebreaksbr }}</li>
 				{% endfor %}
-				<li>{{ camp.get_chaplain.name }}:<br/>
-				{{ camp.get_chaplain.info|escape|linebreaksbr }}	</li>
+				<li>{{ camp.chaplain.name }}:<br/>
+				{{ camp.chaplain.info|escape|linebreaksbr }}	</li>
 			</ul>
 		</td>
 	</tr>

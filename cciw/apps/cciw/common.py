@@ -32,17 +32,14 @@ def standard_subs(value):
     #return value.replace('{{thisyear}}', str(THISYEAR)).replace('{{media}}', CCIW_MEDIA_ROOT)
 
 
-def order_option_to_lookup_arg(order_options, lookup_args_dict, 
-                                request, default_order_by):
-    """Add a lookup argument if the request contains any of the specified ordering
-    parameters in the query string.  
+def get_order_option(order_options, request, default_order_by):
+    """Get the order_by parameter from the request, if the request 
+    contains any of the specified ordering parameters in the query string.
     
     order_options is a dict of query string params and the corresponding lookup argument.  
     
     default_order_by is value to use for if there is no matching
     order query string.
-    
-    lookup_args_dict is a dict of Django lookup arguments to modify inplace 
     """
 
     order_request = request.GET.get('order', None)
@@ -50,7 +47,7 @@ def order_option_to_lookup_arg(order_options, lookup_args_dict,
         order_by = order_options[order_request]
     except:
         order_by = default_order_by
-    lookup_args_dict['order_by'] = order_by
+    return order_by
 
 def create_breadcrumb(links):
     return " :: ".join(links)

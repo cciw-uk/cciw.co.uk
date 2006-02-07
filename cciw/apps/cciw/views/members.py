@@ -14,7 +14,7 @@ def index(request):
         lookup_args['last_seen__gte'] = datetime.now() - timedelta(minutes=3)
     
     extra_context = standard_extra_context(title='Members')
-    order_option_to_lookup_arg(
+    order_by = get_order_option(
         {'adj': ('date_joined',),
         'ddj': ('-date_joined',),
         'aun': ('user_name',),
@@ -23,7 +23,7 @@ def index(request):
         'drn': ('-real_name',),
         'als': ('last_seen',),
         'dls': ('-last_seen',)},
-        lookup_args, request, ('user_name',))
+        request, ('user_name',))
     extra_context['default_order'] = 'aun'
     
     try:
@@ -33,11 +33,11 @@ def index(request):
     except KeyError:
         pass
         
-    return list_detail.object_list(request, model=Member, 
-        extra_context = extra_context, 
-        template_name = 'cciw/members/index',
-        paginate_by=50, extra_lookup_kwargs = lookup_args,
-        allow_empty = True)
+    return list_detail.object_list(request, Member.objects.filter(**lookup_args).order_by(*order_by),
+        extra_context=extra_context, 
+        template_name='cciw/members/index',
+        paginate_by=50,
+        allow_empty=True)
 
 def detail(request, user_name):
     try:

@@ -5,7 +5,7 @@ from cciw.apps.cciw.models import Site, Award
 urlpatterns = \
 patterns('django.views.generic',
     (r'^awards/$', 'list_detail.object_list',
-        {'model': Award,
+        {'queryset': Award.objects.all(),
          'extra_context': cciw_common.standard_extra_context(title="Website Awards"),
          'template_name': 'cciw/awards/index',
          'allow_empty': True,
@@ -13,14 +13,14 @@ patterns('django.views.generic',
     ),
          
     (r'^sites/$', 'list_detail.object_list',
-        {'model': Site,
+        {'queryset': Site.objects.all(),
          'extra_context': cciw_common.standard_extra_context(title="Camp sites"),
          'template_name': 'cciw/sites/index'
         }
     ),
  
     (r'^sites/(?P<slug>.*)/$', 'list_detail.object_detail',
-        {'model': Site,
+        {'queryset': Site.objects.all(),
          'slug_field': 'slug_name',
          'extra_context': cciw_common.standard_extra_context(),
          'template_name': 'cciw/sites/detail'

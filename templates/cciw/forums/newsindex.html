@@ -7,16 +7,16 @@
 	{% if object_list %}
 		{% for topic in object_list %}
 			<div class="newsItem">
-				<h2>{{ topic.get_news_item.subject }}</h2>
-				<div class="newsItemDetails">Posted: {{ topic.get_news_item.created_at|date:"d M Y, h:i" }}, 
-				by {% memberlink %}{{ topic.get_news_item.created_by_id }}{% endmemberlink %}</div>
+				<h2>{{ topic.news_item.subject }}</h2>
+				<div class="newsItemDetails">Posted: {{ topic.news_item.created_at|date:"d M Y, h:i" }}, 
+				by {% memberlink %}{{ topic.news_item.created_by_id }}{% endmemberlink %}</div>
 				<div class="newsItemSummary">
-				{{ topic.get_news_item.summary|bb2html }}
+				{{ topic.news_item.summary|bb2html }}
 				</div>
 				
-				{% if topic.get_news_item.full_item %}
+				{% if topic.news_item.full_item %}
 				<div class="newsItemReadMore"><a href="{{ topic.get_absolute_url }}" 
-				title="Read full article '{{ topic.get_news_item.subject|escape }}'" >Read more</a></div>
+				title="Read full article '{{ topic.news_item.subject|escape }}'" >Read more</a></div>
 				{% endif %}
 
 			</div>

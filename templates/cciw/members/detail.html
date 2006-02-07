@@ -69,9 +69,9 @@
 			<p><b>{{ member.user_name }}</b> has received the following awards:</p>
 			{% for paward in awards %}
 			<div class="awardInfo">
-				<a href="{{paward.get_award.get_absolute_url}}" class="awardlink"><img class="award" alt="{{paward.get_award.nice_name}}" src="{{paward.get_award.imageurl}}" /></a><br/>
+				<a href="{{paward.award.get_absolute_url}}" class="awardlink"><img class="award" alt="{{paward.award.nice_name}}" src="{{paward.award.imageurl}}" /></a><br/>
 				<span class="awardname">
-				{{ paward.get_award.nice_name }}</span>
+				{{ paward.award.nice_name }}</span>
 				{% if paward.date_awarded %}
  					on {{ paward.date_awarded|date:"d M Y" }}
 				{% endif %}
