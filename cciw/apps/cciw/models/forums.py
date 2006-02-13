@@ -93,7 +93,6 @@ class Gallery(models.Model):
     class Admin:
         pass
 
-
 class Photo(models.Model):
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open")
@@ -112,10 +111,10 @@ class Photo(models.Model):
     last_post_by = models.ForeignKey(Member, verbose_name="Last post by",
         null=True, blank=True) # needed for performance and simplicity in templates
     post_count = models.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
-    
+
     def __repr__(self):
         return self.filename
-    
+
     def get_absolute_url(self):
         return self.gallery.get_absolute_url() + str(self.id) + '/'
 
@@ -124,7 +123,7 @@ class Photo(models.Model):
         
     class Admin:
         pass
-        
+
 class Post(models.Model):
     posted_by = models.ForeignKey(Member, 
         related_name="post")
@@ -137,20 +136,20 @@ class Post(models.Model):
         null=True, blank=True, related_name="checked_post")
     approved = models.BooleanField("Approved", null=True)
     needs_approval = models.BooleanField("Needs approval", default=False)
-    photo = models.ForeignKey(Photo, related_name="post",
+    photo = models.ForeignKey(Photo, related_name="posts",
         null=True, blank=True)
-    topic = models.ForeignKey(Topic, related_name="post",
+    topic = models.ForeignKey(Topic, related_name="posts",
         null=True, blank=True)
 
     def __repr__(self):
         return "[" + str(self.id) + "]  " + self.message[:30]
-        
+
     def updateParent(self, parent):
         "Update the cached info in the parent topic/photo"
         # Both types of parent, photos and topics,
         # are covered by this sub since they deliberately have the same
         # interface for this bit.
-        post_count = parent.post_count
+        post_count = parent.posts.count()
         changed = False
         if (parent.last_post_at is None and not self.posted_at is None) or \
             (not parent.last_post_at is None and not self.posted_at is None \
@@ -171,10 +170,10 @@ class Post(models.Model):
         super(Post, self).save()
         # Update parent topic/photo
         
-        if not self.topic_id is None:
+        if self.topic_id is not None:
             self.updateParent(self.topic)
             
-        if not self.photo_id is None:
+        if self.photo_id is not None:
             self.updateParent(self.photo)
     
     class Meta:
@@ -184,7 +183,6 @@ class Post(models.Model):
         # would also cause its posted_at date to change, but not it's order,
         # and data for the original post date/time is now lost)
         ordering = ('id',) 
-        
 
     class Admin:
         list_display = ('__repr__', 'posted_by', 'posted_at')

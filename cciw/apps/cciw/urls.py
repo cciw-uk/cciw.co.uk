@@ -5,7 +5,7 @@ from cciw.apps.cciw.models import Site, Award
 urlpatterns = \
 patterns('django.views.generic',
     (r'^awards/$', 'list_detail.object_list',
-        {'queryset': Award.objects.all(),
+        {'queryset': Award.objects.order_by('-year', '-value'),
          'extra_context': cciw_common.standard_extra_context(title="Website Awards"),
          'template_name': 'cciw/awards/index',
          'allow_empty': True,
@@ -56,6 +56,6 @@ patterns('cciw.apps.cciw.views',
     (r'^website/forum/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
     
-    (r'^$', 'htmlchunk.find'),
+    (r'', 'htmlchunk.find'),
 ) 
 

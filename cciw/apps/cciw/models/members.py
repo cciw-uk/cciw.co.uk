@@ -148,7 +148,7 @@ class Award(models.Model):
     def __repr__(self):
         return self.name + " " + str(self.year)
         
-    def nice_name_get(self):
+    def nice_name(self):
         return repr(self)
     
     def imageurl(self):

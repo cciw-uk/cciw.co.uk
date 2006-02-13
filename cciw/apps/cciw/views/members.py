@@ -8,10 +8,10 @@ from cciw.apps.cciw.common import *
 from datetime import datetime, timedelta
 
 def index(request):
-    # TODO - depends on authorisation
-    lookup_args = {'dummy_member' : 'False', 'hidden': 'False'} 
+    
+    members = Member.objects.filter(dummy_member=False, hidden=False) # TODO - depends on authorisation
     if (request.GET.has_key('online')):
-        lookup_args['last_seen__gte'] = datetime.now() - timedelta(minutes=3)
+        members = members.filter(last_seen__gte=(datetime.now() - timedelta(minutes=3)))
     
     extra_context = standard_extra_context(title='Members')
     order_by = get_order_option(
@@ -24,16 +24,17 @@ def index(request):
         'als': ('last_seen',),
         'dls': ('-last_seen',)},
         request, ('user_name',))
+    members = members.order_by(*order_by)
     extra_context['default_order'] = 'aun'
-    
+
     try:
-        search = '%' + request['search'] + '%'
-        lookup_args['where'] = ["(user_name LIKE %s OR real_name LIKE %s)"]
-        lookup_args['params'] = [search, search]
+        search = request['search']
+        if len(search) > 0:
+            members = (members.filter(user_name__icontains=search) | members.filter(real_name__icontains=search))
     except KeyError:
         pass
-        
-    return list_detail.object_list(request, Member.objects.filter(**lookup_args).order_by(*order_by),
+
+    return list_detail.object_list(request, members,
         extra_context=extra_context, 
         template_name='cciw/members/index',
         paginate_by=50,

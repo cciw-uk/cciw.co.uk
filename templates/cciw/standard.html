@@ -37,7 +37,7 @@
 			{% if html_chunk_list %}
 				<div id="editfooter">Edit HTML: 
 					{% for chunk in html_chunk_list %}
-						<a href="/admin/sitecontent/htmlchunks/{{ chunk.name }}/"> {{ chunk.name }}</a>{% if forloop.last %}{% else %}, {% endif %}
+						<a href="/admin/cciw/htmlchunk/{{ chunk.name }}/"> {{ chunk.name }}</a>{% if forloop.last %}{% else %}, {% endif %}
 					{% endfor %}
 				</div>
 			{% endif %}

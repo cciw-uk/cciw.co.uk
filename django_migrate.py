@@ -424,7 +424,7 @@ def migrate_awards():
                 "Ubergeek": (3, "'Gold' award - definitely time to take a break from the computer."),
                 "Numpton": (-2, "'Black' - we noticed you, at least you have that.")
             }
-            award.description, award.value = descriptions[awardname]
+            award.value, award.description = descriptions[awardname]
             award.image = "award_"+ line[1] + ".gif"
             award.save()
         pa = PersonalAward(award_id=award.id)
