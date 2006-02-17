@@ -29,7 +29,7 @@
 ## 1) full XHTML compliance, including prohibited elements
 ## 2) intelligent handling/preserving of whitespace
 ## 3) emoticons, with intelligent handling for tricky cases
-## 4) ability to render out corrected BBCode as well as XHTML (NOT YET)
+## 4) ability to render out corrected BBCode as well as XHTML
 ## 5) XHTML outputed can be inserted into <body>, <div>, <td>
 ##    and any other elements that allow block level tags
 ##
@@ -47,9 +47,9 @@
 ##    as some elements being context sensitive in the render phase
 
 import re
-from cciw.apps.cciw.utils import get_member_link, obfuscate_email
 
-##### CONSTANTS #####
+#### CCIW specific imports #####
+from cciw.apps.cciw.utils import get_member_link, obfuscate_email
 from cciw.apps.cciw.settings import CCIW_MEDIA_ROOT
 EMOTICONS_ROOT = CCIW_MEDIA_ROOT + 'images/emoticons/'
 
@@ -67,14 +67,14 @@ class BBTag:
     def __init__(self, name, allowed_children, implicit_tag, self_closing=False, 
         prohibited_elements = None, discardable = False):
         """Creates a new BBTag.
-        name is the text appears in square brackets e.g. for [b], name = 'b'
-        allowed_children is a list of the names of tags that can be added to this element
-        implicit_tag is a tag that can automatically be added before this one 
+        - name is the text appears in square brackets e.g. for [b], name = 'b'
+        - allowed_children is a list of the names of tags that can be added to this element
+        - implicit_tag is a tag that can automatically be added before this one 
           if necessary to allow it to be added.
-        self_closing means the element never has child elements
-        prohibited_elements is a list of elements that can never be 
+        - self_closing means the element never has child elements
+        - prohibited_elements is a list of elements that can never be 
           descendent elements of this one
-        discardable = True indicates that the tag can be discarded if 
+        - discardable = True indicates that the tag can be discarded if 
           it can't be added at the current point in the tree.
         """
         
@@ -105,23 +105,29 @@ class BBTag:
             return '[%s]%s[/%s]' % \
                 (opening, node.render_children_bbcode(), self.name)
 
-## Subclasses that follow override the render_node_xhtml method
+## Subclasses that follow override the render_node_xhtml 
+## or render_node_bbcode method
         
 class HtmlEquivTag(BBTag):
     """
     A BBTag that is a direct equivalent of an HTML tag, and can render itself.
     """
     def __init__(self, *args, **kwargs):
-        self.html_equiv = kwargs['html_equiv']
-        del kwargs['html_equiv']
+        self.html_equiv = kwargs.pop('html_equiv')
+        self.attributes = kwargs.pop('attributes', None)
         BBTag.__init__(self, *args, **kwargs)
     
     def render_node_xhtml(self, node):
+        opening = self.html_equiv
+        if self.attributes:
+            # Add any attributes
+            opening += ' ' + ' '.join(['%s="%s"' % (k, escape(v)) 
+                                        for k, v in self.attributes.items()])
         if self.self_closing:
-            ret = '<' + self.html_equiv + '/>'
+            ret = '<' + opening + '/>'
         else:
             if len(node.children) > 0:
-                ret = '<' + self.html_equiv + '>' + node.render_children_xhtml() + \
+                ret = '<' + opening + '>' + node.render_children_xhtml() + \
                     '</' + self.html_equiv + '>'
             else:
                 ret = ''
@@ -219,6 +225,7 @@ _COLORS = ('aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon'
     'navy', 'olive', 'purple', 'red', 'silver', 'teal', 'white', 'yellow')
 _COLOR_REGEXP = re.compile(r'#[0-9A-F]{6}')
 _MEMBER_REGEXP = re.compile(r'^[0-9A-Za-z_]{1,30}$')
+_BBTAG_REGEXP = re.compile(r'\[\[?\/?([A-Za-z\*]+)(=[^\]]+)?\]?\]')
 
 # 'text' is a dummy entry for text nodes
 _INLINE_TAGS = (
@@ -242,11 +249,11 @@ _TAGS = (
     # <br/>
     HtmlEquivTag('br',         (),             'div', 
         self_closing=True, discardable=True, html_equiv='br'),
-        
+    
     # <br/>, but can adapt during render
     SoftBrTag   ('softbr',     (),             'div', 
         self_closing=True, discardable=True),
-        
+    
     # <img/>,  but can adapt
     Emoticon    ('emoticon',   ('text',),      'div'),
     
@@ -257,7 +264,7 @@ _TAGS = (
     # <i>
     HtmlEquivTag('i',          _INLINE_TAGS,   'div',
         html_equiv='i'),
-        
+    
     # <span>
     ColorTag    ('color',      _INLINE_TAGS,   'div'),
     
@@ -285,17 +292,17 @@ _TAGS = (
     HtmlEquivTag('list',       ('*', 'softbr'), None,
         html_equiv='ul'),
     
-    # <pre> (only img currently implemented out of those prohibited elements)
+    # <pre> (only img currently needed out of the prohibited elements)
     HtmlEquivTag('pre',        _INLINE_TAGS,   None, 
         prohibited_elements=('img', 'big', 'small', 'sub', 'sup'),
         html_equiv='pre'), 
     
-    # <pre> # TODO - add a class attribute
+    # <pre class="code">
     HtmlEquivTag('code',       _INLINE_TAGS, None, 
         prohibited_elements = ('img', 'big', 'small', 'sub', 'sup'),
-        html_equiv='pre'),
+        html_equiv='pre', attributes={'class':'code'}),
         
-    # li
+    # <li>
     HtmlEquivTag('*', _FLOW_TAGS, 'list',
         html_equiv='li')
 )
@@ -308,9 +315,6 @@ for t in _TAGS:
 
 # Make list of valid tags
 _TAGNAMES = [t.name for t in _TAGS]
-
-# Regexp
-_BBTAG_REGEXP = re.compile(r'\[\[?\/?([A-Za-z\*]+)(=[^\]]+)?\]?\]')
 
 _EMOTICONS = {
         '0:-)': 'angel.gif',
@@ -399,11 +403,11 @@ class BBRootNode(BBNode):
         else:
             # Rule for HTML BODY element
             return tagname in _BLOCK_LEVEL_TAGS
-            
+
     def render_bbcode(self):
         """Render the node as correct BBCode"""
         return self.render_children_bbcode()
-    
+
 class BBTextNode(BBNode):
     """A text node, containing only plain text"""
     def __init__(self, parent, text):
@@ -429,7 +433,7 @@ class BBTagNode(BBNode):
         BBNode.__init__(self, parent)
         self.bbtag = _TAGDICT[name]
         self.parameter = parameter
-    
+
     def prohibited(self, tagname):
         """Return True if the element 'tagname' is prohibited by
         this node or any parent nodes"""
@@ -440,7 +444,7 @@ class BBTagNode(BBNode):
                 return False
             else:
                 return self.parent.prohibited(tagname)
-    
+
     def allows(self, tagname):
         """Returns true if the tag with 'tagname' can be added to this node"""
         if tagname in self.bbtag.allowed_children:
@@ -448,19 +452,18 @@ class BBTagNode(BBNode):
             return not self.prohibited(tagname)
         else:
             return False
-    
+
     def render_xhtml(self):
         """Render the node as XHTML"""
         return self.bbtag.render_node_xhtml(self)
-        
+
     def render_bbcode(self):
         return self.bbtag.render_node_bbcode(self)
 
 class BBCodeParser:
     def __init__(self, root_allows_inline = False):
-        self.root_node = BBRootNode(root_allows_inline)
-        self.current_node = self.root_node
-        
+        self.root_allows_inline = root_allows_inline
+
     def push_text_node(self, text, escaped=False):
         """Add a text node to the current node"""
         # escaped=True for text that has been wrapped in extra []
@@ -491,11 +494,13 @@ class BBCodeParser:
     def descend(self):
         """Move to the last child of the current node"""
         self.current_node = self.current_node.children[-1]
-        
+
     def ascend(self):
         """Move to the parent node of the current node"""
+        # This usually closes the node, since parsing
+        # will add nodes to the end of self.children
         self.current_node = self.current_node.parent
-    
+
     def push_tag_node(self, name, parameter):
         """Add a BBTagNode of name 'name' onto the tree"""
         if not self.current_node.allows(name):
@@ -514,7 +519,7 @@ class BBCodeParser:
             else:
                 # e.g. block level in inline etc. - traverse up the tree
                 self.current_node = self.current_node.parent
-                self.push_tag_node(name, parameter)
+                self.push_tag_node(name, parameter) # recursive call
         else:
             node = BBTagNode(self.current_node, name, parameter)
             self.current_node.children.append(node)
@@ -537,9 +542,8 @@ class BBCodeParser:
                     break
             temp_node = temp_node.parent
             continue
-    
-    def parse(self, bbcode):
-        """Parse the bbcode into a tree of elements"""        
+
+    def _prepare(self, bbcode):
         # Replace newlines with 'soft' brs
         bbcode = bbcode.replace("\n", '[softbr]')
         
@@ -547,9 +551,15 @@ class BBCodeParser:
         for emoticon in _EMOTICON_LIST:
             bbcode = bbcode.replace(emoticon, 
                 '[emoticon]' + emoticon + '[/emoticon]')
-            
+        return bbcode
+
+    def parse(self, bbcode):
+        """Parse the bbcode into a tree of elements"""        
+        self.root_node = BBRootNode(self.root_allows_inline)
+        self.current_node = self.root_node
+        bbcode = self._prepare(bbcode)
         pos = 0
-        while pos < len(bbcode):        
+        while pos < len(bbcode):
             match = _BBTAG_REGEXP.search(bbcode, pos)
             if not match is None:
                 # push all text up to the start of the match
@@ -566,13 +576,20 @@ class BBCodeParser:
                     if not parameter is None and len(parameter) > 0:
                         parameter = parameter[1:] # strip the equals
                     if tagname in _TAGNAMES:
-                        # genuine tag, push it
+                        # genuine tag
+                        if wholematch.startswith('[['):
+                            # in case of "[[tag]blah":
+                            self.push_text_node('[')
+                        # push it
                         if wholematch.startswith('[/'):
                             # closing
                             self.close_tag_node(tagname)
                         else:
                             # opening
                             self.push_tag_node(tagname, parameter)
+                        if wholematch.endswith(']]'):
+                            # in case of "[tag]]":
+                            self.push_text_node(']')
                     else:
                         # non-genuine tag, treat as literal
                         self.push_text_node(wholematch)
