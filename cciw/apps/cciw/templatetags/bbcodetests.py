@@ -2,6 +2,7 @@ import unittest
 import sys
 import os
 
+# set up environment variables for testing (needed by imports in bbcode)
 sys.path = sys.path + ['/home/httpd/www.cciw.co.uk/django/','/home/httpd/www.cciw.co.uk/django_src/']
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
 
@@ -46,6 +47,10 @@ tests = (
         '<blockquote><div>Blah</div></blockquote>'),
     ('[emoticon][/emoticon]',
         '<div></div>'),
+    ('[[b]] [[/b]] [[quote=foo]] [[[b]]]',               # escaping
+        '<div>[b] [/b] [quote=foo] [[b]]</div>'),
+    ('[nonexistanttag]',    # non-existant tags come through as literals
+        '<div>[nonexistanttag]</div>'),
 )
 
 class TestBBCodeParser(unittest.TestCase):
@@ -55,7 +60,17 @@ class TestBBCodeParser(unittest.TestCase):
             result = bbcode.bb2xhtml(bb)
             self.assertEqual(xhtml, result, "\n----BBcode:\n " +bb + "\n----Rendered as:\n" + result + 
                 "\n---- instead of \n" + xhtml)
-                
+    def test_render_bbcode(self):
+        # After a single 'correction', doing parse() -> render_bbcode()
+        # should be an identity transformation.
+        for bb, xhtml in tests:
+            corrected_bb = bbcode.correct(bb)
+            twice_corrected_bb = bbcode.correct(corrected_bb)
+            self.assertEqual(corrected_bb, twice_corrected_bb, 
+                "\n----BBcode:\n " +bb + "\n----Once corrected\n" + corrected_bb + 
+                "\n----Twice corrected:\n" + twice_corrected_bb)
+
+    # Test on some real data from the CCIW database
     def xtest_render_all_posts(self):
         from cciw.apps.cciw.models import Post, Message
         from cciw.apps.cciw.utils import validate_xml
