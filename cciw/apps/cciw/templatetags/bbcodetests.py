@@ -1,4 +1,3 @@
-import unittest
 import sys
 import os
 
@@ -67,31 +66,30 @@ tests = (
         '<div>[nonexistanttag]</div>'),
 )
 
-class TestBBCodeParser(unittest.TestCase):
-    def test_render_xhtml(self):
-        for bb, xhtml in tests:
-            result = bbcode.bb2xhtml(bb)
-            self.assertEqual(xhtml, result, "\n----BBcode:\n " +bb + "\n----Rendered as:\n" + result + 
-                "\n---- instead of \n" + xhtml)
+def check_xhtml(bb, xhtml):
+    assert bbcode.bb2xhtml(bb) == xhtml
+    
+def test_render_xhtml():
+    for bb, xhtml in tests:
+        yield check_xhtml, bb, xhtml
 
-    def test_correct(self):
-        # After a single 'correction', doing correct()
-        # should be an identity transformation in all cases
-        for bb, xhtml in tests:
-            corrected_bb = bbcode.correct(bb)
-            twice_corrected_bb = bbcode.correct(corrected_bb)
-            self.assertEqual(corrected_bb, twice_corrected_bb, 
-                "\n----BBcode:\n " +bb + "\n----Once corrected\n" + corrected_bb + 
-                "\n----Twice corrected:\n" + twice_corrected_bb)
+def check_correction(bb):
+    corrected_bb = bbcode.correct(bb)
+    twice_corrected_bb = bbcode.correct(corrected_bb)
+    assert corrected_bb == twice_corrected_bb
 
-    def test_correct_preserves_whitespace(self):
-        # These examples are correct bbcode with whitespace
-        # in various places, and 'correct' shouldn't mess with our whitespace!
-        bb = " Hello\nHow\nAre \n\nYou "
-        self.assertEqual(bb, bbcode.correct(bb))
-        bb = "[list]\n  [*]Item1[/*]\n[*]Item2 [/*]\n[/list]\n"
-        self.assertEqual(bb, bbcode.correct(bb))
+def test_correct():
+    # After a single 'correction', doing correct()
+    # should be an identity transformation in all cases
+    for bb, xhtml in tests:
+        yield check_correction, bb
 
-if __name__ == '__main__':
-    unittest.main()
+def test_correct_preserves_whitespace():
+    # These examples are correct bbcode with whitespace
+    # in various places, and 'correct' shouldn't mess with our whitespace!
+    bb = " Hello\nHow\nAre \n\nYou "
+    assert bb == bbcode.correct(bb)
+    bb = "[list]\n  [*]Item1[/*]\n[*]Item2 [/*]\n[/list]\n"
+    assert bb == bbcode.correct(bb)
+
 
