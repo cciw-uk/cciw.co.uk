@@ -35,6 +35,9 @@ tests = (
         '<div><a href="/foo/?a=1&amp;b=2">/foo/?a=1&amp;b=2</a></div>'),
     ('[url=/foo/?a=1&b=2]bar[/url]',
         '<div><a href="/foo/?a=1&amp;b=2">bar</a></div>'),
+    # empty url
+    ('[url][/url]',
+        '<div></div>'),
     ('[member]Joey[/member]',
         '<div>' + get_member_link('Joey') + '</div>'),
     ('[member]illegal " name[/member]',
