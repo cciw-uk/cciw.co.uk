@@ -109,7 +109,7 @@ class BBTag:
         if node.parameter:
             opening += "=" + node.parameter
         if self.self_closing:
-            return '[%s/]' % opening
+            return '[%s]' % opening
         else:
             return '[%s]%s[/%s]' % \
                 (opening, node.render_children_bbcode(), self.name)
