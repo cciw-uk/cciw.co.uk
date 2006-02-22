@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2006-02-05, 01:09:07 -->
+<!-- Saved: 2006-02-19, 01:05:02 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -110,13 +110,6 @@
       <Dir>cciw</Dir>
       <Dir>apps</Dir>
       <Dir>cciw</Dir>
-      <Dir>templatetags</Dir>
-      <Name>bbcodetests.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
       <Dir>views</Dir>
       <Name>forums.py</Name>
     </Source>
@@ -188,6 +181,13 @@
       <Dir>cciw</Dir>
       <Dir>models</Dir>
       <Name>sitecontent.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>apps</Dir>
+      <Dir>cciw</Dir>
+      <Dir>templatetags</Dir>
+      <Name>test_bbcode.py</Name>
     </Source>
   </Sources>
   <Forms>

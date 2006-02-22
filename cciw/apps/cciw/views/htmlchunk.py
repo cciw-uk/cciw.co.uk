@@ -13,10 +13,10 @@ def find(request):
         raise Http404()
         
     try:
-        chunk = link.htmlchunk_set.all()[0]
+        chunk = link.htmlchunk_set[0]
     except HtmlChunk.DoesNotExist:
         raise Http404()
     
-    c = RequestContext(request, standard_extra_context(title = chunk.page_title))
+    c = RequestContext(request, standard_extra_context(title=chunk.page_title))
     chunk.render(c, 'contentBody')
-    return render_to_response('cciw/standard', c)
+    return render_to_response('cciw/standard', context_instance=c)

@@ -35,13 +35,13 @@ def photo_breadcrumb(gallery, photo):
         
     return ['<a href="' + gallery.get_absolute_url() + '">Photos</a>', str(photo.id), prev_and_next]
     
-def topicindex(request, title = None, extra_context = None, forum = None,
-    template_name = 'cciw/forums/topicindex',    breadcrumb_extra = None, paginate_by = 15, default_order = ('-last_post_at',)):
+def topicindex(request, title=None, extra_context=None, forum=None,
+    template_name='cciw/forums/topicindex', breadcrumb_extra=None, paginate_by=15, default_order=('-last_post_at',)):
     "Displays an index of topics in a forum"
     if extra_context is None:
         if title is None:
             raise Exception("No title provided for page")
-        extra_context = standard_extra_context(title = title)
+        extra_context = standard_extra_context(title=title)
         
     if forum is None:
         try:
@@ -52,7 +52,7 @@ def topicindex(request, title = None, extra_context = None, forum = None,
     
     if breadcrumb_extra is None:
         breadcrumb_extra = []
-    extra_context['breadcrumb'] =   create_breadcrumb(breadcrumb_extra + topicindex_breadcrumb(forum))
+    extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topicindex_breadcrumb(forum))
 
     # TODO - searching
     
@@ -73,13 +73,11 @@ def topicindex(request, title = None, extra_context = None, forum = None,
     extra_context['default_order'] = 'dlp' # corresponds = '-last_post_at'
         
     return list_detail.object_list(request, Topic.objects.filter(**lookup_args).order_by(*order_by),
-        extra_context=extra_context, 
-        template_name=template_name,
-        paginate_by=paginate_by, 
-        allow_empty=True)
+        extra_context=extra_context, template_name=template_name,
+        paginate_by=paginate_by, allow_empty=True)
 
-def topic(request, title_start = None, template_name = 'cciw/forums/topic', topicid = 0,
-        introtext = None, breadcrumb_extra = None):
+def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=0,
+        introtext=None, breadcrumb_extra=None):
     """Displays a topic"""
     if title_start is None:
         raise Exception("No title provided for page")
@@ -95,7 +93,7 @@ def topic(request, title_start = None, template_name = 'cciw/forums/topic', topi
     if len(title_start) > 0:
         title = title_start + ": " + title
 
-    extra_context = standard_extra_context(title = title)
+    extra_context = standard_extra_context(title=title)
 
     if breadcrumb_extra is None:
         breadcrumb_extra = []
@@ -121,8 +119,7 @@ def topic(request, title_start = None, template_name = 'cciw/forums/topic', topi
     } 
             
     return list_detail.object_list(request, Post.objects.filter(**lookup_args), 
-        extra_context=extra_context, 
-        template_name=template_name,
+        extra_context=extra_context, template_name=template_name,
         paginate_by=15, allow_empty=True)
 
 def photoindex(request, gallery, extra_context, breadcrumb_extra):
@@ -146,10 +143,8 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
     extra_context['default_order'] = 'aca'
 
     return list_detail.object_list(request, Photo.objects.filter(**lookup_args).order_by(*order_by), 
-        extra_context = extra_context, 
-        template_name = 'cciw/forums/photoindex',
-        paginate_by = 15,
-        allow_empty = True)
+        extra_context=extra_context, template_name='cciw/forums/photoindex',
+        paginate_by=15, allow_empty=True)
 
 def photo(request, photo, extra_context, breadcrumb_extra):
     "Displays a photo"
@@ -162,7 +157,5 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     } 
     
     return list_detail.object_list(request, Post.objects.filter(**lookup_args),
-        extra_context = extra_context, 
-        template_name = 'cciw/forums/photo',
-        paginate_by=25,
-        allow_empty = True)
+        extra_context=extra_context, template_name='cciw/forums/photo',
+        paginate_by=25, allow_empty=True)

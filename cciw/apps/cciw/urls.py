@@ -11,7 +11,7 @@ patterns('django.views.generic',
          'allow_empty': True,
          }
     ),
-         
+
     (r'^sites/$', 'list_detail.object_list',
         {'queryset': Site.objects.all(),
          'extra_context': cciw_common.standard_extra_context(title="Camp sites"),

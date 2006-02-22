@@ -38,7 +38,7 @@ class Poll(models.Model):
     def total_votes(self):
         sum = 0
         # TODO - use SQL
-        for option in self.poll_options.all():
+        for option in self.poll_options:
             sum += option.total
         return sum
         

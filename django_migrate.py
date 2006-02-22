@@ -212,7 +212,7 @@ Ffordd Tyddyn Felin<br/>
 ###########################################################################################
 #                 LEADERS + CHAPLAINS
 def migrate_leaders():
-    Person.objects.delete(DELETE_ALL=True)
+    Person.objects.all().delete()
     for pdata in get_table(PREFIX + 'leaders.data'):
         p = Person(name = pdata[0], info = pdata[1])
         p.save()
@@ -221,6 +221,7 @@ def migrate_leaders():
 #                PAST CAMPS
 
 def migrate_camps():
+    Camp.objects.all().delete()
     for c in reversed(get_table(PREFIX+'pastcamps.data')):
         try: year = int(c[0].split("-")[0])
         except: continue
@@ -286,11 +287,13 @@ def migrate_camps():
             leaders = [leaders]
         for name in leaders:
             camp.leaders.add(Person.objects.get(name__iexact=name))
+    # debug
+    #Camp.objects.all().delete()
     
 ###########################################################################################
 #             USERS
 def migrate_members():
-    Member.objects.delete(DELETE_ALL=True)
+    Member.objects.all().delete()
     def create_member(data, passwords_dict, last_seen_data):
         member = Member(user_name=data[0])
         member.real_name = data[1]
@@ -348,7 +351,7 @@ def migrate_members():
 ###########################################################################################
 # Permissions (from old 'groups')
 def migrate_permissions():
-    Permission.objects.delete(DELETE_ALL=True)
+    Permission.objects.all().delete()
     for m in Member.objects.all():
         m.permissions.clear()
     
@@ -389,7 +392,7 @@ def migrate_permissions():
 #        Messages
 
 def migrate_messages():
-    Message.objects.delete(DELETE_ALL=True)
+    Message.objects.all().delete()
         
     for member in Member.objects.all():
         for boxNumber, boxName in ( (0,'inbox'), (1,'saved') ):
@@ -408,8 +411,8 @@ def migrate_messages():
 ###########################################################################################
 #        AWARDS
 def migrate_awards():
-    Award.objects.delete(DELETE_ALL=True)
-    PersonalAward.objects.delete(DELETE_ALL=True)
+    Award.objects.all().delete()
+    PersonalAward.objects.all().delete()
         
     for line in get_table(PREFIX+"awards.data"):
         awardname,year = line[2].split(" ")
@@ -436,8 +439,8 @@ def migrate_awards():
 #        POLLS
 def migrate_polls():
     # first delete all poll options and polls
-    PollOption.objects.delete(DELETE_ALL=True)
-    Poll.objects.delete(DELETE_ALL=True)
+    PollOption.objects.all().delete()
+    Poll.objects.all().delete()
     
     for line in get_table(PREFIX+"../polls/polls.data"):
         try:
@@ -513,16 +516,14 @@ def get_dummy_or_real_member(user_name):
             return u
         return None
 
-    
-
 def migrate_forums():
     # delete eveything
-    Post.objects.delete(DELETE_ALL=True)
-    NewsItem.objects.delete(DELETE_ALL=True)
-    Topic.objects.delete(DELETE_ALL=True)
-    Photo.objects.delete(DELETE_ALL=True)
-    Forum.objects.delete(DELETE_ALL=True)
-    Gallery.objects.delete(DELETE_ALL=True)
+    Post.objects.all().delete()
+    NewsItem.objects.all().delete()
+    Topic.objects.all().delete()
+    Photo.objects.all().delete()
+    Forum.objects.all().delete()
+    Gallery.objects.all().delete()
 
     boardsdir = PREFIX+ "../boards/"
     boards = get_table(boardsdir + "boards.data")
@@ -579,8 +580,7 @@ def migrate_forums():
                         topic.created_at = datetime.fromtimestamp(timestamp)
                 except:
                     pass
-                
-                
+
                 topic.subject = topicline[1]
                 topic.started_by_id = get_dummy_or_real_member(topicline[2]).user_name
                 # Create news item if necessary
@@ -668,7 +668,7 @@ def migrate_forums():
     # end for line in boards
     
 def migrate_main_menu():
-    MenuLink.objects.delete(DELETE_ALL=True)
+    MenuLink.objects.all().delete()
     
     links = (
         ('Home','/',0,''),
@@ -700,7 +700,7 @@ def migrate_main_menu():
         
 
 def migrate_html():
-    HtmlChunk.objects.delete(DELETE_ALL=True)
+    HtmlChunk.objects.all().delete()
     for name, url, page_title, htmlChunk in html:
         h = HtmlChunk(name=name, html=htmlChunk, 
                                  page_title=page_title)
@@ -749,9 +749,10 @@ def fixup_urls():
 
 ##########################################################
 
+# Order matters!
 migrate_leaders()
-migrate_sites()
 migrate_camps()
+migrate_sites()
 migrate_members()
 migrate_permissions()
 migrate_messages()

@@ -18,7 +18,7 @@
 	<tr>
 		<th scope="row">Following camp:</th>
 		<td>
-			{% for next_camp in camp.next_camps.all %}
+			{% for next_camp in camp.next_camps %}
 				{{ next_camp.get_link }}<br/>
 			{% endfor %}
 		</td>
@@ -36,7 +36,7 @@
 		<th scope="row">Leaders:</th>
 		<td>
 			<ul class="leaderlist">
-				{% for leader in camp.leaders.all %}
+				{% for leader in camp.leaders %}
 					<li>{{ leader.name }}:<br/>
 					{{ leader.info|escape|linebreaksbr }}</li>
 				{% endfor %}

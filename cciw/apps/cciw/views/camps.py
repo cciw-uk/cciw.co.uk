@@ -13,16 +13,16 @@ import forums as forums_views
 
 def index(request, year = None):
     if (year == None):
-        all_camps = Camp.objects.all().order_by('-year', 'number')
+        all_camps = Camp.objects.order_by('-year', 'number')
     else:
         year = int(year)  # year is result of regex match
-        all_camps = Camp.objects.all().filter(year=year)\
+        all_camps = Camp.objects.filter(year=year)\
                                 .order_by('-year', 'number')
         if len(all_camps) == 0:
             raise Http404
     
     return render_to_response('cciw/camps/index', 
-            RequestContext(request, standard_extra_context({'camps': all_camps},
+            context_instance=RequestContext(request, standard_extra_context({'camps': all_camps},
                     title="Camp forums and photos")))
 
 def detail(request, year, number):
@@ -30,18 +30,17 @@ def detail(request, year, number):
         camp = Camp.objects.get(year=int(year), number=int(number))
     except Camp.DoesNotExist:
         raise Http404
-        
+    
     c = RequestContext(request, standard_extra_context({'camp': camp }, 
-                            title = camp.nice_name()))
+                            title=camp.nice_name))
     
     if camp.end_date < datetime.date.today():
         c['camp_is_past'] = True
-        c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(str(camp.year)) + [camp.nice_name()])    
+        c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(str(camp.year)) + [camp.nice_name])    
     else:
         c['breadcrumb'] = create_breadcrumb([standard_subs('<a href="/thisyear/">Camps {{thisyear}}</a>'), "Camp " + number])
-    return render_to_response('cciw/camps/detail', c)
+    return render_to_response('cciw/camps/detail', context_instance=c)
 
-    
 def thisyear(request):
     c = RequestContext(request, standard_extra_context(title="Camps " + str(THISYEAR)))
     HtmlChunk.render_into_context(c, {
@@ -49,7 +48,7 @@ def thisyear(request):
         'outrotext': 'camp_dates_outro_text'})
     c['camps'] = Camp.objects.filter(year=THISYEAR).order_by('site_id', 'number')
     
-    return render_to_response('cciw/camps/thisyear',c)
+    return render_to_response('cciw/camps/thisyear', context_instance=c)
 
 def get_forum_for_camp(camp):
     location = camp.get_absolute_url()[1:] + 'forum/'
@@ -100,7 +99,7 @@ def forum(request, year, number):
         forum = get_forum_for_camp(camp)
         if forum is None:
             raise Http404
-        title=camp.nice_name() + " - Forum"
+        title=camp.nice_name + " - Forum"
         breadcrumb_extra = camp_forum_breadcrumb(camp)
 
     # TODO - some extra context vars, for text to show before the topic list
@@ -138,7 +137,7 @@ def gallery(request, year, number):
 
     # TODO - some extra context vars, for text to show before the topic list
     
-    ec = standard_extra_context(title = camp.nice_name() + " - Photos")
+    ec = standard_extra_context(title=camp.nice_name + " - Photos")
     return forums_views.photoindex(request, gallery, ec, breadcrumb_extra)
 
 def oldcampgallery(request, year, galleryname):
@@ -149,10 +148,9 @@ def oldcampgallery(request, year, galleryname):
 
     breadcrumb_extra = year_forum_breadcrumb(year) + [utils.unslugify(galleryname)]
     
-    ec = standard_extra_context(title = utils.unslugify(year+", " + galleryname) + " - Photos")
+    ec = standard_extra_context(title=utils.unslugify(year+", " + galleryname) + " - Photos")
     return forums_views.photoindex(request, gallery, ec, breadcrumb_extra)
 
-    
 def photo(request, year, number, photonumber):
     try:
         camp = Camp.objects.get(year=int(year), number=int(number))
@@ -166,7 +164,7 @@ def photo(request, year, number, photonumber):
     except Photo.DoesNotExist:
         raise Http404
     
-    ec = standard_extra_context(title = "Photos: " + camp.nice_name())
+    ec = standard_extra_context(title = "Photos: " + camp.nice_name)
     
     return forums_views.photo(request, photo, ec, breadcrumb_extra)
 

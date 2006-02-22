@@ -47,7 +47,7 @@ class Member(models.Model):
     )
 
     user_name   = models.CharField("User name", primary_key=True, maxlength=30)
-    real_name   = models.CharField("Real name", maxlength=20, blank=True)
+    real_name   = models.CharField("Real name", maxlength=30, blank=True)
     email       = models.EmailField("Email address")
     password    = models.CharField("Password", maxlength=30)
     date_joined = models.DateTimeField("Date joined", null=True)

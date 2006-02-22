@@ -62,14 +62,13 @@ class Camp(models.Model):
         verbose_name="chaplain", 
         null=True, blank=True)
     leaders = models.ManyToManyField(Person, 
-        singular="leader",
         related_name="camp_as_leader", 
         verbose_name="leaders",
         null=True, blank=True)
     site = models.ForeignKey(Site)
     
     def __repr__(self):
-        leaders = list(self.leaders.all())
+        leaders = list(self.leaders)
         try:
             leaders.append(self.chaplain)
         except Person.DoesNotExist:
@@ -80,18 +79,18 @@ class Camp(models.Model):
             leadertext = ""
         return str(self.year) + "-" + str(self.number) + leadertext
         
-    def nice_name(self):
+    def _nice_name(self):
         return "Camp " + str(self.number) + ", year " + str(self.year)
+    nice_name = property(_nice_name)
 
     def get_link(self):
-        return "<a href='" + self.get_absolute_url() + "'>" + self.nice_name() + '</a>'
+        return "<a href='" + self.get_absolute_url() + "'>" + self.nice_name + '</a>'
 
     def get_absolute_url(self):
         return "/camps/" + str(self.year) + "/" + str(self.number) + "/"
 
     class Meta:
         app_label = "cciw"
-        pass
 
     class Admin:
         fields = (

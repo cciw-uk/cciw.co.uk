@@ -56,8 +56,8 @@ def detail(request, user_name):
     c = RequestContext(request, 
         standard_extra_context(title="Members: " + member.user_name))
     c['member'] = member
-    c['awards'] = member.personal_awards.all()
-    return render_to_response('cciw/members/detail', c)
+    c['awards'] = member.personal_awards
+    return render_to_response('cciw/members/detail', context_instance=c)
     
 def login(request):
     c = RequestContext(request, standard_extra_context(title="Login"))
@@ -74,4 +74,4 @@ def login(request):
                 c['loginFailed'] = True
         except Member.DoesNotExist:
             c['loginFailed'] = True
-    return render_to_response('cciw/members/login', c)
+    return render_to_response('cciw/members/login', context_instance=c)

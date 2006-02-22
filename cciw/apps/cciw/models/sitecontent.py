@@ -17,7 +17,7 @@ class MenuLink(models.Model):
     def get_visible_children(self, request):
         """Gets a list of child menu links that should be visible given the current url"""
         if request.path == self.url:
-            return self.child_links.all()
+            return self.child_links
         else:
             return []
     
