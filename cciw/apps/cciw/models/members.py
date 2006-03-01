@@ -24,6 +24,7 @@ class Permission(models.Model):
         pass
 
 class Member(models.Model):
+    """Represents a user of the CCIW message boards."""
     MESSAGES_NONE = 0
     MESSAGES_WEBSITE = 1
     MESSAGES_EMAIL = 2
@@ -54,22 +55,20 @@ class Member(models.Model):
     last_seen   = models.DateTimeField("Last on website", null=True)
     show_email  = models.BooleanField("Show email address", default=False)
     message_option = models.PositiveSmallIntegerField("Message option",
-        choices = MESSAGE_OPTIONS, default=1)
+        choices=MESSAGE_OPTIONS, default=1)
     comments    = models.TextField("Comments", blank=True)
     confirmed   = models.BooleanField("Confirmed", default=False)
     confirm_secret = models.CharField("Confirmation secret", maxlength=30, blank=True)
     moderated   = models.PositiveSmallIntegerField("Moderated", default=0,
-            choices = MODERATE_OPTIONS)
+        choices=MODERATE_OPTIONS)
     hidden      = models.BooleanField("Hidden", default=False)
     banned      = models.BooleanField("Banned", default=False)
     new_email   = models.EmailField("New email address (unconfirmed)", blank=True)
     bookmarks_notify = models.BooleanField("Bookmark notifcations enabled", default=False)
     permissions = models.ManyToManyField(Permission,
-        verbose_name="permissions",
-        related_name="member_with_permission",
-        blank=True,
-        null=True)
-    icon          = models.ImageField("Icon", upload_to = MEMBERS_ICONS_UPLOAD_PATH, blank=True)
+        verbose_name="permissions", related_name="member_with_permission",
+        blank=True, null=True, filter_interface=models.HORIZONTAL)
+    icon          = models.ImageField("Icon", upload_to=MEMBERS_ICONS_UPLOAD_PATH, blank=True)
     dummy_member = models.BooleanField("Dummy member status", default=False) # supports ancient posts in message boards
         
     def __repr__(self):
@@ -139,7 +138,7 @@ class Member(models.Model):
 
 class Award(models.Model):
     name = models.CharField("Award name", maxlength=50)
-    value = models.PositiveSmallIntegerField("Value")
+    value = models.SmallIntegerField("Value")
     year = models.PositiveSmallIntegerField("Year")
     description = models.CharField("Description", maxlength=200)
     image = models.ImageField("Award image", 
