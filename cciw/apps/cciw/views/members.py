@@ -8,7 +8,6 @@ from cciw.apps.cciw.common import *
 from datetime import datetime, timedelta
 
 def index(request):
-    
     members = Member.objects.filter(dummy_member=False, hidden=False) # TODO - depends on authorisation
     if (request.GET.has_key('online')):
         members = members.filter(last_seen__gte=(datetime.now() - timedelta(minutes=3)))

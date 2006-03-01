@@ -11,7 +11,7 @@ import cciw.apps.cciw.utils as utils
 import forums as forums_views
 
 
-def index(request, year = None):
+def index(request, year=None):
     if (year == None):
         all_camps = Camp.objects.order_by('-year', 'number')
     else:
