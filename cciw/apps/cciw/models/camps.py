@@ -35,7 +35,6 @@ class Person(models.Model):
 
     class Meta:
         ordering = ('name',)
-        verbose_name_plural = 'people'
         app_label = "cciw"
         
     class Admin:
@@ -68,7 +67,7 @@ class Camp(models.Model):
     site = models.ForeignKey(Site)
     
     def __repr__(self):
-        leaders = list(self.leaders)
+        leaders = list(self.leaders.filter())
         try:
             leaders.append(self.chaplain)
         except Person.DoesNotExist:
