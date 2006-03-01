@@ -47,7 +47,7 @@ def get_table(filename, fieldSep="\t"):
     for line in file(filename):
         line = line.strip("\r\n")
         if len(line) == 0: continue
-        lineData = LazyList([s.decode('windows-1252').encode('UTF-8') for s in line.split(fieldSep)])
+        lineData = LazyList(s.decode('windows-1252').encode('UTF-8') for s in line.split(fieldSep))
         rows.append(lineData)
     return rows
 
@@ -287,8 +287,6 @@ def migrate_camps():
             leaders = [leaders]
         for name in leaders:
             camp.leaders.add(Person.objects.get(name__iexact=name))
-    # debug
-    #Camp.objects.all().delete()
     
 ###########################################################################################
 #             USERS
@@ -351,9 +349,9 @@ def migrate_members():
 ###########################################################################################
 # Permissions (from old 'groups')
 def migrate_permissions():
-    Permission.objects.all().delete()
     for m in Member.objects.all():
         m.permissions.clear()
+    Permission.objects.all().delete()
     
     for id, description in ( 
         (Permission.SUPERUSER, "Administrator"),
@@ -369,20 +367,21 @@ def migrate_permissions():
     
     groups = get_table(PREFIX+'groups.data')
     
-    for groupname, permsList in (
-        ("moderators", (Permission.USER_MODERATOR, Permission.POST_MODERATOR)),
-        ("admins", (Permission.SUPERUSER,)),
-        ("photomanagers", (Permission.PHOTO_APPROVER,)),
-        ("newsposters", (Permission.NEWS_CREATOR, Permission.POLL_CREATOR)) 
-        ):
+    # create permissions based on old 'groups' data for certain group names
+    oldgroups = {
+        "moderators": (Permission.USER_MODERATOR, Permission.POST_MODERATOR),
+        "admins": (Permission.SUPERUSER,),
+        "photomanagers": (Permission.PHOTO_APPROVER,),
+        "newsposters": (Permission.NEWS_CREATOR, Permission.POLL_CREATOR),
+    }
+
+    for groupname, permsList in oldgroups.items():
         found = False
         for line in groups:
-        
             if line[0] == groupname:
                 for user_name in line[2].split(","):
                     u = Member.objects.get(user_name=user_name.strip())
-                    for p in permsList:
-                        u.permissions.add(id=p)
+                    u.permissions.add(*tuple(Permission(id=p) for p in permsList))
                     u.save()
                 found = True
         if not found:
@@ -709,8 +708,7 @@ def migrate_html():
         h.save()
     
 ##########################################################
-        
-    
+
 
 def fixup_urls():
     # first sort new_urls by the length of the key
@@ -735,7 +733,7 @@ def fixup_urls():
         ):
         for obj in objectlist:
             for attrname in attrlist:
-                sorig = obj.__dict__[attrname]
+                sorig = getattr(obj, attrname)
                 snew = sorig
                 for old, new in urlpairs:
                     snew = snew.replace(old, new)
@@ -743,7 +741,7 @@ def fixup_urls():
                 snew = fix_member_links(snew)
                 snew = snew.replace("http://cciw.co.uk//", "http://cciw.co.uk/")
                 if snew != sorig:
-                    obj.__dict__[attrname] = snew
+                    setattr(obj, attrname, snew)
                     obj.save()
 
 
@@ -751,8 +749,8 @@ def fixup_urls():
 
 # Order matters!
 migrate_leaders()
-migrate_camps()
 migrate_sites()
+migrate_camps()
 migrate_members()
 migrate_permissions()
 migrate_messages()
@@ -764,3 +762,4 @@ migrate_main_menu()
 migrate_html()
 
 fixup_urls() # must come after everything else, and needs (at least) migrate_forums to work
+
