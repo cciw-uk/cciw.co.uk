@@ -13,8 +13,8 @@ class Poll(models.Model):
     X_VOTES_PER_USER_PER_DAY = 2
 
     title = models.CharField("Title", maxlength=100)
-    intro_text = models.CharField("Intro text", maxlength=200)
-    outro_text = models.CharField("Closing text", maxlength=200)
+    intro_text = models.CharField("Intro text", maxlength=400)
+    outro_text = models.CharField("Closing text", maxlength=400)
     open = models.BooleanField("Open", default=True)
     voting_starts = models.DateTimeField("Voting starts")
     voting_ends = models.DateTimeField("Voting ends")
