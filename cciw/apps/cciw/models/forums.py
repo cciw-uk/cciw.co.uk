@@ -35,7 +35,7 @@ class NewsItem(models.Model):
         pass
 
 class Topic(models.Model):
-    subject = models.CharField("Subject", maxlength=100)
+    subject = models.CharField("Subject", maxlength=240)
     started_by = models.ForeignKey(Member, related_name="topic_started",
         verbose_name="started by")
     created_at = models.DateTimeField("Started", null=True)
@@ -126,8 +126,8 @@ class Photo(models.Model):
 
 class Post(models.Model):
     posted_by = models.ForeignKey(Member, 
-        related_name="post")
-    subject = models.CharField("Subject", maxlength=100) # deprecated, supports legacy boards
+        related_name="posts")
+    subject = models.CharField("Subject", maxlength=240) # deprecated, supports legacy boards
     message = models.TextField("Message")
     posted_at = models.DateTimeField("Posted at", null=True)
     hidden = models.BooleanField("Hidden", default=False)
