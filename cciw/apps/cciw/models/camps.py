@@ -35,6 +35,7 @@ class Person(models.Model):
 
     class Meta:
         ordering = ('name',)
+        verbose_name_plural = 'people'
         app_label = "cciw"
         
     class Admin:
