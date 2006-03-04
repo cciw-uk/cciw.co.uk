@@ -1,6 +1,6 @@
-from cciw.apps.cciw.settings import CCIW_MEDIA_ROOT, THISYEAR
-from cciw.apps.cciw.models import Member, MenuLink
-from cciw.apps.cciw.templatetags import view_extras
+from cciw.cciwmain.settings import CCIW_MEDIA_ROOT, THISYEAR
+from cciw.cciwmain.models import Member, MenuLink
+from cciw.cciwmain.templatetags import view_extras
 import datetime
        
 def standard_extra_context(extra_dict=None, title=None):

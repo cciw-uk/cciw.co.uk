@@ -18,7 +18,7 @@ class Site(models.Model):
         super(Site, self).save()
     
     class Meta:
-        app_label = "cciw"
+        app_label = "cciwmain"
         pass
     
     class Admin:
@@ -36,7 +36,7 @@ class Person(models.Model):
     class Meta:
         ordering = ('name',)
         verbose_name_plural = 'people'
-        app_label = "cciw"
+        app_label = "cciwmain"
         
     class Admin:
         pass
@@ -90,7 +90,7 @@ class Camp(models.Model):
         return "/camps/" + str(self.year) + "/" + str(self.number) + "/"
 
     class Meta:
-        app_label = "cciw"
+        app_label = "cciwmain"
 
     class Admin:
         fields = (

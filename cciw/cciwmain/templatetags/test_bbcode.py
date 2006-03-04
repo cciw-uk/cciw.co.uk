@@ -6,7 +6,7 @@ sys.path = sys.path + ['/home/httpd/www.cciw.co.uk/django/','/home/httpd/www.cci
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
 
 import bbcode
-from cciw.apps.cciw.utils import get_member_link   
+from cciw.cciwmain.utils import get_member_link   
 
 
 tests = (

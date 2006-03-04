@@ -3,8 +3,8 @@ from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from cciw.apps.cciw.models import Member
-from cciw.apps.cciw.common import *
+from cciw.cciwmain.models import Member
+from cciw.cciwmain.common import *
 from datetime import datetime, timedelta
 
 def index(request):

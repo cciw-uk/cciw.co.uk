@@ -1,7 +1,7 @@
 from django import template
-from cciw.apps.cciw.models import HtmlChunk
-from cciw.apps.cciw.common import standard_subs
-from cciw.apps.cciw.utils import get_member_link, obfuscate_email
+from cciw.cciwmain.models import HtmlChunk
+from cciw.cciwmain.common import standard_subs
+from cciw.cciwmain.utils import get_member_link, obfuscate_email
 
 
 class EmailNode(template.Node):

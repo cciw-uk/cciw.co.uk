@@ -3,8 +3,8 @@ from django.shortcuts import render_to_response
 from django.http import Http404
 from django.template import RequestContext
 
-from cciw.apps.cciw.common import *
-from cciw.apps.cciw.models import HtmlChunk, MenuLink
+from cciw.cciwmain.common import *
+from cciw.cciwmain.models import HtmlChunk, MenuLink
 
 def find(request):
     try:

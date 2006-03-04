@@ -1,10 +1,10 @@
 import datetime
 from django.views.generic import list_detail
 from django.http import Http404
-from cciw.apps.cciw.models import Forum, Topic, Photo, Post
-from cciw.apps.cciw.common import *
+from cciw.cciwmain.models import Forum, Topic, Photo, Post
+from cciw.cciwmain.common import *
 from django.utils.html import escape
-from cciw.apps.cciw import utils
+from cciw.cciwmain import utils
 
 # Called directly as a view for /news/ and /website/forum/, and used by other views
 

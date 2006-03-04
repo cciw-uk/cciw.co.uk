@@ -13,7 +13,7 @@ class Forum(models.Model):
         return self.location
 
     class Meta:
-        app_label = "cciw"   
+        app_label = "cciwmain"   
         
     class Admin:
         pass
@@ -29,7 +29,7 @@ class NewsItem(models.Model):
         return self.subject
 
     class Meta:
-        app_label = "cciw"
+        app_label = "cciwmain"
         
     class Admin:
         pass
@@ -72,7 +72,7 @@ class Topic(models.Model):
         search_fields = ('subject',)
         
     class Meta:
-        app_label = "cciw"
+        app_label = "cciwmain"
         ordering = ('-started_by',)
 
 class Gallery(models.Model):
@@ -86,7 +86,7 @@ class Gallery(models.Model):
         return '/' + self.location
         
     class Meta:
-        app_label = "cciw"
+        app_label = "cciwmain"
         verbose_name_plural = "Galleries"
         ordering = ('-location',)
         
@@ -119,7 +119,7 @@ class Photo(models.Model):
         return self.gallery.get_absolute_url() + str(self.id) + '/'
 
     class Meta:
-        app_label = "cciw"
+        app_label = "cciwmain"
         
     class Admin:
         pass
@@ -177,7 +177,7 @@ class Post(models.Model):
             self.updateParent(self.photo)
     
     class Meta:
-        app_label = "cciw"
+        app_label = "cciwmain"
         # Order by the autoincrement id, rather than  posted_at, because
         # this matches the old system (in the old system editing a post 
         # would also cause its posted_at date to change, but not it's order,

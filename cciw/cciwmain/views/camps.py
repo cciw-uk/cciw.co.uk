@@ -4,10 +4,10 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.http import HttpResponse, Http404
 
-from cciw.apps.cciw.models import Camp, HtmlChunk, Forum, Gallery, Photo
-from cciw.apps.cciw.common import *
-from cciw.apps.cciw.settings import *
-import cciw.apps.cciw.utils as utils
+from cciw.cciwmain.models import Camp, HtmlChunk, Forum, Gallery, Photo
+from cciw.cciwmain.common import *
+from cciw.cciwmain.settings import *
+import cciw.cciwmain.utils as utils
 import forums as forums_views
 
 

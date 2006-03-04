@@ -1,7 +1,7 @@
 from django import template
 from django.utils import html
-from cciw.apps.cciw.settings import *
-from cciw.apps.cciw.utils import *
+from cciw.cciwmain.settings import *
+from cciw.cciwmain.utils import *
 
 def get_view_extras_context(request):
     """

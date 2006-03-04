@@ -59,7 +59,7 @@ class ThisYear(object):
         self.year = 0
         
     def get_year(self):
-        from cciw.apps.cciw.models import Camp
+        from cciw.cciwmain.models import Camp
         lastcamp = Camp.objects.order_by('-end_date')[0]
         if lastcamp.end_date <= datetime.date.today():
             self.year = lastcamp.year + 1

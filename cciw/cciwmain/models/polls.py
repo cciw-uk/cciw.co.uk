@@ -43,7 +43,7 @@ class Poll(models.Model):
         return sum
         
     class Meta:
-        app_label = "cciw"   
+        app_label = "cciwmain"   
         ordering = ('title',)
         
     class Admin:
@@ -84,7 +84,7 @@ class PollOption(models.Model):
             
         
     class Meta:
-        app_label = "cciw"
+        app_label = "cciwmain"
         ordering = ('poll', 'listorder',)
 
     class Admin:
@@ -100,5 +100,5 @@ class VoteInfo(models.Model):
     date = models.DateTimeField("Date")
 
     class Meta:
-        app_label = "cciw"
+        app_label = "cciwmain"
         

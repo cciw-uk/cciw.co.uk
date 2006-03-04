@@ -58,8 +58,8 @@
 import re
 
 #### CCIW specific imports #####
-from cciw.apps.cciw.utils import get_member_link, obfuscate_email
-from cciw.apps.cciw.settings import CCIW_MEDIA_ROOT
+from cciw.cciwmain.utils import get_member_link, obfuscate_email
+from cciw.cciwmain.settings import CCIW_MEDIA_ROOT
 EMOTICONS_ROOT = CCIW_MEDIA_ROOT + 'images/emoticons/'
 
 ##### UTILITY FUNCTIONS #####

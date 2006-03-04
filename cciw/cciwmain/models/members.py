@@ -1,5 +1,5 @@
 from django.db import models
-from cciw.apps.cciw.settings import *
+from cciw.cciwmain.settings import *
 
 class Permission(models.Model):
     SUPERUSER = 1
@@ -18,7 +18,7 @@ class Permission(models.Model):
     
     class Meta:
         ordering = ('id',)
-        app_label = "cciw"
+        app_label = "cciwmain"
         
     class Admin:
         pass
@@ -78,14 +78,14 @@ class Member(models.Model):
         return "/members/" + self.user_name + "/"
         
     def get_link(self):
-        from cciw.apps.cciw.utils import get_member_link
+        from cciw.cciwmain.utils import get_member_link
         if self.dummy_member:
             return self.user_name
         else:
             return get_member_link(self.user_name)
 
     def icon_image(self):
-        from cciw.apps.cciw.settings import CCIW_MEDIA_ROOT
+        from cciw.cciwmain.settings import CCIW_MEDIA_ROOT
         "Get an HTML image with the member's icon"
         if self.icon and len(self.icon) > 0:
             return '<img src="' + CCIW_MEDIA_ROOT + 'images/members/' + self.icon + '" class="userIcon" alt="icon" />'
@@ -119,7 +119,7 @@ class Member(models.Model):
 
     class Meta:
         ordering = ('user_name',)
-        app_label = "cciw"
+        app_label = "cciwmain"
         
     class Admin:
         search_fields = (
@@ -151,7 +151,7 @@ class Award(models.Model):
         return repr(self)
     
     def imageurl(self):
-        from cciw.apps.cciw.settings import CCIW_MEDIA_ROOT
+        from cciw.cciwmain.settings import CCIW_MEDIA_ROOT
         return CCIW_MEDIA_ROOT + "images/awards/" + self.image
         
     def get_absolute_url(self):
@@ -159,7 +159,7 @@ class Award(models.Model):
         return "/awards/#" + slugify(repr(self))
     
     class Meta:
-        app_label = "cciw"
+        app_label = "cciwmain"
         ordering = ('-year', 'name',)
     
     class Admin:
@@ -180,7 +180,7 @@ class PersonalAward(models.Model):
         
         
     class Meta:
-        app_label = "cciw"   
+        app_label = "cciwmain"   
         ordering = ('date_awarded',)
 
     class Admin:
@@ -210,7 +210,7 @@ class Message(models.Model):
         return "[" + str(self.id) + "] to " + repr(self.to_member)  + " from " + repr(self.from_member)
     
     class Meta:
-        app_label = "cciw"
+        app_label = "cciwmain"
         ordering = ('-time',)
     
     class Admin:

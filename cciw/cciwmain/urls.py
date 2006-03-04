@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
-import cciw.apps.cciw.common as cciw_common
-from cciw.apps.cciw.models import Site, Award
+import cciw.cciwmain.common as cciw_common
+from cciw.cciwmain.models import Site, Award
 
 urlpatterns = \
 patterns('django.views.generic',
@@ -29,7 +29,7 @@ patterns('django.views.generic',
     ),
     
 ) + \
-patterns('cciw.apps.cciw.views',
+patterns('cciw.cciwmain.views',
     (r'^login/$', 'members.login'),
     (r'^members/$', 'members.index'),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/$', 'members.detail'),

@@ -11,7 +11,7 @@ class MenuLink(models.Model):
         related_name="child_links")
 
     def __repr__(self):
-        from cciw.apps.cciw.common import standard_subs
+        from cciw.cciwmain.common import standard_subs
         return self.url + " [" +  standard_subs(self.title) + "]"
     
     def get_visible_children(self, request):
@@ -22,7 +22,7 @@ class MenuLink(models.Model):
             return []
     
     class Meta:
-        app_label = "cciw"
+        app_label = "cciwmain"
         ordering = ('listorder','parent_item')
         #order_with_respect_to = 'parent_item' # doesn't seem to work
         
@@ -77,7 +77,7 @@ class HtmlChunk(models.Model):
                 pass
         
     class Meta:
-        app_label = "cciw"   
+        app_label = "cciwmain"   
         verbose_name = "HTML chunk"
 
     class Admin:

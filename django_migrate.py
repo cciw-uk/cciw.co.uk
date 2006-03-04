@@ -8,8 +8,8 @@ import copy
 from datetime import datetime, date
 
 from migrate_html import *
-from cciw.apps.cciw.models import *
-from cciw.apps.cciw.utils import strip_control_chars
+from cciw.cciwmain.models import *
+from cciw.cciwmain.utils import strip_control_chars
 
 # Config
 PREFIX = '/home/httpd/www.cciw.co.uk/web/data/'
