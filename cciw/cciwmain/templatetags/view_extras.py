@@ -23,36 +23,36 @@ class PagingControlNode(template.Node):
     def render(self, context):
         # context has been populated by
         # generic view paging mechanism
-        cur_page = int(context['page'])-1
+        cur_page = int(context['page'])
         total_pages = int(context['pages'])
         request = context['request']
         output = []
         if (total_pages > 1):
             output.append("&mdash; Page %d  of %d &mdash;&nbsp;&nbsp; " %
-                (cur_page + 1, total_pages))
+                (cur_page, total_pages))
             
-            for i in range(0, total_pages):
+            for i in range(1, total_pages+1):
                 if (i > 0):
                     output.append(" | ")
                     
                 if i == cur_page:
                     output.append('<span class="pagingLinkCurrent">'
-                        + str(i+1) + '</span>')
+                        + str(i) + '</span>')
                 else:
                     output.append(
                         '<a title="%(title)s" class="pagingLink" href="%(href)s">%(pagenumber)d</a>' % \
-                        { 'title': 'Page ' + str(i+1),
+                        { 'title': 'Page ' + str(i),
                           'href': page_link(request, i, self.fragment),
-                          'pagenumber': i+1 })
+                          'pagenumber': i })
             output.append(" | ")
-            if cur_page > 0:
+            if cur_page > 1:
                 output.append(
                     '<a class="pagingLink" title="Previous page" href="%s">&laquo;</a>' % \
                     page_link(request, cur_page - 1, self.fragment))
             else:
                 output.append('<span class="pagingLinkCurrent">&laquo;</span>')
             output.append("&nbsp;")
-            if cur_page < total_pages - 1:
+            if cur_page < total_pages:
                 output.append(
                     '<a class="pagingLink" title="Next page" href="%s">&raquo;</a>' % \
                     page_link(request, cur_page + 1, self.fragment))
@@ -76,7 +76,7 @@ def do_paging_control(parser, token):
 """
     parts = token.contents.split(None, 1)
     if len(parts) > 1:
-        return PagingControlNode(fragment = parts[1])
+        return PagingControlNode(fragment=parts[1])
     else:
         return PagingControlNode()
 
