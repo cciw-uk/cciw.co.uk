@@ -1,0 +1,28 @@
+{% extends "cciw/standard" %}
+{% load view_extras %}
+{% load standardpage %}
+{% load forums %}
+{% block content %}
+{% if object_list %}
+	<div class="paging">{% paging_control %}</div>
+	<table class="topheaders">
+		<tr>
+			<th scope="col" class="postFromCol">From</th>
+			<th scope="col">Message</th>
+		</tr>
+		{% for message in object_list %}
+		<tr>
+			<td class="postFrom">
+				<span class="postMemberIcon">{{ message.from_member.icon_image }}</span>
+				{% memberlink %}{{ message.from_member_id }}{% endmemberlink %}<br/>
+				<span class="postDate">{% if message.time %}{{ message.time|date:"d M y, h:i" }}{% endif %}</span>
+			</td>
+			<td class="postMessage">{{ message.text|bb2html }}</td>
+		</tr>
+		{% endfor %}
+	</table>
+	<div class="paging">{% paging_control %}</div>
+{% else %}
+	<p>No messages found.</p>
+{% endif %}
+{% endblock %}

@@ -1,10 +1,11 @@
 from django.views.generic import list_detail
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from cciw.cciwmain.models import Member
-from cciw.cciwmain.common import *
+from cciw.cciwmain.models import Member, Message
+from cciw.cciwmain.common import standard_extra_context, get_order_option, get_current_member, create_breadcrumb
+from cciw.cciwmain.utils import get_member_link
 from datetime import datetime, timedelta
 
 def index(request):
@@ -74,3 +75,37 @@ def login(request):
         except Member.DoesNotExist:
             c['loginFailed'] = True
     return render_to_response('cciw/members/login', context_instance=c)
+
+def inbox(request, user_name):
+    member = get_current_member(request)
+    if member.user_name != user_name:
+        return HttpResponseForbidden
+        
+    extra_context = standard_extra_context(title="%s: Inbox" % user_name)
+    crumbs = [get_member_link(user_name), '&lt; Inbox | <a href="archived/">Archived</a> &gt;']
+    extra_context['breadcrumb'] = create_breadcrumb(crumbs)
+    
+    messages = member.messages_received.filter(box=Message.MESSAGE_BOX_INBOX).order_by('-time')
+    
+    return list_detail.object_list(request, messages,
+        extra_context=extra_context,
+        template_name='cciw/members/messages/index',
+        paginate_by=20,
+        allow_empty=True)
+
+def archived_messages(request, user_name):
+    member = get_current_member(request)
+    if member.user_name != user_name:
+        return HttpResponseForbidden
+    
+    extra_context = standard_extra_context(title="%s: Archived messages" % user_name)
+    crumbs = [get_member_link(user_name), '&lt; <a href="../">Inbox</a> | Archived &gt;']
+    extra_context['breadcrumb'] = create_breadcrumb(crumbs)
+    
+    messages = member.messages_received.filter(box=Message.MESSAGE_BOX_SAVED).order_by('-time')
+    
+    return list_detail.object_list(request, messages,
+        extra_context=extra_context, 
+        template_name='cciw/members/messages/index',
+        paginate_by=20,
+        allow_empty=True)

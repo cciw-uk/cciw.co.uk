@@ -28,11 +28,14 @@ patterns('django.views.generic',
         
     ),
     
+    
 ) + \
 patterns('cciw.cciwmain.views',
     (r'^login/$', 'members.login'),
     (r'^members/$', 'members.index'),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/$', 'members.detail'),
+    ('^members/(?P<user_name>.*)/messages/$', 'members.inbox'),
+    ('^members/(?P<user_name>.*)/messages/archived/$', 'members.archived_messages'),
     (r'^thisyear/$', 'camps.thisyear'),
     
     (r'^camps/$', 'camps.index'),

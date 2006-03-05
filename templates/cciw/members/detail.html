@@ -7,8 +7,8 @@
 		<h2>Links</h2>
 
 		<ul>
-			<li><a href="messages/inbox/">{{ current_member.new_messages }} new message(s)</a></li>
-			<li><a href="messages/saved/">{{ current_member.saved_messages }} saved message(s)</a></li>
+			<li><a href="messages/">{{ current_member.new_messages }} new message(s)</a></li>
+			<li><a href="messages/archived/">{{ current_member.saved_messages }} saved message(s)</a></li>
 			<li><a href="tags/">Tags</a></li>
 		</ul>
 		<form method="post" action="{{request.url}}">
