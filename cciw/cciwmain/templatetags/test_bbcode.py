@@ -74,6 +74,7 @@ def test_render_xhtml():
         yield check_xhtml, bb, xhtml
 
 def check_correction(bb):
+    "utility function for generating tests"
     corrected_bb = bbcode.correct(bb)
     twice_corrected_bb = bbcode.correct(corrected_bb)
     assert corrected_bb == twice_corrected_bb
@@ -89,7 +90,7 @@ def test_correct_preserves_whitespace():
     # in various places, and 'correct' shouldn't mess with our whitespace!
     bb = " Hello\nHow\nAre \n\nYou "
     assert bb == bbcode.correct(bb)
-    bb = "[list]\n  [*]Item1[/*]\n[*]Item2 [/*]\n[/list]\n"
+    bb = "[list]\n  [*]Item1\n[*]Item2 \n[/list]\n"
     assert bb == bbcode.correct(bb)
 
 

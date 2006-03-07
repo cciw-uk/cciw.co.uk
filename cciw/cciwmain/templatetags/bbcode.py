@@ -142,6 +142,19 @@ class HtmlEquivTag(BBTag):
                 ret = ''
         return ret
 
+class LiTag(HtmlEquivTag):
+    """
+    An <li> tag.
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs['html_equiv'] = 'li'
+        HtmlEquivTag.__init__(self, *args, **kwargs)
+
+    def render_node_bbcode(self, node):
+        # Don't render closing [/*]
+        return '[%s]%s' % \
+                (self.name, node.render_children_bbcode())
+
 class SoftBrTag(BBTag):
     """A tag representing an optional <br>"""
     def render_node_xhtml(self, node):
@@ -301,7 +314,7 @@ _TAGS = (
     QuoteTag    ('quote',      _BLOCK_LEVEL_TAGS + ('softbr',), 'div'),
     
     # <ul>
-    HtmlEquivTag('list',       ('*', 'softbr'), None,
+    HtmlEquivTag('list',       ('*', 'softbr'),None,
         html_equiv='ul'),
     
     # <pre> (only img currently needed out of the prohibited elements)
@@ -310,13 +323,12 @@ _TAGS = (
         html_equiv='pre'), 
     
     # <pre class="code">
-    HtmlEquivTag('code',       _INLINE_TAGS, None, 
+    HtmlEquivTag('code',       _INLINE_TAGS,   None, 
         prohibited_elements = ('img', 'big', 'small', 'sub', 'sup'),
         html_equiv='pre', attributes={'class':'code'}),
         
     # <li>
-    HtmlEquivTag('*', _FLOW_TAGS, 'list',
-        html_equiv='li')
+    LiTag('*',                 _FLOW_TAGS,     'list',)
 )
 
 # Make a dictionary
