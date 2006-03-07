@@ -4,9 +4,13 @@
 	{% if loginFailed %}
 		<div class="userError">Login attempt failed.  Please check your user name
 		and password below - remember that both are case sensitive.</div>
+	{% else %}
+		{% if isFromRedirect %}
+		<p>You must login to continue.</p>
+		{% endif %}
 	{% endif %}
 	<p>Enter your user name and password below:</p>
-	<form action="/login/" method="post">
+	<form action="" method="post">
 		<div class="formrow">
 			<label for='user_name'>User name:</label>
 			<input type='text' name='user_name' id='user_name' />

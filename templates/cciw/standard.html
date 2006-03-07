@@ -53,7 +53,7 @@
 	<ul>
 	{% if current_member %}	
 		<li>Logged in as :  <a href="{{current_member.get_absolute_url}}">{{current_member.user_name}}</a></li>
-		<li><a href="{{current_member.get_absolute_url}}messages">{{current_member.new_messages}} new message(s)</a></li>
+		<li><a href="{{current_member.get_absolute_url}}messages/inbox/">{{current_member.new_messages}} new message(s)</a></li>
 	{% else %}
 		<li><a href="/login/">Login</a></li>
 	{% endif %}

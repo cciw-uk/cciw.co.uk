@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2006-02-19, 01:05:02 -->
+<!-- Saved: 2006-03-06, 00:07:27 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -13,44 +13,7 @@
   <Sources>
     <Source>
       <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>views</Dir>
       <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>views</Dir>
-      <Name>camps.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Name>common.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Name>settings.py</Name>
     </Source>
     <Source>
       <Name>django_migrate.py</Name>
@@ -60,79 +23,11 @@
     </Source>
     <Source>
       <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>templatetags</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>templatetags</Dir>
-      <Name>standardpage.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>templatetags</Dir>
-      <Name>view_extras.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>templatetags</Dir>
-      <Name>forums.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>views</Dir>
-      <Name>members.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Name>utils.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>templatetags</Dir>
-      <Name>bbcode.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>views</Dir>
-      <Name>forums.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
       <Name>settings.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
       <Name>urls.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Name>urls.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>views</Dir>
-      <Name>htmlchunk.py</Name>
     </Source>
     <Source>
       <Dir>templates</Dir>
@@ -142,52 +37,136 @@
     </Source>
     <Source>
       <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>models</Dir>
-      <Name>forums.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>models</Dir>
+      <Dir>cciwmain</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>models</Dir>
-      <Name>camps.py</Name>
+      <Dir>cciwmain</Dir>
+      <Name>common.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>models</Dir>
-      <Name>polls.py</Name>
+      <Dir>cciwmain</Dir>
+      <Name>settings.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
-      <Dir>apps</Dir>
-      <Dir>cciw</Dir>
-      <Dir>models</Dir>
-      <Name>members.py</Name>
+      <Dir>cciwmain</Dir>
+      <Name>utils.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
-      <Dir>apps</Dir>
+      <Dir>cciwmain</Dir>
+      <Name>urls.py</Name>
+    </Source>
+    <Source>
       <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
       <Dir>models</Dir>
       <Name>sitecontent.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
-      <Dir>apps</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>models</Dir>
+      <Name>forums.py</Name>
+    </Source>
+    <Source>
       <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>models</Dir>
+      <Name>camps.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>models</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>models</Dir>
+      <Name>members.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>models</Dir>
+      <Name>polls.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>views</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>views</Dir>
+      <Name>camps.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>views</Dir>
+      <Name>htmlchunk.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>views</Dir>
+      <Name>members.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>views</Dir>
+      <Name>forums.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>templatetags</Dir>
+      <Name>standardpage.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>templatetags</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>templatetags</Dir>
+      <Name>view_extras.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>templatetags</Dir>
+      <Name>bbcode.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>templatetags</Dir>
+      <Name>forums.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
       <Dir>templatetags</Dir>
       <Name>test_bbcode.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>models</Dir>
+      <Name>tags.py</Name>
     </Source>
   </Sources>
   <Forms>

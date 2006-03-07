@@ -1,4 +1,4 @@
-/*********** Colours ************/
+/******************* COLOURS *******************/
 /* Include all borders here too */
 
 body {
@@ -91,12 +91,14 @@ h2
 
 
 table.sideheaders td,
+table.simpleform td,
 table.topheaders td
 {
 	background-color: #000000;
 }
 
 table.sideheaders th,
+table.simpleform th,
 table.topheaders th
 {
 	background-color: #383838;
@@ -104,6 +106,8 @@ table.topheaders th
 
 table.sideheaders th,
 table.sideheaders td,
+table.simpleform th,
+table.simpleform td,
 table.topheaders th,
 table.topheaders td
 {
@@ -199,7 +203,16 @@ div.pollBarChart
 {
 	vertical-align: top;
 }
-/************* Layout, spacing, general styles ************/
+
+.messagePreview
+{
+	border: 1px solid #206020;
+	background-color: #102010;
+}
+
+
+/************************** END COLOURS *******************/
+/************* LAYOUT, SPACING, GENERAL STYLES ************/
 
 body 
 {
@@ -414,9 +427,14 @@ h5, h6
 /* Tables */
 
 table.sideheaders,
+table.simpleform,
 table.topheaders
 {
 	border-collapse: collapse;
+}
+table.sideheaders,
+table.topheaders,
+{
 	width: 100%; /* TODO - IE 5.5 and below use width of page as 100% here */
 }
 
@@ -426,13 +444,16 @@ table.topheaders td
 	overflow: hidden;
 }
 
-table.sideheaders th
+table.sideheaders th,
+table.simpleform th
 {
 	text-align: left;
 }
 
 table.sideheaders th,
 table.sideheaders td,
+table.simpleform th,
+table.simpleform td,
 table.topheaders th,
 table.topheaders td
 {
@@ -451,6 +472,8 @@ td div.postSubject
 
 table.sideheaders th,
 table.sideheaders td,
+table.simpleform th,
+table.simpleform td,
 table.topheaders td
 {
 	vertical-align: top;
@@ -513,7 +536,7 @@ div.formrow label
 div.userError
 {
 	padding: 5px;
-	text-align: center;
+	text-align: left;
 }
 
 div.awardInfo
@@ -627,4 +650,10 @@ div.center
 	padding: 0px 2px;
 	margin: 0.5em 1em 0 1em;
 	font-style: italic;
+}
+
+.messagePreview
+{
+	padding: 0.5em 1em ;
+	margin: 0 1em 0.5em 1em;
 }
