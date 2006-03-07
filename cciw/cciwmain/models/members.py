@@ -204,7 +204,7 @@ class Message(models.Model):
     time = models.DateTimeField("At")
     text = models.TextField("Message")
     box = models.PositiveSmallIntegerField("Message box",
-        choices = MESSAGE_BOXES)
+        choices=MESSAGE_BOXES)
     
     def __repr__(self):
         return "[" + str(self.id) + "] to " + repr(self.to_member)  + " from " + repr(self.from_member)

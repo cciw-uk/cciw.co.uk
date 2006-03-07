@@ -1,7 +1,9 @@
 from cciw.cciwmain.settings import CCIW_MEDIA_ROOT, THISYEAR
 from cciw.cciwmain.models import Member, MenuLink
 from cciw.cciwmain.templatetags import view_extras
+from django.http import HttpResponseRedirect
 import datetime
+import urllib
        
 def standard_extra_context(extra_dict=None, title=None):
     """
@@ -77,7 +79,7 @@ def standard_processor(request):
 
 def get_current_member(request):
     try:
-        member = Member.objects.get(user_name = request.session['member_id'])
+        member = Member.objects.get(user_name=request.session['member_id'])
         # use opportunity to update last_seen data
         if (datetime.datetime.now() - member.last_seen).seconds > 60:
             member.last_seen = datetime.datetime.now()
@@ -85,4 +87,14 @@ def get_current_member(request):
         return member
     except (KeyError, Member.DoesNotExist):
         return None
- 
+
+def member_required(func):
+    """Decorator that redirects to a login screen if the user isn't logged in."""
+    def _check(request, *args, **kwargs):
+        if get_current_member(request) is None:
+            qs = urllib.urlencode({'redirect': request.path})
+            return HttpResponseRedirect('%s?%s' % ('/login/', qs))
+        else:
+            return func(request, *args, **kwargs)
+    return _check
+
