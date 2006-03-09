@@ -58,7 +58,7 @@ def detail(request, user_name):
                 pass
         
     c = RequestContext(request, 
-        standard_extra_context(title="Members: " + member.user_name))
+        standard_extra_context(title="Member: " + member.user_name))
     c['member'] = member
     c['awards'] = member.personal_awards
     return render_to_response('cciw/members/detail', context_instance=c)

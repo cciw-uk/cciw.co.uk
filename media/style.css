@@ -173,6 +173,12 @@ div.newsItem h2
 	background-color: #441100;
 }
 
+.newsItemDetails
+{
+	border-bottom: 1px solid #441100;
+	margin-bottom: 4px;
+}
+
 
 .postMessage blockquote
 {
@@ -433,7 +439,7 @@ table.topheaders
 	border-collapse: collapse;
 }
 table.sideheaders,
-table.topheaders,
+table.topheaders
 {
 	width: 100%; /* TODO - IE 5.5 and below use width of page as 100% here */
 }
