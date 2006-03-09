@@ -1,5 +1,5 @@
 from cciw.cciwmain.settings import CCIW_MEDIA_ROOT, THISYEAR
-from cciw.cciwmain.models import Member, MenuLink
+import cciw.cciwmain.models
 from cciw.cciwmain.templatetags import view_extras
 from django.http import HttpResponseRedirect
 import datetime
@@ -9,6 +9,7 @@ def standard_extra_context(extra_dict=None, title=None):
     """
     Gets the 'extra_dict' dictionary used for all pages
     """
+    Member = cciw.cciwmain.models.Member
     if extra_dict is None: 
         extra_dict = {}
         
@@ -30,8 +31,8 @@ def standard_extra_context(extra_dict=None, title=None):
 
 def standard_subs(value):
     """Standard substitutions made on HTML content"""
-    return value.replace('{{thisyear}}', str(THISYEAR))
-    #return value.replace('{{thisyear}}', str(THISYEAR)).replace('{{media}}', CCIW_MEDIA_ROOT)
+    return value.replace('{{thisyear}}', str(THISYEAR))\
+                .replace('{{media}}', CCIW_MEDIA_ROOT)
 
 
 def get_order_option(order_options, request, default_order_by):
@@ -57,6 +58,7 @@ def create_breadcrumb(links):
 def standard_processor(request):
     """Processor that does standard processing of request
     that we need for all pages."""
+    MenuLink = cciw.cciwmain.models.MenuLink
     context = {}
     context['homepage'] = (request.path == "/")
     # TODO - filter on 'visible' attribute
@@ -78,6 +80,7 @@ def standard_processor(request):
     return context
 
 def get_current_member(request):
+    Member = cciw.cciwmain.models.Member
     try:
         member = Member.objects.get(user_name=request.session['member_id'])
         # use opportunity to update last_seen data

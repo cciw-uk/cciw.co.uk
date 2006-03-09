@@ -7,10 +7,10 @@ html.append(
 <p>Click on the thumbnails below for maps of the location of the camp sites:</p>
 <p>
 Map of wales:<br/>
-<a href="{{ pagevars.media_root_url }}images/wales2.gif">
-<img alt="thumbnail map of Wales" src="{{ pagevars.media_root_url }}images/wales2-th.gif" width="100" height="128" /></a></p>
+<a href="{{media}}images/wales2.gif">
+<img alt="thumbnail map of Wales" src="{{media}}images/wales2-th.gif" width="100" height="128" /></a></p>
 <p>Detail of map:<br/>
-<a href="{{ pagevars.media_root_url }}images/wales3.gif"><img alt="thumbnail of map detail" src="{{ pagevars.media_root_url }}images/wales3-th.gif" width="100" height="99" /></a></p>
+<a href="{{media}}images/wales3.gif"><img alt="thumbnail of map detail" src="{{media}}images/wales3-th.gif" width="100" height="99" /></a></p>
     """)
 )
 
@@ -406,8 +406,8 @@ The latest news, particularly about what is available on the website,
  is here, with the opportunity to add your own comments.<br/><br/>
 </li>
 
-<li><a href="/thisyear/">Camps {{ thisyear }}</a><br/>
-Information for camps in {{ thisyear }}, including dates, leadership teams,
+<li><a href="/thisyear/">Camps {{thisyear}}</a><br/>
+Information for camps in {{thisyear}}, including dates, leadership teams,
  and how to book.<br/><br/>
 </li>
 

@@ -18,5 +18,5 @@ def find(request):
         raise Http404()
     
     c = RequestContext(request, standard_extra_context(title=chunk.page_title))
-    chunk.render(c, 'contentBody')
+    c['contentBody'] = chunk.render(request)
     return render_to_response('cciw/standard', context_instance=c)

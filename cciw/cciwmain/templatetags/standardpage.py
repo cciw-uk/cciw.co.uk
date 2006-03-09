@@ -58,7 +58,7 @@ class AddHtmlChunk(template.Node):
         self.chunk = HtmlChunk.objects.get(name=chunk_name)
         
     def render(self, context):
-        self.chunk.render(context, self.context_var)
+        context[self.context_var] = self.chunk.render(context['request'])
         return ''
     
 def do_addhtmlchunk(parser, token):
@@ -67,9 +67,6 @@ def do_addhtmlchunk(parser, token):
     used after 'load' statements and before 'extends'.
     It takes two arguments, the name of the context variable
     to set and the name of the HtmlChunk to find.
-    
-    A reference to the HtmlChunk is also added to the 
-    pagevars['html_chunks'] variable.
     """
     bits = token.contents.split(" ", 2)
     return AddHtmlChunk(bits[1], bits[2])

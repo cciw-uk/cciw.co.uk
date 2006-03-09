@@ -6,7 +6,7 @@ from django.http import HttpResponse, Http404
 
 from cciw.cciwmain.models import Camp, HtmlChunk, Forum, Gallery, Photo
 from cciw.cciwmain.common import *
-from cciw.cciwmain.settings import *
+from cciw.cciwmain.settings import THISYEAR
 import cciw.cciwmain.utils as utils
 import forums as forums_views
 
@@ -21,9 +21,11 @@ def index(request, year=None):
         if len(all_camps) == 0:
             raise Http404
     
+    ec = standard_extra_context()
+    ec['camps'] = all_camps;
+    ec['title'] ="Camp forums and photos"
     return render_to_response('cciw/camps/index', 
-            context_instance=RequestContext(request, standard_extra_context({'camps': all_camps},
-                    title="Camp forums and photos")))
+            context_instance=RequestContext(request, ec))
 
 def detail(request, year, number):
     try:
@@ -31,8 +33,9 @@ def detail(request, year, number):
     except Camp.DoesNotExist:
         raise Http404
     
-    c = RequestContext(request, standard_extra_context({'camp': camp }, 
-                            title=camp.nice_name))
+    c = RequestContext(request, standard_extra_context())
+    c['camp'] = camp
+    c['title'] = camp.nice_name
     
     if camp.end_date < datetime.date.today():
         c['camp_is_past'] = True
@@ -43,11 +46,9 @@ def detail(request, year, number):
 
 def thisyear(request):
     c = RequestContext(request, standard_extra_context(title="Camps " + str(THISYEAR)))
-    HtmlChunk.render_into_context(c, {
-        'introtext': 'camp_dates_intro_text',
-        'outrotext': 'camp_dates_outro_text'})
-    c['camps'] = Camp.objects.filter(year=THISYEAR).order_by('site_id', 'number')
-    
+    c['introtext'] = HtmlChunk(name='camp_dates_intro_text').render(request)
+    c['outrotext'] = HtmlChunk(name='camp_dates_outro_text').render(request)
+
     return render_to_response('cciw/camps/thisyear', context_instance=c)
 
 def get_forum_for_camp(camp):
@@ -105,8 +106,8 @@ def forum(request, year, number):
     # TODO - some extra context vars, for text to show before the topic list
     
     ec = standard_extra_context(title = title)
-    return forums_views.topicindex(request, extra_context = ec, forum = forum, 
-        template_name = 'cciw/forums/topicindex', breadcrumb_extra = breadcrumb_extra)
+    return forums_views.topicindex(request, extra_context=ec, forum=forum, 
+        template_name = 'cciw/forums/topicindex', breadcrumb_extra=breadcrumb_extra)
 
 def topic(request, year, number, topicnumber):
 
@@ -120,8 +121,8 @@ def topic(request, year, number, topicnumber):
             raise Http404
         breadcrumb_extra = camp_forum_breadcrumb(camp)
             
-    return forums_views.topic(request, topicid = topicnumber, title_start = 'Topic',
-        template_name = 'cciw/forums/topic', breadcrumb_extra = breadcrumb_extra)        
+    return forums_views.topic(request, topicid=topicnumber, title_start='Topic',
+        template_name='cciw/forums/topic', breadcrumb_extra=breadcrumb_extra)        
 
 def gallery(request, year, number):
     try:
@@ -164,7 +165,7 @@ def photo(request, year, number, photonumber):
     except Photo.DoesNotExist:
         raise Http404
     
-    ec = standard_extra_context(title = "Photos: " + camp.nice_name)
+    ec = standard_extra_context(title="Photos: " + camp.nice_name)
     
     return forums_views.photo(request, photo, ec, breadcrumb_extra)
 
@@ -183,7 +184,7 @@ def oldcampphoto(request, year, galleryname, photonumber):
     except Photo.DoesNotExist:
         raise Http404
     
-    ec = standard_extra_context(title = utils.unslugify(year+", " + galleryname) + " - Photos")    
+    ec = standard_extra_context(title=utils.unslugify(year+", " + galleryname) + " - Photos")    
     return forums_views.photo(request, photo, ec, breadcrumb_extra)
 
     
