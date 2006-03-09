@@ -47,8 +47,8 @@ class HtmlChunk(models.Model):
         html = cciw.cciwmain.common.standard_subs(self.html)
         if request.user and not request.user.is_anonymous() and \
             request.user.is_staff:
-            html += ("""<div class="editchunk">
-                        <a href="/admin/cciwmain/htmlchunk/%s/">Edit %s</a>
+            html += ("""<div class="editChunkLink">&laquo;
+                        <a href="/admin/cciwmain/htmlchunk/%s/">Edit %s</a> &raquo;
                         </div>""" % (self.name, self.name))
         return html
 

@@ -657,3 +657,9 @@ div.center
 	padding: 0.5em 1em ;
 	margin: 0 1em 0.5em 1em;
 }
+
+.editChunkLink
+{
+	font-size: 80%;
+	text-align: right;
+}
