@@ -79,7 +79,10 @@ def standard_processor(request):
     
     return context
 
+
+# TODO implement thread local cache for this function
 def get_current_member(request):
+    """Returns the currently logged in member, or None"""
     Member = cciw.cciwmain.models.Member
     try:
         member = Member.objects.get(user_name=request.session['member_id'])
@@ -91,13 +94,4 @@ def get_current_member(request):
     except (KeyError, Member.DoesNotExist):
         return None
 
-def member_required(func):
-    """Decorator that redirects to a login screen if the user isn't logged in."""
-    def _check(request, *args, **kwargs):
-        if get_current_member(request) is None:
-            qs = urllib.urlencode({'redirect': request.path})
-            return HttpResponseRedirect('%s?%s' % ('/login/', qs))
-        else:
-            return func(request, *args, **kwargs)
-    return _check
 

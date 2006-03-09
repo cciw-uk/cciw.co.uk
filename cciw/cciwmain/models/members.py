@@ -103,6 +103,14 @@ class Member(models.Model):
     def saved_messages(self):
         return self.messages_received.filter(box=Message.MESSAGE_BOX_SAVED).count()
     
+    def has_perm(self, perm):
+        """Does the member has the specified permission?
+        perm is one of the permission constants in Permission."""
+        for p in self.permissions:
+            if p.id == perm or p.id == Permission.SUPERUSER:
+                return True
+        return False
+
     @staticmethod    
     def generate_salt():
         import random, datetime

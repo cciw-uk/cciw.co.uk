@@ -4,11 +4,13 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 from cciw.cciwmain.models import Member, Message
-from cciw.cciwmain.common import standard_extra_context, get_order_option, get_current_member, create_breadcrumb, member_required
+from cciw.cciwmain.common import standard_extra_context, get_order_option, get_current_member, create_breadcrumb
+from cciw.cciwmain.decorators import member_required, same_member_required
 from cciw.cciwmain.utils import get_member_link
 import cciw.cciwmain.templatetags.bbcode as bbcode
 
 from datetime import datetime, timedelta
+import re
 
 def index(request):
     members = Member.objects.filter(dummy_member=False, hidden=False) # TODO - depends on authorisation
@@ -162,20 +164,57 @@ def send_message(request, user_name):
     
     return render_to_response('cciw/members/messages/send', context_instance=c)
 
+# Utility functions for handling message actions
+def _msg_move_inbox(msg):
+    msg.box = Message.MESSAGE_BOX_INBOX
+    msg.save()
+    
+def _msg_move_archive(msg):
+    msg.box = Message.MESSAGE_BOX_SAVED
+    msg.save()
+
+def _msg_del(msg):
+    msg.delete()
+
+@same_member_required(1)
 def message_list(request, user_name, box):
     """View function to display inbox or archived messages."""
-    member = get_current_member(request)
-    if member.user_name != user_name:
-        return HttpResponseForbidden
+    try:
+        member = Member.objects.get(user_name=user_name)
+    except Member.DoesNotExist:
+        raise Http404
+        
+    # Deal with moves/deletes:
+    if request.POST:
+        id_vars_re = re.compile('msg_\d+')
+        ids = [int(var[4:]) for var in request.POST.keys() if id_vars_re.match(var)]
+        actions = {
+            'delete': _msg_del,
+            'inbox': _msg_move_inbox,
+            'archive': _msg_move_archive,
+        }
+        for (name, action) in actions.items():
+            if request.POST.get(name):
+                for id in ids:
+                    try:
+                        msg = member.messages_received.get(id=id)
+                        action(msg)
+                    except Message.DoesNotExist:
+                        pass
     
+    # Context
+    extra_context = standard_extra_context()
     crumbs = [get_member_link(user_name)]
     if box == Message.MESSAGE_BOX_INBOX:
-        title="%s: Inbox" % user_name
+        extra_context['title'] = "%s: Inbox" % user_name
         crumbs.append('Messages &lt; <a href="../">Send</a> | Inbox | <a href="../archived/">Archived</a> &gt;')
+        extra_context['show_archive_button'] = True
     else:
-        title="%s: Archived messages" % user_name
+        extra_context['title'] = "%s: Archived messages" % user_name
         crumbs.append('Messages &lt; <a href="../">Send</a> | <a href="../inbox/">Inbox</a> | Archived &gt;')
-    extra_context = standard_extra_context(title=title)
+        extra_context['show_move_inbox_button'] = True
+     
+    extra_context['show_delete_button'] = True
     extra_context['breadcrumb'] = create_breadcrumb(crumbs)
     
     messages = member.messages_received.filter(box=box).order_by('-time')
@@ -183,7 +222,7 @@ def message_list(request, user_name, box):
     return list_detail.object_list(request, messages,
         extra_context=extra_context,
         template_name='cciw/members/messages/index',
-        paginate_by=30,
+        paginate_by=20,
         allow_empty=True)
 
 def inbox(request, user_name):
