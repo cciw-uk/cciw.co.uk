@@ -32,7 +32,7 @@ def same_member_required(member_name_arg):
             cur_member = get_current_member(request)
             if cur_member is None or \
                 (cur_member.user_name != user_name and 
-                not member.has_perm(Permission.SUPERUSER)):
+                not cur_member.has_perm(Permission.SUPERUSER)):
                 return HttpResponseForbidden('<h1>Access denied</h1>')
             return func(request, *args, **kwargs)
         return _check
