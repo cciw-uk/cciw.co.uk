@@ -56,9 +56,9 @@ html.append(('website_terms_of_service', '/website/terms/', 'Terms of Service', 
 <p>This web site is intended for people who have been on CCIW camps, those interested in doing so,
  and their friends.  It has the following purposes:</p>
 <ol>
-  <li>To provide information about CCIW and the camps it runs to all those interested in attending
+  <li>To provide information about CCIW and the camps it runs to all those interested in attending</li>
   <li>To provide a friendly, fun, safe, healthy environment in which those who have attended camps
-      can continue their friendships and encourage each other to love the Lord Jesus Christ.
+      can continue their friendships and encourage each other to love the Lord Jesus Christ.</li>
 </ol>
 
 <h2>Principles</h2>
@@ -73,7 +73,7 @@ html.append(('website_terms_of_service', '/website/terms/', 'Terms of Service', 
   <li>Hebrews 13:17 <i>"Obey your leaders and submit to their authority. They keep
     watch over you as men who must give an account. Obey them so that their
     work will be a joy, not a burden, for that would be of no advantage to
-    you."</i></li>
+    you."</i>
   <p>Although that is written for a church context, the logic applies
     to this situation, where those in authority are the moderators and
     web site administrators.</p></li>
@@ -358,12 +358,12 @@ own public liability insurance cover.</p>
 <h2>Booking</h2>
 <p><b>The cost for a single camper 
 is &pound;87. 2nd camper from the same family &pound;63. 
-Subsequent campers from the same family &pound;30.</b>
+Subsequent campers from the same family &pound;30.</b></p>
 
 <p>Please book early to avoid disappointment and to aid planning.  We will try to 
 be flexible with regard to bookings in order to accomodate campers from the 
 same youth group, family, church etc.  If you don't have a booking form, 
-you can <a href="/thisyear/booking/">get one here</a>.
+you can <a href="/thisyear/booking/">get one here</a>.</p>
 
 <p><b>Please send with the form a deposit of &pound;20</b>.  In the event of your 
 first choice being full we will offer you an alternative camp, your deposit back 
