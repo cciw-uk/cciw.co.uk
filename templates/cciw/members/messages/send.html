@@ -1,0 +1,70 @@
+{% extends "cciw/standard" %}
+{% block content %}
+
+{% if message_sent %}
+	<h3>Message was sent:</h3>	
+	<div class="messagePreview">
+	{{ preview }}
+	</div>
+	<div><a href="./">Send another</a></div>
+{% else %}
+
+	{% if errors %}
+		<div class="userError">
+		Please check your input:
+		<ul>
+		{% for error in errors %}
+			<li>{{ error|escape }}</li>
+		{% endfor %}
+		</ul>
+		</div>
+	{% endif %}	
+	
+	
+	{% if preview %}
+		<h3>Preview:</h3>
+		<div class="messagePreview">
+		{{ preview }}
+		</div>
+	{% endif %}
+
+	<form action="" method="post" enctype="" accept-charset="utf-8">
+	{% ifequal mode "send" %}
+		{% if preview  %}
+			<p>Change your message below if necessary:</p>
+		{% else %}
+			<p>Please enter recipient and message:</p>
+		{% endif %}
+		<table class="simpleform">
+			<tr>
+				<th scope="row">To:</th>
+				<td><input type="text" name="to" value="{{ to|escape }}" /></td>	
+			</tr>
+			<tr>
+				<th scope="row">Message:</th>
+				<td>{% include "cciw/message" %}</td>
+			</tr>
+		</table>
+	{% else %}
+		{% if preview  %}
+			<p>Change your message below if necessary:</p>
+		{% else %}
+			<p>Leave a message for {{ member.user_name }}:</p>
+		{% endif %}
+
+		<table class="simpleform">
+			<tr>
+				<th scope="row">Message:</th>
+				<td>{% include "cciw/message" %}</td>
+			</tr>
+		</table>
+	{% endifequal %}
+	<div>
+	<br/>
+	<input type="submit" name="preview" value="Preview" />&nbsp;
+	<input type="submit" name="send" value="Send" />
+	</div>
+	</form>
+{% endif %}
+
+{% endblock %}
