@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2006-03-06, 00:07:27 -->
+<!-- Saved: 2006-03-09, 23:53:40 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -167,6 +167,11 @@
       <Dir>cciwmain</Dir>
       <Dir>models</Dir>
       <Name>tags.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Name>decorators.py</Name>
     </Source>
   </Sources>
   <Forms>
