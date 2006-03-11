@@ -37,6 +37,18 @@
 		</div>
 		<br/>
 		{% endif %}
+		{% if voting_errors %}
+			<div class="userError">
+			Vote could not be registered:
+			<ul>
+			{% for error in voting_errors %}
+				<li>{{ error|escape }}</li>
+			{% endfor %}
+			</ul>
+			</div>
+		{% endif %}
+		{% if voting_message %}<p><i>{{ voting_message|escape }}</i></p>{% endif %}
+		
 		{% if show_vote_box %}
 				{% poll_vote_box request topic poll 2 %}
 		{% else %}

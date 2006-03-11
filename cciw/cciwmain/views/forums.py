@@ -1,7 +1,7 @@
 import datetime
 from django.views.generic import list_detail
 from django.http import Http404, HttpResponseForbidden
-from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member
+from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo
 from cciw.cciwmain.common import get_current_member, create_breadcrumb, standard_extra_context, get_order_option
 from cciw.cciwmain.decorators import login_redirect
 from django.utils.html import escape
@@ -82,7 +82,9 @@ def topicindex(request, title=None, extra_context=None, forum=None,
 # Used as part of a view function
 def process_post(request, topic, photo, context):
     """Processes a posted message for a photo or a topic.
-    One of 'photo' or 'topic' should be set."""
+    One of 'photo' or 'topic' should be set.
+    context is the context dictionary of the page, to which
+    'errors' or 'message' might be added."""
 
     cur_member = get_current_member(request)
     if cur_member is None:
@@ -131,6 +133,51 @@ def process_post(request, topic, photo, context):
         # it will have to take paging into account i.e. this
         # post might be on a new page
 
+def process_vote(request, topic, context):
+    """Processes any votes posted on the topic.
+    topic is the topic that might have a poll.
+    context is the context dictionary of the page, to which
+    voting_errors or voting_message might be added."""
+
+    if topic.poll_id is None:
+        # No poll
+        return
+    
+    poll = topic.poll
+
+    cur_member = get_current_member(request)
+    if cur_member is None:
+        # silently failing is OK, should never get here
+        return
+
+    try:
+        polloption_id = int(request.POST['polloption'])
+    except (ValueError, KeyError):
+        return # they didn't try to vote, or invalid input
+      
+    errors = []
+    if not poll.can_anyone_vote():
+        # Only get here if the poll was closed 
+        # while they were voting
+        errors.append('This poll is closed for voting, sorry.')
+        context['voting_errors'] = errors
+        return
+    
+    if not poll.can_vote(cur_member):
+        errors.append('You cannot vote on this poll.  Please check the voting rules.')
+        context['voting_errors'] = errors
+    
+    if not polloption_id in (po.id for po in poll.poll_options):
+        errors.append('Invalid option chosen')
+        context['voting_errors'] = errors
+    
+    if not errors:
+        voteinfo = VoteInfo(poll_option_id=polloption_id,
+                            member=cur_member,
+                            date=datetime.now())
+        voteinfo.save()
+        context['voting_message'] = 'Vote registered, thank you.'
+
 def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=0,
         introtext=None, breadcrumb_extra=None):
     """Displays a topic"""
@@ -160,6 +207,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
     ### PROCESSING ###
     # Process any message that they added.
     process_post(request, topic, None, extra_context)
+    process_vote(request, topic, extra_context)
     
     # TODO - process moderator stuff
 

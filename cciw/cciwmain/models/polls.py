@@ -103,6 +103,15 @@ class VoteInfo(models.Model):
         related_name="poll_vote")
     date = models.DateTimeField("Date")
 
+    def save(self):
+        # Manually update the parent
+        #  - this is the easiest way for vote counts to work
+        #    with legacy polls that don't have VoteInfo objects
+        is_new = (self.id is not None)
+        super(VoteInfo, self).save()
+        self.poll_option.total += 1
+        self.poll_option.save()
+
     class Meta:
         app_label = "cciwmain"
         
