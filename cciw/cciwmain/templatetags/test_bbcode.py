@@ -64,6 +64,9 @@ tests = (
     # non-existant tags come through as literals
     ('[nonexistanttag]',    
         '<div>[nonexistanttag]</div>'),
+    # empty string should return nothing
+    ('',
+        ''),
 )
 
 def check_xhtml(bb, xhtml):
