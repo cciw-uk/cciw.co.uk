@@ -52,13 +52,22 @@
 		{% if show_vote_box %}
 				{% poll_vote_box request topic poll 2 %}
 		{% else %}
-			{% if poll.can_anyone_vote %}
+			{% if allow_voting_box %}
 				<form action="" method="get"><div>
 				Show the voting form: 
 				<input type="submit" name="showvotebox" value="Show" />
 				</div></form>
 			{% endif %}
 		{% endif %}
+
+		{% if poll.can_anyone_vote %}
+		<p><small><i>Voting starts: {{ poll.voting_starts|date:"d M Y, h:i" }}<br/>
+		 Voting ends: {{ poll.voting_ends|date:"d M Y, h:i" }}<br/>
+		Rules: {{ poll.verbose_rules }}</i></small></p>
+		{% else %}
+		<p><i>Voting closed.</i></p>
+		{% endif %}
+
 	{% endif %}
 {% endblock %} 
 

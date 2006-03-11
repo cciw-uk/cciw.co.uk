@@ -34,7 +34,7 @@ class Poll(models.Model):
     def can_vote(self, member):
         """Returns true if member can vote on the poll"""
         if not self.can_anyone_vote():
-            return false
+            return False
         if not self.have_vote_info:
             # Can't calculate this, but it will only happen 
             # for legacy polls, which are all closed.
@@ -65,6 +65,14 @@ class Poll(models.Model):
     def can_anyone_vote(self):
         return (self.voting_ends > datetime.now()) and \
             (self.voting_starts < datetime.now())
+    
+    def verbose_rules(self):
+        if self.rules == Poll.UNLIMITED:
+            return "Unlimited number of votes."
+        elif self.rules == Poll.X_VOTES_PER_USER:
+            return "%s vote(s) per user." % self.rule_parameter
+        elif self.rules == Poll.X_VOTES_PER_USER_PER_DAY:
+            return "%s vote(s) per user per day." % self.rule_parameter
         
     class Meta:
         app_label = "cciwmain"   

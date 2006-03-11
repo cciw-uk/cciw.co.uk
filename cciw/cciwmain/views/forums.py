@@ -184,6 +184,8 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
     if title_start is None:
         raise Exception("No title provided for page")
 
+    cur_member = get_current_member(request)
+    
     try:
         # TODO - lookup depends on permissions
         topic = Topic.objects.get(id=int(topicid))
@@ -232,6 +234,10 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
             extra_context['show_vote_box'] = True
         else:
             extra_context['show_poll_results'] = True
+        
+        extra_context['allow_voting_box'] = \
+            (cur_member is None and poll.can_anyone_vote()) or \
+            (cur_member is not None and poll.can_vote(cur_member))
 
     ### POSTS ###
     # TODO - lookup depends on permissions
