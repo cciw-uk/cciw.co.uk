@@ -3,12 +3,17 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden
 from cciw.cciwmain.models import Permission
 import urllib
 
+def login_redirect(path):
+    """Returns a URL for logging in and then redirecting to the supplied path"""
+    qs = urllib.urlencode({'redirect': path})
+    return '%s?%s' % ('/login/', qs)
+
 def member_required(func):
-    """Decorator that redirects to a login screen if the user isn't logged in."""
+    """Decorator for a view function that redirects to a login
+     screen if the user isn't logged in."""
     def _check(request, *args, **kwargs):
         if get_current_member(request) is None:
-            qs = urllib.urlencode({'redirect': request.path})
-            return HttpResponseRedirect('%s?%s' % ('/login/', qs))
+            return HttpResponseRedirect(login_redirect(request.get_full_path()))
         else:
             return func(request, *args, **kwargs)
     return _check

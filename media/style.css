@@ -182,14 +182,12 @@ div.newsItem h2
 
 .postMessage blockquote
 {
-	border: 2px solid #206020;
+	border-left: 2px solid #206020;
 	background-color: #203020;
-	border-top: 1px solid #206020;
+	
 }
 .postMessage .memberquote
 {
-	background-color: #203020;
-	border: 2px solid #206020;
 	border-bottom: 0px;
 }
 
@@ -543,6 +541,7 @@ div.userError
 {
 	padding: 5px;
 	text-align: left;
+	margin-bottom: 1em;
 }
 
 div.awardInfo
@@ -647,15 +646,14 @@ div.center
 
 .postMessage blockquote
 {
-	padding: 0.5em 1em ;
-	margin: 0 1em 0.5em 1em;
+	padding: 0.2em 1em ;
+	margin: 0.1em 1em 0.5em 1em;
 }
 
 .postMessage .memberquote
 {
 	padding: 0px 2px;
-	margin: 0.5em 1em 0 1em;
-	font-style: italic;
+	margin: 0.5em 1em 0 0em;
 }
 
 .messagePreview
