@@ -79,19 +79,22 @@ def standard_processor(request):
     
     return context
 
-
-# TODO implement thread local cache for this function
 def get_current_member(request):
     """Returns the currently logged in member, or None"""
-    Member = cciw.cciwmain.models.Member
     try:
-        member = Member.objects.get(user_name=request.session['member_id'])
-        # use opportunity to update last_seen data
-        if (datetime.datetime.now() - member.last_seen).seconds > 60:
-            member.last_seen = datetime.datetime.now()
-            member.save()
+        # return the val we already calculated
+        return request._member
+    except AttributeError:
+        try:
+            Member = cciw.cciwmain.models.Member
+            member = Member.objects.get(user_name=request.session['member_id'])
+            # use opportunity to update last_seen data
+            if (datetime.datetime.now() - member.last_seen).seconds > 60:
+                member.last_seen = datetime.datetime.now()
+                member.save()
+        except (KeyError, Member.DoesNotExist):
+            member = None
+        request._member = member
         return member
-    except (KeyError, Member.DoesNotExist):
-        return None
 
 
