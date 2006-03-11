@@ -463,8 +463,7 @@ def migrate_polls():
                 else:
                     # assume at end, complain later if we were wrong
                     poll.outro_text += pollline
-        
-        poll.open = False
+
         poll.voting_starts = datetime.fromtimestamp(int(line[6]))
         poll.voting_ends = datetime.fromtimestamp(int(line[7]))
         poll.rules = get_int(line[3])
