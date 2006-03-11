@@ -730,6 +730,7 @@ def fixup_urls():
             (Member.objects.all(), ['comments']),
             (Message.objects.all(), ['text']),
             (PollOption.objects.all(), ['text']),
+            (Poll.objects.all(), ['intro_text', 'outro_text']),
         ):
         for obj in objectlist:
             for attrname in attrlist:
