@@ -1,13 +1,17 @@
 import datetime
 from django.views.generic import list_detail
-from django.http import Http404, HttpResponseForbidden
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
+from django.template import RequestContext
+from django.shortcuts import render_to_response
 from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo
 from cciw.cciwmain.common import get_current_member, create_breadcrumb, standard_extra_context, get_order_option
 from cciw.cciwmain.decorators import login_redirect
 from django.utils.html import escape
 from cciw.cciwmain import utils
 from cciw.cciwmain.templatetags import bbcode
+from cciw.cciwmain.decorators import member_required
 from datetime import datetime
+
 
 # Utility functions for breadcrumbs
 def topicindex_breadcrumb(forum):
@@ -79,6 +83,62 @@ def topicindex(request, title=None, extra_context=None, forum=None,
         extra_context=extra_context, template_name=template_name,
         paginate_by=paginate_by, allow_empty=True)
 
+
+# Called directly as a view for /news/ and /website/forum/, and used by other views
+@member_required
+def add_topic(request, breadcrumb_extra=None):
+    "Displays a page for adding a topic to a forum"
+
+    location = request.path[1:-len('add/')] # strip 'add/' bit
+    try:
+        forum = Forum.objects.get(location=location)
+    except Forum.DoesNotExist:
+        raise Http404
+
+    cur_member = get_current_member(request)
+    context = RequestContext(request, standard_extra_context(title='Add topic'))
+    
+    if not forum.open:
+        context['message'] = 'This forum is closed - new topics cannot be added.'
+    else:
+        context['forum'] = forum
+        context['show_form'] = True
+    
+    errors = []
+    # PROCESS POST
+    if forum.open and request.POST.has_key('post') or request.POST.has_key('preview'):
+        subject = request.POST.get('subject', '').strip()
+        msg_text = request.POST.get('message', '').strip()
+        
+        if subject == '':
+            errors.append('You must enter a subject')
+            
+        if msg_text == '':
+            errors.append('You must enter a message.')
+        
+        # TODO: short news items, long news items. polls
+        context['message_text'] = bbcode.correct(msg_text)
+        context['subject_text'] = subject
+        if not errors:
+            if request.POST.has_key('post'):
+                topic = Topic.create_topic(cur_member, subject, forum)
+                topic.save()
+                post = Post.create_post(cur_member, msg_text, topic, None)
+                post.save()
+                if topic.hidden:
+                    context['message'] = 'The topic has been created, but is hidden for now'
+                    context['show_form'] = False
+                else:
+                    return HttpResponseRedirect('../%s/' % topic.id)
+            else:
+                context['preview'] = bbcode.bb2xhtml(msg_text)
+    
+    context['errors'] = errors
+    if breadcrumb_extra is None:
+        breadcrumb_extra = []
+    context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(forum, None))
+    return render_to_response('cciw/forums/add_topic', context_instance=context)
+
 # Used as part of a view function
 def process_post(request, topic, photo, context):
     """Processes a posted message for a photo or a topic.
@@ -117,16 +177,9 @@ def process_post(request, topic, photo, context):
         if not errors:
             context['preview'] = bbcode.bb2xhtml(msg_text)
 
-    # Post        
+    # Post
     if not errors and request.POST.has_key('post'):
-        post = Post(posted_by=cur_member, 
-                  subject='',
-                  message=msg_text,
-                  hidden=(cur_member.moderated == Member.MODERATE_ALL),
-                  needs_approval=(cur_member.moderated == Member.MODERATE_ALL),
-                  topic=topic,
-                  photo=photo,
-                  posted_at=datetime.now())
+        post = Post.create_post(cur_member, msg_text, topic, photo)
         post.save()
         # TODO - do a redirect to the page, and to the
         # exact post that was added.  To work correctly,

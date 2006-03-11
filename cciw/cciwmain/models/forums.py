@@ -1,6 +1,7 @@
 from django.db import models
 from members import *
 from polls import *
+from datetime import datetime
 
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
@@ -40,7 +41,7 @@ class Topic(models.Model):
         verbose_name="started by")
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open")
-    hidden = models.BooleanField("Hidden")
+    hidden = models.BooleanField("Hidden", default=False)
     checked_by = models.ForeignKey(Member,
         null=True, blank=True, related_name="topic_checked",
         verbose_name="checked by")
@@ -67,10 +68,20 @@ class Topic(models.Model):
     def get_link(self):
         return '<a href="' + self.get_absolute_url() + '">' + self.subject + '</a>'
 
+    @staticmethod
+    def create_topic(member, subject, forum):
+        """Create a topic with the correct defaults for a member"""
+        return Topic(started_by=member,
+                     subject=subject,
+                     forum=forum,
+                     created_at=datetime.now(),
+                     hidden=(member.moderated == Member.MODERATE_ALL),
+                     open=True)
+
     class Admin:
         list_display = ('subject', 'started_by', 'created_at')
         search_fields = ('subject',)
-        
+    
     class Meta:
         app_label = "cciwmain"
         ordering = ('-started_by',)
@@ -127,7 +138,7 @@ class Photo(models.Model):
 class Post(models.Model):
     posted_by = models.ForeignKey(Member, 
         related_name="posts")
-    subject = models.CharField("Subject", maxlength=240) # deprecated, supports legacy boards
+    subject = models.CharField("Subject", maxlength=240, blank=True) # deprecated, supports legacy boards
     message = models.TextField("Message")
     posted_at = models.DateTimeField("Posted at", null=True)
     hidden = models.BooleanField("Hidden", default=False)
@@ -176,6 +187,20 @@ class Post(models.Model):
         if self.photo_id is not None:
             self.updateParent(self.photo)
     
+    @staticmethod
+    def create_post(member, message, topic=None, photo=None):
+        """Creates a post with the correct defaults for a member."""
+        post = Post(posted_by=member,
+                    subject='',
+                    message=message,
+                    topic=topic,
+                    photo=photo,
+                    hidden=(member.moderated == Member.MODERATE_ALL),
+                    needs_approval=(member.moderated == Member.MODERATE_ALL),
+                    posted_at=datetime.now())
+        return post
+        
+        
     class Meta:
         app_label = "cciwmain"
         # Order by the autoincrement id, rather than  posted_at, because

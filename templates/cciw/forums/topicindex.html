@@ -39,5 +39,7 @@
 	{% else %}
 		<p>There are no topics yet in this forum.</p>
 	{% endif %}
-
+	{% if forum.open %}
+		<p>&raquo; <a href="add/">Add new topic</a></p>
+	{% endif %}
 {% endblock %} 
