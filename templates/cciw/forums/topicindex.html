@@ -1,6 +1,7 @@
 {% extends "cciw/standard" %}
 {% load standardpage %}
 {% load view_extras %}
+{% load forums %}
 {% block content %}
 	<p>Select from the list of topics below by clicking on the topic name.</p>
 	{% if object_list %}
@@ -20,7 +21,9 @@
 			<tr>
 				<td class="topicLink">
 				{% if topic.news_item_id %}<div class="center">NEWS ITEM</div>{% endif %}
-				{% if topic.poll_id %}<div class="center">POLL</div>{% endif %}
+				{% if topic.poll_id %}<div class="center">POLL</div>
+					{% poll_vote_box request topic topic.poll %}
+				{% endif %}
 				{{ topic.get_link }}
 				</td>
 				<td>{% if topic.created_at %}{{ topic.created_at|date:"d M Y h:i" }}<br/>{% endif %}

@@ -21,7 +21,7 @@
 		{% if show_poll_results %}
 		<div class="pollresults">
 			<h2>{{ poll.title }}</h2>
-			{% if poll.intro_text %}<p>{{ poll.intro_text }}</p>{% endif %}
+			{% if poll.intro_text %}{{ poll.intro_text|bb2html }}{% endif %}
 			<p>Results:</p>
 			<table>
 			{% for polloption in poll.poll_options %}
@@ -33,7 +33,7 @@
 				</tr>
 				
 			{% endfor %}
-			{% if poll.outro_text %}<p>{{ poll.outro_text }}</p>{% endif %}
+			{% if poll.outro_text %}{{ poll.outro_text|bb2html }}{% endif %}
 			</table>
 		</div>
 		{% else %}

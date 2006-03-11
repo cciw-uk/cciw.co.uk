@@ -166,8 +166,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
     if not topic.poll_id is None:
         poll = topic.poll
         extra_context['poll'] = poll
-        if poll.voting_ends < datetime.datetime.now(): # TODO or they just voted, or can no longer vote
-            extra_context['show_poll_results'] = True
+        extra_context['show_poll_results'] = True
         # TODO handle voting on polls
                 
     if introtext:
