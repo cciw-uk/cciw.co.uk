@@ -73,10 +73,12 @@
 			</form>
 		{% endifequal %}
 	{% else %}
-		{% if login_link %}
-			<div><a href="{{ login_link|escape }}">Login to post a
+		{% ifequal page pages %}
+			{% if login_link %}
+				<div><a href="{{ login_link|escape }}">Login to post a
 message.</a></div>
-		{% endif %}
+			{% endif %}
+		{% endifequal %}
 	{% endif %}
 	{% block thread_bottom %}{% endblock %}
 {% endblock %}
