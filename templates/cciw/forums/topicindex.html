@@ -22,7 +22,7 @@
 				<td class="topicLink">
 				{% if topic.news_item_id %}<div class="center">NEWS ITEM</div>{% endif %}
 				{% if topic.poll_id %}<div class="center">POLL</div>
-					{% poll_vote_box request topic topic.poll %}
+					{% poll_vote_box request topic topic.poll 2 %}
 				{% endif %}
 				{{ topic.get_link }}
 				</td>

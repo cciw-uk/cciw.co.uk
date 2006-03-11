@@ -612,6 +612,11 @@ td.topicLink
 	vertical-align: middle;
 }
 
+td.topicLink h2
+{
+	border: 0px;
+}
+
 th.topicSubject h2
 {
 	margin: 0px;

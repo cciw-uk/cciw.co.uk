@@ -21,7 +21,7 @@
 		{% if show_poll_results %}
 		<div class="pollresults">
 			<h2>{{ poll.title }}</h2>
-			{% if poll.intro_text %}{{ poll.intro_text|bb2html }}{% endif %}
+			{{ poll.intro_text|bb2html }}
 			<p>Results:</p>
 			<table>
 			{% for polloption in poll.poll_options %}
@@ -31,17 +31,21 @@
 					<td>{{ polloption.percentage }}</td>
 					<td><div class="pollBarChartTotal"><div style="width: {{ polloption.bar_width }}px; " class="pollBarChart"></div></div></td>
 				</tr>
-				
 			{% endfor %}
-			{% if poll.outro_text %}{{ poll.outro_text|bb2html }}{% endif %}
 			</table>
+			{{ poll.outro_text|bb2html }}
 		</div>
+		<br/>
+		{% endif %}
+		{% if show_vote_box %}
+				{% poll_vote_box request topic poll 2 %}
 		{% else %}
-			<p>{{ poll.intro_text }}</p>
-			{% for polloption in poll.poll_options %}
-
-			{% endfor %}
-			<p>{{ poll.outro_text }}</p>
+			{% if poll.can_anyone_vote %}
+				<form action="" method="get"><div>
+				Show the voting form: 
+				<input type="submit" name="showvotebox" value="Show" />
+				</div></form>
+			{% endif %}
 		{% endif %}
 	{% endif %}
 {% endblock %} 

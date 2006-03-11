@@ -2,7 +2,7 @@
 {% if show_form %}
 <div class="pollVoteBox">
 	<form action="{{ action_url }}" method="post">
-	<div><b>{{ poll.title }}</b><br/>
+	<div><h{{ heading_level }}>{{ poll.title }}</h{{ heading_level }}>
 	{{ poll.intro_text|bb2html }}
 	<ul>
 	{% for polloption in poll.poll_options %}

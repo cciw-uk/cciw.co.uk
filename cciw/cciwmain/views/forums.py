@@ -142,48 +142,55 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
         topic = Topic.objects.get(id=int(topicid))
     except Topic.DoesNotExist:
         raise Http404
-            
+    
+    ### GENERAL CONTEXT ###
     # Add additional title
-    title = utils.get_extract(topic.subject, 30)
+    title = utils.get_extract(topic.subject, 40)
     if len(title_start) > 0:
         title = title_start + ": " + title
-
     extra_context = standard_extra_context(title=title)
 
+    if breadcrumb_extra is None:
+        breadcrumb_extra = []
+    extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(topic.forum, topic))
+
+    if introtext:
+        extra_context['introtext'] = introtext
+
+    ### PROCESSING ###
     # Process any message that they added.
     process_post(request, topic, None, extra_context)
     
     # TODO - process moderator stuff
- 
-    if breadcrumb_extra is None:
-        breadcrumb_extra = []
-    extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(topic.forum, topic))
-            
+
+    ### Topic ###
     extra_context['topic'] = topic
     if not topic.news_item_id is None:
         extra_context['news_item'] = topic.news_item
-    
-    if not topic.poll_id is None:
-        poll = topic.poll
-        extra_context['poll'] = poll
-        extra_context['show_poll_results'] = True
-        # TODO handle voting on polls
-                
-    if introtext:
-        extra_context['introtext'] = introtext
 
-    lookup_args = {
-        'hidden': False, # TODO - lookup depends on permissions
-        'topic__id__exact': topic.id,
-    }
-    
     if topic.open:
         if get_current_member(request) is not None:
             extra_context['show_message_form'] = True
         else:
             extra_context['login_link'] = login_redirect(request.get_full_path() + '#messageform')
+    
+    ### Poll ###
+    if topic.poll_id is not None:
+        poll = topic.poll
+        extra_context['poll'] = poll
+        
+        # TODO handle voting on polls
+        if request.GET.get('showvotebox', None):
+            extra_context['show_vote_box'] = True
+        else:
+            extra_context['show_poll_results'] = True
 
-    return list_detail.object_list(request, Post.objects.filter(**lookup_args), 
+    ### POSTS ###
+    # TODO - lookup depends on permissions
+    posts = Post.objects.filter(hidden=False, topic__id__exact=topic.id)
+    
+
+    return list_detail.object_list(request, posts,
         extra_context=extra_context, template_name=template_name,
         paginate_by=15, allow_empty=True)
 
