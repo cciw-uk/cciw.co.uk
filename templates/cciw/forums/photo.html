@@ -1,36 +1,11 @@
-{% extends "cciw/standard" %}
-{% load view_extras %}
-{% load standardpage %}
-{% load forums %}
-{% block content %}
+{% extends "cciw/forums/thread" %}
+
+{% block thread_top %}
 	<div class="photo">
-		<img class="photo" src="{{ pagevars.media_root_url }}photos/{{ photo.filename }}" alt="Photo {{photo.filename}}" />
+		<img class="photo" src="{{ pagevars.media_root_url }}photos/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
 	</div>
-	<a name="comments"></a>
-	<div class="paging">{% paging_control #comments %}</div>
-	<table class="topheaders">
-		<tr>
-			<th class="commentHeader" colspan="2">Comments</th>
-		</tr>
-		<tr>
-			<th scope="col" class="postFromCol">From</th>
-			<th scope="col">Message</th>
-		</tr>
-		{% if object_list %}
-			{% include 'cciw/forums/thread' %}
-		{% else %}
-			<tr>
-				<td  colspan="2">There are no comments yet on this photo.</td>
-			</tr>
-		{% endif %}
+{% endblock %} 
 
-	</table>
-	<div class="paging">{% paging_control #comments %}</div>
-
-		TODO - add message form<br/>
-		TODO - refactor common template code from forums into
-
+{% block thread_bottom %}
 	<div class='bottombreadcrumb'>{{ breadcrumb }}</div>
-
-
 {% endblock %} 

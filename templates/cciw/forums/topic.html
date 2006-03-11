@@ -1,8 +1,7 @@
-{% extends "cciw/standard" %}
+{% extends "cciw/forums/thread" %}
 {% load standardpage %}
-{% load view_extras %}
 {% load forums %}
-{% block content %}
+{% block thread_top %}
 	{{ introtext }}
 	{% if news_item %}
 	<br/>
@@ -45,67 +44,5 @@
 			<p>{{ poll.outro_text }}</p>
 		{% endif %}
 	{% endif %}
-	<div class="paging"><a name="comments"></a>{% paging_control #comments %}</div>
-	<table class="topheaders">
-		<tr>
-		{% if news_item %}
-			<th class="commentHeader" colspan="2">Comments</th>
-		{% else %}
-			{% if poll %}
-			<th class="commentHeader" colspan="2">Comments</th>
-			{% else %}
-			<th class="topicSubject" colspan="2"><h2>{{ topic.subject }}</h2></th>
-			{% endif %}
-		{% endif %}
-		</tr>
-		<tr>
-			<th scope="col" class="postFromCol">From</th>
-			<th scope="col">Message</th>
-		</tr>
-		{% if object_list %}
-			{% include 'cciw/forums/thread' %}
-		{% else %}
-			<tr>
-				<td  colspan="2">There are no posts yet in this topic.</td>
-			</tr>
-		{% endif %}
-	</table>
-	<div class="paging">{% paging_control #comments %}</div>
+{% endblock %} 
 
-	{% if show_moderator_controls %}
-	<div class="moderatorButtons">
-	</div>
-	# TODO - moderator controls
-	{% endif %}
-	
-	{% if show_message_form %}
-		{% ifequal page pages %}
-			<form action="#messageform" method="post">
-			<h2 id="messageform">Add message:</h2>
-			{% include "cciw/errors" %}
-			{% include "cciw/msgpreview" %}
-			{% if preview %}
-				<p>Make any changes below, and choose
-				'Preview' again or 'Post'.</p>
-			{% endif %}
-			<table class="simpleform">
-				<tr>
-					<th scope="row">Message:</th>
-					<td>
-						{% include "cciw/message" %}
-					</td>
-				</tr>
-			</table>
-			<div>
-			<br/><input type="submit" name="preview" value="Preview"/>&nbsp;
-			<input type="submit" name="post" value="Post" />
-			</div>
-			</form>
-		{% endifequal %}
-	{% else %}
-		{% if login_link %}
-			<div><a href="{{ login_link|escape }}">Login to post a
-comment</a></div>
-		{% endif %}
-	{% endif %}
-{% endblock %}

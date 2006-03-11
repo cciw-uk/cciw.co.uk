@@ -217,6 +217,15 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + photo_breadcrumb(photo.gallery, photo))
     extra_context['photo'] = photo
     
+    if photo.open:
+        if get_current_member(request) is not None:
+            extra_context['show_message_form'] = True
+        else:
+            extra_context['login_link'] = login_redirect(request.get_full_path() + '#messageform')
+
+    # Process any message that they added.
+    process_post(request, None, photo, extra_context)
+    
     lookup_args = {
         'hidden': False, # TODO - lookup depends on permissions
         'photo__id__exact': photo.id,
