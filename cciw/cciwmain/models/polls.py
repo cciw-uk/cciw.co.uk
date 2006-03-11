@@ -1,6 +1,7 @@
 from django.db import models
 from datetime import datetime
 from members import *
+import operator
 
 VOTING_RULES = (
     (0, "Unlimited"),
@@ -32,12 +33,31 @@ class Poll(models.Model):
     
     def can_vote(self, member):
         """Returns true if member can vote on the poll"""
-        # TODO
-        return True
+        if not self.can_anyone_vote():
+            return false
+        if not self.have_vote_info:
+            # Can't calculate this, but it will only happen 
+            # for legacy polls, which are all closed.
+            return True
+        if self.rules == Poll.UNLIMITED:
+            return True
+        queries = [] # queries representing users relevant votes
+        for po in self.poll_options:
+            if self.rules == Poll.X_VOTES_PER_USER:
+                queries.append(po.votes.filter(member=member.user_name))
+            elif self.rules == Poll.X_VOTES_PER_USER_PER_DAY:
+                queries.append(po.votes.filter(member=member.user_name, 
+                                                date__gte=datetime.now() - timedelta(1)))
+        # combine them all and do an SQL count.
+        count = reduce(operator.or_, queries).count()
+        if count >= self.rule_parameter:
+            return False
+        else:
+            return True
         
     def total_votes(self):
         sum = 0
-        # TODO - use SQL
+        # TODO - use SQL, or caching
         for option in self.poll_options:
             sum += option.total
         return sum
@@ -85,8 +105,7 @@ class PollOption(models.Model):
             return 0
         else:
             return int(float(self.total)/sum*400)
-            
-        
+
     class Meta:
         app_label = "cciwmain"
         ordering = ('poll', 'listorder',)
@@ -96,11 +115,10 @@ class PollOption(models.Model):
 
 class VoteInfo(models.Model):
     poll_option = models.ForeignKey(PollOption, 
-        verbose_name="poll_option",
-        related_name="vote")
+        related_name="votes")
     member = models.ForeignKey(Member,
         verbose_name="member",
-        related_name="poll_vote")
+        related_name="poll_votes")
     date = models.DateTimeField("Date")
 
     def save(self):
