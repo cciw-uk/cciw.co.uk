@@ -354,13 +354,8 @@ def migrate_permissions():
     Permission.objects.all().delete()
     
     for id, description in ( 
-        (Permission.SUPERUSER, "Administrator"),
-        (Permission.USER_MODERATOR, "Member moderator"),
-        (Permission.POST_MODERATOR, "Post moderator"),
-        (Permission.PHOTO_APPROVER, "Photo approver"),
         (Permission.POLL_CREATOR, "Poll creator"),
         (Permission.NEWS_CREATOR, "News creator"),
-        (Permission.AWARD_CREATOR, "Award creator") 
         ):
         p = Permission(id=id, description=description)
         p.save()
@@ -369,9 +364,6 @@ def migrate_permissions():
     
     # create permissions based on old 'groups' data for certain group names
     oldgroups = {
-        "moderators": (Permission.USER_MODERATOR, Permission.POST_MODERATOR),
-        "admins": (Permission.SUPERUSER,),
-        "photomanagers": (Permission.PHOTO_APPROVER,),
         "newsposters": (Permission.NEWS_CREATOR, Permission.POLL_CREATOR),
     }
 
@@ -589,17 +581,17 @@ def migrate_forums():
                     ni.created_by_id = topic.started_by_id
                     ni.created_at = topic.created_at
                     ni.summary = topicline[11]
-                    
+
                     if topictype == 2:
                         # long news item
-                        try: 
+                        try:
                             ni.full_item = fix_news_items("".join(file(PREFIX+"../news/" + topicline[12])))
                         except IOError:
                             print "Migration of news items: '" + topicline[12] + "' data is missing"
                             ni.full_item = "ERROR - '" + topicline[12] + "' data was missing at migration time"
                     else:
                         ni.full_item = ""
-                    
+
                     ni.subject = topic.subject
                     ni.save()
                     topic.news_item_id = ni.id
@@ -613,10 +605,10 @@ def migrate_forums():
                     topic.poll_id = Poll.objects.get(title=pollname).id
                 topic.forum_id = f.id
                 topic.save()
-                
+
                 old_topic_location = old_location + '&n=' + topicline[0]
                 new_urls[old_topic_location] = topic.get_absolute_url()
-                
+
             if g != None:
                 photo = Photo(open = bool(int(topicline[7])))
                 photo.hidden = get_bool(topicline[9])
@@ -627,7 +619,7 @@ def migrate_forums():
                         photo.created_at = datetime.fromtimestamp(timestamp)
                 except:
                     pass
-            
+
                 for photoline in get_table(PREFIX+line[0]+".data"):
                     if photoline[0] == topicline[0]:
                         photo.filename = photoline[1]
@@ -635,11 +627,11 @@ def migrate_forums():
                         break
                 photo.gallery_id = g.id
                 photo.save()
-                
+
                 old_photo_location = old_location + '&n=' + topicline[0]
                 new_urls[old_photo_location] = photo.get_absolute_url()
 
-                
+
             # Now get the posts
             try:
                 postdata = get_table(boardsdir + line[0] + "/" + topicline[0] + ".data")
@@ -664,10 +656,10 @@ def migrate_forums():
                 p.save()
         # end for topicline in topiclist
     # end for line in boards
-    
+
 def migrate_main_menu():
     MenuLink.objects.all().delete()
-    
+
     links = (
         ('Home','/',0,''),
         ('News','/news/',100, ''),
@@ -688,14 +680,14 @@ def migrate_main_menu():
         ('Help','/website/help/', 730, '/website/'),
         ('Contact us','/contact/', 800, '')
     )
-    
+
     for i in range(0, len(links)):
         title, url, order, parentUrl = links[i]
         m = MenuLink(title = title, url = url, listorder=order)
         if parentUrl != '':
             m.parent_item_id = MenuLink.objects.get(url=parentUrl).id
         m.save()
-        
+
 
 def migrate_html():
     HtmlChunk.objects.all().delete()

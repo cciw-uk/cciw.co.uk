@@ -2,6 +2,7 @@ from django.db import models
 from members import *
 from polls import *
 from datetime import datetime
+from django.contrib.auth.models import User
 
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
@@ -42,7 +43,7 @@ class Topic(models.Model):
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open")
     hidden = models.BooleanField("Hidden", default=False)
-    checked_by = models.ForeignKey(Member,
+    checked_by = models.ForeignKey(User,
         null=True, blank=True, related_name="topic_checked",
         verbose_name="checked by")
     approved = models.BooleanField("Approved", null=True, blank=True)
@@ -113,7 +114,7 @@ class Photo(models.Model):
     gallery = models.ForeignKey(Gallery,
         verbose_name="gallery",
         related_name="photo")
-    checked_by = models.ForeignKey(Member,
+    checked_by = models.ForeignKey(User,
         null=True, blank=True, related_name="checked_photo")
     approved = models.BooleanField("Approved", null=True, blank=True)
     needs_approval = models.BooleanField("Needs approval", default=False)
@@ -142,7 +143,7 @@ class Post(models.Model):
     message = models.TextField("Message")
     posted_at = models.DateTimeField("Posted at", null=True)
     hidden = models.BooleanField("Hidden", default=False)
-    checked_by = models.ForeignKey(Member,
+    checked_by = models.ForeignKey(User,
         verbose_name="checked by",
         null=True, blank=True, related_name="checked_post")
     approved = models.BooleanField("Approved", null=True)

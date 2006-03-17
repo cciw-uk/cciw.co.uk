@@ -2,13 +2,8 @@ from django.db import models
 from cciw.cciwmain.settings import *
 
 class Permission(models.Model):
-    SUPERUSER = 1
-    USER_MODERATOR = 2
-    POST_MODERATOR =  3
-    PHOTO_APPROVER = 4
     POLL_CREATOR = 5
     NEWS_CREATOR = 6
-    AWARD_CREATOR = 7
 
     id = models.PositiveSmallIntegerField("ID", primary_key=True)
     description = models.CharField("Description", maxlength=40)
