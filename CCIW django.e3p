@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2006-03-09, 23:53:40 -->
+<!-- Saved: 2006-03-12, 00:33:25 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -14,9 +14,6 @@
     <Source>
       <Dir>cciw</Dir>
       <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Name>django_migrate.py</Name>
     </Source>
     <Source>
       <Name>migrate_html.py</Name>
@@ -172,6 +169,9 @@
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Name>decorators.py</Name>
+    </Source>
+    <Source>
+      <Name>django_migrate.py</Name>
     </Source>
   </Sources>
   <Forms>
