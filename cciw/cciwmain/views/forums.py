@@ -238,7 +238,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
         raise Exception("No title provided for page")
 
     cur_member = get_current_member(request)
-    
+
     try:
         # TODO - lookup depends on permissions
         topic = Topic.objects.get(id=int(topicid))
@@ -295,7 +295,6 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
     ### POSTS ###
     # TODO - lookup depends on permissions
     posts = Post.objects.filter(hidden=False, topic__id__exact=topic.id)
-    
 
     return list_detail.object_list(request, posts,
         extra_context=extra_context, template_name=template_name,
