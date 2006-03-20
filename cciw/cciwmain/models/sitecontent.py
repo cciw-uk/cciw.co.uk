@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.admin.views.main import quote
 import cciw.cciwmain.common
 
 class MenuLink(models.Model):
@@ -49,7 +50,7 @@ class HtmlChunk(models.Model):
             request.user.is_staff:
             html += ("""<div class="editChunkLink">&laquo;
                         <a href="/admin/cciwmain/htmlchunk/%s/">Edit %s</a> &raquo;
-                        </div>""" % (self.name, self.name))
+                        </div>""" % (quote(self.name), self.name))
         return html
 
     class Meta:
