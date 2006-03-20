@@ -40,6 +40,15 @@
 		<p>There are no topics yet in this forum.</p>
 	{% endif %}
 	{% if forum.open %}
-		<p>&raquo; <a href="add/">Add new topic</a></p>
+		<p>&raquo; <a href="add/">Add new topic</a>
+		{% if current_member %}
+			{% if current_member.can_add_news %}
+				<br/>&raquo; <a href="add/?mode=news">Add news item</a>
+			{% endif %}
+			{% if current_member.can_add_poll %}
+				<br/>&raquo; <a href="add/?mode=news">Add poll</a>
+			{% endif %}
+		{% endif %}
+		</p>
 	{% endif %}
 {% endblock %} 
