@@ -1,4 +1,4 @@
-from cciw.cciwmain.settings import CCIW_MEDIA_ROOT, THISYEAR
+from django.conf import settings
 import cciw.cciwmain.models
 from cciw.cciwmain.templatetags import view_extras
 from django.http import HttpResponseRedirect
@@ -17,11 +17,11 @@ def standard_extra_context(extra_dict=None, title=None):
         title = "Christian Camps in Wales"
     
     extra_dict['title'] = title
-    extra_dict['thisyear'] = THISYEAR
+    extra_dict['thisyear'] = settings.THISYEAR
     extra_dict['pagevars'] = {
-        'media_root_url': CCIW_MEDIA_ROOT,
-        'style_sheet_url': CCIW_MEDIA_ROOT + 'style.css',
-        'style_sheet2_url': CCIW_MEDIA_ROOT + 'style2.css',
+        'media_root_url': settings.CCIW_MEDIA_URL,
+        'style_sheet_url': settings.CCIW_MEDIA_URL + 'style.css',
+        'style_sheet2_url': settings.CCIW_MEDIA_URL + 'style2.css',
         'logged_in_members': 
             Member.objects.filter(last_seen__gte=datetime.datetime.now() \
                                            - datetime.timedelta(minutes=3)).count(),
@@ -31,8 +31,8 @@ def standard_extra_context(extra_dict=None, title=None):
 
 def standard_subs(value):
     """Standard substitutions made on HTML content"""
-    return value.replace('{{thisyear}}', str(THISYEAR))\
-                .replace('{{media}}', CCIW_MEDIA_ROOT)
+    return value.replace('{{thisyear}}', str(settings.THISYEAR))\
+                .replace('{{media}}', settings.CCIW_MEDIA_URL)
 
 
 def get_order_option(order_options, request, default_order_by):

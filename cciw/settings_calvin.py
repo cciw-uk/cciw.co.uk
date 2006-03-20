@@ -39,3 +39,7 @@ TEMPLATE_DIRS = (
     r'/home/httpd/www.cciw.co.uk/django/lukeplant_me_uk/django/apps/validator/templates/',
 #    r'/usr/lib/python2.4/site-packages/lukeplant_me_uk/django/apps/validator/templates/',
 )
+
+AWARD_UPLOAD_PATH = '/home/httpd/www.cciw.co.uk/django/media/images/awards'
+MEMBERS_ICONS_UPLOAD_PATH = '/home/httpd/www.cciw.co.uk/django/media/images/members'
+CCIW_MEDIA_URL = MEDIA_URL

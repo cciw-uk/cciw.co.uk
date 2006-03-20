@@ -1,6 +1,6 @@
 from django import template
 from django.utils import html
-from cciw.cciwmain.settings import *
+from django.conf import settings
 from cciw.cciwmain.utils import *
 
 def get_view_extras_context(request):
@@ -101,19 +101,19 @@ class SortingControlNode(template.Node):
         if current_order == self.ascending_param:
             output += '<a title="' + self.descending_title +'" href="' +  \
                 html.escape(modified_query_string(request, {'order': self.descending_param})) \
-                + '"><img class="sortAscActive" src="' + CCIW_MEDIA_ROOT + \
+                + '"><img class="sortAscActive" src="' + settings.CCIW_MEDIA_URL + \
                 'images/arrow-up.gif" alt="Sorted ascending" /></a>' 
         elif current_order == self.descending_param:
             output += '<a title="' + self.ascending_title +'" href="' + \
                 html.escape(modified_query_string(request, {'order': self.ascending_param})) \
-                + '"><img class="sortDescActive" src="' + CCIW_MEDIA_ROOT + \
+                + '"><img class="sortDescActive" src="' + settings.CCIW_MEDIA_URL + \
                 'images/arrow-down.gif" alt="Sorted descending" /></a>'
         else:
             # query string resets page to zero if we use a new type of sorting
             output += '<a title="' + self.ascending_title +'" href="' + \
                 html.escape(modified_query_string(request, 
                                                  {'order': self.ascending_param, 'page': 0})) \
-                + '"><img class="sortAsc" src="' + CCIW_MEDIA_ROOT + \
+                + '"><img class="sortAsc" src="' + settings.CCIW_MEDIA_URL + \
                 'images/arrow-up.gif" alt="Sort ascending" /></a>'
         
         output += '</span>'

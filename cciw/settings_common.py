@@ -1,5 +1,5 @@
 # Django settings for cciw project.
-
+import cciw.cciwmain.utils
 
 
 INTERNAL_IPS = ('127.0.0.1')
@@ -57,3 +57,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.i18n",
     "cciw.cciwmain.common.standard_processor",
 )
+
+
+THISYEAR = cciw.cciwmain.utils.ThisYear()

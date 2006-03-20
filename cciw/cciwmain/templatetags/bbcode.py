@@ -59,8 +59,8 @@ import re
 
 #### CCIW specific imports #####
 from cciw.cciwmain.utils import get_member_link, obfuscate_email
-from cciw.cciwmain.settings import CCIW_MEDIA_ROOT
-EMOTICONS_ROOT = CCIW_MEDIA_ROOT + 'images/emoticons/'
+from django.conf import settings
+EMOTICONS_ROOT = settings.CCIW_MEDIA_URL + 'images/emoticons/'
 
 ##### UTILITY FUNCTIONS #####
 def escape(html):

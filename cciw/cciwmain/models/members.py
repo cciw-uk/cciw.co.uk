@@ -1,5 +1,6 @@
 from django.db import models
 from cciw.cciwmain.settings import *
+from django.conf import settings
 
 class Permission(models.Model):
     POLL_CREATOR = 5
@@ -63,7 +64,7 @@ class Member(models.Model):
     permissions = models.ManyToManyField(Permission,
         verbose_name="permissions", related_name="member_with_permission",
         blank=True, null=True, filter_interface=models.HORIZONTAL)
-    icon          = models.ImageField("Icon", upload_to=MEMBERS_ICONS_UPLOAD_PATH, blank=True)
+    icon          = models.ImageField("Icon", upload_to=settings.MEMBERS_ICONS_UPLOAD_PATH, blank=True)
     dummy_member = models.BooleanField("Dummy member status", default=False) # supports ancient posts in message boards
         
     def __repr__(self):
@@ -80,10 +81,9 @@ class Member(models.Model):
             return get_member_link(self.user_name)
 
     def icon_image(self):
-        from cciw.cciwmain.settings import CCIW_MEDIA_ROOT
         "Get an HTML image with the member's icon"
         if self.icon and len(self.icon) > 0:
-            return '<img src="' + CCIW_MEDIA_ROOT + 'images/members/' + self.icon + '" class="userIcon" alt="icon" />'
+            return '<img src="' + settings.CCIW_MEDIA_URL + 'images/members/' + self.icon + '" class="userIcon" alt="icon" />'
         else:
             return ''
 
@@ -145,7 +145,7 @@ class Award(models.Model):
     year = models.PositiveSmallIntegerField("Year")
     description = models.CharField("Description", maxlength=200)
     image = models.ImageField("Award image", 
-        upload_to = AWARD_UPLOAD_PATH)
+        upload_to=settings.AWARD_UPLOAD_PATH)
 
     def __repr__(self):
         return self.name + " " + str(self.year)
@@ -154,8 +154,7 @@ class Award(models.Model):
         return repr(self)
     
     def imageurl(self):
-        from cciw.cciwmain.settings import CCIW_MEDIA_ROOT
-        return CCIW_MEDIA_ROOT + "images/awards/" + self.image
+        return settings.CCIW_MEDIA_URL + "images/awards/" + self.image
         
     def get_absolute_url(self):
         from django.template.defaultfilters import slugify
@@ -177,11 +176,10 @@ class PersonalAward(models.Model):
     member = models.ForeignKey(Member,
         verbose_name="member",
         related_name="personal_awards")
-        
+
     def __repr__(self):
         return self.award.name + " to " + self.member.user_name
-        
-        
+
     class Meta:
         app_label = "cciwmain"   
         ordering = ('date_awarded',)
