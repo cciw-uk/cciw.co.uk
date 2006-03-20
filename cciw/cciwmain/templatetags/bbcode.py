@@ -449,6 +449,8 @@ class BBTextNode(BBNode):
         return False      # text nodes are always leaf nodes
 
 class BBEscapedTextNode(BBTextNode):
+    """Node used for text that uses the escaping mechanism: [[foo]].
+    Only needed for rendering bbcode."""
     def render_bbcode(self):
         return '[' + self.text + ']'
 

@@ -43,7 +43,7 @@ tests = (
         '<div><a title="Information about user \'illegal&quot;name\'" href="/members/illegal&quot;name/">illegal&quot;name</a></div>'),
     # Real example from typical user who doesn't bother with closing tags:
     ('ok, ill go first...[br][br][color=red]b[color=orange]e[color=yellow]a[color=green]u[color=blue]t[color=purple]i[color=magenta]f[color=pink]u[color=red]l[/color]  :-) [color=black](the surroundings and everyone in it)',
-        '<div>ok, ill go first...<br/><br/><span style="color: red;">be<span style="color: yellow;">a<span style="color: green;">u<span style="color: blue;">t<span style="color: purple;">ifu<span style="color: red;">l</span>  <img src="http://cciw_django_local/media/images/emoticons/smile.gif" alt=":-)" /> <span style="color: black;">(the surroundings and everyone in it)</span></span></span></span></span></span></div>'),
+        '<div>ok, ill go first...<br/><br/><span style="color: red;">be<span style="color: yellow;">a<span style="color: green;">u<span style="color: blue;">t<span style="color: purple;">ifu<span style="color: red;">l</span>  <img src="' + bbcode.EMOTICONS_ROOT + 'smile.gif" alt=":-)" /> <span style="color: black;">(the surroundings and everyone in it)</span></span></span></span></span></span></div>'),
     ('[quote= foo1_23 ]Blah[/quote]',
         '<div class="memberquote">' + get_member_link('foo1_23') + ' said:</div><blockquote><div>Blah</div></blockquote>'),
     ('[quote=foo123%]Blah[/quote]',
