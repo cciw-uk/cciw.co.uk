@@ -6,6 +6,7 @@ import shutil
 import re
 import copy
 from datetime import datetime, date
+from itertools import chain
 
 from migrate_html import *
 from cciw.cciwmain.models import *
@@ -222,7 +223,7 @@ def migrate_leaders():
 
 def migrate_camps():
     Camp.objects.all().delete()
-    for c in reversed(get_table(PREFIX+'pastcamps.data')):
+    for c in chain(reversed(get_table(PREFIX+'pastcamps.data')), get_table(PREFIX+'thisyear.data')):
         try: year = int(c[0].split("-")[0])
         except: continue
         if year < 2000: continue # don't store
