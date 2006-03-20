@@ -220,7 +220,7 @@ def process_vote(request, topic, context):
         errors.append('You cannot vote on this poll.  Please check the voting rules.')
         context['voting_errors'] = errors
     
-    if not polloption_id in (po.id for po in poll.poll_options):
+    if not polloption_id in (po.id for po in poll.poll_options.all()):
         errors.append('Invalid option chosen')
         context['voting_errors'] = errors
     

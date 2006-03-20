@@ -13,7 +13,7 @@ which is a list of 'Award' objects
 		{% if award.personal_awards %}
 			<p>Awarded to:</p>
 			<ul>
-			{% for paward in award.personal_awards %}
+			{% for paward in award.personal_awards.all %}
 				<li>{{ paward.member.get_link }} 
 					{% if paward.date_awarded %}, on {{ paward.date_awarded|date:"d M Y" }} {% endif %}
 				for:<br/> {{ paward.reason }}</li>

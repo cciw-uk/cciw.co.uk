@@ -13,7 +13,7 @@ def find(request):
         raise Http404()
         
     try:
-        chunk = link.htmlchunk_set[0]
+        chunk = link.htmlchunk_set.filter()[0]
     except HtmlChunk.DoesNotExist:
         raise Http404()
     

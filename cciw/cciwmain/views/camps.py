@@ -123,7 +123,7 @@ def forum(request, year, number):
         forum = get_forum_for_camp(camp)
         if forum is None:
             raise Http404
-        title=camp.nice_name + " - Forum"
+        title = camp.nice_name + " - Forum"
         breadcrumb_extra = camp_forum_breadcrumb(camp)
 
     c = standard_extra_context(title=title)

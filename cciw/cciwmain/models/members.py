@@ -101,7 +101,7 @@ class Member(models.Model):
     def has_perm(self, perm):
         """Does the member has the specified permission?
         perm is one of the permission constants in Permission."""
-        for p in self.permissions:
+        for p in self.permissions.all():
             if p.id == perm or p.id == Permission.SUPERUSER:
                 return True
         return False

@@ -5,7 +5,7 @@
 	<div><h{{ heading_level }}>{{ poll.title }}</h{{ heading_level }}>
 	{{ poll.intro_text|bb2html }}
 	<ul>
-	{% for polloption in poll.poll_options %}
+	{% for polloption in poll.poll_options.all %}
 		<li
 			><input type="radio" id="poll_{{ topic.poll_id }}_{{ polloption.id }}" name="polloption" value="{{ polloption.id }}" 
 			/>&nbsp; <label for="poll_{{ topic.poll_id }}_{{ polloption.id }}">{{ polloption.text|bb2html }}</label

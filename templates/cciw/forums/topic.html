@@ -24,7 +24,7 @@
 			{{ poll.intro_text|bb2html }}
 			<p>Results:</p>
 			<table>
-			{% for polloption in poll.poll_options %}
+			{% for polloption in poll.poll_options.all %}
 				<tr>
 					<td>{{ polloption.text|bb2html }}</td>
 					<td>{{ polloption.total }} votes &nbsp;&nbsp;</td>
