@@ -112,7 +112,7 @@ class SortingControlNode(template.Node):
             # query string resets page to zero if we use a new type of sorting
             output += '<a title="' + self.ascending_title +'" href="' + \
                 html.escape(modified_query_string(request, 
-                                                 {'order': self.ascending_param, 'page': 0})) \
+                                                 {'order': self.ascending_param, 'page': 1})) \
                 + '"><img class="sortAsc" src="' + settings.CCIW_MEDIA_URL + \
                 'images/arrow-up.gif" alt="Sort ascending" /></a>'
         
