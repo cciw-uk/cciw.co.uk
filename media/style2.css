@@ -24,12 +24,12 @@ a:hover {
 
 #header
 {
-	background-image: url('http://cciw_django_local/media/images/header_inv.png');
+	background-image: url('/media/images/header_inv.png');
 }
 
 #headerlogo
 {
-	background-image: url('http://cciw_django_local/media/images/headerlogo_inv.png');
+	background-image: url('/media/images/headerlogo_inv.png');
 }
 
 #mainbase
@@ -84,7 +84,7 @@ a:hover {
 
 #footer
 {
-	background-image: url('http://cciw_django_local/media/images/headervline_inv.png');
+	background-image: url('/media/images/headervline_inv.png');
 }
 
 
@@ -575,3 +575,4 @@ div.center
 	margin: 0.5em 1em 0 1em;
 	font-style: italic;
 }
+

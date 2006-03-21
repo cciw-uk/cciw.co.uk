@@ -4,6 +4,7 @@
 body {
 	background-color: black;
 	color: white;
+	font-size: small;
 }
 
 a:link {
@@ -24,12 +25,12 @@ a:hover {
 
 #header
 {
-	background-image: url('http://cciw_django_local/media/images/header.png');
+	background-image: url('/media/images/header.png');
 }
 
 #headerlogo
 {
-	background-image: url('http://cciw_django_local/media/images/headerlogo.png');
+	background-image: url('/media/images/headerlogo.png');
 }
 
 #mainbase
@@ -76,7 +77,7 @@ a:hover {
 
 #footer
 {
-	background-image: url('http://cciw_django_local/media/images/headervline.png');
+	background-image: url('/media/images/headervline.png');
 }
 
 
