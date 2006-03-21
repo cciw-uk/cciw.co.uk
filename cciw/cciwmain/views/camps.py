@@ -16,16 +16,17 @@ import forums as forums_views
 def index(request, year=None):
     c = standard_extra_context()
     c['title'] ="Camp forums and photos"
+    all_camps = Camp.objects.filter(year__lt=settings.THISYEAR)
     if (year == None):
-        all_camps = Camp.objects.order_by('-year', 'number')
+        camps = all_camps.order_by('-year', 'number')
         c['show_ancient'] = True
     else:
         year = int(year)  # year is result of regex match
-        all_camps = Camp.objects.filter(year=year)\
+        camps = all_camps.filter(year=year)\
                                 .order_by('-year', 'number')
-        if len(all_camps) == 0:
+        if len(camps) == 0:
             raise Http404
-    c['camps'] = all_camps;
+    c['camps'] = camps;
 
     return render_to_response('cciw/camps/index', 
             context_instance=RequestContext(request, c))
