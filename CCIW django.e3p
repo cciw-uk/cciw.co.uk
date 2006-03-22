@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2006-03-12, 00:33:25 -->
+<!-- Saved: 2006-03-21, 01:51:46 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -172,6 +172,29 @@
     </Source>
     <Source>
       <Name>django_migrate.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Name>settings_common.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Name>settings_calvin.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>officers</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>officers</Dir>
+      <Name>views.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>officers</Dir>
+      <Name>models.py</Name>
     </Source>
   </Sources>
   <Forms>

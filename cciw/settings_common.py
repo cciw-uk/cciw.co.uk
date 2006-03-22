@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'cciw.cciwmain',
+    'cciw.officers',
 )
 
 TIME_ZONE = "Europe/London"
