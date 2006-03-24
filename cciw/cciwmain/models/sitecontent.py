@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.admin.views.main import quote
 import cciw.cciwmain.common
+import cciw.middleware.threadlocals as threadlocals
 
 class MenuLink(models.Model):
     title = models.CharField("title", maxlength=50)
@@ -46,8 +47,9 @@ class HtmlChunk(models.Model):
         """Render the HTML chunk as HTML, with replacements
         made and any member specific adjustments."""
         html = cciw.cciwmain.common.standard_subs(self.html)
-        if request.user and not request.user.is_anonymous() and \
-            request.user.is_staff:
+        user = threadlocals.get_current_user()
+        if user and not user.is_anonymous() and user.is_staff \
+            and user.has_perm('edit_htmlchunk'):
             html += ("""<div class="editChunkLink">&laquo;
                         <a href="/admin/cciwmain/htmlchunk/%s/">Edit %s</a> &raquo;
                         </div>""" % (quote(self.name), self.name))

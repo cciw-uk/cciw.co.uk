@@ -1,7 +1,10 @@
 from django.db import models
 from django.core.validators import ValidationError
 from cciw.cciwmain.models import Camp
+from django.contrib.auth.models import User
+import cciw.middleware.threadlocals as threadlocals
 import re
+import datetime
 
 yyyy_mm_re = re.compile('^\d{4}/\d{2}$')
 
@@ -24,8 +27,8 @@ def AddressField(*args, **kwargs):
     return models.TextField(*args, **kwargs)
 
 YES_NO = (
-    (0, 'NO'),
     (1, 'YES'),
+    (0, 'NO'),
 )
 
 def ExplicitBooleanField(*args, **kwargs):
@@ -35,6 +38,7 @@ def ExplicitBooleanField(*args, **kwargs):
 
 class Application(models.Model):
     camp = models.ForeignKey(Camp, limit_choices_to={'start_date__gt': models.LazyDate()})
+    officer = models.ForeignKey(User, null=True, blank=True, default=None, editable=False) # null=True to get the admin to work
     full_name = models.CharField('full name', maxlength=60, blank=False)
     full_maiden_name = models.CharField('full maiden name', maxlength=60, blank=True)
     birth_date = models.DateField('date of birth')
@@ -102,9 +106,17 @@ class Application(models.Model):
     allegation_declaration = ExplicitBooleanField("YES or NO")
 
     crb_check_consent = ExplicitBooleanField("YES or NO")
-    date_submitted = models.DateField('date submitted')
+    date_submitted = models.DateField('date submitted', blank=True)
     
+    def save(self):
+        if self.officer_id is None:
+            self.officer_id = threadlocals.get_current_user().id
+        self.date_submitted = datetime.date.today()
+        super(Application, self).save()
     
+    def __repr__(self):
+        return self.full_name + ", for camp " + repr(self.camp)
+
     class Meta:
         pass
         
@@ -115,23 +127,27 @@ class Application(models.Model):
             ),
             ('Personal info', 
                 {'fields': ('full_name', 'full_maiden_name', 'birth_date', 'birth_place'),
-                            'classes': 'applicationpersonal'}
+                 'classes': 'applicationpersonal wide'}
             ),
             ('Address', 
                 {'fields': ('address_firstline', 'address_town', 'address_county',
                             'address_postcode', 'address_country', 'address_tel',
-                            'address_mobile', 'address_since')}
+                            'address_mobile', 'address_since', 'address_email'),
+                 'classes': 'wide',}
             ),
             ('Previous addresses',
                 {'fields': ('address2_from', 'address2_to', 'address2_address'),
+                 'classes': 'wide',
                  'description': """If you have lived at your current address for less than 5 years
                                 please give previous address(es) with dates below."""}
             ),
             (None,
-                {'fields': ('address3_from', 'address3_to', 'address3_address')}
+                {'fields': ('address3_from', 'address3_to', 'address3_address'),
+                 'classes': 'wide',}
             ),
             ('Experience',
                 {'fields': ('christian_experience',),
+                 'classes': 'wide',
                  'description': '''Please tells us about your Christian experience 
                     (i.e. how you became a Christian and how long you have been a Christian, 
                     which Churches you have attended and dates, names of minister/leader)'''}
@@ -139,16 +155,19 @@ class Application(models.Model):
             ),
             (None,
                 {'fields': ('youth_experience',),
+                 'classes': 'wide',
                  'description': '''Please give details of previous experience of
                     looking after or working with children/young people - 
                     include any qualifications or training you have. '''}
             ),
             (None,
                 {'fields': ('youth_work_declined', 'youth_work_declined_details'),
+                 'classes': 'wide',
                  'description': 'If you have ever had an offer to work with children/young people declined, you must declare it below and give details.'}
             ),
             ('Illnesses',
                 {'fields': ('relevant_illness', 'illness_details'),
+                 'classes': 'wide',
                  'description':  '''Do you suffer or have you suffered from any
                     illness which may directly affect your work with 
                     children/young people?   If 'Yes' give details below.'''}
@@ -158,11 +177,13 @@ class Application(models.Model):
                             'employer1_job', 'employer1_leaving', 'employer2_name', 
                             'employer2_from', 'employer2_to', 'employer2_job', 
                             'employer2_leaving',),
+                 'classes': 'wide',
                   'description': 'Please tell us about your past and current employers below (if applicable)'}
             ),
             ('References',
                 {'fields': ('referee1_name', 'referee1_address', 'referee1_tel', 'referee1_mobile', 'referee1_email',
                             'referee2_name', 'referee2_address', 'referee2_tel', 'referee2_mobile', 'referee2_email',),
+                 'classes': 'wide',
                  'description': '''Please give the names and addresses, 
                     telephones numbers and e-mail addresses and role or 
                     relationship of <strong>two</strong> people who know you 
@@ -174,6 +195,7 @@ class Application(models.Model):
             ),
             ('Declarations (see note below)',
                 {'fields': ('crime_declaration', 'crime_details'),
+                 'classes': 'wide',
                  'description': '''Have you ever been charged with or convicted
                     of a criminal offence or are the subject of criminal 
                     proceedings? (Note: The disclosure of an offence may not 
@@ -181,17 +203,20 @@ class Application(models.Model):
             ),
             (None,
                 {'fields': ('court_declaration', 'court_details'),
+                 'classes': 'wide',
                  'description': '''Have you ever been involved in Court 
                     proceedings concerning a child for whom you have 
                     parental responsibility?''' }
             ),
             (None,
                 {'fields': ('concern_declaration', 'concern_details'),
+                 'classes': 'wide',
                  'description': '''Has there ever been any cause for concern 
                     regarding your conduct with children/young people?''' }
             ),
             (None,
                 {'fields': ('allegation_declaration',),
+                 'classes': 'wide',
                  'description': '''To your knowledge have you ever had any 
                     allegation made against you concerning children/young people 
                     which has been reported to and investigated by Social 
@@ -200,6 +225,7 @@ class Application(models.Model):
             ),            
             (None,
                 {'fields': ('crb_check_consent',),
+                 'classes': 'wide',
                  'description': '''Do you consent to the obtaining of a Criminal
                     Records Bureau check on yourself? If NO we regret that we 
                     cannot proceed with your application. ''' }
@@ -207,3 +233,4 @@ class Application(models.Model):
 
         )
         save_as = True
+        list_display = ('full_name', 'camp', 'date_submitted')

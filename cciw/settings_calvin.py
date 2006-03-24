@@ -27,6 +27,7 @@ MIDDLEWARE_CLASSES = (
     "lukeplant_me_uk.django.middleware.csrf.CsrfMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "cciw.middleware.threadlocals.ThreadLocals",
 )
 
 INSTALLED_APPS = INSTALLED_APPS + (
