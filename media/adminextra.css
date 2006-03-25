@@ -1,0 +1,25 @@
+#header2
+{
+	background-image: url('/media/images/header.png');
+}
+
+#headerlogo
+{
+	background-image: url('/media/images/headerlogo.png');
+}
+#header2
+{
+	height: 63px;
+	background-repeat: repeat-x;
+}
+
+#headerlogo
+{
+	background-repeat: no-repeat;
+	margin-left: 0px;
+	height: 63px;
+}
+
+#header	{ background:black; color:white; min-height:2.4em; overflow:auto; }
+#header a:link, #header a:visited { color:#00bb55; }
+#header a:hover { text-decoration:underline; }
