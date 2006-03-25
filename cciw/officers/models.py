@@ -1,5 +1,8 @@
 from django.db import models
 from django.core.validators import ValidationError
+from django.http import HttpResponseForbidden
+from django.db.models.options import AdminOptions
+
 from cciw.cciwmain.models import Camp
 from django.contrib.auth.models import User
 import cciw.middleware.threadlocals as threadlocals
@@ -38,7 +41,7 @@ def ExplicitBooleanField(*args, **kwargs):
 
 class Application(models.Model):
     camp = models.ForeignKey(Camp, limit_choices_to={'start_date__gt': models.LazyDate()})
-    officer = models.ForeignKey(User, null=True, blank=True, default=None, editable=False) # null=True to get the admin to work
+    officer = models.ForeignKey(User, blank=True, default=None) # null=True to get the admin to work
     full_name = models.CharField('full name', maxlength=60, blank=False)
     full_maiden_name = models.CharField('full maiden name', maxlength=60, blank=True)
     birth_date = models.DateField('date of birth')
@@ -121,116 +124,145 @@ class Application(models.Model):
         pass
         
     class Admin:
-        fields = (
-            (None,
-                {'fields': ('camp',)}
-            ),
-            ('Personal info', 
-                {'fields': ('full_name', 'full_maiden_name', 'birth_date', 'birth_place'),
-                 'classes': 'applicationpersonal wide'}
-            ),
-            ('Address', 
-                {'fields': ('address_firstline', 'address_town', 'address_county',
-                            'address_postcode', 'address_country', 'address_tel',
-                            'address_mobile', 'address_since', 'address_email'),
-                 'classes': 'wide',}
-            ),
-            ('Previous addresses',
-                {'fields': ('address2_from', 'address2_to', 'address2_address'),
-                 'classes': 'wide',
-                 'description': """If you have lived at your current address for less than 5 years
-                                please give previous address(es) with dates below."""}
-            ),
-            (None,
-                {'fields': ('address3_from', 'address3_to', 'address3_address'),
-                 'classes': 'wide',}
-            ),
-            ('Experience',
-                {'fields': ('christian_experience',),
-                 'classes': 'wide',
-                 'description': '''Please tells us about your Christian experience 
-                    (i.e. how you became a Christian and how long you have been a Christian, 
-                    which Churches you have attended and dates, names of minister/leader)'''}
-                    
-            ),
-            (None,
-                {'fields': ('youth_experience',),
-                 'classes': 'wide',
-                 'description': '''Please give details of previous experience of
-                    looking after or working with children/young people - 
-                    include any qualifications or training you have. '''}
-            ),
-            (None,
-                {'fields': ('youth_work_declined', 'youth_work_declined_details'),
-                 'classes': 'wide',
-                 'description': 'If you have ever had an offer to work with children/young people declined, you must declare it below and give details.'}
-            ),
-            ('Illnesses',
-                {'fields': ('relevant_illness', 'illness_details'),
-                 'classes': 'wide',
-                 'description':  '''Do you suffer or have you suffered from any
-                    illness which may directly affect your work with 
-                    children/young people?   If 'Yes' give details below.'''}
-            ),
-            ('Employment history',
-                {'fields': ('employer1_name', 'employer1_from', 'employer1_to', 
-                            'employer1_job', 'employer1_leaving', 'employer2_name', 
-                            'employer2_from', 'employer2_to', 'employer2_job', 
-                            'employer2_leaving',),
-                 'classes': 'wide',
-                  'description': 'Please tell us about your past and current employers below (if applicable)'}
-            ),
-            ('References',
-                {'fields': ('referee1_name', 'referee1_address', 'referee1_tel', 'referee1_mobile', 'referee1_email',
-                            'referee2_name', 'referee2_address', 'referee2_tel', 'referee2_mobile', 'referee2_email',),
-                 'classes': 'wide',
-                 'description': '''Please give the names and addresses, 
-                    telephones numbers and e-mail addresses and role or 
-                    relationship of <strong>two</strong> people who know you 
-                    well and who would be able to give a personal character reference.
-                    In addition we reserve the right to take up additional character 
-                    references from any other individuals deemed necessary. <strong>One 
-                    reference must be from a Church leader. The other reference should 
-                    be from someone who has known you for more than 5 years.</strong>'''}
-            ),
-            ('Declarations (see note below)',
-                {'fields': ('crime_declaration', 'crime_details'),
-                 'classes': 'wide',
-                 'description': '''Have you ever been charged with or convicted
-                    of a criminal offence or are the subject of criminal 
-                    proceedings? (Note: The disclosure of an offence may not 
-                    prohibit your appointment)'''},
-            ),
-            (None,
-                {'fields': ('court_declaration', 'court_details'),
-                 'classes': 'wide',
-                 'description': '''Have you ever been involved in Court 
-                    proceedings concerning a child for whom you have 
-                    parental responsibility?''' }
-            ),
-            (None,
-                {'fields': ('concern_declaration', 'concern_details'),
-                 'classes': 'wide',
-                 'description': '''Has there ever been any cause for concern 
-                    regarding your conduct with children/young people?''' }
-            ),
-            (None,
-                {'fields': ('allegation_declaration',),
-                 'classes': 'wide',
-                 'description': '''To your knowledge have you ever had any 
-                    allegation made against you concerning children/young people 
-                    which has been reported to and investigated by Social 
-                    Services and /or the Police?  If Yes we will need to discuss 
-                    this with you''' }
-            ),            
-            (None,
-                {'fields': ('crb_check_consent',),
-                 'classes': 'wide',
-                 'description': '''Do you consent to the obtaining of a Criminal
-                    Records Bureau check on yourself? If NO we regret that we 
-                    cannot proceed with your application. ''' }
-            ),
+        fields = () # we override this later
 
-        )
         save_as = True
         list_display = ('full_name', 'camp', 'date_submitted')
+
+camp_officer_application_fields = (
+    (None,
+        {'fields': ('camp',),
+          'classes': 'wide',}
+    ),
+    ('Personal info', 
+        {'fields': ('full_name', 'full_maiden_name', 'birth_date', 'birth_place'),
+         'classes': 'applicationpersonal wide'}
+    ),
+    ('Address', 
+        {'fields': ('address_firstline', 'address_town', 'address_county',
+                    'address_postcode', 'address_country', 'address_tel',
+                    'address_mobile', 'address_since', 'address_email'),
+         'classes': 'wide',}
+    ),
+    ('Previous addresses',
+        {'fields': ('address2_from', 'address2_to', 'address2_address'),
+         'classes': 'wide',
+         'description': """If you have lived at your current address for less than 5 years
+                        please give previous address(es) with dates below."""}
+    ),
+    (None,
+        {'fields': ('address3_from', 'address3_to', 'address3_address'),
+         'classes': 'wide',}
+    ),
+    ('Experience',
+        {'fields': ('christian_experience',),
+         'classes': 'wide',
+         'description': '''Please tells us about your Christian experience 
+            (i.e. how you became a Christian and how long you have been a Christian, 
+            which Churches you have attended and dates, names of minister/leader)'''}
+            
+    ),
+    (None,
+        {'fields': ('youth_experience',),
+         'classes': 'wide',
+         'description': '''Please give details of previous experience of
+            looking after or working with children/young people - 
+            include any qualifications or training you have. '''}
+    ),
+    (None,
+        {'fields': ('youth_work_declined', 'youth_work_declined_details'),
+         'classes': 'wide',
+         'description': 'If you have ever had an offer to work with children/young people declined, you must declare it below and give details.'}
+    ),
+    ('Illnesses',
+        {'fields': ('relevant_illness', 'illness_details'),
+         'classes': 'wide',
+         'description':  '''Do you suffer or have you suffered from any
+            illness which may directly affect your work with 
+            children/young people?   If 'Yes' give details below.'''}
+    ),
+    ('Employment history',
+        {'fields': ('employer1_name', 'employer1_from', 'employer1_to', 
+                    'employer1_job', 'employer1_leaving', 'employer2_name', 
+                    'employer2_from', 'employer2_to', 'employer2_job', 
+                    'employer2_leaving',),
+         'classes': 'wide',
+          'description': 'Please tell us about your past and current employers below (if applicable)'}
+    ),
+    ('References',
+        {'fields': ('referee1_name', 'referee1_address', 'referee1_tel', 'referee1_mobile', 'referee1_email',
+                    'referee2_name', 'referee2_address', 'referee2_tel', 'referee2_mobile', 'referee2_email',),
+         'classes': 'wide',
+         'description': '''Please give the names and addresses, 
+            telephones numbers and e-mail addresses and role or 
+            relationship of <strong>two</strong> people who know you 
+            well and who would be able to give a personal character reference.
+            In addition we reserve the right to take up additional character 
+            references from any other individuals deemed necessary. <strong>One 
+            reference must be from a Church leader. The other reference should 
+            be from someone who has known you for more than 5 years.</strong>'''}
+    ),
+    ('Declarations (see note below)',
+        {'fields': ('crime_declaration', 'crime_details'),
+         'classes': 'wide',
+         'description': '''Have you ever been charged with or convicted
+            of a criminal offence or are the subject of criminal 
+            proceedings? (Note: The disclosure of an offence may not 
+            prohibit your appointment)'''},
+    ),
+    (None,
+        {'fields': ('court_declaration', 'court_details'),
+         'classes': 'wide',
+         'description': '''Have you ever been involved in Court 
+            proceedings concerning a child for whom you have 
+            parental responsibility?''' }
+    ),
+    (None,
+        {'fields': ('concern_declaration', 'concern_details'),
+         'classes': 'wide',
+         'description': '''Has there ever been any cause for concern 
+            regarding your conduct with children/young people?''' }
+    ),
+    (None,
+        {'fields': ('allegation_declaration',),
+         'classes': 'wide',
+         'description': '''To your knowledge have you ever had any 
+            allegation made against you concerning children/young people 
+            which has been reported to and investigated by Social 
+            Services and /or the Police?  If Yes we will need to discuss 
+            this with you''' }
+    ),            
+    (None,
+        {'fields': ('crb_check_consent',),
+         'classes': 'wide',
+         'description': '''Do you consent to the obtaining of a Criminal
+            Records Bureau check on yourself? If NO we regret that we 
+            cannot proceed with your application. ''' }
+    ),
+)
+
+camp_leader_application_fields = (
+    (None, 
+        {'fields': ('officer',), 
+          'classes': 'wide',}
+    ),) + camp_officer_application_fields
+
+class ApplicationAdminOptions(AdminOptions):
+    """Class used to replace AdminOptions for the Application model"""
+    def _fields(self):
+        user = threadlocals.get_current_user()
+        if user is None or user.is_anonymous():
+            # never get here normally
+            return ()
+        else:
+            if user.has_perm('officers.change_application'):
+                return camp_leader_application_fields
+            else:
+                return camp_officer_application_fields
+    fields = property(_fields)
+
+# HACK
+# The inner 'Admin' class has been transformed into Application._meta.admin 
+# by this point, due to metaclass magic. We can alter it's behaviour like this:
+del Application._meta.admin.fields
+Application._meta.admin.__class__ = ApplicationAdminOptions
