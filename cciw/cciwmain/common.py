@@ -18,10 +18,7 @@ def standard_extra_context(extra_dict=None, title=None):
     
     extra_dict['title'] = title
     extra_dict['thisyear'] = settings.THISYEAR
-    extra_dict['pagevars'] = {
-        'media_root_url': settings.CCIW_MEDIA_URL,
-        'style_sheet_url': settings.CCIW_MEDIA_URL + 'style.css',
-        'style_sheet2_url': settings.CCIW_MEDIA_URL + 'style2.css',
+    extra_dict['misc'] = {
         'logged_in_members': 
             Member.objects.filter(last_seen__gte=datetime.datetime.now() \
                                            - datetime.timedelta(minutes=3)).count(),
@@ -74,6 +71,10 @@ def standard_processor(request):
     
     context['menulinks'] = links
     context['current_member'] = get_current_member(request)
+    context['pagevars'] = {
+        'media_root_url': settings.CCIW_MEDIA_URL,
+        'style_sheet_url': settings.CCIW_MEDIA_URL + 'style.css',
+    }
 
     context.update(view_extras.get_view_extras_context(request))
     

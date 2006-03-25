@@ -1,9 +1,13 @@
 {% extends "admin/base" %}
 
 {% block title %}{{ title }} | Django site admin{% endblock %}
-
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{{ pagevars.media_root_url }}adminextra.css" />
+{% endblock %}
 {% block branding %}
-<h1 id="site-name">CCIW administration</h1>
-<h2 id="site-url"><a href="http://www.cciw.co.uk/">cciw.co.uk</a></h2>
+<div id="header2">
+	<div id="headerlogo">
+	</div>
+</div>
 {% endblock %}
 
