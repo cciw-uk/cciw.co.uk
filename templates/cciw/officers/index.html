@@ -10,8 +10,8 @@
 <li>Continue filling in an application:
 <p>The following applications are unfinished and you may continue to edit them.</p>
 <div>
-<label for="application">Choose application:</label>&nbsp;
-	<select name="application" id="application">
+<label for="edit_application">Choose application:</label>&nbsp;
+	<select name="edit_application" id="edit_application">
 	{% for app in unfinished_applications %}
 		<option value="{{ app.id }}">{{ app.camp }}</option>
 	{% endfor %}
@@ -24,13 +24,13 @@
 
 {% if old_applications %}
 <li>Create new application based on an existing one:<br/>
-<label for="application2">Choose application</label>&nbsp;
-	<select name="application" id="application2">
+<label for="new_application">Choose application</label>&nbsp;
+	<select name="new_application" id="new_application">
 		{% for app in unfinished_applications %}
 			<option value="{{ app.id }}">{{ app.camp }}</option>
 		{% endfor %}
 	</select>
-	<input type="submit" name="edit" value="Create" />
+	<input type="submit" name="new" value="Create" />
 <br/><br/>
 </li>
 

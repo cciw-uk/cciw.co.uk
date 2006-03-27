@@ -2,11 +2,13 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import render_to_response
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.admin.views.main import add_stage, render_change_form
-from django.contrib.admin.views.main import unquote, quote
+from django.contrib.admin.views.main import unquote, quote, get_text_list
 from django import forms, template
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.db import models
 from cciw.officers.models import Application
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
+from django.contrib.contenttypes.models import ContentType
 
 # /officers/admin/
 @staff_member_required
@@ -15,8 +17,33 @@ def index(request):
     user = request.user
     context = template.RequestContext(request)
     context['old_applications'] = user.application_set.all() # TODO filtering
-    context['unfinished_applications'] = user.application_set.all()
+    context['unfinished_applications'] = user.application_set.all() # TODO filtering
     
+    if request.POST.has_key('edit'):
+        id = request.POST.get('edit_application', None)
+        if id is not None:
+            return HttpResponseRedirect('/admin/officers/application/%s/' % id)
+    elif request.POST.has_key('new'):
+        obj = None
+        try:
+            id = int(request.POST['new_application'])
+        except (ValueError, KeyError):
+            id = None
+        if id is not None:
+            try:
+                obj = Application.objects.get(pk=id)
+            except Application.DoesNotExist:
+                # should never get here
+                obj = None
+        if obj is not None:
+            # Create a copy 
+            new_obj = Application(id=None)
+            for field in Application._meta.fields:
+                if field.attname != 'id':
+                    setattr(new_obj, field.attname, getattr(obj, field.attname))
+            new_obj.save()
+            return HttpResponseRedirect('/admin/officers/application/%s/' % new_obj.id)
+
     return render_to_response('cciw/officers/index', context_instance=context)
 
 

@@ -112,7 +112,7 @@ class Application(models.Model):
     date_submitted = models.DateField('date submitted', blank=True)
     
     def save(self):
-        if self.officer_id is None:
+        if not hasattr(self, 'officer_id') or self.officer_id is None:
             self.officer_id = threadlocals.get_current_user().id
         self.date_submitted = datetime.date.today()
         super(Application, self).save()
