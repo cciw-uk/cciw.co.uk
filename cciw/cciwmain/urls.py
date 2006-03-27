@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns
 import cciw.cciwmain.common as cciw_common
 from cciw.cciwmain.models import Site, Award
 
