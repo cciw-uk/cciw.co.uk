@@ -41,6 +41,8 @@ TEMPLATE_DIRS = (
 #    r'/usr/lib/python2.4/site-packages/lukeplant_me_uk/django/apps/validator/templates/',
 )
 
+ADMIN_MEDIA_PREFIX = '/media/'
+
 AWARD_UPLOAD_PATH = '/home/httpd/www.cciw.co.uk/django/media/images/awards'
 MEMBERS_ICONS_UPLOAD_PATH = '/home/httpd/www.cciw.co.uk/django/media/images/members'
 CCIW_MEDIA_URL = MEDIA_URL

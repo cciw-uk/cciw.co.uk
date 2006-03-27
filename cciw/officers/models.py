@@ -118,7 +118,7 @@ class Application(models.Model):
         super(Application, self).save()
     
     def __repr__(self):
-        return self.full_name + ", for camp " + repr(self.camp)
+        return "Application from %s, %d" % (self.full_name, self.camp.year)
 
     class Meta:
         pass
@@ -127,7 +127,7 @@ class Application(models.Model):
         fields = () # we override this later
 
         save_as = True
-        list_display = ('full_name', 'camp', 'date_submitted')
+        list_display = ('full_name', 'officer', 'camp', 'date_submitted')
 
 camp_officer_application_fields = (
     (None,

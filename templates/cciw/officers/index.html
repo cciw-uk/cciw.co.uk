@@ -1,0 +1,47 @@
+{% extends "cciw/officers/base" %}
+{% block content %}<div id="content-main">
+<h1>Officer's home page</h1>
+
+<h2>Tasks:</h2>
+<form action="" method="post">
+
+<ul>
+{% if unfinished_applications %}
+<li>Continue filling in an application:
+<p>The following applications are unfinished and you may continue to edit them.</p>
+<div>
+<label for="application">Choose application:</label>&nbsp;
+	<select name="application" id="application">
+	{% for app in unfinished_applications %}
+		<option value="{{ app.id }}">{{ app.camp }}</option>
+	{% endfor %}
+	</select>
+	<input type="submit" name="edit" value="Edit" />
+</div>
+<br/><br/>
+</li>
+{% endif %}
+
+{% if old_applications %}
+<li>Create new application based on an existing one:<br/>
+<label for="application2">Choose application</label>&nbsp;
+	<select name="application" id="application2">
+		{% for app in unfinished_applications %}
+			<option value="{{ app.id }}">{{ app.camp }}</option>
+		{% endfor %}
+	</select>
+	<input type="submit" name="edit" value="Create" />
+<br/><br/>
+</li>
+
+{% endif %}
+
+<li><a href="/admin/officers/application/add/">Create new application (blank)</a></li>
+</ul>
+
+</form>
+
+
+
+</div>
+{% endblock %}
