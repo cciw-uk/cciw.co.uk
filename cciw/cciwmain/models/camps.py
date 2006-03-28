@@ -66,6 +66,7 @@ class Camp(models.Model):
         verbose_name="leaders",
         null=True, blank=True)
     site = models.ForeignKey(Site)
+    online_applications = models.BooleanField("Accepts online applications from officers.")
     
     def __repr__(self):
         leaders = list(self.leaders.filter())

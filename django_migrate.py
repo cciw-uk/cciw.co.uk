@@ -278,7 +278,8 @@ def migrate_camps():
                 camp.previous_camp_id = Camp.objects.get(year=pcampyear, number=pcampnumber).id
             except:
                 pass
-            
+        
+        camp.online_applications = False
         camp.save()
         
         leaders = c[4]
