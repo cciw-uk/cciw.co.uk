@@ -1,5 +1,5 @@
 {% extends "admin/base" %}
-
+{% load i18n %}
 {% block title %}{{ title }} | Django site admin{% endblock %}
 {% block extrastyle %}{{ block.super }}
 <link rel="stylesheet" type="text/css" href="{{ pagevars.media_root_url }}adminextra.css" />
@@ -10,4 +10,5 @@
 	</div>
 </div>
 {% endblock %}
+{% block userlinks %}<a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
 

@@ -16,8 +16,8 @@ def index(request):
     """Displays a list of links/buttons for various actions."""
     user = request.user
     context = template.RequestContext(request)
-    context['old_applications'] = user.application_set.all() # TODO filtering
-    context['unfinished_applications'] = user.application_set.all() # TODO filtering
+    context['finished_applications'] = user.application_set.filter(finished=True) # TODO filtering
+    context['unfinished_applications'] = user.application_set.filter(finished=False) # TODO filtering
     
     if request.POST.has_key('edit'):
         id = request.POST.get('edit_application', None)
@@ -127,7 +127,7 @@ def change_application(request, object_id):
                 return HttpResponseRedirect("../add/")
             else:
                 request.user.message_set.create(message=msg)
-                return HttpResponseRedirect("../")
+                return HttpResponseRedirect("/officers/")
     else:
         # Populate new_data with a "flattened" version of the current data.
         new_data = manipulator.flatten_data()

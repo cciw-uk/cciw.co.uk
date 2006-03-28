@@ -1,4 +1,5 @@
 {% extends "cciw/officers/base" %}
+{% block breadcrumbs %}{% endblock %}
 {% block content %}<div id="content-main">
 <h1>Officer's home page</h1>
 
@@ -22,11 +23,11 @@
 </li>
 {% endif %}
 
-{% if old_applications %}
+{% if finished_applications %}
 <li>Create new application based on an existing one:<br/>
 <label for="new_application">Choose application</label>&nbsp;
 	<select name="new_application" id="new_application">
-		{% for app in unfinished_applications %}
+		{% for app in finished_applications %}
 			<option value="{{ app.id }}">{{ app.camp }}</option>
 		{% endfor %}
 	</select>
