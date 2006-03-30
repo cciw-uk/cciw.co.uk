@@ -96,7 +96,7 @@ class Camp(models.Model):
     class Admin:
         fields = (
             (None, {'fields': ('year', 'number', 'age', 'start_date', 'end_date', 
-                               'chaplain', 'leaders', 'site', 'previous_camp') 
+                               'chaplain', 'leaders', 'site', 'previous_camp', 'online_applications') 
                     }
             ),
         )
