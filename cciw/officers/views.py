@@ -1,4 +1,4 @@
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.shortcuts import render_to_response
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.admin.views.main import add_stage, render_change_form
@@ -9,9 +9,11 @@ from django.db import models
 from cciw.officers.models import Application
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
+from django.views.decorators.cache import never_cache
 
 # /officers/admin/
 @staff_member_required
+@never_cache
 def index(request):
     """Displays a list of links/buttons for various actions."""
     user = request.user
@@ -59,6 +61,7 @@ def add_application(request):
 # Copied straight from django.contrib.admin.views.main,
 # with small mods 
 @staff_member_required
+@never_cache
 def change_application(request, object_id):
     app_label, model_name = 'officers', 'application'
     model = models.get_model(app_label, model_name)
@@ -166,7 +169,3 @@ def change_application(request, object_id):
     })
     return render_change_form(model, manipulator, c, change=True)
 
-
-# TODO - change Application so that it has a 'finished'
-# field, and all the other mandatory fields should only be mandatory
-# if that field is 'True'
