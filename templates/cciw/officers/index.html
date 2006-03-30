@@ -14,7 +14,7 @@
 <label for="edit_application">Choose application:</label>&nbsp;
 	<select name="edit_application" id="edit_application">
 	{% for app in unfinished_applications %}
-		<option value="{{ app.id }}">{{ app.camp }}</option>
+	        <option value="{{ app.id }}">{{ app.camp }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
 	{% endfor %}
 	</select>
 	<input type="submit" name="edit" value="Edit" />
@@ -28,7 +28,7 @@
 <label for="new_application">Choose application</label>&nbsp;
 	<select name="new_application" id="new_application">
 		{% for app in finished_applications %}
-			<option value="{{ app.id }}">{{ app.camp }}</option>
+			<option value="{{ app.id }}">{{ app.camp }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
 		{% endfor %}
 	</select>
 	<input type="submit" name="new" value="Create" />
@@ -41,6 +41,18 @@
 </ul>
 
 </form>
+<h3>PLEASE NOTE</h3>
+<ul>
+<li>
+<p>If you have started filling out an application form and it does
+not appear above, press 'Refresh' on your browser to make sure you are
+seeing an up-to-date version of this page.</p>
+</li>
+
+<li><p>When you return to the 'add/change application' page your
+web browser will often show you a previous (cached) version.  Please press 'refresh' on your browser
+to ensure this doesn't happen (this is a work-around until I fix this properly).</p></li>
+</ul>
 
 
 
