@@ -86,7 +86,7 @@ class FormsExplicitBooleanField(forms.RadioSelectField):
 #ExplicitBooleanField = models.NullBooleanField
 
 class Application(models.Model):
-    camp = required_field(models.ForeignKey, Camp, null=True, limit_choices_to={'start_date__gt': models.LazyDate()})
+    camp = required_field(models.ForeignKey, Camp, null=True, limit_choices_to={'online_applications': True})
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
     full_name = required_field(models.CharField, 'full name', maxlength=60)
     full_maiden_name = models.CharField('full maiden name', maxlength=60, blank=True)
