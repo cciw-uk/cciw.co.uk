@@ -192,6 +192,15 @@ div.newsItem h2
 	border-bottom: 0px;
 }
 
+table.topheaders tr.selected td
+{
+	background-color: #404040;
+}
+table.topheaders tr.selected
+{
+	outline: 1px solid white;
+}
+
 div.pollBarChartTotal
 {
 	width: 404px;
