@@ -3,6 +3,7 @@ from django.views.generic import list_detail
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.template import RequestContext
 from django.shortcuts import render_to_response
+from django.conf import settings
 from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo
 from cciw.cciwmain.common import get_current_member, create_breadcrumb, standard_extra_context, get_order_option
 from cciw.cciwmain.decorators import login_redirect
@@ -43,7 +44,7 @@ def photo_breadcrumb(gallery, photo):
     
 # Called directly as a view for /news/ and /website/forum/, and used by other views
 def topicindex(request, title=None, extra_context=None, forum=None,
-    template_name='cciw/forums/topicindex', breadcrumb_extra=None, paginate_by=15, default_order=('-last_post_at',)):
+    template_name='cciw/forums/topicindex', breadcrumb_extra=None, paginate_by=settings.FORUM_PAGINATE_TOPICS_BY, default_order=('-last_post_at',)):
     "Displays an index of topics in a forum"
     if extra_context is None:
         if title is None:
@@ -298,7 +299,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
 
     return list_detail.object_list(request, posts,
         extra_context=extra_context, template_name=template_name,
-        paginate_by=15, allow_empty=True)
+        paginate_by=settings.FORUM_PAGINATE_POSTS_BY, allow_empty=True)
 
 def photoindex(request, gallery, extra_context, breadcrumb_extra):
     "Displays an a gallery of photos"
@@ -322,7 +323,7 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
 
     return list_detail.object_list(request, Photo.objects.filter(**lookup_args).order_by(*order_by), 
         extra_context=extra_context, template_name='cciw/forums/photoindex',
-        paginate_by=15, allow_empty=True)
+        paginate_by=settings.FORUM_PAGINATE_PHOTOS_BY, allow_empty=True)
 
 def photo(request, photo, extra_context, breadcrumb_extra):
     "Displays a photo"
@@ -345,4 +346,4 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     
     return list_detail.object_list(request, Post.objects.filter(**lookup_args),
         extra_context=extra_context, template_name='cciw/forums/photo',
-        paginate_by=25, allow_empty=True)
+        paginate_by=settings.FORUM_PAGINATE_POSTS_BY, allow_empty=True)
