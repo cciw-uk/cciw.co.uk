@@ -194,7 +194,7 @@ class Application(models.Model):
         fields = () # we override this later
 
         save_as = True
-        list_display = ('full_name', 'officer', 'camp', 'date_submitted')
+        list_display = ('full_name', 'officer', 'camp', 'finished', 'date_submitted')
 
 camp_officer_application_fields = (
     (None,
