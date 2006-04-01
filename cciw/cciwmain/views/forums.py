@@ -264,8 +264,6 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
     # Process any message that they added.
     process_post(request, topic, None, extra_context)
     process_vote(request, topic, extra_context)
-    
-    # TODO - process moderator stuff
 
     ### Topic ###
     extra_context['topic'] = topic
@@ -277,7 +275,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
             extra_context['show_message_form'] = True
         else:
             extra_context['login_link'] = login_redirect(request.get_full_path() + '#messageform')
-    
+
     ### Poll ###
     if topic.poll_id is not None:
         poll = topic.poll
@@ -294,8 +292,12 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
             (cur_member is not None and poll.can_vote(cur_member))
 
     ### POSTS ###
+    posts = Post.objects.filter(topic__id__exact=topic.id)
     # TODO - lookup depends on permissions
-    posts = Post.objects.filter(hidden=False, topic__id__exact=topic.id)
+    if request.user.has_perm('cciwmain.edit_post'):
+        extra_context['moderator'] = True
+    else:
+        posts = posts.filter(hidden=False)
 
     return list_detail.object_list(request, posts,
         extra_context=extra_context, template_name=template_name,

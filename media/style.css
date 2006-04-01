@@ -226,6 +226,8 @@ div.pollBarChart
 
 
 /************************** END COLOURS *******************/
+
+
 /************* LAYOUT, SPACING, GENERAL STYLES ************/
 
 body 
@@ -262,7 +264,6 @@ h1
 {
 	text-shadow: 0px 0px 6px #00bb55;
 }
-
 
 
 h2
@@ -594,6 +595,16 @@ div.bottombreadcrumb
 span.postMemberIcon
 {
 	float: right;
+}
+
+.editPost img
+{
+	border: 0px;
+}
+.postHiddenMsg
+{
+	font-weight: bold;
+	color: red;
 }
 
 th.postFromCol
