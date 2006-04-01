@@ -38,6 +38,20 @@ class NewsItem(models.Model):
     class Admin:
         pass
 
+class UserSpecificTopics(models.Manager):
+    @staticmethod
+    def get_filters():
+        user = get_current_user()
+        if user is None or user.is_anonymous() or \
+            not user.has_perm('cciwmain.edit_photo'):
+            return {'hidden': False }
+        else:
+            return {}
+
+    def get_query_set(self):
+        return super(UserSpecificTopics, self).get_query_set()\
+            .filter(**UserSpecificTopics.get_filters())
+
 class Topic(models.Model):
     subject = models.CharField("Subject", maxlength=240)
     started_by = models.ForeignKey(Member, related_name="topic_started",
@@ -61,7 +75,10 @@ class Topic(models.Model):
     last_post_by = models.ForeignKey(Member, verbose_name="Last post by",
         null=True, blank=True) # needed for performance and simplicity in templates
     post_count = models.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
-        
+    
+    # User specific manager:
+    visible_topics = UserSpecificTopics()
+
     def __repr__(self):
         return  self.subject
         
@@ -107,6 +124,20 @@ class Gallery(models.Model):
     class Admin:
         pass
 
+class UserSpecificPhotos(models.Manager):
+    @staticmethod
+    def get_filters():
+        user = get_current_user()
+        if user is None or user.is_anonymous() or \
+            not user.has_perm('cciwmain.edit_photo'):
+            return {'hidden': False }
+        else:
+            return {}
+
+    def get_query_set(self):
+        return super(UserSpecificPhotos, self).get_query_set()\
+            .filter(**UserSpecificPhotos.get_filters())
+
 class Photo(models.Model):
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open")
@@ -125,6 +156,8 @@ class Photo(models.Model):
     last_post_by = models.ForeignKey(Member, verbose_name="Last post by",
         null=True, blank=True) # needed for performance and simplicity in templates
     post_count = models.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
+    # User specific manager:
+    visible_photos = UserSpecificPhotos()
 
     def __repr__(self):
         return self.filename
@@ -137,6 +170,20 @@ class Photo(models.Model):
         
     class Admin:
         pass
+
+class UserSpecificPosts(models.Manager):
+    @staticmethod
+    def get_filters():
+        user = get_current_user()
+        if user is None or user.is_anonymous() or \
+            not user.has_perm('cciwmain.edit_post'):
+            return {'hidden': False }
+        else:
+            return {}
+
+    def get_query_set(self):
+        return super(UserSpecificPosts, self).get_query_set()\
+            .filter(**UserSpecificPosts.get_filters())
 
 class Post(models.Model):
     posted_by = models.ForeignKey(Member, 
@@ -154,6 +201,7 @@ class Post(models.Model):
         null=True, blank=True)
     topic = models.ForeignKey(Topic, related_name="posts",
         null=True, blank=True)
+    visible_posts = UserSpecificPosts()
 
     def __repr__(self):
         return "[" + str(self.id) + "]  " + self.message[:30]
@@ -196,24 +244,20 @@ class Post(models.Model):
         depends on the member viewing the page)"""
         return "/posts/%s/" % self.id
 
-    def get_forum_url(self, user=None):
+    def get_forum_url(self):
         """Gets the URL for the post in the context of its forum."""
         # Some posts are not visible to some users.  In a forum
         # thread, however, posts are always displayed in pages
         # of N posts, so the page a post is on depends on who is
         # looking at it.  This function takes this into account
         # and gives the correct URL.
-        if user is None:
-            user = get_current_user()
         if self.topic_id is not None:
             thread = self.topic
         elif self.photo_id is not None:
             thread = self.photo
         # Post ordering is by id (for compatibility with legacy data)
         posts = thread.posts.filter(id__lt=self.id)
-        if user is None or user.is_anonymous() or \
-            not user.has_perm('cciwmain.edit_post'):
-            posts = posts.filter(hidden=False)
+        posts = posts.filter(**UserSpecificPosts.get_filters())
         previous_posts = posts.count()
         page = int(previous_posts/settings.FORUM_PAGINATE_POSTS_BY) + 1
         return "%s?page=%s#id%s" % (thread.get_absolute_url(), page, self.id)

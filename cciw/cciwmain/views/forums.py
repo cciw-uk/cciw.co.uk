@@ -63,12 +63,7 @@ def topicindex(request, title=None, extra_context=None, forum=None,
     extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topicindex_breadcrumb(forum))
 
     # TODO - searching
-    
-    lookup_args = {
-        'hidden': False, # TODO - depends on permission
-        'forum__id__exact': forum.id,
-    } 
-    
+
     order_by = get_order_option(
         {'aca': ('created_at', 'id'),
         'dca': ('-created_at', '-id'),
@@ -78,9 +73,11 @@ def topicindex(request, title=None, extra_context=None, forum=None,
         'dlp': ('-last_post_at',),
         },
         request, default_order)
+
     extra_context['default_order'] = 'dlp' # corresponds = '-last_post_at'
-        
-    return list_detail.object_list(request, Topic.objects.filter(**lookup_args).order_by(*order_by),
+    topics = Topic.visible_topics.filter(forum__id__exact= forum.id).order_by(*order_by)
+
+    return list_detail.object_list(request, topics,
         extra_context=extra_context, template_name=template_name,
         paginate_by=paginate_by, allow_empty=True)
 
@@ -182,7 +179,7 @@ def process_post(request, topic, photo, context):
     if not errors and request.POST.has_key('post'):
         post = Post.create_post(cur_member, msg_text, topic, photo)
         post.save()
-        return HttpResponseRedirect(post.get_forum_url(request.user))
+        return HttpResponseRedirect(post.get_forum_url())
 
 def process_vote(request, topic, context):
     """Processes any votes posted on the topic.
@@ -238,8 +235,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
     cur_member = get_current_member(request)
 
     try:
-        # TODO - lookup depends on permissions
-        topic = Topic.objects.get(id=int(topicid))
+        topic = Topic.visible_topics.get(id=int(topicid))
     except Topic.DoesNotExist:
         raise Http404
     
@@ -291,12 +287,9 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
             (cur_member is not None and poll.can_vote(cur_member))
 
     ### POSTS ###
-    posts = Post.objects.filter(topic__id__exact=topic.id)
-    # TODO - lookup depends on permissions
+    posts = Post.visible_posts.filter(topic__id__exact=topic.id)
     if request.user.has_perm('cciwmain.edit_post'):
         extra_context['moderator'] = True
-    else:
-        posts = posts.filter(hidden=False)
 
     return list_detail.object_list(request, posts,
         extra_context=extra_context, template_name=template_name,
@@ -307,11 +300,6 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
     extra_context['gallery'] = gallery    
     extra_context['breadcrumb'] =   create_breadcrumb(breadcrumb_extra + photoindex_breadcrumb(gallery))
 
-    lookup_args = {
-        'hidden': False, # TODO - lookup depends on permissions
-        'gallery__id__exact': gallery.id,
-    } 
-    
     order_by = get_order_option(
         {'aca': ('created_at','id'),
         'dca': ('-created_at','-id'),
@@ -322,7 +310,9 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
         request, ('created_at', 'id'))
     extra_context['default_order'] = 'aca'
 
-    return list_detail.object_list(request, Photo.objects.filter(**lookup_args).order_by(*order_by), 
+    photos = Photo.visible_photos.filter(gallery__id__exact=gallery.id).order_by(*order_by)
+    
+    return list_detail.object_list(request, photos, 
         extra_context=extra_context, template_name='cciw/forums/photoindex',
         paginate_by=settings.FORUM_PAGINATE_PHOTOS_BY, allow_empty=True)
 
@@ -339,12 +329,10 @@ def photo(request, photo, extra_context, breadcrumb_extra):
 
     # Process any message that they added.
     process_post(request, None, photo, extra_context)
-    
-    lookup_args = {
-        'hidden': False, # TODO - lookup depends on permissions
-        'photo__id__exact': photo.id,
-    } 
-    
-    return list_detail.object_list(request, Post.objects.filter(**lookup_args),
+
+    posts = Post.visible_posts.filter(photo__id__exact=photo.id)
+
+    return list_detail.object_list(request, posts,
         extra_context=extra_context, template_name='cciw/forums/photo',
         paginate_by=settings.FORUM_PAGINATE_POSTS_BY, allow_empty=True)
+
