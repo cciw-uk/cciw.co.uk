@@ -224,6 +224,11 @@ div.pollBarChart
 	background-color: #102010;
 }
 
+.individualPost .postMessage
+{
+	border-left: 2px solid #206020;
+}
+
 
 /************************** END COLOURS *******************/
 
@@ -693,3 +698,36 @@ div.center
 	font-size: 80%;
 	text-align: right;
 }
+
+/* 'Recent posts' page */
+.individualPost
+{
+	margin-bottom: 1em;
+	margin-left: 1em;
+}
+
+.individualPost .postHeader h2
+{
+	margin-bottom: 0;
+	margin-left: -1em;
+}
+
+.individualPost .postHeader
+{
+	margin-bottom: 0em;
+}
+.individualPost .postMessage
+{
+	margin-left: 1px;
+	padding-left: 1em;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
+.readmore
+{
+	font-style: italic;
+}
+

@@ -336,3 +336,16 @@ def photo(request, photo, extra_context, breadcrumb_extra):
         extra_context=extra_context, template_name='cciw/forums/photo',
         paginate_by=settings.FORUM_PAGINATE_POSTS_BY, allow_empty=True)
 
+def posts(request):
+    context = standard_extra_context(title="Recent posts")
+    posts = Post.visible_posts.exclude(posted_at__isnull=True).order_by('-posted_at')
+    return list_detail.object_list(request, posts,
+        extra_context=context, template_name='cciw/forums/posts',
+        allow_empty=True, paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
+
+def post(request, id):
+    try:
+        post = Post.visible_posts.get(pk=id)
+    except Post.DoesNotExist:
+        raise Http404()
+    return HttpResponseRedirect(post.get_forum_url())

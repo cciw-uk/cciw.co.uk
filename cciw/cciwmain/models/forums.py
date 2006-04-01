@@ -76,7 +76,8 @@ class Topic(models.Model):
         null=True, blank=True) # needed for performance and simplicity in templates
     post_count = models.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
     
-    # User specific manager:
+    # Managers:
+    objects = models.Manager()
     visible_topics = UserSpecificTopics()
 
     def __repr__(self):
@@ -156,7 +157,9 @@ class Photo(models.Model):
     last_post_by = models.ForeignKey(Member, verbose_name="Last post by",
         null=True, blank=True) # needed for performance and simplicity in templates
     post_count = models.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
-    # User specific manager:
+
+    # managers
+    objects = models.Manager()
     visible_photos = UserSpecificPhotos()
 
     def __repr__(self):
@@ -201,6 +204,9 @@ class Post(models.Model):
         null=True, blank=True)
     topic = models.ForeignKey(Topic, related_name="posts",
         null=True, blank=True)
+
+    # Managers
+    objects = models.Manager()
     visible_posts = UserSpecificPosts()
 
     def __repr__(self):
@@ -238,7 +244,7 @@ class Post(models.Model):
         if self.photo_id is not None:
             self.updateParent(self.photo)
 
-    def get_absolute_url():
+    def get_absolute_url(self):
         """Returns the absolte URL of the post that
         is always correct.  (This does a redirect to a URL that
         depends on the member viewing the page)"""

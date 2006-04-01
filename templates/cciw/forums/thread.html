@@ -12,7 +12,7 @@
 			<th class="commentHeader" colspan="2">Comments</th>
 		{% else %}
 			{% if topic %}
-				<th class="topicSubject" colspan="2"><h2>{{ topic.subject }}</h2></th>
+				<th class="topicSubject" colspan="2"><h2>{{ topic.subject|escape }}</h2></th>
 			{% endif %}
 		{% endif %}
 		</tr>
@@ -34,7 +34,7 @@
 					{% endif %}
 				</td>
 				<td class="postMessage" id="id{{ post.id }}">
-					{% if post.subject %}<div class="postSubject">{{ post.subject }}</div>{% endif %}
+					{% if post.subject %}<div class="postSubject">{{ post.subject|escape }}</div>{% endif %}
 					{{ post.message|bb2html }}
 				</td>
 			</tr>
@@ -63,12 +63,6 @@ if (bits.length == 2) {
 }
 //-->
 </script>
-
-	{% if show_moderator_controls %}
-	<div class="moderatorButtons">
-	</div>
-	# TODO - moderator controls
-	{% endif %}
 	
 	{% if show_message_form %}
 		{% ifequal page pages %}

@@ -28,7 +28,6 @@ patterns('django.views.generic',
         
     ),
     
-    
 ) + \
 patterns('cciw.cciwmain.views',
     (r'^login/$', 'members.login'),
@@ -61,6 +60,8 @@ patterns('cciw.cciwmain.views',
     (r'^website/forum/add/$', 'forums.add_topic', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
     (r'^website/forum/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+    (r'^posts/$', 'forums.posts'),
+    (r'^posts/(?P<id>\d+)/$', 'forums.post'),
     
     (r'', 'htmlchunk.find'),
 ) 

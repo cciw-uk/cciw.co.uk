@@ -11,10 +11,10 @@
 			<ul
 			>{% for menulink in menulinks %}<li
 					><a href="{{ menulink.url }}"
-					{% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
+					{% if menulink.extra_title %} title="{{ menulink.extra_title|escape }}" {% endif %}
 					{% if menulink.isCurrentPage %} class="currentPage" {% endif %}
 					{% if menulink.isCurrentSection %} class="currentSection" {% endif %}
-					>{{ menulink.title }}</a></li
+					>{{ menulink.title|escape }}</a></li
 			>{% endfor %}</ul
 			>
 		</div>
@@ -22,7 +22,7 @@
 	<div id="contentOuter">
 		<div id="content">
 			<div id="pageTitle">
-				<h1>{{ title }}</h1>
+				<h1>{{ title|escape }}</h1>
 			</div>
 			<div id="contentBody">
 				{% block breadcrumb %}
