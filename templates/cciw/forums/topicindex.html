@@ -10,11 +10,11 @@
 			<tr>
 				<th scope="col">Topic</th>
 				<th scope="col" class="topicStartedCol">Started 
-					{% sorting_control "aca" "dca" "Sort by date started, ascending" "Sort by date started, descending" %}</th>
+					{% sorting_control "aca" "dca" "Click to sort by date started, oldest first" "Sort by date started, newest first" %}</th>
 				<th scope="col">Posts 
-					{% sorting_control "apc" "dpc" "Sort by number of posts, ascending" "Sort by number of posts, descending" %}</th>
+					{% sorting_control "apc" "dpc" "Click to sort by number of posts, ascending" "Sort by number of posts, descending" %}</th>
 				<th scope="col" class="topicLastPostCol">Last post 
-					{% sorting_control "alp" "dlp" "Sort by date of last post, ascending" "Sort by date of last post, descending" %}</th>
+					{% sorting_control "alp" "dlp" "Click to sort by date of last post, oldest first" "Sort by date of last post, newest first" %}</th>
 				<th scope="col">Status</th>
 			</tr>
 		{% for topic in object_list %}
