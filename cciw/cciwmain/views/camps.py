@@ -52,7 +52,7 @@ def thisyear(request):
     c = RequestContext(request, standard_extra_context(title="Camps " + str(settings.THISYEAR)))
     c['introtext'] = HtmlChunk.objects.get(name='camp_dates_intro_text').render(request)
     c['outrotext'] = HtmlChunk.objects.get(name='camp_dates_outro_text').render(request)
-    c['camps'] = Camp.objects.filter(year=settings.THISYEAR)
+    c['camps'] = Camp.objects.filter(year=settings.THISYEAR).order_by('number')
     return render_to_response('cciw/camps/thisyear', context_instance=c)
 
 def get_forum_for_camp(camp):
