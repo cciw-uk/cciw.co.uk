@@ -26,14 +26,42 @@ class PagingControlNode(template.Node):
         cur_page = int(context['page'])
         total_pages = int(context['pages'])
         request = context['request']
+        
         output = []
         if (total_pages > 1):
             output.append("&mdash; Page %d  of %d &mdash;&nbsp;&nbsp; " %
                 (cur_page, total_pages))
             
-            for i in range(1, total_pages+1):
+            # Constraints:
+            # - Always have: first page, last page, next page, previous page
+            # - Never have more than abot 10 links
+            # - Have links spread out through range e.g. if 100 pages,
+            #    show links at 10 page intervals.
+            # - If we have any 
+            
+            # Initial set
+            pages = set(p for p in range(cur_page - 2, cur_page + 3) 
+                            if p >= 1 and p <= total_pages)
+            pages.add(1)
+            pages.add(total_pages)
+            
+            # Add some more at intervals
+            # Ensure that if we are using ellipses, we don't
+            # get any adjacent numbers which look odd
+            interval = max(float(total_pages/8.0), 2)
+            for i in xrange(1, 9):
+                p = int(i * interval)
+                if p <= total_pages:
+                    pages.add(p)
+
+            last_page = 0
+            pages = list(pages)
+            pages.sort()
+            for i in pages:
                 if (i > 0):
-                    output.append(" | ")
+                    output.append(" ")
+                if i > last_page + 1:
+                    output.append("&hellip; ")
                     
                 if i == cur_page:
                     output.append('<span class="pagingLinkCurrent">'
@@ -44,6 +72,7 @@ class PagingControlNode(template.Node):
                         { 'title': 'Page ' + str(i),
                           'href': page_link(request, i, self.fragment),
                           'pagenumber': i })
+                last_page = i
             output.append(" | ")
             if cur_page > 1:
                 output.append(
