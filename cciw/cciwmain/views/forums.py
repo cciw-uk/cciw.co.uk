@@ -5,7 +5,8 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.conf import settings
 from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo
-from cciw.cciwmain.common import get_current_member, create_breadcrumb, standard_extra_context, get_order_option
+from cciw.cciwmain.common import create_breadcrumb, standard_extra_context, get_order_option
+from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.decorators import login_redirect
 from django.utils.html import escape
 from cciw.cciwmain import utils
@@ -93,7 +94,7 @@ def add_topic(request, breadcrumb_extra=None):
     except Forum.DoesNotExist:
         raise Http404
 
-    cur_member = get_current_member(request)
+    cur_member = get_current_member()
     context = RequestContext(request, standard_extra_context(title='Add topic'))
     
     if not forum.open:
@@ -144,7 +145,7 @@ def process_post(request, topic, photo, context):
     context is the context dictionary of the page, to which
     'errors' or 'message' might be added."""
 
-    cur_member = get_current_member(request)
+    cur_member = get_current_member()
     if cur_member is None:
         # silently failing is OK, should never get here
         return  
@@ -193,7 +194,7 @@ def process_vote(request, topic, context):
     
     poll = topic.poll
 
-    cur_member = get_current_member(request)
+    cur_member = get_current_member()
     if cur_member is None:
         # silently failing is OK, should never get here
         return
@@ -232,7 +233,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
     if title_start is None:
         raise Exception("No title provided for page")
 
-    cur_member = get_current_member(request)
+    cur_member = get_current_member()
 
     try:
         topic = Topic.visible_topics.get(id=int(topicid))
@@ -266,7 +267,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
         extra_context['news_item'] = topic.news_item
 
     if topic.open:
-        if get_current_member(request) is not None:
+        if get_current_member() is not None:
             extra_context['show_message_form'] = True
         else:
             extra_context['login_link'] = login_redirect(request.get_full_path() + '#messageform')
@@ -322,7 +323,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     extra_context['photo'] = photo
     
     if photo.open:
-        if get_current_member(request) is not None:
+        if get_current_member() is not None:
             extra_context['show_message_form'] = True
         else:
             extra_context['login_link'] = login_redirect(request.get_full_path() + '#messageform')
@@ -330,6 +331,9 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     # Process any message that they added.
     process_post(request, None, photo, extra_context)
 
+    ## POSTS
+    if request.user.has_perm('cciwmain.edit_post'):
+        extra_context['moderator'] = True
     posts = Post.visible_posts.filter(photo__id__exact=photo.id)
 
     return list_detail.object_list(request, posts,

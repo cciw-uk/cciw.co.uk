@@ -1,6 +1,6 @@
 from django import template
 from cciw.cciwmain.decorators import login_redirect
-from cciw.cciwmain.common import get_current_member
+from cciw.middleware.threadlocals import get_current_member
 import bbcode
 
 def bb2html(value):
@@ -15,7 +15,7 @@ def poll_vote_box(request, topic, poll, heading_level):
     """Displays a box for voting in a poll.  The request,
     the topic object and the poll object must be passed in."""
     
-    member = get_current_member(request)
+    member = get_current_member()
     context = {
         'poll': poll,
         'member': member,

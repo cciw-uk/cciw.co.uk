@@ -4,7 +4,8 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 from cciw.cciwmain.models import Member, Message
-from cciw.cciwmain.common import standard_extra_context, get_order_option, get_current_member, create_breadcrumb
+from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb
+from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.decorators import member_required, same_member_required
 from cciw.cciwmain.utils import get_member_link
 import cciw.cciwmain.templatetags.bbcode as bbcode
@@ -92,7 +93,7 @@ def send_message(request, user_name):
     #  - otherwise, the page is a 'leave message for {{ user_name }} page
 
     # General setup
-    current_member = get_current_member(request)
+    current_member = get_current_member()
 
     # Handle input:
     errors = []

@@ -1,4 +1,4 @@
-from cciw.cciwmain.common import get_current_member
+from cciw.middleware.threadlocals import get_current_member
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from cciw.cciwmain.models import Permission
 import urllib
@@ -12,7 +12,7 @@ def member_required(func):
     """Decorator for a view function that redirects to a login
      screen if the user isn't logged in."""
     def _check(request, *args, **kwargs):
-        if get_current_member(request) is None:
+        if get_current_member() is None:
             return HttpResponseRedirect(login_redirect(request.get_full_path()))
         else:
             return func(request, *args, **kwargs)
@@ -34,7 +34,7 @@ def same_member_required(member_name_arg):
                 user_name = args[member_name_arg-1]
             else:
                 user_name = kwargs[member_name_arg]
-            cur_member = get_current_member(request)
+            cur_member = get_current_member()
             if cur_member is None or \
                 (cur_member.user_name != user_name and 
                 not cur_member.has_perm(Permission.SUPERUSER)):

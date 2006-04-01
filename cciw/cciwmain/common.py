@@ -2,6 +2,7 @@ from django.conf import settings
 import cciw.cciwmain.models
 from cciw.cciwmain.templatetags import view_extras
 from django.http import HttpResponseRedirect
+from cciw.middleware.threadlocals import get_current_member
 import datetime
 import urllib
        
@@ -70,7 +71,7 @@ def standard_processor(request):
             l.isCurrentSection = True
     
     context['menulinks'] = links
-    context['current_member'] = get_current_member(request)
+    context['current_member'] = get_current_member()
     context['pagevars'] = {
         'media_root_url': settings.CCIW_MEDIA_URL,
         'style_sheet_url': settings.CCIW_MEDIA_URL + 'style.css',
@@ -80,22 +81,6 @@ def standard_processor(request):
     
     return context
 
-def get_current_member(request):
-    """Returns the currently logged in member, or None"""
-    try:
-        # return the val we already calculated
-        return request._member
-    except AttributeError:
-        try:
-            Member = cciw.cciwmain.models.Member
-            member = Member.objects.get(user_name=request.session['member_id'])
-            # use opportunity to update last_seen data
-            if (datetime.datetime.now() - member.last_seen).seconds > 60:
-                member.last_seen = datetime.datetime.now()
-                member.save()
-        except (KeyError, Member.DoesNotExist):
-            member = None
-        request._member = member
-        return member
+
 
 
