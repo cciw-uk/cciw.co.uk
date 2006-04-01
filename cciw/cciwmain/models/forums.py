@@ -3,6 +3,7 @@ from members import *
 from polls import *
 from datetime import datetime
 from django.contrib.auth.models import User
+from django.conf import settings
 
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
@@ -187,7 +188,33 @@ class Post(models.Model):
             
         if self.photo_id is not None:
             self.updateParent(self.photo)
-    
+
+    def get_absolute_url():
+        """Returns the absolte URL of the post that
+        is always correct.  (This does a redirect to a URL that
+        depends on the member viewing the page)"""
+        return "/posts/%s/" % self.id
+
+    def get_forum_url(self, user):
+        """Gets the URL for the post in the context of its forum."""
+        # Some posts are not visible to some users.  In a forum
+        # thread, however, posts are always displayed in pages
+        # of N posts, so the page a post is on depends on who is
+        # looking at it.  This function takes this into account
+        # and gives the correct URL.
+        if self.topic_id is not None:
+            thread = self.topic
+        elif self.photo_id is not None:
+            thread = self.photo
+        # Post ordering is by id (for compatibility with legacy data)
+        posts = thread.posts.filter(id__lt=self.id)
+        if user is None or user.is_anonymous() or \
+            not user.has_perm('cciwmain.edit_post'):
+            posts = posts.filter(hidden=False)
+        post_num = posts.count() + 1
+        page = int(post_num/settings.FORUM_PAGINATE_POSTS_BY) + 1
+        return "%s?page=%s#id%s" % (thread.get_absolute_url(), page, self.id)
+
     @staticmethod
     def create_post(member, message, topic=None, photo=None):
         """Creates a post with the correct defaults for a member."""

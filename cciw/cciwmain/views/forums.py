@@ -182,10 +182,7 @@ def process_post(request, topic, photo, context):
     if not errors and request.POST.has_key('post'):
         post = Post.create_post(cur_member, msg_text, topic, photo)
         post.save()
-        # TODO - do a redirect to the page, and to the
-        # exact post that was added.  To work correctly,
-        # it will have to take paging into account i.e. this
-        # post might be on a new page
+        return HttpResponseRedirect(post.get_forum_url(request.user))
 
 def process_vote(request, topic, context):
     """Processes any votes posted on the topic.
@@ -262,7 +259,9 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
 
     ### PROCESSING ###
     # Process any message that they added.
-    process_post(request, topic, None, extra_context)
+    resp = process_post(request, topic, None, extra_context)
+    if resp is not None:
+        return resp
     process_vote(request, topic, extra_context)
 
     ### Topic ###
