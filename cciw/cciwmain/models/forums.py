@@ -4,6 +4,7 @@ from polls import *
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.conf import settings
+from cciw.middleware.threadlocals import get_current_user
 
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
@@ -195,13 +196,15 @@ class Post(models.Model):
         depends on the member viewing the page)"""
         return "/posts/%s/" % self.id
 
-    def get_forum_url(self, user):
+    def get_forum_url(self, user=None):
         """Gets the URL for the post in the context of its forum."""
         # Some posts are not visible to some users.  In a forum
         # thread, however, posts are always displayed in pages
         # of N posts, so the page a post is on depends on who is
         # looking at it.  This function takes this into account
         # and gives the correct URL.
+        if user is None:
+            user = get_current_user()
         if self.topic_id is not None:
             thread = self.topic
         elif self.photo_id is not None:
@@ -211,8 +214,8 @@ class Post(models.Model):
         if user is None or user.is_anonymous() or \
             not user.has_perm('cciwmain.edit_post'):
             posts = posts.filter(hidden=False)
-        post_num = posts.count() + 1
-        page = int(post_num/settings.FORUM_PAGINATE_POSTS_BY) + 1
+        previous_posts = posts.count()
+        page = int(previous_posts/settings.FORUM_PAGINATE_POSTS_BY) + 1
         return "%s?page=%s#id%s" % (thread.get_absolute_url(), page, self.id)
 
     @staticmethod
