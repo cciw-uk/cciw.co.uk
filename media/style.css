@@ -602,6 +602,10 @@ span.postMemberIcon
 	float: right;
 }
 
+.editTopic
+{
+	float: right;
+}
 .editPost img
 {
 	border: 0px;
