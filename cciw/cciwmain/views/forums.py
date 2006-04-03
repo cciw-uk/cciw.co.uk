@@ -63,8 +63,6 @@ def topicindex(request, title=None, extra_context=None, forum=None,
         breadcrumb_extra = []
     extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topicindex_breadcrumb(forum))
 
-    # TODO - searching
-
     order_by = get_order_option(
         {'aca': ('created_at', 'id'),
         'dca': ('-created_at', '-id'),
@@ -276,7 +274,6 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
         poll = topic.poll
         extra_context['poll'] = poll
         
-        # TODO handle voting on polls
         if request.GET.get('showvotebox', None):
             extra_context['show_vote_box'] = True
         else:
