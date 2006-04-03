@@ -44,6 +44,8 @@ patterns('cciw.cciwmain.views',
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/$', 'camps.forum'),
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/(?P<topicnumber>\d+)/$', 'camps.topic'),
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/add/$', 'camps.add_topic'),
+    (r'^camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/add_news/$', 'camps.add_news'),
+    
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+)/photos/$', 'camps.gallery'),
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+)/photos/(?P<photonumber>\d+)/$', 'camps.photo'),
     (r'^camps/(?P<year>.*)/(?P<galleryname>.*)/photos/$', 'camps.oldcampgallery'),
@@ -54,12 +56,15 @@ patterns('cciw.cciwmain.views',
         'template_name': 'cciw/forums/newsindex', 
         'paginate_by' : 6,
         'default_order': ('-created_at',)}), 
-    (r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'}), # TODO - create different template ?
+    (r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'}),
+
     (r'^website/forum/$', 'forums.topicindex', {'title': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
     (r'^website/forum/add/$', 'forums.add_topic', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+    (r'^website/forum/add_news/$', 'forums.add_news', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
     (r'^website/forum/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+        
     (r'^posts/$', 'forums.posts'),
     (r'^posts/(?P<id>\d+)/$', 'forums.post'),
     

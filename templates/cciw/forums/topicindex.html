@@ -52,10 +52,10 @@
 		<p>&raquo; <a href="add/">Add new topic</a>
 		{% if current_member %}
 			{% if current_member.can_add_news %}
-				<br/>&raquo; <a href="add/?mode=news">Add news item</a>
+				<br/>&raquo; <a href="add_news/">Add news item</a>
 			{% endif %}
 			{% if current_member.can_add_poll %}
-				<br/>&raquo; <a href="add/?mode=news">Add poll</a>
+				<br/>&raquo; <a href="add_poll/">Add poll</a>
 			{% endif %}
 		{% endif %}
 		</p>

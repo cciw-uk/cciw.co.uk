@@ -4,7 +4,7 @@ from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.conf import settings
-from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo
+from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission
 from cciw.cciwmain.common import create_breadcrumb, standard_extra_context, get_order_option
 from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.decorators import login_redirect
@@ -52,11 +52,7 @@ def topicindex(request, title=None, extra_context=None, forum=None,
             raise Exception("No title provided for page")
         extra_context = standard_extra_context(title=title)
         
-    if forum is None:
-        try:
-            forum = Forum.objects.get(location=request.path[1:])
-        except Forum.DoesNotExist:
-            raise Http404
+    forum = _get_forum_or_404(request.path, '')
     extra_context['forum'] = forum
     
     if breadcrumb_extra is None:
@@ -83,17 +79,25 @@ def topicindex(request, title=None, extra_context=None, forum=None,
         extra_context=extra_context, template_name=template_name,
         paginate_by=paginate_by, allow_empty=True)
 
-
-# Called directly as a view for /news/ and /website/forum/, and used by other views
+def _get_forum_or_404(path, suffix):
+    """Returns a forum from the supplied path (minus the suffix)
+    or throws a 404 if it can't be found."""
+    if suffix:
+        location = path[1:-len(suffix)] # strip 'add/' or 'add_news/' bit
+    else:
+        location = path[1:]
+    try:
+        return Forum.objects.get(location=location)
+    except Forum.DoesNotExist:
+        raise Http404
+    
+    
+# Called directly as a view for /website/forum/, and used by other views
 @member_required
 def add_topic(request, breadcrumb_extra=None):
     "Displays a page for adding a topic to a forum"
 
-    location = request.path[1:-len('add/')] # strip 'add/' bit
-    try:
-        forum = Forum.objects.get(location=location)
-    except Forum.DoesNotExist:
-        raise Http404
+    forum = _get_forum_or_404(request.path, 'add/')
 
     cur_member = get_current_member()
     context = RequestContext(request, standard_extra_context(title='Add topic'))
@@ -116,7 +120,6 @@ def add_topic(request, breadcrumb_extra=None):
         if msg_text == '':
             errors.append('You must enter a message.')
         
-        # TODO: short news items, long news items. polls
         context['message_text'] = bbcode.correct(msg_text)
         context['subject_text'] = subject
         if not errors:
@@ -134,6 +137,57 @@ def add_topic(request, breadcrumb_extra=None):
         breadcrumb_extra = []
     context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(forum, None))
     return render_to_response('cciw/forums/add_topic', context_instance=context)
+
+# Called directly as a view for /website/forum/, and used by other views
+@member_required
+def add_news(request, breadcrumb_extra=None):
+    "Displays a page for adding a short news item to a forum."
+
+    forum = _get_forum_or_404(request.path, 'add_news/')
+
+    cur_member = get_current_member()
+    if not cur_member.has_perm(Permission.NEWS_CREATOR):
+        return HttpResponseForbidden("Permission denied")
+    
+    context = RequestContext(request, standard_extra_context(title='Add short news item'))
+    
+    if not forum.open:
+        context['message'] = 'This forum is closed - new news items cannot be added.'
+    else:
+        context['forum'] = forum
+        context['show_form'] = True
+    
+    errors = []
+    # PROCESS POST
+    if forum.open and request.POST.has_key('post') or request.POST.has_key('preview'):
+        subject = request.POST.get('subject', '').strip()
+        msg_text = request.POST.get('message', '').strip()
+        
+        if subject == '':
+            errors.append('You must enter a subject.')
+            
+        if msg_text == '':
+            errors.append('You must enter the short news item.')
+        
+        context['message_text'] = bbcode.correct(msg_text)
+        context['subject_text'] = subject
+        if not errors:
+            if request.POST.has_key('post'):
+                newsitem = NewsItem.create_item(cur_member, subject, msg_text)
+                newsitem.save()
+                topic = Topic.create_topic(cur_member, subject, forum)
+                topic.news_item_id = newsitem.id
+                topic.save()
+                return HttpResponseRedirect('../%s/' % topic.id)
+            else:
+                context['preview'] = bbcode.bb2xhtml(msg_text)
+    
+    context['errors'] = errors
+    if breadcrumb_extra is None:
+        breadcrumb_extra = []
+    context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(forum, None))
+    return render_to_response('cciw/forums/add_news', context_instance=context)
+
 
 # Used as part of a view function
 def process_post(request, topic, photo, context):
@@ -258,18 +312,19 @@ def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=
         return resp
     process_vote(request, topic, extra_context)
 
-    ### Topic ###
+    ### TOPIC ###
     extra_context['topic'] = topic
-    if not topic.news_item_id is None:
-        extra_context['news_item'] = topic.news_item
-
     if topic.open:
         if get_current_member() is not None:
             extra_context['show_message_form'] = True
         else:
             extra_context['login_link'] = login_redirect(request.get_full_path() + '#messageform')
+            
+    ### NEWS ITEM ###
+    if not topic.news_item_id is None:
+        extra_context['news_item'] = topic.news_item
 
-    ### Poll ###
+    ### POLL ###
     if topic.poll_id is not None:
         poll = topic.poll
         extra_context['poll'] = poll
@@ -313,6 +368,7 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
         extra_context=extra_context, template_name='cciw/forums/photoindex',
         paginate_by=settings.FORUM_PAGINATE_PHOTOS_BY, allow_empty=True)
 
+@member_required
 def photo(request, photo, extra_context, breadcrumb_extra):
     "Displays a photo"
     extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + photo_breadcrumb(photo.gallery, photo))

@@ -26,12 +26,21 @@ class Forum(models.Model):
 class NewsItem(models.Model):
     created_by = models.ForeignKey(Member, related_name="news_item_created")
     created_at = models.DateTimeField("Posted")
-    summary = models.TextField("Summary")
-    full_item = models.TextField("Full post", blank=True)
+    summary = models.TextField("Summary or short item, (bbcode)")
+    full_item = models.TextField("Full post (HTML)", blank=True)
     subject = models.CharField("Subject", maxlength=100)
     
     def __repr__(self):
         return self.subject
+
+    @staticmethod
+    def create_item(member, subject, short_item):
+        """Create a news item with the correct defaults for a member."""
+        return NewsItem(created_by=member,
+                        created_at=datetime.now(),
+                        summary=short_item,
+                        full_item="",
+                        subject=subject)
 
     class Meta:
         app_label = "cciwmain"

@@ -101,10 +101,15 @@ class Member(models.Model):
     def has_perm(self, perm):
         """Does the member has the specified permission?
         perm is one of the permission constants in Permission."""
-        for p in self.permissions.all():
-            if p.id == perm or p.id == Permission.SUPERUSER:
-                return True
-        return False
+        return len(self.permissions.filter(pk=perm)) > 0
+    
+    @property
+    def can_add_news(self):
+        return self.has_perm(Permission.NEWS_CREATOR)
+        
+    @property
+    def can_add_poll(self):
+        return self.has_perm(Permission.POLL_CREATOR)
 
     @staticmethod    
     def generate_salt():

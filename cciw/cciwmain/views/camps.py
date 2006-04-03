@@ -157,6 +157,10 @@ def add_topic(request, year, number):
     camp, breadcrumb_extra = _get_camp_and_breadcrumb(year, number)
     return forums_views.add_topic(request, breadcrumb_extra)
 
+@member_required
+def add_news(request, year, number):
+    camp, breadcrumb_extra = _get_camp_and_breadcrumb(year, number)
+    return forums_views.add_news(request, breadcrumb_extra)
 
 def gallery(request, year, number):
     try:
@@ -193,7 +197,6 @@ def photo(request, year, number, photonumber):
         raise Http404
     breadcrumb_extra = camp_forum_breadcrumb(camp)
     
-    # TODO - permissions and hidden photos
     try:
         photo = Photo.objects.get(id=int(photonumber))
     except Photo.DoesNotExist:
