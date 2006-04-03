@@ -226,7 +226,10 @@ div.pollBarChart
 
 .individualPost .postMessage
 {
-	border-left: 2px solid #206020;
+	border: 2px solid #505050;
+	padding: 4px;
+	
+	background-color: #303030;
 }
 
 
