@@ -78,6 +78,9 @@ def topicindex(request, title=None, extra_context=None, forum=None,
     extra_context['default_order'] = 'dlp' # corresponds = '-last_post_at'
     topics = Topic.visible_topics.filter(forum__id__exact= forum.id).order_by(*order_by)
 
+    if request.user.has_perm('cciwmain.edit_topic'):
+        extra_context['moderator'] = True
+
     return list_detail.object_list(request, topics,
         extra_context=extra_context, template_name=template_name,
         paginate_by=paginate_by, allow_empty=True)
@@ -124,11 +127,7 @@ def add_topic(request, breadcrumb_extra=None):
                 topic.save()
                 post = Post.create_post(cur_member, msg_text, topic, None)
                 post.save()
-                if topic.hidden:
-                    context['message'] = 'The topic has been created, but is hidden for now'
-                    context['show_form'] = False
-                else:
-                    return HttpResponseRedirect('../%s/' % topic.id)
+                return HttpResponseRedirect('../%s/' % topic.id)
             else:
                 context['preview'] = bbcode.bb2xhtml(msg_text)
     

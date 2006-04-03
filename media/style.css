@@ -606,7 +606,7 @@ span.postMemberIcon
 {
 	border: 0px;
 }
-.postHiddenMsg
+.postHiddenMsg, .topicHidden
 {
 	font-weight: bold;
 	color: red;

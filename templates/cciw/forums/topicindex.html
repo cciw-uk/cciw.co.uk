@@ -25,6 +25,13 @@
 					{% poll_vote_box request topic topic.poll 2 %}
 				{% endif %}
 				{{ topic.get_link }}
+				{% if topic.hidden %}
+					{% if moderator %}
+						<br/><span class="topicHidden">HIDDEN</span>
+					{% else %}
+						<br/><span class="topicHidden">HIDDEN</span> (awaiting moderator approval)
+					{% endif %}
+				{% endif %}
 				</td>
 				<td>{% if topic.created_at %}{{ topic.created_at|date:"d M Y h:i" }}<br/>{% endif %}
 				    {% if topic.started_by_id %}{% memberlink %}{{ topic.started_by_id }}{% endmemberlink %}{% endif %}</td>
