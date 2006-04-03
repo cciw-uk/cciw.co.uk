@@ -69,7 +69,7 @@ if (bits.length == 2) {
 </script>
 	
 	{% if show_message_form %}
-		{% ifequal page pages %}
+		{% if not has_next %}
 			<form action="#messageform" method="post">
 			<h2 id="messageform">Add message:</h2>
 			{% include "cciw/errors" %}
@@ -91,14 +91,14 @@ if (bits.length == 2) {
 			<input type="submit" name="post" value="Post" />
 			</div>
 			</form>
-		{% endifequal %}
+		{% endif %}
 	{% else %}
-		{% ifequal page pages %}
+		{% if not has_next %}
 			{% if login_link %}
 				<div><a href="{{ login_link|escape }}">Login to post a
 message.</a></div>
 			{% endif %}
-		{% endifequal %}
+		{% endif %}
 	{% endif %}
 	{% block thread_bottom %}{% endblock %}
 {% endblock %}
