@@ -63,10 +63,10 @@ class Topic(models.Model):
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open")
     hidden = models.BooleanField("Hidden", default=False)
+    approved = models.BooleanField("Approved", null=True, blank=True)
     checked_by = models.ForeignKey(User,
         null=True, blank=True, related_name="topic_checked",
         verbose_name="checked by")
-    approved = models.BooleanField("Approved", null=True, blank=True)
     needs_approval = models.BooleanField("Needs approval", default=False)
     news_item = models.ForeignKey(NewsItem, null=True, blank=True,
         related_name="topic") # optional news item
@@ -101,6 +101,7 @@ class Topic(models.Model):
                      forum=forum,
                      created_at=datetime.now(),
                      hidden=(member.moderated == Member.MODERATE_ALL),
+                     needs_approval=(member.moderated == Member.MODERATE_ALL),
                      open=True)
 
     class Admin:
@@ -131,7 +132,7 @@ class Gallery(models.Model):
 
 class UserSpecificPhotos(models.Manager):
     def get_query_set(self):
-        queryset = super(UserSpecificTopics, self).get_query_set()
+        queryset = super(UserSpecificPhotos, self).get_query_set()
         user = get_current_user()
         if user is None or user.is_anonymous() or \
             not user.has_perm('cciwmain.edit_topic'):
@@ -201,10 +202,10 @@ class Post(models.Model):
     message = models.TextField("Message")
     posted_at = models.DateTimeField("Posted at", null=True)
     hidden = models.BooleanField("Hidden", default=False)
+    approved = models.BooleanField("Approved", null=True)
     checked_by = models.ForeignKey(User,
         verbose_name="checked by",
         null=True, blank=True, related_name="checked_post")
-    approved = models.BooleanField("Approved", null=True)
     needs_approval = models.BooleanField("Needs approval", default=False)
     photo = models.ForeignKey(Photo, related_name="posts",
         null=True, blank=True)
