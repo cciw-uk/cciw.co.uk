@@ -4,7 +4,7 @@ from polls import *
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.conf import settings
-from cciw.middleware.threadlocals import get_current_user
+from cciw.middleware.threadlocals import get_current_user, get_current_member
 
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
@@ -39,18 +39,21 @@ class NewsItem(models.Model):
         pass
 
 class UserSpecificTopics(models.Manager):
-    @staticmethod
-    def get_filters():
+    def get_query_set(self):
+        queryset = super(UserSpecificTopics, self).get_query_set()
         user = get_current_user()
         if user is None or user.is_anonymous() or \
-            not user.has_perm('cciwmain.edit_photo'):
-            return {'hidden': False }
+            not user.has_perm('cciwmain.edit_topic'):
+            # Non-moderator user
+            
+            member = get_current_member()
+            if member is not None:
+                # include hidden topics by that user
+                return (queryset.filter(started_by=member.user_name) | queryset.filter(hidden=False))
+            else:
+                return queryset.filter(hidden=False)
         else:
-            return {}
-
-    def get_query_set(self):
-        return super(UserSpecificTopics, self).get_query_set()\
-            .filter(**UserSpecificTopics.get_filters())
+            return queryset
 
 class Topic(models.Model):
     subject = models.CharField("Subject", maxlength=240)
@@ -77,8 +80,8 @@ class Topic(models.Model):
     post_count = models.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
     
     # Managers:
-    objects = models.Manager()
     visible_topics = UserSpecificTopics()
+    objects = models.Manager()
 
     def __repr__(self):
         return  self.subject
@@ -126,18 +129,15 @@ class Gallery(models.Model):
         pass
 
 class UserSpecificPhotos(models.Manager):
-    @staticmethod
-    def get_filters():
+    def get_query_set(self):
+        queryset = super(UserSpecificTopics, self).get_query_set()
         user = get_current_user()
         if user is None or user.is_anonymous() or \
-            not user.has_perm('cciwmain.edit_photo'):
-            return {'hidden': False }
+            not user.has_perm('cciwmain.edit_topic'):
+            # Non-moderator user
+            return queryset.filter(hidden=False)
         else:
-            return {}
-
-    def get_query_set(self):
-        return super(UserSpecificPhotos, self).get_query_set()\
-            .filter(**UserSpecificPhotos.get_filters())
+            return queryset
 
 class Photo(models.Model):
     created_at = models.DateTimeField("Started", null=True)
@@ -159,8 +159,8 @@ class Photo(models.Model):
     post_count = models.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
 
     # managers
-    objects = models.Manager()
     visible_photos = UserSpecificPhotos()
+    objects = models.Manager()
 
     def __repr__(self):
         return self.filename
@@ -175,18 +175,23 @@ class Photo(models.Model):
         pass
 
 class UserSpecificPosts(models.Manager):
-    @staticmethod
-    def get_filters():
+    def get_query_set(self):
+        """Return a filtered version of the queryset,
+        appropriate for the current member/user."""
+        queryset = super(UserSpecificPosts, self).get_query_set()
         user = get_current_user()
         if user is None or user.is_anonymous() or \
             not user.has_perm('cciwmain.edit_post'):
-            return {'hidden': False }
+            # Non-moderator user
+            
+            member = get_current_member()
+            if member is not None:
+                # include hidden posts by that user
+                return (queryset.filter(posted_by=member.user_name) | queryset.filter(hidden=False))
+            else:
+                return queryset.filter(hidden=False)
         else:
-            return {}
-
-    def get_query_set(self):
-        return super(UserSpecificPosts, self).get_query_set()\
-            .filter(**UserSpecificPosts.get_filters())
+            return queryset
 
 class Post(models.Model):
     posted_by = models.ForeignKey(Member, 
@@ -206,8 +211,9 @@ class Post(models.Model):
         null=True, blank=True)
 
     # Managers
-    objects = models.Manager()
     visible_posts = UserSpecificPosts()
+    objects = models.Manager()
+
 
     def __repr__(self):
         return "[" + str(self.id) + "]  " + self.message[:30]
@@ -262,8 +268,9 @@ class Post(models.Model):
         elif self.photo_id is not None:
             thread = self.photo
         # Post ordering is by id (for compatibility with legacy data)
+        # The following uses the default manager so has permissions
+        # built in.
         posts = thread.posts.filter(id__lt=self.id)
-        posts = posts.filter(**UserSpecificPosts.get_filters())
         previous_posts = posts.count()
         page = int(previous_posts/settings.FORUM_PAGINATE_POSTS_BY) + 1
         return "%s?page=%s#id%s" % (thread.get_absolute_url(), page, self.id)
