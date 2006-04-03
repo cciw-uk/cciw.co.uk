@@ -5,6 +5,7 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.conf import settings
 from cciw.middleware.threadlocals import get_current_user, get_current_member
+from django.template.defaultfilters import escape
 
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
@@ -90,7 +91,7 @@ class Topic(models.Model):
         return self.forum.get_absolute_url() + str(self.id) + '/'
     
     def get_link(self):
-        return '<a href="' + self.get_absolute_url() + '">' + self.subject + '</a>'
+        return '<a href="' + self.get_absolute_url() + '">' + escape(self.subject) + '</a>'
 
     @staticmethod
     def create_topic(member, subject, forum):
