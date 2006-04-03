@@ -54,7 +54,9 @@ def detail(request, user_name):
     if request.POST:
         if request.POST.has_key('logout'):
             try:
+                import cciw.middleware.threadlocals
                 del request.session['member_id']
+                del cciw.middleware.threadlocals._thread_locals.member
             except KeyError:
                 pass
         
