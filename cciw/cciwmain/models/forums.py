@@ -4,7 +4,7 @@ from polls import *
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.conf import settings
-from cciw.middleware.threadlocals import get_current_user, get_current_member
+import cciw.middleware.threadlocals as threadlocals
 from django.template.defaultfilters import escape
 
 class Forum(models.Model):
@@ -51,12 +51,12 @@ class NewsItem(models.Model):
 class UserSpecificTopics(models.Manager):
     def get_query_set(self):
         queryset = super(UserSpecificTopics, self).get_query_set()
-        user = get_current_user()
+        user = threadlocals.get_current_user()
         if user is None or user.is_anonymous() or \
             not user.has_perm('cciwmain.edit_topic'):
             # Non-moderator user
             
-            member = get_current_member()
+            member = threadlocals.get_current_member()
             if member is not None:
                 # include hidden topics by that user
                 return (queryset.filter(started_by=member.user_name) | queryset.filter(hidden=False))
@@ -142,7 +142,7 @@ class Gallery(models.Model):
 class UserSpecificPhotos(models.Manager):
     def get_query_set(self):
         queryset = super(UserSpecificPhotos, self).get_query_set()
-        user = get_current_user()
+        user = threadlocals.get_current_user()
         if user is None or user.is_anonymous() or \
             not user.has_perm('cciwmain.edit_topic'):
             # Non-moderator user
@@ -190,12 +190,12 @@ class UserSpecificPosts(models.Manager):
         """Return a filtered version of the queryset,
         appropriate for the current member/user."""
         queryset = super(UserSpecificPosts, self).get_query_set()
-        user = get_current_user()
+        user = threadlocals.get_current_user()
         if user is None or user.is_anonymous() or \
             not user.has_perm('cciwmain.edit_post'):
             # Non-moderator user
             
-            member = get_current_member()
+            member = threadlocals.get_current_member()
             if member is not None:
                 # include hidden posts by that user
                 return (queryset.filter(posted_by=member.user_name) | queryset.filter(hidden=False))

@@ -1,6 +1,5 @@
 # Utilities and middleware for thread local storage
 import threading
-import cciw.cciwmain.models
 import datetime
 
 _thread_locals = threading.local()
@@ -18,7 +17,7 @@ class ThreadLocals(object):
         _thread_locals.user = getattr(request, 'user', None)
         
         try:
-            Member = cciw.cciwmain.models.Member
+            from cciw.cciwmain.models import Member
             member = Member.objects.get(user_name=request.session['member_id'])
             # use opportunity to update last_seen data
             if (datetime.datetime.now() - member.last_seen).seconds > 60:

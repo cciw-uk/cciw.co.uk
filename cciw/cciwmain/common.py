@@ -2,7 +2,7 @@ from django.conf import settings
 import cciw.cciwmain.models
 from cciw.cciwmain.templatetags import view_extras
 from django.http import HttpResponseRedirect
-from cciw.middleware.threadlocals import get_current_member
+import cciw.middleware.threadlocals as threadlocals
 import datetime
 import urllib
        
@@ -71,7 +71,7 @@ def standard_processor(request):
             l.isCurrentSection = True
     
     context['menulinks'] = links
-    context['current_member'] = get_current_member()
+    context['current_member'] = threadlocals.get_current_member()
     context['pagevars'] = {
         'media_root_url': settings.CCIW_MEDIA_URL,
         'style_sheet_url': settings.CCIW_MEDIA_URL + 'style.css',
