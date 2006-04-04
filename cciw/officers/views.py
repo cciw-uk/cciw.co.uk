@@ -43,6 +43,15 @@ def index(request):
             for field in Application._meta.fields:
                 if field.attname != 'id':
                     setattr(new_obj, field.attname, getattr(obj, field.attname))
+            new_obj.youth_work_declined = None
+            new_obj.relevant_illness = None
+            new_obj.crime_declaration = None
+            new_obj.court_declaration = None
+            new_obj.concern_declaration = None
+            new_obj.allegation_declaration = None
+            new_obj.crb_check_consent = None
+            new_obj.finished = False
+            new_obj.date_submitted = None
             new_obj.save()
             return HttpResponseRedirect('/admin/officers/application/%s/' % new_obj.id)
 
