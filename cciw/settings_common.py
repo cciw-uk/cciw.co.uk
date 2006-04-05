@@ -2,7 +2,7 @@
 import cciw.cciwmain.utils
 
 
-INTERNAL_IPS = ('127.0.0.1')
+INTERNAL_IPS = ('127.0.0.1',)
 
 ADMINS = (
     ('Luke Plant', 'L.Plant.98@cantab.net'),
@@ -16,6 +16,7 @@ DATABASE_ENGINE = 'postgresql'
 
 SITE_ID = 1
 
+SEND_BROKEN_LINK_EMAILS=True
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '__=9o22)i0c=ci+9u$@g77tvdsg9y-wu6v6#f4iott(@jgwig+'
@@ -27,7 +28,6 @@ CSRF_MIDDLEWARE_SECRET = SECRET_KEY
 ROOT_URLCONF = 'cciw.urls'
 
 VALIDATOR_APP_VALIDATORS = {
-#    'text/html': '/usr/bin/validate',
     'text/html': '/home/httpd/myvalidate.sh',
     'application/xml+xhtml': '/home/httpd/myvalidate.sh',
 }
@@ -58,7 +58,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.i18n",
     "cciw.cciwmain.common.standard_processor",
 )
-
 
 THISYEAR = cciw.cciwmain.utils.ThisYear()
 
