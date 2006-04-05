@@ -2,6 +2,11 @@
 {% load view_extras %}
 {% load standardpage %}
 {% load forums %}
+
+{% block extraheader %}
+{{ block.super }}
+<link rel="alternate" type="application/atom+xml" href="/members/?format=atom" title="Atom feed for new members." />
+{% endblock %}
 {% block content %}
 	<form method='get' action='/members/'>
 		<p>

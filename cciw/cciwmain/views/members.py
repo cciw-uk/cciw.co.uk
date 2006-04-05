@@ -9,12 +9,17 @@ from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.decorators import member_required, same_member_required
 from cciw.cciwmain.utils import get_member_link
 import cciw.cciwmain.templatetags.bbcode as bbcode
+from cciw.cciwmain import feeds
 
 from datetime import datetime, timedelta
 import re
 
 def index(request):
     members = Member.objects.filter(dummy_member=False, hidden=False) # TODO - depends on authorisation
+    
+    feed = feeds.handle_feed_request(request, feeds.MemberFeed, query_set=members)
+    if feed: return feed
+
     if (request.GET.has_key('online')):
         members = members.filter(last_seen__gte=(datetime.now() - timedelta(minutes=3)))
     
