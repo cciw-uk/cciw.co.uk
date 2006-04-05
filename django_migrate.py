@@ -643,6 +643,7 @@ def migrate_forums():
                 p = Post(subject="")
                 p.posted_by_id = get_dummy_or_real_member(postline[1].strip()).user_name
                 p.subject = postline[2]
+                p.hidden = get_bool(postline[5])
                 
                 if p.subject.strip() == '&nbsp;' or p.subject.strip() == '':
                     p.subject = ''
