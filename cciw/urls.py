@@ -1,4 +1,6 @@
-from django.conf.urls.defaults import patterns, include
+from django.conf.urls.defaults import *
+
+handler404 = 'cciw.cciwmain.views.handler404'
 
 urlpatterns = patterns('',
     # Override the admin for some views:
