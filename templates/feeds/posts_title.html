@@ -1,5 +1,5 @@
 {% load standardpage %}
-Post by {% memberlink %}{{ obj.posted_by_id }}{% endmemberlink %}, 
+Post by <b>{{ obj.posted_by_id }}</b>, 
 {% if obj.topic_id %}
 in topic "{{ obj.topic|escape }}"
 {% endif %}
