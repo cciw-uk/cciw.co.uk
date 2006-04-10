@@ -18,7 +18,7 @@ class ThreadLocals(object):
         
         try:
             from cciw.cciwmain.models import Member
-            member = Member.objects.get(user_name=request.session['member_id'])
+            member = Member.visible_members.get(user_name=request.session['member_id'])
             # use opportunity to update last_seen data
             if (datetime.datetime.now() - member.last_seen).seconds > 60:
                 member.last_seen = datetime.datetime.now()

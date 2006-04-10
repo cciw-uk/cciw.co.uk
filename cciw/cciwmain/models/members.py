@@ -1,6 +1,7 @@
 from django.db import models
 from cciw.cciwmain.settings import *
 from django.conf import settings
+from cciw.middleware import threadlocals
 
 class Permission(models.Model):
     POLL_CREATOR = 5
@@ -18,6 +19,16 @@ class Permission(models.Model):
         
     class Admin:
         pass
+
+class UserSpecificMembers(models.Manager):
+    def get_query_set(self):
+        user = threadlocals.get_current_user()
+        if user.is_anonymous() or not user.is_staff or not\
+            user.has_perm('cciwmain.change_member'):
+            return super(UserSpecificMembers, self).get_query_set().filter(hidden=False)
+        else:
+        
+            return super(UserSpecificMembers, self).get_query_set()
 
 class Member(models.Model):
     """Represents a user of the CCIW message boards."""
@@ -66,7 +77,11 @@ class Member(models.Model):
         blank=True, null=True, filter_interface=models.HORIZONTAL)
     icon          = models.ImageField("Icon", upload_to=settings.MEMBERS_ICONS_UPLOAD_PATH, blank=True)
     dummy_member = models.BooleanField("Dummy member status", default=False) # supports ancient posts in message boards
-        
+    
+    # Managers
+    visible_members = UserSpecificMembers()
+    objects = models.Manager()
+    
     def __repr__(self):
         return self.user_name
         

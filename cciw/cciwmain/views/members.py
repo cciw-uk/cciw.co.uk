@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 import re
 
 def index(request):
-    members = Member.objects.filter(dummy_member=False, hidden=False) # TODO - depends on authorisation
+    members = Member.visible_members.filter(dummy_member=False)
     
     feed = feeds.handle_feed_request(request, feeds.MemberFeed, query_set=members)
     if feed: return feed
@@ -52,7 +52,7 @@ def index(request):
 
 def detail(request, user_name):
     try:
-        member = Member.objects.get(user_name=user_name)
+        member = Member.visible_members.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404
     
@@ -77,7 +77,7 @@ def login(request):
     c['isFromRedirect'] = (redirect is not None)
     if request.POST:
         try:
-            member = Member.objects.get(user_name=request.POST['user_name'])
+            member = Member.visible_members.get(user_name=request.POST['user_name'])
             if member.check_password(request.POST['password']):
                 request.session['member_id'] = member.user_name
                 member.last_seen = datetime.now()
@@ -109,7 +109,7 @@ def send_message(request, user_name):
     message_text = None
     
     try:
-        member = Member.objects.get(user_name=user_name)
+        member = Member.visible_members.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404
 
@@ -125,7 +125,7 @@ def send_message(request, user_name):
                 errors.append('No user name given.')
             else:
                 try:
-                    to = Member.objects.get(user_name=to_name)
+                    to = Member.visible_members.get(user_name=to_name)
                 except Member.DoesNotExist:
                     errors.append('The user %s could not be found' % to_name)
 
@@ -188,7 +188,7 @@ def _msg_del(msg):
 def message_list(request, user_name, box):
     """View function to display inbox or archived messages."""
     try:
-        member = Member.objects.get(user_name=user_name)
+        member = Member.visible_members.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404
         

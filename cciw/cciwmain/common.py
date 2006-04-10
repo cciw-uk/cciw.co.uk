@@ -21,7 +21,7 @@ def standard_extra_context(extra_dict=None, title=None):
     extra_dict['thisyear'] = settings.THISYEAR
     extra_dict['misc'] = {
         'logged_in_members': 
-            Member.objects.filter(last_seen__gte=datetime.datetime.now() \
+            Member.visible_members.filter(last_seen__gte=datetime.datetime.now() \
                                            - datetime.timedelta(minutes=3)).count(),
     }
     

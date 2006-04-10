@@ -19,8 +19,8 @@ class MemberFeed(feeds.Feed):
     
     def items(self):
         if getattr(self, 'query_set', None) is None:
-            self.query_set = Member.objects.all()
-        return  self.query_set.exclude(banned=True, hidden=True).order_by('-date_joined')[:MEMBER_FEED_MAX_ITEMS]
+            self.query_set = Member.visible_members.all()
+        return  self.query_set.order_by('-date_joined')[:MEMBER_FEED_MAX_ITEMS]
 
 # Part of this is borrowed from django.contrib.syndication.views
 def handle_feed_request(request, feed_class, query_set=None, param=None):

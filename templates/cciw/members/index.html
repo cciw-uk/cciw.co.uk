@@ -37,7 +37,7 @@
 				{{ member.icon_image }}
 			     {% endif %}
 			</td>
-			<td>{{ member.get_link }}</td>
+			<td>{{ member.get_link }}{% if member.hidden %}<br/>HIDDEN{% endif %}{% if member.banned %}<br/>BANNED{% endif %}</td>
 			<td>{{ member.real_name|escape }}</td>
 			<td>{{ member.comments|bb2html }}</td>
 			<td>

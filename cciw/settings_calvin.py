@@ -46,3 +46,5 @@ ADMIN_MEDIA_PREFIX = '/media/'
 AWARD_UPLOAD_PATH = '/home/httpd/www.cciw.co.uk/django/media/images/awards'
 MEMBERS_ICONS_UPLOAD_PATH = '/home/httpd/www.cciw.co.uk/django/media/images/members'
 CCIW_MEDIA_URL = MEDIA_URL
+
+SEND_BROKEN_LINK_EMAILS = False
