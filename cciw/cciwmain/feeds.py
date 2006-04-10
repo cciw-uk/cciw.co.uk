@@ -10,18 +10,6 @@ MEMBER_FEED_MAX_ITEMS = 20
 #    does a default query
 #  - feed class stores the template name for convenience
 
-class MemberFeed(feeds.Feed):
-    feed_type = Atom1Feed
-    template_name = 'members'
-    title = "New CCIW Members"
-    link = "/members/"
-    description = "New members of the Christian Camps in Wales message boards."
-    
-    def items(self):
-        if getattr(self, 'query_set', None) is None:
-            self.query_set = Member.visible_members.all()
-        return  self.query_set.order_by('-date_joined')[:MEMBER_FEED_MAX_ITEMS]
-
 # Part of this is borrowed from django.contrib.syndication.views
 def handle_feed_request(request, feed_class, query_set=None, param=None):
     """If the request has 'format=atom' in the query string,
@@ -44,3 +32,15 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
     response = HttpResponse(mimetype=feedgen.mime_type)
     feedgen.write(response, 'utf-8')
     return response
+
+class MemberFeed(feeds.Feed):
+    feed_type = Atom1Feed
+    template_name = 'members'
+    title = "New CCIW Members"
+    link = "/members/"
+    description = "New members of the Christian Camps in Wales message boards."
+    
+    def items(self):
+        if getattr(self, 'query_set', None) is None:
+            self.query_set = Member.visible_members.all()
+        return  self.query_set.order_by('-date_joined')[:MEMBER_FEED_MAX_ITEMS]
