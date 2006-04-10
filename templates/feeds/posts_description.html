@@ -1,0 +1,11 @@
+{% load standardpage %}
+{% load forums %}
+<div>
+From {% memberlink %}{{ obj.posted_by_id }}{% endmemberlink %}, at {{ obj.posted_at|date:"d M y, h:i" }}:</div>
+		<div class="postMessage"><hr/>
+		{% if obj.subject %}<div class="postSubject">{{ obj.subject|bb2html }}</div>{% endif %}
+		{{ obj.message|bb2html }}
+		</div>
+<div>
+<span class="readmore"><a href="{{ post.get_absolute_url }}">view in context</a></span>
+</div>

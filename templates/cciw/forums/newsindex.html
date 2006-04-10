@@ -2,6 +2,11 @@
 {% load standardpage %}
 {% load view_extras %}
 {% load forums %}
+
+{% block extraheader %}
+{{ block.super }}
+<link rel="alternate" type="application/atom+xml" href="/news/?format=atom" title="Atom feed for web-site news." />
+{% endblock %}
 {% block breadcrumb %}{% endblock %}
 {% block content %}
 	{% if object_list %}

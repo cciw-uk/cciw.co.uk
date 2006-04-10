@@ -13,6 +13,7 @@ from cciw.cciwmain import utils
 from cciw.cciwmain.templatetags import bbcode
 from cciw.cciwmain.decorators import member_required
 from datetime import datetime
+from cciw.cciwmain import feeds
 
 
 # Utility functions for breadcrumbs
@@ -395,6 +396,10 @@ def photo(request, photo, extra_context, breadcrumb_extra):
 def posts(request):
     context = standard_extra_context(title="Recent posts")
     posts = Post.visible_posts.exclude(posted_at__isnull=True).order_by('-posted_at')
+    
+    feed = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
+    if feed: return feed
+
     return list_detail.object_list(request, posts,
         extra_context=context, template_name='cciw/forums/posts',
         allow_empty=True, paginate_by=settings.FORUM_PAGINATE_POSTS_BY)

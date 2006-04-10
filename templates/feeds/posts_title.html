@@ -1,0 +1,8 @@
+{% load standardpage %}
+Post by {% memberlink %}{{ obj.posted_by_id }}{% endmemberlink %}, 
+{% if obj.topic_id %}
+in topic "{{ obj.topic|escape }}"
+{% endif %}
+{% if obj.photo_id %}
+on photo "{{ obj.photo|escape }}"
+{% endif %}

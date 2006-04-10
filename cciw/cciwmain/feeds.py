@@ -1,9 +1,11 @@
 from django.contrib.syndication import feeds
 from django.http import Http404, HttpResponse
-from cciw.cciwmain.models import Member
+from cciw.cciwmain.models import Member, Topic, Post, NewsItem
 from django.utils.feedgenerator import Atom1Feed
 
 MEMBER_FEED_MAX_ITEMS = 20
+NEWS_FEED_MAX_ITEMS = 20
+POST_FEED_MAX_ITEMS = 20
 
 # My extensions to django's feed:
 #  - items() checks for self.query_set and uses that if available, otherwise
@@ -33,14 +35,34 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
     feedgen.write(response, 'utf-8')
     return response
 
-class MemberFeed(feeds.Feed):
+class CCIWFeed(feeds.Feed):
     feed_type = Atom1Feed
+    def items(self):
+        query_set = getattr(self, 'query_set', None)
+        if query_set is None:
+            query_set = self.default_query()
+        else:
+            return self.modify_query(query_set)
+
+class MemberFeed(CCIWFeed):
     template_name = 'members'
     title = "New CCIW Members"
     link = "/members/"
     description = "New members of the Christian Camps in Wales message boards."
+
+    def default_query(self):
+        return Member.visible_members.all()
+        
+    def modify_query(self, query_set):
+        return  query_set.order_by('-date_joined')[:MEMBER_FEED_MAX_ITEMS]
+
+class PostFeed(CCIWFeed):
+    template_name = 'posts'
+    title = "CCIW message boards posts"
+    link = "/posts/"
     
-    def items(self):
-        if getattr(self, 'query_set', None) is None:
-            self.query_set = Member.visible_members.all()
-        return  self.query_set.order_by('-date_joined')[:MEMBER_FEED_MAX_ITEMS]
+    def default_query(self):
+        return Post.visible_posts.all()
+        
+    def modify_query(self, query_set):
+        return query_set.order_by('-posted_at')[:POST_FEED_MAX_ITEMS]
