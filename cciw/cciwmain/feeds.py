@@ -31,7 +31,7 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
         return None
 
     template_name = feed_class.template_name
-    feed_inst = feed_class(template_name, request.path)
+    feed_inst = feed_class(template_name, request.get_full_path())
     if query_set is not None:
         # In case the Feed subclass can use query_set
         feed_inst.query_set = query_set
@@ -39,7 +39,7 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
     try:
         feedgen = feed_inst.get_feed(param)
     except feeds.FeedDoesNotExist:
-        raise Http404, "Invalid feed parameters. Slug %r is valid, but other parameters, or lack thereof, are not." % slug
+        raise Http404, "Invalid feed parameters: %r." % param
 
     response = HttpResponse(mimetype=feedgen.mime_type)
     feedgen.write(response, 'utf-8')
