@@ -40,10 +40,32 @@
 <li><a href="/admin/officers/application/add/">Create new application (blank)</a></li>
 </ul>
 
+
+
+{% if show_leader_links %}
+<h2>Leaders' tools</h2>
+<ul>
+	<li><a href="/admin/officers/application/">View all applications</a><br/><br/></li>
+	{% if thisyearscamp %}
+	<li><a href="/admin/officers/application/?camp__id__exact={{ thisyearscamp.id }}">View applications for camp {{ thisyearscamp }}</a><br/><br/></li>
+	{% endif %}
+
+
+	{% if applications_for_leader %}
+		<li>Resend application as an e-mail to your e-mail address:<br/>
+		<label for="resend_application">Choose application</label>&nbsp;
+		<select name="resend_application" id="resend_application">
+		{% for app in applications_for_leader %}
+			<option value="{{ app.id }}">{{ app.full_name }}, {{ app.camp.year }}</option>
+		{% endfor %}
+		</select>
+		<input type="submit" name="resend" value="Resend" /></li>
+	{% endif %}
+	
+</ul>
+{% endif %}
+
+
 </form>
-
-
-
-
 </div>
 {% endblock %}

@@ -6,7 +6,10 @@ from django.contrib.admin.views.main import unquote, quote, get_text_list
 from django import forms, template
 from django.http import Http404, HttpResponseRedirect
 from django.db import models
+from django.contrib.auth.models import Message
 from cciw.officers.models import Application
+from cciw.cciwmain.models import Person
+from django.conf import settings
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
 from django.views.decorators.cache import never_cache
@@ -18,14 +21,55 @@ def index(request):
     """Displays a list of links/buttons for various actions."""
     user = request.user
     context = template.RequestContext(request)
-    context['finished_applications'] = user.application_set.filter(finished=True) # TODO filtering
-    context['unfinished_applications'] = user.application_set.filter(finished=False) # TODO filtering
+    context['finished_applications'] = user.application_set.filter(finished=True)
+    context['unfinished_applications'] = user.application_set.filter(finished=False)
+    
+    applications_for_leader = None
+    if (user.groups.filter(name='Leaders').count() > 0):
+        context['show_leader_links'] = True
+        
+        # Find the 'Person' object that corresponds to this user
+        leaders = list(Person.objects.filter(user=user.id)) # use list() for later efficiency
+        if len(leaders) > 0:
+            # Find the camps for this leader
+            # (In reality we could do 
+            #  camps = Person.objects.get(user=user.id).camp_as_leader.all(),
+            #  but for completeness we handle the possibility that two Person 
+            #  objects have the same User objects)
+            camps = None
+            for leader in leaders:
+                tmp_camps = leader.camp_as_leader.filter(online_applications=True)
+                if camps is None:
+                    camps = tmp_camps
+                else:
+                    camps = camps | tmp_camps
+            if camps is not None:
+                # Find all applications for all camps
+                # led by this leader.
+                applications = None
+                for camp in camps:
+                    tmp_apps = camp.application_set.filter(finished=True)
+                    if applications is None:
+                        applications = tmp_apps
+                    else:
+                        applications = applications | tmp_apps
+                applications_for_leader = applications
+                
+            # Also find out a single camp id if possible
+            try:
+                context['thisyearscamp'] = leaders[0].camp_as_leader.get(year=int(settings.THISYEAR), online_applications=True)
+            except ObjectDoesNotExist:
+                pass
+            
+    context['applications_for_leader'] = applications_for_leader
     
     if request.POST.has_key('edit'):
+        # Edit existing application
         id = request.POST.get('edit_application', None)
         if id is not None:
             return HttpResponseRedirect('/admin/officers/application/%s/' % id)
     elif request.POST.has_key('new'):
+        # Create new application based on old one
         obj = None
         try:
             id = int(request.POST['new_application'])
@@ -54,6 +98,22 @@ def index(request):
             new_obj.date_submitted = None
             new_obj.save()
             return HttpResponseRedirect('/admin/officers/application/%s/' % new_obj.id)
+            
+    elif request.POST.has_key('resend'):
+        # Resend e-mail for application
+        try:
+            id = int(request.POST['resend_application'])
+        except (ValueError, KeyError):
+            id = None
+        if id is not None:
+            try:
+                app = applications_for_leader.get(pk=id)
+            except Application.DoesNotExist:
+                app = None # should never get here
+            if app is not None:
+                from cciw.officers.hooks import send_leader_email
+                send_leader_email(app)
+                Message(message="Email sent", user=user).save()
 
     return render_to_response('cciw/officers/index.html', context_instance=context)
 
