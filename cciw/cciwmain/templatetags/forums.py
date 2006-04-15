@@ -10,7 +10,7 @@ def bb2html(value):
 register = template.Library()
 register.filter('bb2html', bb2html)
 
-@register.inclusion_tag('cciw/forums/poll_vote_box')
+@register.inclusion_tag('cciw/forums/poll_vote_box.html')
 def poll_vote_box(request, topic, poll, heading_level):
     """Displays a box for voting in a poll.  The request,
     the topic object and the poll object must be passed in."""

@@ -55,7 +55,7 @@ def index(request):
             new_obj.save()
             return HttpResponseRedirect('/admin/officers/application/%s/' % new_obj.id)
 
-    return render_to_response('cciw/officers/index', context_instance=context)
+    return render_to_response('cciw/officers/index.html', context_instance=context)
 
 
 # /admin/officers/application/add/

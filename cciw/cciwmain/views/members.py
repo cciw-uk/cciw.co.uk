@@ -46,7 +46,7 @@ def index(request):
 
     return list_detail.object_list(request, members,
         extra_context=extra_context, 
-        template_name='cciw/members/index',
+        template_name='cciw/members/index.html',
         paginate_by=50,
         allow_empty=True)
 
@@ -69,7 +69,7 @@ def detail(request, user_name):
         standard_extra_context(title="Member: " + member.user_name))
     c['member'] = member
     c['awards'] = member.personal_awards.all()
-    return render_to_response('cciw/members/detail', context_instance=c)
+    return render_to_response('cciw/members/detail.html', context_instance=c)
     
 def login(request):
     c = RequestContext(request, standard_extra_context(title="Login"))
@@ -88,7 +88,7 @@ def login(request):
                 c['loginFailed'] = True
         except Member.DoesNotExist:
             c['loginFailed'] = True
-    return render_to_response('cciw/members/login', context_instance=c)
+    return render_to_response('cciw/members/login.html', context_instance=c)
 
 @member_required
 def send_message(request, user_name):
@@ -170,7 +170,7 @@ def send_message(request, user_name):
     c['message_sent'] = message_sent
     c['message_text'] = message_text
     
-    return render_to_response('cciw/members/messages/send', context_instance=c)
+    return render_to_response('cciw/members/messages/send.html', context_instance=c)
 
 # Utility functions for handling message actions
 def _msg_move_inbox(msg):
@@ -229,7 +229,7 @@ def message_list(request, user_name, box):
     
     return list_detail.object_list(request, messages,
         extra_context=extra_context,
-        template_name='cciw/members/messages/index',
+        template_name='cciw/members/messages/index.html',
         paginate_by=20,
         allow_empty=True)
 

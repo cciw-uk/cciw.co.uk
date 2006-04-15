@@ -3,6 +3,7 @@ from django import template
 register = template.Library()
 
 # Overrides normal 'submit row'
+@register.inclusion_tag('admin/submit_line.html', takes_context=True)
 def application_submit_row(context):
     opts = context['opts']
     change = context['change']
@@ -18,4 +19,3 @@ def application_submit_row(context):
         'show_save': True
     }
 
-application_submit_row = register.inclusion_tag('admin/submit_line', takes_context=True)(application_submit_row)

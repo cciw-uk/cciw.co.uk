@@ -19,4 +19,4 @@ def find(request):
     
     c = RequestContext(request, standard_extra_context(title=chunk.page_title))
     c['contentBody'] = chunk.render(request)
-    return render_to_response('cciw/standard', context_instance=c)
+    return render_to_response('cciw/standard.html', context_instance=c)

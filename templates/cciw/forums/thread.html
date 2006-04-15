@@ -1,4 +1,4 @@
-{% extends "cciw/standard" %}
+{% extends "cciw/standard.html" %}
 {% load standardpage %}
 {% load view_extras %}
 {% load forums %}
@@ -72,8 +72,8 @@ if (bits.length == 2) {
 		{% if not has_next %}
 			<form action="#messageform" method="post">
 			<h2 id="messageform">Add message:</h2>
-			{% include "cciw/errors" %}
-			{% include "cciw/msgpreview" %}
+			{% include "cciw/errors.html" %}
+			{% include "cciw/msgpreview.html" %}
 			{% if preview %}
 				<p>Make any changes below, and choose
 				'Preview' again or 'Post'.</p>
@@ -82,7 +82,7 @@ if (bits.length == 2) {
 				<tr>
 					<th scope="row">Message:</th>
 					<td>
-						{% include "cciw/message" %}
+						{% include "cciw/message.html" %}
 					</td>
 				</tr>
 			</table>

@@ -46,7 +46,7 @@ def photo_breadcrumb(gallery, photo):
     
 # Called directly as a view for /news/ and /website/forum/, and used by other views
 def topicindex(request, title=None, extra_context=None, forum=None,
-    template_name='cciw/forums/topicindex', breadcrumb_extra=None, paginate_by=settings.FORUM_PAGINATE_TOPICS_BY, default_order=('-last_post_at',)):
+    template_name='cciw/forums/topicindex.html', breadcrumb_extra=None, paginate_by=settings.FORUM_PAGINATE_TOPICS_BY, default_order=('-last_post_at',)):
     "Displays an index of topics in a forum"
     if extra_context is None:
         if title is None:
@@ -137,7 +137,7 @@ def add_topic(request, breadcrumb_extra=None):
     if breadcrumb_extra is None:
         breadcrumb_extra = []
     context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(forum, None))
-    return render_to_response('cciw/forums/add_topic', context_instance=context)
+    return render_to_response('cciw/forums/add_topic.html', context_instance=context)
 
 # Called directly as a view for /website/forum/, and used by other views
 @member_required
@@ -187,7 +187,7 @@ def add_news(request, breadcrumb_extra=None):
     if breadcrumb_extra is None:
         breadcrumb_extra = []
     context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(forum, None))
-    return render_to_response('cciw/forums/add_news', context_instance=context)
+    return render_to_response('cciw/forums/add_news.html', context_instance=context)
 
 
 # Used as part of a view function
@@ -279,7 +279,7 @@ def process_vote(request, topic, context):
         voteinfo.save()
         context['voting_message'] = 'Vote registered, thank you.'
 
-def topic(request, title_start=None, template_name='cciw/forums/topic', topicid=0,
+def topic(request, title_start=None, template_name='cciw/forums/topic.html', topicid=0,
         introtext=None, breadcrumb_extra=None):
     """Displays a topic"""
     if title_start is None:
@@ -366,7 +366,7 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
     photos = Photo.visible_photos.filter(gallery__id__exact=gallery.id).order_by(*order_by)
     
     return list_detail.object_list(request, photos, 
-        extra_context=extra_context, template_name='cciw/forums/photoindex',
+        extra_context=extra_context, template_name='cciw/forums/photoindex.html',
         paginate_by=settings.FORUM_PAGINATE_PHOTOS_BY, allow_empty=True)
 
 @member_required
@@ -390,7 +390,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     posts = Post.visible_posts.filter(photo__id__exact=photo.id)
 
     return list_detail.object_list(request, posts,
-        extra_context=extra_context, template_name='cciw/forums/photo',
+        extra_context=extra_context, template_name='cciw/forums/photo.html',
         paginate_by=settings.FORUM_PAGINATE_POSTS_BY, allow_empty=True)
 
 def posts(request):
@@ -401,7 +401,7 @@ def posts(request):
     if feed: return feed
 
     return list_detail.object_list(request, posts,
-        extra_context=context, template_name='cciw/forums/posts',
+        extra_context=context, template_name='cciw/forums/posts.html',
         allow_empty=True, paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
 
 def post(request, id):

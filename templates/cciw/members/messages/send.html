@@ -1,4 +1,4 @@
-{% extends "cciw/standard" %}
+{% extends "cciw/standard.html" %}
 {% block content %}
 
 {% if message_sent %}
@@ -9,9 +9,9 @@
 	<div><a href="./">Send another</a></div>
 {% else %}
 
-	{% include "cciw/errors" %}
+	{% include "cciw/errors.html" %}
 	
-	{% include "cciw/msgpreview" %}
+	{% include "cciw/msgpreview.html" %}
 	
 	<form action="" method="post" enctype="" accept-charset="utf-8">
 	{% ifequal mode "send" %}
@@ -27,7 +27,7 @@
 			</tr>
 			<tr>
 				<th scope="row">Message:</th>
-				<td>{% include "cciw/message" %}</td>
+				<td>{% include "cciw/message.html" %}</td>
 			</tr>
 		</table>
 	{% else %}
@@ -40,7 +40,7 @@
 		<table class="simpleform">
 			<tr>
 				<th scope="row">Message:</th>
-				<td>{% include "cciw/message" %}</td>
+				<td>{% include "cciw/message.html" %}</td>
 			</tr>
 		</table>
 	{% endifequal %}

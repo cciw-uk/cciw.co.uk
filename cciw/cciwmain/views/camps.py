@@ -28,7 +28,7 @@ def index(request, year=None):
             raise Http404
     c['camps'] = camps;
 
-    return render_to_response('cciw/camps/index', 
+    return render_to_response('cciw/camps/index.html', 
             context_instance=RequestContext(request, c))
 
 def detail(request, year, number):
@@ -46,14 +46,14 @@ def detail(request, year, number):
         c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(str(camp.year)) + [camp.nice_name])    
     else:
         c['breadcrumb'] = create_breadcrumb([standard_subs('<a href="/thisyear/">Camps {{thisyear}}</a>'), "Camp " + number])
-    return render_to_response('cciw/camps/detail', context_instance=c)
+    return render_to_response('cciw/camps/detail.html', context_instance=c)
 
 def thisyear(request):
     c = RequestContext(request, standard_extra_context(title="Camps " + str(settings.THISYEAR)))
     c['introtext'] = HtmlChunk.objects.get(name='camp_dates_intro_text').render(request)
     c['outrotext'] = HtmlChunk.objects.get(name='camp_dates_outro_text').render(request)
     c['camps'] = Camp.objects.filter(year=settings.THISYEAR).order_by('number')
-    return render_to_response('cciw/camps/thisyear', context_instance=c)
+    return render_to_response('cciw/camps/thisyear.html', context_instance=c)
 
 def get_forum_for_camp(camp):
     location = camp.get_absolute_url()[1:] + 'forum/'
@@ -129,7 +129,7 @@ def forum(request, year, number):
 
     c = standard_extra_context(title=title)
     return forums_views.topicindex(request, extra_context=c, forum=forum, 
-        template_name='cciw/forums/topicindex', breadcrumb_extra=breadcrumb_extra)
+        template_name='cciw/forums/topicindex.html', breadcrumb_extra=breadcrumb_extra)
 
 def _get_camp_and_breadcrumb(year, number):
     """Get camp and breadcrumb for the supplied year and number,
@@ -150,7 +150,7 @@ def topic(request, year, number, topicnumber):
     camp, breadcrumb_extra = _get_camp_and_breadcrumb(year, number)
     
     return forums_views.topic(request, topicid=topicnumber, title_start='Topic',
-        template_name='cciw/forums/topic', breadcrumb_extra=breadcrumb_extra)        
+        template_name='cciw/forums/topic.html', breadcrumb_extra=breadcrumb_extra)        
 
 @member_required
 def add_topic(request, year, number):

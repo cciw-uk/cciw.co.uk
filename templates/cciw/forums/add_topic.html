@@ -1,4 +1,4 @@
-{% extends "cciw/standard" %}
+{% extends "cciw/standard.html" %}
 {% block content %}
 	{% if message %}
 	<p>{{ message }}</p>
@@ -7,8 +7,8 @@
 	{% if show_form %}
 	<p>Enter the subject and the first post of the new topic below.</p>
 	<form action="#messageform" method="post">
-		{% include "cciw/errors" %}
-		{% include "cciw/msgpreview" %}
+		{% include "cciw/errors.html" %}
+		{% include "cciw/msgpreview.html" %}
 		{% if preview %}
 			<p>Make any changes below, and choose
 			'Preview' again or 'Post'.</p>
@@ -21,7 +21,7 @@
 			<tr>
 				<th scope="row">Message:</th>
 				<td>
-					{% include "cciw/message" %}
+					{% include "cciw/message.html" %}
 				</td>
 			</tr>
 		</table>

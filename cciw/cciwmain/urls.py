@@ -7,7 +7,7 @@ patterns('django.views.generic',
     (r'^awards/$', 'list_detail.object_list',
         {'queryset': Award.objects.order_by('-year', '-value'),
          'extra_context': cciw_common.standard_extra_context(title="Website Awards"),
-         'template_name': 'cciw/awards/index',
+         'template_name': 'cciw/awards/index.html',
          'allow_empty': True,
          }
     ),
@@ -15,7 +15,7 @@ patterns('django.views.generic',
     (r'^sites/$', 'list_detail.object_list',
         {'queryset': Site.objects.all(),
          'extra_context': cciw_common.standard_extra_context(title="Camp sites"),
-         'template_name': 'cciw/sites/index'
+         'template_name': 'cciw/sites/index.html'
         }
     ),
  
@@ -23,7 +23,7 @@ patterns('django.views.generic',
         {'queryset': Site.objects.all(),
          'slug_field': 'slug_name',
          'extra_context': cciw_common.standard_extra_context(),
-         'template_name': 'cciw/sites/detail'
+         'template_name': 'cciw/sites/detail.html'
          }
         
     ),
@@ -53,7 +53,7 @@ patterns('cciw.cciwmain.views',
     
     (r'^news/$', 'forums.topicindex', 
         {'title': 'News', 
-        'template_name': 'cciw/forums/newsindex', 
+        'template_name': 'cciw/forums/newsindex.html', 
         'paginate_by' : 6,
         'default_order': ('-created_at',)}), 
     (r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'}),
