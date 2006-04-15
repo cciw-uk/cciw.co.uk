@@ -64,3 +64,9 @@ THISYEAR = cciw.cciwmain.utils.ThisYear()
 FORUM_PAGINATE_POSTS_BY = 20
 FORUM_PAGINATE_PHOTOS_BY = 20
 FORUM_PAGINATE_TOPICS_BY = 30
+
+SERVER_EMAIL = "website@cciw.python-hosted.com"
+DEFAULT_FROM_EMAIL = SERVER_EMAIL
+EMAIL_HOST = "mail1.python-hosting.com"
+EMAIL_HOST_USER = "cciw"
+EMAIL_HOST_PASSWORD = "slarti"
