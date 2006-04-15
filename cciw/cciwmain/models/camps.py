@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Site(models.Model):
     short_name = models.CharField("Short name", maxlength="25", blank=False, unique=True)
@@ -30,6 +31,8 @@ class Person(models.Model):
     name = models.CharField("Name", maxlength=40)
     info = models.TextField("Information (Plain text)", 
                         blank=True)
+    user = models.ForeignKey(User, verbose_name="Associated admin user", null=True, blank=True)
+
     def __repr__(self):
         return self.name
 

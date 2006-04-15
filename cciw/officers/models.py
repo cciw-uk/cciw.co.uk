@@ -1,10 +1,12 @@
 from django.db import models
 from django import forms
+from django.dispatch import dispatcher
 from django.core.validators import ValidationError
 from django.http import HttpResponseForbidden
 from django.db.models.options import AdminOptions
 
 from cciw.cciwmain.models import Camp
+from cciw.officers import signals
 from django.contrib.auth.models import User
 import cciw.middleware.threadlocals as threadlocals
 import re
@@ -27,13 +29,10 @@ rqd_null_boolean_validator.always_test = True
 def required_field(field_class, *args, **kwargs):
     """Returns a field with options set appropiately
     for Application required fields - i.e., they are
-    allowed to be blank but if 'complete' is true
+    allowed to be blank but if 'finished' is true
     then they must be filled in."""
     kwargs['blank'] = True
-    try:
-        validators = list(kwargs['validator_list'])
-    except KeyError:
-        validators = []
+    validators = list(kwargs.get('validator_list', ()))
     if field_class is ExplicitBooleanField:
         validators.append(rqd_null_boolean_validator)
     else:
@@ -48,7 +47,9 @@ def yyyy_mm_validator(field_data, all_data):
 # Pretend class (it's easier to avoid some ORM magic this way)
 def YyyyMmField(*args, **kwargs):
     kwargs['maxlength'] = 7
-    kwargs['validator_list'] = [yyyy_mm_validator]
+    validators = list(kwargs.get('validator_list', ()))
+    validators.append(yyyy_mm_validator)
+    kwargs['validator_list'] = validators
     kwargs['help_text'] = 'Enter the date in YYYY/MM format.'
     return models.CharField(*args, **kwargs)
 
@@ -78,9 +79,9 @@ class FormsExplicitBooleanField(forms.RadioSelectField):
         elif data == False: data = '3'
         return forms.RadioSelectField.render(self, data)
 
+    @staticmethod
     def html2python(data):
         return {'1': None, '2': True, '3': False}.get(data, None)
-    html2python = staticmethod(html2python)
 
 # For installation, uncomment this:
 #ExplicitBooleanField = models.NullBooleanField
@@ -180,7 +181,8 @@ class Application(models.Model):
             self.officer_id = threadlocals.get_current_user().id
         self.date_submitted = datetime.date.today()
         super(Application, self).save()
-    
+        dispatcher.send(signals.application_saved, sender=self, application=self)
+
     def __repr__(self):
         if self.camp is not None:
             return "Application from %s, %d" % (self.full_name, self.camp.year)
@@ -329,3 +331,7 @@ class ApplicationAdminOptions(AdminOptions):
 # by this point, due to metaclass magic. We can alter it's behaviour like this:
 del Application._meta.admin.fields
 Application._meta.admin.__class__ = ApplicationAdminOptions
+
+
+# Ensure hooks get set up
+import cciw.officers.hooks
