@@ -21,10 +21,16 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
         return None
 
     template_name = feed_class.template_name
-    feed_inst = feed_class(template_name, request.get_full_path())
+    feed_inst = feed_class(template_name, request.path + "?format=atom")
     if query_set is not None:
-        # In case the Feed subclass can use query_set
+        # The Feed subclass may or may not use this query_set
+        # If it is a CCIWFeed it will.
         feed_inst.query_set = query_set
+
+    if not hasattr(feed_inst, 'link'):
+        # Default: atom feed is at same location
+        # as HTML page, but with different query parameters
+        feed_inst.link = request.path
 
     try:
         feedgen = feed_inst.get_feed(param)
@@ -47,7 +53,6 @@ class CCIWFeed(feeds.Feed):
 class MemberFeed(CCIWFeed):
     template_name = 'members'
     title = "New CCIW Members"
-    link = "/members/"
     description = "New members of the Christian Camps in Wales message boards."
 
     def default_query(self):
@@ -59,10 +64,19 @@ class MemberFeed(CCIWFeed):
 class PostFeed(CCIWFeed):
     template_name = 'posts'
     title = "CCIW message boards posts"
-    link = "/posts/"
     
     def default_query(self):
         return Post.visible_posts.all()
         
     def modify_query(self, query_set):
         return query_set.order_by('-posted_at')[:POST_FEED_MAX_ITEMS]
+
+def member_post_feed(member):
+    """Returns a Feed class suitable for the posts
+    of a specific member."""
+    class MemberPostFeed(PostFeed):
+        title = "Posts by %s" % member.user_name
+        
+        def default_query(self):
+            return member.posts.all()
+    return MemberPostFeed

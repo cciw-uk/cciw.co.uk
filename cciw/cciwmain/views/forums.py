@@ -397,8 +397,8 @@ def posts(request):
     context = standard_extra_context(title="Recent posts")
     posts = Post.visible_posts.exclude(posted_at__isnull=True).order_by('-posted_at')
     
-    feed = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
-    if feed: return feed
+    resp = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
+    if resp: return resp
 
     return list_detail.object_list(request, posts,
         extra_context=context, template_name='cciw/forums/posts.html',
