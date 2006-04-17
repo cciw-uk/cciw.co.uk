@@ -83,11 +83,11 @@ class Poll(models.Model):
         
 
 class PollOption(models.Model):
-    text = models.CharField("Option text", maxlength=200)
-    total = models.PositiveSmallIntegerField("Number of votes")
+    text = models.CharField("Option text", maxlength=200, core=True)
+    total = models.PositiveSmallIntegerField("Number of votes", core=True)
     poll = models.ForeignKey(Poll, verbose_name="Associated poll",
-        related_name="poll_options")
-    listorder = models.PositiveSmallIntegerField("Order in list")
+        related_name="poll_options", edit_inline=True)
+    listorder = models.PositiveSmallIntegerField("Order in list", core=True)
         
     def __repr__(self):
         return self.text
