@@ -5,7 +5,9 @@
 
 {% block extraheader %}
 {{ block.super }}
+{% block atomfeed %}
 <link rel="alternate" type="application/atom+xml" href="/news/?format=atom" title="Atom feed for web-site news." />
+{% endblock %}
 {% endblock %}
 {% block breadcrumb %}{% endblock %}
 {% block content %}

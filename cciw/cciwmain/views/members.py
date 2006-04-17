@@ -2,6 +2,7 @@ from django.views.generic import list_detail
 from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.conf import settings
 
 from cciw.cciwmain.models import Member, Message
 from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb
@@ -238,3 +239,21 @@ def inbox(request, user_name):
     
 def archived_messages(request, user_name):
     return message_list(request, user_name, Message.MESSAGE_BOX_SAVED)
+
+def posts(request, user_name):
+    try:
+        member = Member.visible_members.get(user_name=user_name)
+    except Member.DoesNotExist:
+        raise Http404
+    
+    context = standard_extra_context(title="Recent posts by %s" % user_name)
+    crumbs = [get_member_link(user_name), 'Recent posts']
+    context['breadcrumb'] = create_breadcrumb(crumbs)
+    posts = member.posts.exclude(posted_at__isnull=True).order_by('-posted_at')
+    
+    feed = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
+    if feed: return feed
+
+    return list_detail.object_list(request, posts,
+        extra_context=context, template_name='cciw/members/posts.html',
+        allow_empty=True, paginate_by=settings.FORUM_PAGINATE_POSTS_BY)

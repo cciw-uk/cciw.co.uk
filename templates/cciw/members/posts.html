@@ -1,0 +1,7 @@
+{% extends "cciw/forums/posts.html" %}
+{% load standardpage %}
+{% load view_extras %}
+
+{% block atomfeed %}
+<link rel="alternate" type="application/atom+xml" href="{{ request.path }}?format=atom" title="Atom feed for posts by {{ member.user_name}}." />
+{% endblock %}
