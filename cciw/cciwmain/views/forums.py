@@ -393,7 +393,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
         extra_context=extra_context, template_name='cciw/forums/photo.html',
         paginate_by=settings.FORUM_PAGINATE_POSTS_BY, allow_empty=True)
 
-def posts(request):
+def all_posts(request):
     context = standard_extra_context(title="Recent posts")
     posts = Post.visible_posts.exclude(posted_at__isnull=True).order_by('-posted_at')
     
@@ -411,9 +411,9 @@ def post(request, id):
         raise Http404()
     return HttpResponseRedirect(post.get_forum_url())
 
-def topics(request):
+def all_topics(request):
     context = standard_extra_context(title="Recent topics")
-    posts = Topic.visible_topics.exclude(created_at__isnull=True).order_by('-created_at')
+    topics = Topic.visible_topics.exclude(created_at__isnull=True).order_by('-created_at')
     
     resp = feeds.handle_feed_request(request, feeds.TopicFeed, query_set=topics)
     if resp: return resp

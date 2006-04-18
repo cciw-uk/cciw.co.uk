@@ -50,7 +50,7 @@
 		{% if voting_message %}<p><i>{{ voting_message|escape }}</i></p>{% endif %}
 		
 		{% if show_vote_box %}
-				{% poll_vote_box request topic poll 2 %}
+			{% poll_vote_box request topic poll 2 %}
 		{% else %}
 			{% if allow_voting_box %}
 				<form action="" method="get"><div>
