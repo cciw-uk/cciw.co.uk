@@ -27,11 +27,11 @@ class Forum(models.Model):
             captures = m.groupdict()
             number = captures['number']
             if number == 'all':
-                return "Forum for all camps, year %s" % captures['year']
+                return "forum for all camps, year %s" % captures['year']
             else:
-                return "Forum for camp %s, year %s" % (number, captures['year'])
+                return "forum for camp %s, year %s" % (number, captures['year'])
         else:
-            return "Forum at %s" % self.location
+            return "forum at %s" % self.location
 
     class Meta:
         app_label = "cciwmain"   

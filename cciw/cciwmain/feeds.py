@@ -115,3 +115,9 @@ class TopicFeed(CCIWFeed):
         
     def item_pubdate(self, topic):
         return topic.created_at
+
+def forum_topic_feed(forum):
+    """Returns a Feed class suitable for topics of a specific forum."""
+    class ForumTopicFeed(TopicFeed):
+        title = "CCIW - new topics in %s" % forum.nice_name()
+    return ForumTopicFeed

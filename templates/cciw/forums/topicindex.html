@@ -2,6 +2,10 @@
 {% load standardpage %}
 {% load view_extras %}
 {% load forums %}
+
+{% block atomfeed %}
+<link rel="alternate" type="application/atom+xml" href="{{ request.path }}?format=atom" title="Atom feed for new topics on this board." />
+{% endblock %}
 {% block content %}
 	<p>Select from the list of topics below by clicking on the topic name.</p>
 	{% if object_list %}

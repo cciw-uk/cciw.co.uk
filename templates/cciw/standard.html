@@ -1,5 +1,10 @@
 {% extends "cciw/base.html" %}
 {% load standardpage %}
+
+{% block extraheader %}
+{{ block.super }}
+{% block atomfeed %}{% endblock %}
+{% endblock %}
 {% block bodystart %}
 <div id="skiptocontentdiv"><a href="#content" id="skiptocontent">Skip to content</a></div>
 {% endblock %}

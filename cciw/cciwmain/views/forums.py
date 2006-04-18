@@ -72,7 +72,10 @@ def topicindex(request, title=None, extra_context=None, forum=None,
 
     extra_context['default_order'] = 'dlp' # corresponds = '-last_post_at'
     topics = Topic.visible_topics.filter(forum__id__exact= forum.id).order_by(*order_by)
-
+    
+    resp = feeds.handle_feed_request(request, feeds.forum_topic_feed(forum), query_set=topics)
+    if resp: return resp
+    
     if request.user.has_perm('cciwmain.edit_topic'):
         extra_context['moderator'] = True
 

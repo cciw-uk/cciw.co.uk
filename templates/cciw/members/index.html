@@ -3,8 +3,7 @@
 {% load standardpage %}
 {% load forums %}
 
-{% block extraheader %}
-{{ block.super }}
+{% block atomfeed %}
 <link rel="alternate" type="application/atom+xml" href="/members/?format=atom" title="Atom feed for new members." />
 {% endblock %}
 {% block content %}
