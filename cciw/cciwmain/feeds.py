@@ -80,3 +80,6 @@ def member_post_feed(member):
         def default_query(self):
             return member.posts.all()
     return MemberPostFeed
+
+class TopicFeed(CCIWFeed):
+    pass # TODO

@@ -1,6 +1,7 @@
 {% extends "cciw/standard.html" %}
 {% load standardpage %}
 {% load view_extras %}
+{% load forums %}
 
 {% block extraheader %}
 {{ block.super }}
@@ -8,7 +9,6 @@
 <link rel="alternate" type="application/atom+xml" href="{{ request.path }}?format=atom" title="Atom feed for message board posts." />
 {% endblock %}
 {% endblock %}
-{% load forums %}
 {% block content %}
 {% for post in object_list %}
 	<div class="individualPost">

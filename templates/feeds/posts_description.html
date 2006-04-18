@@ -1,11 +1,11 @@
 {% load standardpage %}
 {% load forums %}
-<div>
-From <b>{{ obj.posted_by_id }}</b>, at {{ obj.posted_at|date:"d M y, h:i" }}:</div>
-		<div class="postMessage"><hr/>
-		{% if obj.subject %}<div class="postSubject">{{ obj.subject|bb2html }}</div>{% endif %}
-		{{ obj.message|bb2html }}
-		</div>
+<div>From <b>{{ obj.posted_by_id }}</b>, at {{ obj.posted_at|date:"d M y, h:i" }}:</div>
+<div class="postMessage"><hr/>
+	{% if obj.subject %}<div class="postSubject">{{ obj.subject|bb2html }}</div>{% endif %}
+	{{ obj.message|bb2html }}
+<hr/>
+</div>
 <div>
 <span class="readmore"><a href="http://{{ site.domain }}{{ obj.get_absolute_url }}">view in context</a></span>
 </div>

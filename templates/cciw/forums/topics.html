@@ -1,0 +1,31 @@
+{% extends "cciw/standard.html" %}
+{% load standardpage %}
+{% load view_extras %}
+{% load forums %}
+
+{% block extraheader %}
+{{ block.super }}
+{% block atomfeed %}
+<link rel="alternate" type="application/atom+xml" href="{{ request.path }}?format=atom" title="Atom feed for all message board topics." />
+{% endblock %}
+{% endblock %}
+{% block content %}
+
+	{% if object_list %}
+	<ul>
+		{% for topic in object_list %}
+		<li>
+		<div class="individualTopic">
+			<h2><a href="{{ topic.get_absolute_url }}">{{ topic.subject|escape }}</a></h2>
+			<div>(In <a href="{{ topic.forum.get_absolute_url }}">{{ topic.forum.nice_name|escape }}</a>,
+	started by {% memberlink %}{{ topic.started_by_id }}{% endmemberlink %}, at {{ topic.created_at|date:"d M y, h:i" }})<br/><br/></div>
+	
+		</div></li>
+		{% endfor %}
+	</ul>
+	<div class="paging">{% paging_control %}</div>
+	{% else %}
+	<p>No topics.</p>
+	{% endif %}
+
+{% endblock %}

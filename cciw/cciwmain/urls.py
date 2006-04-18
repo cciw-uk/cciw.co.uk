@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import patterns
 import cciw.cciwmain.common as cciw_common
 from cciw.cciwmain.models import Site, Award
+from django.conf import settings
 
 urlpatterns = \
 patterns('django.views.generic',
@@ -42,10 +43,10 @@ patterns('cciw.cciwmain.views',
     (r'^camps/$', 'camps.index'),
     (r'^camps/(?P<year>\d{4})/?$', 'camps.index'),
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+)/$', 'camps.detail'),
-    (r'^camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/$', 'camps.forum'),
-    (r'^camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/(?P<topicnumber>\d+)/$', 'camps.topic'),
-    (r'^camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/add/$', 'camps.add_topic'),
-    (r'^camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/add_news/$', 'camps.add_news'),
+    (r'^' + settings.CAMP_FORUM_RE + r'$', 'camps.forum'),
+    (r'^' + settings.CAMP_FORUM_RE + r'(?P<topicnumber>\d+)/$', 'camps.topic'),
+    (r'^' + settings.CAMP_FORUM_RE + r'add/$', 'camps.add_topic'),
+    (r'^' + settings.CAMP_FORUM_RE + r'add_news/$', 'camps.add_news'),
     
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+)/photos/$', 'camps.gallery'),
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+)/photos/(?P<photonumber>\d+)/$', 'camps.photo'),
@@ -68,6 +69,8 @@ patterns('cciw.cciwmain.views',
         
     (r'^posts/$', 'forums.posts'),
     (r'^posts/(?P<id>\d+)/$', 'forums.post'),
+
+    (r'^topics/$', 'forums.topics'),
     
     (r'', 'htmlchunk.find'),
 ) 

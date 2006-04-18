@@ -34,11 +34,10 @@ class PagingControlNode(template.Node):
             
             # Constraints:
             # - Always have: first page, last page, next page, previous page
-            # - Never have more than abot 10 links
+            # - Never have more than about 10 links
             # - Have links spread out through range e.g. if 100 pages,
             #    show links at 10 page intervals.
-            # - If we have any 
-            
+
             # Initial set
             pages = set(p for p in range(cur_page - 2, cur_page + 3) 
                             if p >= 1 and p <= total_pages)
@@ -47,7 +46,7 @@ class PagingControlNode(template.Node):
             
             # Add some more at intervals
             # Ensure that if we are using ellipses, we don't
-            # get any adjacent numbers which look odd
+            # get any adjacent numbers since that looks odd.
             interval = max(float(total_pages/8.0), 2)
             for i in xrange(1, 9):
                 p = int(i * interval)
@@ -55,9 +54,7 @@ class PagingControlNode(template.Node):
                     pages.add(p)
 
             last_page = 0
-            pages = list(pages)
-            pages.sort()
-            for i in pages:
+            for i in sorted(pages):
                 if (i > 0):
                     output.append(" ")
                 if i > last_page + 1:

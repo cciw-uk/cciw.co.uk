@@ -3,9 +3,13 @@ from members import *
 from polls import *
 from datetime import datetime
 from django.contrib.auth.models import User
+import re
 from django.conf import settings
 import cciw.middleware.threadlocals as threadlocals
 from django.template.defaultfilters import escape
+
+# regex used to match forums that belong to camps
+_camp_forum_re = re.compile('^' + settings.CAMP_FORUM_RE + '$')
 
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
@@ -16,6 +20,18 @@ class Forum(models.Model):
     
     def __repr__(self):
         return self.location
+    
+    def nice_name(self):
+        m = _camp_forum_re.match(self.location)
+        if m:
+            captures = m.groupdict()
+            number = captures['number']
+            if number == 'all':
+                return "Forum for all camps, year %s" % captures['year']
+            else:
+                return "Forum for camp %s, year %s" % (number, captures['year'])
+        else:
+            return "Forum at %s" % self.location
 
     class Meta:
         app_label = "cciwmain"   

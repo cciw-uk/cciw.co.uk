@@ -59,14 +59,18 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "cciw.cciwmain.common.standard_processor",
 )
 
-THISYEAR = cciw.cciwmain.utils.ThisYear()
-
-FORUM_PAGINATE_POSTS_BY = 20
-FORUM_PAGINATE_PHOTOS_BY = 20
-FORUM_PAGINATE_TOPICS_BY = 30
-
 SERVER_EMAIL = "website@cciw.python-hosted.com"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 EMAIL_HOST = "mail1.python-hosting.com"
 EMAIL_HOST_USER = "cciw"
 EMAIL_HOST_PASSWORD = "slarti"
+
+## CCIW SPECIFIC SETTINGS AND CONSTANTS
+
+THISYEAR = cciw.cciwmain.utils.ThisYear()
+CAMP_FORUM_RE = r'camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/'
+
+FORUM_PAGINATE_POSTS_BY = 20
+FORUM_PAGINATE_PHOTOS_BY = 20
+FORUM_PAGINATE_TOPICS_BY = 30
+
