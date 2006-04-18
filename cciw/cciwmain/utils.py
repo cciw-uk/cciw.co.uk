@@ -4,13 +4,16 @@ def obfuscate_email(email):
     # TODO - make into javascript linky thing?
     return email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ')
 
+def get_member_href(user_name):
+    return '/members/' + user_name + '/'
+
 def get_member_link(user_name):
     user_name = user_name.strip()
     if user_name.startswith("'"):
         return user_name
     else:
         return '<a title="Information about user \'' + user_name + \
-           '\'" href="/members/' + user_name + '/">' + user_name + '</a>'
+           '\'" href="' + get_member_href(user_name) + '">' + user_name + '</a>'
     
 def modified_query_string(request, dict, fragment = ''):
     """Returns the query string represented by request, with key-value pairs

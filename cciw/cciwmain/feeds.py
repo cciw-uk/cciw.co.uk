@@ -3,7 +3,7 @@ from django.http import Http404, HttpResponse
 from cciw.cciwmain.models import Member, Topic, Post, NewsItem
 from django.contrib.sites.models import Site
 from django.utils.feedgenerator import Atom1Feed
-from cciw.cciwmain.utils import get_member_link
+from cciw.cciwmain.utils import get_member_href
 
 MEMBER_FEED_MAX_ITEMS = 20
 NEWS_FEED_MAX_ITEMS = 20
@@ -77,12 +77,12 @@ class PostFeed(CCIWFeed):
 
     def modify_query(self, query_set):
         return query_set.order_by('-posted_at')[:POST_FEED_MAX_ITEMS]
-
+        
     def item_author_name(self, post):
         return post.posted_by_id
 
     def item_author_link(self, post):
-        return add_domain(get_member_link(post.posted_by_id))
+        return add_domain(get_member_href(post.posted_by_id))
 
     def item_pubdate(self, post):
         return post.posted_at
@@ -111,7 +111,7 @@ class TopicFeed(CCIWFeed):
         return topic.started_by_id
         
     def item_author_link(self, topic):
-        return add_domain(get_member_link(topic.started_by_id))
+        return add_domain(get_member_href(topic.started_by_id))
         
     def item_pubdate(self, topic):
         return topic.created_at
