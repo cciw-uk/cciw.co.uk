@@ -288,14 +288,22 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
     if title_start is None:
         raise Exception("No title provided for page")
 
-    cur_member = get_current_member()
-
+    ### TOPIC AND POSTS ###
     try:
         topic = Topic.visible_topics.get(id=int(topicid))
     except Topic.DoesNotExist:
         raise Http404
-    
+
+    posts = Post.visible_posts.filter(topic__id__exact=topic.id)
+
+    ### Feed: ###
+    # Requires 'topic' and 'posts'
+    resp = feeds.handle_feed_request(request, feeds.topic_post_feed(topic), query_set=posts)
+    if resp: return resp
+
     ### GENERAL CONTEXT ###
+    cur_member = get_current_member()
+
     # Add additional title
     title = utils.get_extract(topic.subject, 40)
     if len(title_start) > 0:
@@ -308,6 +316,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
 
     if introtext:
         extra_context['introtext'] = introtext
+
 
     ### PROCESSING ###
     # Process any message that they added.
@@ -342,8 +351,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
             (cur_member is None and poll.can_anyone_vote()) or \
             (cur_member is not None and poll.can_vote(cur_member))
 
-    ### POSTS ###
-    posts = Post.visible_posts.filter(topic__id__exact=topic.id)
+    ### PERMISSIONS ###
     if request.user.has_perm('cciwmain.edit_post'):
         extra_context['moderator'] = True
 

@@ -97,6 +97,13 @@ def member_post_feed(member):
             return member.posts.all()
     return MemberPostFeed
 
+def topic_post_feed(topic):
+    """Returns a Feed class suitable for the posts
+    in a specific topic."""
+    class TopicPostFeed(PostFeed):
+        title = "Posts on topic \"%s\"" % topic.subject
+    return TopicPostFeed
+
 class TopicFeed(CCIWFeed):
     template_name = 'topics'
     title = 'CCIW message board topics'
