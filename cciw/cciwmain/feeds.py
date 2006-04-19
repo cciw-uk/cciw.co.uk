@@ -51,33 +51,23 @@ def add_domain(url):
 class CCIWFeed(feeds.Feed):
     feed_type = Atom1Feed
     def items(self):
-        query_set = getattr(self, 'query_set', None)
-        if query_set is None:
-            query_set = self.default_query()
-        else:
-            return self.modify_query(query_set)
+        return self.modify_query(self.query_set)
 
 class MemberFeed(CCIWFeed):
     template_name = 'members'
     title = "New CCIW Members"
     description = "New members of the Christian Camps in Wales message boards."
 
-    def default_query(self):
-        return Member.visible_members.all()
-        
     def modify_query(self, query_set):
         return  query_set.order_by('-date_joined')[:MEMBER_FEED_MAX_ITEMS]
 
 class PostFeed(CCIWFeed):
     template_name = 'posts'
     title = "CCIW message boards posts"
-    
-    def default_query(self):
-        return Post.visible_posts.all()
 
     def modify_query(self, query_set):
         return query_set.order_by('-posted_at')[:POST_FEED_MAX_ITEMS]
-        
+
     def item_author_name(self, post):
         return post.posted_by_id
 
@@ -92,9 +82,6 @@ def member_post_feed(member):
     of a specific member."""
     class MemberPostFeed(PostFeed):
         title = "Posts by %s" % member.user_name
-        
-        def default_query(self):
-            return member.posts.all()
     return MemberPostFeed
 
 def topic_post_feed(topic):
@@ -107,10 +94,7 @@ def topic_post_feed(topic):
 class TopicFeed(CCIWFeed):
     template_name = 'topics'
     title = 'CCIW message board topics'
-    
-    def default_query(self):
-        return Topic.visible_topics.all()
-        
+
     def modify_query(self, query_set):
         return query_set.order_by('-created_at')[:TOPIC_FEED_MAX_ITEMS]
         
