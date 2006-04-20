@@ -3,7 +3,9 @@
 
 {% block extraheader %}
 {{ block.super }}
-{% block atomfeed %}{% endblock %}
+{% block atomfeed %}
+{% atomfeedlink %}
+{% endblock %}
 {% endblock %}
 {% block bodystart %}
 <div id="skiptocontentdiv"><a href="#content" id="skiptocontent">Skip to content</a></div>

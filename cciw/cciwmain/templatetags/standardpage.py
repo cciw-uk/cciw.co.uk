@@ -71,7 +71,19 @@ def do_addhtmlchunk(parser, token):
     bits = token.contents.split(" ", 2)
     return AddHtmlChunk(bits[1], bits[2])
 
-        
+
+class AtomFeedLink(template.Node):
+    def __init__(self, parser, token):
+        pass
+    def render(self, context):
+        title = context['atom_feed_title']
+        if title:
+            return '<link rel="alternate" type="application/atom+xml" href="%(url)s?format=atom" title="%(title)s" />' \
+            % {'url': context['request'].path, 'title': title }
+        else:
+            return ''
+
+
 register = template.Library()
 register.filter(standard_subs)
 register.filter(obfuscate_email)
@@ -79,4 +91,4 @@ register.tag('email', do_email)
 register.tag('memberlink', do_member_link)
 register.tag('setvar', do_setvar)
 register.tag('addhtmlchunk', do_addhtmlchunk)
-
+register.tag('atomfeedlink', AtomFeedLink)

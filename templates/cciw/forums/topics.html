@@ -3,12 +3,6 @@
 {% load view_extras %}
 {% load forums %}
 
-{% block extraheader %}
-{{ block.super }}
-{% block atomfeed %}
-<link rel="alternate" type="application/atom+xml" href="{{ request.path }}?format=atom" title="Atom feed for all message board topics." />
-{% endblock %}
-{% endblock %}
 {% block content %}
 
 	{% if object_list %}

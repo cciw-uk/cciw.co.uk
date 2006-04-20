@@ -76,6 +76,8 @@ def topicindex(request, title=None, extra_context=None, forum=None,
     resp = feeds.handle_feed_request(request, feeds.forum_topic_feed(forum), query_set=topics)
     if resp: return resp
     
+    extra_context['atom_feed_title'] = "Atom feed for new topics on this board."
+    
     if request.user.has_perm('cciwmain.edit_topic'):
         extra_context['moderator'] = True
 
@@ -317,6 +319,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
     if introtext:
         extra_context['introtext'] = introtext
 
+    extra_context['atom_feed_title'] = "Atom feed for posts in this topic."
 
     ### PROCESSING ###
     # Process any message that they added.
@@ -410,6 +413,8 @@ def all_posts(request):
     
     resp = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
     if resp: return resp
+    
+    context['atom_feed_title'] = "Atom feed for all posts on CCIW message boards."
 
     return list_detail.object_list(request, posts,
         extra_context=context, template_name='cciw/forums/posts.html',
@@ -428,6 +433,8 @@ def all_topics(request):
     
     resp = feeds.handle_feed_request(request, feeds.TopicFeed, query_set=topics)
     if resp: return resp
+    
+    context['atom_feed_title'] = "Atom feed for all new topics."
 
     return list_detail.object_list(request, topics,
         extra_context=context, template_name='cciw/forums/topics.html',

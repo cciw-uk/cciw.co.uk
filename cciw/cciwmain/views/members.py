@@ -45,6 +45,8 @@ def index(request):
     except KeyError:
         pass
 
+    extra_context['atom_feed_title'] = "Atom feed for new members."
+    
     return list_detail.object_list(request, members,
         extra_context=extra_context, 
         template_name='cciw/members/index.html',
@@ -245,16 +247,17 @@ def posts(request, user_name):
         member = Member.visible_members.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404
-    
-    context = standard_extra_context(title="Recent posts by %s" % user_name)
-    context['member'] = member
-    crumbs = [get_member_link(user_name), 'Recent posts']
-    context['breadcrumb'] = create_breadcrumb(crumbs)
     posts = member.posts.exclude(posted_at__isnull=True).order_by('-posted_at')
     
     resp = feeds.handle_feed_request(request, feeds.member_post_feed(member), 
                                      query_set=posts)
     if resp: return resp
+    
+    context = standard_extra_context(title="Recent posts by %s" % user_name)
+    context['member'] = member
+    crumbs = [get_member_link(user_name), 'Recent posts']
+    context['breadcrumb'] = create_breadcrumb(crumbs)
+    context['atom_feed_title'] = "Atom feed for posts by %s." % user_name
 
     return list_detail.object_list(request, posts,
         extra_context=context, template_name='cciw/members/posts.html',
