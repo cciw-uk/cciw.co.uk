@@ -253,3 +253,4 @@ def posts(request, user_name):
     return list_detail.object_list(request, posts,
         extra_context=context, template_name='cciw/members/posts.html',
         allow_empty=True, paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
+

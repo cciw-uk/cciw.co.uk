@@ -1,0 +1,52 @@
+{% extends "cciw/standard.html" %}
+{% load standardpage %}
+
+{% block content %}
+
+{% ifequal stage "start" %}
+<p>Before signing up, please read the terms of service below and 
+then choose 'I agree' if you agree to them.</p>
+
+<h1>Terms of service</h1>
+{% htmlchunk website_terms_of_service %}
+
+<h2>Continue</h2>
+
+<p>If you agree to abide by the terms and rules above, press
+'I agree' to continue.</p>
+
+<form action="" method="post">
+<div><input type="submit" name="agreeterms" value="I agree" /></div>
+</form>
+
+{% else %}{% ifequal stage "email" %}
+
+<h2>E-mail address</h2>
+
+{% if error_message %}
+	<div class="userError">{{ error_message|escape }}</div>
+{% else %}
+	<p>Please enter your e-mail address to continue.</p>
+{% endif %}
+<form method="post" action="" accept-charset="utf-8">
+<div><label for="idemail">E-mail address:</label> 
+<input type="text" name="email" id="idemail" value="{{ email|escape }}" />
+</div>
+
+<p>After clicking 'submit', you will be sent an e-mail
+containing instructions on how to finish the signup process.</p>
+
+<div><input type="submit" name="submitemail" value="Submit" /></div>
+</form>
+{% else %}{% ifequal stage "emailsubmitted" %}
+
+<h2>E-mail sent</h2>
+<p>Thank you, an e-mail has been sent to {{ email|escape }}.  Follow
+the instructions it contains to complete the sign up process.</p>
+
+{% else %}{% ifequal stage "username" %}
+
+
+{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
+
+{% endblock %}

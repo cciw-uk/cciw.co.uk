@@ -72,6 +72,8 @@ patterns('cciw.cciwmain.views',
 
     (r'^topics/$', 'forums.all_topics'),
     
+    (r'^signup/$', 'memberadmin.signup'),
+    
     (r'', 'htmlchunk.find'),
 ) 
 
