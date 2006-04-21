@@ -86,7 +86,7 @@ html.append(('website_terms_of_service', '/website/terms/', 'Terms of Service', 
 <ol>
   <li>All users of the web site must be shown respect,
       and attacks on others will not be tolerated.</li>
-  <li>Profanity, crude language and blasphemy are forbidden.</li>
+  <li>Crude language and blasphemy (taking God's name lightly) are forbidden.</li>
   <li>Use of the message boards for advertising unrelated
       or inappropriate web sites is not allowed.</li>
   <li>Moderators may remove or modify messages,
@@ -121,7 +121,7 @@ html.append(('website_terms_of_service', '/website/terms/', 'Terms of Service', 
 <p>All other content contributed to the site is publically visible,
  and it is the responsiblity of the individual users to take
  any necessary precautions with regard to anything posted on the site.
- Also, we cannot gaurantee the confidentiality of private message
+ Also, we cannot gaurantee the confidentiality of private messages
  sent using the site.</p>
 
 <h2>Disclaimer</h2>
