@@ -384,9 +384,19 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
         extra_context=extra_context, template_name='cciw/forums/photoindex.html',
         paginate_by=settings.FORUM_PAGINATE_PHOTOS_BY, allow_empty=True)
 
-@member_required
+@member_required_for_post
 def photo(request, photo, extra_context, breadcrumb_extra):
     "Displays a photo"
+    
+    ## POSTS ###
+    posts = Post.visible_posts.filter(photo__id__exact=photo.id)
+
+    ### Feed: ###
+    resp = feeds.handle_feed_request(request, feeds.photo_post_feed(photo), query_set=posts)
+    if resp: return resp
+    
+    extra_context['atom_feed_title'] = "Atom feed for posts on this photo."
+    
     extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + photo_breadcrumb(photo.gallery, photo))
     extra_context['photo'] = photo
     
@@ -396,13 +406,12 @@ def photo(request, photo, extra_context, breadcrumb_extra):
         else:
             extra_context['login_link'] = login_redirect(request.get_full_path() + '#messageform')
 
-    # Process any message that they added.
+    ### PROCESSING ###
     process_post(request, None, photo, extra_context)
 
-    ## POSTS
+    ### PERMISSIONS ###
     if request.user.has_perm('cciwmain.edit_post'):
         extra_context['moderator'] = True
-    posts = Post.visible_posts.filter(photo__id__exact=photo.id)
 
     return list_detail.object_list(request, posts,
         extra_context=extra_context, template_name='cciw/forums/photo.html',

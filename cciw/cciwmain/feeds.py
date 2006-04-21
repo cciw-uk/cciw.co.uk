@@ -91,6 +91,12 @@ def topic_post_feed(topic):
         title = "Posts on topic \"%s\"" % topic.subject
     return TopicPostFeed
 
+def photo_post_feed(photo):
+    """Returns a Feed classs suitable for the posts in a specific photo."""
+    class PhotoPostFeed(PostFeed):
+        title = "Posts on photo %s" % str(photo)
+    return PhotoPostFeed
+
 class TopicFeed(CCIWFeed):
     template_name = 'topics'
     title = 'CCIW message board topics'
