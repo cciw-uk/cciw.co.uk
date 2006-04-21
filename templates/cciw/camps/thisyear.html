@@ -1,7 +1,8 @@
 {% extends "cciw/standard.html" %}
+{% load standardpage %}
 {% block content %}
 	{% if camps %}
-		{{ introtext }}
+		{% htmlchunk camp_dates_intro_text %}
 		<h2>Dates</h2>
 		<p>Click on the number of the camp for more information</p>
 		<div>
@@ -39,7 +40,7 @@
 			{% endfor %}
 		</table>
 		</div>
-		{{ outrotext }}
+		{% htmlchunk camp_dates_outro_text %}
 	{% else %}
 	<p>Information for camps in {{thisyear}} is not yet available.</p>
 	{% endif %}
