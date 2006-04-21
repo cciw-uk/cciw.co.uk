@@ -9,6 +9,7 @@ MEMBER_FEED_MAX_ITEMS = 20
 NEWS_FEED_MAX_ITEMS = 20
 POST_FEED_MAX_ITEMS = 20
 TOPIC_FEED_MAX_ITEMS = 20
+PHOTO_FEED_MAX_ITEMS = 20
 
 # My extensions to django's feed:
 #  - items() checks for self.query_set and uses that if available, otherwise
@@ -81,25 +82,25 @@ def member_post_feed(member):
     """Returns a Feed class suitable for the posts
     of a specific member."""
     class MemberPostFeed(PostFeed):
-        title = "Posts by %s" % member.user_name
+        title = "CCIW - Posts by %s" % member.user_name
     return MemberPostFeed
 
 def topic_post_feed(topic):
     """Returns a Feed class suitable for the posts
     in a specific topic."""
     class TopicPostFeed(PostFeed):
-        title = "Posts on topic \"%s\"" % topic.subject
+        title = "CCIW - Posts on topic \"%s\"" % topic.subject
     return TopicPostFeed
 
 def photo_post_feed(photo):
     """Returns a Feed classs suitable for the posts in a specific photo."""
     class PhotoPostFeed(PostFeed):
-        title = "Posts on photo %s" % str(photo)
+        title = "CCIW - Posts on photo %s" % str(photo)
     return PhotoPostFeed
 
 class TopicFeed(CCIWFeed):
     template_name = 'topics'
-    title = 'CCIW message board topics'
+    title = 'CCIW - message board topics'
 
     def modify_query(self, query_set):
         return query_set.order_by('-created_at')[:TOPIC_FEED_MAX_ITEMS]
@@ -118,3 +119,18 @@ def forum_topic_feed(forum):
     class ForumTopicFeed(TopicFeed):
         title = "CCIW - new topics in %s" % forum.nice_name()
     return ForumTopicFeed
+
+class PhotoFeed(CCIWFeed):
+    template_name = 'photos'
+    title = 'CCIW photos'
+    
+    def modify_query(self, query_set):
+        return query_set.order_by('-created_at')[:PHOTO_FEED_MAX_ITEMS]
+    
+    def item_pubdate(self, photo):
+        return photo.created_at
+
+def gallery_photo_feed(gallery_name):
+    class GalleryPhotoFeed(PhotoFeed):
+        title = gallery_name
+    return GalleryPhotoFeed

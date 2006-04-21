@@ -52,7 +52,6 @@ def topicindex(request, title=None, extra_context=None, forum=None,
 
     ### FORUM ###
     forum = _get_forum_or_404(request.path, '')
-    extra_context['forum'] = forum
     
     ### TOPICS ###
     topics = Topic.visible_topics.filter(forum__id__exact=forum.id)
@@ -65,7 +64,8 @@ def topicindex(request, title=None, extra_context=None, forum=None,
         if title is None:
             raise Exception("No title provided for page")
         extra_context = standard_extra_context(title=title)
-        
+    
+    extra_context['forum'] = forum
     extra_context['atom_feed_title'] = "Atom feed for new topics on this board."
     
     if breadcrumb_extra is None:
@@ -374,6 +374,16 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
 
 def photoindex(request, gallery, extra_context, breadcrumb_extra):
     "Displays an a gallery of photos"
+    
+    ### PHOTOS ###
+    photos = Photo.visible_photos.filter(gallery__id__exact=gallery.id)
+    
+    ### FEED ###
+    resp = feeds.handle_feed_request(request, 
+        feeds.gallery_photo_feed("CCIW - " + extra_context['title']), query_set=photos)
+    if resp is not None: return resp
+    
+    extra_context['atom_feed_title'] = "Atom feed for photos in this gallery."
     extra_context['gallery'] = gallery    
     extra_context['breadcrumb'] =   create_breadcrumb(breadcrumb_extra + photoindex_breadcrumb(gallery))
 
@@ -386,9 +396,8 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
         'dlp': ('-last_post_at',)},
         request, ('created_at', 'id'))
     extra_context['default_order'] = 'aca'
+    photos = photos.order_by(*order_by)
 
-    photos = Photo.visible_photos.filter(gallery__id__exact=gallery.id).order_by(*order_by)
-    
     return list_detail.object_list(request, photos, 
         extra_context=extra_context, template_name='cciw/forums/photoindex.html',
         paginate_by=settings.FORUM_PAGINATE_PHOTOS_BY, allow_empty=True)
