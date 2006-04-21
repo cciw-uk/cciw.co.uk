@@ -52,8 +52,8 @@ def do_setvar(parser, token):
     bits = token.contents.split(" ", 2)
     return SetVarNode(bits[1], bits[2])
 
-class AddHtmlChunk(template.Node):
-    def __init__(self, context_var, chunk_name):
+class RenderHtmlChunk(template.Node):
+    def __init__(self, chunk_name):
         self.context_var = context_var
         self.chunk = HtmlChunk.objects.get(name=chunk_name)
         
@@ -61,16 +61,13 @@ class AddHtmlChunk(template.Node):
         context[self.context_var] = self.chunk.render(context['request'])
         return ''
     
-def do_addhtmlchunk(parser, token):
+def do_htmlchunk(parser, token):
     """
-    Adds an HtmlChunk into the context.  This should be
-    used after 'load' statements and before 'extends'.
-    It takes two arguments, the name of the context variable
-    to set and the name of the HtmlChunk to find.
+    Renders an HtmlChunk. It takes a single argument,
+    the name of the HtmlChunk to find.
     """
-    bits = token.contents.split(" ", 2)
-    return AddHtmlChunk(bits[1], bits[2])
-
+    bits = token.contents.split(" ", 1)
+    return RenderHtmlChunk(bits[1])
 
 class AtomFeedLink(template.Node):
     def __init__(self, parser, token):
@@ -90,5 +87,5 @@ register.filter(obfuscate_email)
 register.tag('email', do_email)
 register.tag('memberlink', do_member_link)
 register.tag('setvar', do_setvar)
-register.tag('addhtmlchunk', do_addhtmlchunk)
+register.tag('htmlchunk', do_htmlchunk)
 register.tag('atomfeedlink', AtomFeedLink)

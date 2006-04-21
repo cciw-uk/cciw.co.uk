@@ -1,5 +1,4 @@
 {% load standardpage %}
-{% addhtmlchunk sites_general sites_general %}
 {% extends "cciw/standard.html" %}
 {% block content %}
 <p>CCIW currently use the following camp sites:</p>
@@ -9,6 +8,6 @@
 	{% endfor %}
 </ul>
 
-{{ sites_general }}
+{% htmlchunk sites_general %}
 
 {% endblock %}
