@@ -11,19 +11,27 @@ def get_current_member():
     """Returns the currently logged in member, or None"""
     return getattr(_thread_locals, 'member', None)
 
+def set_current_member(member):
+    # This is *very* rarely needed.
+    _thread_locals.member = member
+
+def _get_member_from_request(request):
+    from cciw.cciwmain.models import Member
+    try:
+        return Member.visible_members.get(user_name=request.session['member_id'])
+    except (KeyError, Member.DoesNotExist):
+        return None
+
 class ThreadLocals(object):
     """Adds various objects to thread local storage from the request object."""
     def process_request(self, request):
         _thread_locals.user = getattr(request, 'user', None)
         
-        try:
-            from cciw.cciwmain.models import Member
-            member = Member.visible_members.get(user_name=request.session['member_id'])
+        member = _get_member_from_request(request)
+        if member is not None:
             # use opportunity to update last_seen data
             if (datetime.datetime.now() - member.last_seen).seconds > 60:
                 member.last_seen = datetime.datetime.now()
                 member.save()
-        except (KeyError, Member.DoesNotExist):
-            member = None
-        _thread_locals.member = member
+        set_current_member(member)
 

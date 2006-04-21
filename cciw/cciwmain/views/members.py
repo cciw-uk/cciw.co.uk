@@ -7,7 +7,7 @@ from django.conf import settings
 from cciw.cciwmain.models import Member, Message
 from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb
 from cciw.middleware.threadlocals import get_current_member
-from cciw.cciwmain.decorators import member_required, same_member_required
+from cciw.cciwmain.decorators import member_required, same_member_required, member_required_for_post, _display_login_form
 from cciw.cciwmain.utils import get_member_link
 import cciw.cciwmain.templatetags.bbcode as bbcode
 from cciw.cciwmain import feeds
@@ -74,24 +74,15 @@ def detail(request, user_name):
     c['awards'] = member.personal_awards.all()
     return render_to_response('cciw/members/detail.html', context_instance=c)
     
+@member_required_for_post
 def login(request):
-    c = RequestContext(request, standard_extra_context(title="Login"))
-    redirect = request.GET.get('redirect', None)
-    c['isFromRedirect'] = (redirect is not None)
     if request.POST:
-        try:
-            member = Member.visible_members.get(user_name=request.POST['user_name'])
-            if member.check_password(request.POST['password']):
-                request.session['member_id'] = member.user_name
-                member.last_seen = datetime.now()
-                member.save()
-                redirect_url = redirect or member.get_absolute_url()
-                return HttpResponseRedirect(redirect_url)
-            else:
-                c['loginFailed'] = True
-        except Member.DoesNotExist:
-            c['loginFailed'] = True
-    return render_to_response('cciw/members/login.html', context_instance=c)
+        redirect = request.GET.get('redirect', None)
+        if not redirect:
+            redirect = get_current_member().get_absolute_url()
+        return HttpResponseRedirect(redirect)
+    else:
+        return _display_login_form(request)
 
 @member_required
 def send_message(request, user_name):

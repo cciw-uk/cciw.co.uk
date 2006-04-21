@@ -11,7 +11,7 @@ from cciw.cciwmain.decorators import login_redirect
 from django.utils.html import escape
 from cciw.cciwmain import utils
 from cciw.cciwmain.templatetags import bbcode
-from cciw.cciwmain.decorators import member_required
+from cciw.cciwmain.decorators import member_required, member_required_for_post
 from datetime import datetime
 from cciw.cciwmain import feeds
 
@@ -284,6 +284,7 @@ def process_vote(request, topic, context):
         voteinfo.save()
         context['voting_message'] = 'Vote registered, thank you.'
 
+@member_required_for_post
 def topic(request, title_start=None, template_name='cciw/forums/topic.html', topicid=0,
         introtext=None, breadcrumb_extra=None):
     """Displays a topic"""
