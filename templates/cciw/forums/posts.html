@@ -4,6 +4,7 @@
 {% load forums %}
 
 {% block content %}
+{% if object_list %}
 {% for post in object_list %}
 	<div class="individualPost">
 		<div class="postHeader">
@@ -22,5 +23,8 @@
 		
 	</div>
 {% endfor %}
+{% else %}
+	<p>No posts found.</p>
+{% endif %}
 <div class="paging">{% paging_control %}</div>
 {% endblock %}
