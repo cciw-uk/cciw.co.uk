@@ -46,20 +46,33 @@ def photo_breadcrumb(gallery, photo):
     
 # Called directly as a view for /news/ and /website/forum/, and used by other views
 def topicindex(request, title=None, extra_context=None, forum=None,
-    template_name='cciw/forums/topicindex.html', breadcrumb_extra=None, paginate_by=settings.FORUM_PAGINATE_TOPICS_BY, default_order=('-last_post_at',)):
+    template_name='cciw/forums/topicindex.html', breadcrumb_extra=None, 
+    paginate_by=settings.FORUM_PAGINATE_TOPICS_BY, default_order=('-last_post_at',)):
     "Displays an index of topics in a forum"
+
+    ### FORUM ###
+    forum = _get_forum_or_404(request.path, '')
+    extra_context['forum'] = forum
+    
+    ### TOPICS ###
+    topics = Topic.visible_topics.filter(forum__id__exact=forum.id)
+    
+    ### FEED ###
+    resp = feeds.handle_feed_request(request, feeds.forum_topic_feed(forum), query_set=topics)
+    if resp: return resp
+
     if extra_context is None:
         if title is None:
             raise Exception("No title provided for page")
         extra_context = standard_extra_context(title=title)
         
-    forum = _get_forum_or_404(request.path, '')
-    extra_context['forum'] = forum
+    extra_context['atom_feed_title'] = "Atom feed for new topics on this board."
     
     if breadcrumb_extra is None:
         breadcrumb_extra = []
     extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topicindex_breadcrumb(forum))
 
+    ### ORDERING ###
     order_by = get_order_option(
         {'aca': ('created_at', 'id'),
         'dca': ('-created_at', '-id'),
@@ -71,13 +84,9 @@ def topicindex(request, title=None, extra_context=None, forum=None,
         request, default_order)
 
     extra_context['default_order'] = 'dlp' # corresponds = '-last_post_at'
-    topics = Topic.visible_topics.filter(forum__id__exact= forum.id).order_by(*order_by)
+    topics = topics.order_by(*order_by)
     
-    resp = feeds.handle_feed_request(request, feeds.forum_topic_feed(forum), query_set=topics)
-    if resp: return resp
-    
-    extra_context['atom_feed_title'] = "Atom feed for new topics on this board."
-    
+    ### PERMISSIONS ###
     if request.user.has_perm('cciwmain.edit_topic'):
         extra_context['moderator'] = True
 
