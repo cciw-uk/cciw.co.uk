@@ -73,7 +73,9 @@ def detail(request, user_name):
     c['member'] = member
     c['awards'] = member.personal_awards.all()
     return render_to_response('cciw/members/detail.html', context_instance=c)
-    
+
+# The real work here is done in member_required_for_post,
+# and _display_login_form, after that it is just redirecting
 @member_required_for_post
 def login(request):
     if request.POST:
