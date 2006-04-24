@@ -58,11 +58,11 @@
 			{% endif %}
 			<tr>
 				<th scope="row">Date joined</th>
-				<td>{{ member.date_joined|date:"d M Y H:i:s" }}</td>
+				<td>{% if member.date_joined %}{{ member.date_joined|date:"d M Y H:i:s" }}{% endif %}</td>
 			</tr>
 			<tr>
 				<th scope="row">Last seen</th>
-				<td>{{ member.last_seen|date:"d M Y H:i:s" }}</td>
+				<td>{% if member.last_seen %}{{ member.last_seen|date:"d M Y H:i:s" }}{% endif %}</td>
 			</tr>
 			{% if member.comments %}
 			<tr>
