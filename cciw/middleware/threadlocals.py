@@ -30,7 +30,7 @@ class ThreadLocals(object):
         member = _get_member_from_request(request)
         if member is not None:
             # use opportunity to update last_seen data
-            if (datetime.datetime.now() - member.last_seen).seconds > 60:
+            if (member.last_seen is None) or (datetime.datetime.now() - member.last_seen).seconds > 60:
                 member.last_seen = datetime.datetime.now()
                 member.save()
         set_current_member(member)
