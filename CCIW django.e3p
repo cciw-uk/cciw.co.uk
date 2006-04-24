@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2006-04-15, 23:02:31 -->
+<!-- Saved: 2006-04-22, 01:34:46 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -232,6 +232,12 @@
       <Dir>cciw</Dir>
       <Dir>officers</Dir>
       <Name>signals.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>views</Dir>
+      <Name>memberadmin.py</Name>
     </Source>
   </Sources>
   <Forms>
