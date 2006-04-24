@@ -64,14 +64,14 @@ class Member(models.Model):
     message_option = models.PositiveSmallIntegerField("Message option",
         choices=MESSAGE_OPTIONS, default=1)
     comments    = models.TextField("Comments", blank=True)
-    confirmed   = models.BooleanField("Confirmed", default=False)
+    confirmed   = models.BooleanField("Confirmed", default=False) # TODO - remove
     confirm_secret = models.CharField("Confirmation secret", maxlength=30, blank=True)
     moderated   = models.PositiveSmallIntegerField("Moderated", default=0,
         choices=MODERATE_OPTIONS)
     hidden      = models.BooleanField("Hidden", default=False)
     banned      = models.BooleanField("Banned", default=False)
     new_email   = models.EmailField("New email address (unconfirmed)", blank=True)
-    bookmarks_notify = models.BooleanField("Bookmark notifcations enabled", default=False)
+    bookmarks_notify = models.BooleanField("Bookmark notifcations enabled", default=False) # TODO - remove
     permissions = models.ManyToManyField(Permission,
         verbose_name="permissions", related_name="member_with_permission",
         blank=True, null=True, filter_interface=models.HORIZONTAL)
