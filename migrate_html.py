@@ -91,11 +91,11 @@ html.append(('website_terms_of_service', '/website/terms/', 'Terms of Service', 
       or inappropriate web sites is not allowed.</li>
   <li>Moderators may remove or modify messages,
       and their decision is final.</li>
-  <li>Usernames not becoming of a Christian are not allowed.</li>
+  <li>Usernames not appropriate for a Christian are not allowed.</li>
 </ol>
 
 
-<p>If these rules are disobeyed the web site admins may 
+<p>If these rules are ignored the web site admins may 
  limit the privileges of a user or ban them entirely.</p>
 
 
@@ -113,7 +113,7 @@ html.append(('website_terms_of_service', '/website/terms/', 'Terms of Service', 
  this site.  (Spammers are known to have programs that trawl web sites
  for e-mail addresses)</p>
 
-<p>A high level of care will be taken to ensure that e-mail addresses are
+<p>Every effort will be taken to ensure that e-mail addresses are
  not made visible without your consent, but due to the fact that
  other people and systems are involved we cannot <i>guarantee</i> that this
  information will remain private.</p>
@@ -160,7 +160,7 @@ Cardiff<br/>
 CF14 1AS<br/>
 Tel: 029 2065 8426<br/>
 Mob: 07867 987930<br/>
-e-mail: {% email %}cciw@cciw.co.uk{% endemail %}<br/>
+e-mail: &ltcciw <b>at</b> cciw <b>dot</b> co <b>dot</b> uk&gt;<br/>
 </address>
 <br/>
 <br/>
@@ -202,7 +202,7 @@ Occupation - Engineer<br/>
 Bradford<br/>
 Elder of Pollard Park Evangelical Church<br/>
 Occupation - Professional Engineering Manager<br/>
-e-mail: {% email %}bobplant@aol.com{% endemail %}
+e-mail: bobplant <b>at</b> aol <b>dot</b> com
 </address>
 <br/>
 <br/>
