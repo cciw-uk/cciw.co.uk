@@ -26,7 +26,7 @@ def modified_query_string(request, dict, fragment = ''):
     
 def strip_control_chars(text):
     for i in range(0,32):
-        text = text.replace(chr(i),'')
+        text = text.replace(chr(i), '')
     return text
     
 def validate_xml(filename):
@@ -80,15 +80,13 @@ class ThisYear(object):
     def __str__(self):
         self.update()
         return str(self.year)
-        
+    
+    __repr__ = __str__
+
     def __cmp__(self, other):
         self.update()
         return cmp(self.year, other)
-        
-    def __repr__(self):
-        self.update()
-        return repr(self.year)
-        
+
     def __add__(self, other):
         self.update()
         return self.year + other
