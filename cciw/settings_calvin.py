@@ -24,7 +24,7 @@ MIDDLEWARE_CLASSES = (
 #    "django.middleware.cache.CacheMiddleware",
 #    "django.middleware.gzip.GZipMiddleware",
     "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware",
-    "lukeplant_me_uk.django.middleware.csrf.CsrfMiddleware",
+    "django.contrib.csrf.middleware.CsrfMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "cciw.middleware.threadlocals.ThreadLocals",
