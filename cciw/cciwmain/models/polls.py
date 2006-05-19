@@ -28,7 +28,7 @@ class Poll(models.Model):
     created_by = models.ForeignKey(Member, verbose_name="created by",
         related_name="poll_created")
     
-    def __repr__(self):
+    def __str__(self):
         return self.title
     
     def can_vote(self, member):
@@ -89,7 +89,7 @@ class PollOption(models.Model):
         related_name="poll_options", edit_inline=True)
     listorder = models.PositiveSmallIntegerField("Order in list", core=True)
         
-    def __repr__(self):
+    def __str__(self):
         return self.text
         
     def percentage(self):
@@ -133,9 +133,10 @@ class VoteInfo(models.Model):
         # Manually update the parent
         #  - this is the easiest way for vote counts to work
         #    with legacy polls that don't have VoteInfo objects
-        is_new = (self.id is not None)
+        is_new = (self.id is None)
         super(VoteInfo, self).save()
-        self.poll_option.total += 1
+        if is_new:
+            self.poll_option.total += 1
         self.poll_option.save()
 
     class Meta:
