@@ -5,8 +5,7 @@
 
 	<form action="/signup/" method="post">
 {% ifequal stage "start" %}
-	<p>Before signing up, please read the terms of service below and 
-	then choose 'I agree' if you agree to them.</p>
+	<p>Before signing up, please read the terms of service below.</p>
 	
 	<h1>Terms of service</h1>
 	{% htmlchunk website_terms_of_service %}
