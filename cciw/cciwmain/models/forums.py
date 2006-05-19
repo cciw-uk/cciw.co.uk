@@ -18,7 +18,7 @@ class Forum(models.Model):
     def get_absolute_url(self):
         return '/' + self.location
     
-    def __repr__(self):
+    def __str__(self):
         return self.location
     
     def nice_name(self):
@@ -46,7 +46,7 @@ class NewsItem(models.Model):
     full_item = models.TextField("Full post (HTML)", blank=True)
     subject = models.CharField("Subject", maxlength=100)
     
-    def __repr__(self):
+    def __str__(self):
         return self.subject
 
     @staticmethod
@@ -109,7 +109,7 @@ class Topic(models.Model):
     visible_topics = UserSpecificTopics()
     objects = models.Manager()
 
-    def __repr__(self):
+    def __str__(self):
         return  self.subject
         
     def get_absolute_url(self):
@@ -141,7 +141,7 @@ class Gallery(models.Model):
     location = models.CharField("Location/URL", maxlength=50)
     needs_approval = models.BooleanField("Photos need approval", default=False)
 
-    def __repr__(self):
+    def __str__(self):
         return self.location
         
     def get_absolute_url(self):
@@ -189,7 +189,7 @@ class Photo(models.Model):
     visible_photos = UserSpecificPhotos()
     objects = models.Manager()
 
-    def __repr__(self):
+    def __str__(self):
         return self.filename
 
     def get_absolute_url(self):
@@ -242,7 +242,7 @@ class Post(models.Model):
     objects = models.Manager()
 
 
-    def __repr__(self):
+    def __str__(self):
         return "[" + str(self.id) + "]  " + self.message[:30]
 
     def updateParent(self, parent):
@@ -325,6 +325,6 @@ class Post(models.Model):
         ordering = ('id',) 
 
     class Admin:
-        list_display = ('__repr__', 'posted_by', 'posted_at')
+        list_display = ('__str__', 'posted_by', 'posted_at')
         search_fields = ('message',)
         

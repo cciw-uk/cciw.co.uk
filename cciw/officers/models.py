@@ -183,7 +183,7 @@ class Application(models.Model):
         super(Application, self).save()
         dispatcher.send(signals.application_saved, sender=self, application=self)
 
-    def __repr__(self):
+    def __str__(self):
         if self.camp is not None:
             return "Application from %s, %d" % (self.full_name, self.camp.year)
         else:

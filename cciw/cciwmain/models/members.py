@@ -1,5 +1,4 @@
 from django.db import models
-from cciw.cciwmain.settings import *
 from django.conf import settings
 from cciw.middleware import threadlocals
 
@@ -23,7 +22,7 @@ class Permission(models.Model):
 class UserSpecificMembers(models.Manager):
     def get_query_set(self):
         user = threadlocals.get_current_user()
-        if user.is_anonymous() or not user.is_staff or not\
+        if user is None or user.is_anonymous() or not user.is_staff or not\
             user.has_perm('cciwmain.change_member'):
             return super(UserSpecificMembers, self).get_query_set().filter(hidden=False)
         else:
@@ -82,7 +81,7 @@ class Member(models.Model):
     visible_members = UserSpecificMembers()
     objects = models.Manager()
     
-    def __repr__(self):
+    def __str__(self):
         return self.user_name
         
     def get_absolute_url(self):
@@ -167,18 +166,18 @@ class Award(models.Model):
     image = models.ImageField("Award image", 
         upload_to=settings.AWARD_UPLOAD_PATH)
 
-    def __repr__(self):
+    def __str__(self):
         return self.name + " " + str(self.year)
         
     def nice_name(self):
-        return repr(self)
+        return str(self)
     
     def imageurl(self):
         return settings.CCIW_MEDIA_URL + "images/awards/" + self.image
         
     def get_absolute_url(self):
         from django.template.defaultfilters import slugify
-        return "/awards/#" + slugify(repr(self))
+        return "/awards/#" + slugify(str(self))
     
     class Meta:
         app_label = "cciwmain"
@@ -197,7 +196,7 @@ class PersonalAward(models.Model):
         verbose_name="member",
         related_name="personal_awards")
 
-    def __repr__(self):
+    def __str__(self):
         return self.award.name + " to " + self.member.user_name
 
     class Meta:
@@ -227,8 +226,8 @@ class Message(models.Model):
     box = models.PositiveSmallIntegerField("Message box",
         choices=MESSAGE_BOXES)
     
-    def __repr__(self):
-        return "[" + str(self.id) + "] to " + repr(self.to_member)  + " from " + repr(self.from_member)
+    def __str__(self):
+        return "[" + str(self.id) + "] to " + str(self.to_member)  + " from " + str(self.from_member)
     
     class Meta:
         app_label = "cciwmain"

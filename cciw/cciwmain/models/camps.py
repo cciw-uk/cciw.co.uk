@@ -7,7 +7,7 @@ class Site(models.Model):
     long_name = models.CharField("Long name", maxlength="50", blank=False)
     info = models.TextField("Description (HTML)")
     
-    def __repr__(self):
+    def __str__(self):
         return self.short_name
         
     def get_absolute_url(self):
@@ -33,7 +33,7 @@ class Person(models.Model):
                         blank=True)
     user = models.ForeignKey(User, verbose_name="Associated admin user", null=True, blank=True)
 
-    def __repr__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -71,21 +71,21 @@ class Camp(models.Model):
     site = models.ForeignKey(Site)
     online_applications = models.BooleanField("Accepts online applications from officers.")
     
-    def __repr__(self):
+    def __str__(self):
         leaders = list(self.leaders.filter())
         try:
             leaders.append(self.chaplain)
         except Person.DoesNotExist:
             pass
         if len(leaders) > 0:
-            leadertext = " (" + ", ".join([repr(l) for l in leaders]) + ")"
+            leadertext = " (" + ", ".join(str(l) for l in leaders) + ")"
         else:
             leadertext = ""
         return str(self.year) + "-" + str(self.number) + leadertext
-        
-    def _nice_name(self):
+    
+    @property
+    def nice_name(self):
         return "Camp " + str(self.number) + ", year " + str(self.year)
-    nice_name = property(_nice_name)
 
     def get_link(self):
         return "<a href='" + self.get_absolute_url() + "'>" + self.nice_name + '</a>'

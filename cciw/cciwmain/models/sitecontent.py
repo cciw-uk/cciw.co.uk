@@ -13,7 +13,7 @@ class MenuLink(models.Model):
         verbose_name="Parent item (none = top level)",
         related_name="child_links")
 
-    def __repr__(self):
+    def __str__(self):
         from cciw.cciwmain.common import standard_subs
         return self.url + " [" +  standard_subs(self.title) + "]"
     
@@ -40,7 +40,7 @@ class HtmlChunk(models.Model):
     page_title = models.CharField("page title (for chunks that are pages)", maxlength=100,
         blank=True)
     
-    def __repr__(self):
+    def __str__(self):
         return self.name
         
     def render(self, request):
