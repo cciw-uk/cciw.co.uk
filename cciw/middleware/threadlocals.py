@@ -18,7 +18,7 @@ def set_current_member(member):
 def _get_member_from_request(request):
     from cciw.cciwmain.models import Member
     try:
-        return Member.visible_members.get(user_name=request.session['member_id'])
+        return Member.objects.get(user_name=request.session['member_id'])
     except (KeyError, Member.DoesNotExist):
         return None
 

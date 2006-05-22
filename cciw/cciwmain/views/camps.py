@@ -215,7 +215,7 @@ def oldcampphoto(request, year, galleryname, photonumber):
     
     # TODO - permissions and hidden photos
     try:
-        photo = Photo.objects.get(id=int(photonumber))
+        photo = Photo.all_objects.get(id=int(photonumber))
     except Photo.DoesNotExist:
         raise Http404
     

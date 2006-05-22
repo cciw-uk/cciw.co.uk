@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 import re
 
 def index(request):
-    members = Member.visible_members.filter(dummy_member=False)
+    members = Member.objects.filter(dummy_member=False)
     
     feed = feeds.handle_feed_request(request, feeds.MemberFeed, query_set=members)
     if feed: return feed
@@ -55,7 +55,7 @@ def index(request):
 
 def detail(request, user_name):
     try:
-        member = Member.visible_members.get(user_name=user_name)
+        member = Member.objects.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404
     
@@ -105,7 +105,7 @@ def send_message(request, user_name):
     message_text = None
     
     try:
-        member = Member.visible_members.get(user_name=user_name)
+        member = Member.objects.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404
 
@@ -121,7 +121,7 @@ def send_message(request, user_name):
                 errors.append('No user name given.')
             else:
                 try:
-                    to = Member.visible_members.get(user_name=to_name)
+                    to = Member.objects.get(user_name=to_name)
                 except Member.DoesNotExist:
                     errors.append('The user %s could not be found' % to_name)
 
@@ -184,7 +184,7 @@ def _msg_del(msg):
 def message_list(request, user_name, box):
     """View function to display inbox or archived messages."""
     try:
-        member = Member.visible_members.get(user_name=user_name)
+        member = Member.objects.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404
         
@@ -237,7 +237,7 @@ def archived_messages(request, user_name):
 
 def posts(request, user_name):
     try:
-        member = Member.visible_members.get(user_name=user_name)
+        member = Member.objects.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404
     posts = member.posts.exclude(posted_at__isnull=True).order_by('-posted_at')

@@ -106,8 +106,8 @@ class Topic(models.Model):
     post_count = models.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
     
     # Managers:
-    visible_topics = UserSpecificTopics()
-    objects = models.Manager()
+    objects = UserSpecificTopics()
+    all_objects = models.Manager()
 
     def __str__(self):
         return  self.subject
@@ -186,8 +186,8 @@ class Photo(models.Model):
     post_count = models.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
 
     # managers
-    visible_photos = UserSpecificPhotos()
-    objects = models.Manager()
+    objects = UserSpecificPhotos()
+    all_objects = models.Manager()
 
     def __str__(self):
         return self.filename
@@ -238,8 +238,8 @@ class Post(models.Model):
         null=True, blank=True)
 
     # Managers
-    visible_posts = UserSpecificPosts()
-    objects = models.Manager()
+    objects = UserSpecificPosts()
+    all_objects = models.Manager()
 
 
     def __str__(self):

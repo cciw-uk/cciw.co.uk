@@ -17,7 +17,7 @@ def index(request):
 
 def members_tags(request, user_name):
     try:
-        member = Member.visible_members.get(user_name=user_name)
+        member = Member.objects.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404()
 

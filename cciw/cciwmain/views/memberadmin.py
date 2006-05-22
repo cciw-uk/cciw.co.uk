@@ -22,7 +22,7 @@ class ValidationError(Exception):
 def create_user(user_name, password1, password2):
     if username_re.match(user_name) is None:
         raise ValidationError("The user name is invalid, please check and try again")
-    elif Member.objects.filter(user_name__iexact=user_name).count() > 0:
+    elif Member.all_objects.filter(user_name__iexact=user_name).count() > 0:
         # Can't just try to create it and catch exceptions,
         # since the ORM checks to see if the primary key is already used
         # and does an 'update' instead of 'insert' in that case.  Also
@@ -46,7 +46,7 @@ def email_hash(email):
     return md5.new(settings.SECRET_KEY + email).hexdigest()[::2]
 
 def email_address_used(email):
-    return Member.objects.filter(email__iexact=email).count() != 0
+    return Member.all_objects.filter(email__iexact=email).count() != 0
 
 def validate_email_and_hash(email, hash):
     if email_address_used(email):

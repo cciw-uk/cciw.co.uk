@@ -78,8 +78,8 @@ class Member(models.Model):
     dummy_member = models.BooleanField("Dummy member status", default=False) # supports ancient posts in message boards
     
     # Managers
-    visible_members = UserSpecificMembers()
-    objects = models.Manager()
+    objects = UserSpecificMembers()
+    all_objects = models.Manager()
     
     def __str__(self):
         return self.user_name

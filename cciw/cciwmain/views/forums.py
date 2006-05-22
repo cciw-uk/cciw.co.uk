@@ -36,7 +36,7 @@ def photo_breadcrumb(gallery, photo):
         prev_and_next += '&laquo; '
         
     try:
-        next_photo = Photo.objects.filter(id__gt=photo.id, \
+        next_photo = Photo.all_objects.filter(id__gt=photo.id, \
             gallery__id__exact = photo.gallery_id).order_by('id')[0]
         prev_and_next += '<a href="%s" title="Next photo">&raquo;</a> ' % next_photo.get_absolute_url()
     except Photo.DoesNotExist:
@@ -54,7 +54,7 @@ def topicindex(request, title=None, extra_context=None, forum=None,
     forum = _get_forum_or_404(request.path, '')
     
     ### TOPICS ###
-    topics = Topic.visible_topics.filter(forum__id__exact=forum.id)
+    topics = Topic.objects.filter(forum__id__exact=forum.id)
     
     ### FEED ###
     resp = feeds.handle_feed_request(request, feeds.forum_topic_feed(forum), query_set=topics)
@@ -302,11 +302,11 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
 
     ### TOPIC AND POSTS ###
     try:
-        topic = Topic.visible_topics.get(id=int(topicid))
+        topic = Topic.objects.get(id=int(topicid))
     except Topic.DoesNotExist:
         raise Http404
 
-    posts = Post.visible_posts.filter(topic__id__exact=topic.id)
+    posts = Post.objects.filter(topic__id__exact=topic.id)
 
     ### Feed: ###
     # Requires 'topic' and 'posts'
@@ -376,7 +376,7 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
     "Displays an a gallery of photos"
     
     ### PHOTOS ###
-    photos = Photo.visible_photos.filter(gallery__id__exact=gallery.id)
+    photos = Photo.objects.filter(gallery__id__exact=gallery.id)
     
     ### FEED ###
     resp = feeds.handle_feed_request(request, 
@@ -407,7 +407,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     "Displays a photo"
     
     ## POSTS ###
-    posts = Post.visible_posts.filter(photo__id__exact=photo.id)
+    posts = Post.objects.filter(photo__id__exact=photo.id)
 
     ### Feed: ###
     resp = feeds.handle_feed_request(request, feeds.photo_post_feed(photo), query_set=posts)
@@ -437,7 +437,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
 
 def all_posts(request):
     context = standard_extra_context(title="Recent posts")
-    posts = Post.visible_posts.exclude(posted_at__isnull=True).order_by('-posted_at')
+    posts = Post.objects.exclude(posted_at__isnull=True).order_by('-posted_at')
     
     resp = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
     if resp: return resp
@@ -450,14 +450,14 @@ def all_posts(request):
 
 def post(request, id):
     try:
-        post = Post.visible_posts.get(pk=id)
+        post = Post.objects.get(pk=id)
     except Post.DoesNotExist:
         raise Http404()
     return HttpResponseRedirect(post.get_forum_url())
 
 def all_topics(request):
     context = standard_extra_context(title="Recent new topics")
-    topics = Topic.visible_topics.exclude(created_at__isnull=True).order_by('-created_at')
+    topics = Topic.objects.exclude(created_at__isnull=True).order_by('-created_at')
     
     resp = feeds.handle_feed_request(request, feeds.TopicFeed, query_set=topics)
     if resp: return resp

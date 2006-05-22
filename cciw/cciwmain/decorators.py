@@ -90,7 +90,7 @@ def member_required_for_post(view_func):
         # Check the password.
         user_name = request.POST.get('user_name', '')
         try:
-            member = Member.visible_members.get(user_name=user_name)
+            member = Member.objects.get(user_name=user_name)
         except Member.DoesNotExist:
             return _display_login_form(request, ERROR_MESSAGE)
 
