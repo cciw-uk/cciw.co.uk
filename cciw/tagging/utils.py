@@ -13,6 +13,13 @@ _pk_to_str_mappers = {}
 # to primary key values for each content type
 _pk_from_str_mappers = {}
 
+# registry of functions used to render tags
+# for different models
+_renderers = {}
+
+def get_object(str_pk_val, content_type_id):
+    """Gets an object from the content type id and a primary key value as a string"""
+    return get_model(content_type_id)._default_manager.get(pk=pk_from_str(str_pk_val, content_type_id))
 
 def get_model(content_type_id):
     """Gets a model class for a given content_type_id"""
@@ -60,3 +67,24 @@ def register_mappers(model, pk_to_str=None, pk_from_str=None):
         _pk_to_str_mappers[content_type_id] = pk_to_str
     if pk_from_str is not None:
         _pk_from_str_mappers[content_type_id] = pk_from_str
+
+def register_renderer(model, renderer):
+    """Registers a function to be used to implement the __str__ method
+    of Tag when it's target is the supplied model type.
+    The function is passed the tag object, and must return
+    the html to be displayed on a page."""
+    _renderers[get_content_type_id(model)] = renderer
+    
+def get_renderer(model_ct):
+    """Gets the renderer for a given content type id, 
+    or None if none can be found."""
+    return _renderers.get(model_ct, None)
+
+def tagging_normaliser(tag_sum, collection=None):
+    """Example 'normaliser' for calculating the 'weight'
+    of a given TagSummary object.
+    
+    collection is the complete TagSummaryCollection.
+    """
+    # Rather simplistic normalising :-)
+    return min(tag_sum.count, 5)

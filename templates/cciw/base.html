@@ -2,7 +2,7 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>{% block title %}CCIW: {{ title }}{% endblock %}</title>
+<title>{% block title %}CCIW: {{ title|escape }}{% endblock %}</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <link rel="stylesheet" title="dark" href="{{ pagevars.style_sheet_url }}" type="text/css" />
 <!--[if lt IE 6]><link rel="stylesheet" title="dark" href="{{ pagevars.media_root_url }}ielt6.css" type="text/css" /><![endif]-->
@@ -22,7 +22,7 @@
 {% block main %}
 	<div id="mainbase">
 		<div id="pageTitle">
-			<h1>{{ title }}</h1>
+			<h1>{{ title|escape }}</h1>
 		</div>
 		<div id="contentBody">
 			{% block content %}

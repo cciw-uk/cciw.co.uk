@@ -1,0 +1,81 @@
+{% extends "cciw/standard.html" %}
+{% load standardpage %}
+{% block content %}
+{% if go_to %}
+<p>Go to <a href="{{ go_to_href }}">{{ go_to }}</a></p>
+{% endif %}
+<h2>Recent tags</h2>
+{% if object_list %}
+	<table class="recenttags">
+		<tr>	
+			<th scope="col">Tag</th>
+			{% if showtagcounts %}
+				<th scope="col">Total</th>
+			{% endif %}
+			<th scope="col" class="whencol">When</th>
+		</tr>
+		{% for tag in object_list %}
+		<tr>
+			<td>
+			{% if showtagtarget %}
+			<span class="tagtitle">{{ tag.render }}</span>
+				{% if showtagtarget %}
+					{% ifnotequal tag.count_tagged_by_others 0 %}&nbsp;&nbsp;<span class="otherstagged"><a href="/tag_targets/{{ tag.target_ct.name }}/{{ tag.target_id }}/">tagged by {{ tag.count_tagged_by_others }} others.</a></span>
+					{% endifnotequal %}
+				{% endif %}
+<br/>
+			{% endif %}
+			&nbsp;Tagged 
+				{% if showtagtext %}
+				as <span class="tag"><a href="/tags/{{ tag.text }}/">{{ tag.text }}</a></span>
+				{% endif %}
+				{% if showtaggedby %}
+				by {% memberlink %}{{ tag.by_id }}{% endmemberlink %}
+				{% endif %} &nbsp;
+			
+
+			</td>
+			{% if showtagcounts %}
+				<td>
+				<a class="tagcount" href="/tag_targets/{{ tag.target_ct.name }}/{{ tag.target_id }}/{{ tag.text }}/" title="Details for tag '{{ tag.text }}'">x{{ tag.count_tagged_with_text }}</a>
+				</td>
+			{% endif %}
+			<td class="whencol">{{ tag.added|timesince }} ago</td>
+		</tr>
+
+	{% endfor %}
+	</table>
+{% else %}
+	<p>No tags found.</p>
+{% endif %}
+
+<br/><br/>
+
+{% if not text %}
+	{% if popular_tags %}
+	<h2>Popular tags</h2>
+		{% for tag in popular_tags %}
+		<span class="tag weight{{ tag.weight }}"><a href="{{ tag_href_prefix }}{{ tag.text }}/">{{ tag.text }}</a></span>&nbsp;
+		{% endfor %}
+	{% endif %}
+{% endif %}
+
+{% if popular_targets %}
+	<h2>Popular items for '{{ text }}'</h2>
+	<table class="tagtargets">
+		<tr>
+			<th scope="col">Item</th>
+			<th scope="col">Count</th>
+		</tr>
+		{% for tagtarget in popular_targets %}
+		<tr>
+			<td><span class="tagtitle">{{ tagtarget.render }}</span></td>
+			<td><a class="tagcount" href="/tag_targets/{{ tagtarget.target_ct.name }}/{{ tagtarget.target_id }}/{{ text }}/" title="Details for tag '{{ text }}'">x{{ tagtarget.count }}</a></td>
+		</tr>
+		{% endfor %}
+	</table>
+
+	<p><a href="/tag_search/{{ text }}/">Show all...</a></p>
+{% endif %}
+
+{% endblock %}

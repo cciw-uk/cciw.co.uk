@@ -1,0 +1,22 @@
+{% extends "cciw/standard.html" %}
+{% load standardpage %}
+{% block content %}
+
+{% if object_list %}
+	<table class="tagtargets">
+		<tr>
+			<th scope="col">Item</th>
+			<th scope="col">Count</th>
+		</tr>
+		{% for tagtarget in object_list %}
+		<tr>
+			<td><span class="tagtitle">{{ tagtarget.render }}</span></td>
+			<td><a class="tagcount" href="/tag_targets/{{ tagtarget.target_ct.name }}/{{ tagtarget.target_id }}/{{ text }}/" title="Details for tag '{{ text }}'">x{{ tagtarget.count }}</a></td>
+		</tr>
+		{% endfor %}
+	</table>
+{% else %}
+	<p>No items found.</p>
+{% endif %}
+
+{% endblock %}

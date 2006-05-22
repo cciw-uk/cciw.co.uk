@@ -1,0 +1,31 @@
+{% extends "cciw/standard.html" %}
+{% load standardpage %}
+{% block content %}
+
+
+
+{% if object_list %}
+
+	<p>Members who have tagged <span class="tagtitle">{{ object_list.0.render }}</span> as <span class="tag"><a href="/tags/{{ text }}/">{{ text }}</a></span>:</p>
+
+	<table class="recenttags">
+		<tr><th scope="col">Member</th><th scope="col" class="whencol">When</th></tr>
+		{% for tag in object_list %}
+			<tr>
+				<td>{% memberlink %}{{ tag.by_id }}{% endmemberlink %}</td>
+				<td class="whencol">{{ tag.added|timesince }} ago</td>
+			</tr>
+		{% endfor %}
+	</table>
+{% else %}
+	<p>No tags found.</p>
+{% endif %}
+
+<h2>Related:</h2>
+<ul>
+<li><a href="../">all tags for {{ target }}</a></li>
+<li>all <span class="tag"><a href="/tags/{{ text }}/">{{ text }}</a></span> items</li>
+</ul>
+
+<br/>
+{% endblock %}

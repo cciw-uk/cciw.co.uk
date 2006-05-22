@@ -1,0 +1,3 @@
+{% for tag in tags %}
+<span class="tagweight{{ tag.count }}"><a href="{{ taghrefprefix }}/{{ tag.text }}/">{{ tag.text }}</a></span>&nbsp;
+{% endfor %}

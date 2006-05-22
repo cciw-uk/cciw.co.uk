@@ -158,6 +158,7 @@ class Member(models.Model):
             'confirmed',
         )
 
+
 class Award(models.Model):
     name = models.CharField("Award name", maxlength=50)
     value = models.SmallIntegerField("Value")
@@ -205,6 +206,7 @@ class PersonalAward(models.Model):
 
     class Admin:
         list_display = ('award', 'member','reason', 'date_awarded')
+        list_filter = ('award',)
         
 class Message(models.Model):
     MESSAGE_BOX_INBOX = 0

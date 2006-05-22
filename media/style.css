@@ -232,6 +232,68 @@ div.pollBarChart
 	background-color: #303030;
 }
 
+.tag a
+{
+	padding: 0 2px;
+	color: #303030;	
+	background-color: #80a080;
+}
+
+.tag a:link 
+{
+	background-color: #80a080;
+}
+
+.tag a:visited 
+{
+	background-color: #80a080;
+}
+.tag a:hover 
+{
+	background-color: #b0c0b0;
+}
+
+.otherstagged a
+{
+	padding: 0 2px;
+	color: #303030;
+}
+
+.otherstagged a:link 
+{
+	background-color: #a89080;
+}
+
+.otherstagged a:visited 
+{
+	background-color: #a89080;
+}
+.otherstagged a:hover 
+{
+	background-color: #c8a890;
+}
+
+a.tagcount
+{
+	padding: 0 2px;
+	color: #303030;
+}
+
+a.tagcount:link 
+{
+	background-color: #a0a080;
+}
+
+a.tagcount:visited 
+{
+	background-color: #a0a080;
+}
+a.tagcount:hover 
+{
+	background-color: #c0c090;
+}
+
+
 
 /************************** END COLOURS *******************/
 
@@ -739,3 +801,70 @@ div.center
 	font-style: italic;
 }
 
+table.recenttags
+{
+	width: 100%;
+}
+
+table.recenttags tr td
+{
+	padding-bottom: 0.5em;
+}
+
+
+table.recenttags th,
+table.recenttags td
+{
+	text-align: left;
+}
+
+table.tagtargets th,
+table.tagtargets td
+{
+	text-align: left;
+	vertical-align: middle;
+}
+
+
+table.recenttags th.whencol,
+table.recenttags td.whencol
+{
+	text-align: right;
+	vertical-align: top;
+	font-size: 95%;
+}
+
+.otherstagged a
+{
+	font-size: 90%;
+}
+
+.tagtitle
+{
+	font-size: 150%;
+}
+
+.weight1
+{
+	font-size: 90%
+}
+
+.weight2
+{
+	font-size: 110%;
+}
+
+.weight3
+{
+	font-size: 130%;
+}
+
+.weight4
+{
+	font-size: 150%;
+}
+
+.weight5
+{
+	font-size: 160%;
+}

@@ -44,6 +44,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'cciw.cciwmain',
     'cciw.officers',
+    'cciw.tagging',
 )
 
 TIME_ZONE = "Europe/London"

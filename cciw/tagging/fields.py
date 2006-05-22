@@ -1,30 +1,28 @@
 import cciw.tagging.models
 from cciw.tagging import utils
 
-
 Any = object()
 
-
-class RelatedTagsDescriptor(object):
-    # This class provides the functionality that makes the Tags
-    # available as attributes on the models that are 'targets'
-    # or the 'source' ('by') of the tagging.
-    def __init__(self, from_model=None, to_model=Any,
+class RelatedGenericManyToManyDescriptor(object):
+    # This class provides the functionality that makes a generic 
+    # many-to-many object (e.g. a Tag) available as attributes 
+    # on the models that are the targets of the relationship
+    def __init__(self, m2m_model=None, from_model=None, to_model=Any,
             from_attrname=None, to_attrname=None):
         self.from_model = from_model
         self.from_ct = utils.get_content_type_id(from_model)
         self.to_ct = (to_model == Any) and Any or utils.get_content_type_id(to_model)
         self.from_attrname = from_attrname # 'target' or 'by'
         self.to_attrname = to_attrname     # 'target' or 'by'
+        self.m2m_model = m2m_model
 
     def __get__(self, instance, instance_type=None):
         if instance is None:
             raise AttributeError, "Manager must be accessed via instance"
 
-        # Dynamically create a class that subclasses Tag's manager
+        # Dynamically create a class that subclasses m2m_model's manager
         desc = self # so we can access the descriptor inside the nested class
-        model = cciw.tagging.models.Tag
-        superclass = model._default_manager.__class__
+        superclass = self.m2m_model._default_manager.__class__
         class RelatedManager(superclass):
             def get_query_set(self):
                 return superclass.get_query_set(self).filter(**(self.core_filters))
@@ -58,7 +56,7 @@ class RelatedTagsDescriptor(object):
         # Limit to Tags of the desired content type
         if self.to_ct is not Any:
             manager.core_filters['%s_ct__id__exact' % self.to_attrname] = self.to_ct
-        manager.model = model
+        manager.model = self.m2m_model
 
         return manager
         
@@ -91,13 +89,13 @@ def add_tagging_fields(by_model=Any, by_attrname=None,
         raise Exception("At least one of by_model and target_model must be set")
     if by_model is not Any and by_attrname is not None:
         setattr(by_model, by_attrname, 
-            RelatedTagsDescriptor(
+            RelatedGenericManyToManyDescriptor(m2m_model=cciw.tagging.models.Tag,
                 from_model=by_model, from_attrname='by',
                 to_model=target_model, to_attrname='target'))
 
     if target_model is not Any and target_attrname is not None:
         setattr(target_model, target_attrname, 
-            RelatedTagsDescriptor(
+            RelatedGenericManyToManyDescriptor(m2m_model=cciw.tagging.models.Tag,
                 from_model=target_model, from_attrname='target',
                 to_model=by_model, to_attrname='by'))
 

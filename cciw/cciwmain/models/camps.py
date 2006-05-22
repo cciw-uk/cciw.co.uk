@@ -67,12 +67,12 @@ class Camp(models.Model):
     leaders = models.ManyToManyField(Person, 
         related_name="camp_as_leader", 
         verbose_name="leaders",
-        null=True, blank=True)
+        null=True, blank=True, filter_interface=models.HORIZONTAL)
     site = models.ForeignKey(Site)
     online_applications = models.BooleanField("Accepts online applications from officers.")
     
     def __str__(self):
-        leaders = list(self.leaders.filter())
+        leaders = list(self.leaders.all())
         try:
             leaders.append(self.chaplain)
         except Person.DoesNotExist:
@@ -104,3 +104,4 @@ class Camp(models.Model):
             ),
         )
         ordering = ['-year','number']
+        list_filter = ('age', 'site', 'online_applications')

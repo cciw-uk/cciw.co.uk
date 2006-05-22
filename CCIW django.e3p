@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2006-04-22, 01:34:46 -->
+<!-- Saved: 2006-05-19, 21:31:10 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -157,12 +157,6 @@
     <Source>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
-      <Dir>models</Dir>
-      <Name>tags.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>cciwmain</Dir>
       <Name>decorators.py</Name>
     </Source>
     <Source>
@@ -238,6 +232,49 @@
       <Dir>cciwmain</Dir>
       <Dir>views</Dir>
       <Name>memberadmin.py</Name>
+    </Source>
+    <Source>
+      <Name>devel.py</Name>
+    </Source>
+    <Source>
+      <Name>testemail.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Name>manage.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Name>settings_postgres.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Name>settings_mysql.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>tagging</Dir>
+      <Name>models.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>tagging</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>tagging</Dir>
+      <Name>fields.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>tagging</Dir>
+      <Name>utils.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>tagging</Dir>
+      <Name>views.py</Name>
     </Source>
   </Sources>
   <Forms>

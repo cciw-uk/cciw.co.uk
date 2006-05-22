@@ -1,0 +1,24 @@
+{% extends "tagging/base.html" %}
+{% block content %}
+<h1>Tags</h1>
+
+<form method="post">
+<input type="hidden" value="{{ redirect_url|escape }}" />
+<div class="formrow">
+<span class="label">For item:</span>
+<span class="control">{{ object }}</span>
+</div>
+
+<div class="formrow">
+<span class="label">URL:</span>
+<span class="control"><a href="{{ object.get_absolute_url|escape }}">{{ object.get_absolute_url|escape }}</a></span>
+</div>
+
+<div class="formrow">
+<label>Tags:</label>
+<input type="text" maxlength="255" size="64" name="tags" id="tags" value="{{ taglist }}" /> <small>space separated</small>
+</div>
+
+<input type="submit" name="save" id="save" value="Save" />
+</form>
+{% endblock %}
