@@ -232,63 +232,63 @@ div.pollBarChart
 	background-color: #303030;
 }
 
-.tag a
+.tag a, a.tag
 {
 	padding: 0 2px;
 	color: #303030;	
 	background-color: #80a080;
 }
 
-.tag a:link 
+.tag a:link, a.tag:link 
 {
 	background-color: #80a080;
 }
 
-.tag a:visited 
+.tag a:visited, a.tag:visited
 {
 	background-color: #80a080;
 }
-.tag a:hover 
+.tag a:hover, a.tag:hover
 {
 	background-color: #b0c0b0;
 }
 
-.otherstagged a
+a.addtag, .otherstagged a, a.otherstagged
 {
 	padding: 0 2px;
 	color: #303030;
 }
 
-.otherstagged a:link 
+a.addtag:link, .otherstagged a:link, a.otherstagged:link
 {
 	background-color: #a89080;
 }
 
-.otherstagged a:visited 
+a.addtag:visited, .otherstagged a:visited, a.otherstagged:visited 
 {
 	background-color: #a89080;
 }
-.otherstagged a:hover 
+a.addtag:hover, .otherstagged a:hover, a.otherstagged:hover 
 {
 	background-color: #c8a890;
 }
 
-a.tagcount
+a.tagcount, .tagcount a
 {
 	padding: 0 2px;
 	color: #303030;
 }
 
-a.tagcount:link 
+a.tagcount:link, .tagcount a:link 
 {
 	background-color: #a0a080;
 }
 
-a.tagcount:visited 
+a.tagcount:visited, .tagcount a:visited 
 {
 	background-color: #a0a080;
 }
-a.tagcount:hover 
+a.tagcount:hover, .tagcount a:hover 
 {
 	background-color: #c0c090;
 }
@@ -867,4 +867,11 @@ table.recenttags td.whencol
 .weight5
 {
 	font-size: 160%;
+}
+
+.tagtimesince
+{
+	font-size: 95%;
+	font-style: italic;
+	padding-left: 1em;
 }

@@ -12,7 +12,7 @@
 		<tr><th scope="col">Member</th><th scope="col" class="whencol">When</th></tr>
 		{% for tag in object_list %}
 			<tr>
-				<td>{% memberlink %}{{ tag.by_id }}{% endmemberlink %}</td>
+				<td>{% memberlink %}{{ tag.creator_id }}{% endmemberlink %}</td>
 				<td class="whencol">{{ tag.added|timesince }} ago</td>
 			</tr>
 		{% endfor %}

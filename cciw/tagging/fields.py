@@ -12,8 +12,8 @@ class RelatedGenericManyToManyDescriptor(object):
         self.from_model = from_model
         self.from_ct = utils.get_content_type_id(from_model)
         self.to_ct = (to_model == Any) and Any or utils.get_content_type_id(to_model)
-        self.from_attrname = from_attrname # 'target' or 'by'
-        self.to_attrname = to_attrname     # 'target' or 'by'
+        self.from_attrname = from_attrname
+        self.to_attrname = to_attrname
         self.m2m_model = m2m_model
 
     def __get__(self, instance, instance_type=None):
@@ -60,24 +60,24 @@ class RelatedGenericManyToManyDescriptor(object):
 
         return manager
         
-def add_tagging_fields(by_model=Any, by_attrname=None,
+def add_tagging_fields(creator_model=Any, creator_attrname=None,
                         target_model=Any, target_attrname=None):
     """Adds fields to model classes to represent related 
     tags.  These fields can be used like reverse foreign
     keys to get a set of related Tag objects.
   
     All arguments are optional, with the constraint
-    that one of by_model and target_model must be provided
+    that one of creator_model and target_model must be provided
     otherwise there is nothing to do.
     
-    by_model is the class of object that the 'by' attribute
+    creator_model is the class of object that the 'creator' attribute
     of a Tag will return, or 'Any' (the default) for any.
     
     target_model is the class of object that the 'target' attribute
     of a Tag will return, or 'Any' (the default) for any.
     
-    by_attrname is the name of the attribute that will be added
-    to the 'by_model' class.  If None, the attribute won't be
+    creator_attrname is the name of the attribute that will be added
+    to the 'creator_model' class.  If None, the attribute won't be
     added to the class.
 
     target_attrname is the name of the attribute that will be added
@@ -85,19 +85,19 @@ def add_tagging_fields(by_model=Any, by_attrname=None,
     added to the class.
     
     """
-    if by_model is Any and target_model is Any:
-        raise Exception("At least one of by_model and target_model must be set")
-    if by_model is not Any and by_attrname is not None:
-        setattr(by_model, by_attrname, 
+    if creator_model is Any and target_model is Any:
+        raise Exception("At least one of creator_model and target_model must be set")
+    if creator_model is not Any and creator_attrname is not None:
+        setattr(creator_model, creator_attrname, 
             RelatedGenericManyToManyDescriptor(m2m_model=cciw.tagging.models.Tag,
-                from_model=by_model, from_attrname='by',
+                from_model=creator_model, from_attrname='creator',
                 to_model=target_model, to_attrname='target'))
 
     if target_model is not Any and target_attrname is not None:
         setattr(target_model, target_attrname, 
             RelatedGenericManyToManyDescriptor(m2m_model=cciw.tagging.models.Tag,
                 from_model=target_model, from_attrname='target',
-                to_model=by_model, to_attrname='by'))
+                to_model=creator_model, to_attrname='creator'))
 
 
 ## Examples:
@@ -109,7 +109,7 @@ def add_tagging_fields(by_model=Any, by_attrname=None,
 ## register_mappers(Topic, pk_to_str=str, pk_from_str=int)
 
 ## add_tagging_fields(
-##     by_model=Member, by_attrname='post_tags',
+##     creator_model=Member, creator_attrname='post_tags',
 ##     target_model=Post, target_attrname='tags',
 ## )
 
@@ -120,7 +120,7 @@ def add_tagging_fields(by_model=Any, by_attrname=None,
 ## that post by Member objects
 
 ##    add_tagging_fields(
-##        by_model=Member, by_attrname='all_tags',
+##        creator_model=Member, creator_attrname='all_tags',
 ##    )
 
 ## Result: 
@@ -130,7 +130,7 @@ def add_tagging_fields(by_model=Any, by_attrname=None,
 ##   [tag.target for tag in mymember.all_tags.all()]
 
 ##    add_tagging_fields(
-##        by_model=Member, by_attrname='topic_tags',
+##        creator_model=Member, creator_attrname='topic_tags',
 ##        target_model=Topic
 ##    )
 

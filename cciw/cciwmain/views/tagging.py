@@ -5,6 +5,8 @@ from cciw.cciwmain.models import Member, Post, Topic, Photo
 from cciw.cciwmain.common import standard_extra_context
 from django.http import Http404
 from django.core import exceptions
+from cciw.cciwmain.decorators import member_required
+from cciw.middleware.threadlocals import get_current_member
 
 def index(request):
     extra_context=standard_extra_context(title='Tags')
@@ -12,7 +14,7 @@ def index(request):
     extra_context['showtaggedby'] = True
     extra_context['showtagtarget'] = True
     extra_context['tag_href_prefix'] = "/tags/"
-    return tagging_views.recent_popular(request, by_model=Member, template_name="cciw/tags/index.html",
+    return tagging_views.recent_popular(request, creator_model=Member, template_name="cciw/tags/index.html",
                 extra_context=extra_context)
 
 def members_tags(request, user_name):
@@ -26,7 +28,7 @@ def members_tags(request, user_name):
     extra_context['showtaggedby'] = False
     extra_context['showtagtarget'] = True
     extra_context['tag_href_prefix'] = "/%s/tags/" % member.user_name
-    return tagging_views.recent_popular(request, by=member, template_name="cciw/tags/index.html",
+    return tagging_views.recent_popular(request, creator=member, template_name="cciw/tags/index.html",
                 extra_context=extra_context)
 
 taggable_models = {'member': Member, 'post': Post, 'topic': Topic}
@@ -52,14 +54,14 @@ def tag_target(request, model_name, object_id):
     extra_context['showtagtarget'] = False
     extra_context['showtagcounts'] = True
     extra_context['tag_href_prefix'] = "/tags/"
-    return tagging_views.recent_popular(request, by_model=Member, target=obj,
+    return tagging_views.recent_popular(request, creator_model=Member, target=obj,
         template_name="cciw/tags/index.html", extra_context=extra_context)
 
 def tag_target_single_text(request, model_name, object_id, text):
     obj = _object_for_model_name_and_id(model_name, object_id)
     extra_context = standard_extra_context(title="'%s' tags for %s" % (text, obj))
     extra_context['tag_href_prefix'] = "/tags/"
-    return tagging_views.recent_popular(request, by_model=Member, target=obj,
+    return tagging_views.recent_popular(request, creator_model=Member, target=obj,
         text=text, template_name="cciw/tags/tagdetail.html", extra_context=extra_context)
         
 def recent_and_popular_targets(request, text):
@@ -72,5 +74,13 @@ def recent_and_popular_targets(request, text):
     # Get 'popular targets for this tag'
     extra_context['popular_targets'] = Tag.objects.get_targets(text, limit=10)
             
-    return tagging_views.recent_popular(request, text=text, by_model=Member,
+    return tagging_views.recent_popular(request, text=text, creator_model=Member,
         extra_context=extra_context, template_name="cciw/tags/index.html")
+
+@member_required
+def edit_tag(request, model_name, object_id):
+    obj = _object_for_model_name_and_id(model_name, object_id)
+    current_member = get_current_member()
+    extra_context = standard_extra_context(title="Add or edit tags")
+    return tagging_views.create_update(request, creator=current_member, target=obj,
+        redirect_url=request.GET.get('r', None), extra_context=extra_context)

@@ -1,6 +1,6 @@
 from django.template import RequestContext
 from cciw.tagging.models import Tag
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from cciw.tagging.models import utils as tagging_utils
 from django.views.generic import list_detail
@@ -8,22 +8,26 @@ from django.views.generic import list_detail
 DEFAULT_PAGINATION = 20
 POPULAR_TAGS_LIMIT = 20
 
-def _get_base_attrs_for_objs(by, target):
+def _get_base_attrs_for_objs(creator, target):
     retval = {}
-    if by:
-        retval['by_id'] = by._get_pk_val()
-        retval['by_ct'] = tagging_utils.get_content_type_id(by.__class__)
+    if creator:
+        retval['creator_id'] = creator._get_pk_val()
+        retval['creator_ct_id'] = tagging_utils.get_content_type_id(creator.__class__)
     if target:
         retval['target_id'] = target._get_pk_val()
-        retval['target_ct'] = tagging_utils.get_content_type_id(target.__class__)
+        retval['target_ct_id'] = tagging_utils.get_content_type_id(target.__class__)
     return retval
 
-def recent_popular(request, by=None, target=None, by_model=None, target_model=None,
+def _get_search_attrs(base_attrs):
+    return dict([(k.replace('_ct_id', '_ct__id__exact'), v) 
+                    for k, v in base_attrs.iteritems()])
+
+def recent_popular(request, creator=None, target=None, creator_model=None, target_model=None,
         extra_context=None, popular_tags_limit=POPULAR_TAGS_LIMIT, 
         popular_tags_order='text', text=None, **kwargs):
     """View that displays a list of recent tags, with paging,
-    and a list of popular tags.  Both lists are filtered by the 'by', 
-    'target', 'by_model' and 'target_model' parameters if given.
+    and a list of popular tags.  Both lists are filtered by the 'creator', 
+    'target', 'creator_model' and 'target_model' parameters if given.
     
     The recent tags are displayed using the list_detail.object_list generic view,
     and the full objects are displayed.  The popular tags are available in the
@@ -32,31 +36,31 @@ def recent_popular(request, by=None, target=None, by_model=None, target_model=No
     'popular_tags_order' is the ordering to apply to the popular tags. It can 
     be 'count' (descending popularity) or 'text'.(alphabetical, ascending).
     
-    'text' limits the search to tags with a specific 'text' value (not generally useful)
+    'text' limits the search to tags with a specific 'text' value. (not generally useful)
     
     kwargs can be used to pass additional parameters to list_detail.object_list
     generic view (e.g. template_name, paginate_by etc).
     """
 
-    base_attrs = _get_base_attrs_for_objs(by, target)
+    base_attrs = _get_base_attrs_for_objs(creator, target)
     if text is not None:
         base_attrs['text'] = text
     if target_model is not None:
-        base_attrs['target_ct'] = tagging_utils.get_content_type_id(target_model)
-    if by_model is not None:
-        base_attrs['by_ct'] = tagging_utils.get_content_type_id(by_model)
+        base_attrs['target_ct_id'] = tagging_utils.get_content_type_id(target_model)
+    if creator_model is not None:
+        base_attrs['creator_ct_id'] = tagging_utils.get_content_type_id(creator_model)
 
-    popular_tags = Tag.objects.get_text_counts(target=target, by=by,
-        target_model=target_model, by_model=by_model, limit=popular_tags_limit,
+    popular_tags = Tag.objects.get_tag_summaries(target=target, creator=creator,
+        target_model=target_model, creator_model=creator_model, limit=popular_tags_limit,
         order=popular_tags_order, text=text)
     if extra_context is None:
         extra_context = {}
     extra_context.update(base_attrs)
     extra_context['target'] = target
-    extra_context['by'] = by
+    extra_context['creator'] = creator
     extra_context['popular_tags'] = popular_tags
 
-    queryset = Tag.objects.filter(**base_attrs)
+    queryset = Tag.objects.filter(**_get_search_attrs(base_attrs))
 
     return list_detail.object_list(request, queryset, allow_empty=True, 
                 extra_context=extra_context, **kwargs)
@@ -103,24 +107,25 @@ def targets_for_text(request, text, target_model=None, template_name=None,
             template_name=template_name, extra_context=extra_context, **kwargs)
 
 
-def create_update(request, by=None, target=None, redirect_url=None,
-        extra_context={}):
+def create_update(request, creator=None, target=None, redirect_url=None,
+        extra_context={}, template_name='tagging/create.html'):
     """View that creates or updates a set of tags for an object."""
     
-    if by is None or target is None:
+    if creator is None or target is None:
         raise Http404()
 
-    base_attrs = _get_base_attrs_for_objs(by, target)
+    base_attrs = _get_base_attrs_for_objs(creator, target)
     
-    tags = Tag.objects.filter(**base_attrs)
+    search_attrs = _get_search_attrs(base_attrs)
+    tags = Tag.objects.filter(**search_attrs)
 
     # TODO - python 2.3 compat
     currenttagset = set(tag.text for tag in tags)
     
-    if request.POST['save']:
+    if request.POST.get('save'):
         newtagset = set(request.POST.get('tags', '').split())
         for tagname in currenttagset - newtagset:
-            Tag.objects.filter(**base_attrs).filter(text=tagname).delete()
+            Tag.objects.filter(**search_attrs).filter(text=tagname).delete()
         for tagname in newtagset - currenttagset:
             t = Tag(**base_attrs)
             t.text = tagname # TODO - strip < > & " 
@@ -133,18 +138,18 @@ def create_update(request, by=None, target=None, redirect_url=None,
             return HttpResponseRedirect(redirect_url)
             
         # Get the new set
-        tags = Tag.objects.filter(**base_attrs)
+        tags = Tag.objects.filter(**search_attrs)
         currenttagset = set(tag.text for tag in tags)
     
     # context dict
     c = {}
     c.update(base_attrs)
-    c['target'] = tagging_utils.get_object(base_attrs['target_id'], base_attrs['target_ct'])
-    c['by'] = tagging_utils.get_object(base_attrs['by_id'], base_attrs['by_ct'])
+    c['target'] = tagging_utils.get_object(base_attrs['target_id'], base_attrs['target_ct_id'])
+    c['creator'] = tagging_utils.get_object(base_attrs['creator_id'], base_attrs['creator_ct_id'])
     c['taglist'] = " ".join(currenttagset)
     if redirect_url:
         c['redirect_url'] = redirect_url
-    ctx = RequestContext(request, )
+    ctx = RequestContext(request, c)
         
-    return render_to_response(context_instance=ctx)
+    return render_to_response(template_name, context_instance=ctx)
     
