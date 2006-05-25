@@ -75,6 +75,7 @@ patterns('cciw.cciwmain.views',
     (r'^signup/$', 'memberadmin.signup'),
     
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/tags/', 'tagging.members_tags'),
+    (r'^edit_tag/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/$', 'tagging.edit_tag'),
     (r'^tags/$', 'tagging.index'),
     (r'^tags/(?P<text>[^/]*)/$', 'tagging.recent_and_popular_targets'),
     (r'^tag_targets/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/$', 'tagging.tag_target'),

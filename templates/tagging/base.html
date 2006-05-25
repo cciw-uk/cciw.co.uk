@@ -7,14 +7,19 @@
 
 <style type="text/css">
 form .formrow label,
-form .formrow .label,
+form .formrow .label
 { 
-        display: block;  /* block float the labels to left column, set a width */
+        display: block;  /* block allows a width */
         float: left; 
         width: 150px; 
-        padding: 0; 
-        margin: 5px 0 0; /* set top margin same as form input - textarea etc. elements */
+        margin: 2px 5px 0; /* set top margin same as form input - textarea etc. elements */
         text-align: right; 
+	
+}
+div.formrow
+{
+        padding: 5px; 
+	clear: both;
 }
 </style>
 {% block extraheader %}{% endblock %}
