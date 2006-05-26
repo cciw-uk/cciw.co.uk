@@ -12,7 +12,7 @@
 			<li><a class="tag" href="/tags/{{ tagsum.text }}/" title="View other things tagged as {{ tagsum.text }}">{{ tagsum.text }}</a>&nbsp;<a class="tagcount" href="/tag_targets/member/{{ member.user_name }}/{{ tagsum.text }}/" title="View details">x{{ tagsum.count }}</a></li>
 		{% endfor %}
 		</ul>
-		
+		<p><a href="/tag_targets/member/{{ member.user_name }}/">View full tag history</a></p>
 	{% else %}
 		<p>{{ member.user_name }} has not been tagged yet.</p>
 	{% endif %}
