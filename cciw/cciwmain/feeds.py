@@ -10,6 +10,7 @@ NEWS_FEED_MAX_ITEMS = 20
 POST_FEED_MAX_ITEMS = 20
 TOPIC_FEED_MAX_ITEMS = 20
 PHOTO_FEED_MAX_ITEMS = 20
+TAG_FEED_MAX_ITEMS = 20
 
 # My extensions to django's feed:
 #  - items() checks for self.query_set and uses that if available, otherwise
@@ -134,3 +135,28 @@ def gallery_photo_feed(gallery_name):
     class GalleryPhotoFeed(PhotoFeed):
         title = gallery_name
     return GalleryPhotoFeed
+
+class TagFeed(CCIWFeed):
+    template_name = 'tags'
+    title = 'CCIW - recent tags'
+    
+    def modify_query(self, query_set):
+        return query_set.order_by('-added')[:TAG_FEED_MAX_ITEMS]
+        
+    def item_author_name(self, tag):
+        return tag.creator_id
+        
+    def item_author_link(self, tag):
+        return add_domain(get_member_href(tag.creator_id))
+    
+    def item_pubdate(self, tag):
+        return tag.added
+        
+    def item_link(self, tag):
+        return "/tag_targets/%s/%s/%s/" % (tag.target_ct.name, tag.target_id, tag.text)
+
+def text_tag_feed(text):
+    class TextTagFeed(TagFeed):
+        title = 'CCIW - items tagged "%s"' % text
+    return TextTagFeed
+# TODO functions/subclasses for member specific feeds, and text specific feeds
