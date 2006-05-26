@@ -5,8 +5,8 @@ from polls import Poll, PollOption, VoteInfo
 from sitecontent import MenuLink, HtmlChunk
 
 # TODO - work out where to put this:
-from cciw.tagging.fields import add_tagging_fields
-from cciw.tagging.utils import register_mappers, register_renderer
+from lukeplant_me_uk.django.tagging.fields import add_tagging_fields
+from lukeplant_me_uk.django.tagging.utils import register_mappers, register_renderer
 import cciw.cciwmain.utils
 from django.template.defaultfilters import escape
 
