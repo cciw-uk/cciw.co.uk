@@ -77,16 +77,16 @@ class TagTarget(object):
     # Possible TODO : add a 'creator_list' property that dynamically returns all
     # objects that have tagged the target
     
-class CTGenericObjectDescriptor(object):
+class GenericForeignKey(object):
     """Desciptor used to return an object that is defined
     in terms of a ContentType id and a string primary key."""
-    def __init__(self, id_attr, ct_attr):
+    def __init__(self, id_attr, ct_id_attr):
         # id_attr is the name of the '_id' attribute on the
         # object the descriptor is attached to.
         # ct_attr is the name of the '_ct_id' attribute on the
         # object the descriptor is attached to
         self.id_attr = id_attr
-        self.ct_attr = ct_attr
+        self.ct_id_attr = ct_id_attr
         self.cache_attr = '_ctrelcache_' + id_attr
 
     def __get__(self, obj, objtype):
@@ -98,9 +98,9 @@ class CTGenericObjectDescriptor(object):
         except AttributeError:
             # Get id and content type from the Tag
             id = getattr(obj, self.id_attr)
-            ct = getattr(obj, self.ct_attr)
+            ct_id = getattr(obj, self.ct_id_attr)
             # Use id and ct to get the actual object
-            retval = utils.get_object(id, ct)
+            retval = utils.get_object(id, ct_id)
             setattr(obj, self.cache_attr, retval)
             return retval
 
@@ -109,10 +109,10 @@ class CTGenericObjectDescriptor(object):
             return self
         # Caculate content type and id from the 
         # passed in object
-        ct = utils.get_content_type_id(value.__class__)
-        id = utils.pk_to_str(value._get_pk_val(), ct)
+        ct_id = utils.get_content_type_id(value.__class__)
+        id = utils.pk_to_str(value._get_pk_val(), ct_id)
         # Set them on Tag object, and update cache
-        setattr(obj, self.ct_attr, ct)
+        setattr(obj, self.ct_id_attr, ct_id)
         setattr(obj, self.id_attr, id)
         setattr(obj, self.cache_attr, value)
 
@@ -150,8 +150,8 @@ class TagManager(models.Manager):
         be retrieved from the ID.
         """
         core_filters = getattr(self, 'core_filters', {})
-        target_ct_id = core_filters.get('target_ct__id__exact', None)
-        target_id = core_filters.get('target_id__exact', None)
+        target_ct_id = core_filters.get('target_ct__id__exact')
+        target_id = core_filters.get('target_id__exact')
         if target_model is None and target is not None:
             target_model = target.__class__
         if target_ct_id is None and target_model is not None:
@@ -243,43 +243,100 @@ class TagManager(models.Manager):
         cursor.execute(sql, params)
         return TagSummaryCollection([TagSummary(r[0], r[1]) for r in cursor.fetchall()])
 
+    @staticmethod
+    def _normalise_text_textlist(text):
+        # Normalise 'text'
+        if isinstance(text, basestring):
+            if ' ' in text:
+                textlist = text.split()
+            else:
+                textlist = [text]
+        else:
+            # assume text is sequence
+            textlist = text
+        
+        textlist = list(set(textlist)) # eliminate dupes
+        text = ' '.join(textlist)
+        return text, textlist
+
     def get_targets(self, text, limit=None, offset=None, target_model=None):
         """Returns target items that match the text value, as a sequence
         of two-tuples of (target, count)
         
-        Items are ordered by popularity (count) descending.
+        'text' can be a single string value, a space separated list
+        or a list of strings.
+        
+        Items are ordered by popularity (count) descending.  If a single
+        text value is provided, the count is the number of 'creator' objects
+        that have tagged the object with that text. If a list of text values 
+        is provided, the count becomes the product of those values.
         
         Use target_model to limit the targets to the specified model
         
         Use limit and offset to alter which/how many targets are found.
+        
+        
         """
+        text, textlist = TagManager._normalise_text_textlist(text)
+        
+        # Normalise other vals.
+        target, target_model, target_id, target_ct_id = self._normalise_target_info(None, target_model)
+        
+        # SQL:
         # SELECT COUNT(creator_id) as c, target_id, target_ct_id 
         #  FROM tagging_tag
+        #   [ optional INNER JOINS for more than one text value]
         #  WHERE text = foo GROUP BY target_id, target_ct_id
+        #   [ optional WHERE CLAUSES for more than one text value]
         #  ORDER BY c DESC LIMIT x
         
         # Really this should be something like COUNT(combination_of(creator_id, creator_ct_id)),
         # which you can't do, but actually, it makes no sense for one person ('creator'
-        # object) to tag the same thing more than once with the same text,
+        # object) to tag the same thing more than once with the same text, so multiple
+        # rows with the same creator_id and 'text' *must* have different creator_ct_id,
+        # (since we are grouping on the other fields),
         # so as long as we don't do 'DISTINCT', we will get accurate results.
         qn = backend.quote_name
         # SELECT
-        sql = "SELECT COUNT(%s) as c, %s, %s FROM %s WHERE %s = %%s" % \
-                (qn('creator_id'), qn('target_id'), qn('target_ct_id'), qn(Tag._meta.db_table), qn('text'))
-        params = [text]
+        tablename = qn(Tag._meta.db_table)
+
+        tablealias = 0
+        selectsql = "SELECT COUNT(tagtable0.creator_id) as c, tagtable0.target_id, tagtable0.target_ct_id "
+        fromsql = " FROM %s as tagtable0" % tablename
+        wheresql = " WHERE tagtable0.text = %s"
+        params = [textlist.pop()]
+        
+        tablealias += 1
+
         # additional WHERE
-        target, target_model, target_id, target_ct_id = self._normalise_target_info(None, target_model)
         if target_ct_id is not None:
-            sql += " AND %s = %%s" % qn('target_ct_id')
+            wheresql += " AND tagtable0.target_ct_id = %s"
             params.append(target_ct_id)
+
+        # Searching for more than one text value
+        while len(textlist) > 0:
+            fromsql += \
+                (" INNER JOIN %s as tagtable%d "
+                 "   ON tagtable0.target_id = tagtable%d.target_id " +
+                 "  AND tagtable0.target_ct_id = tagtable%d.target_ct_id") \
+                 % (tablename, tablealias, tablealias, tablealias)
+            wheresql += \
+                " AND tagtable%d.text = %%s" % tablealias
+            params.append(textlist.pop())
+            tablealias += 1
+        
+        # combine and continue
+        sql = selectsql + ' ' + fromsql + ' ' + wheresql
+        
         # GROUP BY and ORDER BY
-        sql += " GROUP BY %s, %s ORDER BY c DESC" % \
-                (qn('target_id'), qn('target_ct_id'))
+        sql += " GROUP BY tagtable0.target_id, tagtable0.target_ct_id ORDER BY c DESC"
+        
         # LIMIT
         if limit is not None:
             sql += ' ' + backend.get_limit_offset_sql(limit, offset)
         cursor = connection.cursor()
         cursor.execute(sql, params)
+            
         return [TagTarget(text, int(row[0]), row[1], int(row[2])) 
                     for row in cursor.fetchall()]
 
@@ -287,15 +344,37 @@ class TagManager(models.Manager):
         """Gets the total number of items that get_targets returns,
         (with no limits), but more efficiently than len(get_targets())"""
         qn = backend.quote_name
-        inner_sql = "SELECT DISTINCT %s, %s FROM %s WHERE %s = %%s" % \
-            (qn('target_ct_id'), qn('target_id'), qn(Tag._meta.db_table), qn('text'))
-        params = [text]
+        tablename = qn(Tag._meta.db_table)        
+        text, textlist = TagManager._normalise_text_textlist(text)
+        target, target_model, target_id, target_ct_id = self._normalise_target_info(None, target_model)
+        
+        tablealias = 0
+        selectsql = "SELECT DISTINCT tagtable0.target_ct_id, tagtable0.target_id"
+        fromsql = " FROM %s as tagtable0" % tablename
+        wheresql = " WHERE tagtable0.text = %s"
+        params = [textlist.pop()]
+        
+        tablealias += 1
+
         # additional WHERE
-        target, target_model, target_ct_id, target_id = self._normalise_target_info()
         if target_ct_id is not None:
-            inner_sql += " AND %s = %%s" % qn('target_ct_id')
+            wheresql += " AND tagtable0.target_ct_id = %s"
             params.append(target_ct_id)
-        sql = "SELECT COUNT(*) FROM (%s) as a" % inner_sql
+
+        # TODO - reduce duplication with above
+        # Searching for more than one text value
+        while len(textlist) > 0:
+            fromsql += \
+                (" INNER JOIN %s as tagtable%d "
+                 "   ON tagtable0.target_id = tagtable%d.target_id " +
+                 "  AND tagtable0.target_ct_id = tagtable%d.target_ct_id") \
+                 % (tablename, tablealias, tablealias, tablealias)
+            wheresql += \
+                " AND tagtable%d.text = %%s" % tablealias
+            params.append(textlist.pop())
+            tablealias += 1
+        sql = selectsql + ' ' + fromsql + ' ' + wheresql
+        sql = "SELECT COUNT(*) FROM (%s) as x" % sql
         cursor = connection.cursor()
         cursor.execute(sql, params)
         return int(cursor.fetchone()[0])
@@ -308,8 +387,8 @@ class Tag(models.Model):
     creator_ct = models.ForeignKey(ContentType, verbose_name="'creator' content type")
     added = models.DateTimeField("Date added", auto_now_add=True)
     
-    target = CTGenericObjectDescriptor('target_id', 'target_ct_id')
-    creator = CTGenericObjectDescriptor('creator_id', 'creator_ct_id')
+    target = GenericForeignKey('target_id', 'target_ct_id')
+    creator = GenericForeignKey('creator_id', 'creator_ct_id')
     objects = TagManager()
     
     def __str__(self):

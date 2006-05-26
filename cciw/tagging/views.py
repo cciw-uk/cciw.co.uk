@@ -5,7 +5,6 @@ from django.shortcuts import render_to_response
 from cciw.tagging.models import utils as tagging_utils
 from django.views.generic import list_detail
 
-DEFAULT_PAGINATION = 20
 POPULAR_TAGS_LIMIT = 20
 
 def _get_base_attrs_for_objs(creator, target):
@@ -24,7 +23,7 @@ def _get_search_attrs(base_attrs):
 
 def recent_popular(request, creator=None, target=None, creator_model=None, target_model=None,
         extra_context=None, popular_tags_limit=POPULAR_TAGS_LIMIT, 
-        popular_tags_order='text', text=None, **kwargs):
+        popular_tags_order='text', text=None, extra_handler=None, **kwargs):
     """View that displays a list of recent tags, with paging,
     and a list of popular tags.  Both lists are filtered by the 'creator', 
     'target', 'creator_model' and 'target_model' parameters if given.
@@ -38,6 +37,16 @@ def recent_popular(request, creator=None, target=None, creator_model=None, targe
     
     'text' limits the search to tags with a specific 'text' value. (not generally useful)
     
+    The template context variables are the list_detail.object_list ones, 
+    plus 'popular_tags' (a list of TagSummary objects), plus 'text', 'target'
+    and 'creator'.
+    
+    extra_handler is an optional callable that can be used to generate an alternative
+    rendering for the queryset (e.g. an Atom feed).  If provided, it should be a callable
+    that takes the request and the Tag queryset as it only parameters, and returns
+    None if decides not to handle the request, or an object (e.g. HttpResponse)
+    to be returned otherwise.
+    
     kwargs can be used to pass additional parameters to list_detail.object_list
     generic view (e.g. template_name, paginate_by etc).
     """
@@ -50,6 +59,11 @@ def recent_popular(request, creator=None, target=None, creator_model=None, targe
     if creator_model is not None:
         base_attrs['creator_ct_id'] = tagging_utils.get_content_type_id(creator_model)
 
+    queryset = Tag.objects.filter(**_get_search_attrs(base_attrs))
+    if extra_handler is not None:
+        resp = extra_handler(request, queryset)
+        if resp is not None: return resp
+
     popular_tags = Tag.objects.get_tag_summaries(target=target, creator=creator,
         target_model=target_model, creator_model=creator_model, limit=popular_tags_limit,
         order=popular_tags_order, text=text)
@@ -59,8 +73,6 @@ def recent_popular(request, creator=None, target=None, creator_model=None, targe
     extra_context['target'] = target
     extra_context['creator'] = creator
     extra_context['popular_tags'] = popular_tags
-
-    queryset = Tag.objects.filter(**_get_search_attrs(base_attrs))
 
     return list_detail.object_list(request, queryset, allow_empty=True, 
                 extra_context=extra_context, **kwargs)
@@ -92,9 +104,16 @@ class TagTargetPseudoQuery(object):
 def targets_for_text(request, text, target_model=None, template_name=None,
             extra_context=None, **kwargs):
         """Displays a list of objects 'TagTarget' objects Tagged with the given
-        'text' value, ordered by decreasing popularity, with paging.
+        'text' value, ordered by decreasing popularity, with paging. 
+        To search for objects with several different 'text' values, 
+        pass 'text' as a space separated list.
         
         Additional kwargs are passed into list_detail.object_list generic view.
+        
+        Context variables are the list_detail.object_list ones, plus
+        'text' (the value passed in), textlist (a list of text values,
+        i.e. 'text' split on spaces), plus target_ct (the ContentType
+        object for the target_model passed in).
         """
         assert template_name is not None, "template_name is required"
         queryset = TagTargetPseudoQuery(text, target_model)
@@ -103,13 +122,18 @@ def targets_for_text(request, text, target_model=None, template_name=None,
         extra_context['text'] = text
         if target_model is not None:
             extra_context['target_ct'] = tagging_utils.get_content_type_id(target_model)
-        return list_detail.object_list(request, queryset, 
+        return list_detail.object_list(request, queryset, allow_empty=True,
             template_name=template_name, extra_context=extra_context, **kwargs)
 
 
 def create_update(request, creator=None, target=None, redirect_url=None,
         extra_context={}, template_name='tagging/create.html'):
-    """View that creates or updates a set of tags for an object."""
+    """View that creates or updates a set of tags for an object.
+    
+    The template context variables are the list_detail.object_list ones, 
+    plus 'text' (a space separated list of current text values), and
+    'target'.
+    """
     
     if creator is None or target is None:
         raise Http404()
@@ -123,7 +147,7 @@ def create_update(request, creator=None, target=None, redirect_url=None,
     currenttagset = set(tag.text for tag in tags)
     
     if request.POST.get('save'):
-        newtagset = set(request.POST.get('tags', '').split())
+        newtagset = set(request.POST.get('text', '').split())
         for tagname in currenttagset - newtagset:
             Tag.objects.filter(**search_attrs).filter(text=tagname).delete()
         for tagname in newtagset - currenttagset:
@@ -146,7 +170,7 @@ def create_update(request, creator=None, target=None, redirect_url=None,
     c.update(base_attrs)
     c['target'] = tagging_utils.get_object(base_attrs['target_id'], base_attrs['target_ct_id'])
     c['creator'] = tagging_utils.get_object(base_attrs['creator_id'], base_attrs['creator_ct_id'])
-    c['taglist'] = " ".join(currenttagset)
+    c['textlist'] = " ".join(currenttagset)
     if redirect_url:
         c['redirect_url'] = redirect_url
     ctx = RequestContext(request, c)
