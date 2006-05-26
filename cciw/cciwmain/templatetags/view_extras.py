@@ -86,6 +86,7 @@ class PagingControlNode(template.Node):
                 output.append('<span class="pagingLinkCurrent">&raquo;</span>')
         return ''.join(output)
         
+        
 
 def do_paging_control(parser, token):
     """
@@ -105,6 +106,27 @@ def do_paging_control(parser, token):
         return PagingControlNode(fragment=parts[1])
     else:
         return PagingControlNode()
+
+class EarlierLaterNode(template.Node):
+    def render(self, context):
+        cur_page = int(context['page'])
+        total_pages = int(context['pages'])
+        request = context['request']
+        output = ['<span class="earlierlater">']
+        if cur_page < total_pages:
+            output.append('<a href="%s">&laquo; earlier</a>' % page_link(request, cur_page + 1))
+        else:
+            output.append('&laquo; earlier')
+        output.append(' | ')
+        if cur_page > 1:
+            output.append('<a href="%s">later &raquo;</a>' % page_link(request, cur_page - 1))
+        else:
+            output.append('later &raquo;')
+        output.append('</span>')
+        return ''.join(output)
+
+def do_ealier_later(parser, token):
+    return EarlierLaterNode()
 
 class SortingControlNode(template.Node):
     def __init__(self, ascending_param, descending_param, 
@@ -206,5 +228,6 @@ def do_forward_query_param(parser, token):
 
 register = template.Library()    
 register.tag('paging_control', do_paging_control)
+register.tag('earlier_later', do_ealier_later)
 register.tag('sorting_control', do_sorting_control)
 register.tag('forward_query_param', do_forward_query_param)
