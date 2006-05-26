@@ -23,7 +23,7 @@ MIDDLEWARE_CLASSES = (
     "django.middleware.common.CommonMiddleware",
 #    "django.middleware.cache.CacheMiddleware",
 #    "django.middleware.gzip.GZipMiddleware",
-    "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware",
+#    "lukeplant_me_uk.django.validator.middleware.ValidatorMiddleware",
     "django.contrib.csrf.middleware.CsrfMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -31,14 +31,13 @@ MIDDLEWARE_CLASSES = (
 )
 
 INSTALLED_APPS = INSTALLED_APPS + (
-    'lukeplant_me_uk.django.apps.validator',
+#    'lukeplant_me_uk.django.validator',
 )
 
 TEMPLATE_DIRS = (
     r'/home/httpd/www.cciw.co.uk/django/templates/',
     r'/home/httpd/www.cciw.co.uk/django_src/django/contrib/admin/templates/',
-    r'/home/httpd/www.cciw.co.uk/django/lukeplant_me_uk/django/apps/validator/templates/',
-#    r'/usr/lib/python2.4/site-packages/lukeplant_me_uk/django/apps/validator/templates/',
+    r'/home/httpd/www.cciw.co.uk/django/lukeplant_me_uk/django/validator/templates/',
 )
 
 ADMIN_MEDIA_PREFIX = '/admin_media/'

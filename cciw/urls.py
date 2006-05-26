@@ -9,6 +9,6 @@ urlpatterns = patterns('',
     # Normal views
     (r'^admin/', include('django.contrib.admin.urls')),
     (r'^officers/', include('cciw.officers.urls')),
-    (r'^validator/', include('lukeplant_me_uk.django.apps.validator.urls')),
+    (r'^validator/', include('lukeplant_me_uk.django.validator.urls')),
     (r'', include('cciw.cciwmain.urls')),
 )
