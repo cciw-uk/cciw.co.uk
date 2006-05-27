@@ -32,7 +32,7 @@ def photo_breadcrumb(gallery, photo):
         previous_photo = Photo.objects.filter(id__lt=photo.id, \
             gallery__id__exact = photo.gallery_id).order_by('-id')[0]
         prev_and_next += '<a href="%s" title="Previous photo">&laquo;</a> ' % previous_photo.get_absolute_url() 
-    except Photo.DoesNotExist:
+    except IndexError:
         prev_and_next += '&laquo; '
         
     try:
