@@ -293,7 +293,26 @@ a.tagcount:hover, .tagcount a:hover
 	background-color: #c0c090;
 }
 
+/* small inline tags */
 
+a.smtag:link, a.smtag:visited, a.smtag:hover
+{
+	background-color: #80a080;
+	color: black;
+	padding: 0px 2px;
+	font-weight: normal;
+}
+
+a.smtag:hover
+{
+	background-color: #b0c0b0;
+}
+
+.taglist a.tagcount
+{
+	border-left: 1px solid black;
+	font-weight: normal;
+}
 
 /************************** END COLOURS *******************/
 
@@ -875,3 +894,11 @@ table.recenttags td.whencol
 	font-style: italic;
 	padding-left: 1em;
 }
+
+/* Small inline tags */
+span.taglist
+{
+	float:right;
+	font-size: 95%;
+}
+

@@ -9,7 +9,7 @@
 			<tr>
 				<th scope="col" class="photoDateAddedCol">Date added {% sorting_control "aca" "dca" "Click to sort by date added, oldest first" "Click to sort by date added, newest first" %}</th>
 				<th scope="col">Thumbnail</th>
-				<th scope="col">Description</th>
+				<th scope="col">Description/Tags</th>
 				<th scope="col">Posts {% sorting_control "apc" "dpc" "Sort by number of posts ascending" "Sort by number of posts descending"%}</th>
 				<th scope="col" class="photoLastPostCol">Last comment {% sorting_control "alp" "dlp" "Click to sort by date of last post, oldest first" "Click to sort by date of last post, newest first" %}</th>
 			</tr>
@@ -18,7 +18,8 @@
 				<td>{% if photo.created_at %}{{ photo.created_at|date:"d M Y h:i" }}{% endif %}</td>
 				<td class="photoCol"><a href="{{ photo.get_absolute_url }}"><img class="photoThumbnail" src="{{ pagevars.media_root_url }}photos/thumbnails/{{ photo.filename }}" alt="Photo {{photo.filename}}" /></a>
 				</td>
-				<td>{{ photo.description }}</td>
+				<td>{{ photo.description }} <span class="taglist">{% tag_summary_list for photo %} {% add_tag_link for photo %}</span>
+				</td>
 				<td>{{ photo.post_count }}</td>
 				<td>{% if photo.last_post_at %}{{ photo.last_post_at|date:"d M Y h:i" }}<br/>{% endif %}
 				    {% if photo.last_post_by_id %}{% memberlink %}{{ photo.last_post_by_id }}{% endmemberlink %}{% endif %}</td>

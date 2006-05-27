@@ -7,11 +7,13 @@
 <p>Go to <a href="{{ go_to_href }}">{{ go_to }}</a></p>
 {% endif %}
 
+<h2>Search</h2>
 <div>
 	<form method='get' action='/tag_search/'>
+		<p>Enter tags to search for:</p>
 		<p>
-		<label>Search:
-		<input type='text' name='search' id='search' value="{{ text|escape }}" /></label><br/>
+		<label>Text: 
+		<input type='text' name='search' id='search' value="{{ text|escape }}" /></label>
 <input type="submit" name="go" value="Go" />
 		</p>
 	</form>

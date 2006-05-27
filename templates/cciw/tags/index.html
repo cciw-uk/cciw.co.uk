@@ -2,17 +2,8 @@
 {% load standardpage %}
 {% load view_extras %}
 {% block content %}
-{% if go_to %}
-<p>Go to <a href="{{ go_to_href }}">{{ go_to }}</a></p>
-{% endif %}
-{% if target %}
-<h2>Links</h2>
-<ul><li><a href="{{ target.get_absolute_url|escape }}">View '{{ target }}'</a></li></ul>
 
-{% endif %}
-
-
-<h2>Recent tags</h2>
+<h2>Recent</h2>
 {% if object_list %}
 	{% for tag in object_list %}
 		<div>
@@ -51,10 +42,11 @@
 
 {% if not text %}
 	{% if popular_tags %}
-	<h2>Popular tags</h2>
+		<h2>Popular</h2>
 		{% for tag in popular_tags %}
-		<span class="tag weight{{ tag.weight }}"><a href="{{ tag_href_prefix }}{{ tag.text }}/">{{ tag.text }}</a></span>&nbsp;
+			<span class="tag weight{{ tag.weight }}"><a href="{{ tag_href_prefix }}{{ tag.text }}/">{{ tag.text }}</a></span>&nbsp;
 		{% endfor %}
+		<br/><br/>
 	{% endif %}
 {% endif %}
 
@@ -74,6 +66,26 @@
 	</table>
 
 	<p><a href="/tag_search/?search={{ text }}">Show all...</a></p>
+	<br/>
 {% endif %}
+
+{% if target %}
+<h2>Links</h2>
+<ul>
+<li><a href="{{ target.get_absolute_url|escape }}">View '{{ target }}'</a></li>
+<li>{% add_tag_link for target %} - add/edit tags for this item</li>
+</ul>
+<br/>
+{% endif %}
+
+<h2>Search</h2>
+<div>
+<form method='get' action='/tag_search/'>
+<p><label>Text: <input type='text' name='search' id='search' /></label>
+<input type="submit" name="go" value="Go" />
+		</p>
+	</form>
+</div>
+
 
 {% endblock %}

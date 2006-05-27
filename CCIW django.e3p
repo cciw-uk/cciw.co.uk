@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2006-05-19, 21:31:10 -->
+<!-- Saved: 2006-05-27, 04:21:36 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -275,6 +275,117 @@
       <Dir>cciw</Dir>
       <Dir>tagging</Dir>
       <Name>views.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>views</Dir>
+      <Name>tagging.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>tagging</Dir>
+      <Dir>templatetags</Dir>
+      <Name>tagging.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Dir>tagging</Dir>
+      <Dir>templatetags</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Name>dist.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>setup</Dir>
+      <Dir>djangovalidator</Dir>
+      <Name>setup.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Dir>tagging</Dir>
+      <Name>models.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Dir>tagging</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Dir>tagging</Dir>
+      <Name>fields.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Dir>tagging</Dir>
+      <Name>utils.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Dir>tagging</Dir>
+      <Name>views.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Dir>tagging</Dir>
+      <Dir>templatetags</Dir>
+      <Name>tagging.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Dir>tagging</Dir>
+      <Dir>templatetags</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Dir>validator</Dir>
+      <Name>urls.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Dir>validator</Dir>
+      <Name>views.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Dir>validator</Dir>
+      <Name>models.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Dir>validator</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>lukeplant_me_uk</Dir>
+      <Dir>django</Dir>
+      <Dir>validator</Dir>
+      <Name>middleware.py</Name>
     </Source>
   </Sources>
   <Forms>

@@ -23,6 +23,16 @@ add_tagging_fields(creator_model=Member, creator_attrname='member_tags', target_
 def render_post(post):
     return '<a href="%s">Post by %s: %s...</a>' % \
         (post.get_absolute_url(), post.posted_by_id, escape(cciw.cciwmain.utils.get_extract(post.message, 30)))
-    
+
+def render_topic(topic):
+    return '<a href="%s">Topic: %s...</a>' % \
+        (topic.get_absolute_url(), escape(cciw.cciwmain.utils.get_extract(topic.subject, 30)))
+
+def render_photo(photo):
+    return '<a href="%s">Photo: %s</a>' % \
+        (photo.get_absolute_url(), photo.id)
+
 register_renderer(Member, Member.get_link)
 register_renderer(Post, render_post)
+register_renderer(Topic, render_topic)
+register_renderer(Photo, render_photo)
