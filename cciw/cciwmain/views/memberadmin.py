@@ -3,6 +3,7 @@ from django import shortcuts, template
 from django.core import validators, mail
 from django.contrib.sites.models import Site
 from django.conf import settings
+from django.core.validators import email_re
 from cciw.cciwmain.common import standard_extra_context
 from cciw.cciwmain.models import Member
 from cciw.middleware.threadlocals import set_current_member
@@ -79,6 +80,19 @@ ignore this e-mail.
 
 """ % {'domain': domain, 'email': urllib.quote(email), 'hash': email_hash(email)},
 "website@cciw.co.uk", [email])
+
+def send_username_reminder(member):
+    domain = Site.objects.get_current().domain
+    mail.send_mail("CCIW - user name reminder",
+"""You requested a user name reminder on the CCIW website.
+Your user name is: %(user_name)s
+
+You can log in at:
+http://%(domain)s/login/
+
+Thanks.
+""" % {'domain': domain, 'user_name': member.user_name }, 
+    "website@cciw.co.uk", [member.email])
 
 
 def signup(request):
@@ -159,8 +173,41 @@ def signup(request):
 
     ## Do this at end, so that the context_processors
     ## are executed after set_current_member
-    c = template.RequestContext(request, c)
+    ctx = template.RequestContext(request, c)
 
     return shortcuts.render_to_response('cciw/members/signup.html', 
-        context_instance=c)
+        context_instance=ctx)
 
+
+def help_logging_in(request):
+    """View that has reset password and username reminder functionality."""
+    c = standard_extra_context(title="Logging in problems.")
+    if request.POST:
+        # Check e-mail
+        email = request.POST.get('email', '').strip()
+        c['email'] = email
+        cont = True
+        if not email_re.search(email):
+            c['error_message'] = "The e-mail address is not valid.  Please check and try again."
+            cont = False
+        
+        # Check e-mail in db
+        if cont:
+            # Temporary - use [0] instead of .get() because of some bad data
+            try:
+                member = Member.objects.filter(email__iexact=email)[0]
+            except IndexError:
+                c['error_message'] = "A member with that e-mail address could not be found."
+                cont = False
+
+        if cont:
+            if request.POST.has_key('usernamereminder'):
+                send_username_reminder(member)
+                c['success_message'] = "An e-mail has been sent with a reminder of your user name."
+            elif request.POST.has_key('newpassword'):
+                send_newpassword_email(member)
+                c['success_message'] = "An e-mail has been sent to you with a new password."
+    
+    ctx = template.RequestContext(request, c)
+    return shortcuts.render_to_response('cciw/members/help_logging_in.html', context_instance=ctx)
+    

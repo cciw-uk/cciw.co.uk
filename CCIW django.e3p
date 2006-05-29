@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project CCIW django -->
-<!-- Saved: 2006-05-27, 04:21:36 -->
+<!-- Saved: 2006-05-29, 11:27:23 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -241,10 +241,6 @@
     </Source>
     <Source>
       <Dir>cciw</Dir>
-      <Name>manage.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
       <Name>settings_postgres.py</Name>
     </Source>
     <Source>
@@ -253,46 +249,9 @@
     </Source>
     <Source>
       <Dir>cciw</Dir>
-      <Dir>tagging</Dir>
-      <Name>models.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>tagging</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>tagging</Dir>
-      <Name>fields.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>tagging</Dir>
-      <Name>utils.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>tagging</Dir>
-      <Name>views.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Dir>views</Dir>
       <Name>tagging.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>tagging</Dir>
-      <Dir>templatetags</Dir>
-      <Name>tagging.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>tagging</Dir>
-      <Dir>templatetags</Dir>
-      <Name>__init__.py</Name>
     </Source>
     <Source>
       <Dir>lukeplant_me_uk</Dir>
