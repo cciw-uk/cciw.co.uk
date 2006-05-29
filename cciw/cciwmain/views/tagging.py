@@ -1,6 +1,6 @@
 from cciw.cciwmain.models import Member, Post, Topic, Photo
 from cciw.cciwmain.common import standard_extra_context
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.core import exceptions
 from cciw.cciwmain.decorators import member_required
 from cciw.middleware.threadlocals import get_current_member
@@ -99,10 +99,16 @@ def tag_target(request, model_name, object_id):
     extra_context['showtagtarget'] = False
     extra_context['showtagcounts'] = True    
     extra_context['tag_href_prefix'] = "/tags/"
+    extra_context['atom_feed_title'] = "Atom feed for %s" % obj
     extra_context['breadcrumb'] = '<a href="/tags/">All tags</a> :: Tags for "%s"' % obj
+    
+    def feed_handler(request, queryset):
+        return feeds.handle_feed_request(request, feeds.target_tag_feed(obj), 
+                    query_set=queryset)
+    
     return tagging_views.recent_popular(request, creator_model=Member, target=obj,
         template_name="cciw/tags/index.html", extra_context=extra_context,
-        paginate_by=TAG_PAGINGATE_BY)
+        paginate_by=TAG_PAGINGATE_BY, extra_handler=feed_handler)
 
 def tag_target_single_text(request, model_name, object_id, text):
     text = tagging_utils.strip_unsafe_chars(text)
@@ -113,7 +119,12 @@ def tag_target_single_text(request, model_name, object_id, text):
     return tagging_views.recent_popular(request, creator_model=Member, target=obj,
         text=text, template_name="cciw/tags/tagdetail.html", 
         extra_context=extra_context, paginate_by=TAG_PAGINGATE_BY)
-        
+
+def single_tag(request, model_name, object_id, text, tag_id):
+    """View that exists merely to give individual Tag objects unique URLs"""
+    # Not useful to show anything here, so redirect.
+    return HttpResponseRedirect("../")
+
 # /tags/text
 def recent_and_popular_targets(request, text):
     text = tagging_utils.strip_unsafe_chars(text)

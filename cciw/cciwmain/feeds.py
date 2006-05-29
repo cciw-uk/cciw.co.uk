@@ -153,7 +153,7 @@ class TagFeed(CCIWFeed):
         return tag.added
         
     def item_link(self, tag):
-        return "/tag_targets/%s/%s/%s/" % (tag.target_ct.name, tag.target_id, tag.text)
+        return add_domain("/tag_targets/%s/%s/%s/%s/" % (tag.target_ct.name, tag.target_id, tag.text, tag.id))
 
 def text_tag_feed(text):
     class TextTagFeed(TagFeed):
@@ -171,3 +171,9 @@ def member_tag_text_feed(member, text):
     class MemberTagTextFeed(TagFeed):
         title = "CCIW - '%s' tags by %s" % (text, member.user_name)
     return MemberTagTextFeed
+
+def target_tag_feed(target):
+    """Gets a tag feed for a specifc target object."""
+    class TargetTagFeed(TagFeed):
+        title = "CCIW - tags for %s" % target
+    return TargetTagFeed

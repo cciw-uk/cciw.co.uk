@@ -110,7 +110,7 @@ class Topic(models.Model):
     all_objects = models.Manager()
 
     def __str__(self):
-        return  self.subject
+        return  "Topic: " + self.subject
         
     def get_absolute_url(self):
         return self.forum.get_absolute_url() + str(self.id) + '/'
@@ -190,7 +190,7 @@ class Photo(models.Model):
     all_objects = models.Manager()
 
     def __str__(self):
-        return self.filename
+        return "Photo: " + self.filename
 
     def get_absolute_url(self):
         return self.gallery.get_absolute_url() + str(self.id) + '/'
@@ -243,7 +243,7 @@ class Post(models.Model):
 
 
     def __str__(self):
-        return "[" + str(self.id) + "]  " + self.message[:30]
+        return "Post [" + str(self.id) + "]:  " + self.message[:30]
 
     def updateParent(self, parent):
         "Update the cached info in the parent topic/photo"
@@ -278,9 +278,8 @@ class Post(models.Model):
             self.updateParent(self.photo)
 
     def get_absolute_url(self):
-        """Returns the absolte URL of the post that
-        is always correct.  (This does a redirect to a URL that
-        depends on the member viewing the page)"""
+        """Returns the absolute URL of the post that is always correct.  
+        (This does a redirect to a URL that depends on the member viewing the page)"""
         return "/posts/%s/" % self.id
 
     def get_forum_url(self):
@@ -289,7 +288,10 @@ class Post(models.Model):
         # thread, however, posts are always displayed in pages
         # of N posts, so the page a post is on depends on who is
         # looking at it.  This function takes this into account
-        # and gives the correct URL.
+        # and gives the correct URL.  This is important for the case
+        # or feed readers that won't in general be logged in as the
+        # the user when they fetch the feed that may have absolute 
+        # URLs in it.
         if self.topic_id is not None:
             thread = self.topic
         elif self.photo_id is not None:

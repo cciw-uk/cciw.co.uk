@@ -86,6 +86,7 @@ patterns('cciw.cciwmain.views',
     (r'^tags/(?P<text>[^/]*)/$', 'tagging.recent_and_popular_targets'),
     (r'^tag_targets/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/$', 'tagging.tag_target'),
     (r'^tag_targets/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/(?P<text>[^/]*)/$', 'tagging.tag_target_single_text'),
+    (r'^tag_targets/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/(?P<text>[^/]*)/(?P<tag_id>[^/]*)/$', 'tagging.single_tag'),
     (r'^tag_search/$', 'tagging.search'),
     
     (r'', 'htmlchunk.find'),
