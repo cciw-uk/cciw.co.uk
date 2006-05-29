@@ -34,11 +34,13 @@
 			<h2>Actions</h2>
 			<ul>
 				<li><a href="messages/">Send a message</a></li>
+				<li><a href="messages/inbox/">View {{ current_member.new_messages }} new message(s)</a></li>
+				<li><a href="messages/archived/">View {{ current_member.saved_messages }} saved message(s)</a></li>
+				<li><a href="/memberadmin/preferences/">Change your preferences</a></li>
+				<li><a href="/memberadmin/change-password/">Change your password</a></li>
 				<li><div><form method="post" action="{{request.url}}">
 				<p><input type="submit" name="logout" value="Log out" /></p>
 				</form></div></li>
-				<li><a href="messages/inbox/">View {{ current_member.new_messages }} new message(s)</a></li>
-				<li><a href="messages/archived/">View {{ current_member.saved_messages }} saved message(s)</a></li>
 			</ul>
 		{% else %}
 			<h2>Actions</h2>

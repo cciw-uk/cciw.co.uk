@@ -3,7 +3,7 @@
 {% block content %}
 
 {% if success_message %}
-	<div>{{ success_message }}</div>
+	<div class="successMessage">{{ success_message }}</div>
 {% else %}
 	{% htmlchunk help_logging_in_intro %}
 	{% if error_message %}

@@ -114,11 +114,13 @@ table.topheaders td
 {
 	border: solid 1px #336633;
 }
+
 td div.postSubject
 {
 	border-bottom: 1px solid #336633;
 }
 
+/* Sorting control */
 span.sortingControl img
 {
 	border: 0px;
@@ -136,6 +138,12 @@ div.userError
 {
 	border: 1px solid #cc0000;
 	background-color: #330000;
+}
+
+.successMessage
+{
+	border: 1px solid #206020;
+	background-color: #102010;
 }
 
 div.awardInfo
@@ -168,6 +176,7 @@ table.topheaders th.commentHeader
 	background-color: transparent;
 }
 
+/* News */
 div.newsItem h2
 {
 	border: 0px;
@@ -180,7 +189,7 @@ div.newsItem h2
 	margin-bottom: 4px;
 }
 
-
+/* Posts */
 .postMessage blockquote
 {
 	border-left: 2px solid #206020;
@@ -200,6 +209,20 @@ table.topheaders tr.selected
 {
 	outline: 1px solid white;
 }
+.messagePreview
+{
+	border: 1px solid #206020;
+	background-color: #102010;
+}
+
+.individualPost .postMessage
+{
+	border: 2px solid #505050;
+	padding: 4px;
+	
+	background-color: #303030;
+}
+/* Polls */
 
 div.pollBarChartTotal
 {
@@ -216,20 +239,6 @@ div.pollBarChart
 .pollresults td
 {
 	vertical-align: top;
-}
-
-.messagePreview
-{
-	border: 1px solid #206020;
-	background-color: #102010;
-}
-
-.individualPost .postMessage
-{
-	border: 2px solid #505050;
-	padding: 4px;
-	
-	background-color: #303030;
 }
 
 .tag a, a.tag
@@ -779,7 +788,15 @@ div.center
 .messagePreview
 {
 	padding: 0.5em 1em ;
-	margin: 0 1em 0.5em 1em;
+	margin: 0em 1em 0.5em 1em;
+}
+
+.successMessage
+{
+	padding: 5px;
+	text-align: left;
+	margin-bottom: 1em;
+	margin-top: 0.5em;
 }
 
 .editChunkLink
