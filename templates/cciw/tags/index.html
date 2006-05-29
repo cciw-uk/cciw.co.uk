@@ -9,12 +9,12 @@
 		<div>
 		{% if showtagtarget %}
 		<span class="tagtitle">{{ tag.render }}</span> 
-		<a class="tagcount seealltags" href="/tag_targets/{{ tag.target_ct.name }}/{{ tag.target_id }}/">View all tags</a>
+		<span class="seealltags"><a class="tagcount" href="/tag_targets/{{ tag.target_ct.name }}/{{ tag.target_id }}/">View all tags</a> {% add_tag_link for tag.target %}</span>
 		<br/>
 		{% endif %}
 		&nbsp;Tagged 
 		{% if showtagtext %}
-			as <span class="tag"><a href="{{ tag_href_prefix }}{{ tag.text }}/">{{ tag.text }}</a></span>
+			as <span class="tag"><a href="/tags/{{ tag.text }}/">{{ tag.text }}</a></span>
 		{% endif %}
 		{% if showtaggedby %}
 			by {% memberlink %}{{ tag.creator_id }}{% endmemberlink %} (<a title="Tags created by {{ tag.creator_id }}" href="/members/{{ tag.creator_id }}/tags/">tags</a>)
@@ -38,7 +38,11 @@
 
 {% if not text %}
 	{% if popular_tags %}
+		{% if member %}
+		<h2>Popular tags by {{ member.user_name }}</h2>
+		{% else %}
 		<h2>Popular</h2>
+		{% endif %}
 		{% for tag in popular_tags %}
 			<span class="tag weight{{ tag.weight }}"><a href="{{ tag_href_prefix }}{{ tag.text }}/">{{ tag.text }}</a></span>&nbsp;
 		{% endfor %}

@@ -34,6 +34,7 @@ def members_tags(request, user_name):
         raise Http404()
 
     extra_context=standard_extra_context(title="Tags created by %s" % member.user_name)
+    extra_context['member'] = member
     extra_context['showtagtext'] = True
     extra_context['showtaggedby'] = False
     extra_context['showtagtarget'] = True
