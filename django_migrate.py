@@ -15,7 +15,8 @@ from cciw.cciwmain.utils import strip_control_chars
 # Config
 PREFIX = '/home/httpd/www.cciw.co.uk/web/data/'
 ICONDIR = '/home/httpd/www.cciw.co.uk/web/images/members/'
-NEW_ICONDIR = '/home/httpd/www.cciw.co.uk/django/media/images/members/'
+NEW_ICON_PREFIX = 'images/members/'
+NEW_ICONDIR = '/home/httpd/www.cciw.co.uk/django/media/' + NEW_ICON_PREFIX
 
 # Utility functions
 
@@ -313,7 +314,7 @@ def migrate_members():
             imagefile = member.user_name + '.' + suffix
             if os.path.isfile(ICONDIR + imagefile):
                 shutil.copyfile(ICONDIR + imagefile, NEW_ICONDIR + imagefile)
-                member.icon = imagefile
+                member.icon = NEW_ICON_PREFIX + imagefile
                 
         return member
     

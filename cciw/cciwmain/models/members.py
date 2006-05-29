@@ -94,7 +94,7 @@ class Member(models.Model):
     def icon_image(self):
         "Get an HTML image with the member's icon"
         if self.icon and len(self.icon) > 0:
-            return '<img src="' + settings.CCIW_MEDIA_URL + 'images/members/' + self.icon + '" class="userIcon" alt="icon" />'
+            return '<img src="' + settings.CCIW_MEDIA_URL + self.icon + '" class="userIcon" alt="icon" />'
         else:
             return ''
 
