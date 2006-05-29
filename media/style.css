@@ -895,6 +895,12 @@ table.recenttags td.whencol
 	padding-left: 1em;
 }
 
+.seealltags
+{
+	font-size: 90%;
+	vertical-align: 25%;
+}
+
 /* Small inline tags */
 span.taglist
 {

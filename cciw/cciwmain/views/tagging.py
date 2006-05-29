@@ -37,7 +37,7 @@ def members_tags(request, user_name):
     extra_context['showtagtext'] = True
     extra_context['showtaggedby'] = False
     extra_context['showtagtarget'] = True
-    extra_context['tag_href_prefix'] = "/%s/tags/" % member.user_name
+    extra_context['tag_href_prefix'] = "/members/%s/tags/" % member.user_name
     extra_context['atom_feed_title'] = "Atom feed for tags created by %s." % member.user_name
     extra_context['breadcrumb'] = '<a href="/tags/">All tags</a> :: Tags created by %s' % member.user_name
     
@@ -47,6 +47,32 @@ def members_tags(request, user_name):
     return tagging_views.recent_popular(request, creator=member, template_name="cciw/tags/index.html",
                 extra_context=extra_context, paginate_by=TAG_PAGINGATE_BY,
                 extra_handler=feed_handler)
+
+def members_tags_single_text(request, user_name, text):
+    try:
+        member = Member.objects.get(user_name=user_name)
+    except Member.DoesNotExist:
+        raise Http404()
+
+    extra_context=standard_extra_context(title="'%s' tags created by %s" % (text, user_name))
+    extra_context['showtagtext'] = True
+    extra_context['showtaggedby'] = False
+    extra_context['showtagtarget'] = True
+    extra_context['tag_href_prefix'] = "/members/%s/tags/" % user_name
+    extra_context['atom_feed_title'] = "Atom feed for '%s' created by %s" % (text, user_name)
+    extra_context['breadcrumb'] = \
+        '<a href="/tags/%s/">All \'%s\' tags</a>' % (text, text) + ' :: ' + \
+        '<a href="/members/%s/tags/">All tags created by %s</a>' % (user_name, user_name) + \
+        ' :: \'%s\' tags created by %s' % (text, user_name)
+        
+    def feed_handler(request, queryset):
+        return feeds.handle_feed_request(request, 
+            feeds.member_tag_text_feed(member, text), query_set=queryset)
+    
+    return tagging_views.recent_popular(request, creator=member, text=text,
+                template_name="cciw/tags/index.html",extra_context=extra_context, 
+                paginate_by=TAG_PAGINGATE_BY, extra_handler=feed_handler)
+
 
 taggable_models = { Member: 'member', Post: 'post', Topic: 'topic', Photo: 'photo' }
 taggable_models_inv = {'member': Member, 'post': Post, 'topic': Topic, 'photo': Photo}

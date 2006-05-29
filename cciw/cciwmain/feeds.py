@@ -166,3 +166,8 @@ def member_tag_feed(member):
         title = "CCIW - tags by %s" % member.user_name
     return MemberTagFeed
 
+def member_tag_text_feed(member, text):
+    """Gets a tag feed for a member for a specific text value."""
+    class MemberTagTextFeed(TagFeed):
+        title = "CCIW - '%s' tags by %s" % (text, member.user_name)
+    return MemberTagTextFeed

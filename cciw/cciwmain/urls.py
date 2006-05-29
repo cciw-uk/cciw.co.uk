@@ -79,7 +79,8 @@ patterns('cciw.cciwmain.views',
     (r'^topics/$', 'forums.all_topics'),
     
     # Tagging
-    (r'^members/(?P<user_name>[A-Za-z0-9_]+)/tags/', 'tagging.members_tags'),
+    (r'^members/(?P<user_name>[A-Za-z0-9_]+)/tags/$', 'tagging.members_tags'),
+    (r'^members/(?P<user_name>[A-Za-z0-9_]+)/tags/(?P<text>[^/]*)/$', 'tagging.members_tags_single_text'),
     (r'^edit_tag/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/$', 'tagging.edit_tag'),
     (r'^tags/$', 'tagging.index'),
     (r'^tags/(?P<text>[^/]*)/$', 'tagging.recent_and_popular_targets'),
