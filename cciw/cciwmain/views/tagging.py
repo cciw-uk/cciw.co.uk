@@ -39,7 +39,7 @@ def members_tags(request, user_name):
     extra_context['showtagtarget'] = True
     extra_context['tag_href_prefix'] = "/members/%s/tags/" % member.user_name
     extra_context['atom_feed_title'] = "Atom feed for tags created by %s." % member.user_name
-    extra_context['breadcrumb'] = '<a href="/tags/">All tags</a> :: Tags created by %s' % member.user_name
+    extra_context['breadcrumb'] = '<a href="/tags/">All tags</a> :: Tags created by %s' % member.get_link()
     
     def feed_handler(request, queryset):
         return feeds.handle_feed_request(request, feeds.member_tag_feed(member), query_set=queryset)
