@@ -246,6 +246,7 @@ div.pollBarChart
 	padding: 0 2px;
 	color: #303030;	
 	background-color: #80a080;
+	line-height: 1.5;
 }
 
 .tag a:link, a.tag:link 
@@ -645,6 +646,23 @@ div.formrow label
 	float: left;
 	width: 10em;
 }
+div.formrow .formcontrol
+{
+	margin-left: 10em;
+	
+}
+div.formrow .formcontrol label
+{
+	float: none;
+	display: inline;
+}
+div.formrow .formcontrol ul,
+div.formrow .formcontrol ul li
+{
+	list-style-type: none;
+	margin-left: 0px;
+	padding-left: 0px;
+}
 
 div.userError
 {
@@ -837,39 +855,8 @@ div.center
 	font-style: italic;
 }
 
-table.recenttags
-{
-	width: 100%;
-}
 
-table.recenttags tr td
-{
-	padding-bottom: 0.5em;
-}
-
-
-table.recenttags th,
-table.recenttags td
-{
-	text-align: left;
-}
-
-table.tagtargets th,
-table.tagtargets td
-{
-	text-align: left;
-	vertical-align: middle;
-}
-
-
-table.recenttags th.whencol,
-table.recenttags td.whencol
-{
-	text-align: right;
-	vertical-align: top;
-	font-size: 95%;
-}
-
+/* Tags */
 .otherstagged a
 {
 	font-size: 90%;
@@ -916,6 +903,7 @@ table.recenttags td.whencol
 {
 	font-size: 90%;
 	vertical-align: 25%;
+
 }
 
 /* Small inline tags */

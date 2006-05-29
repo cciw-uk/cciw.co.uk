@@ -5,9 +5,11 @@ from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.validators import email_re
 from django.http import Http404, HttpResponseRedirect
+from django import forms
 from cciw.cciwmain.common import standard_extra_context
 from cciw.cciwmain.models import Member
 from cciw.middleware.threadlocals import set_current_member, get_current_member
+from cciw.cciwmain.decorators import member_required
 import md5
 import urllib
 import re
@@ -78,7 +80,22 @@ def validate_email_and_hash(email, hash):
  ensure you have copied the URL from the e-mail correctly.""")
     else:
         return (True, '')
-        
+
+def email_and_username_hash(email, user_name):
+    """Gets a hash of an email address + user_name"""
+    # Use every other character to make it shorter and friendlier
+    return md5.new(settings.SECRET_KEY + email + user_name).hexdigest()[::2]
+
+
+def validate_email_username_and_hash(email, user_name, hash):
+    if email_address_used(email):
+        return (False, """The e-mail address is already in use.""")
+    elif email_and_username_hash(email, user_name) != hash:
+        return (False, """The e-mail address was not confirmed.  Please
+ ensure you have copied the URL from the e-mail correctly.""")
+    else:
+        return (True, '')
+
 def send_signup_mail(email):
     mail.send_mail("CCIW - Sign-up instructions",
 """Thank you for beginning the sign-up process on the CCIW website
@@ -121,17 +138,20 @@ Your new password is:
 
     %(password)s
     
-In order to activate this new password, please follow the link below:
+In order to activate this new password, please click on the link below:
 
 http://%(domain)s/memberadmin/change-password/?u=%(user_name)s&h=%(hash)s
 
-After clicking the link, it is suggested that you log in using the above
-password and then change your password to one more memorable.
+If clicking on the link does not do anything, please copy and paste the 
+entire link into your web browser.
+
+After activating the password, it is suggested that you log in using the 
+above password and then change your password to one more memorable.
 
 If you did not request a new password on the CCIW website, then do not click
 on the link:  this e-mail has been triggered by someone else entering your 
 e-mail addess and asking for a new password.  The password will not actually
-be changed until you click the link.
+be changed until you click the link, so you can safely ignore this e-mail.
 
 """ % {'domain': current_domain(), 'user_name': member.user_name,
        'password': password, 'hash': hash},
@@ -179,6 +199,26 @@ def extract_new_password(hash, user_name):
     
     return password
 
+    
+def send_newemail_email(member, new_email):
+    mail.send_mail("CCIW - E-mail change",
+"""You have changed your e-mail address on the CCIW website.
+
+To confirm that your new e-mail address is genuine and update our records,
+please click on the link below:
+
+http://%(domain)s/memberadmin/change-email/?email=%(email)s&u=%(user_name)s&h=%(hash)s
+
+If clicking on the link does not do anything, please copy and paste
+the entire link into your web browser.
+
+""" % {'domain': current_domain(), 'email': urllib.quote(new_email), 
+       'user_name': urllib.quote(member.user_name),
+       'hash': email_and_username_hash(new_email, member.user_name)},
+    "website@cciw.co.uk", [new_email])
+
+
+#################  VIEW FUNCTIONS #####################
 
 def signup(request):
     c = standard_extra_context(title="Sign up")
@@ -343,3 +383,180 @@ def change_password(request):
     ctx = template.RequestContext(request, c)
     return shortcuts.render_to_response('cciw/members/change_password.html', 
             context_instance=ctx)
+
+def change_email(request):
+    """View that responds to links in the 'change e-mail' emails."""
+    c = standard_extra_context(title="Change email")
+    
+    user_name = request.GET.get('u')
+    email = request.GET.get('email', '')
+    hash = request.GET.get('h', '')
+    valid, msg = validate_email_username_and_hash(email, user_name, hash)
+    if valid:
+        try:
+            member = Member.objects.filter(user_name=user_name)[0]
+        except IndexError:
+            c['error_message'] = "The user name is unknown"
+        else:
+            member.email = email
+            member.save()
+        c['success_message'] = "New email address confirmed, thank you."
+    else:
+        c['error_message'] = msg
+        
+    ctx = template.RequestContext(request, c)
+    return shortcuts.render_to_response('cciw/members/change_email.html', 
+            context_instance=ctx)
+
+            
+##preferences_fields = ["email", "real_name", "comments", "icon_file", "message_option"]
+##preferences_fields_complement = [f.attname for f in Member._meta.fields if f.attname not in preferences_fields]
+
+##def get_manipulator_fields_for_preferences(
+##    self.follow = self.opts.get_follow(follow)
+##    self.fields = []
+##
+##    
+##    for f in self.opts.fields:
+##        if self.follow.get(f.name, False):
+##            self.fields.extend(f.get_manipulator_fields(self.opts, self, self.change))
+##
+##    # Add fields for related objects.
+##    for f in self.opts.get_all_related_objects():
+##        if self.follow.get(f.name, False):
+##            fol = self.follow[f.name]
+##            self.fields.extend(f.get_manipulator_fields(self.opts, self, self.change, fol))
+##manip_preferences_fields = get
+
+
+class PreferencesManipulator(forms.Manipulator):
+    def __init__(self):
+        email_f = Member._meta.get_field('email')
+        real_name_f = Member._meta.get_field('real_name')
+        comments_f = Member._meta.get_field('comments')
+        message_option_f = Member._meta.get_field('message_option')
+        icon_f = Member._meta.get_field('icon')
+        
+        self.fields = (
+            forms.EmailField(field_name=email_f.attname, is_required=True),
+            forms.TextField(field_name=real_name_f.attname, length=30, 
+                maxlength=real_name_f.maxlength, is_required=False),
+            forms.LargeTextField(field_name=comments_f.attname, is_required=False),
+            forms.ImageUploadField(field_name=icon_f.attname + "_file"),
+            forms.RadioSelectField(field_name=message_option_f.attname,
+                choices=message_option_f.choices)
+        )
+        self.opts = Member._meta
+
+from django.db.models.fields import FileField, AutoField
+
+@member_required
+def preferences(request):
+    current_member = get_current_member()
+    c = standard_extra_context(title="Preferences")
+    
+    try:
+        manipulator = PreferencesManipulator()
+    except Member.DoesNotExist:
+        raise Http404
+
+    if request.POST:
+        new_data = request.POST.copy()
+        new_data.update(request.FILES)
+        
+        errors = manipulator.get_validation_errors(new_data)
+        
+        if not errors:
+            manipulator.do_html2python(new_data)
+            
+            # Save changes in new_data to current_member
+            current_member_copy = Member.objects.get(pk=current_member.user_name)
+            for f in manipulator.fields:
+                if f.field_name != 'email':
+                    setattr(current_member_copy, f.field_name, new_data[f.field_name])
+            
+            current_member_copy.save()
+            
+            # File uploads
+            for f in manipulator.opts.fields:
+                if isinstance(f, FileField):
+                    f.save_file(new_data, current_member_copy, current_member, True, rel=False)
+            # TODO - uploaded icon:
+            #  - move to a different dir
+            #  - check file size
+            #     - shrink if necessary
+            #  - convert to PNG
+
+            # E-mail change:
+            new_email = new_data['email']
+            if new_email != current_member.email:
+                # We check for duplicate e-mail address in change_email view,
+                # so don't really need to do it here.
+                send_newemail_email(current_member, new_email)
+                c['message'] = "To confirm the change of e-mail address, an e-mail " + \
+                    "has been sent to your new address with further instructions."
+            else:
+                c['message'] = "Changes saved."
+
+            current_member = current_member_copy
+    else:
+        errors = {}
+        # This makes sure the form accurately represents the fields of the place.
+        new_data = current_member.__dict__
+
+    form = forms.FormWrapper(manipulator, new_data, errors)
+    c['form'] = form
+    c['member'] = current_member
+
+    return shortcuts.render_to_response('cciw/members/preferences.html', 
+        context_instance=template.RequestContext(request, c))
+
+
+##@member_required
+##def preferences(request):
+##    current_member = get_current_member()
+##    c = standard_extra_context(title="Preferences")
+##    
+##    # These fields are the ones we want to edit (minus 'icon', as otherwise
+##    # we get errors.
+##    preferences_fields = ["email", "real_name", "comments", "message_option"]
+##    # These are the rest
+##    fixed_fields = [f.attname for f in Member._meta.fields if f.attname not in preferences_fields]
+##    follow_override = dict([(f, False) for f in fixed_fields])
+##    try:
+##        manipulator = Member.ChangeManipulator(current_member.user_name)
+##    except Member.DoesNotExist:
+##        raise Http404
+##
+##    if request.POST:
+##        new_data = request.POST.copy()
+##        new_data.update(request.FILES)
+##        
+##        errors = manipulator.get_validation_errors(new_data)
+##                
+##        if not errors:
+##            manipulator.do_html2python(new_data)
+##            new_current_member = manipulator.save(new_data, limit_fields_to=preferences_fields)
+##            
+##            # E-mail change:
+##            new_email = new_data['email']
+##            if new_email != current_member.email:
+##                # Check for duplicates
+##                send_newemail_email(current_member, new_email)
+##                message = "To confirm the change of e-mail address, an e-mail " + \
+##                    "has been sent to your new address with further instructions."
+##            else:
+##                message = "Changes saved."
+##            
+##            current_member = new_current_member
+##    else:
+##        errors = {}
+##        # This makes sure the form accurately represents the fields of the place.
+##        new_data = current_member.__dict__
+##
+##    form = forms.FormWrapper(manipulator, new_data, errors)
+##    c['form'] = form
+##    c['member'] = current_member
+##
+##    return shortcuts.render_to_response('cciw/members/preferences.html', 
+##        context_instance=template.RequestContext(request, c))

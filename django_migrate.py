@@ -304,7 +304,6 @@ def migrate_members():
         member.show_email = get_bool(data[4])
         member.message_option = get_int(data[5])
         member.comments = fix_bbcode(data[9])
-        member.confirm_secret = data[13]
         member.moderated = get_int(data[15])
         member.hidden = get_bool(data[17])
         member.banned = get_bool(data[16])
@@ -681,7 +680,8 @@ def migrate_main_menu():
         ('Terms','/website/terms/', 710, '/website/'),
         ('Forum','/website/forum/', 720, '/website/'),
         ('Help','/website/help/', 730, '/website/'),
-        ('Contact us','/contact/', 800, '')
+        ('Contact us','/contact/', 800, ''),
+        ('Tags', '/tags/', 900, ''),
     )
 
     for i in range(0, len(links)):

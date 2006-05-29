@@ -41,6 +41,8 @@ patterns('cciw.cciwmain.views',
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/messages/archived/$', 'members.archived_messages'),
     (r'^signup/$', 'memberadmin.signup'),
     (r'^memberadmin/change-password/$', 'memberadmin.change_password'),
+    (r'^memberadmin/change-email/$', 'memberadmin.change_email'),
+    (r'^memberadmin/preferences/$', 'memberadmin.preferences'),
     (r'^help/logging-in/$', 'memberadmin.help_logging_in'),
     
     # Camps

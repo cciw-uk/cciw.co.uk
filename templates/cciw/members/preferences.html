@@ -1,0 +1,39 @@
+{% extends "cciw/standard.html" %}
+{% block content %}
+<h2>Preferences</h2>
+<p>Edit your preferences below.  Changes to your e-mail address
+will require confirmation by an e-mail.</p>
+
+{% if form.error_dict %}
+<div class="userError">
+Please check your input:
+<ul>
+    {% for e in form.error_dict.items %}
+    <li>{{ e.0 }}: {{ e.1|join:", " }}</li>
+    {% endfor %}
+</ul>
+</div>
+{% endif %}
+
+{% if message %}
+<div class="successMessage">
+	{{ message|escape }}
+</div>
+{% endif %}
+
+<form method="post" action="" enctype="multipart/form-data">
+<div class="formrow"><label for="id_real_name">'Real' name</label>{{ form.real_name }}</div>
+<div class="formrow"><label for="id_email">E-mail address</label>{{ form.email }}</div>
+<div class="formrow"><label for="id_comments">Comments</label>{{ form.comments }}</div>
+<div class="formrow"><label for="id_icon_file">Icon</label>{{ form.icon_file }}{{ form.icon }}<br/></div>
+
+<div class="formrow"><label>Message storing</label><div class="formcontrol">{{ form.message_option }}</div></div>
+
+<div><input type="submit" name="submit" value="Save" /></div>
+</form>
+
+<h2>Related links</h2>
+<ul><li><a href="/memberadmin/change-password/">Change your password</a></li>
+<li><a href="{{ current_member.get_absolute_url }}">Your home page</a></li>
+</ul>
+{% endblock %}
