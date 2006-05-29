@@ -12,9 +12,8 @@ TOPIC_FEED_MAX_ITEMS = 20
 PHOTO_FEED_MAX_ITEMS = 20
 TAG_FEED_MAX_ITEMS = 20
 
-# My extensions to django's feed:
-#  - items() checks for self.query_set and uses that if available, otherwise
-#    does a default query
+# My extensions to django's feed class:
+#  - items() uses self.query_set
 #  - feed class stores the template name for convenience
 
 # Part of this is borrowed from django.contrib.syndication.views
