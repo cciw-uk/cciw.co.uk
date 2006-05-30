@@ -408,155 +408,55 @@ def change_email(request):
     return shortcuts.render_to_response('cciw/members/change_email.html', 
             context_instance=ctx)
 
-            
-##preferences_fields = ["email", "real_name", "comments", "icon_file", "message_option"]
-##preferences_fields_complement = [f.attname for f in Member._meta.fields if f.attname not in preferences_fields]
-
-##def get_manipulator_fields_for_preferences(
-##    self.follow = self.opts.get_follow(follow)
-##    self.fields = []
-##
-##    
-##    for f in self.opts.fields:
-##        if self.follow.get(f.name, False):
-##            self.fields.extend(f.get_manipulator_fields(self.opts, self, self.change))
-##
-##    # Add fields for related objects.
-##    for f in self.opts.get_all_related_objects():
-##        if self.follow.get(f.name, False):
-##            fol = self.follow[f.name]
-##            self.fields.extend(f.get_manipulator_fields(self.opts, self, self.change, fol))
-##manip_preferences_fields = get
-
-
-class PreferencesManipulator(forms.Manipulator):
-    def __init__(self):
-        email_f = Member._meta.get_field('email')
-        real_name_f = Member._meta.get_field('real_name')
-        comments_f = Member._meta.get_field('comments')
-        message_option_f = Member._meta.get_field('message_option')
-        icon_f = Member._meta.get_field('icon')
-        
-        self.fields = (
-            forms.EmailField(field_name=email_f.attname, is_required=True),
-            forms.TextField(field_name=real_name_f.attname, length=30, 
-                maxlength=real_name_f.maxlength, is_required=False),
-            forms.LargeTextField(field_name=comments_f.attname, is_required=False),
-            forms.ImageUploadField(field_name=icon_f.attname + "_file"),
-            forms.RadioSelectField(field_name=message_option_f.attname,
-                choices=message_option_f.choices)
-        )
-        self.opts = Member._meta
-
-from django.db.models.fields import FileField, AutoField
-
 @member_required
 def preferences(request):
     current_member = get_current_member()
     c = standard_extra_context(title="Preferences")
     
+    # These fields are the ones we want to edit:
+    preferences_fields = ["email", "real_name", "comments", "message_option", "icon"]
+    # These are the rest:
+    fixed_fields = [f.attname for f in Member._meta.fields if f.attname not in preferences_fields]
+    follow_override = dict([(f, False) for f in fixed_fields])
     try:
-        manipulator = PreferencesManipulator()
+       manipulator = Member.ChangeManipulator(current_member.user_name, follow=follow_override)
     except Member.DoesNotExist:
-        raise Http404
-
+       raise Http404
+    
     if request.POST:
         new_data = request.POST.copy()
         new_data.update(request.FILES)
         
-        errors = manipulator.get_validation_errors(new_data)
+        new_email = new_data['email']
         
+        errors = manipulator.get_validation_errors(new_data)
+               
         if not errors:
+            # E-mail changes require verification, so fix it here
+            new_data['email'] = current_member.email
+            
             manipulator.do_html2python(new_data)
+            new_current_member = manipulator.save(new_data)
             
-            # Save changes in new_data to current_member
-            current_member_copy = Member.objects.get(pk=current_member.user_name)
-            for f in manipulator.fields:
-                if f.field_name != 'email':
-                    setattr(current_member_copy, f.field_name, new_data[f.field_name])
-            
-            current_member_copy.save()
-            
-            # File uploads
-            for f in manipulator.opts.fields:
-                if isinstance(f, FileField):
-                    f.save_file(new_data, current_member_copy, current_member, True, rel=False)
-            # TODO - uploaded icon:
-            #  - move to a different dir
-            #  - check file size
-            #     - shrink if necessary
-            #  - convert to PNG
-
             # E-mail change:
-            new_email = new_data['email']
             if new_email != current_member.email:
                 # We check for duplicate e-mail address in change_email view,
                 # so don't really need to do it here.
                 send_newemail_email(current_member, new_email)
                 c['message'] = "To confirm the change of e-mail address, an e-mail " + \
-                    "has been sent to your new address with further instructions."
+                   "has been sent to your new address with further instructions."
             else:
                 c['message'] = "Changes saved."
-
-            current_member = current_member_copy
+            
+            current_member = new_current_member
     else:
         errors = {}
         # This makes sure the form accurately represents the fields of the place.
         new_data = current_member.__dict__
-
+    
     form = forms.FormWrapper(manipulator, new_data, errors)
     c['form'] = form
     c['member'] = current_member
 
     return shortcuts.render_to_response('cciw/members/preferences.html', 
-        context_instance=template.RequestContext(request, c))
-
-
-##@member_required
-##def preferences(request):
-##    current_member = get_current_member()
-##    c = standard_extra_context(title="Preferences")
-##    
-##    # These fields are the ones we want to edit (minus 'icon', as otherwise
-##    # we get errors.
-##    preferences_fields = ["email", "real_name", "comments", "message_option"]
-##    # These are the rest
-##    fixed_fields = [f.attname for f in Member._meta.fields if f.attname not in preferences_fields]
-##    follow_override = dict([(f, False) for f in fixed_fields])
-##    try:
-##        manipulator = Member.ChangeManipulator(current_member.user_name)
-##    except Member.DoesNotExist:
-##        raise Http404
-##
-##    if request.POST:
-##        new_data = request.POST.copy()
-##        new_data.update(request.FILES)
-##        
-##        errors = manipulator.get_validation_errors(new_data)
-##                
-##        if not errors:
-##            manipulator.do_html2python(new_data)
-##            new_current_member = manipulator.save(new_data, limit_fields_to=preferences_fields)
-##            
-##            # E-mail change:
-##            new_email = new_data['email']
-##            if new_email != current_member.email:
-##                # Check for duplicates
-##                send_newemail_email(current_member, new_email)
-##                message = "To confirm the change of e-mail address, an e-mail " + \
-##                    "has been sent to your new address with further instructions."
-##            else:
-##                message = "Changes saved."
-##            
-##            current_member = new_current_member
-##    else:
-##        errors = {}
-##        # This makes sure the form accurately represents the fields of the place.
-##        new_data = current_member.__dict__
-##
-##    form = forms.FormWrapper(manipulator, new_data, errors)
-##    c['form'] = form
-##    c['member'] = current_member
-##
-##    return shortcuts.render_to_response('cciw/members/preferences.html', 
-##        context_instance=template.RequestContext(request, c))
+                context_instance=template.RequestContext(request, c))
