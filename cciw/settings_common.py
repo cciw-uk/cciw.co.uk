@@ -68,7 +68,10 @@ EMAIL_HOST_PASSWORD = "slarti"
 
 ## CCIW SPECIFIC SETTINGS AND CONSTANTS
 AWARD_UPLOAD_PATH = 'images/awards'
-MEMBERS_ICONS_UPLOAD_PATH = 'images/members'
+MEMBER_ICON_UPLOAD_PATH = 'images/members/temp/'
+MEMBER_ICON_PATH = 'images/members/'
+DEFAULT_MEMBER_ICON = 'defaultmember.png'
+MEMBER_ICON_MAX_SIZE = 48
 
 THISYEAR = cciw.cciwmain.utils.ThisYear()
 CAMP_FORUM_RE = r'camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/'

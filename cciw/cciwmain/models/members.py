@@ -71,7 +71,7 @@ class Member(models.Model):
     permissions = models.ManyToManyField(Permission,
         verbose_name="permissions", related_name="member_with_permission",
         blank=True, null=True, filter_interface=models.HORIZONTAL)
-    icon         = models.ImageField("Icon", upload_to=settings.MEMBERS_ICONS_UPLOAD_PATH, blank=True)
+    icon         = models.ImageField("Icon", upload_to=settings.MEMBER_ICON_UPLOAD_PATH, blank=True)
     dummy_member = models.BooleanField("Dummy member status", default=False) # supports ancient posts in message boards
     
     # Managers
@@ -90,13 +90,6 @@ class Member(models.Model):
             return self.user_name
         else:
             return get_member_link(self.user_name)
-
-    def icon_image(self):
-        "Get an HTML image with the member's icon"
-        if self.icon and len(self.icon) > 0:
-            return '<img src="' + settings.CCIW_MEDIA_URL + self.icon + '" class="userIcon" alt="icon" />'
-        else:
-            return ''
 
     def check_password(self, plaintextPass):
         """Checks a password is correct"""

@@ -315,7 +315,9 @@ def migrate_members():
             if os.path.isfile(ICONDIR + imagefile):
                 shutil.copyfile(ICONDIR + imagefile, NEW_ICONDIR + imagefile)
                 member.icon = NEW_ICON_PREFIX + imagefile
-                
+        if not member.icon:
+            shutil.copy('/home/httpd/www.cciw.co.uk/django/media/defaultmember.gif',
+                        NEW_ICONDIR + member.user_name + ".gif")
         return member
     
     # first get passwords from separate table
@@ -335,17 +337,6 @@ def migrate_members():
             print "Invalid data:"
             print line
             continue
-        u.confirmed = True
-        u.save()
-    
-    for line in get_table(PREFIX+"pending_members.data"):
-        try:
-            u = create_member(line,passwords, last_seen_data)
-        except:
-            print "Invalid data:"
-            print line
-            continue
-        u.confirmed = False
         u.save()
 
 ###########################################################################################

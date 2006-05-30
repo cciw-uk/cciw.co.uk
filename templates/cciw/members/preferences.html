@@ -21,6 +21,13 @@ Please check your input:
 </div>
 {% endif %}
 
+{% if image_error %}
+<div class="userError">
+	Your icon has not been changed: {{ image_error|escape }}
+</div>
+{% endif %}
+
+
 <form method="post" action="" enctype="multipart/form-data">
 <div class="formrow"><label for="id_real_name">'Real' name</label>{{ form.real_name }}</div>
 <div class="formrow"><label for="id_email">E-mail address</label>{{ form.email }}</div>

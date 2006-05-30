@@ -14,8 +14,20 @@ def get_member_link(user_name):
     else:
         return '<a title="Information about user \'' + user_name + \
            '\'" href="' + get_member_href(user_name) + '">' + user_name + '</a>'
-    
-def modified_query_string(request, dict, fragment = ''):
+
+def get_member_icon(user_name):
+    from django.conf import settings
+    user_name = user_name.strip()
+    if user_name.startswith("'"): # dummy user
+        return ''
+    else:
+        # We use content negotiation to get the right file i.e.
+        # apache will add the right extension on for us.
+        return '<img src="%s" class="userIcon" alt="icon" />' % \
+            (settings.MEDIA_URL + settings.MEMBER_ICON_PATH + user_name)
+
+
+def modified_query_string(request, dict, fragment=''):
     """Returns the query string represented by request, with key-value pairs
     in dict added or modified.  """
     qs = request.GET.copy()

@@ -66,12 +66,10 @@
 				<th scope="row">'Real' name</th>
 				<td>{{ member.real_name }}</td>
 			</tr>
-			{% if member.icon %}
 			<tr>
 				<th scope="row">Icon</th>
-				<td>{{ member.icon_image }}</td>
+				<td>{% membericon %}{{ member.user_name }}{% endmembericon %}</td>
 			</tr>
-			{% endif %}
 			{% if member.show_email %}
 			<tr>
 				<th scope="row">Email</th>

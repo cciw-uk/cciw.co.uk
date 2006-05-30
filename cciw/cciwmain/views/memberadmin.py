@@ -10,6 +10,7 @@ from cciw.cciwmain.common import standard_extra_context
 from cciw.cciwmain.models import Member
 from cciw.middleware.threadlocals import set_current_member, get_current_member
 from cciw.cciwmain.decorators import member_required
+from cciw.cciwmain import imageutils
 import md5
 import urllib
 import re
@@ -430,13 +431,20 @@ def preferences(request):
         new_email = new_data['email']
         
         errors = manipulator.get_validation_errors(new_data)
-               
+        
+        
         if not errors:
             # E-mail changes require verification, so fix it here
             new_data['email'] = current_member.email
             
             manipulator.do_html2python(new_data)
             new_current_member = manipulator.save(new_data)
+            
+            try:
+                imageutils.fix_member_icon(settings.MEDIA_ROOT + new_current_member.icon, 
+                                            new_current_member.user_name)
+            except imageutils.ValidationError, e:
+                c['image_error'] = e.args[0]
             
             # E-mail change:
             if new_email != current_member.email:
