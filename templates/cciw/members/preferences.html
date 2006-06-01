@@ -6,12 +6,12 @@ will require confirmation by an e-mail.</p>
 
 {% if form.error_dict %}
 <div class="userError">
-Please check your input:
-<ul>
-    {% for e in form.error_dict.items %}
-    <li>{{ e.1|join:", " }}</li>
-    {% endfor %}
-</ul>
+Please check your input below:
+
+{% if form.icon_file.errors %}
+<ul><li>{{ form.icon_file.errors|join:", " }}</li></ul>
+{% endif %}
+
 </div>
 {% endif %}
 
@@ -29,8 +29,12 @@ Please check your input:
 
 
 <form method="post" action="" enctype="multipart/form-data">
-<div class="formrow"><label for="id_real_name">'Real' name</label>{{ form.real_name }}</div>
-<div class="formrow"><label for="id_email">E-mail address</label>{{ form.email }}</div>
+<div class="formrow"><label for="id_real_name">'Real' name</label>{{ form.real_name }}
+<span class="validationError">{% if form.real_name.errors %}* {{ form.real_name.errors|join:", " }}{% endif %}</span>
+</div>
+<div class="formrow"><label for="id_email">E-mail address</label>{{ form.email }}
+<span class="validationError">{% if form.email.errors %}* {{ form.email.errors|join:", " }}{% endif %}</span>
+</div>
 <div class="formrow"><label for="id_show_email">Make e-mail address visible</label>{{ form.show_email }}</div>
 <div class="formrow"><label for="id_comments">Comments</label>{{ form.comments }}</div>
 <div class="formrow"><label for="id_icon_file">Icon</label>{{ form.icon_file }}{{ form.icon }}<br/></div>

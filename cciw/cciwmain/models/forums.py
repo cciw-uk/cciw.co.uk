@@ -94,11 +94,11 @@ class Topic(models.Model):
         verbose_name="checked by")
     needs_approval = models.BooleanField("Needs approval", default=False)
     news_item = models.ForeignKey(NewsItem, null=True, blank=True,
-        related_name="topic") # optional news item
+        related_name="topics") # optional news item
     poll = models.ForeignKey(Poll, null=True, blank=True,
-        related_name="topic") # optional topic
+        related_name="topics") # optional topic
     forum = models.ForeignKey(Forum,
-        related_name="topic")
+        related_name="topics")
     last_post_at = models.DateTimeField("Last post at", 
         null=True, blank=True) # needed for performance and simplicity in templates
     last_post_by = models.ForeignKey(Member, verbose_name="Last post by",

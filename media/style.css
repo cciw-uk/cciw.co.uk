@@ -140,6 +140,14 @@ div.userError
 	background-color: #330000;
 }
 
+span.validationError
+{
+	color: red;
+	margin-left: 3px;
+}
+
+
+
 .successMessage
 {
 	border: 1px solid #206020;
@@ -645,11 +653,11 @@ div.formrow label
 {
 	display: block;
 	float: left;
-	width: 10em;
+	width: 16em;
 }
 div.formrow .formcontrol
 {
-	margin-left: 10em;
+	margin-left: 16em;
 	
 }
 div.formrow .formcontrol label

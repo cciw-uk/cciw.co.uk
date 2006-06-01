@@ -68,7 +68,13 @@
 		{% else %}
 		<p><i>Voting closed.</i></p>
 		{% endif %}
-
+		{% if current_member %}
+			{% if current_member.can_add_poll %}
+				{% ifequal current_member poll.created_by %}
+				<br/>&raquo; <a href="../edit_poll/{{ poll.id }}/">Edit poll</a>
+				{% endifequal %}
+			{% endif %}
+		{% endif %}
 	{% endif %}
 {% endblock %} 
 

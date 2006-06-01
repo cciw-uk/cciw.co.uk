@@ -9,7 +9,7 @@ class Permission(models.Model):
     id = models.PositiveSmallIntegerField("ID", primary_key=True)
     description = models.CharField("Description", maxlength=40)
     
-    def __repr__(self):
+    def __str__(self):
         return self.description
     
     class Meta:

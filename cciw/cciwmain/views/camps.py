@@ -160,6 +160,11 @@ def add_news(request, year, number):
     camp, breadcrumb_extra = _get_camp_and_breadcrumb(year, number)
     return forums_views.add_news(request, breadcrumb_extra)
 
+@member_required
+def edit_poll(request, year, number, poll_id=None):
+    camp, breadcrumb_extra = _get_camp_and_breadcrumb(year, number)
+    return forums_views.edit_poll(request, poll_id, breadcrumb_extra)
+
 def gallery(request, year, number):
     try:
         camp = Camp.objects.get(year=int(year), number=int(number))

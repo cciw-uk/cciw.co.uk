@@ -22,7 +22,7 @@ class Poll(models.Model):
     rules = models.PositiveSmallIntegerField("Rules",
         choices = VOTING_RULES)
     rule_parameter = models.PositiveSmallIntegerField("Parameter for rule", 
-        default=1)
+        default=1, radio_admin=True)
     have_vote_info = models.BooleanField("Full vote information available", 
         default=True)
     created_by = models.ForeignKey(Member, verbose_name="created by",
@@ -42,13 +42,15 @@ class Poll(models.Model):
         if self.rules == Poll.UNLIMITED:
             return True
         queries = [] # queries representing users relevant votes
-        for po in self.poll_options:
+        for po in self.poll_options.all():
             if self.rules == Poll.X_VOTES_PER_USER:
                 queries.append(po.votes.filter(member=member.user_name))
             elif self.rules == Poll.X_VOTES_PER_USER_PER_DAY:
                 queries.append(po.votes.filter(member=member.user_name, 
                                                 date__gte=datetime.now() - timedelta(1)))
         # combine them all and do an SQL count.
+        if len(queries) == 0:
+            return False # no options to vote on!
         count = reduce(operator.or_, queries).count()
         if count >= self.rule_parameter:
             return False
