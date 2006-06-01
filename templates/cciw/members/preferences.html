@@ -9,7 +9,7 @@ will require confirmation by an e-mail.</p>
 Please check your input:
 <ul>
     {% for e in form.error_dict.items %}
-    <li>{{ e.0 }}: {{ e.1|join:", " }}</li>
+    <li>{{ e.1|join:", " }}</li>
     {% endfor %}
 </ul>
 </div>
