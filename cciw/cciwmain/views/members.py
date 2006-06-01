@@ -98,17 +98,17 @@ def send_message(request, user_name):
     # General setup
     current_member = get_current_member()
 
+    try:
+        member = Member.objects.get(user_name=user_name)
+    except Member.DoesNotExist:
+        raise Http404
+
     # Handle input:
     errors = []
     message_sent = False
     preview = None
     message_text = None
     
-    try:
-        member = Member.objects.get(user_name=user_name)
-    except Member.DoesNotExist:
-        raise Http404
-
     to_name = ''
     if request.POST:
         to = None
@@ -124,6 +124,8 @@ def send_message(request, user_name):
                     to = Member.objects.get(user_name=to_name)
                 except Member.DoesNotExist:
                     errors.append('The user %s could not be found' % to_name)
+        # TODO - check whether the user allows messages to be
+        # sent to them.
 
         # Message
         message_text = request.POST.get('message', '').strip()
