@@ -415,7 +415,7 @@ def preferences(request):
     c = standard_extra_context(title="Preferences")
     
     # These fields are the ones we want to edit:
-    preferences_fields = ["email", "real_name", "comments", "message_option", "icon"]
+    preferences_fields = ["email", "real_name", "comments", "message_option", "icon", "show_email"]
     # These are the rest:
     fixed_fields = [f.attname for f in Member._meta.fields if f.attname not in preferences_fields]
     follow_override = dict([(f, False) for f in fixed_fields])
@@ -440,11 +440,12 @@ def preferences(request):
             manipulator.do_html2python(new_data)
             new_current_member = manipulator.save(new_data)
             
-            try:
-                imageutils.fix_member_icon(settings.MEDIA_ROOT + new_current_member.icon, 
-                                            new_current_member.user_name)
-            except imageutils.ValidationError, e:
-                c['image_error'] = e.args[0]
+            if request.FILES:
+                try:
+                    imageutils.fix_member_icon(settings.MEDIA_ROOT + new_current_member.icon, 
+                                                new_current_member.user_name)
+                except imageutils.ValidationError, e:
+                    c['image_error'] = e.args[0]
             
             # E-mail change:
             if new_email != current_member.email:
