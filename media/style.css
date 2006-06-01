@@ -226,7 +226,7 @@ table.topheaders tr.selected
 
 div.pollBarChartTotal
 {
-	width: 404px;
+	width: 304px;
 	border: 1px solid #114411;
 	
 }
@@ -637,6 +637,7 @@ div.sitephoto
 
 div.formrow
 {
+	clear: both;
 	margin: 5px 0px;
 }
 

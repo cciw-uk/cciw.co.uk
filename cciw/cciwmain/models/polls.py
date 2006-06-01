@@ -112,7 +112,7 @@ class PollOption(models.Model):
         if sum == 0:
             return 0
         else:
-            return int(float(self.total)/sum*400)
+            return int(float(self.total)/sum*300)
 
     class Meta:
         app_label = "cciwmain"
