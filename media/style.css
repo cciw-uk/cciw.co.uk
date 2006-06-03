@@ -946,11 +946,11 @@ span.taglist
 	font-size: 85%;
 }
 
-a.biblebutton, a.biblebutton img
+a.button, a.button img
 {
 	border-width: 0px;
 }
-a.biblebutton img
+a.button img
 {
 	vertical-align: bottom;
 	border-width: 0px;
