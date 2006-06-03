@@ -130,7 +130,7 @@ def send_message(request, user_name):
                 except Member.DoesNotExist:
                     errors.append('The user %s could not be found' % to_name)
 
-        if to.message_option == Member.MESSAGES_NONE:
+        if to is not None and to.message_option == Member.MESSAGES_NONE:
             errors.append('This user has chosen not to receive any messages.')
         else:
             # Message
