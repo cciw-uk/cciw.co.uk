@@ -28,8 +28,8 @@ CSRF_MIDDLEWARE_SECRET = SECRET_KEY
 ROOT_URLCONF = 'cciw.urls'
 
 VALIDATOR_APP_VALIDATORS = {
-    'text/html': '/home/httpd/myvalidate.sh',
-    'application/xml+xhtml': '/home/httpd/myvalidate.sh',
+    'text/html': '/home/luke/httpd/myvalidate.sh',
+    'application/xml+xhtml': '/home/luke/httpd/myvalidate.sh',
 }
 
 VALIDATOR_APP_IGNORE_PATHS = (
@@ -79,4 +79,4 @@ CAMP_FORUM_RE = r'camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/'
 FORUM_PAGINATE_POSTS_BY = 20
 FORUM_PAGINATE_PHOTOS_BY = 20
 FORUM_PAGINATE_TOPICS_BY = 30
-
+ESV_BROWSE_URL = "http://www.gnpcb.org/esv/search/"

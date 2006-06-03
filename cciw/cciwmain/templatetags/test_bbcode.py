@@ -67,6 +67,12 @@ tests = (
     # empty string should return nothing
     ('',
         ''),
+    # Bible:
+    ('[bible]test',
+        '<blockquote class="bible"><div>test</div></blockquote>'),
+    ('[bible=John 3:16]For God so loved the world[/bible]',
+        '<div class="biblequote"><a href="http://www.gnpcb.org/esv/search/?q=John+3%3A16" ' + \
+        'title="Browse John 3:16 in the ESV">John 3:16:</a></div><blockquote class="bible"><div>For God so loved the world</div></blockquote>'),
 )
 
 def check_xhtml(bb, xhtml):

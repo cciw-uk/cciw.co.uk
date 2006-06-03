@@ -41,6 +41,7 @@
 ## 4) ability to render out corrected BBCode as well as XHTML
 ## 5) XHTML outputed can be inserted into <body>, <div>, <td>
 ##    and any other elements that allow block level tags
+## 6) Excellent 'do what I mean' handling of bbcode input.
 ##
 ## IMPLEMENTATION NOTES
 ## 
@@ -56,11 +57,13 @@
 ##    as some elements being context sensitive in the render phase
 
 import re
+import urllib
 
 #### CCIW specific imports #####
 from cciw.cciwmain.utils import get_member_link, obfuscate_email
 from django.conf import settings
 EMOTICONS_ROOT = settings.CCIW_MEDIA_URL + 'images/emoticons/'
+ESV_BROWSE_URL = settings.ESV_BROWSE_URL
 
 ##### UTILITY FUNCTIONS #####
 def escape(html):
@@ -71,6 +74,8 @@ def escape(html):
         .replace('>', '&gt;').replace('"', '&quot;')
         
 ###### BBCODE ELEMENT DEFINITIONS ######
+# The 'Tag' classes are used as singletons,
+# created in the 'rules' section.
 class BBTag:
     """Represents an allowed tag with its name and meta data."""
     def __init__(self, name, allowed_children, implicit_tag, self_closing=False, 
@@ -242,7 +247,16 @@ class QuoteTag(BBTag):
         else:
             return '<blockquote>' + node.render_children_xhtml() + \
                 '</blockquote>'
-            
+
+class BibleTag(BBTag):
+    def render_node_xhtml(self, node):
+        output = ''
+        if node.parameter is not None:
+            url = ESV_BROWSE_URL + "?" + urllib.urlencode({'q':node.parameter})
+            output += '<div class="biblequote"><a href="%s" title="Browse %s in the ESV">%s:</a></div>' % \
+                (escape(url), escape(node.parameter), escape(node.parameter))
+        output += '<blockquote class="bible">' + node.render_children_xhtml() + '</blockquote>'
+        return ''.join(output)
 
 ###### DATA ######
 
@@ -257,7 +271,7 @@ _INLINE_TAGS = (
     'b', 'i', 'color', 'member', 'email', 'url', 
     'br', 'text', 'img', 'softbr', 'emoticon'
 )
-_BLOCK_LEVEL_TAGS = ('p', 'quote', 'list', 'pre', 'code', 'div')
+_BLOCK_LEVEL_TAGS = ('p', 'quote', 'list', 'pre', 'code', 'div', 'bible')
 _FLOW_TAGS = _INLINE_TAGS + _BLOCK_LEVEL_TAGS
 _OTHER_TAGS = ('*',)
 
@@ -312,6 +326,9 @@ _TAGS = (
     
     # <blockquote>
     QuoteTag    ('quote',      _BLOCK_LEVEL_TAGS + ('softbr',), 'div'),
+    
+    # <blockquote>
+    BibleTag    ('bible',      _BLOCK_LEVEL_TAGS + ('softbr',), 'div'),
     
     # <ul>
     HtmlEquivTag('list',       ('*', 'softbr'),None,

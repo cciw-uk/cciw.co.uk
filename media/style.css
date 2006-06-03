@@ -357,7 +357,7 @@ a:visited
 }
 
 
-h1,h2,h3,h4,h5,h6
+h1, h2, h3, h4, h5, h6
 {
 	margin-top: 0;
 	margin-bottom: 0.6em;
@@ -376,6 +376,7 @@ h1
 h2
 {
 	font-size: 1.3em;
+
 }
 
 h3
@@ -392,6 +393,13 @@ h5, h6
 {
 	font-size: 1em;
 }
+
+p
+{
+	margin-top: 2px;
+	margin-bottom: 1em;
+}
+
 /* Header and positioning */
 #skiptocontentdiv
 {
@@ -921,4 +929,38 @@ span.taglist
 	float:right;
 	font-size: 95%;
 }
+
+.verse-num
+{
+	vertical-align: super;
+	font-size: smaller;
+}
+.chapter-num
+{
+	font-size: bigger;
+	font-weight: bold;
+}
+
+.note
+{
+	font-size: 85%;
+}
+
+a.biblebutton, a.biblebutton img
+{
+	border-width: 0px;
+}
+a.biblebutton img
+{
+	vertical-align: bottom;
+	border-width: 0px;
+}
+
+#esvblock
+{
+	padding-bottom: 1em;
+	border-bottom: 1px solid white;
+	margin-bottom: 1em;
+}
+
 

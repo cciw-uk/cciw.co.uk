@@ -96,6 +96,10 @@ patterns('cciw.cciwmain.views',
     (r'^tag_targets/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/(?P<text>[^/]*)/(?P<tag_id>[^/]*)/$', 'tagging.single_tag'),
     (r'^tag_search/$', 'tagging.search'),
     
+    
+    # Services
+    (r'services/esv_passage/$', 'services.esv_passage'),
+    
     (r'', 'htmlchunk.find'),
 ) 
 

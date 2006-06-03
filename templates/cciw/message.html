@@ -1,3 +1,16 @@
+<script type="text/javascript">
+<!--
+function bibleWindow()
+{
+	var passage = document.getElementById('passageinput').value;
+	window.open('/services/esv_passage/?passage=' + encodeURI(passage),
+		'bible',"toolbar=yes,height=600,width=500,location=no,menubar=no,scrollbars=yes,resizable=yes");
+}
+//-->
+</script>
 <div>
-<textarea name="message" rows="10" cols="50">{% if message_text %}{{ message_text|escape }}{% endif %}</textarea>
+<textarea name="message" rows="10" cols="50" id="message">{% if message_text %}{{ message_text|escape }}{% endif %}</textarea>
+<div class="messageiconrow">Bible: <input name="passageinput" id="passageinput" type="text" title="Enter Bible passage and click the icon
+to do a lookup in a popup window" /><a title="Enter Bible passage and click the icon
+to do a lookup in a popup window" class="biblebutton" href="javascript:void bibleWindow();"><img src="{{ pagevars.media_root_url }}images/book.png" alt="" /></a></div>
 </div>
