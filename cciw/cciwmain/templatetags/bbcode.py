@@ -76,7 +76,7 @@ def escape(html):
 ###### BBCODE ELEMENT DEFINITIONS ######
 # The 'Tag' classes are used as singletons,
 # created in the 'rules' section.
-class BBTag:
+class BBTag(object):
     """Represents an allowed tag with its name and meta data."""
     def __init__(self, name, allowed_children, implicit_tag, self_closing=False, 
         prohibited_elements = None, discardable = False):
@@ -146,6 +146,13 @@ class HtmlEquivTag(BBTag):
             else:
                 ret = ''
         return ret
+    
+    def render_node_bbcode(self, node):
+        if self.name == 'div':
+            # 'div' elements should never be printed out as [div]
+            return node.render_children_bbcode()
+        else:
+            return super(HtmlEquivTag, self).render_node_bbcode(node)
 
 class LiTag(HtmlEquivTag):
     """

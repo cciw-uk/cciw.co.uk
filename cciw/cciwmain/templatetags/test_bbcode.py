@@ -102,4 +102,9 @@ def test_correct_preserves_whitespace():
     bb = "[list]\n  [*]Item1\n[*]Item2 \n[/list]\n"
     assert bb == bbcode.correct(bb)
 
+def test_correct_eliminates_div():
+    # Check we don't get '[div]' in corrected output
+    bb = "[quote]test[/quote]"
+    assert bb == bbcode.correct(bb)
+
 
