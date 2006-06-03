@@ -19,6 +19,9 @@ a:hover {
 }
 
 
+a img {
+	border-width: 0px;
+}
 
 
 /* Header */

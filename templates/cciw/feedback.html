@@ -1,0 +1,44 @@
+{% extends "cciw/standard.html" %}
+{% load standardpage %}
+{% block content %}
+
+{% if message %}
+<div class="successMessage">
+	{{ message }}
+</div>
+{% else %}
+	{% htmlchunk feedback_intro %}
+	
+	{% if form.error_dict %}
+	<div class="userError">Please check your input below:</div>
+	{% endif %}
+
+	<form action="" method="post">	
+	<div class="formrow"><label for="id_email">Your e-mail address (required)</label>
+	{{ form.email }}
+	{% if form.email.errors %}
+		<span class="validationError">* {{ form.email.errors|join:", " }}</span>
+	{% endif %}
+	</div>
+
+	<div class="formrow"><label for="id_name">Your name</label>
+	{{ form.name }}
+	{% if form.name.errors %}
+		<span class="validationError">* {{ form.name.errors|join:", " }}</span>
+	{% endif %}
+	</div>
+
+	<div class="formrow"><label for="id_message">Message (required)</label>
+	{{ form.message }}
+	{% if form.message.errors %}
+		<span class="validationError">* {{ form.message.errors|join:", " }}</span>
+	{% endif %}
+	</div>
+	
+	<p><input type="submit" name="submit" value="Send" /></p>
+	</form>
+	{% htmlchunk feedback_outro %}
+
+{% endif %}
+
+{% endblock %}

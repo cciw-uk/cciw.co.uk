@@ -100,6 +100,9 @@ patterns('cciw.cciwmain.views',
     # Services
     (r'services/esv_passage/$', 'services.esv_passage'),
     
+    # Feedback form
+    (r'contact/$', 'misc.feedback'),
+    
     (r'', 'htmlchunk.find'),
 ) 
 
