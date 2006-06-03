@@ -43,7 +43,7 @@ def photo_breadcrumb(gallery, photo):
         next_photo = Photo.all_objects.filter(id__gt=photo.id, \
             gallery__id__exact = photo.gallery_id).order_by('id')[0]
         prev_and_next += '<a href="%s" title="Next photo">&raquo;</a> ' % next_photo.get_absolute_url()
-    except Photo.DoesNotExist:
+    except IndexError:
         prev_and_next += '&raquo; '
         
     return ['<a href="' + gallery.get_absolute_url() + '">Photos</a>', str(photo.id), prev_and_next]
@@ -115,7 +115,9 @@ def _get_forum_or_404(path, suffix):
 # Called directly as a view for /website/forum/, and used by other views
 @member_required
 def add_topic(request, breadcrumb_extra=None):
-    "Displays a page for adding a topic to a forum"
+    """
+    Displays a page for adding a topic to a forum
+    """
 
     forum = _get_forum_or_404(request.path, 'add/')
 
@@ -161,7 +163,9 @@ def add_topic(request, breadcrumb_extra=None):
 # Called directly as a view for /website/forum/, and used by other views
 @member_required
 def add_news(request, breadcrumb_extra=None):
-    "Displays a page for adding a short news item to a forum."
+    """
+    Displays a page for adding a short news item to a forum.
+    """
 
     forum = _get_forum_or_404(request.path, 'add_news/')
 

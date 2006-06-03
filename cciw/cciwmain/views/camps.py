@@ -14,6 +14,17 @@ import forums as forums_views
 
 
 def index(request, year=None):
+    """
+    Displays a list of all camps, or all camps in a given year.
+    
+    Template - ``cciw/camps/index.html``
+    
+    Context:
+        show_ancient
+            True is the really old camps should be shown
+        camps
+            List of all Camp objects (or all Camp objects in the specified year).
+    """
     c = standard_extra_context()
     c['title'] ="Camp forums and photos"
     all_camps = Camp.objects.filter(year__lt=settings.THISYEAR)
@@ -32,6 +43,16 @@ def index(request, year=None):
             context_instance=RequestContext(request, c))
 
 def detail(request, year, number):
+    """
+    Shows details of a specific camp.
+    
+    Context:
+        camp
+            Camp objects
+        camp_is_past
+            True if this camp is now finished.
+    """
+    
     try:
         camp = Camp.objects.get(year=int(year), number=int(number))
     except Camp.DoesNotExist:
@@ -105,7 +126,8 @@ def _get_forum_for_path_and_year(location, year):
 
 
 def forum(request, year, number):
-    """Displays a topic index for a camp or year.  If number == 'all', the
+    """
+    Displays a topic index for a camp or year.  If number == 'all', the
     general forum will be shown."""
     if number == 'all':
         camp = None
