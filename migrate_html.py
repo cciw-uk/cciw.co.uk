@@ -473,6 +473,6 @@ to the relevant person, who will reply by e-mail.</p>
 """))
 
 
-html.append(('feedback_intro', '', '', """
+html.append(('feedback_outro', '', '', """
 
 """))
