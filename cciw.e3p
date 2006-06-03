@@ -1,308 +1,373 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
-<!-- Project file for project CCIW django -->
-<!-- Saved: 2006-06-03, 00:48:40 -->
+<!-- Project file for project cciw -->
+<!-- Saved: 2006-06-03, 23:05:58 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
-  <UIType>Console</UIType>
+  <UIType>Qt</UIType>
   <Description></Description>
   <Version>0.1</Version>
   <Author></Author>
   <Email></Email>
   <Sources>
     <Source>
+      <Dir>django</Dir>
+      <Name>devel.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Name>django_migrate.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Name>migrate_html.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Name>testemail.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Name>p3.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
-      <Name>migrate_html.py</Name>
-    </Source>
-    <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Name>settings.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Name>urls.py</Name>
     </Source>
     <Source>
-      <Dir>templates</Dir>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
-      <Dir>awards</Dir>
-      <Name>index.html</Name>
+      <Name>settings_postgres.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Name>settings_mysql.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Name>settings_calvin.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Name>settings_common.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Name>settings_sqlite.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Name>common.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Name>utils.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Name>urls.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Name>feeds.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Name>decorators.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Name>imageutils.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Dir>models</Dir>
       <Name>sitecontent.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Dir>models</Dir>
       <Name>forums.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Dir>models</Dir>
       <Name>camps.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Dir>models</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Dir>models</Dir>
       <Name>members.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Dir>models</Dir>
       <Name>polls.py</Name>
     </Source>
     <Source>
-      <Dir>cciw</Dir>
-      <Dir>cciwmain</Dir>
-      <Dir>views</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>cciwmain</Dir>
-      <Dir>views</Dir>
-      <Name>camps.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>cciwmain</Dir>
-      <Dir>views</Dir>
-      <Name>htmlchunk.py</Name>
-    </Source>
-    <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Dir>views</Dir>
       <Name>members.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>views</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>views</Dir>
+      <Name>camps.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>views</Dir>
+      <Name>htmlchunk.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Dir>views</Dir>
       <Name>forums.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
-      <Dir>templatetags</Dir>
-      <Name>standardpage.py</Name>
+      <Dir>views</Dir>
+      <Name>tagging.py</Name>
     </Source>
     <Source>
-      <Dir>cciw</Dir>
-      <Dir>cciwmain</Dir>
-      <Dir>templatetags</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>cciwmain</Dir>
-      <Dir>templatetags</Dir>
-      <Name>view_extras.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>cciwmain</Dir>
-      <Dir>templatetags</Dir>
-      <Name>bbcode.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>cciwmain</Dir>
-      <Dir>templatetags</Dir>
-      <Name>forums.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>cciwmain</Dir>
-      <Dir>templatetags</Dir>
-      <Name>test_bbcode.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>cciwmain</Dir>
-      <Name>decorators.py</Name>
-    </Source>
-    <Source>
-      <Name>django_migrate.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Name>settings_common.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Name>settings_calvin.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>officers</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>officers</Dir>
-      <Name>views.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>officers</Dir>
-      <Name>models.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>middleware</Dir>
-      <Name>threadlocals.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>middleware</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>officers</Dir>
-      <Name>urls.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>officers</Dir>
-      <Dir>templatetags</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>officers</Dir>
-      <Dir>templatetags</Dir>
-      <Name>application_admin.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>cciwmain</Dir>
-      <Name>feeds.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>officers</Dir>
-      <Name>hooks.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Dir>officers</Dir>
-      <Name>signals.py</Name>
-    </Source>
-    <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
       <Dir>views</Dir>
       <Name>memberadmin.py</Name>
     </Source>
     <Source>
-      <Name>devel.py</Name>
-    </Source>
-    <Source>
-      <Name>testemail.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Name>settings_postgres.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Name>settings_mysql.py</Name>
-    </Source>
-    <Source>
+      <Dir>django</Dir>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
-      <Dir>views</Dir>
-      <Name>tagging.py</Name>
+      <Dir>templatetags</Dir>
+      <Name>standardpage.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>templatetags</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>templatetags</Dir>
+      <Name>view_extras.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>templatetags</Dir>
+      <Name>bbcode.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>templatetags</Dir>
+      <Name>forums.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>templatetags</Dir>
+      <Name>test_bbcode.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>officers</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>officers</Dir>
+      <Name>views.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>officers</Dir>
+      <Name>models.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>officers</Dir>
+      <Name>urls.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>officers</Dir>
+      <Name>hooks.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>officers</Dir>
+      <Name>signals.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>officers</Dir>
+      <Dir>templatetags</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>officers</Dir>
+      <Dir>templatetags</Dir>
+      <Name>application_admin.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>middleware</Dir>
+      <Name>threadlocals.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
+      <Dir>cciw</Dir>
+      <Dir>middleware</Dir>
+      <Name>__init__.py</Name>
+    </Source>
+    <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Name>dist.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>setup</Dir>
       <Dir>djangovalidator</Dir>
       <Name>setup.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Dir>tagging</Dir>
       <Name>models.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Dir>tagging</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Dir>tagging</Dir>
       <Name>fields.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Dir>tagging</Dir>
       <Name>utils.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Dir>tagging</Dir>
       <Name>views.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Dir>tagging</Dir>
@@ -310,6 +375,7 @@
       <Name>tagging.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Dir>tagging</Dir>
@@ -317,46 +383,51 @@
       <Name>__init__.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Dir>validator</Dir>
       <Name>urls.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Dir>validator</Dir>
       <Name>views.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Dir>validator</Dir>
       <Name>models.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Dir>validator</Dir>
       <Name>__init__.py</Name>
     </Source>
     <Source>
+      <Dir>django</Dir>
       <Dir>lukeplant_me_uk</Dir>
       <Dir>django</Dir>
       <Dir>validator</Dir>
       <Name>middleware.py</Name>
     </Source>
     <Source>
-      <Name>p3.py</Name>
+      <Dir>cciw</Dir>
+      <Dir>cciwmain</Dir>
+      <Dir>views</Dir>
+      <Name>services.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
       <Dir>cciwmain</Dir>
-      <Name>imageutils.py</Name>
-    </Source>
-    <Source>
-      <Dir>cciw</Dir>
-      <Name>settings_sqlite.py</Name>
+      <Dir>views</Dir>
+      <Name>misc.py</Name>
     </Source>
   </Sources>
   <Forms>
@@ -366,13 +437,10 @@
   <Interfaces>
   </Interfaces>
   <Others>
-    <Other>
-      <Name>templates</Name>
-    </Other>
   </Others>
   <Vcs>
     <VcsType>Subversion</VcsType>
-    <VcsOptions>{'status': [], 'log': [], 'global': [], 'update': [], 'remove': [], 'add': [], 'tag': [], 'export': [], 'diff': [], 'commit': [], 'checkout': [], 'history': []}</VcsOptions>
+    <VcsOptions>{'status': [''], 'log': [''], 'global': [''], 'update': [''], 'remove': [''], 'add': [''], 'tag': [''], 'export': [''], 'diff': [''], 'commit': [''], 'checkout': [''], 'history': ['']}</VcsOptions>
     <VcsOtherData>{'standardLayout': 1}</VcsOtherData>
   </Vcs>
 </Project>
