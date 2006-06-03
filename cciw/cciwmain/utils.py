@@ -110,3 +110,11 @@ class ThisYear(object):
     def __int__(self):
         self.update()
         return self.year
+
+_current_domain = None
+def get_current_domain():
+    global _current_domain
+    if _current_domain is None:
+        from django.contrib.sites.models import Site
+        _current_domain = Site.objects.get_current().domain
+    return _current_domain

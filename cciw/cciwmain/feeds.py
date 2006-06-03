@@ -3,7 +3,7 @@ from django.http import Http404, HttpResponse
 from cciw.cciwmain.models import Member, Topic, Post, NewsItem
 from django.contrib.sites.models import Site
 from django.utils.feedgenerator import Atom1Feed
-from cciw.cciwmain.utils import get_member_href
+from cciw.cciwmain.utils import get_member_href, get_current_domain
 
 MEMBER_FEED_MAX_ITEMS = 20
 NEWS_FEED_MAX_ITEMS = 20
@@ -47,7 +47,7 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
     
 def add_domain(url):
     """Adds the domain onto the beginning of a URL"""
-    return feeds.add_domain(Site.objects.get_current().domain, url)
+    return feeds.add_domain(get_current_domain(), url)
 
 class CCIWFeed(feeds.Feed):
     feed_type = Atom1Feed

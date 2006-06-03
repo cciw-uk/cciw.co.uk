@@ -1,6 +1,9 @@
 from django.db import models
 from django.conf import settings
+from django.core import mail
 from cciw.middleware import threadlocals
+from cciw.cciwmain import utils
+from datetime import datetime
 
 class Permission(models.Model):
     POLL_CREATOR = 5
@@ -216,6 +219,32 @@ class Message(models.Model):
     text = models.TextField("Message")
     box = models.PositiveSmallIntegerField("Message box",
         choices=MESSAGE_BOXES)
+    
+    @staticmethod
+    def send_message(to_member, from_member, text):
+        if to_member.message_option == Member.MESSAGES_NONE:
+            return
+        if to_member.message_option != Member.MESSAGES_EMAIL:
+            msg = Message(to_member=to_member, from_member=from_member,
+                        text=text, time=datetime.now(),
+                        box=Message.MESSAGE_BOX_INBOX)
+            msg.save()
+        if to_member.message_option != Member.MESSAGES_WEBSITE:
+            mail.send_mail("Message on cciw.co.uk",
+"""You have received a message on cciw.co.uk from user %(from)s:
+
+%(message)s
+----
+You can view your inbox here:
+http://%(domain)s/members/%(to)s/messages/inbox/
+
+You can reply here:
+http://%(domain)s/members/%(from)s/messages/
+
+""" % {'from': from_member.user_name, 'to': to_member.user_name,
+        'domain': utils.get_current_domain(), 'message': text},
+        "website@cciw.co.uk", [to_member.email])
+            
     
     def __str__(self):
         return "[" + str(self.id) + "] to " + str(self.to_member)  + " from " + str(self.from_member)

@@ -109,13 +109,18 @@ def send_message(request, user_name):
     preview = None
     message_text = None
     
+    no_messages = False
     to_name = ''
+
+    to = None
+    if current_member.user_name != member.user_name:
+        to = member
+        if to.message_option == Member.MESSAGES_NONE:
+            no_messages = True
+
     if request.POST:
-        to = None
         # Recipient
-        if current_member.user_name != member.user_name:
-            to = member
-        else:
+        if to is None:
             to_name = request.POST.get('to', '').strip()
             if to_name == '':
                 errors.append('No user name given.')
@@ -124,26 +129,24 @@ def send_message(request, user_name):
                     to = Member.objects.get(user_name=to_name)
                 except Member.DoesNotExist:
                     errors.append('The user %s could not be found' % to_name)
-        # TODO - check whether the user allows messages to be
-        # sent to them.
 
-        # Message
-        message_text = request.POST.get('message', '').strip()
-        if message_text == '':
-            errors.append('No message entered.')
-        
-        # Always do a preview (for 'preview' and 'send')
-        preview = bbcode.bb2xhtml(message_text)
-        if len(errors) == 0 and request.POST.has_key('send'):
-            msg = Message(to_member=to, from_member=current_member,
-                text=message_text, time=datetime.now(),
-                box=Message.MESSAGE_BOX_INBOX)
-            msg.save()
-            message_sent = True
-            message_text = '' # don't persist.
+        if to.message_option == Member.MESSAGES_NONE:
+            errors.append('This user has chosen not to receive any messages.')
         else:
-            # Persist text entered, but corrected:
-            message_text = bbcode.correct(message_text)
+            # Message
+            message_text = request.POST.get('message', '').strip()
+            if message_text == '':
+                errors.append('No message entered.')
+            
+            # Always do a preview (for 'preview' and 'send')
+            preview = bbcode.bb2xhtml(message_text)
+            if len(errors) == 0 and request.POST.has_key('send'):
+                Message.send_message(to, current_member, message_text)
+                message_sent = True
+                message_text = '' # don't persist.
+            else:
+                # Persist text entered, but corrected:
+                message_text = bbcode.correct(message_text)
 
     # Context vars
     crumbs = [get_member_link(user_name)]
@@ -167,6 +170,7 @@ def send_message(request, user_name):
     c['errors'] = errors
     c['message_sent'] = message_sent
     c['message_text'] = message_text
+    c['no_messages'] = no_messages
     
     return render_to_response('cciw/members/messages/send.html', context_instance=c)
 
