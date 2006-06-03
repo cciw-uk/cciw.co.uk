@@ -14,7 +14,7 @@ def find(request):
         
     try:
         chunk = link.htmlchunk_set.filter()[0]
-    except HtmlChunk.DoesNotExist:
+    except IndexError:
         raise Http404()
     
     c = RequestContext(request, standard_extra_context(title=chunk.page_title))
