@@ -47,7 +47,23 @@ html.append(('website_general','/website/','Web site info', """
 """))
 
 html.append(('website_help', '/website/help/', 'Website help', """
-<p>WRITE ME!</p>"""))
+<p>If you have any problems with the website, send a message to the <a href="/members/webmaster/messages/">webmaster</a>.
+ Answer to commonly asked questions will be added below.</p>
+ 
+ <h2>Frequently asked questions</h2>
+ <ul>
+ <li><h3>What happened to all the emoticons?</h3>
+ <p>They are still available, just not not 'clickable' like before.  To see 
+  a full list of emoticons and the bbcode you can use, see 
+  <a href="/website/bbcode/">Website BBCode</a>".</p>
+  </li>
+  </ul>"""))
+
+html.append(('website_bbcode', '/website/bbcode/', 'Website BBCode', """
+<p>TODO</p>
+
+"""))
+
 
 html.append(('website_terms_of_service', '/website/terms/', 'Terms of Service', """
 <p>By using this website, you agree to abide by the following terms and conditions.</p>
@@ -308,7 +324,7 @@ Sunday, which is kept special with two services and a quiet programme in between
 
 <h2>Links</h2>
 <ul>
-    <li><a href="/thisyear/coming-on-camp/">Coming on camp</a></li>
+    <li><a href="/thisyear/transport/">Transport</a></li>
     <li><a href="/thisyear/">This year's camp dates</a></li>
     <li><a href="/thisyear/booking/">Booking</a></li>
 </ul>
@@ -320,8 +336,8 @@ html.append(('camp_dates_intro_text', '', '', """
 <p>Dates for camp are below.  See also:</p>
 <ul>
     <li><a href="/info/about-camp/">What is camp all about?</a></li>
-    <li><a href="/thisyear/coming-on-camp/">Coming on camp</a></li>
     <li><a href="/thisyear/booking/">Booking</a></li>
+    <li><a href="/thisyear/transport/">Transport</a></li>
 </ul>
 """))
 
@@ -329,9 +345,8 @@ html.append(('camp_dates_intro_text', '', '', """
 html.append(('camp_dates_outro_text', '', '', """
 """))
 
-html.append(('coming_on_camp', '/thisyear/coming-on-camp/', 'Coming on camp', """
+html.append(('transport', '/thisyear/transport/', 'Transport', """
 
-<h2>Transport</h2>
 <p>Please consult the maps and locations of <a href="/sites/">our camp sites</a> to arrange
 your transport.</p>
 
@@ -354,6 +369,9 @@ any payment from CCIW's insurers.</p>
 <p>Adventure activities are provided by Licensed Activity Providers who have their 
 own public liability insurance cover.</p>
 
+"""))
+
+html.append(('booking', '/thisyear/booking/', 'Booking', """
 
 <h2>Booking</h2>
 <p><b>The cost for a single camper 
@@ -447,3 +465,14 @@ Any comments about camp, suggestions, or other reasons to get in contact with us
 </ul>
 <br/>
 <p>CCIW is a limited company (reg. No. 3900844), and a Registered Charity (No:1079713)</p>"""))
+
+html.append(('feedback_intro', '', '', """
+<p>If you have an enquiry to make to the CCIW directors,
+please use the form below and your message will be forwarded 
+to the relevant person, who will reply by e-mail.</p>
+"""))
+
+
+html.append(('feedback_intro', '', '', """
+
+"""))

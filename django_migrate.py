@@ -11,13 +11,18 @@ from itertools import chain
 from migrate_html import *
 from cciw.cciwmain.models import *
 from cciw.cciwmain.utils import strip_control_chars
+from cciw.middleware import threadlocals
+
+# Set permissions so that default managers show us everything.
+from django.contrib.auth.models import User
+threadlocals.set_current_user(User.objects.filter(is_superuser=True)[0])
 
 # Config
-PREFIX = '/home/httpd/www.cciw.co.uk/web/data/'
-ICONDIR = '/home/httpd/www.cciw.co.uk/web/images/members/'
+PREFIX = '/home/luke/httpd/www.cciw.co.uk/web/data/'
+ICONDIR = '/home/luke/httpd/www.cciw.co.uk/web/images/members/'
 NEW_ICON_PREFIX = 'images/members/'
-NEW_ICONDIR = '/home/httpd/www.cciw.co.uk/django/media/' + NEW_ICON_PREFIX
-
+NEW_ICONDIR = '/home/luke/httpd/www.cciw.co.uk/django/media/' + NEW_ICON_PREFIX
+DEFAULT_ICON = '/home/luke/httpd/www.cciw.co.uk/django/media/defaultmember.gif'
 # Utility functions
 
 # list that generates empty string items if you try to access out of bounds
@@ -99,8 +104,7 @@ new_urls = {
     'pastcamps.php?sp=2003-all': '/camps/2003/all/forum/',
     'pastcamps.php?sp=2002-all': '/camps/2002/all/forum/',
     'pastcamps.php?sp=2001-all': '/camps/2001/all/forum/',
-    'about_website.php?sp=codes': '/website/help/', # TODO ?
-    'http://www.cciw.co.uk/': 'http://cciw.co.uk/',
+    'about_website.php?sp=codes': '/website/help/', 
 } # these are added to by various functions as we go through
 
 
@@ -294,9 +298,10 @@ def migrate_camps():
 ###########################################################################################
 #             USERS
 def migrate_members():
-    Member.objects.all().delete()
+    Member.all_objects.all().delete()
     def create_member(data, passwords_dict, last_seen_data):
-        member = Member(user_name=data[0])
+        member = Member()
+        member.user_name = data[0]
         member.real_name = data[1]
         member.email = data[3]
         member.password = passwords_dict.get(member.user_name, Member.encrypt_password('password1'))
@@ -308,41 +313,34 @@ def migrate_members():
         member.moderated = get_int(data[15])
         member.hidden = get_bool(data[17])
         member.banned = get_bool(data[16])
-        member.new_email = data[22]
-        member.bookmarks_notify = not get_bool(data[18])
         for suffix in ('jpeg', 'png', 'gif'):
             imagefile = member.user_name + '.' + suffix
             if os.path.isfile(ICONDIR + imagefile):
                 shutil.copyfile(ICONDIR + imagefile, NEW_ICONDIR + imagefile)
                 member.icon = NEW_ICON_PREFIX + imagefile
         if not member.icon:
-            shutil.copy('/home/httpd/www.cciw.co.uk/django/media/defaultmember.gif',
+            shutil.copy(DEFAULT_ICON,
                         NEW_ICONDIR + member.user_name + ".gif")
         return member
     
     # first get passwords from separate table
     passwords = {}
-    for line in get_table(PREFIX+".htpasswd.online.2005-08-26",":"):
+    for line in get_table(PREFIX+"../private/.htpasswd.online",":"):
         passwords[line[0]] = line[1]
     
     last_seen_data = {}
     for line in get_table(PREFIX+"lastseen.data"):
         last_seen_data[line[0]] = datetime.fromtimestamp(int(line[1]))
         
-    # Now parse members.data and pending_members.data
+    # Now parse members.data
     for line in get_table(PREFIX+"members.data"):
-        try:
-            u = create_member(line, passwords, last_seen_data)
-        except:
-            print "Invalid data:"
-            print line
-            continue
+        u = create_member(line, passwords, last_seen_data)
         u.save()
 
 ###########################################################################################
 # Permissions (from old 'groups')
 def migrate_permissions():
-    for m in Member.objects.all():
+    for m in Member.all_objects.all():
         m.permissions.clear()
     Permission.objects.all().delete()
     
@@ -501,10 +499,10 @@ def get_dummy_or_real_member(user_name):
 
 def migrate_forums():
     # delete eveything
-    Post.objects.all().delete()
+    Post.all_objects.all().delete()
     NewsItem.objects.all().delete()
-    Topic.objects.all().delete()
-    Photo.objects.all().delete()
+    Topic.all_objects.all().delete()
+    Photo.all_objects.all().delete()
     Forum.objects.all().delete()
     Gallery.objects.all().delete()
 
@@ -659,7 +657,7 @@ def migrate_main_menu():
         ('News','/news/',100, ''),
         ('Camps {{thisyear}}', '/thisyear/',200, ''),
         ('Booking', '/thisyear/booking/', 210, '/thisyear/'),
-        ('Coming on camp', '/thisyear/coming-on-camp/', 220, '/thisyear/'),
+        ('Transport', '/thisyear/transport/', 220, '/thisyear/'),
         ('Camp sites', '/sites/', 300, ''),
         ('Forums and photos', '/camps/',400, ''),
         ('Members', '/members/', 500, ''),
@@ -672,7 +670,9 @@ def migrate_main_menu():
         ('Terms','/website/terms/', 710, '/website/'),
         ('Forum','/website/forum/', 720, '/website/'),
         ('Help','/website/help/', 730, '/website/'),
+        ('BBCode Help','/website/bbcode/', 740, '/website/'),
         ('Contact us','/contact/', 800, ''),
+        ('Awards', '/awards/', 850, ''),
         ('Tags', '/tags/', 900, ''),
     )
 
@@ -734,19 +734,21 @@ def fixup_urls():
 
 ##########################################################
 
-# Order matters!
-migrate_leaders()
-migrate_sites()
-migrate_camps()
-migrate_members()
-migrate_permissions()
-migrate_messages()
-migrate_awards()
-migrate_polls()
-migrate_forums()
+if __name__ == '__main__':
+    # Order matters!
+    migrate_leaders()
+    migrate_sites()
+    migrate_camps()
+    migrate_members()
+    migrate_permissions()
+    migrate_messages()
+    migrate_awards()
+    migrate_polls()
+    migrate_forums()
 
-migrate_main_menu()
-migrate_html()
-
-fixup_urls() # must come after everything else, and needs (at least) migrate_forums to work
+    fixup_urls() # must come after all the above, and needs (at least) migrate_forums to work at all
+    
+    migrate_main_menu()
+    migrate_html()
+    
 
