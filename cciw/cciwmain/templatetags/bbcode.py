@@ -420,8 +420,8 @@ _EMOTICONS = \
 _EMOTICON_DICT = dict(_EMOTICONS)
 
 # Modify list to create 'replacement' text used later
-_EMOTICONS = [(x[0], x[1], '\0'.join(x[0])) for x in _EMOTICONS]
-
+# We insert nulls to avoid a bug with replacements, and remove them later
+_EMOTICONS = [(x[0], x[1],  '[emoticon]' + '\0'.join(x[0]) + '[/emoticon]') for x in _EMOTICONS]
 
 ###### PARSING CLASSES AND FUNCTIONS ######
 class BBNode:
@@ -606,17 +606,16 @@ class BBCodeParser:
         
         # We have to be careful of 0:-) and :-)
         # so we use a nasty hack with inserting nulls
-        # to ensure that later passes don't do this:
-        #  [emoticon]0:-)[/emoticon] -- > [emoticon]0[emoticon]:-)[/emoticon]:-)[/emoticon]
+        # to ensure that we don't get this:
+        #  [emoticon]0:-)[/emoticon] --> [emoticon]0[emoticon]:-)[/emoticon]:-)[/emoticon]
         for emoticon, image, replacement in _EMOTICONS:
-            bbcode = bbcode.replace(emoticon,
-                '[emoticon]' + replacement + '[/emoticon]')
+            bbcode = bbcode.replace(emoticon, replacement)
         # Remove the hacky nulls we inserted
         bbcode = bbcode.replace("\0", '')
         return bbcode
 
     def parse(self, bbcode):
-        """Parse the bbcode into a tree of elements"""        
+        """Parse the bbcode into a tree of elements"""
         self.root_node = BBRootNode(self.root_allows_inline)
         self.current_node = self.root_node
         bbcode = self._prepare(bbcode)
