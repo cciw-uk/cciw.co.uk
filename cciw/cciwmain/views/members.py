@@ -16,6 +16,9 @@ from datetime import datetime, timedelta
 import re
 
 def index(request):
+    """
+    Displays an index of all members.
+    """
     members = Member.objects.filter(dummy_member=False)
     
     feed = feeds.handle_feed_request(request, feeds.MemberFeed, query_set=members)
