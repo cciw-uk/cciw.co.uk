@@ -2,7 +2,12 @@
 
 {% block thread_top %}
 	<div class="photo">
-		<img class="photo" src="{{ pagevars.media_root_url }}photos/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
+		{% if current_member %}
+		<img class="photo" src="{{ pagevars.media_root_url }}photos/real/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
+		{% else %}
+		<img class="photo" src="{{ pagevars.media_root_url }}photos//thumbnails/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
+		<br/><span class="note">You must be logged in to see full images</span>
+		{% endif %}
 	</div>
 {% endblock %} 
 
