@@ -235,8 +235,7 @@ class Emoticon(BBTag):
 class ColorTag(BBTag):
     def render_node_xhtml(self, node):
         if len(node.children) > 0:
-            if node.parameter.lower() in _COLORS or \
-                _COLOR_REGEXP.match(node.parameter) is not None:
+            if _COLOR_REGEXP.match(node.parameter) is not None:
                 return '<span style="color: ' + node.parameter +  ';">' + \
                     node.render_children_xhtml() + '</span>'
             else:
@@ -305,7 +304,8 @@ class BibleTag(BBTag):
 
 _COLORS = ('aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon', 
     'navy', 'olive', 'purple', 'red', 'silver', 'teal', 'white', 'yellow')
-_COLOR_REGEXP = re.compile(r'#[0-9A-F]{6}')
+    
+_COLOR_REGEXP = re.compile('|'.join(_COLORS) + r'|#[0-9A-F]{6}')
 _MEMBER_REGEXP = re.compile(r'^[0-9A-Za-z_]{1,30}$')
 _BBTAG_REGEXP = re.compile(r'\[\[?\/?([A-Za-z\*]+)(=[^\]]+)?\]?\]')
 
