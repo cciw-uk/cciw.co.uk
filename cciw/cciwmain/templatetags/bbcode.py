@@ -37,7 +37,8 @@
 ##
 ## 1) full XHTML compliance, including prohibited elements
 ## 2) intelligent handling/preserving of whitespace
-## 3) emoticons, with intelligent handling for tricky cases
+## 3) emoticons, with intelligent handling for tricky cases 
+##    (e.g. inside <pre> tags)
 ## 4) ability to render out corrected BBCode as well as XHTML
 ## 5) XHTML outputed can be inserted into <body>, <div>, <td>
 ##    and any other elements that allow block level tags
@@ -48,7 +49,7 @@
 ## 1) I have implemented what I needed and used for my own needs,
 ##    which isn't necessarily 'standard' bbcode, if such a thing exists
 ## 2) There are some definitely web site specific extensions
-##    e.g. [email], [member], the rendering of [quote=person]
+##    e.g. [email], [member], [bible], the rendering of [quote=person]
 ## 3) 'Missing' tags - [img] - but should be easy to add
 ## 4) Mostly it works on one-to-one correspondance between
 ##    'bbtags' and xhtml tags, but with some added constraints to force
@@ -73,7 +74,6 @@ def escape(html):
     return html.replace('&', '&amp;').replace('<', '&lt;') \
         .replace('>', '&gt;').replace('"', '&quot;')
 
-        
 class MultiReplace:
     """
     Does multiple replacements on a string at once.
@@ -115,7 +115,7 @@ class MultiReplace:
 class BBTag(object):
     """Represents an allowed tag with its name and meta data."""
     def __init__(self, name, allowed_children, implicit_tag, self_closing=False, 
-        prohibited_elements = None, discardable = False):
+        prohibited_elements=None, discardable=False):
         """Creates a new BBTag.
         - name is the text appears in square brackets e.g. for [b], name = 'b'
         - allowed_children is a list of the names of tags that can be added to this element
@@ -135,7 +135,7 @@ class BBTag(object):
         self.self_closing = self_closing
         self.name = name
         self.implicit_tag = implicit_tag
-        self.allowed_children = allowed_children
+        self.allowed_children = set(allowed_children)
         self.discardable = discardable
         
     def render_node_xhtml(self, node):
@@ -400,7 +400,6 @@ for t in _TAGS:
 # Make list of valid tags
 _TAGNAMES = [t.name for t in _TAGS]
 
-# Order of emoticons is important
 _EMOTICONS = \
     [('0:-)', 'angel.gif'),
      ('O:-)', 'angel.gif'),
@@ -455,7 +454,8 @@ _EMOTICONS = \
 # Create dict
 _EMOTICON_DICT = dict(_EMOTICONS)
 
-# Create a replacer
+# Create a replacer (optimisation, plus this method is important
+# for correctness) 
 _replace_pairs = ((x, '[emoticon]%s[/emoticon]' % x) for x, y in _EMOTICONS)
 _emoticon_replacer = MultiReplace(dict(_replace_pairs))
 
