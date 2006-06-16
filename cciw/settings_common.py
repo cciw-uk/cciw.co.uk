@@ -78,3 +78,4 @@ FORUM_PAGINATE_PHOTOS_BY = 20
 FORUM_PAGINATE_TOPICS_BY = 30
 ESV_BROWSE_URL = "http://www.gnpcb.org/esv/search/"
 FEEDBACK_EMAIL_TO = "L.Plant.98@cantab.net"
+BOOKINGFORMDIR = "downloads"

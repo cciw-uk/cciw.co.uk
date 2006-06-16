@@ -1,3 +1,5 @@
+import os
+
 from django import forms
 from django import shortcuts
 from django import template
@@ -5,7 +7,7 @@ from django.core import mail
 from django.conf import settings
 from django.utils.text import wrap
 
-from cciw.cciwmain.common import standard_extra_context
+from cciw.cciwmain.common import standard_extra_context, get_thisyear
 
 def send_feedback(email, name, message):
     message = wrap(message, 70)
@@ -49,3 +51,16 @@ def feedback(request):
     c['errors'] = errors
     return shortcuts.render_to_response('cciw/feedback.html', 
                 context_instance=template.RequestContext(request, c))
+
+def bookingform(request):
+    """
+    Displays a page with a download link for the booking form 
+    if it is available.
+    """
+    c = standard_extra_context(title="Booking form")
+    year = get_thisyear()
+    bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
+    if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath )):
+        c['bookingform'] = bookingform_relpath
+    return shortcuts.render_to_response('cciw/booking.html',
+        context_instance=template.RequestContext(request, c))

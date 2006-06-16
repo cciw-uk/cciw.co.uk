@@ -47,6 +47,7 @@ patterns('cciw.cciwmain.views',
     
     # Camps
     (r'^thisyear/$', 'camps.thisyear'),
+    (r'^thisyear/bookingform/$', 'misc.bookingform'),
     (r'^camps/$', 'camps.index'),
     (r'^camps/(?P<year>\d{4})/?$', 'camps.index'),
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+)/$', 'camps.detail'),
