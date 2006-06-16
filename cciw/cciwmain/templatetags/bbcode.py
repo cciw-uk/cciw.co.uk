@@ -184,7 +184,7 @@ class Emoticon(BBTag):
             return ''
         emoticon = node.children[0].text   # child is always a BBTextNode
         if node.parent.allows('img'):
-            imagename = _EMOTICONS.get(emoticon,'')
+            imagename = _EMOTICON_DICT.get(emoticon,'')
             if imagename == '':
                 return ''
             else:
@@ -364,59 +364,64 @@ for t in _TAGS:
 # Make list of valid tags
 _TAGNAMES = [t.name for t in _TAGS]
 
-_EMOTICONS = {
-        '0:-)': 'angel.gif',
-        'O:-)':'angel.gif',
-        ':angel:':'angel.gif',
-        ':)':'smile.gif',
-        ':(':'sad.gif',
-        ':D':'grin.gif',
-        ':p':'tongue.gif',
-        ';)':'wink.gif',
-        ':-)':'smile.gif',
-        ':-(': 'sad.gif',
-        ':-D': 'grin.gif',
-        ':-P': 'tongue.gif',
-        ':-p': 'tongue.gif',
-        ':-/': 'unsure.gif',
-        ':-\\': 'unsure.gif',
-        ';-)': 'wink.gif',
-        ':-$': 'confused.gif',
-        ':-S': 'confused.gif',
-        'B-)': 'cool.gif',
-        ':lol:': 'lol.gif',
-        ':batman:': 'batman.gif',
-        ':rolleyes:': 'rolleyes.gif',
-        ':icymad:': 'bluemad.gif',
-        ':mad:': 'mad.gif',
-        ':crying:': 'crying.gif',
-        ':eek:': 'eek.gif',
-        ':eyebrow:': 'eyebrow.gif',
-        ':grim:': 'grim_reaper.gif',
-        ':idea:': 'idea.gif',
-        ':rotfl:': 'rotfl.gif',
-        ':shifty:': 'shifty.gif',
-        ':sleep:': 'sleep.gif',
-        ':thinking:': 'thinking.gif',
-        ':wave:': 'wave.gif',
-        ':bow:': 'bow.gif',
-        ':sheep:':  'sheep.gif',
-        ':santa:':  'santaclaus.gif',
-        ':anvil:': 'anvil.gif',
-        ':bandit:': 'bandit.gif',
-        ':chop:': 'behead.gif',
-        ':biggun:': 'biggun.gif',
-        ':mouthful:': 'blowingup,gif',
-        ':gun:': 'bluekillsred.gif',
-        ':box:': 'boxing.gif',
-        ':gallows:': 'hanged.gif',
-        ':jedi:': 'lightsaber1.gif',
-        ':bosh:': 'mallet1.gif',
-        ':saw:': 'saw.gif',
-        ':stupid:': 'youarestupid.gif',
-}
+# Order of emoticons is important
+_EMOTICONS = \
+    [('0:-)', 'angel.gif'),
+     ('O:-)', 'angel.gif'),
+     (':angel:', 'angel.gif'),
+     (':)', 'smile.gif'),
+     (':(', 'sad.gif'),
+     (':D', 'grin.gif'),
+     (':p', 'tongue.gif'),
+     (';)', 'wink.gif'),
+     (':-)', 'smile.gif'),
+     (':-(', 'sad.gif'),
+     (':-D', 'grin.gif'),
+     (':-P', 'tongue.gif'),
+     (':-p', 'tongue.gif'),
+     (':-/', 'unsure.gif'),
+     (':-\\', 'unsure.gif'),
+     (';-)', 'wink.gif'),
+     (':-$', 'confused.gif'),
+     (':-S', 'confused.gif'),
+     ('B-)', 'cool.gif'),
+     (':lol:', 'lol.gif'),
+     (':batman:', 'batman.gif'),
+     (':rolleyes:', 'rolleyes.gif'),
+     (':icymad:', 'bluemad.gif'),
+     (':mad:', 'mad.gif'),
+     (':crying:', 'crying.gif'),
+     (':eek:', 'eek.gif'),
+     (':eyebrow:', 'eyebrow.gif'),
+     (':grim:', 'grim_reaper.gif'),
+     (':idea:', 'idea.gif'),
+     (':rotfl:', 'rotfl.gif'),
+     (':shifty:', 'shifty.gif'),
+     (':sleep:', 'sleep.gif'),
+     (':thinking:', 'thinking.gif'),
+     (':wave:', 'wave.gif'),
+     (':bow:', 'bow.gif'),
+     (':sheep:', 'sheep.gif'),
+     (':santa:', 'santaclaus.gif'),
+     (':anvil:', 'anvil.gif'),
+     (':bandit:', 'bandit.gif'),
+     (':chop:', 'behead.gif'),
+     (':biggun:', 'biggun.gif'),
+     (':mouthful:', 'blowingup,gif'),
+     (':gun:', 'bluekillsred.gif'),
+     (':box:', 'boxing.gif'),
+     (':gallows:', 'hanged.gif'),
+     (':jedi:', 'lightsaber1.gif'),
+     (':bosh:', 'mallet1.gif'),
+     (':saw:', 'saw.gif'),
+     (':stupid:', 'youarestupid.gif')]
 
-_EMOTICON_LIST = _EMOTICONS.keys();
+# Create dict
+_EMOTICON_DICT = dict(_EMOTICONS)
+
+# Modify list to create 'replacement' text used later
+_EMOTICONS = [(x[0], x[1], '\0'.join(x[0])) for x in _EMOTICONS]
+
 
 ###### PARSING CLASSES AND FUNCTIONS ######
 class BBNode:
@@ -598,9 +603,16 @@ class BBCodeParser:
         bbcode = bbcode.replace("\n", '[softbr]')
         
         # Replace emoticons with context-sensitive emoticon tags
-        for emoticon in _EMOTICON_LIST:
-            bbcode = bbcode.replace(emoticon, 
-                '[emoticon]' + emoticon + '[/emoticon]')
+        
+        # We have to be careful of 0:-) and :-)
+        # so we use a nasty hack with inserting nulls
+        # to ensure that later passes don't do this:
+        #  [emoticon]0:-)[/emoticon] -- > [emoticon]0[emoticon]:-)[/emoticon]:-)[/emoticon]
+        for emoticon, image, replacement in _EMOTICONS:
+            bbcode = bbcode.replace(emoticon,
+                '[emoticon]' + replacement + '[/emoticon]')
+        # Remove the hacky nulls we inserted
+        bbcode = bbcode.replace("\0", '')
         return bbcode
 
     def parse(self, bbcode):

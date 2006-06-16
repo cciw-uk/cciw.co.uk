@@ -28,6 +28,8 @@ tests = (
         '<div>Text in root of list tag is moved outside<ul><li>and put in a div</li></ul></div>'),
     (':-) :bosh:',
         '<div><img src="' + bbcode.EMOTICONS_ROOT + 'smile.gif" alt=":-)" /> <img src="' + bbcode.EMOTICONS_ROOT + 'mallet1.gif" alt=":bosh:" /></div>' ),
+    ('0:-)',
+        '<div><img src="' + bbcode.EMOTICONS_ROOT + 'angel.gif" alt="0:-)" /></div>' ),
     ('[code]:-) :bosh:[/code]',
         '<pre class="code">:-) :bosh:</pre>'),    
     ('[url]/foo/?a=1&b=2[/url]',
@@ -107,4 +109,6 @@ def test_correct_eliminates_div():
     bb = "[quote]test[/quote]"
     assert bb == bbcode.correct(bb)
 
-
+def do_all():
+    for bb, html in tests:
+        bbcode.bb2xhtml(bb)
