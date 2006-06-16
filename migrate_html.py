@@ -55,7 +55,7 @@ html.append(('website_help', '/website/help/', 'Website help', """
  <li><h3>What happened to all the emoticons?</h3>
  <p>They are still available, just not not 'clickable' like before.  To see 
   a full list of emoticons and the bbcode you can use, see 
-  <a href="/website/bbcode/">Website BBCode</a>".</p>
+  <a href="/website/bbcode/">Website BBCode</a>.</p>
   </li>
   </ul>"""))
 
