@@ -36,7 +36,7 @@ def get_thisyear():
     equal to the year of the last camp in the database, or the year 
     afterwards if that camp is in the past.
     """
-    global _thisyear
+    global _thisyear, _thisyear_timestamp
     if _thisyear is None or _thisyear_timestamp is None \
         or (datetime.datetime.now() - _thisyear_timestamp).seconds > 3600:
         from cciw.cciwmain.models import Camp
