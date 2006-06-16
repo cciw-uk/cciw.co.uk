@@ -58,7 +58,7 @@ def index(request):
                 
             # Also find out a single camp id if possible
             try:
-                context['thisyearscamp'] = leaders[0].camp_as_leader.get(year=int(common.get_thisyear()), online_applications=True)
+                context['thisyearscamp'] = leaders[0].camp_as_leader.get(year=common.get_thisyear(), online_applications=True)
             except ObjectDoesNotExist:
                 pass
             
