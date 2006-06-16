@@ -72,7 +72,43 @@ def escape(html):
         html = str(html)
     return html.replace('&', '&amp;').replace('<', '&lt;') \
         .replace('>', '&gt;').replace('"', '&quot;')
+
         
+class MultiReplace:
+    """
+    Does multiple replacements on a string at once.
+    """
+    def __init__(self, repl_dict):
+        # "compile" replacement dictionary
+
+        # assume char to char mapping
+        charmap = map(chr, range(256))
+        for k, v in repl_dict.items():
+            if len(k) != 1 or len(v) != 1:
+                self.charmap = None
+                break
+            charmap[ord(k)] = v
+        else:
+            self.charmap = string.join(charmap, "")
+            return
+
+        # string to string mapping; use a regular expression
+        keys = repl_dict.keys()
+        keys.sort() # lexical order
+        keys.reverse() # use longest match first
+        pattern = "|".join(map(re.escape, keys))
+        self.pattern = re.compile(pattern)
+        self.dict = repl_dict
+
+    def replace(self, str):
+        # apply replacement dictionary to string
+        if self.charmap:
+            return string.translate(str, self.charmap)
+        def repl(match, get=self.dict.get):
+            item = match.group(0)
+            return get(item, item)
+        return self.pattern.sub(repl, str)
+
 ###### BBCODE ELEMENT DEFINITIONS ######
 # The 'Tag' classes are used as singletons,
 # created in the 'rules' section.
@@ -419,9 +455,10 @@ _EMOTICONS = \
 # Create dict
 _EMOTICON_DICT = dict(_EMOTICONS)
 
-# Modify list to create 'replacement' text used later
-# We insert nulls to avoid a bug with replacements, and remove them later
-_EMOTICONS = [(x[0], x[1],  '[emoticon]' + '\0'.join(x[0]) + '[/emoticon]') for x in _EMOTICONS]
+# Create a replacer
+_replace_pairs = ((x, '[emoticon]%s[/emoticon]' % x) for x, y in _EMOTICONS)
+_emoticon_replacer = MultiReplace(dict(_replace_pairs))
+
 
 ###### PARSING CLASSES AND FUNCTIONS ######
 class BBNode:
@@ -603,15 +640,7 @@ class BBCodeParser:
         bbcode = bbcode.replace("\n", '[softbr]')
         
         # Replace emoticons with context-sensitive emoticon tags
-        
-        # We have to be careful of 0:-) and :-)
-        # so we use a nasty hack with inserting nulls
-        # to ensure that we don't get this:
-        #  [emoticon]0:-)[/emoticon] --> [emoticon]0[emoticon]:-)[/emoticon]:-)[/emoticon]
-        for emoticon, image, replacement in _EMOTICONS:
-            bbcode = bbcode.replace(emoticon, replacement)
-        # Remove the hacky nulls we inserted
-        bbcode = bbcode.replace("\0", '')
+        bbcode = _emoticon_replacer.replace(bbcode)
         return bbcode
 
     def parse(self, bbcode):
@@ -668,7 +697,7 @@ class BBCodeParser:
         """Render the parsed tree as corrected BBCode"""
         return self.root_node.render_bbcode()
 
-def bb2xhtml(bbcode, root_allows_inline = False):
+def bb2xhtml(bbcode, root_allows_inline=False):
     "Render bbcode as XHTML"
     parser = BBCodeParser(root_allows_inline)
     parser.parse(bbcode)
