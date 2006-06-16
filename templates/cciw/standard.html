@@ -2,10 +2,10 @@
 {% load standardpage %}
 
 {% block extraheader %}
-{{ block.super }}
-{% block atomfeed %}
-{% atomfeedlink %}
-{% endblock %}
+	{{ block.super }}
+	{% block atomfeed %}
+		{% atomfeedlink %}
+	{% endblock %}
 {% endblock %}
 {% block bodystart %}
 <div id="skiptocontentdiv"><a href="#content" id="skiptocontent">Skip to content</a></div>
