@@ -2,7 +2,7 @@ import datetime
 
 def obfuscate_email(email):
     # TODO - make into javascript linky thing?
-    return email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ')
+    return "<span style='text-decoration: underline;'>%s</span>" % email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ') 
 
 def get_member_href(user_name):
     return '/members/' + user_name + '/'
