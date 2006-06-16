@@ -1,6 +1,4 @@
 # Django settings for cciw project.
-import cciw.cciwmain.utils
-
 
 INTERNAL_IPS = ('127.0.0.1',)
 
@@ -73,7 +71,6 @@ MEMBER_ICON_PATH = 'images/members/'
 DEFAULT_MEMBER_ICON = 'defaultmember.png'
 MEMBER_ICON_MAX_SIZE = 48
 
-THISYEAR = cciw.cciwmain.utils.ThisYear()
 CAMP_FORUM_RE = r'camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/'
 
 FORUM_PAGINATE_POSTS_BY = 20

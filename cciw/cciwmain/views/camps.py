@@ -6,7 +6,7 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.conf import settings
 
 from cciw.cciwmain.models import Camp, HtmlChunk, Forum, Gallery, Photo
-from cciw.cciwmain.common import *
+from cciw.cciwmain.common import standard_extra_context, create_breadcrumb, get_thisyear, standard_subs
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain.templatetags import bbcode
 import cciw.cciwmain.utils as utils
@@ -27,7 +27,7 @@ def index(request, year=None):
     """
     c = standard_extra_context()
     c['title'] ="Camp forums and photos"
-    all_camps = Camp.objects.filter(year__lt=settings.THISYEAR)
+    all_camps = Camp.objects.filter(year__lt=get_thisyear())
     if (year == None):
         camps = all_camps.order_by('-year', 'number')
         c['show_ancient'] = True
@@ -70,8 +70,8 @@ def detail(request, year, number):
     return render_to_response('cciw/camps/detail.html', context_instance=c)
 
 def thisyear(request):
-    c = RequestContext(request, standard_extra_context(title="Camps " + str(settings.THISYEAR)))
-    c['camps'] = Camp.objects.filter(year=settings.THISYEAR).order_by('number')
+    c = RequestContext(request, standard_extra_context(title="Camps " + str(get_thisyear())))
+    c['camps'] = Camp.objects.filter(year=get_thisyear()).order_by('number')
     return render_to_response('cciw/camps/thisyear.html', context_instance=c)
 
 def get_forum_for_camp(camp):

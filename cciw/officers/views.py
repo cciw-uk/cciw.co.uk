@@ -9,6 +9,7 @@ from django.db import models
 from django.contrib.auth.models import Message
 from cciw.officers.models import Application
 from cciw.cciwmain.models import Person
+from cciw.cciwmain import common
 from django.conf import settings
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
@@ -57,7 +58,7 @@ def index(request):
                 
             # Also find out a single camp id if possible
             try:
-                context['thisyearscamp'] = leaders[0].camp_as_leader.get(year=int(settings.THISYEAR), online_applications=True)
+                context['thisyearscamp'] = leaders[0].camp_as_leader.get(year=int(common.get_thisyear()), online_applications=True)
             except ObjectDoesNotExist:
                 pass
             

@@ -60,57 +60,6 @@ def unslugify(slug):
     "Turns dashes and underscores into spaces and applies title casing"
     return slug.replace("-", " ").replace("_", " ").title()
 
-
-class ThisYear(object):
-    """
-    Class to get what year the website is currently on.  The website year is
-    equal to the year of the last camp in the database, or the year 
-    afterwards if that camp is in the past. It is implemented
-    in this way to allow backwards compatibilty with code that
-    expects THISYEAR to be a simple integer.  And for fun.
-    """
-    def __init__(self):
-        self.timestamp = None
-        self.year = 0
-        
-    def get_year(self):
-        from cciw.cciwmain.models import Camp
-        lastcamp = Camp.objects.order_by('-end_date')[0]
-        if lastcamp.end_date <= datetime.date.today():
-            self.year = lastcamp.year + 1
-        else:
-            self.year = lastcamp.year
-        self.timestamp = datetime.datetime.now()
-        
-    def update(self):
-        # update every hour
-        if self.timestamp is None or \
-           (datetime.datetime.now() - self.timestamp).seconds > 3600:
-            self.get_year()
-
-    # TODO - better way of doing this lot? some metaclass magic I imagine
-    def __str__(self):
-        self.update()
-        return str(self.year)
-    
-    __repr__ = __str__
-
-    def __cmp__(self, other):
-        self.update()
-        return cmp(self.year, other)
-
-    def __add__(self, other):
-        self.update()
-        return self.year + other
-
-    def __sub__(self, other):
-        self.update()
-        return self.year - other
-
-    def __int__(self):
-        self.update()
-        return self.year
-
 _current_domain = None
 def get_current_domain():
     global _current_domain

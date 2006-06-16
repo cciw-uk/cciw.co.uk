@@ -18,7 +18,7 @@ def standard_extra_context(extra_dict=None, title=None):
         title = "Christian Camps in Wales"
     
     extra_dict['title'] = title
-    extra_dict['thisyear'] = settings.THISYEAR
+    extra_dict['thisyear'] = get_thisyear()
     extra_dict['misc'] = {
         'logged_in_members': 
             Member.objects.filter(last_seen__gte=datetime.datetime.now() \
@@ -27,11 +27,31 @@ def standard_extra_context(extra_dict=None, title=None):
     
     return extra_dict
 
+_thisyear = None
+_thisyear_timestamp = None
+
+def get_thisyear():
+    """
+    Get the year the website is currently on.  The website year is
+    equal to the year of the last camp in the database, or the year 
+    afterwards if that camp is in the past.
+    """
+    global _thisyear
+    if _thisyear is None or _thisyear_timestamp is None \
+        or (datetime.datetime.now() - _thisyear_timestamp).seconds > 3600:
+        from cciw.cciwmain.models import Camp
+        lastcamp = Camp.objects.order_by('-end_date')[0]
+        if lastcamp.end_date <= datetime.date.today():
+            _thisyear = lastcamp.year + 1
+        else:
+            _thisyear = lastcamp.year
+        _thisyear_timestamp = datetime.datetime.now()
+    return _thisyear
+
 def standard_subs(value):
     """Standard substitutions made on HTML content"""
-    return value.replace('{{thisyear}}', str(settings.THISYEAR))\
+    return value.replace('{{thisyear}}', str(get_thisyear()))\
                 .replace('{{media}}', settings.CCIW_MEDIA_URL)
-
 
 def get_order_option(order_options, request, default_order_by):
     """Get the order_by parameter from the request, if the request 
