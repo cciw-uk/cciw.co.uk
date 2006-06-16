@@ -353,6 +353,11 @@ a:link
 	text-decoration: none;
 }
 
+pre
+{
+	margin-top: 0px;
+	
+}
 
 a:visited
 {
@@ -592,6 +597,7 @@ table.topheaders td
 {
 	padding: 3px;
 }
+
 
 td div.postSubject
 {
