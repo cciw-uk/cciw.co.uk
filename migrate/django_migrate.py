@@ -8,7 +8,7 @@ import copy
 from datetime import datetime, date
 from itertools import chain
 
-from migrate_html import *
+from migrate_html import html, links
 from cciw.cciwmain.models import *
 from cciw.cciwmain.utils import strip_control_chars
 from cciw.middleware import threadlocals
@@ -652,29 +652,6 @@ def migrate_forums():
 def migrate_main_menu():
     MenuLink.objects.all().delete()
 
-    links = (
-        ('Home','/',0,''),
-        ('News','/news/',100, ''),
-        ('Camps {{thisyear}}', '/thisyear/',200, ''),
-        ('Booking', '/thisyear/booking/', 210, '/thisyear/'),
-        ('Transport', '/thisyear/transport/', 220, '/thisyear/'),
-        ('Camp sites', '/sites/', 300, ''),
-        ('Forums and photos', '/camps/',400, ''),
-        ('Members', '/members/', 500, ''),
-        ('About CCIW', '/info/', 600, ''),
-        ('About camp', '/info/about-camp/', 602, '/info/'),
-        ('Directors', '/info/directors/', 610, '/info/'),
-        ('Doctrinal basis', '/info/doctrinal-basis/', 620, '/info/'),
-        ('Legal', '/info/legal/', 630, '/info/'),
-        ('About website', '/website/', 700, ''),
-        ('Terms','/website/terms/', 710, '/website/'),
-        ('Forum','/website/forum/', 720, '/website/'),
-        ('Help','/website/help/', 730, '/website/'),
-        ('BBCode Help','/website/bbcode/', 740, '/website/'),
-        ('Contact us','/contact/', 800, ''),
-        ('Awards', '/awards/', 850, ''),
-        ('Tags', '/tags/', 900, ''),
-    )
 
     for i in range(0, len(links)):
         title, url, order, parentUrl = links[i]
