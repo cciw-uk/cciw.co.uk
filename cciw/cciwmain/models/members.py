@@ -70,7 +70,6 @@ class Member(models.Model):
         choices=MODERATE_OPTIONS)
     hidden      = models.BooleanField("Hidden", default=False)
     banned      = models.BooleanField("Banned", default=False)
-    bookmarks_notify = models.BooleanField("Bookmark notifcations enabled", default=False) # TODO - remove
     permissions = models.ManyToManyField(Permission,
         verbose_name="permissions", related_name="member_with_permission",
         blank=True, null=True, filter_interface=models.HORIZONTAL)

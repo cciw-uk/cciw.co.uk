@@ -40,7 +40,7 @@ class Forum(models.Model):
         pass
 
 class NewsItem(models.Model):
-    created_by = models.ForeignKey(Member, related_name="news_item_created")
+    created_by = models.ForeignKey(Member, related_name="news_items_created")
     created_at = models.DateTimeField("Posted")
     summary = models.TextField("Summary or short item, (bbcode)")
     full_item = models.TextField("Full post (HTML)", blank=True)
@@ -71,7 +71,6 @@ class UserSpecificTopics(models.Manager):
         if user is None or user.is_anonymous() or \
             not user.has_perm('cciwmain.edit_topic'):
             # Non-moderator user
-            
             member = threadlocals.get_current_member()
             if member is not None:
                 # include hidden topics by that user
@@ -83,27 +82,29 @@ class UserSpecificTopics(models.Manager):
 
 class Topic(models.Model):
     subject = models.CharField("Subject", maxlength=240)
-    started_by = models.ForeignKey(Member, related_name="topic_started",
+    started_by = models.ForeignKey(Member, related_name="topics_started",
         verbose_name="started by")
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open")
     hidden = models.BooleanField("Hidden", default=False)
     approved = models.BooleanField("Approved", null=True, blank=True)
     checked_by = models.ForeignKey(User,
-        null=True, blank=True, related_name="topic_checked",
+        null=True, blank=True, related_name="topics_checked",
         verbose_name="checked by")
     needs_approval = models.BooleanField("Needs approval", default=False)
     news_item = models.ForeignKey(NewsItem, null=True, blank=True,
         related_name="topics") # optional news item
     poll = models.ForeignKey(Poll, null=True, blank=True,
         related_name="topics") # optional topic
-    forum = models.ForeignKey(Forum,
-        related_name="topics")
+    forum = models.ForeignKey(Forum, related_name="topics")
+
+    # De-normalised fields needed for performance and simplicity in templates:
     last_post_at = models.DateTimeField("Last post at", 
-        null=True, blank=True) # needed for performance and simplicity in templates
+        null=True, blank=True) 
     last_post_by = models.ForeignKey(Member, verbose_name="Last post by",
-        null=True, blank=True) # needed for performance and simplicity in templates
-    post_count = models.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
+        null=True, blank=True, related_name='topics_with_last_post') 
+    # since we need 'last_post_by', may as well have this too:
+    post_count = models.PositiveSmallIntegerField("Number of posts", default=0) 
     
     # Managers:
     objects = UserSpecificTopics()
@@ -176,14 +177,17 @@ class Photo(models.Model):
         verbose_name="gallery",
         related_name="photo")
     checked_by = models.ForeignKey(User,
-        null=True, blank=True, related_name="checked_photo")
+        null=True, blank=True, related_name="photos_checked")
     approved = models.BooleanField("Approved", null=True, blank=True)
     needs_approval = models.BooleanField("Needs approval", default=False)
+
+    # De-normalised fields needed for performance and simplicity in templates:
     last_post_at = models.DateTimeField("Last post at", 
-        null=True, blank=True) # needed for performance and simplicity in templates
+        null=True, blank=True) 
     last_post_by = models.ForeignKey(Member, verbose_name="Last post by",
-        null=True, blank=True) # needed for performance and simplicity in templates
-    post_count = models.PositiveSmallIntegerField("Number of posts", default=0) # since we need 'lastPost', may as well have this too
+        null=True, blank=True, related_name='photos_with_last_post')
+    # since we need 'last_post_by', may as well have this too:
+    post_count = models.PositiveSmallIntegerField("Number of posts", default=0)
 
     # managers
     objects = UserSpecificPhotos()
@@ -292,6 +296,7 @@ class Post(models.Model):
         # or feed readers that won't in general be logged in as the
         # the user when they fetch the feed that may have absolute 
         # URLs in it.
+        # Also it's useful in case we change the paging.
         if self.topic_id is not None:
             thread = self.topic
         elif self.photo_id is not None:

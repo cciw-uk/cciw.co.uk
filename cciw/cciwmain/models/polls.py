@@ -26,7 +26,7 @@ class Poll(models.Model):
     have_vote_info = models.BooleanField("Full vote information available", 
         default=True)
     created_by = models.ForeignKey(Member, verbose_name="created by",
-        related_name="poll_created")
+        related_name="polls_created")
     
     def __str__(self):
         return self.title
