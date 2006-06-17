@@ -15,7 +15,11 @@ from cciw.middleware import threadlocals
 
 # Set permissions so that default managers show us everything.
 from django.contrib.auth.models import User
-threadlocals.set_current_user(User.objects.filter(is_superuser=True)[0])
+try:
+    u = User.objects.filter(is_superuser=True)[0]
+except IndexError:
+    u = User(is_superuser=True, is_staff=True)
+threadlocals.set_current_user(u)
 
 # Config
 PREFIX = '/home/luke/httpd/www.cciw.co.uk/web/data/'
@@ -703,7 +707,8 @@ def fixup_urls():
                     snew = snew.replace(old, new)
                     snew = snew.replace(old.replace('&', '&amp;'), new.replace('&', '&amp;'))
                 snew = fix_member_links(snew)
-                snew = snew.replace("http://cciw.co.uk//", "http://cciw.co.uk/")
+                snew = snew.replace("http://cciw.co.uk//", "http://www.cciw.co.uk/")
+                snew = snew.replace("http://cciw.co.uk/", "http://www.cciw.co.uk/")
                 if snew != sorig:
                     setattr(obj, attrname, snew)
                     obj.save()
