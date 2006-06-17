@@ -29,7 +29,6 @@ class UserSpecificMembers(models.Manager):
             user.has_perm('cciwmain.change_member'):
             return super(UserSpecificMembers, self).get_query_set().filter(hidden=False)
         else:
-        
             return super(UserSpecificMembers, self).get_query_set()
 
 class Member(models.Model):
