@@ -5,6 +5,7 @@ from cciw.cciwmain.common import standard_subs
 from cciw.cciwmain.utils import get_member_link, obfuscate_email, get_member_icon
 from cciw.middleware.threadlocals import get_current_member
 from django.utils.html import escape
+from django.conf import settings
 from lukeplant_me_uk.django.tagging import utils as tagging_utils
 from lukeplant_me_uk.django.tagging.models import Tag
 
@@ -98,6 +99,20 @@ class AtomFeedLink(template.Node):
             % {'url': context['request'].path, 'title': title }
         else:
             return ''
+            
+class AtomFeedLinkVisible(template.Node):
+    def __init__(self, parser, token):
+        pass
+    def render(self, context):
+        title = context['atom_feed_title']
+        if title:
+            return ('<div class="atomlink">' + 
+                    '<a href="/website/feeds/" title="What\'s this?">?</a> ' + 
+                    '<a class="atomlink" href="%(url)s?format=atom" title="%(title)s" >' + 
+                    '<img src="%(imgurl)s" alt="Subscribe" /></a> </div>') \
+            % {'url': context['request'].path, 'title': title, 'imgurl': settings.MEDIA_URL + "images/feed.gif" }
+        else:
+            return ''
 
 class TagSummaryList(template.Node):
     def __init__(self, target_var_name):
@@ -179,5 +194,6 @@ register.tag('membericon', do_member_icon)
 register.tag('setvar', do_setvar)
 register.tag('htmlchunk', do_htmlchunk)
 register.tag('atomfeedlink', AtomFeedLink)
+register.tag('atomfeedlinkvisible', AtomFeedLinkVisible)
 register.tag('add_tag_link', do_add_tag_link)
 register.tag('tag_summary_list', do_tag_summary_list)

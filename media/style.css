@@ -18,8 +18,7 @@ a:hover {
 	color: #00ff55;
 }
 
-
-a img {
+a img, a {
 	border-width: 0px;
 }
 
@@ -126,7 +125,7 @@ td div.postSubject
 /* Sorting control */
 span.sortingControl img
 {
-	border: 0px;
+	border-width: 0px;
 	border-bottom: 1px solid #808080;
 }
 span.sortingControl img.sortAscActive,
@@ -135,7 +134,6 @@ span.sortingControl img.sortDescActive
 	border-bottom: 2px solid #00ff00;
 
 }
-
 
 div.userError
 {
@@ -148,8 +146,6 @@ span.validationError
 	color: red;
 	margin-left: 3px;
 }
-
-
 
 .successMessage
 {
@@ -972,4 +968,13 @@ a.button img
 	margin-bottom: 1em;
 }
 
+div.atomlink
+{
+	text-align: right;
+	padding-bottom: 4px;
+}
+div.atomlink img
+{
+vertical-align: bottom;
 
+}
