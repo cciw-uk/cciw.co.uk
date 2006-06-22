@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-3.7.dtd">
 <!-- Tasks file for project cciw -->
-<!-- Saved: 2006-06-17, 12:44:37 -->
+<!-- Saved: 2006-06-21, 23:23:23 -->
 <Tasks version="3.7">
+  <Task priority="1" completed="0">
+    <Description>TODO: do this in flatten_data...</Description>
+    <Created>2006-06-16, 18:53:24</Created>
+    <Resource>
+      <Filename>
+        <Dir>cciw</Dir>
+        <Dir>officers</Dir>
+        <Name>views.py</Name>
+      </Filename>
+      <Linenumber>208</Linenumber>
+    </Resource>
+  </Task>
 </Tasks>

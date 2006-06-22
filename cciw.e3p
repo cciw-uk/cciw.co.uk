@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.7.dtd">
 <!-- Project file for project cciw -->
-<!-- Saved: 2006-06-10, 12:15:45 -->
+<!-- Saved: 2006-06-21, 23:23:23 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.7">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -25,18 +25,6 @@
     </Source>
     <Source>
       <Name>devel.py</Name>
-    </Source>
-    <Source>
-      <Name>django_migrate.py</Name>
-    </Source>
-    <Source>
-      <Name>migrate_html.py</Name>
-    </Source>
-    <Source>
-      <Name>p3.py</Name>
-    </Source>
-    <Source>
-      <Name>decorator.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
@@ -363,6 +351,37 @@
       <Dir>cciwmain</Dir>
       <Dir>templatetags</Dir>
       <Name>test_bbcode.py</Name>
+    </Source>
+    <Source>
+      <Dir>migrate</Dir>
+      <Name>mail_duplicated_users.py</Name>
+    </Source>
+    <Source>
+      <Dir>migrate</Dir>
+      <Name>django_migrate.py</Name>
+    </Source>
+    <Source>
+      <Dir>migrate</Dir>
+      <Name>migrate_html.py</Name>
+    </Source>
+    <Source>
+      <Dir>migrate</Dir>
+      <Name>deduplicate_email.py</Name>
+    </Source>
+    <Source>
+      <Dir>migrate</Dir>
+      <Name>html_and_links_to_python.py</Name>
+    </Source>
+    <Source>
+      <Name>changed_users.py</Name>
+    </Source>
+    <Source>
+      <Dir>migrate</Dir>
+      <Name>changed_users.py</Name>
+    </Source>
+    <Source>
+      <Dir>migrate</Dir>
+      <Name>changed_users-2006-06-17-22:35.py</Name>
     </Source>
   </Sources>
   <Forms>
