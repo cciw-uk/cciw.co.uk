@@ -104,6 +104,4 @@ f = open("changed_users.py", "w")
 f.write("changed = %r\n" % changed)
 f.close()
 
-# DEBUG
-transaction.rollback()
-#transaction.commit()
+transaction.commit()

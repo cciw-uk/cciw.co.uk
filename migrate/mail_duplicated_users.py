@@ -6,12 +6,10 @@ from django.core import mail
 from changed_users import changed
 
 
-for email, (kept_name, changed_names) in changed.items()[0:5]: # DEBUG
+for email, (kept_name, changed_names) in changed.items():
     changed_str = ''.join("   " + n + "\n" for n in changed_names)
 
-    # DEBUG
-    email = "L.Plant.98@cantab.net"
-    
+    print "Sending to email %s" % email
     mail.send_mail("CCIW website user name change", """
 Hi,
 
@@ -30,7 +28,7 @@ In your case, the user name that has been kept is:
 
    %(kept_name)s
 
-The following user names have been removed:
+The following user names have been removed and won't work any more:
 
 %(changed_str)s
 
