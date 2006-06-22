@@ -1,0 +1,10 @@
+
+# Remember to fix ExplicitBooleanFields and add_taggging_fields
+
+
+DROP
+django-admin.py sqlreset  validator tagging sessions sites officers cciwmain auth admin contenttypes --settings='cciw.settings_calvin' | egrep '^DROP' | psql -U djangouser -d cciw_django 
+
+INSTALL
+django-admin.py syncdb contenttypes auth admin sites sessions tagging validator cciwmain officers  --settings='cciw.settings_calvin'
+

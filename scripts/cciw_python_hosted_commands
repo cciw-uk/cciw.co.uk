@@ -1,0 +1,22 @@
+
+THIS WORKED:
+@calvin:
+pg_dump -F t -o -O -U djangouser cciw_django -f ~/cciw_db_2005-03-21.backup 
+
+rsync /home/luke/cciw_db_2005-03-21.backup.gz
+cciw@cciw.python-hosted.com:/home2/cciw/webapps/django_app 
+
+
+@krait
+/usr/local/pgsql/bin/pg_restore -c -d cciw -O -U cciw cciw_db_2005-03-21.backup 
+
+
+
+-----------
+
+SYNC
+cd /home/httpd/www.cciw.co.uk/django
+
+#rsync -r cciw media templates cciw@cciw.python-hosted.com:/home2/cciw/webapps/django_app 
+
+rsync -vr --exclude='.bzr' --exclude='.svn' --exclude='*.pyc' --exclude='*~' db templates media cciw lukeplant_me_uk websitedown cciw@cciw.python-hosted.com:/home2/cciw/webapps/django_app/
