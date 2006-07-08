@@ -1,8 +1,2 @@
 {% load standardpage %}
-CCIW - Post by <b>{{ obj.posted_by_id }}</b>, 
-{% if obj.topic_id %}
-in topic "{{ obj.topic|escape }}"
-{% endif %}
-{% if obj.photo_id %}
-on photo "{{ obj.photo|escape }}"
-{% endif %}
+CCIW - Post by {{ obj.posted_by_id }}, {% if obj.topic_id %} in topic "{{ obj.topic }}" {% endif %}{% if obj.photo_id %} on photo "{{ obj.photo }}"{% endif %}
