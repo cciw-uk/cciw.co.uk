@@ -171,8 +171,8 @@ class HtmlEquivTag(BBTag):
         opening = self.html_equiv
         if self.attributes:
             # Add any attributes
-            opening += ' ' + ' '.join(['%s="%s"' % (k, escape(v)) 
-                                        for k, v in self.attributes.items()])
+            opening += ''.join(' %s="%s"' % (k, escape(v)) 
+                                        for k, v in self.attributes.items())
         if self.self_closing:
             ret = '<' + opening + '/>'
         else:
@@ -670,7 +670,6 @@ class BBCodeParser:
                         if wholematch.startswith('[['):
                             # in case of "[[tag]blah":
                             self.push_text_node('[')
-                        # push it
                         if wholematch.startswith('[/'):
                             # closing
                             self.close_tag_node(tagname)
