@@ -93,7 +93,7 @@ class AtomFeedLink(template.Node):
     def __init__(self, parser, token):
         pass
     def render(self, context):
-        title = context['atom_feed_title']
+        title = context.get('atom_feed_title', None)
         if title:
             return '<link rel="alternate" type="application/atom+xml" href="%(url)s?format=atom" title="%(title)s" />' \
             % {'url': context['request'].path, 'title': title }
@@ -104,7 +104,7 @@ class AtomFeedLinkVisible(template.Node):
     def __init__(self, parser, token):
         pass
     def render(self, context):
-        title = context['atom_feed_title']
+        title = context.get('atom_feed_title', None)
         if title:
             return ('<div class="atomlink">' + 
                     '<a href="/website/feeds/" title="What\'s this?">?</a> ' + 
