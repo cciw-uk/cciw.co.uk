@@ -14,6 +14,7 @@ from cciw.cciwmain import feeds
 
 from datetime import datetime, timedelta
 import re
+import math
 
 def index(request):
     """
@@ -214,6 +215,14 @@ def message_list(request, user_name, box):
                         action(msg)
                     except Message.DoesNotExist:
                         pass
+        message_count = member.messages_received.filter(box=box).count()
+        page = request.GET.get('page', 1)
+        last_page = int(math.ceil(float(message_count)/settings.MEMBERS_PAGINATE_MESSAGES_BY))
+        if page > last_page:
+            # User may have deleted/moved everything on the last page,
+            # so need to redirect to avoid a 404
+            return HttpResponseRedirect(request.path + "?page=%s" % last_page)
+            
     
     # Context
     extra_context = standard_extra_context()
@@ -235,7 +244,7 @@ def message_list(request, user_name, box):
     return list_detail.object_list(request, messages,
         extra_context=extra_context,
         template_name='cciw/members/messages/index.html',
-        paginate_by=20,
+        paginate_by=settings.MEMBERS_PAGINATE_MESSAGES_BY,
         allow_empty=True)
 
 def inbox(request, user_name):
