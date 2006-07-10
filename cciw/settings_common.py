@@ -62,13 +62,13 @@ SERVER_EMAIL = "website@cciw.python-hosted.com"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 EMAIL_HOST = "mail1.python-hosting.com"
 EMAIL_HOST_USER = "cciw"
-EMAIL_HOST_PASSWORD = "slarti"
+EMAIL_HOST_PASSWORD = "da1d3nt"
 
 ## CCIW SPECIFIC SETTINGS AND CONSTANTS
 AWARD_UPLOAD_PATH = 'images/awards/'
 MEMBER_ICON_UPLOAD_PATH = 'images/members/temp/'
 MEMBER_ICON_PATH = 'images/members/'
-DEFAULT_MEMBER_ICON = 'defaultmember.png'
+DEFAULT_MEMBER_ICON = 'defaultmember.gif'
 MEMBER_ICON_MAX_SIZE = 48
 
 CAMP_FORUM_RE = r'camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/'
