@@ -70,7 +70,7 @@ class PostFeed(CCIWFeed):
         return query_set.order_by('-posted_at')[:POST_FEED_MAX_ITEMS]
 
     def item_author_name(self, post):
-        return post.posted_by_id
+        return post.posted_by_id.decode('utf-8')
 
     def item_author_link(self, post):
         return add_domain(get_member_href(post.posted_by_id))
@@ -106,7 +106,7 @@ class TopicFeed(CCIWFeed):
         return query_set.order_by('-created_at')[:TOPIC_FEED_MAX_ITEMS]
         
     def item_author_name(self, topic):
-        return topic.started_by_id
+        return topic.started_by_id.decode('utf-8')
         
     def item_author_link(self, topic):
         return add_domain(get_member_href(topic.started_by_id))

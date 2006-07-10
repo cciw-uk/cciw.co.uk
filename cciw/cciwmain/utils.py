@@ -5,7 +5,13 @@ def obfuscate_email(email):
     return "<span style='text-decoration: underline;'>%s</span>" % email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ') 
 
 def get_member_href(user_name):
-    return '/members/' + user_name + '/'
+    if user_name.startswith("'"):
+        # This can get called from feeds, and we need to ensure
+        # we don't generate a URL, as it will go nowhere (also causes problems 
+        # with the feed framework and utf-8)
+        return ''
+    else:
+        return '/members/' + user_name + '/'
 
 def get_member_link(user_name):
     user_name = user_name.strip()
