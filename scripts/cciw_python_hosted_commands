@@ -19,4 +19,4 @@ cd /home/httpd/www.cciw.co.uk/django
 
 #rsync -r cciw media templates cciw@cciw.python-hosted.com:/home2/cciw/webapps/django_app 
 
-rsync -vr --exclude='.bzr' --exclude='.svn' --exclude='*.pyc' --exclude='*~' db templates media cciw lukeplant_me_uk websitedown cciw@cciw.python-hosted.com:/home2/cciw/webapps/django_app/
+rsync -vr --exclude='.bzr' --exclude='.svn' --exclude='*.pyc' --exclude='*~' templates media cciw lukeplant_me_uk websitedown cciw@cciw.python-hosted.com:/home2/cciw/webapps/django_app/
