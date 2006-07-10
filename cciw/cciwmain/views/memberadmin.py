@@ -50,11 +50,18 @@ def create_user(user_name, password1, password2):
     elif password2 !=  password1:
         raise ValidationError("The passwords do not match")
     else:
+        iconfilename = user_name + "." + settings.DEFAULT_MEMBER_ICON.split('.')[-1]
         m = Member(user_name=user_name, 
                    last_seen=datetime.datetime.now(),
                    date_joined=datetime.datetime.now(),
-                   password=Member.encrypt_password(password1))
+                   password=Member.encrypt_password(password1),
+                   icon=settings.MEMBER_ICON_PATH + iconfilename)
         m.save()
+
+        # Copy default member icon
+        import shutil
+        shutil.copy(settings.MEDIA_ROOT + settings.DEFAULT_MEMBER_ICON,
+                    settings.MEDIA_ROOT + settings.MEMBER_ICON_PATH + iconfilename)
         return m
 
 def email_hash(email):
@@ -442,8 +449,7 @@ def preferences(request):
             
             if request.FILES:
                 try:
-                    imageutils.fix_member_icon(settings.MEDIA_ROOT + new_current_member.icon, 
-                                                new_current_member.user_name)
+                    imageutils.fix_member_icon(new_current_member)
                 except imageutils.ValidationError, e:
                     c['image_error'] = e.args[0]
             

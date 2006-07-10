@@ -35,7 +35,8 @@ def safe_del(filename):
         pass # don't care if we couldn't delete for some reason
 
 
-def fix_member_icon(filename, username):
+def fix_member_icon(member):
+    filename = settings.MEDIA_ROOT + member.icon
     try:
         img = parse_image(filename)
     except IOError:
@@ -65,7 +66,12 @@ def fix_member_icon(filename, username):
     
     ext = filename.split('.')[-1]
     # Remove existing variants
-    for f in glob.glob(settings.MEDIA_ROOT + settings.MEMBER_ICON_PATH + username + ".*"):
+    for f in glob.glob(settings.MEDIA_ROOT + settings.MEMBER_ICON_PATH + member.user_name + ".*"):
         os.unlink(f)
 
-    shutil.move(filename, settings.MEDIA_ROOT + settings.MEMBER_ICON_PATH + username + "." + ext)
+    newrelpath = settings.MEMBER_ICON_PATH + member.user_name + "." + ext
+    newfullpath = settings.MEDIA_ROOT + newrelpath
+    shutil.move(filename, newfullpath)
+    os.chmod(newfullpath, 0777)
+    member.icon = newrelpath
+    member.save()
