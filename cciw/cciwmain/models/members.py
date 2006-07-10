@@ -139,7 +139,7 @@ class Member(models.Model):
             'user_name', 'real_name', 'email'
         )
         list_display = (
-            'user_name', 'real_name', 'email', 'date_joined'
+            'user_name', 'real_name', 'email', 'date_joined', 'last_seen'
         )
         list_filter = (
             'dummy_member',
