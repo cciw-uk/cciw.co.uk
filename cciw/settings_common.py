@@ -65,7 +65,7 @@ EMAIL_HOST_USER = "cciw"
 EMAIL_HOST_PASSWORD = "slarti"
 
 ## CCIW SPECIFIC SETTINGS AND CONSTANTS
-AWARD_UPLOAD_PATH = 'images/awards'
+AWARD_UPLOAD_PATH = 'images/awards/'
 MEMBER_ICON_UPLOAD_PATH = 'images/members/temp/'
 MEMBER_ICON_PATH = 'images/members/'
 DEFAULT_MEMBER_ICON = 'defaultmember.png'
