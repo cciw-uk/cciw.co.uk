@@ -6,18 +6,23 @@ import cciw.middleware.threadlocals as threadlocals
 import datetime
 import urllib
        
-def standard_extra_context(extra_dict=None, title=None):
+def standard_extra_context(title=None, description=None, keywords=None):
     """
     Gets the 'extra_dict' dictionary used for all pages
     """
     Member = cciw.cciwmain.models.Member
-    if extra_dict is None: 
-        extra_dict = {}
         
     if title is None:
         title = "Christian Camps in Wales"
+    if description is None:
+        description = "Details of camps, message boards and photos for the UK charity Christian Camps in Wales"
+    if keywords is None:
+        keywords = "camp, camps, summer camp, Christian, Christian camp, charity"
     
+    extra_dict = {}
     extra_dict['title'] = title
+    extra_dict['meta_description'] = description 
+    extra_dict['meta_keywords'] = keywords
     extra_dict['thisyear'] = get_thisyear()
     extra_dict['misc'] = {
         'logged_in_members': 

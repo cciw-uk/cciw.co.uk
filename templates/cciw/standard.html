@@ -2,6 +2,8 @@
 {% load standardpage %}
 
 {% block extraheader %}
+	<meta name="description" content="{{ meta_description|escape }}" />
+	<meta name="keywords" content="{{ meta_keywords|escape }}" />
 	{{ block.super }}
 	{% block atomfeed %}
 		{% atomfeedlink %}
