@@ -331,6 +331,15 @@ a.smtag:hover
 	font-weight: normal;
 }
 
+div.bottomlinks, div.bottomlinks a:link, div.bottomlinks a:visited
+{
+	color: #a0a0a0;
+}
+div.bottomlinks a:hover
+{
+	color: #c0c0c0;
+}
+
 /************************** END COLOURS *******************/
 
 
@@ -968,13 +977,14 @@ a.button img
 	margin-bottom: 1em;
 }
 
-div.atomlink
+div.bottomlinks
 {
 	text-align: right;
 	padding-bottom: 4px;
+	font-size: 80%;
 }
-div.atomlink img
+div.bottomlinks img
 {
-vertical-align: bottom;
-
+	vertical-align: top;
 }
+div.bottomlinks
