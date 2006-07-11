@@ -309,6 +309,23 @@ class Post(models.Model):
         page = int(previous_posts/settings.FORUM_PAGINATE_POSTS_BY) + 1
         return "%s?page=%s#id%s" % (thread.get_absolute_url(), page, self.id)
 
+    def is_parent_visible(self):
+        if self.topic_id is not None:
+            try:
+                topic = self.topic
+                return True
+            except Topic.DoesNotExist:
+                return False
+        elif self.photo_id is not None:
+            try:
+                photo = self.photo
+                return True
+            except Photo.DoesNotExist:
+                return False
+        else:
+            # no parent?
+            return False
+
     @staticmethod
     def create_post(member, message, topic=None, photo=None):
         """Creates a post with the correct defaults for a member."""

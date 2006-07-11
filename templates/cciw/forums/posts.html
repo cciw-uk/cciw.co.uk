@@ -10,11 +10,11 @@
 		<div class="postHeader">
 		{% ifchanged %}
 			<h2>
-			{% if post.topic_id %}In topic <a href="{{ post.topic.get_absolute_url }}">{{ post.topic.subject|escape }}</a>:{% endif %}
+			{% if post.topic_id %}{% if post.is_parent_visible %}In topic <a href="{{ post.topic.get_absolute_url }}">{{ post.topic.subject|escape }}</a>:{% else %}In a hidden topic:{% endif %}{% endif %}
 			{% if post.photo_id %}On photo <a href="{{ post.photo.get_absolute_url }}">{{ post.photo.id }}</a>:{% endif %}
 			</h2>
 		{% endifchanged %}
-		From {% memberlink %}{{ post.posted_by_id }}{% endmemberlink %}, at {{ post.posted_at|date:"d M y, h:i" }} &mdash; <span class="readmore"><a href="{{ post.get_absolute_url }}">view in context</a></span>:
+		From {% memberlink %}{{ post.posted_by_id }}{% endmemberlink %}, at {{ post.posted_at|date:"d M y, h:i" }}{% if post.is_parent_visible %} &mdash; <span class="readmore"><a href="{{ post.get_absolute_url }}">view in context</a></span>{% endif %}:
 		</div>
 		<div class="postMessage">
 		{% if post.subject %}<div class="postSubject">{{ post.subject|bb2html }}</div>{% endif %}

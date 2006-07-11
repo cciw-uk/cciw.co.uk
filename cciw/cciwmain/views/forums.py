@@ -587,7 +587,11 @@ def post(request, id):
         post = Post.objects.get(pk=id)
     except Post.DoesNotExist:
         raise Http404()
-    return HttpResponseRedirect(post.get_forum_url())
+    try:
+        url = post.get_forum_url()
+    except Topic.DoesNotExist:
+        return HttpResponseForbidden("<h1>Access denied</h1><p>Topic is hidden.</p>")
+    return HttpResponseRedirect(url)
 
 def all_topics(request):
     context = standard_extra_context(title="Recent new topics")
