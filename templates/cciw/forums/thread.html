@@ -9,9 +9,10 @@
 	<table class="topheaders">
 		<tr>
 		{% if news_item or photo or poll %}
-			<th class="commentHeader" colspan="2">Comments
+			<th class="commentHeader" colspan="2">
 			{% if photo %}<span class="taglist">{% tag_summary_list for photo %} {% add_tag_link for photo %}</span>{% endif %}			
 			{% if topic %}<span class="taglist">{% tag_summary_list for topic %} {% add_tag_link for topic %}</span>{% endif %}
+			Comments
 			</th>
 		{% else %}
 			{% if topic %}
