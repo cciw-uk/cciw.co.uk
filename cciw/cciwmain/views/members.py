@@ -218,6 +218,7 @@ def message_list(request, user_name, box):
         message_count = member.messages_received.filter(box=box).count()
         page = request.GET.get('page', 1)
         last_page = int(math.ceil(float(message_count)/settings.MEMBERS_PAGINATE_MESSAGES_BY))
+        last_page = max(last_page, 1)
         if page > last_page:
             # User may have deleted/moved everything on the last page,
             # so need to redirect to avoid a 404
