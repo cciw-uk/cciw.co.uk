@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.8.dtd">
 <!-- Project file for project cciw -->
-<!-- Saved: 2006-07-08, 21:34:28 -->
+<!-- Saved: 2006-07-11, 20:49:01 -->
 <!-- Copyright (C) 2006 ,  -->
 <Project version="3.8">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -376,6 +376,10 @@
       <Dir>migrate</Dir>
       <Name>changed_users.py</Name>
     </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Name>settings_tests.py</Name>
+    </Source>
   </Sources>
   <Forms>
   </Forms>
@@ -392,9 +396,9 @@
   </Vcs>
   <FiletypeAssociations>
     <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
-    <FiletypeAssociation pattern="*.ui" type="FORMS" />
-    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
-    <FiletypeAssociation pattern="*.py" type="SOURCES" />
     <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
+    <FiletypeAssociation pattern="*.ui" type="FORMS" />
+    <FiletypeAssociation pattern="*.py" type="SOURCES" />
   </FiletypeAssociations>
 </Project>
