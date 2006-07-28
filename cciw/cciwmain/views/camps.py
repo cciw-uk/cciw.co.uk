@@ -96,7 +96,7 @@ def get_gallery_for_camp(camp):
         gallery = Gallery.objects.get(location=location)
     except Gallery.DoesNotExist:
         # Self maintenance
-        if not camp.end_date <= datetime.date.today():
+        if camp.end_date <= datetime.date.today():
             # if the gallery does not exist yet, but should, create it
             gallery = Gallery(location = location)
             gallery.save()
