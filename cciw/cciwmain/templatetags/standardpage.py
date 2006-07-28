@@ -106,9 +106,9 @@ class AtomFeedLinkVisible(template.Node):
     def render(self, context):
         title = context.get('atom_feed_title', None)
         if title:
-            return ('| <a href="/website/feeds/" title="What\'s this?">?</a> ' + 
-                    '<a class="atomlink" href="%(url)s?format=atom" title="%(title)s" >' + 
-                    '<img src="%(imgurl)s" alt="Subscribe" /></a> ') \
+            return ('<a class="atomlink" href="%(url)s?format=atom" title="%(title)s" >' + 
+                    ' <img src="%(imgurl)s" alt="Subscribe" /> Subscribe</a> ' +
+                    ' <a href="/website/feeds/" title="Help on subscribing">(What\'s that?)</a> |') \
             % {'url': context['request'].path, 'title': title, 'imgurl': settings.MEDIA_URL + "images/feed.gif" }
         else:
             return ''
