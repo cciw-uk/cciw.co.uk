@@ -197,6 +197,7 @@ class Application(models.Model):
 
         save_as = True
         list_display = ('full_name', 'officer', 'camp', 'finished', 'date_submitted')
+        list_filter = ('finished',)
 
 camp_officer_application_fields = (
     (None,
