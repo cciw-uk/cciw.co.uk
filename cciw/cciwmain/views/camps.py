@@ -21,13 +21,13 @@ def index(request, year=None):
     
     Context:
         show_ancient
-            True is the really old camps should be shown
+            True if the really old camps should be shown
         camps
             List of all Camp objects (or all Camp objects in the specified year).
     """
     c = standard_extra_context()
     c['title'] ="Camp forums and photos"
-    all_camps = Camp.objects.filter(year__lt=get_thisyear())
+    all_camps = Camp.objects.filter(end_date__lte=datetime.datetime.today())
     if (year == None):
         camps = all_camps.order_by('-year', 'number')
         c['show_ancient'] = True
