@@ -199,6 +199,20 @@ class Photo(models.Model):
     def get_absolute_url(self):
         return self.gallery.get_absolute_url() + str(self.id) + '/'
 
+    @staticmethod
+    def create_default_photo(filename, gallery):
+        Photo.objects.create(
+                    created_at=datetime.now(),
+                    open=True,
+                    hidden=False,
+                    filename=filename,
+                    description="",
+                    gallery=gallery,
+                    checked_by=None,
+                    approved=None,
+                    needs_approval=False
+        )
+        
     class Meta:
         app_label = "cciwmain"
         
