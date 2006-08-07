@@ -23,7 +23,7 @@
 	
 	{% if alreadyused %}
 		<div class="userError">The e-mail address <b>{{ email|escape }}</b> is already used.
-		If you have forgotten your username you can <a href="/signup/username-reminder/?email={{ email|urlencode|escape }}">get a reminder</a>.</div>
+		If you have forgotten your username you can <a href="/help/logging-in/?email={{ email|urlencode|escape }}">get a reminder</a>.</div>
 	{% else %}
 		{% if error_message %}
 			<div class="userError">{{ error_message|escape }}</div>
