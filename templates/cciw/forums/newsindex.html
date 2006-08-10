@@ -9,7 +9,7 @@
 		{% for topic in object_list %}
 			<div class="newsItem">
 				<h2>{{ topic.news_item.subject }}</h2>
-				<div class="newsItemDetails">Posted: {{ topic.news_item.created_at|date:"d M Y, h:i" }}, 
+				<div class="newsItemDetails">Posted: {{ topic.news_item.created_at|date:"d M Y, H:i" }}, 
 				by {% memberlink %}{{ topic.news_item.created_by_id }}{% endmemberlink %}</div>
 				<div class="newsItemSummary">
 				{{ topic.news_item.summary|bb2html }}

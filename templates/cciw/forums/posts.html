@@ -14,7 +14,7 @@
 			{% if post.photo_id %}On photo <a href="{{ post.photo.get_absolute_url }}">{{ post.photo.id }}</a>:{% endif %}
 			</h2>
 		{% endifchanged %}
-		From {% memberlink %}{{ post.posted_by_id }}{% endmemberlink %}, at {{ post.posted_at|date:"d M y, h:i" }}{% if post.is_parent_visible %} &mdash; <span class="readmore"><a href="{{ post.get_absolute_url }}">view in context</a></span>{% endif %}:
+		From {% memberlink %}{{ post.posted_by_id }}{% endmemberlink %}, at {{ post.posted_at|date:"d M y, H:i" }}{% if post.is_parent_visible %} &mdash; <span class="readmore"><a href="{{ post.get_absolute_url }}">view in context</a></span>{% endif %}:
 		</div>
 		<div class="postMessage">
 		{% if post.subject %}<div class="postSubject">{{ post.subject|bb2html }}</div>{% endif %}

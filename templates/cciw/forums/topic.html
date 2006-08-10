@@ -7,7 +7,7 @@
 	{% if news_item %}
 	<br/>
 	<div class="newsItem">
-		<div class="newsItemDetails">Posted: {{ news_item.created_at|date:"d M Y, h:i" }}, 
+		<div class="newsItemDetails">Posted: {{ news_item.created_at|date:"d M Y, H:i" }}, 
 		by {% memberlink %}{{ news_item.created_by_id }}{% endmemberlink %}</div>
 		<div class="newsItemFull">
 		{% if news_item.full_item %}
@@ -62,8 +62,8 @@
 		{% endif %}
 
 		{% if poll.can_anyone_vote %}
-		<p><small><i>Voting starts: {{ poll.voting_starts|date:"d M Y, h:i" }}<br/>
-		 Voting ends: {{ poll.voting_ends|date:"d M Y, h:i" }}<br/>
+		<p><small><i>Voting starts: {{ poll.voting_starts|date:"d M Y, H:i" }}<br/>
+		 Voting ends: {{ poll.voting_ends|date:"d M Y, H:i" }}<br/>
 		Rules: {{ poll.verbose_rules }}</i></small></p>
 		{% else %}
 		<p><i>Voting closed.</i></p>

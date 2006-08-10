@@ -37,10 +37,10 @@
 					{% endif %}
 				{% endif %}
 				</td>
-				<td>{% if topic.created_at %}{{ topic.created_at|date:"d M Y h:i" }}<br/>{% endif %}
+				<td>{% if topic.created_at %}{{ topic.created_at|date:"d M Y H:i" }}<br/>{% endif %}
 				    {% if topic.started_by_id %}{% memberlink %}{{ topic.started_by_id }}{% endmemberlink %}{% endif %}</td>
 				<td>{{ topic.post_count }}</td>
-				<td>{% if topic.last_post_at %}{{ topic.last_post_at|date:"d M Y h:i" }}<br/>{% endif %}
+				<td>{% if topic.last_post_at %}{{ topic.last_post_at|date:"d M Y H:i" }}<br/>{% endif %}
 				    {% if topic.last_post_by_id %}{% memberlink %}{{ topic.last_post_by_id }}{% endmemberlink %}{% endif %}</td>
 				<td>{% if topic.open %}Open{% else %}Closed{% endif %}</td>
 			</tr>
