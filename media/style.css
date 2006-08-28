@@ -898,9 +898,14 @@ div.center
 	font-size: 150%;
 }
 
+.weight0
+{
+	font-size: 80%
+}
+
 .weight1
 {
-	font-size: 90%
+	font-size: 100%
 }
 
 .weight2
