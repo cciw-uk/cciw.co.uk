@@ -3,6 +3,7 @@ from camps import Site, Person, Camp
 from forums import Forum, NewsItem, Topic, Gallery, Photo, Post
 from polls import Poll, PollOption, VoteInfo
 from sitecontent import MenuLink, HtmlChunk
+from django.conf import settings
 
 # TODO - work out where to put this:
 from lukeplant_me_uk.django.tagging.fields import add_tagging_fields
@@ -29,8 +30,9 @@ def render_topic(topic):
         (topic.get_absolute_url(), escape(cciw.cciwmain.utils.get_extract(topic.subject, 30)))
 
 def render_photo(photo):
-    return '<a href="%s">Photo: %s</a>' % \
-        (photo.get_absolute_url(), photo.id)
+     return '<a href="%s"><img src="%s/photos/thumbnails/%s" alt="Photo %s" /></a><br/>' % \
+         (photo.get_absolute_url(), settings.MEDIA_URL, photo.filename, photo.id)
+
 
 register_renderer(Member, Member.get_link)
 register_renderer(Post, render_post)
