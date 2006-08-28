@@ -1,5 +1,7 @@
 # Django settings for cciw project.
 
+from settings_common_priv import SECRET_KEY, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, CSRF_MIDDLEWARE_SECRET
+
 INTERNAL_IPS = ('127.0.0.1',)
 
 ADMINS = (
@@ -16,12 +18,7 @@ SITE_ID = 1
 
 SEND_BROKEN_LINK_EMAILS=True
 
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = '__=9o22)i0c=ci+9u$@g77tvdsg9y-wu6v6#f4iott(@jgwig+'
-
 CACHE_MIDDLEWARE_SECONDS = 200
-
-CSRF_MIDDLEWARE_SECRET = SECRET_KEY
 
 ROOT_URLCONF = 'cciw.urls'
 
@@ -61,8 +58,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 SERVER_EMAIL = "website@cciw.python-hosted.com"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 EMAIL_HOST = "mail1.python-hosting.com"
-EMAIL_HOST_USER = "cciw"
-EMAIL_HOST_PASSWORD = "da1d3nt"
 
 ## CCIW SPECIFIC SETTINGS AND CONSTANTS
 AWARD_UPLOAD_PATH = 'images/awards/'
