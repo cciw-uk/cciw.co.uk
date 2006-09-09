@@ -30,7 +30,7 @@ def get_member_icon(user_name):
         # We use content negotiation to get the right file i.e.
         # apache will add the right extension on for us.
         return '<img src="%s" class="userIcon" alt="icon" />' % \
-            (settings.MEDIA_URL + settings.MEMBER_ICON_PATH + user_name)
+            (settings.SPECIAL_MEDIA_URL + settings.MEMBER_ICON_PATH + user_name)
 
 
 def modified_query_string(request, dict, fragment=''):

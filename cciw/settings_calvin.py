@@ -14,10 +14,10 @@ DATABASE_HOST = ''        # Set to empty string for localhost. Not used with sql
 # Example: "/home/media/media.lawrence.com/"
 MEDIA_ROOT = '/home/luke/httpd/www.cciw.co.uk/django/media/'
 
-
 # URL that handles the media served from MEDIA_ROOT.
 # Example: "http://media.lawrence.com"
 MEDIA_URL = 'http://cciw_django_local/media/'
+SPECIAL_MEDIA_URL = 'http://cciw_django_local/sp_media/'
 #MEDIA_URL = 'http://localhost:8000/media/'
 
 MIDDLEWARE_CLASSES = (
