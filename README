@@ -1,0 +1,22 @@
+This code is not intended to be an out of the box solution for anyone
+-- it is a snapshot of the source code of the CCIW website made
+available simply for those who wish to browse the source (or copy it
+-- it is available under a BSD license).  I don't have the time to
+support anything here (apart from the 'validator' app which happens to
+be included but is distributed separately), so you are completely on
+your own in terms of working things out!
+
+Nor is it meant to be 'best practice' Django -- Django has changed
+since the project has started, and I don't claim to be the world's
+greatest Python/Django programmer anyway.
+
+It also doesn't include various bit and pieces that would not have
+been useful to other people e.g. my database migration scripts and
+various media files.
+
+Luke
+
+INSTALLATION HINTS
+==================
+- You need to have the unpacked directory in your Python path somewhere
+- The contents of 'misc_src' also need to be on your Python path somewhere
