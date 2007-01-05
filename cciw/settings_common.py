@@ -55,7 +55,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "cciw.cciwmain.common.standard_processor",
 )
 
-SERVER_EMAIL = "website@cciw.python-hosted.com"
+SERVER_EMAIL = "website@cciw.co.uk"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 EMAIL_HOST = "mail1.python-hosting.com"
 

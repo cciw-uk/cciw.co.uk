@@ -2,11 +2,11 @@
 
 from settings_common import *
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = True
 
 DATABASE_NAME = 'cciw_django'
-DATABASE_USER = 'djangouser'
+DATABASE_USER = 'cciw'
 DATABASE_PASSWORD = 'foo' 
 DATABASE_HOST = ''        # Set to empty string for localhost. Not used with sqlite3.
 
@@ -46,6 +46,6 @@ ADMIN_MEDIA_PREFIX = '/admin_media/'
 
 CCIW_MEDIA_URL = MEDIA_URL
 
-SEND_BROKEN_LINK_EMAILS = False
+SEND_BROKEN_LINK_EMAILS = True
 
 ESV_KEY = 'IP'
