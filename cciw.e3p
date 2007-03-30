@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Project SYSTEM "Project-3.8.dtd">
+<!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project cciw -->
-<!-- Saved: 2006-07-11, 20:49:01 -->
-<!-- Copyright (C) 2006 ,  -->
-<Project version="3.8">
+<!-- Saved: 2007-01-05, 14:08:57 -->
+<!-- Copyright (C) 2007 ,  -->
+<Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
   <UIType>Qt</UIType>
   <Description></Description>
@@ -380,6 +380,18 @@
       <Dir>cciw</Dir>
       <Name>settings_tests.py</Name>
     </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Name>settings_priv.py</Name>
+    </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Name>settings_common_priv.py</Name>
+    </Source>
+    <Source>
+      <Dir>scripts</Dir>
+      <Name>add_photos.py</Name>
+    </Source>
   </Sources>
   <Forms>
   </Forms>
@@ -391,14 +403,68 @@
   </Others>
   <Vcs>
     <VcsType>Subversion</VcsType>
-    <VcsOptions>{'status': [''], 'log': [''], 'global': [''], 'update': [''], 'remove': [''], 'add': [''], 'tag': [''], 'export': [''], 'diff': [''], 'commit': [''], 'checkout': [''], 'history': ['']}</VcsOptions>
-    <VcsOtherData>{'standardLayout': 1}</VcsOtherData>
+    <VcsOptions>(dp0
+S'status'
+p1
+(lp2
+S''
+p3
+asS'log'
+p4
+(lp5
+g3
+asS'global'
+p6
+(lp7
+g3
+asS'update'
+p8
+(lp9
+g3
+asS'remove'
+p10
+(lp11
+g3
+asS'add'
+p12
+(lp13
+g3
+asS'tag'
+p14
+(lp15
+g3
+asS'export'
+p16
+(lp17
+g3
+asS'commit'
+p18
+(lp19
+g3
+asS'diff'
+p20
+(lp21
+g3
+asS'checkout'
+p22
+(lp23
+g3
+asS'history'
+p24
+(lp25
+g3
+as.</VcsOptions>
+    <VcsOtherData>(dp0
+S'standardLayout'
+p1
+I1
+s.</VcsOtherData>
   </Vcs>
   <FiletypeAssociations>
     <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
-    <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
-    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
     <FiletypeAssociation pattern="*.ui" type="FORMS" />
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
+    <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
     <FiletypeAssociation pattern="*.py" type="SOURCES" />
   </FiletypeAssociations>
 </Project>
