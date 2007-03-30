@@ -2,7 +2,7 @@
 
 from settings_common import *
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = True
 
 DATABASE_NAME = 'cciw_django'
