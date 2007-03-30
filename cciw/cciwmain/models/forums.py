@@ -175,7 +175,7 @@ class Photo(models.Model):
     description = models.CharField("Description", blank=True, maxlength=100)
     gallery = models.ForeignKey(Gallery,
         verbose_name="gallery",
-        related_name="photo")
+        related_name="photos")
     checked_by = models.ForeignKey(User,
         null=True, blank=True, related_name="photos_checked")
     approved = models.BooleanField("Approved", null=True, blank=True)
