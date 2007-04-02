@@ -1,11 +1,6 @@
 {% load standardpage %}
 {% load forums %}
-<div>From <b>{{ obj.posted_by_id }}</b>, at {{ obj.posted_at|date:"d M y, H:i" }}:</div>
-<div class="postMessage"><hr/>
+<div class="postMessage">
 	{% if obj.subject %}<div class="postSubject">{{ obj.subject|escape }}</div>{% endif %}
 	{{ obj.message|bb2html }}
-<hr/>
-</div>
-<div>
-<span class="readmore"><a href="http://{{ site.domain }}{{ obj.get_absolute_url }}">view in context</a></span>
 </div>
