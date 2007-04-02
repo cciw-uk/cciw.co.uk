@@ -25,8 +25,9 @@ class Permission(models.Model):
 class UserSpecificMembers(models.Manager):
     def get_query_set(self):
         user = threadlocals.get_current_user()
-        if user is None or user.is_anonymous() or not user.is_staff or not\
-            user.has_perm('cciwmain.change_member'):
+        if threadlocals.is_web_request() and \
+           (user is None or user.is_anonymous() or not user.is_staff or \
+            not user.has_perm('cciwmain.change_member')):
             return super(UserSpecificMembers, self).get_query_set().filter(hidden=False)
         else:
             return super(UserSpecificMembers, self).get_query_set()

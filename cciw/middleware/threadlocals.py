@@ -4,6 +4,11 @@ import datetime
 
 _thread_locals = threading.local()
 
+
+import os
+def is_web_request():
+    return os.environ.get('SERVER_PROTOCOL') is not None
+
 def get_current_user():
     return getattr(_thread_locals, 'user', None)
     

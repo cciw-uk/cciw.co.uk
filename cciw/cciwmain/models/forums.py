@@ -68,8 +68,9 @@ class UserSpecificTopics(models.Manager):
     def get_query_set(self):
         queryset = super(UserSpecificTopics, self).get_query_set()
         user = threadlocals.get_current_user()
-        if user is None or user.is_anonymous() or \
-            not user.has_perm('cciwmain.edit_topic'):
+        if threadlocals.is_web_request() and \
+           (user is None or user.is_anonymous() or \
+            not user.has_perm('cciwmain.edit_topic')):
             # Non-moderator user
             member = threadlocals.get_current_member()
             if member is not None:
@@ -160,8 +161,9 @@ class UserSpecificPhotos(models.Manager):
     def get_query_set(self):
         queryset = super(UserSpecificPhotos, self).get_query_set()
         user = threadlocals.get_current_user()
-        if user is None or user.is_anonymous() or \
-            not user.has_perm('cciwmain.edit_topic'):
+        if threadlocals.is_web_request() and \
+            (user is None or user.is_anonymous() or \
+             not user.has_perm('cciwmain.edit_topic')):
             # Non-moderator user
             return queryset.filter(hidden=False)
         else:
@@ -225,8 +227,9 @@ class UserSpecificPosts(models.Manager):
         appropriate for the current member/user."""
         queryset = super(UserSpecificPosts, self).get_query_set()
         user = threadlocals.get_current_user()
-        if user is None or user.is_anonymous() or \
-            not user.has_perm('cciwmain.edit_post'):
+        if threadlocals.is_web_request() and \
+           (user is None or user.is_anonymous() or \
+            not user.has_perm('cciwmain.edit_post')):
             # Non-moderator user
             
             member = threadlocals.get_current_member()
