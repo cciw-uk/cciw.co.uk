@@ -83,8 +83,9 @@ class FormsExplicitBooleanField(forms.RadioSelectField):
     def html2python(data):
         return {'1': None, '2': True, '3': False}.get(data, None)
 
-# For installation, uncomment this:
-#ExplicitBooleanField = models.NullBooleanField
+if not threadlocals.is_web_request():
+    # Need this for installation, uncomment this:
+    ExplicitBooleanField = models.NullBooleanField
 
 class Application(models.Model):
     camp = required_field(models.ForeignKey, Camp, null=True, limit_choices_to={'online_applications': True})
