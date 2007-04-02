@@ -66,6 +66,7 @@ def member_required_for_post(view_func):
     """
     Decorator for views that checks if data was POSTed back and 
     if so requires the user to log in.
+    It is also used by the normal '/login/' view.
     """
     def _checklogin(request, *args, **kwargs):
         if not request.POST:
@@ -81,10 +82,7 @@ def member_required_for_post(view_func):
 
         # If this isn't already the login page, display it.
         if not request.POST.has_key(LOGIN_FORM_KEY):
-            if request.POST:
-                message = _("Please log in again, because your session has expired. Don't worry: Your submission has been saved.")
-            else:
-                message = ""
+            message = _("Please log in again, because your session has expired. Don't worry: Your submitted data has been saved and will be processed when you log in.")
             return _display_login_form(request, message)
 
         # Check the password.
@@ -94,8 +92,8 @@ def member_required_for_post(view_func):
         except Member.DoesNotExist:
             return _display_login_form(request, ERROR_MESSAGE)
 
-        # The member data is correct; log in the member in and continue.
         else:
+            # The member data is correct; log in the member in and continue.
             if member.check_password(request.POST.get('password', '')):
                 member.last_seen = datetime.datetime.now()
                 member.save()
@@ -106,9 +104,12 @@ def member_required_for_post(view_func):
                     if post_data and not post_data.has_key(LOGIN_FORM_KEY):
                         # overwrite request.POST with the saved post_data, and continue
                         request.POST = post_data
-                    return view_func(request, *args, **kwargs)
+                return view_func(request, *args, **kwargs)
             else:
                 return _display_login_form(request, ERROR_MESSAGE)
+            
+    _checklogin.__name__ = view_func.__name__
+    _checklogin.__module__ = view_func.__module__
 
     return _checklogin
 
