@@ -42,6 +42,10 @@ TEMPLATE_DIRS = (
     r'/home/luke/httpd/www.cciw.co.uk/django/lukeplant_me_uk/django/tagging/templates/',
 )
 
+FIXTURE_DIRS = [
+    r'/home/luke/httpd/www.cciw.co.uk/django/cciw/cciwmain/fixtures/'
+]
+
 ADMIN_MEDIA_PREFIX = '/admin_media/'
 
 CCIW_MEDIA_URL = MEDIA_URL
