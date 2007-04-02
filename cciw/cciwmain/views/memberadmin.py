@@ -8,7 +8,7 @@ from django.http import Http404, HttpResponseRedirect
 from django import forms
 from cciw.cciwmain.common import standard_extra_context
 from cciw.cciwmain.models import Member
-from cciw.middleware.threadlocals import set_member_session, set_current_userent_member, get_current_member
+from cciw.middleware.threadlocals import set_member_session, get_current_member
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain import imageutils
 import md5
