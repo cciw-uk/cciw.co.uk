@@ -19,4 +19,6 @@ Luke
 INSTALLATION HINTS
 ==================
 - You need to have the unpacked directory in your Python path somewhere
-- The contents of 'misc_src' also need to be on your Python path somewhere
+- Additionl dependencies:
+	p3.py
+	
