@@ -174,10 +174,6 @@ on yourself?                            {{ app.crb_check_consent|yesno:"YES,NO,-
     
     msg = t.render(template.Context({'app': application}))
     subject = "CCIW application form from %s" % application.full_name
-    # debug
-    print "sending mail:"
-    print subject
-    print msg
     
     send_mail(subject, msg, settings.SERVER_EMAIL, emails)
 
