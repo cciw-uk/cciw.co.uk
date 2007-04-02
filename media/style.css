@@ -339,6 +339,13 @@ div.bottomlinks a:hover
 {
 	color: #c0c0c0;
 }
+div.tagdetail
+{
+	padding-top: .8em;
+	padding-bottom: .8em;
+	border-bottom: 1px solid #663300;
+}
+
 
 /************************** END COLOURS *******************/
 

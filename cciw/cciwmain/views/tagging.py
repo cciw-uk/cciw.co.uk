@@ -47,7 +47,7 @@ def members_tags(request, user_name):
     
     return tagging_views.recent_popular(request, creator=member, template_name="cciw/tags/index.html",
                 extra_context=extra_context, paginate_by=TAG_PAGINGATE_BY,
-                extra_handler=feed_handler)
+                extra_handler=feed_handler, popular_tags_order='count')
 
 def members_tags_single_text(request, user_name, text):
     try:

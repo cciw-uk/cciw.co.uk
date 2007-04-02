@@ -6,7 +6,7 @@
 <h2>Recent</h2>
 {% if object_list %}
 	{% for tag in object_list %}
-		<div>
+		<div class="tagdetail">
 		{% if showtagtarget %}
 		<span class="tagtitle">{{ tag.render }}</span> 
 		<span class="seealltags"><a class="tagcount" href="/tag_targets/{{ tag.target_ct.name }}/{{ tag.target_id }}/">View all tags</a> {% add_tag_link for tag.target %}</span>
@@ -24,7 +24,7 @@
 		{% if showtagcounts %}
 			 <a class="tagcount" href="/tag_targets/{{ tag.target_ct.name }}/{{ tag.target_id }}/{{ tag.text }}/" title="Details for tag '{{ tag.text }}'">x{{ tag.count_tagged_with_text }}</a>
 		{% endif %}
-		</div><br/>
+		</div>
 	{% endfor %}
 {% else %}
 	<p>No tags found.</p>
@@ -43,7 +43,7 @@
 		{% else %}
 		<h2>Popular</h2>
 		{% endif %}
-		{% for tag in popular_tags %}
+		{% for tag in popular_tags|dictsort:"text" %}
 			<span class="tag weight{{ tag.weight }}"><a href="{{ tag_href_prefix }}{{ tag.text }}/">{{ tag.text }}</a></span>&nbsp;
 		{% endfor %}
 		<br/><br/>
@@ -78,7 +78,7 @@
 <br/>
 {% endif %}
 
-<h2>Search all tags</h2>
+<h2>Search tags</h2>
 <div>
 <form method='get' action='/tag_search/'>
 <p><label>Text: <input type='text' name='search' id='search' /></label>
