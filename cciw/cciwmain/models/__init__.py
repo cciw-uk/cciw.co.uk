@@ -19,7 +19,7 @@ add_tagging_fields(creator_model=Member, creator_attrname='all_tags')
 add_tagging_fields(creator_model=Member, creator_attrname='post_tags', target_model=Post, target_attrname='tags')
 add_tagging_fields(creator_model=Member, creator_attrname='topic_tags', target_model=Topic, target_attrname='tags')
 add_tagging_fields(creator_model=Member, creator_attrname='photo_tags', target_model=Photo, target_attrname='tags')
-add_tagging_fields(creator_model=Member, creator_attrname='member_tags', target_model=Post, target_attrname='tags')
+add_tagging_fields(creator_model=Member, creator_attrname='member_tags', target_model=Member, target_attrname='tags')
 
 def render_post(post):
     return '<a href="%s">Post by %s: %s...</a>' % \
