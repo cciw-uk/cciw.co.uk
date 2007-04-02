@@ -6,7 +6,7 @@ from django.conf import settings
 
 from cciw.cciwmain.models import Member, Message
 from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb
-from cciw.middleware.threadlocals import get_current_member
+from cciw.middleware.threadlocals import get_current_member, remove_member_session
 from cciw.cciwmain.decorators import member_required, same_member_required, member_required_for_post, _display_login_form
 from cciw.cciwmain.utils import get_member_link
 import cciw.cciwmain.templatetags.bbcode as bbcode
@@ -66,9 +66,7 @@ def detail(request, user_name):
     if request.POST:
         if request.POST.has_key('logout'):
             try:
-                import cciw.middleware.threadlocals
-                del request.session['member_id']
-                del cciw.middleware.threadlocals._thread_locals.member
+                remove_member_session(request)
             except KeyError:
                 pass
         

@@ -3,7 +3,7 @@ from django import template
 from django.conf import settings
 from django.shortcuts import render_to_response
 
-from cciw.middleware.threadlocals import get_current_member, set_current_member
+from cciw.middleware.threadlocals import get_current_member, set_member_session
 from cciw.cciwmain.models import Permission, Member
 from cciw.cciwmain.common import standard_extra_context
 
@@ -97,10 +97,9 @@ def member_required_for_post(view_func):
         # The member data is correct; log in the member in and continue.
         else:
             if member.check_password(request.POST.get('password', '')):
-                request.session['member_id'] = member.user_name
                 member.last_seen = datetime.datetime.now()
                 member.save()
-                set_current_member(member)
+                set_member_session(request, member)
                 
                 if request.POST.has_key('post_data'):
                     post_data = _decode_post_data(request.POST['post_data'])

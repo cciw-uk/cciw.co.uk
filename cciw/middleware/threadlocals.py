@@ -15,7 +15,6 @@ def get_current_member():
     return getattr(_thread_locals, 'member', None)
 
 def set_current_member(member):
-    # This is *very* rarely needed.
     _thread_locals.member = member
 
 def _get_member_from_request(request):
@@ -25,10 +24,18 @@ def _get_member_from_request(request):
     except (KeyError, Member.DoesNotExist):
         return None
 
+def set_member_session(request, member):
+    request.session['member_id'] = member.user_name
+    set_current_member(member)
+
+def remove_member_session(request):
+    del request.session['member_id']
+    del _thread_locals.member
+
 class ThreadLocals(object):
     """Adds various objects to thread local storage from the request object."""
     def process_request(self, request):
-        _thread_locals.user = getattr(request, 'user', None)
+        set_current_user(getattr(request, 'user', None))
         
         member = _get_member_from_request(request)
         if member is not None:

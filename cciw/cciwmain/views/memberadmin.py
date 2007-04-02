@@ -8,7 +8,7 @@ from django.http import Http404, HttpResponseRedirect
 from django import forms
 from cciw.cciwmain.common import standard_extra_context
 from cciw.cciwmain.models import Member
-from cciw.middleware.threadlocals import set_current_member, get_current_member
+from cciw.middleware.threadlocals import set_member_session, set_current_userent_member, get_current_member
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain import imageutils
 import md5
@@ -297,15 +297,14 @@ def signup(request):
             else:
                 m.email = email
                 m.save()
-                request.session['member_id'] = m.user_name
-                set_current_member(m)
+                set_member_session(request, m)
                 c['stage'] = 'end'
         else:
             c['stage'] = 'invalid'
             c['error_message'] = msg
 
     ## Do this at end, so that the context_processors
-    ## are executed after set_current_member
+    ## are executed after set_member_session
     ctx = template.RequestContext(request, c)
 
     return shortcuts.render_to_response('cciw/members/signup.html', 
