@@ -1,13 +1,13 @@
 # Utilities and middleware for thread local storage
 import threading
 import datetime
+import os
 
 _thread_locals = threading.local()
 
-
-import os
 def is_web_request():
-    return os.environ.get('SERVER_PROTOCOL') is not None
+    return os.environ.has_key('SERVER_PROTOCOL') or \
+           os.environ.has_key('RUN_MAIN')
 
 def get_current_user():
     return getattr(_thread_locals, 'user', None)
