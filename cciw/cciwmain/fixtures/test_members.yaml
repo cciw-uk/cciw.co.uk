@@ -2,7 +2,7 @@
   pk: test_member_1
   fields:
     banned: false
-    comments: ''
+    comments: 'My comments'
     date_joined: 2006-09-02 12:16:57.003467
     dummy_member: false
     email: 'test@test.com'
