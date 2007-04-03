@@ -1,0 +1,27 @@
+- model: cciwmain.site
+  pk: '1'
+  fields:
+    info: Site 1 info
+    long_name: Site 1 long name
+    short_name: Site 1
+    slug_name: llys-andreas
+
+- fields:
+    age: Jnr
+    chaplain: null
+    end_date: 2000-07-08
+    leaders: []
+    number: 1
+    online_applications: false
+    previous_camp: null
+    site: 1
+    start_date: 2000-07-01
+    year: 2000
+  model: cciwmain.camp
+  pk: '1'
+
+- fields: {extra_title: '', listorder: 0, parent_item: null, title: Home, url: /,
+    visible: true}
+  model: cciwmain.menulink
+  pk: '1'
+
