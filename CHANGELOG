@@ -1,0 +1,3 @@
+
+2007-03-31 - Fixed bug in the tagging app -
+  RelatedGenericManyToManyDescriptor was broken.
