@@ -1,6 +1,5 @@
-from django.test import client, TestCase
-from cciw.cciwmain.models import Member
-import cciw.cciwmain.views.members
+from django.test import client
+import cciw.cciwmain.decorators
 
 class CciwClient(client.Client):
     """
@@ -27,16 +26,3 @@ class CciwClient(client.Client):
         return response
 
 
-TEST_MEMBER = 'test_member_1'
-TEST_MEMBER_PASSWORD = 'password'
-
-class SimpleTest(TestCase):
-    fixtures=['basic.yaml','test_members.yaml']
-    def setUp(self):
-        self.client = CciwClient()
-        self.client.member_login(TEST_MEMBER, TEST_MEMBER_PASSWORD)
-
-    def test_set_prefs(self):
-        response = self.client.get('/memberadmin/preferences/')
-        self.failUnlessEqual(response.status_code, 200)
-        self.assert_("Edit your preferences below" in response.content)
