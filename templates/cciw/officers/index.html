@@ -3,6 +3,16 @@
 {% block content %}<div id="content-main">
 <h1>Officer's home page</h1>
 
+<h2>Status:</h2>
+{% if finished_applications %}
+<p>To date, you have submitted the following application forms:</p>
+<ul>
+  {% for app in finished_applications %}
+    <li>{{ app.camp }}, submitted {{ app.date_submitted|date:"Y-m-d" }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
 <h2>Tasks:</h2>
 <form action="" method="post">
 
@@ -33,10 +43,9 @@
 	</select>
 	<input type="submit" name="new" value="Create" />
 <br/><br/>
-<p>Once you have created an application based on the selected application,
-you will need to <strong>change the selected camp</strong>, update any information
-necessary, including your address, and re-check the declarations at the end of the
-form.</p>
+<p>Once you have pressed 'Create', you will need to <strong>change the
+selected camp</strong>, update any information necessary, including
+your address, and re-check the declarations.</p>
 </li>
 
 {% endif %}
