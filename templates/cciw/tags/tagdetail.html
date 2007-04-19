@@ -6,7 +6,7 @@
 
 {% if object_list %}
 
-	<p>Members who have tagged <span class="tagtitle">{{ object_list.0.render }}</span> as <span class="tag"><a href="/tags/{{ text }}/">{{ text }}</a></span>:</p>
+	<p><span class="tagtitle">{{ object_list.0.render }}</span> tagged as <span class="tag"><a href="/tags/{{ text }}/">{{ text }}</a></span> by:</p>
 
 	{% for tag in object_list %}
 		<div>

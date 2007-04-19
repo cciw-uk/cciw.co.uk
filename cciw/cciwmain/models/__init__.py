@@ -30,7 +30,7 @@ def render_topic(topic):
         (topic.get_absolute_url(), escape(cciw.cciwmain.utils.get_extract(topic.subject, 30)))
 
 def render_photo(photo):
-     return '<a href="%s"><img src="%s/photos/thumbnails/%s" alt="Photo %s" /></a><br/>' % \
+     return '<a href="%s"><img src="%s/photos/thumbnails/%s" alt="Photo %s" /></a>' % \
          (photo.get_absolute_url(), settings.MEDIA_URL, photo.filename, photo.id)
 
 
