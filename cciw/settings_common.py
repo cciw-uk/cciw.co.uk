@@ -12,7 +12,7 @@ MANAGERS = ADMINS
 
 LANGUAGE_CODE = 'en-gb'
 
-DATABASE_ENGINE = 'postgresql'
+DATABASE_ENGINE = 'postgresql_psycopg2'
 
 SITE_ID = 1
 

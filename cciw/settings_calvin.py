@@ -9,7 +9,7 @@ DATABASE_NAME = 'cciw_django'
 DATABASE_USER = 'cciw'
 DATABASE_PASSWORD = 'foo' 
 DATABASE_HOST = ''        # Set to empty string for localhost. Not used with sqlite3.
-
+DATABASE_PORT = 5433
 
 basedir = r'/home/luke/httpd/www.cciw.co.uk/django'
 
