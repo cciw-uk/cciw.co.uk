@@ -12,6 +12,7 @@ DATABASE_HOST = ''        # Set to empty string for localhost. Not used with sql
 DATABASE_PORT = 5433
 
 basedir = r'/home/luke/httpd/www.cciw.co.uk/django'
+django_src = r'/home/luke/httpd/www.cciw.co.uk/django_src'
 
 # Absolute path to the directory that holds media.
 
@@ -40,7 +41,7 @@ INSTALLED_APPS = INSTALLED_APPS + (
 
 TEMPLATE_DIRS = (
     basedir + r'/templates/',
-    r'/home/luke/httpd/www.cciw.co.uk/django_src/django/contrib/admin/templates/',
+    django_src + r'/django/contrib/admin/templates/',
     basedir + r'/lukeplant_me_uk/django/validator/templates/',
     basedir + r'/lukeplant_me_uk/django/tagging/templates/',
 )
