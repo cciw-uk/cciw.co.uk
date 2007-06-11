@@ -1,0 +1,212 @@
+Pre - go-live
+=============
+
+Steps:
+1) take down cciw.python-hosted.com to stop officer application
+  changes.
+2) copy database from krait:
+
+krait $ ./dump_applications
+calvin $ rm -r krait_dump/*
+calvin $ rsync -r cciw@cciw.python-hosted.com:webapps/django_app/dump/ krait_dump/
+
+3) put www.cciw.co.uk into read only mode somehow ###???
+  - disable saving in flatfile.php
+  - disable logging in.
+
+4) copy flat file database
+calvin $ cd /home/luke/httpd/www.cciw.co.uk
+calvin $ sudo ./backup.sh
+
+5) Drop cciw_django
+calvin $ echo "DROP DATABASE cciw_django; CREATE DATABASE cciw_django WITH template = template0;" | psql -U luke -d template1
+
+6) Django utility to create database
+- first edit officers/models.py to allow installation
+- command below, don't create super user
+calvin $ django-admin.py syncdb contenttypes auth admin sites sessions tagging validator cciwmain officers  --settings='cciw.settings_calvin'
+
+ (* check officers_applications has been created.)
+
+7) Migrate the old database
+calvin $ cd migrate/
+calvin $ ./django_migrate.py
+
+[take a backup]
+
+8) Copy users/groups
+calvin $ pg_restore  -a -d cciw_django -U luke krait_dump/users.tar  
+calvin $ pg_restore  -a -d cciw_django -U luke krait_dump/groups.tar 
+calvin $ pg_restore  -a -d cciw_django -U luke krait_dump/user_groups.tar
+
+9) Merge in applications:
+- manually edit to fix up camp IDs
+  - untar applications.tar, edit data file
+  - change ids
+  - retar
+calvin $ pg_restore  -a -d cciw_django -U luke krait_dump/applications.tar
+
+10) Fix up some data manually:
+- online_applications on relevant camps
+- permissions for groups:
+  Officers - can add application
+  Leaders - can add/change/delete application
+
+11) Run email change script
+
+12) Dump database
+calvin $ cd ..
+calvin $ pg_dump -Fc -U luke -O -o -f db/to_upload cciw_django
+
+13) upload new database
+### rsync ??
+Restore:
+### pg_restore -U cciw -c db/to_upload -d cciw
+
+14) upload code and stuff
+- change officers/models.py back
+- unlink the photo dir first
+- move photos into 'real' dir on server
+- cleanup:
+callsvin $ find . -name '*.pyc' | xargs rm 
+calvin $ cd /home/luke/httpd/www.cciw.co.uk/django
+calvin $ rsync -r cciw media templates lukeplant_me_uk to_upload websitedown cciw@cciw.python-hosted.com:/home2/cciw/webapps/django_app
+
+15) misc python sources
+ - upload
+ - add to path
+16) update django sources
+
+15)
+- check everything is working
+  - adjust 'site' object to be www.cciw.co.uk
+- transfer domain
+
+16) Send e-mails out to users whose e-mail addresses have changed
+
+BUGS
+----
+BUG - @member_required causes users to lose data if they logged out in one window and posted a form in another.  Needs to detect 'POST' requests.
+
+BUG - icons for awards
+
+
+
+Post - go-live
+==============
+- fix up all my scripts for photos, reorganise local dirs
+- member page
+   - user stats
+- moderator funcs
+   - for approving photos - should be able to do it in bulk
+- upload of photos, with resizing
+- awards - make sure creating new ones works
+- tagging:
+  - should have a autosuggest drop down
+- auto suggest list for private messages
+
+- user name links
+   - on hover, should show basic stats plus 'show more'
+- full text search?
+- get rid of daft validation_collection model
+========
+  DONE
+========
+Tagging - DONE
+-------
+- implement feeds - DONE
+- should have a bread crumb on /members/foo/tags/ - DONE
+- 'Related items' on /members/foo/tags/ should have a link to all tags - DONE
+- add 'create tag' links everywhere - DONE
+- add search link/form - DONE
+- Make the create/update template prettier - DONE
+- implement /tag_search/ (perhaps /tags/?q=foo) - DONE
+- display tags on member - DONE
+- << Earlier | Later >> on all 'recent tags' pages - DONE
+
+For members:
+ - should appear on members page - DONE
+
+For posts - DONE
+ - should appear along top line of post, e.g. [funnny] [stupid x4] 
+
+For topics - DONE
+ - in list - should appear as line along bottom
+ - on page - at top
+
+For photos - DONE
+  - ditto topics
+
+- password/username reminder
+	- "what's my username" - DONE
+	- "new password please" - DONE
+
+- password change - DONE
+- user prefs page - DONE
+- e-mail change (with confirmation) - DONE
+- Members page
+   - sub-pages for posts, tags - DONE
+- user prefs - adjust image to size and convert to PNG (??)
+- optimise pages that use member.icon_image by hardcoding image path - DONE
+- create empty gif as default icon - DONE
+
+ - polls 
+   - create, edit - DONE
+
+- Send private messages by e-mail - DONE
+ - editing
+    - smilies, bbcode help etc
+    - Use ESV web service to insert bible verses
+    - OR have a bible lookup field next to the message box, that inserts        [bible=ref]bibleverse[/bible]
+- Feedback form.
+- /thisyear/booking/ ??
+- /awards/
+- /website/bbcode/
+- fix up HTML errors in stats pages and fix images - DONE
+
+- Content for /website/bbcode/ - DONE
+- sort out /info/transport/ etc - DONE
+- Downloading booking forms:
+   /booking/
+   Needs to check for presence of booking_{{thisyear}}.pdf
+- Only show thumbnails of photos if user is not logged in - DONE
+- Feed icon on pages that have feeds. - DONE
+- de-duplicate users with same e-mail addresses.
+ - save list and generate e-mail to those people.
+- dump htmlchunk and links to migrate_html.py - DONErd/username reminder
+	- "what's my username" - DONE
+	- "new password please" - DONE
+
+- password change - DONE
+- user prefs page - DONE
+- e-mail change (with confirmation) - DONE
+- Members page
+   - sub-pages for posts, tags - DONE
+- user prefs - adjust image to size and convert to PNG (??)
+- optimise pages that use member.icon_image by hardcoding image path - DONE
+- create empty gif as default icon - DONE
+
+ - polls 
+   - create, edit - DONE
+
+- Send private messages by e-mail - DONE
+ - editing
+    - smilies, bbcode help etc
+    - Use ESV web service to insert bible verses
+    - OR have a bible lookup field next to the message box, that inserts        [bible=ref]bibleverse[/bible]
+- Feedback form.
+- /thisyear/booking/ ??
+- /awards/
+- /website/bbcode/
+- fix up HTML errors in stats pages and fix images - DONE
+
+- Content for /website/bbcode/ - DONE
+- sort out /info/transport/ etc - DONE
+- Downloading booking forms:
+   /booking/
+   Needs to check for presence of booking_{{thisyear}}.pdf
+- Only show thumbnails of photos if user is not logged in - DONE
+- Feed icon on pages that have feeds. - DONE
+- de-duplicate users with same e-mail addresses.
+ - save list and generate e-mail to those people.
+- dump htmlchunk and links to migrate_html.py - DONE
