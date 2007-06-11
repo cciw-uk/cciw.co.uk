@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-3.9.dtd">
 <!-- Project file for project cciw -->
-<!-- Saved: 2007-01-05, 14:08:57 -->
+<!-- Saved: 2007-06-11, 18:32:15 -->
 <!-- Copyright (C) 2007 ,  -->
 <Project version="3.9">
   <ProgLanguage mixed="0">Python</ProgLanguage>
@@ -119,99 +119,6 @@
       <Dir>officers</Dir>
       <Dir>templatetags</Dir>
       <Name>application_admin.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Name>dist.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>setup</Dir>
-      <Dir>djangovalidator</Dir>
-      <Name>setup.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Dir>tagging</Dir>
-      <Name>models.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Dir>tagging</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Dir>tagging</Dir>
-      <Name>fields.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Dir>tagging</Dir>
-      <Name>utils.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Dir>tagging</Dir>
-      <Name>views.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Dir>tagging</Dir>
-      <Dir>templatetags</Dir>
-      <Name>tagging.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Dir>tagging</Dir>
-      <Dir>templatetags</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Dir>validator</Dir>
-      <Name>urls.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Dir>validator</Dir>
-      <Name>views.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Dir>validator</Dir>
-      <Name>models.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Dir>validator</Dir>
-      <Name>__init__.py</Name>
-    </Source>
-    <Source>
-      <Dir>lukeplant_me_uk</Dir>
-      <Dir>django</Dir>
-      <Dir>validator</Dir>
-      <Name>middleware.py</Name>
     </Source>
     <Source>
       <Dir>cciw</Dir>
@@ -392,6 +299,14 @@
       <Dir>scripts</Dir>
       <Name>add_photos.py</Name>
     </Source>
+    <Source>
+      <Dir>cciw</Dir>
+      <Name>manage.py</Name>
+    </Source>
+    <Source>
+      <Dir>scripts</Dir>
+      <Name>create_officer.py</Name>
+    </Source>
   </Sources>
   <Forms>
   </Forms>
@@ -461,10 +376,10 @@ I1
 s.</VcsOtherData>
   </Vcs>
   <FiletypeAssociations>
-    <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
-    <FiletypeAssociation pattern="*.ui" type="FORMS" />
-    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
-    <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
     <FiletypeAssociation pattern="*.py" type="SOURCES" />
+    <FiletypeAssociation pattern="*.ui.h" type="FORMS" />
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES" />
+    <FiletypeAssociation pattern="*.ui" type="FORMS" />
+    <FiletypeAssociation pattern="*.ptl" type="SOURCES" />
   </FiletypeAssociations>
 </Project>
