@@ -15,6 +15,22 @@ from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
 from django.views.decorators.cache import never_cache
 
+def _copy_application(application):
+    new_obj = Application(id=None)
+    for field in Application._meta.fields:
+        if field.attname != 'id':
+            setattr(new_obj, field.attname, getattr(application, field.attname))
+    new_obj.camp = None
+    new_obj.youth_work_declined = None
+    new_obj.relevant_illness = None
+    new_obj.crime_declaration = None
+    new_obj.court_declaration = None
+    new_obj.concern_declaration = None
+    new_obj.allegation_declaration = None
+    new_obj.crb_check_consent = None
+    new_obj.finished = False
+    new_obj.date_submitted = None
+
 # /officers/admin/
 @staff_member_required
 @never_cache
@@ -84,19 +100,7 @@ def index(request):
                 obj = None
         if obj is not None:
             # Create a copy 
-            new_obj = Application(id=None)
-            for field in Application._meta.fields:
-                if field.attname != 'id':
-                    setattr(new_obj, field.attname, getattr(obj, field.attname))
-            new_obj.youth_work_declined = None
-            new_obj.relevant_illness = None
-            new_obj.crime_declaration = None
-            new_obj.court_declaration = None
-            new_obj.concern_declaration = None
-            new_obj.allegation_declaration = None
-            new_obj.crb_check_consent = None
-            new_obj.finished = False
-            new_obj.date_submitted = None
+            new_obj = _copy_application(obj)
             new_obj.save()
             return HttpResponseRedirect('/admin/officers/application/%s/' % new_obj.id)
             
