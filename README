@@ -1,10 +1,9 @@
-This code is not intended to be an out of the box solution for anyone
--- it is a snapshot of the source code of the CCIW website made
-available simply for those who wish to browse the source (or copy it
--- it is available under a BSD license).  I don't have the time to
-support anything here (apart from the 'validator' app which happens to
-be included but is distributed separately), so you are completely on
-your own in terms of working things out!
+This code is not intended to be an out of the box solution for anyone -- it
+is a snapshot of the source code of the CCIW website made available simply
+for those who wish to browse the source (or copy it under a BSD license).  I
+don't have the time to support anything here (apart from the 'validator' app
+which happens to be included but is distributed separately), so you are
+completely on your own in terms of working things out!
 
 Nor is it meant to be 'best practice' Django -- Django has changed
 since the project has started, and I don't claim to be the world's
@@ -13,6 +12,18 @@ greatest Python/Django programmer anyway.
 It also doesn't include various bit and pieces that would not have
 been useful to other people e.g. my database migration scripts and
 various media files.
+
+GenericRelations
+----------------
+I rolled my own because Django at the time didn't have any functionality for
+this.  Some of my code made it's way into Django's implementation, but it
+isn't compatible AFAIK.
+
+Tagging 
+------- 
+The project `django-tagging' (http://code.google.com/p/django-tagging/ )
+didn't exist when I wrote this -- I imagine that you would be much better
+off using that project than my implementation.
 
 Luke
 
