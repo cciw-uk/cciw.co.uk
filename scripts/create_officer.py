@@ -54,10 +54,10 @@ def email_officer(loginname, firstname, email, password):
     t = template.Template("""
 Hi {{ firstname }},
 
-Below are the instructions for filling in a CCIW application form online.
-When you have finished filling the form in, it will be e-mailed to the
-leader of the camp, who will need to send reference forms to the referees
-you have specified.
+Below are the instructions for filling in a CCIW application form
+online.  When you have finished filling the form in, it will be
+e-mailed to the leader of the camp, who will need to send reference
+forms to the referees you have specified.
 
 To fill in the application form
 
@@ -68,28 +68,29 @@ To fill in the application form
      Username: {{ loginname }}
      Password: {{ password }}
      
-     (You are advised to change your password to something more memorable
-      once you have logged in)
+     (You are advised to change your password to something more
+      memorable once you have logged in)
       
-3) Choose from the options.
-   If you have already completed an application form online, you can choose
-   to create an application form based on a previous one.  Some tickboxes
-   will be blanked out and you will have to fill them in again, but it should
-   only take a few minutes.
+3) Choose from the options.  If you have already completed an
+   application form online, you can choose to create an application
+   form based on a previous one.  Some tickboxes will be blanked out
+   and you will have to fill them in again, but it should only take a
+   few minutes.
    
-   If you have not already completed an application form, you will have to 
-   start by creating a new one.
+   If you have not already completed an application form, you will
+   have to start by creating a new one.
    
 4) Fill in the form.
 
-  You can save your work at any time (using the 'Save' button at the bottom) 
-  and come back to it later if you want.  When you have finished and want 
-  to submit the application form to the leaders, you need to check the 
-  'Completed' checkbox at the bottom and press 'Save'.
+  You can save your work at any time (using the 'Save' button at the
+  bottom) and come back to it later if you want.  When you have
+  finished and want to submit the application form to the leaders, you
+  need to check the 'Completed' checkbox at the bottom and press
+  'Save'.
   
-  Please note that if you have any validation errors (marked in red when you 
-  try to save), your data won't have been saved.  You'll need to correct the 
-  data before it is actually saved.
+  Please note that if you have any validation errors (marked in red
+  when you try to save), your data won't have been saved.  You'll need
+  to correct the data before it is actually saved.
   
   
 If you have any problems, please e-mail me at L.Plant.98@cantab.net
