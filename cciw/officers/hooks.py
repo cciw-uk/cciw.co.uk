@@ -1,11 +1,10 @@
 # Hooks for various events
 
 from cciw.officers import signals
+from cciw.officers.applications import application_to_text
 from django.dispatch import dispatcher
 from django.core.mail import send_mail
 from django.conf import settings
-from django import template
-from django.template import loader
 import os
 
 def send_leader_email(application=None):
@@ -30,8 +29,12 @@ def send_leader_email(application=None):
                 emails.append(email)
     if len(emails) == 0:
         return
-    t = loader.get_template('cciw/officers/application_email.txt');
-    msg = t.render(template.Context({'app': application}))
+    msg = \
+"""The following application form has been submitted
+via the CCIW website:
+
+""" + application_to_text(application)
+    
     subject = "CCIW application form from %s" % application.full_name
     
     send_mail(subject, msg, settings.SERVER_EMAIL, emails)

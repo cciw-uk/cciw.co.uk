@@ -4,7 +4,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.admin.views.main import add_stage, render_change_form
 from django.contrib.admin.views.main import unquote, quote, get_text_list
 from django import forms, template
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db import models
 from django.contrib.auth.models import Message
 from cciw.officers.models import Application
@@ -14,6 +14,7 @@ from django.conf import settings
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
 from django.views.decorators.cache import never_cache
+from cciw.officers.applications import application_to_text, application_to_rtf
 
 def _copy_application(application):
     new_obj = Application(id=None)
@@ -30,6 +31,7 @@ def _copy_application(application):
     new_obj.crb_check_consent = None
     new_obj.finished = False
     new_obj.date_submitted = None
+    return new_obj
 
 def _is_leader(user):
     return (user.groups.filter(name='Leaders').count() > 0)
@@ -70,6 +72,24 @@ def _get_applications_for_leader(user):
 ##                pass
 
 
+#    elif request.POST.has_key('resend'):
+#        # Resend e-mail for application
+#        try:
+#            id = int(request.POST['resend_application'])
+#        except (ValueError, KeyError):
+#            id = None
+#        if id is not None:
+#            try:
+#                app = applications_for_leader.get(pk=id)
+#            except Application.DoesNotExist:
+#                app = None # should never get here
+#            if app is not None:
+#                from cciw.officers.hooks import send_leader_email
+#                send_leader_email(app)
+#                Message(message="Email sent", user=user).save()
+
+
+
 # /officers/admin/
 @staff_member_required
 @never_cache
@@ -77,8 +97,8 @@ def index(request):
     """Displays a list of links/buttons for various actions."""
     user = request.user
     context = template.RequestContext(request)
-    context['finished_applications'] = user.application_set.filter(finished=True)
-    context['unfinished_applications'] = user.application_set.filter(finished=False)
+    context['finished_applications'] = user.application_set.filter(finished=True).order_by('-date_submitted')
+    context['unfinished_applications'] = user.application_set.filter(finished=False).order_by('-date_submitted')
     
     applications_for_leader = None
     if _is_leader(user):
@@ -107,22 +127,10 @@ def index(request):
             new_obj = _copy_application(obj)
             new_obj.save()
             return HttpResponseRedirect('/admin/officers/application/%s/' % new_obj.id)
-            
-    elif request.POST.has_key('resend'):
-        # Resend e-mail for application
-        try:
-            id = int(request.POST['resend_application'])
-        except (ValueError, KeyError):
-            id = None
-        if id is not None:
-            try:
-                app = applications_for_leader.get(pk=id)
-            except Application.DoesNotExist:
-                app = None # should never get here
-            if app is not None:
-                from cciw.officers.hooks import send_leader_email
-                send_leader_email(app)
-                Message(message="Email sent", user=user).save()
+
+    elif request.POST.has_key('delete'):
+        # Delete an unfinished application
+        pass
 
     return render_to_response('cciw/officers/index.html', context_instance=context)
 
@@ -246,4 +254,41 @@ def change_application(request, object_id):
         'is_popup': request.REQUEST.has_key('_popup'),
     })
     return render_change_form(model, manipulator, c, change=True)
+
+
+@staff_member_required
+def view_application_index(request):
+    # Redirect to view_application
+    url = request.path + request.GET.get('application', '') + '/'
+    params = request.GET.copy()
+    del params['application']
+    return HttpResponseRedirect(url + "?" + params.urlencode())
+
+@staff_member_required
+def view_application(request, application_id):
+    try:
+        application_id = int(application_id)
+    except:
+        raise Http404
+    
+    try:
+        app = Application.objects.get(id=application_id)
+    except Application.DoesNotExist:
+        raise Http404
+
+    if app.officer_id != request.user.id and \
+            not _is_leader(request.user):
+        raise PermissionDenied
+
+    format = request.GET.get('format', '')
+    if format == 'txt':
+        content = application_to_text(app)
+    elif format == 'rtf':
+        content = application_to_rtf(app)
+    else:
+        raise Http404
+
+    resp = HttpResponse(content, mimetype="text/plain")
+    resp['Content-Disposition'] = 'attachment'
+    return resp
 

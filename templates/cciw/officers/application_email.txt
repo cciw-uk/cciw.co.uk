@@ -1,6 +1,3 @@
-The following application form has been submitted
-via the CCIW website:
-    
 For camp:         {{ app.camp }}
 
 Personal info

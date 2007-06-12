@@ -1,4 +1,6 @@
+{% load adminmedia admin_modify %}
 {% extends "cciw/officers/base.html" %}
+{% block stylesheet %}{% admin_media_prefix %}css/forms.css{% endblock %}
 {% block breadcrumbs %}{% endblock %}
 {% block content %}<div id="content-main">
 <h1>Officer's home page</h1>
@@ -35,7 +37,7 @@
 
 {% if finished_applications %}
 <li>Create new application based on an existing one:<br/>
-<label for="new_application">Choose application</label>&nbsp;
+  <label for="new_application">Choose application</label>&nbsp;
 	<select name="new_application" id="new_application">
 		{% for app in finished_applications %}
 			<option value="{{ app.id }}">{{ app.camp }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
@@ -64,8 +66,34 @@ your address, and re-check the declarations.</p>
   data before it is actually saved.</p>
 
 
-
 </form>
+
+{% if finished_applications %}
+<h2>View applications</h2>
+<p>View applications that you have already submitted.</p>
+<form action="{% url cciw.officers.views.view_application_index %}" method="get">
+<div class="aligned">
+  <div class="form-row">
+  <label for="application">Choose application</label>
+  <select name="application" id="application">
+    {% for app in finished_applications %}
+    <option value="{{ app.id }}">{{ app.camp }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
+    {% endfor %}
+  </select>
+  </div>
+  <div class="form-row">
+  <label for="format">Format</label>
+  <select name="format" id="format">
+    <option value="txt">Plain text</option>
+    <option value="rtf">Rich Text Format</option>
+  </select>
+  </div>
+  <div class="form-row">
+    <input type="submit" name="view" value="View" />
+  </div>
+</div>
+</form>
+{% endif %}
 
 
 {% if show_leader_links %}
