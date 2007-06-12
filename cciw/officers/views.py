@@ -31,6 +31,45 @@ def _copy_application(application):
     new_obj.finished = False
     new_obj.date_submitted = None
 
+def _is_leader(user):
+    return (user.groups.filter(name='Leaders').count() > 0)
+
+def _get_applications_for_leader(user):
+    # Find the 'Person' object that corresponds to this user
+    leaders = list(Person.objects.filter(user=user.id)) # use list() for later efficiency
+    if len(leaders) > 0:
+        # Find the camps for this leader
+        # (In reality we could do 
+        #  camps = Person.objects.get(user=user.id).camp_as_leader.all(),
+        #  but for completeness we handle the possibility that two Person 
+        #  objects have the same User objects)
+        camps = None
+        for leader in leaders:
+            tmp_camps = leader.camp_as_leader.filter(online_applications=True)
+            if camps is None:
+                camps = tmp_camps
+            else:
+                camps = camps | tmp_camps
+        if camps is not None:
+            # Find all applications for all camps
+            # led by this leader.
+            applications = None
+            for camp in camps:
+                tmp_apps = camp.application_set.filter(finished=True)
+                if applications is None:
+                    applications = tmp_apps
+                else:
+                    applications = applications | tmp_apps
+            return applications
+                
+##
+            # Also find out a single camp id if possible
+##            try:
+##                context['thisyearscamp'] = leaders[0].camp_as_leader.get(year=common.get_thisyear(), online_applications=True)
+##            except ObjectDoesNotExist:
+##                pass
+
+
 # /officers/admin/
 @staff_member_required
 @never_cache
@@ -42,43 +81,8 @@ def index(request):
     context['unfinished_applications'] = user.application_set.filter(finished=False)
     
     applications_for_leader = None
-    if (user.groups.filter(name='Leaders').count() > 0):
+    if _is_leader(user):
         context['show_leader_links'] = True
-        
-        # Find the 'Person' object that corresponds to this user
-        leaders = list(Person.objects.filter(user=user.id)) # use list() for later efficiency
-        if len(leaders) > 0:
-            # Find the camps for this leader
-            # (In reality we could do 
-            #  camps = Person.objects.get(user=user.id).camp_as_leader.all(),
-            #  but for completeness we handle the possibility that two Person 
-            #  objects have the same User objects)
-            camps = None
-            for leader in leaders:
-                tmp_camps = leader.camp_as_leader.filter(online_applications=True)
-                if camps is None:
-                    camps = tmp_camps
-                else:
-                    camps = camps | tmp_camps
-            if camps is not None:
-                # Find all applications for all camps
-                # led by this leader.
-                applications = None
-                for camp in camps:
-                    tmp_apps = camp.application_set.filter(finished=True)
-                    if applications is None:
-                        applications = tmp_apps
-                    else:
-                        applications = applications | tmp_apps
-                applications_for_leader = applications
-                
-            # Also find out a single camp id if possible
-            try:
-                context['thisyearscamp'] = leaders[0].camp_as_leader.get(year=common.get_thisyear(), online_applications=True)
-            except ObjectDoesNotExist:
-                pass
-            
-    context['applications_for_leader'] = applications_for_leader
     
     if request.POST.has_key('edit'):
         # Edit existing application
