@@ -57,4 +57,11 @@ CCIW_MEDIA_URL = MEDIA_URL
 
 SEND_BROKEN_LINK_EMAILS = True
 
+# For e-mail testing, run:
+#  fakemail.py --path=/home/luke/httpd/www.cciw.co.uk/tests/mail --background
+EMAIL_HOST = 'localhost'
+EMAIL_HOST_USER = None
+EMAIL_HOST_PASSWORD = None
+EMAIL_PORT = 8025
+
 ESV_KEY = 'IP'
