@@ -6,7 +6,6 @@ from django.contrib.admin.views.main import unquote, quote, get_text_list
 from django import forms, template
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db import models
-from django.contrib.auth.models import Message
 from cciw.officers.models import Application
 from cciw.cciwmain.models import Person
 from cciw.cciwmain import common
@@ -14,7 +13,8 @@ from django.conf import settings
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
 from django.contrib.contenttypes.models import ContentType
 from django.views.decorators.cache import never_cache
-from cciw.officers.applications import application_to_text, application_to_rtf
+from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
+from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 
 def _copy_application(application):
     new_obj = Application(id=None)
@@ -62,33 +62,10 @@ def _get_applications_for_leader(user):
                     applications = tmp_apps
                 else:
                     applications = applications | tmp_apps
-            return applications
+            # TODO: sort by year DESC, then full name ASC
+            return applications.order_by('-date_submitted') 
+    return []
                 
-##
-            # Also find out a single camp id if possible
-##            try:
-##                context['thisyearscamp'] = leaders[0].camp_as_leader.get(year=common.get_thisyear(), online_applications=True)
-##            except ObjectDoesNotExist:
-##                pass
-
-
-#    elif request.POST.has_key('resend'):
-#        # Resend e-mail for application
-#        try:
-#            id = int(request.POST['resend_application'])
-#        except (ValueError, KeyError):
-#            id = None
-#        if id is not None:
-#            try:
-#                app = applications_for_leader.get(pk=id)
-#            except Application.DoesNotExist:
-#                app = None # should never get here
-#            if app is not None:
-#                from cciw.officers.hooks import send_leader_email
-#                send_leader_email(app)
-#                Message(message="Email sent", user=user).save()
-
-
 
 # /officers/admin/
 @staff_member_required
@@ -257,17 +234,9 @@ def change_application(request, object_id):
 
 
 @staff_member_required
-def view_application_index(request):
-    # Redirect to view_application
-    url = request.path + request.GET.get('application', '') + '/'
-    params = request.GET.copy()
-    del params['application']
-    return HttpResponseRedirect(url + "?" + params.urlencode())
-
-@staff_member_required
-def view_application(request, application_id):
+def view_application(request):
     try:
-        application_id = int(application_id)
+        application_id = int(request.POST['application'])        
     except:
         raise Http404
     
@@ -280,15 +249,61 @@ def view_application(request, application_id):
             not _is_leader(request.user):
         raise PermissionDenied
 
-    format = request.GET.get('format', '')
+    # NB, this is is called by both normal users and leaders.
+    # In the latter case, request.user != app.officer
+
+    format = request.POST.get('format', '')
     if format == 'txt':
-        content = application_to_text(app)
+        resp = HttpResponse(application_to_text(app), mimetype="text/plain")
+        resp['Content-Disposition'] = 'attachment; filename=%s;' % application_txt_filename(app)
+        return resp
     elif format == 'rtf':
-        content = application_to_rtf(app)
+        resp = HttpResponse(application_to_rtf(app), mimetype="text/rtf")
+        resp['Content-Disposition'] = 'attachment; filename=%s;' % application_rtf_filename(app)
+        return resp
+    elif format == 'send':
+        application_text = application_to_text(app)
+        application_rtf = application_to_rtf(app)
+        rtf_attachment = (application_rtf_filename(app), application_rtf, 'text/rtf')
+
+        msg = \
+"""Dear %s,
+
+Please find attached a copy of the application you requested
+ -- in plain text below and an RTF version attached.
+
+""" % request.user.first_name
+        msg = msg + application_text
+        
+        send_mail_with_attachments("Copy of CCIW application", msg, settings.SERVER_EMAIL,
+                                   [formatted_email(request.user)] , attachments=[rtf_attachment])
+        request.user.message_set.create(message="Email sent.")
+        
+        # Redirect back where we came from
+        return HttpResponseRedirect(request.POST.get('to', '/officers/'))
+        
     else:
         raise Http404
 
-    resp = HttpResponse(content, mimetype="text/plain")
-    resp['Content-Disposition'] = 'attachment'
     return resp
 
+
+def _thisyears_camp_for_leader(user):
+    leaders = list(Person.objects.filter(user=user.id))
+    try:
+        return leaders[0].camp_as_leader.get(year=common.get_thisyear(), online_applications=True)
+    except (ObjectDoesNotExist, IndexError):
+        return None
+
+
+@staff_member_required
+def manage_applications(request):
+    user = request.user
+    if not _is_leader(user):
+        raise PermissionDenied
+
+    context = template.RequestContext(request)
+    context['finished_applications'] =  _get_applications_for_leader(user)
+    context['thisyearscamp'] = _thisyears_camp_for_leader(user)
+    
+    return render_to_response('cciw/officers/manage_applications.html', context_instance=context)

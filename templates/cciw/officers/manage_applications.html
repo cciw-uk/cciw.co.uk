@@ -1,0 +1,53 @@
+{% load adminmedia admin_modify %}
+{% extends "cciw/officers/base.html" %}
+{% block stylesheet %}{% admin_media_prefix %}css/forms.css{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content %}<div id="content-main">
+<h1>Manager application</h1>
+
+<p>This page allows you to view/download submitted applications in different formats.</p>
+
+
+<h2>View/edit</h2>
+<ul>
+	<li><a href="/admin/officers/application/">View all applications in the admin</a></li>
+	{% if thisyearscamp %}<li><a href="/admin/officers/application/?camp__id__exact={{ thisyearscamp.id }}">View applications for camp {{ thisyearscamp }} in the admin</a></li>
+	{% endif %}
+</ul>
+
+<h2>Download</h2>
+
+{% if finished_applications %}
+
+<form action="{% url cciw.officers.views.view_application %}" method="post">
+<div class="aligned">
+  <div class="form-row">
+  <label for="application">Choose application</label>
+  <select name="application" id="application">
+    {% for app in finished_applications %}
+    <option value="{{ app.id }}">{{ app.officer.get_full_name|escape }}, {{ app.camp.year }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
+    {% endfor %}
+  </select>
+  </div>
+  <div class="form-row">
+  <label for="format">Format</label>
+  <select name="format" id="format">
+    <option value="txt">Plain text</option>
+    <option value="rtf">Rich Text Format</option>
+    <option value="send">Send me both in an email</option>
+  </select>
+  </div>
+  <div class="form-row">
+    <input type="submit" name="view" value="View" />
+  </div>
+  <input type="hidden" name="to" value="{{ request.path|escape }}" />
+</div>
+</form>
+
+{% else %}
+
+<p>No applications for your camps have been completed yet.</p>
+
+{% endif %}
+</div>
+{% endblock %}

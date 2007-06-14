@@ -69,9 +69,10 @@ your address, and re-check the declarations.</p>
 </form>
 
 {% if finished_applications %}
-<h2>View applications</h2>
-<p>View applications that you have already submitted.</p>
-<form action="{% url cciw.officers.views.view_application_index %}" method="get">
+<h2>Download</h2>
+<p>Download applications that you have already submitted.</p>
+
+<form action="{% url cciw.officers.views.view_application %}" method="post">
 <div class="aligned">
   <div class="form-row">
   <label for="application">Choose application</label>
@@ -86,21 +87,24 @@ your address, and re-check the declarations.</p>
   <select name="format" id="format">
     <option value="txt">Plain text</option>
     <option value="rtf">Rich Text Format</option>
+    <option value="send">Send me both in an email</option>
   </select>
   </div>
   <div class="form-row">
     <input type="submit" name="view" value="View" />
   </div>
+  <input type="hidden" name="to" value="{{ request.path|escape }}" />
 </div>
 </form>
+
 {% endif %}
 
 
 {% if show_leader_links %}
 <h2>Leaders' tools</h2>
 <ul>
-  <li><a href="/officers/leaders/manage_officers/">Manage officers</a> -
-  register officers so that they can submit applications online</li>
+  {% comment %}<li><a href="/officers/leaders/manage_officers/">Manage officers</a> -
+  register officers so that they can submit applications online</li>{% endcomment %}
   <li><a href="/officers/leaders/applications/">Manage
   applications</a> - view completed applications in different formats</li>
 </ul>

@@ -1,25 +1,10 @@
 # Hooks for various events
 
 from cciw.officers import signals
-from cciw.officers.applications import application_to_text
+from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename
 from django.dispatch import dispatcher
-from django.core.mail import send_mail
+from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from django.conf import settings
-import os
-
-def _formatted_email(user):
-    """
-    Get the email address plus name of the user, formatted for
-    use in sending an email, or 'None' if no email address available
-    """
-    name = (user.first_name + " " + user.last_name).strip().replace('"', '')
-    email = user.email.strip()
-    if len(email) == 0:
-        return None
-    elif len(name) > 0:
-        return '"%s" <%s>' % (name, email)
-    else:
-        return email
 
 def send_application_emails(application=None):
     if not application.finished:
@@ -38,16 +23,20 @@ def send_application_emails(application=None):
                 leader_emails.append(email)
 
     application_text = application_to_text(application)
+    application_rtf = application_to_rtf(application)
+    rtf_attachment = (application_rtf_filename(application), application_rtf, 'text/rtf')
+    
     if len(leader_emails) > 0:
         msg = \
-"""The following application form has been submitted
-via the CCIW website:
+"""The following application form has been submitted via the
+CCIW website.  It is also attached to this email as an RTF file.
 
 """ + application_text
     
         subject = "CCIW application form from %s" % application.full_name
     
-        send_mail(subject, msg, settings.SERVER_EMAIL, leader_emails)
+        send_mail_with_attachments(subject, msg, settings.SERVER_EMAIL,
+                                   leader_emails, attachments=[rtf_attachment])
 
     # Email to the officer
     user_email = _formatted_email(application.officer)
@@ -55,12 +44,14 @@ via the CCIW website:
 """%s,
 
 For your records, here is a copy of the application you have submitted
-to CCIW.
+to CCIW. It is also attached to this email as an RTF file.
 
 """ % application.officer.first_name) + application_text
     subject = "CCIW application form submitted"
 
     if user_email is not None:
-        send_mail(subject, user_msg, settings.SERVER_EMAIL, [user_email])
+        send_mail_with_attachments(subject, user_msg, settings.SERVER_EMAIL,
+                                   [user_email], attachments=[rtf_attachment])
+
 
 dispatcher.connect(send_application_emails, signal=signals.application_saved)
