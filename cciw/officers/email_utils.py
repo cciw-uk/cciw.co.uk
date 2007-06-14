@@ -29,7 +29,6 @@ class EmailWithAttachments(EmailMessage):
     def __init__(self, *args, **kwargs):
         attachments = kwargs.pop('attachments', None)
         super(EmailWithAttachments, self).__init__(*args, **kwargs)
-        x = self.connection
         self.attachments = attachments
 
     def message(self):

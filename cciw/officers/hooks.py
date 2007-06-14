@@ -18,7 +18,7 @@ def send_application_emails(application=None):
     for leader in leaders:
         # Does the leader have an associated admin login?
         if leader.user is not None:
-            email = _formatted_email(leader.user)
+            email = formatted_email(leader.user)
             if email is not None:
                 leader_emails.append(email)
 
@@ -39,7 +39,7 @@ CCIW website.  It is also attached to this email as an RTF file.
                                    leader_emails, attachments=[rtf_attachment])
 
     # Email to the officer
-    user_email = _formatted_email(application.officer)
+    user_email = formatted_email(application.officer)
     user_msg = (
 """%s,
 
