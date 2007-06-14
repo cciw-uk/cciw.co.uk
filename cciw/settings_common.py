@@ -5,7 +5,7 @@ from settings_common_priv import SECRET_KEY, EMAIL_HOST_USER, EMAIL_HOST_PASSWOR
 INTERNAL_IPS = ('127.0.0.1',)
 
 ADMINS = (
-    ('Luke Plant', 'L.Plant.98@cantab.net'),
+    ('Luke Plant', 'spookylukey@fastmail.fm'),
 )
 
 MANAGERS = ADMINS
