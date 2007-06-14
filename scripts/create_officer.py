@@ -6,7 +6,8 @@ import socket
 hostname = socket.gethostname()
 
 if hostname == 'calvin':
-    sys.path = sys.path + ['/home/luke/httpd/www.cciw.co.uk/django/','/home/luke/httpd/www.cciw.co.uk/django_src/', '/home/luke/httpd/www.cciw.co.uk/misc_src/']
+    sys.path = sys.path + ['/home/luke/httpd/www.cciw.co.uk/django/','/home/luke/httpd/www.cciw.co.uk/django_src/', 
+      '/home/luke/local/lib/python2.5/site-packages/', '/home/luke/devel/python/']    
     os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings_calvin'
 else:
     sys.path = sys.path + ['/home2/cciw/webapps/django_app/', '/home2/cciw/src/django-mr/', '/home2/cciw/src/misc/']
@@ -17,6 +18,7 @@ def usage():
     return """
 Usage: create_officer.py <username> <first_name> <last_name> <email>
 OR:    create_officer.py --fromcsv < data.csv
+OR:    create_officer.py --fromcsv --dryrun < data.csv
 
 CSV data should be rows of <first name,last name,email>
 """
@@ -24,8 +26,11 @@ CSV data should be rows of <first name,last name,email>
 def main():
     csvmode = False
     singlemode = False
-    if len(sys.argv) == 2 and sys.argv[1] == "--fromcsv":
+    dryrun = False
+    if (len(sys.argv) == 2 or len(sys.argv) == 3) and sys.argv[1] == "--fromcsv":
         csvmode = True
+        if len(sys.argv) == 3 and sys.argv[2] == '--dryrun':
+          dryrun = True
     if len(sys.argv) == 5:
         singlemode = True
 
@@ -38,15 +43,14 @@ def main():
         create_single_officer(username, first_name, last_name, email)
 
     elif csvmode:
-        
         csv_data = parse_csv_data(sys.stdin)
-        create_multiple_officers(csv_data)
+        create_multiple_officers(csv_data, dryrun)
 
 def parse_csv_data(iterable):
     import csv
     return list(csv.reader(iterable))
 
-def create_multiple_officers(csv_data):
+def create_multiple_officers(csv_data, dryrun):
     # csv_data is hopefully a list of lists, where each inner list
     # has 3 elements.  We have to validate it ourselves,
     # automatically generate usernames, and remember not to create
@@ -89,12 +93,14 @@ def create_multiple_officers(csv_data):
             # race condition between get_username and create_single_officer,
             # but we don't care really.
             username = get_username(first_name, last_name)
-            print "Creating %s, %s %s %s" % (username, first_name, last_name, email)
-            create_single_officer(username, first_name, last_name, email)
+            if dryrun:
+                print "Dry run: Creating %s, %s %s %s" % (username, first_name, last_name, email)
+            else:
+                print "Creating %s, %s %s %s" % (username, first_name, last_name, email)
+                create_single_officer(username, first_name, last_name, email)
                 
         else:
             print "Skipping row - %s:  %r" % (msg, officer_details)
-
 
 def get_username(first_name, last_name, guess_number=1):
     from django.contrib.auth.models import User
