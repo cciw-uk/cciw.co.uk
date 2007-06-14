@@ -3,7 +3,7 @@
 {% block stylesheet %}{% admin_media_prefix %}css/forms.css{% endblock %}
 {% block breadcrumbs %}{% endblock %}
 {% block content %}<div id="content-main">
-<h1>Manager application</h1>
+<h1>Manage applications</h1>
 
 <p>This page allows you to view/download submitted applications in different formats.</p>
 
@@ -38,7 +38,7 @@
   </select>
   </div>
   <div class="form-row">
-    <input type="submit" name="view" value="View" />
+    <input type="submit" name="view" value="Get it" />
   </div>
   <input type="hidden" name="to" value="{{ request.path|escape }}" />
 </div>
