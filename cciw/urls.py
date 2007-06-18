@@ -6,6 +6,8 @@ urlpatterns = patterns('',
     # Override the admin for some views:
     (r'^admin/officers/application/add/$', 'cciw.officers.views.add_application'),
     (r'^admin/officers/application/([^/]+)/$', 'cciw.officers.views.change_application'),
+    (r'^admin/password_reset/$', 'django.contrib.auth.views.password_reset'),
+    (r'^admin/password_reset/done/$', 'django.contrib.auth.views.password_reset_done'),
     # Normal views
     (r'^admin/', include('django.contrib.admin.urls')),
     (r'^officers/', include('cciw.officers.urls')),
