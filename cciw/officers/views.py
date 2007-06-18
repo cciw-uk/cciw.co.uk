@@ -67,7 +67,7 @@ def _get_applications_for_leader(user):
     return []
                 
 
-# /officers/admin/
+# /officers/
 @staff_member_required
 @never_cache
 def index(request):
@@ -76,10 +76,7 @@ def index(request):
     context = template.RequestContext(request)
     context['finished_applications'] = user.application_set.filter(finished=True).order_by('-date_submitted')
     context['unfinished_applications'] = user.application_set.filter(finished=False).order_by('-date_submitted')
-    
-    applications_for_leader = None
-    if _is_leader(user):
-        context['show_leader_links'] = True
+    context['show_leader_links'] = _is_leader(user)
     
     if request.POST.has_key('edit'):
         # Edit existing application
