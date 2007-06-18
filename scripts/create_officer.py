@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2.4
 import sys
 import os
 import socket
@@ -12,15 +12,20 @@ if hostname == 'calvin':
 else:
     sys.path = sys.path + ['/home2/cciw/webapps/django_app/', '/home2/cciw/src/django-mr/', '/home2/cciw/src/misc/']
     os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
+from django.contrib.auth.models import User
 
 
 def usage():
-    return """
-Usage: create_officer.py <username> <first_name> <last_name> <email>
+    return \
+"""Usage: create_officer.py <username> <first_name> <last_name> <email>
+OR:    create_officer.py --update <username> <first_name> <last_name> <email>
 OR:    create_officer.py --fromcsv < data.csv
 OR:    create_officer.py --fromcsv --dryrun < data.csv
 
-CSV data should be rows of <first name,last name,email>
+* CSV data should be rows of <first name,last name,email>
+* --dryrun doesn't make any database changes
+* --update mode will update the given username, resetting the password
+    and re-sending the email.
 """
 
 def main():
@@ -31,16 +36,21 @@ def main():
         csvmode = True
         if len(sys.argv) == 3 and sys.argv[2] == '--dryrun':
           dryrun = True
-    if len(sys.argv) == 5:
+    if (len(sys.argv) == 5 and sys.argv[1] != '--update') or (len(sys.argv) == 6 and sys.argv[1] == '--update'):
         singlemode = True
 
     if not csvmode and not singlemode:
         print usage()
         sys.exit(1)
 
-    if singlemode:        
-        username, first_name, last_name, email = sys.argv[1:]
-        create_single_officer(username, first_name, last_name, email)
+    if singlemode:
+        update = sys.argv[1] == '--update'
+        if update:
+            vars = sys.argv[2:]
+        else:
+            vars = sys.argv[1:]            
+        username, first_name, last_name, email = vars
+        create_single_officer(username, first_name, last_name, email, update=update)
 
     elif csvmode:
         csv_data = parse_csv_data(sys.stdin)
@@ -103,7 +113,6 @@ def create_multiple_officers(csv_data, dryrun):
             print "Skipping row - %s:  %r" % (msg, officer_details)
 
 def get_username(first_name, last_name, guess_number=1):
-    from django.contrib.auth.models import User
     first_name = first_name.lower()
     last_name = last_name.lower()
     if guess_number == 1:
@@ -115,26 +124,34 @@ def get_username(first_name, last_name, guess_number=1):
     else:
         return guess
 
-def create_single_officer(username, first_name, last_name, email):
-    password = generate_password()
-    print "Creating officer %s" % username
-    create_officer(username, first_name, last_name, email, password)
+def create_single_officer(username, first_name, last_name, email, update=False):
+    password = User.objects.make_random_password()
+    if update:
+      print "Updating officer %s" % username
+    else:
+      print "Creating officer %s" % username
+    create_officer(username, first_name, last_name, email, password, update=update)
     print "Emailing officer %s" % username
     email_officer(username, first_name, email, password)
     
-def create_officer(username, first_name, last_name, email, password):
+def create_officer(username, first_name, last_name, email, password, update=False):
     from django.contrib.auth.models import User, Group
     from datetime import datetime
+
+    if update:
+        officer = User.objects.get(username=username)
+    else:
+        officer = User(username=username)
+        officer.date_joined=datetime.now()
+        officer.last_login=datetime.now()
+        
+    officer.first_name=first_name
+    officer.last_name=last_name
+    officer.is_staff=True               
+    officer.is_active=True
+    officer.is_superuser=False
+    officer.email=email
     
-    officer = User(first_name=first_name, 
-                   last_name=last_name,
-                   date_joined=datetime.now(),
-                   is_staff=True,
-                   is_active=True,
-                   is_superuser=False,
-                   email=email,
-                   username=username,
-                   last_login=datetime.now())
     officer.save()
     officer.set_password(password)
     officer.save()
@@ -197,10 +214,6 @@ Luke
                                      'first_name': first_name}))
     send_mail(subject, msg, "L.Plant.98@cantab.net", [email])
 
-def generate_password():
-    from random import randrange
-    chars = "abcdefghijklmnopqrstuvwxyz1234567890"
-    return "".join(chars[randrange(0, len(chars))] for x in range(0, 8))
 
 if __name__ == '__main__':
     main()
