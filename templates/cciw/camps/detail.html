@@ -14,6 +14,14 @@
 		<th scope="row">Location:</th>
 		<td><a href="{{ camp.site.get_absolute_url }}">{{ camp.site.short_name }}</a></td>
 	</tr>
+	<tr>
+		<th scope="row">Date:</th>
+		<td>{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M Y" }}</td>
+	</tr>
+	<tr>
+		<th scope="row">Age:</th>
+		<td>{{ camp.age }}</td>
+	</tr>
 	{% if camp.next_camps.all %}
 	<tr>
 		<th scope="row">Following camp:</th>
