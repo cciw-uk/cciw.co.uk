@@ -14,7 +14,7 @@
 		<th scope="row">Location:</th>
 		<td><a href="{{ camp.site.get_absolute_url }}">{{ camp.site.short_name }}</a></td>
 	</tr>
-	{% if camp.next_camps %}
+	{% if camp.next_camps.all %}
 	<tr>
 		<th scope="row">Following camp:</th>
 		<td>
