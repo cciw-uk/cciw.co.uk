@@ -84,7 +84,8 @@ class FormsExplicitBooleanField(forms.RadioSelectField):
         return {'1': None, '2': True, '3': False}.get(data, None)
 
 if not threadlocals.is_web_request():
-    # Need this for installation, uncomment this:
+    # When installing, we need the following line.  It is only
+    # executed in the command line context.
     ExplicitBooleanField = models.NullBooleanField
 
 class Application(models.Model):
@@ -221,7 +222,8 @@ camp_officer_application_fields = (
         {'fields': ('address2_from', 'address2_to', 'address2_address'),
          'classes': 'wide',
          'description': """If you have lived at your current address for less than 5 years
-                        please give previous address(es) with dates below."""}
+                        please give previous address(es) with dates below. (If more than 2 addresses,
+                        use the second address box for the remaining addresses with their dates)"""}
     ),
     (None,
         {'fields': ('address3_from', 'address3_to', 'address3_address'),
