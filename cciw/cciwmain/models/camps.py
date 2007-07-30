@@ -95,6 +95,7 @@ class Camp(models.Model):
 
     class Meta:
         app_label = "cciwmain"
+        ordering = ['-year','number']
 
     class Admin:
         fields = (
