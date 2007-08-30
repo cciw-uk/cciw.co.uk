@@ -18,21 +18,23 @@ class Forum(models.Model):
     def get_absolute_url(self):
         return '/' + self.location
     
-    def __str__(self):
+    def __unicode__(self):
         return self.location
-    
+
     def nice_name(self):
         m = _camp_forum_re.match(self.location)
         if m:
             captures = m.groupdict()
             number = captures['number']
-            if number == 'all':
-                return "forum for all camps, year %s" % captures['year']
+            assert type(number) is unicode
+            if number == u'all':
+                return u"forum for all camps, year %s" % captures['year']
             else:
-                return "forum for camp %s, year %s" % (number, captures['year'])
+                return u"forum for camp %s, year %s" % (number, captures['year'])
         else:
-            return "forum at %s" % self.location
+            return u"forum at %s" % self.location
 
+    
     class Meta:
         app_label = "cciwmain"   
         
@@ -46,7 +48,7 @@ class NewsItem(models.Model):
     full_item = models.TextField("Full post (HTML)", blank=True)
     subject = models.CharField("Subject", maxlength=100)
     
-    def __str__(self):
+    def __unicode__(self):
         return self.subject
 
     @staticmethod
@@ -111,14 +113,14 @@ class Topic(models.Model):
     objects = UserSpecificTopics()
     all_objects = models.Manager()
 
-    def __str__(self):
-        return  "Topic: " + self.subject
+    def __unicode__(self):
+        return  u"Topic: " + self.subject
         
     def get_absolute_url(self):
         return self.forum.get_absolute_url() + str(self.id) + '/'
     
     def get_link(self):
-        return '<a href="' + self.get_absolute_url() + '">' + escape(self.subject) + '</a>'
+        return u'<a href="%s">%s</a>' % (self.get_absolute_url(), escape(self.subject))
 
     @staticmethod
     def create_topic(member, subject, forum):
@@ -143,7 +145,7 @@ class Gallery(models.Model):
     location = models.CharField("Location/URL", maxlength=50)
     needs_approval = models.BooleanField("Photos need approval", default=False)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.location
         
     def get_absolute_url(self):
@@ -195,8 +197,8 @@ class Photo(models.Model):
     objects = UserSpecificPhotos()
     all_objects = models.Manager()
 
-    def __str__(self):
-        return "Photo: " + self.filename
+    def __unicode__(self):
+        return u"Photo: " + self.filename
 
     def get_absolute_url(self):
         return self.gallery.get_absolute_url() + str(self.id) + '/'
@@ -263,8 +265,8 @@ class Post(models.Model):
     all_objects = models.Manager()
 
 
-    def __str__(self):
-        return "Post [" + str(self.id) + "]:  " + self.message[:30]
+    def __unicode__(self):
+        return u"Post [%s]: %s" % (str(self.id), self.message[:30])
 
     def updateParent(self, parent):
         "Update the cached info in the parent topic/photo"
@@ -366,6 +368,6 @@ class Post(models.Model):
         ordering = ('id',) 
 
     class Admin:
-        list_display = ('__str__', 'posted_by', 'posted_at')
+        list_display = ('__unicode__', 'posted_by', 'posted_at')
         search_fields = ('message',)
         

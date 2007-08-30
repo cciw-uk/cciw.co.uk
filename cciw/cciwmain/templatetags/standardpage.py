@@ -1,4 +1,4 @@
-import urllib
+from django.utils.http import urlquote
 from django import template
 from cciw.cciwmain.models import HtmlChunk, Member, Post, Topic, Photo
 from cciw.cciwmain.common import standard_subs
@@ -95,10 +95,10 @@ class AtomFeedLink(template.Node):
     def render(self, context):
         title = context.get('atom_feed_title', None)
         if title:
-            return '<link rel="alternate" type="application/atom+xml" href="%(url)s?format=atom" title="%(title)s" />' \
+            return u'<link rel="alternate" type="application/atom+xml" href="%(url)s?format=atom" title="%(title)s" />' \
             % {'url': context['request'].path, 'title': title }
         else:
-            return ''
+            return u''
             
 class AtomFeedLinkVisible(template.Node):
     def __init__(self, parser, token):
@@ -106,9 +106,9 @@ class AtomFeedLinkVisible(template.Node):
     def render(self, context):
         title = context.get('atom_feed_title', None)
         if title:
-            return ('<a class="atomlink" href="%(url)s?format=atom" title="%(title)s" >' + 
-                    ' <img src="%(imgurl)s" alt="Subscribe" /> Subscribe</a> ' +
-                    ' <a href="/website/feeds/" title="Help on subscribing">(What\'s that?)</a> |') \
+            return (u'<a class="atomlink" href="%(url)s?format=atom" title="%(title)s" >' + 
+                    u' <img src="%(imgurl)s" alt="Subscribe" /> Subscribe</a> ' +
+                    u' <a href="/website/feeds/" title="Help on subscribing">(What\'s that?)</a> |') \
             % {'url': context['request'].path, 'title': title, 'imgurl': settings.MEDIA_URL + "images/feed.gif" }
         else:
             return ''
@@ -124,9 +124,9 @@ class TagSummaryList(template.Node):
         model_id = tagging_utils.get_pk_as_str(target)
         output = []
         for tagsum in tagsummaries:
-            output.append('<a class="smtag smweight%s" title="View other items with this tag" href="/tags/%s/">%s</a>' % \
+            output.append(u'<a class="smtag smweight%s" title="View other items with this tag" href="/tags/%s/">%s</a>' % \
                             (tagsum.weight(), tagsum.text, tagsum.text))
-            output.append('<a class="tagcount" title="See details of this tag" href="/tag_targets/%s/%s/%s/">x%s</a> ' % \
+            output.append(u'<a class="tagcount" title="See details of this tag" href="/tag_targets/%s/%s/%s/">x%s</a> ' % \
                             (model_name, model_id, tagsum.text, tagsum.count))
         return ''.join(output)
 
@@ -161,8 +161,8 @@ class AddTagLink(template.Node):
         model_name = target.__class__.__name__.lower()
         model_id = tagging_utils.get_pk_as_str(target)
         
-        return '<a class="addtag" href="/edit_tag/%s/%s/?r=%s" title="Add/edit tags for this %s">+</a>' % \
-                (model_name, model_id, escape(urllib.quote(request.get_full_path())), model_name)
+        return u'<a class="addtag" href="/edit_tag/%s/%s/?r=%s" title="Add/edit tags for this %s">+</a>' % \
+                (model_name, model_id, escape(urlquote(request.get_full_path())), model_name)
 
 def do_add_tag_link(parser, token):
     """

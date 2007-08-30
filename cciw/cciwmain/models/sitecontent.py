@@ -13,9 +13,9 @@ class MenuLink(models.Model):
         verbose_name="Parent item (none = top level)",
         related_name="child_links")
 
-    def __str__(self):
+    def __unicode__(self):
         from cciw.cciwmain.common import standard_subs
-        return self.url + " [" +  standard_subs(self.title) + "]"
+        return  u"%s [%s]" % (self.url, standard_subs(self.title))
     
     def get_visible_children(self, request):
         """Gets a list of child menu links that should be visible given the current url"""
@@ -40,7 +40,7 @@ class HtmlChunk(models.Model):
     page_title = models.CharField("page title (for chunks that are pages)", maxlength=100,
         blank=True)
     
-    def __str__(self):
+    def __unicode__(self):
         return self.name
         
     def render(self, request):
@@ -50,7 +50,7 @@ class HtmlChunk(models.Model):
         user = threadlocals.get_current_user()
         if user and not user.is_anonymous() and user.is_staff \
             and user.has_perm('edit_htmlchunk'):
-            html += ("""<div class="editChunkLink">&laquo;
+            html += (u"""<div class="editChunkLink">&laquo;
                         <a href="/admin/cciwmain/htmlchunk/%s/">Edit %s</a> &raquo;
                         </div>""" % (quote(self.name), self.name))
         return html

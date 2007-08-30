@@ -7,7 +7,7 @@ class Site(models.Model):
     long_name = models.CharField("Long name", maxlength="50", blank=False)
     info = models.TextField("Description (HTML)")
     
-    def __str__(self):
+    def __unicode__(self):
         return self.short_name
         
     def get_absolute_url(self):
@@ -33,7 +33,7 @@ class Person(models.Model):
                         blank=True)
     user = models.ForeignKey(User, verbose_name="Associated admin user", null=True, blank=True)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
     class Meta:
@@ -45,8 +45,8 @@ class Person(models.Model):
         pass
 
 CAMP_AGES = (
-    ('Jnr','Junior'),
-    ('Snr','Senior')
+    (u'Jnr',u'Junior'),
+    (u'Snr',u'Senior')
 )
 
 class Camp(models.Model):
@@ -71,27 +71,27 @@ class Camp(models.Model):
     site = models.ForeignKey(Site)
     online_applications = models.BooleanField("Accepts online applications from officers.")
     
-    def __str__(self):
+    def __unicode__(self):
         leaders = list(self.leaders.all())
         try:
             leaders.append(self.chaplain)
         except Person.DoesNotExist:
             pass
         if len(leaders) > 0:
-            leadertext = " (" + ", ".join(str(l) for l in leaders) + ")"
+            leadertext = u" (" + u", ".join(str(l) for l in leaders) + u")"
         else:
-            leadertext = ""
-        return str(self.year) + "-" + str(self.number) + leadertext
+            leadertext = u""
+        return unicode(self.year) + u"-" + unicode(self.number) + leadertext
     
     @property
     def nice_name(self):
-        return "Camp " + str(self.number) + ", year " + str(self.year)
+        return u"Camp %d, year %d"  % (self.number, self.year)
 
     def get_link(self):
-        return "<a href='" + self.get_absolute_url() + "'>" + self.nice_name + '</a>'
+        return u"<a href='%s'>%s</a>" % (self.get_absolute_url(), self.nice_name)
 
     def get_absolute_url(self):
-        return "/camps/" + str(self.year) + "/" + str(self.number) + "/"
+        return u"/camps/%d/%d/" %  (self.year, self.number)
 
     class Meta:
         app_label = "cciwmain"

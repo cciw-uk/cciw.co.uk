@@ -20,12 +20,12 @@ TAG_FEED_MAX_ITEMS = 20
 def handle_feed_request(request, feed_class, query_set=None, param=None):
     """If the request has 'format=atom' in the query string,
     create a feed and return it, otherwise return None."""
-    
-    if request.GET.get('format', None) != 'atom':
+
+    if request.GET.get('format', None) != u'atom':
         return None
 
     template_name = feed_class.template_name
-    feed_inst = feed_class(template_name, request.path + "?format=atom")
+    feed_inst = feed_class(template_name, request)
     if query_set is not None:
         # The Feed subclass may or may not use this query_set
         # If it is a CCIWFeed it will.
@@ -39,7 +39,7 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
     try:
         feedgen = feed_inst.get_feed(param)
     except feeds.FeedDoesNotExist:
-        raise Http404, "Invalid feed parameters: %r." % param
+        raise Http404, u"Invalid feed parameters: %r." % param
 
     response = HttpResponse(mimetype=feedgen.mime_type)
     feedgen.write(response, 'utf-8')
@@ -56,21 +56,21 @@ class CCIWFeed(feeds.Feed):
 
 class MemberFeed(CCIWFeed):
     template_name = 'members'
-    title = "New CCIW Members"
-    description = "New members of the Christian Camps in Wales message boards."
+    title = u"New CCIW Members"
+    description = u"New members of the Christian Camps in Wales message boards."
 
     def modify_query(self, query_set):
         return  query_set.order_by('-date_joined')[:MEMBER_FEED_MAX_ITEMS]
 
 class PostFeed(CCIWFeed):
     template_name = 'posts'
-    title = "CCIW message boards posts"
+    title = u"CCIW message boards posts"
 
     def modify_query(self, query_set):
         return query_set.order_by('-posted_at')[:POST_FEED_MAX_ITEMS]
 
     def item_author_name(self, post):
-        return post.posted_by_id.decode('utf-8')
+        return post.posted_by_id
 
     def item_author_link(self, post):
         return add_domain(get_member_href(post.posted_by_id))
@@ -82,31 +82,31 @@ def member_post_feed(member):
     """Returns a Feed class suitable for the posts
     of a specific member."""
     class MemberPostFeed(PostFeed):
-        title = "CCIW - Posts by %s" % member.user_name
+        title = u"CCIW - Posts by %s" % member.user_name
     return MemberPostFeed
 
 def topic_post_feed(topic):
     """Returns a Feed class suitable for the posts
     in a specific topic."""
     class TopicPostFeed(PostFeed):
-        title = "CCIW - Posts on topic \"%s\"" % topic.subject
+        title = u"CCIW - Posts on topic \"%s\"" % topic.subject
     return TopicPostFeed
 
 def photo_post_feed(photo):
     """Returns a Feed classs suitable for the posts in a specific photo."""
     class PhotoPostFeed(PostFeed):
-        title = "CCIW - Posts on photo %s" % str(photo)
+        title = u"CCIW - Posts on photo %s" % unicode(photo)
     return PhotoPostFeed
 
 class TopicFeed(CCIWFeed):
     template_name = 'topics'
-    title = 'CCIW - message board topics'
+    title = u"CCIW - message board topics"
 
     def modify_query(self, query_set):
         return query_set.order_by('-created_at')[:TOPIC_FEED_MAX_ITEMS]
         
     def item_author_name(self, topic):
-        return topic.started_by_id.decode('utf-8')
+        return topic.started_by_id
         
     def item_author_link(self, topic):
         return add_domain(get_member_href(topic.started_by_id))
@@ -117,12 +117,12 @@ class TopicFeed(CCIWFeed):
 def forum_topic_feed(forum):
     """Returns a Feed class suitable for topics of a specific forum."""
     class ForumTopicFeed(TopicFeed):
-        title = "CCIW - new topics in %s" % forum.nice_name()
+        title = u"CCIW - new topics in %s" % forum.nice_name()
     return ForumTopicFeed
 
 class PhotoFeed(CCIWFeed):
     template_name = 'photos'
-    title = 'CCIW photos'
+    title = u'CCIW photos'
     
     def modify_query(self, query_set):
         return query_set.order_by('-created_at')[:PHOTO_FEED_MAX_ITEMS]
@@ -156,23 +156,23 @@ class TagFeed(CCIWFeed):
 
 def text_tag_feed(text):
     class TextTagFeed(TagFeed):
-        title = 'CCIW - items tagged "%s"' % text
+        title = u'CCIW - items tagged "%s"' % text
     return TextTagFeed
 
 def member_tag_feed(member):
     """Gets a tag feed for a specific member."""
     class MemberTagFeed(TagFeed):
-        title = "CCIW - tags by %s" % member.user_name
+        title = u"CCIW - tags by %s" % member.user_name
     return MemberTagFeed
 
 def member_tag_text_feed(member, text):
     """Gets a tag feed for a member for a specific text value."""
     class MemberTagTextFeed(TagFeed):
-        title = "CCIW - '%s' tags by %s" % (text, member.user_name)
+        title = u"CCIW - '%s' tags by %s" % (text, member.user_name)
     return MemberTagTextFeed
 
 def target_tag_feed(target):
     """Gets a tag feed for a specifc target object."""
     class TargetTagFeed(TagFeed):
-        title = "CCIW - tags for %s" % target
+        title = u"CCIW - tags for %s" % target
     return TargetTagFeed

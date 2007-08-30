@@ -451,7 +451,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
     cur_member = get_current_member()
 
     # Add additional title
-    title = utils.get_extract(topic.subject, 40)
+    title = topic.subject[0:40]
     if len(title_start) > 0:
         title = title_start + ": " + title
     extra_context = standard_extra_context(title=title)

@@ -168,8 +168,8 @@ be changed until you click the link, so you can safely ignore this e-mail.
 def create_new_password_hash(password, user_name):
     # Avoid putting password as plaintext in URL using p3,
     # and also create string used to verify user_name and date.
-    hash_str = ':'.join([datetime.date.today().isoformat(), user_name, password])
-    return base64.urlsafe_b64encode(p3.p3_encrypt(hash_str, settings.SECRET_KEY))
+    hash_str = u':'.join([datetime.date.today().isoformat(), user_name, password])
+    return base64.urlsafe_b64encode(p3.p3_encrypt(hash_str.encode("utf-8"), settings.SECRET_KEY))
 
 def extract_new_password(hash, user_name):
     """Extracts the new password from the hash, throwing a ValidationError
@@ -178,7 +178,7 @@ def extract_new_password(hash, user_name):
         "copied the entire URL from the e-mail"
         
     try:
-        hash_str = base64.urlsafe_b64decode(hash)
+        hash_str = base64.urlsafe_b64decode(hash.encode("ascii"))
     except TypeError:
         raise ValidationError(invalid_url_msg)
 

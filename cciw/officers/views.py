@@ -8,6 +8,7 @@ from django import forms, template
 from django.db import models
 from django.conf import settings
 from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.utils.encoding import force_unicode, smart_str
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -178,7 +179,7 @@ def change_application(request, object_id):
             change_message = ' '.join(change_message)
             if not change_message:
                 change_message = _('No fields changed.')
-            LogEntry.objects.log_action(request.user.id, ContentType.objects.get_for_model(model).id, pk_value, str(new_object), CHANGE, change_message)
+            LogEntry.objects.log_action(request.user.id, ContentType.objects.get_for_model(model).id, pk_value, force_unicode(new_object), CHANGE, change_message)
 
             msg = _('The %(name)s "%(obj)s" was changed successfully.') % {'name': opts.verbose_name, 'obj': new_object}
             if request.POST.has_key("_continue"):

@@ -9,27 +9,27 @@ def get_member_href(user_name):
         # This can get called from feeds, and we need to ensure
         # we don't generate a URL, as it will go nowhere (also causes problems 
         # with the feed framework and utf-8)
-        return ''
+        return u''
     else:
-        return '/members/' + user_name + '/'
+        return u'/members/' + user_name + '/'
 
 def get_member_link(user_name):
     user_name = user_name.strip()
-    if user_name.startswith("'"):
+    if user_name.startswith(u"'"):
         return user_name
     else:
-        return '<a title="Information about user \'' + user_name + \
-           '\'" href="' + get_member_href(user_name) + '">' + user_name + '</a>'
+        return u'<a title="Information about user \'%s\'" href="%s">%s</a>' % \
+               (user_name, get_member_href(user_name), user_name)
 
 def get_member_icon(user_name):
     from django.conf import settings
     user_name = user_name.strip()
-    if user_name.startswith("'"): # dummy user
-        return ''
+    if user_name.startswith(u"'"): # dummy user
+        return u''
     else:
         # We use content negotiation to get the right file i.e.
         # apache will add the right extension on for us.
-        return '<img src="%s" class="userIcon" alt="icon" />' % \
+        return u'<img src="%s" class="userIcon" alt="icon" />' % \
             (settings.SPECIAL_MEDIA_URL + settings.MEMBER_ICON_PATH + user_name)
 
 
@@ -55,13 +55,7 @@ def validate_xml(filename):
     reader = Sax2.Reader(parser=p)
     dom_object = reader.fromUri(filename)
     return True
-
-def get_extract(utf8string, maxlength):
-    u = utf8string.decode('UTF-8')
-    if len(u) > maxlength:
-        u = u[0:maxlength-3] + "..."
-    return u.encode('UTF-8')
-    
+   
 def unslugify(slug):
     "Turns dashes and underscores into spaces and applies title casing"
     return slug.replace("-", " ").replace("_", " ").title()

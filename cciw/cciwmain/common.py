@@ -13,11 +13,11 @@ def standard_extra_context(title=None, description=None, keywords=None):
     Member = cciw.cciwmain.models.Member
         
     if title is None:
-        title = "Christian Camps in Wales"
+        title = u"Christian Camps in Wales"
     if description is None:
-        description = "Details of camps, message boards and photos for the UK charity Christian Camps in Wales"
+        description = u"Details of camps, message boards and photos for the UK charity Christian Camps in Wales"
     if keywords is None:
-        keywords = "camp, camps, summer camp, Christian, Christian camp, charity"
+        keywords = u"camp, camps, summer camp, Christian, Christian camp, charity"
     
     extra_dict = {}
     extra_dict['title'] = title
@@ -76,14 +76,15 @@ def get_order_option(order_options, request, default_order_by):
     return order_by
 
 def create_breadcrumb(links):
-    return " :: ".join(links)
+    return u" :: ".join(links)
 
 def standard_processor(request):
     """Processor that does standard processing of request
     that we need for all pages."""
     MenuLink = cciw.cciwmain.models.MenuLink
     context = {}
-    context['homepage'] = (request.path == "/")
+    assert type(request.path) is unicode
+    context['homepage'] = (request.path == u"/")
     # TODO - filter on 'visible' attribute
     links = MenuLink.objects.filter(parent_item__isnull=True)
     for l in links:
@@ -92,7 +93,7 @@ def standard_processor(request):
         l.isCurrentSection = False
         if l.url == request.path:
             l.isCurrentPage = True
-        elif request.path.startswith(l.url) and l.url != '/':
+        elif request.path.startswith(l.url) and l.url != u'/':
             l.isCurrentSection = True
     
     context['menulinks'] = links

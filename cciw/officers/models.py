@@ -185,11 +185,11 @@ class Application(models.Model):
         super(Application, self).save()
         dispatcher.send(signals.application_saved, sender=self, application=self)
 
-    def __str__(self):
+    def __unicode__(self):
         if self.camp is not None:
-            return "Application from %s, %d" % (self.full_name, self.camp.year)
+            return u"Application from %s, %d" % (self.full_name, self.camp.year)
         else:
-            return "Application from %s" % self.full_name
+            return u"Application from %s" % self.full_name
 
     class Meta:
         pass

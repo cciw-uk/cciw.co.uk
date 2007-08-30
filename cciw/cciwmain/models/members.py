@@ -12,7 +12,7 @@ class Permission(models.Model):
     id = models.PositiveSmallIntegerField("ID", primary_key=True)
     description = models.CharField("Description", maxlength=40)
     
-    def __str__(self):
+    def __unicode__(self):
         return self.description
     
     class Meta:
@@ -44,16 +44,16 @@ class Member(models.Model):
     MODERATE_ALL = 2
     
     MESSAGE_OPTIONS = (
-        (MESSAGES_NONE,     "Don't allow messages"),
-        (MESSAGES_WEBSITE,  "Store messages on the website"),
-        (MESSAGES_EMAIL,    "Send messages via email"),
-        (MESSAGES_EMAIL_AND_WEBSITE, "Store messages and send via email")
+        (MESSAGES_NONE,     u"Don't allow messages"),
+        (MESSAGES_WEBSITE,  u"Store messages on the website"),
+        (MESSAGES_EMAIL,    u"Send messages via email"),
+        (MESSAGES_EMAIL_AND_WEBSITE, u"Store messages and send via email")
     )
     
     MODERATE_OPTIONS = (
-        (MODERATE_OFF,      "Off"),
-        (MODERATE_NOTIFY,   "Unmoderated, but notify"),
-        (MODERATE_ALL,      "Fully moderated")
+        (MODERATE_OFF,      u"Off"),
+        (MODERATE_NOTIFY,   u"Unmoderated, but notify"),
+        (MODERATE_ALL,      u"Fully moderated")
     )
 
     user_name   = models.CharField("User name", primary_key=True, maxlength=30)
@@ -80,11 +80,11 @@ class Member(models.Model):
     objects = UserSpecificMembers()
     all_objects = models.Manager()
     
-    def __str__(self):
+    def __unicode__(self):
         return self.user_name
         
     def get_absolute_url(self):
-        return "/members/" + self.user_name + "/"
+        return "/members/%s/" % self.user_name.encode("ascii") # Usernames are restricted to ascii
         
     def get_link(self):
         from cciw.cciwmain.utils import get_member_link
@@ -158,8 +158,8 @@ class Award(models.Model):
     image = models.ImageField("Award image", 
         upload_to=settings.AWARD_UPLOAD_PATH)
 
-    def __str__(self):
-        return self.name + " " + str(self.year)
+    def __unicode__(self):
+        return self.name + u" " + unicode(self.year)
         
     def nice_name(self):
         return str(self)
@@ -169,7 +169,7 @@ class Award(models.Model):
         
     def get_absolute_url(self):
         from django.template.defaultfilters import slugify
-        return "/awards/#" + slugify(str(self))
+        return "/awards/#" + slugify(unicode(self))
     
     class Meta:
         app_label = "cciwmain"
@@ -188,8 +188,8 @@ class PersonalAward(models.Model):
         verbose_name="member",
         related_name="personal_awards")
 
-    def __str__(self):
-        return self.award.name + " to " + self.member.user_name
+    def __unicode__(self):
+        return "%s to %s" % (self.award.name, self.member.user_name)
 
     class Meta:
         app_label = "cciwmain"   
@@ -245,8 +245,8 @@ http://%(domain)s/members/%(from)s/messages/
         "website@cciw.co.uk", [to_member.email])
             
     
-    def __str__(self):
-        return "[" + str(self.id) + "] to " + str(self.to_member)  + " from " + str(self.from_member)
+    def __unicode__(self):
+        return u"[%s] to %s from %s" % (unicode(self.id), unicode(self.to_member), unicode(self.from_member))
     
     class Meta:
         app_label = "cciwmain"

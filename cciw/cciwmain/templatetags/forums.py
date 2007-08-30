@@ -32,8 +32,8 @@ def poll_vote_box(request, topic, poll, heading_level):
                 context['show_form'] = True
             else:
                 context['show_form'] = False
-                context['message'] = '[You cannot vote on this poll]'
+                context['message'] = u'[You cannot vote on this poll]'
     else:
         context['show_form'] = False
-        context['message'] = '[This poll is closed for voting]'
+        context['message'] = u'[This poll is closed for voting]'
     return context
