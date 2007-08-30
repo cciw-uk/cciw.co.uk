@@ -1,10 +1,6 @@
 import sys
 import os
 
-# set up environment variables for testing (needed by imports in bbcode)
-sys.path = sys.path + ['/home/httpd/www.cciw.co.uk/django/','/home/httpd/www.cciw.co.uk/django_src/']
-os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
-
 import bbcode
 from cciw.cciwmain.utils import get_member_link   
 
