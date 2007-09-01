@@ -1,7 +1,7 @@
 {% extends "cciw/standard.html" %}
 {% block content %}
 	<br/>
-{% if camp_is_past %}
+{% if camp.is_past %}
 	<h2>Links</h2>
 	<ul>
 		<li><a href="{{ camp.get_absolute_url }}forum/">Forum</a></li>
