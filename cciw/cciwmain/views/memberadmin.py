@@ -94,7 +94,6 @@ def email_and_username_hash(email, user_name):
     # Use every other character to make it shorter and friendlier
     return md5.new(settings.SECRET_KEY + email + user_name).hexdigest()[::2]
 
-
 def validate_email_username_and_hash(email, user_name, hash):
     if email_address_used(email):
         return (False, """The e-mail address is already in use.""")
@@ -436,8 +435,7 @@ def preferences(request):
         
         new_email = new_data['email']
         
-        errors = manipulator.get_validation_errors(new_data)
-        
+        errors = manipulator.get_validation_errors(new_data)        
         
         if not errors:
             # E-mail changes require verification, so fix it here

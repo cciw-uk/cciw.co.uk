@@ -270,7 +270,7 @@ def view_application(request):
         rtf_attachment = (application_rtf_filename(app), application_rtf, 'text/rtf')
 
         msg = \
-"""Dear %s,
+u"""Dear %s,
 
 Please find attached a copy of the application you requested
  -- in plain text below and an RTF version attached.

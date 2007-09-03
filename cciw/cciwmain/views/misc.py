@@ -31,7 +31,7 @@ class FeedbackManipulator(forms.Manipulator):
         )
 
 def feedback(request):
-    c = standard_extra_context(title="Contact us")
+    c = standard_extra_context(title=u"Contact us")
     
     manipulator = FeedbackManipulator()
     
@@ -42,7 +42,7 @@ def feedback(request):
         if not errors:
             manipulator.do_html2python(new_data)
             send_feedback(new_data['email'], new_data['name'], new_data['message'])
-            c['message'] = "Thank you, your message has been sent."
+            c['message'] = u"Thank you, your message has been sent."
     else:
         errors = new_data = {}
     

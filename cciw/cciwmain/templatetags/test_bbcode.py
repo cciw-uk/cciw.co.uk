@@ -1,3 +1,4 @@
+# # -*- coding: utf-8 -*-
 import sys
 import os
 
@@ -20,8 +21,8 @@ tests = (
         '<ul>\n<li>Newlines not discarded, or converted when brs would be illegal</li></ul>'),
     ('[quote]\nNewlines not discarded at beginning of quote', 
         '<blockquote>\n<div>Newlines not discarded at beginning of quote</div></blockquote>'),
-    ('[list]Text in root of list tag is moved outside[*]and put in a div[/list]',
-        '<div>Text in root of list tag is moved outside<ul><li>and put in a div</li></ul></div>'),
+    (u'[list]Text in root of list tag is moved outside[*]and put in a div é[/list]',
+        u'<div>Text in root of list tag is moved outside<ul><li>and put in a div é</li></ul></div>'),
     (':-) :bosh:',
         '<div><img src="' + bbcode.EMOTICONS_ROOT + 'smile.gif" alt=":-)" /> <img src="' + bbcode.EMOTICONS_ROOT + 'mallet1.gif" alt=":bosh:" /></div>' ),
     ('0:-)',
@@ -53,15 +54,15 @@ tests = (
     ('[emoticon]hello[/emoticon]',
         '<div></div>'),
     # escaping:
-    ('[[b]] [[/b]] [[quote=foo]] [[[b]]]',
-        '<div>[b] [/b] [quote=foo] [[b]]</div>'),
+    (u'[[b]] [[/b]] [[quote=fooé]] [[[b]]]',
+        u'<div>[b] [/b] [quote=fooé] [[b]]</div>'),
     # text that is accidentally similar to escaping:
     ('[[b]Just some bold text in square brackets[/b]]',
         '<div>[<b>Just some bold text in square brackets</b>]</div>'),
     
     # non-existant tags come through as literals
-    ('[nonexistanttag]',    
-        '<div>[nonexistanttag]</div>'),
+    (u'[nonéxistanttag]',    
+        u'<div>[nonéxistanttag]</div>'),
     # empty string should return nothing
     ('',
         ''),
@@ -91,6 +92,14 @@ def test_correct():
     # should be an identity transformation in all cases
     for bb, xhtml in tests:
         yield check_correction, bb
+
+def test_unicode():
+    # Should always return unicode objects
+    for bb, xhtml in tests:
+        yield check_unicode, bb
+
+def check_unicode(bb):
+    assert type(bbcode.bb2xhtml(bb)) is unicode
 
 def test_correct_preserves_whitespace():
     # These examples are correct bbcode with whitespace

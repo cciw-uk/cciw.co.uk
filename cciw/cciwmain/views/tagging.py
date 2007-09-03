@@ -17,8 +17,8 @@ def index(request):
     extra_context['showtagtext'] = True
     extra_context['showtaggedby'] = True
     extra_context['showtagtarget'] = True
-    extra_context['tag_href_prefix'] = "/tags/"
-    extra_context['atom_feed_title'] = "Atom feed for all tags."
+    extra_context['tag_href_prefix'] = u"/tags/"
+    extra_context['atom_feed_title'] = u"Atom feed for all tags."
     
     def feed_handler(request, queryset):
         return feeds.handle_feed_request(request, feeds.TagFeed, query_set=queryset)
@@ -94,7 +94,7 @@ def _object_for_model_name_and_id(model_name, object_id):
 
 def tag_target(request, model_name, object_id):
     obj = _object_for_model_name_and_id(model_name, object_id)
-    extra_context = standard_extra_context(title='Tags for %s' % obj)
+    extra_context = standard_extra_context(title=u'Tags for %s' % obj)
     extra_context['showtagtext'] = True
     extra_context['showtaggedby'] = True
     extra_context['showtagtarget'] = False

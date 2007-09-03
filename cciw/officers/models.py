@@ -50,11 +50,11 @@ def YyyyMmField(*args, **kwargs):
     validators = list(kwargs.get('validator_list', ()))
     validators.append(yyyy_mm_validator)
     kwargs['validator_list'] = validators
-    kwargs['help_text'] = 'Enter the date in YYYY/MM format.'
+    kwargs['help_text'] = u'Enter the date in YYYY/MM format.'
     return models.CharField(*args, **kwargs)
 
 def AddressField(*args, **kwargs):
-    kwargs['help_text'] ='Full address, including post code and country'
+    kwargs['help_text'] = u'Full address, including post code and country'
     return models.TextField(*args, **kwargs)
 
 class ExplicitBooleanField(models.NullBooleanField):

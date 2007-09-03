@@ -177,7 +177,7 @@ class HtmlEquivTag(BBTag):
             ret = u'<%s/>' % opening 
         else:
             if len(node.children) > 0:
-                ret = u'<%s>%s</%s>' % (opening, + node.render_children_xhtml(), self.html_equiv)
+                ret = u'<%s>%s</%s>' % (opening, node.render_children_xhtml(), self.html_equiv)
             else:
                 ret = u''
         return ret
@@ -292,8 +292,8 @@ class BibleTag(BBTag):
             url = ESV_BROWSE_URL + "?" + urllib.urlencode({'q':node.parameter})
             output += u'<div class="biblequote"><a href="%s" title="Browse %s in the ESV">%s:</a></div>' % \
                 (escape(url), escape(node.parameter), escape(node.parameter))
-        output += u'<blockquote class="bible">%s</blockquote>' + node.render_children_xhtml()
-        return ''.join(output)
+        output += u'<blockquote class="bible">%s</blockquote>' % node.render_children_xhtml()
+        return u''.join(output)
 
 ###### DATA ######
 
