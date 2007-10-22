@@ -50,6 +50,11 @@ def add_domain(url):
     return feeds.add_domain(get_current_domain(), url)
 
 class CCIWFeed(feeds.Feed):
+    def __init__(self, slug, request):
+        feeds.Feed.__init__(self, slug, request)
+        # Django's class does the wrong thing, need to override
+        self.feed_url = request.get_full_path()
+
     feed_type = Atom1Feed
     def items(self):
         return self.modify_query(self.query_set)
