@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -92,6 +94,9 @@ class Camp(models.Model):
 
     def get_absolute_url(self):
         return "/camps/" + str(self.year) + "/" + str(self.number) + "/"
+
+    def is_past(self):
+        return self.end_date <= datetime.date.today()
 
     class Meta:
         app_label = "cciwmain"

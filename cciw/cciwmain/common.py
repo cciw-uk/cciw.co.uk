@@ -46,7 +46,7 @@ def get_thisyear():
         or (datetime.datetime.now() - _thisyear_timestamp).seconds > 3600:
         from cciw.cciwmain.models import Camp
         lastcamp = Camp.objects.order_by('-end_date')[0]
-        if lastcamp.end_date <= datetime.date.today():
+        if lastcamp.is_past():
             _thisyear = lastcamp.year + 1
         else:
             _thisyear = lastcamp.year

@@ -62,8 +62,7 @@ def detail(request, year, number):
     c['camp'] = camp
     c['title'] = camp.nice_name
     
-    if camp.end_date < datetime.date.today():
-        c['camp_is_past'] = True
+    if camp.is_past():
         c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(str(camp.year)) + [camp.nice_name])    
     else:
         c['breadcrumb'] = create_breadcrumb([standard_subs('<a href="/thisyear/">Camps {{thisyear}}</a>'), "Camp " + number])
@@ -82,8 +81,7 @@ def get_forum_for_camp(camp):
         forum = Forum.objects.get(location=location)
     except Forum.DoesNotExist:
         # Self maintenance
-        if not camp.end_date is None and \
-            camp.end_date <= datetime.date.today():
+        if not camp.end_date is None and camp.is_past():
             # If the forum doesn't exist, but should, we should create it
             forum = Forum(location=location, open=True)
             forum.save()
@@ -96,7 +94,7 @@ def get_gallery_for_camp(camp):
         gallery = Gallery.objects.get(location=location)
     except Gallery.DoesNotExist:
         # Self maintenance
-        if camp.end_date <= datetime.date.today():
+        if camp.is_past():
             # if the gallery does not exist yet, but should, create it
             gallery = Gallery(location = location)
             gallery.save()
