@@ -23,3 +23,7 @@ cd /home/httpd/www.cciw.co.uk/django
 ## UPLOAD ##
 
 rsync -vr --exclude='.bzr' --exclude='.svn' --exclude='*.pyc' --exclude='*~' --exclude /media/photos --exclude /media/images/members/ templates media cciw lukeplant_me_uk websitedown cciw@cciw.co.uk:/home2/cciw/webapps/django_app/
+
+
+# Check everything first using 'bzr status'
+rsync -vr --exclude='.bzr' --exclude='*.pyc' --exclude='*~' templates media cciw websitedown cciw@cciw.co.uk:/home2/cciw/webapps/django_app/
