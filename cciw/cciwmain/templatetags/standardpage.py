@@ -6,8 +6,8 @@ from cciw.cciwmain.utils import get_member_link, obfuscate_email, get_member_ico
 from cciw.middleware.threadlocals import get_current_member
 from django.utils.html import escape
 from django.conf import settings
-from lukeplant_me_uk.django.tagging import utils as tagging_utils
-from lukeplant_me_uk.django.tagging.models import Tag
+from cciw.tagging import utils as tagging_utils
+from cciw.tagging.models import Tag
 
 class EmailNode(template.Node):
     def __init__(self, nodelist):

@@ -1,0 +1,217 @@
+Some documentation for the tagging app -- this is an overview.  At the
+bottom you will find a 'Getting started' section.
+
+
+Tag model
+=========
+- The central model.  A *simplified* version is below:
+
+class Tag(models.Model):
+    text = models.CharField()
+    target = GenericForeignKey()
+    creator = GenericForeignKey()
+    added = models.DateTimeField()
+
+GenericForeignKey works like a foreign key field except that it is 
+identified by two pieces of information - an 'id' (stored as a string 
+for maximum generality), and a ContentType id. (The model actually 
+requires other parameters and other fields to be present, not shown).  
+For the most part, however, you can ignore this implementation
+detail.  
+
+Externally, you just set/get mytag.target or mytag.creator to any 
+Django ORM object and it will work. 
+
+Tag objects also have other methods to do efficient SQL queries for 
+summarising Tag information.  e.g. .count_tagged_by_others() returns  
+the number of other 'creator' objects that have tagged the same
+object, 
+and there are other methods on the TagManager for doing this kind of 
+thing (see below).
+
+If you want, you can have different types of object that are taggable, 
+so:
+
+  [t.target for t in Tag.objects.all()] 
+
+could be a heterogeneous list. In templates that show lists of Tag 
+objects in detail, this could be a problem, since you don't know what 
+type of object mytag.target is, and you might want to customise how
+you 
+display a tagged target object. So I've added a 'render_target' method 
+which is pluggable i.e. you can provide different ways of rendering 
+different types of target objects, and then just use tag.render_target
+in the template.
+
+(You could also have different types of 'creator' object, but in my
+case 
+I haven't used this, so haven't tested it much, but I'm not aware of 
+any problems).
+
+Tag Manager
+===========
+The Manager class for Tag has various methods to return database 
+information about tagged objects.  It uses efficient SQL to do so, 
+which means that most of them can't build up queries the way you 
+normally do in Django, but instead the methods provide optional 
+parameters that should cover most of the kind of queries you want to 
+do, including searching for objects that are tagged with multiple text 
+values.
+
+The methods tend to return either simple values, or 'partially 
+aggregated' versions of the Tag object:
+
+TagSummary
+----------
+Contains 'text' and 'count', where count is the number of Tag objects
+with that 'text' value.
+
+TagTarget
+---------
+The 'text' + 'target' half of a 'Tag' object, used for answering the 
+question: "What objects are the target of a certain 'text' value (or 
+values) and how many 'creator' objects have tagged it like that?"
+
+The tag manager methods also work correctly in a 'related' context
+(see 
+below).
+
+Tag relationships
+=================
+A Tag is essentially two foreign key fields (plus metadata), but since 
+it isn't actually a ForeignKey object, and can point to multiple
+models, it doesn't appear on the 'pointed to' models automatically
+(e.g. as in mypost.tags.all() or myuser.created_tags.all()). However, 
+you can set this up with the add_tagging_fields() utility method,
+which allows you add attributes to models with complete flexibility.
+You don't define the tags as part of your model, but use this utility
+method after creating the model to add the attributes.
+
+This has been done like this mainly for ease of implementation, but it
+also keeps your model decoupled from 'tagging' -- after you've defined 
+your model, or imported someone else's, you can add tagging fields
+very easily.
+
+In this related context, you also get methods that parallel normal 
+foreign keys i.e. mypost.tags.create() and mypost.tags.add(), which 
+work as expected.
+
+Finally, the Tag Manager methods for advanced queries also work 
+correctly in the 'related' context
+e.g. mypost.tags.get_distinct_text() limits itself to the relevant Tag
+objects. 
+
+Views
+=====
+A simple tagging facility will allow users to tag objects, and then 
+display those tags inline on the object that is tagged (e.g. a post or 
+a topic etc).  To enable this, a 'create_update' view is provide, with 
+a sample template -- a del.icio.us style form for editing tags for an 
+item.
+
+A more complete solution will involve the ability to browse/search
+tags,view recent tags etc.  For this, I've written a 'recent_popular'
+view, that shows recent tags, optionally limiting to a specific target 
+or 'text' value etc, with paging, and shows a list of popular tags 
+(limited by the same query).
+
+Finally, there is 'targets_for_text' which searches for targets with a 
+specific 'text' value, or several text values, and displays them in a 
+paged list by decreasing popularity.
+
+Most of my tagging related views are simple wrappers around these
+three.
+
+Template tags
+=============
+I've included a template tag for getting a list of TagSummary
+objects for a target object e.g.:
+
+  {% get_tag_summaries for post as tags %}
+
+This creates a context variable 'tags' containing the TagSummary
+objects.
+
+Templates
+=========
+I've included a simple template for create_update, that works as
+is. You can use another template, of course.
+
+URLS
+====
+I've found that sorting out my urls for tagging has been one of the 
+hardest things, especially as I'm going for a fairly complete solution 
+(e.g. you can drill down to the level of a particular Member, see all 
+their tags, see who tagged a particular target with a given text value 
+and when etc.).  I haven't been able to abstract this into a standard 
+system, so I haven't included any implementation of get_absolute_url
+or anything else to do with URLs.  I have my own custom template_tags 
+for generating absolute urls for Tags in different contexts, and I also 
+sometimes use the ContentType object. 
+
+Tag.target is implemented using:
+        Tag.target_ct = models.ForeignKey(ContentType)
+so for any specific Tag I can get tag.target_ct.name and I tend to use 
+that and and Tag.target_id to generate some URLs.
+
+Feeds
+=====
+I normally do feeds using the same view functions as HTML pages, but 
+with ?format=atom.  I've added a hook to the relevant views that
+allows this.
+
+                      ===================
+
+Getting started
+===============
+
+1. Put the code somewhere on your Python path
+
+2. Install the app - add 'lukeplant_me_uk.django.tagging' to your
+INSTALLED_APPS setting, and run the syncdb command.
+
+3. Optionally add the tagging template dir 
+(.../lukeplant_me_uk/django/tagging/templates) into your TEMPLATE_DIRS
+setting (needed for the create/update template)
+
+4. Use the 'register_mappers' function to tell the tagging app how to
+map your objects' primary keys into strings.  This is needed because
+the tagging app stores object ids as strings for maximum generality.
+
+Examples::
+
+    from lukeplant_me_uk.django.tagging.utils import register_mappers
+
+    # For an object with an integer primary key:
+    register_mappers(Post, str, int)
+
+    # For an object with a string primary key
+    register_mappers(Member, str, str)
+
+This code should go after your model definition somewhere (or in a
+module imported from a line after your model definition).
+
+5. Optionally add attributes to your models to enable access to their
+related tags.  See documentation in
+lukeplant_me_uk.django.tagging.fields.add_tagging_fields.  Again,
+these function calls need to go somewhere after your model definitions.
+
+6. Optionally add 'renderers', which are called by the 'Tag.render'
+method. See lukeplant_me_uk.django.tagging.register_renderer().
+The main use of this is in templates that display tags for multiple
+types of 'target' object -- so you can do {{ tag.render }} and get
+something sensible for different types of object.
+
+7. Create a wrapper for create_update that will pass in the right
+parameters -- usually the currently logged in member/user, and the
+target object which will probably be calculated from the URL.  How you
+do this is your own problem, though the ContentTypes model might help,
+and the utility functions in lukeplant_me_uk.django.tagging.utils
+might help.
+
+8. Start adding tagging to your templates, views, urls etc.  You are
+on your own here -- the 'recent_popular' and 'targets_for_text' views
+and the TagManager methods should be a help.  Most of them have
+reasonably good documentation in the code, but not separate yet.
+
+
