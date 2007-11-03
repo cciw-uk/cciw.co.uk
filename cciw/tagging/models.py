@@ -1,10 +1,15 @@
 """Model and related functionality for the tagging app."""
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db import backend, connection
+from django.db import connection
+ops = connection.ops
 from django.conf import settings
 import django.contrib.contenttypes
 from cciw.tagging import utils
+
+# NB - this module uses our own 'GenericForeignKey' implementation
+# that existed before Django had one.  It is the basis of Django's
+# implementation, but it is different from it as well.
 
 # For Python 2.3
 if not hasattr(__builtins__, 'set'):
@@ -204,7 +209,7 @@ class TagManager(models.Manager):
         cursor = connection.cursor()
         where = []
         params = []
-        qn = backend.quote_name
+        qn = ops.quote_name
 
         target, target_model, target_id, target_ct_id = self._normalise_target_info(target, target_model)
         creator, creator_model, creator_id, creator_ct_id = self._normalise_creator_info(creator, creator_model)
@@ -242,7 +247,7 @@ class TagManager(models.Manager):
             sql += " ORDER BY %s ASC" % qn('text')
         # LIMIT
         if limit is not None:
-            sql += ' ' + backend.get_limit_offset_sql(limit, None)
+            sql += ' ' + ops.limit_offset_sql(limit, None)
 
         cursor.execute(sql, params)
         return TagSummaryCollection([TagSummary(r[0], r[1]) for r in cursor.fetchall()])
@@ -300,7 +305,7 @@ class TagManager(models.Manager):
         # rows with the same creator_id and 'text' *must* have different creator_ct_id,
         # (since we are grouping on the other fields),
         # so as long as we don't do 'DISTINCT', we will get accurate results.
-        qn = backend.quote_name
+        qn = ops.quote_name
         # SELECT
         tablename = qn(Tag._meta.db_table)
 
@@ -337,7 +342,7 @@ class TagManager(models.Manager):
         
         # LIMIT
         if limit is not None:
-            sql += ' ' + backend.get_limit_offset_sql(limit, offset)
+            sql += ' ' + ops.limit_offset_sql(limit, offset)
         cursor = connection.cursor()
         cursor.execute(sql, params)
             
@@ -347,7 +352,7 @@ class TagManager(models.Manager):
     def get_target_count(self, text, target_model=None):
         """Gets the total number of items that get_targets returns,
         (with no limits), but more efficiently than len(get_targets())"""
-        qn = backend.quote_name
+        qn = ops.quote_name
         tablename = qn(Tag._meta.db_table)        
         text, textlist = self._normalise_text_textlist(text)
         target, target_model, target_id, target_ct_id = self._normalise_target_info(None, target_model)
@@ -385,6 +390,8 @@ class TagManager(models.Manager):
 
 class Tag(models.Model):
     text = models.CharField("Text", maxlength=32)
+    # We use CharField for target_id and creator_id for greater flexibility
+    # (don't have to use integer primary keys)
     target_id = models.CharField("'Target' ID", maxlength=64) # 64 should be enough for anyone...
     target_ct = models.ForeignKey(ContentType, verbose_name="'Target' content type", 
         related_name='tag_target_set')
@@ -397,8 +404,8 @@ class Tag(models.Model):
     creator = GenericForeignKey('creator_id', 'creator_ct_id')
     objects = TagManager()
     
-    def __str__(self):
-        return "%s tagged as %s by %s" % (self.target, self.text, self.creator)
+    def __unicode__(self):
+        return u"%s tagged as %s by %s" % (self.target, self.text, self.creator)
         
     def render(self):
         """Returns a rendered (e.g. HTML) representation of the
@@ -419,8 +426,8 @@ class Tag(models.Model):
         # SELECT COUNT(DISTINCT(creator_id)) FROM "tagging_tag" 
         # WHERE target_ct_id = x AND target_id = y AND creator_ct_id = z AND NOT (creator_id = q)
         cursor = connection.cursor()
-        qn = backend.quote_name
-        sql = "SELECT COUNT(DISTINCT(%s)) FROM %s WHERE %s = %%s AND %s = %%s AND %s = %%s AND NOT (%s = %%s)" % \
+        qn = ops.quote_name
+        sql = u"SELECT COUNT(DISTINCT(%s)) FROM %s WHERE %s = %%s AND %s = %%s AND %s = %%s AND NOT (%s = %%s)" % \
                 (qn('creator_id'), qn(Tag._meta.db_table), qn('target_ct_id'), qn('target_id'), qn('creator_ct_id'), qn('creator_id'))
         params = [self.target_ct_id, self.target_id, self.creator_ct_id, self.creator_id]
         cursor.execute(sql, params)
