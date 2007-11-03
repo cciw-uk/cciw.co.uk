@@ -5,9 +5,9 @@ from django.core import exceptions
 from cciw.cciwmain.decorators import member_required
 from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain import feeds
-from lukeplant_me_uk.django.tagging import views as tagging_views
-import lukeplant_me_uk.django.tagging.utils as tagging_utils
-from lukeplant_me_uk.django.tagging.models import Tag
+from cciw.tagging import views as tagging_views
+import cciw.tagging.utils as tagging_utils
+from cciw.tagging.models import Tag
 
 TAG_PAGINGATE_BY = 8
 SEARCH_PAGINGATE_BY = 20

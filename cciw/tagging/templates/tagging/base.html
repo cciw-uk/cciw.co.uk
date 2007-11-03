@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>{% block title %}Add tag{% endblock %}</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+<style type="text/css">
+body
+{
+	background:white;
+	color: black;
+}
+
+
+form .formrow label,
+form .formrow .label
+{ 
+        display: block;  /* block allows a width */
+        float: left; 
+        width: 150px; 
+        margin: 2px 15px 0; /* set top margin same as form input - textarea etc. elements */
+        text-align: right; 
+	
+}
+div.formrow
+{
+        padding: 5px; 
+	clear: both;
+}
+.formrow input,
+.formrow .control
+{
+	width: 350px;
+}
+.formrow .control
+{
+	border: 1px solid #808080;
+	padding: 2px;
+}
+
+</style>
+{% block extraheader %}{% endblock %}
+</head>
+<body>
+{% block content %}
+
+{% endblock %}
+</body>
+</html>

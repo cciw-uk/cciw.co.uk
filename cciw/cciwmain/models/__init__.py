@@ -6,8 +6,8 @@ from sitecontent import MenuLink, HtmlChunk
 from django.conf import settings
 
 # TODO - work out where to put this:
-from lukeplant_me_uk.django.tagging.fields import add_tagging_fields
-from lukeplant_me_uk.django.tagging.utils import register_mappers, register_renderer
+from cciw.tagging.fields import add_tagging_fields
+from cciw.tagging.utils import register_mappers, register_renderer
 import cciw.cciwmain.utils
 from django.template.defaultfilters import escape
 
