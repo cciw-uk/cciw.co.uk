@@ -48,7 +48,8 @@ class MemberAdmin(TestCase):
     def _upload_icon(self, iconpath):
         # Upload the file
         post_data = self._standard_post_data()
-        post_data['icon'] = open(iconpath)       
+        post_data['icon_file'] = open(iconpath)
+        post_data['icon'] = ''
         return self.client.post(MEMBER_ADMIN_URL, data=post_data)
 
     def test_upload_icon(self):
@@ -63,8 +64,10 @@ class MemberAdmin(TestCase):
         self._upload_icon(new_icon)
 
         # Ensure it got there
-        uploaded = glob.glob(settings.MEDIA_ROOT + settings.MEMBER_ICON_PATH + self.member.user_name + ".*")[0]
-        self.assertEqual(fs, _get_file_size(uploaded))
+        globpath = settings.MEDIA_ROOT + settings.MEMBER_ICON_PATH + self.member.user_name + ".*"
+        files = glob.glob(globpath)
+        self.assertEqual(1, len(files))
+        self.assertEqual(fs, _get_file_size(files[0]))
 
     def _assert_icon_upload_fails(self, filename):
         new_icon = os.path.join(settings.TEST_DIR, filename)
