@@ -1,8 +1,5 @@
 {% load standardpage %}
 {% load forums %}
-<div>From <b>{{ obj.started_by_id }}</b>, at {{ obj.created_at|date:"d M y, H:i" }}:</div>
-<div><hr/>
-<h1>{{ obj.subject }}</h1>
 {% if obj.news_item_id %}
 	{% if obj.news_item.full_item %}
 		{{ obj.news_item.full_item|standard_subs }}
@@ -24,8 +21,3 @@
 		{% endifnotequal %}
 	{% endif %}
 {% endif %}
-<hr/>
-</div>
-<div>
-<span class="readmore"><a href="http://{{ site.domain }}{{ obj.get_absolute_url }}">view topic</a></span>
-</div>
