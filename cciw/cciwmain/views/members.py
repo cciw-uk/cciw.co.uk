@@ -249,6 +249,7 @@ def message_list(request, user_name, box):
         allow_empty=True)
 
 def inbox(request, user_name):
+    "Shows inbox for a user"
     return message_list(request, user_name, Message.MESSAGE_BOX_INBOX)
     
 def archived_messages(request, user_name):
