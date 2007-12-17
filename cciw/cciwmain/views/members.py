@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.conf import settings
+from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Member, Message
 from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb
@@ -141,7 +142,7 @@ def send_message(request, user_name):
                 errors.append(u'No message entered.')
             
             # Always do a preview (for 'preview' and 'send')
-            preview = bbcode.bb2xhtml(message_text)
+            preview = mark_safe(bbcode.bb2xhtml(message_text))
             if len(errors) == 0 and request.POST.has_key('send'):
                 Message.send_message(to, current_member, message_text)
                 message_sent = True

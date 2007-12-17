@@ -8,6 +8,7 @@ from django.shortcuts import render_to_response
 from django.conf import settings
 from django import forms
 from django.core import validators
+from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission, Poll, PollOption
 from cciw.cciwmain.common import create_breadcrumb, standard_extra_context, get_order_option
@@ -152,7 +153,7 @@ def add_topic(request, breadcrumb_extra=None):
                 post.save()
                 return HttpResponseRedirect('../%s/' % topic.id)
             else:
-                context['preview'] = bbcode.bb2xhtml(msg_text)
+                context['preview'] = mark_safe(bbcode.bb2xhtml(msg_text))
     
     context['errors'] = errors
     if breadcrumb_extra is None:
@@ -204,7 +205,7 @@ def add_news(request, breadcrumb_extra=None):
                 topic.save()
                 return HttpResponseRedirect('../%s/' % topic.id)
             else:
-                context['preview'] = bbcode.bb2xhtml(msg_text)
+                context['preview'] = mark_safe(bbcode.bb2xhtml(msg_text))
     
     context['errors'] = errors
     if breadcrumb_extra is None:
@@ -374,7 +375,7 @@ def process_post(request, topic, photo, context):
     if request.POST.has_key('preview'):
         context['message_text'] = bbcode.correct(msg_text)
         if not errors:
-            context['preview'] = bbcode.bb2xhtml(msg_text)
+            context['preview'] = mark_safe(bbcode.bb2xhtml(msg_text))
 
     # Post
     if not errors and request.POST.has_key('post'):
