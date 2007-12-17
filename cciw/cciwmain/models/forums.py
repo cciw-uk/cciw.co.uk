@@ -90,7 +90,7 @@ class Topic(models.Model):
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open")
     hidden = models.BooleanField("Hidden", default=False)
-    approved = models.BooleanField("Approved", null=True, blank=True)
+    approved = models.NullBooleanField("Approved", blank=True)
     checked_by = models.ForeignKey(User,
         null=True, blank=True, related_name="topics_checked",
         verbose_name="checked by")
@@ -250,7 +250,7 @@ class Post(models.Model):
     message = models.TextField("Message")
     posted_at = models.DateTimeField("Posted at", null=True)
     hidden = models.BooleanField("Hidden", default=False)
-    approved = models.BooleanField("Approved", null=True)
+    approved = models.NullBooleanField("Approved")
     checked_by = models.ForeignKey(User,
         verbose_name="checked by",
         null=True, blank=True, related_name="checked_post")
