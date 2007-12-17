@@ -232,32 +232,67 @@ def update_poll_options(poll, new_option_list):
     and updates the PollOptions related to the Poll."""
     existing_options = list(poll.poll_options.order_by('listorder'))
     
-    # This assume order has not been messed with (as the user was instructed)
-    new_list = []
-    ex_option, new_option_t = None, None
-    while len(existing_options) or len(new_option_list):
-        if len(existing_options) > 0:
-            ex_option = existing_options[-1]
-        else:
-            ex_option = None
-            
-        if len(new_option_list) > 0:
-            new_option_t = new_option_list[-1]
-        else:
-            new_option_t = None
-            
-        if ex_option is not None and ex_option.text == new_option_t:
-            new_list.insert(0, existing_options.pop())
-            # throw away what we've dealt with
-            new_option_list.pop()
-        else: # ex_option is None or the text values are different
-            new_option = PollOption(text=new_option_list.pop(), poll=poll, total=0)
-            new_list.insert(0, new_option)
-    
-    for i, po in enumerate(new_list):
-        po.listorder = i
-        po.save()
+    # This assumes order has not been messed with (as the user was instructed)
 
+    if len(new_option_list) == len(existing_options):
+        # indicates changes to the text only
+        for existing_opt, new_text in zip(existing_options, new_option_list):
+            existing_opt.text = new_text
+            existing_opt.save()
+    elif len(new_option_list) > len(existing_options):
+        # Addition
+        new_list = []
+        ex_option, new_option_t = None, None
+
+        while len(new_option_list) > 0:
+            if len(existing_options) > 0:
+                ex_option = existing_options[-1]
+            else:
+                ex_option = None
+            
+            new_option_t = new_option_list[-1]
+            
+            if ex_option is not None and ex_option.text == new_option_t:
+                # Same as before
+                new_list.insert(0, existing_options.pop())
+                # throw away what we've dealt with
+                new_option_list.pop()
+            else: # ex_option is None or the text values are different
+                # This is an addition
+                text = new_option_list.pop()
+                new_option = PollOption(text=text, poll=poll, total=0)
+                new_list.insert(0, new_option)
+
+        for i, po in enumerate(new_list):
+            po.listorder = i
+            po.save()
+
+    elif len(existing_options) > len(new_option_list):
+         # Removal
+        new_list = []
+        ex_option, new_option_t = None, None
+
+        while len(existing_options) > 0:
+            ex_option = existing_options[-1]
+            
+            if len(new_option_list) > 0:
+                new_option_t = new_option_list[-1]
+            else:
+                new_option_t = None
+            
+            if new_option_t is not None and ex_option.text == new_option_t:
+                # Same as before
+                new_list.insert(0, existing_options.pop())
+                # throw away what we've dealt with
+                new_option_list.pop()
+            else: # new_option_t is None or the text values are different
+                # This is a removal
+                old_option = existing_options.pop()
+                old_option.delete()
+
+        for i, po in enumerate(new_list):
+            po.listorder = i
+            po.save()       
     
 @member_required
 def edit_poll(request, poll_id=None, breadcrumb_extra=None):
@@ -333,7 +368,7 @@ def edit_poll(request, poll_id=None, breadcrumb_extra=None):
             new_data['rule_parameter'] = 1
     
     c['form'] = forms.FormWrapper(manipulator, new_data, errors)
-    c['pollexisting_poll'] = existing_poll
+    c['existing_poll'] = existing_poll
     c['polloptions'] = polloptions
     c['errors'] = errors
     ctx = RequestContext(request, c)
