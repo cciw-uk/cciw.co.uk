@@ -11,6 +11,7 @@ from cciw.cciwmain.models import Member
 from cciw.middleware.threadlocals import set_member_session, get_current_member
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain import imageutils
+from cciw.cciwmain.utils import member_username_re
 import md5
 import urllib
 import re
@@ -20,7 +21,6 @@ import random
 import p3
 import base64
 
-username_re = re.compile(r'^[A-Za-z0-9_]{3,15}$')
 password_re = re.compile(r'^[A-Za-z0-9]{5,15}$')
 
 # The number of days a new password must be activated within
@@ -37,7 +37,7 @@ class ValidationError(Exception):
 
 # TODO - add synchronize lock here
 def create_user(user_name, password1, password2):
-    if username_re.match(user_name) is None:
+    if member_username_re.match(user_name) is None:
         raise ValidationError("The user name is invalid, please check and try again")
     elif Member.all_objects.filter(user_name__iexact=user_name).count() > 0:
         # Can't just try to create it and catch exceptions,

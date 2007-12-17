@@ -1,4 +1,5 @@
 import datetime
+import re
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 
@@ -7,14 +8,20 @@ def obfuscate_email(email):
     # TODO - make into javascript linky thing?
     return "<span style='text-decoration: underline;'>%s</span>" % email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ') 
 
+member_username_re = re.compile(r'^[A-Za-z0-9_]{3,15}$')
+
 def get_member_href(user_name):
-    if user_name.startswith("'"):
+    if not member_username_re.match(user_name):
         # This can get called from feeds, and we need to ensure
         # we don't generate a URL, as it will go nowhere (also causes problems 
-        # with the feed framework and utf-8)
+        # with the feed framework and utf-8).  
+        # Also, this can be called via bbcode, so we need to ensure
+        # that we don't pass anything to urlresolvers.reverse that
+        # will make it die.
         return u''
     else:
         return reverse('cciwmain.members.detail', kwargs={'user_name':user_name})
+
 
 def get_member_link(user_name):
     user_name = user_name.strip()
