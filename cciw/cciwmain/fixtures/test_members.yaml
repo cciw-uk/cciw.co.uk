@@ -3,12 +3,12 @@
   fields:
     banned: false
     comments: 'My comments'
-    date_joined: 2006-09-02 12:16:57.003467
+    date_joined: 2006-09-02 12:16:57
     dummy_member: false
     email: 'test@test.com'
     hidden: false
     icon: ''
-    last_seen: 2006-09-03 12:16:57.003467
+    last_seen: 2006-09-03 12:16:57
     message_option: 1
     moderated: 0
     password: '247SSw8klbYoU'
