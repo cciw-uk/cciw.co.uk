@@ -153,9 +153,6 @@ class AddTagLink(template.Node):
         self.target_var_name = target_var_name
         
     def render(self, context):
-        member = get_current_member()
-        if member is None:
-            return ''
         target = template.resolve_variable(self.target_var_name, context)
         request = context['request'] # requires request to be in the context
         model_name = target.__class__.__name__.lower()
