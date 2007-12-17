@@ -17,13 +17,13 @@ Please check your input below:
 
 {% if message %}
 <div class="successMessage">
-	{{ message|escape }}
+	{{ message }}
 </div>
 {% endif %}
 
 {% if image_error %}
 <div class="userError">
-	Your icon has not been changed: {{ image_error|escape }}
+	Your icon has not been changed: {{ image_error }}
 </div>
 {% endif %}
 

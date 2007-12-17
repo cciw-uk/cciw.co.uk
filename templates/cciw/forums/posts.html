@@ -10,7 +10,7 @@
 		<div class="postHeader">
 		{% ifchanged %}
 			<h2>
-			{% if post.topic_id %}{% if post.is_parent_visible %}In topic <a href="{{ post.topic.get_absolute_url }}">{{ post.topic.subject|escape }}</a>:{% else %}In a hidden topic:{% endif %}{% endif %}
+			{% if post.topic_id %}{% if post.is_parent_visible %}In topic <a href="{{ post.topic.get_absolute_url }}">{{ post.topic.subject }}</a>:{% else %}In a hidden topic:{% endif %}{% endif %}
 			{% if post.photo_id %}On photo <a href="{{ post.photo.get_absolute_url }}">{{ post.photo.id }}</a>:{% endif %}
 			</h2>
 		{% endifchanged %}

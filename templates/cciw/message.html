@@ -14,7 +14,7 @@ function insert(text)
 //-->
 </script>
 <div>
-<textarea name="message" rows="12" cols="60" id="message">{% if message_text %}{{ message_text|escape }}{% endif %}</textarea>
+<textarea name="message" rows="12" cols="60" id="message">{% if message_text %}{{ message_text }}{% endif %}</textarea>
 <div class="messageiconrow">
 <a class="button" href="javascript: void insert(':-)');"><img src="{{ pagevars.media_root_url }}images/emoticons/smile.gif" alt=":-)" title="Add emoticon" /></a>
 <a class="button" href="javascript: void insert(':-(');"><img src="{{ pagevars.media_root_url }}images/emoticons/sad.gif" alt=":-(" title="Add emoticon" /></a>

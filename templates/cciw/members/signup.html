@@ -22,17 +22,17 @@
 	<h2>E-mail address</h2>
 	
 	{% if alreadyused %}
-		<div class="userError">The e-mail address <b>{{ email|escape }}</b> is already used.
-		If you have forgotten your username you can <a href="/help/logging-in/?email={{ email|urlencode|escape }}">get a reminder</a>.</div>
+		<div class="userError">The e-mail address <b>{{ email }}</b> is already used.
+		If you have forgotten your username you can <a href="/help/logging-in/?email={{ email|urlencode }}">get a reminder</a>.</div>
 	{% else %}
 		{% if error_message %}
-			<div class="userError">{{ error_message|escape }}</div>
+			<div class="userError">{{ error_messagex }}</div>
 		{% else %}
 			<p>Please enter your e-mail address to continue.</p>
 		{% endif %}
 	{% endif %}
 	<div><label for="idemail">E-mail address:</label> 
-	<input type="text" name="email" id="idemail" value="{{ email|escape }}" />
+	<input type="text" name="email" id="idemail" value="{{ email }}" />
 	</div>
 	
 	<p>After clicking 'submit', you will be sent an e-mail
@@ -43,12 +43,12 @@
 {% else %}{% ifequal stage "emailsubmitted" %}
 
 	<h2>E-mail sent</h2>
-	<p>Thank you, an e-mail has been sent to {{ email|escape }}.  Follow
+	<p>Thank you, an e-mail has been sent to {{ email }}.  Follow
 	the instructions it contains to complete the sign up process.</p>
 
 {% else %}{% ifequal stage "user_name" %}
 	{% if error_message %}
-		<div class="userError">{{ error_message|escape }}</div>
+		<div class="userError">{{ error_message }}</div>
 	{% endif %}
 	<h2>Choose a username</h2>
 	<p>Please choose a user name and password to complete the sign-up process.</p>
@@ -68,14 +68,14 @@
 	
 	<div><br/><input type="submit" name="submit_user_name" value="Submit" /></div>
 
-	<div><input type="hidden" name="confemail" value="{{ confemail|escape }}" />
-	<input type="hidden" name="confhash" value="{{ confhash|escape }}" />
+	<div><input type="hidden" name="confemail" value="{{ confemail }}" />
+	<input type="hidden" name="confhash" value="{{ confhash }}" />
 	</div>
 
 {% else %}{% ifequal stage "invalid" %}
 	<h2>Error</h2>
 	{% if error_message %}
-		<div class="userError">{{ error_message|escape }}</div>
+		<div class="userError">{{ error_message }}</div>
 	{% endif %}
 {% else %}{% ifequal stage "end" %}
 	<h2>Finished!</h2>

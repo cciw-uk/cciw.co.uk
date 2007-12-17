@@ -10,8 +10,8 @@
 		{% for topic in object_list %}
 		<li>
 		<div class="individualTopic">
-			<h2><a href="{{ topic.get_absolute_url }}">{{ topic.subject|escape }}</a></h2>
-			<div>(In <a href="{{ topic.forum.get_absolute_url }}">{{ topic.forum.nice_name|escape }}</a>,
+			<h2><a href="{{ topic.get_absolute_url }}">{{ topic.subject }}</a></h2>
+			<div>(In <a href="{{ topic.forum.get_absolute_url }}">{{ topic.forum.nice_name }}</a>,
 	started by {% memberlink %}{{ topic.started_by_id }}{% endmemberlink %}, at {{ topic.created_at|date:"d M y, H:i" }})<br/><br/></div>
 	
 		</div></li>

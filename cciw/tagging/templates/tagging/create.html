@@ -3,7 +3,7 @@
 <h1>Tags</h1>
 
 <form method="post" action="">
-<div><input type="hidden" value="{{ redirect_url|escape }}" /></div>
+<div><input type="hidden" value="{{ redirect_url }}" /></div>
 <div class="formrow">
 <span class="label">For item:</span>
 <span class="control">{{ target }}</span>
@@ -11,7 +11,7 @@
 
 <div class="formrow">
 <span class="label">URL:</span>
-<span class="control"><a href="{{ target.get_absolute_url|escape }}">{{ target.get_absolute_url|escape }}</a></span>
+<span class="control"><a href="{{ target.get_absolute_url }}">{{ target.get_absolute_url }}</a></span>
 </div>
 
 <div class="formrow">
