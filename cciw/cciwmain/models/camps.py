@@ -2,6 +2,7 @@ import datetime
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.safestring import mark_safe
 
 class Site(models.Model):
     short_name = models.CharField("Short name", max_length="25", blank=False, unique=True)
@@ -90,7 +91,7 @@ class Camp(models.Model):
         return u"Camp %d, year %d" % (self.number, self.year)
 
     def get_link(self):
-        return u"<a href='%s'>%s</a>" % (self.get_absolute_url(), self.nice_name)
+        return mark_safe(u"<a href='%s'>%s</a>" % (self.get_absolute_url(), self.nice_name))
 
     def get_absolute_url(self):
         return u"/camps/%d/%d/" % (self.year, self.number)

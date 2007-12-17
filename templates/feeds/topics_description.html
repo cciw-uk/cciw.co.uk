@@ -2,7 +2,7 @@
 {% load forums %}
 {% if obj.news_item_id %}
 	{% if obj.news_item.full_item %}
-		{{ obj.news_item.full_item|standard_subs }}
+		{{ obj.news_item.full_item|safe|standard_subs }}
 	{% else %}
 		{{ obj.news_item.summary|bb2html }}
 	{% endif %}

@@ -1,5 +1,5 @@
 from cciw.cciwmain.models import Member, Post, Topic, Photo
-from cciw.cciwmain.common import standard_extra_context
+from cciw.cciwmain.common import standard_extra_context, create_breadcrumb
 from django.http import Http404, HttpResponseRedirect
 from django.core import exceptions
 from cciw.cciwmain.decorators import member_required
@@ -40,7 +40,7 @@ def members_tags(request, user_name):
     extra_context['showtagtarget'] = True
     extra_context['tag_href_prefix'] = u"/members/%s/tags/" % member.user_name
     extra_context['atom_feed_title'] = u"Atom feed for tags created by %s." % member.user_name
-    extra_context['breadcrumb'] = u'<a href="/tags/">All tags</a> :: Tags created by %s' % member.get_link()
+    extra_context['breadcrumb'] = create_breadcrumb([u'<a href="/tags/">All tags</a>', u'Tags created by %s' % member.get_link()])
     
     def feed_handler(request, queryset):
         return feeds.handle_feed_request(request, feeds.member_tag_feed(member), query_set=queryset)
@@ -61,10 +61,10 @@ def members_tags_single_text(request, user_name, text):
     extra_context['showtagtarget'] = True
     extra_context['tag_href_prefix'] = u"/members/%s/tags/" % user_name
     extra_context['atom_feed_title'] = u"Atom feed for '%s' created by %s" % (text, user_name)
-    extra_context['breadcrumb'] = \
-        u'<a href="/tags/%s/">All \'%s\' tags</a>' % (text, text) + u' :: ' + \
-        u'<a href="/members/%s/tags/">All tags created by %s</a>' % (user_name, user_name) + \
-        u' :: \'%s\' tags created by %s' % (text, user_name)
+    extra_context['breadcrumb'] = create_breadcrumb([
+            u'<a href="/tags/%s/">All \'%s\' tags</a>' % (text, text),
+            u'<a href="/members/%s/tags/">All tags created by %s</a>' % (user_name, user_name),
+            u'\'%s\' tags created by %s' % (text, user_name)])
         
     def feed_handler(request, queryset):
         return feeds.handle_feed_request(request, 
@@ -101,7 +101,10 @@ def tag_target(request, model_name, object_id):
     extra_context['showtagcounts'] = True    
     extra_context['tag_href_prefix'] = u"/tags/"
     extra_context['atom_feed_title'] = u"Atom feed for %s" % obj
-    extra_context['breadcrumb'] = u'<a href="/tags/">All tags</a> :: Tags for "%s"' % obj
+    extra_context['breadcrumb'] = create_breadcrumb([
+            u'<a href="/tags/">All tags</a>',
+            u'Tags for "%s"' % obj
+            ])
     
     def feed_handler(request, queryset):
         return feeds.handle_feed_request(request, feeds.target_tag_feed(obj), 
@@ -116,7 +119,10 @@ def tag_target_single_text(request, model_name, object_id, text):
     obj = _object_for_model_name_and_id(model_name, object_id)
     extra_context = standard_extra_context(title=u"'%s' tags for %s" % (text, obj))
     extra_context['tag_href_prefix'] = u"/tags/"
-    extra_context['breadcrumb'] = u'<a href="/tags/">All tags</a> :: <a href="../">All tags for this item</a> :: %s' % text
+    extra_context['breadcrumb'] = create_breadcrumb([
+            u'<a href="/tags/">All tags</a>', 
+            u'<a href="../">All tags for this item</a> :: %s' % text
+            ])
     return tagging_views.recent_popular(request, creator_model=Member, target=obj,
         text=text, template_name="cciw/tags/tagdetail.html", 
         extra_context=extra_context, paginate_by=TAG_PAGINGATE_BY)
@@ -134,7 +140,8 @@ def recent_and_popular_targets(request, text):
     extra_context['showtaggedby'] = True
     extra_context['showtagtarget'] = True
     extra_context['showtagcounts'] = False
-    extra_context['breadcrumb'] = u'<a href="/tags/">All tags</a> :: %s' % text
+    extra_context['breadcrumb'] = create_breadcrumb([
+            u'<a href="/tags/">All tags</a> :: %s' % text])
     extra_context['atom_feed_title'] = u"Atom feed for '%s' tags." % text
     # Get 'popular targets for this tag'
     extra_context['popular_targets'] = Tag.objects.get_targets(text, limit=10)
@@ -156,7 +163,9 @@ def edit_tag(request, model_name, object_id):
 
 def search(request):
     extra_context = standard_extra_context(title="Tag search")
-    extra_context['breadcrumb'] = u'<a href="/tags/">Browse tags</a> :: Search tags'
+    extra_context['breadcrumb'] = create_breadcrumb([
+            u'<a href="/tags/">Browse tags</a> :: Search tags'
+            ])
     text = tagging_utils.strip_unsafe_chars(request.GET.get('search', ''))
     text = ' '.join(list(set(text.split()))[0:4]) # maximum of 4 different tags, so we don't generate daft SQL queries
     return tagging_views.targets_for_text(request, text, paginate_by=SEARCH_PAGINGATE_BY,

@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns
+from django.conf.urls.defaults import patterns, url
 import cciw.cciwmain.common as cciw_common
 from cciw.cciwmain.models import Site, Award
 from django.conf import settings
@@ -52,7 +52,7 @@ patterns('cciw.cciwmain.views',
     (r'^camps/(?P<year>\d{4})/?$', 'camps.index'),
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+)/$', 'camps.detail'),
     (r'^' + settings.CAMP_FORUM_RE + r'$', 'camps.forum'),
-    (r'^' + settings.CAMP_FORUM_RE + r'(?P<topicnumber>\d+)/$', 'camps.topic'),
+    url(r'^' + settings.CAMP_FORUM_RE + r'(?P<topicnumber>\d+)/$', 'camps.topic', name='cciwmain.camps.topic'),
     (r'^' + settings.CAMP_FORUM_RE + r'add/$', 'camps.add_topic'),
     (r'^' + settings.CAMP_FORUM_RE + r'add_news/$', 'camps.add_news'),
     (r'^' + settings.CAMP_FORUM_RE + r'add_poll/$', 'camps.edit_poll'),
@@ -68,8 +68,10 @@ patterns('cciw.cciwmain.views',
         {'title': 'News', 
         'template_name': 'cciw/forums/newsindex.html', 
         'paginate_by' : 6,
-        'default_order': ('-created_at',)}), 
-    (r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'}),
+        'default_order': ('-created_at',)},
+     'cciwmain.site-news-index'), 
+    (r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'},
+     'cciwmain.site-news-detail'),
 
     # Misc website stuff
     (r'^website/forum/$', 'forums.topicindex', {'title': 'Website forum',

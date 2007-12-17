@@ -11,7 +11,7 @@
 		by {% memberlink %}{{ news_item.created_by_id }}{% endmemberlink %}</div>
 		<div class="newsItemFull">
 		{% if news_item.full_item %}
-			{{ news_item.full_item|standard_subs }}
+			{{ news_item.full_item|safe|standard_subs }}
 		{% else %}
 			{{ news_item.summary|bb2html }}
 		{% endif %}

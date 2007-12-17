@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.safestring import mark_safe
 from members import *
 from polls import *
 from datetime import datetime
@@ -48,6 +49,9 @@ class NewsItem(models.Model):
     full_item = models.TextField("Full post (HTML)", blank=True)
     subject = models.CharField("Subject", max_length=100)
     
+    def has_full_item(self):
+        return len(self.full_item) > 0
+
     def __unicode__(self):
         return self.subject
 
@@ -120,7 +124,7 @@ class Topic(models.Model):
         return self.forum.get_absolute_url() + str(self.id) + '/'
     
     def get_link(self):
-        return u'<a href="%s">%s</a>' % (self.get_absolute_url(), escape(self.subject))
+        return mark_safe(u'<a href="%s">%s</a>' % (self.get_absolute_url(), escape(self.subject)))
 
     @staticmethod
     def create_topic(member, subject, forum):

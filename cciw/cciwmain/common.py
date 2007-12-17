@@ -2,6 +2,7 @@ from django.conf import settings
 import cciw.cciwmain.models
 from cciw.cciwmain.templatetags import view_extras
 from django.http import HttpResponseRedirect
+from django.utils.safestring import mark_safe
 import cciw.middleware.threadlocals as threadlocals
 import datetime
 import urllib
@@ -57,6 +58,7 @@ def standard_subs(value):
     """Standard substitutions made on HTML content"""
     return value.replace('{{thisyear}}', str(get_thisyear()))\
                 .replace('{{media}}', settings.CCIW_MEDIA_URL)
+standard_subs.is_safe = True # provided our substitutions don't introduce anything that must be escaped 
 
 def get_order_option(order_options, request, default_order_by):
     """Get the order_by parameter from the request, if the request 
@@ -76,7 +78,7 @@ def get_order_option(order_options, request, default_order_by):
     return order_by
 
 def create_breadcrumb(links):
-    return u" :: ".join(links)
+    return mark_safe(u" :: ".join(links))
 
 def standard_processor(request):
     """Processor that does standard processing of request
