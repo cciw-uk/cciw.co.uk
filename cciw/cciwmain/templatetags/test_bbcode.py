@@ -114,6 +114,3 @@ def test_correct_eliminates_div():
     bb = "[quote]test[/quote]"
     assert bb == bbcode.correct(bb)
 
-def do_all():
-    for bb, html in tests:
-        bbcode.bb2xhtml(bb)
