@@ -4,9 +4,9 @@ import cciw.cciwmain.common
 import cciw.middleware.threadlocals as threadlocals
 
 class MenuLink(models.Model):
-    title = models.CharField("title", maxlength=50)
-    url = models.CharField("URL", maxlength=100)
-    extra_title = models.CharField("Disambiguation title", maxlength=100, blank=True)
+    title = models.CharField("title", max_length=50)
+    url = models.CharField("URL", max_length=100)
+    extra_title = models.CharField("Disambiguation title", max_length=100, blank=True)
     listorder = models.SmallIntegerField("order in list")
     visible = models.BooleanField("Visible", default=True)
     parent_item = models.ForeignKey("self", null=True, blank=True,
@@ -37,7 +37,7 @@ class HtmlChunk(models.Model):
     html = models.TextField("HTML")
     menu_link = models.ForeignKey(MenuLink, verbose_name="Associated URL",
         null=True, blank=True)
-    page_title = models.CharField("page title (for chunks that are pages)", maxlength=100,
+    page_title = models.CharField("page title (for chunks that are pages)", max_length=100,
         blank=True)
     
     def __unicode__(self):

@@ -25,8 +25,8 @@ Message:
 class FeedbackManipulator(forms.Manipulator):
     def __init__(self):
         self.fields = (
-            forms.EmailField(field_name="email", length=30, maxlength=200, is_required=True),
-            forms.TextField(field_name="name", length=30, maxlength=200),
+            forms.EmailField(field_name="email", length=30, max_length=200, is_required=True),
+            forms.TextField(field_name="name", length=30, max_length=200),
             forms.LargeTextField(field_name="message", is_required=True),
         )
 

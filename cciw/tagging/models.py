@@ -389,13 +389,13 @@ class TagManager(models.Manager):
         return int(cursor.fetchone()[0])
 
 class Tag(models.Model):
-    text = models.CharField("Text", maxlength=32)
+    text = models.CharField("Text", max_length=32)
     # We use CharField for target_id and creator_id for greater flexibility
     # (don't have to use integer primary keys)
-    target_id = models.CharField("'Target' ID", maxlength=64) # 64 should be enough for anyone...
+    target_id = models.CharField("'Target' ID", max_length=64) # 64 should be enough for anyone...
     target_ct = models.ForeignKey(ContentType, verbose_name="'Target' content type", 
         related_name='tag_target_set')
-    creator_id = models.CharField("'creator' ID", maxlength=64)
+    creator_id = models.CharField("'creator' ID", max_length=64)
     creator_ct = models.ForeignKey(ContentType, verbose_name="'creator' content type",
         related_name='tag_creator_set')
     added = models.DateTimeField("Date added", auto_now_add=True)

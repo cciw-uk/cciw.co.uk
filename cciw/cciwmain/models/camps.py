@@ -4,9 +4,9 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Site(models.Model):
-    short_name = models.CharField("Short name", maxlength="25", blank=False, unique=True)
-    slug_name = models.SlugField("Machine name", maxlength="25", blank=True, unique=True)
-    long_name = models.CharField("Long name", maxlength="50", blank=False)
+    short_name = models.CharField("Short name", max_length="25", blank=False, unique=True)
+    slug_name = models.SlugField("Machine name", max_length="25", blank=True, unique=True)
+    long_name = models.CharField("Long name", max_length="50", blank=False)
     info = models.TextField("Description (HTML)")
     
     def __unicode__(self):
@@ -30,7 +30,7 @@ class Site(models.Model):
         )
         
 class Person(models.Model):
-    name = models.CharField("Name", maxlength=40)
+    name = models.CharField("Name", max_length=40)
     info = models.TextField("Information (Plain text)", 
                         blank=True)
     user = models.ForeignKey(User, verbose_name="Associated admin user", null=True, blank=True)
@@ -54,7 +54,7 @@ CAMP_AGES = (
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")
     number = models.PositiveSmallIntegerField("number")
-    age = models.CharField("age", blank=False, maxlength=3,
+    age = models.CharField("age", blank=False, max_length=3,
                         choices=CAMP_AGES)
     start_date = models.DateField("start date")
     end_date = models.DateField("end date")

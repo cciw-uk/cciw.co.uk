@@ -10,7 +10,7 @@ class Permission(models.Model):
     NEWS_CREATOR = 6
 
     id = models.PositiveSmallIntegerField("ID", primary_key=True)
-    description = models.CharField("Description", maxlength=40)
+    description = models.CharField("Description", max_length=40)
     
     def __unicode__(self):
         return self.description
@@ -56,10 +56,10 @@ class Member(models.Model):
         (MODERATE_ALL,      u"Fully moderated")
     )
 
-    user_name   = models.CharField("User name", primary_key=True, maxlength=30)
-    real_name   = models.CharField("Real name", maxlength=30, blank=True)
+    user_name   = models.CharField("User name", primary_key=True, max_length=30)
+    real_name   = models.CharField("Real name", max_length=30, blank=True)
     email       = models.EmailField("Email address")
-    password    = models.CharField("Password", maxlength=30)
+    password    = models.CharField("Password", max_length=30)
     date_joined = models.DateTimeField("Date joined", null=True)
     last_seen   = models.DateTimeField("Last on website", null=True)
     show_email  = models.BooleanField("Show email address", default=False)
@@ -151,10 +151,10 @@ class Member(models.Model):
 
 
 class Award(models.Model):
-    name = models.CharField("Award name", maxlength=50)
+    name = models.CharField("Award name", max_length=50)
     value = models.SmallIntegerField("Value")
     year = models.PositiveSmallIntegerField("Year")
-    description = models.CharField("Description", maxlength=200)
+    description = models.CharField("Description", max_length=200)
     image = models.ImageField("Award image", 
         upload_to=settings.AWARD_UPLOAD_PATH)
 
@@ -179,7 +179,7 @@ class Award(models.Model):
         list_display = ('name', 'year')
     
 class PersonalAward(models.Model):
-    reason = models.CharField("Reason for award", maxlength=200)
+    reason = models.CharField("Reason for award", max_length=200)
     date_awarded = models.DateField("Date awarded", null=True, blank=True)
     award = models.ForeignKey(Award,
         verbose_name="award", 

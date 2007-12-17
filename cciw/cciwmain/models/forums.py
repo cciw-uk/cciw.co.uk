@@ -13,7 +13,7 @@ _camp_forum_re = re.compile('^' + settings.CAMP_FORUM_RE + '$')
 
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
-    location = models.CharField("Location/path", db_index=True, unique=True, maxlength=50)
+    location = models.CharField("Location/path", db_index=True, unique=True, max_length=50)
     
     def get_absolute_url(self):
         return '/' + self.location
@@ -46,7 +46,7 @@ class NewsItem(models.Model):
     created_at = models.DateTimeField("Posted")
     summary = models.TextField("Summary or short item, (bbcode)")
     full_item = models.TextField("Full post (HTML)", blank=True)
-    subject = models.CharField("Subject", maxlength=100)
+    subject = models.CharField("Subject", max_length=100)
     
     def __unicode__(self):
         return self.subject
@@ -84,7 +84,7 @@ class UserSpecificTopics(models.Manager):
             return queryset
 
 class Topic(models.Model):
-    subject = models.CharField("Subject", maxlength=240)
+    subject = models.CharField("Subject", max_length=240)
     started_by = models.ForeignKey(Member, related_name="topics_started",
         verbose_name="started by")
     created_at = models.DateTimeField("Started", null=True)
@@ -142,7 +142,7 @@ class Topic(models.Model):
         ordering = ('-started_by',)
 
 class Gallery(models.Model):
-    location = models.CharField("Location/URL", maxlength=50)
+    location = models.CharField("Location/URL", max_length=50)
     needs_approval = models.BooleanField("Photos need approval", default=False)
 
     def __unicode__(self):
@@ -175,8 +175,8 @@ class Photo(models.Model):
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open")
     hidden = models.BooleanField("Hidden")
-    filename = models.CharField("Filename", maxlength=50)
-    description = models.CharField("Description", blank=True, maxlength=100)
+    filename = models.CharField("Filename", max_length=50)
+    description = models.CharField("Description", blank=True, max_length=100)
     gallery = models.ForeignKey(Gallery,
         verbose_name="gallery",
         related_name="photos")
@@ -246,7 +246,7 @@ class UserSpecificPosts(models.Manager):
 class Post(models.Model):
     posted_by = models.ForeignKey(Member, 
         related_name="posts")
-    subject = models.CharField("Subject", maxlength=240, blank=True) # deprecated, supports legacy boards
+    subject = models.CharField("Subject", max_length=240, blank=True) # deprecated, supports legacy boards
     message = models.TextField("Message")
     posted_at = models.DateTimeField("Posted at", null=True)
     hidden = models.BooleanField("Hidden", default=False)

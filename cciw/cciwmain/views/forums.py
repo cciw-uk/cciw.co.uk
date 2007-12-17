@@ -220,9 +220,9 @@ def parse_polloptions(polloptions):
     if len(l) == 0:
         raise validators.ValidationError(u"At least one option must be entered")
     
-    maxlength = PollOption._meta.get_field('text').maxlength
-    if len([opt for opt in l if len(opt) > maxlength]) > 0:
-        raise validators.ValidationError(u"Options may not be more than %s chars long" % maxlength)
+    max_length = PollOption._meta.get_field('text').max_length
+    if len([opt for opt in l if len(opt) > max_length]) > 0:
+        raise validators.ValidationError(u"Options may not be more than %s chars long" % max_length)
         
     return l
     

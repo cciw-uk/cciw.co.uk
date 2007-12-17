@@ -14,9 +14,9 @@ class Poll(models.Model):
     X_VOTES_PER_USER = 1
     X_VOTES_PER_USER_PER_DAY = 2
 
-    title = models.CharField("Title", maxlength=100)
-    intro_text = models.CharField("Intro text", maxlength=400, blank=True)
-    outro_text = models.CharField("Closing text", maxlength=400, blank=True)
+    title = models.CharField("Title", max_length=100)
+    intro_text = models.CharField("Intro text", max_length=400, blank=True)
+    outro_text = models.CharField("Closing text", max_length=400, blank=True)
     voting_starts = models.DateTimeField("Voting starts")
     voting_ends = models.DateTimeField("Voting ends")
     rules = models.PositiveSmallIntegerField("Rules",
@@ -85,7 +85,7 @@ class Poll(models.Model):
         
 
 class PollOption(models.Model):
-    text = models.CharField("Option text", maxlength=200, core=True)
+    text = models.CharField("Option text", max_length=200, core=True)
     total = models.PositiveSmallIntegerField("Number of votes", core=True)
     poll = models.ForeignKey(Poll, verbose_name="Associated poll",
         related_name="poll_options", edit_inline=True)
