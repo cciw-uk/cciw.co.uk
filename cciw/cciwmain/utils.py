@@ -1,4 +1,7 @@
 import datetime
+from django.utils.safestring import mark_safe
+from django.core.urlresolvers import reverse
+
 
 def obfuscate_email(email):
     # TODO - make into javascript linky thing?
@@ -11,15 +14,15 @@ def get_member_href(user_name):
         # with the feed framework and utf-8)
         return u''
     else:
-        return u'/members/' + user_name + '/'
+        return reverse('cciwmain.members.detail', kwargs={'user_name':user_name})
 
 def get_member_link(user_name):
     user_name = user_name.strip()
     if user_name.startswith(u"'"):
         return user_name
     else:
-        return u'<a title="Information about user \'%s\'" href="%s">%s</a>' % \
-               (user_name, get_member_href(user_name), user_name)
+        return mark_safe(u'<a title="Information about user \'%s\'" href="%s">%s</a>' % \
+               (user_name, get_member_href(user_name), user_name))
 
 def get_member_icon(user_name):
     from django.conf import settings

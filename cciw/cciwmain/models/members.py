@@ -4,6 +4,8 @@ from django.core import mail
 from cciw.middleware import threadlocals
 from cciw.cciwmain import utils
 from datetime import datetime
+from cciw.cciwmain.utils import get_member_link, get_member_href
+
 
 class Permission(models.Model):
     POLL_CREATOR = 5
@@ -84,10 +86,12 @@ class Member(models.Model):
         return self.user_name
         
     def get_absolute_url(self):
-        return "/members/%s/" % self.user_name.encode("ascii") # Usernames are restricted to ascii
+        if self.dummy_member:
+            return None
+        else:
+            return get_member_href(self.user_name)
         
     def get_link(self):
-        from cciw.cciwmain.utils import get_member_link
         if self.dummy_member:
             return self.user_name
         else:

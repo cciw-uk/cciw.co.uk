@@ -34,7 +34,7 @@ patterns('cciw.cciwmain.views',
     # Members
     (r'^login/$', 'members.login'),
     (r'^members/$', 'members.index'),
-    (r'^members/(?P<user_name>[A-Za-z0-9_]+)/$', 'members.detail'),
+    url(r'^members/(?P<user_name>[A-Za-z0-9_]+)/$', 'members.detail', name="cciwmain.members.detail"),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/posts/$', 'members.posts'),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/messages/$', 'members.send_message'),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/messages/inbox/$', 'members.inbox'),
