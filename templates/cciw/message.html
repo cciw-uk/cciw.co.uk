@@ -1,3 +1,4 @@
+<script type="text/javascript" src="{{ pagevars.media_root_url }}/javascript/MochiKit/MochiKit.js"></script>
 <script type="text/javascript">
 <!--
 function bibleWindow()
@@ -10,6 +11,23 @@ function insert(text)
 {
 	document.getElementById('message').value += text;
 }
+
+
+function passageinput_keydown(ev)
+{
+	key = ev.key();
+	if (key['string'] == 'KEY_ENTER') {
+		ev.stop();
+		bibleWindow();
+		ev.stop();
+	}
+}
+
+connect(window, 'onload', 
+	function(ev) {
+		connect($('passageinput'), 'onkeydown', passageinput_keydown);
+	}
+)
 
 //-->
 </script>
