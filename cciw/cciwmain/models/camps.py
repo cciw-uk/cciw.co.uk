@@ -14,7 +14,7 @@ class Site(models.Model):
         return self.short_name
         
     def get_absolute_url(self):
-        return u"/sites/%u/" % self.slug_name
+        return u"/sites/%s/" % self.slug_name
     
     def save(self):
         from django.template.defaultfilters import slugify
@@ -81,10 +81,10 @@ class Camp(models.Model):
         except Person.DoesNotExist:
             pass
         if len(leaders) > 0:
-            leadertext = u" (%u)" % u", ".join(str(l) for l in leaders)
+            leadertext = u" (%s)" % u", ".join(str(l) for l in leaders)
         else:
             leadertext = u""
-        return u"%u-%u%u" % (self.year, self.number, leadertext)
+        return u"%s-%s%s" % (self.year, self.number, leadertext)
     
     @property
     def nice_name(self):
