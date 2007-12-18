@@ -33,6 +33,3 @@ class HtmlChunkPage(TestCase):
         else:
             self.assert_("Edit home_page" not in response.content,
                          "'Edit home page' link should not be visible")
-            
-                     
-
