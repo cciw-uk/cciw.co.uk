@@ -26,4 +26,4 @@ rsync -vr --exclude='.bzr' --exclude='.svn' --exclude='*.pyc' --exclude='*~' --e
 
 
 # Check everything first using 'bzr status'
-rsync -vr --exclude='.bzr' --exclude='*.pyc' --exclude='*~' templates media cciw websitedown cciw@cciw.co.uk:/home2/cciw/webapps/django_app/
+rsync -vr --exclude='.bzr' --exclude='*.pyc' --exclude='*~' templates media cciw websitedown scripts cciw@cciw.co.uk:/home2/cciw/webapps/django_app/
