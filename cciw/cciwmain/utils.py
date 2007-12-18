@@ -5,8 +5,12 @@ from django.core.urlresolvers import reverse
 
 
 def obfuscate_email(email):
-    # TODO - make into javascript linky thing?
-    return "<span style='text-decoration: underline;'>%s</span>" % email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ') 
+    # TODO - use javascript write statements, with fallback
+    safe_email = email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ')
+    return mark_safe("<span style='text-decoration: underline;'>%s</span>" % safe_email)
+
+    
+#    return mark_safe("<span style='text-decoration: underline;'>%s</span>" % email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> '))
 
 member_username_re = re.compile(r'^[A-Za-z0-9_]{3,15}$')
 
