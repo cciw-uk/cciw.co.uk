@@ -99,9 +99,6 @@ class Camp(models.Model):
     def is_past(self):
         return self.end_date <= datetime.date.today()
 
-    def is_past(self):
-        return self.end_date <= datetime.date.today()
-
     class Meta:
         app_label = "cciwmain"
         ordering = ['-year','number']
