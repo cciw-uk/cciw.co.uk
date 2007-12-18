@@ -23,9 +23,23 @@ function passageinput_keydown(ev)
 	}
 }
 
+// To keep XHTML validation, we have to avoid
+// 'target', so use this hack instead.
+function externalLinks() { 
+	if (!document.getElementsByTagName) return;
+	var anchors = document.getElementsByTagName("a"); 
+	for (var i=0; i < anchors.length; i++) { 
+		var anchor = anchors[i]; 
+		if (anchor.getAttribute("href") && 
+		anchor.getAttribute("rel") == "external") 
+		anchor.target = "_blank"; 
+	} 
+} 
+
 connect(window, 'onload', 
 	function(ev) {
 		connect($('passageinput'), 'onkeydown', passageinput_keydown);
+		externalLinks();
 	}
 )
 
@@ -46,6 +60,6 @@ connect(window, 'onload',
 
  | Bible: <input name="passageinput" id="passageinput" type="text" title="Enter Bible passage and click the icon to do a lookup in a popup window" /><a title="Enter Bible passage and click the icon to do a lookup in a popup window" class="button" href="javascript:void bibleWindow();"><img src="{{ pagevars.media_root_url }}images/book.png" alt="bible icon" /></a>
  |
-<a title="More details about creating messages." href="/website/bbcode/" >Help</a>
+<a title="More details about creating messages." rel="external" href="/website/bbcode/" >Help</a>
 </div>
 </div>
