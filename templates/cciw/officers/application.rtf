@@ -1,4 +1,4 @@
-{% load rtf %}{\rtf1\ansi\ansicpg1252\uc1\deff0{\fonttbl
+{% load rtf %}{% autoescape off %}{\rtf1\ansi\ansicpg1252\uc1\deff0{\fonttbl
   {\f0 Times New Roman;}
   {\f1 Verdana;}
 }
@@ -144,4 +144,4 @@
 {{ app.crb_check_consent|yesno:"YES,NO,-"|rtfescape }}\cell}\row}
 
 
-}
+}{% endautoescape %}

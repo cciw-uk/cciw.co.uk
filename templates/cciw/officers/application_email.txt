@@ -1,4 +1,4 @@
-For camp:         {{ app.camp }}
+{% autoescape off %}For camp:         {{ app.camp }}
 
 Personal info
 =============
@@ -134,3 +134,4 @@ Do you consent to the obtaining of
 a Criminal Records Bureau check 
 on yourself?                            {{ app.crb_check_consent|yesno:"YES,NO,-" }}
 
+{% endautoescape %}
