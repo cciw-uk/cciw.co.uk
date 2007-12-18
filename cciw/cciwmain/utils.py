@@ -79,24 +79,23 @@ def get_current_domain():
     return _current_domain
 
 
-class LazyDict(object):
+class UseOnceLazyDict(object):
     """
-    Returns a lazy, read-only dictionary like object that calls
-    a function with given arguments when the data is first
-    accessed.
+    Returns a lazy, read-only dictionary for use in wrapping generic
+    views.  This dictionary must be initialised with the function and
+    arguments used to get the data.  When data is extracted, the function
+    is called to get the data, but then forgetton again.
     """
     def __init__(self, func, args=(), kwargs={}):
         self.func, self.args, self.kwargs = func, args, kwargs
-        self.data = None
-    
-    def __getitem__(self, name):
-        self._ensure_data()
-        return self.data[name]
+
+    # if __getitem__ needs to be implemented, then it will
+    # need to get the data and cache it, and when the same piece of
+    # data is requested a second time, all the cached data should
+    # be dropped
 
     def items(self):
-        self._ensure_data()
-        return self.data.items()
+        return self._get_data().items()
     
-    def _ensure_data(self):
-        if self.data is None:
-            self.data = self.func(*self.args, **self.kwargs)
+    def _get_data(self):
+        return self.func(*self.args, **self.kwargs)

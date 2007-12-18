@@ -1,34 +1,34 @@
 from django.conf.urls.defaults import patterns, url
 import cciw.cciwmain.common as cciw_common
-from cciw.cciwmain.utils import LazyDict
+from cciw.cciwmain.utils import UseOnceLazyDict
 from cciw.cciwmain.models import Site, Award
 from django.conf import settings
 
 urlpatterns = \
 patterns('django.views.generic',
     (r'^awards/$', 'list_detail.object_list',
-        {'queryset': Award.objects.order_by('-year', '-value'),
-         'extra_context':  LazyDict(cciw_common.standard_extra_context, kwargs=dict(title="Website Awards")),
-         'template_name': 'cciw/awards/index.html',
-         'allow_empty': True,
-         }
-    ),
+        dict(queryset=Award.objects.order_by('-year', '-value'),
+             extra_context=UseOnceLazyDict(cciw_common.standard_extra_context, kwargs=dict(title="Website Awards")),
+             template_name='cciw/awards/index.html',
+             allow_empty=True,
+             )
+     ),
 
     (r'^sites/$', 'list_detail.object_list',
-        {'queryset': Site.objects.all(),
-         'extra_context': LazyDict(cciw_common.standard_extra_context, kwargs=dict(title="Camp sites")),
-         'template_name': 'cciw/sites/index.html'
-        }
-    ),
+        dict(queryset=Site.objects.all(),
+             extra_context=UseOnceLazyDict(cciw_common.standard_extra_context, kwargs=dict(title="Camp sites")),
+             template_name='cciw/sites/index.html'
+             )
+     ),
  
     (r'^sites/(?P<slug>.*)/$', 'list_detail.object_detail',
-        {'queryset': Site.objects.all(),
-         'slug_field': 'slug_name',
-         'extra_context': LazyDict(cciw_common.standard_extra_context),
-         'template_name': 'cciw/sites/detail.html'
-         }
+        dict(queryset=Site.objects.all(),
+             slug_field='slug_name',
+             extra_context=UseOnceLazyDict(cciw_common.standard_extra_context),
+             template_name='cciw/sites/detail.html'
+             )
         
-    ),
+     ),
     
 ) + \
 patterns('cciw.cciwmain.views',
