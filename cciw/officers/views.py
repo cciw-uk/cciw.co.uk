@@ -126,6 +126,8 @@ def add_application(request):
 
 # Copied straight from django.contrib.admin.views.main,
 # with small mods 
+from django.utils.translation import gettext as _ 
+
 @staff_member_required
 @never_cache
 def change_application(request, object_id):
