@@ -9,9 +9,6 @@ def obfuscate_email(email):
     safe_email = email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ')
     return mark_safe("<span style='text-decoration: underline;'>%s</span>" % safe_email)
 
-    
-#    return mark_safe("<span style='text-decoration: underline;'>%s</span>" % email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> '))
-
 member_username_re = re.compile(r'^[A-Za-z0-9_]{3,15}$')
 
 def get_member_href(user_name):
@@ -43,8 +40,8 @@ def get_member_icon(user_name):
     else:
         # We use content negotiation to get the right file i.e.
         # apache will add the right extension on for us.
-        return u'<img src="%s" class="userIcon" alt="icon" />' % \
-            (settings.SPECIAL_MEDIA_URL + settings.MEMBER_ICON_PATH + user_name)
+        return mark_safe(u'<img src="%s" class="userIcon" alt="icon" />' % \
+            (settings.SPECIAL_MEDIA_URL + settings.MEMBER_ICON_PATH + user_name))
 
 
 def modified_query_string(request, dict, fragment=''):
