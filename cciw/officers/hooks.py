@@ -42,7 +42,7 @@ def send_officer_email(officer, application, application_text, rtf_attachment):
     # Email to the officer
     user_email = formatted_email(application.officer)
     user_msg = (
-"""%s,
+u"""%s,
 
 For your records, here is a copy of the application you have submitted
 to CCIW. It is also attached to this email as an RTF file.
@@ -58,7 +58,7 @@ to CCIW. It is also attached to this email as an RTF file.
 def send_leader_email(leader_emails, application, application_text, rtf_attachment):
     subject = "CCIW application form from %s" % application.full_name
     body = \
-"""The following application form has been submitted via the
+u"""The following application form has been submitted via the
 CCIW website.  It is also attached to this email as an RTF file.
 
 """ + application_text

@@ -4,8 +4,14 @@
 
 
 {% if existing_poll %}
-<p>Edit the poll details below.  Please note that you shouldn't remove or re-order the poll options
-(but it is OK to insert additions at any position).</p>
+<p>Edit the poll details below.  Please note, you can either:</p>
+<ul>
+  <li>Change the text on existing options (votes for that option will
+  be preserved)</li>
+  <li>Remove one or more option</li>
+  <li>Add one or more option</li>
+</ul>
+<p>But do not do more than one of the above at once!</p>
 {% else %}
 <p>Enter the poll details below.  A new topic will be
 created for this poll.</p>

@@ -15,9 +15,9 @@
 				{{ topic.news_item.summary|bb2html }}
 				</div>
 				
-				{% if topic.news_item.full_item %}
+				{% if topic.news_item.has_full_item %}
 				<div class="newsItemReadMore"><a href="{{ topic.get_absolute_url }}" 
-				title="Read full article '{{ topic.news_item.subject|escape }}'" >Read more</a></div>
+				title="Read full article '{{ topic.news_item.subject }}'" >Read more</a></div>
 				{% endif %}
 
 			</div>

@@ -2,18 +2,19 @@ import datetime
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.safestring import mark_safe
 
 class Site(models.Model):
-    short_name = models.CharField("Short name", maxlength="25", blank=False, unique=True)
-    slug_name = models.SlugField("Machine name", maxlength="25", blank=True, unique=True)
-    long_name = models.CharField("Long name", maxlength="50", blank=False)
+    short_name = models.CharField("Short name", max_length="25", blank=False, unique=True)
+    slug_name = models.SlugField("Machine name", max_length="25", blank=True, unique=True)
+    long_name = models.CharField("Long name", max_length="50", blank=False)
     info = models.TextField("Description (HTML)")
     
-    def __str__(self):
+    def __unicode__(self):
         return self.short_name
         
     def get_absolute_url(self):
-        return "/sites/" + self.slug_name
+        return u"/sites/%s/" % self.slug_name
     
     def save(self):
         from django.template.defaultfilters import slugify
@@ -30,12 +31,12 @@ class Site(models.Model):
         )
         
 class Person(models.Model):
-    name = models.CharField("Name", maxlength=40)
+    name = models.CharField("Name", max_length=40)
     info = models.TextField("Information (Plain text)", 
                         blank=True)
     user = models.ForeignKey(User, verbose_name="Associated admin user", null=True, blank=True)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
     class Meta:
@@ -47,14 +48,14 @@ class Person(models.Model):
         pass
 
 CAMP_AGES = (
-    ('Jnr','Junior'),
-    ('Snr','Senior')
+    (u'Jnr',u'Junior'),
+    (u'Snr',u'Senior')
 )
 
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")
     number = models.PositiveSmallIntegerField("number")
-    age = models.CharField("age", blank=False, maxlength=3,
+    age = models.CharField("age", blank=False, max_length=3,
                         choices=CAMP_AGES)
     start_date = models.DateField("start date")
     end_date = models.DateField("end date")
@@ -73,27 +74,30 @@ class Camp(models.Model):
     site = models.ForeignKey(Site)
     online_applications = models.BooleanField("Accepts online applications from officers.")
     
-    def __str__(self):
+    def __unicode__(self):
         leaders = list(self.leaders.all())
         try:
             leaders.append(self.chaplain)
         except Person.DoesNotExist:
             pass
         if len(leaders) > 0:
-            leadertext = " (" + ", ".join(str(l) for l in leaders) + ")"
+            leadertext = u" (%s)" % u", ".join(str(l) for l in leaders)
         else:
-            leadertext = ""
-        return str(self.year) + "-" + str(self.number) + leadertext
+            leadertext = u""
+        return u"%s-%s%s" % (self.year, self.number, leadertext)
     
     @property
     def nice_name(self):
-        return "Camp " + str(self.number) + ", year " + str(self.year)
+        return u"Camp %d, year %d" % (self.number, self.year)
 
     def get_link(self):
-        return "<a href='" + self.get_absolute_url() + "'>" + self.nice_name + '</a>'
+        return mark_safe(u"<a href='%s'>%s</a>" % (self.get_absolute_url(), self.nice_name))
 
     def get_absolute_url(self):
-        return "/camps/" + str(self.year) + "/" + str(self.number) + "/"
+        return u"/camps/%d/%d/" % (self.year, self.number)
+
+    def is_past(self):
+        return self.end_date <= datetime.date.today()
 
     def is_past(self):
         return self.end_date <= datetime.date.today()

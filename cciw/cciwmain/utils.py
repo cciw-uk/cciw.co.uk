@@ -1,36 +1,47 @@
 import datetime
+import re
+from django.utils.safestring import mark_safe
+from django.core.urlresolvers import reverse
+
 
 def obfuscate_email(email):
-    # TODO - make into javascript linky thing?
-    return "<span style='text-decoration: underline;'>%s</span>" % email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ') 
+    # TODO - use javascript write statements, with fallback
+    safe_email = email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ')
+    return mark_safe("<span style='text-decoration: underline;'>%s</span>" % safe_email)
+
+member_username_re = re.compile(r'^[A-Za-z0-9_]{3,15}$')
 
 def get_member_href(user_name):
-    if user_name.startswith("'"):
+    if not member_username_re.match(user_name):
         # This can get called from feeds, and we need to ensure
         # we don't generate a URL, as it will go nowhere (also causes problems 
-        # with the feed framework and utf-8)
-        return ''
+        # with the feed framework and utf-8).  
+        # Also, this can be called via bbcode, so we need to ensure
+        # that we don't pass anything to urlresolvers.reverse that
+        # will make it die.
+        return u''
     else:
-        return '/members/' + user_name + '/'
+        return reverse('cciwmain.members.detail', kwargs={'user_name':user_name})
+
 
 def get_member_link(user_name):
     user_name = user_name.strip()
-    if user_name.startswith("'"):
+    if user_name.startswith(u"'"):
         return user_name
     else:
-        return '<a title="Information about user \'' + user_name + \
-           '\'" href="' + get_member_href(user_name) + '">' + user_name + '</a>'
+        return mark_safe(u'<a title="Information about user \'%s\'" href="%s">%s</a>' % \
+               (user_name, get_member_href(user_name), user_name))
 
 def get_member_icon(user_name):
     from django.conf import settings
     user_name = user_name.strip()
-    if user_name.startswith("'"): # dummy user
-        return ''
+    if user_name.startswith(u"'"): # dummy user
+        return u''
     else:
         # We use content negotiation to get the right file i.e.
         # apache will add the right extension on for us.
-        return '<img src="%s" class="userIcon" alt="icon" />' % \
-            (settings.SPECIAL_MEDIA_URL + settings.MEMBER_ICON_PATH + user_name)
+        return mark_safe(u'<img src="%s" class="userIcon" alt="icon" />' % \
+            (settings.SPECIAL_MEDIA_URL + settings.MEMBER_ICON_PATH + user_name))
 
 
 def modified_query_string(request, dict, fragment=''):
@@ -55,13 +66,7 @@ def validate_xml(filename):
     reader = Sax2.Reader(parser=p)
     dom_object = reader.fromUri(filename)
     return True
-
-def get_extract(utf8string, maxlength):
-    u = utf8string.decode('UTF-8')
-    if len(u) > maxlength:
-        u = u[0:maxlength-3] + "..."
-    return u.encode('UTF-8')
-    
+   
 def unslugify(slug):
     "Turns dashes and underscores into spaces and applies title casing"
     return slug.replace("-", " ").replace("_", " ").title()
@@ -73,3 +78,25 @@ def get_current_domain():
         from django.contrib.sites.models import Site
         _current_domain = Site.objects.get_current().domain
     return _current_domain
+
+
+class UseOnceLazyDict(object):
+    """
+    Returns a lazy, read-only dictionary for use in wrapping generic
+    views.  This dictionary must be initialised with the function and
+    arguments used to get the data.  When data is extracted, the function
+    is called to get the data, but then forgetton again.
+    """
+    def __init__(self, func, args=(), kwargs={}):
+        self.func, self.args, self.kwargs = func, args, kwargs
+
+    # if __getitem__ needs to be implemented, then it will
+    # need to get the data and cache it, and when the same piece of
+    # data is requested a second time, all the cached data should
+    # be dropped
+
+    def items(self):
+        return self._get_data().items()
+    
+    def _get_data(self):
+        return self.func(*self.args, **self.kwargs)

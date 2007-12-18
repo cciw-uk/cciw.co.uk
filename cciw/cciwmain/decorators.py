@@ -28,7 +28,7 @@ def member_required(func):
 
 
 LOGIN_FORM_KEY = 'this_is_the_login_form'
-ERROR_MESSAGE = "Please enter a correct username and password. Note that both fields are case-sensitive."
+ERROR_MESSAGE = u"Please enter a correct username and password. Note that both fields are case-sensitive."
 
 def _display_login_form(request, error_message=''):
     if request.POST and request.POST.has_key('post_data'):
@@ -82,7 +82,7 @@ def member_required_for_post(view_func):
 
         # If this isn't already the login page, display it.
         if not request.POST.has_key(LOGIN_FORM_KEY):
-            message = _("Please log in again, because your session has expired. Don't worry: Your submitted data has been saved and will be processed when you log in.")
+            message = _(u"Please log in again, because your session has expired. Don't worry: Your submitted data has been saved and will be processed when you log in.")
             return _display_login_form(request, message)
 
         # Check the password.
@@ -132,7 +132,7 @@ def same_member_required(member_name_arg):
             cur_member = get_current_member()
             if cur_member is None or \
                 (cur_member.user_name != user_name):
-                return HttpResponseForbidden('<h1>Access denied</h1>')
+                return HttpResponseForbidden(u'<h1>Access denied</h1>')
             return func(request, *args, **kwargs)
         return _check
     return _dec

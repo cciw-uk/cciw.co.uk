@@ -1,0 +1,38 @@
+- model: cciwmain.forum
+  pk: '1'
+  fields:
+    open: true
+    location: camps/2000/1/forum/
+
+- model: cciwmain.topic
+  pk: '1'
+  fields:
+    subject: '<Jill & Jane>'
+    started_by: test_member_1
+    approved: false
+    checked_by: null
+    created_at: 2006-09-03 12:16:57
+    forum: 1
+    hidden: false
+    needs_approval: false
+    news_item: null
+    open: true
+    poll: null
+    post_count: 1
+    last_post_at: 2006-09-03 12:16:57
+    last_post_by: test_member_1
+
+- model: cciwmain.post
+  pk: '1'
+  fields:
+    posted_by: test_member_1
+    subject: ''
+    message: 'A [b]unique message[/b] with some bbcode & <stuff> to be escaped'
+    posted_at: 2006-09-03 12:16:57
+    hidden: false
+    approved: null
+    checked_by: null
+    needs_approval: false
+    photo: null
+    topic: 1
+

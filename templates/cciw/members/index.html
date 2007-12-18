@@ -7,7 +7,7 @@
 	<form method='get' action='/members/'>
 		<p>
 		<label>Search:
-		<input type='text' name='search' id='search' value="{{ request.search|escape }}" /></label><br/>
+		<input type='text' name='search' id='search' value="{{ request.search }}" /></label><br/>
 		<label>Online users only: <input type="checkbox" name="online" value="1"
 			{% if request.online %}
 				checked="checked"
@@ -31,7 +31,7 @@
 		<tr>
 			<td>{% membericon %}{{ member.user_name }}{% endmembericon %}</td>
 			<td>{{ member.get_link }}{% if member.hidden %}<br/>HIDDEN{% endif %}{% if member.banned %}<br/>BANNED{% endif %}</td>
-			<td>{{ member.real_name|escape }}</td>
+			<td>{{ member.real_name }}</td>
 			<td>{{ member.comments|bb2html }}</td>
 			<td>
 			{% if member.date_joined %}

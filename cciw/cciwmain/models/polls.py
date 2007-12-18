@@ -4,9 +4,9 @@ from members import *
 import operator
 
 VOTING_RULES = (
-    (0, "Unlimited"),
-    (1, "'X' votes per member"),
-    (2, "'X' votes per member per day")
+    (0, u"Unlimited"),
+    (1, u"'X' votes per member"),
+    (2, u"'X' votes per member per day")
 )
 
 class Poll(models.Model):
@@ -14,9 +14,9 @@ class Poll(models.Model):
     X_VOTES_PER_USER = 1
     X_VOTES_PER_USER_PER_DAY = 2
 
-    title = models.CharField("Title", maxlength=100)
-    intro_text = models.CharField("Intro text", maxlength=400, blank=True)
-    outro_text = models.CharField("Closing text", maxlength=400, blank=True)
+    title = models.CharField("Title", max_length=100)
+    intro_text = models.CharField("Intro text", max_length=400, blank=True)
+    outro_text = models.CharField("Closing text", max_length=400, blank=True)
     voting_starts = models.DateTimeField("Voting starts")
     voting_ends = models.DateTimeField("Voting ends")
     rules = models.PositiveSmallIntegerField("Rules",
@@ -28,7 +28,7 @@ class Poll(models.Model):
     created_by = models.ForeignKey(Member, verbose_name="created by",
         related_name="polls_created")
     
-    def __str__(self):
+    def __unicode__(self):
         return self.title
     
     def can_vote(self, member):
@@ -70,11 +70,11 @@ class Poll(models.Model):
     
     def verbose_rules(self):
         if self.rules == Poll.UNLIMITED:
-            return "Unlimited number of votes."
+            return u"Unlimited number of votes."
         elif self.rules == Poll.X_VOTES_PER_USER:
-            return "%s vote(s) per user." % self.rule_parameter
+            return u"%s vote(s) per user." % self.rule_parameter
         elif self.rules == Poll.X_VOTES_PER_USER_PER_DAY:
-            return "%s vote(s) per user per day." % self.rule_parameter
+            return u"%s vote(s) per user per day." % self.rule_parameter
         
     class Meta:
         app_label = "cciwmain"   
@@ -85,13 +85,13 @@ class Poll(models.Model):
         
 
 class PollOption(models.Model):
-    text = models.CharField("Option text", maxlength=200, core=True)
+    text = models.CharField("Option text", max_length=200, core=True)
     total = models.PositiveSmallIntegerField("Number of votes", core=True)
     poll = models.ForeignKey(Poll, verbose_name="Associated poll",
         related_name="poll_options", edit_inline=True)
     listorder = models.PositiveSmallIntegerField("Order in list", core=True)
         
-    def __str__(self):
+    def __unicode__(self):
         return self.text
         
     def percentage(self):

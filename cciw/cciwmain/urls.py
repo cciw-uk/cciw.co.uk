@@ -1,48 +1,49 @@
-from django.conf.urls.defaults import patterns
+from django.conf.urls.defaults import patterns, url
 import cciw.cciwmain.common as cciw_common
+from cciw.cciwmain.utils import UseOnceLazyDict
 from cciw.cciwmain.models import Site, Award
 from django.conf import settings
 
 urlpatterns = \
 patterns('django.views.generic',
     (r'^awards/$', 'list_detail.object_list',
-        {'queryset': Award.objects.order_by('-year', '-value'),
-         'extra_context': cciw_common.standard_extra_context(title="Website Awards"),
-         'template_name': 'cciw/awards/index.html',
-         'allow_empty': True,
-         }
-    ),
+        dict(queryset=Award.objects.order_by('-year', '-value'),
+             extra_context=UseOnceLazyDict(cciw_common.standard_extra_context, kwargs=dict(title="Website Awards")),
+             template_name='cciw/awards/index.html',
+             allow_empty=True,
+             )
+     ),
 
     (r'^sites/$', 'list_detail.object_list',
-        {'queryset': Site.objects.all(),
-         'extra_context': cciw_common.standard_extra_context(title="Camp sites"),
-         'template_name': 'cciw/sites/index.html'
-        }
-    ),
+        dict(queryset=Site.objects.all(),
+             extra_context=UseOnceLazyDict(cciw_common.standard_extra_context, kwargs=dict(title="Camp sites")),
+             template_name='cciw/sites/index.html'
+             )
+     ),
  
     (r'^sites/(?P<slug>.*)/$', 'list_detail.object_detail',
-        {'queryset': Site.objects.all(),
-         'slug_field': 'slug_name',
-         'extra_context': cciw_common.standard_extra_context(),
-         'template_name': 'cciw/sites/detail.html'
-         }
+        dict(queryset=Site.objects.all(),
+             slug_field='slug_name',
+             extra_context=UseOnceLazyDict(cciw_common.standard_extra_context),
+             template_name='cciw/sites/detail.html'
+             )
         
-    ),
+     ),
     
 ) + \
 patterns('cciw.cciwmain.views',
     # Members
     (r'^login/$', 'members.login'),
     (r'^members/$', 'members.index'),
-    (r'^members/(?P<user_name>[A-Za-z0-9_]+)/$', 'members.detail'),
+    url(r'^members/(?P<user_name>[A-Za-z0-9_]+)/$', 'members.detail', name="cciwmain.members.detail"),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/posts/$', 'members.posts'),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/messages/$', 'members.send_message'),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/messages/inbox/$', 'members.inbox'),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/messages/archived/$', 'members.archived_messages'),
-    (r'^signup/$', 'memberadmin.signup'),
+    url(r'^signup/$', 'memberadmin.signup', name="cciwmain.memberadmin.signup"),
     (r'^memberadmin/change-password/$', 'memberadmin.change_password'),
     (r'^memberadmin/change-email/$', 'memberadmin.change_email'),
-    (r'^memberadmin/preferences/$', 'memberadmin.preferences'),
+    url(r'^memberadmin/preferences/$', 'memberadmin.preferences', name="cciwmain.memberadmin.preferences"),
     (r'^help/logging-in/$', 'memberadmin.help_logging_in'),
     
     # Camps
@@ -52,7 +53,7 @@ patterns('cciw.cciwmain.views',
     (r'^camps/(?P<year>\d{4})/?$', 'camps.index'),
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+)/$', 'camps.detail'),
     (r'^' + settings.CAMP_FORUM_RE + r'$', 'camps.forum'),
-    (r'^' + settings.CAMP_FORUM_RE + r'(?P<topicnumber>\d+)/$', 'camps.topic'),
+    url(r'^' + settings.CAMP_FORUM_RE + r'(?P<topicnumber>\d+)/$', 'camps.topic', name='cciwmain.camps.topic'),
     (r'^' + settings.CAMP_FORUM_RE + r'add/$', 'camps.add_topic'),
     (r'^' + settings.CAMP_FORUM_RE + r'add_news/$', 'camps.add_news'),
     (r'^' + settings.CAMP_FORUM_RE + r'add_poll/$', 'camps.edit_poll'),
@@ -68,8 +69,10 @@ patterns('cciw.cciwmain.views',
         {'title': 'News', 
         'template_name': 'cciw/forums/newsindex.html', 
         'paginate_by' : 6,
-        'default_order': ('-created_at',)}), 
-    (r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'}),
+        'default_order': ('-created_at',)},
+     'cciwmain.site-news-index'), 
+    (r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'},
+     'cciwmain.site-news-detail'),
 
     # Misc website stuff
     (r'^website/forum/$', 'forums.topicindex', {'title': 'Website forum',

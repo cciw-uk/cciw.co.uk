@@ -25,7 +25,7 @@
   <label for="application">Choose application</label>
   <select name="application" id="application">
     {% for app in finished_applications %}
-    <option value="{{ app.id }}">{{ app.officer.get_full_name|escape }}, {{ app.camp.year }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
+    <option value="{{ app.id }}">{{ app.officer.get_full_name }}, {{ app.camp.year }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
     {% endfor %}
   </select>
   </div>
@@ -40,7 +40,7 @@
   <div class="form-row">
     <input type="submit" name="view" value="Get it" />
   </div>
-  <input type="hidden" name="to" value="{{ request.path|escape }}" />
+  <input type="hidden" name="to" value="{{ request.path }}" />
 </div>
 </form>
 

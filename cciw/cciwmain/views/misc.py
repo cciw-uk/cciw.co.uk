@@ -25,13 +25,13 @@ Message:
 class FeedbackManipulator(forms.Manipulator):
     def __init__(self):
         self.fields = (
-            forms.EmailField(field_name="email", length=30, maxlength=200, is_required=True),
-            forms.TextField(field_name="name", length=30, maxlength=200),
+            forms.EmailField(field_name="email", length=30, max_length=200, is_required=True),
+            forms.TextField(field_name="name", length=30, max_length=200),
             forms.LargeTextField(field_name="message", is_required=True),
         )
 
 def feedback(request):
-    c = standard_extra_context(title="Contact us")
+    c = standard_extra_context(title=u"Contact us")
     
     manipulator = FeedbackManipulator()
     
@@ -42,7 +42,7 @@ def feedback(request):
         if not errors:
             manipulator.do_html2python(new_data)
             send_feedback(new_data['email'], new_data['name'], new_data['message'])
-            c['message'] = "Thank you, your message has been sent."
+            c['message'] = u"Thank you, your message has been sent."
     else:
         errors = new_data = {}
     

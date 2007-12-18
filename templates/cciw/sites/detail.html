@@ -3,5 +3,5 @@
 {% extends "cciw/standard.html" %}
 
 {% block content %}
-	{{ object.info|standard_subs }}
+	{{ object.info|safe|standard_subs }}
 {% endblock %}

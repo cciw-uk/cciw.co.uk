@@ -1,142 +1,147 @@
-{% load rtf %}{\rtf1\ansi\deff0
-{For camp: {{ app.camp }}}
+{% load rtf %}{\rtf1\ansi\ansicpg1252\uc1\deff0{\fonttbl
+  {\f0 Times New Roman;}
+  {\f1 Verdana;}
+}
+{\f1 \fs30 CCIW Application form {{ app.camp.year }} - {\b{{ app.full_name|rtfescape }}}}
+\fs24
+{\par For camp: {{ app.camp|rtfescape }}}
 {\par {\ul Personal info}}
 \par
-{\trowd \intbl\cellx2000\cellx9000 {Name:            \cell {{ app.full_name }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Maiden name:     \cell {{ app.full_maiden_name }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Date of birth:   \cell {{ app.birth_date }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Place of birth:  \cell {{ app.birth_place }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Address:         \cell {{ app.address_firstline }} \line {{ app.address_town }} \line {{ app.address_county }} \line {{ app.address_postcode }} \line {{ app.address_country }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Tel:             \cell {{ app.address_tel }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Mobile:          \cell {{ app.address_mobile }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {E-mail:          \cell {{ app.address_email }}\cell}\row}
-{\trowd \intbl\cellx3000\cellx9000 {At this address since: \cell {{ app.address_since }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Name:            \cell {{ app.full_name|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Maiden name:     \cell {{ app.full_maiden_name|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Date of birth:   \cell {{ app.birth_date|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Place of birth:  \cell {{ app.birth_place|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Address:         \cell {{ app.address_firstline|rtfescape }} \line {{ app.address_town|rtfescape }} \line {{ app.address_county|rtfescape }} \line {{ app.address_postcode|rtfescape }} \line {{ app.address_country|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Tel:             \cell {{ app.address_tel|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Mobile:          \cell {{ app.address_mobile|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {E-mail:          \cell {{ app.address_email|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx3000\cellx9000 {At this address since: \cell {{ app.address_since|rtfescape }}\cell}\row}
 
 {% if app.address2_from or app.address3_from %}
 {\par {\ul Previous addresses}}
 {% if app.address2_from %}{\par Previous address 1:}
 \par
-{\trowd \intbl\cellx2000\cellx9000 {From:            \cell {{ app.address2_from }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {To:              \cell {{ app.address2_to }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Address:         \cell {{ app.address2_address|rtflinebreaks }}\cell}\row}{% endif %}
+{\trowd \intbl\cellx2000\cellx9000 {From:            \cell {{ app.address2_from|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {To:              \cell {{ app.address2_to|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Address:         \cell {{ app.address2_address|rtfescape|rtflinebreaks }}\cell}\row}{% endif %}
 
 {% if app.address3_from %}{\par Previous address 2:}
 \par
-{\trowd \intbl\cellx2000\cellx9000 {From:            \cell {{ app.address3_from }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {To:              \cell {{ app.address3_to }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Address:         \cell {{ app.address3_address|rtflinebreaks }}\cell}\row}{% endif %}
+{\trowd \intbl\cellx2000\cellx9000 {From:            \cell {{ app.address3_from|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {To:              \cell {{ app.address3_to|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Address:         \cell {{ app.address3_address|rtfescape|rtflinebreaks }}\cell}\row}{% endif %}
 {% endif %}
 
 {\par \brdrt \brdrhair {\ul Statements}}
 {\par {\b Christian experience}}
-{\par {{ app.christian_experience|rtflinebreaks }}}
+{\par {{ app.christian_experience|rtfescape|rtflinebreaks }}}
 
 \line
 {\par {\b Youth work experience}}
-{\par {{ app.youth_experience|rtflinebreaks }}}
+{\par {{ app.youth_experience|rtfescape|rtflinebreaks }}}
 \par
 {\trowd \intbl\cellx7000\cellx9000 {Have you ever had an offer to work
   with children/young people declined? \cell
-{{ app.youth_work_declined|yesno:"YES,NO,-" }}\cell}\row}
+{{ app.youth_work_declined|yesno:"YES,NO,-"|rtfescape }}\cell}\row}
 {% if app.youth_work_declined_details or app.youth_work_declined %}
 \line
 {\par {\b Details}}
-{\par {{ app.youth_work_declined_details|rtflinebreaks }}}
+{\par {{ app.youth_work_declined_details|rtfescape|rtflinebreaks }}}
 {% endif %}
 
 {\par {\ul Illnesses}}
 \par
 {\trowd \intbl\cellx7000\cellx9000 {Do you suffer or have you suffered from any illness which
   may directly affect your work with children/young people? \cell
-{{ app.relevant_illness|yesno:"YES,NO,-" }}\cell}\row}
+{{ app.relevant_illness|yesno:"YES,NO,-"|rtfescape }}\cell}\row}
 
 {% if app.illness_details or app.relevant_illness %}
 \line
 {\par {\b Details}}
-{\par {{ app.illness_details|rtflinebreaks }}}
+{\par {{ app.illness_details|rtfescape|rtflinebreaks }}}
 \line
 {% endif %}
 
 {\par \brdrt \brdrhair {\ul Employment history}}
 {% if app.employer1_name %}{\par Employer 1}
 \par
-{\trowd \intbl\cellx2000\cellx9000 {Name:             \cell {{ app.employer1_name }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {From:             \cell {{ app.employer1_from }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Til:              \cell {{ app.employer1_to }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Job description:  \cell {{ app.employer1_job }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Name:             \cell {{ app.employer1_name|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {From:             \cell {{ app.employer1_from|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Til:              \cell {{ app.employer1_to|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Job description:  \cell {{ app.employer1_job|rtfescape }}\cell}\row}
 {\trowd \intbl\cellx2000\cellx9000 {Reason for leaving:\cell
-  {{ app.employer1_leaving|rtflinebreaks }}\cell}\row}
+  {{ app.employer1_leaving|rtfescape|rtflinebreaks }}\cell}\row}
 {% endif %}
 
 {% if app.employer2_name %}{\par Employer 2}
 \par
-{\trowd \intbl\cellx2000\cellx9000 {Name:             \cell {{ app.employer2_name }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {From:             \cell {{ app.employer2_from }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Til:              \cell {{ app.employer2_to }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Job description:  \cell {{ app.employer2_job }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Name:             \cell {{ app.employer2_name|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {From:             \cell {{ app.employer2_from|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Til:              \cell {{ app.employer2_to|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Job description:  \cell {{ app.employer2_job|rtfescape }}\cell}\row}
 {\trowd \intbl\cellx2000\cellx9000 {Reason for leaving:\cell
-  {{ app.employer2_leaving|rtflinebreaks }}\cell}\row}
+  {{ app.employer2_leaving|rtfescape|rtflinebreaks }}\cell}\row}
 
 {% endif %}
 
 
 {\par \brdrt \brdrhair {\ul References}}
 \par
-{\trowd \intbl\cellx2000\cellx9000 {Referee 1:        \cell {{ app.referee1_name }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Address:          \cell {{ app.referee1_address|rtflinebreaks }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Tel:              \cell {{ app.referee1_tel }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Mobile:           \cell {{ app.referee1_mobile }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {E-mail:           \cell {{ app.referee1_email }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Referee 1:        \cell {{ app.referee1_name|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Address:          \cell {{ app.referee1_address|rtfescape|rtflinebreaks }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Tel:              \cell {{ app.referee1_tel|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Mobile:           \cell {{ app.referee1_mobile|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {E-mail:           \cell {{ app.referee1_email|rtfescape }}\cell}\row}
 \par
-{\trowd \intbl\cellx2000\cellx9000 {Referee 2:        \cell {{ app.referee2_name }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Address:          \cell {{ app.referee2_address|rtflinebreaks }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Tel:              \cell {{ app.referee2_tel }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Mobile:           \cell {{ app.referee2_mobile }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {E-mail:           \cell {{ app.referee2_email }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Referee 2:        \cell {{ app.referee2_name|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Address:          \cell {{ app.referee2_address|rtfescape|rtflinebreaks }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Tel:              \cell {{ app.referee2_tel|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {Mobile:           \cell {{ app.referee2_mobile|rtfescape }}\cell}\row}
+{\trowd \intbl\cellx2000\cellx9000 {E-mail:           \cell {{ app.referee2_email|rtfescape }}\cell}\row}
 
 {\par \brdrt \brdrhair {\ul Declarations}}
 \par
 {\trowd \intbl\cellx7000\cellx9000 {Have you ever been charged 
  with or convicted of a criminal offence or are the subject of criminal proceedings? \cell
-{{ app.crime_declaration|yesno:"YES,NO,-" }}\cell}\row}
+{{ app.crime_declaration|yesno:"YES,NO,-"|rtfescape }}\cell}\row}
 
 {% if app.crime_details or app.crime_declaration %}
 {\par {\b Details: }}
-{\par {{ app.crime_details|rtflinebreaks }}}
+{\par {{ app.crime_details|rtfescape|rtflinebreaks }}}
 {% endif %}
 
 \par
 {\trowd \intbl\cellx7000\cellx9000 {Have you ever been involved in court
  proceedings concerning a child for 
  whom you have parental responsibility? \cell
-{{ app.court_declaration|yesno:"YES,NO,-" }}\cell}\row}
+{{ app.court_declaration|yesno:"YES,NO,-"|rtfescape }}\cell}\row}
 
 {% if app.court_details or app.court_declaration %}
 {\par {\b Details: }}
-{\par {{ app.court_details|rtflinebreaks }}}
+{\par {{ app.court_details|rtfescape|rtflinebreaks }}}
 {% endif %}
 
 \par
 {\trowd \intbl\cellx7000\cellx9000 {Has there ever been any cause for 
  concern regarding your conduct with 
  children/young people?  \cell
-{{ app.concern_declaration|yesno:"YES,NO,-" }}\cell}\row}
+{{ app.concern_declaration|yesno:"YES,NO,-"|rtfescape }}\cell}\row}
 
 {% if app.concern_details or app.concern_declaration %}
 {\par {\b Details: }}
-{\par {{ app.concern_details|rtflinebreaks }}}
+{\par {{ app.concern_details|rtfescape|rtflinebreaks }}}
 {% endif %}
 
 \par
 {\trowd \intbl\cellx7000\cellx9000 {To your knowledge have you ever had 
  any allegation made against you concerning children/young people which 
  has been reported to and investigated by Social Services and/or the Police?  \cell
-{{ app.allegation_declaration|yesno:"YES,NO,-" }}\cell}\row}
+{{ app.allegation_declaration|yesno:"YES,NO,-"|rtfescape }}\cell}\row}
 
 \par
 {\trowd \intbl\cellx7000\cellx9000 {Do you consent to the obtaining of 
  a Criminal Records Bureau check on yourself?  \cell
-{{ app.crb_check_consent|yesno:"YES,NO,-" }}\cell}\row}
+{{ app.crb_check_consent|yesno:"YES,NO,-"|rtfescape }}\cell}\row}
 
 
 }

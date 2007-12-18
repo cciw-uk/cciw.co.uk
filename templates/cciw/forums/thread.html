@@ -18,7 +18,7 @@
 			{% if topic %}
 				<th class="topicSubject" colspan="2">
 				<span class="taglist">{% tag_summary_list for topic %} {% add_tag_link for topic %}</span>
-				<h2>{{ topic.subject|escape }}</h2></th>
+				<h2>{{ topic.subject }}</h2></th>
 			{% endif %}
 		{% endif %}
 		</tr>
@@ -45,7 +45,7 @@
 				</td>
 				<td class="postMessage" id="id{{ post.id }}">
 					<span class="taglist">{% tag_summary_list for post %} {% add_tag_link for post %}</span>
-					{% if post.subject %}<div class="postSubject">{{ post.subject|escape }}</div>{% endif %}
+					{% if post.subject %}<div class="postSubject">{{ post.subject }}</div>{% endif %}
 					{{ post.message|bb2html }}
 				</td>
 			</tr>
@@ -102,7 +102,7 @@ if (bits.length == 2) {
 	{% else %}
 		{% if not has_next %}
 			{% if login_link %}
-				<div><a href="{{ login_link|escape }}">Login to post a
+				<div><a href="{{ login_link }}">Login to post a
 message.</a></div>
 			{% endif %}
 		{% endif %}

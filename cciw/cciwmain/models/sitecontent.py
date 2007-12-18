@@ -1,21 +1,22 @@
 from django.db import models
 from django.contrib.admin.views.main import quote
+from django.utils.safestring import mark_safe
 import cciw.cciwmain.common
 import cciw.middleware.threadlocals as threadlocals
 
 class MenuLink(models.Model):
-    title = models.CharField("title", maxlength=50)
-    url = models.CharField("URL", maxlength=100)
-    extra_title = models.CharField("Disambiguation title", maxlength=100, blank=True)
+    title = models.CharField("title", max_length=50)
+    url = models.CharField("URL", max_length=100)
+    extra_title = models.CharField("Disambiguation title", max_length=100, blank=True)
     listorder = models.SmallIntegerField("order in list")
     visible = models.BooleanField("Visible", default=True)
     parent_item = models.ForeignKey("self", null=True, blank=True,
         verbose_name="Parent item (none = top level)",
         related_name="child_links")
 
-    def __str__(self):
+    def __unicode__(self):
         from cciw.cciwmain.common import standard_subs
-        return self.url + " [" +  standard_subs(self.title) + "]"
+        return  u"%s [%s]" % (self.url, standard_subs(self.title))
     
     def get_visible_children(self, request):
         """Gets a list of child menu links that should be visible given the current url"""
@@ -37,10 +38,10 @@ class HtmlChunk(models.Model):
     html = models.TextField("HTML")
     menu_link = models.ForeignKey(MenuLink, verbose_name="Associated URL",
         null=True, blank=True)
-    page_title = models.CharField("page title (for chunks that are pages)", maxlength=100,
+    page_title = models.CharField("page title (for chunks that are pages)", max_length=100,
         blank=True)
     
-    def __str__(self):
+    def __unicode__(self):
         return self.name
         
     def render(self, request):
@@ -49,11 +50,11 @@ class HtmlChunk(models.Model):
         html = cciw.cciwmain.common.standard_subs(self.html)
         user = threadlocals.get_current_user()
         if user and not user.is_anonymous() and user.is_staff \
-            and user.has_perm('edit_htmlchunk'):
-            html += ("""<div class="editChunkLink">&laquo;
+            and user.has_perm('cciwmain.change_htmlchunk'):
+            html += (u"""<div class="editChunkLink">&laquo;
                         <a href="/admin/cciwmain/htmlchunk/%s/">Edit %s</a> &raquo;
                         </div>""" % (quote(self.name), self.name))
-        return html
+        return mark_safe(html)
 
     class Meta:
         app_label = "cciwmain"   

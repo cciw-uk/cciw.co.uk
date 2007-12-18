@@ -8,6 +8,7 @@ from django.shortcuts import render_to_response
 from django.conf import settings
 from django import forms
 from django.core import validators
+from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission, Poll, PollOption
 from cciw.cciwmain.common import create_breadcrumb, standard_extra_context, get_order_option
@@ -22,31 +23,31 @@ from cciw.cciwmain import feeds
 
 # Utility functions for breadcrumbs
 def topicindex_breadcrumb(forum):
-    return ["Topics"]
+    return [u"Topics"]
 
 def photoindex_breadcrumb(gallery):
-    return ["Photos"]
+    return [u"Photos"]
 
 def topic_breadcrumb(forum, topic):
-    return ['<a href="' + forum.get_absolute_url() + '">Topics</a>']
+    return [u'<a href="%s">Topics</a>' % forum.get_absolute_url()]
 
 def photo_breadcrumb(gallery, photo):
-    prev_and_next = ''
+    prev_and_next = u''
     try:
         previous_photo = Photo.objects.filter(id__lt=photo.id, \
             gallery__id__exact = photo.gallery_id).order_by('-id')[0]
-        prev_and_next += '<a href="%s" title="Previous photo">&laquo;</a> ' % previous_photo.get_absolute_url() 
+        prev_and_next += u'<a href="%s" title="Previous photo">&laquo;</a> ' % previous_photo.get_absolute_url() 
     except IndexError:
-        prev_and_next += '&laquo; '
+        prev_and_next += u'&laquo; '
         
     try:
         next_photo = Photo.objects.filter(id__gt=photo.id, \
             gallery__id__exact = photo.gallery_id).order_by('id')[0]
-        prev_and_next += '<a href="%s" title="Next photo">&raquo;</a> ' % next_photo.get_absolute_url()
+        prev_and_next += u'<a href="%s" title="Next photo">&raquo;</a> ' % next_photo.get_absolute_url()
     except IndexError:
-        prev_and_next += '&raquo; '
+        prev_and_next += u'&raquo; '
         
-    return ['<a href="' + gallery.get_absolute_url() + '">Photos</a>', str(photo.id), prev_and_next]
+    return [u'<a href="%s">Photos</a>' % gallery.get_absolute_url(), unicode(photo.id), prev_and_next]
     
 # Called directly as a view for /news/ and /website/forum/, and used by other views
 def topicindex(request, title=None, extra_context=None, forum=None,
@@ -70,7 +71,7 @@ def topicindex(request, title=None, extra_context=None, forum=None,
         extra_context = standard_extra_context(title=title)
     
     extra_context['forum'] = forum
-    extra_context['atom_feed_title'] = "Atom feed for new topics on this board."
+    extra_context['atom_feed_title'] = u"Atom feed for new topics on this board."
     
     ### BREADCRUMB ###
     if breadcrumb_extra is None:
@@ -125,7 +126,7 @@ def add_topic(request, breadcrumb_extra=None):
     context = RequestContext(request, standard_extra_context(title='Add topic'))
     
     if not forum.open:
-        context['message'] = 'This forum is closed - new topics cannot be added.'
+        context['message'] = u'This forum is closed - new topics cannot be added.'
     else:
         context['forum'] = forum
         context['show_form'] = True
@@ -137,10 +138,10 @@ def add_topic(request, breadcrumb_extra=None):
         msg_text = request.POST.get('message', '').strip()
         
         if subject == '':
-            errors.append('You must enter a subject')
+            errors.append(u'You must enter a subject')
             
         if msg_text == '':
-            errors.append('You must enter a message.')
+            errors.append(u'You must enter a message.')
         
         context['message_text'] = bbcode.correct(msg_text)
         context['subject_text'] = subject
@@ -152,7 +153,7 @@ def add_topic(request, breadcrumb_extra=None):
                 post.save()
                 return HttpResponseRedirect('../%s/' % topic.id)
             else:
-                context['preview'] = bbcode.bb2xhtml(msg_text)
+                context['preview'] = mark_safe(bbcode.bb2xhtml(msg_text))
     
     context['errors'] = errors
     if breadcrumb_extra is None:
@@ -187,11 +188,11 @@ def add_news(request, breadcrumb_extra=None):
         subject = request.POST.get('subject', '').strip()
         msg_text = request.POST.get('message', '').strip()
         
-        if subject == '':
-            errors.append('You must enter a subject.')
+        if subject == u'':
+            errors.append(u'You must enter a subject.')
             
-        if msg_text == '':
-            errors.append('You must enter the short news item.')
+        if msg_text == u'':
+            errors.append(u'You must enter the short news item.')
         
         context['message_text'] = bbcode.correct(msg_text)
         context['subject_text'] = subject
@@ -204,7 +205,7 @@ def add_news(request, breadcrumb_extra=None):
                 topic.save()
                 return HttpResponseRedirect('../%s/' % topic.id)
             else:
-                context['preview'] = bbcode.bb2xhtml(msg_text)
+                context['preview'] = mark_safe(bbcode.bb2xhtml(msg_text))
     
     context['errors'] = errors
     if breadcrumb_extra is None:
@@ -218,11 +219,11 @@ def parse_polloptions(polloptions):
     l = [opt for opt in map(string.strip, polloptions.strip().split("\n")) if len(opt) > 0]
     
     if len(l) == 0:
-        raise validators.ValidationError, "At least one option must be entered"
+        raise validators.ValidationError(u"At least one option must be entered")
     
-    maxlength = PollOption._meta.get_field('text').maxlength
-    if len([opt for opt in l if len(opt) > maxlength]) > 0:
-        raise validators.ValidationError, "Options may not be more than %s chars long" % maxlength
+    max_length = PollOption._meta.get_field('text').max_length
+    if len([opt for opt in l if len(opt) > max_length]) > 0:
+        raise validators.ValidationError(u"Options may not be more than %s chars long" % max_length)
         
     return l
     
@@ -231,32 +232,67 @@ def update_poll_options(poll, new_option_list):
     and updates the PollOptions related to the Poll."""
     existing_options = list(poll.poll_options.order_by('listorder'))
     
-    # This assume order has not been messed with (as the user was instructed)
-    new_list = []
-    ex_option, new_option_t = None, None
-    while len(existing_options) or len(new_option_list):
-        if len(existing_options) > 0:
-            ex_option = existing_options[-1]
-        else:
-            ex_option = None
-            
-        if len(new_option_list) > 0:
-            new_option_t = new_option_list[-1]
-        else:
-            new_option_t = None
-            
-        if ex_option is not None and ex_option.text == new_option_t:
-            new_list.insert(0, existing_options.pop())
-            # throw away what we've dealt with
-            new_option_list.pop()
-        else: # ex_option is None or the text values are different
-            new_option = PollOption(text=new_option_list.pop(), poll=poll, total=0)
-            new_list.insert(0, new_option)
-    
-    for i, po in enumerate(new_list):
-        po.listorder = i
-        po.save()
+    # This assumes order has not been messed with (as the user was instructed)
 
+    if len(new_option_list) == len(existing_options):
+        # indicates changes to the text only
+        for existing_opt, new_text in zip(existing_options, new_option_list):
+            existing_opt.text = new_text
+            existing_opt.save()
+    elif len(new_option_list) > len(existing_options):
+        # Addition
+        new_list = []
+        ex_option, new_option_t = None, None
+
+        while len(new_option_list) > 0:
+            if len(existing_options) > 0:
+                ex_option = existing_options[-1]
+            else:
+                ex_option = None
+            
+            new_option_t = new_option_list[-1]
+            
+            if ex_option is not None and ex_option.text == new_option_t:
+                # Same as before
+                new_list.insert(0, existing_options.pop())
+                # throw away what we've dealt with
+                new_option_list.pop()
+            else: # ex_option is None or the text values are different
+                # This is an addition
+                text = new_option_list.pop()
+                new_option = PollOption(text=text, poll=poll, total=0)
+                new_list.insert(0, new_option)
+
+        for i, po in enumerate(new_list):
+            po.listorder = i
+            po.save()
+
+    elif len(existing_options) > len(new_option_list):
+         # Removal
+        new_list = []
+        ex_option, new_option_t = None, None
+
+        while len(existing_options) > 0:
+            ex_option = existing_options[-1]
+            
+            if len(new_option_list) > 0:
+                new_option_t = new_option_list[-1]
+            else:
+                new_option_t = None
+            
+            if new_option_t is not None and ex_option.text == new_option_t:
+                # Same as before
+                new_list.insert(0, existing_options.pop())
+                # throw away what we've dealt with
+                new_option_list.pop()
+            else: # new_option_t is None or the text values are different
+                # This is a removal
+                old_option = existing_options.pop()
+                old_option.delete()
+
+        for i, po in enumerate(new_list):
+            po.listorder = i
+            po.save()       
     
 @member_required
 def edit_poll(request, poll_id=None, breadcrumb_extra=None):
@@ -267,9 +303,9 @@ def edit_poll(request, poll_id=None, breadcrumb_extra=None):
     forum = _get_forum_or_404(request.path, suffix)
     
     if poll_id is not None:
-        title = "Edit poll"
+        title = u"Edit poll"
     else:
-        title = "Create poll"
+        title = u"Create poll"
     c = standard_extra_context(title=title)
     
     cur_member = get_current_member()
@@ -332,7 +368,7 @@ def edit_poll(request, poll_id=None, breadcrumb_extra=None):
             new_data['rule_parameter'] = 1
     
     c['form'] = forms.FormWrapper(manipulator, new_data, errors)
-    c['pollexisting_poll'] = existing_poll
+    c['existing_poll'] = existing_poll
     c['polloptions'] = polloptions
     c['errors'] = errors
     ctx = RequestContext(request, c)
@@ -374,7 +410,7 @@ def process_post(request, topic, photo, context):
     if request.POST.has_key('preview'):
         context['message_text'] = bbcode.correct(msg_text)
         if not errors:
-            context['preview'] = bbcode.bb2xhtml(msg_text)
+            context['preview'] = mark_safe(bbcode.bb2xhtml(msg_text))
 
     # Post
     if not errors and request.POST.has_key('post'):
@@ -408,16 +444,16 @@ def process_vote(request, topic, context):
     if not poll.can_anyone_vote():
         # Only get here if the poll was closed 
         # while they were voting
-        errors.append('This poll is closed for voting, sorry.')
+        errors.append(u'This poll is closed for voting, sorry.')
         context['voting_errors'] = errors
         return
     
     if not poll.can_vote(cur_member):
-        errors.append('You cannot vote on this poll.  Please check the voting rules.')
+        errors.append(u'You cannot vote on this poll.  Please check the voting rules.')
         context['voting_errors'] = errors
     
     if not polloption_id in (po.id for po in poll.poll_options.all()):
-        errors.append('Invalid option chosen')
+        errors.append(u'Invalid option chosen')
         context['voting_errors'] = errors
     
     if not errors:
@@ -425,7 +461,7 @@ def process_vote(request, topic, context):
                             member=cur_member,
                             date=datetime.datetime.now())
         voteinfo.save()
-        context['voting_message'] = 'Vote registered, thank you.'
+        context['voting_message'] = u'Vote registered, thank you.'
 
 @member_required_for_post
 def topic(request, title_start=None, template_name='cciw/forums/topic.html', topicid=0,
@@ -451,9 +487,9 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
     cur_member = get_current_member()
 
     # Add additional title
-    title = utils.get_extract(topic.subject, 40)
+    title = topic.subject[0:40]
     if len(title_start) > 0:
-        title = title_start + ": " + title
+        title = title_start + u": " + title
     extra_context = standard_extra_context(title=title)
 
     if breadcrumb_extra is None:
@@ -463,7 +499,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
     if introtext:
         extra_context['introtext'] = introtext
 
-    extra_context['atom_feed_title'] = "Atom feed for posts in this topic."
+    extra_context['atom_feed_title'] = u"Atom feed for posts in this topic."
 
     ### PROCESSING ###
     # Process any message that they added.
@@ -514,10 +550,10 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
     
     ### FEED ###
     resp = feeds.handle_feed_request(request, 
-        feeds.gallery_photo_feed("CCIW - " + extra_context['title']), query_set=photos)
+        feeds.gallery_photo_feed(u"CCIW - %s" % extra_context['title']), query_set=photos)
     if resp is not None: return resp
     
-    extra_context['atom_feed_title'] = "Atom feed for photos in this gallery."
+    extra_context['atom_feed_title'] = u"Atom feed for photos in this gallery."
     extra_context['gallery'] = gallery    
     extra_context['breadcrumb'] =   create_breadcrumb(breadcrumb_extra + photoindex_breadcrumb(gallery))
 
@@ -547,7 +583,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     resp = feeds.handle_feed_request(request, feeds.photo_post_feed(photo), query_set=posts)
     if resp: return resp
     
-    extra_context['atom_feed_title'] = "Atom feed for posts on this photo."
+    extra_context['atom_feed_title'] = u"Atom feed for posts on this photo."
     
     extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + photo_breadcrumb(photo.gallery, photo))
     extra_context['photo'] = photo
@@ -570,13 +606,13 @@ def photo(request, photo, extra_context, breadcrumb_extra):
         paginate_by=settings.FORUM_PAGINATE_POSTS_BY, allow_empty=True)
 
 def all_posts(request):
-    context = standard_extra_context(title="Recent posts")
+    context = standard_extra_context(title=u"Recent posts")
     posts = Post.objects.exclude(posted_at__isnull=True).order_by('-posted_at')
     
     resp = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
     if resp: return resp
     
-    context['atom_feed_title'] = "Atom feed for all posts on CCIW message boards."
+    context['atom_feed_title'] = u"Atom feed for all posts on CCIW message boards."
 
     return list_detail.object_list(request, posts,
         extra_context=context, template_name='cciw/forums/posts.html',
@@ -594,13 +630,13 @@ def post(request, id):
     return HttpResponseRedirect(url)
 
 def all_topics(request):
-    context = standard_extra_context(title="Recent new topics")
+    context = standard_extra_context(title=u"Recent new topics")
     topics = Topic.objects.exclude(created_at__isnull=True).order_by('-created_at')
     
     resp = feeds.handle_feed_request(request, feeds.TopicFeed, query_set=topics)
     if resp: return resp
     
-    context['atom_feed_title'] = "Atom feed for all new topics."
+    context['atom_feed_title'] = u"Atom feed for all new topics."
 
     return list_detail.object_list(request, topics,
         extra_context=context, template_name='cciw/forums/topics.html',

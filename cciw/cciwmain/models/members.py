@@ -4,15 +4,17 @@ from django.core import mail
 from cciw.middleware import threadlocals
 from cciw.cciwmain import utils
 from datetime import datetime
+from cciw.cciwmain.utils import get_member_link, get_member_href
+
 
 class Permission(models.Model):
     POLL_CREATOR = 5
     NEWS_CREATOR = 6
 
     id = models.PositiveSmallIntegerField("ID", primary_key=True)
-    description = models.CharField("Description", maxlength=40)
+    description = models.CharField("Description", max_length=40)
     
-    def __str__(self):
+    def __unicode__(self):
         return self.description
     
     class Meta:
@@ -44,22 +46,22 @@ class Member(models.Model):
     MODERATE_ALL = 2
     
     MESSAGE_OPTIONS = (
-        (MESSAGES_NONE,     "Don't allow messages"),
-        (MESSAGES_WEBSITE,  "Store messages on the website"),
-        (MESSAGES_EMAIL,    "Send messages via email"),
-        (MESSAGES_EMAIL_AND_WEBSITE, "Store messages and send via email")
+        (MESSAGES_NONE,     u"Don't allow messages"),
+        (MESSAGES_WEBSITE,  u"Store messages on the website"),
+        (MESSAGES_EMAIL,    u"Send messages via email"),
+        (MESSAGES_EMAIL_AND_WEBSITE, u"Store messages and send via email")
     )
     
     MODERATE_OPTIONS = (
-        (MODERATE_OFF,      "Off"),
-        (MODERATE_NOTIFY,   "Unmoderated, but notify"),
-        (MODERATE_ALL,      "Fully moderated")
+        (MODERATE_OFF,      u"Off"),
+        (MODERATE_NOTIFY,   u"Unmoderated, but notify"),
+        (MODERATE_ALL,      u"Fully moderated")
     )
 
-    user_name   = models.CharField("User name", primary_key=True, maxlength=30)
-    real_name   = models.CharField("Real name", maxlength=30, blank=True)
+    user_name   = models.CharField("User name", primary_key=True, max_length=30)
+    real_name   = models.CharField("Real name", max_length=30, blank=True)
     email       = models.EmailField("Email address")
-    password    = models.CharField("Password", maxlength=30)
+    password    = models.CharField("Password", max_length=30)
     date_joined = models.DateTimeField("Date joined", null=True)
     last_seen   = models.DateTimeField("Last on website", null=True)
     show_email  = models.BooleanField("Show email address", default=False)
@@ -80,14 +82,16 @@ class Member(models.Model):
     objects = UserSpecificMembers()
     all_objects = models.Manager()
     
-    def __str__(self):
+    def __unicode__(self):
         return self.user_name
         
     def get_absolute_url(self):
-        return "/members/" + self.user_name + "/"
+        if self.dummy_member:
+            return None
+        else:
+            return get_member_href(self.user_name)
         
     def get_link(self):
-        from cciw.cciwmain.utils import get_member_link
         if self.dummy_member:
             return self.user_name
         else:
@@ -151,15 +155,15 @@ class Member(models.Model):
 
 
 class Award(models.Model):
-    name = models.CharField("Award name", maxlength=50)
+    name = models.CharField("Award name", max_length=50)
     value = models.SmallIntegerField("Value")
     year = models.PositiveSmallIntegerField("Year")
-    description = models.CharField("Description", maxlength=200)
+    description = models.CharField("Description", max_length=200)
     image = models.ImageField("Award image", 
         upload_to=settings.AWARD_UPLOAD_PATH)
 
-    def __str__(self):
-        return self.name + " " + str(self.year)
+    def __unicode__(self):
+        return self.name + u" " + unicode(self.year)
         
     def nice_name(self):
         return str(self)
@@ -169,7 +173,7 @@ class Award(models.Model):
         
     def get_absolute_url(self):
         from django.template.defaultfilters import slugify
-        return "/awards/#" + slugify(str(self))
+        return "/awards/#" + slugify(unicode(self))
     
     class Meta:
         app_label = "cciwmain"
@@ -179,7 +183,7 @@ class Award(models.Model):
         list_display = ('name', 'year')
     
 class PersonalAward(models.Model):
-    reason = models.CharField("Reason for award", maxlength=200)
+    reason = models.CharField("Reason for award", max_length=200)
     date_awarded = models.DateField("Date awarded", null=True, blank=True)
     award = models.ForeignKey(Award,
         verbose_name="award", 
@@ -188,8 +192,8 @@ class PersonalAward(models.Model):
         verbose_name="member",
         related_name="personal_awards")
 
-    def __str__(self):
-        return self.award.name + " to " + self.member.user_name
+    def __unicode__(self):
+        return "%s to %s" % (self.award.name, self.member.user_name)
 
     class Meta:
         app_label = "cciwmain"   
@@ -245,8 +249,8 @@ http://%(domain)s/members/%(from)s/messages/
         "website@cciw.co.uk", [to_member.email])
             
     
-    def __str__(self):
-        return "[" + str(self.id) + "] to " + str(self.to_member)  + " from " + str(self.from_member)
+    def __unicode__(self):
+        return u"[%s] to %s from %s" % (unicode(self.id), unicode(self.to_member), unicode(self.from_member))
     
     class Meta:
         app_label = "cciwmain"

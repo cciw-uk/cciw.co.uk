@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.safestring import mark_safe
 from members import *
 from polls import *
 from datetime import datetime
@@ -13,26 +14,28 @@ _camp_forum_re = re.compile('^' + settings.CAMP_FORUM_RE + '$')
 
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
-    location = models.CharField("Location/path", db_index=True, unique=True, maxlength=50)
+    location = models.CharField("Location/path", db_index=True, unique=True, max_length=50)
     
     def get_absolute_url(self):
         return '/' + self.location
     
-    def __str__(self):
+    def __unicode__(self):
         return self.location
-    
+
     def nice_name(self):
         m = _camp_forum_re.match(self.location)
         if m:
             captures = m.groupdict()
             number = captures['number']
-            if number == 'all':
-                return "forum for all camps, year %s" % captures['year']
+            assert type(number) is unicode
+            if number == u'all':
+                return u"forum for all camps, year %s" % captures['year']
             else:
-                return "forum for camp %s, year %s" % (number, captures['year'])
+                return u"forum for camp %s, year %s" % (number, captures['year'])
         else:
-            return "forum at %s" % self.location
+            return u"forum at %s" % self.location
 
+    
     class Meta:
         app_label = "cciwmain"   
         
@@ -44,9 +47,12 @@ class NewsItem(models.Model):
     created_at = models.DateTimeField("Posted")
     summary = models.TextField("Summary or short item, (bbcode)")
     full_item = models.TextField("Full post (HTML)", blank=True)
-    subject = models.CharField("Subject", maxlength=100)
+    subject = models.CharField("Subject", max_length=100)
     
-    def __str__(self):
+    def has_full_item(self):
+        return len(self.full_item) > 0
+
+    def __unicode__(self):
         return self.subject
 
     @staticmethod
@@ -82,13 +88,13 @@ class UserSpecificTopics(models.Manager):
             return queryset
 
 class Topic(models.Model):
-    subject = models.CharField("Subject", maxlength=240)
+    subject = models.CharField("Subject", max_length=240)
     started_by = models.ForeignKey(Member, related_name="topics_started",
         verbose_name="started by")
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open")
     hidden = models.BooleanField("Hidden", default=False)
-    approved = models.BooleanField("Approved", null=True, blank=True)
+    approved = models.NullBooleanField("Approved", blank=True)
     checked_by = models.ForeignKey(User,
         null=True, blank=True, related_name="topics_checked",
         verbose_name="checked by")
@@ -111,14 +117,14 @@ class Topic(models.Model):
     objects = UserSpecificTopics()
     all_objects = models.Manager()
 
-    def __str__(self):
-        return  "Topic: " + self.subject
+    def __unicode__(self):
+        return  u"Topic: " + self.subject
         
     def get_absolute_url(self):
         return self.forum.get_absolute_url() + str(self.id) + '/'
     
     def get_link(self):
-        return '<a href="' + self.get_absolute_url() + '">' + escape(self.subject) + '</a>'
+        return mark_safe(u'<a href="%s">%s</a>' % (self.get_absolute_url(), escape(self.subject)))
 
     @staticmethod
     def create_topic(member, subject, forum):
@@ -140,10 +146,10 @@ class Topic(models.Model):
         ordering = ('-started_by',)
 
 class Gallery(models.Model):
-    location = models.CharField("Location/URL", maxlength=50)
+    location = models.CharField("Location/URL", max_length=50)
     needs_approval = models.BooleanField("Photos need approval", default=False)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.location
         
     def get_absolute_url(self):
@@ -173,8 +179,8 @@ class Photo(models.Model):
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open")
     hidden = models.BooleanField("Hidden")
-    filename = models.CharField("Filename", maxlength=50)
-    description = models.CharField("Description", blank=True, maxlength=100)
+    filename = models.CharField("Filename", max_length=50)
+    description = models.CharField("Description", blank=True, max_length=100)
     gallery = models.ForeignKey(Gallery,
         verbose_name="gallery",
         related_name="photos")
@@ -195,8 +201,8 @@ class Photo(models.Model):
     objects = UserSpecificPhotos()
     all_objects = models.Manager()
 
-    def __str__(self):
-        return "Photo: " + self.filename
+    def __unicode__(self):
+        return u"Photo: " + self.filename
 
     def get_absolute_url(self):
         return self.gallery.get_absolute_url() + str(self.id) + '/'
@@ -244,11 +250,11 @@ class UserSpecificPosts(models.Manager):
 class Post(models.Model):
     posted_by = models.ForeignKey(Member, 
         related_name="posts")
-    subject = models.CharField("Subject", maxlength=240, blank=True) # deprecated, supports legacy boards
+    subject = models.CharField("Subject", max_length=240, blank=True) # deprecated, supports legacy boards
     message = models.TextField("Message")
     posted_at = models.DateTimeField("Posted at", null=True)
     hidden = models.BooleanField("Hidden", default=False)
-    approved = models.BooleanField("Approved", null=True)
+    approved = models.NullBooleanField("Approved")
     checked_by = models.ForeignKey(User,
         verbose_name="checked by",
         null=True, blank=True, related_name="checked_post")
@@ -263,8 +269,8 @@ class Post(models.Model):
     all_objects = models.Manager()
 
 
-    def __str__(self):
-        return "Post [" + str(self.id) + "]:  " + self.message[:30]
+    def __unicode__(self):
+        return u"Post [%s]: %s" % (str(self.id), self.message[:30])
 
     def updateParent(self, parent):
         "Update the cached info in the parent topic/photo"
@@ -366,6 +372,6 @@ class Post(models.Model):
         ordering = ('id',) 
 
     class Admin:
-        list_display = ('__str__', 'posted_by', 'posted_at')
+        list_display = ('__unicode__', 'posted_by', 'posted_at')
         search_fields = ('message',)
         

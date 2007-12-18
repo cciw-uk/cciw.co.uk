@@ -73,8 +73,10 @@
 {% if target %}
 <h2>Links</h2>
 <ul>
-<li><a href="{{ target.get_absolute_url|escape }}">View '{{ target }}'</a></li>
-<li>{% add_tag_link for target %} - add/edit tags for this item</li>
+<li><a href="{{ target.get_absolute_url }}">View '{{ target }}'</a></li>
+{% if current_member %}
+  <li>{% add_tag_link for target %} - add/edit tags for this item</li>
+{% endif %}
 </ul>
 <br/>
 {% endif %}

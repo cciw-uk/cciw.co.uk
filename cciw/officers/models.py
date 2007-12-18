@@ -46,15 +46,15 @@ def yyyy_mm_validator(field_data, all_data):
 
 # Pretend class (it's easier to avoid some ORM magic this way)
 def YyyyMmField(*args, **kwargs):
-    kwargs['maxlength'] = 7
+    kwargs['max_length'] = 7
     validators = list(kwargs.get('validator_list', ()))
     validators.append(yyyy_mm_validator)
     kwargs['validator_list'] = validators
-    kwargs['help_text'] = 'Enter the date in YYYY/MM format.'
+    kwargs['help_text'] = u'Enter the date in YYYY/MM format.'
     return models.CharField(*args, **kwargs)
 
 def AddressField(*args, **kwargs):
-    kwargs['help_text'] ='Full address, including post code and country'
+    kwargs['help_text'] = u'Full address, including post code and country'
     return models.TextField(*args, **kwargs)
 
 class ExplicitBooleanField(models.NullBooleanField):
@@ -91,17 +91,17 @@ if not threadlocals.is_web_request():
 class Application(models.Model):
     camp = required_field(models.ForeignKey, Camp, null=True, limit_choices_to={'online_applications': True})
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
-    full_name = required_field(models.CharField, 'full name', maxlength=60)
-    full_maiden_name = models.CharField('full maiden name', maxlength=60, blank=True)
+    full_name = required_field(models.CharField, 'full name', max_length=60)
+    full_maiden_name = models.CharField('full maiden name', max_length=60, blank=True)
     birth_date = required_field(models.DateField, 'date of birth', null=True, default=None)
-    birth_place = required_field(models.CharField, 'place of birth', maxlength=60)
-    address_firstline = required_field(models.CharField, 'address', maxlength=40)
-    address_town = required_field(models.CharField, 'town/city', maxlength=60) # 60 == len("Llanfairpwllgwyngyllgogerychwyrndrobwyll-llantysiliogogogoch")
-    address_county = required_field(models.CharField, 'county', maxlength=30)
-    address_postcode = required_field(models.CharField, 'post code', maxlength=10)
-    address_country = required_field(models.CharField, 'country', maxlength=30)
-    address_tel = required_field(models.CharField, 'telephone', maxlength=22, blank=True) # +44-(0)1224-XXXX-XXXX
-    address_mobile = models.CharField('mobile', maxlength=22, blank=True)
+    birth_place = required_field(models.CharField, 'place of birth', max_length=60)
+    address_firstline = required_field(models.CharField, 'address', max_length=40)
+    address_town = required_field(models.CharField, 'town/city', max_length=60) # 60 == len("Llanfairpwllgwyngyllgogerychwyrndrobwyll-llantysiliogogogoch")
+    address_county = required_field(models.CharField, 'county', max_length=30)
+    address_postcode = required_field(models.CharField, 'post code', max_length=10)
+    address_country = required_field(models.CharField, 'country', max_length=30)
+    address_tel = required_field(models.CharField, 'telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
+    address_mobile = models.CharField('mobile', max_length=22, blank=True)
     address_email = required_field(models.EmailField, 'e-mail')
     address_since = required_field(YyyyMmField, 'resident at address since')
 
@@ -123,28 +123,28 @@ class Application(models.Model):
             illness which may directly affect your work with children/young people?''')
     illness_details = models.TextField('illness details', blank=True)
     
-    employer1_name = models.CharField("1. Employer's name and address", maxlength=100, blank=True)
+    employer1_name = models.CharField("1. Employer's name and address", max_length=100, blank=True)
     employer1_from = YyyyMmField("Employed from", blank=True)
     employer1_to = YyyyMmField("Employed until", blank=True)
-    employer1_job = models.CharField("Job description", maxlength=60, blank=True)
-    employer1_leaving = models.CharField("Reason for leaving", maxlength=150, blank=True)
+    employer1_job = models.CharField("Job description", max_length=60, blank=True)
+    employer1_leaving = models.CharField("Reason for leaving", max_length=150, blank=True)
     
-    employer2_name = models.CharField("2. Employer's name and address", maxlength=100, blank=True)
+    employer2_name = models.CharField("2. Employer's name and address", max_length=100, blank=True)
     employer2_from = YyyyMmField("Employed from", blank=True)
     employer2_to = YyyyMmField("Employed until", blank=True)
-    employer2_job = models.CharField("Job description", maxlength=60, blank=True)
-    employer2_leaving = models.CharField("Reason for leaving", maxlength=150, blank=True)
+    employer2_job = models.CharField("Job description", max_length=60, blank=True)
+    employer2_leaving = models.CharField("Reason for leaving", max_length=150, blank=True)
     
-    referee1_name = required_field(models.CharField, "First referee's name", maxlength=60)
+    referee1_name = required_field(models.CharField, "First referee's name", max_length=60)
     referee1_address = required_field(AddressField, 'address')
-    referee1_tel = models.CharField('telephone', maxlength=22, blank=True) # +44-(0)1224-XXXX-XXXX
-    referee1_mobile = models.CharField('mobile', maxlength=22, blank=True)
+    referee1_tel = models.CharField('telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
+    referee1_mobile = models.CharField('mobile', max_length=22, blank=True)
     referee1_email = models.EmailField('e-mail', blank=True)
 
-    referee2_name = required_field(models.CharField, "Second referee's name", maxlength=60)
+    referee2_name = required_field(models.CharField, "Second referee's name", max_length=60)
     referee2_address = required_field(AddressField, 'address')
-    referee2_tel = models.CharField('telephone', maxlength=22, blank=True) # +44-(0)1224-XXXX-XXXX
-    referee2_mobile = models.CharField('mobile', maxlength=22, blank=True)
+    referee2_tel = models.CharField('telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
+    referee2_mobile = models.CharField('mobile', max_length=22, blank=True)
     referee2_email = models.EmailField('e-mail', blank=True)
     
     crime_declaration = required_field(ExplicitBooleanField, 
@@ -185,11 +185,11 @@ class Application(models.Model):
         super(Application, self).save()
         dispatcher.send(signals.application_saved, sender=self, application=self)
 
-    def __str__(self):
+    def __unicode__(self):
         if self.camp is not None:
-            return "Application from %s, %d" % (self.full_name, self.camp.year)
+            return u"Application from %s, %d" % (self.full_name, self.camp.year)
         else:
-            return "Application from %s" % self.full_name
+            return u"Application from %s" % self.full_name
 
     class Meta:
         pass

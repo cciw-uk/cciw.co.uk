@@ -40,7 +40,7 @@
 ## 3) emoticons, with intelligent handling for tricky cases 
 ##    (e.g. inside <pre> tags)
 ## 4) ability to render out corrected BBCode as well as XHTML
-## 5) XHTML outputed can be inserted into <body>, <div>, <td>
+## 5) XHTML output can be inserted into <body>, <div>, <td>
 ##    and any other elements that allow block level tags
 ## 6) Excellent 'do what I mean' handling of bbcode input.
 ##
@@ -68,7 +68,7 @@ ESV_BROWSE_URL = settings.ESV_BROWSE_URL
 
 ##### UTILITY FUNCTIONS #####
 def escape(html):
-    "Returns the given HTML with ampersands, quotes and carets encoded"
+    "Returns the given HTML with ampersands, quotes and waccas encoded"
     if not isinstance(html, basestring):
         html = str(html)
     return html.replace('&', '&amp;').replace('<', '&lt;') \
@@ -89,7 +89,7 @@ class MultiReplace:
                 break
             charmap[ord(k)] = v
         else:
-            self.charmap = string.join(charmap, "")
+            self.charmap = string.join(charmap, u"")
             return
 
         # string to string mapping; use a regular expression
@@ -148,11 +148,11 @@ class BBTag(object):
     def render_node_bbcode(self, node):
         opening = self.name # opening tag
         if node.parameter:
-            opening += "=" + node.parameter
+            opening += u"=" + node.parameter
         if self.self_closing:
-            return '[%s]' % opening
+            return u'[%s]' % opening
         else:
-            return '[%s]%s[/%s]' % \
+            return u'[%s]%s[/%s]' % \
                 (opening, node.render_children_bbcode(), self.name)
 
 ## Subclasses that follow override the render_node_xhtml 
@@ -171,16 +171,15 @@ class HtmlEquivTag(BBTag):
         opening = self.html_equiv
         if self.attributes:
             # Add any attributes
-            opening += ''.join(' %s="%s"' % (k, escape(v)) 
+            opening += u''.join(u' %s="%s"' % (k, escape(v)) 
                                         for k, v in self.attributes.items())
         if self.self_closing:
-            ret = '<' + opening + '/>'
+            ret = u'<%s/>' % opening 
         else:
             if len(node.children) > 0:
-                ret = '<' + opening + '>' + node.render_children_xhtml() + \
-                    '</' + self.html_equiv + '>'
+                ret = u'<%s>%s</%s>' % (opening, node.render_children_xhtml(), self.html_equiv)
             else:
-                ret = ''
+                ret = u''
         return ret
     
     def render_node_bbcode(self, node):
@@ -207,25 +206,24 @@ class SoftBrTag(BBTag):
     """A tag representing an optional <br>"""
     def render_node_xhtml(self, node):
         if node.parent.allows('br'):
-            return '<br/>'
+            return u'<br/>'
         else:
-            return '\n'
+            return u'\n'
             
     def render_node_bbcode(self, node):
-        return '\n'
+        return u'\n'
 
 class Emoticon(BBTag):
     def render_node_xhtml(self, node):
         if len(node.children) == 0:
-            return ''
+            return u''
         emoticon = node.children[0].text   # child is always a BBTextNode
         if node.parent.allows('img'):
             imagename = _EMOTICON_DICT.get(emoticon,'')
             if imagename == '':
-                return ''
+                return u''
             else:
-                return '<img src="' + EMOTICONS_ROOT + imagename + '" alt="' + \
-                    escape(emoticon) + '" />'
+                return u'<img src="%s" alt="%s" />' % (EMOTICONS_ROOT + imagename, escape(emoticon))
         else:
             return emoticon
             
@@ -236,8 +234,8 @@ class ColorTag(BBTag):
     def render_node_xhtml(self, node):
         if len(node.children) > 0:
             if _COLOR_REGEXP.match(node.parameter) is not None:
-                return '<span style="color: ' + node.parameter +  ';">' + \
-                    node.render_children_xhtml() + '</span>'
+                return u'<span style="color: %s;">%s</span>' % \
+                       (node.parameter, node.render_children_xhtml())
             else:
                 return node.render_children_xhtml()
         else:
@@ -246,11 +244,11 @@ class ColorTag(BBTag):
 class MemberTag(BBTag):
     def render_node_xhtml(self, node):
         if len(node.children) == 0:
-            return ''
+            return u''
         else:
-            member_name = escape(node.children[0].text.strip().replace(" ", ""))
+            member_name = escape(node.children[0].text.strip().replace(u" ", u""))
             if len(member_name) == 0:
-                return ''
+                return u''
             else:
                 return get_member_link(member_name)
 
@@ -259,21 +257,21 @@ class EmailTag(BBTag):
         if len(node.children) > 0:
             return obfuscate_email(escape(node.children[0].text.strip()))
         else:
-            return ''
+            return u''
             
 class UrlTag(BBTag):
     def render_node_xhtml(self, node):
         if len(node.children) == 0:
-            return ''
+            return u''
         if not node.parameter is None:
             url = node.parameter.strip()
         else:
             url = node.children[0].text.strip()
         linktext = node.children[0].text.strip()
         if len(url) == 0:
-            return ''
+            return u''
         else:
-            return '<a href="' + escape(url) + '">' + escape(linktext) + '</a>'
+            return u'<a href="%s">%s</a>' % (escape(url), escape(linktext))
 
 class QuoteTag(BBTag):
     def render_node_xhtml(self, node):
@@ -282,23 +280,20 @@ class QuoteTag(BBTag):
         else:
             node.parameter = node.parameter.strip()
         if _MEMBER_REGEXP.match(node.parameter):
-            return '<div class="memberquote">' + \
-                get_member_link(node.parameter) + ' said:</div>' + \
-                    '<blockquote>' + node.render_children_xhtml() + \
-                    '</blockquote>'
+            return u'<div class="memberquote">%s said:</div><blockquote>%s</blockquote>' % \
+                   (get_member_link(node.parameter),  node.render_children_xhtml())
         else:
-            return '<blockquote>' + node.render_children_xhtml() + \
-                '</blockquote>'
-
+            return '<blockquote>%s</blockquote>' % node.render_children_xhtml()
+        
 class BibleTag(BBTag):
     def render_node_xhtml(self, node):
-        output = ''
+        output = u''
         if node.parameter is not None:
             url = ESV_BROWSE_URL + "?" + urllib.urlencode({'q':node.parameter})
-            output += '<div class="biblequote"><a href="%s" title="Browse %s in the ESV">%s:</a></div>' % \
+            output += u'<div class="biblequote"><a href="%s" title="Browse %s in the ESV">%s:</a></div>' % \
                 (escape(url), escape(node.parameter), escape(node.parameter))
-        output += '<blockquote class="bible">' + node.render_children_xhtml() + '</blockquote>'
-        return ''.join(output)
+        output += u'<blockquote class="bible">%s</blockquote>' % node.render_children_xhtml()
+        return u''.join(output)
 
 ###### DATA ######
 
@@ -469,11 +464,11 @@ class BBNode:
         
     def render_children_xhtml(self):
         """Render the child nodes as XHTML"""
-        return "".join([child.render_xhtml() for child in self.children])
+        return u"".join([child.render_xhtml() for child in self.children])
 
     def render_children_bbcode(self):
         """Render the child nodes as BBCode"""
-        return "".join([child.render_bbcode() for child in self.children])
+        return u"".join([child.render_bbcode() for child in self.children])
 
 class BBRootNode(BBNode):
     """Represents a root node"""
@@ -518,7 +513,7 @@ class BBEscapedTextNode(BBTextNode):
     """Node used for text that uses the escaping mechanism: [[foo]].
     Only needed for rendering bbcode."""
     def render_bbcode(self):
-        return '[' + self.text + ']'
+        return u'[%s]' % self.text
 
 class BBTagNode(BBNode):
     def __init__(self, parent, name, parameter):
@@ -606,7 +601,7 @@ class BBCodeParser:
                 # E.g. [*] inside root, or [*] inside [quote]
                 # or inline inside root
                 # Add an implicit tag if possible
-                self.push_tag_node(new_tag.implicit_tag, '')
+                self.push_tag_node(new_tag.implicit_tag, u'')
                 self.push_tag_node(name, parameter)
             else:
                 # e.g. block level in inline etc. - traverse up the tree
@@ -637,7 +632,7 @@ class BBCodeParser:
 
     def _prepare(self, bbcode):
         # Replace newlines with 'soft' brs
-        bbcode = bbcode.replace("\n", '[softbr]')
+        bbcode = bbcode.replace(u"\n", u'[softbr]')
         
         # Replace emoticons with context-sensitive emoticon tags
         bbcode = _emoticon_replacer.replace(bbcode)

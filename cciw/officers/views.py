@@ -8,6 +8,7 @@ from django import forms, template
 from django.db import models
 from django.conf import settings
 from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.utils.encoding import force_unicode, smart_str
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -125,6 +126,8 @@ def add_application(request):
 
 # Copied straight from django.contrib.admin.views.main,
 # with small mods 
+from django.utils.translation import gettext as _ 
+
 @staff_member_required
 @never_cache
 def change_application(request, object_id):
@@ -178,7 +181,7 @@ def change_application(request, object_id):
             change_message = ' '.join(change_message)
             if not change_message:
                 change_message = _('No fields changed.')
-            LogEntry.objects.log_action(request.user.id, ContentType.objects.get_for_model(model).id, pk_value, str(new_object), CHANGE, change_message)
+            LogEntry.objects.log_action(request.user.id, ContentType.objects.get_for_model(model).id, pk_value, force_unicode(new_object), CHANGE, change_message)
 
             msg = _('The %(name)s "%(obj)s" was changed successfully.') % {'name': opts.verbose_name, 'obj': new_object}
             if request.POST.has_key("_continue"):
@@ -269,7 +272,7 @@ def view_application(request):
         rtf_attachment = (application_rtf_filename(app), application_rtf, 'text/rtf')
 
         msg = \
-"""Dear %s,
+u"""Dear %s,
 
 Please find attached a copy of the application you requested
  -- in plain text below and an RTF version attached.

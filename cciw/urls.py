@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import *
+from django.conf import settings
 
 handler404 = 'cciw.cciwmain.views.handler404'
 
@@ -11,7 +12,14 @@ urlpatterns = patterns('',
     (r'^admin/password_reset/confirm/$', 'cciw.officers.views.password_reset_confirm'),
     # Normal views
     (r'^admin/', include('django.contrib.admin.urls')),
-    (r'^officers/', include('cciw.officers.urls')),
-    (r'^validator/', include('lukeplant_me_uk.django.validator.urls')),
-    (r'', include('cciw.cciwmain.urls')),
+    (r'^officers/', include('cciw.officers.urls'))
+)
+
+if settings.DEBUG:
+    urlpatterns = urlpatterns + patterns('',
+      (r'^validator/', include('lukeplant_me_uk.django.validator.urls'))
+    )
+
+urlpatterns = urlpatterns + patterns('',
+    (r'', include('cciw.cciwmain.urls'))
 )

@@ -634,7 +634,6 @@ table.topheaders th
 {
 	white-space: nowrap;
 }
-}
 
 ul.leaderlist
 {
@@ -963,7 +962,7 @@ span.taglist
 }
 .chapter-num
 {
-	font-size: bigger;
+	font-size: larger;
 	font-weight: bold;
 }
 

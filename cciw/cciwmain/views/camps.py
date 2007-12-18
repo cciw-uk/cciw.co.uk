@@ -26,7 +26,7 @@ def index(request, year=None):
             List of all Camp objects (or all Camp objects in the specified year).
     """
     c = standard_extra_context()
-    c['title'] ="Camp forums and photos"
+    c['title'] = u"Camp forums and photos"
     all_camps = Camp.objects.filter(end_date__lte=datetime.datetime.today())
     if (year == None):
         camps = all_camps.order_by('-year', 'number')
@@ -62,14 +62,20 @@ def detail(request, year, number):
     c['camp'] = camp
     c['title'] = camp.nice_name
     
+<<<<<<< local
     if camp.is_past():
         c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(str(camp.year)) + [camp.nice_name])    
+=======
+    if camp.is_past():
+        c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(unicode(camp.year)) + [camp.nice_name])
+>>>>>>> other
     else:
-        c['breadcrumb'] = create_breadcrumb([standard_subs('<a href="/thisyear/">Camps {{thisyear}}</a>'), "Camp " + number])
+        c['breadcrumb'] = create_breadcrumb([standard_subs(u'<a href="/thisyear/">Camps {{thisyear}}</a>'), "Camp " + number])
     return render_to_response('cciw/camps/detail.html', context_instance=c)
 
 def thisyear(request):
-    c = RequestContext(request, standard_extra_context(title="Camps " + str(get_thisyear())))
+    c = RequestContext(request,
+                       standard_extra_context(title=u"Camps %d" % get_thisyear()))
     c['camps'] = Camp.objects.filter(year=get_thisyear()).order_by('number')
     return render_to_response('cciw/camps/thisyear.html', context_instance=c)
 
@@ -130,7 +136,7 @@ def forum(request, year, number):
     if number == 'all':
         camp = None
         forum = _get_forum_for_path_and_year(request.path[1:], int(year))
-        title = "General forum " + str(year)
+        title = u"General forum %s" % year
         breadcrumb_extra = year_forum_breadcrumb(year)
         
     else:
@@ -142,7 +148,7 @@ def forum(request, year, number):
         forum = get_forum_for_camp(camp)
         if forum is None:
             raise Http404
-        title = camp.nice_name + " - Forum"
+        title = u"%s - Forum" % camp.nice_name
         breadcrumb_extra = camp_forum_breadcrumb(camp)
 
     c = standard_extra_context(title=title)
@@ -167,7 +173,7 @@ def topic(request, year, number, topicnumber):
     """Displays a topic for a camp."""
     camp, breadcrumb_extra = _get_camp_and_breadcrumb(year, number)
     
-    return forums_views.topic(request, topicid=topicnumber, title_start='Topic',
+    return forums_views.topic(request, topicid=topicnumber, title_start=u'Topic',
         template_name='cciw/forums/topic.html', breadcrumb_extra=breadcrumb_extra)        
 
 @member_required
@@ -225,7 +231,7 @@ def photo(request, year, number, photonumber):
     except Photo.DoesNotExist:
         raise Http404
     
-    ec = standard_extra_context(title="Photos: " + camp.nice_name)
+    ec = standard_extra_context(title=u"Photos: %s" % camp.nice_name)
     
     return forums_views.photo(request, photo, ec, breadcrumb_extra)
 
@@ -244,11 +250,16 @@ def oldcampphoto(request, year, galleryname, photonumber):
     except Photo.DoesNotExist:
         raise Http404
     
-    ec = standard_extra_context(title=utils.unslugify(year+", " + galleryname) + " - Photos")    
+    ec = standard_extra_context(title=u"%s, %s - Photos" %
+                                (utils.unslugify(year), utils.unslugify(galleryname)))
     return forums_views.photo(request, photo, ec, breadcrumb_extra)
 
 def camp_forum_breadcrumb(camp):
-    return ['<a href="/camps/">Forums and photos</a>', '<a href="/camps/#year' + str(camp.year) + '">' + str(camp.year) + '</a>', camp.get_link()]
+    return [u'<a href="/camps/">Forums and photos</a>',
+            u'<a href="/camps/#year%d">%d</a>' % (camp.year, camp.year),
+            camp.get_link()]
     
 def year_forum_breadcrumb(year):
-    return ['<a href="/camps/">Forums and photos</a>', '<a href="/camps/#year' + year + '">' + utils.unslugify(year) + '</a>']
+    # NB: 'year' may be a string like 'Ancient'
+    return [u'<a href="/camps/">Forums and photos</a>',
+            u'<a href="/camps/#year%s">%s</a>' % (year, utils.unslugify(year)) ]

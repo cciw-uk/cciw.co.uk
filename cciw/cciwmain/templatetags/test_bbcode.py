@@ -1,9 +1,6 @@
+# # -*- coding: utf-8 -*-
 import sys
 import os
-
-# set up environment variables for testing (needed by imports in bbcode)
-sys.path = sys.path + ['/home/httpd/www.cciw.co.uk/django/','/home/httpd/www.cciw.co.uk/django_src/']
-os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
 
 import bbcode
 from cciw.cciwmain.utils import get_member_link   
@@ -24,8 +21,8 @@ tests = (
         '<ul>\n<li>Newlines not discarded, or converted when brs would be illegal</li></ul>'),
     ('[quote]\nNewlines not discarded at beginning of quote', 
         '<blockquote>\n<div>Newlines not discarded at beginning of quote</div></blockquote>'),
-    ('[list]Text in root of list tag is moved outside[*]and put in a div[/list]',
-        '<div>Text in root of list tag is moved outside<ul><li>and put in a div</li></ul></div>'),
+    (u'[list]Text in root of list tag is moved outside[*]and put in a div é[/list]',
+        u'<div>Text in root of list tag is moved outside<ul><li>and put in a div é</li></ul></div>'),
     (':-) :bosh:',
         '<div><img src="' + bbcode.EMOTICONS_ROOT + 'smile.gif" alt=":-)" /> <img src="' + bbcode.EMOTICONS_ROOT + 'mallet1.gif" alt=":bosh:" /></div>' ),
     ('0:-)',
@@ -42,7 +39,7 @@ tests = (
     ('[member]Joey[/member]',
         '<div>' + get_member_link('Joey') + '</div>'),
     ('[member]illegal " name[/member]',
-        '<div><a title="Information about user \'illegal&quot;name\'" href="/members/illegal&quot;name/">illegal&quot;name</a></div>'),
+        '<div><a title="Information about user \'illegal&quot;name\'" href="">illegal&quot;name</a></div>'),
     # Real example from typical user who doesn't bother with closing tags:
     ('ok, ill go first...[br][br][color=red]b[color=orange]e[color=yellow]a[color=green]u[color=blue]t[color=purple]i[color=magenta]f[color=pink]u[color=red]l[/color]  :-) [color=black](the surroundings and everyone in it)',
         '<div>ok, ill go first...<br/><br/><span style="color: red;">be<span style="color: yellow;">a<span style="color: green;">u<span style="color: blue;">t<span style="color: purple;">ifu<span style="color: red;">l</span>  <img src="' + bbcode.EMOTICONS_ROOT + 'smile.gif" alt=":-)" /> <span style="color: black;">(the surroundings and everyone in it)</span></span></span></span></span></span></div>'),
@@ -57,15 +54,15 @@ tests = (
     ('[emoticon]hello[/emoticon]',
         '<div></div>'),
     # escaping:
-    ('[[b]] [[/b]] [[quote=foo]] [[[b]]]',
-        '<div>[b] [/b] [quote=foo] [[b]]</div>'),
+    (u'[[b]] [[/b]] [[quote=fooé]] [[[b]]]',
+        u'<div>[b] [/b] [quote=fooé] [[b]]</div>'),
     # text that is accidentally similar to escaping:
     ('[[b]Just some bold text in square brackets[/b]]',
         '<div>[<b>Just some bold text in square brackets</b>]</div>'),
     
     # non-existant tags come through as literals
-    ('[nonexistanttag]',    
-        '<div>[nonexistanttag]</div>'),
+    (u'[nonéxistanttag]',    
+        u'<div>[nonéxistanttag]</div>'),
     # empty string should return nothing
     ('',
         ''),
@@ -96,6 +93,14 @@ def test_correct():
     for bb, xhtml in tests:
         yield check_correction, bb
 
+def test_unicode():
+    # Should always return unicode objects
+    for bb, xhtml in tests:
+        yield check_unicode, bb
+
+def check_unicode(bb):
+    assert type(bbcode.bb2xhtml(bb)) is unicode
+
 def test_correct_preserves_whitespace():
     # These examples are correct bbcode with whitespace
     # in various places, and 'correct' shouldn't mess with our whitespace!
@@ -109,6 +114,3 @@ def test_correct_eliminates_div():
     bb = "[quote]test[/quote]"
     assert bb == bbcode.correct(bb)
 
-def do_all():
-    for bb, html in tests:
-        bbcode.bb2xhtml(bb)

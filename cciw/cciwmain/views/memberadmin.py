@@ -11,6 +11,7 @@ from cciw.cciwmain.models import Member
 from cciw.middleware.threadlocals import set_member_session, get_current_member
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain import imageutils
+from cciw.cciwmain.utils import member_username_re
 import md5
 import urllib
 import re
@@ -20,7 +21,6 @@ import random
 import p3
 import base64
 
-username_re = re.compile(r'^[A-Za-z0-9_]{3,15}$')
 password_re = re.compile(r'^[A-Za-z0-9]{5,15}$')
 
 # The number of days a new password must be activated within
@@ -37,7 +37,7 @@ class ValidationError(Exception):
 
 # TODO - add synchronize lock here
 def create_user(user_name, password1, password2):
-    if username_re.match(user_name) is None:
+    if member_username_re.match(user_name) is None:
         raise ValidationError("The user name is invalid, please check and try again")
     elif Member.all_objects.filter(user_name__iexact=user_name).count() > 0:
         # Can't just try to create it and catch exceptions,
@@ -93,7 +93,6 @@ def email_and_username_hash(email, user_name):
     """Gets a hash of an email address + user_name"""
     # Use every other character to make it shorter and friendlier
     return md5.new(settings.SECRET_KEY + email + user_name).hexdigest()[::2]
-
 
 def validate_email_username_and_hash(email, user_name, hash):
     if email_address_used(email):
@@ -168,8 +167,8 @@ be changed until you click the link, so you can safely ignore this e-mail.
 def create_new_password_hash(password, user_name):
     # Avoid putting password as plaintext in URL using p3,
     # and also create string used to verify user_name and date.
-    hash_str = ':'.join([datetime.date.today().isoformat(), user_name, password])
-    return base64.urlsafe_b64encode(p3.p3_encrypt(hash_str, settings.SECRET_KEY))
+    hash_str = u':'.join([datetime.date.today().isoformat(), user_name, password])
+    return base64.urlsafe_b64encode(p3.p3_encrypt(hash_str.encode("utf-8"), settings.SECRET_KEY))
 
 def extract_new_password(hash, user_name):
     """Extracts the new password from the hash, throwing a ValidationError
@@ -178,7 +177,7 @@ def extract_new_password(hash, user_name):
         "copied the entire URL from the e-mail"
         
     try:
-        hash_str = base64.urlsafe_b64decode(hash)
+        hash_str = base64.urlsafe_b64decode(hash.encode("ascii"))
     except TypeError:
         raise ValidationError(invalid_url_msg)
 
@@ -436,8 +435,7 @@ def preferences(request):
         
         new_email = new_data['email']
         
-        errors = manipulator.get_validation_errors(new_data)
-        
+        errors = manipulator.get_validation_errors(new_data)        
         
         if not errors:
             # E-mail changes require verification, so fix it here
