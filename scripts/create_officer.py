@@ -151,7 +151,9 @@ def create_officer(username, first_name, last_name, email, password, update=Fals
     officer.is_active=True
     officer.is_superuser=False
     officer.email=email
-    
+
+    officer.validate()
+
     officer.save()
     officer.set_password(password)
     officer.save()
@@ -159,11 +161,11 @@ def create_officer(username, first_name, last_name, email, password, update=Fals
 
 def email_officer(username, first_name, email, password):
     from django.core.mail import send_mail
-    from django import template
+    from django.conf import settings
     
     subject = "CCIW application form"
-    t = template.Template("""
-Hi {{ first_name }},
+    template = """
+Hi %(first_name)s,
 
 Below are the instructions for filling in a CCIW application form
 online.  When you have finished filling the form in, it will be
@@ -176,8 +178,8 @@ To fill in the application form
      http://www.cciw.co.uk/officers/
      
 2) Log in using:
-     Username: {{ username }}
-     Password: {{ password }}
+     Username: %(username)s
+     Password: %(password)s
      
      (You are advised to change your password to something more
       memorable once you have logged in)
@@ -204,15 +206,16 @@ To fill in the application form
   to correct the data before it is actually saved.
   
   
-If you have any problems, please e-mail me at L.Plant.98@cantab.net
+If you have any problems, please e-mail me at %(webmasteremail)s
 
 Luke
-    """)
+    """
     
-    msg = t.render(template.Context({'username': username,
-                                     'password': password,
-                                     'first_name': first_name}))
-    send_mail(subject, msg, "L.Plant.98@cantab.net", [email])
+    msg = template % {'username': username,
+                      'password': password,
+                      'first_name': first_name,
+                      'webmasteremail': settings.WEBMASTER_EMAIL}
+    send_mail(subject, msg, settings.WEBMASTER_EMAIL, [email])
 
 
 if __name__ == '__main__':
