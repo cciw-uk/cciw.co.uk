@@ -76,10 +76,14 @@ def do_setvar(parser, token):
 
 class RenderHtmlChunk(template.Node):
     def __init__(self, chunk_name):
-        self.chunk = HtmlChunk.objects.get(name=chunk_name)
+        self.chunk_name = chunk_name
         
     def render(self, context):
-        return self.chunk.render(context['request'])
+        chunk = getattr(self, 'chunk', None)
+        if chunk is None:
+            chunk = HtmlChunk.objects.get(name=self.chunk_name)
+            self.chunk = chunk
+        return chunk.render(context['request'])
     
 def do_htmlchunk(parser, token):
     """
