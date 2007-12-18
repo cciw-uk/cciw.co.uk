@@ -1,6 +1,8 @@
 from client import CciwClient
 from django.test import TestCase
 from django.conf import settings
+from django.core.urlresolvers import reverse
+
 from cciw.cciwmain.models import Member
 import cciw.cciwmain.views.members
 
@@ -12,7 +14,8 @@ import glob
 TEST_MEMBER = 'test_member_1'
 TEST_MEMBER_PASSWORD = 'password'
 
-MEMBER_ADMIN_URL = '/memberadmin/preferences/'
+MEMBER_ADMIN_URL = reverse("cciwmain.memberadmin.preferences")
+MEMBER_SIGNUP = reverse("cciwmain.memberadmin.signup")
 
 def _get_file_size(path):
     return os.stat(path)[os.path.stat.ST_SIZE]
@@ -61,7 +64,8 @@ class MemberAdmin(TestCase):
         # ensure the file isn't there already
         self._remove_member_icons()
 
-        self._upload_icon(new_icon)
+        response = self._upload_icon(new_icon)
+        self.failUnlessEqual(response.status_code, 200)
 
         # Ensure it got there
         globpath = settings.MEDIA_ROOT + settings.MEMBER_ICON_PATH + self.member.user_name + ".*"
@@ -94,3 +98,14 @@ class MemberAdmin(TestCase):
         for f in glob.glob(settings.MEDIA_ROOT + settings.MEMBER_ICON_PATH + self.member.user_name + ".*"):
             os.unlink(f)
 
+
+class MemberSignup(TestCase):
+    fixtures=['basic.yaml','test_members.yaml']
+
+    def setUp(self):
+        self.client = CciwClient()
+        #self.client.post(
+
+    def test_existing_email(self):
+        pass
+ 

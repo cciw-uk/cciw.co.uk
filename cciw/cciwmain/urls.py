@@ -1,5 +1,6 @@
 from django.conf.urls.defaults import patterns, url
 import cciw.cciwmain.common as cciw_common
+from cciw.cciwmain.utils import LazyDict
 from cciw.cciwmain.models import Site, Award
 from django.conf import settings
 
@@ -7,7 +8,7 @@ urlpatterns = \
 patterns('django.views.generic',
     (r'^awards/$', 'list_detail.object_list',
         {'queryset': Award.objects.order_by('-year', '-value'),
-         'extra_context': cciw_common.standard_extra_context(title="Website Awards"),
+         'extra_context':  LazyDict(cciw_common.standard_extra_context, kwargs=dict(title="Website Awards")),
          'template_name': 'cciw/awards/index.html',
          'allow_empty': True,
          }
@@ -15,7 +16,7 @@ patterns('django.views.generic',
 
     (r'^sites/$', 'list_detail.object_list',
         {'queryset': Site.objects.all(),
-         'extra_context': cciw_common.standard_extra_context(title="Camp sites"),
+         'extra_context': LazyDict(cciw_common.standard_extra_context, kwargs=dict(title="Camp sites")),
          'template_name': 'cciw/sites/index.html'
         }
     ),
@@ -23,7 +24,7 @@ patterns('django.views.generic',
     (r'^sites/(?P<slug>.*)/$', 'list_detail.object_detail',
         {'queryset': Site.objects.all(),
          'slug_field': 'slug_name',
-         'extra_context': cciw_common.standard_extra_context(),
+         'extra_context': LazyDict(cciw_common.standard_extra_context),
          'template_name': 'cciw/sites/detail.html'
          }
         
@@ -39,10 +40,10 @@ patterns('cciw.cciwmain.views',
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/messages/$', 'members.send_message'),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/messages/inbox/$', 'members.inbox'),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/messages/archived/$', 'members.archived_messages'),
-    (r'^signup/$', 'memberadmin.signup'),
+    url(r'^signup/$', 'memberadmin.signup', name="cciwmain.memberadmin.signup"),
     (r'^memberadmin/change-password/$', 'memberadmin.change_password'),
     (r'^memberadmin/change-email/$', 'memberadmin.change_email'),
-    (r'^memberadmin/preferences/$', 'memberadmin.preferences'),
+    url(r'^memberadmin/preferences/$', 'memberadmin.preferences', name="cciwmain.memberadmin.preferences"),
     (r'^help/logging-in/$', 'memberadmin.help_logging_in'),
     
     # Camps

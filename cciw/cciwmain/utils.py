@@ -77,3 +77,26 @@ def get_current_domain():
         from django.contrib.sites.models import Site
         _current_domain = Site.objects.get_current().domain
     return _current_domain
+
+
+class LazyDict(object):
+    """
+    Returns a lazy, read-only dictionary like object that calls
+    a function with given arguments when the data is first
+    accessed.
+    """
+    def __init__(self, func, args=(), kwargs={}):
+        self.func, self.args, self.kwargs = func, args, kwargs
+        self.data = None
+    
+    def __getitem__(self, name):
+        self._ensure_data()
+        return self.data[name]
+
+    def items(self):
+        self._ensure_data()
+        return self.data.items()
+    
+    def _ensure_data(self):
+        if self.data is None:
+            self.data = self.func(*self.args, **self.kwargs)
