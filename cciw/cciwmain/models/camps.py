@@ -34,7 +34,8 @@ class Person(models.Model):
     name = models.CharField("Name", max_length=40)
     info = models.TextField("Information (Plain text)", 
                         blank=True)
-    user = models.ForeignKey(User, verbose_name="Associated admin user", null=True, blank=True)
+    users = models.ManyToManyField(User, verbose_name="Associated admin users", 
+                                   filter_interface=models.HORIZONTAL)
 
     def __unicode__(self):
         return self.name

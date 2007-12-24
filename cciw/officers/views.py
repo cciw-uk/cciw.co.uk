@@ -44,7 +44,7 @@ def _is_leader(user):
 
 def _get_applications_for_leader(user):
     # Find the 'Person' object that corresponds to this user
-    leaders = list(Person.objects.filter(user=user.id)) # use list() for later efficiency
+    leaders = list(user.person_set.all())
     if len(leaders) > 0:
         # Find the camps for this leader
         # (In reality we could do 
@@ -294,7 +294,7 @@ Please find attached a copy of the application you requested
 
 
 def _thisyears_camp_for_leader(user):
-    leaders = list(Person.objects.filter(user=user.id))
+    leaders = list(user.person_set.all())
     try:
         return leaders[0].camp_as_leader.get(year=common.get_thisyear(), online_applications=True)
     except (ObjectDoesNotExist, IndexError):
