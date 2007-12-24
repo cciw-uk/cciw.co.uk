@@ -12,14 +12,11 @@ def send_application_emails(application=None):
         return
 
     # Email to the leaders:
-    leaders = application.camp.leaders.all()
-    
     # Collect e-mails to send to
     leader_emails = []
-    for leader in leaders:
-        # Does the leader have an associated admin login?
-        if leader.user is not None:
-            email = formatted_email(leader.user)
+    for leader in application.camp.leaders.all():
+        for user in leader.users.all():
+            email = formatted_email(user)
             if email is not None:
                 leader_emails.append(email)
 
@@ -33,8 +30,12 @@ def send_application_emails(application=None):
     # If an admin user corrected an application, we don't send the user a copy
     # (usually they just get the year of the camp wrong(!))
     user = threadlocals.get_current_user()
+    if len(leader_emails) > 0:
+        user.message_set.create(message="The completed application form has been sent to the leaders via email.")
+
     if user == application.officer:
         send_officer_email(application.officer, application, application_text, rtf_attachment)
+        user.message_set.create(message="A copy of the application form has been sent to you via email.")
 
 def send_officer_email(officer, application, application_text, rtf_attachment):
     subject = "CCIW application form submitted"
@@ -52,8 +53,6 @@ to CCIW. It is also attached to this email as an RTF file.
     if user_email is not None:
         send_mail_with_attachments(subject, user_msg, settings.SERVER_EMAIL,
                                    [user_email], attachments=[rtf_attachment])
-
-
 
 def send_leader_email(leader_emails, application, application_text, rtf_attachment):
     subject = "CCIW application form from %s" % application.full_name
