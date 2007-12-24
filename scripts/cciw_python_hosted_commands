@@ -1,29 +1,7 @@
-
-THIS WORKED:
-@calvin:
-pg_dump -F t -o -O -U djangouser cciw_django -f ~/cciw_db_2005-03-21.backup 
-
-rsync /home/luke/cciw_db_2005-03-21.backup.gz
-cciw@cciw.python-hosted.com:/home2/cciw/webapps/django_app 
-
-
-@krait
-/usr/local/pgsql/bin/pg_restore -c -d cciw -O -U cciw cciw_db_2005-03-21.backup 
-
-
-
------------
-
-SYNC
-cd /home/httpd/www.cciw.co.uk/django
-
-#rsync -r cciw media templates cciw@cciw.python-hosted.com:/home2/cciw/webapps/django_app 
-
-
 ## UPLOAD ##
 
-rsync -vr --exclude='.bzr' --exclude='.svn' --exclude='*.pyc' --exclude='*~' --exclude /media/photos --exclude /media/images/members/ templates media cciw lukeplant_me_uk websitedown cciw@cciw.co.uk:/home2/cciw/webapps/django_app/
+#rsync -vr --exclude='.bzr' --exclude='.svn' --exclude='*.pyc' --exclude='*~' --exclude /media/photos --exclude /media/images/members/ templates media cciw lukeplant_me_uk websitedown cciw@cciw.co.uk:/home2/cciw/webapps/django_app/
 
 
 # Check everything first using 'bzr status'
-rsync -vr --exclude='.bzr' --exclude='*.pyc' --exclude='*~' templates media cciw websitedown scripts cciw@cciw.co.uk:/home2/cciw/webapps/django_app/
+rsync -vr --exclude='.bzr' --exclude='*.pyc' --exclude='*~' templates media cciw websitedown scripts migrate cciw@cciw.co.uk:/home2/cciw/webapps/django_app/
