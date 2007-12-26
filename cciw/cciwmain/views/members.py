@@ -8,7 +8,7 @@ from django.utils.safestring import mark_safe
 from cciw.cciwmain.models import Member, Message
 from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb
 from cciw.middleware.threadlocals import get_current_member, remove_member_session
-from cciw.cciwmain.decorators import member_required, same_member_required, member_required_for_post, _display_login_form
+from cciw.cciwmain.decorators import member_required, member_required_for_post, _display_login_form
 from cciw.cciwmain.utils import get_member_link
 import cciw.cciwmain.templatetags.bbcode as bbcode
 from cciw.cciwmain import feeds
@@ -192,14 +192,17 @@ def _msg_del(msg):
 
 _id_vars_re = re.compile('msg_(\d+)')
 
-@same_member_required(1)
 def message_list(request, user_name, box):
     """View function to display inbox or archived messages."""
     try:
         member = Member.objects.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404
-        
+
+    current_member = get_current_member()
+    if current_member is None or user_name != current_member.user_name:
+        return HttpResponseForbidden(u'<h1>Access denied</h1>')
+
     # Deal with moves/deletes:
     if request.POST:
         ids = [int(m.groups()[0]) for m in map(_id_vars_re.match, request.POST.keys()) if m is not None]

@@ -11,6 +11,11 @@ import urllib
 import base64, datetime, md5
 import cPickle as pickle
 
+def copy_func_attrs(src, dest):
+    dest.__name__ = src.__name__
+    dest.__module__ = src.__module__
+    dest.__doc__ = src.__doc__
+
 def login_redirect(path):
     """Returns a URL for logging in and then redirecting to the supplied path"""
     qs = urllib.urlencode({'redirect': path})
@@ -24,6 +29,8 @@ def member_required(func):
             return HttpResponseRedirect(login_redirect(request.get_full_path()))
         else:
             return func(request, *args, **kwargs)
+
+    copy_func_attrs(func, _check)
     return _check
 
 
@@ -108,31 +115,5 @@ def member_required_for_post(view_func):
             else:
                 return _display_login_form(request, ERROR_MESSAGE)
             
-    _checklogin.__name__ = view_func.__name__
-    _checklogin.__module__ = view_func.__module__
-
+    copy_func_attrs(view_func, _checklogin)
     return _checklogin
-
-def same_member_required(member_name_arg):
-    """Returns a decorator for a view that only allows the specified
-    member to view the page.
-    
-    member_name_arg sepcifies the argument to the wrapped function 
-    that contains the users name. It is either an integer for a positional 
-    argument or a string for a keyword argument."""
-    
-    def _dec(func):
-        def _check(request, *args, **kwargs):
-            if isinstance(member_name_arg, int):
-                # positional argument, but out by one
-                # due to the request arg
-                user_name = args[member_name_arg-1]
-            else:
-                user_name = kwargs[member_name_arg]
-            cur_member = get_current_member()
-            if cur_member is None or \
-                (cur_member.user_name != user_name):
-                return HttpResponseForbidden(u'<h1>Access denied</h1>')
-            return func(request, *args, **kwargs)
-        return _check
-    return _dec
