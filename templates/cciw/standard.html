@@ -58,7 +58,7 @@
 		<li>Logged in as :  <a href="{{current_member.get_absolute_url}}">{{current_member.user_name}}</a></li>
 		<li><a href="{{current_member.get_absolute_url}}messages/inbox/">{{current_member.new_messages}} new message(s)</a></li>
 	{% else %}
-		<li><a href="/login/">Login</a></li>
+		<li><a href="/login/?redirect={{ request.get_full_path}}">Login</a></li>
 	{% endif %}
 		<li><a href="/members/?online=1"> {{ misc.logged_in_members }} member(s) online</a></li>
 	</ul>
