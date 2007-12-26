@@ -36,7 +36,7 @@ created for this poll.</p>
 </div>
 
 <div class="formrow">
-<label for="polloptions">Options (one per line)</label><textarea name="polloptions" id="polloptions" rows="10" cols="40">{{ polloptions }}</textarea>{% if errors.polloptions %}<span class="validationError">{{ errors.polloptions }}</span>{% endif %}
+<label for="id_polloptions">Options (one per line)</label><textarea name="polloptions" id="id_polloptions" rows="10" cols="40">{{ polloptions }}</textarea>{% if errors.polloptions %}<span class="validationError">{{ errors.polloptions }}</span>{% endif %}
 </div>
 
 <div class="formrow">
@@ -70,7 +70,7 @@ created for this poll.</p>
 </div>
 
 <div class="formrow">
-<label for="id_rules">Value of 'X' (for voting rules)</label>{{ form.rule_parameter }}
+<label for="id_rule_parameter">Value of 'X' (for voting rules)</label>{{ form.rule_parameter }}
 {% if form.rule_parameter.errors %}<span class="validationError">{{ form.rule_parameter.errors|join:", " }}</span>{% endif %}
 </div>
 
