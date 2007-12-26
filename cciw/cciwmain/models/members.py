@@ -8,8 +8,8 @@ from cciw.cciwmain.utils import get_member_link, get_member_href
 
 
 class Permission(models.Model):
-    POLL_CREATOR = 5
-    NEWS_CREATOR = 6
+    POLL_CREATOR = "Poll creator"
+    NEWS_CREATOR = "News creator"
 
     id = models.PositiveSmallIntegerField("ID", primary_key=True)
     description = models.CharField("Description", max_length=40)
@@ -111,7 +111,7 @@ class Member(models.Model):
     def has_perm(self, perm):
         """Does the member has the specified permission?
         perm is one of the permission constants in Permission."""
-        return len(self.permissions.filter(pk=perm)) > 0
+        return len(self.permissions.filter(description=perm)) > 0
     
     @property
     def can_add_news(self):

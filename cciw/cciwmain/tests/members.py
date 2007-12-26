@@ -20,6 +20,9 @@ TEST_MEMBER_USERNAME = 'test_member_1'
 TEST_MEMBER_PASSWORD = 'password'
 TEST_MEMBER_EMAIL = 'test@test.com' 
 
+TEST_POLL_CREATOR_USERNAME = 'test_poll_creator_1'
+TEST_POLL_CREATOR_PASSWORD = 'password'
+
 NEW_MEMBER_EMAIL='new_member@test.com'
 NEW_MEMBER_USERNAME='new_member'
 
