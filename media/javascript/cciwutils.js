@@ -104,14 +104,21 @@ function cciw_validate_form(formname) {
 	return d;
 }
 
+function standardform_normalise_control_id(control_id) {
+	// Summary: returns the id/name that corresponds to
+	// the whole Django widget.  For MultiWidgets,
+	// this strips the trailing _0, _1 etc.
+	return control_id.replace(/^(.*)(_\d+)$/, "$1");
+}
 
 function standardform_get_form_row(control_id) {
 	var rowId = 'div_' + control_id;
 	var row = $(rowId);
-	if (row == null) { 
-		logError("Control " + rowId + " not found.");
-	}
-	return row;
+
+	if (row != null) { return row; }
+
+	logError("Row for control " + control_id + " could not be found.");
+	return null;
 }
 
 function standardform_display_error(control_id, errors) {
@@ -144,15 +151,17 @@ function standardform_clear_error(control_id) {
 }
 
 function standardform_get_validator_callback(control_name, control_id) {
+	var control_name_n = standardform_normalise_control_id(control_name);
+	var control_id_n = standardform_normalise_control_id(control_id);
 	function handler(req) {
 		var json = evalJSONRequest(req);
 		logDebug("JSON: " + req.responseText);
-		var errors = json[control_name];
+		var errors = json[control_name_n];
 		if (errors != null && errors != undefined) {
-			standardform_clear_error(control_id);
-			standardform_display_error(control_id, errors);
+			standardform_clear_error(control_id_n);
+			standardform_display_error(control_id_n, errors);
 		} else {
-			standardform_clear_error(control_id);
+			standardform_clear_error(control_id_n);
 		}
 	};
 	return handler;
