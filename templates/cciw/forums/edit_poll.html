@@ -9,16 +9,54 @@
 // DEBUG:
 //createLoggingPane();
 
+function get_form_row(control_id) {
+	var rowId = 'div_' + control_id;
+	var row = $(rowId);
+	if (row == null) { 
+		log("Control " + rowId + " not found.");
+	}
+	return row;
+}
+
+function display_error(control_id, errors) {
+	var row = get_form_row(control_id);
+	if (row == null) {
+		return;
+	}
+	if (!hasElementClass(row, "validationErrorBottom")) {
+		log("Adding nodes to " + row.id);
+		// insert <ul> before it
+		var newnodes = DIV({'class':'validationErrorTop'}, 
+				UL({'class':'errorlist'}, 
+				    map(partial(LI, null), errors)));
+		row.parentNode.insertBefore(newnodes, row)
+		addElementClass(row, "validationErrorBottom");
+	}
+}
+
+function clear_error(control_id) {
+	var row = get_form_row(control_id);
+	if (row == null) {
+		return;
+	}
+	if (hasElementClass(row, "validationErrorBottom")) {
+		removeElementClass(row, "validationErrorBottom");
+		// there will be a previous sibling
+		// which holds the error message
+		row.parentNode.removeChild(row.previousSibling);
+	}
+}
+
 function get_validator_callback(control_name, control_id) {
 	function handler(req) {
 		var json = evalJSONRequest(req);
 		log("JSON: " + req.responseText);
-		var error = json[control_name];
-		if (error != null && error != undefined) {
-		    log(control_name + " has error: " + error);
-		    // TODO: display somehow
+		var errors = json[control_name];
+		if (errors != null && errors != undefined) {
+			log(control_name + " has error: " + errors);
+			display_error(control_id, errors);
 		} else {
-		    // TODO: need to clear the error
+			clear_error(control_id);
 		}
 	};
 	return handler;

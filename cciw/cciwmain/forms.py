@@ -8,7 +8,7 @@ class CciwFormMixin(object):
     def as_p(self):
         "Returns this form rendered as HTML <p>s."
 
-        normal_row = '<p class="%(class)s">%(label)s %(field)s%(help_text)s</p>'
+        normal_row = '<p id="%(divid)s" class="%(class)s">%(label)s %(field)s%(help_text)s</p>'
         error_row = u'<div class="validationErrorTop">%s</div>'
         help_text_html = u' %s'
         normal_class = 'formrow'
@@ -48,7 +48,8 @@ class CciwFormMixin(object):
                         'label': force_unicode(label), 
                         'field': unicode(bf), 
                         'help_text': help_text,
-                        'class': cssclass
+                        'class': cssclass,
+                        'divid': "div_id_%s" % bf.name
                         })
         if top_errors:
             output.insert(0, error_row % top_errors)
