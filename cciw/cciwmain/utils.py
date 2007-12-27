@@ -2,7 +2,9 @@ import datetime
 import re
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
-
+from django.utils import simplejson
+from django.utils.functional import Promise
+from django.utils.encoding import force_unicode
 
 def obfuscate_email(email):
     # TODO - use javascript write statements, with fallback
@@ -100,3 +102,17 @@ class UseOnceLazyDict(object):
     
     def _get_data(self):
         return self.func(*self.args, **self.kwargs)
+
+# form.errors contains strings marked for translation,
+# even though USE_I18N==False.  We have to do this so
+# that we can serialize
+class LazyEncoder(simplejson.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Promise):
+            return force_unicode(obj)
+        return obj
+
+json_encoder = LazyEncoder(ensure_ascii=False)
+
+def python_to_json(obj):
+    return json_encoder.encode(obj)

@@ -2,7 +2,7 @@ from datetime import datetime, date
 import string
 
 from django.views.generic import list_detail
-from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.conf import settings
@@ -296,7 +296,7 @@ class PollOptionListField(forms.CharField):
         if len(filter(lambda opt: len(opt) > max_length, l)) > 0:
             raise forms.ValidationError(u"Options may not be more than %s chars long" % max_length)
         
-        return l        
+        return l
 
 class CreatePollForm(forms.ModelForm):
     voting_starts = forms.SplitDateTimeField(widget=widgets.SplitDateTimeWidget,
@@ -343,6 +343,11 @@ def edit_poll(request, poll_id=None, breadcrumb_extra=None):
 
     if request.method == 'POST':
         form = CreatePollForm(request.POST, instance=existing_poll)
+
+        if request.GET.get('format') == 'json':
+            return HttpResponse(utils.python_to_json(form.errors),
+                                mimetype='text/javascript')
+
         if form.is_valid():
             new_poll = form.save(commit=False)
             new_poll.created_by_id = cur_member.user_name

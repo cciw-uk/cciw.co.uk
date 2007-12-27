@@ -1,7 +1,75 @@
 {% extends "cciw/standard.html" %}
 {% block content %}
 
+<script type="text/javascript" src="{{ pagevars.media_root_url }}/javascript/MochiKit/MochiKit.js"></script>
+<script type="text/javascript" src="{{ pagevars.media_root_url }}/javascript/cciwutils.js"></script>
+<script type="text/javascript">
+<!--
 
+// DEBUG:
+createLoggingPane();
+
+function get_validator_callback(control_name, control_id) {
+	function handler(req) {
+		var json = evalJSONRequest(req);
+		log("JSON: " + req.responseText);
+		var error = json[control_name];
+		if (error != null && error != undefined) {
+		    log(control_name + " has error: " + error);
+		    // TODO: display somehow
+		} else {
+		    // TODO: need to clear the error
+		}
+	};
+	return handler;
+}
+
+function ajax_error_handler(err) { 
+	log("Err " + repr(err));
+}
+
+var formname = 'editpollform';
+
+function do_validate_form(theform) {
+	var data = encodeForm($(theform));
+	var d = doXHR("?format=json", 
+			{
+				method:'POST', 
+				sendContent: data,
+				headers: {
+				  "Content-Type": "application/x-www-form-urlencoded"
+				} 
+			}
+	);
+	return d;
+}
+
+function get_input_change_handler(control_name, control_id) {
+	function on_input_change(ev) {
+		d = do_validate_form(formname);
+		d.addCallbacks(get_validator_callback(control_name, control_id) , ajax_error_handler);
+	};
+	return on_input_change;
+} 
+
+connect(window, 'onload',
+	function(ev) {
+		// Add event handlers to everything that can be validated.
+		var inputs = $(formname).elements;
+		for (var i = 0; i < inputs.length; i++) {
+			if (defaultFormFilter(inputs[i])) {
+				log("Adding onchange handler for control name " + inputs[i].name + ", control id " + inputs[i].id);
+				// TODO: need to handle widgets that have more than 
+				// one control
+				connect(inputs[i], 'onchange', get_input_change_handler(inputs[i].name, inputs[i].id));
+			}
+		}
+	}
+);
+
+
+//-->
+</script>
 
 {% if existing_poll %}
 <p>Edit the poll details below.  Please note, you can either:</p>
@@ -23,7 +91,7 @@ created for this poll.</p>
 	</div>
 {% endif %}
 
-<form action="" method="post">
+<form action="" method="post" id="editpollform">
 
 <div class="form">
 {{ form.as_p }}
