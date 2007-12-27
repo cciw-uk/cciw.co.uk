@@ -49,10 +49,10 @@ class CreatePollPage(TestCase):
             intro_text="This is a poll",
             polloptions="Option 1\nOption 2\nOption 3\n\nOption 4",
             outro_text="Outro text",
-            voting_starts_date="2007-12-26",
-            voting_starts_time="00:00",
-            voting_ends_date="2007-12-29",
-            voting_ends_time="00:00",
+            voting_starts_0="2007-12-26",
+            voting_starts_1="00:00",
+            voting_ends_0="2007-12-29",
+            voting_ends_1="00:00",
             rules="0",
             rule_parameter="1",
             )
@@ -65,7 +65,7 @@ class CreatePollPage(TestCase):
         self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)
         response = self.client.get(ADD_POLL_URL)
         # we should a permission denied
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 403, "Should get permission denied if trying to create a poll w/o enough permissions")
 
     def test_create_poll(self):
         poll_data = self._poll_data_1()
@@ -81,7 +81,7 @@ class CreatePollPage(TestCase):
         response2 = self.client.post(ADD_POLL_URL, data=self._poll_data_1())
 
         # We get a redirection to the new page:
-        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(response2.status_code, 302, "Should be redirected upon successful creation of poll")
 
         # Ensure the poll got created
         try:

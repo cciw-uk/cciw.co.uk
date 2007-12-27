@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, date
 import string
 
 from django.views.generic import list_detail
@@ -6,8 +6,9 @@ from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.conf import settings
-from django import forms
-from django.core import validators
+from django import newforms as forms
+from django.newforms import widgets
+from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission, Poll, PollOption
@@ -212,21 +213,7 @@ def add_news(request, breadcrumb_extra=None):
         breadcrumb_extra = []
     context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(forum, None))
     return render_to_response('cciw/forums/add_news.html', context_instance=context)
-
-def parse_polloptions(polloptions):
-    """Parse a string containing multiple lines of text,
-    and returns a list of poll options or raises ValidationError"""
-    l = [opt for opt in map(string.strip, polloptions.strip().split("\n")) if len(opt) > 0]
-    
-    if len(l) == 0:
-        raise validators.ValidationError(u"At least one option must be entered")
-    
-    max_length = PollOption._meta.get_field('text').max_length
-    if len([opt for opt in l if len(opt) > max_length]) > 0:
-        raise validators.ValidationError(u"Options may not be more than %s chars long" % max_length)
-        
-    return l
-    
+  
 def update_poll_options(poll, new_option_list):
     """Takes a Poll object and a list of strings,
     and updates the PollOptions related to the Poll."""
@@ -293,56 +280,74 @@ def update_poll_options(poll, new_option_list):
         for i, po in enumerate(new_list):
             po.listorder = i
             po.save()       
+
+class PollOptionListField(forms.CharField):
+    widget = widgets.Textarea
+    def clean(self, value):
+        """Parses a string containing multiple lines of text,
+        and returns a list of poll options or raises ValidationError"""
+        value = super(PollOptionListField, self).clean(value)
+        l = filter(lambda opt: len(opt) > 0, map(string.strip, value.strip().split("\n")))
     
+        if len(l) == 0:
+            raise forms.ValidationError(u"At least one option must be entered")
+    
+        max_length = PollOption._meta.get_field('text').max_length
+        if len(filter(lambda opt: len(opt) > max_length, l)) > 0:
+            raise forms.ValidationError(u"Options may not be more than %s chars long" % max_length)
+        
+        return l        
+
+class CreatePollForm(forms.ModelForm):
+    voting_starts = forms.SplitDateTimeField(widget=widgets.SplitDateTimeWidget,
+                                             label="Voting starts")
+    voting_ends = forms.SplitDateTimeField(widget=widgets.SplitDateTimeWidget,
+                                           label="Voting ends")
+    polloptions = PollOptionListField(label='Options (one per line)')
+
+    class Meta:
+        model = Poll
+        fields = ['title', 'intro_text', 'outro_text', 'voting_starts', 'voting_ends', 'rules', 'rule_parameter']
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get('instance', None)
+        initial = kwargs.pop('initial', {})
+        if instance is not None:
+            initial['polloptions'] = '\n'.join(po.text for po in instance.poll_options.order_by('listorder'))
+        kwargs['initial'] = initial
+        super(CreatePollForm, self).__init__(*args, **kwargs)
+
+# Overriding CreatePollForm to get the fields in the right order
+# is currently rather tricky.  Easiest hack is this:
+CreatePollForm.base_fields.keyOrder = ['title', 'intro_text', 'polloptions', 'outro_text', 'voting_starts', 'voting_ends', 'rules', 'rule_parameter']
+
 @member_required
 def edit_poll(request, poll_id=None, breadcrumb_extra=None):
     if poll_id is None:
         suffix = 'add_poll/'
+        title = u"Create poll"
+        existing_poll = None
     else:
         suffix = '/'.join(request.path.split('/')[-3:]) # 'edit_poll/xx/'
-    forum = _get_forum_or_404(request.path, suffix)
-    
-    if poll_id is not None:
         title = u"Edit poll"
-    else:
-        title = u"Create poll"
-    c = standard_extra_context(title=title)
-    
+        existing_poll = get_object_or_404(Poll.objects.filter(id=poll_id))
+        
     cur_member = get_current_member()
     if not cur_member.has_perm(Permission.POLL_CREATOR):
         return HttpResponseForbidden("Permission denied")
-    
-    follow = {'have_vote_info': False} # 'created_by': False (but it don't work like that)
-    if poll_id is None:
-        manipulator = Poll.AddManipulator(follow=follow)
-        existing_poll = None
-        polloptions = ''
-    else:
-        try:
-            manipulator = Poll.ChangeManipulator(poll_id, follow=follow)
-            existing_poll = manipulator.original_object
-            polloptions = '\n'.join(po.text for po in  existing_poll.poll_options.order_by('listorder'))
-        except Poll.DoesNotExist:
-            raise Http404
-            
     if existing_poll and existing_poll.created_by != cur_member:
         return HttpResponseForbidden("Access denied.")
-    
-    if request.POST:
-        new_data = request.POST.copy()
-        new_data['created_by'] = cur_member.user_name
-        polloptions = request.POST.get('polloptions', '')
-        errors = manipulator.get_validation_errors(new_data)
-        
-        try:
-            polloption_list = parse_polloptions(polloptions)
-        except validators.ValidationError, e:
-            errors['polloptions'] = e.messages[0]
-        
-        if not errors:            
-            manipulator.do_html2python(new_data)
-            new_poll = manipulator.save(new_data)
-            
+
+    forum = _get_forum_or_404(request.path, suffix)    
+    c = standard_extra_context(title=title)
+
+    if request.method == 'POST':
+        form = CreatePollForm(request.POST, instance=existing_poll)
+        if form.is_valid():
+            new_poll = form.save(commit=False)
+            new_poll.created_by_id = cur_member.user_name
+            new_poll.save()
+ 
             if existing_poll is None:
                 # new poll, create a topic to go with it
                 topic = Topic.create_topic(cur_member, new_poll.title, forum)
@@ -353,26 +358,23 @@ def edit_poll(request, poll_id=None, breadcrumb_extra=None):
                 topic = new_poll.topics.all()[0]
                 topic.subject = new_poll.title
                 topic.save()
-                
-            update_poll_options(new_poll, polloption_list)
+
+            update_poll_options(new_poll, form.cleaned_data['polloptions'])
 
             return HttpResponseRedirect(topic.get_absolute_url())
     else:
-        errors = {}
         if existing_poll:
-            new_data = manipulator.flatten_data()
+            form = CreatePollForm(instance=existing_poll)
         else:
-            new_data = {}
-            new_data['voting_starts_date'] = datetime.date.today()
-            new_data['voting_starts_time'] = "00:00"
-            new_data['rule_parameter'] = 1
-    
-    c['form'] = forms.FormWrapper(manipulator, new_data, errors)
+            today = datetime.today()
+            today = datetime(today.year, today.month, today.day)
+            form = CreatePollForm(initial=dict(voting_starts=today))
+
+    c['form'] = form
     c['existing_poll'] = existing_poll
-    c['polloptions'] = polloptions
-    c['errors'] = errors
-    ctx = RequestContext(request, c)
-    return render_to_response('cciw/forums/edit_poll.html', context_instance=ctx)
+    return render_to_response('cciw/forums/edit_poll.html', 
+                              context_instance=RequestContext(request, c))
+
 
 # Used as part of a view function
 def process_post(request, topic, photo, context):
@@ -459,7 +461,7 @@ def process_vote(request, topic, context):
     if not errors:
         voteinfo = VoteInfo(poll_option_id=polloption_id,
                             member=cur_member,
-                            date=datetime.datetime.now())
+                            date=datetime.now())
         voteinfo.save()
         context['voting_message'] = u'Vote registered, thank you.'
 

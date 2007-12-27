@@ -17,7 +17,7 @@
 created for this poll.</p>
 {% endif %}
 
-{% if errors %}
+{% if form.errors %}
 	<div class="userError">
 	Please check your input:
 	</div>
@@ -25,55 +25,9 @@ created for this poll.</p>
 
 <form action="" method="post">
 
-<div class="formrow">
-<label for="id_title">Title</label>{{ form.title }}
-{% if form.title.errors %}<span class="validationError">{{ form.title.errors|join:", " }}</span>{% endif %}
+<div class="form">
+{{ form.as_p }}
 </div>
-
-<div class="formrow">
-<label for="id_intro_text">Intro text</label>{{ form.intro_text }}
-{% if form.intro_text.errors %}<span class="validationError">{{ form.intro_text.errors|join:", " }}</span>{% endif %}
-</div>
-
-<div class="formrow">
-<label for="id_polloptions">Options (one per line)</label><textarea name="polloptions" id="id_polloptions" rows="10" cols="40">{{ polloptions }}</textarea>{% if errors.polloptions %}<span class="validationError">{{ errors.polloptions }}</span>{% endif %}
-</div>
-
-<div class="formrow">
-<label for="id_outro_text">Closing text</label>{{ form.outro_text }}
-{% if form.outro_text.errors %}<span class="validationError">{{ form.outro_text.errors|join:", " }}</span>{% endif %}
-</div>
-
-<div class="formrow">
-<label for="id_voting_starts_date">Voting start date</label>{{ form.voting_starts_date }} 
-{% if form.voting_starts_date.errors %}<span class="validationError">{{ form.voting_starts_date.errors|join:", " }}</span>{% endif %}
-</div>
-
-<div class="formrow">
-<label for="id_voting_starts_time">Voting start time</label>{{ form.voting_starts_time }}
-{% if form.voting_starts_time.errors %}<span class="validationError">{{ form.voting_starts_time.errors|join:", " }}</span>{% endif %}
- </div>
-
-<div class="formrow">
-<label for="id_voting_ends_date">Voting end date</label>{{ form.voting_ends_date }}
-{% if form.voting_ends_date.errors %}<span class="validationError">{{ form.voting_ends_date.errors|join:", " }}</span>{% endif %}
- </div>
-
-<div class="formrow">
-<label for="id_voting_ends_time">Voting end time</label>{{ form.voting_ends_time }}
-{% if form.voting_ends_time.errors %}<span class="validationError">{{ form.voting_ends_time.errors|join:", " }}</span>{% endif %}
- </div>
-
-<div class="formrow">
-<label for="id_rules">Voting rules</label>{{ form.rules }}
-{% if form.rules.errors %}<span class="validationError">{{ form.rules.errors|join:", " }}</span>{% endif %}
-</div>
-
-<div class="formrow">
-<label for="id_rule_parameter">Value of 'X' (for voting rules)</label>{{ form.rule_parameter }}
-{% if form.rule_parameter.errors %}<span class="validationError">{{ form.rule_parameter.errors|join:", " }}</span>{% endif %}
-</div>
-
 
 <div><input type="submit" name="submit" id="submit" value="Submit" /></div>
 </form>
