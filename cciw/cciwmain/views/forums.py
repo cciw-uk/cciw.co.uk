@@ -20,6 +20,7 @@ from cciw.cciwmain import utils
 from cciw.cciwmain.templatetags import bbcode
 from cciw.cciwmain.decorators import member_required, member_required_for_post
 from cciw.cciwmain import feeds
+from cciw.cciwmain import forms as cciwforms
 
 
 # Utility functions for breadcrumbs
@@ -298,7 +299,7 @@ class PollOptionListField(forms.CharField):
         
         return l
 
-class CreatePollForm(forms.ModelForm):
+class CreatePollForm(cciwforms.CciwFormMixin, forms.ModelForm):
     voting_starts = forms.SplitDateTimeField(widget=widgets.SplitDateTimeWidget,
                                              label="Voting starts")
     voting_ends = forms.SplitDateTimeField(widget=widgets.SplitDateTimeWidget,

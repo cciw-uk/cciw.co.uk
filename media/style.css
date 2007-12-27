@@ -140,9 +140,15 @@ div.userError
 	border: 1px solid #cc0000;
 	background-color: #330000;
 }
-ul.errorlist
+
+div.validationErrorTop
 {
-	border: 1px solid #660000;
+	border-top: 1px solid #660000;
+	background-color: #220000;
+}
+p.validationErrorBottom
+{
+	border-bottom: 1px solid #660000;
 	background-color: #220000;
 }
 
@@ -676,13 +682,16 @@ div.sitephoto
 	text-align: center;
 }
 
-div.formrow, div.form p
+/*** FORMS ***/
+
+div.formrow, p.formrow
 {
 	clear: both;
-	margin: 5px 0px 5px 5px;
+	margin: 0px 0px 4px 0px;
+	padding: 0px 6px 2px 6px;
 }
 
-div.formrow label, div.form p label
+div.formrow label, p.formrow label
 {
 	display: block;
 	float: left;
@@ -723,10 +732,10 @@ div.userError
 
 ul.errorlist
 {
-	padding-top: 3px;
-	padding-bottom: 3px;
-	margin-bottom: 0.5em;
-	margin-top: 1em;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	margin-bottom: 0px;
+	margin-top: 5px;
 }
 
 div.awardInfo
