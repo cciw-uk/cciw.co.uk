@@ -8,6 +8,8 @@ class CciwFormMixin(object):
     def as_p(self):
         "Returns this form rendered as HTML <p>s."
 
+        ## Remember to change cciwutils.js standardform_ functions if the
+        ## HTML here is changed
         normal_row = '<p id="%(divid)s" class="%(class)s">%(label)s %(field)s%(help_text)s</p>'
         error_row = u'<div class="validationErrorTop">%s</div>'
         help_text_html = u' %s'

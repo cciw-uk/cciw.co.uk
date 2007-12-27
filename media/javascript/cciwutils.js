@@ -111,6 +111,7 @@ function standardform_normalise_control_id(control_id) {
 	return control_id.replace(/^(.*)(_\d+)$/, "$1");
 }
 
+// standardform_* functions depend on the HTML in CciwFormMixin
 function standardform_get_form_row(control_id) {
 	var rowId = 'div_' + control_id;
 	var row = $(rowId);
