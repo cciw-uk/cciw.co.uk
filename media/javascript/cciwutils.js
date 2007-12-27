@@ -1,5 +1,4 @@
-// Borrowed from Dojo, ported to MochiKit
-
+// A lot borrowed from Dojo, ported to MochiKit
 
 function inArray(arr, value) {
 	return findValue(arr, value) != -1;
@@ -70,4 +69,95 @@ function encodeForm (/*DOMNode*/formNode, /*Function?*/formFilter){
 		}
 	}
 	return values.join("&") + "&"; //String
+}
+
+
+function add_form_onchange_handlers(formname, mk_input_change_handler) {
+	// Summary: Adds 'onchange' handlers to all inputs in a form
+	// formname: name of the form in the DOM
+	// mk_input_change_handler: when called with one of the 
+	//   form elements, returns a handler to be connected to 
+	//   that element.
+	var inputs = $(formname).elements;
+	for (var i = 0; i < inputs.length; i++) {
+		if (defaultFormFilter(inputs[i])) {
+			// TODO: need to handle widgets that have more than 
+			// one control
+			connect(inputs[i], 'onchange', mk_input_change_handler(inputs[i]));
+		}
+	}
+}
+
+function cciw_validate_form(formname) {
+	// Summary: do AJAX validation of the form, using normal conventions,
+	// returns a MochiKit Deferred object.
+	var data = encodeForm($(formname));
+	var d = doXHR("?format=json", 
+			{
+				method:'POST', 
+				sendContent: data,
+				headers: {
+				  "Content-Type": "application/x-www-form-urlencoded"
+				} 
+			}
+	);
+	return d;
+}
+
+
+function standardform_get_form_row(control_id) {
+	var rowId = 'div_' + control_id;
+	var row = $(rowId);
+	if (row == null) { 
+		logError("Control " + rowId + " not found.");
+	}
+	return row;
+}
+
+function standardform_display_error(control_id, errors) {
+	var row = standardform_get_form_row(control_id);
+	if (row == null) {
+		return;
+	}
+	if (!hasElementClass(row, "validationErrorBottom")) {
+		// insert <ul> before it
+		var newnodes = DIV({'class':'validationErrorTop'}, 
+				UL({'class':'errorlist'}, 
+				    map(partial(LI, null), errors)));
+		row.parentNode.insertBefore(newnodes, row)
+		addElementClass(row, "validationErrorBottom");
+	}
+}
+
+function standardform_clear_error(control_id) {
+	var row = standardform_get_form_row(control_id);
+	if (row == null) {
+		return;
+	}
+	if (hasElementClass(row, "validationErrorBottom")) {
+		removeElementClass(row, "validationErrorBottom");
+		// there will be a previous sibling
+		// which holds the error message
+		removeEmptyTextNodes(row.parentNode);
+		row.parentNode.removeChild(row.previousSibling);
+	}
+}
+
+function standardform_get_validator_callback(control_name, control_id) {
+	function handler(req) {
+		var json = evalJSONRequest(req);
+		logDebug("JSON: " + req.responseText);
+		var errors = json[control_name];
+		if (errors != null && errors != undefined) {
+			standardform_clear_error(control_id);
+			standardform_display_error(control_id, errors);
+		} else {
+			standardform_clear_error(control_id);
+		}
+	};
+	return handler;
+}
+
+function standardform_ajax_error_handler(err) { 
+	logError("Err " + repr(err));
 }

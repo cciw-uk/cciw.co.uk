@@ -9,83 +9,13 @@
 // DEBUG:
 //createLoggingPane();
 
-function get_form_row(control_id) {
-	var rowId = 'div_' + control_id;
-	var row = $(rowId);
-	if (row == null) { 
-		log("Control " + rowId + " not found.");
-	}
-	return row;
-}
-
-function display_error(control_id, errors) {
-	var row = get_form_row(control_id);
-	if (row == null) {
-		return;
-	}
-	if (!hasElementClass(row, "validationErrorBottom")) {
-		log("Adding nodes to " + row.id);
-		// insert <ul> before it
-		var newnodes = DIV({'class':'validationErrorTop'}, 
-				UL({'class':'errorlist'}, 
-				    map(partial(LI, null), errors)));
-		row.parentNode.insertBefore(newnodes, row)
-		addElementClass(row, "validationErrorBottom");
-	}
-}
-
-function clear_error(control_id) {
-	var row = get_form_row(control_id);
-	if (row == null) {
-		return;
-	}
-	if (hasElementClass(row, "validationErrorBottom")) {
-		removeElementClass(row, "validationErrorBottom");
-		// there will be a previous sibling
-		// which holds the error message
-		row.parentNode.removeChild(row.previousSibling);
-	}
-}
-
-function get_validator_callback(control_name, control_id) {
-	function handler(req) {
-		var json = evalJSONRequest(req);
-		log("JSON: " + req.responseText);
-		var errors = json[control_name];
-		if (errors != null && errors != undefined) {
-			log(control_name + " has error: " + errors);
-			display_error(control_id, errors);
-		} else {
-			clear_error(control_id);
-		}
-	};
-	return handler;
-}
-
-function ajax_error_handler(err) { 
-	log("Err " + repr(err));
-}
-
-var formname = 'editpollform';
-
-function do_validate_form(theform) {
-	var data = encodeForm($(theform));
-	var d = doXHR("?format=json", 
-			{
-				method:'POST', 
-				sendContent: data,
-				headers: {
-				  "Content-Type": "application/x-www-form-urlencoded"
-				} 
-			}
-	);
-	return d;
-}
+var editpollformname = 'editpollform';
 
 function get_input_change_handler(control_name, control_id) {
 	function on_input_change(ev) {
-		d = do_validate_form(formname);
-		d.addCallbacks(get_validator_callback(control_name, control_id) , ajax_error_handler);
+		d = cciw_validate_form(editpollformname);
+		d.addCallbacks(standardform_get_validator_callback(control_name, control_id), 
+				standardform_ajax_error_handler);
 	};
 	return on_input_change;
 } 
@@ -93,15 +23,9 @@ function get_input_change_handler(control_name, control_id) {
 connect(window, 'onload',
 	function(ev) {
 		// Add event handlers to everything that can be validated.
-		var inputs = $(formname).elements;
-		for (var i = 0; i < inputs.length; i++) {
-			if (defaultFormFilter(inputs[i])) {
-				log("Adding onchange handler for control name " + inputs[i].name + ", control id " + inputs[i].id);
-				// TODO: need to handle widgets that have more than 
-				// one control
-				connect(inputs[i], 'onchange', get_input_change_handler(inputs[i].name, inputs[i].id));
-			}
-		}
+		add_form_onchange_handlers(editpollformname, function(input) {
+			return get_input_change_handler(input.name, input.id);
+		});		
 	}
 );
 
