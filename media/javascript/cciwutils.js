@@ -81,8 +81,6 @@ function add_form_onchange_handlers(formname, mk_input_change_handler) {
 	var inputs = $(formname).elements;
 	for (var i = 0; i < inputs.length; i++) {
 		if (defaultFormFilter(inputs[i])) {
-			// TODO: need to handle widgets that have more than 
-			// one control
 			connect(inputs[i], 'onchange', mk_input_change_handler(inputs[i]));
 		}
 	}
@@ -104,7 +102,7 @@ function cciw_validate_form(formname) {
 	return d;
 }
 
-function standardform_normalise_control_id(control_id) {
+function django_normalise_control_id(control_id) {
 	// Summary: returns the id/name that corresponds to
 	// the whole Django widget.  For MultiWidgets,
 	// this strips the trailing _0, _1 etc.
@@ -152,8 +150,8 @@ function standardform_clear_error(control_id) {
 }
 
 function standardform_get_validator_callback(control_name, control_id) {
-	var control_name_n = standardform_normalise_control_id(control_name);
-	var control_id_n = standardform_normalise_control_id(control_id);
+	var control_name_n = django_normalise_control_id(control_name);
+	var control_id_n = django_normalise_control_id(control_id);
 	function handler(req) {
 		var json = evalJSONRequest(req);
 		logDebug("JSON: " + req.responseText);
