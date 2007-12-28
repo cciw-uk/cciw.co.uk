@@ -288,7 +288,7 @@ class PollOptionListField(forms.CharField):
         """Parses a string containing multiple lines of text,
         and returns a list of poll options or raises ValidationError"""
         value = super(PollOptionListField, self).clean(value)
-        l = filter(lambda opt: len(opt) > 0, map(string.strip, value.strip().split("\n")))
+        l = filter(lambda opt: len(opt) > 0, map(string.strip, value.split("\n")))
     
         if len(l) == 0:
             raise forms.ValidationError(u"At least one option must be entered")
