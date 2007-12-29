@@ -1,0 +1,19 @@
+#/bin/sh
+
+CURDIR=`pwd`
+test `basename $(pwd)` == 'current_src' || { echo "Expecting to be run from 'current_src' dir."; exit 1; }
+
+
+DATE=`date +%Y-%m-%d`
+RELEASENAME=cciw_django_public_$DATE
+OUTPUTDIR=../releases/$RELEASENAME
+mkdir $OUTPUTDIR || exit 1
+bzr clean-tree --ignored || exit 1
+cp -a cciw LICENSE media migrate README templates websitedown $OUTPUTDIR || exit 1
+rm $OUTPUTDIR/cciw/settings*.py || exit 1
+cp cciw/settings_common.py cciw/settings.py $OUTPUTDIR/cciw/ || exit 1
+cd $OUTPUTDIR || exit 1
+cd .. || exit 1
+zip -r $RELEASENAME.zip $RELEASENAME || exit 1
+
+cd $CURDIR
