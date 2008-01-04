@@ -58,8 +58,8 @@ class CreatePollPage(TestCase):
             )
     def test_cant_create_poll_if_anonymous(self):        
         response = self.client.get(ADD_POLL_URL)
-        # we should get a redirect to login page
-        self.assertEqual(response.status_code, 302)
+        # response should be a login form
+        self.assert_("Enter your user name and password below" in response.content)
 
     def test_cant_create_poll_if_not_poll_creator(self):
         self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)

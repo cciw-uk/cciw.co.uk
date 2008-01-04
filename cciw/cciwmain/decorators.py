@@ -32,7 +32,7 @@ def _display_login_form(request, error_message=''):
         post_data = request.POST['post_data']
     elif request.method == 'POST':
         # User's session must have expired; save their post data.
-        post_data = _encode_post_data(request.POST)
+        post_data = _encode_post_data(request.method, request.POST)
     else:
         post_data = None
     
@@ -43,12 +43,13 @@ def _display_login_form(request, error_message=''):
         'error_message': error_message
     }, context_instance=c)
 
-def _encode_post_data(post_data):
-    pickled = pickle.dumps(post_data)
+def _encode_post_data(method, post_data):
+    pickled = pickle.dumps((method, post_data))
     pickled_md5 = md5.new(pickled + settings.SECRET_KEY).hexdigest()
     return base64.encodestring(pickled + pickled_md5)
 
 def _decode_post_data(encoded_data):
+    " Returns the original (request.method, request.POST)"
     encoded_data = base64.decodestring(encoded_data)
     pickled, tamper_check = encoded_data[:-32], encoded_data[-32:]
     if md5.new(pickled + settings.SECRET_KEY).hexdigest() != tamper_check:
@@ -70,22 +71,16 @@ def member_required_generic(except_methods):
         It is also used by the normal '/login/' view.
         """
 
-            
-        
         def _checklogin(request, *args, **kwargs):
             
             def _forward_to_original(req):
                 # helper function to go to the original view function.
                 if req.POST.has_key('post_data'):
-                    post_data = _decode_post_data(req.POST['post_data'])
+                    method, post_data = _decode_post_data(req.POST['post_data'])
                     if post_data and not post_data.has_key(LOGIN_FORM_KEY):
                         # overwrite request.POST with the saved post_data, and continue
                         req.POST = post_data
-                else:
-                    # If no 'post_data', then original request must
-                    # have been a 'GET'. (This assumes that 'POST' and
-                    # 'GET' are our only options.
-                    req.method = 'GET'
+                        req.method = method
 
                 return view_func(req, *args, **kwargs)
             ## end helper
