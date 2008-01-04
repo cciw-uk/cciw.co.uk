@@ -102,13 +102,13 @@ patterns('cciw.cciwmain.views',
    
     
     # Services
-    (r'services/esv_passage/$', 'services.esv_passage'),
+    (r'^services/esv_passage/$', 'services.esv_passage'),
     
     # Feedback form
-    (r'contact/$', 'misc.feedback'),
+    (r'^contact/$', 'misc.feedback'),
 
     # Fallback -- allows any other URL to be defined as arbitary pages.
     # htmlchunk.find will throw a 404 for any URL not defined.
-    (r'', 'htmlchunk.find'),
+    (r'^(?:.*)/$|^$', 'htmlchunk.find'),
 ) 
 
