@@ -21,31 +21,20 @@ def login_redirect(path):
     qs = urllib.urlencode({'redirect': path})
     return '%s?%s' % ('/login/', qs)
 
-def member_required(func):
-    """Decorator for a view function that redirects to a login
-     screen if the user isn't logged in."""
-    def _check(request, *args, **kwargs):
-        if get_current_member() is None:
-            return HttpResponseRedirect(login_redirect(request.get_full_path()))
-        else:
-            return func(request, *args, **kwargs)
-
-    copy_func_attrs(func, _check)
-    return _check
 
 
 LOGIN_FORM_KEY = 'this_is_the_login_form'
 ERROR_MESSAGE = u"Please enter a correct username and password. Note that both fields are case-sensitive."
 
 def _display_login_form(request, error_message=''):
-    if request.POST and request.POST.has_key('post_data'):
-        # User has failed login BUT has previously saved post data.
+    if request.method == 'POST' and request.POST.has_key('post_data'):
+        # User has failed login BUT has previously saved post data
         post_data = request.POST['post_data']
-    elif request.POST:
+    elif request.method == 'POST':
         # User's session must have expired; save their post data.
         post_data = _encode_post_data(request.POST)
     else:
-        post_data = _encode_post_data({})
+        post_data = None
     
     c = template.RequestContext(request, standard_extra_context(title="Login"))
     return render_to_response('cciw/members/login.html', {
@@ -53,8 +42,6 @@ def _display_login_form(request, error_message=''):
         'post_data': post_data,
         'error_message': error_message
     }, context_instance=c)
-
-    
 
 def _encode_post_data(post_data):
     pickled = pickle.dumps(post_data)
@@ -69,51 +56,83 @@ def _decode_post_data(encoded_data):
         raise SuspiciousOperation, "User may have tampered with session cookie."
     return pickle.loads(pickled)
 
-def member_required_for_post(view_func):
+def member_required_generic(except_methods):
+    """Returns a decorator that forces a member to be logged in to access the view.
+    'except_methods' is a list of strings indicated HTTP methods that can get
+    through without a member logged in. e.g. ['GET'] to allow the view to be
+    accessed if it isn't a POST request.
     """
-    Decorator for views that checks if data was POSTed back and 
-    if so requires the user to log in.
-    It is also used by the normal '/login/' view.
-    """
-    def _checklogin(request, *args, **kwargs):
-        if not request.POST:
-            return view_func(request, *args, **kwargs)
-    
-        if get_current_member() is not None:
-            # The user is valid. Continue to the page.
-            if request.POST.has_key('post_data'):
-                # User must have re-authenticated through a different window
-                # or tab.
-                request.POST = _decode_post_data(request.POST['post_data'])
-            return view_func(request, *args, **kwargs)
 
-        # If this isn't already the login page, display it.
-        if not request.POST.has_key(LOGIN_FORM_KEY):
-            message = _(u"Please log in again, because your session has expired. Don't worry: Your submitted data has been saved and will be processed when you log in.")
-            return _display_login_form(request, message)
+    def decorator(view_func):
+        """
+        Decorator for views that checks if data was POSTed back and 
+        if so requires the user to log in.
+        It is also used by the normal '/login/' view.
+        """
 
-        # Check the password.
-        user_name = request.POST.get('user_name', '')
-        try:
-            member = Member.objects.get(user_name=user_name)
-        except Member.DoesNotExist:
-            return _display_login_form(request, ERROR_MESSAGE)
-
-        else:
-            # The member data is correct; log in the member in and continue.
-            if member.check_password(request.POST.get('password', '')):
-                member.last_seen = datetime.datetime.now()
-                member.save()
-                set_member_session(request, member)
-                
-                if request.POST.has_key('post_data'):
-                    post_data = _decode_post_data(request.POST['post_data'])
+            
+        
+        def _checklogin(request, *args, **kwargs):
+            
+            def _forward_to_original(req):
+                # helper function to go to the original view function.
+                if req.POST.has_key('post_data'):
+                    post_data = _decode_post_data(req.POST['post_data'])
                     if post_data and not post_data.has_key(LOGIN_FORM_KEY):
                         # overwrite request.POST with the saved post_data, and continue
-                        request.POST = post_data
+                        req.POST = post_data
+                else:
+                    # If no 'post_data', then original request must
+                    # have been a 'GET'. (This assumes that 'POST' and
+                    # 'GET' are our only options.
+                    req.method = 'GET'
+
+                return view_func(req, *args, **kwargs)
+            ## end helper
+
+            if request.method in except_methods:
                 return view_func(request, *args, **kwargs)
-            else:
+
+            if get_current_member() is not None:
+                # The user is valid. Continue to the page.
+                # NB: 2 routes to this:
+                #  - either they were logged in
+                #  - or they were logged out and so saw the login page.
+                #    But they then logged in through a different
+                #    browser tab, and so don't need to log in again.
+                
+                return _forward_to_original(request)
+
+            # If this isn't already the login page, display it.
+            if not request.POST.has_key(LOGIN_FORM_KEY):
+                message = u"Please log in again, because your session has expired."
+                if request.method == 'POST':
+                    message += u"  Don't worry: Your submitted data has been saved and will be processed when you log in."
+                return _display_login_form(request, message)
+
+            # Check the password.
+            user_name = request.POST.get('user_name', '')
+            try:
+                member = Member.objects.get(user_name=user_name)
+            except Member.DoesNotExist:
                 return _display_login_form(request, ERROR_MESSAGE)
-            
-    copy_func_attrs(view_func, _checklogin)
-    return _checklogin
+
+            else:
+                # The member data is correct; log in the member in and continue.
+                if member.check_password(request.POST.get('password', '')):
+                    member.last_seen = datetime.datetime.now()
+                    member.save()
+                    set_member_session(request, member)
+
+                    return _forward_to_original(request)
+
+                else:
+                    return _display_login_form(request, ERROR_MESSAGE)
+
+        copy_func_attrs(view_func, _checklogin)
+        return _checklogin
+
+    return decorator
+
+member_required_for_post = member_required_generic(['GET'])
+member_required = member_required_generic([])

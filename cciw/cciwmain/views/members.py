@@ -81,7 +81,7 @@ def detail(request, user_name):
 # and _display_login_form, after that it is just redirecting
 @member_required_for_post
 def login(request):
-    if request.POST:
+    if request.method == 'POST':
         redirect = request.GET.get('redirect', None)
         if not redirect:
             redirect = get_current_member().get_absolute_url()
@@ -121,7 +121,7 @@ def send_message(request, user_name):
         if to.message_option == Member.MESSAGES_NONE:
             no_messages = True
 
-    if request.POST:
+    if request.method == 'POST':
         # Recipient
         if to is None:
             to_name = request.POST.get('to', u'').strip()
