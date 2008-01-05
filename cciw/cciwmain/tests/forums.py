@@ -4,6 +4,7 @@ from django.test import TestCase
 from cciw.cciwmain.models import Topic, Member, Poll
 from django.core.urlresolvers import reverse
 from datetime import datetime
+from cciw.cciwmain import decorators
 
 FORUM_1_YEAR = 2000
 FORUM_1_CAMP_NUMBER = 1
@@ -59,7 +60,7 @@ class CreatePollPage(TestCase):
     def test_cant_create_poll_if_anonymous(self):        
         response = self.client.get(ADD_POLL_URL)
         # response should be a login form
-        self.assert_("Enter your user name and password below" in response.content)
+        self.assert_(decorators.LOGIN_FORM_KEY in response.content)
 
     def test_cant_create_poll_if_not_poll_creator(self):
         self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)
