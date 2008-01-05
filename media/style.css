@@ -698,11 +698,6 @@ div.formrow label, p.formrow label
 	width: 16em;
 }
 
-/* , 
-div.form p input, 
-div.form p select, 
-div.form p textarea */
-
 div.formrow .formcontrol
 {
 	margin-left: 16em;
