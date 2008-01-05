@@ -1,6 +1,6 @@
 import os
 
-from django import forms
+from django import newforms as forms
 from django import shortcuts
 from django import template
 from django.core import mail
@@ -8,6 +8,7 @@ from django.conf import settings
 from django.utils.text import wrap
 
 from cciw.cciwmain.common import standard_extra_context, get_thisyear
+from cciw.cciwmain.forms import CciwFormMixin
 
 def send_feedback(email, name, message):
     message = wrap(message, 70)
@@ -20,35 +21,25 @@ Message:
 %(message)s
 
 """ % locals(), "website@cciw.co.uk", [settings.FEEDBACK_EMAIL_TO])
-    
 
-class FeedbackManipulator(forms.Manipulator):
-    def __init__(self):
-        self.fields = (
-            forms.EmailField(field_name="email", length=30, max_length=200, is_required=True),
-            forms.TextField(field_name="name", length=30, max_length=200),
-            forms.LargeTextField(field_name="message", is_required=True),
-        )
+class FeedbackForm(CciwFormMixin, forms.Form):
+    email = forms.EmailField(max_length=320)
+    name = forms.CharField(max_length=200, required=False)
+    message = forms.CharField(widget=forms.Textarea)
 
 def feedback(request):
     c = standard_extra_context(title=u"Contact us")
     
-    manipulator = FeedbackManipulator()
-    
-    if request.POST:
-        new_data = request.POST.copy()
-        errors = manipulator.get_validation_errors(new_data)
-        
-        if not errors:
-            manipulator.do_html2python(new_data)
-            send_feedback(new_data['email'], new_data['name'], new_data['message'])
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            send_feedback(form.cleaned_data['email'], form.cleaned_data['name'],
+                          form.cleaned_data['message'])
             c['message'] = u"Thank you, your message has been sent."
     else:
-        errors = new_data = {}
+        form = FeedbackForm()
     
-    form = forms.FormWrapper(manipulator, new_data, errors)
     c['form'] = form
-    c['errors'] = errors
     return shortcuts.render_to_response('cciw/feedback.html', 
                 context_instance=template.RequestContext(request, c))
 
