@@ -4,3 +4,4 @@ from news import *
 from htmlchunks import *
 from sites import *
 from decorators import *
+from contact import *
