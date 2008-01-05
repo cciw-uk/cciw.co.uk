@@ -28,13 +28,12 @@ ERROR_MESSAGE = u"Please enter a correct username and password. Note that both f
 
 def _display_login_form(request, error_message=''):
     if request.method == 'POST' and request.POST.has_key('post_data'):
-        # User has failed login BUT has previously saved post data
+        # User has failed login BUT has previously saved post data,
+        # so we propagate that data.
         post_data = request.POST['post_data']
-    elif request.method == 'POST':
-        # User's session must have expired; save their post data.
-        post_data = _encode_post_data(request.method, request.POST)
     else:
-        post_data = None
+        # User's session must have expired; save their post data.
+        post_data = _encode_post_data((request.method, request.POST))
     
     c = template.RequestContext(request, standard_extra_context(title="Login"))
     return render_to_response('cciw/members/login.html', {
@@ -43,13 +42,13 @@ def _display_login_form(request, error_message=''):
         'error_message': error_message
     }, context_instance=c)
 
-def _encode_post_data(method, post_data):
-    pickled = pickle.dumps((method, post_data))
+def _encode_post_data(data):
+    pickled = pickle.dumps(data)
     pickled_md5 = md5.new(pickled + settings.SECRET_KEY).hexdigest()
     return base64.encodestring(pickled + pickled_md5)
 
 def _decode_post_data(encoded_data):
-    " Returns the original (request.method, request.POST)"
+    " Returns the original data that was stored"
     encoded_data = base64.decodestring(encoded_data)
     pickled, tamper_check = encoded_data[:-32], encoded_data[-32:]
     if md5.new(pickled + settings.SECRET_KEY).hexdigest() != tamper_check:
