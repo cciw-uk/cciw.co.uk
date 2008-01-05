@@ -2,7 +2,7 @@ from datetime import datetime, date
 import string
 
 from django.views.generic import list_detail
-from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect, HttpResponse
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.conf import settings
@@ -345,9 +345,8 @@ def edit_poll(request, poll_id=None, breadcrumb_extra=None):
     if request.method == 'POST':
         form = CreatePollForm(request.POST, instance=existing_poll)
 
-        if request.GET.get('format') == 'json':
-            return HttpResponse(utils.python_to_json(form.errors),
-                                mimetype='text/javascript')
+        json = utils.json_validation_request(request, form)
+        if json: return json
 
         if form.is_valid():
             new_poll = form.save(commit=False)

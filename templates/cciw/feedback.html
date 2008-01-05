@@ -1,6 +1,24 @@
 {% extends "cciw/standard.html" %}
 {% load standardpage %}
 {% block content %}
+<script type="text/javascript" src="{{ pagevars.media_root_url }}javascript/MochiKit/MochiKit.js"></script>
+<script type="text/javascript" src="{{ pagevars.media_root_url }}javascript/cciwutils.js"></script>
+<script type="text/javascript">
+<!--
+
+// DEBUG:
+//createLoggingPane();
+
+connect(window, 'onload',
+	function(ev) {
+		// Add event handlers to everything that can be validated.
+		standardform_add_onchange_handlers('contactform');
+	}
+);
+
+
+//-->
+</script>
 
 {% if message %}
 <div class="successMessage">
@@ -13,7 +31,7 @@
 	<div class="userError">Please check your input below:</div>
 	{% endif %}
 
-	<form action="" method="post">	
+	<form action="" method="post" id="contactform">	
 	  {{ form.as_p }} 
 	
 	<p><input type="submit" name="submit" value="Send" /></p>

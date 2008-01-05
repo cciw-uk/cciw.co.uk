@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.utils import simplejson
 from django.utils.functional import Promise
 from django.utils.encoding import force_unicode
+from django.http import HttpResponse
 
 def obfuscate_email(email):
     # TODO - use javascript write statements, with fallback
@@ -116,3 +117,13 @@ json_encoder = LazyEncoder(ensure_ascii=False)
 
 def python_to_json(obj):
     return json_encoder.encode(obj)
+
+def json_validation_request(request, form):
+    """Returns a JSON validation response for a form, 
+    if the request is for JSON validation"""
+
+    if request.GET.get('format') == 'json':
+        return HttpResponse(python_to_json(form.errors),
+                            mimetype='text/javascript')
+    else:
+        return None

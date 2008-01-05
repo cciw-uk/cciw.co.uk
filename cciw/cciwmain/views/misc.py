@@ -9,6 +9,7 @@ from django.utils.text import wrap
 
 from cciw.cciwmain.common import standard_extra_context, get_thisyear
 from cciw.cciwmain.forms import CciwFormMixin
+from cciw.cciwmain import utils
 
 def send_feedback(email, name, message):
     message = wrap(message, 70)
@@ -32,6 +33,10 @@ def feedback(request):
     
     if request.method == 'POST':
         form = FeedbackForm(request.POST)
+
+        json = utils.json_validation_request(request, form)
+        if json: return json
+
         if form.is_valid():
             send_feedback(form.cleaned_data['email'], form.cleaned_data['name'],
                           form.cleaned_data['message'])
