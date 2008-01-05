@@ -21,16 +21,15 @@ def login_redirect(path):
     qs = urllib.urlencode({'redirect': path})
     return '%s?%s' % ('/login/', qs)
 
-
-
 LOGIN_FORM_KEY = 'this_is_the_login_form'
 ERROR_MESSAGE = u"Please enter a correct username and password. Note that both fields are case-sensitive."
+LOGIN_FORM_POST_DATA_KEY = 'login_form_post_data'
 
 def _display_login_form(request, error_message=''):
-    if request.method == 'POST' and request.POST.has_key('post_data'):
+    if request.method == 'POST' and request.POST.has_key(LOGIN_FORM_POST_DATA_KEY):
         # User has failed login BUT has previously saved post data,
         # so we propagate that data.
-        post_data = request.POST['post_data']
+        post_data = request.POST[LOGIN_FORM_POST_DATA_KEY]
     else:
         # User's session must have expired; save their post data.
         post_data = _encode_post_data((request.method, request.POST))
@@ -74,12 +73,13 @@ def member_required_generic(except_methods):
             
             def _forward_to_original(req):
                 # helper function to go to the original view function.
-                if req.POST.has_key('post_data'):
-                    method, post_data = _decode_post_data(req.POST['post_data'])
-                    if post_data and not post_data.has_key(LOGIN_FORM_KEY):
+                if req.POST.has_key(LOGIN_FORM_POST_DATA_KEY):
+                    method, post_data = _decode_post_data(req.POST[LOGIN_FORM_POST_DATA_KEY])
+                    if not post_data.has_key(LOGIN_FORM_KEY):
                         # overwrite request.POST with the saved post_data, and continue
                         req.POST = post_data
                         req.method = method
+                        req.META['REQUEST_METHOD'] = method
 
                 return view_func(req, *args, **kwargs)
             ## end helper

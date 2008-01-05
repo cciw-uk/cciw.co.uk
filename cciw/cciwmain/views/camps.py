@@ -62,13 +62,8 @@ def detail(request, year, number):
     c['camp'] = camp
     c['title'] = camp.nice_name
     
-<<<<<<< local
-    if camp.is_past():
-        c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(str(camp.year)) + [camp.nice_name])    
-=======
     if camp.is_past():
         c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(unicode(camp.year)) + [camp.nice_name])
->>>>>>> other
     else:
         c['breadcrumb'] = create_breadcrumb([standard_subs(u'<a href="/thisyear/">Camps {{thisyear}}</a>'), "Camp " + number])
     return render_to_response('cciw/camps/detail.html', context_instance=c)
@@ -176,17 +171,14 @@ def topic(request, year, number, topicnumber):
     return forums_views.topic(request, topicid=topicnumber, title_start=u'Topic',
         template_name='cciw/forums/topic.html', breadcrumb_extra=breadcrumb_extra)        
 
-@member_required
 def add_topic(request, year, number):
     camp, breadcrumb_extra = _get_camp_and_breadcrumb(year, number)
     return forums_views.add_topic(request, breadcrumb_extra)
 
-@member_required
 def add_news(request, year, number):
     camp, breadcrumb_extra = _get_camp_and_breadcrumb(year, number)
     return forums_views.add_news(request, breadcrumb_extra)
 
-@member_required
 def edit_poll(request, year, number, poll_id=None):
     camp, breadcrumb_extra = _get_camp_and_breadcrumb(year, number)
     return forums_views.edit_poll(request, poll_id, breadcrumb_extra)
