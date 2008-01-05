@@ -9,23 +9,10 @@
 // DEBUG:
 //createLoggingPane();
 
-var editpollformname = 'editpollform';
-
-function get_input_change_handler(control_name, control_id) {
-	function on_input_change(ev) {
-		d = cciw_validate_form(editpollformname);
-		d.addCallbacks(standardform_get_validator_callback(control_name, control_id), 
-				standardform_ajax_error_handler);
-	};
-	return on_input_change;
-} 
-
 connect(window, 'onload',
 	function(ev) {
 		// Add event handlers to everything that can be validated.
-		add_form_onchange_handlers(editpollformname, function(input) {
-			return get_input_change_handler(input.name, input.id);
-		});		
+		standardform_add_onchange_handlers('editpollform');
 	}
 );
 

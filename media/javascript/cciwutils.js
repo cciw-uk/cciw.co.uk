@@ -72,13 +72,18 @@ function encodeForm (/*DOMNode*/formNode, /*Function?*/formFilter){
 }
 
 
-function add_form_onchange_handlers(formname, mk_input_change_handler) {
+function add_form_onchange_handlers(form_id, mk_input_change_handler) {
 	// Summary: Adds 'onchange' handlers to all inputs in a form
-	// formname: name of the form in the DOM
+	// form_id: id of the form in the DOM
 	// mk_input_change_handler: when called with one of the 
 	//   form elements, returns a handler to be connected to 
 	//   that element.
-	var inputs = $(formname).elements;
+	var form = $(form_id);
+	if (form == null) { 
+		logError("Could not find form '" + form_id + "'.") ; 
+		return null;
+	}
+	var inputs = form.elements;
 	for (var i = 0; i < inputs.length; i++) {
 		if (defaultFormFilter(inputs[i])) {
 			connect(inputs[i], 'onchange', mk_input_change_handler(inputs[i]));
@@ -86,10 +91,10 @@ function add_form_onchange_handlers(formname, mk_input_change_handler) {
 	}
 }
 
-function cciw_validate_form(formname) {
+function cciw_validate_form(form_id) {
 	// Summary: do AJAX validation of the form, using normal conventions,
 	// returns a MochiKit Deferred object.
-	var data = encodeForm($(formname));
+	var data = encodeForm($(form_id));
 	var d = doXHR("?format=json", 
 			{
 				method:'POST', 
@@ -150,6 +155,8 @@ function standardform_clear_error(control_id) {
 }
 
 function standardform_get_validator_callback(control_name, control_id) {
+	// Summary: returns a callback that should be called when
+	// the AJAX validation request returns with data.
 	var control_name_n = django_normalise_control_id(control_name);
 	var control_id_n = django_normalise_control_id(control_id);
 	function handler(req) {
@@ -168,4 +175,23 @@ function standardform_get_validator_callback(control_name, control_id) {
 
 function standardform_ajax_error_handler(err) { 
 	logError("Err " + repr(err));
+}
+
+function standardform_get_input_change_handler(form_id, control_name, control_id) {
+	// Summary: returns an event handler to be added to a control,
+	// form_id: id of the form the control belongs to
+	// control_name: the name of the control
+	// control_id: id of the control
+	function on_input_change(ev) {
+		d = cciw_validate_form(form_id);
+		d.addCallbacks(standardform_get_validator_callback(control_name, control_id), 
+			       standardform_ajax_error_handler);
+	};
+	return on_input_change;
+}
+
+function standardform_add_onchange_handlers(form_id) {
+	add_form_onchange_handlers(form_id, function(input) {
+			return standardform_get_input_change_handler(form_id, input.name, input.id);
+		});
 }
