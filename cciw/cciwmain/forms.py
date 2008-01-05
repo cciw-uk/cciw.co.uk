@@ -13,11 +13,15 @@ class CciwFormMixin(object):
         normal_row = '<p id="%(divid)s" class="%(class)s">%(label)s %(field)s%(help_text)s</p>'
         error_row = u'<div class="validationErrorTop">%s</div>'
         help_text_html = u' %s'
-        normal_class = 'formrow'
-        error_class = 'formrow validationErrorBottom'
+        normal_class = u'formrow'
+        error_class = u'formrow validationErrorBottom'
+        start = u'<div class="form">'
+        end = u'</div>'
+        required_text = ' <a href="#" title="This field is required">*</a>'
         
         top_errors = self.non_field_errors() # Errors that should be displayed above all fields.
         output, hidden_fields = [], []
+        output.append(start)
         for name, field in self.fields.items():
             bf = BoundField(self, field, name)
             bf_errors = self.error_class([escape(error) for error in bf.errors]) # Escape and cache in local variable.
@@ -38,7 +42,12 @@ class CciwFormMixin(object):
                     if self.label_suffix:
                         if label[-1] not in ':?.!':
                             label += self.label_suffix
-                    label = bf.label_tag(label) or ''
+                    if field.required:
+                        label += required_text
+                        label_attrs = {'class':'required'}
+                    else:
+                        label_attrs = {}
+                    label = bf.label_tag(label, attrs=label_attrs) or ''
                 else:
                     label = ''
                 if field.help_text:
@@ -58,4 +67,5 @@ class CciwFormMixin(object):
         if hidden_fields: # Insert any hidden fields in the last row.
             str_hidden = u''.join(hidden_fields)
             output.append(str_hidden)
+        output.append(end)
         return mark_safe(u'\n'.join(output))
