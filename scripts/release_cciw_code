@@ -15,5 +15,5 @@ cp cciw/settings_common.py cciw/settings.py $OUTPUTDIR/cciw/ || exit 1
 cd $OUTPUTDIR || exit 1
 cd .. || exit 1
 zip -r $RELEASENAME.zip $RELEASENAME || exit 1
-
+rm -rf $RELEASENAME
 cd $CURDIR
