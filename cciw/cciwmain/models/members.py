@@ -169,7 +169,7 @@ class Award(models.Model):
         return str(self)
     
     def imageurl(self):
-        return settings.CCIW_MEDIA_URL + "images/awards/" + self.image
+        return settings.CCIW_MEDIA_URL + "/images/awards/" + self.image
         
     def get_absolute_url(self):
         from django.template.defaultfilters import slugify

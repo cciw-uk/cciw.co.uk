@@ -33,7 +33,7 @@ def render_topic(topic):
 
 def render_photo(photo):
      return mark_safe(u'<a href="%s"><img src="%s/photos/thumbnails/%s" alt="Photo %s" /></a>' % \
-         (photo.get_absolute_url(), settings.MEDIA_URL, photo.filename, photo.id))
+         (photo.get_absolute_url(), settings.CCIW_MEDIA_URL, photo.filename, photo.id))
 
 
 register_renderer(Member, Member.get_link)

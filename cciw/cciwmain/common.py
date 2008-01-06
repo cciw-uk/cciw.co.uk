@@ -102,7 +102,7 @@ def standard_processor(request):
     context['current_member'] = threadlocals.get_current_member()
     context['pagevars'] = {
         'media_root_url': settings.CCIW_MEDIA_URL,
-        'style_sheet_url': settings.CCIW_MEDIA_URL + 'style.css',
+        'style_sheet_url': settings.CCIW_MEDIA_URL + '/style.css',
     }
 
     context.update(view_extras.get_view_extras_context(request))

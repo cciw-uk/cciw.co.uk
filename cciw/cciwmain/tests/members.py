@@ -82,7 +82,7 @@ class MemberAdmin(TestCase):
         self.failUnlessEqual(response.status_code, 200)
 
         # Ensure it got there
-        globpath = settings.MEDIA_ROOT + settings.MEMBER_ICON_PATH + self.member.user_name + ".*"
+        globpath = "%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, self.member.user_name + ".*")
         files = glob.glob(globpath)
         self.assertEqual(1, len(files))
         self.assertEqual(fs, _get_file_size(files[0]))
@@ -96,7 +96,7 @@ class MemberAdmin(TestCase):
         self._upload_icon(new_icon)
 
         # Ensure it didn't get there
-        self.assertEqual(0, len(glob.glob(settings.MEDIA_ROOT + settings.MEMBER_ICON_PATH + self.member.user_name + ".*")))
+        self.assertEqual(0, len(glob.glob("%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, self.member.user_name + ".*"))))
 
     def test_upload_bad_icon(self):
         self._assert_icon_upload_fails("badicon.png")
@@ -109,7 +109,7 @@ class MemberAdmin(TestCase):
         pass
 
     def _remove_member_icons(self):
-        for f in glob.glob(settings.MEDIA_ROOT + settings.MEMBER_ICON_PATH + self.member.user_name + ".*"):
+        for f in glob.glob("%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, self.member.user_name + ".*")):
             os.unlink(f)
 
 

@@ -56,13 +56,13 @@ def create_user(user_name, password1, password2):
                    last_seen=datetime.datetime.now(),
                    date_joined=datetime.datetime.now(),
                    password=Member.encrypt_password(password1),
-                   icon=settings.MEMBER_ICON_PATH + iconfilename)
+                   icon="%s/%s" % (settings.MEMBER_ICON_PATH, iconfilename))
         m.save()
 
         # Copy default member icon
         import shutil
-        shutil.copy(settings.MEDIA_ROOT + settings.DEFAULT_MEMBER_ICON,
-                    settings.MEDIA_ROOT + settings.MEMBER_ICON_PATH + iconfilename)
+        shutil.copy("%s/%s" % (settings.MEDIA_ROOT, settings.DEFAULT_MEMBER_ICON),
+                    "%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, iconfilename))
         return m
 
 def email_hash(email):
