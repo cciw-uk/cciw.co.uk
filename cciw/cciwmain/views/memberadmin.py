@@ -11,7 +11,7 @@ from cciw.cciwmain.models import Member
 from cciw.middleware.threadlocals import set_member_session, get_current_member
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain import imageutils
-from cciw.cciwmain.utils import member_username_re
+from cciw.cciwmain import utils
 from cciw.cciwmain.forms import CciwFormMixin
 import md5
 import urllib
@@ -38,7 +38,7 @@ class ValidationError(Exception):
 
 # TODO - add synchronize lock here
 def create_user(user_name, password1, password2):
-    if member_username_re.match(user_name) is None:
+    if utils.member_username_re.match(user_name) is None:
         raise ValidationError("The user name is invalid, please check and try again")
     elif Member.all_objects.filter(user_name__iexact=user_name).count() > 0:
         # Can't just try to create it and catch exceptions,
@@ -416,9 +416,11 @@ def change_email(request):
             context_instance=ctx)
 
 preferences_fields = ["real_name", "email", "show_email", "comments", "message_option", "icon"]
+_real_name_max_length = Member._meta.get_field('real_name').max_length
 class PreferencesForm(CciwFormMixin, forms.ModelForm):
-    real_name = forms.CharField(widget=forms.TextInput(attrs={'size':'30'}),
-                                label="'Real' name", required=False)
+    real_name = forms.CharField(widget=forms.TextInput(attrs={'size':str(_real_name_max_length)}),
+                                label="'Real' name", required=False,
+                                max_length=_real_name_max_length)
     email = forms.EmailField(widget=forms.TextInput(attrs={'size':'40'}))
     message_option = forms.ChoiceField(choices=Member.MESSAGE_OPTIONS,
                                        widget=forms.RadioSelect,
@@ -447,6 +449,9 @@ def preferences(request):
     if request.method == 'POST':
         form = PreferencesForm(request.POST, request.FILES,
                                instance=current_member)
+
+        json = utils.json_validation_request(request, form)
+        if json: return json
         
         if form.is_valid():
 

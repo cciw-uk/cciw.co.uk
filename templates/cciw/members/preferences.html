@@ -1,5 +1,22 @@
 {% extends "cciw/standard.html" %}
 {% block content %}
+
+<script type="text/javascript" src="{{ pagevars.media_root_url }}javascript/MochiKit/MochiKit.js"></script>
+<script type="text/javascript" src="{{ pagevars.media_root_url }}javascript/cciwutils.js"></script>
+<script type="text/javascript">
+<!--
+
+connect(window, 'onload',
+	function(ev) {
+		// Add event handlers to everything that can be validated.
+		standardform_add_onchange_handlers('preferencesform');
+	}
+);
+
+
+//-->
+</script>
+
 <h2>Preferences</h2>
 <p>Edit your preferences below.  Changes to your e-mail address
 will require confirmation by an e-mail.</p>
@@ -28,7 +45,7 @@ Please check your input below:
 {% endif %}
 
 
-<form method="post" action="" enctype="multipart/form-data">
+<form method="post" action="" enctype="multipart/form-data" id="preferencesform">
 
 {{ form.as_p }}
 
