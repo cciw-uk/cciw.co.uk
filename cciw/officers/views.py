@@ -316,22 +316,22 @@ def manage_applications(request):
 # Password reset
 # admin/password_reset/
 
-from django import newforms as forms
+from django import newforms
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
 # Similar to version in django.contrib.auth.forms, but this one provides
 # much better security
 
-class CciwUserEmailField(forms.EmailField):
+class CciwUserEmailField(newforms.EmailField):
     def clean(self, value):
         value = super(CciwUserEmailField, self).clean(value)
         if User.objects.filter(email__iexact=value).count() == 0:
-            raise forms.ValidationError("That e-mail address doesn't have an associated user account. Are you sure you've registered?")
+            raise newforms.ValidationError("That e-mail address doesn't have an associated user account. Are you sure you've registered?")
         return value
 
-class PasswordResetForm(forms.Form):
+class PasswordResetForm(newforms.Form):
     "A form that lets a user request a password reset"
-    email = CciwUserEmailField(widget=forms.TextInput(attrs={'size':'40'}))
+    email = CciwUserEmailField(widget=newforms.TextInput(attrs={'size':'40'}))
 
     def save(self, domain_override=None, email_template_name='cciw/officers/password_reset_email.txt'):
         "Calculates a new password randomly and sends it to the user"
