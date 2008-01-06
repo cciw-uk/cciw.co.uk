@@ -146,7 +146,7 @@ div.validationErrorTop
 	border-top: 1px solid #660000;
 	background-color: #220000;
 }
-p.validationErrorBottom
+div.validationErrorBottom
 {
 	border-bottom: 1px solid #660000;
 	background-color: #220000;
@@ -684,37 +684,40 @@ div.sitephoto
 
 /*** FORMS ***/
 
-div.formrow, p.formrow
+div.formrow
 {
 	clear: both;
 	margin: 0px 0px 4px 0px;
 	padding: 0px 6px 2px 6px;
 }
 
-div.formrow label, p.formrow label
+/* LHS of form */
+div.formrow label
 {
 	display: block;
 	float: left;
 	width: 16em;
 }
 
-div.formrow .formcontrol
-{
-	margin-left: 16em;
-	
-}
-
-div.formrow .formcontrol label
-{
-	float: none;
-	display: inline;
-}
-div.formrow .formcontrol ul,
-div.formrow .formcontrol ul li
+/* RHS of form */
+div.formrow ul,
+div.formrow ul li
 {
 	list-style-type: none;
 	margin-left: 0px;
 	padding-left: 0px;
+}
+
+div.formrow ul
+{
+	margin-left: 16em;
+}
+
+div.formrow ul label
+{
+	// Override what we set before under div.formrow label
+	float: none;
+	width: auto;
 }
 
 div.userError

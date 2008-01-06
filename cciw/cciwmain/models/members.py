@@ -59,13 +59,13 @@ class Member(models.Model):
     )
 
     user_name   = models.CharField("User name", primary_key=True, max_length=30)
-    real_name   = models.CharField("Real name", max_length=30, blank=True)
+    real_name   = models.CharField("'Real' name", max_length=30, blank=True)
     email       = models.EmailField("Email address")
     password    = models.CharField("Password", max_length=30)
     date_joined = models.DateTimeField("Date joined", null=True)
     last_seen   = models.DateTimeField("Last on website", null=True)
-    show_email  = models.BooleanField("Show email address", default=False)
-    message_option = models.PositiveSmallIntegerField("Message option",
+    show_email  = models.BooleanField("Make email address visible", default=False)
+    message_option = models.PositiveSmallIntegerField("Message storing",
         choices=MESSAGE_OPTIONS, default=1, radio_admin=True)
     comments    = models.TextField("Comments", blank=True)
     moderated   = models.PositiveSmallIntegerField("Moderated", default=0,

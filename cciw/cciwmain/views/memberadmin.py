@@ -5,13 +5,14 @@ from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.validators import email_re
 from django.http import Http404, HttpResponseRedirect
-from django import forms
+from django import newforms as forms
 from cciw.cciwmain.common import standard_extra_context
 from cciw.cciwmain.models import Member
 from cciw.middleware.threadlocals import set_member_session, get_current_member
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain import imageutils
 from cciw.cciwmain.utils import member_username_re
+from cciw.cciwmain.forms import CciwFormMixin
 import md5
 import urllib
 import re
@@ -414,6 +415,20 @@ def change_email(request):
     return shortcuts.render_to_response('cciw/members/change_email.html', 
             context_instance=ctx)
 
+preferences_fields = ["real_name", "email", "show_email", "comments", "message_option", "icon"]
+class PreferencesForm(CciwFormMixin, forms.ModelForm):
+    real_name = forms.CharField(widget=forms.TextInput(attrs={'size':'30'}),
+                                label="'Real' name", required=False)
+    email = forms.EmailField(widget=forms.TextInput(attrs={'size':'40'}))
+    message_option = forms.ChoiceField(choices=Member.MESSAGE_OPTIONS,
+                                       widget=forms.RadioSelect,
+                                       label="Message storing")
+    class Meta:
+        model = Member
+        fields = preferences_fields
+
+PreferencesForm.base_fields.keyOrder = preferences_fields
+
 @member_required
 def preferences(request):
     current_member = get_current_member()
@@ -429,29 +444,29 @@ def preferences(request):
     except Member.DoesNotExist:
        raise Http404
     
-    if request.POST:
-        new_data = request.POST.copy()
-        new_data.update(request.FILES)
+    if request.method == 'POST':
+        form = PreferencesForm(request.POST, request.FILES,
+                               instance=current_member)
         
-        new_email = new_data['email']
-        
-        errors = manipulator.get_validation_errors(new_data)        
-        
-        if not errors:
-            # E-mail changes require verification, so fix it here
-            new_data['email'] = current_member.email
-            
-            manipulator.do_html2python(new_data)
-            new_current_member = manipulator.save(new_data)
+        if form.is_valid():
+
+            # E-mail changes require verification, so frig it here
+            orig_email = current_member.email # before update
+            current_member = form.save(commit=False)
+            new_email = current_member.email # from posted data
+
+            # Save with original email
+            current_member.email = orig_email
+            current_member.save()
             
             if request.FILES:
                 try:
-                    imageutils.fix_member_icon(new_current_member)
+                    imageutils.fix_member_icon(current_member)
                 except imageutils.ValidationError, e:
                     c['image_error'] = e.args[0]
             
             # E-mail change:
-            if new_email != current_member.email:
+            if new_email != orig_email:
                 # We check for duplicate e-mail address in change_email view,
                 # so don't really need to do it here.
                 send_newemail_email(current_member, new_email)
@@ -459,14 +474,10 @@ def preferences(request):
                    "has been sent to your new address with further instructions."
             else:
                 c['message'] = "Changes saved."
-            
-            current_member = new_current_member
+
     else:
-        errors = {}
-        # This makes sure the form accurately represents the fields of the place.
-        new_data = current_member.__dict__
+        form = PreferencesForm(instance=current_member)
     
-    form = forms.FormWrapper(manipulator, new_data, errors)
     c['form'] = form
     c['member'] = current_member
 

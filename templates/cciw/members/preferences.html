@@ -29,17 +29,8 @@ Please check your input below:
 
 
 <form method="post" action="" enctype="multipart/form-data">
-<div class="formrow"><label for="id_real_name">'Real' name</label>{{ form.real_name }}
-<span class="validationError">{% if form.real_name.errors %}* {{ form.real_name.errors|join:", " }}{% endif %}</span>
-</div>
-<div class="formrow"><label for="id_email">E-mail address</label>{{ form.email }}
-<span class="validationError">{% if form.email.errors %}* {{ form.email.errors|join:", " }}{% endif %}</span>
-</div>
-<div class="formrow"><label for="id_show_email">Make e-mail address visible</label>{{ form.show_email }}</div>
-<div class="formrow"><label for="id_comments">Comments (public information about yourself)</label>{{ form.comments }}</div>
-<div class="formrow"><label for="id_icon_file">Icon</label>{{ form.icon_file }}{{ form.icon }}<br/></div>
 
-<div class="formrow"><label>Message storing</label><div class="formcontrol">{{ form.message_option }}</div></div>
+{{ form.as_p }}
 
 <div><input type="submit" name="submit" value="Save" /></div>
 </form>

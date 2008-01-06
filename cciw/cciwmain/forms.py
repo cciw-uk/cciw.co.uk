@@ -10,7 +10,7 @@ class CciwFormMixin(object):
 
         ## Remember to change cciwutils.js standardform_ functions if the
         ## HTML here is changed
-        normal_row = '<p id="%(divid)s" class="%(class)s">%(label)s %(field)s%(help_text)s</p>'
+        normal_row = '<div id="%(divid)s" class="%(class)s">%(label)s %(field)s%(help_text)s</div>'
         error_row = u'<div class="validationErrorTop">%s</div>'
         help_text_html = u' %s'
         normal_class = u'formrow'
