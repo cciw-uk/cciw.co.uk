@@ -24,9 +24,9 @@ Message:
 """ % locals(), "website@cciw.co.uk", [settings.FEEDBACK_EMAIL_TO])
 
 class FeedbackForm(CciwFormMixin, forms.Form):
-    email = forms.EmailField(max_length=320)
-    name = forms.CharField(max_length=200, required=False)
-    message = forms.CharField(widget=forms.Textarea)
+    email = forms.EmailField(label="Email address", max_length=320)
+    name = forms.CharField(label="Name", max_length=200, required=False)
+    message = forms.CharField(label="Message", widget=forms.Textarea)
 
 def feedback(request):
     c = standard_extra_context(title=u"Contact us")
