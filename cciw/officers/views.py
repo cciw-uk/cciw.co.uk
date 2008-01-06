@@ -316,29 +316,28 @@ def manage_applications(request):
 # Password reset
 # admin/password_reset/
 
-from django import oldforms
-from django.core import validators
+from django import newforms as forms
 from django.core.urlresolvers import reverse
+from django.core.mail import send_mail
 # Similar to version in django.contrib.auth.forms, but this one provides
 # much better security
-class PasswordResetForm(oldforms.Manipulator):
-    "A form that lets a user request a password reset"
-    def __init__(self):
-        self.fields = (
-            oldforms.EmailField(field_name="email", length=40, is_required=True,
-                validator_list=[self.isValidUserEmail]),
-        )
 
-    def isValidUserEmail(self, new_data, all_data):
-        "Validates that a user exists with the given e-mail address"
-        self.users_cache = list(User.objects.filter(email__iexact=new_data))
-        if len(self.users_cache) == 0:
-            raise validators.ValidationError, _("That e-mail address doesn't have an associated user account. Are you sure you've registered?")
+class CciwUserEmailField(forms.EmailField):
+    def clean(self, value):
+        value = super(CciwUserEmailField, self).clean(value)
+        if User.objects.filter(email__iexact=value).count() == 0:
+            raise forms.ValidationError("That e-mail address doesn't have an associated user account. Are you sure you've registered?")
+        return value
+
+class PasswordResetForm(forms.Form):
+    "A form that lets a user request a password reset"
+    email = CciwUserEmailField(widget=forms.TextInput(attrs={'size':'40'}))
 
     def save(self, domain_override=None, email_template_name='cciw/officers/password_reset_email.txt'):
         "Calculates a new password randomly and sends it to the user"
-        from django.core.mail import send_mail
-        for user in self.users_cache:
+        email = self.cleaned_data['email']
+        print self.cleaned_data
+        for user in User.objects.filter(email__iexact=email):
             new_pass = User.objects.make_random_password()
             current_site = Site.objects.get_current()
             site_name = current_site.name
@@ -357,20 +356,16 @@ def make_newpassword_hash(newpassword, username):
     import md5
     return md5.new(settings.SECRET_KEY + newpassword + username).hexdigest()
 
-def password_reset(request, is_admin_site=False, template_name='registration/password_reset_form.html',
-        email_template_name='cciw/officers/password_reset_email.txt'):
-    new_data, errors = {}, {}
-    form = PasswordResetForm()
-    if request.POST:
-        new_data = request.POST.copy()
-        errors = form.get_validation_errors(new_data)
-        if not errors:
-            if is_admin_site:
-                form.save(domain_override=request.META['HTTP_HOST'])
-            else:
-                form.save(email_template_name=email_template_name)
+def password_reset(request):
+    template_name='cciw/officers/password_reset_form.html'
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            form.save()
             return HttpResponseRedirect('%sdone/' % request.path)
-    return render_to_response(template_name, {'form': oldforms.FormWrapper(form, new_data, errors)},
+    else:
+        form = PasswordResetForm()
+    return render_to_response(template_name, {'form': form},
         context_instance=template.RequestContext(request))
 
 # admin/password_reset_done/
