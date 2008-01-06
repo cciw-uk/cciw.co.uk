@@ -435,17 +435,7 @@ PreferencesForm.base_fields.keyOrder = preferences_fields
 def preferences(request):
     current_member = get_current_member()
     c = standard_extra_context(title="Preferences")
-    
-    # These fields are the ones we want to edit:
-    preferences_fields = ["email", "real_name", "comments", "message_option", "icon", "show_email"]
-    # These are the rest:
-    fixed_fields = [f.attname for f in Member._meta.fields if f.attname not in preferences_fields]
-    follow_override = dict([(f, False) for f in fixed_fields])
-    try:
-       manipulator = Member.ChangeManipulator(current_member.user_name, follow=follow_override)
-    except Member.DoesNotExist:
-       raise Http404
-    
+        
     if request.method == 'POST':
         form = PreferencesForm(request.POST, request.FILES,
                                instance=current_member)
