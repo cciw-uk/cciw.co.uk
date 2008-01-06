@@ -63,9 +63,11 @@ class MemberAdmin(TestCase):
     def _upload_icon(self, iconpath):
         # Upload the file
         post_data = self._standard_post_data()
-        post_data['icon_file'] = open(iconpath)
-        post_data['icon'] = ''
-        return self.client.post(MEMBER_ADMIN_URL, data=post_data)
+        f = open(iconpath)
+        post_data['icon'] = f
+        resp = self.client.post(MEMBER_ADMIN_URL, data=post_data)
+        f.close()
+        return resp        
 
     def test_upload_icon(self):
         new_icon = os.path.join(settings.TEST_DIR, TEST_MEMBER_USERNAME + ".png")
