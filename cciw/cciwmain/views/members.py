@@ -87,7 +87,7 @@ def login(request):
             redirect = get_current_member().get_absolute_url()
         return HttpResponseRedirect(redirect)
     else:
-        return _display_login_form(request)
+        return _display_login_form(request, login_page=True)
 
 @member_required
 def send_message(request, user_name):

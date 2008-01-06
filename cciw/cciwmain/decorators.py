@@ -25,8 +25,10 @@ LOGIN_FORM_KEY = 'this_is_the_login_form'
 ERROR_MESSAGE = u"Please enter a correct username and password. Note that both fields are case-sensitive."
 LOGIN_FORM_POST_DATA_KEY = 'login_form_post_data'
 
-def _display_login_form(request, error_message=''):
-    if request.method == 'POST' and request.POST.has_key(LOGIN_FORM_POST_DATA_KEY):
+def _display_login_form(request, error_message='', login_page=False):
+    if login_page:
+        post_data = None
+    elif request.method == 'POST' and request.POST.has_key(LOGIN_FORM_POST_DATA_KEY):
         # User has failed login BUT has previously saved post data,
         # so we propagate that data.
         post_data = request.POST[LOGIN_FORM_POST_DATA_KEY]
@@ -75,11 +77,15 @@ def member_required_generic(except_methods):
                 # helper function to go to the original view function.
                 if req.POST.has_key(LOGIN_FORM_POST_DATA_KEY):
                     method, post_data = _decode_post_data(req.POST[LOGIN_FORM_POST_DATA_KEY])
-                    if not post_data.has_key(LOGIN_FORM_KEY):
-                        # overwrite request.POST with the saved post_data, and continue
-                        req.POST = post_data
+                    # overwrite request.POST with the saved post_data, and continue
+                    req.POST = post_data
+                    # This works for WSGI handler, throws exception for mod_python:
+                    try:
                         req.method = method
-                        req.META['REQUEST_METHOD'] = method
+                    except AttributeError:
+                        pass
+                    # This one works for mod_python handler
+                    req.META['REQUEST_METHOD'] = method
 
                 return view_func(req, *args, **kwargs)
             ## end helper
