@@ -1,5 +1,5 @@
 from django.db import models
-from django import forms
+from django import oldforms as forms
 from django.dispatch import dispatcher
 from django.core.validators import ValidationError
 from django.http import HttpResponseForbidden
