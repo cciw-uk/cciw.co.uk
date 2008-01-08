@@ -2,59 +2,68 @@
 import sys
 import os
 import socket
+from optparse import OptionParser
+
 
 hostname = socket.gethostname()
 
 if hostname == 'calvin':
-    sys.path = sys.path + ['/home/luke/httpd/www.cciw.co.uk/django/','/home/luke/httpd/www.cciw.co.uk/django_src/', 
+    sys.path = sys.path + ['/home/luke/httpd/www.cciw.co.uk/current_src/','/home/luke/httpd/www.cciw.co.uk/django_src/', 
       '/home/luke/local/lib/python2.5/site-packages/', '/home/luke/devel/python/']    
     os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings_calvin'
 else:
     sys.path = sys.path + ['/home2/cciw/webapps/django_app/', '/home2/cciw/src/django-mr/', '/home2/cciw/src/misc/']
     os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
+
 from django.contrib.auth.models import User
+from cciw.cciwmain.models import Person
 
+parser = OptionParser(usage=
+"""
 
-def usage():
-    return \
-"""Usage: create_officer.py <username> <first_name> <last_name> <email>
+       create_officer.py <username> <first_name> <last_name> <email>
+OR:    create_officer.py --leader <username> <first_name> <last_name> <email> "<Person name>"
 OR:    create_officer.py --update <username> <first_name> <last_name> <email>
 OR:    create_officer.py --fromcsv < data.csv
 OR:    create_officer.py --fromcsv --dryrun < data.csv
-
-* CSV data should be rows of <first name,last name,email>
-* --dryrun doesn't make any database changes
-* --update mode will update the given username, resetting the password
-    and re-sending the email.
 """
+)
+
+parser.add_option("-u", "--update", dest="update", action="store_true", default=False, help="Updates an existing record, resetting password and sending out email again")
+parser.add_option("", "--leader", dest="is_leader", action="store_true", default=False, help="Adds/updates this person as a leader, not an officer")
+parser.add_option("", "--dryrun", dest="dryrun", action="store_true", default=False, help="Don't touch the database or actually send emails")
+parser.add_option("", "--fromcsv", dest="fromcsv", action="store_true", default=False, help="Read data in from CSV file")
+
+def usage_and_exit():
+    parser.print_usage()
+    sys.exit(1)
 
 def main():
-    csvmode = False
-    singlemode = False
-    dryrun = False
-    if (len(sys.argv) == 2 or len(sys.argv) == 3) and sys.argv[1] == "--fromcsv":
-        csvmode = True
-        if len(sys.argv) == 3 and sys.argv[2] == '--dryrun':
-          dryrun = True
-    if (len(sys.argv) == 5 and sys.argv[1] != '--update') or (len(sys.argv) == 6 and sys.argv[1] == '--update'):
-        singlemode = True
+    options, args = parser.parse_args()
 
-    if not csvmode and not singlemode:
-        print usage()
-        sys.exit(1)
-
-    if singlemode:
-        update = sys.argv[1] == '--update'
-        if update:
-            vars = sys.argv[2:]
-        else:
-            vars = sys.argv[1:]            
-        username, first_name, last_name, email = vars
-        create_single_officer(username, first_name, last_name, email, update=update)
-
-    elif csvmode:
+    if options.fromcsv:
+        if len(args) > 0:
+            usage_and_exit()
+        if options.is_leader:
+            print "'--leader' not valid with '--fromcsv'"
+            usage_and_exit()
         csv_data = parse_csv_data(sys.stdin)
-        create_multiple_officers(csv_data, dryrun)
+        create_multiple_officers(csv_data, options.dryrun)
+        
+    else:
+        if options.is_leader:
+            if len(args) != 5:
+                usage_and_exit()
+            username, first_name, last_name, email, personname = args
+            create_single_officer(username, first_name, last_name, email, 
+                                  update=options.update, is_leader=True,
+                                  personname=personname)
+        else:
+            if len(args) != 4:
+                usage_and_exit()
+            username, first_name, last_name, email = args
+            create_single_officer(username, first_name, last_name, email, 
+                                  update=options.update)
 
 def parse_csv_data(iterable):
     import csv
@@ -64,7 +73,9 @@ def create_multiple_officers(csv_data, dryrun):
     # csv_data is hopefully a list of lists, where each inner list
     # has 3 elements.  We have to validate it ourselves,
     # automatically generate usernames, and remember not to create
-    # duplicate officers.
+    # duplicate officers.  For this reason we use slightly different
+    # logic e.g. detecting duplicates, whereas in create_single_officer
+    # we trust the user.
     from django.core import validators
     from django.contrib.auth.models import User
     
@@ -103,11 +114,7 @@ def create_multiple_officers(csv_data, dryrun):
             # race condition between get_username and create_single_officer,
             # but we don't care really.
             username = get_username(first_name, last_name)
-            if dryrun:
-                print "Dry run: Creating %s, %s %s %s" % (username, first_name, last_name, email)
-            else:
-                print "Creating %s, %s %s %s" % (username, first_name, last_name, email)
-                create_single_officer(username, first_name, last_name, email)
+            create_single_officer(username, first_name, last_name, email, dryrun=dryrun)
                 
         else:
             print "Skipping row - %s:  %r" % (msg, officer_details)
@@ -124,19 +131,31 @@ def get_username(first_name, last_name, guess_number=1):
     else:
         return guess
 
-def create_single_officer(username, first_name, last_name, email, update=False):
+def create_single_officer(username, first_name, last_name, email, update=False,
+                          is_leader=False, personname=None, dryrun=False):
     password = User.objects.make_random_password()
     if update:
       print "Updating officer %s" % username
     else:
       print "Creating officer %s" % username
-    create_officer(username, first_name, last_name, email, password, update=update)
+    create_officer(username, first_name, last_name, email, password, update=update,
+                   is_leader=is_leader, personname=personname, dryrun=dryrun)
     print "Emailing officer %s" % username
-    email_officer(username, first_name, email, password)
+    email_officer(username, first_name, email, password, is_leader=is_leader, dryrun=dryrun, update=update)
     
-def create_officer(username, first_name, last_name, email, password, update=False):
+def create_officer(username, first_name, last_name, email, password, dryrun=False,
+                   update=False, personname=None, is_leader=False):
     from django.contrib.auth.models import User, Group
     from datetime import datetime
+
+    if personname is not None:
+        try:
+            person = Person.objects.get(name=personname)
+        except Person.DoesNotExist:
+            print "Person called '%s' does not exist in the database" % personname
+            sys.exit(1)
+    else:
+        person = None
 
     if update:
         officer = User.objects.get(username=username)
@@ -154,20 +173,35 @@ def create_officer(username, first_name, last_name, email, password, update=Fals
 
     officer.validate()
 
-    officer.save()
-    officer.set_password(password)
-    officer.save()
-    officer.groups.add(Group.objects.filter(name='Officers')[0])
+    if not dryrun:
+        officer.save()
+        officer.set_password(password)
+        officer.save()
 
-def email_officer(username, first_name, email, password):
-    from django.core.mail import send_mail
-    from django.conf import settings
-    
-    subject = "CCIW application form"
-    template = """
+    if is_leader:
+        groupname = 'Leaders'
+    else:
+        groupname = 'Officers'
+
+    if not dryrun:
+        officer.groups.add(Group.objects.filter(name=groupname)[0])
+
+        if is_leader and person is not None:
+            # Make association between person and officer
+            officer.person_set.add(person)
+            if officer.person_set.count() > 1:
+                # This can occasionally be valid e.g. if
+                # you have Person 'Joe Bloggs' and a Person 'Joe and Jane Bloggs',
+                # User joebloggs will be assoicated with both.
+                print "Warning: %r now is now associated with more than one 'Person' object." % officer
+                print "  Usually this is an error."
+
+
+
+officer_template = """
 Hi %(first_name)s,
 
-Below are the instructions for filling in a CCIW application form
+%(repeat_message)sBelow are the instructions for filling in a CCIW application form
 online.  When you have finished filling the form in, it will be
 e-mailed to the leader of the camp, who will need to send reference
 forms to the referees you have specified.
@@ -181,8 +215,8 @@ To fill in the application form
      Username: %(username)s
      Password: %(password)s
      
-     (You are advised to change your password to something more
-      memorable once you have logged in)
+     (You should change your password to something more memorable once
+      you have logged in)
       
 3) Choose from the options.  If you have already completed an
    application form online, you can choose to create an application
@@ -210,12 +244,74 @@ If you have any problems, please e-mail me at %(webmasteremail)s
 
 Luke
     """
+
+
+leader_template = """
+Hi %(first_name)s,
+
+%(repeat_message)sYou have been set up to receive CCIW application forms from officers
+using the online system.  Here is what you need to know:
+
+1) You will need to refer your officers to me to get login names for
+   the system if they don't have them already.  If you have a list of
+   officer names and email addresses, these can be imported in bulk.
+   In either case, I will send them complete instructions for using
+   the system.
+
+2) After that, you will normally have nothing more to do -- you should
+   receive all the application forms by email, in plain text format and
+   in RTF format which should be good for printing out.
+
+3) If you want to look at the list of people who have submitted forms,
+   or if you have lost an email, you can log on to the system:
+
+   Go to:
+     http://www.cciw.co.uk/officers/
+     
+   Log in using:
+     Username: %(username)s
+     Password: %(password)s
+     
+     (You should change your password to something more memorable once
+      you have logged in)
+
+   At the bottom of this page you should find a link to another
+   page that allows you to manage the submitted applications.
+  
+  
+If you have any problems, please e-mail me at %(webmasteremail)s
+
+Luke
+    """
+
+def email_officer(username, first_name, email, password, is_leader=False, dryrun=False, update=False):
+    from django.core.mail import send_mail
+    from django.conf import settings
     
+    if update:
+        repeat_message = \
+"""This is a repeat email sent either because the first email was lost
+or the password was forgotten.  Your username has not been changed, but
+a new random password has been given to you, see below.
+
+"""
+    else:
+        repeat_message = ""
+
+    subject = "CCIW application form system"
+    if is_leader:
+        template = leader_template
+    else:
+        template = officer_template
+
     msg = template % {'username': username,
                       'password': password,
                       'first_name': first_name,
-                      'webmasteremail': settings.WEBMASTER_EMAIL}
-    send_mail(subject, msg, settings.WEBMASTER_EMAIL, [email])
+                      'webmasteremail': settings.WEBMASTER_EMAIL,
+                      'repeat_message': repeat_message}
+
+    if not dryrun:
+        send_mail(subject, msg, settings.WEBMASTER_EMAIL, [email])
 
 
 if __name__ == '__main__':
