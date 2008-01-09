@@ -1,8 +1,8 @@
-from django.utils.http import urlquote
+from django.utils.http import urlquote, urlencode
 from django import template
 from cciw.cciwmain.models import HtmlChunk, Member, Post, Topic, Photo
 from cciw.cciwmain.common import standard_subs
-from cciw.cciwmain.utils import get_member_link, obfuscate_email, get_member_icon
+from cciw.cciwmain.utils import get_member_link, obfuscate_email, get_member_icon, get_current_domain
 from cciw.middleware.threadlocals import get_current_member
 from django.utils.html import escape
 from django.conf import settings
@@ -110,10 +110,20 @@ class AtomFeedLinkVisible(template.Node):
     def render(self, context):
         title = context.get('atom_feed_title', None)
         if title:
-            return (u'<a class="atomlink" href="%(url)s?format=atom" title="%(title)s" >' + 
-                    u' <img src="%(imgurl)s" alt="Subscribe" /> Subscribe</a> ' +
-                    u' <a href="/website/feeds/" title="Help on subscribing">(What\'s that?)</a> |') \
-            % {'url': context['request'].path, 'title': title, 'imgurl': settings.MEDIA_URL + "images/feed.gif" }
+            thisurl = context['request'].path
+            thisfullurl = 'http://%s%s' % (get_current_domain(), thisurl)
+            return (u'<a class="atomlink" href="%(atomurl)s" rel="external" title="%(atomtitle)s" >' + 
+                    u' <img src="%(atomimgurl)s" alt="Feed icon" /></a> ' +
+                    u' <a href="/website/feeds/" title="Help on Atom feeds">?</a> |' +
+                    u' <a class="atomlink" href="%(emailurl)s" rel="external" title="Subscribe to this page by email">' +
+                    u' <img src="%(emailimgurl)s" alt="Email icon" /></a> ' +
+                    u' <a href="/website/feeds/#emailupdates" title="Help on Email updates">?</a> |') \
+            % dict(atomurl="%s?format=atom" % thisurl, 
+                   atomtitle=title, 
+                   atomimgurl="%s/images/feed.gif" % settings.MEDIA_URL,
+                   emailurl=escape("http://www.rssfwd.com/rssfwd/preview?%s" % urlencode({'url':thisfullurl, 'submit url':'Submit'})),
+                   emailimgurl="%s/images/email.gif" % settings.MEDIA_URL
+               )
         else:
             return ''
 
