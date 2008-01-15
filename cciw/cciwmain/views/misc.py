@@ -56,7 +56,7 @@ def bookingform(request):
     c = standard_extra_context(title="Booking form")
     year = get_thisyear()
     bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
-    if os.path.isfile("%s%s" % (settings.MEDIA_ROOT, bookingform_relpath )):
+    if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath)):
         c['bookingform'] = bookingform_relpath
     return shortcuts.render_to_response('cciw/booking.html',
         context_instance=template.RequestContext(request, c))
