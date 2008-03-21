@@ -72,6 +72,10 @@ class Camp(models.Model):
         related_name="camps_as_leader", 
         verbose_name="leaders",
         null=True, blank=True, filter_interface=models.HORIZONTAL)
+    admins = models.ManyToManyField(User, 
+        related_name="camps_as_admin",
+        verbose_name="admins",
+        null=True, blank=True, filter_interface=models.HORIZONTAL)
     site = models.ForeignKey(Site)
     online_applications = models.BooleanField("Accepts online applications from officers.")
     
@@ -107,7 +111,8 @@ class Camp(models.Model):
     class Admin:
         fields = (
             (None, {'fields': ('year', 'number', 'age', 'start_date', 'end_date', 
-                               'chaplain', 'leaders', 'site', 'previous_camp', 'online_applications') 
+                               'chaplain', 'leaders', 'site', 'previous_camp', 
+                               'online_applications', 'admins') 
                     }
             ),
         )
