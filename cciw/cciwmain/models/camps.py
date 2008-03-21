@@ -65,11 +65,11 @@ class Camp(models.Model):
         verbose_name="previous camp",
         null=True, blank=True)
     chaplain = models.ForeignKey(Person, 
-        related_name="camp_as_chaplain", 
+        related_name="camps_as_chaplain", 
         verbose_name="chaplain", 
         null=True, blank=True)
     leaders = models.ManyToManyField(Person, 
-        related_name="camp_as_leader", 
+        related_name="camps_as_leader", 
         verbose_name="leaders",
         null=True, blank=True, filter_interface=models.HORIZONTAL)
     site = models.ForeignKey(Site)
