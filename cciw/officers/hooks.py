@@ -13,13 +13,12 @@ def send_application_emails(application=None):
 
     # Email to the leaders:
     # Collect e-mails to send to
-    leader_emails = []
-    for leader in application.camp.leaders.all():
-        for user in leader.users.all():
-            email = formatted_email(user)
-            if email is not None:
-                leader_emails.append(email)
-
+    leaders = [user for leader in application.camp.leaders.all() 
+                        for user in leader.users.all()] + \
+              list(application.camp.admins.all())
+    leader_emails = filter(lambda x: x is not None,
+                           map(formatted_email, leaders))
+    
     application_text = application_to_text(application)
     application_rtf = application_to_rtf(application)
     rtf_attachment = (application_rtf_filename(application), application_rtf, 'text/rtf')

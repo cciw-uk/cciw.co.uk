@@ -39,39 +39,29 @@ def _copy_application(application):
     new_obj.date_submitted = None
     return new_obj
 
-def _is_leader(user):
-    return (user.groups.filter(name='Leaders').count() > 0)
+def _is_camp_admin(user):
+    return (user.groups.filter(name='Leaders').count() > 0) \
+        or user.camps_as_admin.count() > 0
 
 def _get_applications_for_leader(user):
+    # If the user is ad 'admin' for some camps:
+    camps = user.camps_as_admin.all()
     # Find the 'Person' object that corresponds to this user
     leaders = list(user.person_set.all())
-    if len(leaders) > 0:
-        # Find the camps for this leader
-        # (In reality we could do 
-        #  camps = Person.objects.get(user=user.id).camps_as_leader.all(),
-        #  but for completeness we handle the possibility that two Person 
-        #  objects have the same User objects)
-        camps = None
-        for leader in leaders:
-            tmp_camps = leader.camps_as_leader.filter(online_applications=True)
-            if camps is None:
-                camps = tmp_camps
-            else:
-                camps = camps | tmp_camps
-        if camps is not None:
-            # Find all applications for all camps
-            # led by this leader.
-            applications = None
-            for camp in camps:
-                tmp_apps = camp.application_set.filter(finished=True)
-                if applications is None:
-                    applications = tmp_apps
-                else:
-                    applications = applications | tmp_apps
-            # TODO: sort by year DESC, then full name ASC
-            return applications.order_by('-date_submitted') 
-    return []
-                
+    # Find the camps for this leader
+    # (We could do:
+    #    Person.objects.get(user=user.id).camps_as_leader.all(),
+    #  but we also must we handle the possibility that two Person 
+    #  objects have the same User objects, which could happen in the
+    #  case where a leader leads by themselves and as part of a couple)
+    for leader in leaders:
+        camps = camps | leader.camps_as_leader.all()
+
+    applications = Application.objects.none()
+    for camp in camps.filter(online_applications=True):
+        applications = applications | camp.application_set.filter(finished=True)
+    # TODO: sort by year DESC, then full name ASC
+    return applications.order_by('-date_submitted')
 
 # /officers/
 @staff_member_required
@@ -82,7 +72,7 @@ def index(request):
     context = template.RequestContext(request)
     context['finished_applications'] = user.application_set.filter(finished=True).order_by('-date_submitted')
     context['unfinished_applications'] = user.application_set.filter(finished=False).order_by('-date_submitted')
-    context['show_leader_links'] = _is_leader(user)
+    context['show_leader_links'] = _is_camp_admin(user)
     
     if request.POST.has_key('edit'):
         # Edit existing application
@@ -251,7 +241,7 @@ def view_application(request):
         raise Http404
 
     if app.officer_id != request.user.id and \
-            not _is_leader(request.user):
+            not _is_camp_admin(request.user):
         raise PermissionDenied
 
     # NB, this is is called by both normal users and leaders.
@@ -304,7 +294,7 @@ def _thisyears_camp_for_leader(user):
 @staff_member_required
 def manage_applications(request):
     user = request.user
-    if not _is_leader(user):
+    if not _is_camp_admin(user):
         raise PermissionDenied
 
     context = template.RequestContext(request)
