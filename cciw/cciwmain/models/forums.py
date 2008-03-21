@@ -66,6 +66,7 @@ class NewsItem(models.Model):
 
     class Meta:
         app_label = "cciwmain"
+        ordering = ('-created_at',)
         
     class Admin:
         pass
