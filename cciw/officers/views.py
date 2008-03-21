@@ -270,7 +270,7 @@ Please find attached a copy of the application you requested
 """ % request.user.first_name
         msg = msg + application_text
         
-        send_mail_with_attachments("Copy of CCIW application", msg, settings.SERVER_EMAIL,
+        send_mail_with_attachments("Copy of CCIW application - %s" % app.full_name , msg, settings.SERVER_EMAIL,
                                    [formatted_email(request.user)] , attachments=[rtf_attachment])
         request.user.message_set.create(message="Email sent.")
         
