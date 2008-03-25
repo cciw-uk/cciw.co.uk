@@ -20,8 +20,18 @@
   model: cciwmain.camp
   pk: '1'
 
-- fields: {extra_title: '', listorder: 0, parent_item: null, title: Home, url: /,
-    visible: true}
-  model: cciwmain.menulink
+- model: cciwmain.menulink
+  fields: 
+    extra_title: ''
+    listorder: 0
+    parent_item: null
+    title: Home
+    url: /
+    visible: true
   pk: '1'
 
+- model: sites.site
+  pk: 1
+  fields: 
+    domain: www.cciw.co.uk
+    name: www.cciw.co.uk
