@@ -40,6 +40,11 @@ MEMBER_SIGNUP = reverse("cciwmain.memberadmin.signup")
 def _get_file_size(path):
     return os.stat(path)[os.path.stat.ST_SIZE]
 
+def _remove_member_icons(user_name):
+    for f in glob.glob("%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, user_name + ".*")):
+        os.unlink(f)
+
+
 class MemberAdmin(TestCase):
     fixtures=['basic.yaml','test_members.yaml']
     def setUp(self):
@@ -84,7 +89,7 @@ class MemberAdmin(TestCase):
         self.failIfEqual(fs, 0, "something has happened to %s" % new_icon) 
 
         # ensure the file isn't there already
-        self._remove_member_icons()
+        _remove_member_icons(TEST_MEMBER_USERNAME)
 
         response = self._upload_icon(new_icon)
         self.failUnlessEqual(response.status_code, 200)
@@ -99,7 +104,7 @@ class MemberAdmin(TestCase):
         new_icon = os.path.join(settings.TEST_DIR, filename)
         
         # ensure the file isn't there already
-        self._remove_member_icons()
+        _remove_member_icons(TEST_MEMBER_USERNAME)
 
         self._upload_icon(new_icon)
 
@@ -113,11 +118,8 @@ class MemberAdmin(TestCase):
         self._assert_icon_upload_fails("outsize_icon.png")
 
     def tearDown(self):
-        self._remove_member_icons()
+        _remove_member_icons(TEST_MEMBER_USERNAME)
 
-    def _remove_member_icons(self):
-        for f in glob.glob("%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, self.member.user_name + ".*")):
-            os.unlink(f)
 
 def url_to_path_and_query(url):
     scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)    
@@ -136,6 +138,7 @@ class MemberSignup(TestCase):
 
     def tearDown(self):
         twill_teardown()
+        _remove_member_icons(NEW_MEMBER_USERNAME)
 
     def test_existing_email(self):
         post_data = dict(submit_email='Submit', email=TEST_MEMBER_EMAIL)
@@ -193,9 +196,8 @@ class MemberSignup(TestCase):
     def test_signup_complete_bad_password(self):
         self._test_signup_send_email_part1()
         url, path, querydata = self._read_signup_email(mail.outbox[0])
-        local_url = make_twill_url(url)
         twill.set_output(StringIO())
-        tc.go(local_url)
+        tc.go(make_twill_url(url))
         tc.notfind("Error")
         tc.fv('1', 'user_name', NEW_MEMBER_USERNAME)
         tc.fv('1', 'password1', NEW_MEMBER_PASSWORD)
@@ -206,15 +208,16 @@ class MemberSignup(TestCase):
         # Correct it, without setting user_name
         tc.fv('1', 'password1', NEW_MEMBER_PASSWORD)
         tc.fv('1', 'password2', NEW_MEMBER_PASSWORD)
+
+        # try again
         tc.submit()
         self._twill_assert_finished()
 
     def test_signup_complete_bad_username(self):
         self._test_signup_send_email_part1()
         url, path, querydata = self._read_signup_email(mail.outbox[0])
-        local_url = make_twill_url(url)
         twill.set_output(StringIO())
-        tc.go(local_url)
+        tc.go(make_twill_url(url))
         tc.notfind("Error")
         tc.fv('1', 'user_name', TEST_MEMBER_USERNAME)
         tc.fv('1', 'password1', NEW_MEMBER_PASSWORD)
