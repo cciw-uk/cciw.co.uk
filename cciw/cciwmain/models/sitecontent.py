@@ -27,8 +27,8 @@ class MenuLink(models.Model):
     
     class Meta:
         app_label = "cciwmain"
-        ordering = ('listorder','parent_item')
-        #order_with_respect_to = 'parent_item' # doesn't seem to work
+        # put top level items at top of list, others into groups, for the admin
+        ordering = ('-parent_item__id', 'listorder') 
         
     class Admin:
         list_display = ('title', 'url', 'listorder','visible','parent_item')
