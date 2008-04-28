@@ -1,4 +1,4 @@
 
-export PYTHONPATH=/home/luke/httpd/www.cciw.co.uk/current_src:/home/luke/httpd/www.cciw.co.uk/django_src/:/home/luke/local/lib/python2.5/site-packages/:/home/luke/devel/python/
+export PYTHONPATH=/home/luke/httpd/www.cciw.co.uk/current_src:/home/luke/httpd/www.cciw.co.uk/django_src/:/home/luke/local/lib/python2.5/site-packages/
 export DJANGO_SETTINGS_MODULE=cciw.settings_calvin
 
