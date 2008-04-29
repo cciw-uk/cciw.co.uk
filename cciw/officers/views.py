@@ -57,11 +57,15 @@ def _get_applications_for_leader(user):
     for leader in leaders:
         camps = camps | leader.camps_as_leader.all()
 
-    applications = Application.objects.none()
+    apps_acc = None
     for camp in camps.filter(online_applications=True):
-        applications = applications | camp.application_set.filter(finished=True)
+        applications = camp.application_set.filter(finished=True)
+        if apps_acc is not None:
+            apps_acc = apps_acc | applications
+        else:
+            apps_acc = applications
     # TODO: sort by year DESC, then full name ASC
-    return applications.order_by('-date_submitted')
+    return apps_acc.order_by('-date_submitted')
 
 # /officers/
 @staff_member_required
