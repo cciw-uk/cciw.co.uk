@@ -89,7 +89,7 @@ if not threadlocals.is_web_request():
     ExplicitBooleanField = models.NullBooleanField
 
 class Application(models.Model):
-    camp = required_field(models.ForeignKey, Camp, null=True, limit_choices_to={'online_applications': True})
+    camp = models.ForeignKey(Camp, null=True, limit_choices_to={'online_applications': True})
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
     full_name = required_field(models.CharField, 'full name', max_length=60)
     full_maiden_name = models.CharField('full maiden name', max_length=60, blank=True)
