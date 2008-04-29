@@ -9,16 +9,20 @@ BEGIN
                 RAISE EXCEPTION 'Incorrect schema version';
         END IF;
 
-	BEGIN;
 	CREATE TABLE "utils_confirmtoken" (
 	    "id" serial NOT NULL PRIMARY KEY,
 	    "action_type" varchar(50) NOT NULL,
 	    "token" varchar(10) NOT NULL,
 	    "expires" timestamp with time zone NOT NULL,
 	    "objdata" text NOT NULL
-	)
-	;
-	COMMIT;
+	);
+
+	CREATE TABLE "officers_reference" (
+	    "id" serial NOT NULL PRIMARY KEY,
+	    "application_id" integer NOT NULL REFERENCES "officers_application" ("id") DEFERRABLE INITIALLY DEFERRED,
+	    "referee_number" smallint NOT NULL,
+	    UNIQUE ("application_id", "referee_number")
+	);
 
         UPDATE cciwmain_metainfo SET value = '4' WHERE key = 'schema_version';
 

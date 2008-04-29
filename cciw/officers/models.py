@@ -187,12 +187,12 @@ class Application(models.Model):
 
     def __unicode__(self):
         if self.camp is not None:
-            return u"Application from %s, %d" % (self.full_name, self.camp.year)
+            return u"Application from %s, %d, camp %d" % (self.full_name, self.camp.year, self.camp.number)
         else:
             return u"Application from %s" % self.full_name
 
     class Meta:
-        pass
+        ordering = ('-camp__year', 'officer__first_name', 'officer__last_name', 'camp__number')
         
     class Admin:
         fields = () # we override this later
@@ -338,6 +338,36 @@ class ApplicationAdminOptions(AdminOptions):
 del Application._meta.admin.fields
 Application._meta.admin.__class__ = ApplicationAdminOptions
 
+
+class Reference(models.Model):
+    application = models.ForeignKey(Application, limit_choices_to={'finished': True})
+    referee_number = models.SmallIntegerField("Referee number", choices=((1,'1'), (2,'2')))
+
+    def __unicode__(self):
+        app = self.application
+        # Due to this being called before object is saved to the 
+        # database in admin, self.referee_number can sometimes be a string
+        refnum = int(self.referee_number)
+        
+        if refnum not in (1,2):
+            return u"<Reference improperly created>"
+        referee_name = getattr(app, "referee%d_name" % refnum)
+        return u"For %s %s | From %s | Camp %d, %d" % (app.officer.first_name, 
+                                                       app.officer.last_name, 
+                                                       referee_name, 
+                                                       app.camp.number,
+                                                       app.camp.year)
+
+    class Meta:
+        ordering = ('application__camp__year', 
+                    'application__officer__first_name', 
+                    'application__officer__last_name',
+                    'application__camp__number',
+                    'referee_number')
+        unique_together = (("application", "referee_number"),)
+
+    class Admin:
+        search_fields = ['application__officer__first_name', 'application__officer__last_name']
 
 # Ensure hooks get set up
 import cciw.officers.hooks
