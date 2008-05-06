@@ -24,13 +24,15 @@
 #header a:link, #header a:visited { color:#00bb55; }
 #header a:hover { text-decoration:underline; }
 
-.firstline 
+.firstline,
+.refdetails
 {
     cursor: pointer;
 }
 
 .firstline,
-.addrblock
+.addrblock,
+.refdetails
 {
     background: #d0d0d0;
 }
@@ -40,4 +42,9 @@
     display: none;
 }
 
-
+.refdetails
+{
+    border-top: 1px solid #808080;
+    border-bottom: 1px solid #808080;
+    margin-top: 2px;
+}

@@ -192,6 +192,18 @@ class Application(models.Model):
         else:
             return u"Application from %s" % self.full_name
 
+    def _ref(self, num):
+        try:
+            return self.reference_set.get(referee_number=num)
+        except Reference.DoesNotExist:
+            return None        
+
+    def ref1(self):
+        return self._ref(1)
+
+    def ref2(self):
+        return self._ref(2)
+
     class Meta:
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name', 'camp__number')
         
