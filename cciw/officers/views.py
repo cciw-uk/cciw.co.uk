@@ -297,10 +297,9 @@ def _thisyears_camp_for_leader(user):
 
 
 @staff_member_required
+@user_passes_test(_is_camp_admin)
 def manage_applications(request):
     user = request.user
-    if not _is_camp_admin(user):
-        raise PermissionDenied
 
     context = template.RequestContext(request)
     context['finished_applications'] =  _get_applications_for_leader(user)
@@ -386,8 +385,8 @@ def password_reset_confirm(request, template_name='cciw/officers/password_reset_
 
     return render_to_response(template_name, context_instance=context_instance)
 
-@user_passes_test(_is_camp_admin)
 @staff_member_required
+@user_passes_test(_is_camp_admin)
 def manage_references(request, year=None, number=None):
     try:
         camp = Camp.objects.get(year=year, number=number)
@@ -400,6 +399,3 @@ def manage_references(request, year=None, number=None):
     
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)
-
-    
-    
