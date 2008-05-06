@@ -342,6 +342,9 @@ Application._meta.admin.__class__ = ApplicationAdminOptions
 class Reference(models.Model):
     application = models.ForeignKey(Application, limit_choices_to={'finished': True})
     referee_number = models.SmallIntegerField("Referee number", choices=((1,'1'), (2,'2')))
+    requested = models.BooleanField()
+    received = models.BooleanField()
+    comments = models.TextField(blank=True)
 
     def __unicode__(self):
         app = self.application
@@ -368,6 +371,18 @@ class Reference(models.Model):
 
     class Admin:
         search_fields = ['application__officer__first_name', 'application__officer__last_name']
+
+class Invitation(models.Model):
+    officer = models.ForeignKey(User)
+    camp = models.ForeignKey(Camp)
+
+    class Meta:
+        ordering = ('-camp__year', 'officer__first_name', 'officer__last_name')
+        unique_together = (('officer', 'camp'),)
+
+    class Admin:
+        pass
+
 
 # Ensure hooks get set up
 import cciw.officers.hooks
