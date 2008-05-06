@@ -2,6 +2,7 @@
 {% load adminmedia admin_modify reference_utils %}
 {% block stylesheet %}{% admin_media_prefix %}css/forms.css{% endblock %}
 {% block breadcrumbs %}{% endblock %}
+{% block title %}Manage references{% endblock %}
 {% block extrastyle %}{{ block.super }}
 <script type="text/javascript">
 <!--
@@ -42,7 +43,7 @@ connect(window, 'onload',
 
 <h2>References</h2>
 {% if application_forms %}
-
+  <form action="" method="POST">
   <table>
     <tr>
       <th>Officer</th>
@@ -61,6 +62,9 @@ connect(window, 'onload',
 	{% if app.referee1_tel %}<div>{{ app.referee1_tel }}</div>{% endif %}
 	{% if app.referee1_mobile %}<div>{{ app.referee1_mobile }}</div>{% endif %}
 	{% if app.referee1_email %}<div>{{ app.referee1_email }}</div>{% endif %}
+	<div>
+	  
+	</div>
       </td>
       <td>{{ app.referee2_name }}<br />
 	{{ app.referee2_address|firstline }}
@@ -84,6 +88,7 @@ connect(window, 'onload',
     {% endwith %}
     {% endfor %}
   </table>
+  </form>
 
 {% else %}
   <p>No application forms completed yet.</p>
