@@ -395,7 +395,18 @@ def manage_references(request, year=None, number=None):
 
     c = template.RequestContext(request)
     c['camp'] = camp
-    c['application_forms'] = camp.application_set.all().order_by('officer__first_name', 'officer__last_name')
+    this_years_apps =  list(camp.application_set.filter(finished=True).order_by('officer__first_name', 'officer__last_name'))
+    last_years_apps = []
+    for app in this_years_apps:
+        lastapp = list(app.officer.application_set.filter(camp__year__lt=camp.year).order_by('-camp__year'))
+        if len(lastapp) == 0:
+            lastapp = None
+        else:
+            # Pick the most recent
+            lastapp = lastapp[0]
+        last_years_apps.append(lastapp)
+
+    c['application_forms'] = zip(this_years_apps, last_years_apps)
     
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)

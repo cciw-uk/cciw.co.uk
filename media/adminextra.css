@@ -23,3 +23,21 @@
 #header	{ background:black; color:white; min-height:2.4em; overflow:auto; }
 #header a:link, #header a:visited { color:#00bb55; }
 #header a:hover { text-decoration:underline; }
+
+.firstline 
+{
+    cursor: pointer;
+}
+
+.firstline,
+.addrblock
+{
+    background: #d0d0d0;
+}
+
+.hidden
+{
+    display: none;
+}
+
+

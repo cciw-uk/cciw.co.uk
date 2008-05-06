@@ -1,8 +1,39 @@
 {% extends "cciw/officers/base.html" %}
-{% load adminmedia admin_modify %}
+{% load adminmedia admin_modify reference_utils %}
 {% block stylesheet %}{% admin_media_prefix %}css/forms.css{% endblock %}
 {% block breadcrumbs %}{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<script type="text/javascript">
+<!--
+
+function toggleAddress(ev) {
+    var addrblock = ev.src().nextSibling;
+    if (hasElementClass(addrblock, "hidden")) {
+	removeElementClass(addrblock, "hidden");
+    } else {
+	addElementClass(addrblock, "hidden");
+    }
+}
+
+function addToggleHandlers(ev) {
+    var elems = getElementsByTagAndClassName("div", "firstline");
+    for (var i = 0; i < elems.length; i++) {
+	connect(elems[i], 'onclick', toggleAddress);
+    }
+}
+
+connect(window, 'onload', 
+	function(ev) {
+	    addToggleHandlers();
+	}
+)
+
+//-->
+</script>
+{% endblock %}
+
 {% block content %}<div id="content-main">
+
 <h1>Manage references</h1>
 <h2>For camp {{ camp }}</h2>
 
@@ -21,10 +52,34 @@
       <th>Last year - 2</th>
     </tr>
 
-    {% for app in application_forms %}
+    {% for app, prevapp in application_forms %}
     {% with app.officer as officer %}
     <tr>      
       <td>{{ officer.first_name }} {{ officer.last_name }}</td>
+      <td>{{ app.referee1_name }}<br />
+	{{ app.referee1_address|firstline }}
+	{% if app.referee1_tel %}<div>{{ app.referee1_tel }}</div>{% endif %}
+	{% if app.referee1_mobile %}<div>{{ app.referee1_mobile }}</div>{% endif %}
+	{% if app.referee1_email %}<div>{{ app.referee1_email }}</div>{% endif %}
+      </td>
+      <td>{{ app.referee2_name }}<br />
+	{{ app.referee2_address|firstline }}
+	{% if app.referee2_tel %}<div>{{ app.referee2_tel }}</div>{% endif %}
+	{% if app.referee2_mobile %}<div>{{ app.referee2_mobile }}</div>{% endif %}
+	{% if app.referee2_email %}<div>{{ app.referee2_email }}</div>{% endif %}
+      </td>
+      <td>{{ prevapp.referee1_name }}<br />
+	{{ prevapp.referee1_address|firstline }}
+	{% if prevapp.referee1_tel %}<div>{{ prevapp.referee1_tel }}</div>{% endif %}
+	{% if prevapp.referee1_mobile %}<div>{{ prevapp.referee1_mobile }}</div>{% endif %}
+	{% if prevapp.referee1_email %}<div>{{ prevapp.referee1_email }}</div>{% endif %}
+      </td>
+      <td>{{ prevapp.referee2_name }}<br />
+	{{ prevapp.referee2_address|firstline }}
+	{% if prevapp.referee2_tel %}<div>{{ prevapp.referee2_tel }}</div>{% endif %}
+	{% if prevapp.referee2_mobile %}<div>{{ prevapp.referee2_mobile }}</div>{% endif %}
+	{% if prevapp.referee2_email %}<div>{{ prevapp.referee2_email }}</div>{% endif %}
+      </td>
     </tr>
     {% endwith %}
     {% endfor %}
