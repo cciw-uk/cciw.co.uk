@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.db import models
 from django import oldforms as forms
 from django.dispatch import dispatcher
@@ -376,12 +377,18 @@ class Invitation(models.Model):
     officer = models.ForeignKey(User)
     camp = models.ForeignKey(Camp)
 
+    def __unicode__(self):
+        return u"%s %s — camp %s" % (self.officer.first_name, self.officer.last_name, self.camp)
+        
+
     class Meta:
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name')
         unique_together = (('officer', 'camp'),)
 
     class Admin:
-        pass
+        list_display = ['officer', 'camp']
+        list_filter = ['camp']
+        search_fields = ['officer']
 
 
 # Ensure hooks get set up
