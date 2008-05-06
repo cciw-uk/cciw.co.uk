@@ -1,6 +1,7 @@
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.shortcuts import render_to_response
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.admin.views.main import add_stage, render_change_form
 from django.contrib.admin.views.main import unquote, quote, get_text_list
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE, DELETION
@@ -15,7 +16,7 @@ from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 
 from cciw.officers.models import Application
-from cciw.cciwmain.models import Person
+from cciw.cciwmain.models import Person, Camp
 
 from cciw.cciwmain import common
 from django.views.decorators.cache import never_cache
@@ -385,3 +386,20 @@ def password_reset_confirm(request, template_name='cciw/officers/password_reset_
 
     return render_to_response(template_name, context_instance=context_instance)
 
+@user_passes_test(_is_camp_admin)
+@staff_member_required
+def manage_references(request, year=None, number=None):
+    try:
+        camp = Camp.objects.get(year=year, number=number)
+    except Camp.DoesNotExist:
+        raise Http404
+
+    c = template.RequestContext(request)
+    c['camp'] = camp
+    c['application_forms'] = camp.application_set.all().order_by('officer__first_name', 'officer__last_name')
+    
+    return render_to_response('cciw/officers/manage_references.html',
+                              context_instance=c)
+
+    
+    

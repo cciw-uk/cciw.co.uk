@@ -1,0 +1,38 @@
+{% extends "cciw/officers/base.html" %}
+{% load adminmedia admin_modify %}
+{% block stylesheet %}{% admin_media_prefix %}css/forms.css{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content %}<div id="content-main">
+<h1>Manage references</h1>
+<h2>For camp {{ camp }}</h2>
+
+<p>This page allows you to manage references for officers who have
+  submitted application forms.</p>
+
+<h2>References</h2>
+{% if application_forms %}
+
+  <table>
+    <tr>
+      <th>Officer</th>
+      <th>Referee 1</th>
+      <th>Referee 2</th>
+      <th>Last year - 1</th>
+      <th>Last year - 2</th>
+    </tr>
+
+    {% for app in application_forms %}
+    {% with app.officer as officer %}
+    <tr>      
+      <td>{{ officer.first_name }} {{ officer.last_name }}</td>
+    </tr>
+    {% endwith %}
+    {% endfor %}
+  </table>
+
+{% else %}
+  <p>No application forms completed yet.</p>
+
+{% endif %}
+
+</div>{% endblock %}
