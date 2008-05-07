@@ -104,11 +104,14 @@ your address, and re-check the declarations.</p>
 <ul>
   {% comment %}<li><a href="/officers/leaders/manage_officers/">Manage officers</a> -
   register officers so that they can submit applications online</li>{% endcomment %}
-  <li><a href="/officers/leaders/applications/">Manage
-  applications</a> - view completed applications in different formats</li>
+  <li>Manage applications: 
+    {% for c in camps_to_administer %}
+    <br />&nbsp;&nbsp;&nbsp;<a href="{% url cciw.officers.views.manage_applications year=c.year,number=c.number %}">{{ c }}</a>
+    {% endfor %}
+  </li>
   <li>Manage references: 
     {% for c in camps_to_administer %}
-    <br /><a href="{% url cciw.officers.views.manage_references year=c.year,number=c.number %}">{{ c }}</a>
+    <br />&nbsp;&nbsp;&nbsp;<a href="{% url cciw.officers.views.manage_references year=c.year,number=c.number %}">{{ c }}</a>
     {% endfor %}
   </li>
     

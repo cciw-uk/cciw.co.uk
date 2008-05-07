@@ -303,12 +303,12 @@ def _thisyears_camp_for_leader(user):
 
 @staff_member_required
 @user_passes_test(_is_camp_admin)
-def manage_applications(request):
+def manage_applications(request, year=None, number=None):
     user = request.user
-
+    camp = _get_camp_or_404(year, number)
     context = template.RequestContext(request)
     context['finished_applications'] =  _get_applications_for_leader(user)
-    context['thisyearscamp'] = _thisyears_camp_for_leader(user)
+    context['camp'] = camp
     
     return render_to_response('cciw/officers/manage_applications.html', context_instance=context)
 

@@ -9,10 +9,11 @@
 
 
 <h2>View/edit</h2>
+<p>If you need to view/edit applications to make corrections, use the 
+following links:</p>
 <ul>
-	<li><a href="/admin/officers/application/">View all applications in the admin</a></li>
-	{% if thisyearscamp %}<li><a href="/admin/officers/application/?camp__id__exact={{ thisyearscamp.id }}">View applications for camp {{ thisyearscamp }} in the admin</a></li>
-	{% endif %}
+	<li><a href="/admin/officers/application/?camp__id__exact={{ camp.id }}">Applications for camp {{ camp }}</a></li>
+	<li><a href="/admin/officers/application/">All applications</a></li>
 </ul>
 
 <h2>Download</h2>
