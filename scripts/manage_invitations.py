@@ -41,7 +41,13 @@ def main():
     campnum = int(args[1])
 
     camp = Camp.objects.get(year=year, number=campnum)
-    users = [User.objects.get(username=uname) for uname in args[2:]]
+    users = []
+    for uname in args[2:]:
+        try:
+            u = User.objects.get(username=uname)
+        except User.DoesNotExist:
+            print "Can't find user '%s'" % uname
+        users.append(u)
 
     for user in users:
         if options.remove:
