@@ -424,7 +424,7 @@ def manage_references(request, year=None, number=None):
                 try:
                     ref = Reference.objects.get(application=appid, referee_number=refnum)
                 except Reference.DoesNotExist:
-                    # Create, but we only both to save if it's 
+                    # Create, but we only bother to save if it's 
                     # data is changed from empty.
                     ref = Reference(application_id=appid,
                                     referee_number=refnum,
