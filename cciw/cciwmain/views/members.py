@@ -64,7 +64,7 @@ def detail(request, user_name):
     except Member.DoesNotExist:
         raise Http404
     
-    if request.POST:
+    if request.method == 'POST':
         if request.POST.has_key('logout'):
             try:
                 remove_member_session(request)
@@ -204,7 +204,7 @@ def message_list(request, user_name, box):
         return HttpResponseForbidden(u'<h1>Access denied</h1>')
 
     # Deal with moves/deletes:
-    if request.POST:
+    if request.method == 'POST':
         ids = [int(m.groups()[0]) for m in map(_id_vars_re.match, request.POST.keys()) if m is not None]
         actions = {
             'delete': _msg_del,

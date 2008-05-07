@@ -314,7 +314,7 @@ def signup(request):
 def help_logging_in(request):
     """View that has reset password and username reminder functionality."""
     c = standard_extra_context(title="Logging in problems.")
-    if request.POST:
+    if request.method == 'POST':
         # Check e-mail
         email = request.POST.get('email', '').strip()
         c['email'] = email
@@ -372,7 +372,7 @@ def change_password(request):
         if current_member is None:
             return HttpResponseRedirect("/login/?r=%s" % request.path)
         c['show_form'] = True
-        if request.POST:
+        if request.method == 'POST':
             new_password = request.POST.get('new_password', '')
             new_password2 = request.POST.get('new_password2', '')
             error_message = ''

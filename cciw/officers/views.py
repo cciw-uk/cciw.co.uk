@@ -157,7 +157,7 @@ def change_application(request, object_id):
     except ObjectDoesNotExist:
         raise Http404
 
-    if request.POST:
+    if request.method == 'POST':
         new_data = request.POST.copy()
 
         if opts.has_field_type(models.FileField):
@@ -416,7 +416,7 @@ def manage_references(request, year=None, number=None):
     c['camp'] = camp
     c['application_forms'] = get_relevant_applications(camp)
     
-    if request.POST:
+    if request.method == 'POST':
         refs_updated = set()
         applist = []
         for k, val in request.POST.items():
