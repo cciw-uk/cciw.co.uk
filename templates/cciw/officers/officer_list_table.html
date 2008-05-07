@@ -1,0 +1,21 @@
+{% if officers %}
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Email</th>
+  </tr>
+  {% for officer in officers %}
+  <tr>
+    <td>{{ officer.first_name }} {{ officer.last_name }}</td>
+    <td>{{ officer.email }}
+  </tr>
+  {% endfor %}
+</table>
+<h3>List for email:</h3>
+<p>
+{% for officer in officers %}"{{ officer.first_name }} {{ officer.last_name }}" &lt;{{ officer.email }}&gt;,{% endfor %}
+</p>
+
+{% else %}
+<p>No officers found</p>
+{% endif %}

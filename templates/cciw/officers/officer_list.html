@@ -1,0 +1,28 @@
+{% extends "cciw/officers/base.html" %}
+{% block title %}Officer list :: CCIW{% endblock %}
+{% block content %}<div id="content-main">
+<h1>Officer list</h1>
+
+<h2>Invitation list</h2>
+
+{% with officers_all as officers %}
+{% include "cciw/officers/officer_list_table.html" %}
+{% endwith %}
+<br />
+
+<h2>Completed application form</h2>
+
+{% with officers_applicationform as officers %}
+{% include "cciw/officers/officer_list_table.html" %}
+{% endwith %}
+<br />
+
+<h2>No/incomplete application form</h2>
+
+{% with officers_noapplicationform as officers %}
+{% include "cciw/officers/officer_list_table.html" %}
+{% endwith %}
+<br />
+
+
+{% endblock %}

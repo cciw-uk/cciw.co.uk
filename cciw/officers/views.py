@@ -457,3 +457,35 @@ def manage_references(request, year=None, number=None):
 
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)
+
+class Obj(object):
+    pass
+
+def mk_objs(dictlist):
+    """For each dict in dictlist, create an object based
+    on the dictionary, but with any leading 'foo__' removed
+    from key names."""
+    retval = []
+    for d in dictlist:
+        obj = Obj()
+        for k, v in d.iteritems():
+            setattr(obj, k.split("__")[-1], v)
+        retval.append(obj)
+    return retval
+
+@staff_member_required
+@user_passes_test(_is_camp_admin)
+def officer_list(request, year=None, number=None):
+    camp = _get_camp_or_404(year, number)
+
+    c = template.RequestContext(request)
+    c['camp'] = camp
+    c['officers_all'] = mk_objs(camp.invitation_set.values('officer__id', 'officer__first_name', 'officer__last_name', 'officer__email'))
+    
+    officers_applicationform = mk_objs(camp.application_set.filter(finished=True).values('officer__id', 'officer__first_name', 'officer__last_name', 'officer__email'))
+    c['officers_applicationform'] = officers_applicationform
+    finished_apps_off_ids = [o.id for o in officers_applicationform]
+    c['officers_noapplicationform'] = mk_objs(camp.invitation_set.values('officer__id', 'officer__first_name', 'officer__last_name', 'officer__email').exclude(officer__in=finished_apps_off_ids))
+
+    return render_to_response('cciw/officers/officer_list.html',
+                              context_instance=c)
