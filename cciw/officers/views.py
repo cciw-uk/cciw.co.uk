@@ -385,6 +385,20 @@ def password_reset_confirm(request, template_name='cciw/officers/password_reset_
 
     return render_to_response(template_name, context_instance=context_instance)
 
+
+def get_relevant_applications(camp):
+    this_years_apps = list(camp.application_set.filter(finished=True).order_by('officer__first_name', 'officer__last_name'))
+    last_years_apps = []
+    for app in this_years_apps:
+        lastapp = list(app.officer.application_set.filter(camp__year__lt=camp.year).order_by('-camp__year'))
+        if len(lastapp) == 0:
+            lastapp = None
+        else:
+            # Pick the most recent
+            lastapp = lastapp[0]
+        last_years_apps.append(lastapp)
+    return zip(this_years_apps, last_years_apps)
+
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 def manage_references(request, year=None, number=None):
@@ -395,18 +409,7 @@ def manage_references(request, year=None, number=None):
 
     c = template.RequestContext(request)
     c['camp'] = camp
-    this_years_apps =  list(camp.application_set.filter(finished=True).order_by('officer__first_name', 'officer__last_name'))
-    last_years_apps = []
-    for app in this_years_apps:
-        lastapp = list(app.officer.application_set.filter(camp__year__lt=camp.year).order_by('-camp__year'))
-        if len(lastapp) == 0:
-            lastapp = None
-        else:
-            # Pick the most recent
-            lastapp = lastapp[0]
-        last_years_apps.append(lastapp)
-
-    c['application_forms'] = zip(this_years_apps, last_years_apps)
+    c['application_forms'] = get_relevant_applications(camp)
     
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)
