@@ -44,8 +44,8 @@ def _is_camp_admin(user):
     return (user.groups.filter(name='Leaders').count() > 0) \
         or user.camps_as_admin.count() > 0
 
-def _get_applications_for_leader(user):
-    # If the user is ad 'admin' for some camps:
+def _camps_as_admin_or_leader(user):
+    # If the user is am 'admin' for some camps:
     camps = user.camps_as_admin.all()
     # Find the 'Person' object that corresponds to this user
     leaders = list(user.person_set.all())
@@ -58,6 +58,10 @@ def _get_applications_for_leader(user):
     for leader in leaders:
         camps = camps | leader.camps_as_leader.all()
 
+    return camps
+
+def _get_applications_for_leader(user):
+    camps = _camps_as_admin_or_leader(user)
     apps_acc = None
     for camp in camps.filter(online_applications=True):
         applications = camp.application_set.filter(finished=True)
@@ -65,8 +69,7 @@ def _get_applications_for_leader(user):
             apps_acc = apps_acc | applications
         else:
             apps_acc = applications
-    # TODO: sort by year DESC, then full name ASC
-    return apps_acc.order_by('-date_submitted')
+    return apps_acc.order_by('-date_submitted').order_by('-camp__year', 'officer__first_name', 'officer__last_name') 
 
 # /officers/
 @staff_member_required
