@@ -76,7 +76,7 @@ connect(window, 'onload',
     <tr class="refrow">      
       <td>{{ officer.first_name }} {{ officer.last_name }}
 	{% if app.ref1.received and app.ref2.received %}<strong class="good">Complete</stong>{% endif %}
-        <input name="hid_{{ app.id }}" type="hidden" />
+        <input name="appids" value="{{ app.id }}" type="hidden" />
       </td>
       <td>{{ app.referee1_name }}<br />
 	{{ app.referee1_address|firstline }}

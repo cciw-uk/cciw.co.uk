@@ -415,13 +415,15 @@ def manage_references(request, year=None, number=None):
     c = template.RequestContext(request)
     c['camp'] = camp
     c['application_forms'] = get_relevant_applications(camp)
+
+    # We have less validation than normal here, because
+    # we basically trust the user, and the system is deliberately
+    # fairly permissive (leaders can look at applications for
+    # other camps, not just their own, etc).
     
     if request.method == 'POST':
         refs_updated = set()
-        applist = []
-        for k, val in request.POST.items():
-            if k.startswith('hid_'):
-                applist.append(int(k.split('_')[1]))
+        applist = map(int, request.POST.getlist('appids'))
 
         for appid in applist:
             for refnum in (1, 2):
