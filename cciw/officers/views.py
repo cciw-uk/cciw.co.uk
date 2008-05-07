@@ -15,7 +15,7 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 
-from cciw.officers.models import Application
+from cciw.officers.models import Application, Reference
 from cciw.cciwmain.models import Person, Camp
 
 from cciw.cciwmain import common
@@ -412,49 +412,44 @@ def manage_references(request, year=None, number=None):
     c['application_forms'] = get_relevant_applications(camp)
     
     if request.POST:
-        # Controls expected all take form:
-        #  {controlname}_[12]_{appid}
-        refs = {} # cache to avoid saving things many times.
-        refs_to_save = set()
-        print request.POST.items()
+        refs_updated = set()
+        applist = []
         for k, val in request.POST.items():
-            if '_' in k:
-                cntrl, refnum, appid = k.split('_')
-                refnum = int(refnum)
-                appid = int(appid)
-                if cntrl in ('req', 'rec', 'comments') and refnum in (1, 2):
-                    updated = False
-                    try:
-                        ref = refs[(appid,refnum)]
-                    except KeyError:
-                        app = Application.objects.get(id=appid)
-                        ref = app._ref(refnum)
-                        if ref is None:
-                            ref = app.reference_set.create(referee_number=refnum,
-                                                           requested=False,
-                                                           received=False,
-                                                           comments="")
-                    if cntrl == 'req':
-                        if not ref.requested:
-                            ref.requested = True
-                            updated = True
-                    if cntrl == 'rec':
-                        if not ref.received:
-                            ref.received = True
-                            updated = True
-                    if cntrl == 'comments':
-                        if ref.comments != val:
-                            ref.comments = val
-                            updated = True
+            if k.startswith('hid_'):
+                applist.append(int(k.split('_')[1]))
 
-                    if updated:
-                        # needs saving
-                        refs_to_save.add(ref)
-                    refs[(appid, refnum)] = ref
+        for appid in applist:
+            for refnum in (1, 2):
+                updated = False
+                try:
+                    ref = Reference.objects.get(application=appid, referee_number=refnum)
+                except Reference.DoesNotExist:
+                    # Create, but we only both to save if it's 
+                    # data is changed from empty.
+                    ref = Reference(application_id=appid,
+                                    referee_number=refnum,
+                                    requested=False,
+                                    received=False,
+                                    comments="")
+                req = ('req_%d_%d' % (refnum, appid)) in request.POST.keys()
+                rec = ('rec_%d_%d' % (refnum, appid)) in request.POST.keys()
+                comments = request.POST.get('comments_%d_%d' % (refnum, appid), "")
 
-        for ref in refs_to_save:
-            ref.save()
-        c['message'] = u"Information for %d references was updated." % len(refs_to_save)
+                if ref.requested != req:
+                    ref.requested = req
+                    updated = True
+                if ref.received != rec:
+                    ref.received = rec
+                    updated = True
+                if ref.comments != comments:
+                    ref.comments = comments
+                    updated = True
+
+                if updated:
+                    ref.save()
+                    refs_updated.add(ref)
+
+        c['message'] = u"Information for %d references was updated." % len(refs_updated)
 
     # This view/template is horribly inefficient.  But since it is only
     # going to be used by about 5 people each year, and not more than
