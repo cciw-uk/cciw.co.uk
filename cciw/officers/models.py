@@ -373,7 +373,6 @@ class Reference(models.Model):
                                                        referee_name, 
                                                        app.camp.number,
                                                        app.camp.year)
-
     class Meta:
         ordering = ('application__camp__year', 
                     'application__officer__first_name', 

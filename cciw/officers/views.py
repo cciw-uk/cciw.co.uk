@@ -60,17 +60,6 @@ def _camps_as_admin_or_leader(user):
 
     return camps
 
-def _get_applications_for_leader(user):
-    camps = _camps_as_admin_or_leader(user)
-    apps_acc = None
-    for camp in camps.filter(online_applications=True):
-        applications = camp.application_set.filter(finished=True)
-        if apps_acc is not None:
-            apps_acc = apps_acc | applications
-        else:
-            apps_acc = applications
-    return apps_acc.order_by('-date_submitted').order_by('-camp__year', 'officer__first_name', 'officer__last_name') 
-
 # /officers/
 @staff_member_required
 @never_cache
@@ -307,7 +296,7 @@ def manage_applications(request, year=None, number=None):
     user = request.user
     camp = _get_camp_or_404(year, number)
     context = template.RequestContext(request)
-    context['finished_applications'] =  _get_applications_for_leader(user)
+    context['finished_applications'] =  camp.application_set.filter(finished=True)
     context['camp'] = camp
     
     return render_to_response('cciw/officers/manage_applications.html', context_instance=context)
