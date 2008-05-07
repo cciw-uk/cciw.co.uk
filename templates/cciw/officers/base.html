@@ -1,4 +1,7 @@
 {% extends "admin/base_site.html" %}
+{% load adminmedia admin_modify %}
+{% block stylesheet %}{% admin_media_prefix %}css/forms.css{% endblock %}
+{% block breadcrumbs %}{% endblock %}
 {% block title %}
 CCIW Officers
 {% endblock %}
