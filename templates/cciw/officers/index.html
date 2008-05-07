@@ -106,6 +106,12 @@ your address, and re-check the declarations.</p>
   register officers so that they can submit applications online</li>{% endcomment %}
   <li><a href="/officers/leaders/applications/">Manage
   applications</a> - view completed applications in different formats</li>
+  <li>Manage references: 
+    {% for c in camps_to_administer %}
+    <br /><a href="{% url cciw.officers.views.manage_references year=c.year,number=c.number %}">{{ c }}</a>
+    {% endfor %}
+  </li>
+    
 </ul>
 {% endif %}
 

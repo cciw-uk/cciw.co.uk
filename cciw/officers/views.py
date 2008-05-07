@@ -80,7 +80,9 @@ def index(request):
     context = template.RequestContext(request)
     context['finished_applications'] = user.application_set.filter(finished=True).order_by('-date_submitted')
     context['unfinished_applications'] = user.application_set.filter(finished=False).order_by('-date_submitted')
-    context['show_leader_links'] = _is_camp_admin(user)
+    if _is_camp_admin(user):
+        context['show_leader_links'] = True
+        context['camps_to_administer'] = _camps_as_admin_or_leader(user).filter(year=common.get_thisyear())  
     
     if request.POST.has_key('edit'):
         # Edit existing application
