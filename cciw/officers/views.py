@@ -456,5 +456,9 @@ def manage_references(request, year=None, number=None):
             ref.save()
         c['message'] = u"Information for %d references was updated." % len(refs_to_save)
 
+    # This view/template is horribly inefficient.  But since it is only
+    # going to be used by about 5 people each year, and not more than
+    # a few times a day, do we really care?
+
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)

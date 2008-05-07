@@ -73,8 +73,9 @@ connect(window, 'onload',
 
     {% for app, prevapp in application_forms %}
     {% with app.officer as officer %}
-    <tr>      
-      <td>{{ officer.first_name }} {{ officer.last_name }}</td>
+    <tr class="refrow">      
+      <td>{{ officer.first_name }} {{ officer.last_name }}
+	{% if app.ref1.received and app.ref2.received %}<strong class="good">Complete</stong>{% endif %}</td>
       <td>{{ app.referee1_name }}<br />
 	{{ app.referee1_address|firstline }}
 	{% if app.referee1_tel %}<div>{{ app.referee1_tel }}</div>{% endif %}

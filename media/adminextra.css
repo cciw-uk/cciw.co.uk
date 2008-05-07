@@ -48,3 +48,14 @@
     border-bottom: 1px solid #808080;
     margin-top: 2px;
 }
+
+.good
+{
+    color: green;
+}
+
+.refrow td
+{
+    border-bottom: 1px solid black;
+}
+
