@@ -55,6 +55,10 @@ connect(window, 'onload',
 <p>This page allows you to manage references for officers who have
   submitted application forms.</p>
 
+{% if message %}
+  <p><strong>{{ message }}</strong></p>
+{% endif %}
+
 <h2>References</h2>
 {% if application_forms %}
   <form action="" method="POST">
@@ -78,10 +82,10 @@ connect(window, 'onload',
 	{% if app.referee1_email %}<div>{{ app.referee1_email }}</div>{% endif %}
 	<div class="refdetails">Reference:
 	</div><div class="refcontrols hidden">
-	  <label for="req1_{{ app.id }}">Requested </label><input id="cb_req1_{{ app.id }}" value="1" type="checkbox" {% if app.ref1.requested %}checked="checked"{% endif %} /><br />
-	  <label for="rec1_{{ app.id }}">Received <label><input id="cb_rec1_{{ app.id }}" value="1" type="checkbox"  {% if app.ref1.received %}checked="checked"{% endif %} /><br />
-	  <label for="comments1_{{ app.id }}">Comments</label><br />
-	  <textarea cols="40" rows="4">{{ app.ref1.comments }}</textarea>
+	  <label for="req_1_{{ app.id }}">Requested </label><input id="req_1_{{ app.id }}" name="req_1_{{ app.id }}" value="1" type="checkbox" {% if app.ref1.requested %}checked="checked"{% endif %} /><br />
+	  <label for="rec_1_{{ app.id }}">Received <label><input id="rec_1_{{ app.id }}" name="rec_1_{{ app.id }}" value="1" type="checkbox"  {% if app.ref1.received %}checked="checked"{% endif %} /><br />
+	  <label for="comments_1_{{ app.id }}">Comments</label><br />
+	  <textarea name="comments_1_{{ app.id }}" id="comments_1_{{ app.id }}" cols="40" rows="4">{{ app.ref1.comments }}</textarea>
 	</div>
       </td>
       <td>{{ app.referee2_name }}<br />
@@ -89,6 +93,13 @@ connect(window, 'onload',
 	{% if app.referee2_tel %}<div>{{ app.referee2_tel }}</div>{% endif %}
 	{% if app.referee2_mobile %}<div>{{ app.referee2_mobile }}</div>{% endif %}
 	{% if app.referee2_email %}<div>{{ app.referee2_email }}</div>{% endif %}
+	<div class="refdetails">Reference:
+	</div><div class="refcontrols hidden">
+	  <label for="req_2_{{ app.id }}">Requested </label><input id="req_2_{{ app.id }}" name="req_2_{{ app.id }}" value="1" type="checkbox" {% if app.ref2.requested %}checked="checked"{% endif %} /><br />
+	  <label for="rec_2_{{ app.id }}">Received <label><input id="rec_2_{{ app.id }}" name="rec_2_{{ app.id }}" value="1" type="checkbox"  {% if app.ref2.received %}checked="checked"{% endif %} /><br />
+	  <label for="comments_2_{{ app.id }}">Comments</label><br />
+	  <textarea name="comments_2_{{ app.id }}" id="comments_2_{{ app.id }}" cols="40" rows="4">{{ app.ref2.comments }}</textarea>
+	</div>
       </td>
       <td>{{ prevapp.referee1_name }}<br />
 	{{ prevapp.referee1_address|firstline }}
@@ -106,6 +117,8 @@ connect(window, 'onload',
     {% endwith %}
     {% endfor %}
   </table>
+
+  <input type="submit" name="save" value="Save" />
   </form>
 
 {% else %}

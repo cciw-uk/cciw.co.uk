@@ -411,5 +411,50 @@ def manage_references(request, year=None, number=None):
     c['camp'] = camp
     c['application_forms'] = get_relevant_applications(camp)
     
+    if request.POST:
+        # Controls expected all take form:
+        #  {controlname}_[12]_{appid}
+        refs = {} # cache to avoid saving things many times.
+        refs_to_save = set()
+        print request.POST.items()
+        for k, val in request.POST.items():
+            if '_' in k:
+                cntrl, refnum, appid = k.split('_')
+                refnum = int(refnum)
+                appid = int(appid)
+                if cntrl in ('req', 'rec', 'comments') and refnum in (1, 2):
+                    updated = False
+                    try:
+                        ref = refs[(appid,refnum)]
+                    except KeyError:
+                        app = Application.objects.get(id=appid)
+                        ref = app._ref(refnum)
+                        if ref is None:
+                            ref = app.reference_set.create(referee_number=refnum,
+                                                           requested=False,
+                                                           received=False,
+                                                           comments="")
+                    if cntrl == 'req':
+                        if not ref.requested:
+                            ref.requested = True
+                            updated = True
+                    if cntrl == 'rec':
+                        if not ref.received:
+                            ref.received = True
+                            updated = True
+                    if cntrl == 'comments':
+                        if ref.comments != val:
+                            ref.comments = val
+                            updated = True
+
+                    if updated:
+                        # needs saving
+                        refs_to_save.add(ref)
+                    refs[(appid, refnum)] = ref
+
+        for ref in refs_to_save:
+            ref.save()
+        c['message'] = u"Information for %d references was updated." % len(refs_to_save)
+
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)
