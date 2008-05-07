@@ -404,13 +404,17 @@ def get_relevant_applications(camp):
         last_years_apps.append(lastapp)
     return zip(this_years_apps, last_years_apps)
 
+def _get_camp_or_404(year, number):
+    try:
+        return Camp.objects.get(year=int(year), number=int(number))
+    except Camp.DoesNotExist, ValueError:
+        raise Http404
+   
+
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 def manage_references(request, year=None, number=None):
-    try:
-        camp = Camp.objects.get(year=year, number=number)
-    except Camp.DoesNotExist:
-        raise Http404
+    camp = _get_camp_or_404(year, number)
 
     c = template.RequestContext(request)
     c['camp'] = camp
