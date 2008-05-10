@@ -130,4 +130,4 @@ def json_validation_request(request, form):
         return None
 
 def all(seq):
-    return reduce(operator.and_, seq, False)
+    return reduce(operator.and_, seq, True)
