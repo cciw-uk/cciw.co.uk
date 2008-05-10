@@ -15,6 +15,8 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 
+from cciw.cciwmain.utils import all
+
 from cciw.officers.models import Application, Reference
 from cciw.cciwmain.models import Person, Camp
 

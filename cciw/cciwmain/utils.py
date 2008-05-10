@@ -1,5 +1,6 @@
 import datetime
 import re
+import operator
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 from django.utils import simplejson
@@ -127,3 +128,6 @@ def json_validation_request(request, form):
                             mimetype='text/javascript')
     else:
         return None
+
+def all(seq):
+    return reduce(operator.and_, seq, False)
