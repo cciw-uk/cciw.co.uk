@@ -198,9 +198,11 @@ class Application(models.Model):
         except Reference.DoesNotExist:
             return None        
 
+    @property
     def ref1(self):
         return self._ref(1)
 
+    @property
     def ref2(self):
         return self._ref(2)
 

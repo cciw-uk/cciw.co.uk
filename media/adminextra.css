@@ -54,6 +54,11 @@
     color: green;
 }
 
+.ok
+{
+    color: darkorange;
+}
+
 .refrow td
 {
     border-bottom: 1px solid black;

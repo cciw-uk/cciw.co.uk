@@ -383,6 +383,8 @@ def password_reset_confirm(request, template_name='cciw/officers/password_reset_
 def get_relevant_applications(camp):
     this_years_apps = list(camp.application_set.filter(finished=True).order_by('officer__first_name', 'officer__last_name'))
     last_years_apps = []
+    requested = []
+    received = []
     for app in this_years_apps:
         lastapp = list(app.officer.application_set.filter(camp__year__lt=camp.year).order_by('-camp__year'))
         if len(lastapp) == 0:
@@ -391,7 +393,10 @@ def get_relevant_applications(camp):
             # Pick the most recent
             lastapp = lastapp[0]
         last_years_apps.append(lastapp)
-    return zip(this_years_apps, last_years_apps)
+        refs = (app.ref1, app.ref2)
+        requested.append(all(r.requested for r in refs)) 
+        received.append(all(r.received for r in refs))
+    return zip(this_years_apps, last_years_apps, requested, received)
 
 def _get_camp_or_404(year, number):
     try:
@@ -451,7 +456,8 @@ def manage_references(request, year=None, number=None):
 
         c['message'] = u"Information for %d references was updated." % len(refs_updated)
 
-    # This view/template is horribly inefficient.  But since it is only
+    # This view/template is horribly inefficient.(see
+    # get_relevant_applications especially). But since it is only
     # going to be used by about 5 people each year, and not more than
     # a few times a day, do we really care?
 
