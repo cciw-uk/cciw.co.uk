@@ -96,6 +96,13 @@ def index(request):
         if obj is not None:
             # Create a copy 
             new_obj = _copy_application(obj)
+            # We *have* to set 'camp' otherwise object cannot be seen
+            # in admin, due to default 'ordering'
+            next_camps = list(obj.camp.next_camps.all())
+            if len(next_camps) > 0:
+                new_obj.camp = next_camps[0]
+            else:
+                new_obj.camp = Camp.objects.filter(online_applications=True).order_by('-year', 'number')[0]
             new_obj.save()
             return HttpResponseRedirect('/admin/officers/application/%s/' % new_obj.id)
 
