@@ -13,7 +13,7 @@ from cciw.cciwmain.models import Member
 import cciw.cciwmain.views.members
 import cciw.cciwmain.decorators
 
-from cciw.cciwmain.tests.twillhelpers import twill_setup, twill_teardown, make_twill_url
+from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_twill_url
 
 import os
 import glob
@@ -129,15 +129,15 @@ def url_to_path_and_query(url):
         querydata[key] = val[-1]
     return (path, querydata)
 
-class MemberSignup(TestCase):
+class MemberSignup(TwillMixin, TestCase):
     fixtures=['basic.yaml','test_members.yaml']
 
     def setUp(self):
         self.client = CciwClient()
-        twill_setup()
+        super(MemberSignup, self).setUp()
 
     def tearDown(self):
-        twill_teardown()
+        super(MemberSignup, self).tearDown()
         _remove_member_icons(NEW_MEMBER_USERNAME)
 
     def test_existing_email(self):
