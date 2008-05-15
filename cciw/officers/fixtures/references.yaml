@@ -1,0 +1,210 @@
+- fields: 
+    full_name: Mr Officer
+    officer: 1
+    camp: 1
+    address_firstline: 654 Stupid Way
+    address_town: Bradford
+    address_country: UK
+    address_county: Yorkshire
+    address_email: hey@boo.com
+    address_mobile: ''
+    address_postcode: XY9 8WN
+    address_since: 2004/06
+    address_tel: 01048378569
+    address2_address: "123 abc"
+    address2_from: 2003/08
+    address2_to: 2004/06
+    address3_address: "456 zxc"
+    address3_from: 1996/11
+    address3_to: 2003/08
+    allegation_declaration: false
+    birth_date: 1911-02-07
+    birth_place: Foobar
+    christian_experience: "Became a Christian at age 0.2 years"
+    concern_declaration: false
+    concern_details: ''
+    court_declaration: false
+    court_details: ''
+    crb_check_consent: true
+    crime_declaration: false
+    crime_details: ''
+    date_submitted: 2008-03-12
+    employer1_from: 2003/09
+    employer1_job: Pilot
+    employer1_leaving: ''
+    employer1_name: Employer 1
+    employer1_to: 0000/00
+    employer2_from: 1988/10,
+    employer2_job: Manager
+    employer2_leaving: Just because
+    employer2_name: Employer 2
+    employer2_to: 2003/06
+    finished: true
+    full_maiden_name: ''
+    illness_details: ''
+    referee1_address: "Referee 1 Address\r\nLine 2"
+    referee1_email: referee1@email.co.uk
+    referee1_mobile: ''
+    referee1_name: Mr Refere1 Name
+    referee1_tel: 01222 666666
+    referee2_address: "1267a Somewhere Road\r\nThereyougo"
+    referee2_email: referee2@email.co.uk
+    referee2_mobile: ''
+    referee2_name: Mr Referee2 Name
+    referee2_tel: 01234 567890
+    relevant_illness: false
+    youth_experience: "Lots"
+    youth_work_declined: false
+    youth_work_declined_details: ''
+  model: officers.application
+  pk: 1
+
+- fields: 
+    full_name: Officer2
+    officer: 3
+    camp: 1
+    address_firstline: 654 Stupid Way
+    address_town: Bradford
+    address_country: UK
+    address_county: Yorkshire
+    address_email: hey@boo.com
+    address_mobile: ''
+    address_postcode: XY9 8WN
+    address_since: 2004/06
+    address_tel: 01048378569
+    address2_address: "123 abc"
+    address2_from: 2003/08
+    address2_to: 2004/06
+    address3_address: "456 zxc"
+    address3_from: 1996/11
+    address3_to: 2003/08
+    allegation_declaration: false
+    birth_date: 1911-02-07
+    birth_place: Foobar
+    christian_experience: "Became a Christian at age 0.2 years"
+    concern_declaration: false
+    concern_details: ''
+    court_declaration: false
+    court_details: ''
+    crb_check_consent: true
+    crime_declaration: false
+    crime_details: ''
+    date_submitted: 2008-03-12
+    employer1_from: 2003/09
+    employer1_job: Pilot
+    employer1_leaving: ''
+    employer1_name: Employer 1
+    employer1_to: 0000/00
+    employer2_from: 1988/10,
+    employer2_job: Manager
+    employer2_leaving: Just because
+    employer2_name: Employer 2
+    employer2_to: 2003/06
+    finished: true
+    full_maiden_name: ''
+    illness_details: ''
+    referee1_address: "Referee 3 Address\r\nLine 2"
+    referee1_email: referee3@email.co.uk
+    referee1_mobile: ''
+    referee1_name: Mr Refere3 Name
+    referee1_tel: 01222 666666
+    referee2_address: "Referee 4 adddress"
+    referee2_email: referee4@email.co.uk
+    referee2_mobile: ''
+    referee2_name: Mr Referee4 Name
+    referee2_tel: 01234 567890
+    relevant_illness: false
+    youth_experience: "Lots"
+    youth_work_declined: false
+    youth_work_declined_details: ''
+  model: officers.application
+  pk: 2
+
+
+- fields: 
+    full_name: Officer3
+    officer: 4
+    camp: 1
+    address_firstline: 654 Stupid Way
+    address_town: Bradford
+    address_country: UK
+    address_county: Yorkshire
+    address_email: hey@boo.com
+    address_mobile: ''
+    address_postcode: XY9 8WN
+    address_since: 2004/06
+    address_tel: 01048378569
+    address2_address: "123 abc"
+    address2_from: 2003/08
+    address2_to: 2004/06
+    address3_address: "456 zxc"
+    address3_from: 1996/11
+    address3_to: 2003/08
+    allegation_declaration: false
+    birth_date: 1911-02-07
+    birth_place: Foobar
+    christian_experience: "Became a Christian at age 0.2 years"
+    concern_declaration: false
+    concern_details: ''
+    court_declaration: false
+    court_details: ''
+    crb_check_consent: true
+    crime_declaration: false
+    crime_details: ''
+    date_submitted: 2008-03-12
+    employer1_from: 2003/09
+    employer1_job: Pilot
+    employer1_leaving: ''
+    employer1_name: Employer 1
+    employer1_to: 0000/00
+    employer2_from: 1988/10,
+    employer2_job: Manager
+    employer2_leaving: Just because
+    employer2_name: Employer 2
+    employer2_to: 2003/06
+    finished: true
+    full_maiden_name: ''
+    illness_details: ''
+    referee1_address: "Referee 3 Address\r\nLine 2"
+    referee1_email: referee3@email.co.uk
+    referee1_mobile: ''
+    referee1_name: Mr Refere3 Name
+    referee1_tel: 01222 666666
+    referee2_address: "Referee 4 adddress"
+    referee2_email: referee4@email.co.uk
+    referee2_mobile: ''
+    referee2_name: Mr Referee4 Name
+    referee2_tel: 01234 567890
+    relevant_illness: false
+    youth_experience: "Lots"
+    youth_work_declined: false
+    youth_work_declined_details: ''
+  model: officers.application
+  pk: 3
+
+# Application 1: has both 'Reference' objects
+# Application 2: has one 'Reference' object
+# Application 3: has no 'Reference' objects
+
+- fields: {application: 1, comments: '', received: true, referee_number: 1, requested: true}
+  model: officers.reference
+  pk: 1
+- fields: {application: 1, comments: Left message on answer phone, received: false, referee_number: 2, requested: true}
+  model: officers.reference
+  pk: 2
+
+- fields: {application: 2, comments: '', received: false, referee_number: 2, requested: true}
+  model: officers.reference
+  pk: 3
+
+- fields: {camp: 1, officer: 1}
+  model: officers.invitation
+  pk: 1
+
+- fields: {camp: 1, officer: 2}
+  model: officers.invitation
+  pk: 2
+
+- fields: {camp: 1, officer: 3}
+  model: officers.invitation
+  pk: 3

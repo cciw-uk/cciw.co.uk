@@ -19,8 +19,7 @@ def mk_url(view, *args, **kwargs):
     return make_twill_url(BASE + reverse(view, args=args, kwargs=kwargs))
 
 class ReferencesPage(TwillMixin, TestCase):
-    fixtures = ['basic.yaml', 'officers_users.yaml']
-    twill_quiet = False
+    fixtures = ['basic.yaml', 'officers_users.yaml', 'references.yaml']
 
     def _twill_login(self, creds):
         tc.go(mk_url("cciw.officers.views.index"))
@@ -29,7 +28,18 @@ class ReferencesPage(TwillMixin, TestCase):
         tc.submit()        
 
     def test_page_ok(self):
+        # Value of this test lies in the test data.
         self._twill_login(LEADER)
         tc.go(mk_url("cciw.officers.views.manage_references", year=2000, number=1))
         tc.code(200)
         tc.find('For camp 2000-1')
+
+        tc.find('name="appids" value="1"')
+        tc.find('name="appids" value="2"')
+        tc.find('name="appids" value="3"')
+
+        tc.find('referee1@email.co.uk')
+        tc.find('referee2@email.co.uk')
+        tc.find('referee3@email.co.uk')
+        tc.find('referee4@email.co.uk')
+

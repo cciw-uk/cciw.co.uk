@@ -403,8 +403,8 @@ def get_relevant_applications(camp):
             lastapp = lastapp[0]
         last_years_apps.append(lastapp)
         refs = (app.ref1, app.ref2)
-        requested.append(all(r.requested for r in refs)) 
-        received.append(all(r.received for r in refs))
+        requested.append(all(r is not None and r.requested for r in refs)) 
+        received.append(all(r is not None and r.received for r in refs))
     return zip(this_years_apps, last_years_apps, requested, received)
 
 def _get_camp_or_404(year, number):

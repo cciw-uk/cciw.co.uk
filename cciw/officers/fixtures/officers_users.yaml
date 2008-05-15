@@ -32,6 +32,7 @@
     username: mrofficer
   model: auth.user
   pk: 1
+
 - fields:
     date_joined: 2007-05-20 23:22:40
     email: leader@somewhere.com
@@ -48,3 +49,38 @@
     username: mrleader
   model: auth.user
   pk: 2
+
+- fields:
+    date_joined: 2008-03-21 16:48:46
+    email: officer@somewhere.com
+    first_name: Mr
+    groups: [1]
+    is_active: true
+    is_staff: true
+    is_superuser: false
+    last_login: 2008-04-23 14:49:25
+    last_name: Officer2
+    # test_normaluser_password
+    password: sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba
+    user_permissions: []
+    username: officer2
+  model: auth.user
+  pk: 3
+
+
+- fields:
+    date_joined: 2008-03-21 16:48:46
+    email: officer@somewhere.com
+    first_name: Mr
+    groups: [1]
+    is_active: true
+    is_staff: true
+    is_superuser: false
+    last_login: 2008-04-23 14:49:25
+    last_name: Officer3
+    # test_normaluser_password
+    password: sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba
+    user_permissions: []
+    username: officer3
+  model: auth.user
+  pk: 4
