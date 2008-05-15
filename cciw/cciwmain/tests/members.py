@@ -1,7 +1,6 @@
 import twill
 from twill import commands as tc
 from twill.shell import TwillCommandLoop
-from StringIO import StringIO
 
 from client import CciwClient
 from django.test import TestCase
@@ -180,7 +179,6 @@ class MemberSignup(TwillMixin, TestCase):
         self._test_signup_send_email_part1()
         url, path, querydata = self._read_signup_email(mail.outbox[0])
         local_url = make_twill_url(url)
-        twill.set_output(StringIO())
         tc.go(local_url)
         tc.notfind("Error")
         tc.fv('1', 'user_name', NEW_MEMBER_USERNAME)
@@ -196,7 +194,6 @@ class MemberSignup(TwillMixin, TestCase):
     def test_signup_complete_bad_password(self):
         self._test_signup_send_email_part1()
         url, path, querydata = self._read_signup_email(mail.outbox[0])
-        twill.set_output(StringIO())
         tc.go(make_twill_url(url))
         tc.notfind("Error")
         tc.fv('1', 'user_name', NEW_MEMBER_USERNAME)
@@ -216,7 +213,6 @@ class MemberSignup(TwillMixin, TestCase):
     def test_signup_complete_bad_username(self):
         self._test_signup_send_email_part1()
         url, path, querydata = self._read_signup_email(mail.outbox[0])
-        twill.set_output(StringIO())
         tc.go(make_twill_url(url))
         tc.notfind("Error")
         tc.fv('1', 'user_name', TEST_MEMBER_USERNAME)

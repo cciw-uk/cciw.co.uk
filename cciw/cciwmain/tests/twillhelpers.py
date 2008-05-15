@@ -1,3 +1,4 @@
+from StringIO import StringIO
 
 import twill
 from django.core.servers.basehttp import AdminMediaHandler
@@ -14,8 +15,13 @@ def twill_teardown():
     twill.remove_wsgi_intercept('127.0.0.1', 8080)
 
 class TwillMixin(object):
+    twill_quiet = True
+
     def setUp(self):
         twill_setup()
+        if self.twill_quiet:
+            twill.set_output(StringIO())
+
 
     def tearDown(self):
         twill_teardown()
