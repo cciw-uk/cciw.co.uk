@@ -1,0 +1,50 @@
+- fields:
+    name: Officers
+    permissions: [64]
+  model: auth.group
+  pk: 1
+
+- fields:
+    name: Leaders
+    permissions: [64, 65, 66, 29, 40, 41, 42, 91, 92, 93, 4, 5, 6]
+  model: auth.group
+  pk: 2
+
+- fields:
+    name: Site editors
+    permissions: [28, 29, 30, 61, 62, 63, 46, 47, 48, 22, 23, 24, 40, 41, 42, 7, 8, 9]
+  model: auth.group
+  pk: 3
+
+- fields:
+    date_joined: 2008-03-21 16:48:46
+    email: officer@somewhere.com
+    first_name: Mr
+    groups: [1]
+    is_active: true
+    is_staff: true
+    is_superuser: false
+    last_login: 2008-04-23 14:49:25
+    last_name: Officer
+    # test_normaluser_password
+    password: sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba
+    user_permissions: []
+    username: mrofficer
+  model: auth.user
+  pk: 1
+- fields:
+    date_joined: 2007-05-20 23:22:40
+    email: leader@somewhere.com
+    first_name: Mr
+    groups: [2]
+    is_active: true
+    is_staff: true
+    is_superuser: false
+    last_login: 2008-04-23 19:06:39
+    last_name: Leader
+    # test_normaluser_password
+    password: sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba
+    user_permissions: []
+    username: mrleader
+  model: auth.user
+  pk: 2
