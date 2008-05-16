@@ -43,3 +43,16 @@ class ReferencesPage(TwillMixin, TestCase):
         tc.find('referee3@email.co.uk')
         tc.find('referee4@email.co.uk')
 
+    def test_page_anonymous_denied(self):
+        tc.go(mk_url("cciw.officers.views.manage_references", year=2000, number=1))
+        tc.code(200) # at a redirection page
+        tc.notfind('For camp 2000-1')
+
+
+    def test_page_officers_denied(self):
+        self._twill_login(OFFICER)
+        tc.go(mk_url("cciw.officers.views.manage_references", year=2000, number=1))
+        # Currently we get redirected to /officers/ page if insufficient
+        # privileges.
+        self.assertEqual(tc.get_browser().get_url().split('?')[0], mk_url("cciw.officers.views.index"))
+        tc.notfind('For camp 2000-1')
