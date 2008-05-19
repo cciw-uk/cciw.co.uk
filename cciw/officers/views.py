@@ -388,6 +388,7 @@ def password_reset_confirm(request, template_name='cciw/officers/password_reset_
 
     return render_to_response(template_name, context_instance=context_instance)
 
+
 def _sort_apps(t1, t2):
     # Sorting function used below
     # Sort by 'received'
@@ -400,7 +401,11 @@ def _sort_apps(t1, t2):
     # be preserved in a stable sort
     return rq
 
-def get_relevant_applications(camp):
+def sort_app_details(tuplelist):
+    tuplelist.sort(cmp=_sort_apps)
+    return tuplelist
+
+def get_app_details(camp):
     """Returns list of 4-tuples - 
     (this years app, 
     last years app (or None), 
@@ -422,9 +427,7 @@ def get_relevant_applications(camp):
         refs = (app.ref1, app.ref2)
         requested.append(all(r is not None and r.requested for r in refs)) 
         received.append(all(r is not None and r.received for r in refs))
-    retval = zip(this_years_apps, last_years_apps, requested, received)
-    retval.sort(cmp=_sort_apps)
-    return retval
+    return zip(this_years_apps, last_years_apps, requested, received)
 
 def _get_camp_or_404(year, number):
     try:
@@ -440,7 +443,7 @@ def manage_references(request, year=None, number=None):
 
     c = template.RequestContext(request)
     c['camp'] = camp
-    c['application_forms'] = get_relevant_applications(camp)
+    c['application_forms'] = sort_app_details(get_app_details(camp))
 
     # We have less validation than normal here, because
     # we basically trust the user, and the system is deliberately
