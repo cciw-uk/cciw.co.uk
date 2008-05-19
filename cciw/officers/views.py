@@ -468,7 +468,6 @@ def manage_references(request, year=None, number=None):
 
     c = template.RequestContext(request)
     c['camp'] = camp
-    c['application_forms'] = add_referee_counts(sort_app_details(get_app_details(camp)))
 
     # We have less validation than normal here, because
     # we basically trust the user, and the system is deliberately
@@ -512,6 +511,7 @@ def manage_references(request, year=None, number=None):
 
         c['message'] = u"Information for %d references was updated." % len(refs_updated)
 
+    c['application_forms'] = add_referee_counts(sort_app_details(get_app_details(camp)))
     # This view/template is horribly inefficient.(see
     # get_relevant_applications especially). But since it is only
     # going to be used by about 5 people each year, and not more than

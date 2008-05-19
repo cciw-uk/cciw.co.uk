@@ -111,6 +111,17 @@ class ReferencesPage(TwillMixin, TestCase):
 
         tc.submit()
 
+        # Check page has been immediately refreshed
+        b2 = tc.get_browser()
+        f2 = b.get_form(1)
+        self.assertEqual(b.get_form_field(f2, 'req_1_1').value, [])
+        self.assertEqual(b.get_form_field(f2, 'req_2_1').value, [])
+        self.assertEqual(b.get_form_field(f2, 'req_1_2').value, ['1'])
+        self.assertEqual(b.get_form_field(f2, 'req_2_2').value, [])
+        self.assertEqual(b.get_form_field(f2, 'req_1_3').value, ['1'])
+        self.assertEqual(b.get_form_field(f2, 'req_2_3').value, ['1'])
+
+        # Check saved data has actually changed
         ref1_1 = Reference.objects.get(application__id=1, referee_number=1)
         ref2_1 = Reference.objects.get(application__id=1, referee_number=2)
         ref1_2 = Reference.objects.get(application__id=2, referee_number=1)
