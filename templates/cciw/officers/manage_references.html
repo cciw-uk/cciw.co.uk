@@ -71,8 +71,7 @@ connect(window, 'onload',
 
     {% for app, prevapp, requested, received in application_forms %}
     {% with app.officer as officer %}
-    {% with app.ref1 as ref1 %}
-    {% with app.ref2 as ref2 %}
+    {% with app.references as references %}
     <tr class="refrow">      
       <td>{{ officer.first_name }} {{ officer.last_name }}
 	{% if received %}
@@ -91,10 +90,10 @@ connect(window, 'onload',
 	{% if app.referee1_email %}<div>{{ app.referee1_email }}</div>{% endif %}
 	<div class="refdetails">Reference:
 	</div><div class="refcontrols hidden">
-	  <label for="req_1_{{ app.id }}">Requested </label><input id="req_1_{{ app.id }}" name="req_1_{{ app.id }}" value="1" type="checkbox" {% if ref1.requested %}checked="checked"{% endif %} /><br />
-	  <label for="rec_1_{{ app.id }}">Received <label><input id="rec_1_{{ app.id }}" name="rec_1_{{ app.id }}" value="1" type="checkbox"  {% if ref1.received %}checked="checked"{% endif %} /><br />
+	  <label for="req_1_{{ app.id }}">Requested </label><input id="req_1_{{ app.id }}" name="req_1_{{ app.id }}" value="1" type="checkbox" {% if references.1.requested %}checked="checked"{% endif %} /><br />
+	  <label for="rec_1_{{ app.id }}">Received <label><input id="rec_1_{{ app.id }}" name="rec_1_{{ app.id }}" value="1" type="checkbox"  {% if references.1.received %}checked="checked"{% endif %} /><br />
 	  <label for="comments_1_{{ app.id }}">Comments</label><br />
-	  <textarea name="comments_1_{{ app.id }}" id="comments_1_{{ app.id }}" cols="40" rows="4">{{ ref1.comments }}</textarea>
+	  <textarea name="comments_1_{{ app.id }}" id="comments_1_{{ app.id }}" cols="40" rows="4">{{ references.1.comments }}</textarea>
 	</div>
       </td>
       <td>{{ app.referee2_name }} {% ifnotequal app.referees.1.usedcount 1 %}<span class="refcount ref{{ app.referees.1.id }}">{{ app.referees.1.usedcount }}</span>{% endifnotequal %}<br />
@@ -104,10 +103,10 @@ connect(window, 'onload',
 	{% if app.referee2_email %}<div>{{ app.referee2_email }}</div>{% endif %}
 	<div class="refdetails">Reference:
 	</div><div class="refcontrols hidden">
-	  <label for="req_2_{{ app.id }}">Requested </label><input id="req_2_{{ app.id }}" name="req_2_{{ app.id }}" value="1" type="checkbox" {% if ref2.requested %}checked="checked"{% endif %} /><br />
-	  <label for="rec_2_{{ app.id }}">Received <label><input id="rec_2_{{ app.id }}" name="rec_2_{{ app.id }}" value="1" type="checkbox"  {% if ref2.received %}checked="checked"{% endif %} /><br />
+	  <label for="req_2_{{ app.id }}">Requested </label><input id="req_2_{{ app.id }}" name="req_2_{{ app.id }}" value="1" type="checkbox" {% if references.2.requested %}checked="checked"{% endif %} /><br />
+	  <label for="rec_2_{{ app.id }}">Received <label><input id="rec_2_{{ app.id }}" name="rec_2_{{ app.id }}" value="1" type="checkbox"  {% if references.2.received %}checked="checked"{% endif %} /><br />
 	  <label for="comments_2_{{ app.id }}">Comments</label><br />
-	  <textarea name="comments_2_{{ app.id }}" id="comments_2_{{ app.id }}" cols="40" rows="4">{{ ref2.comments }}</textarea>
+	  <textarea name="comments_2_{{ app.id }}" id="comments_2_{{ app.id }}" cols="40" rows="4">{{ references.2.comments }}</textarea>
 	</div>
       </td>
       <td>{{ prevapp.referee1_name }}<br />
@@ -123,7 +122,6 @@ connect(window, 'onload',
 	{% if prevapp.referee2_email %}<div>{{ prevapp.referee2_email }}</div>{% endif %}
       </td>
     </tr>
-    {% endwith %}
     {% endwith %}
     {% endwith %}
     {% endfor %}

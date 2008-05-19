@@ -209,6 +209,17 @@ class Application(models.Model):
             retval = tuple(retval) # since we don't want assignment
             self._referees_cache = retval
             return retval
+
+    @property
+    def references(self):
+        """A cached version of 2 items that can exist in 'references_set', 
+        but with 'None' instead of exceptions if they are not there. Read only"""
+        try:
+            return self._references_cache
+        except AttributeError:
+            retval = (self._ref(1), self._ref(2))
+            self._references_cache = retval
+            return retval
     
     def save(self):
         if not hasattr(self, 'officer_id') or self.officer_id is None:
@@ -227,15 +238,7 @@ class Application(models.Model):
         try:
             return self.reference_set.get(referee_number=num)
         except Reference.DoesNotExist:
-            return None        
-
-    @property
-    def ref1(self):
-        return self._ref(1)
-
-    @property
-    def ref2(self):
-        return self._ref(2)
+            return None
 
     class Meta:
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name', 'camp__number')

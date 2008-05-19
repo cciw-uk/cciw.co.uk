@@ -424,9 +424,8 @@ def get_app_details(camp):
             # Pick the most recent
             lastapp = lastapp[0]
         last_years_apps.append(lastapp)
-        refs = (app.ref1, app.ref2)
-        requested.append(all(r is not None and r.requested for r in refs)) 
-        received.append(all(r is not None and r.received for r in refs))
+        requested.append(all(r is not None and r.requested for r in app.references)) 
+        received.append(all(r is not None and r.received for r in app.references))
     return zip(this_years_apps, last_years_apps, requested, received)
 
 def remove_name_prefixes(s):
