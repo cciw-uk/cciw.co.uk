@@ -83,44 +83,33 @@ connect(window, 'onload',
 	{% endif %}
         <input name="appids" value="{{ app.id }}" type="hidden" />
       </td>
-      <td>{{ app.referee1_name }} {% ifnotequal app.referees.0.usedcount 1 %}<span class="refcount ref{{ app.referees.0.id }}">{{ app.referees.0.usedcount }}</span>{% endifnotequal %}<br />
-	{{ app.referee1_address|firstline }}
-	{% if app.referee1_tel %}<div>{{ app.referee1_tel }}</div>{% endif %}
-	{% if app.referee1_mobile %}<div>{{ app.referee1_mobile }}</div>{% endif %}
-	{% if app.referee1_email %}<div>{{ app.referee1_email }}</div>{% endif %}
+      {% for referee in app.referees %}
+      {# hack - really we want  zip(app.referees, app.references) #}
+      {% for reference in app.references %}{% ifequal forloop.counter forloop.parentloop.counter %}
+      <td>{{ referee.name }} {% ifnotequal referee.usedcount 1 %}<span class="refcount ref{{ referee.id }}">{{ referee.usedcount }}</span>{% endifnotequal %}<br />
+	{{ referee.address|firstline }}
+	{% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
+	{% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
+	{% if referee.email %}<div>{{ referee.email }}</div>{% endif %}
 	<div class="refdetails">Reference:
 	</div><div class="refcontrols hidden">
-	  <label for="req_1_{{ app.id }}">Requested </label><input id="req_1_{{ app.id }}" name="req_1_{{ app.id }}" value="1" type="checkbox" {% if references.1.requested %}checked="checked"{% endif %} /><br />
-	  <label for="rec_1_{{ app.id }}">Received <label><input id="rec_1_{{ app.id }}" name="rec_1_{{ app.id }}" value="1" type="checkbox"  {% if references.1.received %}checked="checked"{% endif %} /><br />
-	  <label for="comments_1_{{ app.id }}">Comments</label><br />
-	  <textarea name="comments_1_{{ app.id }}" id="comments_1_{{ app.id }}" cols="40" rows="4">{{ references.1.comments }}</textarea>
+	  <label for="req_{{ forloop.counter }}_{{ app.id }}">Requested </label><input id="req_{{ forloop.counter }}_{{ app.id }}" name="req_{{ forloop.counter }}_{{ app.id }}" value="1" type="checkbox" {% if reference.requested %}checked="checked"{% endif %} /><br />
+	  <label for="rec_{{ forloop.counter }}_{{ app.id }}">Received <label><input id="rec_1_{{ app.id }}" name="rec_1_{{ app.id }}" value="1" type="checkbox"  {% if reference.received %}checked="checked"{% endif %} /><br />
+	  <label for="comments_{{ forloop.counter }}_{{ app.id }}">Comments</label><br />
+	  <textarea name="comments_{{ forloop.counter }}_{{ app.id }}" id="comments_{{ forloop.counter }}_{{ app.id }}" cols="40" rows="4">{{ reference.comments }}</textarea>
 	</div>
       </td>
-      <td>{{ app.referee2_name }} {% ifnotequal app.referees.1.usedcount 1 %}<span class="refcount ref{{ app.referees.1.id }}">{{ app.referees.1.usedcount }}</span>{% endifnotequal %}<br />
-	{{ app.referee2_address|firstline }}
-	{% if app.referee2_tel %}<div>{{ app.referee2_tel }}</div>{% endif %}
-	{% if app.referee2_mobile %}<div>{{ app.referee2_mobile }}</div>{% endif %}
-	{% if app.referee2_email %}<div>{{ app.referee2_email }}</div>{% endif %}
-	<div class="refdetails">Reference:
-	</div><div class="refcontrols hidden">
-	  <label for="req_2_{{ app.id }}">Requested </label><input id="req_2_{{ app.id }}" name="req_2_{{ app.id }}" value="1" type="checkbox" {% if references.2.requested %}checked="checked"{% endif %} /><br />
-	  <label for="rec_2_{{ app.id }}">Received <label><input id="rec_2_{{ app.id }}" name="rec_2_{{ app.id }}" value="1" type="checkbox"  {% if references.2.received %}checked="checked"{% endif %} /><br />
-	  <label for="comments_2_{{ app.id }}">Comments</label><br />
-	  <textarea name="comments_2_{{ app.id }}" id="comments_2_{{ app.id }}" cols="40" rows="4">{{ references.2.comments }}</textarea>
-	</div>
+      {% endifequal %}{% endfor %}
+      {% endfor %}
+      
+      {% for referee in prevapp.referees %}
+      <td>{{ referee.name }}<br />
+	{{ referee.address|firstline }}
+	{% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
+	{% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
+	{% if referee.email %}<div>{{ referee.email }}</div>{% endif %}
       </td>
-      <td>{{ prevapp.referee1_name }}<br />
-	{{ prevapp.referee1_address|firstline }}
-	{% if prevapp.referee1_tel %}<div>{{ prevapp.referee1_tel }}</div>{% endif %}
-	{% if prevapp.referee1_mobile %}<div>{{ prevapp.referee1_mobile }}</div>{% endif %}
-	{% if prevapp.referee1_email %}<div>{{ prevapp.referee1_email }}</div>{% endif %}
-      </td>
-      <td>{{ prevapp.referee2_name }}<br />
-	{{ prevapp.referee2_address|firstline }}
-	{% if prevapp.referee2_tel %}<div>{{ prevapp.referee2_tel }}</div>{% endif %}
-	{% if prevapp.referee2_mobile %}<div>{{ prevapp.referee2_mobile }}</div>{% endif %}
-	{% if prevapp.referee2_email %}<div>{{ prevapp.referee2_email }}</div>{% endif %}
-      </td>
+      {% endfor %}
     </tr>
     {% endwith %}
     {% endwith %}
