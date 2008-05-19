@@ -430,9 +430,9 @@ def get_app_details(camp):
 
 def remove_name_prefixes(s):
     s = s.lower()
-    for p in ["mr ", "mr. ", "pastor ", "rev ", "rev. ", "mrs. ", "mrs "]:
-        if s.startswith(p):
-            s = s[len(p):]
+    for p in ["mr", "mr.", "pastor", "rev", "rev.", "mrs.", "mrs", "dr.", "dr", "prof", "prof."]:
+        if s.startswith(p + " "):
+            s = s[len(p)+1:]
             break
     return s
 
