@@ -89,6 +89,24 @@ if not threadlocals.is_web_request():
     # executed in the command line context.
     ExplicitBooleanField = models.NullBooleanField
 
+class Referee(object):
+    """Helper class for more convenient access to referee* attributes
+    of 'Application' model."""
+    def __init__(self, appobj, refnum):
+        self._appobj = appobj
+        self._refnum = refnum
+
+    def __getattr__(self, name):
+        attname = "referee%d_%s" % (self._refnum, name)
+        return getattr(self._appobj, attname)
+
+    def __setattr__(self, name, val):
+        if name.startswith('_'):
+            self.__dict__[name] = val
+        else:
+            attname = "referee%d_%s" % (self._refnum, name)
+            setattr(self._appobj, attname, val)
+
 class Application(models.Model):
     camp = models.ForeignKey(Camp, null=True, limit_choices_to={'online_applications': True})
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
@@ -178,6 +196,19 @@ class Application(models.Model):
     finished = models.BooleanField("is the above information complete?", default=False)
     
     date_submitted = models.DateField('date submitted', null=True, blank=True)
+
+    # Convenience wrapper around 'referee?_*' fields:
+    @property
+    def referees(self):
+        try:
+            return self._referees_cache
+        except AttributeError:
+            retval = []
+            for refnum in (1, 2):
+                retval.append(Referee(self, refnum))
+            retval = tuple(retval) # since we don't want assignment
+            self._referees_cache = retval
+            return retval
     
     def save(self):
         if not hasattr(self, 'officer_id') or self.officer_id is None:
