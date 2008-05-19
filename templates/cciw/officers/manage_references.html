@@ -94,7 +94,7 @@ connect(window, 'onload',
 	<div class="refdetails">Reference:
 	</div><div class="refcontrols hidden">
 	  <label for="req_{{ forloop.counter }}_{{ app.id }}">Requested </label><input id="req_{{ forloop.counter }}_{{ app.id }}" name="req_{{ forloop.counter }}_{{ app.id }}" value="1" type="checkbox" {% if reference.requested %}checked="checked"{% endif %} /><br />
-	  <label for="rec_{{ forloop.counter }}_{{ app.id }}">Received <label><input id="rec_1_{{ app.id }}" name="rec_1_{{ app.id }}" value="1" type="checkbox"  {% if reference.received %}checked="checked"{% endif %} /><br />
+	  <label for="rec_{{ forloop.counter }}_{{ app.id }}">Received <label><input id="rec_{{ forloop.counter}}_{{ app.id }}" name="rec_{{ forloop.counter}}_{{ app.id }}" value="1" type="checkbox"  {% if reference.received %}checked="checked"{% endif %} /><br />
 	  <label for="comments_{{ forloop.counter }}_{{ app.id }}">Comments</label><br />
 	  <textarea name="comments_{{ forloop.counter }}_{{ app.id }}" id="comments_{{ forloop.counter }}_{{ app.id }}" cols="40" rows="4">{{ reference.comments }}</textarea>
 	</div>
