@@ -429,6 +429,40 @@ def get_app_details(camp):
         received.append(all(r is not None and r.received for r in refs))
     return zip(this_years_apps, last_years_apps, requested, received)
 
+def remove_name_prefixes(s):
+    s = s.lower()
+    for p in ["mr ", "mr. ", "pastor ", "rev ", "rev. "]:
+        if s.startswith(p):
+            s = s[len(p):]
+            break
+    return s
+
+def add_referee_counts(tuplelist):
+    """Takes a tuple list [(thisyearsapp, prevyearsapp, requested, received)]
+    and returns a list that has additional columns containing counts
+    and pseudo ids for the two referees."""
+    refnames = map(remove_name_prefixes, 
+                   [getattr(app, 'referee%d_name' % refnum) 
+                    for app in [t[0] for t in tuplelist]
+                    for refnum in (1, 2)])
+    counts = {}
+    for name in refnames:
+        counts[name] = counts.get(name, 0) + 1
+    print counts
+    retval = []
+    curid = 0
+    for app, prevapp, requested, received in tuplelist:        
+        ref1id = curid
+        curid += 1
+        ref2id = curid
+        curid += 1
+        
+        ref1count = counts[remove_name_prefixes(app.referee1_name)]
+        ref2count = counts[remove_name_prefixes(app.referee2_name)]
+
+        retval.append((app, prevapp, requested, received, ref1count, ref1id, ref2count, ref2id ))
+    return retval
+
 def _get_camp_or_404(year, number):
     try:
         return Camp.objects.get(year=int(year), number=int(number))
@@ -443,7 +477,7 @@ def manage_references(request, year=None, number=None):
 
     c = template.RequestContext(request)
     c['camp'] = camp
-    c['application_forms'] = sort_app_details(get_app_details(camp))
+    c['application_forms'] = add_referee_counts(sort_app_details(get_app_details(camp)))
 
     # We have less validation than normal here, because
     # we basically trust the user, and the system is deliberately

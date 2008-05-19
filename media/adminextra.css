@@ -64,3 +64,13 @@
     border-bottom: 1px solid black;
 }
 
+
+/* References */
+
+.refcount 
+{ 
+    color: white; 
+    background: #8080ff;
+    padding-left: 2px;
+    padding-right: 2px;
+}

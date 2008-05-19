@@ -69,7 +69,7 @@ connect(window, 'onload',
       <th>Last year - 2</th>
     </tr>
 
-    {% for app, prevapp, requested, received in application_forms %}
+    {% for app, prevapp, requested, received, ref1count, ref1id, ref2count, ref2id in application_forms %}
     {% with app.officer as officer %}
     {% with app.ref1 as ref1 %}
     {% with app.ref2 as ref2 %}
@@ -84,7 +84,7 @@ connect(window, 'onload',
 	{% endif %}
         <input name="appids" value="{{ app.id }}" type="hidden" />
       </td>
-      <td>{{ app.referee1_name }}<br />
+      <td>{{ app.referee1_name }} {% ifnotequal ref1count 1 %}<span class="refcount ref{{ ref1id }}">{{ ref1count }}</span>{% endifnotequal %}<br />
 	{{ app.referee1_address|firstline }}
 	{% if app.referee1_tel %}<div>{{ app.referee1_tel }}</div>{% endif %}
 	{% if app.referee1_mobile %}<div>{{ app.referee1_mobile }}</div>{% endif %}
@@ -97,7 +97,7 @@ connect(window, 'onload',
 	  <textarea name="comments_1_{{ app.id }}" id="comments_1_{{ app.id }}" cols="40" rows="4">{{ ref1.comments }}</textarea>
 	</div>
       </td>
-      <td>{{ app.referee2_name }}<br />
+      <td>{{ app.referee2_name }} {% ifnotequal ref2count 1 %}<span class="refcount ref{{ ref2id }}">{{ ref2count }}</span>{% endifnotequal %}<br />
 	{{ app.referee2_address|firstline }}
 	{% if app.referee2_tel %}<div>{{ app.referee2_tel }}</div>{% endif %}
 	{% if app.referee2_mobile %}<div>{{ app.referee2_mobile }}</div>{% endif %}
