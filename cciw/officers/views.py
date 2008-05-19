@@ -388,8 +388,25 @@ def password_reset_confirm(request, template_name='cciw/officers/password_reset_
 
     return render_to_response(template_name, context_instance=context_instance)
 
+def _sort_apps(t1, t2):
+    # Sorting function used below
+    # Sort by 'received'
+    rc = int(t1[3]) - int(t2[3])
+    if rc != 0:
+        return rc
+    # Sort by 'requested'
+    rq = int(t1[2]) - int(t2[2])
+    # The list is already sorted by officer name, this should
+    # be preserved in a stable sort
+    return rq
 
 def get_relevant_applications(camp):
+    """Returns list of 4-tuples - 
+    (this years app, 
+    last years app (or None), 
+    boolean indicating all references have been requested,
+    boolean indicating all references have been received)
+    """
     this_years_apps = list(camp.application_set.filter(finished=True).order_by('officer__first_name', 'officer__last_name'))
     last_years_apps = []
     requested = []
@@ -405,7 +422,9 @@ def get_relevant_applications(camp):
         refs = (app.ref1, app.ref2)
         requested.append(all(r is not None and r.requested for r in refs)) 
         received.append(all(r is not None and r.received for r in refs))
-    return zip(this_years_apps, last_years_apps, requested, received)
+    retval = zip(this_years_apps, last_years_apps, requested, received)
+    retval.sort(cmp=_sort_apps)
+    return retval
 
 def _get_camp_or_404(year, number):
     try:
