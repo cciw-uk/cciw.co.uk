@@ -186,14 +186,29 @@
 # Application 2: has one 'Reference' object
 # Application 3: has no 'Reference' objects
 
-- fields: {application: 1, comments: '', received: true, referee_number: 1, requested: true}
+- fields:
+    application: 1
+    comments: ''
+    received: true
+    referee_number: 1
+    requested: true
   model: officers.reference
   pk: 1
-- fields: {application: 1, comments: Left message on answer phone, received: false, referee_number: 2, requested: true}
+- fields: 
+    application: 1
+    comments: Left message on answer phone
+    received: false
+    referee_number: 2
+    requested: true
   model: officers.reference
   pk: 2
 
-- fields: {application: 2, comments: '', received: false, referee_number: 2, requested: true}
+- fields: 
+    application: 2
+    comments: ''
+    received: false
+    referee_number: 2
+    requested: true
   model: officers.reference
   pk: 3
 
