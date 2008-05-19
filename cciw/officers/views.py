@@ -439,29 +439,21 @@ def remove_name_prefixes(s):
 
 def add_referee_counts(tuplelist):
     """Takes a tuple list [(thisyearsapp, prevyearsapp, requested, received)]
-    and returns a list that has additional columns containing counts
-    and pseudo ids for the two referees."""
+    and adds counts and pseudo ids for each referee on thisyearsapp."""
     refnames = map(remove_name_prefixes, 
-                   [getattr(app, 'referee%d_name' % refnum) 
+                   [ref.name 
                     for app in [t[0] for t in tuplelist]
-                    for refnum in (1, 2)])
+                    for ref in app.referees])
     counts = {}
     for name in refnames:
         counts[name] = counts.get(name, 0) + 1
-    print counts
-    retval = []
     curid = 0
-    for app, prevapp, requested, received in tuplelist:        
-        ref1id = curid
-        curid += 1
-        ref2id = curid
-        curid += 1
-        
-        ref1count = counts[remove_name_prefixes(app.referee1_name)]
-        ref2count = counts[remove_name_prefixes(app.referee2_name)]
-
-        retval.append((app, prevapp, requested, received, ref1count, ref1id, ref2count, ref2id ))
-    return retval
+    for app, prevapp, requested, received in tuplelist: 
+        for referee in app.referees:
+            curid += 1
+            referee.id = curid
+            referee.usedcount = counts[remove_name_prefixes(referee.name)]
+    return tuplelist
 
 def _get_camp_or_404(year, number):
     try:

@@ -25,3 +25,10 @@ class ApplicationModel(TestCase):
         app.referees[0].name = "A new name"
         self.assertEqual(app.referee1_name, "A new name")
 
+    def test_referees_set_extra_attrs(self):
+        """Tests that we can set and retrieve additional attributes,
+        not just ones defined as part of Application model"""
+
+        app = Application.objects.filter(officer__username=OFFICER_USERNAME)[0]
+        app.referees[0].some_extra_attr = "Hello"
+        self.assertEqual(app.referees[0].some_extra_attr, "Hello")
