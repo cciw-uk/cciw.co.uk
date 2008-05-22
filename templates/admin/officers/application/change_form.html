@@ -1,20 +1,6 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin/change_form.html" %}
 {% load i18n admin_modify adminmedia %}
 {% load application_admin %}
-{% block extrahead %}{{ block.super }}
-<script type="text/javascript" src="../../../jsi18n/"></script>
-{% for js in javascript_imports %}{% include_admin_script js %}{% endfor %}
-{% endblock %}
-{% block stylesheet %}{% admin_media_prefix %}css/forms.css{% endblock %}
-{% block coltype %}{% if ordered_objects %}colMS{% else %}colM{% endif %}{% endblock %}
-{% block bodyclass %}{{ opts.app_label }}-{{ opts.object_name.lower }} change-form{% endblock %}
-{% block breadcrumbs %}{% if not is_popup %}
-<div class="breadcrumbs">
-     <a href="../../../">{% trans "Home" %}</a> &rsaquo;
-     <a href="../">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo;
-     {% if add %}{% trans "Add" %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}
-</div>
-{% endif %}{% endblock %}
 {% block content %}<div id="content-main">
 {% block object-tools %}
 {% if change %}{% if not is_popup %}
