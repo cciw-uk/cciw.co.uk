@@ -494,18 +494,9 @@ def manage_references(request, year=None, number=None):
                 req = ('req_%d_%d' % (refnum, appid)) in request.POST.keys()
                 rec = ('rec_%d_%d' % (refnum, appid)) in request.POST.keys()
                 comments = request.POST.get('comments_%d_%d' % (refnum, appid), "")
-
-                if ref.requested != req:
-                    ref.requested = req
-                    updated = True
-                if ref.received != rec:
-                    ref.received = rec
-                    updated = True
-                if ref.comments != comments:
-                    ref.comments = comments
-                    updated = True
-
-                if updated:
+                
+                if ref.requested != req or ref.received != rec or ref.comments != comments:
+                    ref.requested, ref.received, ref.comments = req, rec, comments
                     ref.save()
                     refs_updated.add(ref)
 
