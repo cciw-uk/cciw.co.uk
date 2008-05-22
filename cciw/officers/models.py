@@ -5,7 +5,6 @@ from django.dispatch import dispatcher
 from django.core.validators import ValidationError
 from django.http import HttpResponseForbidden
 from django.db.models.options import AdminOptions
-from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Camp
 from cciw.officers import signals
@@ -315,14 +314,14 @@ camp_officer_application_fields = (
         {'fields': ('referee1_name', 'referee1_address', 'referee1_tel', 'referee1_mobile', 'referee1_email',
                     'referee2_name', 'referee2_address', 'referee2_tel', 'referee2_mobile', 'referee2_email',),
          'classes': 'wide',
-         'description': mark_safe('''Please give the names and addresses, 
+         'description': '''Please give the names and addresses, 
             telephones numbers and e-mail addresses and role or 
             relationship of <strong>two</strong> people who know you 
             well and who would be able to give a personal character reference.
             In addition we reserve the right to take up additional character 
             references from any other individuals deemed necessary. <strong>One 
             reference must be from a Church leader. The other reference should 
-            be from someone who has known you for more than 5 years.</strong>''')}
+            be from someone who has known you for more than 5 years.</strong>'''}
     ),
     ('Declarations (see note below)',
         {'fields': ('crime_declaration', 'crime_details'),
