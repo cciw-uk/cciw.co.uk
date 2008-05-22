@@ -439,10 +439,9 @@ def remove_name_prefixes(s):
 def add_referee_counts(tuplelist):
     """Takes a tuple list [(thisyearsapp, prevyearsapp, requested, received)]
     and adds counts and pseudo ids for each referee on thisyearsapp."""
-    refnames = map(remove_name_prefixes, 
-                   [ref.name 
-                    for app in [t[0] for t in tuplelist]
-                    for ref in app.referees])
+    refnames = [remove_name_prefixes(ref.name)
+                for app in [t[0] for t in tuplelist]
+                for ref in app.referees]
     counts = {}
     for name in refnames:
         counts[name] = counts.get(name, 0) + 1
@@ -503,10 +502,6 @@ def manage_references(request, year=None, number=None):
         c['message'] = u"Information for %d references was updated." % len(refs_updated)
 
     c['application_forms'] = add_referee_counts(sort_app_details(get_app_details(camp)))
-    # This view/template is horribly inefficient.(see
-    # get_relevant_applications especially). But since it is only
-    # going to be used by about 5 people each year, and not more than
-    # a few times a day, do we really care?
 
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)
