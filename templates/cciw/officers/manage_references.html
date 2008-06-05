@@ -80,6 +80,8 @@ connect(window, 'onload',
 			<strong class="ok">Requested</stong>
 		{% endif %}
 	{% endif %}
+	<br/>
+	<a rel="external" href="{% url django.contrib.admin.views.main.change_stage "officers","application",app.id %}">Edit form</a>
         <input name="appids" value="{{ app.id }}" type="hidden" />
       </td>
       {% for referee in app.referees %}
