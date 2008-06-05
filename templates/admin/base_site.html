@@ -4,6 +4,18 @@
 {% block extrastyle %}{{ block.super }}
 <link rel="stylesheet" type="text/css" href="{{ pagevars.media_root_url }}/adminextra.css" />
 <script type="text/javascript" src="{{ pagevars.media_root_url }}/javascript/MochiKit/MochiKit.js"></script>
+<script type="text/javascript" src="{{ pagevars.media_root_url }}/javascript/cciwutils.js"></script>
+<script type="text/javascript">
+<!--
+
+connect(window, 'onload', 
+	function(ev) {
+		externalLinks();
+	}
+)
+
+//-->
+</script>
 
 {% endblock %}
 {% block branding %}

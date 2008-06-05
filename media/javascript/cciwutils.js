@@ -195,3 +195,16 @@ function standardform_add_onchange_handlers(form_id) {
 			return standardform_get_input_change_handler(form_id, input.name, input.id);
 		});
 }
+
+// To keep XHTML validation, we have to avoid
+// 'target', so use this hack instead.
+function externalLinks() { 
+	if (!document.getElementsByTagName) return;
+	var anchors = document.getElementsByTagName("a"); 
+	for (var i=0; i < anchors.length; i++) { 
+		var anchor = anchors[i]; 
+		if (anchor.getAttribute("href") && 
+		anchor.getAttribute("rel") == "external") 
+		anchor.target = "_blank"; 
+	} 
+} 
