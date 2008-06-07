@@ -15,7 +15,7 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 
-from cciw.cciwmain.utils import all
+from cciw.cciwmain.utils import all, StandardReprMixin
 
 from cciw.officers.models import Application, Reference
 from cciw.cciwmain.models import Person, Camp
@@ -506,7 +506,7 @@ def manage_references(request, year=None, number=None):
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)
 
-class Obj(object):
+class Obj(StandardReprMixin):
     pass
 
 def mk_objs(dictlist):
