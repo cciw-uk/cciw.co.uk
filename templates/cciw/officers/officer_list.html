@@ -16,9 +16,10 @@
 
 <h3>Current list</h3>
 
-<p>Officers can be removed by clicking the 'Remove' links (this will
-  open a new window, and you will have to confirm the removal).
-  Details of officers (e.g. email address) can be changed by clicking 'Edit'.</p>
+<p>Officers can be removed from your camp list by clicking the
+  'Remove' links (this will open a new window, and you will have to
+  confirm the removal).  Details of officers (e.g. email address) can
+  be changed by clicking 'Edit'.</p>
 
 {% with invitations_all as invitations %}
 {% include "cciw/officers/officer_list_table_editable.html" %}
@@ -26,6 +27,9 @@
 <br />
 
 <h2>No/incomplete application form</h2>
+
+<p>The following officers are on your camp list (above), but have not
+  yet completed an application form.</p>
 
 {% with officers_noapplicationform as officers %}
 {% include "cciw/officers/officer_list_table.html" %}
