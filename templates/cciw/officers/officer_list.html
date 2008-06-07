@@ -5,15 +5,8 @@
 
 <h2>Invitation list</h2>
 
-{% with officers_all as officers %}
-{% include "cciw/officers/officer_list_table.html" %}
-{% endwith %}
-<br />
-
-<h2>Completed application form</h2>
-
-{% with officers_applicationform as officers %}
-{% include "cciw/officers/officer_list_table.html" %}
+{% with invitations_all as invitations %}
+{% include "cciw/officers/officer_list_table_editable.html" %}
 {% endwith %}
 <br />
 

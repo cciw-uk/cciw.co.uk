@@ -1,0 +1,25 @@
+{% if invitations %}
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Remove</th>
+    <th>Edit user details</th>
+  </tr>
+  {% for inv in invitations %}
+  <tr>
+    <td>{{ inv.officer.first_name }} {{ inv.officer.last_name }}</td>
+    <td>{{ inv.officer.email }}</td>
+    <td><a rel="external" href="{% url django.contrib.admin.views.main.delete_stage "officers","invitation",inv.id %}">Remove</a></td>
+    <td><a rel="external" href="{% url django.contrib.admin.views.main.change_stage "auth","user",inv.officer_id %}">Edit</a></td>
+  </tr>
+  {% endfor %}
+</table>
+<h3>List for email:</h3>
+<p>
+{% for inv in invitations %}"{{ inv.officer.first_name }} {{ inv.officer.last_name }}" &lt;{{ inv.officer.email }}&gt;,{% endfor %}
+</p>
+
+{% else %}
+<p>No officers found</p>
+{% endif %}

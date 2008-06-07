@@ -528,10 +528,9 @@ def officer_list(request, year=None, number=None):
 
     c = template.RequestContext(request)
     c['camp'] = camp
-    c['officers_all'] = mk_objs(camp.invitation_set.values('officer__id', 'officer__first_name', 'officer__last_name', 'officer__email'))
+    c['invitations_all'] = camp.invitation_set.all()
     
-    officers_applicationform = mk_objs(camp.application_set.filter(finished=True).values('officer__id', 'officer__first_name', 'officer__last_name', 'officer__email'))
-    c['officers_applicationform'] = officers_applicationform
+    officers_applicationform = mk_objs(camp.application_set.filter(finished=True).values('officer__id'))
     finished_apps_off_ids = [o.id for o in officers_applicationform]
     c['officers_noapplicationform'] = mk_objs(camp.invitation_set.values('officer__id', 'officer__first_name', 'officer__last_name', 'officer__email').exclude(officer__in=finished_apps_off_ids))
 
