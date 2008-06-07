@@ -3,7 +3,22 @@
 {% block content %}<div id="content-main">
 <h1>Officer list - {{ camp }}</h1>
 
-<h2>Invitation list</h2>
+<h2>Camp list</h2>
+
+<h3>Add officer</h3>
+
+<p>If you need to add a new officer to the website system, currently this
+  should be done by the webmaster.  <br /> For adding existing users to your
+  camp list, use the following link:</p>
+
+<ul><li><a rel="external" href="{% url django.contrib.admin.views.main.add_stage "officers","invitation" %}">Add invitation</a></li></ul>
+
+
+<h3>Current list</h3>
+
+<p>Officers can be removed by clicking the 'Remove' links (this will
+  open a new window, and you will have to confirm the removal).
+  Details of officers (e.g. email address) can be changed by clicking 'Edit'.</p>
 
 {% with invitations_all as invitations %}
 {% include "cciw/officers/officer_list_table_editable.html" %}
