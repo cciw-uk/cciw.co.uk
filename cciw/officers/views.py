@@ -10,6 +10,7 @@ from django.db import models
 from django.conf import settings
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.encoding import force_unicode, smart_str
+import re
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -428,18 +429,19 @@ def get_app_details(camp):
         received.append(all(r is not None and r.received for r in app.references))
     return zip(this_years_apps, last_years_apps, requested, received)
 
-def remove_name_prefixes(s):
+def normalise_name(s):
     s = s.lower()
     for p in ["mr", "mr.", "pastor", "rev", "rev.", "mrs.", "mrs", "dr.", "dr", "prof", "prof."]:
         if s.startswith(p + " "):
             s = s[len(p)+1:]
             break
+    s = re.sub("[ .]*(\(.*\))?[ .]*$", "", s) # remove trailing space or '.', and anything in brackets
     return s
 
 def add_referee_counts(tuplelist):
     """Takes a tuple list [(thisyearsapp, prevyearsapp, requested, received)]
     and adds counts and pseudo ids for each referee on thisyearsapp."""
-    refnames = [remove_name_prefixes(ref.name)
+    refnames = [normalise_name(ref.name)
                 for app in [t[0] for t in tuplelist]
                 for ref in app.referees]
     counts = {}
@@ -450,7 +452,7 @@ def add_referee_counts(tuplelist):
         for referee in app.referees:
             curid += 1
             referee.id = curid
-            referee.usedcount = counts[remove_name_prefixes(referee.name)]
+            referee.usedcount = counts[normalise_name(referee.name)]
     return tuplelist
 
 def _get_camp_or_404(year, number):
