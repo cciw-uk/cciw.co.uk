@@ -34,7 +34,7 @@
     employer1_leaving: ''
     employer1_name: Employer 1
     employer1_to: 0000/00
-    employer2_from: 1988/10,
+    employer2_from: 1988/10
     employer2_job: Manager
     employer2_leaving: Just because
     employer2_name: Employer 2
@@ -95,7 +95,7 @@
     employer1_leaving: ''
     employer1_name: Employer 1
     employer1_to: 0000/00
-    employer2_from: 1988/10,
+    employer2_from: 1988/10
     employer2_job: Manager
     employer2_leaving: Just because
     employer2_name: Employer 2
@@ -157,7 +157,7 @@
     employer1_leaving: ''
     employer1_name: Employer 1
     employer1_to: 0000/00
-    employer2_from: 1988/10,
+    employer2_from: 1988/10
     employer2_job: Manager
     employer2_leaving: Just because
     employer2_name: Employer 2
