@@ -9,7 +9,6 @@ from cciw.officers.tests.references import LEADER, OFFICER, ReferencesPage
 
 class OfficerListPage(TwillMixin, TestCase):
     fixtures = ['basic.yaml', 'officers_users.yaml', 'references.yaml']
-    twill_quiet = False
     def test_page_ok(self):
         self._twill_login(LEADER)
         tc.go(make_django_url("cciw.officers.views.officer_list", year=2000, number=1))

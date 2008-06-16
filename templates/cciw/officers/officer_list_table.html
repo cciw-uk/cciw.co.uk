@@ -1,19 +1,19 @@
-{% if officers %}
+{% if invitations %}
 <table>
   <tr>
     <th>Name</th>
     <th>Email</th>
   </tr>
-  {% for officer in officers %}
+  {% for inv in invitations %}
   <tr>
-    <td>{{ officer.first_name }} {{ officer.last_name }}</td>
-    <td>{{ officer.email }}</td>
+    <td>{{ inv.officer.first_name }} {{ inv.officer.last_name }}</td>
+    <td>{{ inv.officer.email }}</td>
   </tr>
   {% endfor %}
 </table>
 <h3>List for email:</h3>
 <p>
-{% for officer in officers %}"{{ officer.first_name }} {{ officer.last_name }}" &lt;{{ officer.email }}&gt;,{% endfor %}
+{% for inv in invitations %}"{{ inv.officer.first_name }} {{ inv.officer.last_name }}" &lt;{{ inv.officer.email }}&gt;,{% endfor %}
 </p>
 
 {% else %}

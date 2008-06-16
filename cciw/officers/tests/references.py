@@ -51,9 +51,7 @@ class ReferencesPage(TwillMixin, TestCase):
         self._twill_login(LEADER)
         tc.go(make_django_url("cciw.officers.views.manage_references", year=2000, number=1))
 
-
-        # Check the data is what we expect first, or the
-        # test is bogus
+        # Check the data is what we expect first, or the test is bogus
         b = tc.get_browser()
         f = b.get_form(1)
         self.assertEqual(b.get_form_field(f, 'req_1_1').value, ['1'])

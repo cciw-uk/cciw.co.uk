@@ -81,10 +81,16 @@ class Camp(models.Model):
     
     def __unicode__(self):
         leaders = list(self.leaders.all())
+        chaplain = None
         try:
-            leaders.append(self.chaplain)
+            chaplain = self.chaplain
         except Person.DoesNotExist:
+            # This might not be raised if we didn't use 'select_related',
+            # instead self.chaplain could be None
             pass
+        if chaplain is not None:
+            leaders.append(chaplain)
+
         if len(leaders) > 0:
             leadertext = u" (%s)" % u", ".join(str(l) for l in leaders)
         else:
