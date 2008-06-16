@@ -61,7 +61,7 @@ def topicindex(request, title=None, extra_context=None, forum=None,
     forum = _get_forum_or_404(request.path, '')
     
     ### TOPICS ###
-    topics = forum.topics.get_query_set()
+    topics = forum.topics.all().select_related('forum')
     
     ### FEED ###
     resp = feeds.handle_feed_request(request, feeds.forum_topic_feed(forum), query_set=topics)
@@ -483,7 +483,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
     except Topic.DoesNotExist:
         raise Http404
 
-    posts = topic.posts.get_query_set()
+    posts = topic.posts.all()
 
     ### Feed: ###
     # Requires 'topic' and 'posts'
@@ -553,7 +553,7 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
     "Displays an a gallery of photos"
     
     ### PHOTOS ###
-    photos = gallery.photos.get_query_set()
+    photos = gallery.photos.all().select_related('gallery')
     
     ### FEED ###
     resp = feeds.handle_feed_request(request, 
@@ -584,7 +584,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     "Displays a photo"
     
     ## POSTS ###
-    posts = photo.posts.get_query_set()
+    posts = photo.posts.all()
 
     ### Feed: ###
     resp = feeds.handle_feed_request(request, feeds.photo_post_feed(photo), query_set=posts)
