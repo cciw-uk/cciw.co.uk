@@ -1,30 +1,47 @@
 {% extends "cciw/officers/base.html" %}
 {% block title %}Officer list :: CCIW{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/admin_media/js/core.js"></script><script type="text/javascript" src="/admin_media/js/admin/RelatedObjectLookups.js"></script><script type="text/javascript" src="/admin_media/js/calendar.js"></script><script type="text/javascript" src="/admin_media/js/admin/DateTimeShortcuts.js"></script><script type="text/javascript" src="/admin_media/js/SelectBox.js"></script><script type="text/javascript" src="/admin_media/js/SelectFilter2.js"></script>
+
+{% endblock %}
+{% block bodyclass%}change-form{% endblock %}
+
 {% block content %}<div id="content-main">
 <h1>Officer list - {{ camp }}</h1>
 
-<h2>Camp list</h2>
-
-<h3>Add officer</h3>
-
-<p>If you need to add a new officer to the website system, currently this
-  should be done by the webmaster.  <br /> For adding existing users to your
-  camp list, use the following link:</p>
-
-<ul><li><a rel="external" href="{% url django.contrib.admin.views.main.add_stage "officers","invitation" %}">Add invitation</a></li></ul>
-
-
-<h3>Current list</h3>
-
-<p>Officers can be removed from your camp list by clicking the
-  'Remove' links (this will open a new window, and you will have to
-  confirm the removal).  Details of officers (e.g. email address) can
-  be changed by clicking 'Edit'.</p>
+<h2>Current list</h2>
 
 {% with invitations_all as invitations %}
 {% include "cciw/officers/officer_list_table_editable.html" %}
 {% endwith %}
 <br />
+
+
+<h2>Modify list</h2>
+{% if form.officers.errors %}{{ form.officers.errors }}{% endif %}
+
+<form method="post" action="">
+<fieldset class="module aligned">
+
+<div class="form-row" >
+  <label for="id_officers">Officers:</label> 
+  {{ form.officers }}
+   <script type="text/javascript">addEvent(window, "load", function(e) { SelectFilter.init("id_officers", "officers", 0, "/admin_media/"); });</script>
+</div>
+</fieldset>
+
+<input type="submit" value="Save" name="submit" id="id_submit" />
+
+</form>
+
+<h2>Create officer</h2>
+
+<p>If you need to add a new officer to the 'Available officers' above,
+  currently this should be done by
+  the <a href="mailto:webmaster@cciw.co.uk">webmaster</a>. </p>
+
 
 <h2>No/incomplete application form</h2>
 

@@ -508,6 +508,17 @@ def manage_references(request, year=None, number=None):
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)
 
+class OfficerChoice(newforms.ModelMultipleChoiceField):
+    def label_from_instance(self, u):
+        return u"%s %s <%s>" % (u.first_name, u.last_name, u.email)
+
+class OfficerListForm(newforms.Form):
+    officers = OfficerChoice(
+        widget=newforms.SelectMultiple(attrs={'class':'vSelectMultipleField'}),
+        queryset=User.objects.filter(is_staff=True),
+        required=False
+        )
+
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 def officer_list(request, year=None, number=None):
@@ -515,8 +526,23 @@ def officer_list(request, year=None, number=None):
 
     c = template.RequestContext(request)
     c['camp'] = camp
+
+
+    if request.method == 'POST':
+        print request.POST
+        form = OfficerListForm(request.POST)
+        if form.is_valid():
+            camp.invitation_set.all().delete()
+            print camp.invitation_set
+            for o in form.cleaned_data['officers']:
+                camp.invitation_set.create(officer=o).save()
+    else:
+        form = OfficerListForm({'officers': [unicode(inv.officer_id) for inv in camp.invitation_set.all()]})
+
+    c['form'] = form
+
+    # Make sure these queries come after the above data modification
     c['invitations_all'] = camp.invitation_set.all().select_related('officer')
-    
     finished_apps_off_ids = [o['officer__id'] 
                              for o in camp.application_set.filter(finished=True).values('officer__id')]
     c['invitations_noapplicationform'] = camp.invitation_set.exclude(officer__in=finished_apps_off_ids).select_related('officer')
