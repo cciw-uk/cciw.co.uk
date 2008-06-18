@@ -203,10 +203,8 @@ class Application(models.Model):
         try:
             return self._referees_cache
         except AttributeError:
-            retval = []
-            for refnum in (1, 2):
-                retval.append(Referee(self, refnum))
-            retval = tuple(retval) # since we don't want assignment
+            # Use tuple since we don't want assignment or mutation to the list
+            retval = tuple(Referee(self, refnum) for refnum in (1,2)) 
             self._referees_cache = retval
             return retval
 
