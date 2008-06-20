@@ -324,7 +324,7 @@ class CciwUserEmailField(newforms.EmailField):
     def clean(self, value):
         value = super(CciwUserEmailField, self).clean(value)
         if User.objects.filter(email__iexact=value).count() == 0:
-            raise newforms.ValidationError("That e-mail address doesn't have an associated user account. Are you sure you've registered?")
+            raise newforms.ValidationError("That e-mail address doesn't have an associated user account. Are you sure you've been registered?")
         return value
 
 class PasswordResetForm(newforms.Form):
