@@ -7,6 +7,7 @@ from django.conf import settings
 import django.contrib.contenttypes
 from cciw.tagging import utils
 from django.core.exceptions import ObjectDoesNotExist
+from django.dispatch import dispatcher
 
 # NB - this module uses our own 'GenericForeignKey' implementation
 # that existed before Django had one.  It is the basis of Django's
@@ -470,3 +471,17 @@ class Tag(models.Model):
             'creator_ct',
         )
         search_fields = ('text',)
+
+def post_delete_tagged_object(sender, instance, **kwargs):
+    # Delete any tags associated with the instance, either creator or target
+    try:
+        pk_s = utils.get_pk_as_str(instance)
+    except utils.NoMapperError:
+        # No mapper defined, can't delete tags, but that's OK as
+        # we won't have created any.
+        return
+    ct = utils.get_content_type_id(instance.__class__)
+    Tag.objects.filter(target_id=pk_s, target_ct=ct).delete()
+    Tag.objects.filter(creator_id=pk_s, creator_ct=ct).delete()
+
+dispatcher.connect(post_delete_tagged_object, signal=models.signals.post_delete)

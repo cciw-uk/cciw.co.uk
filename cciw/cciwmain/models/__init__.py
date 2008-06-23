@@ -40,3 +40,4 @@ register_renderer(Member, Member.get_link)
 register_renderer(Post, render_post)
 register_renderer(Topic, render_topic)
 register_renderer(Photo, render_photo)
+
