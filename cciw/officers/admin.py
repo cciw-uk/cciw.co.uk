@@ -3,6 +3,7 @@ from django import newforms as forms
 from fields import ExplicitBooleanField
 from django.contrib.admin import widgets
 from django.newforms.util import ErrorList
+import datetime
 
 class ExplicitBooleanFieldSelect(widgets.AdminRadioSelect):
     """
@@ -195,6 +196,21 @@ class ApplicationAdmin(admin.ModelAdmin):
             defaults.update(kwargs)
             return db_field.formfield(**defaults)            
         return super(ApplicationAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+
+    def _update_timestamp(self, request):
+        request.POST['date_submitted'] = datetime.datetime.today()
+        request.POST['date_submitted_0'] = datetime.date.today()
+        request.POST['date_submitted_1'] = datetime.datetime.now().strftime("%H:%M:%S")
+
+    def add_view(self, request):
+        if request.method == "POST":
+            self._update_timestamp(request)
+        return super(ApplicationAdmin, self).add_view(request)
+
+    def change_view(self, request, obj_id):
+        if request.method == "POST":
+            self._update_timestamp(request)
+        return super(ApplicationAdmin, self).change_view(request, obj_id)
 
 class ReferenceAdmin(admin.ModelAdmin):
     search_fields = ['application__officer__first_name', 'application__officer__last_name']
