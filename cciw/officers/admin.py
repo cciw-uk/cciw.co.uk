@@ -2,6 +2,7 @@ from django.contrib import admin
 from django import newforms as forms
 from fields import ExplicitBooleanField
 from django.contrib.admin import widgets
+from django.newforms.util import ErrorList
 
 class ExplicitBooleanFieldSelect(widgets.AdminRadioSelect):
     """
@@ -31,8 +32,20 @@ class ExplicitBooleanFieldSelect(widgets.AdminRadioSelect):
         return bool(initial) != bool(data)
 
 class ApplicationAdminModelForm(forms.ModelForm):
-    # TODO: logic for custom validation possibly goes here
-    pass
+    def clean(self):
+        app_finished = self.cleaned_data.get('finished', False)
+        if app_finished:
+            # All fields decorated with 'required_field' need to be
+            # non-empty
+            for name, field in self.fields.items():
+                if getattr(field, 'required_field', False):
+                    if isinstance(field, forms.NullBooleanField):
+                        if self.cleaned_data[name] is None:
+                            self._errors[name] = ErrorList(["This is a required field"])
+                    else:
+                        if len(self.cleaned_data.get(name,'')) == 0:
+                            self._errors[name] = ErrorList(["This is a required field"])
+        return self.cleaned_data
 
 class ApplicationAdmin(admin.ModelAdmin):
     save_as = True
@@ -178,9 +191,9 @@ class ApplicationAdmin(admin.ModelAdmin):
 
     def formfield_for_dbfield(self, db_field, **kwargs):
         if isinstance(db_field, ExplicitBooleanField):
-            args = {'widget':ExplicitBooleanFieldSelect}
-            args.update(kwargs)
-            return db_field.formfield(**args)
+            defaults = {'widget': ExplicitBooleanFieldSelect}
+            defaults.update(kwargs)
+            return db_field.formfield(**defaults)            
         return super(ApplicationAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
 class ReferenceAdmin(admin.ModelAdmin):

@@ -27,8 +27,24 @@ class ExplicitBooleanField(models.NullBooleanField):
         kwargs['default'] = None
         super(ExplicitBooleanField, self).__init__(*args, **kwargs)
 
+    def formfield(**kwargs):
+        defaults = {'widget': ExplicitBooleanFieldSelect}
+        defaults.update(kwargs)
+        return super(ExplicitBooleanField, self).formfield(**defaults)
+
 if not threadlocals.is_web_request():
     # When installing, we need the following line.  It is only
     # executed in the command line context.
     ExplicitBooleanField = models.NullBooleanField
 
+def required_field(field_class, *args, **kwargs):
+    """Returns a field with options set appropiately
+    for "required fields" -- field.formfield() objects
+    have '.required_field = True'."""
+    kwargs['blank'] = True
+    class NewDBField(field_class):
+        def formfield(self, *args, **kwargs):
+            f = super(field_class, self).formfield(*args, **kwargs)
+            f.required_field = True
+            return f
+    return NewDBField(*args, **kwargs)

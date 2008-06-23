@@ -9,40 +9,7 @@ from cciw.cciwmain.models import Camp
 from cciw.officers import signals
 from django.contrib.auth.models import User
 import datetime
-from fields import YyyyMmField, AddressField, ExplicitBooleanField
-
-# FIXME 'required_field' doesn't work yet.
-def rqd_field_validator(field_data, all_data):
-    if all_data.get('finished', 'off') == 'on':
-        if len(field_data) == 0:
-            raise ValidationError("This is a required field.")
-rqd_field_validator.always_test = True
-
-def rqd_null_boolean_validator(field_data, all_data):
-    if all_data.get('finished', 'off') == 'on':
-        if field_data == '' or field_data == '1':
-            raise ValidationError("This is a required field.")
-rqd_null_boolean_validator.always_test = True
-
-def required_field(field_class, *args, **kwargs):
-    """Returns a field with options set appropiately
-    for Application required fields - i.e., they are
-    allowed to be blank but if 'finished' is true
-    then they must be filled in."""
-    kwargs['blank'] = True
-    #validators = list(kwargs.get('validator_list', ()))
-    #if field_class is ExplicitBooleanField:
-    #    validators.append(rqd_null_boolean_validator)
-    #else:
-    #    validators.append(rqd_field_validator)
-    #kwargs['validator_list'] = validators
-    # We have to dynamically wrap the class of 
-    # the db field, and change the class of object that
-    # dbfield.formfield() returns
-    class NewDBField(field_class):
-        pass
-
-    return NewDBField(*args, **kwargs)
+from fields import YyyyMmField, AddressField, ExplicitBooleanField, required_field
 
 class Referee(object):
     """Helper class for more convenient access to referee* attributes
