@@ -38,9 +38,6 @@ class Forum(models.Model):
     
     class Meta:
         app_label = "cciwmain"   
-        
-    class Admin:
-        pass
 
 class NewsItem(models.Model):
     created_by = models.ForeignKey(Member, related_name="news_items_created")
@@ -67,9 +64,6 @@ class NewsItem(models.Model):
     class Meta:
         app_label = "cciwmain"
         ordering = ('-created_at',)
-        
-    class Admin:
-        pass
 
 class UserSpecificTopics(models.Manager):
     def get_query_set(self):
@@ -138,10 +132,6 @@ class Topic(models.Model):
                      needs_approval=(member.moderated == Member.MODERATE_ALL),
                      open=True)
 
-    class Admin:
-        list_display = ('subject', 'started_by', 'created_at')
-        search_fields = ('subject',)
-    
     class Meta:
         app_label = "cciwmain"
         ordering = ('-started_by',)
@@ -160,9 +150,6 @@ class Gallery(models.Model):
         app_label = "cciwmain"
         verbose_name_plural = "Galleries"
         ordering = ('-location',)
-        
-    class Admin:
-        pass
 
 class UserSpecificPhotos(models.Manager):
     def get_query_set(self):
@@ -224,9 +211,6 @@ class Photo(models.Model):
         
     class Meta:
         app_label = "cciwmain"
-        
-    class Admin:
-        pass
 
 class UserSpecificPosts(models.Manager):
     def get_query_set(self):
@@ -371,8 +355,3 @@ class Post(models.Model):
         # would also cause its posted_at date to change, but not it's order,
         # and data for the original post date/time is now lost)
         ordering = ('id',) 
-
-    class Admin:
-        list_display = ('__unicode__', 'posted_by', 'posted_at')
-        search_fields = ('message',)
-        

@@ -4,17 +4,14 @@ from django import oldforms as forms
 from django.dispatch import dispatcher
 from django.core.validators import ValidationError
 from django.http import HttpResponseForbidden
-from django.db.models.options import AdminOptions
 
 from cciw.cciwmain.models import Camp
 from cciw.officers import signals
 from django.contrib.auth.models import User
-import cciw.middleware.threadlocals as threadlocals
-import re
 import datetime
+from fields import YyyyMmField, AddressField, ExplicitBooleanField
 
-yyyy_mm_re = re.compile('^\d{4}/\d{2}$')
-
+# FIXME 'required_field' doesn't work yet.
 def rqd_field_validator(field_data, all_data):
     if all_data.get('finished', 'off') == 'on':
         if len(field_data) == 0:
@@ -33,61 +30,19 @@ def required_field(field_class, *args, **kwargs):
     allowed to be blank but if 'finished' is true
     then they must be filled in."""
     kwargs['blank'] = True
-    validators = list(kwargs.get('validator_list', ()))
-    if field_class is ExplicitBooleanField:
-        validators.append(rqd_null_boolean_validator)
-    else:
-        validators.append(rqd_field_validator)
-    kwargs['validator_list'] = validators
-    return field_class(*args, **kwargs)
-    
-def yyyy_mm_validator(field_data, all_data):
-    if not yyyy_mm_re.match(field_data):
-        raise ValidationError("This field must be in the form YYYY/MM.")
+    #validators = list(kwargs.get('validator_list', ()))
+    #if field_class is ExplicitBooleanField:
+    #    validators.append(rqd_null_boolean_validator)
+    #else:
+    #    validators.append(rqd_field_validator)
+    #kwargs['validator_list'] = validators
+    # We have to dynamically wrap the class of 
+    # the db field, and change the class of object that
+    # dbfield.formfield() returns
+    class NewDBField(field_class):
+        pass
 
-# Pretend class (it's easier to avoid some ORM magic this way)
-def YyyyMmField(*args, **kwargs):
-    kwargs['max_length'] = 7
-    validators = list(kwargs.get('validator_list', ()))
-    validators.append(yyyy_mm_validator)
-    kwargs['validator_list'] = validators
-    kwargs['help_text'] = u'Enter the date in YYYY/MM format.'
-    return models.CharField(*args, **kwargs)
-
-def AddressField(*args, **kwargs):
-    kwargs['help_text'] = u'Full address, including post code and country'
-    return models.TextField(*args, **kwargs)
-
-class ExplicitBooleanField(models.NullBooleanField):
-    def __init__(self, *args, **kwargs):
-        kwargs['radio_admin'] = True
-        kwargs['default'] = None
-        models.NullBooleanField.__init__(self, *args, **kwargs)
-
-    def get_manipulator_field_objs(self):
-        return [FormsExplicitBooleanField]
-
-class FormsExplicitBooleanField(forms.RadioSelectField):
-    """This FormsExplicitBooleanField provides 'Yes', 'No' and 'Unknown', 
-    mapping results to True, False or None"""
-    def __init__(self, field_name, is_required=False, validator_list=[]):
-        forms.RadioSelectField.__init__(self, field_name, choices=[('2', 'Yes'), ('3', 'No')],
-            is_required=is_required, validator_list=validator_list, ul_class='radiolist inline')
-
-    def render(self, data):
-        if data is None: data = '1'
-        elif data == True: data = '2'
-        elif data == False: data = '3'
-        return forms.RadioSelectField.render(self, data)
-
-    @staticmethod
-    def html2python(data):
-        return {'1': None, '2': True, '3': False}.get(data, None)
-
-if not threadlocals.is_web_request():
-    # When installing, we need the following line.  It is only
-    # executed in the command line context.
-    ExplicitBooleanField = models.NullBooleanField
+    return NewDBField(*args, **kwargs)
 
 class Referee(object):
     """Helper class for more convenient access to referee* attributes
@@ -240,150 +195,6 @@ class Application(models.Model):
 
     class Meta:
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name', 'camp__number')
-        
-    class Admin:
-        fields = () # we override this later
-
-        save_as = True
-        list_display = ('full_name', 'officer', 'camp', 'finished', 'date_submitted')
-        list_filter = ('finished','date_submitted')
-        ordering = ('full_name',)
-        search_fields = ('full_name',)
-
-camp_officer_application_fields = (
-    (None,
-        {'fields': ('camp', ),
-          'classes': 'wide',}
-    ),
-    ('Personal info', 
-        {'fields': ('full_name', 'full_maiden_name', 'birth_date', 'birth_place'),
-         'classes': 'applicationpersonal wide'}
-    ),
-    ('Address', 
-        {'fields': ('address_firstline', 'address_town', 'address_county',
-                    'address_postcode', 'address_country', 'address_tel',
-                    'address_mobile', 'address_since', 'address_email'),
-         'classes': 'wide',}
-    ),
-    ('Previous addresses',
-        {'fields': ('address2_from', 'address2_to', 'address2_address'),
-         'classes': 'wide',
-         'description': """If you have lived at your current address for less than 5 years
-                        please give previous address(es) with dates below. (If more than 2 addresses,
-                        use the second address box for the remaining addresses with their dates)"""}
-    ),
-    (None,
-        {'fields': ('address3_from', 'address3_to', 'address3_address'),
-         'classes': 'wide',}
-    ),
-    ('Experience',
-        {'fields': ('christian_experience',),
-         'classes': 'wide',
-         'description': '''Please tells us about your Christian experience 
-            (i.e. how you became a Christian and how long you have been a Christian, 
-            which Churches you have attended and dates, names of minister/leader)'''}
-            
-    ),
-    (None,
-        {'fields': ('youth_experience',),
-         'classes': 'wide',
-         'description': '''Please give details of previous experience of
-            looking after or working with children/young people - 
-            include any qualifications or training you have. '''}
-    ),
-    (None,
-        {'fields': ('youth_work_declined', 'youth_work_declined_details'),
-         'classes': 'wide',
-         'description': 'If you have ever had an offer to work with children/young people declined, you must declare it below and give details.'}
-    ),
-    ('Illnesses',
-        {'fields': ('relevant_illness', 'illness_details'),
-         'classes': 'wide' }
-    ),
-    ('Employment history',
-        {'fields': ('employer1_name', 'employer1_from', 'employer1_to', 
-                    'employer1_job', 'employer1_leaving', 'employer2_name', 
-                    'employer2_from', 'employer2_to', 'employer2_job', 
-                    'employer2_leaving',),
-         'classes': 'wide',
-          'description': 'Please tell us about your past and current employers below (if applicable)'}
-    ),
-    ('References',
-        {'fields': ('referee1_name', 'referee1_address', 'referee1_tel', 'referee1_mobile', 'referee1_email',
-                    'referee2_name', 'referee2_address', 'referee2_tel', 'referee2_mobile', 'referee2_email',),
-         'classes': 'wide',
-         'description': '''Please give the names and addresses, 
-            telephones numbers and e-mail addresses and role or 
-            relationship of <strong>two</strong> people who know you 
-            well and who would be able to give a personal character reference.
-            In addition we reserve the right to take up additional character 
-            references from any other individuals deemed necessary. <strong>One 
-            reference must be from a Church leader. The other reference should 
-            be from someone who has known you for more than 5 years.</strong>'''}
-    ),
-    ('Declarations (see note below)',
-        {'fields': ('crime_declaration', 'crime_details'),
-         'classes': 'wide',
-         'description': '''Note: The disclosure of an offence may not 
-            prohibit your appointment'''},
-    ),
-    (None,
-        {'fields': ('court_declaration', 'court_details'),
-         'classes': 'wide', }
-    ),
-    (None,
-        {'fields': ('concern_declaration', 'concern_details'),
-         'classes': 'wide' }
-    ),
-    (None,
-        {'fields': ('allegation_declaration',),
-         'classes': 'wide',
-         'description': '''If you answer yes to the following question
-            we will need to discuss this with you''' }
-    ),            
-    (None,
-        {'fields': ('crb_check_consent',),
-         'classes': 'wide',
-         'description': '''If you answer NO  to
-            the following question we regret that we 
-            cannot proceed with your application. ''' }
-    ),
-    ("Confirmation",
-        {'fields': ('finished',),
-         'classes': 'wide',
-         'description': """By ticking this box and pressing save, you confirm 
-         that the information you have submitted is correct and complete, and your
-         information will then be sent to the camp leader.  By leaving this box un-ticked,
-         you can save what you have done so far and edit it later."""
-         }
-    ),
-)
-
-camp_leader_application_fields = (
-    (None, 
-        {'fields': ('officer',), 
-          'classes': 'wide',}
-    ),) + camp_officer_application_fields
-
-class ApplicationAdminOptions(AdminOptions):
-    """Class used to replace AdminOptions for the Application model"""
-    def _fields(self):
-        user = threadlocals.get_current_user()
-        if user is None or user.is_anonymous():
-            # never get here normally
-            return ()
-        else:
-            if user.has_perm('officers.change_application'):
-                return camp_leader_application_fields
-            else:
-                return camp_officer_application_fields
-    fields = property(_fields)
-
-# HACK
-# The inner 'Admin' class has been transformed into Application._meta.admin 
-# by this point, due to metaclass magic. We can alter it's behaviour like this:
-del Application._meta.admin.fields
-Application._meta.admin.__class__ = ApplicationAdminOptions
 
 
 class Reference(models.Model):
@@ -415,9 +226,6 @@ class Reference(models.Model):
                     'referee_number')
         unique_together = (("application", "referee_number"),)
 
-    class Admin:
-        search_fields = ['application__officer__first_name', 'application__officer__last_name']
-
 class Invitation(models.Model):
     officer = models.ForeignKey(User)
     camp = models.ForeignKey(Camp)
@@ -429,12 +237,6 @@ class Invitation(models.Model):
     class Meta:
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name')
         unique_together = (('officer', 'camp'),)
-
-    class Admin:
-        list_display = ['officer', 'camp']
-        list_filter = ['camp']
-        search_fields = ['officer']
-
 
 # Ensure hooks get set up
 import cciw.officers.hooks

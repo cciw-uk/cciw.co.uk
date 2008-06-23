@@ -1,0 +1,198 @@
+from django.contrib import admin
+from django import newforms as forms
+from fields import ExplicitBooleanField
+from django.contrib.admin import widgets
+
+class ExplicitBooleanFieldSelect(widgets.AdminRadioSelect):
+    """
+    A Radio select widget intended to be used with NullBooleanField.
+    """
+    def __init__(self, attrs=None):
+        if attrs is None:
+            attrs = {}
+        attrs.update({'class':'radiolist inline'})
+        choices = ((u'2', 'Yes'), (u'3', 'No'))
+        super(ExplicitBooleanFieldSelect, self).__init__(attrs, choices)
+
+    def render(self, name, value, attrs=None, choices=()):
+        try:
+            value = {True: u'2', False: u'3', u'2': u'2', u'3': u'3'}[value]
+        except KeyError:
+            value = u'1'
+        return super(ExplicitBooleanFieldSelect, self).render(name, value, attrs, choices)
+
+    def value_from_datadict(self, data, files, name):
+        value = data.get(name, None)
+        return {u'2': True, u'3': False, True: True, False: False}.get(value, None)
+
+    def _has_changed(self, initial, data):
+        # Sometimes data or initial could be None or u'' which should be the
+        # same thing as False.
+        return bool(initial) != bool(data)
+
+class ApplicationAdminModelForm(forms.ModelForm):
+    # TODO: logic for custom validation possibly goes here
+    pass
+
+class ApplicationAdmin(admin.ModelAdmin):
+    save_as = True
+    list_display = ('full_name', 'officer', 'camp', 'finished', 'date_submitted')
+    list_filter = ('finished','date_submitted')
+    ordering = ('full_name',)
+    search_fields = ('full_name',)        
+    radio_fields = {'youth_work_declined': admin.HORIZONTAL,
+                    'relevant_illness': admin.HORIZONTAL,
+                    'crime_declaration': admin.HORIZONTAL,
+                    'court_declaration': admin.HORIZONTAL,
+                    'concern_declaration': admin.HORIZONTAL,
+                    'allegation_declaration': admin.HORIZONTAL,
+                    'crb_check_consent': admin.HORIZONTAL,
+                    }
+    form = ApplicationAdminModelForm
+
+    camp_officer_application_fieldsets = (
+        (None,
+            {'fields': ('camp', ),
+              'classes': 'wide',}
+        ),
+        ('Personal info', 
+            {'fields': ('full_name', 'full_maiden_name', 'birth_date', 'birth_place'),
+             'classes': 'applicationpersonal wide'}
+        ),
+        ('Address', 
+            {'fields': ('address_firstline', 'address_town', 'address_county',
+                        'address_postcode', 'address_country', 'address_tel',
+                        'address_mobile', 'address_since', 'address_email'),
+             'classes': 'wide',}
+        ),
+        ('Previous addresses',
+            {'fields': ('address2_from', 'address2_to', 'address2_address'),
+             'classes': 'wide',
+             'description': """If you have lived at your current address for less than 5 years
+                            please give previous address(es) with dates below. (If more than 2 addresses,
+                            use the second address box for the remaining addresses with their dates)"""}
+        ),
+        (None,
+            {'fields': ('address3_from', 'address3_to', 'address3_address'),
+             'classes': 'wide',}
+        ),
+        ('Experience',
+            {'fields': ('christian_experience',),
+             'classes': 'wide',
+             'description': '''Please tells us about your Christian experience 
+                (i.e. how you became a Christian and how long you have been a Christian, 
+                which Churches you have attended and dates, names of minister/leader)'''}
+
+        ),
+        (None,
+            {'fields': ('youth_experience',),
+             'classes': 'wide',
+             'description': '''Please give details of previous experience of
+                looking after or working with children/young people - 
+                include any qualifications or training you have. '''}
+        ),
+        (None,
+            {'fields': ('youth_work_declined', 'youth_work_declined_details'),
+             'classes': 'wide',
+             'description': 'If you have ever had an offer to work with children/young people declined, you must declare it below and give details.'}
+        ),
+        ('Illnesses',
+            {'fields': ('relevant_illness', 'illness_details'),
+             'classes': 'wide' }
+        ),
+        ('Employment history',
+            {'fields': ('employer1_name', 'employer1_from', 'employer1_to', 
+                        'employer1_job', 'employer1_leaving', 'employer2_name', 
+                        'employer2_from', 'employer2_to', 'employer2_job', 
+                        'employer2_leaving',),
+             'classes': 'wide',
+              'description': 'Please tell us about your past and current employers below (if applicable)'}
+        ),
+        ('References',
+            {'fields': ('referee1_name', 'referee1_address', 'referee1_tel', 'referee1_mobile', 'referee1_email',
+                        'referee2_name', 'referee2_address', 'referee2_tel', 'referee2_mobile', 'referee2_email',),
+             'classes': 'wide',
+             'description': '''Please give the names and addresses, 
+                telephones numbers and e-mail addresses and role or 
+                relationship of <strong>two</strong> people who know you 
+                well and who would be able to give a personal character reference.
+                In addition we reserve the right to take up additional character 
+                references from any other individuals deemed necessary. <strong>One 
+                reference must be from a Church leader. The other reference should 
+                be from someone who has known you for more than 5 years.</strong>'''}
+        ),
+        ('Declarations (see note below)',
+            {'fields': ('crime_declaration', 'crime_details'),
+             'classes': 'wide',
+             'description': '''Note: The disclosure of an offence may not 
+                prohibit your appointment'''},
+        ),
+        (None,
+            {'fields': ('court_declaration', 'court_details'),
+             'classes': 'wide', }
+        ),
+        (None,
+            {'fields': ('concern_declaration', 'concern_details'),
+             'classes': 'wide' }
+        ),
+        (None,
+            {'fields': ('allegation_declaration',),
+             'classes': 'wide',
+             'description': '''If you answer yes to the following question
+                we will need to discuss this with you''' }
+        ),            
+        (None,
+            {'fields': ('crb_check_consent',),
+             'classes': 'wide',
+             'description': '''If you answer NO  to
+                the following question we regret that we 
+                cannot proceed with your application. ''' }
+        ),
+        ("Confirmation",
+            {'fields': ('finished',),
+             'classes': 'wide',
+             'description': """By ticking this box and pressing save, you confirm 
+             that the information you have submitted is correct and complete, and your
+             information will then be sent to the camp leader.  By leaving this box un-ticked,
+             you can save what you have done so far and edit it later."""
+             }
+        ),
+    )
+
+    camp_leader_application_fieldsets = (
+        (None, 
+            {'fields': ('officer',), 
+              'classes': 'wide',}
+        ),) + camp_officer_application_fieldsets
+
+    def get_fieldsets(self, request, obj=None):
+        user = request.user
+        if user is None or user.is_anonymous():
+            # never get here normally
+            return ()
+        else:
+            if user.has_perm('officers.change_application'):
+                return self.camp_leader_application_fieldsets
+            else:
+                return self.camp_officer_application_fieldsets
+
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        if isinstance(db_field, ExplicitBooleanField):
+            args = {'widget':ExplicitBooleanFieldSelect}
+            args.update(kwargs)
+            return db_field.formfield(**args)
+        return super(ApplicationAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+
+class ReferenceAdmin(admin.ModelAdmin):
+    search_fields = ['application__officer__first_name', 'application__officer__last_name']
+
+class InvitationAdmin(admin.ModelAdmin):
+    list_display = ['officer', 'camp']
+    list_filter = ['camp']
+    search_fields = ['officer']
+
+from models import Application, Reference, Invitation
+
+admin.site.register(Application, ApplicationAdmin)
+admin.site.register(Reference, ReferenceAdmin)
+admin.site.register(Invitation, InvitationAdmin)

@@ -22,7 +22,7 @@ class Poll(models.Model):
     rules = models.PositiveSmallIntegerField("Rules",
         choices = VOTING_RULES)
     rule_parameter = models.PositiveSmallIntegerField("Parameter for rule", 
-        default=1, radio_admin=True)
+        default=1)
     have_vote_info = models.BooleanField("Full vote information available", 
         default=True)
     created_by = models.ForeignKey(Member, verbose_name="created by",
@@ -79,10 +79,6 @@ class Poll(models.Model):
     class Meta:
         app_label = "cciwmain"   
         ordering = ('title',)
-        
-    class Admin:
-        list_display = ('title', 'created_by', 'voting_starts')
-        
 
 class PollOption(models.Model):
     text = models.CharField("Option text", max_length=200, core=True)
@@ -119,9 +115,6 @@ class PollOption(models.Model):
     class Meta:
         app_label = "cciwmain"
         ordering = ('poll', 'listorder',)
-
-    class Admin:
-        list_display = ('text', 'poll')
 
 class VoteInfo(models.Model):
     poll_option = models.ForeignKey(PollOption, 

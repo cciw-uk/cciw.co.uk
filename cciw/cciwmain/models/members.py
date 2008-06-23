@@ -6,7 +6,6 @@ from cciw.cciwmain import utils
 from datetime import datetime
 from cciw.cciwmain.utils import get_member_link, get_member_href
 
-
 class Permission(models.Model):
     POLL_CREATOR = "Poll creator"
     NEWS_CREATOR = "News creator"
@@ -20,9 +19,6 @@ class Permission(models.Model):
     class Meta:
         ordering = ('id',)
         app_label = "cciwmain"
-        
-    class Admin:
-        pass
 
 class UserSpecificMembers(models.Manager):
     def get_query_set(self):
@@ -66,7 +62,7 @@ class Member(models.Model):
     last_seen   = models.DateTimeField("Last on website", null=True)
     show_email  = models.BooleanField("Make email address visible", default=False)
     message_option = models.PositiveSmallIntegerField("Message storing",
-        choices=MESSAGE_OPTIONS, default=1, radio_admin=True)
+        choices=MESSAGE_OPTIONS, default=1)
     comments    = models.TextField("Comments", blank=True)
     moderated   = models.PositiveSmallIntegerField("Moderated", default=0,
         choices=MODERATE_OPTIONS)
@@ -74,7 +70,7 @@ class Member(models.Model):
     banned      = models.BooleanField("Banned", default=False)
     permissions = models.ManyToManyField(Permission,
         verbose_name="permissions", related_name="member_with_permission",
-        blank=True, null=True, filter_interface=models.HORIZONTAL)
+        blank=True, null=True)
     icon         = models.ImageField("Icon", upload_to=settings.MEMBER_ICON_UPLOAD_PATH, blank=True)
     dummy_member = models.BooleanField("Dummy member status", default=False) # supports ancient posts in message boards
     
@@ -138,21 +134,6 @@ class Member(models.Model):
     class Meta:
         ordering = ('user_name',)
         app_label = "cciwmain"
-        
-    class Admin:
-        search_fields = (
-            'user_name', 'real_name', 'email'
-        )
-        list_display = (
-            'user_name', 'real_name', 'email', 'date_joined', 'last_seen'
-        )
-        list_filter = (
-            'dummy_member',
-            'hidden',
-            'banned',
-            'moderated',
-        )
-
 
 class Award(models.Model):
     name = models.CharField("Award name", max_length=50)
@@ -178,10 +159,7 @@ class Award(models.Model):
     class Meta:
         app_label = "cciwmain"
         ordering = ('-year', 'name',)
-    
-    class Admin:
-        list_display = ('name', 'year')
-    
+
 class PersonalAward(models.Model):
     reason = models.CharField("Reason for award", max_length=200)
     date_awarded = models.DateField("Date awarded", null=True, blank=True)
@@ -198,10 +176,6 @@ class PersonalAward(models.Model):
     class Meta:
         app_label = "cciwmain"   
         ordering = ('date_awarded',)
-
-    class Admin:
-        list_display = ('award', 'member','reason', 'date_awarded')
-        list_filter = ('award',)
         
 class Message(models.Model):
     MESSAGE_BOX_INBOX = 0
@@ -255,6 +229,3 @@ http://%(domain)s/members/%(from)s/messages/
     class Meta:
         app_label = "cciwmain"
         ordering = ('-time',)
-    
-    class Admin:
-        list_display = ('to_member', 'from_member', 'time')

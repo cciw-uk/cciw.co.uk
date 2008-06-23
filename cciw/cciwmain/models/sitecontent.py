@@ -29,9 +29,6 @@ class MenuLink(models.Model):
         app_label = "cciwmain"
         # put top level items at top of list, others into groups, for the admin
         ordering = ('-parent_item__id', 'listorder') 
-        
-    class Admin:
-        list_display = ('title', 'url', 'listorder','visible','parent_item')
 
 class HtmlChunk(models.Model):
     name = models.SlugField("name", primary_key=True, db_index=True)
@@ -59,7 +56,3 @@ class HtmlChunk(models.Model):
     class Meta:
         app_label = "cciwmain"   
         verbose_name = "HTML chunk"
-
-    class Admin:
-        list_display = ('name', 'page_title', 'menu_link')
-       

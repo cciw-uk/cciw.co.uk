@@ -24,18 +24,12 @@ class Site(models.Model):
     class Meta:
         app_label = "cciwmain"
         pass
-    
-    class Admin:
-        fields = (
-            (None, {'fields': ('short_name', 'long_name', 'info')}),
-        )
         
 class Person(models.Model):
     name = models.CharField("Name", max_length=40)
     info = models.TextField("Information (Plain text)", 
                         blank=True)
-    users = models.ManyToManyField(User, verbose_name="Associated admin users", 
-                                   filter_interface=models.HORIZONTAL)
+    users = models.ManyToManyField(User, verbose_name="Associated admin users")
 
     def __unicode__(self):
         return self.name
@@ -44,9 +38,6 @@ class Person(models.Model):
         ordering = ('name',)
         verbose_name_plural = 'people'
         app_label = "cciwmain"
-        
-    class Admin:
-        pass
 
 CAMP_AGES = (
     (u'Jnr',u'Junior'),
@@ -71,11 +62,11 @@ class Camp(models.Model):
     leaders = models.ManyToManyField(Person, 
         related_name="camps_as_leader", 
         verbose_name="leaders",
-        null=True, blank=True, filter_interface=models.HORIZONTAL)
+        null=True, blank=True)
     admins = models.ManyToManyField(User, 
         related_name="camps_as_admin",
         verbose_name="admins",
-        null=True, blank=True, filter_interface=models.HORIZONTAL)
+        null=True, blank=True)
     site = models.ForeignKey(Site)
     online_applications = models.BooleanField("Accepts online applications from officers.")
     
@@ -113,14 +104,3 @@ class Camp(models.Model):
     class Meta:
         app_label = "cciwmain"
         ordering = ['-year','number']
-
-    class Admin:
-        fields = (
-            (None, {'fields': ('year', 'number', 'age', 'start_date', 'end_date', 
-                               'chaplain', 'leaders', 'site', 'previous_camp', 
-                               'online_applications', 'admins') 
-                    }
-            ),
-        )
-        ordering = ['-year','number']
-        list_filter = ('age', 'site', 'online_applications')
