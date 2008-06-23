@@ -27,11 +27,6 @@ class ExplicitBooleanField(models.NullBooleanField):
         kwargs['default'] = None
         super(ExplicitBooleanField, self).__init__(*args, **kwargs)
 
-    def formfield(**kwargs):
-        defaults = {'widget': ExplicitBooleanFieldSelect}
-        defaults.update(kwargs)
-        return super(ExplicitBooleanField, self).formfield(**defaults)
-
 if not threadlocals.is_web_request():
     # When installing, we need the following line.  It is only
     # executed in the command line context.
