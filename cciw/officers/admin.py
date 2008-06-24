@@ -37,32 +37,32 @@ class ApplicationAdmin(admin.ModelAdmin):
     camp_officer_application_fieldsets = (
         (None,
             {'fields': ('camp', ),
-              'classes': 'wide',}
+              'classes': ('wide',),}
         ),
         ('Personal info', 
             {'fields': ('full_name', 'full_maiden_name', 'birth_date', 'birth_place'),
-             'classes': 'applicationpersonal wide'}
+             'classes': ('applicationpersonal', 'wide')}
         ),
         ('Address', 
             {'fields': ('address_firstline', 'address_town', 'address_county',
                         'address_postcode', 'address_country', 'address_tel',
                         'address_mobile', 'address_since', 'address_email'),
-             'classes': 'wide',}
+             'classes': ('wide',),}
         ),
         ('Previous addresses',
             {'fields': ('address2_from', 'address2_to', 'address2_address'),
-             'classes': 'wide',
+             'classes': ('wide',),
              'description': """If you have lived at your current address for less than 5 years
                             please give previous address(es) with dates below. (If more than 2 addresses,
                             use the second address box for the remaining addresses with their dates)"""}
         ),
         (None,
             {'fields': ('address3_from', 'address3_to', 'address3_address'),
-             'classes': 'wide',}
+             'classes': ('wide',),}
         ),
         ('Experience',
             {'fields': ('christian_experience',),
-             'classes': 'wide',
+             'classes': ('wide',),
              'description': '''Please tells us about your Christian experience 
                 (i.e. how you became a Christian and how long you have been a Christian, 
                 which Churches you have attended and dates, names of minister/leader)'''}
@@ -70,32 +70,32 @@ class ApplicationAdmin(admin.ModelAdmin):
         ),
         (None,
             {'fields': ('youth_experience',),
-             'classes': 'wide',
+             'classes': ('wide',),
              'description': '''Please give details of previous experience of
                 looking after or working with children/young people - 
                 include any qualifications or training you have. '''}
         ),
         (None,
             {'fields': ('youth_work_declined', 'youth_work_declined_details'),
-             'classes': 'wide',
+             'classes': ('wide',),
              'description': 'If you have ever had an offer to work with children/young people declined, you must declare it below and give details.'}
         ),
         ('Illnesses',
             {'fields': ('relevant_illness', 'illness_details'),
-             'classes': 'wide' }
+             'classes': ('wide',) }
         ),
         ('Employment history',
             {'fields': ('employer1_name', 'employer1_from', 'employer1_to', 
                         'employer1_job', 'employer1_leaving', 'employer2_name', 
                         'employer2_from', 'employer2_to', 'employer2_job', 
                         'employer2_leaving',),
-             'classes': 'wide',
+             'classes': ('wide',),
               'description': 'Please tell us about your past and current employers below (if applicable)'}
         ),
         ('References',
             {'fields': ('referee1_name', 'referee1_address', 'referee1_tel', 'referee1_mobile', 'referee1_email',
                         'referee2_name', 'referee2_address', 'referee2_tel', 'referee2_mobile', 'referee2_email',),
-             'classes': 'wide',
+             'classes': ('wide',),
              'description': '''Please give the names and addresses, 
                 telephones numbers and e-mail addresses and role or 
                 relationship of <strong>two</strong> people who know you 
@@ -107,34 +107,34 @@ class ApplicationAdmin(admin.ModelAdmin):
         ),
         ('Declarations (see note below)',
             {'fields': ('crime_declaration', 'crime_details'),
-             'classes': 'wide',
+             'classes': ('wide',),
              'description': '''Note: The disclosure of an offence may not 
                 prohibit your appointment'''},
         ),
         (None,
             {'fields': ('court_declaration', 'court_details'),
-             'classes': 'wide', }
+             'classes': ('wide',), }
         ),
         (None,
             {'fields': ('concern_declaration', 'concern_details'),
-             'classes': 'wide' }
+             'classes': ('wide',) }
         ),
         (None,
             {'fields': ('allegation_declaration',),
-             'classes': 'wide',
+             'classes': ('wide',),
              'description': '''If you answer yes to the following question
                 we will need to discuss this with you''' }
         ),            
         (None,
             {'fields': ('crb_check_consent',),
-             'classes': 'wide',
+             'classes': ('wide',),
              'description': '''If you answer NO  to
                 the following question we regret that we 
                 cannot proceed with your application. ''' }
         ),
         ("Confirmation",
             {'fields': ('finished',),
-             'classes': 'wide',
+             'classes': ('wide',),
              'description': """By ticking this box and pressing save, you confirm 
              that the information you have submitted is correct and complete, and your
              information will then be sent to the camp leader.  By leaving this box un-ticked,
@@ -146,7 +146,7 @@ class ApplicationAdmin(admin.ModelAdmin):
     camp_leader_application_fieldsets = (
         (None, 
             {'fields': ('officer',), 
-              'classes': 'wide',}
+              'classes': ('wide',),}
         ),) + camp_officer_application_fieldsets
 
     def get_fieldsets(self, request, obj=None):
