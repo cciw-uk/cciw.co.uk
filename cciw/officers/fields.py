@@ -1,22 +1,17 @@
-import re
 from django.db import models
 import cciw.middleware.threadlocals as threadlocals
-
-yyyy_mm_re = re.compile('^\d{4}/\d{2}$')
-
-def yyyy_mm_validator(field_data, all_data):
-    if not yyyy_mm_re.match(field_data):
-        raise ValidationError("This field must be in the form YYYY/MM.")
+import formfields
 
 class YyyyMmField(models.CharField):
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 7
-        # FIXME - validators don't work yet in nfa
-        validators = list(kwargs.get('validator_list', ()))
-        validators.append(yyyy_mm_validator)
-        kwargs['validator_list'] = validators
         kwargs['help_text'] = u'Enter the date in YYYY/MM format.'
         return super(YyyyMmField, self).__init__(*args, **kwargs)
+
+    def formfield(self, *args, **kwargs):
+        defaults = {'form_class': formfields.YyyyMmField}
+        defaults.update(kwargs)
+        return super(YyyyMmField, self).formfield(*args, **defaults)
 
 class AddressField(models.TextField):
     def __init__(self, *args, **kwargs):
