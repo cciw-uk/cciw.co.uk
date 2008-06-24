@@ -11,6 +11,7 @@ def yyyy_mm_validator(field_data, all_data):
 class YyyyMmField(models.CharField):
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 7
+        # FIXME - validators don't work yet in nfa
         validators = list(kwargs.get('validator_list', ()))
         validators.append(yyyy_mm_validator)
         kwargs['validator_list'] = validators
@@ -39,7 +40,7 @@ def required_field(field_class, *args, **kwargs):
     kwargs['blank'] = True
     class NewDBField(field_class):
         def formfield(self, *args, **kwargs):
-            f = super(field_class, self).formfield(*args, **kwargs)
+            f = super(NewDBField, self).formfield(*args, **kwargs)
             f.required_field = True
             return f
     return NewDBField(*args, **kwargs)
