@@ -19,7 +19,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
         return self.cleaned_data
 
 class ApplicationAdmin(admin.ModelAdmin):
-    save_as = True
+    save_as = False
     list_display = ('full_name', 'officer', 'camp', 'finished', 'date_submitted')
     list_filter = ('finished','date_submitted')
     ordering = ('full_name',)
@@ -172,15 +172,50 @@ class ApplicationAdmin(admin.ModelAdmin):
         request.POST['date_submitted_0'] = datetime.date.today()
         request.POST['date_submitted_1'] = datetime.datetime.now().strftime("%H:%M:%S")
 
+    def _force_no_add_another(self, request):
+        if request.POST.has_key('_addanother'):
+            del request.POST['_addanother']
+
+    def _force_user_val(self, request):
+        user = request.user
+        if not user.has_perm('officers.change_application'):
+            request.POST['officer'] = unicode(request.user.id)
+
+    def _force_post_vals(self, request):
+        self._force_no_add_another(request)
+        self._force_user_val(request)
+        self._update_timestamp(request)
+
+    # Officers do not even have 'officers.add_application' permission
+    # - this is to prevent them adding things via the normal interface,
+    # and to force certain buttons to not appear.  So we special case
+    # things in the permission methods
+
     def add_view(self, request):
         if request.method == "POST":
-            self._update_timestamp(request)
+            self._force_post_vals(request)
+
         return super(ApplicationAdmin, self).add_view(request)
 
     def change_view(self, request, obj_id):
         if request.method == "POST":
-            self._update_timestamp(request)
+            self._force_post_vals(request)
+
         return super(ApplicationAdmin, self).change_view(request, obj_id)
+
+    def has_add_permission(self, request):
+        if request.user is not None and request.user.groups.filter(name='Officers').count() > 0:
+            return True
+        else:
+            return super(ApplicationAdmin, self).has_add_permission(request)
+
+    def has_change_permission(self, request, obj=None):
+        # Normal users do not have change permission, unless they are editing
+        # their own object.
+        if obj is not None and obj.officer_id is not None \
+                and obj.officer_id == request.user.id:
+            return True
+        return super(ApplicationAdmin, self).has_change_permission(request, obj)
 
 class ReferenceAdmin(admin.ModelAdmin):
     search_fields = ['application__officer__first_name', 'application__officer__last_name']
