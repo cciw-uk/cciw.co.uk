@@ -202,7 +202,6 @@ class PasswordResetForm(newforms.Form):
     def save(self, domain_override=None, email_template_name='cciw/officers/password_reset_email.txt'):
         "Calculates a new password randomly and sends it to the user"
         email = self.cleaned_data['email']
-        print self.cleaned_data
         for user in User.objects.filter(email__iexact=email):
             new_pass = User.objects.make_random_password()
             current_site = Site.objects.get_current()
