@@ -1,36 +1,9 @@
 from django.contrib import admin
 from django import newforms as forms
 from fields import ExplicitBooleanField
-from django.contrib.admin import widgets
 from django.newforms.util import ErrorList
 import datetime
-
-class ExplicitBooleanFieldSelect(widgets.AdminRadioSelect):
-    """
-    A Radio select widget intended to be used with NullBooleanField.
-    """
-    def __init__(self, attrs=None):
-        if attrs is None:
-            attrs = {}
-        attrs.update({'class':'radiolist inline'})
-        choices = ((u'2', 'Yes'), (u'3', 'No'))
-        super(ExplicitBooleanFieldSelect, self).__init__(attrs, choices)
-
-    def render(self, name, value, attrs=None, choices=()):
-        try:
-            value = {True: u'2', False: u'3', u'2': u'2', u'3': u'3'}[value]
-        except KeyError:
-            value = u'1'
-        return super(ExplicitBooleanFieldSelect, self).render(name, value, attrs, choices)
-
-    def value_from_datadict(self, data, files, name):
-        value = data.get(name, None)
-        return {u'2': True, u'3': False, True: True, False: False}.get(value, None)
-
-    def _has_changed(self, initial, data):
-        # Sometimes data or initial could be None or u'' which should be the
-        # same thing as False.
-        return bool(initial) != bool(data)
+import widgets
 
 class ApplicationAdminModelForm(forms.ModelForm):
     def clean(self):
@@ -40,12 +13,9 @@ class ApplicationAdminModelForm(forms.ModelForm):
             # non-empty
             for name, field in self.fields.items():
                 if getattr(field, 'required_field', False):
-                    if isinstance(field, forms.NullBooleanField):
-                        if self.cleaned_data[name] is None:
-                            self._errors[name] = ErrorList(["This is a required field"])
-                    else:
-                        if len(self.cleaned_data.get(name,'')) == 0:
-                            self._errors[name] = ErrorList(["This is a required field"])
+                    data = self.cleaned_data.get(name)
+                    if data is None or data == u"":
+                        self._errors[name] = ErrorList(["This is a required field"])
         return self.cleaned_data
 
 class ApplicationAdmin(admin.ModelAdmin):
@@ -192,7 +162,7 @@ class ApplicationAdmin(admin.ModelAdmin):
 
     def formfield_for_dbfield(self, db_field, **kwargs):
         if isinstance(db_field, ExplicitBooleanField):
-            defaults = {'widget': ExplicitBooleanFieldSelect}
+            defaults = {'widget': widgets.ExplicitBooleanFieldSelect}
             defaults.update(kwargs)
             return db_field.formfield(**defaults)            
         return super(ApplicationAdmin, self).formfield_for_dbfield(db_field, **kwargs)
