@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.core import urlresolvers
 from django import newforms as forms
 from fields import ExplicitBooleanField
 from django.newforms.util import ErrorList
@@ -216,6 +217,19 @@ class ApplicationAdmin(admin.ModelAdmin):
                 and obj.officer_id == request.user.id:
             return True
         return super(ApplicationAdmin, self).has_change_permission(request, obj)
+
+    def _redirect_to_officer_home_page(self, request, response):
+        if not request.POST.has_key('_continue') and response.has_header("Location"):
+            response["Location"] = urlresolvers.reverse('cciw.officers.views.index')
+        return response
+
+    def save_add(self, request, model, form, formsets, post_url_continue):
+        resp = super(ApplicationAdmin, self).save_add(request, model, form, formsets, post_url_continue)
+        return self._redirect_to_officer_home_page(request, resp)
+
+    def save_change(self, request, model, form, formsets=None):
+        resp = super(ApplicationAdmin, self).save_change(request, model, form, formsets)
+        return self._redirect_to_officer_home_page(request, resp)   
 
 class ReferenceAdmin(admin.ModelAdmin):
     search_fields = ['application__officer__first_name', 'application__officer__last_name']
