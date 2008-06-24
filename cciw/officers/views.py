@@ -221,22 +221,6 @@ def make_newpassword_hash(newpassword, username):
     import md5
     return md5.new(settings.SECRET_KEY + newpassword + username).hexdigest()
 
-def password_reset(request):
-    template_name='cciw/officers/password_reset_form.html'
-    if request.method == 'POST':
-        form = PasswordResetForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect('%sdone/' % request.path)
-    else:
-        form = PasswordResetForm()
-    return render_to_response(template_name, {'form': form},
-        context_instance=template.RequestContext(request))
-
-# admin/password_reset_done/
-def password_reset_done(request, template_name='cciw/officers/password_reset_done.html'):
-    return render_to_response(template_name, context_instance=template.RequestContext(request))
-
 def password_reset_confirm(request, template_name='cciw/officers/password_reset_confirm.html'):
     password = request.GET.get('p', '')
     username = request.GET.get('u', '')
@@ -255,7 +239,6 @@ def password_reset_confirm(request, template_name='cciw/officers/password_reset_
         user.save()
 
     return render_to_response(template_name, context_instance=context_instance)
-
 
 def _sort_apps(t1, t2):
     # Sorting function used below
