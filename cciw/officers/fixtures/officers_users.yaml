@@ -326,7 +326,7 @@
 
 - fields:
     date_joined: 2008-03-21 16:48:46
-    email: officer@somewhere.com
+    email: officer1@somewhere.com
     first_name: Mr
     groups: [1]
     is_active: true
@@ -360,7 +360,7 @@
 
 - fields:
     date_joined: 2008-03-21 16:48:46
-    email: officer@somewhere.com
+    email: officer2@somewhere.com
     first_name: Mr
     groups: [1]
     is_active: true
@@ -378,7 +378,7 @@
 
 - fields:
     date_joined: 2008-03-21 16:48:46
-    email: officer@somewhere.com
+    email: officer3@somewhere.com
     first_name: Mr
     groups: [1]
     is_active: true
