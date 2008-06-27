@@ -36,6 +36,8 @@ NEW_MEMBER_PASSWORD='mypassword'
 MEMBER_ADMIN_URL = reverse("cciwmain.memberadmin.preferences")
 MEMBER_SIGNUP = reverse("cciwmain.memberadmin.signup")
 
+NEW_PASSWORD_URL = reverse("cciwmain.memberadmin.help_logging_in")
+
 def _get_file_size(path):
     return os.stat(path)[os.path.stat.ST_SIZE]
 
@@ -43,6 +45,13 @@ def _remove_member_icons(user_name):
     for f in glob.glob("%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, user_name + ".*")):
         os.unlink(f)
 
+def read_email(email, regex):
+    urlmatch = re.search(regex, email.body)
+    assert urlmatch is not None, "No URL found in sent email"
+    url = urlmatch.group()
+    assert "http://www.cciw.co.uk/" in url
+    path, querydata = url_to_path_and_query(url)
+    return url, path, querydata
 
 class MemberAdmin(TestCase):
     fixtures=['basic.yaml','test_members.yaml']
@@ -117,12 +126,7 @@ class MemberAdmin(TestCase):
         self._assert_icon_upload_fails("outsize_icon.png")
 
     def _read_email_change_email(self, email):
-        urlmatch = re.search("http://.*/change-email/.*\w", email.body)
-        self.assert_(urlmatch is not None, "No URL found in sent email")
-        url = urlmatch.group()
-        self.assert_("http://www.cciw.co.uk/" in url)
-        path, querydata = url_to_path_and_query(url)
-        return url, path, querydata
+        return read_email(email, "http://.*/change-email/.*")
 
     def test_change_email(self):
         data = self._standard_post_data()
@@ -137,9 +141,25 @@ class MemberAdmin(TestCase):
         m = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         self.assertEqual(m.email, data['email'])
 
+    def _read_newpassword_email(self, email):
+        return read_email(email, "http://.*/change-password/.*")
+
+    def test_send_new_password(self):
+        resp = self.client.post(NEW_PASSWORD_URL, {'email': TEST_MEMBER_EMAIL,
+                                                   'newpassword': '1'})
+        self.failUnlessEqual(resp.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+        url, path, querydata = self._read_newpassword_email(mail.outbox[0])
+        newpassword_m = re.search("Your new password is:\s*(\S*)\s*", mail.outbox[0].body)
+        self.assert_(newpassword_m is not None)
+        newpassword = newpassword_m.groups()[0]
+
+        self.client.get(path, querydata)
+        m = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
+        self.assert_(m.check_password(newpassword))
+
     def tearDown(self):
         _remove_member_icons(TEST_MEMBER_USERNAME)
-
 
 def url_to_path_and_query(url):
     scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)    
@@ -179,13 +199,7 @@ class MemberSignup(TwillMixin, TestCase):
         self.assertEqual(len(mail.outbox), 1, "An email should be sent")
 
     def _read_signup_email(self, email):
-        # read the email, and follow the link
-        urlmatch = re.search("http://.*/signup/.*\w", email.body)
-        self.assert_(urlmatch is not None, "No URL found in sent email")
-        url = urlmatch.group()
-        self.assert_("http://www.cciw.co.uk/" in url)
-        path, querydata = url_to_path_and_query(url)
-        return url, path, querydata
+        return read_email(email, "http://.*/signup/.*")
 
     def _follow_email_url(self, path, querydata):
         response = self.client.get(path, querydata)

@@ -44,7 +44,7 @@ patterns('cciw.cciwmain.views',
     (r'^memberadmin/change-password/$', 'memberadmin.change_password'),
     (r'^memberadmin/change-email/$', 'memberadmin.change_email'),
     url(r'^memberadmin/preferences/$', 'memberadmin.preferences', name="cciwmain.memberadmin.preferences"),
-    (r'^help/logging-in/$', 'memberadmin.help_logging_in'),
+    url(r'^help/logging-in/$', 'memberadmin.help_logging_in', name="cciwmain.memberadmin.help_logging_in"),
     
     # Camps
     (r'^thisyear/$', 'camps.thisyear'),
