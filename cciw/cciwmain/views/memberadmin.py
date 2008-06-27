@@ -416,11 +416,10 @@ def change_email(request):
             context_instance=ctx)
 
 preferences_fields = ["real_name", "email", "show_email", "comments", "message_option", "icon"]
-_real_name_max_length = Member._meta.get_field('real_name').max_length
 class PreferencesForm(CciwFormMixin, forms.ModelForm):
-    real_name = forms.CharField(widget=forms.TextInput(attrs={'size':str(_real_name_max_length)}),
+    real_name = forms.CharField(widget=forms.TextInput(attrs={'size':str(Member._meta.get_field('real_name').max_length)}),
                                 label="'Real' name", required=False,
-                                max_length=_real_name_max_length)
+                                max_length=Member._meta.get_field('real_name').max_length)
     email = forms.EmailField(widget=forms.TextInput(attrs={'size':'40'}))
     message_option = forms.ChoiceField(choices=Member.MESSAGE_OPTIONS,
                                        widget=forms.RadioSelect,
