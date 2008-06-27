@@ -19,7 +19,6 @@ import re
 import datetime
 import string
 import random
-import p3
 import base64
 
 password_re = re.compile(r'^[A-Za-z0-9]{5,15}$')
@@ -166,10 +165,9 @@ be changed until you click the link, so you can safely ignore this e-mail.
     "website@cciw.co.uk", [member.email])
 
 def create_new_password_hash(password, user_name):
-    # Avoid putting password as plaintext in URL using p3,
-    # and also create string used to verify user_name and date.
+    # Create string used to verify user_name and date.
     hash_str = u':'.join([datetime.date.today().isoformat(), user_name, password])
-    return base64.urlsafe_b64encode(p3.p3_encrypt(hash_str.encode("utf-8"), settings.SECRET_KEY))
+    return base64.urlsafe_b64encode(hash_str.encode("utf-8"))
 
 def extract_new_password(hash, user_name):
     """Extracts the new password from the hash, throwing a ValidationError
@@ -180,13 +178,7 @@ def extract_new_password(hash, user_name):
     try:
         hash_str = base64.urlsafe_b64decode(hash.encode("ascii"))
     except TypeError:
-        raise ValidationError(invalid_url_msg)
-
-    try:
-        hash_str = p3.p3_decrypt(hash_str, settings.SECRET_KEY)
-    except p3.CryptError:
-        raise ValidationError(invalid_url_msg)
-    
+        raise ValidationError(invalid_url_msg)    
     try:
         date_str, h_user_name, password = hash_str.split(':')
     except ValueError:
