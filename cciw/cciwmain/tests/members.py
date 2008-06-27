@@ -116,6 +116,27 @@ class MemberAdmin(TestCase):
     def test_upload_outsize_icon(self):
         self._assert_icon_upload_fails("outsize_icon.png")
 
+    def _read_email_change_email(self, email):
+        urlmatch = re.search("http://.*/change-email/.*\w", email.body)
+        self.assert_(urlmatch is not None, "No URL found in sent email")
+        url = urlmatch.group()
+        self.assert_("http://www.cciw.co.uk/" in url)
+        path, querydata = url_to_path_and_query(url)
+        return url, path, querydata
+
+    def test_change_email(self):
+        data = self._standard_post_data()
+        data['email'] = "anewemailtoconfirm@email.com"
+        resp = self.client.post(MEMBER_ADMIN_URL, data=data)
+        self.assert_("an e-mail has been sent" in resp.content)
+        self.assertEqual(len(mail.outbox), 1)
+        url, path, querydata = self._read_email_change_email(mail.outbox[0])
+        resp2 = self.client.get(path, querydata)
+        self.failUnlessEqual(resp.status_code, 200)
+        
+        m = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
+        self.assertEqual(m.email, data['email'])
+
     def tearDown(self):
         _remove_member_icons(TEST_MEMBER_USERNAME)
 
@@ -234,13 +255,3 @@ class MemberSignup(TwillMixin, TestCase):
         querydata['email'] = querydata['email'] + "x"
         response = self._follow_email_url(path, querydata)
         self.assert_("Error" in response.content, "Error should be reported if the email is incorrect")
-
-class MemberEmail(TestCase):
-    """Tests for changing email address"""
-    
-    fixtures=['basic.yaml','test_members.yaml']
-    def setUp(self):
-        self.client = CciwClient()
-        self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)
-        self.member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
-
