@@ -7,6 +7,7 @@ from django.db import models
 from django.conf import settings
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 import re
+import time
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
@@ -207,23 +208,28 @@ class PasswordResetForm(newforms.Form):
             current_site = Site.objects.get_current()
             site_name = current_site.name
             t = template.loader.get_template(email_template_name)
+            timestamp = int(time.time())
             c = {
                 'new_password': new_pass,
                 'email': user.email,
                 'domain': current_site.domain,
                 'site_name': site_name,
                 'user': user,
-                'hash': make_newpassword_hash(new_pass, user.username)
+                'timestamp': timestamp,
+                'hash': make_newpassword_hash(new_pass, user.username, str(timestamp))
                 }
             send_mail('Password reset on %s' % site_name, t.render(template.Context(c)), None, [user.email])
 
-def make_newpassword_hash(newpassword, username):
+def make_newpassword_hash(newpassword, username, timestamp):
     import md5
-    return md5.new(settings.SECRET_KEY + newpassword + username).hexdigest()
+    return md5.new(settings.SECRET_KEY + newpassword + username + timestamp).hexdigest()
+
+PASSWORD_RESET_EXPIRY_SECONDS = 60*60*48
 
 def password_reset_confirm(request, template_name='cciw/officers/password_reset_confirm.html'):
     password = request.GET.get('p', '')
     username = request.GET.get('u', '')
+    timestamp = request.GET.get('t', '')
     hash = request.GET.get('h', '')
 
     context_instance = template.RequestContext(request)
@@ -233,10 +239,14 @@ def password_reset_confirm(request, template_name='cciw/officers/password_reset_
         # Only get here if user has been deleted since email was sent.
         raise Http404
     
-    if hash == make_newpassword_hash(password, username):
-        context_instance['success'] = True
-        user.set_password(password)
-        user.save()
+    if hash == make_newpassword_hash(password, username, timestamp):
+        timestamp = int(timestamp)
+        if time.time() > timestamp + PASSWORD_RESET_EXPIRY_SECONDS:
+            context_instance['expired'] = True
+        else:
+            context_instance['success'] = True
+            user.set_password(password)
+            user.save()
 
     return render_to_response(template_name, context_instance=context_instance)
 
