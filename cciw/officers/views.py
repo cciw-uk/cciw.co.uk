@@ -7,7 +7,7 @@ from django.db import models
 from django.conf import settings
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.utils.translation import ugettext_lazy as _
-from django import newforms
+from django import newforms as forms
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
 import re
@@ -190,16 +190,16 @@ def manage_applications(request, year=None, number=None):
 # Similar to version in django.contrib.auth.forms, but this one provides
 # much better security
 
-class CciwUserEmailField(newforms.EmailField):
+class CciwUserEmailField(forms.EmailField):
     def clean(self, value):
         value = super(CciwUserEmailField, self).clean(value)
         if User.objects.filter(email__iexact=value).count() == 0:
-            raise newforms.ValidationError("That e-mail address doesn't have an associated user account. Are you sure you've been registered?")
+            raise forms.ValidationError("That e-mail address doesn't have an associated user account. Are you sure you've been registered?")
         return value
 
-class PasswordResetForm(newforms.Form):
+class PasswordResetForm(forms.Form):
     "A form that lets a user request a password reset"
-    email = CciwUserEmailField(widget=newforms.TextInput(attrs={'size':'40'}))
+    email = CciwUserEmailField(widget=forms.TextInput(attrs={'size':'40'}))
 
     def save(self, domain_override=None, email_template_name='cciw/officers/password_reset_email.txt'):
         "Generates a one-use only link for restting password and sends to the user"
@@ -232,13 +232,13 @@ def make_passwordreset_hash(user):
 
 # This can be merged with 'PasswordChangeForm' using inheritance once
 # it is complete and added to core
-class SetPasswordForm(newforms.Form):
+class SetPasswordForm(forms.Form):
     """
     A form that lets a user change set his/her password without
     entering the old password
     """
-    new_password1 = newforms.CharField(label=_("New password"), max_length=30, widget=newforms.PasswordInput)
-    new_password2 = newforms.CharField(label=_("New password confirmation"), max_length=30, widget=newforms.PasswordInput)
+    new_password1 = forms.CharField(label=_("New password"), max_length=30, widget=forms.PasswordInput)
+    new_password2 = forms.CharField(label=_("New password confirmation"), max_length=30, widget=forms.PasswordInput)
 
     def __init__(self, user, *args, **kwargs):
         self.user = user
@@ -249,7 +249,7 @@ class SetPasswordForm(newforms.Form):
         password2 = self.cleaned_data.get('new_password2')
         if password1 and password2:
             if password1 != password2:
-                raise newforms.ValidationError(_("The two password fields didn't match."))
+                raise forms.ValidationError(_("The two password fields didn't match."))
         return password2
 
     def save(self, commit=True):
@@ -399,13 +399,13 @@ def manage_references(request, year=None, number=None):
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)
 
-class OfficerChoice(newforms.ModelMultipleChoiceField):
+class OfficerChoice(forms.ModelMultipleChoiceField):
     def label_from_instance(self, u):
         return u"%s %s <%s>" % (u.first_name, u.last_name, u.email)
 
-class OfficerListForm(newforms.Form):
+class OfficerListForm(forms.Form):
     officers = OfficerChoice(
-        widget=newforms.SelectMultiple(attrs={'class':'vSelectMultipleField'}),
+        widget=forms.SelectMultiple(attrs={'class':'vSelectMultipleField'}),
         queryset=User.objects.filter(is_staff=True),
         required=False
         )
