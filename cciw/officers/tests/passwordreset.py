@@ -65,6 +65,11 @@ class PasswordResetTest(TestCase):
         u = User.objects.get(email='officer1@somewhere.com')
         self.assert_(u.check_password("anewpassword"))
 
+        # Check we can't use it again
+        response = self.client.get(path)
+        self.assertEquals(response.status_code, 200) 
+        self.assert_("The password reset link was invalid" in response.content)
+
     def test_confirm_different_passwords(self):
         url, path, querydata = self._test_confirm_start()
         response = self.client.post(path, {'new_password1': 'anewpassword',
