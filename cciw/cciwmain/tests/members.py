@@ -150,7 +150,7 @@ class MemberAdmin(TestCase):
         self.failUnlessEqual(resp.status_code, 200)
         self.assertEqual(len(mail.outbox), 1)
         url, path, querydata = self._read_newpassword_email(mail.outbox[0])
-        newpassword_m = re.search("Your new password is:\s*(\S*)\s*", mail.outbox[0].body)
+        newpassword_m = re.search(r"Your new password is:\s*(\S*)\s*", mail.outbox[0].body)
         self.assert_(newpassword_m is not None)
         newpassword = newpassword_m.groups()[0]
 

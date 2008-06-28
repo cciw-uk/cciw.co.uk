@@ -63,7 +63,7 @@ class PasswordResetTest(TestCase):
     def _read_signup_email(self, email):
         urlmatch = re.search("http://.*/confirm/.*\w", email.body)
         self.assert_(urlmatch is not None, "No URL found in sent email")
-        passwordmatch = re.search("Your new password is:\s*(\S*)\s*", email.body)
+        passwordmatch = re.search(r"Your new password is:\s*(\S*)\s*", email.body)
         self.assert_(passwordmatch is not None, "No password in sent email")
         url = urlmatch.group()
         self.assert_("http://www.cciw.co.uk/" in url)
