@@ -8,10 +8,14 @@ handler404 = 'cciw.cciwmain.views.handler404'
 urlpatterns = patterns('',
     # Override the admin for some views:
     (r'^admin/password_reset/$', 'django.contrib.auth.views.password_reset',
-     dict(password_reset_form=cciw.officers.views.PasswordResetForm, email_template_name='cciw/officers/password_reset_email.txt')),
-    (r'^admin/password_reset/done/$', 'django.contrib.auth.views.password_reset_done', 
+     dict(password_reset_form=cciw.officers.views.PasswordResetForm, 
+          email_template_name='cciw/officers/password_reset_email.txt')),
+    (r'^admin/password_reset/done/$', 'django.contrib.auth.views.password_reset_done',
      dict(template_name='cciw/officers/password_reset_done.html')),
-    (r'^admin/password_reset/confirm/$', 'cciw.officers.views.password_reset_confirm'),
+    (r'^reset/(?P<uid>\d+)-(?P<hash>\S{32})/$', 'cciw.officers.views.password_reset_confirm'),
+    url(r'^reset/done/$', 'django.views.generic.simple.direct_to_template', 
+        name='auth.password_reset_complete',
+        kwargs={'template':'cciw/officers/password_reset_complete.html'}),
     # Normal views
     (r'^admin/(.*)', admin.site.root),
     (r'^officers/', include('cciw.officers.urls'))

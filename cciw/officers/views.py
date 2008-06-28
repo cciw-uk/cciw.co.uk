@@ -1,11 +1,15 @@
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django import template
 from django.db import models
 from django.conf import settings
 from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.utils.translation import ugettext_lazy as _
+from django import newforms
+from django.core.urlresolvers import reverse
+from django.core.mail import send_mail
 import re
 import time
 from django.contrib.auth.models import User
@@ -183,9 +187,6 @@ def manage_applications(request, year=None, number=None):
 # Password reset
 # admin/password_reset/
 
-from django import newforms
-from django.core.urlresolvers import reverse
-from django.core.mail import send_mail
 # Similar to version in django.contrib.auth.forms, but this one provides
 # much better security
 
@@ -201,53 +202,83 @@ class PasswordResetForm(newforms.Form):
     email = CciwUserEmailField(widget=newforms.TextInput(attrs={'size':'40'}))
 
     def save(self, domain_override=None, email_template_name='cciw/officers/password_reset_email.txt'):
-        "Calculates a new password randomly and sends it to the user"
+        "Generates a one-use only link for restting password and sends to the user"
         email = self.cleaned_data['email']
         for user in User.objects.filter(email__iexact=email):
-            new_pass = User.objects.make_random_password()
             current_site = Site.objects.get_current()
             site_name = current_site.name
             t = template.loader.get_template(email_template_name)
             timestamp = int(time.time())
             c = {
-                'new_password': new_pass,
                 'email': user.email,
                 'domain': current_site.domain,
                 'site_name': site_name,
                 'user': user,
-                'timestamp': timestamp,
-                'hash': make_newpassword_hash(new_pass, user.username, str(timestamp))
+                'hash': make_passwordreset_hash(user),
                 }
             send_mail('Password reset on %s' % site_name, t.render(template.Context(c)), None, [user.email])
 
-def make_newpassword_hash(newpassword, username, timestamp):
+def make_passwordreset_hash(user):
+    """
+    Returns a hash that can be used once to do a password reset.
+    """
+    # By hashing on the internal state of the user and using state
+    # that is sure to change (the password salt will change as soon as
+    # the password is set, at least for current Django auth, and
+    # last_login will also change), we produce a hash that will be
+    # invalid as soon as it is used
     import md5
-    return md5.new(settings.SECRET_KEY + newpassword + username + timestamp).hexdigest()
+    return md5.new(settings.SECRET_KEY + unicode(user.id) + user.password + unicode(user.last_login)).hexdigest()
 
-PASSWORD_RESET_EXPIRY_SECONDS = 60*60*48
+# This can be merged with 'PasswordChangeForm' using inheritance once
+# it is complete and added to core
+class SetPasswordForm(newforms.Form):
+    """
+    A form that lets a user change set his/her password without
+    entering the old password
+    """
+    new_password1 = newforms.CharField(label=_("New password"), max_length=30, widget=newforms.PasswordInput)
+    new_password2 = newforms.CharField(label=_("New password confirmation"), max_length=30, widget=newforms.PasswordInput)
 
-def password_reset_confirm(request, template_name='cciw/officers/password_reset_confirm.html'):
-    password = request.GET.get('p', '')
-    username = request.GET.get('u', '')
-    timestamp = request.GET.get('t', '')
-    hash = request.GET.get('h', '')
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(SetPasswordForm, self).__init__(*args, **kwargs)
 
+    def clean_new_password2(self):
+        password1 = self.cleaned_data.get('new_password1')
+        password2 = self.cleaned_data.get('new_password2')
+        if password1 and password2:
+            if password1 != password2:
+                raise newforms.ValidationError(_("The two password fields didn't match."))
+        return password2
+
+    def save(self, commit=True):
+        self.user.set_password(self.cleaned_data['new_password1'])
+        if commit:
+            self.user.save()
+        return self.user
+
+def password_reset_confirm(request, uid=None, hash=None, template_name='cciw/officers/password_reset_confirm.html'):
+    """
+    View that checks the hash and presents a form for entering a new password.
+    """
+    assert uid is not None and hash is not None # checked by URLconf
+    user = get_object_or_404(User, id=uid)
     context_instance = template.RequestContext(request)
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        # Only get here if user has been deleted since email was sent.
-        raise Http404
-    
-    if hash == make_newpassword_hash(password, username, timestamp):
-        timestamp = int(timestamp)
-        if time.time() > timestamp + PASSWORD_RESET_EXPIRY_SECONDS:
-            context_instance['expired'] = True
-        else:
-            context_instance['success'] = True
-            user.set_password(password)
-            user.save()
 
+    if make_passwordreset_hash(user) == hash:
+        context_instance['validlink'] = True
+        if request.method == 'POST':
+            form = SetPasswordForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+                return HttpResponseRedirect("../done/")
+        else:
+            form = SetPasswordForm(None)
+    else:
+        context_instance['validlink'] = False
+        form = None
+    context_instance['form'] = form    
     return render_to_response(template_name, context_instance=context_instance)
 
 def _sort_apps(t1, t2):

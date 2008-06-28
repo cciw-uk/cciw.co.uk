@@ -27,46 +27,55 @@ class PasswordResetTest(TestCase):
         self.assertEquals(len(mail.outbox), 1)
         return  self._read_signup_email(mail.outbox[0])
 
-    def test_confirm(self):
-        url, path, querydata, password = self._test_confirm_start()
+    def test_confirm_valid(self):
+        url, path, querydata = self._test_confirm_start()
+        response = self.client.get(path)
+        # redirect to a 'complete' page:
+        self.assertEquals(response.status_code, 200) 
+        self.assert_("Please enter your new password" in response.content)
 
-        # Check the password has not been changed yet
+    def test_confirm_invalid(self):
+        url, path, querydata = self._test_confirm_start()
+        # Lets munge the path, but still get past URLconf
+        path = path[:-33] + ("0"*32) + path[-1]
+
+        response = self.client.get(path)
+        self.assertEquals(response.status_code, 200) 
+        self.assert_("The password reset link was invalid" in response.content)
+
+    def test_confirm_invalid_post(self):
+        # Same as test_confirm_invalid, but trying
+        # to do a POST instead.
+        url, path, querydata = self._test_confirm_start()
+        path = path[:-33] + ("0"*32) + path[-1]
+
+        response = self.client.post(path, {'new_password1': 'anewpassword',
+                                           'new_password2':' anewpassword'})
+        # Check the password has not been changed 
         u = User.objects.get(email='officer1@somewhere.com')
-        self.assert_(not u.check_password(password))
+        self.assert_(not u.check_password("anewpassword"))
 
-        cciw.officers.views.PASSWORD_RESET_EXPIRY_SECONDS = 100
-        response = self.client.get(path, querydata)
+    def test_confirm_complete(self):
+        url, path, querydata = self._test_confirm_start()
+        response = self.client.post(path, {'new_password1': 'anewpassword',
+                                           'new_password2': 'anewpassword'})
+        # It redirects us to a 'complete' page:
+        self.assertEquals(response.status_code, 302) 
+        # Check the password has been changed 
+        u = User.objects.get(email='officer1@somewhere.com')
+        self.assert_(u.check_password("anewpassword"))
+
+    def test_confirm_different_passwords(self):
+        url, path, querydata = self._test_confirm_start()
+        response = self.client.post(path, {'new_password1': 'anewpassword',
+                                           'new_password2':' x'})
         self.assertEquals(response.status_code, 200)
-        self.assert_("reset successful" in response.content)
-
-        # Check password has changed now
-        u = User.objects.get(email='officer1@somewhere.com')
-        self.assert_(u.check_password(password))
-
-    def test_confirm_expired(self):
-        url, path, querydata, password = self._test_confirm_start()
-
-        # Check the password has not been changed yet
-        u = User.objects.get(email='officer1@somewhere.com')
-        self.assert_(not u.check_password(password))
-
-        cciw.officers.views.PASSWORD_RESET_EXPIRY_SECONDS = -1
-        response = self.client.get(path, querydata)
-        self.assertEquals(response.status_code, 200)
-        self.assert_("reset unsuccessful" in response.content)
-        self.assert_("expired" in response.content)
-        
-        # Check password has not changed
-        u = User.objects.get(email='officer1@somewhere.com')
-        self.assert_(not u.check_password(password))
+        self.assert_("The two password fields didn't match" in response.content)
 
     def _read_signup_email(self, email):
-        urlmatch = re.search("http://.*/confirm/.*\w", email.body)
+        urlmatch = re.search("http://.*/reset/\S*", email.body)
         self.assert_(urlmatch is not None, "No URL found in sent email")
-        passwordmatch = re.search(r"Your new password is:\s*(\S*)\s*", email.body)
-        self.assert_(passwordmatch is not None, "No password in sent email")
         url = urlmatch.group()
         self.assert_("http://www.cciw.co.uk/" in url)
         path, querydata = url_to_path_and_query(url)
-        return url, path, querydata, passwordmatch.groups()[0]
-
+        return url, path, querydata
