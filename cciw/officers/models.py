@@ -141,9 +141,6 @@ class Application(models.Model):
             return retval
     
     def save(self):
-        if not hasattr(self, 'officer_id') or self.officer_id is None:
-            self.officer_id = threadlocals.get_current_user().id
-        self.date_submitted = datetime.date.today()
         super(Application, self).save()
         dispatcher.send(signals.application_saved, sender=self, application=self)
 
@@ -161,7 +158,6 @@ class Application(models.Model):
 
     class Meta:
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name', 'camp__number')
-
 
 class Reference(models.Model):
     application = models.ForeignKey(Application, limit_choices_to={'finished': True})
