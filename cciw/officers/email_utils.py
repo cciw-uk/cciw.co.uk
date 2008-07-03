@@ -11,7 +11,8 @@ def send_mail_with_attachments(subject, message, from_email,
                                attachments=None): 
     connection = SMTPConnection(username=auth_user, password=auth_password,
                                  fail_silently=fail_silently)
-    return EmailMessage(subject, message, from_email, recipient_list, connection=connection, attachments=attachments).send()
+    return EmailMessage(subject=subject, body=message, from_email=from_email, 
+                        to=recipient_list, connection=connection, attachments=attachments).send()
 
 def formatted_email(user):
     """
