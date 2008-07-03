@@ -183,6 +183,7 @@ class ApplicationAdmin(admin.ModelAdmin):
             request.POST['officer'] = unicode(request.user.id)
 
     def _force_post_vals(self, request):
+        request.POST = request.POST.copy()
         self._force_no_add_another(request)
         self._force_user_val(request)
         self._update_timestamp(request)
