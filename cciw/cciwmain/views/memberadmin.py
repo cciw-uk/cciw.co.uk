@@ -433,7 +433,7 @@ def preferences(request):
 
         json = utils.json_validation_request(request, form)
         if json: return json
-        
+
         if form.is_valid():
 
             # E-mail changes require verification, so frig it here
@@ -447,7 +447,7 @@ def preferences(request):
             
             if request.FILES:
                 try:
-                    imageutils.fix_member_icon(current_member)
+                    imageutils.fix_member_icon(current_member, request.FILES['icon'])
                 except imageutils.ValidationError, e:
                     c['image_error'] = e.args[0]
             

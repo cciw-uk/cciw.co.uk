@@ -24,7 +24,6 @@ def parse_image(filename):
     im = p.close()
     return im
 
-
 class ValidationError(Exception):
     pass
 
@@ -34,9 +33,15 @@ def safe_del(filename):
     except OSError:
         pass # don't care if we couldn't delete for some reason
 
+def write_file(filename, filedata):
+    destination = open(filename, 'wb')
+    for chunk in filedata.chunk():
+        destination.write(chunk)
 
-def fix_member_icon(member):
+def fix_member_icon(member, filedata):
     filename = "%s/%s" % (settings.MEDIA_ROOT, member.icon)
+    write_file(filename, filedata)
+
     try:
         img = parse_image(filename)
     except IOError:
