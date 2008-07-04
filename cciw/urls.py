@@ -9,6 +9,7 @@ urlpatterns = patterns('',
     # Override the admin for some views:
     (r'^admin/password_reset/$', 'django.contrib.auth.views.password_reset',
      dict(password_reset_form=cciw.officers.views.PasswordResetForm, 
+          template_name='cciw/officers/password_reset_form.html',
           email_template_name='cciw/officers/password_reset_email.txt')),
     (r'^admin/password_reset/done/$', 'django.contrib.auth.views.password_reset_done',
      dict(template_name='cciw/officers/password_reset_done.html')),
