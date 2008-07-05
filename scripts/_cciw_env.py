@@ -1,0 +1,17 @@
+"""
+Used by scripts to set up environment in context sensitive way,
+so Django can be used
+"""
+import socket
+import sys
+import os
+
+hostname = socket.gethostname()
+
+if hostname == 'calvin':
+    sys.path = sys.path + ['/home/luke/httpd/www.cciw.co.uk/current_src/','/home/luke/httpd/www.cciw.co.uk/django_src/', 
+      '/home/luke/local/lib/python2.4/site-packages/', '/home/luke/devel/python/luke']    
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings_calvin'
+else:
+    sys.path = sys.path + ['/home2/cciw/webapps/django_app/', '/home2/cciw/src/django/']
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
