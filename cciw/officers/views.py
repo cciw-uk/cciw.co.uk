@@ -433,10 +433,10 @@ def officer_list(request, year=None, number=None):
     c['form'] = form
 
     # Make sure these queries come after the above data modification
-    c['invitations_all'] = camp.invitation_set.all().select_related('officer')
+    c['officers_all'] = [i.officer for i in camp.invitation_set.all().select_related('officer')]
     finished_apps_off_ids = [o['officer__id'] 
                              for o in camp.application_set.filter(finished=True).values('officer__id')]
-    c['invitations_noapplicationform'] = camp.invitation_set.exclude(officer__in=finished_apps_off_ids).select_related('officer')
+    c['officers_noapplicationform'] = [i.officer for i in camp.invitation_set.exclude(officer__in=finished_apps_off_ids).select_related('officer')]
 
     return render_to_response('cciw/officers/officer_list.html',
                               context_instance=c)

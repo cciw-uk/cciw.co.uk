@@ -13,7 +13,7 @@
 
 <h2>Current list</h2>
 
-{% with invitations_all as invitations %}
+{% with officers_all as officers %}
 {% include "cciw/officers/officer_list_table_editable.html" %}
 {% endwith %}
 <br />
@@ -48,7 +48,7 @@
 <p>The following officers are on your camp list (above), but have not
   yet completed an application form.</p>
 
-{% with invitations_noapplicationform as invitations %}
+{% with officers_noapplicationform as officers %}
 {% include "cciw/officers/officer_list_table.html" %}
 {% endwith %}
 <br />

@@ -1,4 +1,4 @@
-{% if invitations %}
+{% if officers %}
 <p>Details of officers (e.g. email address) can be changed by clicking 'Edit'.</p>
 
 <table>
@@ -7,18 +7,18 @@
     <th>Email</th>
     <th>Edit user details</th>
   </tr>
-  {% for inv in invitations %}
+  {% for officer in officers %}
   <tr>
-    <td>{{ inv.officer.first_name }} {{ inv.officer.last_name }}</td>
-    <td>{{ inv.officer.email }}</td>
-    <td><a rel="external" href="/admin/auth/user/{{ inv.officer_id }}/">Edit</a></td>
+    <td>{{ officer.first_name }} {{ officer.last_name }}</td>
+    <td>{{ officer.email }}</td>
+    <td><a rel="external" href="/admin/auth/user/{{ officer.id }}/">Edit</a></td>
   </tr>
   {% endfor %}
 </table>
 
 <h3>List for email:</h3>
 <p>
-{% for inv in invitations %}"{{ inv.officer.first_name }} {{ inv.officer.last_name }}" &lt;{{ inv.officer.email }}&gt;,{% endfor %}
+{% for officer in officers %}"{{ officer.first_name }} {{ officer.last_name }}" &lt;{{ officer.email }}&gt;,{% endfor %}
 </p>
 
 {% else %}
