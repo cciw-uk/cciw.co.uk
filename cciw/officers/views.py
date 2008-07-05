@@ -22,6 +22,7 @@ from cciw.cciwmain.utils import all, StandardReprMixin
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.models import Application, Reference
+from cciw.officers.utils import camp_officer_list, camp_slacker_list
 
 def _copy_application(application):
     new_obj = Application(id=None)
@@ -418,7 +419,6 @@ def officer_list(request, year=None, number=None):
     c = template.RequestContext(request)
     c['camp'] = camp
 
-
     if request.method == 'POST':
         print request.POST
         form = OfficerListForm(request.POST)
@@ -433,10 +433,8 @@ def officer_list(request, year=None, number=None):
     c['form'] = form
 
     # Make sure these queries come after the above data modification
-    c['officers_all'] = [i.officer for i in camp.invitation_set.all().select_related('officer')]
-    finished_apps_off_ids = [o['officer__id'] 
-                             for o in camp.application_set.filter(finished=True).values('officer__id')]
-    c['officers_noapplicationform'] = [i.officer for i in camp.invitation_set.exclude(officer__in=finished_apps_off_ids).select_related('officer')]
+    c['officers_all'] = camp_officer_list(camp)
+    c['officers_noapplicationform'] = camp_slacker_list(camp)
 
     return render_to_response('cciw/officers/officer_list.html',
                               context_instance=c)
