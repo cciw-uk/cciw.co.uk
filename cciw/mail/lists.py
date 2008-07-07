@@ -54,28 +54,6 @@ def list_for_address(address):
             return func(**m.groupdict())
     return None
 
-def send_none_matched_mail(to_addr, from_addr, subject):
-    """
-    Sends an email to $from_addr saying that $to_addr is not known.
-    """
-    # Generally should not even get here, unless some email addresses
-    # are created that point to the mailbox without accompanying
-    # code in this module.
-    e = EmailMessage()
-    e.subject = "Mail not sent to CCIW list - Re '%s'" % subject
-    e.body = """
-Your message to address:
-  %(to_addr)s 
-with subject:
-  %(subject)s
-
-was not sent because this address is not a recognised mailbox.
-
-""" % locals()
-    e.to = [from_addr]
-    e.from_email = settings.SERVER_EMAIL
-    e.send()
-
 def forward_email_to_list(mail, addresslist, original_to):
     from_addr = mail['From']
 
@@ -112,10 +90,11 @@ def handle_mail(data):
 
     for address in addresses:
         l = list_for_address(address)
-        if l is None:
-            # indicates nothing matching this address
-            send_none_matched_mail(address, mail['From'], mail['Subject'])
-        else:
+        # addresses can contain anything else on the 'to' line, which
+        # can even included valid @cciw.co.uk that we don't know about
+        # (e.g. other mailboxes).  So if we don't recognise the
+        # address, just ignore
+        if l is not None:
             forward_email_to_list(mail, l, address)
 
 def handle_all_mail():
