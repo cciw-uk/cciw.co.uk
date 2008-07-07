@@ -41,3 +41,4 @@ register_renderer(Post, render_post)
 register_renderer(Topic, render_topic)
 register_renderer(Photo, render_photo)
 
+import cciw.cciwmain.hooks

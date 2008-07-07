@@ -1,0 +1,2 @@
+
+camp_created = object()
