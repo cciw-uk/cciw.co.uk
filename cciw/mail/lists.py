@@ -126,6 +126,7 @@ def handle_all_mail():
         typ, data = im.search(None, 'ALL')
         assert typ == 'OK'
         if len(data[0]) > 0:
+            # handle the first one, then close the box
             num = data[0].split()[0]
             typ, data = im.fetch(num, '(RFC822)')
             assert typ == 'OK'
