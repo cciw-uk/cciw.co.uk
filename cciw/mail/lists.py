@@ -80,7 +80,6 @@ def handle_mail(data):
     """
     mail = email.message_from_string(data)
     to = mail['To']
-    print to
     assert to is not None, "Message did not have 'To' field set, cannot send email"
 
     if email_re.match(to):
