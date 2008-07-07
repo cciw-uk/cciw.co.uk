@@ -39,6 +39,9 @@ email_lists = {
                re.IGNORECASE): camp_officers,
     re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-slackers@cciw.co.uk$",
                re.IGNORECASE): camp_slackers,
+    re.compile(r"^camp-debug@cciw.co.uk$"):
+        lambda: ['"Luke Plant" <L.Plant.98@cantab.net>',
+                 'spookylukey@fastmail.fm']
     }
 
 def list_for_address(address):
@@ -55,9 +58,25 @@ def send_none_matched_mail(to, address):
     # TODO
     print "No mail matched %r" % address
 
-def forward_email_to_list(mail, addresslist):
-    print "forwarding to: %r" % addresslist
-    # TODO
+def forward_email_to_list(mail, addresslist, original_to):
+    from_addr = mail['From']
+
+    # search and erase the original 'To' address in the 'Received'
+    # headers, to hinder people from mailing the address themselves
+    mail._headers = [(name, val.replace(original_to, "private@cciw.co.uk"))
+                     for name, val in mail._headers]
+
+    # Use Django's wrapper object for connection,
+    # but not the message.
+    from django.core.mail import SMTPConnection
+    c = SMTPConnection()
+    c.open()
+    # send inidividual emails
+    for addr in addresslist:
+        del mail['To']
+        mail['To'] = addr
+        c.connection.sendmail(from_addr, addresslist, mail.as_string())
+    c.close()
 
 def handle_mail(data):
     """
@@ -72,22 +91,23 @@ def handle_mail(data):
     if l is None:
         # indicates nothing matching this address
         send_none_matched_mail(mail['From'], address)
-    
     else:
-        forward_email_to_list(mail, l)
+        forward_email_to_list(mail, l, address)
 
-def delete_mail(imapsession, mailnum):
-    # TODO
-    pass
-
-def handle_all_mail():    
+def handle_all_mail():
+    # We do error handling just using asserts here
+    # and catching all errors in calling routine
     im = imaplib.IMAP4_SSL(settings.IMAP_MAIL_SERVER)
     im.login(settings.LIST_MAILBOX_NAME, settings.MAILBOX_PASSWORD)
-    typ, data = im.select("INBOX")        
+    typ, data = im.select("INBOX")
+    assert typ == 'OK'
     typ, data = im.search(None, 'ALL')
+    assert typ == 'OK'
     for num in data[0].split():
         typ, data = im.fetch(num, '(RFC822)')
+        assert typ == 'OK'
         handle_mail(data[0][1])
-        delete_mail(im, num)
+        typ, data = im.store(num, '+FLAGS', '\\Deleted')
+        assert typ == 'OK'
     im.close()
     im.logout()
