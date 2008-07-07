@@ -408,7 +408,7 @@ class OfficerChoice(forms.ModelMultipleChoiceField):
 class OfficerListForm(forms.Form):
     officers = OfficerChoice(
         widget=forms.SelectMultiple(attrs={'class':'vSelectMultipleField'}),
-        queryset=User.objects.filter(is_staff=True),
+        queryset=User.objects.filter(is_staff=True).order_by('first_name', 'last_name'),
         required=False
         )
 
