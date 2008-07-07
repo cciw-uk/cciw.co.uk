@@ -4,6 +4,7 @@ import xmlrpclib
 import re
 from django.conf import settings 
 from django.core.mail import SMTPConnection, EmailMessage
+from django.core.validators import email_re
 from cciw.cciwmain.models import Camp
 from cciw.officers.email_utils import formatted_email
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
@@ -18,6 +19,8 @@ def create_mailboxes(camp):
     email = s.create_email(email_address, settings.LIST_MAILBOX_NAME)
 
 ### Reading mailboxes ###
+
+email_extract_re = re.compile(r"([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)")
 
 def camp_officers(year=None, number=None):
     try:
@@ -98,15 +101,22 @@ def handle_mail(data):
     data is RFC822 formatted data
     """
     mail = email.message_from_string(data)
-    address = mail['To']
-    assert address is not None, "Message did not have 'To' field set, cannot send email"
+    to = mail['To']
+    print to
+    assert to is not None, "Message did not have 'To' field set, cannot send email"
 
-    l = list_for_address(address)
-    if l is None:
-        # indicates nothing matching this address
-        send_none_matched_mail(address, mail['From'], mail['Subject'])
+    if email_re.match(to):
+        addresses = [to]
     else:
-        forward_email_to_list(mail, l, address)
+        addresses = email_extract_re.findall(to)
+
+    for address in addresses:
+        l = list_for_address(address)
+        if l is None:
+            # indicates nothing matching this address
+            send_none_matched_mail(address, mail['From'], mail['Subject'])
+        else:
+            forward_email_to_list(mail, l, address)
 
 def handle_all_mail():
     # We do error handling just using asserts here
