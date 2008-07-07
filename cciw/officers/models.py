@@ -202,3 +202,4 @@ class Invitation(models.Model):
 
 # Ensure hooks get set up
 import cciw.officers.hooks
+import cciw.officers.admin
