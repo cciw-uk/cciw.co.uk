@@ -22,7 +22,7 @@ from cciw.cciwmain.utils import all, StandardReprMixin
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.models import Application, Reference
-from cciw.officers.utils import camp_officer_list, camp_slacker_list
+from cciw.officers.utils import camp_officer_list, camp_slacker_list, address_for_camp_officers, address_for_camp_slackers
 
 def _copy_application(application):
     new_obj = Application(id=None)
@@ -435,6 +435,8 @@ def officer_list(request, year=None, number=None):
     # Make sure these queries come after the above data modification
     c['officers_all'] = camp_officer_list(camp)
     c['officers_noapplicationform'] = camp_slacker_list(camp)
+    c['addresses_all'] = address_for_camp_officers(camp)
+    c['addresses_noapplicationform'] = address_for_camp_slackers(camp)
 
     return render_to_response('cciw/officers/officer_list.html',
                               context_instance=c)
