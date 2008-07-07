@@ -1,4 +1,6 @@
+import xmlrpclib
 # See http://wf.davidsissitka.com/api/reference/
+from django.conf import settings
 
 class WebFactionSession(object):
     """
