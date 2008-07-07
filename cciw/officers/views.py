@@ -19,10 +19,11 @@ from django.views.decorators.cache import never_cache
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Person, Camp
 from cciw.cciwmain.utils import all, StandardReprMixin
+from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.models import Application, Reference
-from cciw.officers.utils import camp_officer_list, camp_slacker_list, address_for_camp_officers, address_for_camp_slackers
+from cciw.officers.utils import camp_officer_list, camp_slacker_list
 
 def _copy_application(application):
     new_obj = Application(id=None)

@@ -5,8 +5,17 @@ from django.conf import settings
 from django.core.mail import SMTPConnection, EmailMessage
 from django.core.validators import email_re
 from cciw.officers.email_utils import formatted_email
-from cciw.officers.utils import camp_officer_list, camp_slacker_list, address_for_camp_officers, address_for_camp_slackers
+from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.webfaction import webfaction_session
+
+### External utility functions ###
+
+# See also below for changes to format
+def address_for_camp_officers(camp):
+    return "camp-%d-%d-officers@cciw.co.uk" % (camp.year, camp.number)
+
+def address_for_camp_slackers(camp):
+    return "camp-%d-%d-slackers@cciw.co.uk" % (camp.year, camp.number)
 
 ### Creation of mailboxes ###
 
