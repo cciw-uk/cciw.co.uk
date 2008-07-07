@@ -127,7 +127,6 @@ def handle_all_mail():
         assert typ == 'OK'
         if len(data[0]) > 0:
             num = data[0].split()[0]
-            print "Handling mail: %s" % num
             typ, data = im.fetch(num, '(RFC822)')
             assert typ == 'OK'
             handle_mail(data[0][1])
