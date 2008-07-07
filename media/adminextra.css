@@ -24,6 +24,13 @@
 #header a:link, #header a:visited { color:#00bb55; }
 #header a:hover { text-decoration:underline; }
 
+#helplink 
+{ 
+    font-size: 11px; 
+    text-align: right; 
+    padding: 2px 10px;
+}
+
 .firstline,
 .refdetails
 {
@@ -89,4 +96,12 @@ tr.refrow td.nopadding
     background: #8080ff;
     padding-left: 2px;
     padding-right: 2px;
+}
+
+/* Admin overrides */
+
+#user-tools 
+{ 
+    top: 1.4em;
+    padding:0.2em 10px 1.2em 10px;
 }
