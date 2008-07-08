@@ -1,18 +1,9 @@
-#!/usr/bin/env python2.4
+#!/usr/bin/env python2.5
+import _cciw_env
 import sys
 import os
 import socket
 from optparse import OptionParser
-
-hostname = socket.gethostname()
-
-if hostname == 'calvin':
-    sys.path = sys.path + ['/home/luke/httpd/www.cciw.co.uk/current_src/','/home/luke/httpd/www.cciw.co.uk/django_src/', 
-      '/home/luke/local/lib/python2.4/site-packages/', '/home/luke/devel/python/luke']
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings_calvin'
-else:
-    sys.path = sys.path + ['/home2/cciw/webapps/django_app/', '/home2/cciw/src/django-mr/', '/home2/cciw/src/misc/']
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
 
 from django.contrib.auth.models import User
 from cciw.cciwmain.models import Camp
