@@ -2,7 +2,7 @@ import email
 import imaplib
 import re
 from django.conf import settings 
-from django.core.mail import SMTPConnection, EmailMessage
+from django.core.mail import SMTPConnection, EmailMessage, make_msgid
 from django.core.validators import email_re
 from cciw.officers.email_utils import formatted_email
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
@@ -76,11 +76,15 @@ def forward_email_to_list(mail, addresslist, original_to):
     # but not the message.
     c = SMTPConnection()
     c.open()
-    # send inidividual emails
+    # send individual emails
     for addr in addresslist:
         del mail['To']
         mail['To'] = addr
-        c.connection.sendmail(from_addr, addr, mail.as_string())
+        # Need new message ID, or webfaction's mail server will only send one
+        del mail['Message-ID']
+        del mail['Message-Id']
+        mail['Message-ID'] = make_msgid()
+        c.connection.sendmail(from_addr, [addr], mail.as_string())
     c.close()
 
 def handle_mail(data):
