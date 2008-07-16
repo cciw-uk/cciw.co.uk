@@ -28,7 +28,7 @@ def get_model(content_type_id):
     try:
         return _model_cache[content_type_id]
     except KeyError:
-        ct = models.ContentType.objects.get(pk=content_type_id)
+        ct = models.ContentType.objects.get_for_id(content_type_id)
         model = ct.model_class()
         _model_cache[content_type_id] = model
         _content_type_cache[model] = content_type_id

@@ -81,7 +81,7 @@ class TagTarget(object):
         return utils.get_renderer(self.target_ct_id)(self.target)
 
     def target_ct(self):
-        return ContentType.objects.get(pk=self.target_ct_id)
+        return ContentType.objects.get_for_id(self.target_ct_id)
     target_ct = property(target_ct)
         
     # Possible TODO : add a 'creator_list' property that dynamically returns all
