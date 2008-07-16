@@ -4,7 +4,6 @@ from django.db import models
 from django.db import connection
 ops = connection.ops
 from django.conf import settings
-import django.contrib.contenttypes
 from cciw.tagging import utils
 from django.core.exceptions import ObjectDoesNotExist
 from django.dispatch import dispatcher
@@ -82,7 +81,7 @@ class TagTarget(object):
         return utils.get_renderer(self.target_ct_id)(self.target)
 
     def target_ct(self):
-        return django.contrib.contenttypes.models.ContentType.objects.get(pk=self.target_ct_id)
+        return ContentType.objects.get(pk=self.target_ct_id)
     target_ct = property(target_ct)
         
     # Possible TODO : add a 'creator_list' property that dynamically returns all

@@ -1,6 +1,5 @@
 import string
-import django.contrib.contenttypes.models
-from django.contrib import contenttypes
+from django.contrib.contenttypes import models
 
 # Caches of content types/models
 _model_cache = {}
@@ -29,7 +28,7 @@ def get_model(content_type_id):
     try:
         return _model_cache[content_type_id]
     except KeyError:
-        ct = contenttypes.models.ContentType.objects.get(pk=content_type_id)
+        ct = models.ContentType.objects.get(pk=content_type_id)
         model = ct.model_class()
         _model_cache[content_type_id] = model
         _content_type_cache[model] = content_type_id
@@ -40,7 +39,7 @@ def get_content_type_id(model):
     try:
         return _content_type_cache[model]
     except:
-        ct_id = contenttypes.models.ContentType.objects.get_for_model(model).id
+        ct_id = models.ContentType.objects.get_for_model(model).id
         _model_cache[ct_id] = model
         _content_type_cache[model] = ct_id
         return ct_id
