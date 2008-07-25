@@ -12,7 +12,7 @@ class CampAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {'fields': ('year', 'number', 'age', 'start_date', 'end_date', 
                            'chaplain', 'leaders', 'site', 'previous_camp', 
-                           'online_applications', 'admins') 
+                           'online_applications', 'admins')
                 }
         ),
     )
@@ -42,7 +42,8 @@ class PostAdmin(admin.ModelAdmin):
 
 class PollAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_by', 'voting_starts')
-    radio_fields = {'rule_parameter': admin.HORIZONTAL}
+    radio_fields = {'rules': admin.HORIZONTAL}
+
 class PollOptionAdmin(admin.ModelAdmin):
     list_display = ('text', 'poll')
 
