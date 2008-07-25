@@ -20,7 +20,7 @@ class Poll(models.Model):
     voting_starts = models.DateTimeField("Voting starts")
     voting_ends = models.DateTimeField("Voting ends")
     rules = models.PositiveSmallIntegerField("Rules",
-        choices = VOTING_RULES)
+        choices=VOTING_RULES)
     rule_parameter = models.PositiveSmallIntegerField("Parameter for rule", 
         default=1)
     have_vote_info = models.BooleanField("Full vote information available", 
