@@ -6,8 +6,8 @@ from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.conf import settings
-from django import newforms as forms
-from django.newforms import widgets
+from django import forms
+from django.forms import widgets
 from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 

@@ -1,6 +1,6 @@
 import re
 import time
-from django import newforms as forms
+from django import forms
 from django import template
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required

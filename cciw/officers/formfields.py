@@ -1,5 +1,5 @@
 import re
-from django import newforms as forms
+from django import forms
 
 yyyy_mm_re = re.compile('^\d{4}/\d{2}$')
 

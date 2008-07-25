@@ -5,7 +5,7 @@ from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.validators import email_re
 from django.http import Http404, HttpResponseRedirect
-from django import newforms as forms
+from django import forms
 from cciw.cciwmain.common import standard_extra_context
 from cciw.cciwmain.models import Member
 from cciw.middleware.threadlocals import set_member_session, get_current_member

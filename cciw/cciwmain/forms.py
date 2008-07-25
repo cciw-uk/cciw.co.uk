@@ -1,5 +1,5 @@
 from django.utils.html import escape
-from django.newforms.forms import BoundField
+from django.forms.forms import BoundField
 from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
 
@@ -17,7 +17,7 @@ class CciwFormMixin(object):
         error_class = u'formrow validationErrorBottom'
         start = u'<div class="form">'
         end = u'</div>'
-        required_text = ' <a href="#" title="This field is required">*</a>'
+        required_text = u' <a href="#" title="This field is required">*</a>'
         
         top_errors = self.non_field_errors() # Errors that should be displayed above all fields.
         output, hidden_fields = [], []
@@ -27,7 +27,7 @@ class CciwFormMixin(object):
             bf_errors = self.error_class([escape(error) for error in bf.errors]) # Escape and cache in local variable.
             if bf.is_hidden:
                 if bf_errors:
-                    top_errors.extend(['(Hidden field %s) %s' % (name, force_unicode(e)) for e in bf_errors])
+                    top_errors.extend([u'(Hidden field %s) %s' % (name, force_unicode(e)) for e in bf_errors])
                 hidden_fields.append(unicode(bf))
             else:
                 if bf_errors:

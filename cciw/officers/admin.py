@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.core import urlresolvers
-from django import newforms as forms
+from django import forms
 from fields import ExplicitBooleanField
-from django.newforms.util import ErrorList
+from django.forms.util import ErrorList
 import datetime
 import widgets
 
