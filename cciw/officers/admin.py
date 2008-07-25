@@ -25,14 +25,6 @@ class ApplicationAdmin(admin.ModelAdmin):
     list_filter = ('finished','date_submitted')
     ordering = ('full_name',)
     search_fields = ('full_name',)        
-    radio_fields = {'youth_work_declined': admin.HORIZONTAL,
-                    'relevant_illness': admin.HORIZONTAL,
-                    'crime_declaration': admin.HORIZONTAL,
-                    'court_declaration': admin.HORIZONTAL,
-                    'concern_declaration': admin.HORIZONTAL,
-                    'allegation_declaration': admin.HORIZONTAL,
-                    'crb_check_consent': admin.HORIZONTAL,
-                    }
     form = ApplicationAdminModelForm
 
     camp_officer_application_fieldsets = (
