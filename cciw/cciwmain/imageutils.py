@@ -35,7 +35,7 @@ def safe_del(filename):
 
 def write_file(filename, filedata):
     destination = open(filename, 'wb')
-    for chunk in filedata.chunk():
+    for chunk in filedata.chunks():
         destination.write(chunk)
 
 def fix_member_icon(member, filedata):
