@@ -1,6 +1,6 @@
 from django.db import models
 from datetime import datetime, timedelta
-from members import *
+from cciw.cciwmain.models.members import Member
 import operator
 
 VOTING_RULES = (

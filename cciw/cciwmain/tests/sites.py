@@ -1,4 +1,4 @@
-from client import CciwClient
+from cciw.cciwmain.tests.client import CciwClient
 from django.test import TestCase
 from cciw.cciwmain.models import Site
 

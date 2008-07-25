@@ -1,10 +1,9 @@
 from django.test import TestCase
 from django.core import mail
-from references import OFFICER
 import re
 from django.contrib.auth.models import User
 from cciw.cciwmain.tests.members import url_to_path_and_query
-import cciw.officers.views
+from cciw.officers.tests.references import OFFICER
 
 class PasswordResetTest(TestCase):
     fixtures = ['basic.yaml', 'officers_users.yaml']

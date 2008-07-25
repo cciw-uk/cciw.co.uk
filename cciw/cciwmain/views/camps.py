@@ -10,7 +10,7 @@ from cciw.cciwmain.common import standard_extra_context, create_breadcrumb, get_
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain.templatetags import bbcode
 import cciw.cciwmain.utils as utils
-import forums as forums_views
+import cciw.cciwmain.views.forums as forums_views
 
 
 def index(request, year=None):

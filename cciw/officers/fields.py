@@ -1,6 +1,6 @@
 from django.db import models
 import cciw.middleware.threadlocals as threadlocals
-import formfields
+from cciw.officers import formfields
 
 class YyyyMmField(models.CharField):
     def __init__(self, *args, **kwargs):

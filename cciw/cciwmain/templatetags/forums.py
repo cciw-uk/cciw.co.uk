@@ -2,7 +2,7 @@ from django import template
 from django.utils.safestring import mark_safe
 from cciw.cciwmain.decorators import login_redirect
 from cciw.middleware.threadlocals import get_current_member
-import bbcode
+from cciw.cciwmain.templatetags import bbcode
 
 def bb2html(value):
     """Converts message board 'BB code'-like formatting into HTML"""

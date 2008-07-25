@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.core import urlresolvers
 from django import forms
-from fields import ExplicitBooleanField
 from django.forms.util import ErrorList
 import datetime
-import widgets
+from cciw.officers.fields import ExplicitBooleanField
+from cciw.officers.models import Application, Reference, Invitation
+from cciw.officers import widgets
 
 class ApplicationAdminModelForm(forms.ModelForm):
     def clean(self):
@@ -231,8 +232,6 @@ class InvitationAdmin(admin.ModelAdmin):
     list_display = ['officer', 'camp']
     list_filter = ['camp']
     search_fields = ['officer']
-
-from models import Application, Reference, Invitation
 
 admin.site.register(Application, ApplicationAdmin)
 admin.site.register(Reference, ReferenceAdmin)

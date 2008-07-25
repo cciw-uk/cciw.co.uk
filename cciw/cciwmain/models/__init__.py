@@ -1,8 +1,8 @@
-from members import Permission, Member, Award, PersonalAward, Message
-from camps import Site, Person, Camp
-from forums import Forum, NewsItem, Topic, Gallery, Photo, Post
-from polls import Poll, PollOption, VoteInfo
-from sitecontent import MenuLink, HtmlChunk
+from cciw.cciwmain.models.members import Permission, Member, Award, PersonalAward, Message
+from cciw.cciwmain.models.camps import Site, Person, Camp
+from cciw.cciwmain.models.forums import Forum, NewsItem, Topic, Gallery, Photo, Post
+from cciw.cciwmain.models.polls import Poll, PollOption, VoteInfo
+from cciw.cciwmain.models.sitecontent import MenuLink, HtmlChunk
 from django.conf import settings
 from django.utils.safestring import mark_safe
 
@@ -10,7 +10,6 @@ from django.utils.safestring import mark_safe
 # TODO - work out where to put this:
 from cciw.tagging.fields import add_tagging_fields
 from cciw.tagging.utils import register_mappers, register_renderer
-import cciw.cciwmain.utils
 from django.template.defaultfilters import escape
 
 register_mappers(Post, str, int)

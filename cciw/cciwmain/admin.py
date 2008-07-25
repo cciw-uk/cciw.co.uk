@@ -82,7 +82,7 @@ class PersonalAwardAdmin(admin.ModelAdmin):
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('to_member', 'from_member', 'time')
 
-from models import Site, Person, Camp, Forum, NewsItem, Topic, Gallery, Photo, Post, Poll, PollOption, MenuLink, HtmlChunk, Permission, Member, Award, PersonalAward, Message
+from cciw.cciwmain.models import Site, Person, Camp, Forum, NewsItem, Topic, Gallery, Photo, Post, Poll, PollOption, MenuLink, HtmlChunk, Permission, Member, Award, PersonalAward, Message
 
 admin.site.register(Site, SiteAdmin)
 admin.site.register(Person, PersonAdmin)

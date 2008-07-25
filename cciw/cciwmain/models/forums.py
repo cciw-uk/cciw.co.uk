@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.safestring import mark_safe
-from members import *
-from polls import *
+from cciw.cciwmain.models.members import Member
+from cciw.cciwmain.models.polls import Poll
 from datetime import datetime
 from django.contrib.auth.models import User
 import re

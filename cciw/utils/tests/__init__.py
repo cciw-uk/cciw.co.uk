@@ -1,1 +1,1 @@
-from models import *
+from cciw.utils.tests.models import *

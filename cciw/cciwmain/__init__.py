@@ -1,3 +1,3 @@
 __all__ = ['common']
-import admin
+import cciw.cciwmain.admin
 

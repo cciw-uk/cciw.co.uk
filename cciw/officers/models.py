@@ -8,7 +8,7 @@ from cciw.cciwmain.models import Camp
 from cciw.officers import signals
 from django.contrib.auth.models import User
 import datetime
-from fields import YyyyMmField, AddressField, ExplicitBooleanField, required_field
+from cciw.officers.fields import YyyyMmField, AddressField, ExplicitBooleanField, required_field
 
 class Referee(object):
     """Helper class for more convenient access to referee* attributes

@@ -1,5 +1,5 @@
 from BeautifulSoup import BeautifulSoup
-from client import CciwClient
+from cciw.cciwmain.tests.client import CciwClient
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.core import mail

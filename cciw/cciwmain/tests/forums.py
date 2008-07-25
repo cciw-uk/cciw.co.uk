@@ -1,5 +1,5 @@
-from client import CciwClient
-from members import TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD, TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD 
+from cciw.cciwmain.tests.client import CciwClient
+from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD, TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD 
 from django.test import TestCase
 from cciw.cciwmain.models import Topic, Member, Poll
 from django.core.urlresolvers import reverse

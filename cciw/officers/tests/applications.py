@@ -1,7 +1,7 @@
 from django.test import TestCase
 from cciw.officers.models import Application
 
-from references import OFFICER_USERNAME 
+from cciw.officers.tests.references import OFFICER_USERNAME 
 
 class ApplicationModel(TestCase):
     fixtures = ['basic.yaml', 'officers_users.yaml', 'references.yaml']
