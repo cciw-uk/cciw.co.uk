@@ -163,26 +163,40 @@ class TestGetTargets(TestTagBase):
         self.assertEqual(Tag.objects.get_target_count('test', target_model=Member), 0)
 
 class TestTagSummaries(TestTagBase):
-    def test_tag_summaries(self):
+    def setUp(self):
+        super(TestTagSummaries, self).setUp()
         self._make_standard_tags()
+
+    def test_tag_summaries(self):
         self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries()],
                          [('test', 3),
                           ('another', 1)])
 
     def test_tag_summaries_order_text(self):
-        self._make_standard_tags()
         self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(order='text')],
                          [('another', 1),
                           ('test', 3)])
 
     def test_tag_summaries_text(self):
-        self._make_standard_tags()
         self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(text='another')],
                          [('another', 1)])
 
     def test_tag_summaries_target_model(self):
-        self._make_standard_tags()
         self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(target_model=Post, order='text')],
                          [('another', 1),
                           ('test', 2)])
+
+    def test_tag_summaries_creator(self):
+        self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(creator=self._get_member(), order='text')],
+                         [('another', 1),
+                          ('test', 2)])
+
+    def test_tag_summaries_target(self):
+        self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(target=self._get_post(), order='text')],
+                         [('another', 1),
+                          ('test', 2)])
+                   
+    def test_tag_summaries_target2(self):
+        self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(target=self._get_topic(), order='text')],
+                         [('test', 1)])
                    
