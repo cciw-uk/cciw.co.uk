@@ -191,6 +191,10 @@ class TestTagSummaries(TestTagBase):
                          [('test', 3),
                           ('another', 1)])
 
+    def test_tag_summaries_limit(self):
+        self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(limit=1)],
+                         [('test', 3)])
+
     def test_tag_summaries_order_text(self):
         self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(order='text')],
                          [('another', 1),
