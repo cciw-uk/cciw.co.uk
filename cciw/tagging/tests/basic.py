@@ -16,12 +16,35 @@ class TestTagBase(TestCase):
         return Member.objects.get(user_name='test_member_1')
 
     @staticmethod
+    def _get_member2():
+        return Member.objects.get(user_name='test_poll_creator_1')
+
+    @staticmethod
     def _get_post():
         return Post.objects.get(pk=1)
 
     @staticmethod
     def _get_topic():
         return Topic.objects.get(pk=1)
+
+    @staticmethod
+    def _make_tags(post=None, topic=None, member=None, member2=None):
+        t1 = Tag(text='test', target=post, creator=member)
+        t1.save()
+        t2 = Tag(text='another', target=post, creator=member)
+        t2.save()
+        t3 = Tag(text='test', target=topic, creator=member)
+        t3.save()
+        t4 = Tag(text='test', target=post, creator=member2)
+        t4.save()
+        return (t1, t2, t3, t4)
+
+    @staticmethod
+    def _make_standard_tags():
+        TestTagBase._make_tags(post=TestTagBase._get_post(), 
+                               topic=TestTagBase._get_topic(), 
+                               member=TestTagBase._get_member(),
+                               member2=TestTagBase._get_member2())
 
 class TestTag(TestTagBase):
 
@@ -72,16 +95,6 @@ class TestTag(TestTagBase):
         m.delete()
         self.assertEqual(Tag.objects.filter(creator_id=m_id).count(), 0)
 
-
-def _make_tags(post=None, topic=None, member=None):
-    t1 = Tag(text='test', target=post, creator=member)
-    t1.save()
-    t2 = Tag(text='another', target=post, creator=member)
-    t2.save()
-    t3 = Tag(text='test', target=topic, creator=member)
-    t3.save()
-    return (t1, t2, t3)
-
 class TestGetTargets(TestTagBase):
     """
     Tests for the Tag.get_targets method.
@@ -95,26 +108,24 @@ class TestGetTargets(TestTagBase):
         """
         Tests simply asking for a 'text' value
         """
-        m = self._get_member()
         p = self._get_post()
         tp = self._get_topic()
-        _make_tags(post=p, topic=tp, member=m)
+        self._make_standard_tags()
 
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test')],
-                         [('test', tp, 1), ('test', p, 1)])
+                         [('test', p, 2), ('test', tp, 1)])
 
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('another')],
                          [('another', p, 1)])
 
 
     def test_get_text_for_model(self):
-        m = self._get_member()
         p = self._get_post()
         tp = self._get_topic()
-        _make_tags(post=p, topic=tp, member=m)
+        self._make_standard_tags()
 
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test', target_model=Post)],
-                         [('test', p, 1)])
+                         [('test', p, 2)])
 
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test', target_model=Topic)],
                          [('test', tp, 1)])
@@ -123,16 +134,15 @@ class TestGetTargets(TestTagBase):
                          [])
 
     def test_get_text_with_limit_offset(self):
-        m = self._get_member()
         p = self._get_post()
         tp = self._get_topic()
-        _make_tags(post=p, topic=tp, member=m)
+        self._make_standard_tags()
 
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test', limit=1)],
-                         [('test', tp, 1)])
+                         [('test', p, 2)])
 
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test', limit=10, offset=1)],
-                         [('test', p, 1)])
+                         [('test', tp, 1)])
 
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test', limit=10, offset=2)],
                          [])
@@ -141,19 +151,38 @@ class TestGetTargets(TestTagBase):
         """
         Tests get_target_count, simply asking for a 'text' value
         """
-        _make_tags(post=self._get_post(), 
-                   topic=self._get_topic(), 
-                   member=self._get_member())
+        self._make_standard_tags()
 
         self.assertEqual(Tag.objects.get_target_count('test'), 2)
         self.assertEqual(Tag.objects.get_target_count('another'), 1)
 
     def test_get_text_for_model_counts(self):
-        _make_tags(post=self._get_post(), 
-                   topic=self._get_topic(), 
-                   member=self._get_member())
+        self._make_standard_tags()
 
         self.assertEqual(Tag.objects.get_target_count('test', target_model=Post), 1)
         self.assertEqual(Tag.objects.get_target_count('test', target_model=Member), 0)
 
-        
+class TestTagSummaries(TestTagBase):
+    def test_tag_summaries(self):
+        self._make_standard_tags()
+        self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries()],
+                         [('test', 3),
+                          ('another', 1)])
+
+    def test_tag_summaries_order_text(self):
+        self._make_standard_tags()
+        self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(order='text')],
+                         [('another', 1),
+                          ('test', 3)])
+
+    def test_tag_summaries_text(self):
+        self._make_standard_tags()
+        self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(text='another')],
+                         [('another', 1)])
+
+    def test_tag_summaries_target_model(self):
+        self._make_standard_tags()
+        self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(target_model=Post, order='text')],
+                         [('another', 1),
+                          ('test', 2)])
+                   
