@@ -32,9 +32,7 @@ class TestTag(TestTagBase):
         """
         m = self._get_member()
         p = self._get_member()
-        t = Tag(text='test')
-        t.target = p
-        t.creator = m
+        t = Tag(text='test', target=p, creator=m)
         t.save()
 
         t = Tag.objects.get(text='test')
@@ -52,9 +50,7 @@ class TestTag(TestTagBase):
         """
         m = self._get_member()
         p = self._get_post()
-        t = Tag(text='test')
-        t.target = p
-        t.creator = m
+        t = Tag(text='test', target=p, creator=m)
         t.save()
 
         p_id = get_pk_as_str(p) # p.delete will set p.id = None
@@ -68,9 +64,7 @@ class TestTag(TestTagBase):
         """
         m = Member.objects.get(user_name='test_member_1')
         p = Post.objects.get(pk=1)
-        t = Tag(text='test')
-        t.target = p
-        t.creator = m
+        t = Tag(text='test', target=p, creator=m)
         t.save()
 
         m_id = get_pk_as_str(m) # m.delete will set m.id = None
@@ -94,19 +88,13 @@ class TestGetTargets(TestTagBase):
         m = self._get_member()
         p = self._get_post()
         tp = self._get_topic()
-        t1 = Tag(text='test')
-        t1.target = p
-        t1.creator = m
+        t1 = Tag(text='test', target=p, creator=m)
         t1.save()
 
-        t2 = Tag(text='another')
-        t2.target = p
-        t2.creator = m
+        t2 = Tag(text='another', target=p, creator=m)
         t2.save()
         
-        t3 = Tag(text='test')
-        t3.target = tp
-        t3.creator = m
+        t3 = Tag(text='test', target=tp, creator=m)
         t3.save()
         
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test')],

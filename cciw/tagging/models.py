@@ -272,7 +272,7 @@ class TagManager(models.Manager):
 
     def get_targets(self, text, limit=None, offset=None, target_model=None):
         """Returns target items that match the text value, as a sequence
-        of two-tuples of (target, count)
+        of TagTarget objects
         
         'text' can be a single string value, a space separated list
         or a list of strings.
@@ -405,6 +405,19 @@ class Tag(models.Model):
     target = GenericForeignKey('target_id', 'target_ct_id')
     creator = GenericForeignKey('creator_id', 'creator_ct_id')
     objects = TagManager()
+
+    def __init__(self, *args, **kwargs):
+        if 'target' in kwargs:
+            target = kwargs.pop('target')
+        else:
+            target = None
+        if 'creator' in kwargs:
+            creator = kwargs.pop('creator')
+        else:
+            creator = None
+        super(Tag, self).__init__(*args, **kwargs)
+        if target is not None: self.target = target
+        if creator is not None: self.creator = creator
     
     def __unicode__(self):
         try:
