@@ -1,5 +1,6 @@
 import string
 from django.contrib.contenttypes import models
+from django.db.models.base import ModelBase
 
 # Caches of content types/models
 _model_cache = {}
@@ -36,9 +37,13 @@ def get_model(content_type_id):
 
 def get_content_type_id(model):
     """Gets a content type id for a given model"""
+    if not isinstance(model, ModelBase):
+        if not isinstance(type(model), ModelBase):
+            raise Exception("%s is not a model" % model)
+        model = type(model)
     try:
         return _content_type_cache[model]
-    except:
+    except KeyError:
         ct_id = models.ContentType.objects.get_for_model(model).id
         _model_cache[ct_id] = model
         _content_type_cache[model] = ct_id
@@ -60,7 +65,7 @@ def pk_to_str(pk, content_type_id):
     """Get a string representation of a primary key value."""
     try:
         mapper = _pk_to_str_mappers[get_model(content_type_id)]
-    except:
+    except KeyError:
         raise NoMapperError("No primay key-to-string mapper has been configured for content type %s" % content_type_id)
     return mapper(pk)
     
