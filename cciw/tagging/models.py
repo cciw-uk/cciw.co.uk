@@ -248,7 +248,8 @@ class TagManager(models.Manager):
             sql += " ORDER BY %s ASC" % qn('text')
         # LIMIT
         if limit is not None:
-            sql += ' ' + ops.limit_offset_sql(limit, None)
+            # Non portable
+            sql += ' LIMIT %d' % limit
 
         cursor.execute(sql, params)
         return TagSummaryCollection([TagSummary(r[0], r[1]) for r in cursor.fetchall()])
@@ -343,7 +344,10 @@ class TagManager(models.Manager):
         
         # LIMIT
         if limit is not None:
-            sql += ' ' + ops.limit_offset_sql(limit, offset)
+            # Non portable
+            sql += ' LIMIT %d' % limit
+            if offset is not None:
+                sql += ' OFFSET %d' % offset
         cursor = connection.cursor()
         cursor.execute(sql, params)
             
