@@ -105,6 +105,7 @@ class TestGetTargets(TestTagBase):
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('another')],
                          [('another', p, 1)])
 
+
     def test_get_text_for_model(self):
         m = self._get_member()
         p = self._get_post()
@@ -134,4 +135,24 @@ class TestGetTargets(TestTagBase):
 
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test', limit=10, offset=2)],
                          [])
-        
+
+    def test_get_text_counts(self):
+        """
+        Tests get_target_count, simply asking for a 'text' value
+        """
+        m = self._get_member()
+        p = self._get_post()
+        tp = self._get_topic()
+        self._make_tags(post=p, topic=tp, member=m)
+
+        self.assertEqual(Tag.objects.get_target_count('test'), 2)
+        self.assertEqual(Tag.objects.get_target_count('another'), 1)
+
+    def test_get_text_for_model_counts(self):
+        m = self._get_member()
+        p = self._get_post()
+        tp = self._get_topic()
+        self._make_tags(post=p, topic=tp, member=m)
+
+        self.assertEqual(Tag.objects.get_target_count('test', target_model=Post), 1)
+        self.assertEqual(Tag.objects.get_target_count('test', target_model=Member), 0)
