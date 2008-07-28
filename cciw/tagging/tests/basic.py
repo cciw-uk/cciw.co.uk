@@ -141,19 +141,19 @@ class TestGetTargets(TestTagBase):
         """
         Tests get_target_count, simply asking for a 'text' value
         """
-        m = self._get_member()
-        p = self._get_post()
-        tp = self._get_topic()
-        _make_tags(post=p, topic=tp, member=m)
+        _make_tags(post=self._get_post(), 
+                   topic=self._get_topic(), 
+                   member=self._get_member())
 
         self.assertEqual(Tag.objects.get_target_count('test'), 2)
         self.assertEqual(Tag.objects.get_target_count('another'), 1)
 
     def test_get_text_for_model_counts(self):
-        m = self._get_member()
-        p = self._get_post()
-        tp = self._get_topic()
-        _make_tags(post=p, topic=tp, member=m)
+        _make_tags(post=self._get_post(), 
+                   topic=self._get_topic(), 
+                   member=self._get_member())
 
         self.assertEqual(Tag.objects.get_target_count('test', target_model=Post), 1)
         self.assertEqual(Tag.objects.get_target_count('test', target_model=Member), 0)
+
+        
