@@ -81,6 +81,15 @@ class TestGetTargets(TestTagBase):
     def tearDown(self):
         Tag.objects.all().delete()    
 
+    def _make_tags(self, post=None, topic=None, member=None):
+        t1 = Tag(text='test', target=post, creator=member)
+        t1.save()
+        t2 = Tag(text='another', target=post, creator=member)
+        t2.save()
+        t3 = Tag(text='test', target=topic, creator=member)
+        t3.save()
+        return (t1, t2, t3)
+
     def test_get_text(self):
         """
         Tests simply asking for a 'text' value
@@ -88,15 +97,8 @@ class TestGetTargets(TestTagBase):
         m = self._get_member()
         p = self._get_post()
         tp = self._get_topic()
-        t1 = Tag(text='test', target=p, creator=m)
-        t1.save()
+        self._make_tags(post=p, topic=tp, member=m)
 
-        t2 = Tag(text='another', target=p, creator=m)
-        t2.save()
-        
-        t3 = Tag(text='test', target=tp, creator=m)
-        t3.save()
-        
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test')],
                          [('test', tp, 1), ('test', p, 1)])
 
