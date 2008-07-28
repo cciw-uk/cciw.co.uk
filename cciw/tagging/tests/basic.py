@@ -119,4 +119,19 @@ class TestGetTargets(TestTagBase):
 
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test', target_model=Member)],
                          [])
+
+    def test_get_text_with_limit_offset(self):
+        m = self._get_member()
+        p = self._get_post()
+        tp = self._get_topic()
+        self._make_tags(post=p, topic=tp, member=m)
+
+        self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test', limit=1)],
+                         [('test', tp, 1)])
+
+        self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test', limit=10, offset=1)],
+                         [('test', p, 1)])
+
+        self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('test', limit=10, offset=2)],
+                         [])
         
