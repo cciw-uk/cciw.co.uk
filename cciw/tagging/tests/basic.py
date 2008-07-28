@@ -118,6 +118,25 @@ class TestGetTargets(TestTagBase):
         self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets('another')],
                          [('another', p, 1)])
 
+    def test_get_text_list(self):
+        """
+        Tests asking for a list of 'text' values
+        """
+        p = self._get_post()
+        m2 = self._get_member2()
+        tp = self._get_topic()
+        self._make_standard_tags()
+
+        self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets(['test', 'another'])],
+                         [('test another', p, 2)])
+
+        # Add some more data to really test
+        Tag(text='another', creator=m2, target=p).save()
+        Tag(text='another', creator=m2, target=tp).save()
+
+        self.assertEqual([(tt.text, tt.target, tt.count) for tt in Tag.objects.get_targets(['test', 'another'])],
+                         [('test another', p, 4),
+                          ('test another', tp, 1)])
 
     def test_get_text_for_model(self):
         p = self._get_post()
