@@ -192,16 +192,16 @@ def manage_applications(request, year=None, number=None):
 # Similar to version in django.contrib.auth.forms, but this one provides
 # much better security
 
-class CciwUserEmailField(forms.EmailField):
+class ExistingUserEmailField(forms.EmailField):
     def clean(self, value):
-        value = super(CciwUserEmailField, self).clean(value)
+        value = super(ExistingUserEmailField, self).clean(value)
         if User.objects.filter(email__iexact=value).count() == 0:
             raise forms.ValidationError("That e-mail address doesn't have an associated user account. Are you sure you've been registered?")
         return value
 
 class PasswordResetForm(forms.Form):
     "A form that lets a user request a password reset"
-    email = CciwUserEmailField(widget=forms.TextInput(attrs={'size':'40'}))
+    email = ExistingUserEmailField(widget=forms.TextInput(attrs={'size':'40'}))
 
     def save(self, domain_override=None, email_template_name='cciw/officers/password_reset_email.txt'):
         "Generates a one-use only link for restting password and sends to the user"
