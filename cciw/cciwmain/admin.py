@@ -103,3 +103,4 @@ admin.site.register(Award, AwardAdmin)
 admin.site.register(PersonalAward, PersonalAwardAdmin)
 admin.site.register(Message, MessageAdmin)
 
+from django.contrib.auth import admin
