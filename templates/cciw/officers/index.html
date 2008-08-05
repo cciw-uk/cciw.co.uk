@@ -55,13 +55,13 @@ your address, and re-check the declarations.</p>
 </ul>
 
 <h2>Help filling in the form</h2>
-<p>You can save your work at any time (using the 'Save' button at the bottom) 
- and come back to it later if you want.  When you have finished and want 
- to submit the application form to the leaders, you need to check the 
+<p>You can save your work at any time (using the 'Save' button at the bottom)
+ and come back to it later if you want.  When you have finished and want
+ to submit the application form to the leaders, you need to check the
  'Completed' checkbox at the bottom and press 'Save'.</p>
 
-<p>Please note that if you have any validation errors (marked in red when you 
-  try to save), your data won't have been saved.  You'll need to correct the 
+<p>Please note that if you have any validation errors (marked in red when you
+  try to save), your data won't have been saved.  You'll need to correct the
   data before it is actually saved.</p>
 
 
@@ -102,15 +102,15 @@ your address, and re-check the declarations.</p>
 {% if show_leader_links %}
 <h2>Leaders' tools</h2>
 <p>Manage camps:
-<ul>  
+<ul>
     {% for c in camps_to_administer %}
-    <li>{{ c }}: 
+    <li>{{ c }}:
     <br />&nbsp;&nbsp;&nbsp;<a href="{% url cciw.officers.views.officer_list year=c.year,number=c.number %}">Officer list</a>
     <br />&nbsp;&nbsp;&nbsp;<a href="{% url cciw.officers.views.manage_applications year=c.year,number=c.number %}">Applications</a>
     <br />&nbsp;&nbsp;&nbsp;<a href="{% url cciw.officers.views.manage_references year=c.year,number=c.number %}">References</a>
     </li>
     {% endfor %}
-    
+
 </ul>
 {% endif %}
 
