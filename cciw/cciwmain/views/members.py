@@ -58,7 +58,7 @@ def index(request):
         paginate_by=50,
         allow_empty=True)
 
-def detail(request, user_name):
+def detail(request, user_name=None):
     try:
         member = Member.objects.get(user_name=user_name)
     except Member.DoesNotExist:
@@ -90,7 +90,7 @@ def login(request):
         return _display_login_form(request, login_page=True)
 
 @member_required
-def send_message(request, user_name):
+def send_message(request, user_name=None):
     """View function that handles the 'send message' form"""
 
     # Two modes:
@@ -252,14 +252,14 @@ def message_list(request, user_name, box):
         paginate_by=settings.MEMBERS_PAGINATE_MESSAGES_BY,
         allow_empty=True)
 
-def inbox(request, user_name):
+def inbox(request, user_name=None):
     "Shows inbox for a user"
     return message_list(request, user_name, Message.MESSAGE_BOX_INBOX)
     
-def archived_messages(request, user_name):
+def archived_messages(request, user_name=None):
     return message_list(request, user_name, Message.MESSAGE_BOX_SAVED)
 
-def posts(request, user_name):
+def posts(request, user_name=None):
     try:
         member = Member.objects.get(user_name=user_name)
     except Member.DoesNotExist:
