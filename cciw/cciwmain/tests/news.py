@@ -2,7 +2,7 @@ from client import CciwClient
 from django.test import TestCase
 from cciw.cciwmain.models import Topic
 
-class NewsPage(TestCase):    
+class NewsPage(TestCase):
     fixtures = ['basic.yaml', 'test_members.yaml', 'news.yaml']
 
     def setUp(self):
@@ -25,7 +25,7 @@ class NewsPage(TestCase):
         topic = Topic.objects.get(id=1)
         response = self.client.get(topic.forum.get_absolute_url(), {'format':'atom'})
         self.assertEqual(response.status_code, 200)
-        
+
         self.assert_("Bits &amp; Pieces" in response.content,
                      "Subject not present or not escaped properly")
 
@@ -53,6 +53,6 @@ class NewsPage(TestCase):
 
         self.assert_("Fish &amp; Chips" in response.content,
                      "Subject not present or not escaped properly")
-        
+
         self.assert_("&lt;p&gt;Full item with &lt;i&gt;html" in response.content,
                      "HTML content not present or not escaped properly")

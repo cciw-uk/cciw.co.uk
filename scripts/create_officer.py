@@ -36,20 +36,20 @@ def main():
             usage_and_exit()
         csv_data = parse_csv_data(sys.stdin)
         create_multiple_officers(csv_data, options.dryrun)
-        
+
     else:
         if options.is_leader:
             if len(args) != 5:
                 usage_and_exit()
             username, first_name, last_name, email, personname = args
-            create_single_officer(username, first_name, last_name, email, 
+            create_single_officer(username, first_name, last_name, email,
                                   update=options.update, is_leader=True,
                                   personname=personname)
         else:
             if len(args) != 4:
                 usage_and_exit()
             username, first_name, last_name, email = args
-            create_single_officer(username, first_name, last_name, email, 
+            create_single_officer(username, first_name, last_name, email,
                                   update=options.update)
 
 def parse_csv_data(iterable):
@@ -65,10 +65,10 @@ def create_multiple_officers(csv_data, dryrun):
     # we trust the user.
     from django.core import validators
     from django.contrib.auth.models import User
-    
+
     for officer_details in csv_data:
         valid = True
-        
+
         if len(officer_details) < 3:
             valid = False
             msg = "insufficient data"
@@ -102,7 +102,7 @@ def create_multiple_officers(csv_data, dryrun):
             # but we don't care really.
             username = get_username(first_name, last_name)
             create_single_officer(username, first_name, last_name, email, dryrun=dryrun)
-                
+
         else:
             print "Skipping row - %s:  %r" % (msg, officer_details)
 
@@ -129,7 +129,7 @@ def create_single_officer(username, first_name, last_name, email, update=False,
                    is_leader=is_leader, personname=personname, dryrun=dryrun)
     print "Emailing officer %s" % username
     email_officer(username, first_name, email, password, is_leader=is_leader, dryrun=dryrun, update=update)
-    
+
 def create_officer(username, first_name, last_name, email, password, dryrun=False,
                    update=False, personname=None, is_leader=False):
     from django.contrib.auth.models import User, Group
@@ -150,10 +150,10 @@ def create_officer(username, first_name, last_name, email, password, dryrun=Fals
         officer = User(username=username)
         officer.date_joined=datetime.now()
         officer.last_login=datetime.now()
-        
+
     officer.first_name=first_name
     officer.last_name=last_name
-    officer.is_staff=True               
+    officer.is_staff=True
     officer.is_active=True
     officer.is_superuser=False
     officer.email=email
@@ -197,23 +197,23 @@ To fill in the application form
 
 1) Go to:
      http://www.cciw.co.uk/officers/
-     
+
 2) Log in using:
      Username: %(username)s
      Password: %(password)s
-     
+
      (You should change your password to something more memorable once
       you have logged in)
-      
+
 3) Choose from the options.  If you have already completed an
    application form online, you can choose to create an application
    form based on a previous one.  Some tickboxes will be blanked out
    and you will have to fill them in again, but it should only take a
    few minutes.
-   
+
    If you have not already completed an application form, you will
    have to start by creating a new one.
-   
+
 4) Fill in the form.
 
   You can save your work at any time (using the 'Save' button at the
@@ -221,12 +221,12 @@ To fill in the application form
   finished and want to submit the application form to the leaders, you
   need to check the 'Completed' checkbox at the bottom and press
   'Save'.
-  
+
   Please note that if you have any validation errors (marked in red
   when you try to save), your data won't have been saved.  You'll need
   to correct the data before it is actually saved.
-  
-  
+
+
 If you have any problems, please e-mail me at %(webmasteremail)s
 
 Luke
@@ -254,18 +254,18 @@ using the online system.  Here is what you need to know:
 
    Go to:
      http://www.cciw.co.uk/officers/
-     
+
    Log in using:
      Username: %(username)s
      Password: %(password)s
-     
+
      (You should change your password to something more memorable once
       you have logged in)
 
    At the bottom of this page you should find a link to another
    page that allows you to manage the submitted applications.
-  
-  
+
+
 If you have any problems, please e-mail me at %(webmasteremail)s
 
 Luke
@@ -274,7 +274,7 @@ Luke
 def email_officer(username, first_name, email, password, is_leader=False, dryrun=False, update=False):
     from django.core.mail import send_mail
     from django.conf import settings
-    
+
     if update:
         repeat_message = \
 """This is a repeat email sent either because the first email was lost

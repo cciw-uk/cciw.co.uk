@@ -25,9 +25,9 @@ password_re = re.compile(r'^[A-Za-z0-9]{5,15}$')
 
 # The number of days a new password must be activated within
 # (this is to stop an old e-mail being used to reset a password,
-# in the scenario where an attacker has temporary access to 
+# in the scenario where an attacker has temporary access to
 # a user's e-mails).
-NEW_PASSWORD_EXPIRY = 5 
+NEW_PASSWORD_EXPIRY = 5
 
 def current_domain():
     return Site.objects.get_current().domain
@@ -51,7 +51,7 @@ def create_user(user_name, password1, password2):
         raise ValidationError("The passwords do not match")
     else:
         iconfilename = user_name + "." + settings.DEFAULT_MEMBER_ICON.split('.')[-1]
-        m = Member(user_name=user_name, 
+        m = Member(user_name=user_name,
                    last_seen=datetime.datetime.now(),
                    date_joined=datetime.datetime.now(),
                    password=Member.encrypt_password(password1),
@@ -79,9 +79,9 @@ def random_password():
 
 def validate_email_and_hash(email, hash):
     if email_address_used(email):
-        # in reality shouldn't get here, unless user has 
+        # in reality shouldn't get here, unless user has
         # started two signup processes in parallel
-        return (False, """The e-mail address is already used.  You must start the 
+        return (False, """The e-mail address is already used.  You must start the
  sign-up procedure again with a different e-mail address.""")
     elif email_hash(email) != hash:
         return (False, """The e-mail address was not confirmed.  Please
@@ -107,7 +107,7 @@ def send_signup_mail(email):
     mail.send_mail("CCIW - Sign-up instructions",
 """Thank you for beginning the sign-up process on the CCIW website
 
-To confirm the e-mail address you used is genuine and continue the 
+To confirm the e-mail address you used is genuine and continue the
 sign-up process, please click on the link below:
 
 http://%(domain)s/signup/?email=%(email)s&h=%(hash)s
@@ -131,7 +131,7 @@ You can log in at:
 http://%(domain)s/login/
 
 Thanks.
-""" % {'domain': current_domain(), 'user_name': member.user_name }, 
+""" % {'domain': current_domain(), 'user_name': member.user_name },
     "website@cciw.co.uk", [member.email])
 
 def send_newpassword_email(member):
@@ -144,19 +144,19 @@ def send_newpassword_email(member):
 Your new password is:
 
     %(password)s
-    
+
 In order to activate this new password, please click on the link below:
 
 http://%(domain)s/memberadmin/change-password/?u=%(user_name)s&h=%(hash)s
 
-If clicking on the link does not do anything, please copy and paste the 
+If clicking on the link does not do anything, please copy and paste the
 entire link into your web browser.
 
-After activating the password, it is suggested that you log in using the 
+After activating the password, it is suggested that you log in using the
 above password and then change your password to one more memorable.
 
 If you did not request a new password on the CCIW website, then do not click
-on the link:  this e-mail has been triggered by someone else entering your 
+on the link:  this e-mail has been triggered by someone else entering your
 e-mail addess and asking for a new password.  The password will not actually
 be changed until you click the link, so you can safely ignore this e-mail.
 
@@ -174,32 +174,32 @@ def extract_new_password(hash, user_name):
     containing an error message if it fails."""
     invalid_url_msg = "The URL hash was invalid -- please check that you " + \
         "copied the entire URL from the e-mail"
-        
+
     try:
         hash_str = base64.urlsafe_b64decode(hash.encode("ascii"))
     except TypeError:
-        raise ValidationError(invalid_url_msg)    
+        raise ValidationError(invalid_url_msg)
     try:
         date_str, h_user_name, password = hash_str.split(':')
     except ValueError:
         raise ValidationError(invalid_url_msg)
-    
+
     try:
         year, month, day = map(int, date_str.split('-'))
         email_date = datetime.date(year, month, day)
     except ValueError: # catches unpacking, int, and datetime.date
         raise ValidationError(invalid_url_msg)
-        
+
     if (datetime.date.today() - email_date).days > NEW_PASSWORD_EXPIRY:
         raise ValidationError("The new password has expired.  Please request a new password again.")
-        
+
     if (h_user_name != user_name):
         # hack attempt?
         raise ValidationError("This URL has been tampered with.  Password not changed.")
-    
+
     return password
 
-    
+
 def send_newemail_email(member, new_email):
     mail.send_mail("CCIW - E-mail change",
 """You have changed your e-mail address on the CCIW website.
@@ -212,7 +212,7 @@ http://%(domain)s/memberadmin/change-email/?email=%(email)s&u=%(user_name)s&h=%(
 If clicking on the link does not do anything, please copy and paste
 the entire link into your web browser.
 
-""" % {'domain': current_domain(), 'email': urllib.quote(new_email), 
+""" % {'domain': current_domain(), 'email': urllib.quote(new_email),
        'user_name': urllib.quote(member.user_name),
        'hash': email_and_username_hash(new_email, member.user_name)},
     "website@cciw.co.uk", [new_email])
@@ -222,15 +222,15 @@ the entire link into your web browser.
 
 def signup(request):
     c = standard_extra_context(title="Sign up")
-    
+
     if not request.POST and not request.GET:
         ######## 1. START #########
         c['stage'] = "start"
-    
+
     if "agreeterms" in request.POST:
         ######## 2. ENTER EMAIL #########
         c['stage'] = "email"
-        
+
     elif "email" in request.POST or "submit_email" in request.POST:
         ######## 3. CHECK ADDRESS AND SEND EMAIL #########
         email = request.POST['email'].strip()
@@ -265,10 +265,10 @@ def signup(request):
         else:
             c['stage'] = 'invalid'
             c['error_message'] = msg
-    
+
     elif "user_name" in request.POST or "submit_user_name" in request.POST:
         ######## 5. CREATE ACCOUNT #########
-        # First, re-check email and hash in case of 
+        # First, re-check email and hash in case of
         # tampering with hidden form values
         email = request.POST.get('confemail', '')
         hash = request.POST.get('confhash', '')
@@ -299,7 +299,7 @@ def signup(request):
     ## are executed after set_member_session
     ctx = template.RequestContext(request, c)
 
-    return shortcuts.render_to_response('cciw/members/signup.html', 
+    return shortcuts.render_to_response('cciw/members/signup.html',
         context_instance=ctx)
 
 
@@ -314,7 +314,7 @@ def help_logging_in(request):
         if not email_re.search(email):
             c['error_message'] = "The e-mail address is not valid.  Please check and try again."
             cont = False
-        
+
         # Check e-mail in db
         if cont:
             # Temporary - use [0] instead of .get() because of some bad data
@@ -331,17 +331,17 @@ def help_logging_in(request):
             elif request.POST.has_key('newpassword'):
                 send_newpassword_email(member)
                 c['success_message'] = "An e-mail has been sent to you with a new password."
-    
+
     ctx = template.RequestContext(request, c)
     return shortcuts.render_to_response('cciw/members/help_logging_in.html', context_instance=ctx)
-    
+
 
 def change_password(request):
     """View that handles password changes, with a form and from
     'new password' emails."""
     user_name = request.GET.get('u', '')
     hash = request.GET.get('h', '')
-    
+
     c = standard_extra_context(title="Change password")
     if user_name:
         # New password from e-mail
@@ -378,15 +378,15 @@ def change_password(request):
                 c['success_message'] = "Password changed."
             else:
                 c['error_message'] = error_message
-        
+
     ctx = template.RequestContext(request, c)
-    return shortcuts.render_to_response('cciw/members/change_password.html', 
+    return shortcuts.render_to_response('cciw/members/change_password.html',
             context_instance=ctx)
 
 def change_email(request):
     """View that responds to links in the 'change e-mail' emails."""
     c = standard_extra_context(title="Change email")
-    
+
     user_name = request.GET.get('u')
     email = request.GET.get('email', '')
     hash = request.GET.get('h', '')
@@ -402,9 +402,9 @@ def change_email(request):
         c['success_message'] = "New email address confirmed, thank you."
     else:
         c['error_message'] = msg
-        
+
     ctx = template.RequestContext(request, c)
-    return shortcuts.render_to_response('cciw/members/change_email.html', 
+    return shortcuts.render_to_response('cciw/members/change_email.html',
             context_instance=ctx)
 
 preferences_fields = ["real_name", "email", "show_email", "comments", "message_option", "icon"]
@@ -426,7 +426,7 @@ PreferencesForm.base_fields.keyOrder = preferences_fields
 def preferences(request):
     current_member = get_current_member()
     c = standard_extra_context(title="Preferences")
-        
+
     if request.method == 'POST':
         form = PreferencesForm(request.POST, request.FILES,
                                instance=current_member)
@@ -444,13 +444,13 @@ def preferences(request):
             # Save with original email
             current_member.email = orig_email
             current_member.save()
-            
+
             if request.FILES:
                 try:
                     imageutils.fix_member_icon(current_member, request.FILES['icon'])
                 except imageutils.ValidationError, e:
                     c['image_error'] = e.args[0]
-            
+
             # E-mail change:
             if new_email != orig_email:
                 # We check for duplicate e-mail address in change_email view,
@@ -463,9 +463,9 @@ def preferences(request):
 
     else:
         form = PreferencesForm(instance=current_member)
-    
+
     c['form'] = form
     c['member'] = current_member
 
-    return shortcuts.render_to_response('cciw/members/preferences.html', 
+    return shortcuts.render_to_response('cciw/members/preferences.html',
                 context_instance=template.RequestContext(request, c))

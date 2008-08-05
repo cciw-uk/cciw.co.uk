@@ -40,12 +40,12 @@ def unicode_to_rtf(u):
         else:
             converted = str(char)
         output.append(converted)
-    return ''.join(output)        
+    return ''.join(output)
 
 @stringfilter
 def rtfescape(value):
     "Escapes RTF control characters"
-    
+
     return unicode_to_rtf(value.replace('\\', '\\\\').replace('{','\\{').replace('}', '\\}'))
 
 register.filter(rtfescape)

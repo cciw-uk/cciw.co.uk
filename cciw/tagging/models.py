@@ -23,7 +23,7 @@ except AttributeError:
 
 class TagSummaryCollection(list):
     """Collection of TagSummary objects.
-  
+
     It exists to calculate and store its count_min and
     count_max properties, which are the minimum and maximum
     values of 'count' of all its children."""
@@ -42,7 +42,7 @@ class TagSummaryCollection(list):
 
 class TagSummary(object):
     """An object representing a summary of tags.
-    
+
     - text is the tag text
     - count is the number of tags with that text.
     - collection is the collection of TagSummary
@@ -51,11 +51,11 @@ class TagSummary(object):
     def __init__(self, text, count):
         self.text, self.count = text, count
         self.collection = None # this is set externally later
-        
+
     def weight(self):
         """Weight is the count, but normalised using settings.TAGGING_NORMALISER."""
         return _normaliser(self, self.collection)
-        
+
     def __repr__(self):
         return "<TagSummary: %s x %r>" % (self.count, self.text)
 
@@ -83,10 +83,10 @@ class TagTarget(object):
     def target_ct(self):
         return ContentType.objects.get_for_id(self.target_ct_id)
     target_ct = property(target_ct)
-        
+
     # Possible TODO : add a 'creator_list' property that dynamically returns all
     # objects that have tagged the target
-    
+
 class GenericForeignKey(object):
     """Desciptor used to return an object that is defined
     in terms of a ContentType id and a string primary key."""
@@ -117,7 +117,7 @@ class GenericForeignKey(object):
     def __set__(self, obj, value):
         if obj is None:
             return self
-        # Caculate content type and id from the 
+        # Caculate content type and id from the
         # passed in object
         ct_id = utils.get_content_type_id(value.__class__)
         id = utils.pk_to_str(value._get_pk_val(), ct_id)
@@ -128,10 +128,10 @@ class GenericForeignKey(object):
 
 class TagManager(models.Manager):
     # Lots of methods require custom SQL, which means:
-    #  - we can't use normal .filter() stuff, so we need to have keyword 
+    #  - we can't use normal .filter() stuff, so we need to have keyword
     #    arguments for everything that you might want to query on.
     #  - query_set.core_filters won't work automatically, so we have to manually
-    #    merge in data from core_filters for methods to work correctly in a 
+    #    merge in data from core_filters for methods to work correctly in a
     #    related context.
     def _get_model_limited_query(self, target_model=None, creator_model=None):
         q = self.get_query_set()
@@ -143,9 +143,9 @@ class TagManager(models.Manager):
 
     def get_distinct_text(self, target_model=None, creator_model=None, **kwargs):
         """Gets distinct 'text' values as a list of strings.
-        
+
         Supply 'target_model' and/or 'creator_model' to limit values to specified models.
-        
+
         kwargs are extra keyword arguments supplied to QuerySet.filter(), which
         can be used to limit the query to a specific target object for example.
         """
@@ -155,7 +155,7 @@ class TagManager(models.Manager):
     def _normalise_target_info(self, target, target_model):
         """Gets any additional target info from core_filters, and
         returns target, target_model, target_id, target_ct_id.
-        
+
         ID will be retrieved for objects, but objects will not
         be retrieved from the ID.
         """
@@ -173,7 +173,7 @@ class TagManager(models.Manager):
     def _normalise_creator_info(self, creator, creator_model):
         """Gets any additional creator info from core_filters, and
         returns creator, creator_model, creator_id, creator_ct_id.
-        
+
         ID will be retrieved for objects, but objects will not
         be retrieved from the ID.
         """
@@ -189,19 +189,19 @@ class TagManager(models.Manager):
             creator_id = utils.pk_to_str(creator._get_pk_val(), creator_ct_id)
         return (creator, creator_model, creator_id, creator_ct_id)
 
-    def get_tag_summaries(self, target_model=None, creator_model=None, 
+    def get_tag_summaries(self, target_model=None, creator_model=None,
             target=None, creator=None, limit=None, order='count', text=None):
         """Returns a sequence (TagSummaryCollection) of TagSummary objects i.e.
         a tag 'text' value with its associated count.
-        
+
         Use target_model, creator_model, target and creator to limit the query
         to the model types or specific objects.
-        
+
         Use limit to specify that only the top 'n' should be returned.
-        
-        'order' can be 'count' (descending popularity) or 
+
+        'order' can be 'count' (descending popularity) or
         'text'.(alphabetical, ascending)
-        
+
         'text' constrains the query to a single text value.
 
         """
@@ -214,7 +214,7 @@ class TagManager(models.Manager):
 
         target, target_model, target_id, target_ct_id = self._normalise_target_info(target, target_model)
         creator, creator_model, creator_id, creator_ct_id = self._normalise_creator_info(creator, creator_model)
-        
+
         if target_ct_id is not None:
             where.append('%s = %%s' % qn('target_ct_id'))
             params.append(target_ct_id)
@@ -264,7 +264,7 @@ class TagManager(models.Manager):
         else:
             # assume text is sequence
             textlist = text
-        
+
         textlist = list(set(textlist)) # eliminate dupes
         text = ' '.join(textlist)
         return text, textlist
@@ -273,34 +273,34 @@ class TagManager(models.Manager):
     def get_targets(self, text, limit=None, offset=None, target_model=None):
         """Returns target items that match the text value, as a sequence
         of TagTarget objects
-        
+
         'text' can be a single string value, a space separated list
         or a list of strings.
-        
+
         Items are ordered by popularity (count) descending.  If a single
         text value is provided, the count is the number of 'creator' objects
-        that have tagged the object with that text. If a list of text values 
+        that have tagged the object with that text. If a list of text values
         is provided, the count becomes the product of those values.
-        
+
         Use target_model to limit the targets to the specified model
-        
+
         Use limit and offset to alter which/how many targets are found.
-        
-        
+
+
         """
         text, textlist = self._normalise_text_textlist(text)
-        
+
         # Normalise other vals.
         target, target_model, target_id, target_ct_id = self._normalise_target_info(None, target_model)
-        
+
         # SQL:
-        # SELECT COUNT(creator_id) as c, target_id, target_ct_id 
+        # SELECT COUNT(creator_id) as c, target_id, target_ct_id
         #  FROM tagging_tag
         #   [ optional INNER JOINS for more than one text value]
         #  WHERE text = foo GROUP BY target_id, target_ct_id
         #   [ optional WHERE CLAUSES for more than one text value]
         #  ORDER BY c DESC LIMIT x
-        
+
         # Really this should be something like COUNT(combination_of(creator_id, creator_ct_id)),
         # which you can't do, but actually, it makes no sense for one person ('creator'
         # object) to tag the same thing more than once with the same text, so multiple
@@ -316,7 +316,7 @@ class TagManager(models.Manager):
         fromsql = " FROM %s as tagtable0" % tablename
         wheresql = " WHERE tagtable0.text = %s"
         params = [textlist.pop()]
-        
+
         tablealias += 1
 
         # additional WHERE
@@ -335,13 +335,13 @@ class TagManager(models.Manager):
                 " AND tagtable%d.text = %%s" % tablealias
             params.append(textlist.pop())
             tablealias += 1
-        
+
         # combine and continue
         sql = selectsql + ' ' + fromsql + ' ' + wheresql
-        
+
         # GROUP BY and ORDER BY
         sql += " GROUP BY tagtable0.target_id, tagtable0.target_ct_id ORDER BY c DESC"
-        
+
         # LIMIT
         if limit is not None:
             # Non portable
@@ -350,24 +350,24 @@ class TagManager(models.Manager):
                 sql += ' OFFSET %d' % offset
         cursor = connection.cursor()
         cursor.execute(sql, params)
-            
-        return [TagTarget(text, int(row[0]), row[1], int(row[2])) 
+
+        return [TagTarget(text, int(row[0]), row[1], int(row[2]))
                     for row in cursor.fetchall()]
 
     def get_target_count(self, text, target_model=None):
         """Gets the total number of items that get_targets returns,
         (with no limits), but more efficiently than len(get_targets())"""
         qn = ops.quote_name
-        tablename = qn(Tag._meta.db_table)        
+        tablename = qn(Tag._meta.db_table)
         text, textlist = self._normalise_text_textlist(text)
         target, target_model, target_id, target_ct_id = self._normalise_target_info(None, target_model)
-        
+
         tablealias = 0
         selectsql = "SELECT DISTINCT tagtable0.target_ct_id, tagtable0.target_id"
         fromsql = " FROM %s as tagtable0" % tablename
         wheresql = " WHERE tagtable0.text = %s"
         params = [textlist.pop()]
-        
+
         tablealias += 1
 
         # additional WHERE
@@ -398,13 +398,13 @@ class Tag(models.Model):
     # We use CharField for target_id and creator_id for greater flexibility
     # (don't have to use integer primary keys)
     target_id = models.CharField("'Target' ID", max_length=64) # 64 should be enough for anyone...
-    target_ct = models.ForeignKey(ContentType, verbose_name="'Target' content type", 
+    target_ct = models.ForeignKey(ContentType, verbose_name="'Target' content type",
         related_name='tag_target_set')
     creator_id = models.CharField("'creator' ID", max_length=64)
     creator_ct = models.ForeignKey(ContentType, verbose_name="'creator' content type",
         related_name='tag_creator_set')
     added = models.DateTimeField("Date added", auto_now_add=True)
-    
+
     target = GenericForeignKey('target_id', 'target_ct_id')
     creator = GenericForeignKey('creator_id', 'creator_ct_id')
     objects = TagManager()
@@ -421,7 +421,7 @@ class Tag(models.Model):
         super(Tag, self).__init__(*args, **kwargs)
         if target is not None: self.target = target
         if creator is not None: self.creator = creator
-    
+
     def __unicode__(self):
         try:
             target_s = self.target
@@ -432,9 +432,9 @@ class Tag(models.Model):
             creator_s = self.creator
         except ObjectDoesNotExist:
             creator_s = "[%s(%s) does not exist]" % (self.creator_ct.name, self.creator_id)
-        
+
         return u"%s tagged as %s by %s" % (target_s, self.text, creator_s)
-        
+
     def render(self):
         """Returns a rendered (e.g. HTML) representation of the
         tag target.  Requires a 'renderer' to be registered first."""
@@ -445,13 +445,13 @@ class Tag(models.Model):
         the same object that this tag is for."""
         # only includes 'creator' objects of the same content type,
         # as the SQL is harder otherwise.
-        
+
         # try cache first
         try:
             return self._count_tagged_by_others
         except AttributeError:
             pass
-        # SELECT COUNT(DISTINCT(creator_id)) FROM "tagging_tag" 
+        # SELECT COUNT(DISTINCT(creator_id)) FROM "tagging_tag"
         # WHERE target_ct_id = x AND target_id = y AND creator_ct_id = z AND NOT (creator_id = q)
         cursor = connection.cursor()
         qn = ops.quote_name
@@ -460,13 +460,13 @@ class Tag(models.Model):
         params = [self.target_ct_id, self.target_id, self.creator_ct_id, self.creator_id]
         cursor.execute(sql, params)
         retval = int(cursor.fetchone()[0])
-        
+
         # cache so we can use it more cheaply in templates
         self._count_tagged_by_others = retval
         return retval
-        
+
     def count_tagged_with_text(self):
-        """Returns the total number of times that this target 
+        """Returns the total number of times that this target
         has been tagged with this text."""
 
         # we could do this more efficiently if we didn't use self.target
@@ -474,7 +474,7 @@ class Tag(models.Model):
 
     class Meta:
         ordering = ('-added',)
-    
+
     class Admin:
         list_display = (
             'text',

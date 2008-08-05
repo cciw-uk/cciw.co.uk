@@ -18,7 +18,7 @@ class CciwFormMixin(object):
         start = u'<div class="form">'
         end = u'</div>'
         required_text = u' <a href="#" title="This field is required">*</a>'
-        
+
         top_errors = self.non_field_errors() # Errors that should be displayed above all fields.
         output, hidden_fields = [], []
         output.append(start)
@@ -55,9 +55,9 @@ class CciwFormMixin(object):
                 else:
                     help_text = u''
                 output.append(normal_row % {
-                        'errors': force_unicode(bf_errors), 
-                        'label': force_unicode(label), 
-                        'field': unicode(bf), 
+                        'errors': force_unicode(bf_errors),
+                        'label': force_unicode(label),
+                        'field': unicode(bf),
                         'help_text': help_text,
                         'class': cssclass,
                         'divid': "div_id_%s" % bf.name

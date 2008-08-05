@@ -7,13 +7,13 @@ from cciw.cciwmain.tests import members
 
 
 # Test our decorators, which are quite complex.
-# We use existing views which have the different 
+# We use existing views which have the different
 # decorators
 
 def _get_login_post_data(response):
     bs = BeautifulSoup(response.content)
     inp = bs.find(name='input', attrs={'name': LOGIN_FORM_POST_DATA_KEY})
-    if inp is None: 
+    if inp is None:
         return inp
     else:
         return inp.attrMap['value']
@@ -31,7 +31,7 @@ class MemberRequiredPage(TestCase):
         self.assert_(LOGIN_FORM_KEY in r.content, "Should get a login form.")
 
     def test_get_logged_in(self):
-        self.client.member_login(members.TEST_POLL_CREATOR_USERNAME, 
+        self.client.member_login(members.TEST_POLL_CREATOR_USERNAME,
                                  members.TEST_POLL_CREATOR_PASSWORD)
         r = self.client.get(ADD_POLL_URL)
         self.assert_(LOGIN_FORM_KEY not in r.content, "Should not get a login form.")
@@ -40,7 +40,7 @@ class MemberRequiredPage(TestCase):
         """Ensure that when we start with a GET request and have to log in, the view ultimately receives a 'GET' request, not a 'POST'"""
         r = self.client.get(ADD_POLL_URL)
 
-        data = self.client.get_member_login_data(members.TEST_POLL_CREATOR_USERNAME, 
+        data = self.client.get_member_login_data(members.TEST_POLL_CREATOR_USERNAME,
                                                  members.TEST_POLL_CREATOR_PASSWORD,
                                                  post_data = _get_login_post_data(r))
         r2 = self.client.post(ADD_POLL_URL, data=data)
@@ -65,7 +65,7 @@ class MemberRequiredPage(TestCase):
         orig_data = {'some':'random_data', 'details':'dont matter'}
         r = self.client.post(ADD_POLL_URL, data=orig_data)
 
-        data = self.client.get_member_login_data(members.TEST_POLL_CREATOR_USERNAME, 
+        data = self.client.get_member_login_data(members.TEST_POLL_CREATOR_USERNAME,
                                                  members.TEST_POLL_CREATOR_PASSWORD,
                                                  post_data = _get_login_post_data(r))
         r2 = self.client.post(ADD_POLL_URL, data=data)
@@ -79,11 +79,11 @@ class MemberRequiredPage(TestCase):
         # which is good enough for now.
         orig_request2 = get_context_var(r2.context, 'request')
         self.assertEqual(orig_request2.method, 'POST', "Should reproduce a 'POST' method")
-        self.assertEqual(sorted(orig_request2.POST.items()), 
-                         sorted(orig_data.items()), 
+        self.assertEqual(sorted(orig_request2.POST.items()),
+                         sorted(orig_data.items()),
                          "Original post data should be present")
 
-        # Also, validation should have been done, so context should 
+        # Also, validation should have been done, so context should
         # have an 'errors' value
         form = get_context_var(r2.context, 'form')
         self.assertNotEqual(form.errors, {}, "Page should have done some validation")

@@ -8,7 +8,7 @@ class TagSummaryNode(template.Node):
     def __init__(self, object_var_name, output_var_name):
         self.object_var_name = object_var_name
         self.output_var_name = output_var_name
-        
+
     def render(self, context):
         try:
             obj = template.resolve_variable(self.object_var_name, context)
@@ -21,15 +21,15 @@ def do_get_tag_summaries(parser, token):
     """
     Gets tag summaries for an object, populating the context with
     a TagSummaryCollection using the named defined in the 'as' clause.
-    
+
     Syntax::
-    
+
         {% get_tag_summaries for [object] as [varname] %}
-        
+
     Example usage::
-        
+
         {% get_tag_summaries for post as post_tags %}
-        
+
     """
     tokens = token.contents.split()
     # Now tokens is a list like this:

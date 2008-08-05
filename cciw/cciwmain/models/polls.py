@@ -21,22 +21,22 @@ class Poll(models.Model):
     voting_ends = models.DateTimeField("Voting ends")
     rules = models.PositiveSmallIntegerField("Rules",
         choices=VOTING_RULES)
-    rule_parameter = models.PositiveSmallIntegerField("Parameter for rule", 
+    rule_parameter = models.PositiveSmallIntegerField("Parameter for rule",
         default=1)
-    have_vote_info = models.BooleanField("Full vote information available", 
+    have_vote_info = models.BooleanField("Full vote information available",
         default=True)
     created_by = models.ForeignKey(Member, verbose_name="created by",
         related_name="polls_created")
-    
+
     def __unicode__(self):
         return self.title
-    
+
     def can_vote(self, member):
         """Returns true if member can vote on the poll"""
         if not self.can_anyone_vote():
             return False
         if not self.have_vote_info:
-            # Can't calculate this, but it will only happen 
+            # Can't calculate this, but it will only happen
             # for legacy polls, which are all closed.
             return True
         if self.rules == Poll.UNLIMITED:
@@ -46,7 +46,7 @@ class Poll(models.Model):
             if self.rules == Poll.X_VOTES_PER_USER:
                 queries.append(po.votes.filter(member=member.user_name))
             elif self.rules == Poll.X_VOTES_PER_USER_PER_DAY:
-                queries.append(po.votes.filter(member=member.user_name, 
+                queries.append(po.votes.filter(member=member.user_name,
                                                 date__gte=datetime.now() - timedelta(1)))
         # combine them all and do an SQL count.
         if len(queries) == 0:
@@ -56,18 +56,18 @@ class Poll(models.Model):
             return False
         else:
             return True
-        
+
     def total_votes(self):
         sum = 0
         # TODO - use SQL, or caching
         for option in self.poll_options.all():
             sum += option.total
         return sum
-    
+
     def can_anyone_vote(self):
         return (self.voting_ends > datetime.now()) and \
             (self.voting_starts < datetime.now())
-    
+
     def verbose_rules(self):
         if self.rules == Poll.UNLIMITED:
             return u"Unlimited number of votes."
@@ -75,9 +75,9 @@ class Poll(models.Model):
             return u"%s vote(s) per user." % self.rule_parameter
         elif self.rules == Poll.X_VOTES_PER_USER_PER_DAY:
             return u"%s vote(s) per user per day." % self.rule_parameter
-        
+
     class Meta:
-        app_label = "cciwmain"   
+        app_label = "cciwmain"
         ordering = ('title',)
 
 class PollOption(models.Model):
@@ -86,13 +86,13 @@ class PollOption(models.Model):
     poll = models.ForeignKey(Poll, verbose_name="Associated poll",
         related_name="poll_options", edit_inline=True)
     listorder = models.PositiveSmallIntegerField("Order in list", core=True)
-        
+
     def __unicode__(self):
         return self.text
-        
+
     def percentage(self):
         """
-        Get the percentage of votes this option got 
+        Get the percentage of votes this option got
         compared to the total number of votes in the whole. Return
         'n/a' if total votes = 0
         """
@@ -104,7 +104,7 @@ class PollOption(models.Model):
                 return '0%'
             else:
                 return '%.1f' % (float(self.total)/sum*100) + '%'
-                
+
     def bar_width(self):
         sum = self.poll.total_votes()
         if sum == 0:
@@ -117,7 +117,7 @@ class PollOption(models.Model):
         ordering = ('poll', 'listorder',)
 
 class VoteInfo(models.Model):
-    poll_option = models.ForeignKey(PollOption, 
+    poll_option = models.ForeignKey(PollOption,
         related_name="votes")
     member = models.ForeignKey(Member,
         verbose_name="member",
@@ -136,4 +136,4 @@ class VoteInfo(models.Model):
 
     class Meta:
         app_label = "cciwmain"
-        
+

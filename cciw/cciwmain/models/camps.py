@@ -11,25 +11,25 @@ class Site(models.Model):
     slug_name = models.SlugField("Machine name", max_length="25", blank=True, unique=True)
     long_name = models.CharField("Long name", max_length="50", blank=False)
     info = models.TextField("Description (HTML)")
-    
+
     def __unicode__(self):
         return self.short_name
-        
+
     def get_absolute_url(self):
         return u"/sites/%s/" % self.slug_name
-    
+
     def save(self):
         from django.template.defaultfilters import slugify
         self.slug_name = slugify(self.short_name)
         super(Site, self).save()
-    
+
     class Meta:
         app_label = "cciwmain"
         pass
-        
+
 class Person(models.Model):
     name = models.CharField("Name", max_length=40)
-    info = models.TextField("Information (Plain text)", 
+    info = models.TextField("Information (Plain text)",
                         blank=True)
     users = models.ManyToManyField(User, verbose_name="Associated admin users")
 
@@ -53,25 +53,25 @@ class Camp(models.Model):
                         choices=CAMP_AGES)
     start_date = models.DateField("start date")
     end_date = models.DateField("end date")
-    previous_camp = models.ForeignKey("self", 
-        related_name="next_camps", 
+    previous_camp = models.ForeignKey("self",
+        related_name="next_camps",
         verbose_name="previous camp",
         null=True, blank=True)
-    chaplain = models.ForeignKey(Person, 
-        related_name="camps_as_chaplain", 
-        verbose_name="chaplain", 
+    chaplain = models.ForeignKey(Person,
+        related_name="camps_as_chaplain",
+        verbose_name="chaplain",
         null=True, blank=True)
-    leaders = models.ManyToManyField(Person, 
-        related_name="camps_as_leader", 
+    leaders = models.ManyToManyField(Person,
+        related_name="camps_as_leader",
         verbose_name="leaders",
         null=True, blank=True)
-    admins = models.ManyToManyField(User, 
+    admins = models.ManyToManyField(User,
         related_name="camps_as_admin",
         verbose_name="admins",
         null=True, blank=True)
     site = models.ForeignKey(Site)
     online_applications = models.BooleanField("Accepts online applications from officers.")
-    
+
     def save(self):
         new = self.id is None
         super(Camp, self).save()
@@ -95,7 +95,7 @@ class Camp(models.Model):
         else:
             leadertext = u""
         return u"%s-%s%s" % (self.year, self.number, leadertext)
-    
+
     @property
     def nice_name(self):
         return u"Camp %d, year %d" % (self.number, self.year)

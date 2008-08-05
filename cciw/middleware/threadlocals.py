@@ -11,7 +11,7 @@ def is_web_request():
 
 def get_current_user():
     return getattr(_thread_locals, 'user', None)
-    
+
 def set_current_user(user):
     _thread_locals.user = user
 
@@ -41,7 +41,7 @@ class ThreadLocals(object):
     """Adds various objects to thread local storage from the request object."""
     def process_request(self, request):
         set_current_user(getattr(request, 'user', None))
-        
+
         member = _get_member_from_request(request)
         if member is not None:
             # use opportunity to update last_seen data

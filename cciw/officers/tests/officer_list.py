@@ -20,7 +20,7 @@ class OfficerListPage(TwillMixin, TestCase):
 "Mr Leader" &lt;leader@somewhere.com&gt;,"Mr Officer" &lt;officer1@somewhere.com&gt;,"Mr Officer2" &lt;officer2@somewhere.com&gt;,
 </p>""")
 
-        # Officers without application forms. 
+        # Officers without application forms.
         # (This is not brilliantly robust, because both lists are on one
         #  page, but it will do.)
         tc.find("""<h3>List for email:</h3>

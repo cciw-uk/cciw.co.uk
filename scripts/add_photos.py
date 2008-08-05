@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.5
+x#!/usr/bin/env python2.5
 import sys
 import os
 
@@ -18,7 +18,7 @@ Usage: add_photos.py photo1.jpeg [photo2.jpeg...]
 """
 
 
-camp_re = re.compile('^(?P<year>\d{4})-(?P<number>\d+)') 
+camp_re = re.compile('^(?P<year>\d{4})-(?P<number>\d+)')
 
 def main():
     if len(sys.argv) == 1:
@@ -30,15 +30,15 @@ def main():
         m = camp_re.match(photoname)
         if m is None:
             raise Exception("Photo %s is not in the form yyyy-n-*" % photoname)
-    
+
         try:
-            camp = Camp.objects.get(year=int(m.groupdict()['year']), 
+            camp = Camp.objects.get(year=int(m.groupdict()['year']),
                                     number=int(m.groupdict()['number']))
         except Camp.DoesNotExist:
             raise Exception("Camp %s could not be found" % m.group())
 
         gallery = get_gallery_for_camp(camp)
-        
+
         try:
             p = Photo.objects.get(gallery=gallery, filename=photoname)
         except Photo.DoesNotExist:
@@ -48,6 +48,6 @@ def main():
             print "Created photo %s." % photoname
         else:
             print "Warning: Photo %s already exists." % photoname
-    
+
 if __name__ == '__main__':
     main()

@@ -17,7 +17,7 @@ class EmailNode(template.Node):
 
 def do_email(parser, token):
     """
-    Obfuscates the email address between the 
+    Obfuscates the email address between the
     'email' and 'endemail' tags.
     """
     nodelist = parser.parse(('endemail',))
@@ -30,33 +30,33 @@ class MemberLinkNode(template.Node):
     def render(self, context):
         user_name = self.nodelist.render(context)
         return get_member_link(user_name)
-    
+
 def do_member_link(parser, token):
     """
-    Creates a link to a member, using the member name between the 
+    Creates a link to a member, using the member name between the
     'memberlink' and 'endmemberlink' tags.
     """
     nodelist = parser.parse(('endmemberlink',))
     parser.delete_first_token()
     return MemberLinkNode(nodelist)
-    
+
 class MemberIconNode(template.Node):
     def __init__(self, nodelist):
         self.nodelist = nodelist
     def render(self, context):
         user_name = self.nodelist.render(context)
         return get_member_icon(user_name)
-    
+
 def do_member_icon(parser, token):
     """
-    Creates an <img> tag for a member icon, using the member name between the 
+    Creates an <img> tag for a member icon, using the member name between the
     'membericon' and 'endmembericon' tags.
     """
     nodelist = parser.parse(('endmembericon',))
     parser.delete_first_token()
     return MemberIconNode(nodelist)
 
-    
+
 class SetVarNode(template.Node):
     def __init__(self, varname, varval):
         self.varname = varname
@@ -65,10 +65,10 @@ class SetVarNode(template.Node):
         context[self.varname] = template.resolve_variable(self.varval, context)
         return ''
 
-        
+
 def do_setvar(parser, token):
     """
-    Sets a variable in the context.  The first argument 
+    Sets a variable in the context.  The first argument
     must be the variable name, the second the variable value
     as a literal or a variable."""
     bits = token.contents.split(" ", 2)
@@ -77,14 +77,14 @@ def do_setvar(parser, token):
 class RenderHtmlChunk(template.Node):
     def __init__(self, chunk_name):
         self.chunk_name = chunk_name
-        
+
     def render(self, context):
         chunk = getattr(self, 'chunk', None)
         if chunk is None:
             chunk = HtmlChunk.objects.get(name=self.chunk_name)
             self.chunk = chunk
         return chunk.render(context['request'])
-    
+
 def do_htmlchunk(parser, token):
     """
     Renders an HtmlChunk. It takes a single argument,
@@ -103,7 +103,7 @@ class AtomFeedLink(template.Node):
             % {'url': context['request'].path, 'title': title }
         else:
             return u''
-            
+
 class AtomFeedLinkVisible(template.Node):
     def __init__(self, parser, token):
         pass
@@ -112,14 +112,14 @@ class AtomFeedLinkVisible(template.Node):
         if title:
             thisurl = context['request'].path
             thisfullurl = 'http://%s%s' % (get_current_domain(), thisurl)
-            return (u'<a class="atomlink" href="%(atomurl)s" rel="external" title="%(atomtitle)s" >' + 
+            return (u'<a class="atomlink" href="%(atomurl)s" rel="external" title="%(atomtitle)s" >' +
                     u' <img src="%(atomimgurl)s" alt="Feed icon" /></a> ' +
                     u' <a href="/website/feeds/" title="Help on Atom feeds">?</a> |' +
                     u' <a class="atomlink" href="%(emailurl)s" rel="external" title="Subscribe to this page by email">' +
                     u' <img src="%(emailimgurl)s" alt="Email icon" /></a> ' +
                     u' <a href="/website/feeds/#emailupdates" title="Help on Email updates">?</a> |') \
-            % dict(atomurl="%s?format=atom" % thisurl, 
-                   atomtitle=title, 
+            % dict(atomurl="%s?format=atom" % thisurl,
+                   atomtitle=title,
                    atomimgurl="%s/images/feed.gif" % settings.MEDIA_URL,
                    emailurl=escape("http://www.rssfwd.com/rssfwd/preview?%s" % urlencode({'url':thisfullurl, 'submit url':'Submit'})),
                    emailimgurl="%s/images/email.gif" % settings.MEDIA_URL
@@ -148,9 +148,9 @@ def do_tag_summary_list(parser, token):
     """
     Renders a list of tag summaries for an object, with links to
     full details.
-    
+
     Example::
-    
+
         {% tag_summary_list for post %}
     """
     tokens = token.contents.split()
@@ -165,26 +165,26 @@ def do_tag_summary_list(parser, token):
 class AddTagLink(template.Node):
     def __init__(self, target_var_name):
         self.target_var_name = target_var_name
-        
+
     def render(self, context):
         target = template.resolve_variable(self.target_var_name, context)
         request = context['request'] # requires request to be in the context
         model_name = target.__class__.__name__.lower()
         model_id = tagging_utils.get_pk_as_str(target)
-        
+
         return u'<a class="addtag" href="/edit_tag/%s/%s/?r=%s" title="Add/edit tags for this %s">+</a>' % \
                 (model_name, model_id, escape(urlquote(request.get_full_path())), model_name)
 
 def do_add_tag_link(parser, token):
     """
     Renders a link for adding a tag to an object
-    
+
     Syntax::
-    
+
         {% add_tag_link for [object] %}
-        
+
     Example usage::
-        
+
         {% add_tag_link for post %}
     """
     tokens = token.contents.split()

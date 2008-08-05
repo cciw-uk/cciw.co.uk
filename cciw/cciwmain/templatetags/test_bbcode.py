@@ -3,23 +3,23 @@ import sys
 import os
 
 import bbcode
-from cciw.cciwmain.utils import get_member_link   
+from cciw.cciwmain.utils import get_member_link
 
 
 tests = (
     ('<test&',
         '<div>&lt;test&amp;</div>'),
-    ('[b]Incorrectly [i]nested tags[/b] must be dealt with[/i]', 
+    ('[b]Incorrectly [i]nested tags[/b] must be dealt with[/i]',
         '<div><b>Incorrectly <i>nested tags</i></b> must be dealt with</div>'),
-    ('[quote]this must be in a div[/quote]', 
+    ('[quote]this must be in a div[/quote]',
         '<blockquote><div>this must be in a div</div></blockquote>'),
-    ('Newlines\nconverted\n\nto brs', 
+    ('Newlines\nconverted\n\nto brs',
         '<div>Newlines<br/>converted<br/><br/>to brs</div>'),
-    ('[list][br][*]brs discarded when illegal', 
+    ('[list][br][*]brs discarded when illegal',
         '<ul><li>brs discarded when illegal</li></ul>'),
-    ('[list]\n[*]Newlines not discarded, or converted when brs would be illegal', 
+    ('[list]\n[*]Newlines not discarded, or converted when brs would be illegal',
         '<ul>\n<li>Newlines not discarded, or converted when brs would be illegal</li></ul>'),
-    ('[quote]\nNewlines not discarded at beginning of quote', 
+    ('[quote]\nNewlines not discarded at beginning of quote',
         '<blockquote>\n<div>Newlines not discarded at beginning of quote</div></blockquote>'),
     (u'[list]Text in root of list tag is moved outside[*]and put in a div é[/list]',
         u'<div>Text in root of list tag is moved outside<ul><li>and put in a div é</li></ul></div>'),
@@ -28,7 +28,7 @@ tests = (
     ('0:-)',
         '<div><img src="' + bbcode.EMOTICONS_ROOT + 'angel.gif" alt="0:-)" /></div>' ),
     ('[code]:-) :bosh:[/code]',
-        '<pre class="code">:-) :bosh:</pre>'),    
+        '<pre class="code">:-) :bosh:</pre>'),
     ('[url]/foo/?a=1&b=2[/url]',
         '<div><a href="/foo/?a=1&amp;b=2">/foo/?a=1&amp;b=2</a></div>'),
     ('[url=/foo/?a=1&b=2]bar[/url]',
@@ -59,9 +59,9 @@ tests = (
     # text that is accidentally similar to escaping:
     ('[[b]Just some bold text in square brackets[/b]]',
         '<div>[<b>Just some bold text in square brackets</b>]</div>'),
-    
+
     # non-existant tags come through as literals
-    (u'[nonéxistanttag]',    
+    (u'[nonéxistanttag]',
         u'<div>[nonéxistanttag]</div>'),
     # empty string should return nothing
     ('',
@@ -76,7 +76,7 @@ tests = (
 
 def check_xhtml(bb, xhtml):
     assert bbcode.bb2xhtml(bb) == xhtml
-    
+
 def test_render_xhtml():
     for bb, xhtml in tests:
         yield check_xhtml, bb, xhtml

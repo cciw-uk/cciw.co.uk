@@ -52,7 +52,7 @@ def main():
                 Invitation.objects.get(camp=camp.id, officer=user.id)
             except Invitation.DoesNotExist:
                 inv = Invitation(camp_id=camp.id, officer_id=user.id)
-                inv.save()            
+                inv.save()
 
 if __name__ == '__main__':
     main()

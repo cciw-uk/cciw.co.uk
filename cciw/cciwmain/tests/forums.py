@@ -1,5 +1,5 @@
 from cciw.cciwmain.tests.client import CciwClient
-from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD, TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD 
+from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD, TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD
 from django.test import TestCase
 from cciw.cciwmain.models import Topic, Member, Poll
 from django.core.urlresolvers import reverse
@@ -8,7 +8,7 @@ from cciw.cciwmain import decorators
 
 FORUM_1_YEAR = 2000
 FORUM_1_CAMP_NUMBER = 1
-ADD_POLL_URL =  reverse("cciwmain.camps.add_poll", 
+ADD_POLL_URL =  reverse("cciwmain.camps.add_poll",
                         kwargs=dict(year=FORUM_1_YEAR, number=FORUM_1_CAMP_NUMBER))
 
 class TopicPage(TestCase):
@@ -16,18 +16,18 @@ class TopicPage(TestCase):
 
     def setUp(self):
         self.client = CciwClient()
-        
+
     def path(self):
         return Topic.objects.get(id=1).get_absolute_url()
 
     def test_topic_html(self):
         response = self.client.get(self.path())
         self.failUnlessEqual(response.status_code, 200)
-        self.assert_("<h2>&lt;Jill &amp; Jane&gt;</h2>" in response.content, 
+        self.assert_("<h2>&lt;Jill &amp; Jane&gt;</h2>" in response.content,
                      "Subject not escaped correctly")
-        self.assert_("A <b>unique message</b> with some bbcode &amp; &lt;stuff&gt; to be escaped" in response.content, 
+        self.assert_("A <b>unique message</b> with some bbcode &amp; &lt;stuff&gt; to be escaped" in response.content,
                      "Posts not escaped correctly")
-        self.assert_('<a href="/camps/">Forums and photos</a>' in response.content, 
+        self.assert_('<a href="/camps/">Forums and photos</a>' in response.content,
                      "Breadcrumb not escaped properly")
 
     def test_topic_atom(self):
@@ -57,7 +57,7 @@ class CreatePollPage(TestCase):
             rules="0",
             rule_parameter="1",
             )
-    def test_cant_create_poll_if_anonymous(self):        
+    def test_cant_create_poll_if_anonymous(self):
         response = self.client.get(ADD_POLL_URL)
         # response should be a login form
         self.assert_(decorators.LOGIN_FORM_KEY in response.content)
@@ -89,13 +89,13 @@ class CreatePollPage(TestCase):
             p = Poll.objects.get(title=poll_data['title'])
         except Poll.ObjectDoesNotExist:
             self.fail("Poll not created.")
-        
+
         self.assertEqual(p.intro_text, poll_data['intro_text'])
         self.assertEqual(p.poll_options.count(), 4, "Poll does not have right number of options created")
 
     def test_cant_edit_someone_elses_poll(self):
-        p = Poll(title="test", 
-                 voting_starts=datetime.now(), 
+        p = Poll(title="test",
+                 voting_starts=datetime.now(),
                  voting_ends=datetime.now(),
                  rules = 0,
                  rule_parameter=1,
@@ -104,8 +104,8 @@ class CreatePollPage(TestCase):
         p.save()
 
         self.client.member_login(TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD)
-        url = reverse("cciwmain.camps.edit_poll", 
-                      kwargs=dict(year=FORUM_1_YEAR, 
+        url = reverse("cciwmain.camps.edit_poll",
+                      kwargs=dict(year=FORUM_1_YEAR,
                                   number=FORUM_1_CAMP_NUMBER,
                                   poll_id=p.id))
         response = self.client.get(url)

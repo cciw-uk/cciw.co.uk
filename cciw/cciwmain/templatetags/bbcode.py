@@ -1,25 +1,25 @@
 #####################################################################
-##    Copyright (c) 2005-2006, Luke Plant 
+##    Copyright (c) 2005-2006, Luke Plant
 ##    All rights reserved.
 ##    E-mail: <L.Plant.98@cantab.net>
 ##    Web: http://lukeplant.me.uk/
-##    
+##
 ##    Redistribution and use in source and binary forms, with or without
 ##    modification, are permitted provided that the following conditions are
 ##    met:
-##    
+##
 ##        * Redistributions of source code must retain the above copyright
 ##          notice, this list of conditions and the following disclaimer.
-##    
+##
 ##        * Redistributions in binary form must reproduce the above
 ##          copyright notice, this list of conditions and the following
 ##          disclaimer in the documentation and/or other materials provided
 ##          with the distribution.
-##    
-##        * The name of Luke Plant may not be used to endorse or promote 
-##          products derived from this software without specific prior 
+##
+##        * The name of Luke Plant may not be used to endorse or promote
+##          products derived from this software without specific prior
 ##          written permission.
-##    
+##
 ##    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 ##    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 ##    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -37,7 +37,7 @@
 ##
 ## 1) full XHTML compliance, including prohibited elements
 ## 2) intelligent handling/preserving of whitespace
-## 3) emoticons, with intelligent handling for tricky cases 
+## 3) emoticons, with intelligent handling for tricky cases
 ##    (e.g. inside <pre> tags)
 ## 4) ability to render out corrected BBCode as well as XHTML
 ## 5) XHTML output can be inserted into <body>, <div>, <td>
@@ -45,7 +45,7 @@
 ## 6) Excellent 'do what I mean' handling of bbcode input.
 ##
 ## IMPLEMENTATION NOTES
-## 
+##
 ## 1) I have implemented what I needed and used for my own needs,
 ##    which isn't necessarily 'standard' bbcode, if such a thing exists
 ## 2) There are some definitely web site specific extensions
@@ -54,7 +54,7 @@
 ## 4) Mostly it works on one-to-one correspondance between
 ##    'bbtags' and xhtml tags, but with some added constraints to force
 ##    extra elements to be inserted to comply with XHTML, and
-##    use some tricks to relax the nesting constraints, such 
+##    use some tricks to relax the nesting constraints, such
 ##    as some elements being context sensitive in the render phase
 
 import re
@@ -114,20 +114,20 @@ class MultiReplace:
 # created in the 'rules' section.
 class BBTag(object):
     """Represents an allowed tag with its name and meta data."""
-    def __init__(self, name, allowed_children, implicit_tag, self_closing=False, 
+    def __init__(self, name, allowed_children, implicit_tag, self_closing=False,
         prohibited_elements=None, discardable=False):
         """Creates a new BBTag.
         - name is the text appears in square brackets e.g. for [b], name = 'b'
         - allowed_children is a list of the names of tags that can be added to this element
-        - implicit_tag is a tag that can automatically be added before this one 
+        - implicit_tag is a tag that can automatically be added before this one
           if necessary to allow it to be added.
         - self_closing means the element never has child elements
-        - prohibited_elements is a list of elements that can never be 
+        - prohibited_elements is a list of elements that can never be
           descendent elements of this one
-        - discardable = True indicates that the tag can be discarded if 
+        - discardable = True indicates that the tag can be discarded if
           it can't be added at the current point in the tree.
         """
-        
+
         if prohibited_elements is None:
             self.prohibited_elements = ()
         else:
@@ -137,14 +137,14 @@ class BBTag(object):
         self.implicit_tag = implicit_tag
         self.allowed_children = set(allowed_children)
         self.discardable = discardable
-        
+
     def render_node_xhtml(self, node):
         """
         Renders a node of this BBTag as HTML.
         node is the node to render.
         """
         raise NotImplementedException()
-    
+
     def render_node_bbcode(self, node):
         opening = self.name # opening tag
         if node.parameter:
@@ -155,9 +155,9 @@ class BBTag(object):
             return u'[%s]%s[/%s]' % \
                 (opening, node.render_children_bbcode(), self.name)
 
-## Subclasses that follow override the render_node_xhtml 
+## Subclasses that follow override the render_node_xhtml
 ## or render_node_bbcode method
-        
+
 class HtmlEquivTag(BBTag):
     """
     A BBTag that is a direct equivalent of an HTML tag, and can render itself.
@@ -166,22 +166,22 @@ class HtmlEquivTag(BBTag):
         self.html_equiv = kwargs.pop('html_equiv')
         self.attributes = kwargs.pop('attributes', None)
         BBTag.__init__(self, *args, **kwargs)
-    
+
     def render_node_xhtml(self, node):
         opening = self.html_equiv
         if self.attributes:
             # Add any attributes
-            opening += u''.join(u' %s="%s"' % (k, escape(v)) 
+            opening += u''.join(u' %s="%s"' % (k, escape(v))
                                         for k, v in self.attributes.items())
         if self.self_closing:
-            ret = u'<%s/>' % opening 
+            ret = u'<%s/>' % opening
         else:
             if len(node.children) > 0:
                 ret = u'<%s>%s</%s>' % (opening, node.render_children_xhtml(), self.html_equiv)
             else:
                 ret = u''
         return ret
-    
+
     def render_node_bbcode(self, node):
         if self.name == 'div':
             # 'div' elements should never be printed out as [div]
@@ -209,7 +209,7 @@ class SoftBrTag(BBTag):
             return u'<br/>'
         else:
             return u'\n'
-            
+
     def render_node_bbcode(self, node):
         return u'\n'
 
@@ -226,7 +226,7 @@ class Emoticon(BBTag):
                 return u'<img src="%s" alt="%s" />' % (EMOTICONS_ROOT + imagename, escape(emoticon))
         else:
             return emoticon
-            
+
     def render_node_bbcode(self, node):
         return node.children[0].text
 
@@ -258,7 +258,7 @@ class EmailTag(BBTag):
             return obfuscate_email(escape(node.children[0].text.strip()))
         else:
             return u''
-            
+
 class UrlTag(BBTag):
     def render_node_xhtml(self, node):
         if len(node.children) == 0:
@@ -284,7 +284,7 @@ class QuoteTag(BBTag):
                    (get_member_link(node.parameter),  node.render_children_xhtml())
         else:
             return '<blockquote>%s</blockquote>' % node.render_children_xhtml()
-        
+
 class BibleTag(BBTag):
     def render_node_xhtml(self, node):
         output = u''
@@ -297,16 +297,16 @@ class BibleTag(BBTag):
 
 ###### DATA ######
 
-_COLORS = ('aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon', 
+_COLORS = ('aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon',
     'navy', 'olive', 'purple', 'red', 'silver', 'teal', 'white', 'yellow')
-    
+
 _COLOR_REGEXP = re.compile('|'.join(_COLORS) + r'|#[0-9A-F]{6}')
 _MEMBER_REGEXP = re.compile(r'^[0-9A-Za-z_]{1,30}$')
 _BBTAG_REGEXP = re.compile(r'\[\[?\/?([A-Za-z\*]+)(=[^\]]+)?\]?\]')
 
 # 'text' is a dummy entry for text nodes
 _INLINE_TAGS = (
-    'b', 'i', 'color', 'member', 'email', 'url', 
+    'b', 'i', 'color', 'member', 'email', 'url',
     'br', 'text', 'img', 'softbr', 'emoticon'
 )
 _BLOCK_LEVEL_TAGS = ('p', 'quote', 'list', 'pre', 'code', 'div', 'bible')
@@ -315,7 +315,7 @@ _OTHER_TAGS = ('*',)
 
 _ANCHOR_TAGS = ('member', 'email', 'url')
 
-# Rules, defined so that the output after translation will be 
+# Rules, defined so that the output after translation will be
 # XHTML compatible. Other rules are implicit in the parsing routines.
 # Note that some bbtags can adapt to their context in the rendering
 # phase in order to generate correct XHTML, so have slacker rules than normal
@@ -324,64 +324,64 @@ _ANCHOR_TAGS = ('member', 'email', 'url')
 _TAGS = (
     #           name          allowed_children   implicit_tag
     # <br/>
-    HtmlEquivTag('br',         (),             'div', 
+    HtmlEquivTag('br',         (),             'div',
         self_closing=True, discardable=True, html_equiv='br'),
-    
+
     # <br/>, but can adapt during render
-    SoftBrTag   ('softbr',     (),             'div', 
+    SoftBrTag   ('softbr',     (),             'div',
         self_closing=True, discardable=True),
-    
+
     # <img/>,  but can adapt
     Emoticon    ('emoticon',   ('text',),      'div'),
-    
+
     # <b>
     HtmlEquivTag('b',          _INLINE_TAGS,   'div',
         html_equiv='b'),
-    
+
     # <i>
     HtmlEquivTag('i',          _INLINE_TAGS,   'div',
         html_equiv='i'),
-    
+
     # <span>
     ColorTag    ('color',      _INLINE_TAGS,   'div'),
-    
+
     # <a>
     MemberTag   ('member',     ('text',),      'div' ),
-    
+
     # <a>
     EmailTag    ('email',      ('text',),      'div'),
-    
+
     # <a>
     UrlTag      ('url',        ('text',),      'div'),
-    
+
     # <p>
     HtmlEquivTag('p',          _INLINE_TAGS,   None,
         html_equiv='p'),
-    
+
     # <div>
     HtmlEquivTag('div',        _FLOW_TAGS,     None,
         html_equiv='div'),
-    
+
     # <blockquote>
     QuoteTag    ('quote',      _BLOCK_LEVEL_TAGS + ('softbr',), 'div'),
-    
+
     # <blockquote>
     BibleTag    ('bible',      _BLOCK_LEVEL_TAGS + ('softbr',), 'div'),
-    
+
     # <ul>
     HtmlEquivTag('list',       ('*', 'softbr'),None,
         html_equiv='ul'),
-    
+
     # <pre> (only img currently needed out of the prohibited elements)
-    HtmlEquivTag('pre',        _INLINE_TAGS,   None, 
+    HtmlEquivTag('pre',        _INLINE_TAGS,   None,
         prohibited_elements=('img', 'big', 'small', 'sub', 'sup'),
-        html_equiv='pre'), 
-    
+        html_equiv='pre'),
+
     # <pre class="code">
-    HtmlEquivTag('code',       _INLINE_TAGS,   None, 
+    HtmlEquivTag('code',       _INLINE_TAGS,   None,
         prohibited_elements = ('img', 'big', 'small', 'sub', 'sup'),
         html_equiv='pre', attributes={'class':'code'}),
-        
+
     # <li>
     LiTag('*',                 _FLOW_TAGS,     'list',)
 )
@@ -450,7 +450,7 @@ _EMOTICONS = \
 _EMOTICON_DICT = dict(_EMOTICONS)
 
 # Create a replacer (optimisation, plus this method is important
-# for correctness) 
+# for correctness)
 _replace_pairs = ((x, '[emoticon]%s[/emoticon]' % x) for x, y in _EMOTICONS)
 _emoticon_replacer = MultiReplace(dict(_replace_pairs))
 
@@ -461,7 +461,7 @@ class BBNode:
     def __init__(self, parent):
         self.parent = parent
         self.children = []
-        
+
     def render_children_xhtml(self):
         """Render the child nodes as XHTML"""
         return u"".join([child.render_xhtml() for child in self.children])
@@ -476,7 +476,7 @@ class BBRootNode(BBNode):
         BBNode.__init__(self, None)
         self.children = []
         self.allow_inline = allow_inline
-    
+
     def render_xhtml(self):
         """Render the node as XHTML"""
         return self.render_children_xhtml()
@@ -498,7 +498,7 @@ class BBTextNode(BBNode):
     def __init__(self, parent, text):
         BBNode.__init__(self, parent)
         self.text = text
-        
+
     def render_xhtml(self):
         """Render the node as XHTML"""
         return escape(self.text)
@@ -555,7 +555,7 @@ class BBCodeParser:
         """Add a text node to the current node"""
         # escaped=True for text that has been wrapped in extra []
         # to stop interpretation as bbcode
-        
+
         if escaped:
             text_class = BBEscapedTextNode
         else:
@@ -597,7 +597,7 @@ class BBCodeParser:
             elif (self.current_node == self.root_node or \
                 self.current_node.bbtag.name in _BLOCK_LEVEL_TAGS) and\
                 not new_tag.implicit_tag is None:
-                
+
                 # E.g. [*] inside root, or [*] inside [quote]
                 # or inline inside root
                 # Add an implicit tag if possible
@@ -614,7 +614,7 @@ class BBCodeParser:
                 self.descend()
 
     def close_tag_node(self, name):
-        """Pop the stack back to the first node with the 
+        """Pop the stack back to the first node with the
         specified tag name, and 'close' that node."""
         temp_node = self.current_node
         while True:
@@ -633,7 +633,7 @@ class BBCodeParser:
     def _prepare(self, bbcode):
         # Replace newlines with 'soft' brs
         bbcode = bbcode.replace(u"\n", u'[softbr]')
-        
+
         # Replace emoticons with context-sensitive emoticon tags
         bbcode = _emoticon_replacer.replace(bbcode)
         return bbcode
@@ -649,7 +649,7 @@ class BBCodeParser:
             if not match is None:
                 # push all text up to the start of the match
                 self.push_text_node(bbcode[pos:match.start()])
-                
+
                 # push the tag itself
                 tagname = match.groups()[0]
                 parameter = match.groups()[1]
@@ -682,11 +682,11 @@ class BBCodeParser:
                 # push all remaining text
                 self.push_text_node(bbcode[pos:])
                 pos = len(bbcode)
-        
+
     def render_xhtml(self):
         """Render the parsed tree as XHTML"""
         return self.root_node.render_xhtml()
-        
+
     def render_bbcode(self):
         """Render the parsed tree as corrected BBCode"""
         return self.root_node.render_bbcode()
@@ -696,7 +696,7 @@ def bb2xhtml(bbcode, root_allows_inline=False):
     parser = BBCodeParser(root_allows_inline)
     parser.parse(bbcode)
     return parser.render_xhtml()
-    
+
 def correct(bbcode):
     "Renders corrected bbcode"
     parser = BBCodeParser(True)

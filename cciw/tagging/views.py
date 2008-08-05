@@ -24,35 +24,35 @@ def _get_base_attrs_for_objs(creator, target):
 def _get_search_attrs(base_attrs):
     """Turns 'base attributes' dictionary into a dict
     that can be passed to QuerySet.filter()"""
-    return dict([(k.replace('_ct_id', '_ct__id__exact'), v) 
+    return dict([(k.replace('_ct_id', '_ct__id__exact'), v)
                     for k, v in base_attrs.iteritems()])
 
 def recent_popular(request, creator=None, target=None, creator_model=None, target_model=None,
-        extra_context=None, popular_tags_limit=POPULAR_TAGS_LIMIT, 
+        extra_context=None, popular_tags_limit=POPULAR_TAGS_LIMIT,
         popular_tags_order='text', text=None, extra_handler=None, **kwargs):
     """View that displays a list of recent tags, with paging,
-    and a list of popular tags.  Both lists are filtered by the 'creator', 
+    and a list of popular tags.  Both lists are filtered by the 'creator',
     'target', 'creator_model' and 'target_model' parameters if given.
-    
+
     The recent tags are displayed using the list_detail.object_list generic view,
     and the full objects are displayed.  The popular tags are available in the
     context as a list of TagSummary objects, with the name 'popular_tags'.
-    
-    'popular_tags_order' is the ordering to apply to the popular tags. It can 
+
+    'popular_tags_order' is the ordering to apply to the popular tags. It can
     be 'count' (descending popularity) or 'text'.(alphabetical, ascending).
-    
+
     'text' limits the search to tags with a specific 'text' value. (not generally useful)
-    
-    The template context variables are the list_detail.object_list ones, 
+
+    The template context variables are the list_detail.object_list ones,
     plus 'popular_tags' (a list of TagSummary objects), plus 'text', 'target'
     and 'creator'.
-    
+
     extra_handler is an optional callable that can be used to generate an alternative
     rendering for the queryset (e.g. an Atom feed).  If provided, it should be a callable
     that takes the request and the Tag queryset as it only parameters, and returns
     None if decides not to handle the request, or an object (e.g. HttpResponse)
     to be returned otherwise.
-    
+
     kwargs can be used to pass additional parameters to list_detail.object_list
     generic view (e.g. template_name, paginate_by etc).
     """
@@ -80,7 +80,7 @@ def recent_popular(request, creator=None, target=None, creator_model=None, targe
     extra_context['creator'] = creator
     extra_context['popular_tags'] = popular_tags
 
-    return list_detail.object_list(request, queryset, allow_empty=True, 
+    return list_detail.object_list(request, queryset, allow_empty=True,
                 extra_context=extra_context, **kwargs)
 
 class TagTargetPseudoQuery(object):
@@ -88,14 +88,14 @@ class TagTargetPseudoQuery(object):
     def __init__(self, text, target_model):
         self.text = text
         self.target_model = target_model
-        
+
 
     def _clone(self):
         return self # we don't need the generic view to clone us
 
     def count(self):
         return Tag.objects.get_target_count(self.text, self.target_model)
-    
+
     def __getitem__(self, k):
         "Retrieve an item or slice from the set of results."
         assert isinstance(k, slice) # we don't need to handle anything else
@@ -104,18 +104,18 @@ class TagTargetPseudoQuery(object):
             limit = k.stop - k.start
         else:
             limit = k.stop
-        return Tag.objects.get_targets(self.text, limit=limit, 
+        return Tag.objects.get_targets(self.text, limit=limit,
             offset=offset, target_model=self.target_model)
 
 def targets_for_text(request, text, target_model=None, template_name=None,
             extra_context=None, **kwargs):
         """Displays a list of objects 'TagTarget' objects Tagged with the given
-        'text' value, ordered by decreasing popularity, with paging. 
-        To search for objects with several different 'text' values, 
+        'text' value, ordered by decreasing popularity, with paging.
+        To search for objects with several different 'text' values,
         pass 'text' as a space separated list.
-        
+
         Additional kwargs are passed into list_detail.object_list generic view.
-        
+
         Context variables are the list_detail.object_list ones, plus
         'text' (the value passed in), textlist (a list of text values,
         i.e. 'text' split on spaces), plus target_ct (the ContentType
@@ -135,12 +135,12 @@ def targets_for_text(request, text, target_model=None, template_name=None,
 def create_update(request, creator=None, target=None, redirect_url=None,
         extra_context={}, template_name='tagging/create.html'):
     """View that creates or updates a set of tags for an object.
-    
-    The template context variables are the list_detail.object_list ones, 
+
+    The template context variables are the list_detail.object_list ones,
     plus 'text' (a space separated list of current text values), and
     'target'.
     """
-    
+
     if creator is None or target is None:
         raise Http404()
 
@@ -150,7 +150,7 @@ def create_update(request, creator=None, target=None, redirect_url=None,
     tags = Tag.objects.filter(**search_attrs)
 
     currenttagset = set([tag.text for tag in tags])
-    
+
     if request.POST.get('save'):
         # remove some possibly troublesome chars:
         text = tagging_utils.strip_unsafe_chars(request.POST.get('text', ''))
@@ -169,11 +169,11 @@ def create_update(request, creator=None, target=None, redirect_url=None,
             redirect_url = request.GET.get('redirect_url', None)
         if redirect_url is not None:
             return HttpResponseRedirect(redirect_url)
-            
+
         # Get the new set
         tags = Tag.objects.filter(**search_attrs)
         currenttagset = set([tag.text for tag in tags])
-    
+
     # context dict
     c = {}
     c.update(base_attrs)
@@ -184,6 +184,6 @@ def create_update(request, creator=None, target=None, redirect_url=None,
     if redirect_url:
         c['redirect_url'] = redirect_url
     ctx = RequestContext(request, c)
-        
+
     return render_to_response(template_name, context_instance=ctx)
-    
+

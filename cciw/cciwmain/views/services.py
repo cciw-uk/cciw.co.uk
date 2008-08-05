@@ -23,4 +23,4 @@ def esv_passage(request):
     return shortcuts.render_to_response('cciw/services/esv_passage.html',
             context_instance=RequestContext(request, c))
 
-    
+

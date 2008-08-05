@@ -1,7 +1,7 @@
 from cciw.cciwmain.tests.client import CciwClient
 from django.test import TestCase
 
-class HtmlChunkPage(TestCase):    
+class HtmlChunkPage(TestCase):
     fixtures = ['basic.yaml', 'users.yaml', 'htmlchunks.yaml']
 
     def setUp(self):
@@ -25,7 +25,7 @@ class HtmlChunkPage(TestCase):
 
     def _test_page(self, should_see_edit_link):
         response = self.client.get('/')
-        self.assert_('<p>CCIW is a charitable company' in response.content, 
+        self.assert_('<p>CCIW is a charitable company' in response.content,
                      "HtmlChunk not visible or not escaped properly")
         if should_see_edit_link:
             self.assert_("Edit home_page" in response.content,

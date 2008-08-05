@@ -32,12 +32,12 @@ class TwillMixin(object):
         tc.go(make_django_url("cciw.officers.views.index"))
         tc.fv(1, 'id_username', creds[0])
         tc.fv(1, 'id_password', creds[1])
-        tc.submit()        
+        tc.submit()
 
     def tearDown(self):
         twill_teardown()
 
-# Twill snippets 
+# Twill snippets
 # To interactively continue, finish test with this:
 #cmd = TwillCommandLoop()
 #cmd.cmdloop()

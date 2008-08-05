@@ -1,4 +1,4 @@
-# Hooks for various events
+x# Hooks for various events
 
 from cciw.officers import signals
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename
@@ -13,16 +13,16 @@ def send_application_emails(application=None):
 
     # Email to the leaders:
     # Collect e-mails to send to
-    leaders = [user for leader in application.camp.leaders.all() 
+    leaders = [user for leader in application.camp.leaders.all()
                         for user in leader.users.all()] + \
               list(application.camp.admins.all())
     leader_emails = filter(lambda x: x is not None,
                            map(formatted_email, leaders))
-    
+
     application_text = application_to_text(application)
     application_rtf = application_to_rtf(application)
     rtf_attachment = (application_rtf_filename(application), application_rtf, 'text/rtf')
-    
+
     if len(leader_emails) > 0:
         send_leader_email(leader_emails, application, application_text, rtf_attachment)
 
@@ -60,7 +60,7 @@ u"""The following application form has been submitted via the
 CCIW website.  It is also attached to this email as an RTF file.
 
 """ + application_text
-        
+
     send_mail_with_attachments(subject, body, settings.SERVER_EMAIL,
                                leader_emails, attachments=[rtf_attachment])
 

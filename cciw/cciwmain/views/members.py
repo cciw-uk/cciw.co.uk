@@ -22,13 +22,13 @@ def index(request):
     Displays an index of all members.
     """
     members = Member.objects.filter(dummy_member=False)
-    
+
     feed = feeds.handle_feed_request(request, feeds.MemberFeed, query_set=members)
     if feed: return feed
 
     if (request.GET.has_key('online')):
         members = members.filter(last_seen__gte=(datetime.now() - timedelta(minutes=3)))
-    
+
     extra_context = standard_extra_context(title=u'Members')
     order_by = get_order_option(
         {'adj': ('date_joined',),
@@ -51,9 +51,9 @@ def index(request):
         pass
 
     extra_context['atom_feed_title'] = u"Atom feed for new members."
-    
+
     return list_detail.object_list(request, members,
-        extra_context=extra_context, 
+        extra_context=extra_context,
         template_name='cciw/members/index.html',
         paginate_by=50,
         allow_empty=True)
@@ -63,15 +63,15 @@ def detail(request, user_name=None):
         member = Member.objects.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404
-    
+
     if request.method == 'POST':
         if request.POST.has_key('logout'):
             try:
                 remove_member_session(request)
             except KeyError:
                 pass
-        
-    c = RequestContext(request, 
+
+    c = RequestContext(request,
         standard_extra_context(title=u"Member: %s" % member.user_name))
     c['member'] = member
     c['awards'] = member.personal_awards.all()
@@ -111,7 +111,7 @@ def send_message(request, user_name=None):
     message_sent = False
     preview = None
     message_text = None
-    
+
     no_messages = False
     to_name = u''
 
@@ -140,7 +140,7 @@ def send_message(request, user_name=None):
             message_text = request.POST.get('message', u'').strip()
             if message_text == u'':
                 errors.append(u'No message entered.')
-            
+
             # Always do a preview (for 'preview' and 'send')
             preview = mark_safe(bbcode.bb2xhtml(message_text))
             if len(errors) == 0 and request.POST.has_key('send'):
@@ -164,7 +164,7 @@ def send_message(request, user_name=None):
         crumbs.append(u'Send message')
         to_name = user_name
 
-    c = RequestContext(request, standard_extra_context(title=title))    
+    c = RequestContext(request, standard_extra_context(title=title))
     c['breadcrumb'] = create_breadcrumb(crumbs)
     c['member'] = member
     c['to'] = to_name
@@ -174,14 +174,14 @@ def send_message(request, user_name=None):
     c['message_sent'] = message_sent
     c['message_text'] = message_text
     c['no_messages'] = no_messages
-    
+
     return render_to_response('cciw/members/messages/send.html', context_instance=c)
 
 # Utility functions for handling message actions
 def _msg_move_inbox(msg):
     msg.box = Message.MESSAGE_BOX_INBOX
     msg.save()
-    
+
 def _msg_move_archive(msg):
     msg.box = Message.MESSAGE_BOX_SAVED
     msg.save()
@@ -227,8 +227,8 @@ def message_list(request, user_name, box):
             # User may have deleted/moved everything on the last page,
             # so need to redirect to avoid a 404
             return HttpResponseRedirect(request.path + "?page=%s" % last_page)
-            
-    
+
+
     # Context
     extra_context = standard_extra_context()
     crumbs = [get_member_link(user_name)]
@@ -240,12 +240,12 @@ def message_list(request, user_name, box):
         extra_context['title'] = u"%s: Archived messages" % user_name
         crumbs.append(u'Messages &lt; <a href="../">Send</a> | <a href="../inbox/">Inbox</a> | Archived &gt;')
         extra_context['show_move_inbox_button'] = True
-     
+
     extra_context['show_delete_button'] = True
     extra_context['breadcrumb'] = create_breadcrumb(crumbs)
-    
+
     messages = member.messages_received.filter(box=box).order_by('-time')
-    
+
     return list_detail.object_list(request, messages,
         extra_context=extra_context,
         template_name='cciw/members/messages/index.html',
@@ -255,7 +255,7 @@ def message_list(request, user_name, box):
 def inbox(request, user_name=None):
     "Shows inbox for a user"
     return message_list(request, user_name, Message.MESSAGE_BOX_INBOX)
-    
+
 def archived_messages(request, user_name=None):
     return message_list(request, user_name, Message.MESSAGE_BOX_SAVED)
 
@@ -265,11 +265,11 @@ def posts(request, user_name=None):
     except Member.DoesNotExist:
         raise Http404
     posts = member.posts.exclude(posted_at__isnull=True).order_by('-posted_at')
-    
-    resp = feeds.handle_feed_request(request, feeds.member_post_feed(member), 
+
+    resp = feeds.handle_feed_request(request, feeds.member_post_feed(member),
                                      query_set=posts)
     if resp: return resp
-    
+
     context = standard_extra_context(title=u"Recent posts by %s" % user_name)
     context['member'] = member
     crumbs = [get_member_link(user_name), u'Recent posts']

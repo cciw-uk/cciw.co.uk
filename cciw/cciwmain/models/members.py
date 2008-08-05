@@ -12,10 +12,10 @@ class Permission(models.Model):
 
     id = models.PositiveSmallIntegerField("ID", primary_key=True)
     description = models.CharField("Description", max_length=40)
-    
+
     def __unicode__(self):
         return self.description
-    
+
     class Meta:
         ordering = ('id',)
         app_label = "cciwmain"
@@ -36,18 +36,18 @@ class Member(models.Model):
     MESSAGES_WEBSITE = 1
     MESSAGES_EMAIL = 2
     MESSAGES_EMAIL_AND_WEBSITE = 3
-    
+
     MODERATE_OFF = 0
     MODERATE_NOTIFY = 1
     MODERATE_ALL = 2
-    
+
     MESSAGE_OPTIONS = (
         (MESSAGES_NONE,     u"Don't allow messages"),
         (MESSAGES_WEBSITE,  u"Store messages on the website"),
         (MESSAGES_EMAIL,    u"Send messages via email"),
         (MESSAGES_EMAIL_AND_WEBSITE, u"Store messages and send via email")
     )
-    
+
     MODERATE_OPTIONS = (
         (MODERATE_OFF,      u"Off"),
         (MODERATE_NOTIFY,   u"Unmoderated, but notify"),
@@ -73,20 +73,20 @@ class Member(models.Model):
         blank=True, null=True)
     icon         = models.ImageField("Icon", upload_to=settings.MEMBER_ICON_UPLOAD_PATH, blank=True)
     dummy_member = models.BooleanField("Dummy member status", default=False) # supports ancient posts in message boards
-    
+
     # Managers
     objects = UserSpecificMembers()
     all_objects = models.Manager()
-    
+
     def __unicode__(self):
         return self.user_name
-        
+
     def get_absolute_url(self):
         if self.dummy_member:
             return None
         else:
             return get_member_href(self.user_name)
-        
+
     def get_link(self):
         if self.dummy_member:
             return self.user_name
@@ -97,33 +97,33 @@ class Member(models.Model):
         """Checks a password is correct"""
         import crypt
         return crypt.crypt(plaintextPass, self.password) == self.password
-        
+
     def new_messages(self):
         return self.messages_received.filter(box=Message.MESSAGE_BOX_INBOX).count()
 
     def saved_messages(self):
         return self.messages_received.filter(box=Message.MESSAGE_BOX_SAVED).count()
-    
+
     def has_perm(self, perm):
         """Does the member has the specified permission?
         perm is one of the permission constants in Permission."""
         return len(self.permissions.filter(description=perm)) > 0
-    
+
     @property
     def can_add_news(self):
         return self.has_perm(Permission.NEWS_CREATOR)
-        
+
     @property
     def can_add_poll(self):
         return self.has_perm(Permission.POLL_CREATOR)
 
-    @staticmethod    
+    @staticmethod
     def generate_salt():
         import random, datetime
         rand64= "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
         random.seed(datetime.datetime.today().microsecond)
         return rand64[int(random.random()*64)] + rand64[int(random.random()*64)]
-    
+
     @staticmethod
     def encrypt_password(memberPass):
         import crypt
@@ -140,22 +140,22 @@ class Award(models.Model):
     value = models.SmallIntegerField("Value")
     year = models.PositiveSmallIntegerField("Year")
     description = models.CharField("Description", max_length=200)
-    image = models.ImageField("Award image", 
+    image = models.ImageField("Award image",
         upload_to=settings.AWARD_UPLOAD_PATH)
 
     def __unicode__(self):
         return self.name + u" " + unicode(self.year)
-        
+
     def nice_name(self):
         return str(self)
-    
+
     def imageurl(self):
         return settings.CCIW_MEDIA_URL + "/images/awards/" + self.image
-        
+
     def get_absolute_url(self):
         from django.template.defaultfilters import slugify
         return "/awards/#" + slugify(unicode(self))
-    
+
     class Meta:
         app_label = "cciwmain"
         ordering = ('-year', 'name',)
@@ -164,7 +164,7 @@ class PersonalAward(models.Model):
     reason = models.CharField("Reason for award", max_length=200)
     date_awarded = models.DateField("Date awarded", null=True, blank=True)
     award = models.ForeignKey(Award,
-        verbose_name="award", 
+        verbose_name="award",
         related_name="personal_awards")
     member = models.ForeignKey(Member,
         verbose_name="member",
@@ -174,13 +174,13 @@ class PersonalAward(models.Model):
         return "%s to %s" % (self.award.name, self.member.user_name)
 
     class Meta:
-        app_label = "cciwmain"   
+        app_label = "cciwmain"
         ordering = ('date_awarded',)
-        
+
 class Message(models.Model):
     MESSAGE_BOX_INBOX = 0
     MESSAGE_BOX_SAVED = 1
-    
+
     MESSAGE_BOXES = (
         (MESSAGE_BOX_INBOX, "Inbox"),
         (MESSAGE_BOX_SAVED, "Saved")
@@ -189,14 +189,14 @@ class Message(models.Model):
         verbose_name="from member",
         related_name="messages_sent"
     )
-    to_member = models.ForeignKey(Member, 
+    to_member = models.ForeignKey(Member,
         verbose_name="to member",
         related_name="messages_received")
     time = models.DateTimeField("At")
     text = models.TextField("Message")
     box = models.PositiveSmallIntegerField("Message box",
         choices=MESSAGE_BOXES)
-    
+
     @staticmethod
     def send_message(to_member, from_member, text):
         if to_member.message_option == Member.MESSAGES_NONE:
@@ -221,11 +221,11 @@ http://%(domain)s/members/%(from)s/messages/
 """ % {'from': from_member.user_name, 'to': to_member.user_name,
         'domain': utils.get_current_domain(), 'message': text},
         "website@cciw.co.uk", [to_member.email])
-            
-    
+
+
     def __unicode__(self):
         return u"[%s] to %s from %s" % (unicode(self.id), unicode(self.to_member), unicode(self.from_member))
-    
+
     class Meta:
         app_label = "cciwmain"
         ordering = ('-time',)

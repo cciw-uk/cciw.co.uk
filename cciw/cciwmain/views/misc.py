@@ -30,7 +30,7 @@ class FeedbackForm(CciwFormMixin, forms.Form):
 
 def feedback(request):
     c = standard_extra_context(title=u"Contact us")
-    
+
     if request.method == 'POST':
         form = FeedbackForm(request.POST)
 
@@ -43,14 +43,14 @@ def feedback(request):
             c['message'] = u"Thank you, your message has been sent."
     else:
         form = FeedbackForm()
-    
+
     c['form'] = form
-    return shortcuts.render_to_response('cciw/feedback.html', 
+    return shortcuts.render_to_response('cciw/feedback.html',
                 context_instance=template.RequestContext(request, c))
 
 def bookingform(request):
     """
-    Displays a page with a download link for the booking form 
+    Displays a page with a download link for the booking form
     if it is available.
     """
     c = standard_extra_context(title="Booking form")

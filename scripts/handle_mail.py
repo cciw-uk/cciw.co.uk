@@ -10,10 +10,10 @@ def main(lockfile):
         # There is a race condition here, but since we only run this
         # script every n minutes, the processes are not going to be
         # racing.
-        
+
         # Create the lock
         file(lockfile, "w").close()
-        
+
         try:
             from cciw.mail.lists import handle_all_mail
             handle_all_mail()
@@ -28,7 +28,7 @@ def main(lockfile):
     finally:
         # Delete the lock
         os.unlink(lockfile)
-            
+
 if __name__ == '__main__':
     import sys
     main(sys.argv[1])

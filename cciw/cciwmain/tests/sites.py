@@ -2,7 +2,7 @@ from cciw.cciwmain.tests.client import CciwClient
 from django.test import TestCase
 from cciw.cciwmain.models import Site
 
-class SitePage(TestCase):    
+class SitePage(TestCase):
     fixtures = ['basic.yaml', 'sites.yaml']
 
     def setUp(self):

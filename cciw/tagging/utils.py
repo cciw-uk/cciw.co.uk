@@ -68,7 +68,7 @@ def pk_to_str(pk, content_type_id):
     except KeyError:
         raise NoMapperError("No primay key-to-string mapper has been configured for content type %s" % content_type_id)
     return mapper(pk)
-    
+
 def get_pk_as_str(django_object):
     ct_id = get_content_type_id(django_object.__class__)
     return pk_to_str(django_object._get_pk_val(), ct_id)
@@ -91,16 +91,16 @@ def register_renderer(model, renderer):
     The function is passed the tag object, and must return
     the html to be displayed on a page."""
     _renderers[model] = renderer
-    
+
 def get_renderer(model_ct):
-    """Gets the renderer for a given content type id, 
+    """Gets the renderer for a given content type id,
     or None if none can be found."""
     return _renderers.get(get_model(model_ct), None)
 
 def tagging_normaliser(tag_sum, collection):
     """Example 'normaliser' for calculating the 'weight'
     of a given TagSummary object.
-    
+
     collection is the complete TagSummaryCollection.
     """
     # Fit to scale 0 to 5

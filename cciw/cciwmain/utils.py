@@ -20,8 +20,8 @@ member_username_re = re.compile(r'^[A-Za-z0-9_]{3,15}$')
 def get_member_href(user_name):
     if not member_username_re.match(user_name):
         # This can get called from feeds, and we need to ensure
-        # we don't generate a URL, as it will go nowhere (also causes problems 
-        # with the feed framework and utf-8).  
+        # we don't generate a URL, as it will go nowhere (also causes problems
+        # with the feed framework and utf-8).
         # Also, this can be called via bbcode, so we need to ensure
         # that we don't pass anything to urlresolvers.reverse that
         # will make it die.
@@ -58,12 +58,12 @@ def modified_query_string(request, dict, fragment=''):
     for k,v in dict.items():
         qs[k] = v
     return request.path + '?' + qs.urlencode() + fragment
-    
+
 def strip_control_chars(text):
     for i in range(0,32):
         text = text.replace(chr(i), '')
     return text
-    
+
 def validate_xml(filename):
     from xml.sax import sax2exts
     from xml.dom.ext.reader import Sax2
@@ -72,7 +72,7 @@ def validate_xml(filename):
     reader = Sax2.Reader(parser=p)
     dom_object = reader.fromUri(filename)
     return True
-   
+
 def unslugify(slug):
     "Turns dashes and underscores into spaces and applies title casing"
     return slug.replace("-", " ").replace("_", " ").title()
@@ -103,7 +103,7 @@ class UseOnceLazyDict(object):
 
     def items(self):
         return self._get_data().items()
-    
+
     def _get_data(self):
         return self.func(*self.args, **self.kwargs)
 
@@ -122,7 +122,7 @@ def python_to_json(obj):
     return json_encoder.encode(obj)
 
 def json_validation_request(request, form):
-    """Returns a JSON validation response for a form, 
+    """Returns a JSON validation response for a form,
     if the request is for JSON validation"""
 
     if request.GET.get('format') == 'json':
@@ -136,7 +136,7 @@ def all(seq):
 
 class StandardReprMixin(object):
     u"""
-    Used to add an implementation of '__repr__' that is generally 
+    Used to add an implementation of '__repr__' that is generally
     useful for debugging.
 
     >>> class Foo(StandardReprMixin):

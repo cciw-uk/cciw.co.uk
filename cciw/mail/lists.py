@@ -1,7 +1,7 @@
 import email
 import imaplib
 import re
-from django.conf import settings 
+from django.conf import settings
 from django.core.mail import SMTPConnection, EmailMessage, make_msgid
 from django.core.validators import email_re
 from cciw.officers.email_utils import formatted_email
@@ -23,8 +23,8 @@ def create_mailboxes(camp=None):
     assert camp is not None
     # TODO: handle xmlrpclib.Fault exceptions
     s = webfaction_session()
-    for address in [address_for_camp_officers(camp), 
-                    address_for_camp_slackers(camp)]:                    
+    for address in [address_for_camp_officers(camp),
+                    address_for_camp_slackers(camp)]:
         email = s.create_email(address, settings.LIST_MAILBOX_NAME)
 
 ### Reading mailboxes ###
@@ -49,7 +49,7 @@ def _camp_slackers(year=None, number=None):
 
 # See also cciw.officers.utils
 email_lists = {
-    re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-officers@cciw.co.uk$", 
+    re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-officers@cciw.co.uk$",
                re.IGNORECASE): _camp_officers,
     re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-slackers@cciw.co.uk$",
                re.IGNORECASE): _camp_slackers,

@@ -35,7 +35,7 @@ def _display_login_form(request, error_message='', login_page=False):
     else:
         # User's session must have expired; save their post data.
         post_data = _encode_post_data((request.method, request.POST))
-    
+
     c = template.RequestContext(request, standard_extra_context(title="Login"))
     return render_to_response('cciw/members/login.html', {
         'app_path': request.path,
@@ -66,13 +66,13 @@ def member_required_generic(except_methods):
 
     def decorator(view_func):
         """
-        Decorator for views that checks if data was POSTed back and 
+        Decorator for views that checks if data was POSTed back and
         if so requires the user to log in.
         It is also used by the normal '/login/' view.
         """
 
         def _checklogin(request, *args, **kwargs):
-            
+
             def _forward_to_original(req):
                 # helper function to go to the original view function.
                 if req.POST.has_key(LOGIN_FORM_POST_DATA_KEY):
@@ -100,7 +100,7 @@ def member_required_generic(except_methods):
                 #  - or they were logged out and so saw the login page.
                 #    But they then logged in through a different
                 #    browser tab, and so don't need to log in again.
-                
+
                 return _forward_to_original(request)
 
             # If this isn't already the login page, display it.

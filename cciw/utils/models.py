@@ -10,7 +10,7 @@ class ConfirmToken(models.Model):
     token = models.CharField(max_length=10)
     expires = models.DateTimeField()
     objdata = models.TextField()
-    
+
     def _get_data(self):
         try:
             return cPickle.loads(base64.decodestring(self.objdata))
@@ -24,7 +24,7 @@ class ConfirmToken(models.Model):
 
     @staticmethod
     def make_token():
-        chars = [chr(c) for p1, p2 in [("A", "Z"),("a", "z"), ("0","9")] 
+        chars = [chr(c) for p1, p2 in [("A", "Z"),("a", "z"), ("0","9")]
                           for c in range(ord(p1), ord(p2) + 1)]
         random.seed()
         random.shuffle(chars)

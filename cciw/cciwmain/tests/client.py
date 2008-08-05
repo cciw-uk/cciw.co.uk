@@ -18,7 +18,7 @@ class CciwClient(client.Client):
         }
         if post_data is not None:
             form_data[cciw.cciwmain.decorators.LOGIN_FORM_POST_DATA_KEY] = post_data
-        
+
         return form_data
 
     def member_login(self, membername, password, **extra):
@@ -26,7 +26,7 @@ class CciwClient(client.Client):
         Does a member login, setting the cookies that are needed.
         """
         path = '/login/'
-        
+
         response = self.post(path, data=self.get_member_login_data(membername, password))
         if response.status_code != 302: # Expect a redirect on successful login
             raise Exception("Failed to log in")

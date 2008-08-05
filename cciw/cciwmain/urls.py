@@ -20,16 +20,16 @@ patterns('django.views.generic',
              template_name='cciw/sites/index.html'
              )
      ),
- 
+
     (r'^sites/(?P<slug>.*)/$', 'list_detail.object_detail',
         dict(queryset=Site.objects.all(),
              slug_field='slug_name',
              extra_context=UseOnceLazyDict(cciw_common.standard_extra_context),
              template_name='cciw/sites/detail.html'
              )
-        
+
      ),
-    
+
 ) + \
 patterns('cciw.cciwmain.views',
     # Members
@@ -45,7 +45,7 @@ patterns('cciw.cciwmain.views',
     (r'^memberadmin/change-email/$', 'memberadmin.change_email'),
     url(r'^memberadmin/preferences/$', 'memberadmin.preferences', name="cciwmain.memberadmin.preferences"),
     url(r'^help/logging-in/$', 'memberadmin.help_logging_in', name="cciwmain.memberadmin.help_logging_in"),
-    
+
     # Camps
     (r'^thisyear/$', 'camps.thisyear'),
     (r'^thisyear/bookingform/$', 'misc.bookingform'),
@@ -58,19 +58,19 @@ patterns('cciw.cciwmain.views',
     (r'^' + settings.CAMP_FORUM_RE + r'add_news/$', 'camps.add_news'),
     url(r'^' + settings.CAMP_FORUM_RE + r'add_poll/$', 'camps.edit_poll', name='cciwmain.camps.add_poll'),
     url(r'^' + settings.CAMP_FORUM_RE + r'edit_poll/(?P<poll_id>\d+)/$', 'camps.edit_poll', name='cciwmain.camps.edit_poll'),
-    
+
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+)/photos/$', 'camps.gallery'),
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+)/photos/(?P<photonumber>\d+)/$', 'camps.photo'),
     (r'^camps/(?P<year>.*)/(?P<galleryname>.*)/photos/$', 'camps.oldcampgallery'),
     (r'^camps/(?P<year>.*)/(?P<galleryname>.*)/photos/(?P<photonumber>\d+)/$', 'camps.oldcampphoto'),
-    
+
     # News
-    (r'^news/$', 'forums.topicindex', 
-        {'title': 'News', 
-        'template_name': 'cciw/forums/newsindex.html', 
+    (r'^news/$', 'forums.topicindex',
+        {'title': 'News',
+        'template_name': 'cciw/forums/newsindex.html',
         'paginate_by' : 6,
         'default_order': ('-created_at',)},
-     'cciwmain.site-news-index'), 
+     'cciwmain.site-news-index'),
     (r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'},
      'cciwmain.site-news-detail'),
 
@@ -83,12 +83,12 @@ patterns('cciw.cciwmain.views',
     (r'^website/forum/edit_poll/(?P<poll_id>\d+)/$', 'forums.edit_poll', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
     (r'^website/forum/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    
+
     # Shortcuts
     (r'^posts/$', 'forums.all_posts'),
     (r'^posts/(?P<id>\d+)/$', 'forums.post'),
     (r'^topics/$', 'forums.all_topics'),
-    
+
     # Tagging
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/tags/$', 'tagging.members_tags'),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/tags/(?P<text>[^/]*)/$', 'tagging.members_tags_single_text'),
@@ -99,16 +99,16 @@ patterns('cciw.cciwmain.views',
     (r'^tag_targets/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/(?P<text>[^/]*)/$', 'tagging.tag_target_single_text'),
     (r'^tag_targets/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/(?P<text>[^/]*)/(?P<tag_id>[^/]*)/$', 'tagging.single_tag'),
     (r'^tag_search/$', 'tagging.search'),
-   
-    
+
+
     # Services
     (r'^services/esv_passage/$', 'services.esv_passage'),
-    
+
     # Feedback form
     url(r'^contact/$', 'misc.feedback', name="cciwmain.misc.feedback"),
 
     # Fallback -- allows any other URL to be defined as arbitary pages.
     # htmlchunk.find will throw a 404 for any URL not defined.
     (r'^(?:.*)/$|^$', 'htmlchunk.find'),
-) 
+)
 

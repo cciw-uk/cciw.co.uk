@@ -4,14 +4,14 @@ class SiteAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {'fields': ('short_name', 'long_name', 'info')}),
     )
-   
+
 class PersonAdmin(admin.ModelAdmin):
     filter_horizontal = ('users',)
 
 class CampAdmin(admin.ModelAdmin):
     fieldsets = (
-        (None, {'fields': ('year', 'number', 'age', 'start_date', 'end_date', 
-                           'chaplain', 'leaders', 'site', 'previous_camp', 
+        (None, {'fields': ('year', 'number', 'age', 'start_date', 'end_date',
+                           'chaplain', 'leaders', 'site', 'previous_camp',
                            'online_applications', 'admins')
                 }
         ),

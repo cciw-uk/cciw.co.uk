@@ -41,8 +41,8 @@ class TestTagBase(TestCase):
 
     @staticmethod
     def _make_standard_tags():
-        TestTagBase._make_tags(post=TestTagBase._get_post(), 
-                               topic=TestTagBase._get_topic(), 
+        TestTagBase._make_tags(post=TestTagBase._get_post(),
+                               topic=TestTagBase._get_topic(),
                                member=TestTagBase._get_member(),
                                member2=TestTagBase._get_member2())
 
@@ -91,7 +91,7 @@ class TestTag(TestTagBase):
         t.save()
 
         m_id = get_pk_as_str(m) # m.delete will set m.id = None
-        self.assertEqual(Tag.objects.filter(creator_id=m_id).count(), 1)        
+        self.assertEqual(Tag.objects.filter(creator_id=m_id).count(), 1)
         m.delete()
         self.assertEqual(Tag.objects.filter(creator_id=m_id).count(), 0)
 
@@ -102,7 +102,7 @@ class TestGetTargets(TestTagBase):
     fixtures = ['basic.yaml', 'basic_topic.yaml', 'test_members.yaml']
 
     def tearDown(self):
-        Tag.objects.all().delete()    
+        Tag.objects.all().delete()
 
     def test_get_text(self):
         """
@@ -218,8 +218,8 @@ class TestTagSummaries(TestTagBase):
         self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(target=self._get_post(), order='text')],
                          [('another', 1),
                           ('test', 2)])
-                   
+
     def test_tag_summaries_target2(self):
         self.assertEqual([(ts.text, ts.count) for ts in Tag.objects.get_tag_summaries(target=self._get_topic(), order='text')],
                          [('test', 1)])
-                   
+

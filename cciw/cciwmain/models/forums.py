@@ -15,10 +15,10 @@ _camp_forum_re = re.compile('^' + settings.CAMP_FORUM_RE + '$')
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
     location = models.CharField("Location/path", db_index=True, unique=True, max_length=50)
-    
+
     def get_absolute_url(self):
         return '/' + self.location
-    
+
     def __unicode__(self):
         return self.location
 
@@ -35,9 +35,9 @@ class Forum(models.Model):
         else:
             return u"forum at %s" % self.location
 
-    
+
     class Meta:
-        app_label = "cciwmain"   
+        app_label = "cciwmain"
 
 class NewsItem(models.Model):
     created_by = models.ForeignKey(Member, related_name="news_items_created")
@@ -45,7 +45,7 @@ class NewsItem(models.Model):
     summary = models.TextField("Summary or short item, (bbcode)")
     full_item = models.TextField("Full post (HTML)", blank=True)
     subject = models.CharField("Subject", max_length=100)
-    
+
     def has_full_item(self):
         return len(self.full_item) > 0
 
@@ -101,23 +101,23 @@ class Topic(models.Model):
     forum = models.ForeignKey(Forum, related_name="topics")
 
     # De-normalised fields needed for performance and simplicity in templates:
-    last_post_at = models.DateTimeField("Last post at", 
-        null=True, blank=True) 
+    last_post_at = models.DateTimeField("Last post at",
+        null=True, blank=True)
     last_post_by = models.ForeignKey(Member, verbose_name="Last post by",
-        null=True, blank=True, related_name='topics_with_last_post') 
+        null=True, blank=True, related_name='topics_with_last_post')
     # since we need 'last_post_by', may as well have this too:
-    post_count = models.PositiveSmallIntegerField("Number of posts", default=0) 
-    
+    post_count = models.PositiveSmallIntegerField("Number of posts", default=0)
+
     # Managers:
     objects = UserSpecificTopics()
     all_objects = models.Manager()
 
     def __unicode__(self):
         return  u"Topic: " + self.subject
-        
+
     def get_absolute_url(self):
         return self.forum.get_absolute_url() + str(self.id) + '/'
-    
+
     def get_link(self):
         return mark_safe(u'<a href="%s">%s</a>' % (self.get_absolute_url(), escape(self.subject)))
 
@@ -142,10 +142,10 @@ class Gallery(models.Model):
 
     def __unicode__(self):
         return self.location
-        
+
     def get_absolute_url(self):
         return '/' + self.location
-        
+
     class Meta:
         app_label = "cciwmain"
         verbose_name_plural = "Galleries"
@@ -178,8 +178,8 @@ class Photo(models.Model):
     needs_approval = models.BooleanField("Needs approval", default=False)
 
     # De-normalised fields needed for performance and simplicity in templates:
-    last_post_at = models.DateTimeField("Last post at", 
-        null=True, blank=True) 
+    last_post_at = models.DateTimeField("Last post at",
+        null=True, blank=True)
     last_post_by = models.ForeignKey(Member, verbose_name="Last post by",
         null=True, blank=True, related_name='photos_with_last_post')
     # since we need 'last_post_by', may as well have this too:
@@ -208,7 +208,7 @@ class Photo(models.Model):
                     approved=None,
                     needs_approval=False
         )
-        
+
     class Meta:
         app_label = "cciwmain"
 
@@ -222,7 +222,7 @@ class UserSpecificPosts(models.Manager):
            (user is None or user.is_anonymous() or \
             not user.has_perm('cciwmain.edit_post')):
             # Non-moderator user
-            
+
             member = threadlocals.get_current_member()
             if member is not None:
                 # include hidden posts by that user
@@ -233,7 +233,7 @@ class UserSpecificPosts(models.Manager):
             return queryset
 
 class Post(models.Model):
-    posted_by = models.ForeignKey(Member, 
+    posted_by = models.ForeignKey(Member,
         related_name="posts")
     subject = models.CharField("Subject", max_length=240, blank=True) # deprecated, supports legacy boards
     message = models.TextField("Message")
@@ -278,19 +278,19 @@ class Post(models.Model):
             changed = True
         if changed:
             parent.save()
-                
+
     def save(self):
         super(Post, self).save()
         # Update parent topic/photo
-        
+
         if self.topic_id is not None:
             self.updateParent(self.topic)
-            
+
         if self.photo_id is not None:
             self.updateParent(self.photo)
 
     def get_absolute_url(self):
-        """Returns the absolute URL of the post that is always correct.  
+        """Returns the absolute URL of the post that is always correct.
         (This does a redirect to a URL that depends on the member viewing the page)"""
         return "/posts/%s/" % self.id
 
@@ -302,7 +302,7 @@ class Post(models.Model):
         # looking at it.  This function takes this into account
         # and gives the correct URL.  This is important for the case
         # or feed readers that won't in general be logged in as the
-        # the user when they fetch the feed that may have absolute 
+        # the user when they fetch the feed that may have absolute
         # URLs in it.
         # Also it's useful in case we change the paging.
         if self.topic_id is not None:
@@ -346,12 +346,12 @@ class Post(models.Model):
                     needs_approval=(member.moderated == Member.MODERATE_ALL),
                     posted_at=datetime.now())
         return post
-        
-        
+
+
     class Meta:
         app_label = "cciwmain"
         # Order by the autoincrement id, rather than  posted_at, because
-        # this matches the old system (in the old system editing a post 
+        # this matches the old system (in the old system editing a post
         # would also cause its posted_at date to change, but not it's order,
         # and data for the original post date/time is now lost)
-        ordering = ('id',) 
+        ordering = ('id',)

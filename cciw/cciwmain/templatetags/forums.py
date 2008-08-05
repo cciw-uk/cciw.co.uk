@@ -7,7 +7,7 @@ from cciw.cciwmain.templatetags import bbcode
 def bb2html(value):
     """Converts message board 'BB code'-like formatting into HTML"""
     return bbcode.bb2xhtml(value, True)
-    
+
 register = template.Library()
 register.filter('bb2html', lambda s: mark_safe(bb2html(s)))
 
@@ -15,7 +15,7 @@ register.filter('bb2html', lambda s: mark_safe(bb2html(s)))
 def poll_vote_box(request, topic, poll, heading_level):
     """Displays a box for voting in a poll.  The request,
     the topic object and the poll object must be passed in."""
-    
+
     member = get_current_member()
     context = {
         'poll': poll,

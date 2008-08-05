@@ -25,7 +25,7 @@ class ApplicationAdmin(admin.ModelAdmin):
     list_display = ('full_name', 'officer', 'camp', 'finished', 'date_submitted')
     list_filter = ('finished','date_submitted')
     ordering = ('full_name',)
-    search_fields = ('full_name',)        
+    search_fields = ('full_name',)
     form = ApplicationAdminModelForm
 
     camp_officer_application_fieldsets = (
@@ -33,11 +33,11 @@ class ApplicationAdmin(admin.ModelAdmin):
             {'fields': ('camp', ),
               'classes': ('wide',),}
         ),
-        ('Personal info', 
+        ('Personal info',
             {'fields': ('full_name', 'full_maiden_name', 'birth_date', 'birth_place'),
              'classes': ('applicationpersonal', 'wide')}
         ),
-        ('Address', 
+        ('Address',
             {'fields': ('address_firstline', 'address_town', 'address_county',
                         'address_postcode', 'address_country', 'address_tel',
                         'address_mobile', 'address_since', 'address_email'),
@@ -57,8 +57,8 @@ class ApplicationAdmin(admin.ModelAdmin):
         ('Experience',
             {'fields': ('christian_experience',),
              'classes': ('wide',),
-             'description': '''Please tells us about your Christian experience 
-                (i.e. how you became a Christian and how long you have been a Christian, 
+             'description': '''Please tells us about your Christian experience
+                (i.e. how you became a Christian and how long you have been a Christian,
                 which Churches you have attended and dates, names of minister/leader)'''}
 
         ),
@@ -66,7 +66,7 @@ class ApplicationAdmin(admin.ModelAdmin):
             {'fields': ('youth_experience',),
              'classes': ('wide',),
              'description': '''Please give details of previous experience of
-                looking after or working with children/young people - 
+                looking after or working with children/young people -
                 include any qualifications or training you have. '''}
         ),
         (None,
@@ -79,9 +79,9 @@ class ApplicationAdmin(admin.ModelAdmin):
              'classes': ('wide',) }
         ),
         ('Employment history',
-            {'fields': ('employer1_name', 'employer1_from', 'employer1_to', 
-                        'employer1_job', 'employer1_leaving', 'employer2_name', 
-                        'employer2_from', 'employer2_to', 'employer2_job', 
+            {'fields': ('employer1_name', 'employer1_from', 'employer1_to',
+                        'employer1_job', 'employer1_leaving', 'employer2_name',
+                        'employer2_from', 'employer2_to', 'employer2_job',
                         'employer2_leaving',),
              'classes': ('wide',),
               'description': 'Please tell us about your past and current employers below (if applicable)'}
@@ -90,19 +90,19 @@ class ApplicationAdmin(admin.ModelAdmin):
             {'fields': ('referee1_name', 'referee1_address', 'referee1_tel', 'referee1_mobile', 'referee1_email',
                         'referee2_name', 'referee2_address', 'referee2_tel', 'referee2_mobile', 'referee2_email',),
              'classes': ('wide',),
-             'description': '''Please give the names and addresses, 
-                telephones numbers and e-mail addresses and role or 
-                relationship of <strong>two</strong> people who know you 
+             'description': '''Please give the names and addresses,
+                telephones numbers and e-mail addresses and role or
+                relationship of <strong>two</strong> people who know you
                 well and who would be able to give a personal character reference.
-                In addition we reserve the right to take up additional character 
-                references from any other individuals deemed necessary. <strong>One 
-                reference must be from a Church leader. The other reference should 
+                In addition we reserve the right to take up additional character
+                references from any other individuals deemed necessary. <strong>One
+                reference must be from a Church leader. The other reference should
                 be from someone who has known you for more than 5 years.</strong>'''}
         ),
         ('Declarations (see note below)',
             {'fields': ('crime_declaration', 'crime_details'),
              'classes': ('wide',),
-             'description': '''Note: The disclosure of an offence may not 
+             'description': '''Note: The disclosure of an offence may not
                 prohibit your appointment'''},
         ),
         (None,
@@ -118,18 +118,18 @@ class ApplicationAdmin(admin.ModelAdmin):
              'classes': ('wide',),
              'description': '''If you answer yes to the following question
                 we will need to discuss this with you''' }
-        ),            
+        ),
         (None,
             {'fields': ('crb_check_consent',),
              'classes': ('wide',),
              'description': '''If you answer NO  to
-                the following question we regret that we 
+                the following question we regret that we
                 cannot proceed with your application. ''' }
         ),
         ("Confirmation",
             {'fields': ('finished',),
              'classes': ('wide',),
-             'description': """By ticking this box and pressing save, you confirm 
+             'description': """By ticking this box and pressing save, you confirm
              that the information you have submitted is correct and complete, and your
              information will then be sent to the camp leader.  By leaving this box un-ticked,
              you can save what you have done so far and edit it later."""
@@ -138,8 +138,8 @@ class ApplicationAdmin(admin.ModelAdmin):
     )
 
     camp_leader_application_fieldsets = (
-        (None, 
-            {'fields': ('officer',), 
+        (None,
+            {'fields': ('officer',),
               'classes': ('wide',),}
         ),) + camp_officer_application_fieldsets
 
@@ -158,7 +158,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         if isinstance(db_field, ExplicitBooleanField):
             defaults = {'widget': widgets.ExplicitBooleanFieldSelect}
             defaults.update(kwargs)
-            return db_field.formfield(**defaults)            
+            return db_field.formfield(**defaults)
         return super(ApplicationAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
     def _update_timestamp(self, request):
@@ -223,7 +223,7 @@ class ApplicationAdmin(admin.ModelAdmin):
 
     def save_change(self, request, model, form, formsets=None):
         resp = super(ApplicationAdmin, self).save_change(request, model, form, formsets)
-        return self._redirect_to_officer_home_page(request, resp)   
+        return self._redirect_to_officer_home_page(request, resp)
 
 class ReferenceAdmin(admin.ModelAdmin):
     search_fields = ['application__officer__first_name', 'application__officer__last_name']

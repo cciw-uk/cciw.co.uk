@@ -44,7 +44,7 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
     response = HttpResponse(mimetype=feedgen.mime_type)
     feedgen.write(response, 'utf-8')
     return response
-    
+
 def add_domain(url):
     """Adds the domain onto the beginning of a URL"""
     return feeds.add_domain(get_current_domain(), url)
@@ -109,13 +109,13 @@ class TopicFeed(CCIWFeed):
 
     def modify_query(self, query_set):
         return query_set.order_by('-created_at')[:TOPIC_FEED_MAX_ITEMS]
-        
+
     def item_author_name(self, topic):
         return topic.started_by_id
-        
+
     def item_author_link(self, topic):
         return add_domain(get_member_href(topic.started_by_id))
-        
+
     def item_pubdate(self, topic):
         return topic.created_at
 
@@ -128,10 +128,10 @@ def forum_topic_feed(forum):
 class PhotoFeed(CCIWFeed):
     template_name = 'photos'
     title = u'CCIW photos'
-    
+
     def modify_query(self, query_set):
         return query_set.order_by('-created_at')[:PHOTO_FEED_MAX_ITEMS]
-    
+
     def item_pubdate(self, photo):
         return photo.created_at
 
@@ -143,19 +143,19 @@ def gallery_photo_feed(gallery_name):
 class TagFeed(CCIWFeed):
     template_name = 'tags'
     title = 'CCIW - recent tags'
-    
+
     def modify_query(self, query_set):
         return query_set.order_by('-added')[:TAG_FEED_MAX_ITEMS]
-        
+
     def item_author_name(self, tag):
         return tag.creator_id
-        
+
     def item_author_link(self, tag):
         return add_domain(get_member_href(tag.creator_id))
-    
+
     def item_pubdate(self, tag):
         return tag.added
-        
+
     def item_link(self, tag):
         return add_domain("/tag_targets/%s/%s/%s/%s/" % (tag.target_ct.name, tag.target_id, tag.text, tag.id))
 

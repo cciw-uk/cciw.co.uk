@@ -24,7 +24,7 @@ import cgi
 # created by fixture
 TEST_MEMBER_USERNAME = 'test_member_1'
 TEST_MEMBER_PASSWORD = 'password'
-TEST_MEMBER_EMAIL = 'test@test.com' 
+TEST_MEMBER_EMAIL = 'test@test.com'
 
 TEST_POLL_CREATOR_USERNAME = 'test_poll_creator_1'
 TEST_POLL_CREATOR_PASSWORD = 'password'
@@ -88,13 +88,13 @@ class MemberAdmin(TestCase):
         post_data['icon'] = f
         resp = self.client.post(MEMBER_ADMIN_URL, data=post_data)
         f.close()
-        return resp        
+        return resp
 
     def test_upload_icon(self):
         new_icon = os.path.join(settings.TEST_DIR, TEST_MEMBER_USERNAME + ".png")
         # get length of file, used for heuristic
         fs = _get_file_size(new_icon)
-        self.failIfEqual(fs, 0, "something has happened to %s" % new_icon) 
+        self.failIfEqual(fs, 0, "something has happened to %s" % new_icon)
 
         # ensure the file isn't there already
         _remove_member_icons(TEST_MEMBER_USERNAME)
@@ -110,7 +110,7 @@ class MemberAdmin(TestCase):
 
     def _assert_icon_upload_fails(self, filename):
         new_icon = os.path.join(settings.TEST_DIR, filename)
-        
+
         # ensure the file isn't there already
         _remove_member_icons(TEST_MEMBER_USERNAME)
 
@@ -137,7 +137,7 @@ class MemberAdmin(TestCase):
         url, path, querydata = self._read_email_change_email(mail.outbox[0])
         resp2 = self.client.get(path, querydata)
         self.failUnlessEqual(resp.status_code, 200)
-        
+
         m = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         self.assertEqual(m.email, data['email'])
 
@@ -162,7 +162,7 @@ class MemberAdmin(TestCase):
         _remove_member_icons(TEST_MEMBER_USERNAME)
 
 def url_to_path_and_query(url):
-    scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)    
+    scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)
     querydata_t = cgi.parse_qs(query)
     querydata = {}
     for key, val in querydata_t.items():
@@ -184,7 +184,7 @@ class MemberSignup(TwillMixin, TestCase):
         post_data = dict(submit_email='Submit', email=TEST_MEMBER_EMAIL)
         response = self.client.post(MEMBER_SIGNUP, data=post_data)
         self.failUnlessEqual(response.status_code, 200)
-   
+
         self.assert_("already used" in response.content,
                      "Signing up should not allow an existing email to be reused")
         self.assertEqual(len(mail.outbox), 0)
@@ -193,7 +193,7 @@ class MemberSignup(TwillMixin, TestCase):
         post_data = dict(submit_email='Submit', email=NEW_MEMBER_EMAIL)
         response = self.client.post(MEMBER_SIGNUP, data=post_data)
         self.failUnlessEqual(response.status_code, 200)
-   
+
         self.assert_("an e-mail has been sent" in response.content,
                      "An message saying that an email has been sent should be seen")
         self.assertEqual(len(mail.outbox), 1, "An email should be sent")

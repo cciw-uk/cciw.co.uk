@@ -54,7 +54,7 @@ def _camps_as_admin_or_leader(user):
     # Find the camps for this leader
     # (We could do:
     #    Person.objects.get(user=user.id).camps_as_leader.all(),
-    #  but we also must we handle the possibility that two Person 
+    #  but we also must we handle the possibility that two Person
     #  objects have the same User objects, which could happen in the
     #  case where a leader leads by themselves and as part of a couple)
     for leader in leaders:
@@ -73,8 +73,8 @@ def index(request):
     context['unfinished_applications'] = user.application_set.filter(finished=False).order_by('-date_submitted')
     if _is_camp_admin(user):
         context['show_leader_links'] = True
-        context['camps_to_administer'] = _camps_as_admin_or_leader(user).filter(year=common.get_thisyear())  
-    
+        context['camps_to_administer'] = _camps_as_admin_or_leader(user).filter(year=common.get_thisyear())
+
     if request.POST.has_key('edit'):
         # Edit existing application
         id = request.POST.get('edit_application', None)
@@ -94,7 +94,7 @@ def index(request):
                 # should never get here
                 obj = None
         if obj is not None:
-            # Create a copy 
+            # Create a copy
             new_obj = _copy_application(obj)
             # We *have* to set 'camp' otherwise object cannot be seen
             # in admin, due to default 'ordering'
@@ -115,10 +115,10 @@ def index(request):
 @staff_member_required
 def view_application(request):
     try:
-        application_id = int(request.POST['application'])        
+        application_id = int(request.POST['application'])
     except:
         raise Http404
-    
+
     try:
         app = Application.objects.get(id=application_id)
     except Application.DoesNotExist:
@@ -153,14 +153,14 @@ Please find attached a copy of the application you requested
 
 """ % request.user.first_name
         msg = msg + application_text
-        
+
         send_mail_with_attachments("Copy of CCIW application - %s" % app.full_name , msg, settings.SERVER_EMAIL,
                                    [formatted_email(request.user)] , attachments=[rtf_attachment])
         request.user.message_set.create(message="Email sent.")
-        
+
         # Redirect back where we came from
         return HttpResponseRedirect(request.POST.get('to', '/officers/'))
-        
+
     else:
         raise Http404
 
@@ -183,7 +183,7 @@ def manage_applications(request, year=None, number=None):
     context = template.RequestContext(request)
     context['finished_applications'] =  camp.application_set.filter(finished=True)
     context['camp'] = camp
-    
+
     return render_to_response('cciw/officers/manage_applications.html', context_instance=context)
 
 
@@ -204,9 +204,9 @@ def sort_app_details(tuplelist):
     return tuplelist
 
 def get_app_details(camp):
-    """Returns list of 4-tuples - 
-    (this years app, 
-    last years app (or None), 
+    """Returns list of 4-tuples -
+    (this years app,
+    last years app (or None),
     boolean indicating all references have been requested,
     boolean indicating all references have been received)
     """
@@ -222,7 +222,7 @@ def get_app_details(camp):
             # Pick the most recent
             lastapp = lastapp[0]
         last_years_apps.append(lastapp)
-        requested.append(all(r is not None and r.requested for r in app.references)) 
+        requested.append(all(r is not None and r.requested for r in app.references))
         received.append(all(r is not None and r.received for r in app.references))
     return zip(this_years_apps, last_years_apps, requested, received)
 
@@ -245,7 +245,7 @@ def add_referee_counts(tuplelist):
     for name in refnames:
         counts[name] = counts.get(name, 0) + 1
     curid = 0
-    for app, prevapp, requested, received in tuplelist: 
+    for app, prevapp, requested, received in tuplelist:
         for referee in app.referees:
             curid += 1
             referee.id = curid
@@ -257,7 +257,7 @@ def _get_camp_or_404(year, number):
         return Camp.objects.get(year=int(year), number=int(number))
     except Camp.DoesNotExist, ValueError:
         raise Http404
-   
+
 
 @staff_member_required
 @user_passes_test(_is_camp_admin)
@@ -271,7 +271,7 @@ def manage_references(request, year=None, number=None):
     # we basically trust the user, and the system is deliberately
     # fairly permissive (leaders can look at applications for
     # other camps, not just their own, etc).
-    
+
     if request.method == 'POST':
         refs_updated = set()
         applist = map(int, request.POST.getlist('appids'))
@@ -282,7 +282,7 @@ def manage_references(request, year=None, number=None):
                 try:
                     ref = Reference.objects.get(application=appid, referee_number=refnum)
                 except Reference.DoesNotExist:
-                    # Create, but we only bother to save if it's 
+                    # Create, but we only bother to save if it's
                     # data is changed from empty.
                     ref = Reference(application_id=appid,
                                     referee_number=refnum,
@@ -292,7 +292,7 @@ def manage_references(request, year=None, number=None):
                 req = ('req_%d_%d' % (refnum, appid)) in request.POST.keys()
                 rec = ('rec_%d_%d' % (refnum, appid)) in request.POST.keys()
                 comments = request.POST.get('comments_%d_%d' % (refnum, appid), "")
-                
+
                 if ref.requested != req or ref.received != rec or ref.comments != comments:
                     ref.requested, ref.received, ref.comments = req, rec, comments
                     ref.save()
