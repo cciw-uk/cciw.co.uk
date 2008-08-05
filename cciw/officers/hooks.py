@@ -1,4 +1,4 @@
-x# Hooks for various events
+# Hooks for various events
 
 from cciw.officers import signals
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename

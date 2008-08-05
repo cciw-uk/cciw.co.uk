@@ -1,4 +1,4 @@
-x#!/usr/bin/env python2.5
+#!/usr/bin/env python2.5
 import sys
 import os
 
