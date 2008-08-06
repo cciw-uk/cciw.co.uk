@@ -12,7 +12,7 @@
     end_date: 2000-07-08
     leaders: []
     number: 1
-    online_applications: false
+    online_applications: true
     previous_camp: null
     site: 1
     start_date: 2000-07-01

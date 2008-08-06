@@ -5,6 +5,7 @@ from twill import commands as tc
 from django.core.servers.basehttp import AdminMediaHandler
 from django.core.handlers.wsgi import WSGIHandler
 from django.core.urlresolvers import reverse
+from twill.shell import TwillCommandLoop
 
 def make_twill_url(url):
     return url.replace("http://www.cciw.co.uk/", "http://127.0.0.1:8080/")
@@ -34,11 +35,16 @@ class TwillMixin(object):
         tc.fv(1, 'id_password', creds[1])
         tc.submit()
 
+    def continue_twill(self):
+        cmd = TwillCommandLoop()
+        cmd.cmdloop()
+
     def tearDown(self):
         twill_teardown()
 
 # Twill snippets
 # To interactively continue, finish test with this:
-#cmd = TwillCommandLoop()
-#cmd.cmdloop()
-# And make sure that twill.set_output(...) is commented out
+#   self.continue_twill()
+# And add
+#   twill_quiet = False
+# to the class
