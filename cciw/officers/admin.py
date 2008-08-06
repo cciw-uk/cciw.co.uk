@@ -217,8 +217,8 @@ class ApplicationAdmin(admin.ModelAdmin):
             response["Location"] = urlresolvers.reverse('cciw.officers.views.index')
         return response
 
-    def save_add(self, request, model, form, formsets, post_url_continue):
-        resp = super(ApplicationAdmin, self).save_add(request, model, form, formsets, post_url_continue)
+    def save_add(self, request, form, formsets, post_url_continue):
+        resp = super(ApplicationAdmin, self).save_add(request, form, formsets, post_url_continue)
         return self._redirect_to_officer_home_page(request, resp)
 
     def save_change(self, request, model, form, formsets=None):
