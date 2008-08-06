@@ -1,16 +1,10 @@
 #!/usr/bin/env python2.5
-import sys
-import os
-
-sys.path = sys.path + ['/home2/cciw/webapps/django_app/', '/home2/cciw/src/django-mr/', '/home2/cciw/src/misc/']
-os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
-
-import re
+import _cciw_env
 
 from cciw.cciwmain.models import Photo, Gallery, Camp
 from cciw.cciwmain.views.camps import get_gallery_for_camp
-
-
+import sys
+import re
 
 def usage():
     return """
