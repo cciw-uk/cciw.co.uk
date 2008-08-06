@@ -221,8 +221,8 @@ class ApplicationAdmin(admin.ModelAdmin):
         resp = super(ApplicationAdmin, self).save_add(request, form, formsets, post_url_continue)
         return self._redirect_to_officer_home_page(request, resp)
 
-    def save_change(self, request, model, form, formsets=None):
-        resp = super(ApplicationAdmin, self).save_change(request, model, form, formsets)
+    def save_change(self, request, form, formsets=None):
+        resp = super(ApplicationAdmin, self).save_change(request, form, formsets)
         return self._redirect_to_officer_home_page(request, resp)
 
 class ReferenceAdmin(admin.ModelAdmin):
