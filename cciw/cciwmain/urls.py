@@ -34,7 +34,7 @@ patterns('django.views.generic',
 patterns('cciw.cciwmain.views',
     # Members
     (r'^login/$', 'members.login'),
-    (r'^members/$', 'members.index'),
+    url(r'^members/$', 'members.index', name="cciwmain.members.index"),
     url(r'^members/(?P<user_name>[A-Za-z0-9_]+)/$', 'members.detail', name="cciwmain.members.detail"),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/posts/$', 'members.posts'),
     (r'^members/(?P<user_name>[A-Za-z0-9_]+)/messages/$', 'members.send_message'),

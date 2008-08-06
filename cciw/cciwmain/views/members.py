@@ -44,7 +44,7 @@ def index(request):
     extra_context['default_order'] = 'aun'
 
     try:
-        search = request['search']
+        search = request.GET['search']
         if len(search) > 0:
             members = (members.filter(user_name__icontains=search) | members.filter(real_name__icontains=search))
     except KeyError:

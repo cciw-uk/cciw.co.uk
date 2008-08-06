@@ -269,3 +269,11 @@ class MemberSignup(TwillMixin, TestCase):
         querydata['email'] = querydata['email'] + "x"
         response = self._follow_email_url(path, querydata)
         self.assert_("Error" in response.content, "Error should be reported if the email is incorrect")
+
+class MemberLists(TestCase):
+    fixtures=['basic.yaml','test_members.yaml']
+
+    def test_index(self):
+        # Just test for no error
+        resp = self.client.get(reverse('cciwmain.members.index'))
+        self.assertEqual(resp.status_code, 200)
