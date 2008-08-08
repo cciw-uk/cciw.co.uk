@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from django.dispatch import dispatcher
 from django.core.validators import ValidationError
 from django.http import HttpResponseForbidden
 
@@ -142,7 +141,7 @@ class Application(models.Model):
 
     def save(self):
         super(Application, self).save()
-        dispatcher.send(signals.application_saved, sender=self, application=self)
+        signals.application_saved.send(sender=self)
 
     def __unicode__(self):
         if self.camp is not None:

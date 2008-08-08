@@ -2,12 +2,11 @@
 
 from cciw.officers import signals
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename
-from django.dispatch import dispatcher
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from django.conf import settings
 import cciw.middleware.threadlocals as threadlocals
 
-def send_application_emails(application=None):
+def send_application_emails(application):
     if not application.finished:
         return
 
@@ -64,5 +63,5 @@ CCIW website.  It is also attached to this email as an RTF file.
     send_mail_with_attachments(subject, body, settings.SERVER_EMAIL,
                                leader_emails, attachments=[rtf_attachment])
 
-
-dispatcher.connect(send_application_emails, signal=signals.application_saved)
+send_application_emails_w = lambda sender, **kwargs: send_application_emails(sender)
+signals.application_saved.connect(send_application_emails_w)

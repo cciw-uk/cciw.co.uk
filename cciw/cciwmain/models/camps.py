@@ -2,7 +2,6 @@ import datetime
 
 from cciw.cciwmain import signals
 from django.db import models
-from django.dispatch import dispatcher
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 
@@ -76,7 +75,7 @@ class Camp(models.Model):
         new = self.id is None
         super(Camp, self).save()
         if new:
-            dispatcher.send(signals.camp_created, sender=self, camp=self)
+            signals.camp_created.send(self)
 
     def __unicode__(self):
         leaders = list(self.leaders.all())

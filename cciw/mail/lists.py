@@ -19,8 +19,7 @@ def address_for_camp_slackers(camp):
 
 ### Creation of mailboxes ###
 
-def create_mailboxes(camp=None):
-    assert camp is not None
+def create_mailboxes(camp):
     # TODO: handle xmlrpclib.Fault exceptions
     s = webfaction_session()
     for address in [address_for_camp_officers(camp),
