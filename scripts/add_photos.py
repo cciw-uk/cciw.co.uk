@@ -33,6 +33,10 @@ def main():
 
         gallery = get_gallery_for_camp(camp)
 
+        if gallery is None:
+            raise Exception(("A gallery for camp %s, %s does not exist." +
+                            "It is not created until the day the camp ends.") % (camp.number, camp.year))
+
         try:
             p = Photo.objects.get(gallery=gallery, filename=photoname)
         except Photo.DoesNotExist:
