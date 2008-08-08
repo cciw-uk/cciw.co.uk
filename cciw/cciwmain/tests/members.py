@@ -274,6 +274,12 @@ class MemberLists(TestCase):
     fixtures=['basic.yaml','test_members.yaml']
 
     def test_index(self):
-        # Just test for no error
         resp = self.client.get(reverse('cciwmain.members.index'))
         self.assertEqual(resp.status_code, 200)
+        self.assert_(TEST_MEMBER_USERNAME in resp.content)
+
+    def test_atom(self):
+        # Just test for no error
+        resp = self.client.get(reverse('cciwmain.members.index'), {'format':'atom'})
+        self.assertEqual(resp.status_code, 200)
+        self.assert_(TEST_MEMBER_USERNAME in resp.content)
