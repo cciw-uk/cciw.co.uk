@@ -1,6 +1,6 @@
-- fields: 
-    full_name: Mr Officer
-    officer: 1
+- fields:
+    full_name: Officer2
+    officer: 2
     camp: 1
     address_firstline: 654 Stupid Way
     address_town: Bradford
@@ -59,8 +59,8 @@
   model: officers.application
   pk: 1
 
-- fields: 
-    full_name: Officer2
+- fields:
+    full_name: Officer3
     officer: 3
     camp: 1
     address_firstline: 654 Stupid Way
@@ -121,8 +121,8 @@
   pk: 2
 
 
-- fields: 
-    full_name: Officer3
+- fields:
+    full_name: Officer4
     officer: 4
     camp: 1
     address_firstline: 654 Stupid Way
@@ -194,7 +194,7 @@
     requested: true
   model: officers.reference
   pk: 1
-- fields: 
+- fields:
     application: 1
     comments: Left message on answer phone
     received: false
@@ -203,7 +203,7 @@
   model: officers.reference
   pk: 2
 
-- fields: 
+- fields:
     application: 2
     comments: ''
     received: false

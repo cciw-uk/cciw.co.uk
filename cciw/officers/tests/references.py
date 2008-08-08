@@ -7,11 +7,11 @@ from django.test import TestCase
 
 from cciw.officers.models import Reference
 
-OFFICER_USERNAME = 'mrofficer'
+OFFICER_USERNAME = 'mrofficer2'
 OFFICER_PASSWORD = 'test_normaluser_password'
 OFFICER = (OFFICER_USERNAME, OFFICER_PASSWORD)
 
-LEADER_USERNAME = 'mrleader'
+LEADER_USERNAME = 'davestott'
 LEADER_PASSWORD = 'test_normaluser_password'
 LEADER = (LEADER_USERNAME, LEADER_PASSWORD)
 

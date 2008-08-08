@@ -17,7 +17,7 @@ class OfficerListPage(TwillMixin, TestCase):
         # Complete list of officers
         tc.find("""<h3>List for email:</h3>
 <p>
-"Mr Leader" &lt;leader@somewhere.com&gt;,"Mr Officer" &lt;officer1@somewhere.com&gt;,"Mr Officer2" &lt;officer2@somewhere.com&gt;,
+"Dave Stott" &lt;leader@somewhere.com&gt;,"Mr Officer2" &lt;officer2@somewhere.com&gt;,"Mr Officer3" &lt;officer3@somewhere.com&gt;,
 </p>""")
 
         # Officers without application forms.
@@ -25,7 +25,7 @@ class OfficerListPage(TwillMixin, TestCase):
         #  page, but it will do.)
         tc.find("""<h3>List for email:</h3>
 <p>
-"Mr Leader" &lt;leader@somewhere.com&gt;,
+"Dave Stott" &lt;leader@somewhere.com&gt;,
 </p>""")
 
 
