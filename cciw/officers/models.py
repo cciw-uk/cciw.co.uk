@@ -10,8 +10,10 @@ import datetime
 from cciw.officers.fields import YyyyMmField, AddressField, ExplicitBooleanField, required_field
 
 class Referee(object):
-    """Helper class for more convenient access to referee* attributes
-    of 'Application' model."""
+    """
+    Helper class for more convenient access to referee* attributes
+    of 'Application' model and referee details from 'Reference' model
+    """
     def __init__(self, appobj, refnum):
         self._appobj = appobj
         self._refnum = refnum
@@ -179,6 +181,11 @@ class Reference(models.Model):
                                                        referee_name,
                                                        app.camp.number,
                                                        app.camp.year)
+
+    @property
+    def referee(self):
+        return Referee(self.application, self.referee_number)
+
     class Meta:
         ordering = ('application__camp__year',
                     'application__officer__first_name',
