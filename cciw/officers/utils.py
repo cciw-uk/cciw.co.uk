@@ -6,7 +6,7 @@ def camp_officer_list(camp):
     """
     Returns complete list of officers for a camp
     """
-    return [i.officer for i in camp.invitation_set.all().select_related('officer')]
+    return list(camp.officers.all())
 
 def camp_slacker_list(camp):
     """
@@ -14,5 +14,5 @@ def camp_slacker_list(camp):
     """
     finished_apps_off_ids = [o['officer__id']
                              for o in camp.application_set.filter(finished=True).values('officer__id')]
-    return [i.officer for i in camp.invitation_set.exclude(officer__in=finished_apps_off_ids).select_related('officer')]
+    return list(camp.officers.exclude(id__in=finished_apps_off_ids))
 
