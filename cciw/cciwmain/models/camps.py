@@ -70,6 +70,7 @@ class Camp(models.Model):
         null=True, blank=True)
     site = models.ForeignKey(Site)
     online_applications = models.BooleanField("Accepts online applications from officers.")
+    officers = models.ManyToManyField(User, through='officers.Invitation')
 
     def save(self):
         new = self.id is None
@@ -111,4 +112,3 @@ class Camp(models.Model):
     class Meta:
         app_label = "cciwmain"
         ordering = ['-year','number']
-
