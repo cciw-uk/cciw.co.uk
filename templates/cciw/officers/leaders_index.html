@@ -1,0 +1,31 @@
+{% extends "cciw/officers/base.html" %}
+{% block content %}<div id="content-main">
+<h1>Leaders' tools</h1>
+
+{% if current_camps %}
+{% with current_camps as camps %}
+<h2>Current camps:</h2>
+{% include "cciw/officers/camp_management_links.html" %}
+{% endwith %}
+{% endif %}
+
+{% if old_camps %}
+{% with old_camps as camps %}
+<h2>Past camps:</h2>
+{% include "cciw/officers/camp_management_links.html" %}
+{% endwith %}
+{% endif %}
+
+{% if not current_camps and not old_camps %}
+<p>No camps found.</p>
+{% endif %}
+
+<h2>General</h2>
+
+<p>Management of officers, camps, camp sites and various other parts
+  of the CCIW website can be done via the <a href="/admin/">CCIW admin
+  interface</a>.  The data that is shown and is editable depends on
+  your permissions.</p>
+
+</div>
+{% endblock %}

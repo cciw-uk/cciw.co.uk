@@ -1,0 +1,102 @@
+{% extends "cciw/officers/base.html" %}
+{% block content %}<div id="content-main">
+<h1>Your applications</h1>
+
+<h2>Status:</h2>
+{% if finished_applications %}
+<p>To date, you have submitted the following application forms:</p>
+<ul>
+  {% for app in finished_applications %}
+    <li>{{ app.camp }}, submitted {{ app.date_submitted|date:"Y-m-d" }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+<h2>Tasks:</h2>
+
+<p><strong>Please read the 'help' section below first.</strong></p>
+
+<form action="" method="post">
+
+<ul>
+{% if unfinished_applications %}
+<li>Continue filling in an application:
+<p>The following applications are unfinished and you may continue to edit them.</p>
+<div>
+<label for="edit_application">Choose application:</label>&nbsp;
+	<select name="edit_application" id="edit_application">
+	{% for app in unfinished_applications %}
+	        <option value="{{ app.id }}">{{ app.camp }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
+	{% endfor %}
+	</select>
+	<input type="submit" name="edit" value="Edit" />
+</div>
+<br/><br/>
+</li>
+{% endif %}
+
+{% if finished_applications %}
+<li>Create new application based on an existing one:<br/>
+  <label for="new_application">Choose application</label>&nbsp;
+	<select name="new_application" id="new_application">
+		{% for app in finished_applications %}
+			<option value="{{ app.id }}">{{ app.camp }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
+		{% endfor %}
+	</select>
+	<input type="submit" name="new" value="Create" />
+<br/><br/>
+<p>Once you have pressed 'Create', you will need to update any information necessary, including
+your address, and re-check the declarations.</p>
+</li>
+
+{% endif %}
+
+<li><a href="/admin/officers/application/add/">Create new application (blank)</a></li>
+</ul>
+
+<h2>Help filling in the form</h2>
+<p>You can save your work at any time (using the 'Save' button at the bottom)
+ and come back to it later if you want.  When you have finished and want
+ to submit the application form to the leaders, you need to check the
+ 'Completed' checkbox at the bottom and press 'Save'.</p>
+
+<p>Please note that if you have any validation errors (marked in red when you
+  try to save), your data won't have been saved.  You'll need to correct the
+  data before it is actually saved.</p>
+
+
+</form>
+
+{% if finished_applications %}
+<h2>Download</h2>
+<p>Download applications that you have already submitted.</p>
+
+<form action="{% url cciw.officers.views.view_application %}" method="post">
+<div class="aligned">
+  <div class="form-row">
+  <label for="application">Choose application</label>
+  <select name="application" id="application">
+    {% for app in finished_applications %}
+    <option value="{{ app.id }}">{{ app.camp }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
+    {% endfor %}
+  </select>
+  </div>
+  <div class="form-row">
+  <label for="format">Format</label>
+  <select name="format" id="format">
+    <option value="txt">Plain text</option>
+    <option value="rtf">Rich Text Format</option>
+    <option value="send">Send me both in an email</option>
+  </select>
+  </div>
+  <div class="form-row">
+    <input type="submit" name="view" value="Get it" />
+  </div>
+  <input type="hidden" name="to" value="{{ request.path }}" />
+</div>
+</form>
+
+{% endif %}
+
+</div>
+{% endblock %}

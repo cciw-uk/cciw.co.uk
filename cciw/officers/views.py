@@ -69,11 +69,32 @@ def index(request):
     """Displays a list of links/buttons for various actions."""
     user = request.user
     context = template.RequestContext(request)
-    context['finished_applications'] = user.application_set.filter(finished=True).order_by('-date_submitted')
-    context['unfinished_applications'] = user.application_set.filter(finished=False).order_by('-date_submitted')
     if _is_camp_admin(user):
         context['show_leader_links'] = True
-        context['camps_to_administer'] = _camps_as_admin_or_leader(user).filter(year=common.get_thisyear())
+        context['show_admin_link'] = True
+
+    return render_to_response('cciw/officers/index.html', context_instance=context)
+
+@staff_member_required
+@user_passes_test(_is_camp_admin)
+def leaders_index(request):
+    """Displays a list of links for actions for leaders"""
+    user = request.user
+    context = template.RequestContext(request)
+    thisyear = common.get_thisyear()
+    context['current_camps'] = _camps_as_admin_or_leader(user).filter(year=thisyear)
+    context['old_camps'] = _camps_as_admin_or_leader(user).filter(year__lt=thisyear)
+
+    return render_to_response('cciw/officers/leaders_index.html', context_instance=context)
+
+@staff_member_required
+@never_cache
+def applications(request):
+    """Displays a list of tasks related to applications."""
+    user = request.user
+    context = template.RequestContext(request)
+    context['finished_applications'] = user.application_set.filter(finished=True).order_by('-date_submitted')
+    context['unfinished_applications'] = user.application_set.filter(finished=False).order_by('-date_submitted')
 
     if request.POST.has_key('edit'):
         # Edit existing application
@@ -110,7 +131,7 @@ def index(request):
         # Delete an unfinished application
         pass
 
-    return render_to_response('cciw/officers/index.html', context_instance=context)
+    return render_to_response('cciw/officers/applications.html', context_instance=context)
 
 @staff_member_required
 def view_application(request):
@@ -174,7 +195,6 @@ def _thisyears_camp_for_leader(user):
     except (ObjectDoesNotExist, IndexError):
         return None
 
-
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 def manage_applications(request, year=None, number=None):
@@ -185,7 +205,6 @@ def manage_applications(request, year=None, number=None):
     context['camp'] = camp
 
     return render_to_response('cciw/officers/manage_applications.html', context_instance=context)
-
 
 def _sort_apps(t1, t2):
     # Sorting function used below
@@ -210,6 +229,7 @@ def get_app_details(camp):
     boolean indicating all references have been requested,
     boolean indicating all references have been received)
     """
+    # This is currently very inefficient.
     this_years_apps = list(camp.application_set.filter(finished=True).order_by('officer__first_name', 'officer__last_name'))
     last_years_apps = []
     requested = []
