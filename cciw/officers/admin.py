@@ -214,15 +214,15 @@ class ApplicationAdmin(admin.ModelAdmin):
 
     def _redirect_to_officer_home_page(self, request, response):
         if not request.POST.has_key('_continue') and response.has_header("Location"):
-            response["Location"] = urlresolvers.reverse('cciw.officers.views.index')
+            response["Location"] = urlresolvers.reverse('cciw.officers.views.applications')
         return response
 
-    def save_add(self, request, form, formsets, post_url_continue):
-        resp = super(ApplicationAdmin, self).save_add(request, form, formsets, post_url_continue)
+    def response_add(self, request, new_object):
+        resp = super(ApplicationAdmin, self).response_add(request, new_object)
         return self._redirect_to_officer_home_page(request, resp)
 
-    def save_change(self, request, form, formsets=None):
-        resp = super(ApplicationAdmin, self).save_change(request, form, formsets)
+    def response_change(self, request, new_object):
+        resp = super(ApplicationAdmin, self).response_change(request, new_object)
         return self._redirect_to_officer_home_page(request, resp)
 
 class ReferenceAdmin(admin.ModelAdmin):
