@@ -8,13 +8,8 @@ from cciw.cciwmain.models import Permission, Member
 from cciw.cciwmain.common import standard_extra_context
 
 import urllib
-import base64, datetime, md5
-import cPickle as pickle
-
-def copy_func_attrs(src, dest):
-    dest.__name__ = src.__name__
-    dest.__module__ = src.__module__
-    dest.__doc__ = src.__doc__
+import datetime
+from functools import wraps
 
 def login_redirect(path):
     """Returns a URL for logging in and then redirecting to the supplied path"""
@@ -23,39 +18,13 @@ def login_redirect(path):
 
 LOGIN_FORM_KEY = 'this_is_the_login_form'
 ERROR_MESSAGE = u"Please enter a correct username and password. Note that both fields are case-sensitive."
-LOGIN_FORM_POST_DATA_KEY = 'login_form_post_data'
 
 def _display_login_form(request, error_message='', login_page=False):
-    if login_page:
-        post_data = None
-    elif request.method == 'POST' and request.POST.has_key(LOGIN_FORM_POST_DATA_KEY):
-        # User has failed login BUT has previously saved post data,
-        # so we propagate that data.
-        post_data = request.POST[LOGIN_FORM_POST_DATA_KEY]
-    else:
-        # User's session must have expired; save their post data.
-        post_data = _encode_post_data((request.method, request.POST))
-
     c = template.RequestContext(request, standard_extra_context(title="Login"))
     return render_to_response('cciw/members/login.html', {
-        'app_path': request.path,
-        'post_data': post_data,
+        'app_path': request.get_full_path(),
         'error_message': error_message
     }, context_instance=c)
-
-def _encode_post_data(data):
-    pickled = pickle.dumps(data)
-    pickled_md5 = md5.new(pickled + settings.SECRET_KEY).hexdigest()
-    return base64.encodestring(pickled + pickled_md5)
-
-def _decode_post_data(encoded_data):
-    " Returns the original data that was stored"
-    encoded_data = base64.decodestring(encoded_data)
-    pickled, tamper_check = encoded_data[:-32], encoded_data[-32:]
-    if md5.new(pickled + settings.SECRET_KEY).hexdigest() != tamper_check:
-        from django.core.exceptions import SuspiciousOperation
-        raise SuspiciousOperation, "User may have tampered with session cookie."
-    return pickle.loads(pickled)
 
 def member_required_generic(except_methods):
     """Returns a decorator that forces a member to be logged in to access the view.
@@ -73,41 +42,12 @@ def member_required_generic(except_methods):
 
         def _checklogin(request, *args, **kwargs):
 
-            def _forward_to_original(req):
-                # helper function to go to the original view function.
-                if req.POST.has_key(LOGIN_FORM_POST_DATA_KEY):
-                    method, post_data = _decode_post_data(req.POST[LOGIN_FORM_POST_DATA_KEY])
-                    # overwrite request.POST with the saved post_data, and continue
-                    req.POST = post_data
-                    # This works for WSGI handler, throws exception for mod_python:
-                    try:
-                        req.method = method
-                    except AttributeError:
-                        pass
-                    # This one works for mod_python handler
-                    req.META['REQUEST_METHOD'] = method
-
-                return view_func(req, *args, **kwargs)
-            ## end helper
-
-            if request.method in except_methods:
+            if request.method in except_methods or get_current_member() is not None:
                 return view_func(request, *args, **kwargs)
-
-            if get_current_member() is not None:
-                # The user is valid. Continue to the page.
-                # NB: 2 routes to this:
-                #  - either they were logged in
-                #  - or they were logged out and so saw the login page.
-                #    But they then logged in through a different
-                #    browser tab, and so don't need to log in again.
-
-                return _forward_to_original(request)
 
             # If this isn't already the login page, display it.
             if not request.POST.has_key(LOGIN_FORM_KEY):
                 message = u"Please log in again, because your session has expired."
-                if request.method == 'POST':
-                    message += u"  Don't worry: Your submitted data has been saved and will be processed when you log in."
                 return _display_login_form(request, message)
 
             # Check the password.
@@ -124,13 +64,12 @@ def member_required_generic(except_methods):
                     member.save()
                     set_member_session(request, member)
 
-                    return _forward_to_original(request)
+                    return HttpResponseRedirect(request.get_full_path())
 
                 else:
                     return _display_login_form(request, ERROR_MESSAGE)
 
-        copy_func_attrs(view_func, _checklogin)
-        return _checklogin
+        return wraps(view_func)(_checklogin)
 
     return decorator
 

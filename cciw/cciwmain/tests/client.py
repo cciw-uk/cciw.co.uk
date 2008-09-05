@@ -1,6 +1,8 @@
 from django.test import client
 import cciw.cciwmain.decorators
 
+LOGIN_URL = '/login/'
+
 class CciwClient(client.Client):
     """
     Subclass of the Django Test Client class that knows about
@@ -8,7 +10,7 @@ class CciwClient(client.Client):
     """
 
     @staticmethod
-    def get_member_login_data(membername, password, post_data=None):
+    def get_member_login_data(membername, password):
         # Special knowledge of CCIW code:
         form_data = {
             'user_name': membername,
@@ -16,18 +18,14 @@ class CciwClient(client.Client):
             'login': 'Login',
             cciw.cciwmain.decorators.LOGIN_FORM_KEY: '1'
         }
-        if post_data is not None:
-            form_data[cciw.cciwmain.decorators.LOGIN_FORM_POST_DATA_KEY] = post_data
 
         return form_data
 
-    def member_login(self, membername, password, **extra):
+    def member_login(self, membername, password):
         """
         Does a member login, setting the cookies that are needed.
         """
-        path = '/login/'
-
-        response = self.post(path, data=self.get_member_login_data(membername, password))
+        response = self.post(LOGIN_URL, data=self.get_member_login_data(membername, password))
         if response.status_code != 302: # Expect a redirect on successful login
             raise Exception("Failed to log in")
         return response

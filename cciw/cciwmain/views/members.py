@@ -81,10 +81,11 @@ def detail(request, user_name=None):
 # and _display_login_form, after that it is just redirecting
 @member_required_for_post
 def login(request):
-    if request.method == 'POST':
+    member = get_current_member()
+    if member is not None:
         redirect = request.GET.get('redirect', None)
         if not redirect:
-            redirect = get_current_member().get_absolute_url()
+            redirect = member.get_absolute_url()
         return HttpResponseRedirect(redirect)
     else:
         return _display_login_form(request, login_page=True)
