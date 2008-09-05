@@ -81,11 +81,11 @@ class Poll(models.Model):
         ordering = ('title',)
 
 class PollOption(models.Model):
-    text = models.CharField("Option text", max_length=200, core=True)
-    total = models.PositiveSmallIntegerField("Number of votes", core=True)
+    text = models.CharField("Option text", max_length=200)
+    total = models.PositiveSmallIntegerField("Number of votes")
     poll = models.ForeignKey(Poll, verbose_name="Associated poll",
-        related_name="poll_options", edit_inline=True)
-    listorder = models.PositiveSmallIntegerField("Order in list", core=True)
+        related_name="poll_options")
+    listorder = models.PositiveSmallIntegerField("Order in list")
 
     def __unicode__(self):
         return self.text

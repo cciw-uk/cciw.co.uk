@@ -1,3 +1,4 @@
+from cciw.cciwmain.models import Site, Person, Camp, Forum, NewsItem, Topic, Gallery, Photo, Post, Poll, PollOption, MenuLink, HtmlChunk, Permission, Member, Award, PersonalAward, Message
 from django.contrib import admin
 
 class SiteAdmin(admin.ModelAdmin):
@@ -40,9 +41,15 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ('__unicode__', 'posted_by', 'posted_at')
     search_fields = ('message',)
 
+class PollOptionInline(admin.TabularInline):
+    model = PollOption
+
 class PollAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_by', 'voting_starts')
     radio_fields = {'rules': admin.HORIZONTAL}
+    inlines = [
+        PollOptionInline,
+        ]
 
 class PollOptionAdmin(admin.ModelAdmin):
     list_display = ('text', 'poll')
@@ -81,8 +88,6 @@ class PersonalAwardAdmin(admin.ModelAdmin):
 
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('to_member', 'from_member', 'time')
-
-from cciw.cciwmain.models import Site, Person, Camp, Forum, NewsItem, Topic, Gallery, Photo, Post, Poll, PollOption, MenuLink, HtmlChunk, Permission, Member, Award, PersonalAward, Message
 
 admin.site.register(Site, SiteAdmin)
 admin.site.register(Person, PersonAdmin)
