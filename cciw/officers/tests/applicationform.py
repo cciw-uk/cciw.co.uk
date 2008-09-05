@@ -28,7 +28,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
         tc.submit('_save')
-        tc.url('officers/$')
+        tc.url('officers/applications/$')
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
 
@@ -44,7 +44,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
         tc.submit('_save')
-        tc.url('officers/$')
+        tc.url('officers/applications/$')
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
 
@@ -126,7 +126,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.formvalue('1', 'crb_check_consent', '2')
 
         tc.submit('_save')
-        tc.url('officers/$')
+        tc.url('officers/applications/$')
 
         self.assertEqual(u.application_set.count(), 1)
 
