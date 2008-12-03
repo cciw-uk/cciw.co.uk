@@ -35,9 +35,8 @@ def member_required_generic(except_methods):
 
     def decorator(view_func):
         """
-        Decorator for views that checks if data was POSTed back and
-        if so requires the user to log in.
-        It is also used by the normal '/login/' view.
+        Decorator for views that checks the method and may require the
+        user to log in.  It is also used by the normal '/login/' view.
         """
 
         def _checklogin(request, *args, **kwargs):
