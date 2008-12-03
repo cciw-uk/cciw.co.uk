@@ -253,10 +253,12 @@ def message_list(request, user_name, box):
         paginate_by=settings.MEMBERS_PAGINATE_MESSAGES_BY,
         allow_empty=True)
 
+@member_required
 def inbox(request, user_name=None):
     "Shows inbox for a user"
     return message_list(request, user_name, Message.MESSAGE_BOX_INBOX)
 
+@member_required
 def archived_messages(request, user_name=None):
     return message_list(request, user_name, Message.MESSAGE_BOX_SAVED)
 
