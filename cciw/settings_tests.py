@@ -1,23 +1,13 @@
 # Settings file for testing on development box
 
-from settings_common import *
+from cciw.settings_calvin import *
 
-DEBUG = True
-TEMPLATE_DEBUG = True
+DEBUG = False
+TEMPLATE_DEBUG = False
+DEBUG_PROPAGATE_EXCEPTIONS = True
 
-DATABASE_NAME = 'cciw_django_test'
-DATABASE_USER = 'djangouser'
-DATABASE_PASSWORD = 'foo' 
-DATABASE_HOST = ''        # Set to empty string for localhost. Not used with sqlite3.
-
-# Absolute path to the directory that holds media.
-# Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = '/home/luke/httpd/www.cciw.co.uk/django/media/'
-
-
-# URL that handles the media served from MEDIA_ROOT.
-MEDIA_URL = 'http://cciw_django_local/media/'
-#MEDIA_URL = 'http://localhost:8000/media/'
+DATABASE_ENGINE = 'sqlite3'
+DATABASE_NAME = ':memory:'
 
 MIDDLEWARE_CLASSES = (
     "django.middleware.common.CommonMiddleware",
@@ -30,17 +20,7 @@ MIDDLEWARE_CLASSES = (
     "cciw.middleware.threadlocals.ThreadLocals",
 )
 
-TEMPLATE_DIRS = (
-    r'/home/luke/httpd/www.cciw.co.uk/django/templates/',
-    r'/home/luke/httpd/www.cciw.co.uk/django_src/django/contrib/admin/templates/',
-    r'/home/luke/httpd/www.cciw.co.uk/django/lukeplant_me_uk/django/validator/templates/',
-    r'/home/luke/httpd/www.cciw.co.uk/django/lukeplant_me_uk/django/tagging/templates/',
-)
-
-ADMIN_MEDIA_PREFIX = '/admin_media/'
-
-CCIW_MEDIA_URL = MEDIA_URL
+INSTALLED_APPS = filter(lambda x: x != "lukeplant_me_uk.django.validator", INSTALLED_APPS)
 
 SEND_BROKEN_LINK_EMAILS = False
 
-ESV_KEY = 'IP'

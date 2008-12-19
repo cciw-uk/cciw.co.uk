@@ -1,0 +1,6 @@
+syntax:glob
+*~
+*.pyc
+*\.\#*
+*\#
+settings*priv.py

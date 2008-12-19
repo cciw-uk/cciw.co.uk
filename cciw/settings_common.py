@@ -1,11 +1,12 @@
 # Django settings for cciw project.
 
-from settings_common_priv import SECRET_KEY, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, CSRF_MIDDLEWARE_SECRET
+from cciw.settings_common_priv import SECRET_KEY, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, CSRF_MIDDLEWARE_SECRET
+from cciw.settings_common_priv import MAILBOX_PASSWORD, WEBFACTION_PASSWORD, WEBFACTION_USER, IMAP_MAIL_SERVER
 
 INTERNAL_IPS = ('127.0.0.1',)
 
 ADMINS = (
-    ('Luke Plant', 'spookylukey@fastmail.fm'),
+    ('Luke Plant', 'L.Plant.98@cantab.net'),
 )
 
 MANAGERS = ADMINS
@@ -39,7 +40,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'cciw.cciwmain',
     'cciw.officers',
-    'lukeplant_me_uk.django.tagging',
+    'cciw.tagging',
+    'cciw.utils',
 )
 
 TIME_ZONE = "Europe/London"
@@ -57,12 +59,18 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 SERVER_EMAIL = "website@cciw.co.uk"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
-EMAIL_HOST = "mail1.python-hosting.com"
+EMAIL_HOST = "mail1.webfaction.com"
+
+USE_I18N = False
+
+LOGIN_URL = "/officers/"
+
+FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
 
 ## CCIW SPECIFIC SETTINGS AND CONSTANTS
-AWARD_UPLOAD_PATH = 'images/awards/'
-MEMBER_ICON_UPLOAD_PATH = 'images/members/temp/'
-MEMBER_ICON_PATH = 'images/members/'
+AWARD_UPLOAD_PATH = 'images/awards'
+MEMBER_ICON_UPLOAD_PATH = 'images/members/temp'
+MEMBER_ICON_PATH = 'images/members'
 DEFAULT_MEMBER_ICON = 'defaultmember.gif'
 MEMBER_ICON_MAX_SIZE = 48
 
@@ -75,3 +83,7 @@ ESV_BROWSE_URL = "http://www.gnpcb.org/esv/search/"
 FEEDBACK_EMAIL_TO = "L.Plant.98@cantab.net"
 BOOKINGFORMDIR = "downloads"
 MEMBERS_PAGINATE_MESSAGES_BY = 20
+WEBMASTER_EMAIL = FEEDBACK_EMAIL_TO
+LIST_MAILBOX_NAME = "camplists"
+LIST_MAIL_DEBUG_ADDRESSES = [
+]

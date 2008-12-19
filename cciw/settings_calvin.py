@@ -1,30 +1,33 @@
 # Settings file for development box (calvin)
-
-from settings_common import *
+import os
+from cciw.settings_common import *
 
 DEBUG = True
 TEMPLATE_DEBUG = True
 
-DATABASE_NAME = 'cciw_django'
+DATABASE_NAME = 'cciw'
 DATABASE_USER = 'cciw'
-DATABASE_PASSWORD = 'foo' 
+DATABASE_PASSWORD = 'foo'
 DATABASE_HOST = ''        # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = 5433
 
-basedir = r'/home/luke/httpd/www.cciw.co.uk/django'
-django_src = r'/home/luke/httpd/www.cciw.co.uk/django_src'
+basedir = os.path.dirname(os.path.abspath(os.path.dirname(__file__))) # ../
+# Django source is in:
+# ../django_src  or ../django_src_live
+django_src = os.path.dirname(basedir) + os.path.basename(basedir).replace("current", "django")
 
 # Absolute path to the directory that holds media.
 
-MEDIA_ROOT =  basedir + '/media/'
+MEDIA_ROOT =  basedir + '/media'
 
 # URL that handles the media served from MEDIA_ROOT.
 # Example: "http://media.lawrence.com"
-MEDIA_URL = 'http://cciw_django_local/media/'
-SPECIAL_MEDIA_URL = 'http://cciw_django_local/sp_media/'
+MEDIA_URL = 'http://cciw_local/media'
+SPECIAL_MEDIA_URL = 'http://cciw_local/sp_media'
 #MEDIA_URL = 'http://localhost:8000/media/'
 
 MIDDLEWARE_CLASSES = (
+    "django.middleware.doc.XViewMiddleware",
     "django.middleware.common.CommonMiddleware",
 #    "django.middleware.cache.CacheMiddleware",
 #    "django.middleware.gzip.GZipMiddleware", # interferes with testing
@@ -40,18 +43,17 @@ INSTALLED_APPS = INSTALLED_APPS + (
 )
 
 TEMPLATE_DIRS = (
-    basedir + r'/templates/',
-    django_src + r'/django/contrib/admin/templates/',
-    basedir + r'/lukeplant_me_uk/django/validator/templates/',
-    basedir + r'/lukeplant_me_uk/django/tagging/templates/',
+    basedir + r'/templates',
 )
 
-FIXTURE_DIRS = [
-    basedir + r'/cciw/cciwmain/fixtures/'
-]
-TEST_DIR = basedir + r'/cciw/cciwmain/tests/'
+FILE_UPLOAD_TEMP_DIR = basedir + "/uploads"
 
-ADMIN_MEDIA_PREFIX = '/admin_media/'
+FIXTURE_DIRS = [
+    basedir + r'/cciw/cciwmain/fixtures'
+]
+TEST_DIR = basedir + r'/cciw/cciwmain/tests'
+
+ADMIN_MEDIA_PREFIX = '/admin_media/' # this requires trailing slash
 
 CCIW_MEDIA_URL = MEDIA_URL
 
