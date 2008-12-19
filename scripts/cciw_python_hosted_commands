@@ -1,6 +1,6 @@
 ## UPLOAD ##
 
-# Check everything first using 'bzr status'
-rsync -vr --exclude='.bzr' --exclude='*.pyc' --exclude='*~' templates media cciw websitedown scripts migrate cciw@cciw.co.uk:/home2/cciw/webapps/django_app/
+# Check everything first using 'hg status'
+rsync -vr --exclude='.hg' --exclude='*.pyc' --exclude='*~' templates media cciw websitedown scripts migrate cciw@cciw.co.uk:/home2/cciw/webapps/django_new/
 
 ssh cciw@cciw.co.uk /home2/cciw/bin/restart_apache_graceful.sh
