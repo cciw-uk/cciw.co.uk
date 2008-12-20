@@ -474,18 +474,6 @@ class Tag(models.Model):
     class Meta:
         ordering = ('-added',)
 
-    class Admin:
-        list_display = (
-            'text',
-            'target',
-            'creator',
-            'added',
-        )
-        list_filter = (
-            'target_ct',
-            'creator_ct',
-        )
-        search_fields = ('text',)
 
 def post_delete_tagged_object(signal, sender, instance, **kwargs):
     # Delete any tags associated with the instance, either creator or target
