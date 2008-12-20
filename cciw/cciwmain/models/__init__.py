@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 # TODO - work out where to put this:
 from cciw.tagging.fields import add_tagging_fields
 from cciw.tagging.utils import register_mappers, register_renderer
-from django.template.defaultfilters import escape
+from django.utils.html import escape
 
 register_mappers(Post, str, int)
 register_mappers(Topic, str, int)

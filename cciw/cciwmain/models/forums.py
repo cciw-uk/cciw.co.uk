@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 import re
 from django.conf import settings
 import cciw.middleware.threadlocals as threadlocals
-from django.template.defaultfilters import escape
+from django.utils.html import escape
 
 # regex used to match forums that belong to camps
 _camp_forum_re = re.compile('^' + settings.CAMP_FORUM_RE + '$')
