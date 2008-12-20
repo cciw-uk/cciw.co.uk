@@ -51,7 +51,7 @@ def get_content_type_id(model):
 
 def strip_unsafe_chars(text):
     "Returns a text value with undesirable chars stripped"
-    return u''.join(c for c in text if c not in u"<>&\"'?")
+    return u''.join(c for c in text if c not in u"<>&\"'?/")
 
 def pk_from_str(pk_str, content_type_id):
     """Get a primary key value of the correct type."""
