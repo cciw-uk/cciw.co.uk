@@ -56,24 +56,6 @@ def do_member_icon(parser, token):
     parser.delete_first_token()
     return MemberIconNode(nodelist)
 
-
-class SetVarNode(template.Node):
-    def __init__(self, varname, varval):
-        self.varname = varname
-        self.varval = varval
-    def render(self, context):
-        context[self.varname] = template.resolve_variable(self.varval, context)
-        return ''
-
-
-def do_setvar(parser, token):
-    """
-    Sets a variable in the context.  The first argument
-    must be the variable name, the second the variable value
-    as a literal or a variable."""
-    bits = token.contents.split(" ", 2)
-    return SetVarNode(bits[1], bits[2])
-
 class RenderHtmlChunk(template.Node):
     def __init__(self, chunk_name):
         self.chunk_name = chunk_name
@@ -201,7 +183,6 @@ register.filter(obfuscate_email)
 register.tag('email', do_email)
 register.tag('memberlink', do_member_link)
 register.tag('membericon', do_member_icon)
-register.tag('setvar', do_setvar)
 register.tag('htmlchunk', do_htmlchunk)
 register.tag('atomfeedlink', AtomFeedLink)
 register.tag('atomfeedlinkvisible', AtomFeedLinkVisible)

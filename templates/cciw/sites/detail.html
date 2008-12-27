@@ -1,6 +1,8 @@
 {% extends "cciw/standard.html" %}
 {% load standardpage %}
-{% setvar title object.short_name %}
+{% block title %}
+{{ object.short_name }}
+{% endblock %}
 
 {% block content %}
 	{{ object.info|safe|standard_subs }}

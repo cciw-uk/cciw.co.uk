@@ -44,7 +44,7 @@ connect(window, 'onload',
 	<div id="contentOuter">
 		<div id="content">
 			<div id="pageTitle">
-				<h1>{{ title }}</h1>
+				<h1>{% block title %}{{ title }}{% endblock %}</h1>
 			</div>
 			<div id="contentBody">
 				{% block breadcrumb %}
