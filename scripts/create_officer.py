@@ -158,8 +158,6 @@ def create_officer(username, first_name, last_name, email, password, dryrun=Fals
     officer.is_superuser=False
     officer.email=email
 
-    officer.validate()
-
     if not dryrun:
         officer.save()
         officer.set_password(password)
