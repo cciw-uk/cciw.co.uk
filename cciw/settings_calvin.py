@@ -9,7 +9,7 @@ DATABASE_NAME = 'cciw'
 DATABASE_USER = 'cciw'
 DATABASE_PASSWORD = 'foo'
 DATABASE_HOST = ''        # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = 5433
+DATABASE_PORT = 5432
 
 basedir = os.path.dirname(os.path.abspath(os.path.dirname(__file__))) # ../
 # Django source is in:
