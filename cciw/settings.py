@@ -17,13 +17,14 @@ SPECIAL_MEDIA_URL = 'http://www.cciw.co.uk/sp_media'
 
 MIDDLEWARE_CLASSES = (
     "django.middleware.http.SetRemoteAddrFromForwardedFor",
-    "django.middleware.common.CommonMiddleware",
 #    "django.middleware.cache.CacheMiddleware",
     "django.middleware.gzip.GZipMiddleware",
 #    "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware",
-    "django.contrib.csrf.middleware.CsrfMiddleware",
+    'django.contrib.csrf.middleware.CsrfViewMiddleware',
+    'django.contrib.csrf.middleware.CsrfResponseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "cciw.middleware.threadlocals.ThreadLocals",
 )
 

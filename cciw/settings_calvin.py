@@ -28,13 +28,14 @@ SPECIAL_MEDIA_URL = 'http://cciw_local/sp_media'
 
 MIDDLEWARE_CLASSES = (
     "django.middleware.doc.XViewMiddleware",
-    "django.middleware.common.CommonMiddleware",
 #    "django.middleware.cache.CacheMiddleware",
-#    "django.middleware.gzip.GZipMiddleware", # interferes with testing
+    "django.middleware.gzip.GZipMiddleware", # interferes with testing
     "lukeplant_me_uk.django.validator.middleware.ValidatorMiddleware",
-#    "django.contrib.csrf.middleware.CsrfMiddleware", # interferes with testing
+    'django.contrib.csrf.middleware.CsrfViewMiddleware',
+    'django.contrib.csrf.middleware.CsrfResponseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "cciw.middleware.threadlocals.ThreadLocals",
 )
 
