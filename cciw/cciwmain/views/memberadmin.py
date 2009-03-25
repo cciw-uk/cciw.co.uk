@@ -1,9 +1,9 @@
 """Administrative views for members (signup, password change etc)"""
 from django import shortcuts, template
-from django.core import validators, mail
+from django.core import mail
 from django.contrib.sites.models import Site
 from django.conf import settings
-from django.core.validators import email_re
+from django.forms.fields import email_re
 from django.http import Http404, HttpResponseRedirect
 from django import forms
 from cciw.cciwmain.common import standard_extra_context
@@ -235,7 +235,7 @@ def signup(request):
         ######## 3. CHECK ADDRESS AND SEND EMAIL #########
         email = request.POST['email'].strip()
         c['email'] = email
-        if validators.email_re.search(email):
+        if email_re.search(email):
             if email_address_used(email):
                 c['stage'] = "email"
                 c['alreadyused'] = True

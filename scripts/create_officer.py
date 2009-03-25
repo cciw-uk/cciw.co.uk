@@ -63,7 +63,7 @@ def create_multiple_officers(csv_data, dryrun):
     # duplicate officers.  For this reason we use slightly different
     # logic e.g. detecting duplicates, whereas in create_single_officer
     # we trust the user.
-    from django.core import validators
+    from django.forms.fields import email_re
     from django.contrib.auth.models import User
 
     for officer_details in csv_data:
@@ -87,7 +87,7 @@ def create_multiple_officers(csv_data, dryrun):
         if valid and len(email) == 0:
             valid = False
             msg = "no email provided"
-        if valid and not validators.email_re.search(email):
+        if valid and not email_re.search(email):
             valid = False
             msg = "invalid email address"
 
