@@ -158,6 +158,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         if isinstance(db_field, ExplicitBooleanField):
             defaults = {'widget': widgets.ExplicitBooleanFieldSelect}
             defaults.update(kwargs)
+            defaults.pop("request")
             return db_field.formfield(**defaults)
         return super(ApplicationAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
