@@ -1,7 +1,7 @@
-{% load forums %}
+{% load forums csrf %}
 {% if show_form %}
 <div class="pollVoteBox">
-	<form action="{{ action_url }}" method="post">
+	<form action="{{ action_url }}" method="post">{% csrf_token %}
 	<div><h{{ heading_level }}>{{ poll.title }}</h{{ heading_level }}>
 	{{ poll.intro_text|bb2html }}
 	<ul>

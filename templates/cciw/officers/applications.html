@@ -1,4 +1,5 @@
 {% extends "cciw/officers/base.html" %}
+{% load csrf %}
 {% block content %}<div id="content-main">
 <h1>Your applications</h1>
 
@@ -16,7 +17,7 @@
 
 <p><strong>Please read the 'help' section below first.</strong></p>
 
-<form action="" method="post">
+<form action="" method="post">{% csrf_token %}
 
 <ul>
 {% if unfinished_applications %}
@@ -71,7 +72,7 @@ your address, and re-check the declarations.</p>
 <h2>Download</h2>
 <p>Download applications that you have already submitted.</p>
 
-<form action="{% url cciw.officers.views.view_application %}" method="post">
+<form action="{% url cciw.officers.views.view_application %}" method="post">{% csrf_token %}
 <div class="aligned">
   <div class="form-row">
   <label for="application">Choose application</label>

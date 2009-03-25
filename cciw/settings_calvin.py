@@ -32,7 +32,6 @@ MIDDLEWARE_CLASSES = (
     "django.middleware.gzip.GZipMiddleware", # interferes with testing
     "lukeplant_me_uk.django.validator.middleware.ValidatorMiddleware",
     'django.contrib.csrf.middleware.CsrfViewMiddleware',
-    'django.contrib.csrf.middleware.CsrfResponseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.common.CommonMiddleware",

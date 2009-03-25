@@ -1,8 +1,9 @@
 {% extends "tagging/base.html" %}
+{% load csrf %}
 {% block content %}
 <h1>Tags</h1>
 
-<form method="post" action="">
+<form method="post" action="">{% csrf_token %}
 <div><input type="hidden" value="{{ redirect_url }}" /></div>
 <div class="formrow">
 <span class="label">For item:</span>

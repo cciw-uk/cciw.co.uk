@@ -36,6 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.admin',
     'django.contrib.contenttypes',
+    'django.contrib.csrf',
     'django.contrib.sessions',
     'django.contrib.sites',
     'cciw.cciwmain',
@@ -54,6 +55,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.auth",
     "django.core.context_processors.debug",
     "django.core.context_processors.i18n",
+    "django.contrib.csrf.context_processors.csrf",
     "cciw.cciwmain.common.standard_processor",
 )
 

@@ -1,7 +1,7 @@
 {% extends "cciw/standard.html" %}
 {% load standardpage %}
 {% load view_extras %}
-{% load forums %}
+{% load forums csrf %}
 {% block content %}
 	{% block thread_top %}{% endblock %}
 
@@ -77,7 +77,7 @@ if (bits.length == 2) {
 	
 	{% if show_message_form %}
 		{% if not has_next %}
-			<form action="#messageform" method="post">
+			<form action="#messageform" method="post">{% csrf_token %}
 			<h2 id="messageform">Add message:</h2>
 			{% include "cciw/errors.html" %}
 			{% include "cciw/msgpreview.html" %}

@@ -1,10 +1,10 @@
 {% extends "cciw/standard.html" %}
 {% load view_extras %}
 {% load standardpage %}
-{% load forums %}
+{% load forums csrf %}
 {% block content %}
 {% if object_list %}
-	<form action="" method="post" >
+	<form action="" method="post" >{% csrf_token %}
 	<div class="paging">{% paging_control %}</div>
 	<table class="topheaders">
 		<tr>
