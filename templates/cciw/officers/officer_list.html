@@ -1,10 +1,11 @@
 {% extends "cciw/officers/base.html" %}
-{% load csrf %}
+{% load csrf adminmedia %}
 {% block title %}Officer list :: CCIW{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />
 <script type="text/javascript" src="/admin/jsi18n/"></script>
-<script type="text/javascript" src="/admin_media/js/core.js"></script><script type="text/javascript" src="/admin_media/js/admin/RelatedObjectLookups.js"></script><script type="text/javascript" src="/admin_media/js/calendar.js"></script><script type="text/javascript" src="/admin_media/js/admin/DateTimeShortcuts.js"></script><script type="text/javascript" src="/admin_media/js/SelectBox.js"></script><script type="text/javascript" src="/admin_media/js/SelectFilter2.js"></script>
+<script type="text/javascript" src="{% admin_media_prefix %}js/core.js"></script><script type="text/javascript" src="{% admin_media_prefix %}js/admin/RelatedObjectLookups.js"></script><script type="text/javascript" src="{% admin_media_prefix %}js/calendar.js"></script><script type="text/javascript" src="{% admin_media_prefix %}js/admin/DateTimeShortcuts.js"></script><script type="text/javascript" src="{% admin_media_prefix %}js/SelectBox.js"></script><script type="text/javascript" src="{% admin_media_prefix %}js/SelectFilter2.js"></script>
 
 {% endblock %}
 {% block bodyclass%}change-form{% endblock %}
