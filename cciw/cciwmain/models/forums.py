@@ -174,7 +174,7 @@ class Photo(models.Model):
         related_name="photos")
     checked_by = models.ForeignKey(User,
         null=True, blank=True, related_name="photos_checked")
-    approved = models.BooleanField("Approved", null=True, blank=True)
+    approved = models.NullBooleanField("Approved", blank=True)
     needs_approval = models.BooleanField("Needs approval", default=False)
 
     # De-normalised fields needed for performance and simplicity in templates:
