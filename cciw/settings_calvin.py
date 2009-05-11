@@ -30,7 +30,7 @@ MIDDLEWARE_CLASSES = (
     "django.middleware.doc.XViewMiddleware",
 #    "django.middleware.cache.CacheMiddleware",
     "django.middleware.gzip.GZipMiddleware", # interferes with testing
-    "lukeplant_me_uk.django.validator.middleware.ValidatorMiddleware",
+#    "lukeplant_me_uk.django.validator.middleware.ValidatorMiddleware",
     'django.contrib.csrf.middleware.CsrfViewMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
