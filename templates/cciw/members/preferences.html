@@ -1,5 +1,4 @@
 {% extends "cciw/standard.html" %}
-{% load csrf %}
 {% block content %}
 
 <script type="text/javascript">
@@ -44,7 +43,7 @@ Please check your input below:
 {% endif %}
 
 
-<form method="post" action="" enctype="multipart/form-data" id="preferencesform">{% csrf_token %}
+<form method="post" action="" enctype="multipart/form-data" id="preferencesform">
 
 {{ form.as_p }}
 

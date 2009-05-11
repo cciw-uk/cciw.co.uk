@@ -1,9 +1,9 @@
 {% extends "cciw/standard.html" %}
-{% load standardpage csrf %}
+{% load standardpage %}
 
 {% block content %}
 
-	<form action="/signup/" method="post">{% csrf_token %}
+	<form action="/signup/" method="post">
 {% ifequal stage "start" %}
 	<p>Before signing up, please read the terms of service below.</p>
 	

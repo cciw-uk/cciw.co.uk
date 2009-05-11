@@ -1,5 +1,4 @@
 {% extends "cciw/standard.html" %}
-{% load csrf %}
 {% block content %}
 
 {% if message_sent %}
@@ -17,7 +16,7 @@
 		
 		{% include "cciw/msgpreview.html" %}
 		
-		<form action="" method="post" accept-charset="utf-8">{% csrf_token %}
+		<form action="" method="post" accept-charset="utf-8">
 		{% ifequal mode "send" %}
 			{% if preview  %}
 				<p>Change your message below if necessary:</p>

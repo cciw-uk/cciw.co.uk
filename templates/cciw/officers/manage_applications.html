@@ -1,5 +1,4 @@
 {% extends "cciw/officers/base.html" %}
-{% load csrf %}
 {% block title %}Manage applications :: CCIW{% endblock %}
 {% block content %}<div id="content-main">
 <h1>Manage applications</h1>
@@ -23,7 +22,7 @@ following links:</p>
 
 {% if finished_applications %}
 
-<form action="{% url cciw.officers.views.view_application %}" method="post">{% csrf_token %}
+<form action="{% url cciw.officers.views.view_application %}" method="post">
 <div class="aligned">
   <div class="form-row">
   <label for="application">Choose application</label>

@@ -1,5 +1,5 @@
 {% extends "cciw/officers/base.html" %}
-{% load csrf adminmedia %}
+{% load adminmedia %}
 {% block title %}Officer list :: CCIW{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
@@ -28,7 +28,7 @@
 <h2>Modify list</h2>
 {% if form.officers.errors %}{{ form.officers.errors }}{% endif %}
 
-<form method="post" action="">{% csrf_token %}
+<form method="post" action="">
 <fieldset class="module aligned">
 
 <div class="form-row" >

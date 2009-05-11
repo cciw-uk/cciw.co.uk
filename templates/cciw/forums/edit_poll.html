@@ -1,5 +1,4 @@
 {% extends "cciw/standard.html" %}
-{% load csrf %}
 {% block content %}
 
 <script type="text/javascript">
@@ -39,7 +38,7 @@ created for this poll.</p>
 	</div>
 {% endif %}
 
-<form action="" method="post" id="editpollform">{% csrf_token %}
+<form action="" method="post" id="editpollform">
 
 {{ form.as_p }}
 

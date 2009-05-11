@@ -1,7 +1,7 @@
 {% extends "cciw/standard.html" %}
 {% load forums %}
 {% load standardpage %}
-{% load tagging csrf %}
+{% load tagging %}
 {% block content %}
 	{% get_tag_summaries for member as tagsummaries %}
 	<h2>Tags</h2>
@@ -40,7 +40,7 @@
 				<li><a href="messages/archived/">View {{ current_member.saved_messages }} saved message(s)</a><br/><br/></li>
 				
 				
-				<li><div><form method="post" action="{{request.url}}">{% csrf_token %}
+				<li><div><form method="post" action="{{request.url}}">
 				<p><input type="submit" name="logout" value="Log out" /></p>
 				</form></div></li>
 			</ul>

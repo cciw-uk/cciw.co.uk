@@ -1,5 +1,5 @@
 {% extends "cciw/standard.html" %}
-{% load standardpage csrf %}
+{% load standardpage %}
 {% block content %}
 <script type="text/javascript">
 <!--
@@ -29,7 +29,7 @@ connect(window, 'onload',
 	<div class="userError">Please check your input below:</div>
 	{% endif %}
 
-	<form action="" method="post" id="contactform">{% csrf_token %}
+	<form action="" method="post" id="contactform">	
 	  {{ form.as_p }} 
 	
 	<p><input type="submit" name="submit" value="Send" /></p>

@@ -1,5 +1,4 @@
 {% extends "cciw/standard.html" %}
-{% load csrf %}
 {% block content %}
 	{% if message %}
 	<p>{{ message }}</p>
@@ -7,7 +6,7 @@
 
 	{% if show_form %}
 	<p>Enter the subject and body of the news item.</p>
-	<form action="#messageform" method="post">{% csrf_token %}
+	<form action="#messageform" method="post">
 		{% include "cciw/errors.html" %}
 		{% include "cciw/msgpreview.html" %}
 		{% if preview %}
