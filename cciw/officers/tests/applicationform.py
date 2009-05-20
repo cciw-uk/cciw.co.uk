@@ -6,9 +6,19 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase
 from twill import commands as tc
+import datetime
 
 class ApplicationFormView(TwillMixin, TestCase):
     fixtures = ['basic.yaml', 'officers_users.yaml']
+
+    def setUp(self):
+        # make sure camp 1 has end date in future, otherwise
+        # we won't be able to save
+        c = Camp.objects.get(id=1)
+        c.end_date = datetime.date.today() + datetime.timedelta(100)
+        c.save()
+
+        super(ApplicationFormView, self).setUp()
 
     def _add_application(self):
         u = User.objects.get(username=OFFICER[0])
