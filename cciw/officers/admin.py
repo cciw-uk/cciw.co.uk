@@ -3,6 +3,7 @@ from django.core import urlresolvers
 from django import forms
 from django.forms.util import ErrorList
 import datetime
+from cciw.middleware import threadlocals
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.models import Application, Reference, Invitation
 from cciw.officers import widgets
@@ -10,6 +11,17 @@ from cciw.officers import widgets
 class ApplicationAdminModelForm(forms.ModelForm):
     def clean(self):
         app_finished = self.cleaned_data.get('finished', False)
+        user = threadlocals.get_current_user()
+        # If not admin, we don't allow them to submit application form
+        # for a camp that is past.
+        if self.instance.pk is not None:
+            if not user.has_perm('officers.change_application'):
+                if self.cleaned_data['camp'].end_date < datetime.date.today():
+                    self._errors.setdefault('camp', ErrorList()).append("You cannot submit an application form for a camp that is already finished")
+
+                if self.instance.finished and (self.instance.camp != self.cleaned_data['camp']):
+                    self._errors.setdefault('__all__', ErrorList()).append("You cannot change the camp once you have submitted the form")
+
         if app_finished:
             # All fields decorated with 'required_field' need to be
             # non-empty
