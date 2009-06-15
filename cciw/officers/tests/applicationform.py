@@ -1,4 +1,5 @@
 from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
+from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
 from cciw.officers.tests.references import OFFICER
@@ -23,64 +24,13 @@ class ApplicationFormView(TwillMixin, TestCase):
     def _add_application(self):
         u = User.objects.get(username=OFFICER[0])
         c = Camp.objects.get(id=1)
-        a = Application(officer=u, camp=c)
+        a = Application(officer=u, camp=c, address_email=u.email)
         a.save()
         return a
 
-    def test_add_application(self):
-        self._twill_login(OFFICER)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
-        tc.code(200)
-#        tc.find('Save and continue editing')
-#        tc.notfind('Save and add another')
-        u = User.objects.get(username=OFFICER[0])
-        self.assertEqual(u.application_set.count(), 0)
+    def _finish_application_form(self):
+        # A full set of values that pass validation.
         tc.formvalue('1', 'camp', '1')
-        tc.formvalue('1', 'full_name', 'Test full name')
-        tc.submit('_save')
-        tc.url('officers/applications/$')
-        self.assertEqual(u.application_set.count(), 1)
-        self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
-
-    def test_change_application(self):
-        self._twill_login(OFFICER)
-        a = self._add_application()
-        u = User.objects.get(username=OFFICER[0])
-        self.assertEqual(u.application_set.count(), 1)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
-        tc.code(200)
-#        tc.find('Save and continue editing')
-#        tc.notfind('Save and add another')
-        tc.formvalue('1', 'camp', '1')
-        tc.formvalue('1', 'full_name', 'Test full name')
-        tc.submit('_save')
-        tc.url('officers/applications/$')
-        self.assertEqual(u.application_set.count(), 1)
-        self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
-
-    def test_finish_incomplete(self):
-        u = User.objects.get(username=OFFICER[0])
-        self.assertEqual(u.application_set.count(), 0)
-        self._twill_login(OFFICER)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
-        tc.code(200)
-        tc.formvalue('1', 'camp', '1')
-        tc.formvalue('1', 'finished', 'on')
-        tc.submit('_save')
-        tc.url('admin/officers/application/add/$')
-        tc.find("Please correct the errors below")
-        tc.find("form-row errors full_name")
-        self.assertEqual(u.application_set.count(), 0) # shouldn't have been saved
-
-    def test_finish_complete(self):
-        u = User.objects.get(username=OFFICER[0])
-        self.assertEqual(u.application_set.count(), 0)
-        self.assertEqual(len(mail.outbox), 0)
-        self._twill_login(OFFICER)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
-        tc.code(200)
-        tc.formvalue('1', 'camp', '1')
-        tc.formvalue('1', 'finished', 'on')
         tc.formvalue('1', 'full_name', 'x')
         tc.formvalue('1', 'full_maiden_name', 'x')
         tc.formvalue('1', 'birth_date', '2000-01-01')
@@ -134,6 +84,135 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.formvalue('1', 'concern_declaration', '2')
         tc.formvalue('1', 'allegation_declaration', '2')
         tc.formvalue('1', 'crb_check_consent', '2')
+        tc.formvalue('1', 'finished', 'on')
+
+    def _get_application_form_emails(self):
+        return [e for e in mail.outbox if "CCIW application form" in e.subject]
+
+    def _get_email_change_emails(self):
+        return [e for e in mail.outbox if "Email change" in e.subject]
+
+    def test_add_application(self):
+        self._twill_login(OFFICER)
+        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.code(200)
+#        tc.find('Save and continue editing')
+#        tc.notfind('Save and add another')
+        u = User.objects.get(username=OFFICER[0])
+        self.assertEqual(u.application_set.count(), 0)
+        tc.formvalue('1', 'camp', '1')
+        tc.formvalue('1', 'full_name', 'Test full name')
+        tc.submit('_save')
+        tc.url('officers/applications/$')
+        self.assertEqual(u.application_set.count(), 1)
+        self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
+
+
+    def test_change_application(self):
+        self._twill_login(OFFICER)
+        a = self._add_application()
+        u = User.objects.get(username=OFFICER[0])
+        self.assertEqual(u.application_set.count(), 1)
+        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
+        tc.code(200)
+#        tc.find('Save and continue editing')
+#        tc.notfind('Save and add another')
+        tc.formvalue('1', 'camp', '1')
+        tc.formvalue('1', 'full_name', 'Test full name')
+        tc.submit('_save')
+        tc.url('officers/applications/$')
+        self.assertEqual(u.application_set.count(), 1)
+        self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
+
+    def test_change_email_address(self):
+        # When submitted email address is different from the one stored against
+        # the user, an e-mail should be sent with a link to update the stored
+        # e-mail address
+
+        # This is a 'story' test, really, not a unit test, because we want to
+        # check several different conclusions.
+
+        # setup
+        self.assertEqual(len(mail.outbox), 0)
+        self._twill_login(OFFICER)
+        u = User.objects.get(username=OFFICER[0])
+        a = self._add_application()
+        self.assertEqual(u.application_set.count(), 1)
+
+        # email asserts
+        orig_email = u.email
+        new_email = 'a_different_email@foo.com'
+        self.assertNotEqual(orig_email, new_email)
+
+        # visit page
+        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
+        tc.code(200)
+        self._finish_application_form()
+        tc.formvalue('1', 'camp', '1')
+        tc.formvalue('1', 'full_name', 'Test full name')
+        tc.formvalue('1', 'address_email', new_email)
+        tc.submit('_save')
+        tc.url('officers/applications/$')
+
+        self.assertEqual(u.application_set.count(), 1)
+
+        # Check the e-mails have been sent
+        emails = self._get_email_change_emails()
+        self.assertEqual(len(emails), 1)
+
+        # Read the e-mail
+        url, path, querydata = read_email_url(emails[0], 'http://.*/update-email/.*')
+
+        # Check that nothing has changed yet
+        self.assertEqual(User.objects.get(username=OFFICER[0]).email,
+                         orig_email)
+
+        # follow link - deliberately wrong first time
+        response = self.client.get(path, {'email': new_email, 'hash': 'foo'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Update failed")
+
+        # Check that nothing has changed yet
+        self.assertEqual(User.objects.get(username=OFFICER[0]).email,
+                         orig_email)
+
+        # follow link, right this time
+        response = self.client.get(path, querydata)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Update successful")
+
+        # check e-mail address has changed
+        self.assertEqual(User.objects.get(username=OFFICER[0]).email, new_email)
+
+        # follow link again -- shouldn't update
+        response = self.client.get(path, querydata)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Update failed")
+
+        self.assertEqual(User.objects.get(username=OFFICER[0]).email, new_email)
+
+    def test_finish_incomplete(self):
+        u = User.objects.get(username=OFFICER[0])
+        self.assertEqual(u.application_set.count(), 0)
+        self._twill_login(OFFICER)
+        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.code(200)
+        tc.formvalue('1', 'camp', '1')
+        tc.formvalue('1', 'finished', 'on')
+        tc.submit('_save')
+        tc.url('admin/officers/application/add/$')
+        tc.find("Please correct the errors below")
+        tc.find("form-row errors full_name")
+        self.assertEqual(u.application_set.count(), 0) # shouldn't have been saved
+
+    def test_finish_complete(self):
+        u = User.objects.get(username=OFFICER[0])
+        self.assertEqual(u.application_set.count(), 0)
+        self.assertEqual(len(mail.outbox), 0)
+        self._twill_login(OFFICER)
+        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.code(200)
+        self._finish_application_form()
 
         tc.submit('_save')
         tc.url('officers/applications/$')
@@ -147,4 +226,4 @@ class ApplicationFormView(TwillMixin, TestCase):
         self.assertEqual(a.camp.leaders.count(), 1)
         l = a.camp.leaders.all()[0]
         self.assertEqual(l.users.count(), 1)
-        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(len(self._get_application_form_emails()), 2)
