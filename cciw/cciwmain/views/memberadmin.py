@@ -29,9 +29,6 @@ password_re = re.compile(r'^[A-Za-z0-9]{5,15}$')
 # a user's e-mails).
 NEW_PASSWORD_EXPIRY = 5
 
-def current_domain():
-    return Site.objects.get_current().domain
-
 class ValidationError(Exception):
     pass
 
@@ -119,7 +116,7 @@ the link into your web browser.
 If you did not attempt to sign up on the CCIW web-site, you can just
 ignore this e-mail.
 
-""" % {'domain': current_domain(), 'email': urllib.quote(email), 'hash': email_hash(email)},
+""" % {'domain': utils.get_current_domain(), 'email': urllib.quote(email), 'hash': email_hash(email)},
 "website@cciw.co.uk", [email])
 
 def send_username_reminder(member):
@@ -131,7 +128,7 @@ You can log in at:
 http://%(domain)s/login/
 
 Thanks.
-""" % {'domain': current_domain(), 'user_name': member.user_name },
+""" % {'domain': utils.get_current_domain(), 'user_name': member.user_name },
     "website@cciw.co.uk", [member.email])
 
 def send_newpassword_email(member):
@@ -160,7 +157,7 @@ on the link:  this e-mail has been triggered by someone else entering your
 e-mail addess and asking for a new password.  The password will not actually
 be changed until you click the link, so you can safely ignore this e-mail.
 
-""" % {'domain': current_domain(), 'user_name': member.user_name,
+""" % {'domain': utils.get_current_domain(), 'user_name': member.user_name,
        'password': password, 'hash': hash},
     "website@cciw.co.uk", [member.email])
 
@@ -212,7 +209,7 @@ http://%(domain)s/memberadmin/change-email/?email=%(email)s&u=%(user_name)s&h=%(
 If clicking on the link does not do anything, please copy and paste
 the entire link into your web browser.
 
-""" % {'domain': current_domain(), 'email': urllib.quote(new_email),
+""" % {'domain': utils.get_current_domain(), 'email': urllib.quote(new_email),
        'user_name': urllib.quote(member.user_name),
        'hash': email_and_username_hash(new_email, member.user_name)},
     "website@cciw.co.uk", [new_email])
