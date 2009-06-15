@@ -1,0 +1,10 @@
+{% extends "cciw/officers/base.html" %}
+{% block content %}
+{% if success %}
+  <h1>Update successful</h1>
+{% else %}
+  <h1>Update failed</h1>
+{% endif %}
+
+<p>{{ message }}</p>
+{% endblock %}
