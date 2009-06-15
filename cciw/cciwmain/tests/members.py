@@ -13,13 +13,12 @@ import cciw.cciwmain.views.members
 import cciw.cciwmain.decorators
 
 from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_twill_url
+from cciw.cciwmain.tests.mailhelpers import read_email
 
 import os
 import glob
 import urllib
-import urlparse
 import re
-import cgi
 
 # created by fixture
 TEST_MEMBER_USERNAME = 'test_member_1'
@@ -44,14 +43,6 @@ def _get_file_size(path):
 def _remove_member_icons(user_name):
     for f in glob.glob("%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, user_name + ".*")):
         os.unlink(f)
-
-def read_email(email, regex):
-    urlmatch = re.search(regex, email.body)
-    assert urlmatch is not None, "No URL found in sent email"
-    url = urlmatch.group()
-    assert "http://www.cciw.co.uk/" in url
-    path, querydata = url_to_path_and_query(url)
-    return url, path, querydata
 
 class MemberAdmin(TestCase):
     fixtures=['basic.yaml','test_members.yaml']
@@ -160,14 +151,6 @@ class MemberAdmin(TestCase):
 
     def tearDown(self):
         _remove_member_icons(TEST_MEMBER_USERNAME)
-
-def url_to_path_and_query(url):
-    scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)
-    querydata_t = cgi.parse_qs(query)
-    querydata = {}
-    for key, val in querydata_t.items():
-        querydata[key] = val[-1]
-    return (path, querydata)
 
 class MemberSignup(TwillMixin, TestCase):
     fixtures=['basic.yaml','test_members.yaml']
