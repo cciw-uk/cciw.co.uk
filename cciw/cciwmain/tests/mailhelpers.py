@@ -10,10 +10,12 @@ def url_to_path_and_query(url):
         querydata[key] = val[-1]
     return (path, querydata)
 
-def read_email(email, regex):
+def read_email_url(email, regex):
+    """
+    Reads and parses a URL from an email
+    """
     urlmatch = re.search(regex, email.body)
     assert urlmatch is not None, "No URL found in sent email"
     url = urlmatch.group()
-    assert "http://www.cciw.co.uk/" in url
     path, querydata = url_to_path_and_query(url)
     return url, path, querydata
