@@ -14,7 +14,6 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
-from django.utils.hashcompat import sha_constructor
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.cache import never_cache
 from cciw.cciwmain import common
@@ -23,7 +22,7 @@ from cciw.cciwmain.utils import all, StandardReprMixin
 from cciw.cciwmain.views.memberadmin import email_hash
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
-from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
+from cciw.officers.email_utils import send_mail_with_attachments, formatted_email, make_update_email_hash
 from cciw.officers.models import Application, Reference
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 
@@ -367,9 +366,6 @@ def officer_list(request, year=None, number=None):
 
     return render_to_response('cciw/officers/officer_list.html',
                               context_instance=c)
-
-def make_update_email_hash(oldemail, newemail):
-    return sha_constructor("emailupdate" + settings.SECRET_KEY + ':' + oldemail + ':' + newemail).hexdigest()[::2]
 
 def update_email(request, username=''):
     c = {}

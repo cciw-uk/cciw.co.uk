@@ -3,8 +3,7 @@
 from cciw.cciwmain import utils
 from cciw.officers import signals
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename
-from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
-from cciw.officers.views import make_update_email_hash
+from cciw.officers.email_utils import send_mail_with_attachments, formatted_email, make_update_email_hash
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse

@@ -1,5 +1,6 @@
 from django.core.mail import EmailMessage, SMTPConnection
 from django.conf import settings
+from django.utils.hashcompat import sha_constructor
 
 """
 Utilities for sending email with attachments
@@ -27,3 +28,9 @@ def formatted_email(user):
         return u'"%s" <%s>' % (name, email)
     else:
         return email
+
+def make_update_email_hash(oldemail, newemail):
+    """
+    Returns a hash for use in confirmation of e-mail change.
+    """
+    return sha_constructor("emailupdate" + settings.SECRET_KEY + ':' + oldemail + ':' + newemail).hexdigest()[::2]
