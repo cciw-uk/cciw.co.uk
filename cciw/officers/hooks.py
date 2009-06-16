@@ -52,7 +52,7 @@ u"""%s,
 
 For your records, here is a copy of the application you have submitted
 to CCIW. It is also attached to this email as an RTF file.
-o
+
 """ % application.officer.first_name) + application_text
 
     if user_email is not None:
