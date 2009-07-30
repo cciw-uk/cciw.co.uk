@@ -16,7 +16,7 @@ MEDIA_URL = 'http://www.cciw.co.uk/media'
 SPECIAL_MEDIA_URL = 'http://www.cciw.co.uk/sp_media'
 
 MIDDLEWARE_CLASSES = (
-    "django.middleware.http.SetRemoteAddrFromForwardedFor",
+    "cciw.middleware.http.SetRemoteAddrFromForwardedFor",
 #    "django.middleware.cache.CacheMiddleware",
     "django.middleware.gzip.GZipMiddleware",
 #    "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware",
