@@ -1,5 +1,5 @@
 {% extends "cciw/standard.html" %}
-{% load standardpage %}
+{% load standardpage csrf %}
 {% block content %}
 
 {% if success_message %}
@@ -11,7 +11,7 @@
 	{% endif %}
 	
 	
-	<form action="" method="post">
+	<form action="" method="post">{% csrf_token %}
 	<div>
 	<label for="email">E-mail address:</label> <input type="text" name="email" id="email" value="{{ email }}" /><br/><br/>
 	Choose:<br/>

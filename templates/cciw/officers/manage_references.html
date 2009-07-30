@@ -1,5 +1,5 @@
 {% extends "cciw/officers/base.html" %}
-{% load reference_utils %}
+{% load reference_utils csrf %}
 {% block title %}Manage references :: CCIW{% endblock %}
 {% block extrastyle %}{{ block.super }}
 <script type="text/javascript">
@@ -59,7 +59,7 @@ connect(window, 'onload',
 
 <h2>References</h2>
 {% if application_forms %}
-  <form action="" method="POST">
+  <form action="" method="POST">{% csrf_token %}
   <table cellpadding="0" cellspacing="0">
     <tr>
       <th>Officer</th>

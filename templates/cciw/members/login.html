@@ -1,5 +1,5 @@
 {% extends "cciw/standard.html" %}
-
+{% load csrf %}
 {% block content %}
 	{% if error_message %}
 	<div class="userError">{{ error_message }}</div>
@@ -9,7 +9,7 @@
 		{% endif %}
 	{% endif %}
 	<p>Enter your user name and password below:</p>
-	<form action="" method="post">
+	<form action="" method="post">{% csrf_token %}
 		<div class="formrow">
 			<label for='user_name'>User name:</label>
 			<input type='text' name='user_name' id='user_name' />
