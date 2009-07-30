@@ -54,7 +54,7 @@ class Member(models.Model):
         (MODERATE_ALL,      u"Fully moderated")
     )
 
-    user_name   = models.CharField("User name", primary_key=True, max_length=30)
+    user_name   = models.CharField("User name", primary_key=True, max_length=30, editable=False)
     real_name   = models.CharField("'Real' name", max_length=30, blank=True)
     email       = models.EmailField("Email address")
     password    = models.CharField("Password", max_length=30)
