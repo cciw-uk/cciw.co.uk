@@ -48,8 +48,10 @@
 					<li>{{ leader.name }}:<br/>
 					{{ leader.info|escape|linebreaksbr }}</li>
 				{% endfor %}
-				<li>{{ camp.chaplain.name }}:<br/>
-				{{ camp.chaplain.info|escape|linebreaksbr }}	</li>
+                                {% if camp.chaplain %}
+                                        <li>{{ camp.chaplain.name }}:<br/>
+        				{{ camp.chaplain.info|escape|linebreaksbr }}</li>
+                                {% endif %}
 			</ul>
 		</td>
 	</tr>

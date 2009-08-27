@@ -33,7 +33,7 @@
 						<td>{{ camp.age	}}</td>
 						<td>{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M" }}</td>
 						<td>{{ camp.leaders.all|join:", " }}</td>
-						<td>{{ camp.chaplain }}</td>
+						<td>{% if camp.chaplain %}{{ camp.chaplain }}{% else %}TBA{% endif %}</td>
 					</tr>
 					{% endfor %}
 				</tbody>
