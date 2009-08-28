@@ -21,7 +21,6 @@ MIDDLEWARE_CLASSES = (
     "django.middleware.gzip.GZipMiddleware",
 #    "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware",
     'django.contrib.csrf.middleware.CsrfViewMiddleware',
-    'django.contrib.csrf.middleware.CsrfResponseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.common.CommonMiddleware",
