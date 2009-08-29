@@ -10,11 +10,12 @@ DATABASE_ENGINE = 'sqlite3'
 DATABASE_NAME = ':memory:'
 
 MIDDLEWARE_CLASSES = (
+    "cciw.middleware.http.DummyForceSSLMiddleware",
     "django.middleware.common.CommonMiddleware",
 #    "django.middleware.cache.CacheMiddleware",
 #    "django.middleware.gzip.GZipMiddleware",
 #    "lukeplant_me_uk.django.validator.middleware.ValidatorMiddleware",
-#    "django.contrib.csrf.middleware.CsrfMiddleware",
+#    "django.contrib.csrf.middleware.CsrfViewMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "cciw.middleware.threadlocals.ThreadLocals",

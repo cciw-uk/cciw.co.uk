@@ -40,3 +40,11 @@ class ForceSSLMiddleware(object):
         if view_kwargs.pop('FORCESSL', False) and not request.is_secure():
             newurl = "https://%s%s" % (request.get_host(), request.get_full_path())
             return HttpResponsePermanentRedirect(newurl)
+
+class DummyForceSSLMiddleware(object):
+    """
+    For local testing where we don't have HTTPS - just remove the FORCESSL
+    kwarg from view_kwargs
+    """
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        view_kwargs.pop('FORCESSL', None)

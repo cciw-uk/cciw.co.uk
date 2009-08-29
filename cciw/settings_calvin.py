@@ -27,6 +27,7 @@ SPECIAL_MEDIA_URL = 'http://cciw_local/sp_media'
 #MEDIA_URL = 'http://localhost:8000/media/'
 
 MIDDLEWARE_CLASSES = (
+    "cciw.middleware.http.DummyForceSSLMiddleware",
     "django.middleware.doc.XViewMiddleware",
 #    "django.middleware.cache.CacheMiddleware",
     "django.middleware.gzip.GZipMiddleware", # interferes with testing
