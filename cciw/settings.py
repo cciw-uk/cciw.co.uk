@@ -17,6 +17,7 @@ SPECIAL_MEDIA_URL = '/sp_media'
 
 MIDDLEWARE_CLASSES = (
     "cciw.middleware.http.WebFactionFixes",
+    "cciw.middleware.http.ForceSSLMiddleware",
 #    "django.middleware.cache.CacheMiddleware",
     "django.middleware.gzip.GZipMiddleware",
 #    "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware",

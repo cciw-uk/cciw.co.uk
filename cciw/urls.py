@@ -12,8 +12,8 @@ urlpatterns = patterns('',
     (r'^reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', 'django.contrib.auth.views.password_reset_confirm'),
     (r'^reset/done/$', 'django.contrib.auth.views.password_reset_complete'),
     # Normal views
-    (r'^admin/', include(admin.site.urls)),
-    (r'^officers/', include('cciw.officers.urls'))
+    (r'^admin/', include(admin.site.urls), {'FORCESSL': True}),
+    (r'^officers/', include('cciw.officers.urls'), {'FORCESSL': True})
 )
 
 if settings.DEBUG:

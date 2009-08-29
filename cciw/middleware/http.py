@@ -1,3 +1,5 @@
+from django.http import HttpResponsePermanentRedirect
+
 class WebFactionFixes(object):
     """
     Middleware that applies some fixes for people using
@@ -27,3 +29,14 @@ class WebFactionFixes(object):
         # Fix HTTPS
         if 'HTTP_X_FORWARDED_SSL' in request.META:
             request.is_secure = lambda: request.META['HTTP_X_FORWARDED_SSL'] == 'on'
+
+class ForceSSLMiddleware(object):
+    """
+    Middleware that performs redirects from HTTP to HTTPS for
+    specified views.
+    """
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        if view_kwargs.pop('FORCESSL', False) and not request.is_secure():
+            newurl = "https://%s%s" % (request.get_host(), request.get_full_path())
+            return HttpResponsePermanentRedirect(newurl)
