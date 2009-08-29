@@ -6,7 +6,11 @@ class WebFactionFixes(object):
     * sets 'REMOTE_ADDR' based on 'HTTP_X_FORWARDED_FOR', if the
       latter is set.
 
-    * Monkey patches request.is_secure() to respect HTTP_X_FORWARDED_SSL
+    * Monkey patches request.is_secure() to respect HTTP_X_FORWARDED_SSL.
+      PLEASE NOTE that this is not reliable, since a user could set
+      X-Forwarded-SSL manually and the main WebFaction Apache instance
+      does not remove it, so it will appear to be a secure request
+      when it is not.
     """
     def process_request(self, request):
         # Fix REMOTE_ADDR
