@@ -12,8 +12,8 @@ basedir = os.path.dirname(os.path.abspath(os.path.dirname(__file__))) # ../
 MEDIA_ROOT = basedir + '/media'
 
 # URL that handles the media served from MEDIA_ROOT.
-MEDIA_URL = 'http://www.cciw.co.uk/media'
-SPECIAL_MEDIA_URL = 'http://www.cciw.co.uk/sp_media'
+MEDIA_URL = '/media'
+SPECIAL_MEDIA_URL = '/sp_media'
 
 MIDDLEWARE_CLASSES = (
     "cciw.middleware.http.WebFactionFixes",
