@@ -194,7 +194,7 @@ forms to the referees you have specified.
 To fill in the application form
 
 1) Go to:
-     http://www.cciw.co.uk/officers/
+     https://www.cciw.co.uk/officers/
 
 2) Log in using:
      Username: %(username)s
@@ -251,7 +251,7 @@ using the online system.  Here is what you need to know:
    or if you have lost an email, you can log on to the system:
 
    Go to:
-     http://www.cciw.co.uk/officers/
+     https://www.cciw.co.uk/officers/
 
    Log in using:
      Username: %(username)s
