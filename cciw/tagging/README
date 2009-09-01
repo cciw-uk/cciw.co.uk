@@ -1,3 +1,10 @@
+This tagging app is really old and was started when Django's GenericForeignKey
+did not exist.  The only advantage this version of GenericForeignKey has over
+Django's is that it can reference models that don't have an integer primary key
+(which is the case for cciw.cciwmain.models.Member).
+
+----
+
 Some documentation for the tagging app -- this is an overview.  At the
 bottom you will find a 'Getting started' section.
 

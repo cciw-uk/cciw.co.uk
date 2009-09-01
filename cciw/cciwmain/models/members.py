@@ -54,6 +54,12 @@ class Member(models.Model):
         (MODERATE_ALL,      u"Fully moderated")
     )
 
+    # We use a string primary key because we know that user_names can't change,
+    # and for database efficiency -- we can generate a link to a member's page
+    # just using the primary key, so for other tables that refer to Member,
+    # (e.g. Post) we don't need to hit the database again.  However,
+    # improvements to QuerySet.select_related() probably mean that this isn't
+    # necessary anymore.
     user_name   = models.CharField("User name", primary_key=True, max_length=30, editable=False)
     real_name   = models.CharField("'Real' name", max_length=30, blank=True)
     email       = models.EmailField("Email address")
