@@ -89,3 +89,4 @@ WEBMASTER_EMAIL = "webmaster@cciw.co.uk"
 LIST_MAILBOX_NAME = "camplists"
 LIST_MAIL_DEBUG_ADDRESSES = [
 ]
+REFERENCE_CONCERNS_CONTACT_DETAILS = "Colin Davies on 029 20 617391 or Shirley Evans on 020 8569 0669."

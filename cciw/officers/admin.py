@@ -5,7 +5,7 @@ from django.forms.util import ErrorList
 import datetime
 from cciw.middleware import threadlocals
 from cciw.officers.fields import ExplicitBooleanField
-from cciw.officers.models import Application, Reference, Invitation
+from cciw.officers.models import Application, Reference, Invitation, ReferenceForm
 from cciw.officers import widgets
 
 class ApplicationAdminModelForm(forms.ModelForm):
@@ -246,6 +246,38 @@ class InvitationAdmin(admin.ModelAdmin):
     list_filter = ['camp']
     search_fields = ['officer']
 
+class ReferenceFormAdmin(admin.ModelAdmin):
+    save_as = False
+    list_display = ('referee_name', 'applicant_name', 'date_created')
+    ordering = ('referee_name', )
+    search_fields = ('referee_name','reference_info__application__officer__last_name', 'reference_info__application__officer__first_name')
+
+    fieldsets = (
+        (None,
+            {'fields': ('referee_name',
+                        'how_long_known',
+                        'capacity_known',
+                        'known_offences',
+                        'known_offences_details',
+                        'capability_children',
+                        'character',
+                        'concerns',
+                        'comments',
+                        'date_created',
+                        'reference_info',
+                        ),
+              'classes': ('wide',),}
+        ),
+     )
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        if isinstance(db_field, ExplicitBooleanField):
+            defaults = {'widget': widgets.ExplicitBooleanFieldSelect}
+            defaults.update(kwargs)
+            defaults.pop("request")
+            return db_field.formfield(**defaults)
+        return super(ReferenceFormAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+
 admin.site.register(Application, ApplicationAdmin)
 admin.site.register(Reference, ReferenceAdmin)
 admin.site.register(Invitation, InvitationAdmin)
+admin.site.register(ReferenceForm, ReferenceFormAdmin)

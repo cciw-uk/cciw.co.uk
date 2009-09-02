@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.conf import settings
 from django.http import HttpResponseForbidden
 
 from cciw.cciwmain.models import Camp
@@ -161,6 +162,11 @@ class Application(models.Model):
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name', 'camp__number')
 
 class Reference(models.Model):
+    """
+    Stores metadata about a reference for an officer.
+    """
+    # The actual reference is stored in ReferenceForm model.  This should have
+    # been named ReferenceMeta or something.
     application = models.ForeignKey(Application, limit_choices_to={'finished': True})
     referee_number = models.SmallIntegerField("Referee number", choices=((1,'1'), (2,'2')))
     requested = models.BooleanField()
@@ -193,6 +199,37 @@ class Reference(models.Model):
                     'application__camp__number',
                     'referee_number')
         unique_together = (("application", "referee_number"),)
+
+class ReferenceFormManager(models.Manager):
+    # manager to reduce number of SQL queries, especially in admin
+    use_for_related_fields = True
+    def get_query_set(self):
+        return super(ReferenceFormManager, self).get_query_set().select_related('reference_info__application__officer')
+
+class ReferenceForm(models.Model):
+    referee_name = models.CharField("name of referee", max_length=100)
+    how_long_known = models.CharField("how long have you known the applicant?", max_length=150)
+    capacity_known = models.TextField("in what capacity do you know the applicant?")
+    known_offences = ExplicitBooleanField("""The position for which the applicant is applying requires substantial contact with children and young people. To the best of your knowledge, does the applicant have any convictions/cautions/bindovers, for any criminal offences?""", blank=True)
+    known_offences_details = models.TextField("If the answer is yes, please identify", blank=True)
+    capability_children = models.TextField("Please comment on the applicant's capability of working with children and young people (ie. previous experience of similar work, sense of responsibility, sensitivity, ability to work with others, ability to communicate with children and young people, leadership skills)")
+    character = models.TextField("Please comment on aspects of the applicants character (ie. Christian experience honesty, trustworthiness, reliability, disposition, faithful attendance at worship/prayer meetings.)")
+    concerns = models.TextField("Have you ever had concerns about either this applicant's ability or suitability to work with children and young people? If you would prefer to discuss your concerns on the telephone and in confidence, please contact either: " + settings.REFERENCE_CONCERNS_CONTACT_DETAILS)
+    comments = models.TextField("Any other comments you wish to make")
+    date_created = models.DateField("date created")
+    reference_info = models.ForeignKey(Reference)
+
+    objects = ReferenceFormManager()
+
+    def _get_applicant_name(self):
+        o = self.reference_info.application.officer
+        return u"%s %s" % (o.first_name, o.last_name)
+
+    applicant_name = property(_get_applicant_name)
+
+    def __unicode__(self):
+        officer = self.reference_info.application.officer
+        return u"Reference form for %s %s by %s" % (officer.first_name, officer.last_name, self.referee_name)
 
 class Invitation(models.Model):
     officer = models.ForeignKey(User)
