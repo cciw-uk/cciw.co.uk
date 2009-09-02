@@ -30,8 +30,9 @@ MIDDLEWARE_CLASSES = (
     "cciw.middleware.http.DummyForceSSLMiddleware",
     "django.middleware.doc.XViewMiddleware",
 #    "django.middleware.cache.CacheMiddleware",
-    "django.middleware.gzip.GZipMiddleware", # interferes with testing
-#    "lukeplant_me_uk.django.validator.middleware.ValidatorMiddleware",
+#    "django.middleware.gzip.GZipMiddleware", # interferes with testing
+    "lukeplant_me_uk.django.validator.middleware.ValidatorMiddleware",
+#    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.csrf.middleware.CsrfViewMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -41,6 +42,7 @@ MIDDLEWARE_CLASSES = (
 
 INSTALLED_APPS = INSTALLED_APPS + (
     'lukeplant_me_uk.django.validator',
+    'debug_toolbar',
 )
 
 TEMPLATE_DIRS = (
