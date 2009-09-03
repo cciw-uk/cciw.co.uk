@@ -270,7 +270,7 @@ class ReferenceFormAdmin(admin.ModelAdmin):
         ),
      )
     def formfield_for_dbfield(self, db_field, **kwargs):
-        if isinstance(db_field, ExplicitBooleanField):
+        if db_field.name == 'known_offences':
             defaults = {'widget': widgets.ExplicitBooleanFieldSelect}
             defaults.update(kwargs)
             defaults.pop("request")

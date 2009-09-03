@@ -1,0 +1,39 @@
+{% extends "cciw/officers/base.html" %}
+{% load csrf %}
+{% block title %}CCIW Officers - submit reference{% endblock %}
+{% block content %}
+<h1>Submit reference for {{ officer.first_name }} {{ officer.last_name }}</h1>
+{% if incorrect_url %}
+<p>The address is not correct.  Please ensure you have used the complete URL
+  from the e-mail</p>
+{% else %}
+  {% if already_submitted %}
+  <p>The reference has already been submitted, thank you.</p>
+  {% else %}
+    {% if update %}
+    <p>Please check and update the following information, and press 'Submit
+    reference' at the bottom.  Thanks!</p>
+    <p>(If this is the first time you have used this online system,
+      some of the information in the reference may have been retrieved
+      from previously submitted electronic documents.  If you see any
+      serious errors, please let us know using the 'help' link at top of page). Thanks.</p>
+    {% else %}
+    <p>Please fill out the reference form, amending your name if necessary.
+      At the bottom of the page press 'Submit reference'.</p>
+    {% endif %}
+
+    {% if form.errors %}
+    <p class="errornote">
+      Please correct the error(s) below.
+    </p>
+    {% endif %}
+
+    <form method="post" action="">{% csrf_token %}
+      <table>
+      {{ form }}
+      </table>
+      <div><input type="submit" name="save" value="Submit reference" /></div>
+    </form>
+  {% endif %}
+{% endif %}
+{% endblock %}

@@ -11,6 +11,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
@@ -26,6 +27,7 @@ from cciw.cciwmain.views.memberadmin import email_hash
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email, make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash
+from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 import smtplib
@@ -345,7 +347,6 @@ def request_reference(request):
                                 url=url))
     c['is_popup'] = True
     c['already_requested'] = ref.requested
-    c['title'] = "Request Reference"
     c['referee'] = ref.referee
     c['app'] = app
     c['default_message'] = msg
@@ -353,8 +354,75 @@ def request_reference(request):
     return render_to_response('cciw/officers/request_reference.html',
                               context_instance=c)
 
+class ReferenceFormForm(forms.ModelForm):
+    class Meta:
+        model = ReferenceForm
+        fields = ('referee_name',
+                  'how_long_known',
+                  'capacity_known',
+                  'known_offences',
+                  'known_offences_details',
+                  'capability_children',
+                  'character',
+                  'concerns',
+                  'comments')
+
+normal_textarea = forms.Textarea(attrs={'cols':80, 'rows':10})
+small_textarea = forms.Textarea(attrs={'cols':80, 'rows':5})
+ReferenceFormForm.base_fields['capacity_known'].widget = small_textarea
+ReferenceFormForm.base_fields['known_offences'].widget = ExplicitBooleanFieldSelect()
+ReferenceFormForm.base_fields['known_offences_details'].widget = normal_textarea
+ReferenceFormForm.base_fields['capability_children'].widget = normal_textarea
+ReferenceFormForm.base_fields['character'].widget = normal_textarea
+ReferenceFormForm.base_fields['concerns'].widget = normal_textarea
+ReferenceFormForm.base_fields['comments'].widget = normal_textarea
+
+def initial_reference_form_data(ref, prev_ref_form):
+    retval =  {}
+    if prev_ref_form is not None:
+        # Copy data over
+        for f in ReferenceFormForm._meta.fields:
+            retval[f] = getattr(prev_ref_form, f)
+    retval['referee_name'] = ref.referee.name
+    retval.pop('date_created', None)
+    return retval
+
 def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
-    pass
+    c = template.RequestContext(request)
+    if hash != make_ref_form_url_hash(ref_id, prev_ref_id):
+        c['incorrect_url'] = True
+    else:
+        ref = get_object_or_404(Reference.objects.filter(id=int(ref_id)))
+        if prev_ref_id != "":
+            prev_ref = get_object_or_404(Reference.objects.filter(id=int(prev_ref_id)))
+            assert prev_ref.referenceform_set.all().count() == 1
+            prev_ref_form = prev_ref.referenceform_set.all()[0]
+            c['update'] = True
+        else:
+            prev_ref = None
+            prev_ref_form = None
+
+        if ref.referenceform_set.all().count() > 0:
+            c['already_submitted'] = True
+        else:
+            if request.method == 'POST':
+                form = ReferenceFormForm(request.POST) # A form bound to the POST data
+                if form.is_valid():
+                    obj = form.save(commit=False)
+                    obj.reference_info = ref
+                    obj.date_created = datetime.date.today()
+                    obj.save()
+                    return HttpResponseRedirect(reverse('cciw.officers.views.create_reference_thanks'))
+            else:
+                form = ReferenceFormForm(initial=initial_reference_form_data(ref, prev_ref_form))
+            c['form'] = form
+        c['officer'] = ref.application.officer
+    return render_to_response('cciw/officers/create_reference.html',
+                              context_instance=c)
+
+def create_reference_thanks(request):
+    return render_to_response('cciw/officers/create_reference_thanks.html',
+                              context_instance=template.RequestContext(request))
 
 class OfficerChoice(forms.ModelMultipleChoiceField):
     def label_from_instance(self, u):
@@ -370,6 +438,7 @@ class OfficerListForm(forms.Form):
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 def view_reference(request):
+    # TODO
     pass
 
 @staff_member_required

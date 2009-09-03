@@ -12,4 +12,5 @@ urlpatterns = patterns('cciw.officers.views',
     (r'^leaders/request_reference/$', 'request_reference'),
     (r'^leaders/reference/(?P<ref_id>\d+)/$', 'view_reference'),
     (r'^ref/(?P<ref_id>\d+)-(?P<prev_ref_id>\d*)-(?P<hash>.*)/$', 'create_reference_form'),
+    (r'^ref/thanks/$', 'create_reference_thanks'),
 )

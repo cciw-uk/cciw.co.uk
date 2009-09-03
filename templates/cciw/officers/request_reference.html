@@ -1,6 +1,6 @@
-{% extends "admin/base_site.html" %}
+{% extends "cciw/officers/base.html" %}
 {% load csrf %}
-
+{% block title %}CCIW Officers - request referencefor {{ app.officer.first_name }} {{ app.officer.last_name }} {% endblock %}
 {% block content %}
 <div id="content-main">
 
