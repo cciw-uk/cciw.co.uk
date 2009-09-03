@@ -11,15 +11,17 @@ def import_reference(fname):
         sys.stderr.write("Filename '%s' was not in expected format.\n" % fname)
         sys.exit(1)
     print fname
-    appid = m.groupdict()['appid']
-    refnum = m.groupdict()['refnum']
+    appid = int(m.groupdict()['appid'])
+    refnum = int(m.groupdict()['refnum'])
     data = eval("".join(open(fname).readlines()))
     data['referee_name'] = data['referee_name'].replace("\n", " ")
     app = Application.objects.get(id=appid)
-    ref = app.reference_set.get(referee_number=refnum)
+    ref = app.references[refnum-1]
     refform = ReferenceForm(**data)
     refform.reference_info = ref
     refform.save()
+    ref.received = True
+    ref.save()
 
 usage = """Usage:
 
