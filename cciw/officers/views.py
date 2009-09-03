@@ -412,6 +412,8 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                     obj.reference_info = ref
                     obj.date_created = datetime.date.today()
                     obj.save()
+                    ref.received = True
+                    ref.save()
                     return HttpResponseRedirect(reverse('cciw.officers.views.create_reference_thanks'))
             else:
                 form = ReferenceFormForm(initial=initial_reference_form_data(ref, prev_ref_form))
