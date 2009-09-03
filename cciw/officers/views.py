@@ -1,5 +1,6 @@
+import itertools
 import re
-import time
+import datetime
 from django import forms
 from django import template
 from django.conf import settings
@@ -23,7 +24,7 @@ from cciw.cciwmain.views.memberadmin import email_hash
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email, make_update_email_hash
-from cciw.officers.models import Application, Reference
+from cciw.officers.models import Application, Reference, ReferenceForm
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 
 def _copy_application(application):
@@ -281,47 +282,56 @@ def _get_camp_or_404(year, number):
 
 
 @staff_member_required
-@user_passes_test(_is_camp_admin)
+@user_passes_test(_is_camp_admin) # we don't care which camp they are admin for.
 def manage_references(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
 
     c = template.RequestContext(request)
     c['camp'] = camp
 
-    # We have less validation than normal here, because
-    # we basically trust the user, and the system is deliberately
-    # fairly permissive (leaders can look at applications for
-    # other camps, not just their own, etc).
+    apps = camp.application_set.filter(finished=True)
+    # force creation of Reference objects.
+    [a.references for a in apps]
 
-    if request.method == 'POST':
-        refs_updated = set()
-        applist = map(int, request.POST.getlist('appids'))
+    # TODO - check for case where user has submitted multiple application forms.
+    # User.objects.all().filter(application__camp=camp).annotate(num_applications=models.Count('application')).filter(num_applications__gt=1)
 
-        for appid in applist:
-            for refnum in (1, 2):
-                updated = False
-                try:
-                    ref = Reference.objects.get(application=appid, referee_number=refnum)
-                except Reference.DoesNotExist:
-                    # Create, but we only bother to save if it's
-                    # data is changed from empty.
-                    ref = Reference(application_id=appid,
-                                    referee_number=refnum,
-                                    requested=False,
-                                    received=False,
-                                    comments="")
-                req = ('req_%d_%d' % (refnum, appid)) in request.POST.keys()
-                rec = ('rec_%d_%d' % (refnum, appid)) in request.POST.keys()
-                comments = request.POST.get('comments_%d_%d' % (refnum, appid), "")
+    refinfo = Reference.objects.filter(application__camp=camp, application__finished=True).order_by('application__officer__first_name', 'referee_number')
+    received = refinfo.filter(received=True)
+    requested = refinfo.filter(received=False, requested=True)
+    notrequested = refinfo.filter(received=False, requested=False)
 
-                if ref.requested != req or ref.received != rec or ref.comments != comments:
-                    ref.requested, ref.received, ref.comments = req, rec, comments
-                    ref.save()
-                    refs_updated.add(ref)
+    for l in (received, requested, notrequested):
+        # decorate each Reference with suggested previous ReferenceForms.
+        for curref in l:
+            # Look for ReferenceForms for same officer, within the previous five
+            # years.  Don't look for references from this year's
+            # application (which will be the other referee).
+            cutoffdate = curref.application.camp.start_date - datetime.timedelta(365*5)
+            prev = list(ReferenceForm.objects.filter(reference_info__application__officer=curref.application.officer,
+                                                     reference_info__application__finished=True,
+                                                     date_created__gte=cutoffdate).exclude(reference_info__application=curref.application).order_by('-reference_info__application__camp__year'))
 
-        c['message'] = u"Information for %d references was updated." % len(refs_updated)
+            # Sort by relevance
+            def relevance_key(refform):
+                # Matching name or e-mail address is better, so has lower value,
+                # so it comes first.
+                return -(int(refform.reference_info.referee.email==curref.referee.email) +
+                         int(refform.reference_info.referee.name ==curref.referee.name))
+            prev.sort(key=relevance_key)
 
-    c['application_forms'] = add_referee_counts(sort_app_details(get_app_details(camp)))
+            exact = None
+            for refform in prev:
+                if refform.reference_info.referee == curref.referee:
+                    exact = refform.reference_info
+            if exact is not None:
+                curref.previous_reference = exact
+            else:
+                curref.possible_previous_references = [rf.reference_info for rf in prev]
+
+    c['notrequested'] = notrequested
+    c['requested'] = requested
+    c['received'] = received
 
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)

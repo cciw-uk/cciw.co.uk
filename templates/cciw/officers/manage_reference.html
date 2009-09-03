@@ -1,0 +1,56 @@
+<h3 class="referencestart">{{ ref.application.officer.first_name }} {{ ref.application.officer.last_name }}</h3>
+<h4>From: {{ ref.referee.name }}</h4>
+<div class="reference">
+{% if ref.received %}
+<div class="good"><strong>Received</strong></div>
+{% else %}
+{% if ref.requested %}
+<div class="ok"><strong>Requested</strong></div>
+{% else %}
+<div><strong>Not requested</strong></div>
+{% endif %}
+{% endif %}
+
+{% ifequal mode "received" %}
+  <p><a href="{% url cciw.officers.views.view_reference refid=ref.id %}" rel="external">View reference from {{ ref.referee.name }}</a></p>
+{% else %}
+<p>Ask for request - choose from the options:</p>
+<ul>
+  {% if ref.previous_reference %}
+  <li>{{ ref.referee.name }} &lt;{{ ref.previous_reference.referee.email }}&gt;
+    has done a reference for {{ ref.application.officer.first_name}} before:
+    <span class="referencebutton">
+      <button onclick="requestUpdate({{ ref.id }});">Request updated reference{% ifequal mode "requested" %} (again){% endifequal %}</button>
+    </span>
+  </li>
+  {% else %}
+  <li>{{ ref.referee.name }} has not done a reference for
+    {{ ref.application.officer.first_name}} before:
+    <span class="referencebutton"><button
+    onclick="requestReference({{ ref.id }});">Request reference{% ifequal mode "requested" %} (again){% endifequal %}</button></span>
+ </li>
+  {% endif %}
+  {% if ref.possible_previous_references %}
+  <li>{{ ref.referee.name }} <strong>has</strong> done a reference for
+    {{ ref.application.officer.first_name }} before.<br />
+    There are no exact matches for "{{ ref.referee.name }}
+    &lt;{{ ref.referee.email }}&gt;".  If one of the previous reference forms
+    submitted for this officer is actually by the same person, please select:<br />
+    <select  name="ref_opts_{{ ref.id }}" id="id_ref_opts_{{ ref.id }}">
+      {% for opt in ref.possible_previous_references %}
+      <option value="{{ opt.id }}"
+              {% if forloop.first %}selected="selected"{% endif %}>
+        {{ opt.referee.name }} &lt;{{ opt.referee.email }}&gt;
+        ({{ opt.application.camp.year }})
+      </option>
+      {% endfor %}
+    </select>
+    <span class="referencebutton"><button
+    onclick="requestUpdateCustom({{ ref.id }});">Request updated reference</button></span>
+  </li>
+  {% endif %}
+</ul>
+
+{% endifequal %}
+
+</div>

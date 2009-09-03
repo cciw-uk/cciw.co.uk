@@ -98,6 +98,23 @@ tr.refrow td.nopadding
     padding-right: 2px;
 }
 
+.reference
+{
+    padding-left: 2em;
+    margin-bottom: 3em;
+}
+
+.referencestart
+{
+    border-top: 1px solid #888;
+    padding-top: 0.5em;
+}
+
+.referencebutton
+{
+    padding: 0.5em;
+}
+
 /* Admin overrides */
 
 #user-tools 

@@ -41,6 +41,18 @@ connect(window, 'onload',
         }
 )
 
+function requestReference(ref_id) {
+    alert(ref_id); // TODO
+}
+
+function requestUpdate(ref_id) {
+    alert(ref_id); // TODO
+}
+
+function requestUpdateCustom(ref_id) {
+    alert(ref_id); // TODO
+}
+
 //-->
 </script>
 {% endblock %}
@@ -50,94 +62,61 @@ connect(window, 'onload',
 <h1>Manage references</h1>
 <h2>For camp {{ camp }}</h2>
 
-<p>This page allows you to manage references for officers who have
-  submitted application forms.</p>
+<p>This page allows you to request references for officers who have submitted
+  application forms. References that have not been requested are at the top,
+  those that have been requested are in the middle, and those that have been
+  received are at the bottom.  Within each section they are sorted
+  alphabetically by first name.
+</p>
+
+<p>For each reference that needs to be requested, choose from the options.  An
+  option only appears if it is possible, and the most likely option is listed
+  first.</p>
+
+<p>All of the 'request' action buttons open new windows in which you may need to
+  edit a default e-mail and confirm.</p>
+
+<p>If the referee does not respond quickly, you can request the reference
+  again.</p>
 
 {% if message %}
-  <p><strong>{{ message }}</strong></p>
+<p><strong>{{ message }}</strong></p>
 {% endif %}
 
-<h2>References</h2>
-{% if application_forms %}
-  <form action="" method="post">{% csrf_token %}
-  <table cellpadding="0" cellspacing="0">
-    <tr>
-      <th>Officer</th>
-      <th>Referee 1</th>
-      <th>Referee 2</th>
-      <th>Last year</th>
-    </tr>
+<h2>References to be requested</h2>
 
-    {% for app, prevapp, requested, received in application_forms %}
-    {% with app.officer as officer %}
-    {% with app.references as references %}
-    <tr class="refrow">
-      <td>{{ officer.first_name }} {{ officer.last_name }}
-        {% if received %}
-                <strong class="good">Complete</stong>
-        {% else %}
-                {% if requested %}
-                        <strong class="ok">Requested</stong>
-                {% endif %}
-        {% endif %}
-        <br/>
-        <a rel="external" href="/admin/officers/application/{{ app.id }}/">Edit form</a>
-        <input name="appids" value="{{ app.id }}" type="hidden" />
-      </td>
-      {% for referee in app.referees %}
-      {# hack - really we want  zip(app.referees, app.references) #}
-      {% for reference in app.references %}{% ifequal forloop.counter forloop.parentloop.counter %}
-      <td>{{ referee.name }} {% ifnotequal referee.usedcount 1 %}<span class="refcount ref{{ referee.id }}">{{ referee.usedcount }}</span>{% endifnotequal %}<br />
-        {{ referee.address|firstline }}
-        {% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
-        {% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
-        {% if referee.email %}<div>{{ referee.email }}</div>{% endif %}
-        <div class="refdetails">Reference:
-        </div><div class="refcontrols hidden">
-          <label for="req_{{ forloop.counter }}_{{ app.id }}">Requested </label><input id="req_{{ forloop.counter }}_{{ app.id }}" name="req_{{ forloop.counter }}_{{ app.id }}" value="1" type="checkbox" {% if reference.requested %}checked="checked"{% endif %} /><br />
-          <label for="rec_{{ forloop.counter }}_{{ app.id }}">Received </label><input id="rec_{{ forloop.counter}}_{{ app.id }}" name="rec_{{ forloop.counter}}_{{ app.id }}" value="1" type="checkbox"  {% if reference.received %}checked="checked"{% endif %} /><br />
-          <label for="comments_{{ forloop.counter }}_{{ app.id }}">Comments</label><br />
-          <textarea name="comments_{{ forloop.counter }}_{{ app.id }}" id="comments_{{ forloop.counter }}_{{ app.id }}" cols="40" rows="4">{{ reference.comments }}</textarea>
-        </div>
-      </td>
-      {% endifequal %}{% endfor %}
-      {% endfor %}
+{% for ref in notrequested %}
 
-      <td class="nopadding">
-        {% if prevapp %}
-        <table cellpadding="0" cellspacing="0">
-          <tr>
-            {% for referee in prevapp.referees %}
-            <td style="width: 50%;">{{ referee.name }}<br />
-              {{ referee.address|firstline }}
-              {% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
-              {% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
-              {% if referee.email %}<div>{{ referee.email }}</div>{% endif %}
-            </td>
-            {% endfor %}
-          </tr>
-          <tr>
-            <td colspan="2">
-              [{{ prevapp.camp }}]
-            </td>
-          </tr>
-        </table>
-        {% endif %}
-      </td>
-    </tr>
-    {% endwith %}
-    {% endwith %}
-    {% endfor %}
-  </table>
+{% with "notrequested" as mode %}
+{% include "cciw/officers/manage_reference.html" %}
+{% endwith %}
 
-  <div>
-    <input type="submit" name="save" value="Save" />
-  </div>
-  </form>
+{% empty %}
+<p>No outstanding references to be requested.</p>
+{% endfor %}
 
-{% else %}
-  <p>No application forms completed yet.</p>
+<h2 class="ok">References requested</h2>
 
-{% endif %}
+{% for ref in requested %}
+
+{% with "requested" as mode %}
+{% include "cciw/officers/manage_reference.html" %}
+{% endwith %}
+
+{% empty %}
+<p>No references requested.</p>
+{% endfor %}
+
+<h2 class="good">References received</h2>
+
+{% for ref in received %}
+
+{% with "received" as mode %}
+{% include "cciw/officers/manage_reference.html" %}
+{% endwith %}
+
+{% empty %}
+<p>No references received.</p>
+{% endfor %}
 
 </div>{% endblock %}

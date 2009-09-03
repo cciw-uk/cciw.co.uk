@@ -30,6 +30,9 @@ class Referee(object):
             attname = "referee%d_%s" % (self._refnum, name)
             setattr(self._appobj, attname, val)
 
+    def __eq__(self, other):
+        return self.name == other.name and self.email == other.email
+
 class Application(models.Model):
     camp = models.ForeignKey(Camp, null=True, limit_choices_to={'online_applications': True})
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
@@ -133,8 +136,8 @@ class Application(models.Model):
 
     @property
     def references(self):
-        """A cached version of 2 items that can exist in 'references_set',
-        but with 'None' instead of exceptions if they are not there. Read only"""
+        """A cached version of 2 items that can exist in 'references_set', which
+        are created if they don't exist. Read only"""
         try:
             return self._references_cache
         except AttributeError:
@@ -153,10 +156,7 @@ class Application(models.Model):
             return u"Application from %s" % self.full_name
 
     def _ref(self, num):
-        try:
-            return self.reference_set.get(referee_number=num)
-        except Reference.DoesNotExist:
-            return None
+        return self.reference_set.get_or_create(referee_number=num)[0]
 
     class Meta:
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name', 'camp__number')
