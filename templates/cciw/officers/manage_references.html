@@ -8,18 +8,18 @@
 function toggleAddress(ev) {
     var addrblock = ev.src().nextSibling;
     if (hasElementClass(addrblock, "hidden")) {
-	removeElementClass(addrblock, "hidden");
+        removeElementClass(addrblock, "hidden");
     } else {
-	addElementClass(addrblock, "hidden");
+        addElementClass(addrblock, "hidden");
     }
 }
 
 function toggleRefControls(ev) {
     var refcontrols = ev.src().nextSibling;
     if (hasElementClass(refcontrols, "hidden")) {
-	removeElementClass(refcontrols, "hidden");
+        removeElementClass(refcontrols, "hidden");
     } else {
-	addElementClass(refcontrols, "hidden");
+        addElementClass(refcontrols, "hidden");
     }
 }
 
@@ -27,18 +27,18 @@ function toggleRefControls(ev) {
 function addToggleHandlers(ev) {
     var elems = getElementsByTagAndClassName("div", "firstline");
     for (var i = 0; i < elems.length; i++) {
-	connect(elems[i], 'onclick', toggleAddress);
+        connect(elems[i], 'onclick', toggleAddress);
     }
     elems = getElementsByTagAndClassName("div", "refdetails");
     for (var i = 0; i < elems.length; i++) {
-	connect(elems[i], 'onclick', toggleRefControls);
+        connect(elems[i], 'onclick', toggleRefControls);
     }
 }
 
 connect(window, 'onload',
-	function(ev) {
-	    addToggleHandlers();
-	}
+        function(ev) {
+            addToggleHandlers();
+        }
 )
 
 //-->
@@ -59,7 +59,7 @@ connect(window, 'onload',
 
 <h2>References</h2>
 {% if application_forms %}
-  <form action="" method="POST">{% csrf_token %}
+  <form action="" method="post">{% csrf_token %}
   <table cellpadding="0" cellspacing="0">
     <tr>
       <th>Officer</th>
@@ -73,54 +73,56 @@ connect(window, 'onload',
     {% with app.references as references %}
     <tr class="refrow">
       <td>{{ officer.first_name }} {{ officer.last_name }}
-	{% if received %}
-		<strong class="good">Complete</stong>
-	{% else %}
-		{% if requested %}
-			<strong class="ok">Requested</stong>
-		{% endif %}
-	{% endif %}
-	<br/>
-	<a rel="external" href="/admin/officers/application/{{ app.id }}/">Edit form</a>
+        {% if received %}
+                <strong class="good">Complete</stong>
+        {% else %}
+                {% if requested %}
+                        <strong class="ok">Requested</stong>
+                {% endif %}
+        {% endif %}
+        <br/>
+        <a rel="external" href="/admin/officers/application/{{ app.id }}/">Edit form</a>
         <input name="appids" value="{{ app.id }}" type="hidden" />
       </td>
       {% for referee in app.referees %}
       {# hack - really we want  zip(app.referees, app.references) #}
       {% for reference in app.references %}{% ifequal forloop.counter forloop.parentloop.counter %}
       <td>{{ referee.name }} {% ifnotequal referee.usedcount 1 %}<span class="refcount ref{{ referee.id }}">{{ referee.usedcount }}</span>{% endifnotequal %}<br />
-	{{ referee.address|firstline }}
-	{% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
-	{% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
-	{% if referee.email %}<div>{{ referee.email }}</div>{% endif %}
-	<div class="refdetails">Reference:
-	</div><div class="refcontrols hidden">
-	  <label for="req_{{ forloop.counter }}_{{ app.id }}">Requested </label><input id="req_{{ forloop.counter }}_{{ app.id }}" name="req_{{ forloop.counter }}_{{ app.id }}" value="1" type="checkbox" {% if reference.requested %}checked="checked"{% endif %} /><br />
-	  <label for="rec_{{ forloop.counter }}_{{ app.id }}">Received <label><input id="rec_{{ forloop.counter}}_{{ app.id }}" name="rec_{{ forloop.counter}}_{{ app.id }}" value="1" type="checkbox"  {% if reference.received %}checked="checked"{% endif %} /><br />
-	  <label for="comments_{{ forloop.counter }}_{{ app.id }}">Comments</label><br />
-	  <textarea name="comments_{{ forloop.counter }}_{{ app.id }}" id="comments_{{ forloop.counter }}_{{ app.id }}" cols="40" rows="4">{{ reference.comments }}</textarea>
-	</div>
+        {{ referee.address|firstline }}
+        {% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
+        {% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
+        {% if referee.email %}<div>{{ referee.email }}</div>{% endif %}
+        <div class="refdetails">Reference:
+        </div><div class="refcontrols hidden">
+          <label for="req_{{ forloop.counter }}_{{ app.id }}">Requested </label><input id="req_{{ forloop.counter }}_{{ app.id }}" name="req_{{ forloop.counter }}_{{ app.id }}" value="1" type="checkbox" {% if reference.requested %}checked="checked"{% endif %} /><br />
+          <label for="rec_{{ forloop.counter }}_{{ app.id }}">Received </label><input id="rec_{{ forloop.counter}}_{{ app.id }}" name="rec_{{ forloop.counter}}_{{ app.id }}" value="1" type="checkbox"  {% if reference.received %}checked="checked"{% endif %} /><br />
+          <label for="comments_{{ forloop.counter }}_{{ app.id }}">Comments</label><br />
+          <textarea name="comments_{{ forloop.counter }}_{{ app.id }}" id="comments_{{ forloop.counter }}_{{ app.id }}" cols="40" rows="4">{{ reference.comments }}</textarea>
+        </div>
       </td>
       {% endifequal %}{% endfor %}
       {% endfor %}
 
       <td class="nopadding">
-	<table cellpadding="0" cellspacing="0">
-	  <tr>
-	    {% for referee in prevapp.referees %}
-	    <td width="50%">{{ referee.name }}<br />
-	      {{ referee.address|firstline }}
-	      {% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
-	      {% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
-	      {% if referee.email %}<div>{{ referee.email }}</div>{% endif %}
-	    </td>
-	    {% endfor %}
-	  </tr>
-	  <tr>
-	    <td colspan="2">
-	      {% if prevapp %}[{{ prevapp.camp }}]{% endif %}
-	    </td>
-	  </tr>
+        {% if prevapp %}
+        <table cellpadding="0" cellspacing="0">
+          <tr>
+            {% for referee in prevapp.referees %}
+            <td>{{ referee.name }}<br />
+              {{ referee.address|firstline }}
+              {% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
+              {% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
+              {% if referee.email %}<div>{{ referee.email }}</div>{% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <td colspan="2">
+              [{{ prevapp.camp }}]
+            </td>
+          </tr>
         </table>
+        {% endif %}
       </td>
     </tr>
     {% endwith %}
@@ -128,7 +130,9 @@ connect(window, 'onload',
     {% endfor %}
   </table>
 
-  <input type="submit" name="save" value="Save" />
+  <div>
+    <input type="submit" name="save" value="Save" />
+  </div>
   </form>
 
 {% else %}
