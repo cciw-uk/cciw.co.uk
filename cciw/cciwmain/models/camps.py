@@ -45,6 +45,11 @@ CAMP_AGES = (
     (u'Snr',u'Senior')
 )
 
+class CampManager(models.Manager):
+    use_for_related_fields = True
+    def get_query_set(self):
+        return super(CampManager, self).get_query_set().select_related('chaplain')
+
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")
     number = models.PositiveSmallIntegerField("number")
@@ -71,6 +76,8 @@ class Camp(models.Model):
     site = models.ForeignKey(Site)
     online_applications = models.BooleanField("Accepts online applications from officers.")
     officers = models.ManyToManyField(User, through='officers.Invitation')
+
+    objects = CampManager()
 
     def save(self):
         new = self.id is None

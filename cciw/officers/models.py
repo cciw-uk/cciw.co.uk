@@ -231,9 +231,16 @@ class ReferenceForm(models.Model):
         officer = self.reference_info.application.officer
         return u"Reference form for %s %s by %s" % (officer.first_name, officer.last_name, self.referee_name)
 
+class InvitationManager(models.Manager):
+    use_for_related_fields = True
+    def get_query_set(self):
+        return super(InvitationManager, self).get_query_set().select_related('officer', 'camp__chaplain', 'camp__leaders')
+
 class Invitation(models.Model):
     officer = models.ForeignKey(User)
     camp = models.ForeignKey(Camp)
+
+    objects = InvitationManager()
 
     def __unicode__(self):
         return u"%s %s — camp %s" % (self.officer.first_name, self.officer.last_name, self.camp)
