@@ -73,7 +73,7 @@ CCIW website.  It is also attached to this email as an RTF file.
 def make_update_email_url(application):
     email = application.address_email
     old_email = application.officer.email
-    return 'http://%(domain)s%(path)s?email=%(email)s&hash=%(hash)s' % dict(domain=utils.get_current_domain(),
+    return 'https://%(domain)s%(path)s?email=%(email)s&hash=%(hash)s' % dict(domain=utils.get_current_domain(),
                                                                            path=reverse('cciw.officers.views.update_email', kwargs={'username': application.officer.username}),
                                                                            email=urllib.quote(email),
                                                                            hash=make_update_email_hash(old_email, email))
