@@ -413,6 +413,7 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                     obj.date_created = datetime.date.today()
                     obj.save()
                     ref.received = True
+                    ref.comments = ref.comments + ("\nReference received on %s\n" % datetime.datetime.now())
                     ref.save()
                     return HttpResponseRedirect(reverse('cciw.officers.views.create_reference_thanks'))
             else:
