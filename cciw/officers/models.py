@@ -161,6 +161,12 @@ class Application(models.Model):
     class Meta:
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name', 'camp__number')
 
+class ReferenceManager(models.Manager):
+    # manager to reduce number of SQL queries, especially in admin
+    use_for_related_fields = True
+    def get_query_set(self):
+        return super(ReferenceManager, self).get_query_set().select_related('application__camp', 'application__officer')
+
 class Reference(models.Model):
     """
     Stores metadata about a reference for an officer.
@@ -172,6 +178,8 @@ class Reference(models.Model):
     requested = models.BooleanField()
     received = models.BooleanField()
     comments = models.TextField(blank=True)
+
+    objects = ReferenceManager()
 
     def __unicode__(self):
         app = self.application
@@ -204,7 +212,7 @@ class ReferenceFormManager(models.Manager):
     # manager to reduce number of SQL queries, especially in admin
     use_for_related_fields = True
     def get_query_set(self):
-        return super(ReferenceFormManager, self).get_query_set().select_related('reference_info__application__officer')
+        return super(ReferenceFormManager, self).get_query_set().select_related('reference_info__application__camp', 'reference_info__application__officer')
 
 class ReferenceForm(models.Model):
     referee_name = models.CharField("name of referee", max_length=100)
