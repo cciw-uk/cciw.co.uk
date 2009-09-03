@@ -46,7 +46,7 @@
       {% endfor %}
     </select>
     <span class="referencebutton"><button
-    onclick="requestUpdateCustom({{ ref.id }});">Request updated reference</button></span>
+    onclick="requestUpdateCustom({{ ref.id }});">Request updated reference{% ifequal mode "requested" %} (again){% endifequal %}</button></span>
   </li>
   {% endif %}
 </ul>
