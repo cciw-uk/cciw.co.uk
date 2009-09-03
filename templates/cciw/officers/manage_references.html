@@ -108,7 +108,7 @@ connect(window, 'onload',
         <table cellpadding="0" cellspacing="0">
           <tr>
             {% for referee in prevapp.referees %}
-            <td>{{ referee.name }}<br />
+            <td style="width: 50%;">{{ referee.name }}<br />
               {{ referee.address|firstline }}
               {% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
               {% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
