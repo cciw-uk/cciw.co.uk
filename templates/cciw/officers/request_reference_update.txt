@@ -1,0 +1,11 @@
+{% autoescape off %}Dear {{ referee.name }},
+
+{{ applicant.first_name }} {{ applicant.last_name }} has applied to be an officer on a CCIW camp, and has put your name down as a referee.  You have done a reference for {{ applicant.first_name }} in the past, which is stored in our database, and we would appreciate it if you could take a few minutes check and update your reference, by visiting the following page in your web browser:
+
+{{ url }}
+
+In most e-mail programs, you should be able to click on the link above.  If not, open up your web browser and copy and paste the whole link into the address bar at the top of the web browser.
+
+Many thanks for your support of CCIW.
+
+On behalf of the leaders of camp {{ camp.number }}, {{ camp.year }} - {{ camp.leaders_formatted }}.{% endautoescape %}

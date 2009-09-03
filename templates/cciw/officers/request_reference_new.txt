@@ -1,0 +1,13 @@
+{% autoescape off %}Dear {{ referee.name }},
+
+{{ applicant.first_name }} {{ applicant.last_name }} has applied to be an officer on a CCIW camp, and has put your name down as a referee.  We would appreciate it if you could take a few minutes to fill out a reference form online, by visiting the following page in your web browser and filling out the form:
+
+{{ url }}
+
+In most e-mail programs, you should be able to click on the link above.  If not, open up your web browser and copy and paste the whole link into the address bar at the top of the web browser.
+
+If you have done a reference form in the past for {{ applicant.first_name }}, we apologise for asking you to write the same thing again, but please note that we are now moving to a system where the references are stored in our database, and next year you will simply be asked to confirm or update what you wrote this year.
+
+Many thanks for your support of CCIW.
+
+On behalf of the leaders of camp {{ camp.number }}, {{ camp.year }} - {{ camp.leaders_formatted }}.{% endautoescape %}

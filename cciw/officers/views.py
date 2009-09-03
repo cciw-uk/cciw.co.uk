@@ -11,11 +11,13 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.core.mail import send_mail
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
+from django.template.loader import render_to_string
+from django.template.defaultfilters import wordwrap
 from django.utils.translation import ugettext_lazy as _
+from django.utils.hashcompat import sha_constructor
 from django.views.decorators.cache import never_cache
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Person, Camp
@@ -23,9 +25,10 @@ from cciw.cciwmain.utils import all, StandardReprMixin
 from cciw.cciwmain.views.memberadmin import email_hash
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
-from cciw.officers.email_utils import send_mail_with_attachments, formatted_email, make_update_email_hash
+from cciw.officers.email_utils import send_mail_with_attachments, formatted_email, make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash
 from cciw.officers.models import Application, Reference, ReferenceForm
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
+import smtplib
 
 def _copy_application(application):
     new_obj = Application(id=None)
@@ -215,9 +218,38 @@ def _get_camp_or_404(year, number):
     except Camp.DoesNotExist, ValueError:
         raise Http404
 
+def get_previous_references(ref):
+    """
+    Returns a tuple of:
+     (possible previous References ordered by relevance,
+      exact match for previous Reference or None if it doesn't exist)
+    """
+    # Look for ReferenceForms for same officer, within the previous five
+    # years.  Don't look for references from this year's
+    # application (which will be the other referee).
+    cutoffdate = ref.application.camp.start_date - datetime.timedelta(365*5)
+    prev = list(ReferenceForm.objects.filter(reference_info__application__officer=ref.application.officer,
+                                             reference_info__application__finished=True,
+                                             date_created__gte=cutoffdate).exclude(reference_info__application=ref.application).order_by('-reference_info__application__camp__year'))
+
+    # Sort by relevance
+    def relevance_key(refform):
+        # Matching name or e-mail address is better, so has lower value,
+        # so it comes first.
+        return -(int(refform.reference_info.referee.email==ref.referee.email) +
+                 int(refform.reference_info.referee.name ==ref.referee.name))
+    prev.sort(key=relevance_key) # sort is stable, so previous sort by year should be kept
+
+    exact = None
+    for refform in prev:
+        if refform.reference_info.referee == ref.referee:
+            exact = refform.reference_info
+            break
+    return ([rf.reference_info for rf in prev], exact)
 
 @staff_member_required
 @user_passes_test(_is_camp_admin) # we don't care which camp they are admin for.
+@never_cache
 def manage_references(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
 
@@ -226,7 +258,8 @@ def manage_references(request, year=None, number=None):
 
     apps = camp.application_set.filter(finished=True)
     # force creation of Reference objects.
-    [a.references for a in apps]
+    if Reference.objects.filter(application__finished=True, application__camp=camp).count() < apps.count() * 2:
+        [a.references for a in apps]
 
     # TODO - check for case where user has submitted multiple application forms.
     # User.objects.all().filter(application__camp=camp).annotate(num_applications=models.Count('application')).filter(num_applications__gt=1)
@@ -239,30 +272,11 @@ def manage_references(request, year=None, number=None):
     for l in (received, requested, notrequested):
         # decorate each Reference with suggested previous ReferenceForms.
         for curref in l:
-            # Look for ReferenceForms for same officer, within the previous five
-            # years.  Don't look for references from this year's
-            # application (which will be the other referee).
-            cutoffdate = curref.application.camp.start_date - datetime.timedelta(365*5)
-            prev = list(ReferenceForm.objects.filter(reference_info__application__officer=curref.application.officer,
-                                                     reference_info__application__finished=True,
-                                                     date_created__gte=cutoffdate).exclude(reference_info__application=curref.application).order_by('-reference_info__application__camp__year'))
-
-            # Sort by relevance
-            def relevance_key(refform):
-                # Matching name or e-mail address is better, so has lower value,
-                # so it comes first.
-                return -(int(refform.reference_info.referee.email==curref.referee.email) +
-                         int(refform.reference_info.referee.name ==curref.referee.name))
-            prev.sort(key=relevance_key)
-
-            exact = None
-            for refform in prev:
-                if refform.reference_info.referee == curref.referee:
-                    exact = refform.reference_info
+            (prev, exact) = get_previous_references(curref)
             if exact is not None:
                 curref.previous_reference = exact
             else:
-                curref.possible_previous_references = [rf.reference_info for rf in prev]
+                curref.possible_previous_references = prev
 
     c['notrequested'] = notrequested
     c['requested'] = requested
@@ -270,6 +284,77 @@ def manage_references(request, year=None, number=None):
 
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)
+
+def email_sending_failed_response():
+    return HttpResponse("""<p>Email failed to send.  This is likely a temporary
+    error, please press back in your browser and try again.</p>""")
+
+def close_window_response():
+    return HttpResponse('<script type="text/javascript">window.close()</script>')
+
+@staff_member_required
+@user_passes_test(_is_camp_admin) # we don't care which camp they are admin for.
+def request_reference(request):
+    try:
+        ref_id = int(request.GET.get('ref_id'))
+    except ValueError, TypeError:
+        raise Http404
+    ref = get_object_or_404(Reference.objects.filter(id=ref_id))
+
+    if request.method == 'POST':
+        if 'send' in request.POST:
+            try:
+                send_reference_request_email(wordwrap(request.POST.get('message', ''), 70), ref)
+            except smtplib.SMTPException:
+                return email_sending_failed_response()
+            ref.requested = True
+            ref.comments = ref.comments + ("\nReference requested on %s\n" % datetime.datetime.now())
+            ref.save()
+        return close_window_response()
+
+    c = template.RequestContext(request)
+    update = 'update' in request.GET
+    if update:
+        (possible, exact) = get_previous_references(ref)
+        prev_ref_id = request.GET.get('prev_ref_id', None)
+        if prev_ref_id is None:
+            # require an exact.
+            assert exact is not None
+            # The above can only fail if the user has been
+            # trying to hack things.
+            url = make_ref_form_url(ref.id, exact.id)
+            c['known_email_address'] = True
+        else:
+            # These can error if the user has been hacking
+            prev_ref_id = int(prev_ref_id)
+            refs = [r for r in possible if r.id == prev_ref_id]
+            assert len(refs) == 1
+            url = make_ref_form_url(ref.id, prev_ref_id)
+            c['old_referee'] = refs[0].referee
+        msg_template = 'cciw/officers/request_reference_update.txt'
+    else:
+        url = make_ref_form_url(ref.id, None)
+        msg_template = 'cciw/officers/request_reference_new.txt'
+
+    app = ref.application
+    camp = app.camp
+    msg = render_to_string(msg_template,
+                           dict(referee=ref.referee,
+                                applicant=app.officer,
+                                camp=camp,
+                                url=url))
+    c['is_popup'] = True
+    c['already_requested'] = ref.requested
+    c['title'] = "Request Reference"
+    c['referee'] = ref.referee
+    c['app'] = app
+    c['default_message'] = msg
+    c['is_update'] = update
+    return render_to_response('cciw/officers/request_reference.html',
+                              context_instance=c)
+
+def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
+    pass
 
 class OfficerChoice(forms.ModelMultipleChoiceField):
     def label_from_instance(self, u):
@@ -281,6 +366,11 @@ class OfficerListForm(forms.Form):
         queryset=User.objects.filter(is_staff=True).order_by('first_name', 'last_name'),
         required=False
         )
+
+@staff_member_required
+@user_passes_test(_is_camp_admin)
+def view_reference(request):
+    pass
 
 @staff_member_required
 @user_passes_test(_is_camp_admin)

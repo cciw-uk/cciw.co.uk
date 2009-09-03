@@ -12,7 +12,7 @@
 {% endif %}
 
 {% ifequal mode "received" %}
-  <p><a href="{% url cciw.officers.views.view_reference refid=ref.id %}" rel="external">View reference from {{ ref.referee.name }}</a></p>
+  <p><a href="{% url cciw.officers.views.view_reference ref_id=ref.id %}" rel="external">View reference from {{ ref.referee.name }}</a></p>
 {% else %}
 <p>Ask for request - choose from the options:</p>
 <ul>

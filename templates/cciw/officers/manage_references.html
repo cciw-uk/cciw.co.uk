@@ -41,16 +41,27 @@ connect(window, 'onload',
         }
 )
 
+function requestGeneric(query) {
+    window.open('{% url cciw.officers.views.request_reference %}?' + query,
+                '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+}
+
 function requestReference(ref_id) {
-    alert(ref_id); // TODO
+    requestGeneric('ref_id=' + ref_id.toString());
 }
 
 function requestUpdate(ref_id) {
-    alert(ref_id); // TODO
+    requestGeneric('ref_id=' + ref_id.toString() + '&update=1');
 }
 
 function requestUpdateCustom(ref_id) {
-    alert(ref_id); // TODO
+    var s = document.getElementById('id_ref_opts_' + ref_id.toString());
+    if (s.selectedIndex == -1) {
+        alert("Please select an option");
+    } else {
+        var val = s.options[s.selectedIndex].value;
+        requestGeneric('ref_id=' + ref_id.toString() + '&update=1&prev_ref_id=' + val);
+    }
 }
 
 //-->
@@ -119,4 +130,5 @@ function requestUpdateCustom(ref_id) {
 <p>No references received.</p>
 {% endfor %}
 
-</div>{% endblock %}
+</div>
+{% endblock %}

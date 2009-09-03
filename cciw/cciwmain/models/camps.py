@@ -97,11 +97,18 @@ class Camp(models.Model):
         if chaplain is not None:
             leaders.append(chaplain)
 
-        if len(leaders) > 0:
-            leadertext = u" (%s)" % u", ".join(str(l) for l in leaders)
+        leadertext = self._format_leaders(leaders)
+        return u"%s-%s (%s)" % (self.year, self.number, leadertext)
+
+    def _format_leaders(self, ls):
+        if len(ls) > 0:
+            return u", ".join(str(l) for l in ls)
         else:
-            leadertext = u""
-        return u"%s-%s%s" % (self.year, self.number, leadertext)
+            return u""
+
+    @property
+    def leaders_formatted(self):
+        return self._format_leaders(list(self.leaders.all()))
 
     @property
     def nice_name(self):

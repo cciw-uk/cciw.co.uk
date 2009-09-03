@@ -1,0 +1,53 @@
+{% extends "admin/base_site.html" %}
+{% load csrf %}
+
+{% block content %}
+<div id="content-main">
+
+<h2>Request reference for {{ app.officer.first_name }} {{ app.officer.last_name }}</h2>
+
+<p>From referee: {{ referee.name }} &lt;{{ referee.email }}&gt;</p>
+<p>Address:</p>
+<div>{{ referee.address|linebreaksbr }}</div>
+{% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
+{% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
+<div><br/></div>
+<form action="" method="post">{% csrf_token %}
+
+{% if already_requested %}
+<p><strong>PLEASE NOTE: A request has already been sent for this reference</strong></p>
+{% endif %}
+
+{% if is_update and known_email_address %}
+<p>{{ referee.name }} has done a reference for {{ app.officer.first_name }} in
+the past.</p>
+{% endif %}
+
+{% if not is_update %}
+<p><strong>{{ referee.name }} has not done a reference for {{ app.officer.first_name }} in
+    the past.</strong>  Before requesting this reference, you should endeavour to
+  ensure that this person is who the applicant claims they are, and the e-mail
+  address is correct, and that they are happy to do a reference.</p>
+{% endif %}
+
+{% if is_update and not known_email_address %}
+<p>In the past, "{{ old_referee.name }} &lt;{{ old_referee.email }}&gt;" did a
+  reference for {{ app.officer.first_name }}.  If you have confirmed that this
+  person's name/email address is now "{{ referee.name }} &lt;{{ referee.email }}&gt;",
+  you can ask them to update their reference.</p>
+{% endif %}
+
+<p>The following e-mail, which you can now modify, will be sent to him/her.
+Make sure you don't modify the link contained in the e-mail.</p>
+<div>
+<textarea  rows="20" cols="80" name="message">
+{{ default_message }}</textarea>
+<br />
+<input type="submit" name="send" value="Send" />
+<input type="submit" name="cancel" value="Cancel" />
+</div>
+
+
+</form>
+</div>
+{% endblock %}
