@@ -1,0 +1,24 @@
+{% extends "cciw/officers/base.html" %}
+
+{% block content %}
+<h1>Reference for {{ officer.first_name }} {{ officer.last_name }} from {{ referee.name }}</h1>
+{% if refform %}
+  {% for name,val in info %}
+   <p><strong>{{ name }}</strong></p>
+   <p style="margin-left: 1em;">{{ val }}</p>
+  {% endfor %}
+{% else %}
+  {% if ref.received %}
+    <p>No reference form could be found. The reference is marked as 'received', which
+    means it must have been received by email or paper, rather than using the online
+    system.</p>
+    {% if ref.comments %}
+      <p>Further comments are below:</p>
+      <pre style="border: 1px solid black;">{{ ref.comments }}</pre>
+    {% endif %}
+  {% else %}
+    <p>This reference has not been received.</p>
+  {% endif %}
+{% endif %}
+
+{% endblock %}

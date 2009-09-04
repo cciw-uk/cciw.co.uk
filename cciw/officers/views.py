@@ -505,11 +505,44 @@ class OfficerListForm(forms.Form):
         required=False
         )
 
+def first_letter_cap(s):
+    return s[0].upper()+s[1:]
+
+def _present_val(v):
+    # presentation function used in view_reference
+    if v is False:
+        return "No"
+    elif v is True:
+        return "Yes"
+    else:
+        return v
+
+def reference_form_info(refform):
+    """
+    Name/value pairs for all user presentable
+    information in ReferenceForm
+    """
+    # Avoid hard coding strings into templates by using field verbose_name from model
+    return [(first_letter_cap(f.verbose_name), _present_val(getattr(refform, f.attname)))
+            for f in ReferenceForm._meta.fields if f.attname not in ('id','reference_info_id')]
+
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 def view_reference(request, ref_id=None):
-    # TODO - implement view_reference
-    pass
+    ref = get_object_or_404(Reference.objects.filter(id=ref_id))
+    forms = list(ref.referenceform_set.all())
+    c = template.RequestContext(request)
+    if len(forms) > 0:
+        refform = forms[0]
+        c['refform'] = refform
+        c['info'] = reference_form_info(refform)
+    c['ref'] = ref
+    c['officer'] = ref.application.officer
+    c['referee'] = ref.referee
+    c['is_popup'] = True
+
+    return render_to_response("cciw/officers/view_reference_form.html",
+                              context_instance=c)
 
 @staff_member_required
 @user_passes_test(_is_camp_admin)
