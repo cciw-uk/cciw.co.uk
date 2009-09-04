@@ -161,7 +161,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         self.assertEqual(len(emails), 1)
 
         # Read the e-mail
-        url, path, querydata = read_email_url(emails[0], 'http://.*/update-email/.*')
+        url, path, querydata = read_email_url(emails[0], 'https?://.*/update-email/.*')
 
         # Check that nothing has changed yet
         self.assertEqual(User.objects.get(username=OFFICER[0]).email,

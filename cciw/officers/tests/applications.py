@@ -34,16 +34,7 @@ class ApplicationModel(TestCase):
         self.assertEqual(app.referees[0].some_extra_attr, "Hello")
 
     def test_references(self):
-        app1 = Application.objects.get(id=1)
-        self.assertEqual(app1.references[0], app1.reference_set.get(referee_number=1))
-        self.assertEqual(app1.references[1], app1.reference_set.get(referee_number=2))
-
-        app2 = Application.objects.get(id=2)
-        self.assertEqual(app2.references[0], None)
-        self.assertEqual(app2.references[1], app2.reference_set.get(referee_number=2))
-
-        app3 = Application.objects.get(id=3)
-        self.assertEqual(app3.references[0], None)
-        self.assertEqual(app3.references[1], None)
-
-
+        for appid in [1,2,3]:
+            app = Application.objects.get(id=appid)
+            self.assertEqual(app.references[0], app.reference_set.get(referee_number=1))
+            self.assertEqual(app.references[1], app.reference_set.get(referee_number=2))
