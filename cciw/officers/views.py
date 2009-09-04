@@ -48,10 +48,16 @@ def _copy_application(application):
     return new_obj
 
 def _is_camp_admin(user):
+    """
+    Returns True is the user is an admin for any camp.
+    """
     return (user.groups.filter(name='Leaders').count() > 0) \
         or user.camps_as_admin.count() > 0
 
 def _camps_as_admin_or_leader(user):
+    """
+    Returns all the camps for which the user is an admin or leader.
+    """
     # If the user is am 'admin' for some camps:
     camps = user.camps_as_admin.all()
     # Find the 'Person' object that corresponds to this user
