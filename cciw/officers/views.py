@@ -23,10 +23,11 @@ from cciw.cciwmain.views.memberadmin import email_hash
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
-from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash
+from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
+from cciw.officers.references import reference_form_info
 from cciw.utils.views import close_window_response
 import smtplib
 
@@ -483,7 +484,7 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                     ref.received = True
                     ref.comments = ref.comments + ("\nReference received on %s\n" % datetime.datetime.now())
                     ref.save()
-                    # TODO - email leaders.
+                    send_leaders_reference_email(obj)
                     return HttpResponseRedirect(reverse('cciw.officers.views.create_reference_thanks'))
             else:
                 form = ReferenceFormForm(initial=initial_reference_form_data(ref, prev_ref_form))
@@ -507,26 +508,6 @@ class OfficerListForm(forms.Form):
         required=False
         )
 
-def first_letter_cap(s):
-    return s[0].upper()+s[1:]
-
-def _present_val(v):
-    # presentation function used in view_reference
-    if v is False:
-        return "No"
-    elif v is True:
-        return "Yes"
-    else:
-        return v
-
-def reference_form_info(refform):
-    """
-    Name/value pairs for all user presentable
-    information in ReferenceForm
-    """
-    # Avoid hard coding strings into templates by using field verbose_name from model
-    return [(first_letter_cap(f.verbose_name), _present_val(getattr(refform, f.attname)))
-            for f in ReferenceForm._meta.fields if f.attname not in ('id','reference_info_id')]
 
 @staff_member_required
 @user_passes_test(_is_camp_admin)
