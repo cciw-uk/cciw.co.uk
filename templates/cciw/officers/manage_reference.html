@@ -17,23 +17,23 @@
 <p>Ask for request - choose from the options:</p>
 <ul>
   {% if ref.previous_reference %}
-  <li>{{ ref.referee.name }} &lt;{{ ref.previous_reference.referee.email }}&gt;
+  <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
     has done a reference for {{ ref.application.officer.first_name}} before:
     <span class="referencebutton">
       <button onclick="requestUpdate({{ ref.id }});">Request updated reference{% ifequal mode "requested" %} (again){% endifequal %}</button>
     </span>
   </li>
   {% else %}
-  <li>{{ ref.referee.name }} has not done a reference for
-    {{ ref.application.officer.first_name}} before:
+  <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
+    has not done a reference for {{ ref.application.officer.first_name}} before:
     <span class="referencebutton"><button
     onclick="requestReference({{ ref.id }});">Request reference{% ifequal mode "requested" %} (again){% endifequal %}</button></span>
  </li>
   {% endif %}
 
   {% if ref.possible_previous_references %}
-  <li>{{ ref.referee.name }} <strong>has</strong> done a reference for
-    {{ ref.application.officer.first_name }} before.<br />
+  <li>{{ ref.referee.name }}
+    <strong>has</strong> done a reference for {{ ref.application.officer.first_name }} before.<br />
     There are no exact matches for "{{ ref.referee.name }}
     &lt;{{ ref.referee.email }}&gt;".  If one of the previous reference forms
     submitted for this officer is actually by the same person, please select:<br />
