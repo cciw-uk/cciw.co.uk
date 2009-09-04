@@ -7,10 +7,7 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
-from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.forms.fields import email_re
@@ -18,12 +15,10 @@ from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import render_to_string
 from django.template.defaultfilters import wordwrap
-from django.utils.translation import ugettext_lazy as _
 from django.utils.hashcompat import sha_constructor
 from django.views.decorators.cache import never_cache
 from cciw.cciwmain import common
-from cciw.cciwmain.models import Person, Camp
-from cciw.cciwmain.utils import all, StandardReprMixin
+from cciw.cciwmain.models import Camp
 from cciw.cciwmain.views.memberadmin import email_hash
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
