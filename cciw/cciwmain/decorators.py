@@ -2,6 +2,7 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django import template
 from django.conf import settings
 from django.shortcuts import render_to_response
+from django.core.mail import mail_admins
 
 from cciw.middleware.threadlocals import get_current_member, set_member_session
 from cciw.cciwmain.models import Permission, Member
@@ -10,6 +11,7 @@ from cciw.cciwmain.common import standard_extra_context
 import urllib
 import datetime
 from functools import wraps
+import sys
 
 def login_redirect(path):
     """Returns a URL for logging in and then redirecting to the supplied path"""
@@ -74,3 +76,19 @@ def member_required_generic(except_methods):
 
 member_required_for_post = member_required_generic(['GET'])
 member_required = member_required_generic([])
+
+def email_errors_silently(func):
+    """
+    Decorator causes any errors raised by a function to be emailed to admins,
+    and then silently ignored.
+    """
+    def _inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except:
+            import traceback
+            subject = 'Error on CCIW site'
+            message = '\n'.join(traceback.format_exception(*sys.exc_info()))
+            mail_admins(subject, message, fail_silently=True)
+            return None
+    return wraps(func)(_inner)

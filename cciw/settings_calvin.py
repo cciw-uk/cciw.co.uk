@@ -70,3 +70,7 @@ EMAIL_HOST_PASSWORD = None
 EMAIL_PORT = 8025
 
 ESV_KEY = 'IP'
+
+WEBFACTION_USER = None # stops any webfaction API calls being made.
+
+

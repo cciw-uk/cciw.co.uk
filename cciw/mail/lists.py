@@ -4,6 +4,7 @@ import re
 from django.conf import settings
 from django.core.mail import SMTPConnection, EmailMessage, make_msgid
 from django.forms.fields import email_re
+from cciw.cciwmain.decorators import email_errors_silently
 from cciw.officers.email_utils import formatted_email
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.webfaction import webfaction_session
@@ -19,6 +20,7 @@ def address_for_camp_slackers(camp):
 
 ### Creation of mailboxes ###
 
+@email_errors_silently
 def create_mailboxes(camp):
     # TODO: handle xmlrpclib.Fault exceptions
     s = webfaction_session()

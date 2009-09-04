@@ -19,6 +19,8 @@ class WebFactionSession(object):
         return func
 
 def webfaction_session():
+    if settings.WEBFACTION_USER is None:
+        raise Exception("No WEBFACTION_USER set")
     server = xmlrpclib.Server('https://api.webfaction.com/')
     session_id, account = server.login(settings.WEBFACTION_USER, settings.WEBFACTION_PASSWORD)
     return WebFactionSession(server, session_id)
