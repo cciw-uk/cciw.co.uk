@@ -27,7 +27,8 @@ from cciw.cciwmain.utils import all, StandardReprMixin
 from cciw.cciwmain.views.memberadmin import email_hash
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
-from cciw.officers.email_utils import send_mail_with_attachments, formatted_email, make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash
+from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
+from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
