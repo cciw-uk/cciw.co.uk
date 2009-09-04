@@ -58,11 +58,7 @@ class Poll(models.Model):
             return True
 
     def total_votes(self):
-        sum = 0
-        # TODO - use SQL, or caching
-        for option in self.poll_options.all():
-            sum += option.total
-        return sum
+        return self.poll_options.all().aggregate(models.Sum('total'))['total__sum']
 
     def can_anyone_vote(self):
         return (self.voting_ends > datetime.now()) and \
