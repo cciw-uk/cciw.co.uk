@@ -87,8 +87,7 @@ def standard_processor(request):
     context = {}
     assert type(request.path) is unicode
     context['homepage'] = (request.path == u"/")
-    # TODO - filter on 'visible' attribute
-    links = MenuLink.objects.filter(parent_item__isnull=True)
+    links = MenuLink.objects.filter(parent_item__isnull=True, visible=True)
     for l in links:
         l.title = standard_subs(l.title)
         l.isCurrentPage = False
