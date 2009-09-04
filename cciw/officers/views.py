@@ -95,6 +95,17 @@ def leaders_index(request):
 
     return render_to_response('cciw/officers/leaders_index.html', context_instance=context)
 
+def get_next_camp_guess(camp):
+    next_camps = list(camp.next_camps.filter(online_applications=True))
+    if len(next_camps) > 0:
+        next_camp = next_camps[0]
+        if next_camp.is_past():
+            return get_next_camp_guess(next_camp)
+        else:
+            return next_camp
+    else:
+        return None
+
 @staff_member_required
 @never_cache
 def applications(request):
@@ -127,9 +138,9 @@ def applications(request):
             new_obj = _copy_application(obj)
             # We *have* to set 'camp' otherwise object cannot be seen
             # in admin, due to default 'ordering'
-            next_camps = list(obj.camp.next_camps.all())
-            if len(next_camps) > 0:
-                new_obj.camp = next_camps[0]
+            next_camp = get_next_camp_guess(obj.camp)
+            if next_camp is not None:
+                new_obj.camp = next_camp
             else:
                 new_obj.camp = Camp.objects.filter(online_applications=True).order_by('-year', 'number')[0]
             new_obj.save()
