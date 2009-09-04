@@ -226,18 +226,20 @@ class ApplicationAdmin(admin.ModelAdmin):
             return True
         return super(ApplicationAdmin, self).has_change_permission(request, obj)
 
-    def _redirect_to_officer_home_page(self, request, response):
+    def _redirect(self, request, response):
         if not request.POST.has_key('_continue') and response.has_header("Location"):
-            response["Location"] = urlresolvers.reverse('cciw.officers.views.applications')
+            location = request.GET.get('_redirect_to',
+                                       urlresolvers.reverse('cciw.officers.views.applications'))
+            response["Location"] = location
         return response
 
     def response_add(self, request, new_object):
         resp = super(ApplicationAdmin, self).response_add(request, new_object)
-        return self._redirect_to_officer_home_page(request, resp)
+        return self._redirect(request, resp)
 
     def response_change(self, request, new_object):
         resp = super(ApplicationAdmin, self).response_change(request, new_object)
-        return self._redirect_to_officer_home_page(request, resp)
+        return self._redirect(request, resp)
 
 class ReferenceAdmin(admin.ModelAdmin):
     search_fields = ['application__officer__first_name', 'application__officer__last_name']

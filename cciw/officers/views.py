@@ -13,6 +13,7 @@ from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.forms.fields import email_re
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import render_to_string
@@ -350,6 +351,8 @@ def request_reference(request):
         url = make_ref_form_url(ref.id, None)
         msg_template = 'cciw/officers/request_reference_new.txt'
 
+    if not email_re.match(ref.referee.email.strip()):
+        c['bad_email'] = True
     app = ref.application
     camp = app.camp
     msg = render_to_string(msg_template,
