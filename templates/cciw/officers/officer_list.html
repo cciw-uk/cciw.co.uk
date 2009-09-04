@@ -19,11 +19,13 @@
 {% include "cciw/officers/officer_list_table_editable.html" %}
 {% endwith %}
 
+{% if officers_all %}
 <h3>List address:</h3>
 <p>The above list of officers can alternatively be emailed at: 
 <strong><a href="mailto:{{ addresses_all }}">{{ addresses_all }}</a></strong></p>
 
 {% include "cciw/officers/email_list_note.html" %}
+{% endif %}
 
 <h2>Modify list</h2>
 {% if form.officers.errors %}{{ form.officers.errors }}{% endif %}
@@ -58,9 +60,12 @@
 {% include "cciw/officers/officer_list_table.html" %}
 {% endwith %}
 
+{% if officers_noapplicationform %}
 <h3>List address:</h3>
 <p>The above list of officers can alternatively be emailed at: 
 <strong><a href="mailto:{{ addresses_noapplicationform }}">{{ addresses_noapplicationform }}</a></strong></p>
 
 {% include "cciw/officers/email_list_note.html" %}
+{% endif %}
+
 {% endblock %}
