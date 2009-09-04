@@ -59,9 +59,7 @@ def fix_member_icon(member, filedata):
         raise ValidationError(u"The image was bigger than %s by %s." % \
             (settings.MEMBER_ICON_MAX_SIZE, settings.MEMBER_ICON_MAX_SIZE))
 
-        # Scale to fit - TODO
-        #factor = max(img.size[0], img.size[1])/float(settings.MEMBER_ICON_MAX_SIZE)
-        #new_width, new_height = size[0]/factor, size[1]/factor
+        # Ideally would have scale to fit
 
     # Give the icon a predictable name, with the same extension it had before.
     # We refer to it in views without its extension, and use content negotiation

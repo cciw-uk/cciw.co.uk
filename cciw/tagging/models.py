@@ -83,9 +83,6 @@ class TagTarget(object):
         return ContentType.objects.get_for_id(self.target_ct_id)
     target_ct = property(target_ct)
 
-    # Possible TODO : add a 'creator_list' property that dynamically returns all
-    # objects that have tagged the target
-
 class GenericForeignKey(object):
     """Desciptor used to return an object that is defined
     in terms of a ContentType id and a string primary key."""
@@ -374,7 +371,8 @@ class TagManager(models.Manager):
             wheresql += " AND tagtable0.target_ct_id = %s"
             params.append(target_ct_id)
 
-        # TODO - reduce duplication with above
+        # Ideally we would reduce duplication with above.
+
         # Searching for more than one text value
         while len(textlist) > 0:
             fromsql += \

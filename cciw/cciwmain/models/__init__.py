@@ -7,7 +7,7 @@ from django.conf import settings
 from django.utils.safestring import mark_safe
 
 
-# TODO - work out where to put this:
+# Registration stuff for tagging app.
 from cciw.tagging.fields import add_tagging_fields
 from cciw.tagging.utils import register_mappers, register_renderer
 from django.utils.html import escape

@@ -11,7 +11,6 @@ from django.utils.encoding import force_unicode
 from django.http import HttpResponse
 
 def obfuscate_email(email):
-    # TODO - use javascript write statements, with fallback
     safe_email = email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ')
     return mark_safe("<span style='text-decoration: underline;'>%s</span>" % safe_email)
 

@@ -195,8 +195,6 @@ def gallery(request, year, number):
 
     breadcrumb_extra = camp_forum_breadcrumb(camp)
 
-    # TODO - some extra context vars, for text to show before the topic list
-
     ec = standard_extra_context(title=camp.nice_name + " - Photos")
     return forums_views.photoindex(request, gallery, ec, breadcrumb_extra)
 
@@ -236,7 +234,6 @@ def oldcampphoto(request, year, galleryname, photonumber):
 
     breadcrumb_extra = year_forum_breadcrumb(year) + [utils.unslugify(galleryname)]
 
-    # TODO - permissions and hidden photos
     try:
         photo = Photo.all_objects.get(id=int(photonumber))
     except Photo.DoesNotExist:

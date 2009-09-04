@@ -11,8 +11,8 @@ from cciw.cciwmain.tests import members
 # in insecure, see
 # http://www.djangoproject.com/weblog/2008/sep/02/security/ )
 #
-# We use existing views which have the different decorators
-# TODO - use Twill for proper testing of this kind of thing.
+# We use existing views which have the different decorators.
+# Ideally would use Twill for proper testing of this kind of thing.
 
 class MemberRequiredPage(TestCase):
     fixtures = CreatePollPage.fixtures

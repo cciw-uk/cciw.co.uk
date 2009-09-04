@@ -32,7 +32,7 @@ NEW_PASSWORD_EXPIRY = 5
 class ValidationError(Exception):
     pass
 
-# TODO - add synchronize lock here
+# Ideally would add synchronize lock here, but YAGNI with any imaginable amount of traffic
 def create_user(user_name, password1, password2):
     if utils.member_username_re.match(user_name) is None:
         raise ValidationError("The user name is invalid, please check and try again")

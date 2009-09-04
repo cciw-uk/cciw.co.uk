@@ -22,7 +22,6 @@ def address_for_camp_slackers(camp):
 
 @email_errors_silently
 def create_mailboxes(camp):
-    # TODO: handle xmlrpclib.Fault exceptions
     s = webfaction_session()
     for address in [address_for_camp_officers(camp),
                     address_for_camp_slackers(camp)]:

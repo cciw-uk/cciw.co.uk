@@ -596,7 +596,7 @@ table.topheaders
 table.sideheaders,
 table.topheaders
 {
-	width: 100%; /* TODO - IE 5.5 and below use width of page as 100% here */
+	width: 100%;
 }
 
 table.sideheaders td,

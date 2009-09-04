@@ -60,7 +60,6 @@ def parse_date(s):
             if len(gs['y']) == 2:
                 year = year + 2000
             return datetime.date(year, month, day)
-    # TODO Try stuff like '9th May 2008'
     r = re.compile(r"\s*:?\s*(?P<d>\d{1,2})(?:st|nd|rd|th)?\s+(?P<m>[a-zA-Z]*)\s+(?P<y>\d{2,4})", flags=re.IGNORECASE)
     m = r.match(s)
     if m is not None:
