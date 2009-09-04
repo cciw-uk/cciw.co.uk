@@ -7,6 +7,7 @@ from cciw.middleware import threadlocals
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.models import Application, Reference, Invitation, ReferenceForm
 from cciw.officers import widgets
+from cciw.utils.views import close_window_response
 
 class ApplicationAdminModelForm(forms.ModelForm):
     def clean(self):
@@ -276,6 +277,13 @@ class ReferenceFormAdmin(admin.ModelAdmin):
             defaults.pop("request")
             return db_field.formfield(**defaults)
         return super(ReferenceFormAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+
+    def response_change(self, request, obj):
+        # Little hack to allow popups for changing ReferenceForms
+        if '_popup' in request.POST:
+            return close_window_response()
+        else:
+            return super(ReferenceFormAdmin, self).response_change(request, obj)
 
 admin.site.register(Application, ApplicationAdmin)
 admin.site.register(Reference, ReferenceAdmin)

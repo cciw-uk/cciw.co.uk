@@ -64,6 +64,11 @@ function requestUpdateCustom(ref_id) {
     }
 }
 
+function manageReferenceManually(ref_id) {
+    requestGeneric('ref_id=' + ref_id.toString() + '&manual=1');
+}
+
+
 //-->
 </script>
 {% endblock %}

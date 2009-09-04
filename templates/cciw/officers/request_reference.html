@@ -15,7 +15,7 @@
 <form action="" method="post">{% csrf_token %}
 
 {% if already_requested %}
-<p><strong>PLEASE NOTE: A request has already been sent for this reference</strong></p>
+<p><strong class="ok">PLEASE NOTE: A request has already been sent for this reference</strong></p>
 {% endif %}
 
 {% if is_update and known_email_address %}

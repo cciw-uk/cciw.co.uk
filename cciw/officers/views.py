@@ -30,6 +30,7 @@ from cciw.officers.email_utils import send_mail_with_attachments, formatted_emai
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
+from cciw.utils.views import close_window_response
 import smtplib
 
 def _copy_application(application):
@@ -291,9 +292,6 @@ def email_sending_failed_response():
     return HttpResponse("""<p>Email failed to send.  This is likely a temporary
     error, please press back in your browser and try again.</p>""")
 
-def close_window_response():
-    return HttpResponse('<script type="text/javascript">window.close()</script>')
-
 @staff_member_required
 @user_passes_test(_is_camp_admin) # we don't care which camp they are admin for.
 def request_reference(request):
@@ -302,6 +300,9 @@ def request_reference(request):
     except ValueError, TypeError:
         raise Http404
     ref = get_object_or_404(Reference.objects.filter(id=ref_id))
+
+    if 'manual' in request.GET:
+        return manage_reference_manually(request, ref)
 
     if request.method == 'POST':
         if 'send' in request.POST:
@@ -377,7 +378,55 @@ ReferenceFormForm.base_fields['character'].widget = normal_textarea
 ReferenceFormForm.base_fields['concerns'].widget = normal_textarea
 ReferenceFormForm.base_fields['comments'].widget = normal_textarea
 
+# I have models called Reference and ReferenceForm.  What do I call a Form
+# for model Reference? I'm a loser...
+class ReferenceEditForm(forms.ModelForm):
+    class Meta:
+        model = Reference
+        fields = ('requested', 'received', 'comments')
+
+def manage_reference_manually(request, ref):
+    """
+    Returns page for manually editing Reference and ReferenceForm details.
+    """
+    c = template.RequestContext(request)
+    c['ref'] = ref
+    c['referee'] = ref.referee
+    c['officer'] = ref.application.officer
+    if request.method == 'POST':
+        if 'save' in request.POST:
+            form = ReferenceEditForm(request.POST, instance=ref)
+            if form.is_valid():
+                form.save()
+                return close_window_response()
+        else:
+            return close_window_response()
+    else:
+        form = ReferenceEditForm(instance=ref)
+    c['form'] = form
+    return render_to_response("cciw/officers/manage_reference_manual.html",
+                              context_instance=c)
+
+@staff_member_required
+@user_passes_test(_is_camp_admin) # we don't care which camp they are admin for.
+def edit_reference_form_manually(request, ref_id=None):
+    """
+    Create ReferenceForm if necessary, then launch normal admin popup for
+    editing it.
+    """
+    ref = get_object_or_404(Reference.objects.filter(id=int(ref_id)))
+    if ref.referenceform_set.count() == 0:
+        # Create it
+        ref.referenceform_set.create(referee_name=ref.referee.name,
+                                     date_created=datetime.date.today(),
+                                     known_offences=False)
+    return HttpResponseRedirect(reverse("admin:officers_referenceform_change", args=(ref.referenceform_set.all()[0].id,)) +"?_popup=1")
+
 def initial_reference_form_data(ref, prev_ref_form):
+    """
+    Return the initial data to be used for ReferenceFormForm, given the current
+    Reference objects and the ReferenceForm object with data to be copied.
+    """
     retval =  {}
     if prev_ref_form is not None:
         # Copy data over
@@ -388,6 +437,9 @@ def initial_reference_form_data(ref, prev_ref_form):
     return retval
 
 def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
+    """
+    View for allowing referee to submit reference (create the ReferenceForm object)
+    """
     c = template.RequestContext(request)
     if hash != make_ref_form_url_hash(ref_id, prev_ref_id):
         c['incorrect_url'] = True
@@ -440,7 +492,7 @@ class OfficerListForm(forms.Form):
 
 @staff_member_required
 @user_passes_test(_is_camp_admin)
-def view_reference(request):
+def view_reference(request, ref_id=None):
     # TODO
     pass
 
