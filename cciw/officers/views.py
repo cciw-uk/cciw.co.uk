@@ -481,6 +481,7 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                     ref.received = True
                     ref.comments = ref.comments + ("\nReference received on %s\n" % datetime.datetime.now())
                     ref.save()
+                    # TODO - email leaders.
                     return HttpResponseRedirect(reverse('cciw.officers.views.create_reference_thanks'))
             else:
                 form = ReferenceFormForm(initial=initial_reference_form_data(ref, prev_ref_form))
@@ -507,7 +508,7 @@ class OfficerListForm(forms.Form):
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 def view_reference(request, ref_id=None):
-    # TODO
+    # TODO - implement view_reference
     pass
 
 @staff_member_required
