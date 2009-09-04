@@ -10,17 +10,20 @@ from django.core.urlresolvers import reverse
 import cciw.middleware.threadlocals as threadlocals
 import urllib
 
+def admin_emails_for_application(application):
+    leaders = [user for leader in application.camp.leaders.all()
+                    for user in leader.users.all()] + \
+              list(application.camp.admins.all())
+    return filter(lambda x: x is not None,
+                  map(formatted_email, leaders))
+
 def send_application_emails(application):
     if not application.finished:
         return
 
     # Email to the leaders:
     # Collect e-mails to send to
-    leaders = [user for leader in application.camp.leaders.all()
-                        for user in leader.users.all()] + \
-              list(application.camp.admins.all())
-    leader_emails = filter(lambda x: x is not None,
-                           map(formatted_email, leaders))
+    leader_emails = admin_emails_for_application(application)
 
     application_text = application_to_text(application)
     application_rtf = application_to_rtf(application)
