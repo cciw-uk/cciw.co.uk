@@ -85,7 +85,8 @@ def index(request):
         context['show_leader_links'] = True
         context['show_admin_link'] = True
 
-    return render_to_response('cciw/officers/index.html', context_instance=context)
+    return render_to_response('cciw/officers/index.html',
+                              context_instance=context)
 
 @staff_member_required
 @user_passes_test(_is_camp_admin)
@@ -116,8 +117,12 @@ def applications(request):
     """Displays a list of tasks related to applications."""
     user = request.user
     context = template.RequestContext(request)
-    context['finished_applications'] = user.application_set.filter(finished=True).order_by('-date_submitted')
-    context['unfinished_applications'] = user.application_set.filter(finished=False).order_by('-date_submitted')
+    context['finished_applications'] = user.application_set\
+                                       .filter(finished=True)\
+                                       .order_by('-date_submitted')
+    context['unfinished_applications'] = user.application_set\
+                                         .filter(finished=False)\
+                                         .order_by('-date_submitted')
 
     if request.POST.has_key('edit'):
         # Edit existing application
@@ -146,15 +151,19 @@ def applications(request):
             if next_camp is not None:
                 new_obj.camp = next_camp
             else:
-                new_obj.camp = Camp.objects.filter(online_applications=True).order_by('-year', 'number')[0]
+                new_obj.camp = Camp.objects\
+                               .filter(online_applications=True)\
+                               .order_by('-year', 'number')[0]
             new_obj.save()
-            return HttpResponseRedirect('/admin/officers/application/%s/' % new_obj.id)
+            return HttpResponseRedirect('/admin/officers/application/%s/' % \
+                                        new_obj.id)
 
     elif request.POST.has_key('delete'):
         # Delete an unfinished application
         pass
 
-    return render_to_response('cciw/officers/applications.html', context_instance=context)
+    return render_to_response('cciw/officers/applications.html',
+                              context_instance=context)
 
 @staff_member_required
 def view_application(request):
@@ -178,16 +187,19 @@ def view_application(request):
     format = request.POST.get('format', '')
     if format == 'txt':
         resp = HttpResponse(application_to_text(app), mimetype="text/plain")
-        resp['Content-Disposition'] = 'attachment; filename=%s;' % application_txt_filename(app)
+        resp['Content-Disposition'] = 'attachment; filename=%s;' % \
+                                      application_txt_filename(app)
         return resp
     elif format == 'rtf':
         resp = HttpResponse(application_to_rtf(app), mimetype="text/rtf")
-        resp['Content-Disposition'] = 'attachment; filename=%s;' % application_rtf_filename(app)
+        resp['Content-Disposition'] = 'attachment; filename=%s;' % \
+                                      application_rtf_filename(app)
         return resp
     elif format == 'send':
         application_text = application_to_text(app)
         application_rtf = application_to_rtf(app)
-        rtf_attachment = (application_rtf_filename(app), application_rtf, 'text/rtf')
+        rtf_attachment = (application_rtf_filename(app),
+                          application_rtf, 'text/rtf')
 
         msg = \
 u"""Dear %s,
@@ -198,8 +210,10 @@ Please find attached a copy of the application you requested
 """ % request.user.first_name
         msg = msg + application_text
 
-        send_mail_with_attachments("Copy of CCIW application - %s" % app.full_name , msg, settings.SERVER_EMAIL,
-                                   [formatted_email(request.user)] , attachments=[rtf_attachment])
+        send_mail_with_attachments("Copy of CCIW application - %s" % app.full_name,
+                                   msg, settings.SERVER_EMAIL,
+                                   [formatted_email(request.user)],
+                                   attachments=[rtf_attachment])
         request.user.message_set.create(message="Email sent.")
 
         # Redirect back where we came from
@@ -214,7 +228,8 @@ Please find attached a copy of the application you requested
 def _thisyears_camp_for_leader(user):
     leaders = list(user.person_set.all())
     try:
-        return leaders[0].camps_as_leader.get(year=common.get_thisyear(), online_applications=True)
+        return leaders[0].camps_as_leader.get(year=common.get_thisyear(),
+                                              online_applications=True)
     except (ObjectDoesNotExist, IndexError):
         return None
 
@@ -228,7 +243,8 @@ def manage_applications(request, year=None, number=None):
     context['finished_applications'] =  camp.application_set.filter(finished=True)
     context['camp'] = camp
 
-    return render_to_response('cciw/officers/manage_applications.html', context_instance=context)
+    return render_to_response('cciw/officers/manage_applications.html',
+                              context_instance=context)
 
 def _get_camp_or_404(year, number):
     try:
@@ -246,9 +262,12 @@ def get_previous_references(ref):
     # years.  Don't look for references from this year's
     # application (which will be the other referee).
     cutoffdate = ref.application.camp.start_date - datetime.timedelta(365*5)
-    prev = list(ReferenceForm.objects.filter(reference_info__application__officer=ref.application.officer,
-                                             reference_info__application__finished=True,
-                                             date_created__gte=cutoffdate).exclude(reference_info__application=ref.application).order_by('-reference_info__application__camp__year'))
+    prev = list(ReferenceForm.objects\
+                .filter(reference_info__application__officer=ref.application.officer,
+                        reference_info__application__finished=True,
+                        date_created__gte=cutoffdate)\
+                .exclude(reference_info__application=ref.application)\
+                .order_by('-reference_info__application__camp__year'))
 
     # Sort by relevance
     def relevance_key(refform):
@@ -276,13 +295,16 @@ def manage_references(request, year=None, number=None):
 
     apps = camp.application_set.filter(finished=True)
     # force creation of Reference objects.
-    if Reference.objects.filter(application__finished=True, application__camp=camp).count() < apps.count() * 2:
+    if Reference.objects.filter(application__finished=True,
+                                application__camp=camp).count() < apps.count() * 2:
         [a.references for a in apps]
 
     # TODO - check for case where user has submitted multiple application forms.
     # User.objects.all().filter(application__camp=camp).annotate(num_applications=models.Count('application')).filter(num_applications__gt=1)
 
-    refinfo = Reference.objects.filter(application__camp=camp, application__finished=True).order_by('application__officer__first_name', 'referee_number')
+    refinfo = Reference.objects\
+              .filter(application__camp=camp, application__finished=True)\
+              .order_by('application__officer__first_name', 'referee_number')
     received = refinfo.filter(received=True)
     requested = refinfo.filter(received=False, requested=True)
     notrequested = refinfo.filter(received=False, requested=False)
@@ -326,7 +348,9 @@ def request_reference(request):
             except smtplib.SMTPException:
                 return email_sending_failed_response()
             ref.requested = True
-            ref.comments = ref.comments + ("\nReference requested on %s\n" % datetime.datetime.now())
+            ref.comments = ref.comments + \
+                           ("\nReference requested on %s\n" % \
+                            datetime.datetime.now())
             ref.save()
         return close_window_response()
 
@@ -437,7 +461,9 @@ def edit_reference_form_manually(request, ref_id=None):
         ref.referenceform_set.create(referee_name=ref.referee.name,
                                      date_created=datetime.date.today(),
                                      known_offences=False)
-    return HttpResponseRedirect(reverse("admin:officers_referenceform_change", args=(ref.referenceform_set.all()[0].id,)) +"?_popup=1")
+    return HttpResponseRedirect(reverse("admin:officers_referenceform_change",
+                                        args=(ref.referenceform_set.all()[0].id,)) + \
+                                "?_popup=1")
 
 def initial_reference_form_data(ref, prev_ref_form):
     """
@@ -482,7 +508,9 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                     obj.date_created = datetime.date.today()
                     obj.save()
                     ref.received = True
-                    ref.comments = ref.comments + ("\nReference received on %s\n" % datetime.datetime.now())
+                    ref.comments = ref.comments + \
+                                   ("\nReference received on %s\n" % \
+                                    datetime.datetime.now())
                     ref.save()
                     send_leaders_reference_email(obj)
                     return HttpResponseRedirect(reverse('cciw.officers.views.create_reference_thanks'))
@@ -574,4 +602,5 @@ def update_email(request, username=''):
             u.email = email
             u.save()
 
-    return render_to_response('cciw/officers/email_update.html', context_instance=template.RequestContext(request, c))
+    return render_to_response('cciw/officers/email_update.html',
+                              context_instance=template.RequestContext(request, c))
