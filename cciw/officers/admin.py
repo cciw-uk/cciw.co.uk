@@ -13,15 +13,20 @@ class ApplicationAdminModelForm(forms.ModelForm):
     def clean(self):
         app_finished = self.cleaned_data.get('finished', False)
         user = threadlocals.get_current_user()
-        # If not admin, we don't allow them to submit application form
-        # for a camp that is past.
+        # If not admin, we don't allow them to submit application form for a
+        # camp that is past.  This stops people submitting for incorrect camps.
+        # Also, once an Application has been marked 'finished' and the camp is
+        # past, we don't allow any value to be changed, to stop the possibility
+        # of tampering with saved data.
         if self.instance.pk is not None:
             if not user.has_perm('officers.change_application'):
-                if self.cleaned_data['camp'].end_date < datetime.date.today():
+                if self.cleaned_data['camp'].is_past():
                     self._errors.setdefault('camp', ErrorList()).append("You cannot submit an application form for a camp that is already finished")
 
-                if self.instance.finished and (self.instance.camp != self.cleaned_data['camp']):
-                    self._errors.setdefault('__all__', ErrorList()).append("You cannot change the camp once you have submitted the form")
+                # NB: next line uses 'instance' and *not* cleaned_data, since we
+                # need to look at saved data, not form data.
+                if self.instance.finished and self.instance.camp.is_past():
+                    self._errors.setdefault('__all__', ErrorList()).append("You cannot change a submitted application form once the camp is finished.")
 
         if app_finished:
             # All fields decorated with 'required_field' need to be

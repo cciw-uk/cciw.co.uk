@@ -227,3 +227,25 @@ class ApplicationFormView(TwillMixin, TestCase):
         l = a.camp.leaders.all()[0]
         self.assertEqual(l.users.count(), 1)
         self.assertEqual(len(self._get_application_form_emails()), 2)
+
+    def test_change_application_after_camp_past(self):
+        """
+        Ensure that the user can't change an application after it
+        has been saved, and the camp is now past.
+        """
+        self._twill_login(OFFICER)
+        a = self._add_application()
+
+        # Make the camp past
+        camp = a.camp
+        camp.end_date = datetime.date.today() - datetime.timedelta(100)
+        camp.save()
+
+        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
+        tc.code(200)
+        tc.formvalue('1', 'full_name', 'A Changed Full Name')
+        tc.submit('_save')
+        # we should be on same page:
+        tc.url('officers/application/%s/$' % a.id)
+        # shouldn't have changed data:
+        self.assertNotEqual(a.full_name, 'A Changed Full Name')
