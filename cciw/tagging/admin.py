@@ -11,7 +11,6 @@ class TagAdmin(admin.ModelAdmin):
     )
     list_filter = (
         'target_ct',
-        'creator_ct',
     )
     search_fields = ('text',)
 

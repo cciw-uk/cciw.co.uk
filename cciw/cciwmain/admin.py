@@ -20,16 +20,18 @@ class CampAdmin(admin.ModelAdmin):
     ordering = ['-year','number']
     list_filter = ('age', 'site', 'online_applications')
     filter_horizontal = ('leaders', 'admins')
+    date_hierarchy = 'start_date'
 
 class ForumAdmin(admin.ModelAdmin):
     pass
 
 class NewsItemAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('subject', 'created_at', 'created_by')
 
 class TopicAdmin(admin.ModelAdmin):
     list_display = ('subject', 'started_by', 'created_at')
     search_fields = ('subject',)
+    date_hierarchy = 'created_at'
 
 class GalleryAdmin(admin.ModelAdmin):
     pass
@@ -40,6 +42,7 @@ class PhotoAdmin(admin.ModelAdmin):
 class PostAdmin(admin.ModelAdmin):
     list_display = ('__unicode__', 'posted_by', 'posted_at')
     search_fields = ('message',)
+    date_hierarchy = 'posted_at'
 
 class PollOptionInline(admin.TabularInline):
     model = PollOption
