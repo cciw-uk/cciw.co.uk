@@ -1,7 +1,7 @@
 {% extends "cciw/standard.html" %}
 {% load view_extras %}
 {% load standardpage %}
-{% load forums csrf %}
+{% load forums %}
 {% block content %}
 {% if object_list %}
 	<form action="" method="post" >{% csrf_token %}

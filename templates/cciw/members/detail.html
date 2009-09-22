@@ -1,7 +1,7 @@
 {% extends "cciw/standard.html" %}
 {% load forums %}
 {% load standardpage %}
-{% load tagging csrf %}
+{% load tagging %}
 {% block content %}
 	{% get_tag_summaries for member as tagsummaries %}
 	<h2>Tags</h2>
