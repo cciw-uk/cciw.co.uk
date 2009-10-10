@@ -22,6 +22,7 @@ from cciw.cciwmain.models import Camp
 from cciw.cciwmain.views.memberadmin import email_hash
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
+from cciw.officers import create
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
@@ -101,6 +102,10 @@ def leaders_index(request):
     return render_to_response('cciw/officers/leaders_index.html', context_instance=context)
 
 def get_next_camp_guess(camp):
+    """
+    Given a camp that an officer had been on, returns the camp that they are
+    likely to apply to, or None if no suitable guess can be found.
+    """
     next_camps = list(camp.next_camps.filter(online_applications=True))
     if len(next_camps) > 0:
         next_camp = next_camps[0]
@@ -603,4 +608,73 @@ def update_email(request, username=''):
             u.save()
 
     return render_to_response('cciw/officers/email_update.html',
+                              context_instance=template.RequestContext(request, c))
+
+
+class CreateOfficerForm(forms.Form):
+    first_name = forms.CharField()
+    last_name = forms.CharField()
+    email = forms.EmailField()
+
+    def save(self):
+        # TODO
+        return create.create_officer(None, self.cleaned_data['first_name'],
+                                     self.cleaned_data['last_name'],
+                                     self.cleaned_data['email'])
+
+@staff_member_required
+@user_passes_test(_is_camp_admin)
+def create_officer(request):
+    allow_confirm = True
+    duplicate_message = ""
+    existing_users = None
+    message = ""
+    if request.method == "POST":
+        form = CreateOfficerForm(request.POST)
+        process_form = False
+        if form.is_valid():
+            if "add" in request.POST:
+                same_name_users = User.objects.filter(first_name__iexact=form.cleaned_data['first_name'],
+                                                      last_name__iexact=form.cleaned_data['last_name'])
+                same_email_users = User.objects.filter(email__iexact=form.cleaned_data['email'])
+                same_user = same_name_users & same_email_users
+                if same_user.count() > 0:
+                    allow_confirm = False
+                    duplicate_message = "A user with that name and e-mail address already exists. You can change the details above and try again."
+                elif len(same_name_users) > 0:
+                    existing_users = same_name_users
+                    print existing_users
+                    if len(existing_users) == 1:
+                        duplicate_message = "A user with that first name and last name " + \
+                                            "already exists:"
+                    else:
+                        duplicate_message = "%d users with that first name and last name " + \
+                                            "already exist:" % len(existing_users)
+                elif len(same_email_users):
+                    existing_users = same_email_users
+                    if len(existing_users) == 1:
+                        duplicate_message = "A user with that e-mail address already exists:"
+                    else:
+                        duplicate_message = "%d users with that e-mail address already exist:"\
+                                            % len(existing_users)
+                else:
+                    process_form = True
+
+            elif "confirm" in request.POST:
+                process_form = True
+
+            if process_form:
+                u = form.save()
+                form = CreateOfficerForm()
+                message = "Officer %s has been added and e-mailed.  You can add another if required." % u.username
+    else:
+        form = CreateOfficerForm()
+    print existing_users
+    c = {'form': form,
+         'duplicate_message': duplicate_message,
+         'existing_users': existing_users,
+         'allow_confirm': allow_confirm,
+         'message': message,
+         }
+    return render_to_response('cciw/officers/create_officer.html',
                               context_instance=template.RequestContext(request, c))

@@ -13,6 +13,9 @@
 {% block content %}<div id="content-main">
 <h1>Officer list - {{ camp }}</h1>
 
+<p>This page can be used for viewing and managing the officers on your list,
+ and for viewing those who have not yet filled in an application form.</p>
+
 <h2>Current list</h2>
 
 {% with officers_all as officers %}
@@ -49,9 +52,11 @@
 
 <h2>Create officer</h2>
 
-<p>If you need to add a new officer to the 'Available officers' above,
-  currently this should be done by
-  the <a href="mailto:webmaster@cciw.co.uk">webmaster</a>. </p>
+<p>If you need to add a new officer to the 'Available officers' above, use
+  the <a href="{% url cciw.officers.views.create_officer %}" rel="external">add
+  officer form</a> (opens in new window). If you have a list on a computer, you
+  can <a href="mailto:webmaster@cciw.co.uk">e-mail the webmaster</a> to have
+  them imported.</p>
 
 
 <h2>No/incomplete application form</h2>

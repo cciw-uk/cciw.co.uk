@@ -122,3 +122,8 @@ tr.refrow td.nopadding
     top: 1.4em;
     padding:0.2em 10px 1.2em 10px;
 }
+
+.actionnote {
+    background-color: #ff8;
+    padding: 0.3em;
+}
