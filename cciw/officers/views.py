@@ -349,8 +349,8 @@ def request_reference(request):
                 return email_sending_failed_response()
             ref.requested = True
             ref.comments = ref.comments + \
-                           ("\nReference requested on %s\n" % \
-                            datetime.datetime.now())
+                           ("\nReference requested by user %s via online system on %s\n" % \
+                            (request.user.username, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
             ref.save()
         return close_window_response()
 
@@ -509,8 +509,8 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                     obj.save()
                     ref.received = True
                     ref.comments = ref.comments + \
-                                   ("\nReference received on %s\n" % \
-                                    datetime.datetime.now())
+                                   ("\nReference received via online system on %s\n" % \
+                                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                     ref.save()
                     send_leaders_reference_email(obj)
                     return HttpResponseRedirect(reverse('cciw.officers.views.create_reference_thanks'))
