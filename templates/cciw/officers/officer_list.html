@@ -28,6 +28,9 @@
 {% endif %}
 
 <h2>Modify list</h2>
+<p>Choose officers from 'Available officers' using the arrows, and remember to
+ press 'Save' when done.</p>
+
 {% if form.officers.errors %}{{ form.officers.errors }}{% endif %}
 
 <form method="post" action="">{% csrf_token %}
