@@ -8,8 +8,8 @@ import os
 
 hostname = socket.gethostname()
 
-if hostname == 'calvin':
-    assert '/home/luke/local/lib/python2.5/site-packages/' in os.environ['PYTHONPATH'].split(":")
+if hostname == 'ryle':
+    assert '/home/luke/.local/lib/python2.5/site-packages/' in os.environ['PYTHONPATH'].split(":")
     sys.path = sys.path + ['/home/luke/httpd/www.cciw.co.uk/current_src/','/home/luke/httpd/www.cciw.co.uk/django_src/', 
       '/home/luke/local/lib/python2.5/site-packages/', '/home/luke/devel/python/luke']
     os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings_calvin'
