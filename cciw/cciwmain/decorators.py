@@ -5,7 +5,6 @@ from django.shortcuts import render_to_response
 from django.core.mail import mail_admins
 
 from cciw.middleware.threadlocals import get_current_member, set_member_session
-from cciw.cciwmain.models import Permission, Member
 from cciw.cciwmain.common import standard_extra_context
 
 import urllib
@@ -34,13 +33,13 @@ def member_required_generic(except_methods):
     through without a member logged in. e.g. ['GET'] to allow the view to be
     accessed if it isn't a POST request.
     """
-
     def decorator(view_func):
         """
         Decorator for views that checks the method and may require the
         user to log in.  It is also used by the normal '/login/' view.
         """
 
+        from cciw.cciwmain.models import Member
         def _checklogin(request, *args, **kwargs):
 
             if request.method in except_methods or get_current_member() is not None:

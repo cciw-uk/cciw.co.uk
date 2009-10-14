@@ -1,5 +1,4 @@
 from django.conf import settings
-import cciw.cciwmain.models
 from cciw.cciwmain.templatetags import view_extras
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
@@ -11,7 +10,7 @@ def standard_extra_context(title=None, description=None, keywords=None):
     """
     Gets the 'extra_dict' dictionary used for all pages
     """
-    Member = cciw.cciwmain.models.Member
+    from cciw.cciwmain.models import Member
 
     if title is None:
         title = u"Christian Camps in Wales"
@@ -83,7 +82,7 @@ def create_breadcrumb(links):
 def standard_processor(request):
     """Processor that does standard processing of request
     that we need for all pages."""
-    MenuLink = cciw.cciwmain.models.MenuLink
+    from cciw.cciwmain.models import MenuLink
     context = {}
     assert type(request.path) is unicode
     context['homepage'] = (request.path == u"/")

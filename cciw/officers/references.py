@@ -1,7 +1,6 @@
 """
 Utilities for dealing with ReferenceForm and Reference
 """
-from cciw.officers.models import ReferenceForm
 from django.template.loader import render_to_string
 from django import template
 
@@ -22,6 +21,7 @@ def reference_form_info(refform):
     Name/value pairs for all user presentable
     information in ReferenceForm
     """
+    from cciw.officers.models import ReferenceForm
     # Avoid hard coding strings into templates by using field verbose_name from model
     return [(first_letter_cap(f.verbose_name), _present_val(getattr(refform, f.attname)))
             for f in ReferenceForm._meta.fields if f.attname not in ('id','reference_info_id')]
