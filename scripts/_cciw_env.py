@@ -14,5 +14,5 @@ if hostname == 'ryle':
       '/home/luke/local/lib/python2.5/site-packages/', '/home/luke/devel/python/luke']
     os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings_calvin'
 else:
-    sys.path = sys.path + ['/home2/cciw/webapps/django_new/', '/home2/cciw/src/django/']
+    sys.path = sys.path + ['/home2/cciw/webapps/django_new/cciw_env/lib/python2.5/site-packages']
     os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
