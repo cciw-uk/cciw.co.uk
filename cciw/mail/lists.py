@@ -32,6 +32,7 @@ def create_mailboxes(camp):
 email_extract_re = re.compile(r"([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)")
 
 def _camp_officers(year=None, number=None):
+    from cciw.cciwmain.models import Camp
     try:
         c = Camp.objects.get(year=year, number=number)
     except Camp.DoesNotExist:
@@ -40,6 +41,7 @@ def _camp_officers(year=None, number=None):
     return map(formatted_email, camp_officer_list(c))
 
 def _camp_slackers(year=None, number=None):
+    from cciw.cciwmain.models import Camp
     try:
         c = Camp.objects.get(year=year, number=number)
     except Camp.DoesNotExist:
@@ -140,6 +142,3 @@ def handle_all_mail():
         else:
             cont = False
     im.logout()
-
-# at end to avoid import cycles
-from cciw.cciwmain.models import Camp
