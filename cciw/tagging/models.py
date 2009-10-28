@@ -487,3 +487,4 @@ def post_delete_tagged_object(signal, sender, instance, **kwargs):
 
 
 models.signals.post_delete.connect(post_delete_tagged_object)
+import cciw.tagging.admin # Ensure this gets set up
