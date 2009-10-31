@@ -117,7 +117,7 @@ _MIDDLEWARE_CLASSES = (
     (not DEVBOX, "cciw.middleware.http.ForceSSLMiddleware"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
 #    (DEVBOX,     "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware"),
-    (True,       'django.contrib.csrf.middleware.CsrfViewMiddleware'),
+    (True,       'django.middleware.csrf.CsrfViewMiddleware'),
     (True,       "django.contrib.sessions.middleware.SessionMiddleware"),
     (True,       "django.contrib.auth.middleware.AuthenticationMiddleware"),
     (True,       "django.middleware.common.CommonMiddleware"),
@@ -186,3 +186,5 @@ if DEVBOX:
         basedir + r'/cciw/cciwmain/fixtures'
     ]
     TEST_DIR = basedir + r'/cciw/cciwmain/tests'
+
+DEFAULT_CONTENT_TYPE = "application/xhtml+xml"
