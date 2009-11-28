@@ -1,4 +1,3 @@
 
 . ../cciw_dev_env/bin/activate
-export DJANGO_SETTINGS_MODULE=cciw.settings_calvin
-
+export DJANGO_SETTINGS_MODULE=cciw.settings

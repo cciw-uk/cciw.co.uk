@@ -1,6 +1,6 @@
 # Settings file for testing on development box
 
-from cciw.settings_calvin import *
+from cciw.settings import *
 
 DEBUG = False
 TEMPLATE_DEBUG = False
