@@ -17,6 +17,9 @@ def make_django_url(view, *args, **kwargs):
 def twill_setup():
     app = AdminMediaHandler(WSGIHandler())
     twill.add_wsgi_intercept("127.0.0.1", 8080, lambda: app)
+    b = twill.get_browser()
+    b._browser._factory.is_html = True # make it handle XHTML
+    twill.browser = b
 
 def twill_teardown():
     twill.remove_wsgi_intercept('127.0.0.1', 8080)
