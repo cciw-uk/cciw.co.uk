@@ -3,6 +3,7 @@ from cciw.officers.applications import application_to_text, application_to_rtf, 
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.references import reference_form_to_text
 from django.conf import settings
+from django.contrib import messages
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.utils.hashcompat import sha_constructor
@@ -22,7 +23,7 @@ def admin_emails_for_application(application):
     return filter(lambda x: x is not None,
                   map(formatted_email, leaders))
 
-def send_application_emails(application):
+def send_application_emails(request, application):
     if not application.finished:
         return
 
@@ -39,13 +40,13 @@ def send_application_emails(application):
 
     # If an admin user corrected an application, we don't send the user a copy
     # (usually they just get the year of the camp wrong(!))
-    user = threadlocals.get_current_user()
+    user = request.user
     if len(leader_emails) > 0:
-        user.message_set.create(message="The completed application form has been sent to the leaders via email.")
+        messages.info(request, "The completed application form has been sent to the leaders via email.")
 
     if user == application.officer:
         send_officer_email(application.officer, application, application_text, rtf_attachment)
-        user.message_set.create(message="A copy of the application form has been sent to you via email.")
+        messages.info(request, "A copy of the application form has been sent to you via email.")
 
         if application.officer.email != application.address_email:
             send_email_change_emails(user, application)

@@ -5,7 +5,6 @@ from django.conf import settings
 from django.http import HttpResponseForbidden
 
 from cciw.cciwmain.models import Camp
-from cciw.officers import signals
 from django.contrib.auth.models import User
 import datetime
 from cciw.officers.fields import YyyyMmField, AddressField, ExplicitBooleanField, required_field
@@ -145,10 +144,6 @@ class Application(models.Model):
             self._references_cache = retval
             return retval
 
-    def save(self):
-        super(Application, self).save()
-        signals.application_saved.send(sender=self)
-
     def __unicode__(self):
         if self.camp is not None:
             return u"Application from %s, %d, camp %d" % (self.full_name, self.camp.year, self.camp.number)
@@ -258,6 +253,4 @@ class Invitation(models.Model):
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name')
         unique_together = (('officer', 'camp'),)
 
-# Ensure hooks get set up
-import cciw.officers.hooks
 import cciw.officers.admin

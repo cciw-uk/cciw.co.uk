@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
+from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -219,7 +220,7 @@ Please find attached a copy of the application you requested
                                    msg, settings.SERVER_EMAIL,
                                    [formatted_email(request.user)],
                                    attachments=[rtf_attachment])
-        request.user.message_set.create(message="Email sent.")
+        messages.info(request, "Email sent.")
 
         # Redirect back where we came from
         return HttpResponseRedirect(request.POST.get('to', '/officers/'))

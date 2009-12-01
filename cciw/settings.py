@@ -50,6 +50,7 @@ INSTALLED_APPS = (
     'cciw.officers',
     'cciw.tagging',
     'cciw.utils',
+    'django.contrib.messages',
 )
 
 if DEBUG:
@@ -88,6 +89,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.i18n",
     "cciw.cciwmain.common.standard_processor",
     "django.core.context_processors.request",
+    "django.contrib.messages.context_processors.messages",
 )
 
 #####  EMAIL  #######
@@ -119,6 +121,7 @@ _MIDDLEWARE_CLASSES = (
 #    (DEVBOX,     "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware"),
     (True,       'django.middleware.csrf.CsrfViewMiddleware'),
     (True,       "django.contrib.sessions.middleware.SessionMiddleware"),
+    (True,       "django.contrib.messages.middleware.MessageMiddleware"),
     (True,       "django.contrib.auth.middleware.AuthenticationMiddleware"),
     (True,       "django.middleware.common.CommonMiddleware"),
     (True,       "cciw.middleware.threadlocals.ThreadLocals"),

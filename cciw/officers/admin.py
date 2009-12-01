@@ -6,7 +6,7 @@ import datetime
 from cciw.middleware import threadlocals
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.models import Application, Reference, Invitation, ReferenceForm
-from cciw.officers import widgets
+from cciw.officers import widgets, email
 from cciw.utils.views import close_window_response
 
 class ApplicationAdminModelForm(forms.ModelForm):
@@ -245,6 +245,10 @@ class ApplicationAdmin(admin.ModelAdmin):
     def response_change(self, request, new_object):
         resp = super(ApplicationAdmin, self).response_change(request, new_object)
         return self._redirect(request, resp)
+
+    def save_model(self, request, obj, form, change):
+        super(ApplicationAdmin, self).save_model(request, obj, form, change)
+        email.send_application_emails(request, obj)
 
 class ReferenceAdmin(admin.ModelAdmin):
     search_fields = ['application__officer__first_name', 'application__officer__last_name']
