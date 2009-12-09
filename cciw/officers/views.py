@@ -570,11 +570,9 @@ def officer_list(request, year=None, number=None):
     c['camp'] = camp
 
     if request.method == 'POST':
-        print request.POST
         form = OfficerListForm(request.POST)
         if form.is_valid():
             camp.invitation_set.all().delete()
-            print camp.invitation_set
             for o in form.cleaned_data['officers']:
                 camp.invitation_set.create(officer=o).save()
     else:
@@ -644,7 +642,6 @@ def create_officer(request):
                     duplicate_message = "A user with that name and e-mail address already exists. You can change the details above and try again."
                 elif len(same_name_users) > 0:
                     existing_users = same_name_users
-                    print existing_users
                     if len(existing_users) == 1:
                         duplicate_message = "A user with that first name and last name " + \
                                             "already exists:"
@@ -670,7 +667,7 @@ def create_officer(request):
                 message = "Officer %s has been added and e-mailed.  You can add another if required." % u.username
     else:
         form = CreateOfficerForm()
-    print existing_users
+
     c = {'form': form,
          'duplicate_message': duplicate_message,
          'existing_users': existing_users,
