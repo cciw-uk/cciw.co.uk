@@ -11,7 +11,7 @@
 {% endif %}
 {% endif %}
 
-{% ifequal mode "received" %}
+{% if mode == "received" %}
   <p><a href="{% url cciw.officers.views.view_reference ref_id=ref.id %}" rel="external">View reference from {{ ref.referee.name }}</a> (in new window)</p>
 {% else %}
 <p>Ask for request - choose from the options:</p>
@@ -20,14 +20,14 @@
   <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
     has done a reference for {{ ref.application.officer.first_name}} before:
     <span class="referencebutton">
-      <button onclick="requestUpdate({{ ref.id }});">Request updated reference{% ifequal mode "requested" %} (again){% endifequal %}</button>
+      <button onclick="requestUpdate({{ ref.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button>
     </span>
   </li>
   {% else %}
   <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
     has not done a reference for {{ ref.application.officer.first_name}} before:
     <span class="referencebutton"><button
-    onclick="requestReference({{ ref.id }});">Request reference{% ifequal mode "requested" %} (again){% endifequal %}</button></span>
+    onclick="requestReference({{ ref.id }});">Request reference{% if mode == "requested" %} (again){% endif %}</button></span>
  </li>
   {% endif %}
 
@@ -47,7 +47,7 @@
       {% endfor %}
     </select>
     <span class="referencebutton"><button
-    onclick="requestUpdateCustom({{ ref.id }});">Request updated reference{% ifequal mode "requested" %} (again){% endifequal %}</button></span>
+    onclick="requestUpdateCustom({{ ref.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button></span>
   </li>
   {% endif %}
 
@@ -57,6 +57,6 @@
   </li>
 </ul>
 
-{% endifequal %}
+{% endif %}
 
 </div>

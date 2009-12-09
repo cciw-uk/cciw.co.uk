@@ -17,7 +17,7 @@
 		{% include "cciw/msgpreview.html" %}
 		
 		<form action="" method="post" accept-charset="utf-8">{% csrf_token %}
-		{% ifequal mode "send" %}
+		{% if mode == "send" %}
 			{% if preview  %}
 				<p>Change your message below if necessary:</p>
 			{% else %}
@@ -46,7 +46,7 @@
 					<td>{% include "cciw/message.html" %}</td>
 				</tr>
 			</table>
-		{% endifequal %}
+		{% endif %}
 		<div>
 		<br/>
 		<input type="submit" name="preview" value="Preview" />&nbsp;

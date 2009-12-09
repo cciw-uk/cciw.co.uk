@@ -4,7 +4,7 @@
 {% block content %}
 
 	<form action="/signup/" method="post">{% csrf_token %}
-{% ifequal stage "start" %}
+{% if stage == "start" %}
 	<p>Before signing up, please read the terms of service below.</p>
 	
 	<h1>Terms of service</h1>
@@ -17,7 +17,7 @@
 	
 	<div><input type="submit" name="agreeterms" value="I agree" /></div>
 
-{% else %}{% ifequal stage "email" %}
+{% else %}{% if stage == "email" %}
 
 	<h2>E-mail address</h2>
 	
@@ -40,13 +40,13 @@
 	
 	<div><input type="submit" name="submit_email" value="Submit" /></div>
 
-{% else %}{% ifequal stage "emailsubmitted" %}
+{% else %}{% if stage == "emailsubmitted" %}
 
 	<h2>E-mail sent</h2>
 	<p>Thank you, an e-mail has been sent to {{ email }}.  Follow
 	the instructions it contains to complete the sign up process.</p>
 
-{% else %}{% ifequal stage "user_name" %}
+{% else %}{% if stage == "user_name" %}
 	{% if error_message %}
 		<div class="userError">{{ error_message }}</div>
 	{% endif %}
@@ -72,16 +72,16 @@
 	<input type="hidden" name="confhash" value="{{ confhash }}" />
 	</div>
 
-{% else %}{% ifequal stage "invalid" %}
+{% else %}{% if stage == "invalid" %}
 	<h2>Error</h2>
 	{% if error_message %}
 		<div class="userError">{{ error_message }}</div>
 	{% endif %}
-{% else %}{% ifequal stage "end" %}
+{% else %}{% if stage == "end" %}
 	<h2>Finished!</h2>
 	<p>Your account has been created.  You might want to edit your <a href="/memberadmin/preferences/">preferences</a>
 	which includes personal details that you want other people to see.</p>
 
-{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}{% endifequal %}
+{% endif %}{% endif %}{% endif %}{% endif %}{% endif %}{% endif %}
 	</form>
 {% endblock %}

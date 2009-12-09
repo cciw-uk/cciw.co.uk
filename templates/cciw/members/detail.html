@@ -30,7 +30,7 @@
 	</ul>
 
 	{% if current_member %}
-		{% ifequal current_member.user_name member.user_name %}
+		{% if current_member.user_name == member.user_name %}
 			<h2>Actions</h2>
 			<ul>
 				<li><a href="/memberadmin/preferences/">Preferences</a></li>
@@ -49,7 +49,7 @@
 			<ul>
 				<li><a href="messages/">Leave a message for {{ member.user_name }}</a></li>
 			</ul>
-		{% endifequal %}
+		{% endif %}
 	{% else %}
 		<h2>Actions</h2>
 		<ul>
