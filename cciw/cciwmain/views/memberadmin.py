@@ -36,7 +36,7 @@ class ValidationError(Exception):
 def create_user(user_name, password1, password2):
     if utils.member_username_re.match(user_name) is None:
         raise ValidationError("The user name is invalid, please check and try again")
-    elif Member.all_objects.filter(user_name__iexact=user_name).count() > 0:
+    elif Member.all_objects.filter(user_name__iexact=user_name).exists():
         # Can't just try to create it and catch exceptions,
         # since the ORM checks to see if the primary key is already used
         # and does an 'update' instead of 'insert' in that case.  Also

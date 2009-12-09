@@ -110,13 +110,13 @@ def _get_forum_for_path_and_year(location, year):
         # Self maintenance
         # If any camps from that year are finished, create it
         if Camp.objects.filter(year=year,
-                end_date__lte=datetime.date.today()).count() > 0:
+                end_date__lte=datetime.date.today()).exists():
             forum = Forum(location='camps/%s/all/forum/' % year)
         else:
             raise Http404
         # If it's an old forum, close it
         if Camp.objects.filter(year=year + 1,
-                end_date__lte=datetime.date.today()).count() > 0:
+                end_date__lte=datetime.date.today()).exists():
             forum.open = False
         else:
             forum.open = True

@@ -218,7 +218,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         return super(ApplicationAdmin, self).change_view(request, obj_id)
 
     def has_add_permission(self, request):
-        if request.user is not None and request.user.groups.filter(name='Officers').count() > 0:
+        if request.user is not None and request.user.groups.filter(name='Officers').exists():
             return True
         else:
             return super(ApplicationAdmin, self).has_add_permission(request)

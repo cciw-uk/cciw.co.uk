@@ -19,7 +19,7 @@ def make_username(first_name, last_name, guess_number=1):
         guess = "%s%s" % (first_name, last_name)
     else:
         guess = "%s%s%d" % (first_name, last_name, guess_number)
-    if User.objects.filter(username=guess).count() > 0:
+    if User.objects.filter(username=guess).exists():
         return make_username(first_name, last_name, guess_number + 1)
     else:
         return guess
@@ -59,7 +59,7 @@ def create_multiple_officers(csv_data, dryrun, verbose=False):
 
         # We allow couples to share email addresses, so to check
         # for duplicates, we check first name as well.
-        if valid and User.objects.filter(email__iexact=email, first_name__iexact=first_name).count() > 0:
+        if valid and User.objects.filter(email__iexact=email, first_name__iexact=first_name).exists():
             valid = False
             msg = "User with email address %s and name %s already exists" % (email, first_name)
 

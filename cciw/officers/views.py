@@ -54,8 +54,8 @@ def _is_camp_admin(user):
     """
     Returns True is the user is an admin for any camp.
     """
-    return (user.groups.filter(name='Leaders').count() > 0) \
-        or user.camps_as_admin.count() > 0
+    return (user.groups.filter(name='Leaders').exists()) \
+        or user.camps_as_admin.exists() > 0
 
 def _camps_as_admin_or_leader(user):
     """
@@ -462,7 +462,7 @@ def edit_reference_form_manually(request, ref_id=None):
     editing it.
     """
     ref = get_object_or_404(Reference.objects.filter(id=int(ref_id)))
-    if ref.referenceform_set.count() == 0:
+    if not ref.referenceform_set.exists():
         # Create it
         ref.referenceform_set.create(referee_name=ref.referee.name,
                                      date_created=datetime.date.today(),
@@ -503,7 +503,7 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
             prev_ref = None
             prev_ref_form = None
 
-        if ref.referenceform_set.all().count() > 0:
+        if ref.referenceform_set.all().exists():
             c['already_submitted'] = True
         else:
             if request.method == 'POST':
@@ -616,7 +616,6 @@ class CreateOfficerForm(forms.Form):
     email = forms.EmailField()
 
     def save(self):
-        # TODO
         return create.create_officer(None, self.cleaned_data['first_name'],
                                      self.cleaned_data['last_name'],
                                      self.cleaned_data['email'])
@@ -637,7 +636,7 @@ def create_officer(request):
                                                       last_name__iexact=form.cleaned_data['last_name'])
                 same_email_users = User.objects.filter(email__iexact=form.cleaned_data['email'])
                 same_user = same_name_users & same_email_users
-                if same_user.count() > 0:
+                if same_user.exists():
                     allow_confirm = False
                     duplicate_message = "A user with that name and e-mail address already exists. You can change the details above and try again."
                 elif len(same_name_users) > 0:
