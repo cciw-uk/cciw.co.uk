@@ -190,4 +190,4 @@ if DEVBOX:
     ]
     TEST_DIR = basedir + r'/cciw/cciwmain/tests'
 
-DEFAULT_CONTENT_TYPE = "application/xhtml+xml"
+DEFAULT_CONTENT_TYPE = "text/html"
