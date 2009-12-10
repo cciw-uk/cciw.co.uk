@@ -503,7 +503,12 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
             prev_ref = None
             prev_ref_form = None
 
-        if ref.referenceform_set.all().exists():
+        if ref.referenceform_set.all().exists() and ref.received:
+            # It's possible, if an admin has done 'Manage reference manually'
+            # and clicked "Create/edit reference form" but then cancelled, that
+            # the ReferenceForm will exist but be empty.  So we check both that
+            # it exists and that the 'ref.received' is True, otherwise a referee
+            # will be unable to fill out the form.
             c['already_submitted'] = True
         else:
             if request.method == 'POST':
