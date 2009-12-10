@@ -220,6 +220,7 @@ class ReferenceForm(models.Model):
     concerns = models.TextField("Have you ever had concerns about either this applicant's ability or suitability to work with children and young people? If you would prefer to discuss your concerns on the telephone and in confidence, please contact either: " + settings.REFERENCE_CONCERNS_CONTACT_DETAILS)
     comments = models.TextField("Any other comments you wish to make", blank=True)
     date_created = models.DateField("date created")
+    # Reference <-> ReferenceForm ought to be one-to-one really.  This is enforced in view logic.
     reference_info = models.ForeignKey(Reference)
 
     objects = ReferenceFormManager()

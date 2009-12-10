@@ -504,14 +504,14 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
             prev_ref_form = None
 
         ref_forms = ref.referenceform_set.all()
-        if ref_forms.exists():
+        if len(ref_forms) > 0:
             # For the case where a ReferenceForm has been created (accidentally)
             # by an admin, we need to re-use it, rather than create another.
             instance = ref_forms[0]
         else:
             instance = None
-        
-        if ref_forms.exists() and ref.received:
+
+        if len(ref_forms) > 0 and ref.received:
             # It's possible, if an admin has done 'Manage reference manually'
             # and clicked "Create/edit reference form" but then cancelled, that
             # the ReferenceForm will exist but be empty.  So we check both that
