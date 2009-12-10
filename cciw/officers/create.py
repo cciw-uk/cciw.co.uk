@@ -198,19 +198,8 @@ Hi %(first_name)s,
 You have been set up to receive CCIW application forms from officers
 using the online system.  Here is what you need to know:
 
-1) You will need to refer your officers to me to get login names for
-   the system if they don't have them already.  If you have a list of
-   officer names and email addresses, these can be imported in bulk.
-   In either case, I will send them complete instructions for using
-   the system.
-
-2) After that, you will normally have nothing more to do -- you should
-   receive all the application forms by email, in plain text format and
-   in RTF format which should be good for printing out.
-
-3) If you want to look at the list of people who have submitted forms,
-   or if you have lost an email, you can log on to the system:
-
+1) You will need to log in to the website:
+   
    Go to:
      https://www.cciw.co.uk/officers/
 
@@ -221,9 +210,25 @@ using the online system.  Here is what you need to know:
      (You should change your password to something more memorable once
       you have logged in)
 
-   At the bottom of this page you should find a link to another
-   page that allows you to manage the submitted applications.
+   You will be presented with a menu that will allow you to perform
+   the steps given below.
 
+2) You should set up a list of officers for your camp.  If you have
+   officers who are not yet added to the system, you can add them
+   yourself on the relevant pages, or if you have a list of officer
+   names and email addresses, these can be imported in bulk if you
+   send them to me.
+
+3) You may want to e-mail the list of officers to remind them to
+   submit their application forms.
+
+   After that, you should receive all the application forms by email,
+   in plain text format and in RTF format which should be good for
+   printing out. You can also go to the website to find any application
+   forms that you may have lost.
+
+4) Once you start receiving application forms, you can use the system
+   to request references from the referees.
 
 If you have any problems, please e-mail me at %(webmasteremail)s
 
