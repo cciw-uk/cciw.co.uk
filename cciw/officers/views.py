@@ -503,7 +503,15 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
             prev_ref = None
             prev_ref_form = None
 
-        if ref.referenceform_set.all().exists() and ref.received:
+        ref_forms = ref.referenceform_set.all()
+        if ref_forms.exists():
+            # For the case where a ReferenceForm has been created (accidentally)
+            # by an admin, we need to re-use it, rather than create another.
+            instance = ref_forms[0]
+        else:
+            instance = None
+        
+        if ref_forms.exists() and ref.received:
             # It's possible, if an admin has done 'Manage reference manually'
             # and clicked "Create/edit reference form" but then cancelled, that
             # the ReferenceForm will exist but be empty.  So we check both that
@@ -512,7 +520,7 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
             c['already_submitted'] = True
         else:
             if request.method == 'POST':
-                form = ReferenceFormForm(request.POST) # A form bound to the POST data
+                form = ReferenceFormForm(request.POST, instance=instance) # A form bound to the POST data
                 if form.is_valid():
                     obj = form.save(commit=False)
                     obj.reference_info = ref
@@ -526,7 +534,10 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                     send_leaders_reference_email(obj)
                     return HttpResponseRedirect(reverse('cciw.officers.views.create_reference_thanks'))
             else:
-                form = ReferenceFormForm(initial=initial_reference_form_data(ref, prev_ref_form))
+                if instance is not None:
+                    form = ReferenceFormForm(instance=instance)
+                else:
+                    form = ReferenceFormForm(initial=initial_reference_form_data(ref, prev_ref_form))
             c['form'] = form
         c['officer'] = ref.application.officer
     return render_to_response('cciw/officers/create_reference.html',
