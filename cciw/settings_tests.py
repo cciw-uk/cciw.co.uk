@@ -17,6 +17,7 @@ MIDDLEWARE_CLASSES = (
 #    "lukeplant_me_uk.django.validator.middleware.ValidatorMiddleware",
 #    "django.contrib.csrf.middleware.CsrfViewMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "cciw.middleware.threadlocals.ThreadLocals",
 )
