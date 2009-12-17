@@ -2,7 +2,7 @@ import email
 import imaplib
 import re
 from django.conf import settings
-from django.core.mail import SMTPConnection, EmailMessage, make_msgid
+from django.core.mail import get_connection, make_msgid
 from django.forms.fields import email_re
 from cciw.cciwmain.decorators import email_errors_silently
 from cciw.officers.email_utils import formatted_email
@@ -70,13 +70,13 @@ def forward_email_to_list(mail, addresslist, original_to):
     from_addr = mail['From']
 
     # search and erase the original 'To' address in the 'Received'
-    # headers, to hinder people from mailing the address themselves
+    # headers, to hinder recipients from mailing the address themselves
     mail._headers = [(name, val.replace(original_to, "private@cciw.co.uk"))
                      for name, val in mail._headers]
 
     # Use Django's wrapper object for connection,
     # but not the message.
-    c = SMTPConnection()
+    c = get_connection()
     c.open()
     # send individual emails
     for addr in addresslist:
@@ -113,16 +113,14 @@ def handle_mail(data):
             forward_email_to_list(mail, l, address)
 
 def handle_all_mail():
-    # We do error handling just using asserts here
-    # and catching all errors in calling routine
+    # We do error handling just using asserts here and catching all errors in
+    # calling routine
     im = imaplib.IMAP4_SSL(settings.IMAP_MAIL_SERVER)
     im.login(settings.LIST_MAILBOX_NAME, settings.MAILBOX_PASSWORD)
-    # If mail was successfully forwarded, we need to
-    # delete it and close the mailbox to actually delete
-    # the items.  Otherwise, some exception that occurs later
-    # will cause the deleted messages to stay undelete and
-    # be handled again.  So, we have to select the mailbox every
-    # time.
+    # If mail was successfully forwarded, we need to delete it and close the
+    # mailbox to actually delete the items.  Otherwise, some exception that
+    # occurs later could cause the deleted messages to stay undeleted and be
+    # handled again.  So, we have to select the mailbox every time.
     cont = True
     while cont:
         typ, data = im.select("INBOX")
