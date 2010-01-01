@@ -6,7 +6,7 @@ from cciw.tagging.utils import get_content_type_id, get_pk_as_str
 from django.test import TestCase
 
 class TestTagBase(TestCase):
-    fixtures = ['basic.yaml', 'basic_topic.yaml', 'test_members.yaml']
+    fixtures = ['basic.yaml', 'test_members.yaml', 'basic_topic.yaml']
 
     def tearDown(self):
         Tag.objects.all().delete()
@@ -47,6 +47,10 @@ class TestTagBase(TestCase):
                                member2=TestTagBase._get_member2())
 
 class TestTag(TestTagBase):
+
+    @staticmethod
+    def _get_member():
+        return Member.objects.get(user_name='test_member_1')
 
     def test_create(self):
         """
@@ -99,7 +103,6 @@ class TestGetTargets(TestTagBase):
     """
     Tests for the Tag.get_targets method.
     """
-    fixtures = ['basic.yaml', 'basic_topic.yaml', 'test_members.yaml']
 
     def tearDown(self):
         Tag.objects.all().delete()
