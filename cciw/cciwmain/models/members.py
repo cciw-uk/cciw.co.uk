@@ -6,6 +6,8 @@ from cciw.cciwmain import utils
 from datetime import datetime
 from cciw.cciwmain.utils import get_member_link, get_member_href
 
+import os
+
 class Permission(models.Model):
     POLL_CREATOR = "Poll creator"
     NEWS_CREATOR = "News creator"
@@ -156,7 +158,7 @@ class Award(models.Model):
         return str(self)
 
     def imageurl(self):
-        return settings.CCIW_MEDIA_URL + "/images/awards/" + self.image
+        return os.path.join(settings.CCIW_MEDIA_URL, settings.AWARD_UPLOAD_PATH, self.image.name)
 
     def get_absolute_url(self):
         from django.template.defaultfilters import slugify
