@@ -6,8 +6,8 @@ DEBUG = False
 TEMPLATE_DEBUG = False
 DEBUG_PROPAGATE_EXCEPTIONS = True
 
-DATABASE_ENGINE = 'sqlite3'
-DATABASE_NAME = ':memory:'
+DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
+DATABASES['default']['NAME'] = ':memory:'
 
 MIDDLEWARE_CLASSES = (
     "cciw.middleware.http.DummyForceSSLMiddleware",
