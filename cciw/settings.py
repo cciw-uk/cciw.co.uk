@@ -61,16 +61,20 @@ if DEBUG:
 
 
 ######  DATABASE   ####
-DATABASE_ENGINE = 'postgresql_psycopg2'
 
 if DEVBOX:
-    DATABASE_NAME = 'cciw'
-    DATABASE_USER = 'cciw'
-    DATABASE_PASSWORD = 'foo'
-    DATABASE_HOST = ''        # Set to empty string for localhost. Not used with sqlite3.
-    DATABASE_PORT = 5432
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'cciw',
+            'USER': 'cciw',
+            'PASSWORD': 'foo',
+            'HOST': '', # localhost
+            'PORT': 5432
+            }
+        }
 else:
-    from cciw.settings_priv import DATABASE_NAME, DATABASE_USER, DATABASE_PASSWORD, DATABASE_HOST
+    from cciw.settings_priv import DATABASES
 
 ######  TEMPLATES  ###########
 
