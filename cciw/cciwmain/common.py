@@ -1,6 +1,5 @@
 from django.conf import settings
 from cciw.cciwmain.templatetags import view_extras
-from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 import cciw.middleware.threadlocals as threadlocals
 import datetime

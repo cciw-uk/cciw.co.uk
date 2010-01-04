@@ -1,6 +1,5 @@
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponseRedirect
 from django import template
-from django.conf import settings
 from django.shortcuts import render_to_response
 from django.core.mail import mail_admins
 
