@@ -3,7 +3,7 @@ import imaplib
 import re
 from django.conf import settings
 from django.core.mail import get_connection, make_msgid
-from django.forms.fields import email_re
+from django.core.validators import email_re
 from cciw.cciwmain.decorators import email_errors_silently
 from cciw.officers.email_utils import formatted_email
 from cciw.officers.utils import camp_officer_list, camp_slacker_list

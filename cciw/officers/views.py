@@ -11,7 +11,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.forms.fields import email_re
+from django.core.validators import email_re
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import render_to_string

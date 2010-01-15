@@ -6,7 +6,7 @@ from datetime import datetime
 from django.contrib.auth.models import User, Group
 from django.conf import settings
 from django.core.mail import send_mail
-from django.forms.fields import email_re
+from django.core.validators import email_re
 
 def make_username(first_name, last_name, guess_number=1):
     """
