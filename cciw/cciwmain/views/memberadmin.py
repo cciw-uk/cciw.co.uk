@@ -422,6 +422,7 @@ PreferencesForm.base_fields.keyOrder = preferences_fields
 @member_required
 def preferences(request):
     current_member = get_current_member()
+    orig_email = current_member.email # before update
     c = standard_extra_context(title="Preferences")
 
     if request.method == 'POST':
@@ -434,7 +435,6 @@ def preferences(request):
         if form.is_valid():
 
             # E-mail changes require verification, so frig it here
-            orig_email = current_member.email # before update
             current_member = form.save(commit=False)
             new_email = current_member.email # from posted data
 

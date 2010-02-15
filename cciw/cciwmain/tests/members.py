@@ -127,7 +127,7 @@ class MemberAdmin(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         url, path, querydata = self._read_email_change_email(mail.outbox[0])
         resp2 = self.client.get(path, querydata)
-        self.failUnlessEqual(resp.status_code, 200)
+        self.failUnlessEqual(resp2.status_code, 200)
 
         m = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         self.assertEqual(m.email, data['email'])
