@@ -28,7 +28,7 @@
     has not done a reference for {{ ref.application.officer.first_name}} before:
     <span class="referencebutton"><button
     onclick="requestReference({{ ref.id }});">Request reference{% if mode == "requested" %} (again){% endif %}</button></span>
- </li>
+  </li>
   {% endif %}
 
   {% if ref.possible_previous_references %}
@@ -60,3 +60,4 @@
 {% endif %}
 
 </div>
+<p><a href="/admin/officers/application/{{ ref.application_id }}/" rel="external">View/edit officer's application form (in new window)</a></p>
