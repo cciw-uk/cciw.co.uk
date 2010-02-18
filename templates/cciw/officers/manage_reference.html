@@ -14,18 +14,18 @@
 {% if mode == "received" %}
   <p><a href="{% url cciw.officers.views.view_reference ref_id=ref.id %}" rel="external">View reference from {{ ref.referee.name }}</a> (in new window)</p>
 {% else %}
-<p>Ask for request - choose from the options:</p>
+  <p>Ask for reference{% if mode == "requested" %} again{% endif %} - choose from the options:</p>
 <ul>
   {% if ref.previous_reference %}
   <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
-    has done a reference for {{ ref.application.officer.first_name}} before:
+    has done a reference for {{ ref.application.officer.first_name}} before, so: 
     <span class="referencebutton">
       <button onclick="requestUpdate({{ ref.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button>
     </span>
   </li>
   {% else %}
   <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
-    has not done a reference for {{ ref.application.officer.first_name}} before:
+    has not done an online reference for {{ ref.application.officer.first_name}} before, so: 
     <span class="referencebutton"><button
     onclick="requestReference({{ ref.id }});">Request reference{% if mode == "requested" %} (again){% endif %}</button></span>
   </li>
@@ -35,7 +35,7 @@
   <li>{{ ref.referee.name }}
     <strong>has</strong> done a reference for {{ ref.application.officer.first_name }} before.<br />
     There are no exact matches for "{{ ref.referee.name }}
-    &lt;{{ ref.referee.email }}&gt;".  If one of the previous reference forms
+    &lt;{{ ref.referee.email }}&gt;", but if one of the previous references
     submitted for this officer is actually by the same person, please select:<br />
     <select  name="ref_opts_{{ ref.id }}" id="id_ref_opts_{{ ref.id }}">
       {% for opt in ref.possible_previous_references %}
@@ -51,7 +51,7 @@
   </li>
   {% endif %}
 
-  <li>{{ ref.referee.name }} can't do references using the online system.
+  <li>{{ ref.referee.name }} can't do references using the online system, so: 
     <span class="referencebutton"><button
     onclick="manageReferenceManually({{ ref.id }});">Manage reference manually</button></span>
   </li>
@@ -60,4 +60,4 @@
 {% endif %}
 
 </div>
-<p><a href="/admin/officers/application/{{ ref.application_id }}/" rel="external">View/edit officer's application form (in new window)</a></p>
+<p>If you need to amend details of the referee, <a href="/admin/officers/application/{{ ref.application_id }}/" rel="external">view/edit officer's application form (in new window)</a></p>
