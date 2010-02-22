@@ -1,4 +1,4 @@
-from django.contrib.syndication import feeds
+from django.contrib.syndication import views as feed_views
 from django.http import Http404, HttpResponse
 from cciw.cciwmain.models import Member, Topic, Post, NewsItem
 from django.contrib.sites.models import Site
@@ -24,8 +24,10 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
     if request.GET.get('format', None) != u'atom':
         return None
 
-    template_name = feed_class.template_name
-    feed_inst = feed_class(template_name, request)
+    feed_inst = feed_class()
+    # Django's class does the wrong thing, need to override
+    feed_inst.feed_url = request.get_full_path()
+
     if query_set is not None:
         # The Feed subclass may or may not use this query_set
         # If it is a CCIWFeed it will.
@@ -36,28 +38,26 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
         # as HTML page, but with different query parameters
         feed_inst.link = request.path
 
-    try:
-        feedgen = feed_inst.get_feed(param)
-    except feeds.FeedDoesNotExist:
-        raise Http404, u"Invalid feed parameters: %r." % param
-
-    response = HttpResponse(mimetype=feedgen.mime_type)
-    feedgen.write(response, 'utf-8')
-    return response
+    return feed_inst(request)
 
 def add_domain(url):
     """Adds the domain onto the beginning of a URL"""
-    return feeds.add_domain(get_current_domain(), url)
+    return feed_views.add_domain(get_current_domain(), url)
 
-class CCIWFeed(feeds.Feed):
-    def __init__(self, slug, request):
-        feeds.Feed.__init__(self, slug, request)
-        # Django's class does the wrong thing, need to override
-        self.feed_url = request.get_full_path()
+class CCIWFeed(feed_views.Feed):
 
     feed_type = Atom1Feed
+
     def items(self):
         return self.modify_query(self.query_set)
+
+    @property
+    def title_template(self):
+        return 'feeds/%s_title.html' % self.template_name
+
+    @property
+    def description_template(self):
+        return 'feeds/%s_description.html' % self.template_name
 
 class MemberFeed(CCIWFeed):
     template_name = 'members'
