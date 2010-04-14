@@ -19,6 +19,7 @@ from django.template.defaultfilters import wordwrap
 from django.utils.hashcompat import sha_constructor
 from django.views.decorators.cache import never_cache
 from cciw.cciwmain import common
+from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.views.memberadmin import email_hash
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
@@ -27,7 +28,7 @@ from cciw.officers import create
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
-from cciw.officers.models import Application, Reference, ReferenceForm
+from cciw.officers.models import Application, Reference, ReferenceForm, Invitation
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.officers.references import reference_form_info
 from cciw.utils.views import close_window_response
@@ -602,8 +603,30 @@ def officer_list(request, year=None, number=None):
     c['addresses_all'] = address_for_camp_officers(camp)
     c['addresses_noapplicationform'] = address_for_camp_slackers(camp)
 
-    return render_to_response('cciw/officers/officer_list.html',
-                              context_instance=c)
+    if request.GET.get('list_only') is not None:
+        tname = "cciw/officers/officer_list_table_editable.html"
+    else:
+        tname = "cciw/officers/officer_list.html"
+    return render_to_response(tname, context_instance=c)
+
+
+@staff_member_required
+@user_passes_test(_is_camp_admin)
+@json_response
+def remove_officer(request, year=None, number=None):
+    camp = _get_camp_or_404(year, number)
+    officer_id = request.POST.get('officer_id', None)
+    Invitation.objects.filter(camp=camp.id, officer=officer_id).delete()
+    return {'status':'success'}
+
+@staff_member_required
+@user_passes_test(_is_camp_admin)
+@json_response
+def add_officer(request, year=None, number=None):
+    camp = _get_camp_or_404(year, number)
+    officer_id = request.POST.get('officer_id', None)
+    Invitation.objects.get_or_create(camp=camp, officer_id=officer_id)
+    return {'status':'success'}
 
 def update_email(request, username=''):
     c = {}

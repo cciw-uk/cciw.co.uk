@@ -1,10 +1,11 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django import template
 from django.shortcuts import render_to_response
 from django.core.mail import mail_admins
 
 from cciw.middleware.threadlocals import get_current_member, set_member_session
 from cciw.cciwmain.common import standard_extra_context
+from cciw.cciwmain.utils import python_to_json
 
 import urllib
 import datetime
@@ -90,3 +91,10 @@ def email_errors_silently(func):
             mail_admins(subject, message, fail_silently=True)
             return None
     return wraps(func)(_inner)
+
+def json_response(view_func):
+    def _inner(request, *args, **kwargs):
+        data = view_func(request, *args, **kwargs)
+        return HttpResponse(python_to_json(data),
+                            mimetype="text/javascript")
+    return wraps(view_func)(_inner)

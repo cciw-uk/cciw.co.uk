@@ -5,7 +5,13 @@
 {% block extrastyle %}{{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />
 <script type="text/javascript" src="/admin/jsi18n/"></script>
-<script type="text/javascript" src="{% admin_media_prefix %}js/core.js"></script><script type="text/javascript" src="{% admin_media_prefix %}js/admin/RelatedObjectLookups.js"></script><script type="text/javascript" src="{% admin_media_prefix %}js/calendar.js"></script><script type="text/javascript" src="{% admin_media_prefix %}js/admin/DateTimeShortcuts.js"></script><script type="text/javascript" src="{% admin_media_prefix %}js/SelectBox.js"></script><script type="text/javascript" src="{% admin_media_prefix %}js/SelectFilter2.js"></script>
+<script type="text/javascript" src="{% admin_media_prefix %}js/core.js"></script>
+<script type="text/javascript" src="{% admin_media_prefix %}js/admin/RelatedObjectLookups.js"></script>
+<script type="text/javascript" src="{% admin_media_prefix %}js/calendar.js"></script>
+<script type="text/javascript" src="{% admin_media_prefix %}js/admin/DateTimeShortcuts.js"></script>
+<script type="text/javascript" src="{% admin_media_prefix %}js/SelectBox.js"></script>
+<script type="text/javascript" src="{% admin_media_prefix %}js/SelectFilter2.js"></script>
+<script type="text/javascript" src="{% admin_media_prefix %}js/jquery.min.js"></script>
 
 {% endblock %}
 {% block bodyclass%}change-form{% endblock %}
@@ -18,13 +24,62 @@
 
 <h2>Current list</h2>
 
-{% with officers_all as officers %}
+<p>Total: {{ officers_all|length }}</p>
+
 {% include "cciw/officers/officer_list_table_editable.html" %}
-{% endwith %}
+
+<h3>Add</h3>
+
+<script type="text/javascript">
+(function($) {
+    var refresh_officer_list = function() {
+        $.ajax({
+            type: "GET",
+            url: "?list_only=1",
+            success: function(text) {
+                $("#id_officer_list_table").html(text);
+                add_officer_list_eventhandlers();
+            }
+        });
+    };
+    var refresh_available_list = function() {
+
+    }
+    var add_officer_list_eventhandlers = function() {
+        // event handlers for all 'edit' buttons
+        $(".editbtn").click(function(ev) {
+            var officer_id = parseFloat(ev.target.id.substring(8), 10);
+            // Make input boxes
+            // TODO
+            // Add save/cancel buttons
+            // TODO
+            // Hide 'edit' button
+            // TODO
+            // Dim & disable other controls.
+        });
+
+        // event handlers for 'remove' buttons
+        $(".removebtn").click(function(ev) {
+            var officer_id = parseFloat(ev.target.id.substring(10), 10);
+            // Remove from list
+            $.ajax({
+                type: "POST",
+                url:  "{% url cciw.officers.views.remove_officer camp.year camp.number %}",
+                data: "officer_id=" + officer_id.toString(),
+                success: refresh_officer_list
+            });
+        });
+    }
+
+    $(document).ready(function(){
+        add_officer_list_eventhandlers();
+    });
+})(jQuery);
+</script>
 
 {% if officers_all %}
 <h3>List address:</h3>
-<p>The above list of officers can alternatively be emailed at: 
+<p>The above list of officers can be emailed at:
 <strong><a href="mailto:{{ addresses_all }}">{{ addresses_all }}</a></strong></p>
 
 {% include "cciw/officers/email_list_note.html" %}
@@ -59,18 +114,27 @@
   them imported.</p>
 
 
+{% if officers_noapplicationform %}
 <h2>No/incomplete application form</h2>
 
 <p>The following officers are on your camp list (above), but have not
   yet completed an application form.</p>
 
-{% with officers_noapplicationform as officers %}
-{% include "cciw/officers/officer_list_table.html" %}
-{% endwith %}
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Email</th>
+  </tr>
+  {% for officer in officers_noapplicationform %}
+  <tr>
+    <td>{{ officer.first_name }} {{ officer.last_name }}</td>
+    <td>{{ officer.email }}</td>
+  </tr>
+  {% endfor %}
+</table>
 
-{% if officers_noapplicationform %}
 <h3>List address:</h3>
-<p>The above list of officers can alternatively be emailed at: 
+<p>The above list of officers can be emailed at:
 <strong><a href="mailto:{{ addresses_noapplicationform }}">{{ addresses_noapplicationform }}</a></strong></p>
 
 {% include "cciw/officers/email_list_note.html" %}

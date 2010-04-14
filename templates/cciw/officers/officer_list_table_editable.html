@@ -1,26 +1,24 @@
-{% if officers %}
-<p>Details of officers (e.g. email address) can be changed by clicking 'Edit'.</p>
-
+<div  id="id_officer_list_table">
 <table>
   <tr>
     <th>Name</th>
-    <th>Email</th>
-    <th>Edit user details</th>
+    <th>E-mail</th>
+    <th>Edit details</th>
+    <th>Remove</th>
   </tr>
-  {% for officer in officers %}
+{% for officer in officers_all %}
   <tr>
     <td>{{ officer.first_name }} {{ officer.last_name }}</td>
     <td>{{ officer.email }}</td>
-    <td><a rel="external" href="/admin/auth/user/{{ officer.id }}/">Edit</a></td>
+    <td><a class="editbtn" id="id_edit_{{ officer.id }}" href="#">Edit</a></td>
+    <td><a class="removebtn" id="id_remove_{{ officer.id }}" href="#">Remove</a></td>
   </tr>
-  {% endfor %}
+{% empty %}
+  <tr>
+    <td colspan="4">
+    No officers found
+    </td>
+  </tr>
+{% endfor %}
 </table>
-
-<h3>List for email:</h3>
-<p>
-{% for officer in officers %}"{{ officer.first_name }} {{ officer.last_name }}" &lt;{{ officer.email }}&gt;,{% endfor %}
-</p>
-
-{% else %}
-<p>No officers found</p>
-{% endif %}
+</div>
