@@ -24,31 +24,86 @@
 
 <h2>Current list</h2>
 
-<p>Total: {{ officers_all|length }}</p>
-
 {% include "cciw/officers/officer_list_table_editable.html" %}
 
-<h3>Add</h3>
+<h3>Add to list</h3>
+
+<div class="selector-filter">
+<img style="vertical-align: middle" src="/admin_media/img/admin/selector-search.gif">
+ <input type="text" id="id_available_officers_filter">
+</div>
+<div>
+<select multiple="multiple" id="id_available_officers" name="officers">
+{% include "cciw/officers/officer_list_available.html" %}
+</select>
+</div>
+
+<ul>
+<li>Add an officer from those registered on the system by double clicking
+ on the entry above (or use arrow keys and 'Enter').  </li>
+<li> Type in the search box to quickly find an officer.</li>
+<li>Officers from last year are starred (if the information is available)</li>
+</ul>
+
+
+<h2>Add officer</h2>
+
+<p>If you need to add a new officer to the 'Available officers' above, use
+  the <a href="{% url cciw.officers.views.create_officer %}" rel="external">add
+  officer form</a> (opens in new window). If you have a list on a computer, you
+  can <a href="mailto:webmaster@cciw.co.uk">e-mail the webmaster</a> to have
+  them imported.</p>
 
 <script type="text/javascript">
+// Define multiSelectFilter jQuery plugin
+(function($){
+  var MultiSelectFilter = function(src, where) {
+    $(src).bind('keyup', function(){
+      var field = $(this)[0];
+      var select = $(where)[0];
+      for (var i = 0; i < select.options.length; i++) {
+        if (field.value == "" || select.options[i].text.toUpperCase().indexOf(field.value.toUpperCase()) != -1) {
+            $(select.options[i]).show();
+        } else {
+            $(select.options[i]).hide();
+        }
+      }
+    });
+  };
+
+  $.fn.multiSelectFilter = function (where) {
+    var foo = new MultiSelectFilter(this, where);
+  }
+})(jQuery);
+
 (function($) {
-    var refresh_officer_list = function() {
+    var refreshLists = function() {
+        var selectedIdx = document.getElementById("id_available_officers").selectedIndex;
         $.ajax({
             type: "GET",
             url: "?list_only=1",
             success: function(text) {
                 $("#id_officer_list_table").html(text);
-                add_officer_list_eventhandlers();
+                addOfficerListHandlers();
+            }
+        });
+        $.ajax({
+            type: "GET",
+            url: "?available_officers_only=1",
+            success: function(text) {
+                removeOfficerAddHandlers();
+                $("#id_available_officers").html(text);
+                // restore filter
+                $("#id_available_officers_filter").keyup();
+                document.getElementById("id_available_officers").selectedIndex = selectedIdx;
+                addOfficerAddHandlers();
             }
         });
     };
-    var refresh_available_list = function() {
-
-    }
-    var add_officer_list_eventhandlers = function() {
+    var addOfficerListHandlers = function() {
         // event handlers for all 'edit' buttons
         $(".editbtn").click(function(ev) {
-            var officer_id = parseFloat(ev.target.id.substring(8), 10);
+            var officerId = parseFloat(ev.target.id.substring(8), 10);
             // Make input boxes
             // TODO
             // Add save/cancel buttons
@@ -60,19 +115,43 @@
 
         // event handlers for 'remove' buttons
         $(".removebtn").click(function(ev) {
-            var officer_id = parseFloat(ev.target.id.substring(10), 10);
+            var officerId = parseFloat(ev.target.id.substring(10), 10);
             // Remove from list
             $.ajax({
                 type: "POST",
                 url:  "{% url cciw.officers.views.remove_officer camp.year camp.number %}",
-                data: "officer_id=" + officer_id.toString(),
-                success: refresh_officer_list
+                data: "officer_id=" + officerId.toString(),
+                success: refreshLists
             });
+            ev.preventDefault();
         });
+    }
+    var addOfficerAddHandlers = function() {
+	    var officerAddHandler = function(ev) {
+	        if (ev.type == "keyup") {
+	            var code = (ev.keyCode ? ev.keyCode : ev.which);
+                if (code != 13) { // Enter
+                    return;
+                }
+	        }
+	        $.ajax({
+	            type: "POST",
+	            url: "{% url cciw.officers.views.add_officer camp.year camp.number %}",
+	            data: "officer_id=" + ev.target.value,
+	            success: refreshLists
+	        });
+	    };
+	    $("#id_available_officers option").dblclick(officerAddHandler);
+	    $("#id_available_officers").keyup(officerAddHandler);
+	}
+    var removeOfficerAddHandlers = function() {
+        $("#id_available_officers").unbind("keyup");
     }
 
     $(document).ready(function(){
-        add_officer_list_eventhandlers();
+        $("#id_available_officers_filter").multiSelectFilter("#id_available_officers");
+        addOfficerListHandlers();
+        addOfficerAddHandlers();
     });
 })(jQuery);
 </script>
@@ -80,38 +159,12 @@
 {% if officers_all %}
 <h3>List address:</h3>
 <p>The above list of officers can be emailed at:
-<strong><a href="mailto:{{ addresses_all }}">{{ addresses_all }}</a></strong></p>
+<strong><a href="mailto:{{ address_all }}">{{ address_all }}</a></strong></p>
 
 {% include "cciw/officers/email_list_note.html" %}
 {% endif %}
 
-<h2>Modify list</h2>
-<p>Choose officers from 'Available officers' using the arrows, and remember to
- press 'Save' when done.</p>
 
-{% if form.officers.errors %}{{ form.officers.errors }}{% endif %}
-
-<form method="post" action="">{% csrf_token %}
-<fieldset class="module aligned">
-
-<div class="form-row" >
-  <label for="id_officers">Officers:</label> 
-  {{ form.officers }}
-   <script type="text/javascript">addEvent(window, "load", function(e) { SelectFilter.init("id_officers", "officers", 0, "/admin_media/"); });</script>
-</div>
-</fieldset>
-
-<input type="submit" value="Save" name="submit" id="id_submit" />
-
-</form>
-
-<h2>Add officer</h2>
-
-<p>If you need to add a new officer to the 'Available officers' above, use
-  the <a href="{% url cciw.officers.views.create_officer %}" rel="external">add
-  officer form</a> (opens in new window). If you have a list on a computer, you
-  can <a href="mailto:webmaster@cciw.co.uk">e-mail the webmaster</a> to have
-  them imported.</p>
 
 
 {% if officers_noapplicationform %}
@@ -135,7 +188,7 @@
 
 <h3>List address:</h3>
 <p>The above list of officers can be emailed at:
-<strong><a href="mailto:{{ addresses_noapplicationform }}">{{ addresses_noapplicationform }}</a></strong></p>
+<strong><a href="mailto:{{ address_noapplicationform }}">{{ address_noapplicationform }}</a></strong></p>
 
 {% include "cciw/officers/email_list_note.html" %}
 {% endif %}

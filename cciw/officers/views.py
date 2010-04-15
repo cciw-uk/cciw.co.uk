@@ -548,18 +548,6 @@ def create_reference_thanks(request):
     return render_to_response('cciw/officers/create_reference_thanks.html',
                               context_instance=template.RequestContext(request))
 
-class OfficerChoice(forms.ModelMultipleChoiceField):
-    def label_from_instance(self, u):
-        return u"%s %s <%s>" % (u.first_name, u.last_name, u.email)
-
-class OfficerListForm(forms.Form):
-    officers = OfficerChoice(
-        widget=forms.SelectMultiple(attrs={'class':'vSelectMultipleField'}),
-        queryset=User.objects.filter(is_staff=True).order_by('first_name', 'last_name'),
-        required=False
-        )
-
-
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 def view_reference(request, ref_id=None):
@@ -585,26 +573,33 @@ def officer_list(request, year=None, number=None):
 
     c = template.RequestContext(request)
     c['camp'] = camp
-
-    if request.method == 'POST':
-        form = OfficerListForm(request.POST)
-        if form.is_valid():
-            camp.invitation_set.all().delete()
-            for o in form.cleaned_data['officers']:
-                camp.invitation_set.create(officer=o).save()
-    else:
-        form = OfficerListForm({'officers': [unicode(inv.officer_id) for inv in camp.invitation_set.all()]})
-
-    c['form'] = form
-
     # Make sure these queries come after the above data modification
-    c['officers_all'] = camp_officer_list(camp)
+    officer_list = camp_officer_list(camp)
+    officer_list_ids = set(u.id for u in officer_list)
+    c['officers_all'] = officer_list
     c['officers_noapplicationform'] = camp_slacker_list(camp)
-    c['addresses_all'] = address_for_camp_officers(camp)
-    c['addresses_noapplicationform'] = address_for_camp_slackers(camp)
+    c['address_all'] = address_for_camp_officers(camp)
+    c['address_noapplicationform'] = address_for_camp_slackers(camp)
 
+    # List for select
+    available_officers = list(User.objects.filter(is_staff=True).order_by('first_name', 'last_name', 'email'))
+    # decorate with info about previous camp
+    prev_camp = camp.previous_camp
+    if prev_camp is not None:
+        prev_officer_list_ids = set(u.id for u in prev_camp.officers.all())
+        for u in available_officers:
+            if u.id in prev_officer_list_ids:
+                u.on_previous_camp = True
+    # Filter out officers who are already chosen for this camp.
+    # Since the total number of officers >> officers chosen for a camp
+    # there is no need to do this filtering in the database.
+    c['available_officers'] = [u for u in available_officers if u.id not in officer_list_ids]
+
+    # Different templates allow us to render just parts of the page, for AJAX calls
     if request.GET.get('list_only') is not None:
         tname = "cciw/officers/officer_list_table_editable.html"
+    elif request.GET.get('available_officers_only') is not None:
+        tname = "cciw/officers/officer_list_available.html"
     else:
         tname = "cciw/officers/officer_list.html"
     return render_to_response(tname, context_instance=c)
@@ -615,8 +610,8 @@ def officer_list(request, year=None, number=None):
 @json_response
 def remove_officer(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
-    officer_id = request.POST.get('officer_id', None)
-    Invitation.objects.filter(camp=camp.id, officer=officer_id).delete()
+    officer_id = request.POST['officer_id']
+    Invitation.objects.filter(camp=camp.id, officer=int(officer_id)).delete()
     return {'status':'success'}
 
 @staff_member_required
@@ -624,8 +619,8 @@ def remove_officer(request, year=None, number=None):
 @json_response
 def add_officer(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
-    officer_id = request.POST.get('officer_id', None)
-    Invitation.objects.get_or_create(camp=camp, officer_id=officer_id)
+    officer_id = request.POST['officer_id']
+    Invitation.objects.get_or_create(camp=camp, officer=User.objects.get(id=int(officer_id)))
     return {'status':'success'}
 
 def update_email(request, username=''):

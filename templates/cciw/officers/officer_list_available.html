@@ -1,0 +1,5 @@
+{% for officer in available_officers %}
+<option value="{{ officer.id }}">{{ officer.first_name }} {{ officer.last_name }}
+ &lt;{{ officer.email }}&gt;
+ {% if officer.on_previous_camp %}*{% endif %}</option>
+{% endfor %}
