@@ -162,13 +162,11 @@
 })(jQuery);
 </script>
 
-{% if officers_all %}
 <h3>List address:</h3>
 <p>The above list of officers can be emailed at:
 <strong><a href="mailto:{{ address_all }}">{{ address_all }}</a></strong></p>
 
 {% include "cciw/officers/email_list_note.html" %}
-{% endif %}
 
 
 {% if officers_noapplicationform %}
