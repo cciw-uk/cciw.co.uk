@@ -95,7 +95,8 @@
                 $("#id_available_officers").html(text);
                 // restore filter
                 $("#id_available_officers_filter").keyup();
-                document.getElementById("id_available_officers").selectedIndex = selectedIdx;
+                var s = document.getElementById("id_available_officers");
+                s.selectedIndex = Math.min(selectedIdx, s.options.length - 1);
                 addOfficerAddHandlers();
             }
         });
