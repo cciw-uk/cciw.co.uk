@@ -33,7 +33,7 @@
  <input type="text" id="id_available_officers_filter">
 </div>
 <div>
-<select multiple="multiple" id="id_available_officers" name="officers">
+<select multiple="multiple" id="id_available_officers" style="min-width:30em;" name="officers">
 {% include "cciw/officers/officer_list_available.html" %}
 </select>
 </div>
@@ -163,8 +163,6 @@
 
 {% include "cciw/officers/email_list_note.html" %}
 {% endif %}
-
-
 
 
 {% if officers_noapplicationform %}
