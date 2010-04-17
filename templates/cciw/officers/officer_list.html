@@ -175,18 +175,11 @@
 <p>The following officers are on your camp list (above), but have not
   yet completed an application form.</p>
 
-<table>
-  <tr>
-    <th>Name</th>
-    <th>Email</th>
-  </tr>
-  {% for officer in officers_noapplicationform %}
-  <tr>
-    <td>{{ officer.first_name }} {{ officer.last_name }}</td>
-    <td>{{ officer.email }}</td>
-  </tr>
-  {% endfor %}
-</table>
+<div style="margin-left:2em;">
+{% for officer in officers_noapplicationform %}
+{{ officer.first_name }} {{ officer.last_name }}<br/>
+{% endfor %}
+</div>
 
 <h3>List address:</h3>
 <p>The above list of officers can be emailed at:
