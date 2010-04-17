@@ -22,11 +22,14 @@
 <p>This page can be used for viewing and managing the officers on your list,
  and for viewing those who have not yet filled in an application form.</p>
 
+<div style="float: left; width: 40em;">
 <h2>Current list</h2>
 
 {% include "cciw/officers/officer_list_table_editable.html" %}
 
-<h3>Add to list</h3>
+</div>
+<div style="margin-left: 42em;">
+<h2 style="margin-top: 2em;">Add to list</h2>
 
 <div class="selector-filter">
 <img style="vertical-align: middle" src="/admin_media/img/admin/selector-search.gif">
@@ -45,7 +48,6 @@
 <li>Officers from last year are starred (if the information is available)</li>
 </ul>
 
-
 <h2>Add officer</h2>
 
 <p>If you need to add a new officer to the 'Available officers' above, use
@@ -54,6 +56,9 @@
   can <a href="mailto:webmaster@cciw.co.uk">e-mail the webmaster</a> to have
   them imported.</p>
 
+</div>
+
+<br style="clear: left;">
 <script type="text/javascript">
 // Define multiSelectFilter jQuery plugin
 (function($){
