@@ -4,13 +4,6 @@
 
 {% block extrastyle %}{{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />
-<script type="text/javascript" src="/admin/jsi18n/"></script>
-<script type="text/javascript" src="{% admin_media_prefix %}js/core.js"></script>
-<script type="text/javascript" src="{% admin_media_prefix %}js/admin/RelatedObjectLookups.js"></script>
-<script type="text/javascript" src="{% admin_media_prefix %}js/calendar.js"></script>
-<script type="text/javascript" src="{% admin_media_prefix %}js/admin/DateTimeShortcuts.js"></script>
-<script type="text/javascript" src="{% admin_media_prefix %}js/SelectBox.js"></script>
-<script type="text/javascript" src="{% admin_media_prefix %}js/SelectFilter2.js"></script>
 <script type="text/javascript" src="{% admin_media_prefix %}js/jquery.min.js"></script>
 
 {% endblock %}
@@ -22,13 +15,13 @@
 <p>This page can be used for viewing and managing the officers on your list,
  and for viewing those who have not yet filled in an application form.</p>
 
-<div style="float: left; width: 40em;">
+<div style="float: left; width: 44em;">
 <h2>Current list</h2>
 
 {% include "cciw/officers/officer_list_table_editable.html" %}
 
 </div>
-<div style="margin-left: 42em;">
+<div style="margin-left: 45em;">
 <h2 style="margin-top: 2em;">Add to list</h2>
 
 <div class="selector-filter">
@@ -61,8 +54,8 @@
 
 <br style="clear: left;">
 <script type="text/javascript">
-// Define multiSelectFilter jQuery plugin
 (function($){
+    // Define multiSelectFilter jQuery plugin
     $.fn.multiSelectFilter = function(select){
         var filterbox = this;
         // Make clone that stores options
@@ -102,11 +95,11 @@
         return this;
 
     };
-})(jQuery);
 
-(function($) {
+    // Code specific to page
     var refreshLists = function() {
         var selectedIdx = document.getElementById("id_available_officers").selectedIndex;
+        // Refresh different areas of the page:
         $.ajax({
             type: "GET",
             url: "?mode=chosen",
@@ -119,13 +112,12 @@
             type: "GET",
             url: "?mode=available",
             success: function(text) {
-                removeOfficerAddHandlers();
                 $("#id_available_officers").html(text);
                 // restore filter
                 $("#id_available_officers_filter").trigger('refresh');
+                // restore selected item
                 var s = document.getElementById("id_available_officers");
                 s.selectedIndex = Math.min(selectedIdx, s.options.length - 1);
-                addOfficerAddHandlers();
             }
         });
         $.ajax({
@@ -162,33 +154,27 @@
             ev.preventDefault();
         });
     }
-    var addOfficerAddHandlers = function() {
-	    var officerAddHandler = function(ev) {
-	        if (ev.type == "keyup") {
-	            var code = (ev.keyCode ? ev.keyCode : ev.which);
-                if (code != 13) { // Enter
-                    return;
-                }
-	        }
-	        $.ajax({
-	            type: "POST",
-	            url: "{% url cciw.officers.views.add_officer camp.year camp.number %}",
-	            data: "officer_id=" + ev.target.value,
-	            success: refreshLists
-	        });
-	    };
-	    $("#id_available_officers").dblclick(officerAddHandler);
-	    $("#id_available_officers").keyup(officerAddHandler);
-	}
-    var removeOfficerAddHandlers = function() {
-        $("#id_available_officers").unbind("keyup");
-        $("#id_available_officers").unbind("dblclick");
-    }
+    var officerAddHandler = function(ev) {
+        if (ev.type == "keyup") {
+            var code = (ev.keyCode ? ev.keyCode : ev.which);
+            if (code != 13) { // Enter
+                return;
+            }
+        }
+        $.ajax({
+            type: "POST",
+            url: "{% url cciw.officers.views.add_officer camp.year camp.number %}",
+            data: "officer_id=" + ev.target.value,
+            success: refreshLists
+        });
+    };
 
     $(document).ready(function(){
         $("#id_available_officers_filter").multiSelectFilter("#id_available_officers");
         addOfficerListHandlers();
-        addOfficerAddHandlers();
+        $("#id_available_officers")
+           .dblclick(officerAddHandler)
+           .keyup(officerAddHandler);
     });
 })(jQuery);
 </script>
