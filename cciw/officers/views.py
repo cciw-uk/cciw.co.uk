@@ -593,7 +593,9 @@ def officer_list(request, year=None, number=None):
     # Filter out officers who are already chosen for this camp.
     # Since the total number of officers >> officers chosen for a camp
     # there is no need to do this filtering in the database.
-    c['available_officers'] = [u for u in available_officers if u.id not in officer_list_ids]
+    available_officers = [u for u in available_officers if u.id not in officer_list_ids]
+    available_officers.sort(key=lambda u: not getattr(u, 'on_previous_camp', False))
+    c['available_officers'] = available_officers
 
     # Different templates allow us to render just parts of the page, for AJAX calls
     tnames = {"chosen": "cciw/officers/officer_list_table_editable.html",
