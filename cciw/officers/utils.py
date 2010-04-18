@@ -14,5 +14,5 @@ def camp_slacker_list(camp):
     """
     finished_apps_off_ids = [o['officer__id']
                              for o in camp.application_set.filter(finished=True).values('officer__id')]
-    return list(camp.officers.exclude(id__in=finished_apps_off_ids))
+    return list(camp.officers.order_by('first_name', 'last_name', 'email').exclude(id__in=finished_apps_off_ids))
 
