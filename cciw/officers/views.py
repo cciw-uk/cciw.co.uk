@@ -596,12 +596,10 @@ def officer_list(request, year=None, number=None):
     c['available_officers'] = [u for u in available_officers if u.id not in officer_list_ids]
 
     # Different templates allow us to render just parts of the page, for AJAX calls
-    if request.GET.get('list_only') is not None:
-        tname = "cciw/officers/officer_list_table_editable.html"
-    elif request.GET.get('available_officers_only') is not None:
-        tname = "cciw/officers/officer_list_available.html"
-    else:
-        tname = "cciw/officers/officer_list.html"
+    tnames = {"chosen": "cciw/officers/officer_list_table_editable.html",
+              "available": "cciw/officers/officer_list_available.html",
+              "noapplicationform": "cciw/officers/officer_list_noapplicationform.html"}
+    tname = tnames.get(request.GET.get('mode', None), "cciw/officers/officer_list.html")
     return render_to_response(tname, context_instance=c)
 
 

@@ -109,7 +109,7 @@
         var selectedIdx = document.getElementById("id_available_officers").selectedIndex;
         $.ajax({
             type: "GET",
-            url: "?list_only=1",
+            url: "?mode=chosen",
             success: function(text) {
                 $("#id_officer_list_table").html(text);
                 addOfficerListHandlers();
@@ -117,7 +117,7 @@
         });
         $.ajax({
             type: "GET",
-            url: "?available_officers_only=1",
+            url: "?mode=available",
             success: function(text) {
                 removeOfficerAddHandlers();
                 $("#id_available_officers").html(text);
@@ -126,6 +126,13 @@
                 var s = document.getElementById("id_available_officers");
                 s.selectedIndex = Math.min(selectedIdx, s.options.length - 1);
                 addOfficerAddHandlers();
+            }
+        });
+        $.ajax({
+            type: "GET",
+            url: "?mode=noapplicationform",
+            success: function(text) {
+                $("#id_noapplicationform").html(text);
             }
         });
     };
@@ -192,24 +199,8 @@
 
 {% include "cciw/officers/email_list_note.html" %}
 
-
-{% if officers_noapplicationform %}
-<h2>No/incomplete application form</h2>
-
-<p>The following officers are on your camp list (above), but have not
-  yet completed an application form.</p>
-
-<div style="margin-left:2em;">
-{% for officer in officers_noapplicationform %}
-{{ officer.first_name }} {{ officer.last_name }}<br/>
-{% endfor %}
+<div id="id_noapplicationform">
+{% include "cciw/officers/officer_list_noapplicationform.html" %}
 </div>
-
-<h3>List address:</h3>
-<p>The above list of officers can be emailed at:
-<strong><a href="mailto:{{ address_noapplicationform }}">{{ address_noapplicationform }}</a></strong></p>
-
-{% include "cciw/officers/email_list_note.html" %}
-{% endif %}
 
 {% endblock %}
