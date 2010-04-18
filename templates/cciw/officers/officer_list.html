@@ -36,11 +36,12 @@
  <input type="text" id="id_available_officers_filter">
 </div>
 <div>
-<select multiple="multiple" id="id_available_officers" style="min-width:30em;" name="officers">
+<select multiple="multiple" id="id_available_officers" style="min-width:30em;height: 30em;" name="officers">
 {% include "cciw/officers/officer_list_available.html" %}
 </select>
 </div>
 
+<h3>Help</h3>
 <ul>
 <li>Add an officer from those registered on the system by double clicking
  on the entry above (or use arrow keys and 'Enter').  </li>
@@ -62,23 +63,45 @@
 <script type="text/javascript">
 // Define multiSelectFilter jQuery plugin
 (function($){
-  var MultiSelectFilter = function(src, where) {
-    $(src).bind('keyup', function(){
-      var field = $(this)[0];
-      var select = $(where)[0];
-      for (var i = 0; i < select.options.length; i++) {
-        if (field.value == "" || select.options[i].text.toUpperCase().indexOf(field.value.toUpperCase()) != -1) {
-            $(select.options[i]).show();
-        } else {
-            $(select.options[i]).hide();
-        }
-      }
-    });
-  };
+    $.fn.multiSelectFilter = function(select){
+        var filterbox = this;
+        // Make clone that stores options
+        var select = $(select);
+        var clone;
 
-  $.fn.multiSelectFilter = function (where) {
-    var foo = new MultiSelectFilter(this, where);
-  }
+        var init = function() {
+            if (clone != undefined) {
+                clone.remove();
+            }
+            clone = select.clone();
+            clone.removeAttr('id').removeAttr('name').hide();
+            clone.appendTo(select.parent());
+        }
+
+        var filter = function(){
+            select.children().remove();
+            var term = $.trim(filterbox.val().toLowerCase());
+            var tmp = [];
+            clone.children().each(function(i, elem){
+                            if (!term || elem.text.toLowerCase().indexOf(term) != -1) { 
+                                tmp.push($('<div>').append($(elem).eq(0).clone()).html());
+                            }
+                         });
+            select.append(tmp.join(''));
+        }
+
+        init();
+        this.keyup(filter);
+
+        // If the contents are changed, the clone needs to be refreshed,
+        // so the 'refresh' event should be triggered on the filterbox.
+        this.bind('refresh', function() {
+            init();
+            filter();
+        });
+        return this;
+
+    };
 })(jQuery);
 
 (function($) {
@@ -99,7 +122,7 @@
                 removeOfficerAddHandlers();
                 $("#id_available_officers").html(text);
                 // restore filter
-                $("#id_available_officers_filter").keyup();
+                $("#id_available_officers_filter").trigger('refresh');
                 var s = document.getElementById("id_available_officers");
                 s.selectedIndex = Math.min(selectedIdx, s.options.length - 1);
                 addOfficerAddHandlers();
@@ -147,11 +170,12 @@
 	            success: refreshLists
 	        });
 	    };
-	    $("#id_available_officers option").dblclick(officerAddHandler);
+	    $("#id_available_officers").dblclick(officerAddHandler);
 	    $("#id_available_officers").keyup(officerAddHandler);
 	}
     var removeOfficerAddHandlers = function() {
         $("#id_available_officers").unbind("keyup");
+        $("#id_available_officers").unbind("dblclick");
     }
 
     $(document).ready(function(){
