@@ -98,6 +98,10 @@
     };
 
     // Code specific to page
+
+    // Global that is true if a row of officer details is in 'edit mode'
+    var editOfficerMode = false;
+
     var refreshLists = function() {
         var selectedIdx = document.getElementById("id_available_officers").selectedIndex;
         // Refresh different areas of the page:
@@ -106,6 +110,7 @@
             url: "?mode=chosen",
             success: function(text) {
                 $("#id_officer_list_table").html(text);
+                editOfficerMode = false;
                 addOfficerListHandlers();
             }
         });
@@ -129,17 +134,62 @@
             }
         });
     };
+
     var addOfficerListHandlers = function() {
         // event handlers for all 'edit' buttons
         $(".editbtn").click(function(ev) {
+            ev.preventDefault();
+            if (editOfficerMode) {
+                alert("Please finish editing the other row first");
+                return;
+            }
+            editOfficerMode = true;
             var officerId = parseFloat(ev.target.id.substring(8), 10);
-            // Make input boxes
-            // TODO
-            // Add save/cancel buttons
-            // TODO
-            // Hide 'edit' button
-            // TODO
-            // Dim & disable other controls.
+            // Need to retrieve details (we don't know first name and last name)
+            $.ajax({
+                type: "GET",
+                url: "{% url cciw.officers.views.officer_details %}?officer_id=" + officerId.toString(),
+                dataType: 'json',
+                success: function(officer) {
+                    var escape = function(t) {
+                        return $('<div/>').text(t).html();
+                    }
+                    var row = $('#id_officer_table_tr_' + officerId.toString());
+                    // Make input boxes, and save/cancel buttons
+                    row.html('<td>' +
+                                '<nobr><input size=6 id="id_officer_first_name" type="text" value="' +
+                                    escape(officer.first_name) + '" />' +
+                                '<input size=6 id="id_officer_last_name" type="text" value="' +
+                                    escape(officer.last_name) + '" /></nobr>' +
+                             '</td>' +
+                             '<td><input size=30 id="id_officer_email" type="text" value="' +
+                                escape(officer.email) + '" /></td>' +
+                             '<td colspan=2><a href="#" id="id_officer_save">Save</a> / ' +
+                             '<a href="#" id="id_officer_cancel">Cancel</a> </td>');
+                    // 'Cancel' handler:
+                    row.find('#id_officer_cancel').click(function(ev) {
+                        ev.preventDefault();
+                        refreshLists();
+                    });
+                    // 'Save' handler
+                    row.find('#id_officer_save').click(function(ev) {
+                        ev.preventDefault();
+                        officer.first_name = $('#id_officer_first_name').val();
+                        officer.last_name = $('#id_officer_last_name').val();
+                        officer.email = $('#id_officer_email').val();
+                        $.ajax({
+                            type: 'POST',
+                            url: "{% url cciw.officers.views.update_officer %}",
+                            data: {'officer_id': officer.id,
+                                   'first_name': officer.first_name,
+                                   'last_name': officer.last_name,
+                                   'email': officer.email
+                                   },
+                            success: refreshLists
+                        });
+                    });
+                }
+            });
         });
 
         // event handlers for 'remove' buttons

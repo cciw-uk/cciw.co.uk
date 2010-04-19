@@ -4,11 +4,11 @@
   <tr>
     <th>Name</th>
     <th>E-mail</th>
-    <th>Edit details</th>
+    <th>Edit</th>
     <th>Remove</th>
   </tr>
 {% for officer in officers_all %}
-  <tr>
+  <tr id="id_officer_table_tr_{{ officer.id }}">
     <td>{{ officer.first_name }} {{ officer.last_name }}</td>
     <td>{{ officer.email }}</td>
     <td><a class="editbtn" id="id_edit_{{ officer.id }}" href="#">Edit</a></td>

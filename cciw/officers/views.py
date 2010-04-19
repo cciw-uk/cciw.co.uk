@@ -623,6 +623,28 @@ def add_officer(request, year=None, number=None):
     Invitation.objects.get_or_create(camp=camp, officer=User.objects.get(id=int(officer_id)))
     return {'status':'success'}
 
+@staff_member_required
+@user_passes_test(_is_camp_admin)
+@json_response
+def officer_details(request):
+    user = User.objects.get(pk=int(request.GET['officer_id']))
+    return {'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'id': user.id,
+            }
+
+@staff_member_required
+@user_passes_test(_is_camp_admin)
+@json_response
+def update_officer(request):
+    User.objects.filter(pk=int(request.POST['officer_id'])).update(first_name=request.POST['first_name'],
+                                                                   last_name=request.POST['last_name'],
+                                                                   email=request.POST['email']
+                                                                   )
+    return {'status':'success'}
+
 def update_email(request, username=''):
     c = {}
     u = get_object_or_404(User.objects.filter(username=username))
