@@ -697,7 +697,7 @@ def create_officer(request):
             if process_form:
                 u = form.save()
                 form = CreateOfficerForm()
-                message = "Officer %s has been added and e-mailed.  You can add another if required." % u.username
+                message = "Officer %s has been added and e-mailed.  You can add another if required, or close this popup to continue." % u.username
     else:
         form = CreateOfficerForm()
 
@@ -706,6 +706,7 @@ def create_officer(request):
          'existing_users': existing_users,
          'allow_confirm': allow_confirm,
          'message': message,
+         'is_popup': True,
          }
     return render_to_response('cciw/officers/create_officer.html',
                               context_instance=template.RequestContext(request, c))
