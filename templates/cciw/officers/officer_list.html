@@ -247,7 +247,13 @@
            .dblclick(officerAddHandler)
            .keyup(officerAddHandler);
         $('#id_new_officer_btn').click(newOfficerHandler);
-        $('#id_popup_close_btn').click(newOfficerClose)
+        $('#id_popup_close_btn').click(newOfficerClose);
+        $("#loading").ajaxStart(function(){
+            $(this).show();
+        });
+        $("#loading").ajaxStop(function(){
+            $(this).hide();
+        });
     });
 })(jQuery);
 </script>
@@ -274,4 +280,8 @@
 
 <div class="inlinepopup_background" id="id_popup_background"></div>
 
+<div id="loading" style="text-align: center; background-color: white; border: 1px solid #888; position: fixed; bottom: 0px; right: 0px; width: 222px; height: 40px; display: none;">
+<img src="{{ pagevars.media_root_url }}/images/loading.gif" alt="" />
+<br/>Loading...
+</div>
 {% endblock %}
