@@ -211,7 +211,7 @@ class ReferenceFormManager(models.Manager):
 
 class ReferenceForm(models.Model):
     referee_name = models.CharField("name of referee", max_length=100)
-    how_long_known = models.CharField("how long have you known the applicant?", max_length=150)
+    how_long_known = models.CharField("how long/since when have you known the applicant?", max_length=150)
     capacity_known = models.TextField("in what capacity do you know the applicant?")
     known_offences = models.BooleanField("""The position for which the applicant is applying requires substantial contact with children and young people. To the best of your knowledge, does the applicant have any convictions/cautions/bindovers, for any criminal offences?""", blank=True)
     known_offences_details = models.TextField("If the answer is yes, please identify", blank=True)
