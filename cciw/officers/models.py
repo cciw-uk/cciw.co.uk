@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.conf import settings
-from django.http import HttpResponseForbidden
 
 from cciw.cciwmain.models import Camp
 from django.contrib.auth.models import User
-import datetime
 from cciw.officers.fields import YyyyMmField, AddressField, ExplicitBooleanField, required_field
 
 class Referee(object):
