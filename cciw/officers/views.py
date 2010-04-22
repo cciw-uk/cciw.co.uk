@@ -665,8 +665,17 @@ def update_email(request, username=''):
     return render_to_response('cciw/officers/email_update.html',
                               context_instance=template.RequestContext(request, c))
 
+class StripStringsMixin(object):
+    def clean(self):
+        for field,value in self.cleaned_data.items():
+            if isinstance(value, basestring):
+                self.cleaned_data[field] = value.strip()
+        return self.cleaned_data
 
-class CreateOfficerForm(forms.Form):
+class BaseForm(StripStringsMixin, forms.Form):
+    pass
+
+class CreateOfficerForm(BaseForm):
     first_name = forms.CharField()
     last_name = forms.CharField()
     email = forms.EmailField()
