@@ -726,9 +726,13 @@ def create_officer(request):
                 process_form = True
 
             if process_form:
-                u = form.save()
-                form = CreateOfficerForm()
-                message = "Officer %s has been added and e-mailed.  You can add another if required, or close this popup to continue." % u.username
+                try:
+                    u = form.save()
+                    form = CreateOfficerForm()
+                    message = "Officer %s has been added and e-mailed.  You can add another if required, or close this popup to continue." % u.username
+                except create.EmailError:
+                    message = "Due to a problem sending e-mail, the officer has not been added to the system.  Please try again later"
+
     else:
         form = CreateOfficerForm()
 

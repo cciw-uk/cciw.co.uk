@@ -73,6 +73,9 @@ def create_multiple_officers(csv_data, dryrun, verbose=False):
             if verbose:
                 print "Skipping row - %s:  %r" % (msg, officer_details)
 
+class EmailError(Exception):
+    pass
+
 def create_officer(username, first_name, last_name, email, update=False,
                    is_leader=False, person=None, dryrun=False, verbose=False):
     """
@@ -95,7 +98,17 @@ def create_officer(username, first_name, last_name, email, update=False,
                               dryrun=dryrun, verbose=verbose)
     if verbose:
         print "Emailing officer %s" % username
-    email_officer(username, first_name, email, password, is_leader=is_leader, dryrun=dryrun, update=update)
+    try:
+        # We don't want to send an e-mail if the data wasn't actually saved
+        # to the the database, so we do this second.  However, we don't really
+        # want to leave the officer in the database if we couldn't send the e-mail
+        # (usability problems for admins creating the officer in the DB - they
+        # will not be able to send the e-mail manually).  So we delete the
+        # User if there was a problem sending mail.
+        email_officer(username, first_name, email, password, is_leader=is_leader, dryrun=dryrun, update=update)
+    except Exception:
+        User.objects.get(username=username).delete()
+        raise EmailError()
     return officer
 
 def _create_officer(username, first_name, last_name, email, password, dryrun=False,
@@ -134,7 +147,7 @@ def _create_officer(username, first_name, last_name, email, password, dryrun=Fal
                 if officer.person_set.count() > 1:
                     # This can occasionally be valid e.g. if you have Person
                     # 'Joe Bloggs' and a Person 'Joe and Jane Bloggs', User
-                    # joebloggs will be assoicated with both. But usually a
+                    # joebloggs will be associated with both. But usually a
                     # warning will be helpful.
                     print "Warning: %r now is now associated with more than one 'Person' object." % officer
                     print "  Usually this is an error."
