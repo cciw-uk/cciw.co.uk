@@ -103,8 +103,13 @@
     var editOfficerMode = false;
 
     var refreshLists = function() {
-        var selectedIdx = document.getElementById("id_available_officers").selectedIndex;
         // Refresh different areas of the page:
+        refreshChosenList();
+        refreshAvailableList();
+        refreshNoApplicationFormList();
+    };
+
+    var refreshChosenList = function() {
         $.ajax({
             type: "GET",
             url: "?mode=chosen",
@@ -114,6 +119,10 @@
                 addOfficerListHandlers();
             }
         });
+    };
+
+    var refreshAvailableList = function() {
+        var selectedIdx = document.getElementById("id_available_officers").selectedIndex;
         $.ajax({
             type: "GET",
             url: "?mode=available",
@@ -126,6 +135,9 @@
                 s.selectedIndex = Math.min(selectedIdx, s.options.length - 1);
             }
         });
+    };
+
+    var refreshNoApplicationFormList = function() {
         $.ajax({
             type: "GET",
             url: "?mode=noapplicationform",
@@ -169,7 +181,7 @@
                     // 'Cancel' handler:
                     row.find('#id_officer_cancel').click(function(ev) {
                         ev.preventDefault();
-                        refreshLists();
+                        refreshChosenList();
                     });
                     // 'Save' handler
                     row.find('#id_officer_save').click(function(ev) {
@@ -185,7 +197,7 @@
                                    'last_name': officer.last_name,
                                    'email': officer.email
                                    },
-                            success: refreshLists
+                            success: refreshChosenList
                         });
                     });
                 }
