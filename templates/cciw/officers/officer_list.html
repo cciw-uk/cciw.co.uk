@@ -212,10 +212,14 @@
                 return;
             }
         }
+        var officer_id = ev.target.value;
+        if (officer_id == "") {
+            return;
+        }
         $.ajax({
             type: "POST",
             url: "{% url cciw.officers.views.add_officer camp.year camp.number %}",
-            data: "officer_id=" + ev.target.value,
+            data: "officer_id=" + officer_id,
             success: refreshLists
         });
     };
