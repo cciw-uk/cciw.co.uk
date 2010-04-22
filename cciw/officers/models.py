@@ -196,6 +196,8 @@ class Reference(models.Model):
         return Referee(self.application, self.referee_number)
 
     class Meta:
+        verbose_name = "Reference Metadata"
+        verbose_name_plural = verbose_name
         ordering = ('application__camp__year',
                     'application__officer__first_name',
                     'application__officer__last_name',
@@ -234,6 +236,9 @@ class ReferenceForm(models.Model):
     def __unicode__(self):
         officer = self.reference_info.application.officer
         return u"Reference form for %s %s by %s" % (officer.first_name, officer.last_name, self.referee_name)
+
+    class Meta:
+        verbose_name = "Reference"
 
 class InvitationManager(models.Manager):
     use_for_related_fields = True
