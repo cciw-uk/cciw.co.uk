@@ -1,5 +1,4 @@
 #!/usr/bin/env python2.5
-import _cciw_env
 from optparse import OptionParser
 import sys
 from django.contrib.auth.models import User

@@ -1,5 +1,4 @@
 #!/usr/bin/env python2.5
-import _cciw_env
 import sys
 import os
 import socket

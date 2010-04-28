@@ -1,6 +1,4 @@
 #!/usr/bin/env python2.5
-import _cciw_env
-
 from cciw.cciwmain.models import Photo, Gallery, Camp
 from cciw.cciwmain.views.camps import get_gallery_for_camp
 import sys

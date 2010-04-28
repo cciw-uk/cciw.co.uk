@@ -1,5 +1,4 @@
 #!/usr/bin/env python2.5
-import _cciw_env
 import os
 
 def main(lockfile):
