@@ -104,47 +104,36 @@
 
     var refreshLists = function() {
         // Refresh different areas of the page:
-        refreshChosenList();
-        refreshAvailableList();
-        refreshNoApplicationFormList();
-    };
-
-    var refreshChosenList = function() {
         $.ajax({
             type: "GET",
-            url: "?mode=chosen",
-            success: function(text) {
-                $("#id_officer_list_table").html(text);
-                editOfficerMode = false;
-                addOfficerListHandlers();
+            url: "?sections=1",
+            dataType: 'json',
+            success: function(data) {
+                refreshChosenList(data.chosen);
+                refreshAvailableList(data.available);
+                refreshNoApplicationFormList(data.noapplicationform);
             }
         });
     };
 
-    var refreshAvailableList = function() {
+    var refreshChosenList = function(text) {
+        $("#id_officer_list_table").html(text);
+        editOfficerMode = false;
+        addOfficerListHandlers();
+    };
+
+    var refreshAvailableList = function(text) {
         var selectedIdx = document.getElementById("id_available_officers").selectedIndex;
-        $.ajax({
-            type: "GET",
-            url: "?mode=available",
-            success: function(text) {
-                $("#id_available_officers").html(text);
-                // restore filter
-                $("#id_available_officers_filter").trigger('refresh');
-                // restore selected item
-                var s = document.getElementById("id_available_officers");
-                s.selectedIndex = Math.min(selectedIdx, s.options.length - 1);
-            }
-        });
+        $("#id_available_officers").html(text);
+        // restore filter
+        $("#id_available_officers_filter").trigger('refresh');
+        // restore selected item
+        var s = document.getElementById("id_available_officers");
+        s.selectedIndex = Math.min(selectedIdx, s.options.length - 1);
     };
 
-    var refreshNoApplicationFormList = function() {
-        $.ajax({
-            type: "GET",
-            url: "?mode=noapplicationform",
-            success: function(text) {
-                $("#id_noapplicationform").html(text);
-            }
-        });
+    var refreshNoApplicationFormList = function(text) {
+        $("#id_noapplicationform").html(text);
     };
 
     var addOfficerListHandlers = function() {
@@ -181,7 +170,7 @@
                     // 'Cancel' handler:
                     row.find('#id_officer_cancel').click(function(ev) {
                         ev.preventDefault();
-                        refreshChosenList();
+                        refreshLists();
                     });
                     // 'Save' handler
                     row.find('#id_officer_save').click(function(ev) {
@@ -197,7 +186,7 @@
                                    'last_name': officer.last_name,
                                    'email': officer.email
                                    },
-                            success: refreshChosenList
+                            success: refreshLists
                         });
                     });
                 }

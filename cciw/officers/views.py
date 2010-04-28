@@ -20,6 +20,7 @@ from django.views.decorators.cache import never_cache
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
+from cciw.cciwmain.utils import python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
 from cciw.officers import create
@@ -596,11 +597,17 @@ def officer_list(request, year=None, number=None):
     c['available_officers'] = available_officers
 
     # Different templates allow us to render just parts of the page, for AJAX calls
-    tnames = {"chosen": "cciw/officers/officer_list_table_editable.html",
-              "available": "cciw/officers/officer_list_available.html",
-              "noapplicationform": "cciw/officers/officer_list_noapplicationform.html"}
-    tname = tnames.get(request.GET.get('mode', None), "cciw/officers/officer_list.html")
-    return render_to_response(tname, context_instance=c)
+    if 'sections' in request.GET:
+        tnames = [("chosen", "cciw/officers/officer_list_table_editable.html"),
+                  ("available", "cciw/officers/officer_list_available.html"),
+                  ("noapplicationform", "cciw/officers/officer_list_noapplicationform.html")]
+        retval = {}
+        for section, tname in tnames:
+            retval[section] = render_to_string(tname, context_instance=c)
+        return HttpResponse(python_to_json(retval),
+                            mimetype="text/javascript")
+    else:
+        return render_to_response("cciw/officers/officer_list.html", context_instance=c)
 
 
 @staff_member_required
