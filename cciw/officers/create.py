@@ -29,7 +29,7 @@ def create_multiple_officers(csv_data, dryrun, verbose=False):
     # has 3 elements.  We have to validate it ourselves,
     # automatically generate usernames, and remember not to create
     # duplicate officers.  For this reason we use slightly different
-    # logic e.g. detecting duplicates, whereas in create_single_officer
+    # logic e.g. detecting duplicates, whereas in create_officer
     # we trust the user.
 
     for officer_details in csv_data:
@@ -64,10 +64,10 @@ def create_multiple_officers(csv_data, dryrun, verbose=False):
             msg = "User with email address %s and name %s already exists" % (email, first_name)
 
         if valid:
-            # race condition between make_username and create_single_officer,
+            # race condition between make_username and create_officer,
             # but we don't care really.
             username = make_username(first_name, last_name)
-            create_single_officer(username, first_name, last_name, email, dryrun=dryrun)
+            create_officer(username, first_name, last_name, email, dryrun=dryrun)
 
         else:
             if verbose:
