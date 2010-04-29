@@ -12,7 +12,10 @@
 {% endif %}
 
 {% if mode == "received" %}
-  <p><a href="{% url cciw.officers.views.view_reference ref_id=ref.id %}" rel="external">View reference from {{ ref.referee.name }}</a> (in new window)</p>
+  <p><a href="{% url cciw.officers.views.view_reference ref_id=ref.id %}" rel="external">View reference from {{ ref.referee.name }}</a> (in new window)
+  <br/><span class="referencebutton"><button
+    onclick="manageReferenceManually({{ ref.id }});">Manage reference manually</button></span>
+  </p>
 {% else %}
   <p>Ask for reference{% if mode == "requested" %} again{% endif %} - choose from the options:</p>
 <ul>
