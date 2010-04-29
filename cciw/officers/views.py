@@ -310,7 +310,8 @@ def manage_references(request, year=None, number=None):
 
     refinfo = Reference.objects\
               .filter(application__camp=camp, application__finished=True)\
-              .order_by('application__officer__first_name', 'referee_number')
+              .order_by('application__officer__first_name', 'application__officer__last_name',
+                        'referee_number')
     received = refinfo.filter(received=True)
     requested = refinfo.filter(received=False, requested=True)
     notrequested = refinfo.filter(received=False, requested=False)
