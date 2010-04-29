@@ -243,7 +243,6 @@ def _thisyears_camp_for_leader(user):
 @user_passes_test(_is_camp_admin)
 @never_cache
 def manage_applications(request, year=None, number=None):
-    user = request.user
     camp = _get_camp_or_404(year, number)
     context = template.RequestContext(request)
     context['finished_applications'] =  camp.application_set.filter(finished=True)
@@ -495,13 +494,23 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
         c['incorrect_url'] = True
     else:
         ref = get_object_or_404(Reference.objects.filter(id=int(ref_id)))
+        prev_ref = None
         if prev_ref_id != "":
             prev_ref = get_object_or_404(Reference.objects.filter(id=int(prev_ref_id)))
+        else:
+            # If we can find an exact match, use that.  This covers the case
+            # where a reference is filled in for the same person for another
+            # camp in the same year.
+            (_, exact) = get_previous_references(ref)
+            if exact is not None:
+                prev_ref = exact
+
+        if prev_ref is not None:
             assert prev_ref.referenceform_set.all().count() == 1
             prev_ref_form = prev_ref.referenceform_set.all()[0]
             c['update'] = True
+            c['last_form_date'] = prev_ref_form.date_created
         else:
-            prev_ref = None
             prev_ref_form = None
 
         ref_forms = ref.referenceform_set.all()
