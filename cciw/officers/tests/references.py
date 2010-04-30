@@ -85,3 +85,31 @@ class CreateReference(TwillMixin, TestCase):
 
         # Check the application has been updated with amended referee name
         self.assertEqual(app.referees[0].name, "Referee1 Name")
+
+    def test_reference_update(self):
+        """
+        Check that if we are updating a reference that previous data appears
+        """
+        # This is story style - start with submitting "last year's" reference.
+        self.test_page_submit()
+
+        app = Application.objects.get(pk=1)
+        # Now officer makes a new application form based on original
+        # (which was updated in test_page_submit)
+        app2 = Application.objects.get(pk=1)
+        app2.id = None # force creation of new
+        app2.camp_id = 2
+        app2.save()
+
+        # We should be able to find an exact match for references
+        prev_refs, exact = get_previous_references(app2.references[0])
+        self.assertEqual(exact, app.references[0])
+
+        # Go to the corresponding URL
+        url = make_ref_form_url(app2.references[0].id, app.references[0].id)
+        tc.go(make_twill_url(url))
+        tc.code(200)
+
+        # Check it is pre-filled as we expect
+        tc.find('name="referee_name" value="Referee1 Name"')
+        tc.find('name="how_long_known" value="Forever"')
