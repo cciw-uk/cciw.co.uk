@@ -192,6 +192,19 @@ class Reference(models.Model):
     def referee(self):
         return Referee(self.application, self.referee_number)
 
+    @property
+    def reference_form(self):
+        """
+        Returns the actual reference form data, or None if not available
+        """
+        # This ought to be a one-to-one
+        l = list(self.referenceform_set.all())
+        if len(l) == 0:
+            return None
+        else:
+            assert len(l) == 1
+            return l[0]
+
     class Meta:
         verbose_name = "Reference Metadata"
         verbose_name_plural = verbose_name

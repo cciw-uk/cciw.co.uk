@@ -1,5 +1,3 @@
-import itertools
-import re
 import datetime
 from django import forms
 from django import template
@@ -468,7 +466,7 @@ def edit_reference_form_manually(request, ref_id=None):
                                      date_created=datetime.date.today(),
                                      known_offences=False)
     return HttpResponseRedirect(reverse("admin:officers_referenceform_change",
-                                        args=(ref.referenceform_set.all()[0].id,)) + \
+                                        args=(ref.reference_form.id,)) + \
                                 "?_popup=1")
 
 def initial_reference_form_data(ref, prev_ref_form):
@@ -506,22 +504,21 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                 prev_ref = exact
 
         if prev_ref is not None:
-            assert prev_ref.referenceform_set.all().count() == 1
-            prev_ref_form = prev_ref.referenceform_set.all()[0]
+            prev_ref_form = prev_ref.reference_form
             c['update'] = True
             c['last_form_date'] = prev_ref_form.date_created
         else:
             prev_ref_form = None
 
-        ref_forms = ref.referenceform_set.all()
-        if len(ref_forms) > 0:
+        ref_form = ref.reference_form
+        if ref_form is not None:
             # For the case where a ReferenceForm has been created (accidentally)
             # by an admin, we need to re-use it, rather than create another.
-            instance = ref_forms[0]
+            instance = ref_form
         else:
             instance = None
 
-        if len(ref_forms) > 0 and ref.received:
+        if ref_form is not None and ref.received:
             # It's possible, if an admin has done 'Manage reference manually'
             # and clicked "Create/edit reference form" but then cancelled, that
             # the ReferenceForm will exist but be empty.  So we check both that
@@ -541,6 +538,11 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                                    ("\nReference received via online system on %s\n" % \
                                     datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                     ref.save()
+                    # Update application form with name of referee
+                    app = ref.application
+                    app.referees[ref.referee_number - 1].name = obj.referee_name
+                    app.save()
+                    # Send e-mails
                     send_leaders_reference_email(obj)
                     return HttpResponseRedirect(reverse('cciw.officers.views.create_reference_thanks'))
             else:
@@ -561,12 +563,11 @@ def create_reference_thanks(request):
 @user_passes_test(_is_camp_admin)
 def view_reference(request, ref_id=None):
     ref = get_object_or_404(Reference.objects.filter(id=ref_id))
-    forms = list(ref.referenceform_set.all())
+    ref_form = ref.reference_form
     c = template.RequestContext(request)
-    if len(forms) > 0:
-        refform = forms[0]
-        c['refform'] = refform
-        c['info'] = reference_form_info(refform)
+    if ref_form is not None:
+        c['refform'] = ref_form
+        c['info'] = reference_form_info(ref_form)
     c['ref'] = ref
     c['officer'] = ref.application.officer
     c['referee'] = ref.referee

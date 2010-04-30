@@ -2,10 +2,12 @@ import twill
 from twill.shell import TwillCommandLoop
 from twill import commands as tc
 
-from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_django_url
+from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
 from django.test import TestCase
 
-from cciw.officers.models import Reference
+from cciw.officers.email import make_ref_form_url
+from cciw.officers.models import Application
+from cciw.officers.views import get_previous_references
 
 OFFICER_USERNAME = 'mrofficer2'
 OFFICER_PASSWORD = 'test_normaluser_password'
@@ -41,3 +43,45 @@ class ReferencesPage(TwillMixin, TestCase):
         self.assertEqual(tc.get_browser().get_url().split('?')[0], make_django_url("cciw.officers.views.index"))
         tc.notfind('For camp 2000-1')
 
+
+class CreateReference(TwillMixin, TestCase):
+
+    fixtures = ['basic.yaml', 'officers_users.yaml', 'references.yaml']
+
+    #twill_quiet = False
+    def test_page_ok(self):
+        """
+        Test for 200 code if we get the right URL
+        """
+        app = Application.objects.get(pk=1)
+        url = make_ref_form_url(app.references[0].id, None)
+        tc.go(make_twill_url(url))
+        tc.code(200)
+
+    def test_page_submit(self):
+        """
+        Check that a reference can be created using the page,
+        and that the name on the application form is updated.
+        """
+        app = Application.objects.get(pk=1)
+        self.assertEqual(app.referees[0].name, "Mr Referee1 Name")
+        self.assert_(app.references[0].reference_form is None)
+        self.test_page_ok()
+
+        tc.formvalue('1', 'referee_name', 'Referee1 Name')
+        tc.formvalue('1', 'how_long_known', 'Forever')
+        tc.formvalue('1', 'capacity_known', 'Minister')
+        tc.formvalue('1', 'capability_children', 'Fine')
+        tc.formvalue('1', 'character', 'Great')
+        tc.formvalue('1', 'concerns', 'No')
+        tc.submit()
+
+        # Check the data has been saved
+        app = Application.objects.get(pk=1)
+        ref_form = app.references[0].reference_form
+        self.assert_(ref_form is not None)
+        self.assertEqual(ref_form.referee_name, "Referee1 Name")
+        self.assertEqual(ref_form.how_long_known, "Forever")
+
+        # Check the application has been updated with amended referee name
+        self.assertEqual(app.referees[0].name, "Referee1 Name")

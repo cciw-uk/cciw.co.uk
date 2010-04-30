@@ -8,7 +8,8 @@ from django.core.urlresolvers import reverse
 from twill.shell import TwillCommandLoop
 
 def make_twill_url(url):
-    return url.replace("http://www.cciw.co.uk/", "http://127.0.0.1:8080/")
+    url = url.replace("http://www.cciw.co.uk/", "http://127.0.0.1:8080/")
+    return url.replace("https://www.cciw.co.uk/", "http://127.0.0.1:8080/")
 
 BASE = "http://www.cciw.co.uk"
 def make_django_url(view, *args, **kwargs):
