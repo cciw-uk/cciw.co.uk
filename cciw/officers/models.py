@@ -247,6 +247,15 @@ class ReferenceForm(models.Model):
         officer = self.reference_info.application.officer
         return u"Reference form for %s %s by %s" % (officer.first_name, officer.last_name, self.referee_name)
 
+    def save(self, *args, **kwargs):
+        retval = super(ReferenceForm, self).save(*args, **kwargs)
+        # Update application form with name of referee
+        ref_info = self.reference_info
+        app = ref_info.application
+        app.referees[ref_info.referee_number - 1].name = self.referee_name
+        app.save()
+        return retval
+
     class Meta:
         verbose_name = "Reference"
 

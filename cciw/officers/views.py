@@ -538,10 +538,6 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                                    ("\nReference received via online system on %s\n" % \
                                     datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                     ref.save()
-                    # Update application form with name of referee
-                    app = ref.application
-                    app.referees[ref.referee_number - 1].name = obj.referee_name
-                    app.save()
                     # Send e-mails
                     send_leaders_reference_email(obj)
                     return HttpResponseRedirect(reverse('cciw.officers.views.create_reference_thanks'))
