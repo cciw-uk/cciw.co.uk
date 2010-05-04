@@ -17,8 +17,16 @@ urlpatterns = patterns('',
 )
 
 if settings.DEBUG:
-    urlpatterns = urlpatterns + patterns('',
-      (r'^validator/', include('lukeplant_me_uk.django.validator.urls'))
+    import django
+    import os
+    django_root = os.path.dirname(django.__file__)
+    admin_media_root = django_root + '/contrib/admin/media'
+    urlpatterns += patterns('',
+                            (r'^validator/', include('lukeplant_me_uk.django.validator.urls')),
+                            (r'^media/(?P<path>.*)$', 'django.views.static.serve',
+                             {'document_root': settings.MEDIA_ROOT}),
+                            (r'^sp_media/(?P<path>.*)$', 'django.views.static.serve',
+                             {'document_root': settings.MEDIA_ROOT}),
     )
 
 urlpatterns = urlpatterns + patterns('',

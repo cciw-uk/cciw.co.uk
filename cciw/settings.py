@@ -143,12 +143,8 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"
 MEDIA_ROOT = basedir + '/media'
 
 # URL that handles the media served from MEDIA_ROOT.
-if DEVBOX:
-    MEDIA_URL = 'http://cciw_local/media'
-    SPECIAL_MEDIA_URL = 'http://cciw_local/sp_media'
-else:
-    MEDIA_URL = '/media'
-    SPECIAL_MEDIA_URL = '/sp_media'
+MEDIA_URL = '/media'
+SPECIAL_MEDIA_URL = '/sp_media'
 
 FILE_UPLOAD_TEMP_DIR = basedir + "/uploads"
 
