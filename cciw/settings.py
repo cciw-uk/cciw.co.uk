@@ -69,7 +69,7 @@ if DEVBOX:
             'NAME': 'cciw',
             'USER': 'cciw',
             'PASSWORD': 'foo',
-            'HOST': '', # localhost
+            'HOST': 'localhost',
             'PORT': 5432
             }
         }
