@@ -181,7 +181,7 @@ class Reference(models.Model):
 
         if refnum not in (1,2):
             return u"<Reference improperly created>"
-        referee_name = getattr(app, "referee%d_name" % refnum)
+        referee_name = app.referees[refnum - 1].name
         return u"For %s %s | From %s | Camp %d, %d" % (app.officer.first_name,
                                                        app.officer.last_name,
                                                        referee_name,
