@@ -268,6 +268,7 @@ def get_previous_references(ref):
     prev = list(ReferenceForm.objects\
                 .filter(reference_info__application__officer=ref.application.officer,
                         reference_info__application__finished=True,
+                        reference_info__received=True,
                         date_created__gte=cutoffdate)\
                 .exclude(reference_info__application=ref.application)\
                 .order_by('-reference_info__application__camp__year'))
