@@ -3,17 +3,13 @@
 {% block title %}{{ title }} | Django site admin{% endblock %}
 {% block extrastyle %}{{ block.super }}
 <link rel="stylesheet" type="text/css" href="{{ pagevars.media_root_url }}/adminextra.css" />
-<script type="text/javascript" src="{{ pagevars.media_root_url }}/javascript/MochiKit/MochiKit.js"></script>
+<script type="text/javascript" src="{{ pagevars.admin_media_root_url }}js/jquery.min.js"></script>
 <script type="text/javascript" src="{{ pagevars.media_root_url }}/javascript/cciwutils.js"></script>
 <script type="text/javascript">
 <!--
-
-connect(window, 'onload', 
-	function(ev) {
-		externalLinks();
-	}
-)
-
+(function($) {
+   $(document).ready(cciw.externalLinks);
+})(jQuery);
 //-->
 </script>
 

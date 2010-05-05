@@ -8,16 +8,14 @@
 	{% block atomfeed %}
 		{% atomfeedlink %}
 	{% endblock %}
-	<script type="text/javascript" src="{{ pagevars.media_root_url }}/javascript/MochiKit/MochiKit.js"></script>
+        <script type="text/javascript" src="{{ pagevars.admin_media_root_url }}js/jquery.min.js"></script>
 	<script type="text/javascript" src="{{ pagevars.media_root_url }}/javascript/cciwutils.js"></script>
 	<script type="text/javascript">
 <!--
+(function($) {
+   $(document).ready(externalLinks);
+})(jQuery);
 
-connect(window, 'onload', 
-	function(ev) {
-		externalLinks();
-	}
-)
 
 //-->
 </script>

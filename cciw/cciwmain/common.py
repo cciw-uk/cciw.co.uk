@@ -100,6 +100,7 @@ def standard_processor(request):
     context['pagevars'] = {
         'media_root_url': settings.CCIW_MEDIA_URL,
         'style_sheet_url': settings.CCIW_MEDIA_URL + '/style.css',
+        'admin_media_root_url': settings.ADMIN_MEDIA_PREFIX,
     }
 
     context.update(view_extras.get_view_extras_context(request))

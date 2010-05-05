@@ -1,79 +1,43 @@
 {% extends "cciw/base.html" %}
 {% block content %}
+<script type="text/javascript" src="{{ pagevars.admin_media_root_url }}js/jquery.min.js"></script>
+<script type="text/javascript" src="{{ pagevars.media_root_url }}/javascript/cciwutils.js"></script>
 <script type="text/javascript">
 <!--
 
-var bibleref = "{{ passage }}";
-// Define .innerText for non-IE browsers
-if((typeof HTMLElement != 'undefined') && HTMLElement.prototype.__defineGetter__ != 'undefined')
-{
-	HTMLElement.prototype.__defineGetter__("innerText", function () {
-		var r = this.ownerDocument.createRange();
-		r.selectNodeContents(this);
-		return r.toString();
-	}); 
-}
-
-function copyPassage()
-{
-	// find the starting point
-	var start = document.getElementById('esvblock');
-	// we want to find all paragraphs inside
-	// div class="esv-text" blocks
-	var divs = start.getElementsByTagName('div');
-	var output = new Array();
-
-	
-	for (var i = 0; i < divs.length; i++)
-	{
-		if (divs[i].className == 'esv-text')
-		{
-			var nodes = divs[i].childNodes;
-			for (var j = 0; j < nodes.length; j++)
-			{
-				var node = nodes[j];
-				if (node.nodeName.toLowerCase() == 'p')
-				{
-					var innerText = node.innerText;
-					if (innerText == undefined)
-					{
-						var r = node.ownerDocument.createRange();
-   						r.selectNodeContents(node);
-   						innerText = r.toString();
-					}
-					if (output.length != 0)
-					{
-						output.push('\n\n')
-					}
-					output.push(innerText)
-					
-				}
-				
-			}
-		}
+var cciw = (function(pub, $) {
+    pub.copyPassage = function() {
+        var output = "";
+        $('.esv-text p').each(function(i, elem) {
+            var text = $(elem).text();
+            if (output.length != 0) {
+                output = output + "\n\n";
+            }
+            output = output + text;
+        });
+        output = "[bible=" + "{{ passage }}" + "]" + output + "[/bible]";
+	var messageBox = $(window.opener.document).find('#message');
+	if (messageBox.size() != 0) {
+		messageBox.insertAtCaret(output);
 	}
-	output.unshift('[bible=' + bibleref + ']\n');
-	output.push('[/bible]');
-	var messageBox = window.opener.document.getElementById('message');
-	if (messageBox != null)
-	{
-		messageBox.value += output.join('');
-	}
-}
+    };
+
+   return pub;
+
+})(cciw || {}, jQuery);
 
 //-->
-</script>	
+</script>
 	<div id="esvblock">
 	{{ passagetext }}
 	</div>
 
-	
 	<h2>Refine Search</h2>
 	<form action="" method="get"><p>Passage: <input type="text" name="passage" value="{{ passage }}"/> <input type="submit" name="submit" value="Go" /></p>
 	</form>
 	<h2>Copy text into message</h2>
-	<p><a href="javascript: copyPassage();window.close();">Copy and close</a>
-	 | <a href="javascript:void copyPassage();">Copy</a></p>
+	<p><a href="javascript: cciw.copyPassage();window.close();">Copy and close</a>
+	 | <a href="javascript:void cciw.copyPassage();">Copy</a></p>
 
 	<h2>Notice</h2>
 	<p>Scripture taken from The Holy Bible, English Standard Version. Copyright &copy;2001 by <a href="http://www.crosswaybibles.org">Crossway Bibles</a>, a division of Good News Publishers. Used by permission. All rights reserved. Text provided by the <a href="http://www.gnpcb.org/esv/share/services/">Crossway Bibles Web Service</a>.</p>

@@ -59,19 +59,15 @@
 	<div class="paging">{% paging_control #comments %}</div>
 <script type="text/javascript">
 <!--
-bits = window.location.href.split('#');
-if (bits.length == 2) {
-    td = document.getElementById(bits[1]);
-    if (td) {
-	tr = td.parentNode;
-        className = tr.className;
-        if (className.length > 0) {
-            className = className + " ";
+(function($) {
+    $(document).ready(function(ev) {
+        var bits = window.location.href.split('#');
+        if (bits.length == 2) {
+            $('#' + bits[1]).parent().addClass("selected");
         }
-        className = className + 'selected';
-        tr.className = className;
-    }
-}
+
+    });
+})(jQuery);
 //-->
 </script>
 	

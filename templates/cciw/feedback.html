@@ -4,16 +4,12 @@
 <script type="text/javascript">
 <!--
 
-// DEBUG:
-//createLoggingPane();
+(function($) {
+   $(document).ready(function() {
+       cciw.standardform_add_onchange_handlers('contactform');
 
-connect(window, 'onload',
-	function(ev) {
-		// Add event handlers to everything that can be validated.
-		standardform_add_onchange_handlers('contactform');
-	}
-);
-
+   });
+})(jQuery);
 
 //-->
 </script>
