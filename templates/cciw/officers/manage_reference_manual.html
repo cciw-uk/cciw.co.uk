@@ -53,9 +53,10 @@ function createReferenceFormManually() {
 <h2>Full reference form</h2>
 <p>If you have old references that you want to copy into the online system, or
   if you want to record information given in a telephone conversation, you can
-  create/edit the reference form manually:
-  <button onclick="createReferenceFormManually();">Create/edit
-  Reference Form</button> (opens in new window)<br />
+  create/edit the reference form manually:<br/>
+
+  <button onclick="createReferenceFormManually();">{% if ref.reference_form %}Edit{% else %}Create{% endif %} Reference Form</button>
+(opens in new window)<br />
 <p>After creating the form, update the 'requested', 'received' and 'comments'
   fields above as appropriate.</p>
 
