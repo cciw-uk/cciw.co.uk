@@ -68,7 +68,7 @@ var cciw = (function(pub, $) {
             // We don't know which button was 'clicked',
             // so we can't include any as an element to submit
             // Also can't submit files
-            accept = $.inArray(type, ["file", "submit", "reset", "button", "image"]);
+            accept = $.inArray(type, ["file", "submit", "reset", "button", "image"]) != -1;
         }
         return accept;
     };
