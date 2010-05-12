@@ -16,9 +16,9 @@
 				<th scope="col">Chaplain</th>
 			</tr>
 			</thead>
+				<tbody>
 			{% regroup camps by site_id as campgroups %}
 			{% for campgroup in campgroups %}
-				<tbody>
 					<tr>
 						<th scope="rowgroup" colspan="5" class="siteDivision">
 						<a href="{{ campgroup.list.0.site.get_absolute_url }}">{{ campgroup.list.0.site }}</a>
@@ -36,8 +36,8 @@
 						<td>{% if camp.chaplain %}{{ camp.chaplain }}{% else %}TBA{% endif %}</td>
 					</tr>
 					{% endfor %}
-				</tbody>
 			{% endfor %}
+				</tbody>
 		</table>
 		</div>
 		{% htmlchunk camp_dates_outro_text %}
