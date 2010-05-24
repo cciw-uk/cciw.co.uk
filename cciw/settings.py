@@ -51,6 +51,7 @@ INSTALLED_APPS = (
     'cciw.tagging',
     'cciw.utils',
     'django.contrib.messages',
+    'mailer',
 )
 
 if DEBUG:
@@ -97,6 +98,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 #####  EMAIL  #######
+
+EMAIL_BACKEND = "mailer.backend.DbBackend"
+
 if DEVBOX:
     # For e-mail testing, run:
     #  fakemail.py --path=/home/luke/httpd/www.cciw.co.uk/tests/mail --background

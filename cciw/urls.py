@@ -2,6 +2,7 @@ from django.conf.urls.defaults import *
 from django.conf import settings
 from django.contrib import admin
 import cciw.officers.views
+import mailer.admin
 
 handler404 = 'cciw.cciwmain.views.handler404'
 
