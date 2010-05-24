@@ -1,4 +1,4 @@
-from django.core.mail import EmailMessage, SMTPConnection
+from django.core.mail import EmailMessage, get_connection
 """
 Utilities for sending email with attachments
 """
@@ -7,8 +7,8 @@ def send_mail_with_attachments(subject, message, from_email,
                                recipient_list, fail_silently=False,
                                auth_user=None, auth_password=None,
                                attachments=None):
-    connection = SMTPConnection(username=auth_user, password=auth_password,
-                                 fail_silently=fail_silently)
+    connection = get_connection(username=auth_user, password=auth_password,
+                                fail_silently=fail_silently)
     return EmailMessage(subject=subject, body=message, from_email=from_email,
                         to=recipient_list, connection=connection, attachments=attachments).send()
 
