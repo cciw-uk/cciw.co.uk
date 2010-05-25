@@ -76,7 +76,7 @@ def forward_email_to_list(mail, addresslist, original_to):
 
     # Use Django's wrapper object for connection,
     # but not the message.
-    c = get_connection()
+    c = get_connection("django.core.mail.backends.smtp.EmailBackend")
     c.open()
     # send individual emails
     for addr in addresslist:
