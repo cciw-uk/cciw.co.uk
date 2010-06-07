@@ -73,7 +73,7 @@ var cciw = (function(pub, $) {
         return accept;
     };
 
-    var add_form_onchange_handlers = function(form_id, mk_input_change_handler) {
+    var addFormOnchangeHandlers = function(form_id, mk_input_change_handler) {
         // Summary: Adds 'onchange' handlers to all inputs in a form
         // form_id: id of the form in the DOM
         // mk_input_change_handler: when called with one of the
@@ -92,7 +92,7 @@ var cciw = (function(pub, $) {
         return null;
     };
 
-    var django_normalise_control_id = function(control_id) {
+    var djangoNormaliseControlId = function(control_id) {
         // Summary: returns the id/name that corresponds to
         // the whole Django widget.  For MultiWidgets,
         // this strips the trailing _0, _1 etc.
@@ -100,7 +100,7 @@ var cciw = (function(pub, $) {
     };
 
     // standardform_* functions depend on the HTML in CciwFormMixin
-    var standardform_display_error = function(control_id, errors) {
+    var standardformDisplayError = function(control_id, errors) {
         var row = $('#div_' + control_id);
         if (row.size() == 0) {
             return;
@@ -116,7 +116,7 @@ var cciw = (function(pub, $) {
         }
     };
 
-    var standardform_clear_error = function(control_id) {
+    var standardformClearError = function(control_id) {
         var row = $('#div_' + control_id);
         if (row.size() == 0) {
             return;
@@ -129,24 +129,24 @@ var cciw = (function(pub, $) {
         }
     };
 
-    var standardform_get_validator_callback = function(control_name, control_id) {
+    var standardformGetValidatorCallback = function(control_name, control_id) {
         // Summary: returns a callback that should be called when
         // the AJAX validation request returns with data.
-        var control_name_n = django_normalise_control_id(control_name);
-        var control_id_n = django_normalise_control_id(control_id);
+        var control_name_n = djangoNormaliseControlId(control_name);
+        var control_id_n = djangoNormaliseControlId(control_id);
         var handler = function(json) {
             var errors = json[control_name_n];
             if (errors != null && errors != undefined) {
-                standardform_clear_error(control_id_n);
-                standardform_display_error(control_id_n, errors);
+                standardformClearError(control_id_n);
+                standardformDisplayError(control_id_n, errors);
             } else {
-                standardform_clear_error(control_id_n);
+                standardformClearError(control_id_n);
             }
         };
         return handler;
     };
 
-    var standardform_get_input_change_handler = function(form_id, control_name, control_id) {
+    var standardformGetInputChangeHandler = function(form_id, control_name, control_id) {
         // Summary: returns an event handler to be added to a control,
         // form_id: id of the form the control belongs to
         // control_name: the name of the control
@@ -157,16 +157,16 @@ var cciw = (function(pub, $) {
                 data: $('#' + form_id).serialize(),
                 url: "?format=json",
                 dataType: "json",
-                success: standardform_get_validator_callback(control_name, control_id)
+                success: standardformGetValidatorCallback(control_name, control_id)
             });
         };
         return on_input_change;
     };
 
     // Public interface:
-    pub.standardform_add_onchange_handlers = function(form_id) {
-        add_form_onchange_handlers(form_id, function(input) {
-            return standardform_get_input_change_handler(form_id, input.name, input.id);
+    pub.standardformAddOnchangeHandlers = function(form_id) {
+        addFormOnchangeHandlers(form_id, function(input) {
+            return standardformGetInputChangeHandler(form_id, input.name, input.id);
         });
     };
 
