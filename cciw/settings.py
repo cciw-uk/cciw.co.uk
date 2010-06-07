@@ -114,7 +114,7 @@ if DEVBOX:
 else:
     SERVER_EMAIL = "website@cciw.co.uk"
     DEFAULT_FROM_EMAIL = SERVER_EMAIL
-    EMAIL_HOST = "mail1.webfaction.com"
+    EMAIL_HOST = "smtp.webfaction.com"
     from cciw.settings_priv import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
 
     SEND_BROKEN_LINK_EMAILS = False
