@@ -193,6 +193,11 @@ class ApplicationAdmin(admin.ModelAdmin):
         user = request.user
         if not user.has_perm('officers.change_application'):
             request.POST['officer'] = unicode(request.user.id)
+        else:
+            # The leader possibly forgot to set the 'user' box while submitting
+            # their own application form.
+            if request.POST['officer'] == '':
+                request.POST['officer'] = unicode(request.user.id)
 
     def _force_post_vals(self, request):
         request.POST = request.POST.copy()

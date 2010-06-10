@@ -1,327 +1,53 @@
 - fields:
     name: Officers
-    permissions: [64]
+    permissions: [["add_application", "officers", "application"]]
   model: auth.group
   pk: 1
 
 - fields:
     name: Leaders
-    permissions: [64, 65, 66, 29, 40, 41, 42, 91, 92, 93, 4, 5, 6]
+    permissions: [
+                     ["add_application", "officers", "application"],
+                     ["change_application", "officers", "application"],
+                     ["delete_application", "officers", "application"],
+                     ["change_camp", "cciwmain", "camp"],
+                     ["add_person", "cciwmain", "person"],
+                     ["change_person", "cciwmain", "person"],
+                     ["delete_person", "cciwmain", "person"],
+                     ["add_reference", "officers", "reference"],
+                     ["change_reference", "officers", "reference"],
+                     ["delete_reference", "officers", "reference"],
+                     ["add_user", "auth", "user"],
+                     ["change_user", "auth", "user"],
+                     ["delete_user", "auth", "user"],
+                 ]
   model: auth.group
   pk: 2
 
 - fields:
     name: Site editors
-    permissions: [28, 29, 30, 61, 62, 63, 46, 47, 48, 22, 23, 24, 40, 41, 42, 7, 8, 9]
+    permissions: [
+                     ["add_camp", "cciwmain", "camp"],
+                     ["change_camp", "cciwmain", "camp"],
+                     ["delete_camp", "cciwmain", "camp"],
+                     ["add_htmlchunk", "cciwmain", "htmlchunk"],
+                     ["change_htmlchunk", "cciwmain", "htmlchunk"],
+                     ["delete_htmlchunk", "cciwmain", "htmlchunk"],
+                     ["add_menulink", "cciwmain", "menulink"],
+                     ["change_menulink", "cciwmain", "menulink"],
+                     ["delete_menulink", "cciwmain", "menulink"],
+                     ["add_newsitem", "cciwmain", "newsitem"],
+                     ["change_newsitem", "cciwmain", "newsitem"],
+                     ["delete_newsitem", "cciwmain", "newsitem"],
+                     ["add_person", "cciwmain", "person"],
+                     ["change_person", "cciwmain", "person"],
+                     ["delete_person", "cciwmain", "person"],
+                     ["add_site", "cciwmain", "site"],
+                     ["change_site", "cciwmain", "site"],
+                     ["delete_site", "cciwmain", "site"],
+                ]
   model: auth.group
   pk: 3
-
-- fields: {codename: add_application, content_type: 22, name: Can add application}
-  model: auth.permission
-  pk: 64
-- fields: {codename: change_application, content_type: 22, name: Can change application}
-  model: auth.permission
-  pk: 65
-- fields: {codename: delete_application, content_type: 22, name: Can delete application}
-  model: auth.permission
-  pk: 66
-- fields: {codename: add_award, content_type: 12, name: Can add award}
-  model: auth.permission
-  pk: 34
-- fields: {codename: change_award, content_type: 12, name: Can change award}
-  model: auth.permission
-  pk: 35
-- fields: {codename: delete_award, content_type: 12, name: Can delete award}
-  model: auth.permission
-  pk: 36
-- fields: {codename: add_camp, content_type: 10, name: Can add camp}
-  model: auth.permission
-  pk: 28
-- fields: {codename: change_camp, content_type: 10, name: Can change camp}
-  model: auth.permission
-  pk: 29
-- fields: {codename: delete_camp, content_type: 10, name: Can delete camp}
-  model: auth.permission
-  pk: 30
-- fields: {codename: add_confirmtoken, content_type: 32, name: Can add confirm token}
-  model: auth.permission
-  pk: 94
-- fields: {codename: change_confirmtoken, content_type: 32, name: Can change confirm
-      token}
-  model: auth.permission
-  pk: 95
-- fields: {codename: delete_confirmtoken, content_type: 32, name: Can delete confirm
-      token}
-  model: auth.permission
-  pk: 96
-- fields: {codename: add_contenttype, content_type: 28, name: Can add content type}
-  model: auth.permission
-  pk: 82
-- fields: {codename: change_contenttype, content_type: 28, name: Can change content
-      type}
-  model: auth.permission
-  pk: 83
-- fields: {codename: delete_contenttype, content_type: 28, name: Can delete content
-      type}
-  model: auth.permission
-  pk: 84
-- fields: {codename: add_forum, content_type: 5, name: Can add forum}
-  model: auth.permission
-  pk: 13
-- fields: {codename: change_forum, content_type: 5, name: Can change forum}
-  model: auth.permission
-  pk: 14
-- fields: {codename: delete_forum, content_type: 5, name: Can delete forum}
-  model: auth.permission
-  pk: 15
-- fields: {codename: add_gallery, content_type: 19, name: Can add gallery}
-  model: auth.permission
-  pk: 55
-- fields: {codename: change_gallery, content_type: 19, name: Can change gallery}
-  model: auth.permission
-  pk: 56
-- fields: {codename: delete_gallery, content_type: 19, name: Can delete gallery}
-  model: auth.permission
-  pk: 57
-- fields: {codename: add_group, content_type: 1, name: Can add group}
-  model: auth.permission
-  pk: 1
-- fields: {codename: change_group, content_type: 1, name: Can change group}
-  model: auth.permission
-  pk: 2
-- fields: {codename: delete_group, content_type: 1, name: Can delete group}
-  model: auth.permission
-  pk: 3
-- fields: {codename: add_htmlchunk, content_type: 21, name: Can add HTML chunk}
-  model: auth.permission
-  pk: 61
-- fields: {codename: change_htmlchunk, content_type: 21, name: Can change HTML chunk}
-  model: auth.permission
-  pk: 62
-- fields: {codename: delete_htmlchunk, content_type: 21, name: Can delete HTML chunk}
-  model: auth.permission
-  pk: 63
-- fields: {codename: add_invitation, content_type: 33, name: Can add invitation}
-  model: auth.permission
-  pk: 97
-- fields: {codename: change_invitation, content_type: 33, name: Can change invitation}
-  model: auth.permission
-  pk: 98
-- fields: {codename: delete_invitation, content_type: 33, name: Can delete invitation}
-  model: auth.permission
-  pk: 99
-- fields: {codename: add_logentry, content_type: 27, name: Can add log entry}
-  model: auth.permission
-  pk: 79
-- fields: {codename: change_logentry, content_type: 27, name: Can change log entry}
-  model: auth.permission
-  pk: 80
-- fields: {codename: delete_logentry, content_type: 27, name: Can delete log entry}
-  model: auth.permission
-  pk: 81
-- fields: {codename: add_member, content_type: 13, name: Can add member}
-  model: auth.permission
-  pk: 37
-- fields: {codename: change_member, content_type: 13, name: Can change member}
-  model: auth.permission
-  pk: 38
-- fields: {codename: delete_member, content_type: 13, name: Can delete member}
-  model: auth.permission
-  pk: 39
-- fields: {codename: add_menulink, content_type: 16, name: Can add menu link}
-  model: auth.permission
-  pk: 46
-- fields: {codename: change_menulink, content_type: 16, name: Can change menu link}
-  model: auth.permission
-  pk: 47
-- fields: {codename: delete_menulink, content_type: 16, name: Can delete menu link}
-  model: auth.permission
-  pk: 48
-- fields: {codename: add_message, content_type: 25, name: Can add message}
-  model: auth.permission
-  pk: 73
-- fields: {codename: add_message, content_type: 17, name: Can add message}
-  model: auth.permission
-  pk: 49
-- fields: {codename: change_message, content_type: 25, name: Can change message}
-  model: auth.permission
-  pk: 74
-- fields: {codename: change_message, content_type: 17, name: Can change message}
-  model: auth.permission
-  pk: 50
-- fields: {codename: delete_message, content_type: 17, name: Can delete message}
-  model: auth.permission
-  pk: 51
-- fields: {codename: delete_message, content_type: 25, name: Can delete message}
-  model: auth.permission
-  pk: 75
-- fields: {codename: add_newsitem, content_type: 8, name: Can add news item}
-  model: auth.permission
-  pk: 22
-- fields: {codename: change_newsitem, content_type: 8, name: Can change news item}
-  model: auth.permission
-  pk: 23
-- fields: {codename: delete_newsitem, content_type: 8, name: Can delete news item}
-  model: auth.permission
-  pk: 24
-- fields: {codename: add_permission, content_type: 26, name: Can add permission}
-  model: auth.permission
-  pk: 76
-- fields: {codename: add_permission, content_type: 7, name: Can add permission}
-  model: auth.permission
-  pk: 19
-- fields: {codename: change_permission, content_type: 26, name: Can change permission}
-  model: auth.permission
-  pk: 77
-- fields: {codename: change_permission, content_type: 7, name: Can change permission}
-  model: auth.permission
-  pk: 20
-- fields: {codename: delete_permission, content_type: 7, name: Can delete permission}
-  model: auth.permission
-  pk: 21
-- fields: {codename: delete_permission, content_type: 26, name: Can delete permission}
-  model: auth.permission
-  pk: 78
-- fields: {codename: add_person, content_type: 14, name: Can add person}
-  model: auth.permission
-  pk: 40
-- fields: {codename: change_person, content_type: 14, name: Can change person}
-  model: auth.permission
-  pk: 41
-- fields: {codename: delete_person, content_type: 14, name: Can delete person}
-  model: auth.permission
-  pk: 42
-- fields: {codename: add_personalaward, content_type: 6, name: Can add personal award}
-  model: auth.permission
-  pk: 16
-- fields: {codename: change_personalaward, content_type: 6, name: Can change personal
-      award}
-  model: auth.permission
-  pk: 17
-- fields: {codename: delete_personalaward, content_type: 6, name: Can delete personal
-      award}
-  model: auth.permission
-  pk: 18
-- fields: {codename: add_photo, content_type: 9, name: Can add photo}
-  model: auth.permission
-  pk: 25
-- fields: {codename: change_photo, content_type: 9, name: Can change photo}
-  model: auth.permission
-  pk: 26
-- fields: {codename: delete_photo, content_type: 9, name: Can delete photo}
-  model: auth.permission
-  pk: 27
-- fields: {codename: add_poll, content_type: 18, name: Can add poll}
-  model: auth.permission
-  pk: 52
-- fields: {codename: change_poll, content_type: 18, name: Can change poll}
-  model: auth.permission
-  pk: 53
-- fields: {codename: delete_poll, content_type: 18, name: Can delete poll}
-  model: auth.permission
-  pk: 54
-- fields: {codename: add_polloption, content_type: 20, name: Can add poll option}
-  model: auth.permission
-  pk: 58
-- fields: {codename: change_polloption, content_type: 20, name: Can change poll option}
-  model: auth.permission
-  pk: 59
-- fields: {codename: delete_polloption, content_type: 20, name: Can delete poll option}
-  model: auth.permission
-  pk: 60
-- fields: {codename: add_post, content_type: 15, name: Can add post}
-  model: auth.permission
-  pk: 43
-- fields: {codename: change_post, content_type: 15, name: Can change post}
-  model: auth.permission
-  pk: 44
-- fields: {codename: delete_post, content_type: 15, name: Can delete post}
-  model: auth.permission
-  pk: 45
-- fields: {codename: add_reference, content_type: 31, name: Can add reference}
-  model: auth.permission
-  pk: 91
-- fields: {codename: change_reference, content_type: 31, name: Can change reference}
-  model: auth.permission
-  pk: 92
-- fields: {codename: delete_reference, content_type: 31, name: Can delete reference}
-  model: auth.permission
-  pk: 93
-- fields: {codename: add_session, content_type: 29, name: Can add session}
-  model: auth.permission
-  pk: 85
-- fields: {codename: change_session, content_type: 29, name: Can change session}
-  model: auth.permission
-  pk: 86
-- fields: {codename: delete_session, content_type: 29, name: Can delete session}
-  model: auth.permission
-  pk: 87
-- fields: {codename: add_site, content_type: 11, name: Can add site}
-  model: auth.permission
-  pk: 31
-- fields: {codename: add_site, content_type: 3, name: Can add site}
-  model: auth.permission
-  pk: 7
-- fields: {codename: change_site, content_type: 3, name: Can change site}
-  model: auth.permission
-  pk: 8
-- fields: {codename: change_site, content_type: 11, name: Can change site}
-  model: auth.permission
-  pk: 32
-- fields: {codename: delete_site, content_type: 11, name: Can delete site}
-  model: auth.permission
-  pk: 33
-- fields: {codename: delete_site, content_type: 3, name: Can delete site}
-  model: auth.permission
-  pk: 9
-- fields: {codename: add_tag, content_type: 23, name: Can add tag}
-  model: auth.permission
-  pk: 67
-- fields: {codename: change_tag, content_type: 23, name: Can change tag}
-  model: auth.permission
-  pk: 68
-- fields: {codename: delete_tag, content_type: 23, name: Can delete tag}
-  model: auth.permission
-  pk: 69
-- fields: {codename: add_topic, content_type: 4, name: Can add topic}
-  model: auth.permission
-  pk: 10
-- fields: {codename: change_topic, content_type: 4, name: Can change topic}
-  model: auth.permission
-  pk: 11
-- fields: {codename: delete_topic, content_type: 4, name: Can delete topic}
-  model: auth.permission
-  pk: 12
-- fields: {codename: add_user, content_type: 2, name: Can add user}
-  model: auth.permission
-  pk: 4
-- fields: {codename: change_user, content_type: 2, name: Can change user}
-  model: auth.permission
-  pk: 5
-- fields: {codename: delete_user, content_type: 2, name: Can delete user}
-  model: auth.permission
-  pk: 6
-- fields: {codename: add_validationfailure, content_type: 24, name: Can add validation
-      failure}
-  model: auth.permission
-  pk: 70
-- fields: {codename: change_validationfailure, content_type: 24, name: Can change
-      validation failure}
-  model: auth.permission
-  pk: 71
-- fields: {codename: delete_validationfailure, content_type: 24, name: Can delete
-      validation failure}
-  model: auth.permission
-  pk: 72
-- fields: {codename: add_voteinfo, content_type: 30, name: Can add vote info}
-  model: auth.permission
-  pk: 88
-- fields: {codename: change_voteinfo, content_type: 30, name: Can change vote info}
-  model: auth.permission
-  pk: 89
-- fields: {codename: delete_voteinfo, content_type: 30, name: Can delete vote info}
-  model: auth.permission
-  pk: 90
 
 
 - fields:

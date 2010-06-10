@@ -2,7 +2,7 @@ from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_django_url, make_t
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
-from cciw.officers.tests.references import OFFICER
+from cciw.officers.tests.references import OFFICER, LEADER
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase
@@ -107,6 +107,20 @@ class ApplicationFormView(TwillMixin, TestCase):
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
 
+    def test_add_application_leader(self):
+        # Test that we don't get an error if a leader is using it, and forgets
+        # to do fill out the 'officer' box.
+        u = User.objects.get(username=LEADER[0])
+        self.assertEqual(u.application_set.count(), 0)
+        self._twill_login(LEADER)
+        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.code(200)
+        tc.formvalue('1', 'camp', '1')
+        tc.formvalue('1', 'full_name', 'Test full name')
+        tc.submit('_save')
+        tc.url('officers/applications/$')
+        self.assertEqual(u.application_set.count(), 1)
+        self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
 
     def test_change_application(self):
         self._twill_login(OFFICER)
