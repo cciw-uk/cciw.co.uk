@@ -1,6 +1,6 @@
 - fields:
     name: Officers
-    permissions: [["add_application", "officers", "application"]]
+    permissions: []
   model: auth.group
   pk: 1
 

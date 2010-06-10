@@ -206,9 +206,8 @@ class ApplicationAdmin(admin.ModelAdmin):
         self._update_timestamp(request)
 
     # Officers do not even have 'officers.add_application' permission
-    # - this is to prevent them adding things via the normal interface,
-    # and to force certain buttons to not appear.  So we special case
-    # things in the permission methods
+    # - this is to prevent them adding things via the normal interface.
+    # So we special case things in the permission methods
 
     def add_view(self, request):
         if request.method == "POST":
@@ -231,8 +230,8 @@ class ApplicationAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         # Normal users do not have change permission, unless they are editing
         # their own object.
-        if obj is not None and obj.officer_id is not None \
-                and obj.officer_id == request.user.id:
+        if (obj is None # adding new object, which is their own.
+            or (obj.officer_id is not None and obj.officer_id == request.user.id)):
             return True
         return super(ApplicationAdmin, self).has_change_permission(request, obj)
 
