@@ -122,6 +122,7 @@ else:
 ### MIDDLEWARE_CLASSES ####
 
 _MIDDLEWARE_CLASSES = (
+    (DEVBOX,     "cciw.middleware.http.ActAsProxy"),
     (DEVBOX,     "cciw.middleware.http.DummyForceSSLMiddleware"),
     (not DEVBOX, "cciw.middleware.http.WebFactionFixes"),
     (not DEVBOX, "cciw.middleware.http.ForceSSLMiddleware"),

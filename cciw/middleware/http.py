@@ -48,3 +48,15 @@ class DummyForceSSLMiddleware(object):
     """
     def process_view(self, request, view_func, view_args, view_kwargs):
         view_kwargs.pop('FORCESSL', None)
+
+class ActAsProxy(object):
+    """
+    Allows us to use privoxy and a redirect from www.cciw.co.uk
+    for the sake of demos
+    """
+    URLS = ["http://www.cciw.co.uk"]
+    def process_request(self, request):
+        for u in self.URLS:
+            if request.path.startswith(u):
+                request.path = request.path_info = request.environ['PATH_INFO'] = request.path[len(u):]
+                return
