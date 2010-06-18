@@ -2,20 +2,17 @@ from django import template
 
 register = template.Library()
 
-# Overrides normal 'submit row'
-@register.inclusion_tag('admin/submit_line.html', takes_context=True)
-def application_submit_row(context):
-    opts = context['opts']
-    change = context['change']
-    is_popup = context['is_popup']
-    return {
-        'onclick_attrib': (opts.get_ordered_objects() and change
-                            and 'onclick="submitOrderForm();"' or ''),
-        'show_delete_link': (not is_popup and context['has_delete_permission']
-                              and (change or context['show_delete'])),
-        'show_save_as_new': False, # CHANGED - never want this
-        'show_save_and_add_another': False, # CHANGED - never want this
-        'show_save_and_continue': not is_popup, # CHANGED (allow button without change_permission)
-        'show_save': True
-    }
+# Used to override part of normal 'submit row'
+# UGLY HACK!
+class FixPermissions(template.Node):
+    def render(self, context):
+        for d in context.dicts:
+            if 'has_change_permission' in d:
+                # We want 'Save and continue editing' to appear
+                d['has_change_permission'] = True
+                # We don't want 'Save and add another' to appear
+                d['has_add_permission'] = False
 
+def fix_permissions(parser, token):
+    return FixPermissions()
+register.tag('fix_permissions', fix_permissions)

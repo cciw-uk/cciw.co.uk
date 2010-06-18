@@ -97,7 +97,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
         tc.code(200)
         tc.find('Save and continue editing')
-#        tc.notfind('Save and add another')
+        tc.notfind('Save and add another')
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 0)
         tc.formvalue('1', 'camp', '1')
@@ -130,7 +130,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
         tc.code(200)
         tc.find('Save and continue editing')
-#        tc.notfind('Save and add another')
+        tc.notfind('Save and add another')
         tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
         tc.submit('_save')
@@ -263,3 +263,19 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.url('officers/application/%s/$' % a.id)
         # shouldn't have changed data:
         self.assertNotEqual(a.full_name, 'A Changed Full Name')
+
+    def test_list_applications_officers(self):
+        """
+        Ensure that normal officers can't see the list of applications
+        """
+        self._twill_login(OFFICER)
+        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/"))
+        tc.code(403)
+
+    def test_list_applications_leaders(self):
+        """
+        Ensure that leaders can see the list of applications
+        """
+        self._twill_login(LEADER)
+        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/"))
+        tc.code(200)
