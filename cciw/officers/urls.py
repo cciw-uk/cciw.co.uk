@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns
+from django.conf.urls.defaults import patterns, url
 
 urlpatterns = patterns('cciw.officers.views',
     (r'^$', 'index'),
@@ -20,4 +20,6 @@ urlpatterns = patterns('cciw.officers.views',
     (r'^ref/thanks/$', 'create_reference_thanks'),
     (r'^add-officer/$', 'create_officer'),
     (r'^files/(.*)$', 'officer_files'),
+) + patterns('django.views.generic.simple',
+    url(r'^info/$', 'direct_to_template', {'template': 'cciw/officers/info.html'}, name="cciw.officers.views.info"),
 )
