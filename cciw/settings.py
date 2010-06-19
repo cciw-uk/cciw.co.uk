@@ -52,6 +52,7 @@ INSTALLED_APPS = (
     'cciw.utils',
     'django.contrib.messages',
     'mailer',
+    'securedownload',
 )
 
 if DEBUG:
@@ -201,3 +202,12 @@ if DEVBOX:
     TEST_DIR = basedir + r'/cciw/cciwmain/tests'
 
 DEFAULT_CONTENT_TYPE = "text/html"
+
+SECURE_FILES_SERVE_URL = "/file/"
+SECURE_FILES_TIMEOUT = 3600
+if DEVBOX:
+    SECURE_FILES_SOURCE = os.path.join(basedir, "../resources/protected_downloads")
+    SECURE_FILES_SERVE_ROOT = os.path.join(basedir, "../protected_downloads")
+else:
+    SECURE_FILES_SOURCE = "/home/cciw/webapps/cciw_protected_downloads_src"
+    SECURE_FILES_SERVE_ROOT = "/home/cciw/webapps/cciw_protected_downloads"

@@ -29,6 +29,7 @@ from cciw.officers.models import Application, Reference, ReferenceForm, Invitati
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.officers.references import reference_form_info
 from cciw.utils.views import close_window_response
+from securedownload.views import access_folder_securely
 import smtplib
 
 def _copy_application(application):
@@ -54,6 +55,10 @@ def _is_camp_admin(user):
     """
     return (user.groups.filter(name='Leaders').exists()) \
         or user.camps_as_admin.exists() > 0
+
+def _is_camp_officer(user):
+    return user.is_authenticated() and \
+        user.groups.filter(name='Officers').exists()
 
 def _camps_as_admin_or_leader(user):
     """
@@ -758,3 +763,8 @@ def create_officer(request):
          }
     return render_to_response('cciw/officers/create_officer.html',
                               context_instance=template.RequestContext(request, c))
+
+
+officer_files = access_folder_securely("officers",
+                                       lambda request: _is_camp_officer(request.user))
+
