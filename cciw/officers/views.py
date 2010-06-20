@@ -58,7 +58,8 @@ def _is_camp_admin(user):
 
 def _is_camp_officer(user):
     return user.is_authenticated() and \
-        user.groups.filter(name='Officers').exists()
+        (user.groups.filter(name='Officers') |
+         user.groups.filter(name='Leaders')).exists()
 
 def _camps_as_admin_or_leader(user):
     """
