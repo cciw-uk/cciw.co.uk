@@ -395,10 +395,7 @@ def request_reference(request):
             # cancel
             return close_window_response()
     else:
-        if ref.referee.email.strip() != "":
-            emailform = SetEmailForm({'email': ref.referee.email})
-        else:
-            emailform = SetEmailForm()
+        emailform = SetEmailForm(initial={'email': ref.referee.email})
 
     c = template.RequestContext(request)
     update = 'update' in request.GET
