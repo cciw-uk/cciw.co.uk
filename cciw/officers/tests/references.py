@@ -101,6 +101,19 @@ class RequestReference(TwillMixin, TestCase):
         tc.submit()
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_dont_remove_link(self):
+        app = Application.objects.get(pk=3)
+        refinfo = app.references[0]
+        self._twill_login(LEADER)
+        tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
+        tc.code(200)
+        tc.formvalue('sendmessage', 'message', 'I removed the link! Haha')
+        tc.submit()
+        url = make_ref_form_url(refinfo.id, None)
+        tc.find(url)
+        tc.find("You removed the link")
+        self.assertEqual(len(mail.outbox), 0)
+
 
 class CreateReference(TwillMixin, TestCase):
     """

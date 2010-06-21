@@ -359,6 +359,32 @@ class SetEmailForm(forms.Form):
     email = forms.EmailField()
 
 
+class SendMessageForm(forms.Form):
+    message = forms.CharField(widget=forms.Textarea(attrs={'cols':80, 'rows':20}))
+
+    def __init__(self, *args, **kwargs):
+        message_info = kwargs.pop('message_info', {})
+
+        if message_info['update']:
+            msg_template = 'cciw/officers/request_reference_update.txt'
+        else:
+            msg_template = 'cciw/officers/request_reference_new.txt'
+        msg = render_to_string(msg_template, message_info)
+        initial = kwargs.pop('initial', {})
+        initial['message'] = msg
+        kwargs['initial'] = initial
+        self.message_info = message_info
+        return super(SendMessageForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        url = self.message_info['url']
+        if url not in cleaned_data.setdefault('message', ''):
+            errmsg = "You removed the link %s from the message.  This link is needed for the referee to be able to submit their reference" % url
+            self._errors.setdefault('message', self.error_class([])).append(errmsg)
+            del cleaned_data['message']
+        return cleaned_data
+
 @staff_member_required
 @user_passes_test(_is_camp_admin) # we don't care which camp they are admin for.
 def request_reference(request):
@@ -373,31 +399,6 @@ def request_reference(request):
     if 'manual' in request.GET:
         return manage_reference_manually(request, ref)
 
-    if request.method == 'POST':
-        if 'send' in request.POST:
-            try:
-                send_reference_request_email(wordwrap(request.POST.get('message', ''), 70), ref)
-            except smtplib.SMTPException:
-                return email_sending_failed_response()
-            ref.requested = True
-            ref.comments = ref.comments + \
-                           ("\nReference requested by user %s via online system on %s\n" % \
-                            (request.user.username, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-            ref.save()
-            return close_window_response()
-        elif 'setemail' in request.POST:
-            emailform = SetEmailForm(request.POST)
-            if emailform.is_valid():
-                app.referees[ref.referee_number-1].email = emailform.cleaned_data['email']
-                app.save()
-                messages.info(request, "Email updated.")
-        else:
-            # cancel
-            return close_window_response()
-    else:
-        emailform = SetEmailForm(initial={'email': ref.referee.email})
-
-    c = template.RequestContext(request)
     update = 'update' in request.GET
     if update:
         (possible, exact) = get_previous_references(ref)
@@ -416,25 +417,56 @@ def request_reference(request):
             assert len(refs) == 1
             url = make_ref_form_url(ref.id, prev_ref_id)
             c['old_referee'] = refs[0].referee
-        msg_template = 'cciw/officers/request_reference_update.txt'
     else:
         url = make_ref_form_url(ref.id, None)
-        msg_template = 'cciw/officers/request_reference_new.txt'
 
+    messageform_info = dict(referee=ref.referee,
+                            applicant=app.officer,
+                            camp=camp,
+                            url=url,
+                            update=update)
+    emailform = None
+    messageform = None
+
+    if request.method == 'POST':
+        if 'send' in request.POST:
+            messageform = SendMessageForm(request.POST, message_info=messageform_info)
+            if messageform.is_valid():
+                try:
+                    send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), ref)
+                except smtplib.SMTPException:
+                    return email_sending_failed_response()
+                ref.requested = True
+                ref.comments = ref.comments + \
+                    ("\nReference requested by user %s via online system on %s\n" % \
+                         (request.user.username, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                ref.save()
+                return close_window_response()
+        elif 'setemail' in request.POST:
+            emailform = SetEmailForm(request.POST)
+            if emailform.is_valid():
+                app.referees[ref.referee_number-1].email = emailform.cleaned_data['email']
+                app.save()
+                messages.info(request, "Email updated.")
+        else:
+            # cancel
+            return close_window_response()
+
+    if emailform is None:
+        emailform = SetEmailForm(initial={'email': ref.referee.email})
+    if messageform is None:
+        messageform = SendMessageForm(message_info=messageform_info)
+
+    c = template.RequestContext(request)
     if not email_re.match(ref.referee.email.strip()):
         c['bad_email'] = True
-    msg = render_to_string(msg_template,
-                           dict(referee=ref.referee,
-                                applicant=app.officer,
-                                camp=camp,
-                                url=url))
     c['is_popup'] = True
     c['already_requested'] = ref.requested
     c['referee'] = ref.referee
     c['app'] = app
-    c['default_message'] = msg
     c['is_update'] = update
     c['emailform'] = emailform
+    c['messageform'] = messageform
     return render_to_response('cciw/officers/request_reference.html',
                               context_instance=c)
 
