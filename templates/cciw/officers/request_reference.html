@@ -22,11 +22,6 @@
     must manage the reference manually.  If you can find find out the e-mail
     address, enter it below and press 'Save' to continue:</p>
 
-  {% if emailform.errors %}
-    <p class="errornote">
-      Please correct the error(s) below.
-    </p>
-  {% endif %}
 
   <form name="setemail" method="post" action="">{% csrf_token %}
     {{ emailform.as_p }}
@@ -56,11 +51,6 @@
 
   <p>If you need to correct the e-mail address, please edit below and press
   'Save' before continuing:</p>
-  {% if emailform.errors %}
-    <p class="errornote">
-      Please correct the error(s) below.
-    </p>
-  {% endif %}
 
   <form name="setemail" method="post" action="">{% csrf_token %}
     {{ emailform.as_p }}
