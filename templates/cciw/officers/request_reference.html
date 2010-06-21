@@ -20,23 +20,31 @@
   <p>No e-mail address (or an invalid e-mail address) was provided, so the
     referee can't be e-mailed.  If you cannot find out their e-mail address, you
     must manage the reference manually.  If you can find find out the e-mail
-    address,
-    <a href="{% url admin:officers_application_change app.id %}?_redirect_to={{ request.get_full_path|urlencode }}">update 
-      the application form</a> and continue.
-  </p>
+    address, enter it below and press 'Save' to continue:</p>
+
+  {% if emailform.errors %}
+    <p class="errornote">
+      Please correct the error(s) below.
+    </p>
+  {% endif %}
+
+  <form name="setemail" method="post" action="">{% csrf_token %}
+    {{ emailform.as_p }}
+    <div><input type="submit" name="setemail" value="Save" /></div>
+  </form>
 
 {% else %}
-  <form action="" method="post">{% csrf_token %}
   {% if is_update and known_email_address %}
   <p>{{ referee.name }} has done a reference for {{ app.officer.first_name }} in
     the past.</p>
   {% endif %}
 
   {% if not is_update %}
-  <p><strong>{{ referee.name }} has not done a reference for {{ app.officer.first_name }} in
-      the past.</strong>  Before requesting this reference, you should endeavour to
-    ensure that this person is who the applicant claims they are, and the e-mail
-    address is correct, and that they are happy to do a reference.</p>
+  <p><strong>{{ referee.name }} has not done a reference for
+      {{ app.officer.first_name }} in the past.</strong>  Before requesting this
+      reference, you should endeavour to ensure that this person is who the
+      applicant claims they are, and <strong>ensure the e-mail address is
+      correct</strong>, and that they are happy to do a reference.</p>
   {% endif %}
 
   {% if is_update and not known_email_address %}
@@ -46,8 +54,24 @@
     you can ask them to update their reference.</p>
   {% endif %}
 
+  <p>If you need to correct the e-mail address, please edit below and press
+  'Save' before continuing:</p>
+  {% if emailform.errors %}
+    <p class="errornote">
+      Please correct the error(s) below.
+    </p>
+  {% endif %}
+
+  <form name="setemail" method="post" action="">{% csrf_token %}
+    {{ emailform.as_p }}
+    <p><input type="submit" name="setemail" value="Save" /></p>
+  </form>
+
+  <hr>
+
   <p>The following e-mail, which you can now modify, will be sent to him/her.
     Make sure you don't modify the link contained in the e-mail.</p>
+  <form name="sendmessage" action="" method="post">{% csrf_token %}
   <div>
     <textarea  rows="20" cols="80" name="message">
 {{ default_message }}</textarea>

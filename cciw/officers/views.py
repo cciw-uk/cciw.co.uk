@@ -32,6 +32,7 @@ from cciw.utils.views import close_window_response
 from securedownload.views import access_folder_securely
 import smtplib
 
+
 def _copy_application(application):
     new_obj = Application(id=None)
     for field in Application._meta.fields:
@@ -49,6 +50,7 @@ def _copy_application(application):
     new_obj.date_submitted = None
     return new_obj
 
+
 def _is_camp_admin(user):
     """
     Returns True is the user is an admin for any camp.
@@ -56,10 +58,12 @@ def _is_camp_admin(user):
     return (user.groups.filter(name='Leaders').exists()) \
         or user.camps_as_admin.exists() > 0
 
+
 def _is_camp_officer(user):
     return user.is_authenticated() and \
         (user.groups.filter(name='Officers') |
          user.groups.filter(name='Leaders')).exists()
+
 
 def _camps_as_admin_or_leader(user):
     """
@@ -80,6 +84,7 @@ def _camps_as_admin_or_leader(user):
 
     return camps
 
+
 # /officers/
 @staff_member_required
 @never_cache
@@ -94,6 +99,7 @@ def index(request):
     return render_to_response('cciw/officers/index.html',
                               context_instance=context)
 
+
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 def leaders_index(request):
@@ -105,6 +111,7 @@ def leaders_index(request):
     context['old_camps'] = _camps_as_admin_or_leader(user).filter(year__lt=thisyear)
 
     return render_to_response('cciw/officers/leaders_index.html', context_instance=context)
+
 
 def get_next_camp_guess(camp):
     """
@@ -120,6 +127,7 @@ def get_next_camp_guess(camp):
             return next_camp
     else:
         return None
+
 
 @staff_member_required
 @never_cache
@@ -174,6 +182,7 @@ def applications(request):
 
     return render_to_response('cciw/officers/applications.html',
                               context_instance=context)
+
 
 @staff_member_required
 def view_application(request):
@@ -243,6 +252,7 @@ def _thisyears_camp_for_leader(user):
     except (ObjectDoesNotExist, IndexError):
         return None
 
+
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 @never_cache
@@ -255,11 +265,13 @@ def manage_applications(request, year=None, number=None):
     return render_to_response('cciw/officers/manage_applications.html',
                               context_instance=context)
 
+
 def _get_camp_or_404(year, number):
     try:
         return Camp.objects.get(year=int(year), number=int(number))
     except Camp.DoesNotExist, ValueError:
         raise Http404
+
 
 def get_previous_references(ref):
     """
@@ -293,6 +305,7 @@ def get_previous_references(ref):
             exact = refform.reference_info
             break
     return ([rf.reference_info for rf in prev], exact)
+
 
 @staff_member_required
 @user_passes_test(_is_camp_admin) # we don't care which camp they are admin for.
@@ -336,9 +349,15 @@ def manage_references(request, year=None, number=None):
     return render_to_response('cciw/officers/manage_references.html',
                               context_instance=c)
 
+
 def email_sending_failed_response():
     return HttpResponse("""<p>Email failed to send.  This is likely a temporary
     error, please press back in your browser and try again.</p>""")
+
+
+class SetEmailForm(forms.Form):
+    email = forms.EmailField()
+
 
 @staff_member_required
 @user_passes_test(_is_camp_admin) # we don't care which camp they are admin for.
@@ -348,6 +367,8 @@ def request_reference(request):
     except ValueError, TypeError:
         raise Http404
     ref = get_object_or_404(Reference.objects.filter(id=ref_id))
+    app = ref.application
+    camp = app.camp
 
     if 'manual' in request.GET:
         return manage_reference_manually(request, ref)
@@ -363,7 +384,21 @@ def request_reference(request):
                            ("\nReference requested by user %s via online system on %s\n" % \
                             (request.user.username, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
             ref.save()
-        return close_window_response()
+            return close_window_response()
+        elif 'setemail' in request.POST:
+            emailform = SetEmailForm(request.POST)
+            if emailform.is_valid():
+                app.referees[ref.referee_number-1].email = emailform.cleaned_data['email']
+                app.save()
+                messages.info(request, "Email updated.")
+        else:
+            # cancel
+            return close_window_response()
+    else:
+        if ref.referee.email.strip() != "":
+            emailform = SetEmailForm({'email': ref.referee.email})
+        else:
+            emailform = SetEmailForm()
 
     c = template.RequestContext(request)
     update = 'update' in request.GET
@@ -373,8 +408,8 @@ def request_reference(request):
         if prev_ref_id is None:
             # require an exact.
             assert exact is not None
-            # The above can only fail if the user has been
-            # trying to hack things.
+            # The above can only fail if the user has been trying to hack
+            # things.
             url = make_ref_form_url(ref.id, exact.id)
             c['known_email_address'] = True
         else:
@@ -391,8 +426,6 @@ def request_reference(request):
 
     if not email_re.match(ref.referee.email.strip()):
         c['bad_email'] = True
-    app = ref.application
-    camp = app.camp
     msg = render_to_string(msg_template,
                            dict(referee=ref.referee,
                                 applicant=app.officer,
@@ -404,8 +437,10 @@ def request_reference(request):
     c['app'] = app
     c['default_message'] = msg
     c['is_update'] = update
+    c['emailform'] = emailform
     return render_to_response('cciw/officers/request_reference.html',
                               context_instance=c)
+
 
 class ReferenceFormForm(forms.ModelForm):
     class Meta:
@@ -420,6 +455,7 @@ class ReferenceFormForm(forms.ModelForm):
                   'concerns',
                   'comments')
 
+
 normal_textarea = forms.Textarea(attrs={'cols':80, 'rows':10})
 small_textarea = forms.Textarea(attrs={'cols':80, 'rows':5})
 ReferenceFormForm.base_fields['capacity_known'].widget = small_textarea
@@ -430,12 +466,14 @@ ReferenceFormForm.base_fields['character'].widget = normal_textarea
 ReferenceFormForm.base_fields['concerns'].widget = normal_textarea
 ReferenceFormForm.base_fields['comments'].widget = normal_textarea
 
+
 # I have models called Reference and ReferenceForm.  What do I call a Form
 # for model Reference? I'm a loser...
 class ReferenceEditForm(forms.ModelForm):
     class Meta:
         model = Reference
         fields = ('requested', 'received', 'comments')
+
 
 def manage_reference_manually(request, ref):
     """
@@ -459,6 +497,7 @@ def manage_reference_manually(request, ref):
     return render_to_response("cciw/officers/manage_reference_manual.html",
                               context_instance=c)
 
+
 @staff_member_required
 @user_passes_test(_is_camp_admin) # we don't care which camp they are admin for.
 def edit_reference_form_manually(request, ref_id=None):
@@ -476,6 +515,7 @@ def edit_reference_form_manually(request, ref_id=None):
                                         args=(ref.reference_form.id,)) + \
                                 "?_popup=1")
 
+
 def initial_reference_form_data(ref, prev_ref_form):
     """
     Return the initial data to be used for ReferenceFormForm, given the current
@@ -489,6 +529,7 @@ def initial_reference_form_data(ref, prev_ref_form):
     retval['referee_name'] = ref.referee.name
     retval.pop('date_created', None)
     return retval
+
 
 def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
     """
@@ -558,9 +599,11 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
     return render_to_response('cciw/officers/create_reference.html',
                               context_instance=c)
 
+
 def create_reference_thanks(request):
     return render_to_response('cciw/officers/create_reference_thanks.html',
                               context_instance=template.RequestContext(request))
+
 
 @staff_member_required
 @user_passes_test(_is_camp_admin)
@@ -578,6 +621,7 @@ def view_reference(request, ref_id=None):
 
     return render_to_response("cciw/officers/view_reference_form.html",
                               context_instance=c)
+
 
 @staff_member_required
 @user_passes_test(_is_camp_admin)
@@ -633,6 +677,7 @@ def remove_officer(request, year=None, number=None):
     Invitation.objects.filter(camp=camp.id, officer=int(officer_id)).delete()
     return {'status':'success'}
 
+
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 @json_response
@@ -641,6 +686,7 @@ def add_officer(request, year=None, number=None):
     officer_id = request.POST['officer_id']
     Invitation.objects.get_or_create(camp=camp, officer=User.objects.get(id=int(officer_id)))
     return {'status':'success'}
+
 
 @staff_member_required
 @user_passes_test(_is_camp_admin)
@@ -654,6 +700,7 @@ def officer_details(request):
             'id': user.id,
             }
 
+
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 @json_response
@@ -663,6 +710,7 @@ def update_officer(request):
                                                                    email=request.POST['email']
                                                                    )
     return {'status':'success'}
+
 
 def update_email(request, username=''):
     c = {}
@@ -684,6 +732,7 @@ def update_email(request, username=''):
     return render_to_response('cciw/officers/email_update.html',
                               context_instance=template.RequestContext(request, c))
 
+
 class StripStringsMixin(object):
     def clean(self):
         for field,value in self.cleaned_data.items():
@@ -691,8 +740,10 @@ class StripStringsMixin(object):
                 self.cleaned_data[field] = value.strip()
         return self.cleaned_data
 
+
 class BaseForm(StripStringsMixin, forms.Form):
     pass
+
 
 class CreateOfficerForm(BaseForm):
     first_name = forms.CharField()

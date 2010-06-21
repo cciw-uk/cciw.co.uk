@@ -2,22 +2,26 @@ import twill
 from twill.shell import TwillCommandLoop
 from twill import commands as tc
 
-from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
+from django.core import mail
 from django.test import TestCase
-
+from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application
 from cciw.officers.views import get_previous_references
+
 
 OFFICER_USERNAME = 'mrofficer2'
 OFFICER_PASSWORD = 'test_normaluser_password'
 OFFICER = (OFFICER_USERNAME, OFFICER_PASSWORD)
 
+
 LEADER_USERNAME = 'davestott'
 LEADER_PASSWORD = 'test_normaluser_password'
 LEADER = (LEADER_USERNAME, LEADER_PASSWORD)
 
+
 class ReferencesPage(TwillMixin, TestCase):
+
     fixtures = ['basic.yaml', 'officers_users.yaml', 'references.yaml']
 
     def test_page_ok(self):
@@ -44,9 +48,66 @@ class ReferencesPage(TwillMixin, TestCase):
         tc.notfind('For camp 2000-1')
 
 
-class CreateReference(TwillMixin, TestCase):
+class RequestReference(TwillMixin, TestCase):
+    """
+    Tests for page where reference is requested, and referee e-mail can be updated.
+    """
 
-    fixtures = ['basic.yaml', 'officers_users.yaml', 'references.yaml']
+    fixtures = ReferencesPage.fixtures
+
+    def test_with_email(self):
+        # Application 3 has an e-mail address for first referee
+        app = Application.objects.get(pk=3)
+        self.assert_(app.referees[0].email != '')
+        refinfo = app.references[0]
+        self._twill_login(LEADER)
+        tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
+        tc.code(200)
+        tc.notfind("No e-mail address")
+        tc.find("The following e-mail")
+        tc.formvalue("sendmessage", "send", "send")
+        tc.submit()
+        self.assertEqual(len([e for e in mail.outbox if "Reference for" in e.subject]), 1)
+
+    def test_no_email(self):
+        # Application 3 has no e-mail address for second referee
+        app = Application.objects.get(pk=3)
+        self.assert_(app.referees[1].email == '')
+        refinfo = app.references[1]
+        self._twill_login(LEADER)
+        tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
+        tc.code(200)
+        tc.find("No e-mail address")
+        tc.notfind("This field is required") # Don't want errors on first view
+        tc.notfind("The following e-mail")
+
+    def test_add_email(self):
+        self.test_no_email()
+        tc.formvalue('1', 'email', 'addedemail@example.com')
+        tc.submit()
+        app = Application.objects.get(pk=3)
+        self.assert_(app.referees[1].email == 'addedemail@example.com')
+        tc.find("Email updated.")
+
+    def test_cancel(self):
+        # Application 3 has an e-mail address for first referee
+        app = Application.objects.get(pk=3)
+        self.assert_(app.referees[0].email != '')
+        refinfo = app.references[0]
+        self._twill_login(LEADER)
+        tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
+        tc.code(200)
+        tc.formvalue("sendmessage", "cancel", "cancel")
+        tc.submit()
+        self.assertEqual(len(mail.outbox), 0)
+
+
+class CreateReference(TwillMixin, TestCase):
+    """
+    Tests for page for referees submitting references
+    """
+
+    fixtures = ReferencesPage.fixtures
 
     #twill_quiet = False
     def test_page_ok(self):
