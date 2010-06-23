@@ -784,6 +784,7 @@ class CreateOfficerForm(BaseForm):
                                      self.cleaned_data['last_name'],
                                      self.cleaned_data['email'])
 
+
 @staff_member_required
 @user_passes_test(_is_camp_admin)
 def create_officer(request):
@@ -829,6 +830,9 @@ def create_officer(request):
                     u = form.save()
                     form = CreateOfficerForm()
                     message = "Officer %s has been added and e-mailed.  You can add another if required, or close this popup to continue." % u.username
+                    camp_id = request.GET.get('camp_id')
+                    if camp_id is not None:
+                        Invitation.objects.get_or_create(camp=Camp.objects.get(id=camp_id), officer=u)
                 except create.EmailError:
                     message = "Due to a problem sending e-mail, the officer has not been added to the system.  Please try again later"
 

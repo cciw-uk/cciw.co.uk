@@ -227,7 +227,7 @@
 
     var newOfficerHandler = function(ev) {
         var popup = $('#id_add_officer_popup');
-        popup.find(".iframe_container").html('<iframe src="{% url cciw.officers.views.create_officer %}?is_popup=1" width="780" frameborder=0 height="400">');
+        popup.find(".iframe_container").html('<iframe src="{% url cciw.officers.views.create_officer %}?is_popup=1&camp_id={{ camp.id }}" width="780" frameborder=0 height="400">');
         popup.css({
             "position": "fixed",
             "top": ($(window).height()/2 - popup.height()/2).toString() + "px",
