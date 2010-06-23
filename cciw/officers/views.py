@@ -59,6 +59,9 @@ def _is_camp_admin(user):
         or user.camps_as_admin.exists() > 0
 
 
+camp_admin_required = user_passes_test(_is_camp_admin)
+
+
 def _is_camp_officer(user):
     return user.is_authenticated() and \
         (user.groups.filter(name='Officers') |
@@ -101,7 +104,7 @@ def index(request):
 
 
 @staff_member_required
-@user_passes_test(_is_camp_admin)
+@camp_admin_required
 def leaders_index(request):
     """Displays a list of links for actions for leaders"""
     user = request.user
@@ -254,7 +257,7 @@ def _thisyears_camp_for_leader(user):
 
 
 @staff_member_required
-@user_passes_test(_is_camp_admin)
+@camp_admin_required
 @never_cache
 def manage_applications(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
@@ -308,7 +311,7 @@ def get_previous_references(ref):
 
 
 @staff_member_required
-@user_passes_test(_is_camp_admin) # we don't care which camp they are admin for.
+@camp_admin_required # we don't care which camp they are admin for.
 @never_cache
 def manage_references(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
@@ -386,7 +389,7 @@ class SendMessageForm(forms.Form):
         return cleaned_data
 
 @staff_member_required
-@user_passes_test(_is_camp_admin) # we don't care which camp they are admin for.
+@camp_admin_required # we don't care which camp they are admin for.
 def request_reference(request):
     try:
         ref_id = int(request.GET.get('ref_id'))
@@ -528,7 +531,7 @@ def manage_reference_manually(request, ref):
 
 
 @staff_member_required
-@user_passes_test(_is_camp_admin) # we don't care which camp they are admin for.
+@camp_admin_required # we don't care which camp they are admin for.
 def edit_reference_form_manually(request, ref_id=None):
     """
     Create ReferenceForm if necessary, then launch normal admin popup for
@@ -635,7 +638,7 @@ def create_reference_thanks(request):
 
 
 @staff_member_required
-@user_passes_test(_is_camp_admin)
+@camp_admin_required
 def view_reference(request, ref_id=None):
     ref = get_object_or_404(Reference.objects.filter(id=ref_id))
     ref_form = ref.reference_form
@@ -653,7 +656,7 @@ def view_reference(request, ref_id=None):
 
 
 @staff_member_required
-@user_passes_test(_is_camp_admin)
+@camp_admin_required
 def officer_list(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
 
@@ -698,7 +701,7 @@ def officer_list(request, year=None, number=None):
 
 
 @staff_member_required
-@user_passes_test(_is_camp_admin)
+@camp_admin_required
 @json_response
 def remove_officer(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
@@ -708,7 +711,7 @@ def remove_officer(request, year=None, number=None):
 
 
 @staff_member_required
-@user_passes_test(_is_camp_admin)
+@camp_admin_required
 @json_response
 def add_officer(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
@@ -718,7 +721,7 @@ def add_officer(request, year=None, number=None):
 
 
 @staff_member_required
-@user_passes_test(_is_camp_admin)
+@camp_admin_required
 @json_response
 def officer_details(request):
     user = User.objects.get(pk=int(request.GET['officer_id']))
@@ -731,7 +734,7 @@ def officer_details(request):
 
 
 @staff_member_required
-@user_passes_test(_is_camp_admin)
+@camp_admin_required
 @json_response
 def update_officer(request):
     User.objects.filter(pk=int(request.POST['officer_id'])).update(first_name=request.POST['first_name'],
@@ -786,7 +789,7 @@ class CreateOfficerForm(BaseForm):
 
 
 @staff_member_required
-@user_passes_test(_is_camp_admin)
+@camp_admin_required
 def create_officer(request):
     allow_confirm = True
     duplicate_message = ""
