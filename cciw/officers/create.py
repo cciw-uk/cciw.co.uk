@@ -67,7 +67,7 @@ def create_multiple_officers(csv_data, dryrun, verbose=False):
             # race condition between make_username and create_officer,
             # but we don't care really.
             username = make_username(first_name, last_name)
-            create_officer(username, first_name, last_name, email, dryrun=dryrun)
+            create_officer(username, first_name, last_name, email, dryrun=dryrun, verbose=verbose)
 
         else:
             if verbose:
