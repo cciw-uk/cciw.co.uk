@@ -57,6 +57,7 @@ INSTALLED_APPS = (
 
 if DEBUG:
     INSTALLED_APPS += (
+        'django.contrib.admindocs',
         'lukeplant_me_uk.django.validator',
         'debug_toolbar',
     )
