@@ -85,7 +85,7 @@ def _camps_as_admin_or_leader(user):
     for leader in leaders:
         camps = camps | leader.camps_as_leader.all()
 
-    return camps
+    return camps.distinct()
 
 
 # /officers/
