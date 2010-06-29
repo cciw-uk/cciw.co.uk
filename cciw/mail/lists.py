@@ -8,6 +8,7 @@ from cciw.cciwmain.decorators import email_errors_silently
 from cciw.officers.email_utils import formatted_email
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.webfaction import webfaction_session
+import xmlrpclib
 
 ### External utility functions ###
 
@@ -15,21 +16,38 @@ from cciw.webfaction import webfaction_session
 def address_for_camp_officers(camp):
     return "camp-%d-%d-officers@cciw.co.uk" % (camp.year, camp.number)
 
+
 def address_for_camp_slackers(camp):
     return "camp-%d-%d-slackers@cciw.co.uk" % (camp.year, camp.number)
 
-### Creation of mailboxes ###
 
+def address_for_camp_leaders(camp):
+    return "camp-%d-%d-leaders@cciw.co.uk" % (camp.year, camp.number)
+
+
+def address_for_camp_leaders_year(year):
+    return "camps-%d-leaders@cciw.co.uk" % year
+
+
+### Creation of mailboxes ###
 @email_errors_silently
 def create_mailboxes(camp):
     s = webfaction_session()
     for address in [address_for_camp_officers(camp),
-                    address_for_camp_slackers(camp)]:
-        email = s.create_email(address, settings.LIST_MAILBOX_NAME)
+                    address_for_camp_slackers(camp),
+                    address_for_camp_leaders(camp),
+                    address_for_camp_leaders_year(camp.year)]:
+        try:
+            email = s.create_email(address, settings.LIST_MAILBOX_NAME)
+        except xmlrpclib.Fault, e:
+            if e.faultString == 'username: Value already exists':
+                pass
+            else:
+                raise
 
 ### Reading mailboxes ###
-
 email_extract_re = re.compile(r"([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)")
+
 
 def _camp_officers(year=None, number=None):
     from cciw.cciwmain.models import Camp
@@ -40,6 +58,7 @@ def _camp_officers(year=None, number=None):
 
     return map(formatted_email, camp_officer_list(c))
 
+
 def _camp_slackers(year=None, number=None):
     from cciw.cciwmain.models import Camp
     try:
@@ -49,15 +68,41 @@ def _camp_slackers(year=None, number=None):
 
     return map(formatted_email, camp_slacker_list(c))
 
+
+def _camp_leaders(year=None, number=None):
+    from cciw.cciwmain.models import Camp
+    camps = Camp.objects.filter(year=year)
+    if number is not None:
+        camps = camps.filter(number=number)
+    s = set()
+    for c in camps:
+        s.update(_get_leaders_for_camp(c))
+
+    return map(formatted_email, s)
+
+
+def _get_leaders_for_camp(camp):
+    retval = set()
+    for p in camp.leaders.all():
+        for u in p.users.all():
+            retval.add(u)
+    return retval
+
+
 # See also cciw.officers.utils
 email_lists = {
     re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-officers@cciw.co.uk$",
                re.IGNORECASE): _camp_officers,
     re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-slackers@cciw.co.uk$",
                re.IGNORECASE): _camp_slackers,
+    re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-leaders@cciw.co.uk$",
+               re.IGNORECASE): _camp_leaders,
+    re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw.co.uk$",
+               re.IGNORECASE): _camp_leaders,
     re.compile(r"^camp-debug@cciw.co.uk$"):
         lambda: settings.LIST_MAIL_DEBUG_ADDRESSES,
     }
+
 
 def list_for_address(address):
     for pat, func in email_lists.items():
@@ -65,6 +110,7 @@ def list_for_address(address):
         if m is not None:
             return func(**m.groupdict())
     return None
+
 
 def forward_email_to_list(mail, addresslist, original_to):
     from_addr = mail['From']
@@ -89,6 +135,7 @@ def forward_email_to_list(mail, addresslist, original_to):
         c.connection.sendmail(from_addr, [addr], mail.as_string())
     c.close()
 
+
 def handle_mail(data):
     """
     Forwards an email to the correct list of people.
@@ -111,6 +158,7 @@ def handle_mail(data):
         # address, just ignore
         if l is not None:
             forward_email_to_list(mail, l, address)
+
 
 def handle_all_mail():
     # We do error handling just using asserts here and catching all errors in
