@@ -1,18 +1,22 @@
+{% load adminmedia %}
 <div  id="id_officer_list_table">
 <p>Total: {{ officers_all|length }}</p>
 <table style="width:43em;">
   <tr>
     <th>Name</th>
     <th>E-mail</th>
-    <th>Edit</th>
-    <th>Remove</th>
+    <th colspan="2">Edit/Remove</th>
   </tr>
 {% for officer in officers_all %}
   <tr id="id_officer_table_tr_{{ officer.id }}">
     <td>{{ officer.first_name }} {{ officer.last_name }}</td>
     <td>{{ officer.email }}</td>
-    <td><a class="editbtn" id="id_edit_{{ officer.id }}" href="#">Edit</a></td>
-    <td><a class="removebtn" id="id_remove_{{ officer.id }}" href="#">Remove</a></td>
+    <td>
+      <img class="editbtn" id="id_edit_{{ officer.id }}" src="{% admin_media_prefix %}img/admin/icon_changelink.gif" alt="Edit" title="Edit" />
+    </td>
+    <td>
+      <img class="removebtn" id="id_remove_{{ officer.id }}" src="{% admin_media_prefix %}img/admin/icon_deletelink.gif" alt="Remove" title="Remove" />
+    </td>
   </tr>
 {% empty %}
   <tr>
