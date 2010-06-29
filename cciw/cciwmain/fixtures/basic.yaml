@@ -30,7 +30,7 @@
     previous_camp: 1
     site: 1
     start_date: 2001-07-01
-    year: 200
+    year: 2001
   model: cciwmain.camp
   pk: '2'
 
