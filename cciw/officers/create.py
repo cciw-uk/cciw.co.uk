@@ -252,9 +252,9 @@ def email_officer(username, first_name, email, password, is_leader=False, dryrun
     if update:
         repeat_message = \
 """
-This is a repeat email sent either because the first email was lost or
-the password was forgotten.  Your username has not been changed, but a
-new random password has been given to you, see below.
+This is a repeat email sent either because the first email never
+arrived or the password was forgotten.  Your username has not been
+changed, but a new random password has been given to you, see below.
 """
     else:
         repeat_message = ""

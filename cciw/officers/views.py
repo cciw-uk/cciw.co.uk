@@ -853,6 +853,18 @@ def create_officer(request):
                               context_instance=template.RequestContext(request, c))
 
 
+@staff_member_required
+@camp_admin_required
+@json_response
+def resend_email(request):
+    u = User.objects.get(pk=int(request.POST['officer_id']))
+    password = User.objects.make_random_password()
+    u.set_password(password)
+    u.save()
+    create.email_officer(u.username, u.first_name, u.email, password, is_leader=False, update=True)
+    return {'status':'success'}
+
+
 officer_files = access_folder_securely("officers",
                                        lambda request: _is_camp_officer(request.user))
 

@@ -205,6 +205,19 @@
             });
             ev.preventDefault();
         });
+
+        // event handlers for 'email' buttons
+        $(".emailbtn").click(function(ev) {
+            ev.preventDefault();
+            if (confirm("This will reset the officer's password and re-send the initial signup e-mail.  Continue?")) {
+                var officerId = parseFloat(ev.target.id.substring(9), 10);
+                $.ajax({
+                    type: "POST",
+                    url: "{% url cciw.officers.views.resend_email %}",
+                    data: "officer_id=" + officerId.toString(),
+                });
+            }
+        });
     }
     var officerAddHandler = function(ev) {
         if (ev.type == "keyup") {
