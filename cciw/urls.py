@@ -13,7 +13,6 @@ urlpatterns = patterns('',
     (r'^reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', 'django.contrib.auth.views.password_reset_confirm'),
     (r'^reset/done/$', 'django.contrib.auth.views.password_reset_complete'),
     # Normal views
-    (r'^admin/doc/', include('django.contrib.admindocs.urls')),
     (r'^admin/', include(admin.site.urls), {'FORCESSL': True}),
     (r'^officers/', include('cciw.officers.urls'), {'FORCESSL': True})
 )
@@ -27,6 +26,7 @@ if settings.DEBUG:
                             (r'^validator/', include('lukeplant_me_uk.django.validator.urls')),
                             (r'^admin_media/(?P<path>.*)$', 'django.views.static.serve',
                              {'document_root': admin_media_root}),
+                            (r'^admin_doc/', include('django.contrib.admindocs.urls')),
                             (r'^media/(?P<path>.*)$', 'django.views.static.serve',
                              {'document_root': settings.MEDIA_ROOT}),
                             (r'^sp_media/(?P<path>.*)$', 'django.views.static.serve',
