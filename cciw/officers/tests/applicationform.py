@@ -21,9 +21,9 @@ class ApplicationFormView(TwillMixin, TestCase):
 
         super(ApplicationFormView, self).setUp()
 
-    def _add_application(self):
+    def _add_application(self, camp_id=1):
         u = User.objects.get(username=OFFICER[0])
-        c = Camp.objects.get(id=1)
+        c = Camp.objects.get(id=camp_id)
         a = Application(officer=u, camp=c, address_email=u.email)
         a.save()
         return a
@@ -302,3 +302,29 @@ class ApplicationFormView(TwillMixin, TestCase):
         self._twill_login(LEADER)
         tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/"))
         tc.code(200)
+
+    def test_add_application_duplicate_camp(self):
+        """
+        Test that we can't add a new application for the same camp
+        """
+        self._twill_login(OFFICER)
+        a1 = self._add_application(camp_id=1)
+        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.formvalue('1', 'camp', '1')
+        tc.submit('_save')
+        tc.find('You have already submitted')
+        u = User.objects.get(username=OFFICER[0])
+        self.assertEqual(u.application_set.count(), 1)
+
+    def test_change_application_duplicate_camp(self):
+        """
+        Ensure that we can't change the 'camp' field so that we end up with
+        duplicates.
+        """
+        self._twill_login(OFFICER)
+        a1 = self._add_application(camp_id=1)
+        a2 = self._add_application(camp_id=2)
+        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/%s/" % a2.id))
+        tc.formvalue('1', 'camp', '1') # change
+        tc.submit('_save')
+        tc.find('You have already submitted')
