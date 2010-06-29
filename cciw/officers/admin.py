@@ -18,11 +18,12 @@ class ApplicationAdminModelForm(forms.ModelForm):
         # Also, once an Application has been marked 'finished' and the camp is
         # past, we don't allow any value to be changed, to stop the possibility
         # of tampering with saved data.
-        if self.instance.pk is not None:
-            if not user.has_perm('officers.change_application'):
-                if self.cleaned_data['camp'].is_past():
-                    self._errors.setdefault('camp', ErrorList()).append("You cannot submit an application form for a camp that is already finished")
+        if self.instance.pk is None:
+            if self.cleaned_data['camp'].is_past():
+                self._errors.setdefault('camp', ErrorList()).append("You cannot submit an application form for a camp that is already finished")
 
+        else:
+            if not user.has_perm('officers.change_application'):
                 # NB: next line uses 'instance' and *not* cleaned_data, since we
                 # need to look at saved data, not form data.
                 if self.instance.finished and self.instance.camp.is_past():

@@ -244,11 +244,13 @@ class ApplicationFormView(TwillMixin, TestCase):
 
     def test_change_application_after_camp_past(self):
         """
-        Ensure that the user can't change an application after it
-        has been saved, and the camp is now past.
+        Ensure that the user can't change an application after it has been
+        'finished', and the camp is now past.
         """
         self._twill_login(OFFICER)
         a = self._add_application()
+        a.finished = True
+        a.save()
 
         # Make the camp past
         camp = a.camp
@@ -261,8 +263,29 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.submit('_save')
         # we should be on same page:
         tc.url('officers/application/%s/$' % a.id)
+        tc.find("You cannot change a submitted")
         # shouldn't have changed data:
         self.assertNotEqual(a.full_name, 'A Changed Full Name')
+
+    def test_submit_application_after_camp_past(self):
+        """
+        Ensure that the user can't create an application after the camp is past.
+        """
+        camp = Camp.objects.get(pk=1)
+        camp.end_date = datetime.date.today() - datetime.timedelta(100)
+        camp.save()
+
+        self._twill_login(OFFICER)
+        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.code(200)
+        u = User.objects.get(username=OFFICER[0])
+        self.assertEqual(u.application_set.count(), 0)
+        tc.formvalue('1', 'camp', '1')
+        tc.formvalue('1', 'full_name', 'Test full name')
+        tc.submit('_save')
+        tc.url('admin/officers/application/add/$')
+        tc.find("You cannot submit an application")
+        self.assertEqual(u.application_set.count(), 0)
 
     def test_list_applications_officers(self):
         """
