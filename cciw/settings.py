@@ -79,6 +79,11 @@ if DEVBOX:
 else:
     from cciw.settings_priv import DATABASES
 
+###### SESSIONS ########
+
+if not DEVBOX:
+    SESSION_COOKIE_SECURE = True
+
 ######  TEMPLATES  ###########
 
 TEMPLATE_DIRS = (
@@ -125,7 +130,6 @@ else:
 
 _MIDDLEWARE_CLASSES = (
     (DEVBOX,     "cciw.middleware.http.ActAsProxy"),
-    (DEVBOX,     "cciw.middleware.http.DummyForceSSLMiddleware"),
     (not DEVBOX, "cciw.middleware.http.WebFactionFixes"),
     (not DEVBOX, "cciw.middleware.http.ForceSSLMiddleware"),
     (True,       "django.middleware.gzip.GZipMiddleware"),

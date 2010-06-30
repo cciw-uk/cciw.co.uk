@@ -32,22 +32,15 @@ class WebFactionFixes(object):
 
 class ForceSSLMiddleware(object):
     """
-    Middleware that performs redirects from HTTP to HTTPS for
-    specified views.
+    Middleware that performs redirects from HTTP to HTTPS.
     """
-
+    # We need SESSION_COOKIE_SECURE = True to have any genuine security over
+    # SSH.  But it is a global setting, so sessions won't work over
+    # HTTP. Therefore need to force everything to be HTTPS.
     def process_view(self, request, view_func, view_args, view_kwargs):
-        if view_kwargs.pop('FORCESSL', False) and not request.is_secure():
+        if not request.is_secure():
             newurl = "https://%s%s" % (request.get_host(), request.get_full_path())
             return HttpResponsePermanentRedirect(newurl)
-
-class DummyForceSSLMiddleware(object):
-    """
-    For local testing where we don't have HTTPS - just remove the FORCESSL
-    kwarg from view_kwargs
-    """
-    def process_view(self, request, view_func, view_args, view_kwargs):
-        view_kwargs.pop('FORCESSL', None)
 
 class ActAsProxy(object):
     """

@@ -94,7 +94,7 @@ class ApplicationFormView(TwillMixin, TestCase):
 
     def test_add_application(self):
         self._twill_login(OFFICER)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/add/"))
         tc.code(200)
         tc.find('Save and continue editing')
         tc.notfind('Save and add another')
@@ -113,7 +113,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         u = User.objects.get(username=LEADER[0])
         self.assertEqual(u.application_set.count(), 0)
         self._twill_login(LEADER)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/add/"))
         tc.code(200)
         tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
@@ -127,7 +127,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         a = self._add_application()
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 1)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
         tc.code(200)
         tc.find('Save and continue editing')
         tc.notfind('Save and add another')
@@ -159,7 +159,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         self.assertNotEqual(orig_email, new_email)
 
         # visit page
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
         tc.code(200)
         self._finish_application_form()
         tc.formvalue('1', 'camp', '1')
@@ -209,7 +209,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 0)
         self._twill_login(OFFICER)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/add/"))
         tc.code(200)
         tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'finished', 'on')
@@ -224,7 +224,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         self.assertEqual(u.application_set.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
         self._twill_login(OFFICER)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/add/"))
         tc.code(200)
         self._finish_application_form()
 
@@ -257,7 +257,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         camp.end_date = datetime.date.today() - datetime.timedelta(100)
         camp.save()
 
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
         tc.code(200)
         tc.formvalue('1', 'full_name', 'A Changed Full Name')
         tc.submit('_save')
@@ -276,7 +276,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         camp.save()
 
         self._twill_login(OFFICER)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/add/"))
         tc.code(200)
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 0)
@@ -292,7 +292,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         Ensure that normal officers can't see the list of applications
         """
         self._twill_login(OFFICER)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/"))
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/"))
         tc.code(403)
 
     def test_list_applications_leaders(self):
@@ -300,7 +300,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         Ensure that leaders can see the list of applications
         """
         self._twill_login(LEADER)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/"))
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/"))
         tc.code(200)
 
     def test_add_application_duplicate_camp(self):
@@ -309,7 +309,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         """
         self._twill_login(OFFICER)
         a1 = self._add_application(camp_id=1)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/add/"))
         tc.formvalue('1', 'camp', '1')
         tc.submit('_save')
         tc.find('You have already submitted')
@@ -324,7 +324,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         self._twill_login(OFFICER)
         a1 = self._add_application(camp_id=1)
         a2 = self._add_application(camp_id=2)
-        tc.go(make_twill_url("http://www.cciw.co.uk/admin/officers/application/%s/" % a2.id))
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/%s/" % a2.id))
         tc.formvalue('1', 'camp', '1') # change
         tc.submit('_save')
         tc.find('You have already submitted')

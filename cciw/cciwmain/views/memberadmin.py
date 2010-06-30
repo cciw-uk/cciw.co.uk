@@ -107,7 +107,7 @@ def send_signup_mail(email):
 To confirm the e-mail address you used is genuine and continue the
 sign-up process, please click on the link below:
 
-http://%(domain)s/signup/?email=%(email)s&h=%(hash)s
+https://%(domain)s/signup/?email=%(email)s&h=%(hash)s
 
 If clicking on the link does not do anything, please copy and paste
 the link into your web browser.
@@ -125,7 +125,7 @@ def send_username_reminder(member):
 Your user name is: %(user_name)s
 
 You can log in at:
-http://%(domain)s/login/
+https://%(domain)s/login/
 
 Thanks.
 """ % {'domain': utils.get_current_domain(), 'user_name': member.user_name },
@@ -144,7 +144,7 @@ Your new password is:
 
 In order to activate this new password, please click on the link below:
 
-http://%(domain)s/memberadmin/change-password/?u=%(user_name)s&h=%(hash)s
+https://%(domain)s/memberadmin/change-password/?u=%(user_name)s&h=%(hash)s
 
 If clicking on the link does not do anything, please copy and paste the
 entire link into your web browser.
@@ -204,7 +204,7 @@ def send_newemail_email(member, new_email):
 To confirm that your new e-mail address is genuine and update our records,
 please click on the link below:
 
-http://%(domain)s/memberadmin/change-email/?email=%(email)s&u=%(user_name)s&h=%(hash)s
+https://%(domain)s/memberadmin/change-email/?email=%(email)s&u=%(user_name)s&h=%(hash)s
 
 If clicking on the link does not do anything, please copy and paste
 the entire link into your web browser.

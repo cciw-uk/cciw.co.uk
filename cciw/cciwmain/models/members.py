@@ -221,10 +221,10 @@ class Message(models.Model):
 %(message)s
 ----
 You can view your inbox here:
-http://%(domain)s/members/%(to)s/messages/inbox/
+https://%(domain)s/members/%(to)s/messages/inbox/
 
 You can reply here:
-http://%(domain)s/members/%(from)s/messages/
+https://%(domain)s/members/%(from)s/messages/
 
 """ % {'from': from_member.user_name, 'to': to_member.user_name,
         'domain': utils.get_current_domain(), 'message': text},

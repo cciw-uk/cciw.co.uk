@@ -117,7 +117,7 @@ class MemberAdmin(TestCase):
         self._assert_icon_upload_fails("outsize_icon.png")
 
     def _read_email_change_email(self, email):
-        return read_email_url(email, "http://.*/change-email/.*")
+        return read_email_url(email, "https://.*/change-email/.*")
 
     def test_change_email(self):
         data = self._standard_post_data()
@@ -133,7 +133,7 @@ class MemberAdmin(TestCase):
         self.assertEqual(m.email, data['email'])
 
     def _read_newpassword_email(self, email):
-        return read_email_url(email, "http://.*/change-password/.*")
+        return read_email_url(email, "https://.*/change-password/.*")
 
     def test_send_new_password(self):
         resp = self.client.post(NEW_PASSWORD_URL, {'email': TEST_MEMBER_EMAIL,
@@ -182,7 +182,7 @@ class MemberSignup(TwillMixin, TestCase):
         self.assertEqual(len(mail.outbox), 1, "An email should be sent")
 
     def _read_signup_email(self, email):
-        return read_email_url(email, "http://.*/signup/.*")
+        return read_email_url(email, "https://.*/signup/.*")
 
     def _follow_email_url(self, path, querydata):
         response = self.client.get(path, querydata)

@@ -10,7 +10,6 @@ DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
 DATABASES['default']['NAME'] = ':memory:'
 
 MIDDLEWARE_CLASSES = (
-    "cciw.middleware.http.DummyForceSSLMiddleware",
     "django.middleware.common.CommonMiddleware",
 #    "django.middleware.cache.CacheMiddleware",
 #    "django.middleware.gzip.GZipMiddleware",
