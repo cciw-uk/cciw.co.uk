@@ -18,8 +18,9 @@ class ApplicationAdminModelForm(forms.ModelForm):
         # an Application has been marked 'finished' and the camp is past, we
         # don't allow any value to be changed, to stop the possibility of
         # tampering with saved data.
+        camp = self.cleaned_data.get('camp', None)
         if self.instance.pk is None:
-            if self.cleaned_data['camp'].is_past():
+            if camp is not None and camp.is_past():
                 self._errors.setdefault('camp', ErrorList()).append("You cannot submit an application form for a camp that is already finished")
 
         else:
@@ -30,11 +31,11 @@ class ApplicationAdminModelForm(forms.ModelForm):
                     self._errors.setdefault('__all__', ErrorList()).append("You cannot change a submitted application form once the camp is finished.")
 
         # Ensure no duplicates:
-        camp_id = self.cleaned_data['camp'].id
-        apps = user.application_set.filter(camp=camp_id)
-        if (self.instance.pk is None and apps.exists()) or \
-                (self.instance.pk is not None and apps.exclude(id=self.instance.pk).exists()):
-            self._errors.setdefault('__all__', ErrorList()).append("You have already submitted an application for that camp")
+        if camp is not None:
+            apps = user.application_set.filter(camp=camp.id)
+            if (self.instance.pk is None and apps.exists()) or \
+                    (self.instance.pk is not None and apps.exclude(id=self.instance.pk).exists()):
+                self._errors.setdefault('camp', ErrorList()).append("You have already submitted an application for this camp")
 
         if app_finished:
             # All fields decorated with 'required_field' need to be
