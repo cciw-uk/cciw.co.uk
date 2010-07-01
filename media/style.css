@@ -465,7 +465,7 @@ p
 /* standard template */
 #sidebarOuter
 {
-	position: absolute;
+	position: fixed;
 	left: 0px;
 	top: 72px;
 	width: 14em;
