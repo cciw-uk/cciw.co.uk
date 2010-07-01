@@ -17,3 +17,8 @@ def application_txt_filename(app):
 
 def _application_filename_stem(app):
     return 'Application_%s_%s' % (app.officer.username, app.camp.year)
+
+def application_diff(app1, app2):
+    import difflib
+    conv = lambda app: application_to_text(app).split('\n')
+    return '\n'.join(difflib.unified_diff(conv(app1), conv(app2), lineterm=''))
