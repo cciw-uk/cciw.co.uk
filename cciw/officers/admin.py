@@ -267,6 +267,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         email.send_application_emails(request, obj)
 
 class ReferenceAdmin(admin.ModelAdmin):
+    list_display = ['__unicode__', 'requested', 'received']
     search_fields = ['application__officer__first_name', 'application__officer__last_name']
 
 class InvitationAdmin(admin.ModelAdmin):
