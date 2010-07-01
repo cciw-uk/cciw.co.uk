@@ -13,6 +13,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
     def clean(self):
         app_finished = self.cleaned_data.get('finished', False)
         user = threadlocals.get_current_user()
+        officer = self.cleaned_data.get('officer', None)
         # We don't allow them to submit application form for a camp that is
         # past.  This stops people submitting for incorrect camps.  Also, once
         # an Application has been marked 'finished' and the camp is past, we
@@ -31,8 +32,8 @@ class ApplicationAdminModelForm(forms.ModelForm):
                     self._errors.setdefault('__all__', ErrorList()).append("You cannot change a submitted application form once the camp is finished.")
 
         # Ensure no duplicates:
-        if camp is not None:
-            apps = user.application_set.filter(camp=camp.id)
+        if camp is not None and officer is not None:
+            apps = officer.application_set.filter(camp=camp.id)
             if (self.instance.pk is None and apps.exists()) or \
                     (self.instance.pk is not None and apps.exclude(id=self.instance.pk).exists()):
                 self._errors.setdefault('camp', ErrorList()).append("You have already submitted an application for this camp")

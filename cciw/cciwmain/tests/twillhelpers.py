@@ -39,6 +39,9 @@ class TwillMixin(object):
         tc.fv(1, 'id_password', creds[1])
         tc.submit()
 
+    def _twill_logout(self):
+        twill.get_browser().clear_cookies()
+
     def continue_twill(self):
         cmd = TwillCommandLoop()
         cmd.cmdloop()

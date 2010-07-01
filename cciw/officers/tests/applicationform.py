@@ -21,8 +21,8 @@ class ApplicationFormView(TwillMixin, TestCase):
 
         super(ApplicationFormView, self).setUp()
 
-    def _add_application(self, camp_id=1):
-        u = User.objects.get(username=OFFICER[0])
+    def _add_application(self, camp_id=1, officer=OFFICER):
+        u = User.objects.get(username=officer[0])
         c = Camp.objects.get(id=camp_id)
         a = Application(officer=u, camp=c, address_email=u.email)
         a.save()
@@ -137,6 +137,27 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.url('officers/applications/$')
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
+
+    def test_change_finished_application(self):
+        """
+        Ensure that a leader can change a finished application of an officer
+        """
+        self.test_finish_complete() # adds app for OFFICER
+        self._twill_logout()
+
+        self._twill_login(LEADER)
+        # To catch a bug, give the leader an application form for the same camp
+        self._add_application(officer=LEADER)
+        u = User.objects.get(username=OFFICER[0])
+        apps = u.application_set.all()
+        self.assertEqual(len(apps), 1)
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/%s/" % apps[0].id))
+        tc.code(200)
+        tc.formvalue('1', 'full_name', 'Changed full name')
+        tc.submit('_save')
+        tc.url('officers/applications/$')
+        self.assertEqual(u.application_set.count(), 1)
+        self.assertEqual(u.application_set.all()[0].full_name, 'Changed full name')
 
     def test_change_email_address(self):
         # When submitted email address is different from the one stored against
