@@ -359,7 +359,7 @@ def email_sending_failed_response():
 
 
 class SetEmailForm(forms.Form):
-    email = forms.EmailField()
+    email = forms.EmailField(widget=forms.TextInput(attrs={'size':'50'}))
 
 
 class SendMessageForm(forms.Form):
@@ -451,7 +451,7 @@ def request_reference(request):
             if emailform.is_valid():
                 app.referees[ref.referee_number-1].email = emailform.cleaned_data['email']
                 app.save()
-                messages.info(request, "Email updated.")
+                messages.info(request, "E-mail address updated.")
         else:
             # cancel
             return close_window_response()
