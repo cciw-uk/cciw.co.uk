@@ -402,6 +402,7 @@ def request_reference(request):
     if 'manual' in request.GET:
         return manage_reference_manually(request, ref)
 
+    c = template.RequestContext(request)
     update = 'update' in request.GET
     if update:
         (possible, exact) = get_previous_references(ref)
@@ -460,7 +461,6 @@ def request_reference(request):
     if messageform is None:
         messageform = SendMessageForm(message_info=messageform_info)
 
-    c = template.RequestContext(request)
     if not email_re.match(ref.referee.email.strip()):
         c['bad_email'] = True
     c['is_popup'] = True
