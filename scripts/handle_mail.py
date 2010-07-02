@@ -1,18 +1,14 @@
 #!/usr/bin/env python2.5
 import os
+import zc.lockfile
 
-def main(lockfile):
-    if os.path.exists(lockfile):
+def main():
+    try:
+        l = zc.lockfile.LockFile('.handle_mail_lock')
+    except zc.lockfile.LockError:
         return
 
     try:
-        # There is a race condition here, but since we only run this
-        # script every n minutes, the processes are not going to be
-        # racing.
-
-        # Create the lock
-        file(lockfile, "w").close()
-
         try:
             from cciw.mail.lists import handle_all_mail
             handle_all_mail()
@@ -26,8 +22,7 @@ def main(lockfile):
             mail_admins(subject, message, fail_silently=True)
     finally:
         # Delete the lock
-        os.unlink(lockfile)
+        l.close()
 
 if __name__ == '__main__':
-    import sys
-    main(sys.argv[1])
+    main()
