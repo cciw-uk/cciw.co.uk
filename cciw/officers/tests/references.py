@@ -87,7 +87,7 @@ class RequestReference(TwillMixin, TestCase):
         tc.submit()
         app = Application.objects.get(pk=3)
         self.assert_(app.referees[1].email == 'addedemail@example.com')
-        tc.find("Email updated.")
+        tc.find("E-mail address updated.")
 
     def test_cancel(self):
         # Application 3 has an e-mail address for first referee
