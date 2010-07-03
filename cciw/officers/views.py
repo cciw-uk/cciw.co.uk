@@ -526,6 +526,7 @@ def manage_reference_manually(request, ref):
     else:
         form = ReferenceEditForm(instance=ref)
     c['form'] = form
+    c['is_popup'] = True
     return render_to_response("cciw/officers/manage_reference_manual.html",
                               context_instance=c)
 
