@@ -90,7 +90,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         return [e for e in mail.outbox if "CCIW application form" in e.subject]
 
     def _get_email_change_emails(self):
-        return [e for e in mail.outbox if "Email change" in e.subject]
+        return [e for e in mail.outbox if "E-mail change" in e.subject]
 
     def test_add_application(self):
         self._twill_login(OFFICER)

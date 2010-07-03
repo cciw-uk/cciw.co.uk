@@ -42,11 +42,11 @@ def send_application_emails(request, application):
     # (usually they just get the year of the camp wrong(!))
     user = request.user
     if len(leader_emails) > 0:
-        messages.info(request, "The completed application form has been sent to the leaders via email.")
+        messages.info(request, "The completed application form has been sent to the leaders via e-mail.")
 
     if user == application.officer:
         send_officer_email(application.officer, application, application_text, rtf_attachment)
-        messages.info(request, "A copy of the application form has been sent to you via email.")
+        messages.info(request, "A copy of the application form has been sent to you via e-mail.")
 
         if application.officer.email != application.address_email:
             send_email_change_emails(user, application)
@@ -60,7 +60,7 @@ def send_officer_email(officer, application, application_text, rtf_attachment):
 u"""%s,
 
 For your records, here is a copy of the application you have submitted
-to CCIW. It is also attached to this email as an RTF file.
+to CCIW. It is also attached to this e-mail as an RTF file.
 
 """ % application.officer.first_name) + application_text
 
@@ -72,7 +72,7 @@ def send_leader_email(leader_emails, application, application_text, rtf_attachme
     subject = "CCIW application form from %s" % application.full_name
     body = \
 u"""The following application form has been submitted via the
-CCIW website.  It is also attached to this email as an RTF file.
+CCIW website.  It is also attached to this e-mail as an RTF file.
 
 """ + application_text
 
@@ -88,7 +88,7 @@ def make_update_email_url(application):
                                                                            hash=make_update_email_hash(old_email, email))
 
 def send_email_change_emails(officer, application):
-    subject = "Email change on CCIW"
+    subject = "E-mail change on CCIW"
     user_email = formatted_email(application.officer)
     user_msg = (
 u"""%(name)s,
@@ -100,7 +100,7 @@ then click the link below:
 
  %(url)s
 
-If the email address you entered on your application form (%(new)s)
+If the e-mail address you entered on your application form (%(new)s)
 is, in fact, incorrect, then please reply to this e-mail to say so.
 
 NB. This e-mail has been sent to both the old and new e-mail

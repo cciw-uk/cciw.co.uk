@@ -236,7 +236,7 @@ Please find attached a copy of the application you requested
                                    msg, settings.SERVER_EMAIL,
                                    [formatted_email(request.user)],
                                    attachments=[rtf_attachment])
-        messages.info(request, "Email sent.")
+        messages.info(request, "E-mail sent.")
 
         # Redirect back where we came from
         return HttpResponseRedirect(request.POST.get('to', '/officers/'))
@@ -354,7 +354,7 @@ def manage_references(request, year=None, number=None):
 
 
 def email_sending_failed_response():
-    return HttpResponse("""<p>Email failed to send.  This is likely a temporary
+    return HttpResponse("""<p>E-mail failed to send.  This is likely a temporary
     error, please press back in your browser and try again.</p>""")
 
 

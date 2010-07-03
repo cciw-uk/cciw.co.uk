@@ -52,16 +52,16 @@ def create_multiple_officers(csv_data, dryrun, verbose=False):
             msg = "no surname provided"
         if valid and len(email) == 0:
             valid = False
-            msg = "no email provided"
+            msg = "no e-mail address provided"
         if valid and not email_re.search(email):
             valid = False
-            msg = "invalid email address"
+            msg = "invalid e-mail address"
 
         # We allow couples to share email addresses, so to check
         # for duplicates, we check first name as well.
         if valid and User.objects.filter(email__iexact=email, first_name__iexact=first_name).exists():
             valid = False
-            msg = "User with email address %s and name %s already exists" % (email, first_name)
+            msg = "User with e-mail address %s and name %s already exists" % (email, first_name)
 
         if valid:
             # race condition between make_username and create_officer,
@@ -79,7 +79,7 @@ class EmailError(Exception):
 def create_officer(username, first_name, last_name, email, update=False,
                    is_leader=False, person=None, dryrun=False, verbose=False):
     """
-    Create an officer with the specified username, first_name, last_name, email.
+    Create an officer with the specified username, first_name, last_name, e-mail.
     Officer will be e-mailed with password.  Set username to None for an
     automatically assigned one.  Returns the created User object.
     """
@@ -97,7 +97,7 @@ def create_officer(username, first_name, last_name, email, update=False,
                               update=update, is_leader=is_leader, person=person,
                               dryrun=dryrun, verbose=verbose)
     if verbose:
-        print "Emailing officer %s" % username
+        print "E-mailing officer %s" % username
     try:
         # We don't want to send an e-mail if the data wasn't actually saved
         # to the the database, so we do this second.  However, we don't really
@@ -229,13 +229,13 @@ using the online system.  Here is what you need to know:
 2) You should set up a list of officers for your camp.  If you have
    officers who are not yet added to the system, you can add them
    yourself on the relevant pages, or if you have a list of officer
-   names and email addresses, these can be imported in bulk if you
+   names and e-mail addresses, these can be imported in bulk if you
    send them to me.
 
 3) You may want to e-mail the list of officers to remind them to
    submit their application forms.
 
-   After that, you should receive all the application forms by email,
+   After that, you should receive all the application forms by e-mail,
    in plain text format and in RTF format which should be good for
    printing out. You can also go to the website to find any application
    forms that you may have lost.
@@ -252,7 +252,7 @@ def email_officer(username, first_name, email, password, is_leader=False, dryrun
     if update:
         repeat_message = \
 """
-This is a repeat email sent either because the first email never
+This is a repeat e-mail sent either because the first e-mail never
 arrived or the password was forgotten.  Your username has not been
 changed, but a new random password has been given to you, see below.
 """
