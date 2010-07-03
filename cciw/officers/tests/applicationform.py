@@ -226,6 +226,27 @@ class ApplicationFormView(TwillMixin, TestCase):
 
         self.assertEqual(User.objects.get(username=OFFICER[0]).email, new_email)
 
+    def test_unchanged_email_address(self):
+        """
+        Check that if the e-mail address is not changed (or is just different case)
+        then no e-mail is sent out
+        """
+        self.assertEqual(len(mail.outbox), 0)
+        self._twill_login(OFFICER)
+        u = User.objects.get(username=OFFICER[0])
+        a = self._add_application()
+        self.assertEqual(u.application_set.count(), 1)
+
+        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
+        tc.code(200)
+        self._finish_application_form()
+        tc.formvalue('1', 'address_email', u.email.upper())
+        tc.submit('_save')
+
+        # Check no e-mails have been sent
+        emails = self._get_email_change_emails()
+        self.assertEqual(len(emails), 0)
+
     def test_finish_incomplete(self):
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 0)

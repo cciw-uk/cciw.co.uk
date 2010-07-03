@@ -48,7 +48,7 @@ def send_application_emails(request, application):
         send_officer_email(application.officer, application, application_text, rtf_attachment)
         messages.info(request, "A copy of the application form has been sent to you via e-mail.")
 
-        if application.officer.email != application.address_email:
+        if application.officer.email.lower() != application.address_email.lower():
             send_email_change_emails(user, application)
 
 def send_officer_email(officer, application, application_text, rtf_attachment):
