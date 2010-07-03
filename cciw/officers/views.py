@@ -564,6 +564,10 @@ def initial_reference_form_data(ref, prev_ref_form):
     return retval
 
 
+def empty_reference(ref_form):
+    return ref_form.how_long_known.strip() == ""
+
+
 def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
     """
     View for allowing referee to submit reference (create the ReferenceForm object)
@@ -579,7 +583,8 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
         else:
             # If we can find an exact match, use that.  This covers the case
             # where a reference is filled in for the same person for another
-            # camp in the same year.
+            # camp in the same year, after the e-mail was sent out (so the
+            # e-mail has an out-of-date link).
             (_, exact) = get_previous_references(ref)
             if exact is not None:
                 prev_ref = exact
@@ -599,7 +604,7 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
         else:
             instance = None
 
-        if ref_form is not None and ref.received:
+        if ref_form is not None and ref.received and not empty_reference(ref_form):
             # It's possible, if an admin has done 'Manage reference manually'
             # and clicked "Create/edit reference form" but then cancelled, that
             # the ReferenceForm will exist but be empty.  So we check both that
@@ -623,10 +628,15 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                     send_leaders_reference_email(obj)
                     return HttpResponseRedirect(reverse('cciw.officers.views.create_reference_thanks'))
             else:
+                initial_data = initial_reference_form_data(ref, prev_ref_form)
                 if instance is not None:
+                    if empty_reference(instance):
+                        # Need to fill data
+                        for k, v in initial_data.items():
+                            setattr(instance, k, v)
                     form = ReferenceFormForm(instance=instance)
                 else:
-                    form = ReferenceFormForm(initial=initial_reference_form_data(ref, prev_ref_form))
+                    form = ReferenceFormForm(initial=initial_data)
             c['form'] = form
         c['officer'] = ref.application.officer
     return render_to_response('cciw/officers/create_reference.html',
