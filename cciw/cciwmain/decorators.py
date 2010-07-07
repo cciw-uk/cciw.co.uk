@@ -95,6 +95,8 @@ def email_errors_silently(func):
 def json_response(view_func):
     def _inner(request, *args, **kwargs):
         data = view_func(request, *args, **kwargs)
-        return HttpResponse(python_to_json(data),
+        resp = HttpResponse(python_to_json(data),
                             mimetype="text/javascript")
+        resp['Cache-Control'] = "no-cache"
+        return resp
     return wraps(view_func)(_inner)

@@ -70,7 +70,7 @@
             clone = select.clone();
             clone.removeAttr('id').removeAttr('name').hide();
             clone.appendTo(select.parent());
-        }
+        };
 
         var filter = function(){
             select.children().remove();
@@ -82,7 +82,7 @@
                             }
                          });
             select.append(tmp.join(''));
-        }
+        };
 
         init();
         this.keyup(filter);
@@ -106,7 +106,7 @@
         // Refresh different areas of the page:
         $.ajax({
             type: "GET",
-            url: "?sections=1",
+            url: "?sections=1&" + Math.random().toString(),
             dataType: 'json',
             success: function(data) {
                 refreshChosenList(data.chosen);
@@ -117,6 +117,7 @@
     };
 
     var refreshChosenList = function(text) {
+        $("#id_officer_list_table").children().remove();
         $("#id_officer_list_table").html(text);
         editOfficerMode = false;
         addOfficerListHandlers();
@@ -149,12 +150,12 @@
             // Need to retrieve details (we don't know first name and last name)
             $.ajax({
                 type: "GET",
-                url: "{% url cciw.officers.views.officer_details %}?officer_id=" + officerId.toString(),
+                url: "{% url cciw.officers.views.officer_details %}?officer_id=" + officerId.toString() + "&" + Math.random().toString(),
                 dataType: 'json',
                 success: function(officer) {
                     var escape = function(t) {
                         return $('<div/>').text(t).html();
-                    }
+                    };
                     var row = $('#id_officer_table_tr_' + officerId.toString());
                     // Make input boxes, and save/cancel buttons
                     row.html('<td>' +
@@ -186,6 +187,7 @@
                                    'last_name': officer.last_name,
                                    'email': officer.email
                                    },
+                            dataType: 'json',
                             success: refreshLists
                         });
                     });
@@ -201,6 +203,7 @@
                 type: "POST",
                 url:  "{% url cciw.officers.views.remove_officer camp.year camp.number %}",
                 data: "officer_id=" + officerId.toString(),
+                dataType: 'json',
                 success: refreshLists
             });
             ev.preventDefault();
@@ -215,10 +218,11 @@
                     type: "POST",
                     url: "{% url cciw.officers.views.resend_email %}",
                     data: "officer_id=" + officerId.toString(),
+                    dataType: 'json'
                 });
             }
         });
-    }
+    };
     var officerAddHandler = function(ev) {
         if (ev.type == "keyup") {
             var code = (ev.keyCode ? ev.keyCode : ev.which);
@@ -234,6 +238,7 @@
             type: "POST",
             url: "{% url cciw.officers.views.add_officer camp.year camp.number %}",
             data: "officer_id=" + officer_id,
+            dataType: 'json',
             success: refreshLists
         });
     };
@@ -249,14 +254,14 @@
         popup.fadeIn("fast");
         $('#id_popup_background').fadeIn('fast');
         ev.preventDefault();
-    }
+    };
 
     var newOfficerClose = function(ev) {
         refreshLists();
         $('#id_add_officer_popup').fadeOut('fast');
         $('#id_popup_background').fadeOut('fast');
         ev.preventDefault();
-    }
+    };
 
     $(document).ready(function(){
         $("#id_available_officers_filter").multiSelectFilter("#id_available_officers");
