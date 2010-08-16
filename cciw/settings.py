@@ -157,8 +157,6 @@ MEDIA_ROOT = basedir + '/media'
 MEDIA_URL = '/media'
 SPECIAL_MEDIA_URL = '/sp_media'
 
-FILE_UPLOAD_TEMP_DIR = basedir + "/uploads"
-
 ADMIN_MEDIA_PREFIX = '/admin_media/'
 
 CCIW_MEDIA_URL = MEDIA_URL
