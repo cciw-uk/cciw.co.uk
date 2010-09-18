@@ -133,6 +133,7 @@ _MIDDLEWARE_CLASSES = (
     (not DEVBOX, "cciw.middleware.http.WebFactionFixes"),
     (not DEVBOX, "cciw.middleware.http.ForceSSLMiddleware"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
+    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
 #    (DEVBOX,     "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware"),
     (True,       'django.middleware.csrf.CsrfViewMiddleware'),
     (True,       "django.contrib.sessions.middleware.SessionMiddleware"),
