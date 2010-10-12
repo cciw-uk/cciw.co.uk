@@ -25,11 +25,11 @@ class HtmlChunkPage(TestCase):
 
     def _test_page(self, should_see_edit_link):
         response = self.client.get('/')
-        self.assert_('<p>CCIW is a charitable company' in response.content,
-                     "HtmlChunk not visible or not escaped properly")
+        self.assertTrue('<p>CCIW is a charitable company' in response.content,
+                        "HtmlChunk not visible or not escaped properly")
         if should_see_edit_link:
-            self.assert_("Edit home_page" in response.content,
-                         "'Edit home page' link should be visible")
+            self.assertTrue("Edit home_page" in response.content,
+                            "'Edit home page' link should be visible")
         else:
-            self.assert_("Edit home_page" not in response.content,
-                         "'Edit home page' link should not be visible")
+            self.assertTrue("Edit home_page" not in response.content,
+                            "'Edit home page' link should not be visible")

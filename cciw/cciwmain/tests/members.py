@@ -60,8 +60,8 @@ class MemberAdmin(TestCase):
 
         # Check context has been populated
         member = response.context[0].get('member')
-        self.assert_(member is not None)
-        self.assert_(member == self.member)
+        self.assertTrue(member is not None)
+        self.assertTrue(member == self.member)
 
     def _standard_post_data(self):
         return  {
@@ -123,7 +123,7 @@ class MemberAdmin(TestCase):
         data = self._standard_post_data()
         data['email'] = "anewemailtoconfirm@email.com"
         resp = self.client.post(MEMBER_ADMIN_URL, data=data)
-        self.assert_("an e-mail has been sent" in resp.content)
+        self.assertTrue("an e-mail has been sent" in resp.content)
         self.assertEqual(len(mail.outbox), 1)
         url, path, querydata = self._read_email_change_email(mail.outbox[0])
         resp2 = self.client.get(path, querydata)
@@ -142,12 +142,12 @@ class MemberAdmin(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         url, path, querydata = self._read_newpassword_email(mail.outbox[0])
         newpassword_m = re.search(r"Your new password is:\s*(\S*)\s*", mail.outbox[0].body)
-        self.assert_(newpassword_m is not None)
+        self.assertTrue(newpassword_m is not None)
         newpassword = newpassword_m.groups()[0]
 
         self.client.get(path, querydata)
         m = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
-        self.assert_(m.check_password(newpassword))
+        self.assertTrue(m.check_password(newpassword))
 
     def tearDown(self):
         _remove_member_icons(TEST_MEMBER_USERNAME)
@@ -168,7 +168,7 @@ class MemberSignup(TwillMixin, TestCase):
         response = self.client.post(MEMBER_SIGNUP, data=post_data)
         self.failUnlessEqual(response.status_code, 200)
 
-        self.assert_("already used" in response.content,
+        self.assertTrue("already used" in response.content,
                      "Signing up should not allow an existing email to be reused")
         self.assertEqual(len(mail.outbox), 0)
 
@@ -177,7 +177,7 @@ class MemberSignup(TwillMixin, TestCase):
         response = self.client.post(MEMBER_SIGNUP, data=post_data)
         self.failUnlessEqual(response.status_code, 200)
 
-        self.assert_("an e-mail has been sent" in response.content,
+        self.assertTrue("an e-mail has been sent" in response.content,
                      "An message saying that an email has been sent should be seen")
         self.assertEqual(len(mail.outbox), 1, "An email should be sent")
 
@@ -244,14 +244,14 @@ class MemberSignup(TwillMixin, TestCase):
         url, path, querydata = self._read_signup_email(mail.outbox[0])
         querydata['h'] = querydata['h'] + "x"
         response = self._follow_email_url(path, querydata)
-        self.assert_("Error" in response.content, "Error should be reported if the hash is incorrect")
+        self.assertTrue("Error" in response.content, "Error should be reported if the hash is incorrect")
 
     def test_signup_incorrect_email(self):
         self._test_signup_send_email_part1()
         url, path, querydata = self._read_signup_email(mail.outbox[0])
         querydata['email'] = querydata['email'] + "x"
         response = self._follow_email_url(path, querydata)
-        self.assert_("Error" in response.content, "Error should be reported if the email is incorrect")
+        self.assertTrue("Error" in response.content, "Error should be reported if the email is incorrect")
 
 class MemberLists(TestCase):
     fixtures=['basic.yaml','test_members.yaml']
@@ -259,10 +259,10 @@ class MemberLists(TestCase):
     def test_index(self):
         resp = self.client.get(reverse('cciwmain.members.index'))
         self.assertEqual(resp.status_code, 200)
-        self.assert_(TEST_MEMBER_USERNAME in resp.content)
+        self.assertTrue(TEST_MEMBER_USERNAME in resp.content)
 
     def test_atom(self):
         # Just test for no error
         resp = self.client.get(reverse('cciwmain.members.index'), {'format':'atom'})
         self.assertEqual(resp.status_code, 200)
-        self.assert_(TEST_MEMBER_USERNAME in resp.content)
+        self.assertTrue(TEST_MEMBER_USERNAME in resp.content)
