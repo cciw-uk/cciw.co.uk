@@ -1,0 +1,51 @@
+[
+    {
+        "pk": "test_member_1", 
+        "model": "cciwmain.member", 
+        "fields": {
+            "dummy_member": false, 
+            "message_option": 1, 
+            "icon": "", 
+            "banned": false, 
+            "comments": "My comments", 
+            "real_name": "Test", 
+            "show_email": false, 
+            "email": "test@test.com", 
+            "moderated": 0, 
+            "date_joined": "2006-09-02 12:16:57", 
+            "last_seen": "2006-09-03 12:16:57", 
+            "password": "247SSw8klbYoU", 
+            "hidden": false, 
+            "permissions": []
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "cciwmain.permission", 
+        "fields": {
+            "description": "Poll creator"
+        }
+    }, 
+    {
+        "pk": "test_poll_creator_1", 
+        "model": "cciwmain.member", 
+        "fields": {
+            "dummy_member": false, 
+            "message_option": 1, 
+            "icon": "", 
+            "banned": false, 
+            "comments": "My comments", 
+            "real_name": "Test Poll Creator", 
+            "show_email": false, 
+            "email": "test2@test.com", 
+            "moderated": 0, 
+            "date_joined": "2006-09-02 12:16:57", 
+            "last_seen": "2006-09-03 12:16:57", 
+            "password": "247SSw8klbYoU", 
+            "hidden": false, 
+            "permissions": [
+                1
+            ]
+        }
+    }
+]

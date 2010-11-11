@@ -3,7 +3,7 @@ from django.test import TestCase
 from cciw.cciwmain.models import Topic
 
 class NewsPage(TestCase):
-    fixtures = ['basic.yaml', 'test_members.yaml', 'news.yaml']
+    fixtures = ['basic.json', 'test_members.json', 'news.json']
 
     def setUp(self):
         self.client = CciwClient()

@@ -22,7 +22,7 @@ LEADER = (LEADER_USERNAME, LEADER_PASSWORD)
 
 class ReferencesPage(TwillMixin, TestCase):
 
-    fixtures = ['basic.yaml', 'officers_users.yaml', 'references.yaml']
+    fixtures = ['basic.json', 'officers_users.json', 'references.json']
 
     def test_page_ok(self):
         # Value of this test lies in the test data.

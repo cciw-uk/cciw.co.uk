@@ -45,7 +45,7 @@ def _remove_member_icons(user_name):
         os.unlink(f)
 
 class MemberAdmin(TestCase):
-    fixtures=['basic.yaml','test_members.yaml']
+    fixtures=['basic.json','test_members.json']
     def setUp(self):
         self.client = CciwClient()
         self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)
@@ -153,7 +153,7 @@ class MemberAdmin(TestCase):
         _remove_member_icons(TEST_MEMBER_USERNAME)
 
 class MemberSignup(TwillMixin, TestCase):
-    fixtures=['basic.yaml','test_members.yaml']
+    fixtures=['basic.json','test_members.json']
 
     def setUp(self):
         self.client = CciwClient()
@@ -254,7 +254,7 @@ class MemberSignup(TwillMixin, TestCase):
         self.assertTrue("Error" in response.content, "Error should be reported if the email is incorrect")
 
 class MemberLists(TestCase):
-    fixtures=['basic.yaml','test_members.yaml']
+    fixtures=['basic.json','test_members.json']
 
     def test_index(self):
         resp = self.client.get(reverse('cciwmain.members.index'))

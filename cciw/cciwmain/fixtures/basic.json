@@ -1,0 +1,99 @@
+[
+    {
+        "pk": "1", 
+        "model": "cciwmain.site", 
+        "fields": {
+            "info": "Site 1 info", 
+            "long_name": "Site 1 long name", 
+            "slug_name": "llys-andreas", 
+            "short_name": "Site 1"
+        }
+    }, 
+    {
+        "fields": {
+            "previous_camp": null, 
+            "leaders": [
+                1
+            ], 
+            "end_date": "2000-07-08", 
+            "online_applications": true, 
+            "number": 1, 
+            "site": 1, 
+            "age": "Jnr", 
+            "year": 2000, 
+            "start_date": "2000-07-01", 
+            "chaplain": null
+        }, 
+        "model": "cciwmain.camp", 
+        "pk": "1"
+    }, 
+    {
+        "fields": {
+            "previous_camp": 1, 
+            "leaders": [
+                1
+            ], 
+            "end_date": "2001-07-08", 
+            "online_applications": true, 
+            "number": 1, 
+            "site": 1, 
+            "age": "Jnr", 
+            "year": 2001, 
+            "start_date": "2001-07-01", 
+            "chaplain": null
+        }, 
+        "model": "cciwmain.camp", 
+        "pk": "2"
+    }, 
+    {
+        "fields": {
+            "visible": true, 
+            "extra_title": "", 
+            "parent_item": null, 
+            "title": "Home", 
+            "url": "/", 
+            "listorder": 0
+        }, 
+        "model": "cciwmain.menulink", 
+        "pk": "1"
+    }, 
+    {
+        "pk": 1, 
+        "model": "sites.site", 
+        "fields": {
+            "domain": "www.cciw.co.uk", 
+            "name": "www.cciw.co.uk"
+        }
+    }, 
+    {
+        "fields": {
+            "username": "davestott", 
+            "first_name": "Dave", 
+            "last_name": "Stott", 
+            "is_active": true, 
+            "is_superuser": false, 
+            "is_staff": true, 
+            "last_login": "2008-04-23 19:06:39", 
+            "groups": [
+                2
+            ], 
+            "user_permissions": [], 
+            "password": "sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba", 
+            "email": "leader@somewhere.com", 
+            "date_joined": "2007-05-20 23:22:40"
+        }, 
+        "model": "auth.user", 
+        "pk": 1
+    }, 
+    {
+        "fields": {
+            "info": "Dave and Rebecca are members of Grace Baptist Church, Southport.  Dave has been a leader or assistant leader on many camps (EMW, CCIW and church camps).", 
+            "name": "Dave & Rebecca Stott", 
+            "users": [
+                1
+            ]
+        }, 
+        "model": "cciwmain.person", 
+        "pk": 1
+    }
+]

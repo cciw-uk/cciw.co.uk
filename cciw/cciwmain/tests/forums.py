@@ -12,7 +12,7 @@ ADD_POLL_URL =  reverse("cciwmain.camps.add_poll",
                         kwargs=dict(year=FORUM_1_YEAR, number=FORUM_1_CAMP_NUMBER))
 
 class TopicPage(TestCase):
-    fixtures = ['basic.yaml', 'test_members.yaml', 'basic_topic.yaml']
+    fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
 
     def setUp(self):
         self.client = CciwClient()
@@ -39,7 +39,7 @@ class TopicPage(TestCase):
                         "Message posts not escaped properly")
 
 class CreatePollPage(TestCase):
-    fixtures = ['basic.yaml', 'test_members.yaml', 'basic_topic.yaml']
+    fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
 
     def setUp(self):
         self.client = CciwClient()

@@ -4,7 +4,7 @@ from cciw.officers.models import Application
 from cciw.officers.tests.references import OFFICER_USERNAME
 
 class ApplicationModel(TestCase):
-    fixtures = ['basic.yaml', 'officers_users.yaml', 'references.yaml']
+    fixtures = ['basic.json', 'officers_users.json', 'references.json']
 
     def test_referees_get(self):
         """Tests the Application.referees getter utility"""

@@ -1,0 +1,104 @@
+[
+    {
+        "pk": 1, 
+        "model": "cciwmain.forum", 
+        "fields": {
+            "open": true, 
+            "location": "news/"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "cciwmain.newsitem", 
+        "fields": {
+            "created_at": "2002-12-27 15:22:57", 
+            "subject": "Bits & Pieces", 
+            "created_by": "test_member_1", 
+            "full_item": "", 
+            "summary": "Summary [b]with bbcode[/b]"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "cciwmain.newsitem", 
+        "fields": {
+            "created_at": "2002-12-27 15:22:57", 
+            "subject": "Fish & Chips", 
+            "created_by": "test_member_1", 
+            "full_item": "<p>Full item with <i>html</i> and everything</p>", 
+            "summary": ""
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "cciwmain.topic", 
+        "fields": {
+            "poll": null, 
+            "forum": 1, 
+            "post_count": 1, 
+            "needs_approval": false, 
+            "created_at": "2006-09-03 12:16:57", 
+            "subject": "Bits & Pieces", 
+            "started_by": "test_member_1", 
+            "last_post_by": "test_member_1", 
+            "news_item": 1, 
+            "hidden": false, 
+            "last_post_at": "2006-09-03 12:16:57", 
+            "open": true, 
+            "approved": false, 
+            "checked_by": null
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "cciwmain.topic", 
+        "fields": {
+            "poll": null, 
+            "forum": 1, 
+            "post_count": 1, 
+            "needs_approval": false, 
+            "created_at": "2006-09-03 12:16:57", 
+            "subject": "Fish & Chips", 
+            "started_by": "test_member_1", 
+            "last_post_by": "test_member_1", 
+            "news_item": 2, 
+            "hidden": false, 
+            "last_post_at": "2006-09-03 12:16:57", 
+            "open": true, 
+            "approved": false, 
+            "checked_by": null
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "cciwmain.post", 
+        "fields": {
+            "hidden": false, 
+            "needs_approval": false, 
+            "posted_by": "test_member_1", 
+            "approved": null, 
+            "topic": 1, 
+            "checked_by": null, 
+            "photo": null, 
+            "message": "A [b]unique message[/b] with some bbcode & <stuff> to be escaped", 
+            "posted_at": "2006-09-03 12:16:57", 
+            "subject": ""
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "cciwmain.post", 
+        "fields": {
+            "hidden": false, 
+            "needs_approval": false, 
+            "posted_by": "test_member_1", 
+            "approved": null, 
+            "topic": 2, 
+            "checked_by": null, 
+            "photo": null, 
+            "message": "A [b]unique message[/b] with some bbcode & <stuff> to be escaped", 
+            "posted_at": "2006-09-03 12:16:57", 
+            "subject": ""
+        }
+    }
+]

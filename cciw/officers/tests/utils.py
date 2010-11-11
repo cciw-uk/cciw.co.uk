@@ -4,7 +4,7 @@ from django.test import TestCase
 
 
 class UtilsTests(TestCase):
-    fixtures = ['basic.yaml', 'officers_users.yaml', 'references.yaml']
+    fixtures = ['basic.json', 'officers_users.json', 'references.json']
 
     def test_camp_officer_list(self):
         c = Camp.objects.get(pk=1)

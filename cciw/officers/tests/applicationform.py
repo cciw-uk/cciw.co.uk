@@ -10,7 +10,7 @@ from twill import commands as tc
 import datetime
 
 class ApplicationFormView(TwillMixin, TestCase):
-    fixtures = ['basic.yaml', 'officers_users.yaml']
+    fixtures = ['basic.json', 'officers_users.json']
 
     def setUp(self):
         # make sure camp 1 has end date in future, otherwise

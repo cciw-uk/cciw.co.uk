@@ -7,7 +7,7 @@ from django.core import mail
 FEEDBACK_URL = reverse("cciwmain.misc.feedback")
 
 class ContactUsPage(TestCase):
-    fixtures = ['basic.yaml', 'contact.yaml']
+    fixtures = ['basic.json', 'contact.json']
 
     def setUp(self):
         self.client = CciwClient()

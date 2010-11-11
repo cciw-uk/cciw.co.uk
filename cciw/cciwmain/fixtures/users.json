@@ -1,0 +1,87 @@
+[
+    {
+        "fields": {
+            "codename": "add_htmlchunk", 
+            "name": "Can add HTML chunk", 
+            "content_type": 21
+        }, 
+        "model": "auth.permission", 
+        "pk": 1
+    }, 
+    {
+        "fields": {
+            "codename": "change_htmlchunk", 
+            "name": "Can change HTML chunk", 
+            "content_type": 21
+        }, 
+        "model": "auth.permission", 
+        "pk": 2
+    }, 
+    {
+        "fields": {
+            "codename": "delete_htmlchunk", 
+            "name": "Can delete HTML chunk", 
+            "content_type": 21
+        }, 
+        "model": "auth.permission", 
+        "pk": 3
+    }, 
+    {
+        "fields": {
+            "username": "admin", 
+            "first_name": "Admin", 
+            "last_name": "", 
+            "is_active": true, 
+            "is_superuser": true, 
+            "is_staff": true, 
+            "last_login": "2007-12-17 18:49:13", 
+            "groups": [], 
+            "user_permissions": [], 
+            "password": "sha1$3b8d0$b5f6730d7bd13886ac2f7e6b5062c037b81e267c", 
+            "email": "someone@somewhere.com", 
+            "date_joined": "2007-12-17 18:49:13"
+        }, 
+        "model": "auth.user", 
+        "pk": 1
+    }, 
+    {
+        "fields": {
+            "username": "editor", 
+            "first_name": "Editor", 
+            "last_name": "", 
+            "is_active": true, 
+            "is_superuser": false, 
+            "is_staff": true, 
+            "last_login": "2007-12-17 18:49:13", 
+            "groups": [], 
+            "user_permissions": [
+                1, 
+                2, 
+                3
+            ], 
+            "password": "sha1$72713$4d655a356d9dfde29f74d04e8c40a6e412d26d0a", 
+            "email": "editor@somewhere.com", 
+            "date_joined": "2007-12-17 18:49:13"
+        }, 
+        "model": "auth.user", 
+        "pk": 2
+    }, 
+    {
+        "fields": {
+            "username": "normaluser", 
+            "first_name": "Some other user", 
+            "last_name": "", 
+            "is_active": true, 
+            "is_superuser": false, 
+            "is_staff": false, 
+            "last_login": "2007-12-17 18:49:13", 
+            "groups": [], 
+            "user_permissions": [], 
+            "password": "sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba", 
+            "email": "editor@somewhere.com", 
+            "date_joined": "2007-12-17 18:49:13"
+        }, 
+        "model": "auth.user", 
+        "pk": 3
+    }
+]
