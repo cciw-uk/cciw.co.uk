@@ -23,13 +23,13 @@ class MemberRequiredPage(TestCase):
     def test_get_anonymous(self):
         "Test that we get a login form if we try to view a 'member_required' page"
         r = self.client.get(ADD_POLL_URL)
-        self.assert_(LOGIN_FORM_KEY in r.content, "Should get a login form.")
+        self.assertTrue(LOGIN_FORM_KEY in r.content, "Should get a login form.")
 
     def test_get_logged_in(self):
         self.client.member_login(members.TEST_POLL_CREATOR_USERNAME,
                                  members.TEST_POLL_CREATOR_PASSWORD)
         r = self.client.get(ADD_POLL_URL)
-        self.assert_(LOGIN_FORM_KEY not in r.content, "Should not get a login form.")
+        self.assertTrue(LOGIN_FORM_KEY not in r.content, "Should not get a login form.")
 
     def test_get_anonymous_produces_redirect(self):
         """Ensure that when we start with a GET request and have to log in, the user ultimately receives a 'GET' request, not a 'POST' to the view"""
@@ -40,7 +40,7 @@ class MemberRequiredPage(TestCase):
         r2 = self.client.post(ADD_POLL_URL, data=data)
 
         # should be back at orignal page.
-        self.assert_(LOGIN_FORM_KEY not in r2.content, "Should not get a login form.")
+        self.assertTrue(LOGIN_FORM_KEY not in r2.content, "Should not get a login form.")
         self.assertEqual(r2.status_code, 302)
 
     def test_post_produces_redirect(self):
@@ -54,6 +54,6 @@ class MemberRequiredPage(TestCase):
         r2 = self.client.post(ADD_POLL_URL, data=data)
 
         # should be back at orignal page.
-        self.assert_(LOGIN_FORM_KEY not in r2.content, "Should not get a login form.")
+        self.assertTrue(LOGIN_FORM_KEY not in r2.content, "Should not get a login form.")
         self.assertEqual(r2.status_code, 302)
 

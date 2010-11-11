@@ -11,7 +11,7 @@ class SitePage(TestCase):
     def test_site_page(self):
         site = Site.objects.get(id=1)
         response = self.client.get(site.get_absolute_url())
-        self.failUnlessEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         self.assertTrue("<address>Llys Andreas Camp Site" in response.content,
                         "Site page not visible or content not escaped properly")

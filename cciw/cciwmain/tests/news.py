@@ -15,22 +15,22 @@ class NewsPage(TestCase):
         response = self.client.get(topic.get_absolute_url())
         self.assertEqual(response.status_code, 200)
 
-        self.assert_("Bits &amp; Pieces" in response.content,
-                     "Subject not present or not escaped properly")
+        self.assertTrue("Bits &amp; Pieces" in response.content,
+                        "Subject not present or not escaped properly")
 
-        self.assert_("Summary <b>with bbcode</b>" in response.content,
-                     "BBCode content not present or not escaped properly")
+        self.assertTrue("Summary <b>with bbcode</b>" in response.content,
+                        "BBCode content not present or not escaped properly")
 
     def test_shortnews_atom(self):
         topic = Topic.objects.get(id=1)
         response = self.client.get(topic.forum.get_absolute_url(), {'format':'atom'})
         self.assertEqual(response.status_code, 200)
 
-        self.assert_("Bits &amp; Pieces" in response.content,
-                     "Subject not present or not escaped properly")
+        self.assertTrue("Bits &amp; Pieces" in response.content,
+                        "Subject not present or not escaped properly")
 
-        self.assert_("Summary &lt;b&gt;with bbcode&lt;/b&gt;" in response.content,
-                     "BBCode content not present or not escaped properly")
+        self.assertTrue("Summary &lt;b&gt;with bbcode&lt;/b&gt;" in response.content,
+                        "BBCode content not present or not escaped properly")
 
 
     # `Long' news items contain HTML
@@ -39,11 +39,11 @@ class NewsPage(TestCase):
         response = self.client.get(topic.get_absolute_url())
         self.assertEqual(response.status_code, 200)
 
-        self.assert_("Fish &amp; Chips" in response.content,
-                     "Subject not present or not escaped properly")
+        self.assertTrue("Fish &amp; Chips" in response.content,
+                        "Subject not present or not escaped properly")
 
-        self.assert_("<p>Full item with <i>html" in response.content,
-                     "HTML content not present or not escaped properly")
+        self.assertTrue("<p>Full item with <i>html" in response.content,
+                        "HTML content not present or not escaped properly")
 
 
     def test_longnews_atom(self):
@@ -51,8 +51,8 @@ class NewsPage(TestCase):
         response = self.client.get(topic.forum.get_absolute_url(), {'format':'atom'})
         self.assertEqual(response.status_code, 200)
 
-        self.assert_("Fish &amp; Chips" in response.content,
-                     "Subject not present or not escaped properly")
+        self.assertTrue("Fish &amp; Chips" in response.content,
+                        "Subject not present or not escaped properly")
 
-        self.assert_("&lt;p&gt;Full item with &lt;i&gt;html" in response.content,
-                     "HTML content not present or not escaped properly")
+        self.assertTrue("&lt;p&gt;Full item with &lt;i&gt;html" in response.content,
+                        "HTML content not present or not escaped properly")

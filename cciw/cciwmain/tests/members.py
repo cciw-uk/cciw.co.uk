@@ -53,10 +53,10 @@ class MemberAdmin(TestCase):
 
     def test_view_prefs(self):
         response = self.client.get(MEMBER_ADMIN_URL)
-        self.failUnlessEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         # Check we are on the right page
-        self.assertEqual(response.template[0].name,'cciw/members/preferences.html')
+        self.assertEqual(response.templates[0].name,'cciw/members/preferences.html')
 
         # Check context has been populated
         member = response.context[0].get('member')
@@ -85,13 +85,13 @@ class MemberAdmin(TestCase):
         new_icon = os.path.join(settings.TEST_DIR, TEST_MEMBER_USERNAME + ".png")
         # get length of file, used for heuristic
         fs = _get_file_size(new_icon)
-        self.failIfEqual(fs, 0, "something has happened to %s" % new_icon)
+        self.assertNotEqual(fs, 0, "something has happened to %s" % new_icon)
 
         # ensure the file isn't there already
         _remove_member_icons(TEST_MEMBER_USERNAME)
 
         response = self._upload_icon(new_icon)
-        self.failUnlessEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         # Ensure it got there
         globpath = "%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, self.member.user_name + ".*")
@@ -127,7 +127,7 @@ class MemberAdmin(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         url, path, querydata = self._read_email_change_email(mail.outbox[0])
         resp2 = self.client.get(path, querydata)
-        self.failUnlessEqual(resp2.status_code, 200)
+        self.assertEqual(resp2.status_code, 200)
 
         m = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         self.assertEqual(m.email, data['email'])
@@ -138,7 +138,7 @@ class MemberAdmin(TestCase):
     def test_send_new_password(self):
         resp = self.client.post(NEW_PASSWORD_URL, {'email': TEST_MEMBER_EMAIL,
                                                    'newpassword': '1'})
-        self.failUnlessEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(mail.outbox), 1)
         url, path, querydata = self._read_newpassword_email(mail.outbox[0])
         newpassword_m = re.search(r"Your new password is:\s*(\S*)\s*", mail.outbox[0].body)
@@ -166,7 +166,7 @@ class MemberSignup(TwillMixin, TestCase):
     def test_existing_email(self):
         post_data = dict(submit_email='Submit', email=TEST_MEMBER_EMAIL)
         response = self.client.post(MEMBER_SIGNUP, data=post_data)
-        self.failUnlessEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         self.assertTrue("already used" in response.content,
                      "Signing up should not allow an existing email to be reused")
@@ -175,7 +175,7 @@ class MemberSignup(TwillMixin, TestCase):
     def _test_signup_send_email_part1(self):
         post_data = dict(submit_email='Submit', email=NEW_MEMBER_EMAIL)
         response = self.client.post(MEMBER_SIGNUP, data=post_data)
-        self.failUnlessEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         self.assertTrue("an e-mail has been sent" in response.content,
                      "An message saying that an email has been sent should be seen")
@@ -186,7 +186,7 @@ class MemberSignup(TwillMixin, TestCase):
 
     def _follow_email_url(self, path, querydata):
         response = self.client.get(path, querydata)
-        self.failUnlessEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         return response
 
     def test_signup_send_email(self):

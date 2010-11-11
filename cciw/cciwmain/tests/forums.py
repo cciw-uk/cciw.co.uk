@@ -22,7 +22,7 @@ class TopicPage(TestCase):
 
     def test_topic_html(self):
         response = self.client.get(self.path())
-        self.failUnlessEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertTrue("<h2>&lt;Jill &amp; Jane&gt;</h2>" in response.content,
                         "Subject not escaped correctly")
         self.assertTrue("A <b>unique message</b> with some bbcode &amp; &lt;stuff&gt; to be escaped" in response.content,
@@ -32,7 +32,7 @@ class TopicPage(TestCase):
 
     def test_topic_atom(self):
         response = self.client.get(self.path(), {'format':'atom'})
-        self.failUnlessEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertTrue('<title>CCIW - Posts on topic "&lt;Jill &amp; Jane&gt;"</title>' in response.content,
                         "Title not escaped properly")
         self.assertTrue('A &lt;b&gt;unique message&lt;/b&gt; with some bbcode &amp;amp; &amp;lt;stuff&amp;gt; to be escaped' in response.content,
@@ -76,7 +76,7 @@ class CreatePollPage(TestCase):
         self.client.member_login(TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD)
         response = self.client.get(ADD_POLL_URL)
         # we should be OK
-        self.failUnlessEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         # Now do a post to the same URL
         response2 = self.client.post(ADD_POLL_URL, data=self._poll_data_1())

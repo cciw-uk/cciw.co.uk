@@ -11,15 +11,15 @@ class HtmlChunkPage(TestCase):
         self._test_page(False)
 
     def test_page_normal_user(self):
-        self.failUnless(self.client.login(username='normaluser', password='test_normaluser_password'))
+        self.assertTrue(self.client.login(username='normaluser', password='test_normaluser_password'))
         self._test_page(False)
 
     def test_page_editor(self):
-        self.failUnless(self.client.login(username='editor', password='test_editor_password'))
+        self.assertTrue(self.client.login(username='editor', password='test_editor_password'))
         self._test_page(True)
 
     def test_page_admin(self):
-        self.failUnless(self.client.login(username='admin', password='test_admin_password'))
+        self.assertTrue(self.client.login(username='admin', password='test_admin_password'))
         self._test_page(True)
 
 

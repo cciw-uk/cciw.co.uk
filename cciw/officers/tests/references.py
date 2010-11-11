@@ -58,7 +58,7 @@ class RequestReference(TwillMixin, TestCase):
     def test_with_email(self):
         # Application 3 has an e-mail address for first referee
         app = Application.objects.get(pk=3)
-        self.assert_(app.referees[0].email != '')
+        self.assertTrue(app.referees[0].email != '')
         refinfo = app.references[0]
         self._twill_login(LEADER)
         tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
@@ -72,7 +72,7 @@ class RequestReference(TwillMixin, TestCase):
     def test_no_email(self):
         # Application 3 has no e-mail address for second referee
         app = Application.objects.get(pk=3)
-        self.assert_(app.referees[1].email == '')
+        self.assertTrue(app.referees[1].email == '')
         refinfo = app.references[1]
         self._twill_login(LEADER)
         tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
@@ -86,13 +86,13 @@ class RequestReference(TwillMixin, TestCase):
         tc.formvalue('1', 'email', 'addedemail@example.com')
         tc.submit()
         app = Application.objects.get(pk=3)
-        self.assert_(app.referees[1].email == 'addedemail@example.com')
+        self.assertTrue(app.referees[1].email == 'addedemail@example.com')
         tc.find("E-mail address updated.")
 
     def test_cancel(self):
         # Application 3 has an e-mail address for first referee
         app = Application.objects.get(pk=3)
-        self.assert_(app.referees[0].email != '')
+        self.assertTrue(app.referees[0].email != '')
         refinfo = app.references[0]
         self._twill_login(LEADER)
         tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
@@ -139,7 +139,7 @@ class CreateReference(TwillMixin, TestCase):
         """
         app = Application.objects.get(pk=1)
         self.assertEqual(app.referees[0].name, "Mr Referee1 Name")
-        self.assert_(app.references[0].reference_form is None)
+        self.assertTrue(app.references[0].reference_form is None)
         self.test_page_ok()
 
         tc.formvalue('1', 'referee_name', 'Referee1 Name')
@@ -153,7 +153,7 @@ class CreateReference(TwillMixin, TestCase):
         # Check the data has been saved
         app = Application.objects.get(pk=1)
         ref_form = app.references[0].reference_form
-        self.assert_(ref_form is not None)
+        self.assertTrue(ref_form is not None)
         self.assertEqual(ref_form.referee_name, "Referee1 Name")
         self.assertEqual(ref_form.how_long_known, "Forever")
 
