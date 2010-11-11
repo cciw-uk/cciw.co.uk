@@ -28,9 +28,10 @@ def twill_teardown():
 class TwillMixin(object):
     twill_quiet = True
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         twill_setup()
-        if self.twill_quiet:
+        if cls.twill_quiet:
             twill.set_output(StringIO())
 
     def _twill_login(self, creds):
@@ -46,7 +47,8 @@ class TwillMixin(object):
         cmd = TwillCommandLoop()
         cmd.cmdloop()
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         twill_teardown()
 
 # Twill snippets
