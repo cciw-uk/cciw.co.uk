@@ -41,6 +41,3 @@ INSTALLATION HINTS
 - You need to create a settings_private.py file (should be obvious if you
   try to run it).  This file needs the various settings that I cannot
   release publically (database, passwords, secret key)
-- Additional dependencies:
-	p3.py
-	
