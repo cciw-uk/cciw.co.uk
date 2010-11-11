@@ -8,6 +8,7 @@ hostname = socket.gethostname()
 basedir = os.path.dirname(os.path.abspath(os.path.dirname(__file__))) # ../
 
 DEVBOX = ('webfaction' not in hostname)
+LIVEBOX = not DEVBOX
 
 ### MISC ###
 
@@ -81,7 +82,7 @@ else:
 
 ###### SESSIONS ########
 
-if not DEVBOX:
+if LIVEBOX:
     SESSION_COOKIE_SECURE = True
 
 ######  TEMPLATES  ###########
@@ -130,8 +131,8 @@ else:
 
 _MIDDLEWARE_CLASSES = (
     (DEVBOX,     "cciw.middleware.http.ActAsProxy"),
-    (not DEVBOX, "cciw.middleware.http.WebFactionFixes"),
-    (not DEVBOX, "cciw.middleware.http.ForceSSLMiddleware"),
+    (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
+    (LIVEBOX,    "cciw.middleware.http.ForceSSLMiddleware"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
     (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
 #    (DEVBOX,     "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware"),
