@@ -1,7 +1,6 @@
 # Settings file
 import os
 import socket
-from cciw.settings_priv import SECRET_KEY, MAILBOX_PASSWORD, WEBFACTION_PASSWORD, WEBFACTION_USER, IMAP_MAIL_SERVER
 
 hostname = socket.gethostname()
 
@@ -11,6 +10,8 @@ DEVBOX = ('webfaction' not in hostname)
 LIVEBOX = not DEVBOX
 
 ### MISC ###
+
+from cciw.settings_priv import SECRET_KEY
 
 if DEVBOX:
     DEBUG = True
@@ -127,6 +128,29 @@ else:
 
     SEND_BROKEN_LINK_EMAILS = False
 
+
+##### MAILING LISTS ######
+
+if LIVEBOX:
+    from cciw.settings_priv import MAILBOX_PASSWORD, IMAP_MAIL_SERVER
+
+##### WEBFACTION #####
+
+if LIVEBOX:
+    from cciw.settings_priv import  WEBFACTION_PASSWORD, WEBFACTION_USER
+
+
+##### SECURE_FILES #####
+
+SECURE_FILES_SERVE_URL = "/file/"
+SECURE_FILES_TIMEOUT = 3600
+
+if DEVBOX:
+    SECURE_FILES_SOURCE = os.path.join(basedir, "../resources/protected_downloads")
+    SECURE_FILES_SERVE_ROOT = os.path.join(basedir, "../protected_downloads")
+else:
+    from cciw.settings_priv import SECURE_FILES_SOURCE, SECURE_FILES_SERVE_ROOT
+
 ### MIDDLEWARE_CLASSES ####
 
 _MIDDLEWARE_CLASSES = (
@@ -199,8 +223,6 @@ if DEVBOX:
         '/admin/',
     )
 
-    WEBFACTION_USER = None # stops any webfaction API calls being made.
-
     FIXTURE_DIRS = [
         basedir + r'/cciw/cciwmain/fixtures'
     ]
@@ -208,11 +230,3 @@ if DEVBOX:
 
 DEFAULT_CONTENT_TYPE = "text/html"
 
-SECURE_FILES_SERVE_URL = "/file/"
-SECURE_FILES_TIMEOUT = 3600
-if DEVBOX:
-    SECURE_FILES_SOURCE = os.path.join(basedir, "../resources/protected_downloads")
-    SECURE_FILES_SERVE_ROOT = os.path.join(basedir, "../protected_downloads")
-else:
-    SECURE_FILES_SOURCE = "/home/cciw/webapps/cciw_protected_downloads_src"
-    SECURE_FILES_SERVE_ROOT = "/home/cciw/webapps/cciw_protected_downloads"
