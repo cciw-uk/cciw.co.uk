@@ -9,6 +9,9 @@ basedir = os.path.dirname(os.path.abspath(os.path.dirname(__file__))) # ../
 DEVBOX = ('webfaction' not in hostname)
 LIVEBOX = not DEVBOX
 
+if LIVEBOX:
+    from cciw.settings_priv import PRODUCTION, STAGING
+
 ### MISC ###
 
 from cciw.settings_priv import SECRET_KEY
@@ -83,7 +86,7 @@ else:
 
 ###### SESSIONS ########
 
-if LIVEBOX:
+if LIVEBOX and PRODUCTION:
     SESSION_COOKIE_SECURE = True
 
 ######  TEMPLATES  ###########
@@ -156,7 +159,7 @@ else:
 _MIDDLEWARE_CLASSES = (
     (DEVBOX,     "cciw.middleware.http.ActAsProxy"),
     (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
-    (LIVEBOX,    "cciw.middleware.http.ForceSSLMiddleware"),
+    (LIVEBOX and PRODUCTION, "cciw.middleware.http.ForceSSLMiddleware"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
     (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
 #    (DEVBOX,     "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware"),
