@@ -145,14 +145,14 @@ if LIVEBOX:
 
 ##### SECURE_FILES #####
 
-SECURE_FILES_SERVE_URL = "/file/"
-SECURE_FILES_TIMEOUT = 3600
+SECUREDOWNLOAD_SERVE_URL = "/file/"
+SECUREDOWNLOAD_TIMEOUT = 3600
 
 if DEVBOX:
-    SECURE_FILES_SOURCE = os.path.join(basedir, "../resources/protected_downloads")
-    SECURE_FILES_SERVE_ROOT = os.path.join(basedir, "../protected_downloads")
+    SECUREDOWNLOAD_SOURCE = os.path.join(basedir, "../resources/protected_downloads")
+    SECUREDOWNLOAD_SERVE_ROOT = os.path.join(basedir, "../protected_downloads")
 else:
-    from cciw.settings_priv import SECURE_FILES_SOURCE, SECURE_FILES_SERVE_ROOT
+    from cciw.settings_priv import SECUREDOWNLOAD_SOURCE, SECUREDOWNLOAD_SERVE_ROOT
 
 ### MIDDLEWARE_CLASSES ####
 

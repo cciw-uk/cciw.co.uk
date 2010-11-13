@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         now = datetime.datetime.now()
-        for d in os.listdir(settings.SECURE_FILES_SERVE_ROOT):
+        for d in os.listdir(settings.SECUREDOWNLOAD_SERVE_ROOT):
             parts = d.split('-')
             if len(parts) != 2:
                 continue
@@ -19,8 +19,8 @@ class Command(BaseCommand):
                 continue
             dt = datetime.datetime.fromtimestamp(ts)
             td = now - dt
-            if (td.days * 3600 * 24) + td.seconds < settings.SECURE_FILES_TIMEOUT:
+            if (td.days * 3600 * 24) + td.seconds < settings.SECUREDOWNLOAD_TIMEOUT:
                 continue
 
             # Delete the directory and all contents.
-            shutil.rmtree(os.path.join(settings.SECURE_FILES_SERVE_ROOT, d))
+            shutil.rmtree(os.path.join(settings.SECUREDOWNLOAD_SERVE_ROOT, d))

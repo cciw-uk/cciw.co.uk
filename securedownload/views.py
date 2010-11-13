@@ -10,12 +10,12 @@ from django.utils.hashcompat import sha_hmac
 def serve_secure_file(filename):
     """
     Returns an HTTP redirect to serve the specified file.
-    It will be a redirect to a location under SECURE_FILES_SERVE_URL,
-    which should map to SECURE_FILES_SERVE_ROOT
+    It will be a redirect to a location under SECUREDOWNLOAD_SERVE_URL,
+    which should map to SECUREDOWNLOAD_SERVE_ROOT
 
-    filename is relative to SECURE_FILES_SOURCE.
+    filename is relative to SECUREDOWNLOAD_SOURCE.
     """
-    src = os.path.join(settings.SECURE_FILES_SOURCE, filename)
+    src = os.path.join(settings.SECUREDOWNLOAD_SOURCE, filename)
     if not os.path.isfile(src):
         raise Http404()
     # Make a link
@@ -25,12 +25,12 @@ def serve_secure_file(filename):
     key = "cciw.officers.secure_file" + settings.SECRET_KEY
     nonce = hmac.new(key, "%s-%s" % (ts, filename), sha_hmac).hexdigest()
     dirname = "%s-%s" % (ts, nonce)
-    abs_destdir = os.path.join(settings.SECURE_FILES_SERVE_ROOT, dirname)
+    abs_destdir = os.path.join(settings.SECUREDOWNLOAD_SERVE_ROOT, dirname)
     if not os.path.isdir(abs_destdir):
         os.mkdir(abs_destdir)
     dest = os.path.join(dirname, os.path.basename(filename))
-    os.symlink(src, os.path.join(settings.SECURE_FILES_SERVE_ROOT, dest))
-    return HttpResponseRedirect(os.path.join(settings.SECURE_FILES_SERVE_URL, dest))
+    os.symlink(src, os.path.join(settings.SECUREDOWNLOAD_SERVE_ROOT, dest))
+    return HttpResponseRedirect(os.path.join(settings.SECUREDOWNLOAD_SERVE_URL, dest))
 
 def sanitise_path(path):
     newpath = ''
@@ -52,7 +52,7 @@ def access_folder_securely(folder, check_permission):
     check_permission is a callable that takes a request and
     returns True if the file should be served.
 
-    folder is relative to SECURE_FILES_SOURCE.
+    folder is relative to SECUREDOWNLOAD_SOURCE.
     """
     def view(request, filename):
         if check_permission(request):

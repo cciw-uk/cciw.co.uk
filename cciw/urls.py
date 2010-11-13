@@ -32,7 +32,7 @@ if settings.DEBUG:
                             (r'^sp_media/(?P<path>.*)$', 'django.views.static.serve',
                              {'document_root': settings.MEDIA_ROOT}),
                             (r'^file/(?P<path>.*)$', 'django.views.static.serve',
-                             {'document_root': settings.SECURE_FILES_SERVE_ROOT}),
+                             {'document_root': settings.SECUREDOWNLOAD_SERVE_ROOT}),
     )
 
 urlpatterns = urlpatterns + patterns('',
