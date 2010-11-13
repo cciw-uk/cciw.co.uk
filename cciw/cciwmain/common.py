@@ -55,7 +55,8 @@ def get_thisyear():
 def standard_subs(value):
     """Standard substitutions made on HTML content"""
     return value.replace('{{thisyear}}', str(get_thisyear()))\
-                .replace('{{media}}', settings.MEDIA_URL)
+                .replace('{{media}}', settings.MEDIA_URL)\
+                .replace('{{static}}', settings.STATICFILES_URL)
 standard_subs.is_safe = True # provided our substitutions don't introduce anything that must be escaped
 
 def get_order_option(order_options, request, default_order_by):
