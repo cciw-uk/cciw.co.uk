@@ -15,6 +15,7 @@ PRODUCTION = "cciw"
 this_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(this_dir)
 
+
 @runs_once
 def ensure_dependencies():
     hg_branch = local("cd deps/django; hg branch")
@@ -86,7 +87,8 @@ def _start_apache(target):
 
 
 def _restart_apache(target):
-    _stop_apache(target)
+    with settings(warn_only=True):
+        _stop_apache(target)
     _start_apache(target)
 
 
@@ -100,6 +102,8 @@ def _copy_local_sources(dest_dir, deps, project_dir):
     # Upload local sources. For speed, we:
     # - make a copy of the sources that are there already, if they exist.
     # - rsync to the copies.
+    # This also copies the virtualenv which is contained in the same folder,
+    # which saves a lot of time with installing.
     current_srcs = os.path.dirname(dest_dir) + "/current"
     run("cp -a -L %s %s" % (current_srcs, dest_dir))
 
@@ -118,7 +122,7 @@ def _copy_local_sources(dest_dir, deps, project_dir):
 def _deploy(target):
     label = datetime.now().strftime("%Y-%m-%d_%H.%M.%S")
     _prepare_deploy()
-    #db_backup_name = backup_database(target, label)
+    db_backup_name = backup_database(target, label)
 
     dest_dirname = "src-%s" % label
     dest_dir =  "/home/cciw/webapps/" + target + "/src/" + dest_dirname
