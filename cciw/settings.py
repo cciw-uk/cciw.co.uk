@@ -19,6 +19,9 @@ from cciw.settings_priv import SECRET_KEY
 if DEVBOX:
     DEBUG = True
     TEMPLATE_DEBUG = True
+    DEBUG_TOOLBAR_CONFIG = {
+        'INTERCEPT_REDIRECTS': False,
+    }
 else:
     DEBUG = False
     TEMPLATE_DEBUG = False
@@ -58,6 +61,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'mailer',
     'securedownload',
+    'django.contrib.staticfiles',
 )
 
 if DEBUG:
@@ -100,14 +104,17 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.Loader',
 )
 
-TEMPLATE_CONTEXT_PROCESSORS = (
-    "django.contrib.auth.context_processors.auth",
-    "django.core.context_processors.debug",
-    "django.core.context_processors.i18n",
-    "cciw.cciwmain.common.standard_processor",
+TEMPLATE_CONTEXT_PROCESSORS = [
+    "django.core.context_processors.media",
     "django.core.context_processors.request",
+    "django.contrib.auth.context_processors.auth",
     "django.contrib.messages.context_processors.messages",
-)
+    "django.contrib.staticfiles.context_processors.staticfiles",
+    "cciw.cciwmain.common.standard_processor",
+]
+
+if DEBUG:
+    TEMPLATE_CONTEXT_PROCESSORS.append("django.core.context_processors.debug")
 
 #####  EMAIL  #######
 
@@ -131,7 +138,6 @@ else:
 
     SEND_BROKEN_LINK_EMAILS = False
 
-
 ##### MAILING LISTS ######
 
 if LIVEBOX:
@@ -140,10 +146,9 @@ if LIVEBOX:
 ##### WEBFACTION #####
 
 if LIVEBOX:
-    from cciw.settings_priv import  WEBFACTION_PASSWORD, WEBFACTION_USER
+    from cciw.settings_priv import WEBFACTION_PASSWORD, WEBFACTION_USER
 
-
-##### SECURE_FILES #####
+##### SECUREDOWNLOAD #####
 
 SECUREDOWNLOAD_SERVE_URL = "/file/"
 SECUREDOWNLOAD_TIMEOUT = 3600
@@ -179,16 +184,17 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"
 
 ####### MEDIA #############
 
-# Absolute path to the directory that holds media.
-MEDIA_ROOT = basedir + '/media'
+if DEVBOX:
+    MEDIA_ROOT = os.path.dirname(basedir) + '/usermedia'
+    STATICFILES_ROOT = os.path.dirname(basedir) + '/static'
+else:
+    from cciw.settings_priv import MEDIA_ROOT, STATICFILES_ROOT
 
-# URL that handles the media served from MEDIA_ROOT.
-MEDIA_URL = '/media'
+MEDIA_URL = '/usermedia/'
+STATICFILES_URL = '/static/'
+ADMIN_MEDIA_PREFIX = '/static/admin/'
+
 SPECIAL_MEDIA_URL = '/sp_media'
-
-ADMIN_MEDIA_PREFIX = '/admin_media/'
-
-CCIW_MEDIA_URL = MEDIA_URL
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
 

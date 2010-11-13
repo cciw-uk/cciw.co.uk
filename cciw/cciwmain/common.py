@@ -55,7 +55,7 @@ def get_thisyear():
 def standard_subs(value):
     """Standard substitutions made on HTML content"""
     return value.replace('{{thisyear}}', str(get_thisyear()))\
-                .replace('{{media}}', settings.CCIW_MEDIA_URL)
+                .replace('{{media}}', settings.MEDIA_URL)
 standard_subs.is_safe = True # provided our substitutions don't introduce anything that must be escaped
 
 def get_order_option(order_options, request, default_order_by):
@@ -97,16 +97,7 @@ def standard_processor(request):
 
     context['menulinks'] = links
     context['current_member'] = threadlocals.get_current_member()
-    context['pagevars'] = {
-        'media_root_url': settings.CCIW_MEDIA_URL,
-        'style_sheet_url': settings.CCIW_MEDIA_URL + '/style.css',
-        'admin_media_root_url': settings.ADMIN_MEDIA_PREFIX,
-    }
 
     context.update(view_extras.get_view_extras_context(request))
 
     return context
-
-
-
-

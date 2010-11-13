@@ -147,14 +147,14 @@ class SortingControlNode(template.Node):
 
         if current_order == self.ascending_param:
             output += u'<a title="%s" href="%s">' % (self.descending_title, html.escape(modified_query_string(request, {'order': self.descending_param}))) + \
-                u'<img class="sortAscActive" src="%s/images/arrow-up.gif" alt="Sorted ascending" /></a>' % settings.CCIW_MEDIA_URL
+                u'<img class="sortAscActive" src="%simages/arrow-up.gif" alt="Sorted ascending" /></a>' % settings.STATICFILES_URL
         elif current_order == self.descending_param:
             output += u'<a title="%s" href="%s">' % (self.ascending_title, html.escape(modified_query_string(request, {'order': self.ascending_param}))) + \
-                u'<img class="sortDescActive" src="%s/images/arrow-down.gif" alt="Sorted descending" /></a>' % settings.CCIW_MEDIA_URL
+                u'<img class="sortDescActive" src="%simages/arrow-down.gif" alt="Sorted descending" /></a>' % settings.STATICFILES_URL
         else:
             # query string resets page to zero if we use a new type of sorting
             output += u'<a title="%s" href="%s">' % (self.ascending_title, html.escape(modified_query_string(request, {'order': self.ascending_param, 'page': 1}))) + \
-                u'<img class="sortAsc" src="%s/images/arrow-up.gif" alt="Sort ascending" /></a>' % settings.CCIW_MEDIA_URL
+                u'<img class="sortAsc" src="%simages/arrow-up.gif" alt="Sort ascending" /></a>' % settings.STATICFILES_URL
 
         output += u'</span>'
         return output
@@ -193,8 +193,6 @@ class ForwardQueryParamNode(template.Node):
         self.param_name = param_name
 
     def render(self, context):
-        # requires the standard extra context
-        #request = context['pagevars'].request
         request = context['request']
         return u'<div><input type="hidden" name="%s" value="%s" /></div>' % \
                (self.param_name, html.escape(request.GET.get(self.param_name, '')))
@@ -207,8 +205,7 @@ def do_forward_query_param(parser, token):
     Turns a parameter in a query string into a hidden input field,
     allowing it to be 'forwarded' as part of the next request in
     a form submission.  It requires one argument (the name of the parameter),
-    and also requires that the request object be in the context as
-    by putting the standard 'pagevars' object in the context.
+    and also requires that the request object be in the context.
     """
     try:
         tag_name, param_name = token.contents.split(None, 1)

@@ -24,16 +24,17 @@ if settings.DEBUG:
     admin_media_root = django_root + '/contrib/admin/media'
     urlpatterns += patterns('',
                             (r'^validator/', include('lukeplant_me_uk.django.validator.urls')),
-                            (r'^admin_media/(?P<path>.*)$', 'django.views.static.serve',
-                             {'document_root': admin_media_root}),
                             (r'^admin_doc/', include('django.contrib.admindocs.urls')),
-                            (r'^media/(?P<path>.*)$', 'django.views.static.serve',
+                            (r'^usermedia/(?P<path>.*)$', 'django.views.static.serve',
                              {'document_root': settings.MEDIA_ROOT}),
                             (r'^sp_media/(?P<path>.*)$', 'django.views.static.serve',
                              {'document_root': settings.MEDIA_ROOT}),
                             (r'^file/(?P<path>.*)$', 'django.views.static.serve',
                              {'document_root': settings.SECUREDOWNLOAD_SERVE_ROOT}),
     )
+
+    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+    urlpatterns += staticfiles_urlpatterns()
 
 urlpatterns = urlpatterns + patterns('',
     (r'', include('cciw.cciwmain.urls'))

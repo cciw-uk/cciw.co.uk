@@ -1,11 +1,11 @@
 #header2
 {
-	background-image: url('/media/images/header.png');
+	background-image: url('/static/images/header.png');
 }
 
 #headerlogo
 {
-	background-image: url('/media/images/headerlogo.png');
+	background-image: url('/static/images/headerlogo.png');
 }
 #header2
 {

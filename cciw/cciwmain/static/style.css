@@ -27,12 +27,12 @@ a img, a {
 
 #header
 {
-	background-image: url('/media/images/header.png');
+	background-image: url('/static/images/header.png');
 }
 
 #headerlogo
 {
-	background-image: url('/media/images/headerlogo.png');
+	background-image: url('/static/images/headerlogo.png');
 }
 
 #mainbase
@@ -79,7 +79,7 @@ a img, a {
 
 #footer
 {
-	background-image: url('/media/images/headervline.png');
+	background-image: url('/static/images/headervline.png');
 }
 
 

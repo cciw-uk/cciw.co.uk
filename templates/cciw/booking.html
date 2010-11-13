@@ -3,7 +3,7 @@
 {% block content %}
 {% if bookingform %}
 	{% htmlchunk bookingform_start %}
-	<div><a href="{{ pagevars.media_root_url }}/{{ bookingform }}">Download the CCIW booking for {{ thisyear }}</a> </div>
+	<div><a href="{{ STATICFILES_URL }}{{ bookingform }}">Download the CCIW booking for {{ thisyear }}</a> </div>
 	{% htmlchunk bookingform_end %}
 {% else %}
 	{% htmlchunk no_bookingform_yet %}

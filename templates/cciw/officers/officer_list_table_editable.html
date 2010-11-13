@@ -18,7 +18,7 @@
       <img class="removebtn" id="id_remove_{{ officer.id }}" src="{% admin_media_prefix %}img/admin/icon_deletelink.gif" alt="Remove" title="Remove" />
     </td>
     <td>
-      <img class="emailbtn" id="id_email_{{ officer.id }}" src="{{ pagevars.media_root_url }}/images/sendemail.gif" alt="Re-send initial e-mail" title="Re-send initial e-mail" />
+      <img class="emailbtn" id="id_email_{{ officer.id }}" src="{{ STATICFILES_URL }}images/sendemail.gif" alt="Re-send initial e-mail" title="Re-send initial e-mail" />
    </td>
   </tr>
 {% empty %}

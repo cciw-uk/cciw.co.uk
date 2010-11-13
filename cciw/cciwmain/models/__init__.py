@@ -31,8 +31,8 @@ def render_topic(topic):
         (topic.get_absolute_url(), escape(topic.subject[0:30])))
 
 def render_photo(photo):
-     return mark_safe(u'<a href="%s"><img src="%s/photos/thumbnails/%s" alt="Photo %s" /></a>' % \
-         (photo.get_absolute_url(), settings.CCIW_MEDIA_URL, photo.filename, photo.id))
+     return mark_safe(u'<a href="%s"><img src="%sphotos/thumbnails/%s" alt="Photo %s" /></a>' % \
+         (photo.get_absolute_url(), settings.MEDIA_URL, photo.filename, photo.id))
 
 
 register_renderer(Member, Member.get_link)

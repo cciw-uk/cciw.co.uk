@@ -158,7 +158,7 @@ class Award(models.Model):
         return str(self)
 
     def imageurl(self):
-        return os.path.join(settings.CCIW_MEDIA_URL, settings.AWARD_UPLOAD_PATH, self.image.name)
+        return os.path.join(settings.MEDIA_URL, settings.AWARD_UPLOAD_PATH, self.image.name)
 
     def get_absolute_url(self):
         from django.template.defaultfilters import slugify
