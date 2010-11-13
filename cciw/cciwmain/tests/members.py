@@ -81,8 +81,17 @@ class MemberAdmin(TestCase):
         f.close()
         return resp
 
-    def test_upload_icon(self):
-        new_icon = os.path.join(settings.TEST_DIR, TEST_MEMBER_USERNAME + ".png")
+    def test_upload_png_icon(self):
+       self._test_upload_icon('png')
+
+    def test_upload_gif_icon(self):
+        self._test_upload_icon('gif')
+
+    def test_upload_jpeg_icon(self):
+        self._test_upload_icon('jpeg')
+
+    def _test_upload_icon(self, ext):
+        new_icon = os.path.join(settings.TEST_DIR, TEST_MEMBER_USERNAME + "." + ext)
         # get length of file, used for heuristic
         fs = _get_file_size(new_icon)
         self.assertNotEqual(fs, 0, "something has happened to %s" % new_icon)
@@ -93,11 +102,12 @@ class MemberAdmin(TestCase):
         response = self._upload_icon(new_icon)
         self.assertEqual(response.status_code, 200)
 
-        # Ensure it got there
-        globpath = "%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, self.member.user_name + ".*")
+        # Ensure it got there, converted to correct format
+        dest_ext = settings.DEFAULT_MEMBER_ICON.split('.')[-1]
+        globpath = "%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, self.member.user_name + "." + dest_ext)
         files = glob.glob(globpath)
         self.assertEqual(1, len(files))
-        self.assertEqual(fs, _get_file_size(files[0]))
+        self.assertNotEqual(0, _get_file_size(files[0]))
 
     def _assert_icon_upload_fails(self, filename):
         new_icon = os.path.join(settings.TEST_DIR, filename)

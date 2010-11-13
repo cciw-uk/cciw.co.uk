@@ -6,10 +6,9 @@ Utilities for manipulating images
 # and it's easier than getting
 
 from django.conf import settings
-import shutil
 import os
 import ImageFile
-import glob
+import tempfile
 
 def parse_image(filename):
     fp = open(filename, "rb")
@@ -33,14 +32,14 @@ def safe_del(filename):
     except OSError:
         pass # don't care if we couldn't delete for some reason
 
-def write_file(filename, filedata):
-    destination = open(filename, 'wb')
+def write_file(fp, filedata):
     for chunk in filedata.chunks():
-        destination.write(chunk)
+        fp.write(chunk)
+    fp.close()
 
 def fix_member_icon(member, filedata):
-    filename = "%s/%s" % (settings.MEDIA_ROOT, member.icon)
-    write_file(filename, filedata)
+    fd, filename = tempfile.mkstemp()
+    write_file(os.fdopen(fd, "w"), filedata)
 
     try:
         img = parse_image(filename)
@@ -58,23 +57,20 @@ def fix_member_icon(member, filedata):
         safe_del(filename)
         raise ValidationError(u"The image was bigger than %s by %s." % \
             (settings.MEMBER_ICON_MAX_SIZE, settings.MEMBER_ICON_MAX_SIZE))
-
         # Ideally would have scale to fit
 
-    # Give the icon a predictable name, with the same extension it had before.
-    # We refer to it in views without its extension, and use content negotiation
-    # to get the right one.
-    # This means we can just we only need the primary key (the username) of
-    # the Member object to calculate this URL, saving on *lots* of db queries.
-
-    ext = filename.split('.')[-1]
-    # Remove existing variants
-    for f in glob.glob("%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, member.user_name + ".*")):
-        os.unlink(f)
-
+    # Convert to destination format
+    ext = settings.DEFAULT_MEMBER_ICON.split('.')[-1]
     newrelpath = "%s/%s" % (settings.MEMBER_ICON_PATH, member.user_name + "." + ext)
     newfullpath = "%s/%s" % (settings.MEDIA_ROOT, newrelpath)
-    shutil.move(filename, newfullpath)
+
+    opts = {}
+    try:
+        opts['transparency'] = img.info['transparency']
+    except KeyError:
+        pass
+    img.save(newfullpath, **opts)
+
     os.chmod(newfullpath, 0777)
     member.icon = newrelpath
     member.save()

@@ -194,15 +194,13 @@ MEDIA_URL = '/usermedia/'
 STATICFILES_URL = '/static/'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
-SPECIAL_MEDIA_URL = '/sp_media'
-
 FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
 
 ## CCIW SPECIFIC SETTINGS AND CONSTANTS
 AWARD_UPLOAD_PATH = 'images/awards'
 MEMBER_ICON_UPLOAD_PATH = 'images/members/temp'
 MEMBER_ICON_PATH = 'images/members'
-DEFAULT_MEMBER_ICON = 'defaultmember.gif'
+DEFAULT_MEMBER_ICON = 'defaultmember.png'
 MEMBER_ICON_MAX_SIZE = 48
 
 CAMP_FORUM_RE = r'camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/'
