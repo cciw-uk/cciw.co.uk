@@ -3,9 +3,9 @@
 {% block thread_top %}
 	<div class="photo">
 		{% if current_member %}
-		<img class="photo" src="{{ STATIC_URL }}photos/real/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
+		<img class="photo" src="{{ MEDIA_URL }}photos/real/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
 		{% else %}
-		<img class="photo" src="{{ STATIC_URL }}photos/thumbnails/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
+		<img class="photo" src="{{ MEDIA_URL }}photos/thumbnails/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
 		<br/><span class="note">You must be logged in to see full images</span>
 		{% endif %}
 	</div>
