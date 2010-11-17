@@ -102,9 +102,9 @@ class AtomFeedLinkVisible(template.Node):
                     u' <a href="/website/feeds/#emailupdates" title="Help on Email updates">?</a> |') \
             % dict(atomurl="%s?format=atom" % thisurl,
                    atomtitle=title,
-                   atomimgurl="%simages/feed.gif" % settings.STATICFILES_URL,
+                   atomimgurl="%simages/feed.gif" % settings.STATIC_URL,
                    emailurl=escape("http://www.rssfwd.com/rssfwd/preview?%s" % urlencode({'url':thisfullurl, 'submit url':'Submit'})),
-                   emailimgurl="%simages/email.gif" % settings.STATICFILES_URL
+                   emailimgurl="%simages/email.gif" % settings.STATIC_URL
                )
         else:
             return ''

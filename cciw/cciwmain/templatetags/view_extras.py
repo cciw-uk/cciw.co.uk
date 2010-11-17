@@ -147,14 +147,14 @@ class SortingControlNode(template.Node):
 
         if current_order == self.ascending_param:
             output += u'<a title="%s" href="%s">' % (self.descending_title, html.escape(modified_query_string(request, {'order': self.descending_param}))) + \
-                u'<img class="sortAscActive" src="%simages/arrow-up.gif" alt="Sorted ascending" /></a>' % settings.STATICFILES_URL
+                u'<img class="sortAscActive" src="%simages/arrow-up.gif" alt="Sorted ascending" /></a>' % settings.STATIC_URL
         elif current_order == self.descending_param:
             output += u'<a title="%s" href="%s">' % (self.ascending_title, html.escape(modified_query_string(request, {'order': self.ascending_param}))) + \
-                u'<img class="sortDescActive" src="%simages/arrow-down.gif" alt="Sorted descending" /></a>' % settings.STATICFILES_URL
+                u'<img class="sortDescActive" src="%simages/arrow-down.gif" alt="Sorted descending" /></a>' % settings.STATIC_URL
         else:
             # query string resets page to zero if we use a new type of sorting
             output += u'<a title="%s" href="%s">' % (self.ascending_title, html.escape(modified_query_string(request, {'order': self.ascending_param, 'page': 1}))) + \
-                u'<img class="sortAsc" src="%simages/arrow-up.gif" alt="Sort ascending" /></a>' % settings.STATICFILES_URL
+                u'<img class="sortAsc" src="%simages/arrow-up.gif" alt="Sort ascending" /></a>' % settings.STATIC_URL
 
         output += u'</span>'
         return output

@@ -106,10 +106,10 @@ TEMPLATE_LOADERS = (
 
 TEMPLATE_CONTEXT_PROCESSORS = [
     "django.core.context_processors.media",
+    "django.core.context_processors.static",
     "django.core.context_processors.request",
     "django.contrib.auth.context_processors.auth",
     "django.contrib.messages.context_processors.messages",
-    "django.contrib.staticfiles.context_processors.staticfiles",
     "cciw.cciwmain.common.standard_processor",
 ]
 
@@ -191,7 +191,7 @@ else:
     from cciw.settings_priv import MEDIA_ROOT, STATICFILES_ROOT
 
 MEDIA_URL = '/usermedia/'
-STATICFILES_URL = '/static/'
+STATIC_URL = '/static/'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
