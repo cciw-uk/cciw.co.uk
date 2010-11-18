@@ -42,7 +42,7 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
 
 def add_domain(url):
     """Adds the domain onto the beginning of a URL"""
-    return feed_views.add_domain(get_current_domain(), url)
+    return feed_views.add_domain(get_current_domain(), url, secure=True)
 
 class CCIWFeed(feed_views.Feed):
 
