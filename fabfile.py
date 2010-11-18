@@ -2,9 +2,11 @@ from collections import namedtuple
 from datetime import datetime
 from fabric.api import run, local, abort, env, put
 from fabric.contrib import files
+from fabric.contrib import console
 from fabric.decorators import hosts, runs_once
 from fabric.context_managers import cd, settings
 import os
+import sys
 
 #  fabfile for deploying CCIW
 #
@@ -262,8 +264,15 @@ def deploy_staging():
 
 
 def deploy_production():
-    _deploy(PRODUCTION)
+    with cd(this_dir):
+        if local("hg st").strip() != "":
+            if not console.confirm("Project dir is not clean, merge to live will fail. Continue anyway?", default=False):
+                sys.exit()
 
+    _deploy(PRODUCTION)
+    #  Update 'live' branch so that we can switch to it easily if needed.
+    with cd(this_dir):
+        local('hg update -r live && hg merge -r default && hg commit -m "Merged from default" && hg update -r default', capture=False)
 
 def stop_apache_production():
     _stop_apache(PRODUCTION)
