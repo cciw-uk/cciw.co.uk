@@ -25,11 +25,9 @@ if settings.DEBUG:
     urlpatterns += patterns('',
                             (r'^validator/', include('lukeplant_me_uk.django.validator.urls')),
                             (r'^admin_doc/', include('django.contrib.admindocs.urls')),
-                            (r'^usermedia/(?P<path>.*)$', 'django.views.static.serve',
+                            (r'^usermedia/(?P<path>.*)$', 'django.contrib.staticfiles.views.serve',
                              {'document_root': settings.MEDIA_ROOT}),
-                            (r'^sp_media/(?P<path>.*)$', 'django.views.static.serve',
-                             {'document_root': settings.MEDIA_ROOT}),
-                            (r'^file/(?P<path>.*)$', 'django.views.static.serve',
+                            (r'^file/(?P<path>.*)$', 'django.contrib.staticfiles.views.serve',
                              {'document_root': settings.SECUREDOWNLOAD_SERVE_ROOT}),
     )
 
