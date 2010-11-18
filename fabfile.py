@@ -113,7 +113,6 @@ def _prepare_deploy():
     # check that there are no outstanding changes.
 
 
-@hosts("cciw@cciw.co.uk")
 def backup_database(target, label):
     fname = "%s-%s.db" % (target.dbname, label)
     run("dump_cciw_db.sh %s %s" % (target.dbname, fname))
