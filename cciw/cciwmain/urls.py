@@ -1,35 +1,32 @@
 from django.conf.urls.defaults import patterns, url
 import cciw.cciwmain.common as cciw_common
+from cciw.cciwmain.common import DefaultMetaData
 from cciw.cciwmain.utils import UseOnceLazyDict
 from cciw.cciwmain.models import Site, Award
 from django.conf import settings
+from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
+
+class AwardList(DefaultMetaData, ListView):
+    metadata_title = "Website Awards"
+    template_name = "cciw/awards/index.html"
+    queryset = Award.objects.order_by('-year', '-value')
+
+class SiteList(DefaultMetaData, ListView):
+    metadata_title = "Camp sites"
+    template_name='cciw/sites/index.html'
+    queryset = Site.objects.all()
+
+class SiteDetail(DefaultMetaData, DetailView):
+    queryset = Site.objects.all()
+    slug_field = 'slug_name'
+    template_name = 'cciw/sites/detail.html'
 
 urlpatterns = \
-patterns('django.views.generic',
-    (r'^awards/$', 'list_detail.object_list',
-        dict(queryset=Award.objects.order_by('-year', '-value'),
-             extra_context=UseOnceLazyDict(cciw_common.standard_extra_context, kwargs=dict(title="Website Awards")),
-             template_name='cciw/awards/index.html',
-             allow_empty=True,
-             )
-     ),
-
-    (r'^sites/$', 'list_detail.object_list',
-        dict(queryset=Site.objects.all(),
-             extra_context=UseOnceLazyDict(cciw_common.standard_extra_context, kwargs=dict(title="Camp sites")),
-             template_name='cciw/sites/index.html'
-             )
-     ),
-
-    (r'^sites/(?P<slug>.*)/$', 'list_detail.object_detail',
-        dict(queryset=Site.objects.all(),
-             slug_field='slug_name',
-             extra_context=UseOnceLazyDict(cciw_common.standard_extra_context),
-             template_name='cciw/sites/detail.html'
-             )
-
-     ),
-
+patterns('',
+         url(r'^awards/$', AwardList.as_view(), name="cciwmain.awards.index"),
+         url(r'^sites/$', SiteList.as_view(), name="cciwmain.sites.index"),
+         url(r'^sites/(?P<slug>.*)/$', SiteDetail.as_view(), name="cciwmain.sites.detail"),
 ) + \
 patterns('cciw.cciwmain.views',
     # Members

@@ -1,6 +1,7 @@
 from django.conf import settings
 from cciw.cciwmain.templatetags import view_extras
 from django.utils.safestring import mark_safe
+from django.views.generic.base import TemplateResponseMixin
 import cciw.middleware.threadlocals as threadlocals
 import datetime
 import urllib
@@ -30,6 +31,29 @@ def standard_extra_context(title=None, description=None, keywords=None):
     }
 
     return extra_dict
+
+
+# Class based version
+class DefaultMetaData(TemplateResponseMixin):
+    metadata_title=u"Christian Camps in Wales"
+    metadata_description= u"Details of camps, message boards and photos for the UK charity Christian Camps in Wales"
+    metadata_keywords = u"camp, camps, summer camp, Christian, Christian camp, charity"
+
+    def get_context_instance(self, context):
+        from cciw.cciwmain.models import Member
+        # Add some stuff:
+        context['title'] = self.metadata_title
+        context['meta_description'] = self.metadata_description
+        context['meta_keywords'] = self.metadata_keywords
+        context['thisyear'] = get_thisyear()
+        context['misc'] = {
+           'logged_in_members':
+               Member.objects.filter(last_seen__gte=datetime.datetime.now() \
+                                         - datetime.timedelta(minutes=3)).count(),
+           }
+
+        return super(DefaultMetaData, self).get_context_instance(context)
+
 
 _thisyear = None
 _thisyear_timestamp = None
