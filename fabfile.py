@@ -264,3 +264,27 @@ def deploy_staging():
 
 def deploy_production():
     _deploy(PRODUCTION)
+
+
+def stop_apache_production():
+    _stop_apache(PRODUCTION)
+
+
+def stop_apache_staging():
+    _stop_apache(STAGING)
+
+
+def start_apache_production():
+    _start_apache(PRODUCTION)
+
+
+def start_apache_staging():
+    _start_apache(STAGING)
+
+
+def restart_apache_production():
+    _restart_apache(PRODUCTION)
+
+
+def restart_apache_staging():
+    _restart_apache(STAGING)
