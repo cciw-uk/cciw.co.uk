@@ -4,7 +4,8 @@ import socket
 
 hostname = socket.gethostname()
 
-basedir = os.path.dirname(os.path.abspath(os.path.dirname(__file__))) # ../
+basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # ../
+parentdir = os.path.dirname(basedir)
 
 DEVBOX = ('webfaction' not in hostname)
 LIVEBOX = not DEVBOX
@@ -154,8 +155,8 @@ SECUREDOWNLOAD_SERVE_URL = "/file/"
 SECUREDOWNLOAD_TIMEOUT = 3600
 
 if DEVBOX:
-    SECUREDOWNLOAD_SOURCE = os.path.join(basedir, "../resources/protected_downloads")
-    SECUREDOWNLOAD_SERVE_ROOT = os.path.join(basedir, "../protected_downloads")
+    SECUREDOWNLOAD_SOURCE = os.path.join(parentdir, "resources/protected_downloads")
+    SECUREDOWNLOAD_SERVE_ROOT = os.path.join(parentdir, "protected_downloads")
 else:
     from cciw.settings_priv import SECUREDOWNLOAD_SOURCE, SECUREDOWNLOAD_SERVE_ROOT
 
@@ -185,10 +186,14 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"
 ####### MEDIA #############
 
 if DEVBOX:
-    MEDIA_ROOT = os.path.dirname(basedir) + '/usermedia'
-    STATICFILES_ROOT = os.path.dirname(basedir) + '/static'
+    MEDIA_ROOT = os.path.join(parentdir, 'usermedia')
+    STATIC_ROOT = os.path.join(parentdir, 'static')
 else:
-    from cciw.settings_priv import MEDIA_ROOT, STATICFILES_ROOT
+    # Need this to be relative to current. At the time this is used, the
+    # directory above STATIC_ROOT will be one of many timestamped directories,
+    # and we can't use the 'current' symlink.
+    STATIC_ROOT = os.path.join(parentdir, 'static')
+    from cciw.settings_priv import MEDIA_ROOT
 
 MEDIA_URL = '/usermedia/'
 STATIC_URL = '/static/'
