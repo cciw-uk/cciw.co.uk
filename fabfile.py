@@ -18,7 +18,6 @@ import os
 # - They have different apps on the webfaction server
 #    - for the django project app
 #    - for the static app
-#    - for the usermedia app
 # - STAGING has SSL turned off.
 #
 # settings_priv.py and settings.py controls these things.
@@ -288,3 +287,9 @@ def restart_apache_production():
 
 def restart_apache_staging():
     _restart_apache(STAGING)
+
+
+# TODO:
+#  - backup usermedia task
+#  - backup db task
+#  - clean out old copies of sources.
