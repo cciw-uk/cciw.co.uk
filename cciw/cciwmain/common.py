@@ -42,16 +42,10 @@ class DefaultMetaData(TemplateResponseMixin):
     def get_context_instance(self, context):
         from cciw.cciwmain.models import Member
         # Add some stuff:
-        context['title'] = self.metadata_title
-        context['meta_description'] = self.metadata_description
-        context['meta_keywords'] = self.metadata_keywords
-        context['thisyear'] = get_thisyear()
-        context['misc'] = {
-           'logged_in_members':
-               Member.objects.filter(last_seen__gte=datetime.datetime.now() \
-                                         - datetime.timedelta(minutes=3)).count(),
-           }
-
+        d = standard_extra_context(title=self.metadata_title,
+                                   description=self.metadata_description,
+                                   keywords=self.metadata_keywords)
+        context.update(d)
         return super(DefaultMetaData, self).get_context_instance(context)
 
 
