@@ -4,10 +4,12 @@ from django import forms
 from django import shortcuts
 from django import template
 from django.core import mail
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.utils.text import wrap
+from django.views.generic.base import TemplateView
 
-from cciw.cciwmain.common import standard_extra_context, get_thisyear
+from cciw.cciwmain.common import standard_extra_context, get_thisyear, JsonFormView, DefaultMetaData
 from cciw.cciwmain.forms import CciwFormMixin
 from cciw.cciwmain import utils
 
@@ -28,25 +30,26 @@ class FeedbackForm(CciwFormMixin, forms.Form):
     name = forms.CharField(label="Name", max_length=200, required=False)
     message = forms.CharField(label="Message", widget=forms.Textarea)
 
-def feedback(request):
-    c = standard_extra_context(title=u"Contact us")
+class FeedbackBase(DefaultMetaData):
+    metadata_title = u"Contact us"
 
-    if request.method == 'POST':
-        form = FeedbackForm(request.POST)
+class FeedbackFormView(FeedbackBase, JsonFormView):
+    form_class = FeedbackForm
+    template_name = 'cciw/feedback.html'
 
-        json = utils.json_validation_request(request, form)
-        if json: return json
+    def get_success_url(self):
+        return reverse('cciwmain.misc.feedback_done')
 
-        if form.is_valid():
-            send_feedback(form.cleaned_data['email'], form.cleaned_data['name'],
-                          form.cleaned_data['message'])
-            c['message'] = u"Thank you, your message has been sent."
-    else:
-        form = FeedbackForm()
+    def form_valid(self, form):
+        send_feedback(form.cleaned_data['email'], form.cleaned_data['name'],
+                      form.cleaned_data['message'])
+        return super(FeedbackFormView, self).form_valid(form)
 
-    c['form'] = form
-    return shortcuts.render_to_response('cciw/feedback.html',
-                context_instance=template.RequestContext(request, c))
+class FeedbackDone(FeedbackBase, TemplateView):
+    template_name = 'cciw/feedback_done.html'
+
+feedback = FeedbackFormView.as_view()
+feedback_done = FeedbackDone.as_view()
 
 def bookingform(request):
     """

@@ -102,6 +102,7 @@ patterns('cciw.cciwmain.views',
 
     # Feedback form
     url(r'^contact/$', 'misc.feedback', name="cciwmain.misc.feedback"),
+    url(r'^contact/done/$', 'misc.feedback_done', name="cciwmain.misc.feedback_done"),
 
     # Fallback -- allows any other URL to be defined as arbitary pages.
     # htmlchunk.find will throw a 404 for any URL not defined.

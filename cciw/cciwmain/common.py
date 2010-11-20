@@ -1,7 +1,10 @@
-from django.conf import settings
 from cciw.cciwmain.templatetags import view_extras
+from cciw.cciwmain.utils import python_to_json
+from django.conf import settings
+from django.http import HttpResponse
 from django.utils.safestring import mark_safe
 from django.views.generic.base import TemplateResponseMixin
+from django.views.generic.edit import FormView
 import cciw.middleware.threadlocals as threadlocals
 import datetime
 import urllib
@@ -47,6 +50,21 @@ class DefaultMetaData(TemplateResponseMixin):
                                    keywords=self.metadata_keywords)
         context.update(d)
         return super(DefaultMetaData, self).get_context_instance(context)
+
+
+class JsonFormView(FormView):
+    """
+    A FormView subclass that returns validation results
+    by JSON if accessed with ?format=json
+    """
+    def post(self, request, *args, **kwargs):
+        if request.GET.get('format', None) == 'json':
+            form_class = self.get_form_class()
+            form = self.get_form(form_class)
+            return HttpResponse(python_to_json(form.errors),
+                                mimetype='text/javascript')
+        else:
+            return super(JsonFormView, self).post(request, *args, **kwargs)
 
 
 _thisyear = None
