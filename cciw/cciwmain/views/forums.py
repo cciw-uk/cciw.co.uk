@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission, Poll, PollOption
-from cciw.cciwmain.common import create_breadcrumb, standard_extra_context, get_order_option
+from cciw.cciwmain.common import create_breadcrumb, standard_extra_context, get_order_option, object_list
 from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.decorators import login_redirect
 from django.utils.html import escape
@@ -98,9 +98,8 @@ def topicindex(request, title=None, extra_context=None, forum=None,
     if request.user.has_perm('cciwmain.edit_topic'):
         extra_context['moderator'] = True
 
-    return list_detail.object_list(request, topics,
-        extra_context=extra_context, template_name=template_name,
-        paginate_by=paginate_by, allow_empty=True)
+    return object_list(request, topics, extra_context=extra_context,
+                       template_name=template_name, paginate_by=paginate_by)
 
 def _get_forum_or_404(path, suffix):
     """Returns a forum from the supplied path (minus the suffix)
@@ -545,9 +544,9 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
     if request.user.has_perm('cciwmain.edit_post'):
         extra_context['moderator'] = True
 
-    return list_detail.object_list(request, posts,
+    return object_list(request, posts,
         extra_context=extra_context, template_name=template_name,
-        paginate_by=settings.FORUM_PAGINATE_POSTS_BY, allow_empty=True)
+        paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
 
 def photoindex(request, gallery, extra_context, breadcrumb_extra):
     "Displays an a gallery of photos"
@@ -575,9 +574,9 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
     extra_context['default_order'] = 'aca'
     photos = photos.order_by(*order_by)
 
-    return list_detail.object_list(request, photos,
+    return object_list(request, photos,
         extra_context=extra_context, template_name='cciw/forums/photoindex.html',
-        paginate_by=settings.FORUM_PAGINATE_PHOTOS_BY, allow_empty=True)
+        paginate_by=settings.FORUM_PAGINATE_PHOTOS_BY)
 
 @member_required_for_post
 def photo(request, photo, extra_context, breadcrumb_extra):
@@ -608,9 +607,9 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     if request.user.has_perm('cciwmain.edit_post'):
         extra_context['moderator'] = True
 
-    return list_detail.object_list(request, posts,
+    return object_list(request, posts,
         extra_context=extra_context, template_name='cciw/forums/photo.html',
-        paginate_by=settings.FORUM_PAGINATE_POSTS_BY, allow_empty=True)
+        paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
 
 def all_posts(request):
     context = standard_extra_context(title=u"Recent posts")
@@ -621,9 +620,9 @@ def all_posts(request):
 
     context['atom_feed_title'] = u"Atom feed for all posts on CCIW message boards."
 
-    return list_detail.object_list(request, posts,
+    return object_list(request, posts,
         extra_context=context, template_name='cciw/forums/posts.html',
-        allow_empty=True, paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
+        paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
 
 def post(request, id):
     try:
@@ -645,6 +644,6 @@ def all_topics(request):
 
     context['atom_feed_title'] = u"Atom feed for all new topics."
 
-    return list_detail.object_list(request, topics,
+    return object_list(request, topics,
         extra_context=context, template_name='cciw/forums/topics.html',
-        allow_empty=True, paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
+        paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
