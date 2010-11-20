@@ -5,6 +5,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.utils.safestring import mark_safe
 from django.views.generic.edit import FormView
+from django.views.generic.list import ListView
 import cciw.middleware.threadlocals as threadlocals
 import datetime
 import urllib
@@ -92,6 +93,20 @@ class FeedHandler(object):
             return feeds.handle_feed_request(self.request, feeds.MemberFeed, self.get_queryset())
         else:
             return super(FeedHandler, self).get(request, *args, **kwargs)
+
+
+def object_list(request, queryset, extra_context=None,
+                template_name='', paginate_by=None):
+    # list_detail.object_list replacement with all the things we need
+    class ObjectList(ListView):
+        def get_context_data(self, **kwargs):
+            c = super(ObjectList, self).get_context_data(**kwargs)
+            c.update(extra_context)
+            return c
+
+    return ObjectList.as_view(template_name=template_name,
+                              paginate_by=paginate_by,
+                              queryset=queryset)(request)
 
 
 _thisyear = None

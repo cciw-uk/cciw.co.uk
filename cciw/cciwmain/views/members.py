@@ -1,5 +1,4 @@
 from django.views.generic.list import ListView
-from django.views.generic import list_detail
 from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -7,7 +6,7 @@ from django.conf import settings
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Member, Message
-from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb, DefaultMetaData, FeedHandler
+from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb, DefaultMetaData, FeedHandler, object_list
 from cciw.middleware.threadlocals import get_current_member, remove_member_session
 from cciw.cciwmain.decorators import member_required, member_required_for_post, _display_login_form
 from cciw.cciwmain.utils import get_member_link
@@ -251,11 +250,10 @@ def message_list(request, user_name, box):
 
     messages = member.messages_received.filter(box=box).order_by('-time')
 
-    return list_detail.object_list(request, messages,
+    return object_list(request, messages,
         extra_context=extra_context,
         template_name='cciw/members/messages/index.html',
-        paginate_by=settings.MEMBERS_PAGINATE_MESSAGES_BY,
-        allow_empty=True)
+        paginate_by=settings.MEMBERS_PAGINATE_MESSAGES_BY)
 
 @member_required
 def inbox(request, user_name=None):
@@ -266,24 +264,27 @@ def inbox(request, user_name=None):
 def archived_messages(request, user_name=None):
     return message_list(request, user_name, Message.MESSAGE_BOX_SAVED)
 
+
 def posts(request, user_name=None):
     try:
         member = Member.objects.get(user_name=user_name)
     except Member.DoesNotExist:
         raise Http404
-    posts = member.posts.exclude(posted_at__isnull=True).order_by('-posted_at')
 
-    resp = feeds.handle_feed_request(request, feeds.member_post_feed(member),
-                                     query_set=posts)
-    if resp: return resp
+    class MemberPosts(DefaultMetaData, FeedHandler, ListView):
+        metadata_title = u"Recent posts by %s" % member.user_name
+        feed_class = feeds.member_post_feed(member)
+        template_name = 'cciw/members/posts.html'
+        paginate_by = settings.FORUM_PAGINATE_POSTS_BY
 
-    context = standard_extra_context(title=u"Recent posts by %s" % user_name)
-    context['member'] = member
-    crumbs = [get_member_link(user_name), u'Recent posts']
-    context['breadcrumb'] = create_breadcrumb(crumbs)
-    context['atom_feed_title'] = u"Atom feed for posts by %s." % user_name
+        def get_queryset(self):
+            return member.posts.exclude(posted_at__isnull=True).order_by('-posted_at')
 
-    return list_detail.object_list(request, posts,
-        extra_context=context, template_name='cciw/members/posts.html',
-        allow_empty=True, paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
+        def get_context_data(self, **kwargs):
+            c = super(MemberPosts, self).get_context_data(**kwargs)
+            c['member'] = member
+            c['breadcrumb'] = create_breadcrumb([get_member_link(user_name),
+                                                 u'Recent posts'])
+            return c
 
+    return MemberPosts.as_view()(request, user_name=user_name)
