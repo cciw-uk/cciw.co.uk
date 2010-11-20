@@ -52,15 +52,16 @@ class FeedbackDone(FeedbackBase, TemplateView):
 feedback = FeedbackFormView.as_view()
 feedback_done = FeedbackDone.as_view()
 
-def bookingform(request):
-    """
-    Displays a page with a download link for the booking form
-    if it is available.
-    """
-    c = standard_extra_context(title="Booking form")
-    year = get_thisyear()
-    bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
-    if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath)):
-        c['bookingform'] = bookingform_relpath
-    return shortcuts.render_to_response('cciw/booking.html',
-        context_instance=template.RequestContext(request, c))
+class BookingForm(DefaultMetaData, TemplateView):
+    metadata_title = "Booking form"
+    template_name = "cciw/booking.html"
+
+    def get_context_data(self, **kwargs):
+        c = super(BookingForm, self).get_context_data(**kwargs)
+        year = get_thisyear()
+        bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
+        if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath)):
+            c['bookingform'] = bookingform_relpath
+        return c
+
+bookingform = BookingForm.as_view()
