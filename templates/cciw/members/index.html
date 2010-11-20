@@ -9,7 +9,7 @@
 		<label>Search:
 		<input type='text' name='search' id='search' value="{{ request.GET.search }}" /></label><br/>
 		<label>Online users only: <input type="checkbox" name="online" value="1"
-			{% if request.online %}
+			{% if request.GET.online %}
 				checked="checked"
 			{% endif %} /></label> <input type="submit" name="go" value="Go" />
 		</p>
