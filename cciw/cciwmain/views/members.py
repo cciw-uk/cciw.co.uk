@@ -1,3 +1,4 @@
+from django.views.generic.list import ListView
 from django.views.generic import list_detail
 from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
 from django.shortcuts import render_to_response
@@ -6,7 +7,7 @@ from django.conf import settings
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Member, Message
-from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb
+from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb, DefaultMetaData, FeedHandler
 from cciw.middleware.threadlocals import get_current_member, remove_member_session
 from cciw.cciwmain.decorators import member_required, member_required_for_post, _display_login_form
 from cciw.cciwmain.utils import get_member_link
@@ -17,46 +18,49 @@ from datetime import datetime, timedelta
 import re
 import math
 
-def index(request):
-    """
-    Displays an index of all members.
-    """
-    members = Member.objects.filter(dummy_member=False)
 
-    feed = feeds.handle_feed_request(request, feeds.MemberFeed, query_set=members)
-    if feed: return feed
+class MemberList(DefaultMetaData, FeedHandler, ListView):
+    metadata_title = u"Members"
+    feed_class = feeds.MemberFeed
+    template_name = "cciw/members/index.html"
+    paginate_by = 50
 
-    if (request.GET.has_key('online')):
-        members = members.filter(last_seen__gte=(datetime.now() - timedelta(minutes=3)))
+    def get_queryset(self):
+        members = Member.objects.filter(dummy_member=False)
+        if self.is_feed_request():
+            return members
 
-    extra_context = standard_extra_context(title=u'Members')
-    order_by = get_order_option(
-        {'adj': ('date_joined',),
-        'ddj': ('-date_joined',),
-        'aun': ('user_name',),
-        'dun': ('-user_name',),
-        'arn': ('real_name',),
-        'drn': ('-real_name',),
-        'als': ('last_seen',),
-        'dls': ('-last_seen',)},
-        request, ('user_name',))
-    members = members.order_by(*order_by)
-    extra_context['default_order'] = 'aun'
+        if self.request.GET.has_key('online'):
+            members = members.filter(last_seen__gte=(datetime.now() - timedelta(minutes=3)))
+        order_by = get_order_option(
+            {'adj': ('date_joined',),
+             'ddj': ('-date_joined',),
+             'aun': ('user_name',),
+             'dun': ('-user_name',),
+             'arn': ('real_name',),
+             'drn': ('-real_name',),
+             'als': ('last_seen',),
+             'dls': ('-last_seen',)},
+            self.request, ('user_name',))
+        members = members.order_by(*order_by)
 
-    try:
-        search = request.GET['search']
-        if len(search) > 0:
-            members = (members.filter(user_name__icontains=search) | members.filter(real_name__icontains=search))
-    except KeyError:
-        pass
+        try:
+            search = self.request.GET['search']
+            if len(search) > 0:
+                members = (members.filter(user_name__icontains=search) | members.filter(real_name__icontains=search))
+        except KeyError:
+            pass
 
-    extra_context['atom_feed_title'] = u"Atom feed for new members."
+        return members
 
-    return list_detail.object_list(request, members,
-        extra_context=extra_context,
-        template_name='cciw/members/index.html',
-        paginate_by=50,
-        allow_empty=True)
+    def get_context_data(self, **kwargs):
+        c = super(MemberList, self).get_context_data(**kwargs)
+        c['default_order'] = 'aun'
+        c['atom_feed_title'] = u"Atom feed for new members"
+        return c
+
+index = MemberList.as_view()
+
 
 def detail(request, user_name=None):
     try:

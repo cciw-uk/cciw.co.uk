@@ -1,3 +1,4 @@
+from cciw.cciwmain import feeds
 from cciw.cciwmain.templatetags import view_extras
 from cciw.cciwmain.utils import python_to_json
 from django.conf import settings
@@ -68,6 +69,29 @@ class AjaxyFormView(FormView):
                                 mimetype='text/javascript')
         else:
             return super(AjaxyFormView, self).post(request, *args, **kwargs)
+
+
+class FeedHandler(object):
+    """
+    Mixin that handles requests for a feed rather than HTML
+    """
+    feed_class = None
+
+    def get_feed_class(self):
+        if self.feed_class is None:
+            raise NotImplementedError("Attribute feed_class not defined.")
+        else:
+            return self.feed_class
+
+    def is_feed_request(self):
+        return self.request.GET.get('format', None) == 'atom'
+
+    def get(self, request, *args, **kwargs):
+        if self.is_feed_request():
+            feed_class = self.get_feed_class()
+            return feeds.handle_feed_request(self.request, feeds.MemberFeed, self.get_queryset())
+        else:
+            return super(FeedHandler, self).get(request, *args, **kwargs)
 
 
 _thisyear = None
