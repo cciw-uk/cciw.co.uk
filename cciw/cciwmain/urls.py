@@ -1,7 +1,6 @@
 from django.conf.urls.defaults import patterns, url
 import cciw.cciwmain.common as cciw_common
 from cciw.cciwmain.common import DefaultMetaData
-from cciw.cciwmain.utils import UseOnceLazyDict
 from cciw.cciwmain.models import Site, Award
 from django.conf import settings
 from django.views.generic.list import ListView
