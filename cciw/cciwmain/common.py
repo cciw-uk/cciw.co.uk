@@ -52,10 +52,10 @@ class DefaultMetaData(TemplateResponseMixin):
         return super(DefaultMetaData, self).get_context_instance(context)
 
 
-class JsonFormView(FormView):
+class AjaxyFormView(FormView):
     """
-    A FormView subclass that returns validation results
-    by JSON if accessed with ?format=json
+    A FormView subclass that enables the returning of validation results by JSON
+    if accessed with ?format=json.
     """
     def post(self, request, *args, **kwargs):
         if request.GET.get('format', None) == 'json':
@@ -64,7 +64,7 @@ class JsonFormView(FormView):
             return HttpResponse(python_to_json(form.errors),
                                 mimetype='text/javascript')
         else:
-            return super(JsonFormView, self).post(request, *args, **kwargs)
+            return super(AjaxyFormView, self).post(request, *args, **kwargs)
 
 
 _thisyear = None

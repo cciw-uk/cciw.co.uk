@@ -9,7 +9,7 @@ from django.conf import settings
 from django.utils.text import wrap
 from django.views.generic.base import TemplateView
 
-from cciw.cciwmain.common import standard_extra_context, get_thisyear, JsonFormView, DefaultMetaData
+from cciw.cciwmain.common import standard_extra_context, get_thisyear, AjaxyFormView, DefaultMetaData
 from cciw.cciwmain.forms import CciwFormMixin
 from cciw.cciwmain import utils
 
@@ -33,7 +33,7 @@ class FeedbackForm(CciwFormMixin, forms.Form):
 class FeedbackBase(DefaultMetaData):
     metadata_title = u"Contact us"
 
-class FeedbackFormView(FeedbackBase, JsonFormView):
+class FeedbackFormView(FeedbackBase, AjaxyFormView):
     form_class = FeedbackForm
     template_name = 'cciw/feedback.html'
 
@@ -41,7 +41,8 @@ class FeedbackFormView(FeedbackBase, JsonFormView):
         return reverse('cciwmain.misc.feedback_done')
 
     def form_valid(self, form):
-        send_feedback(form.cleaned_data['email'], form.cleaned_data['name'],
+        send_feedback(form.cleaned_data['email'],
+                      form.cleaned_data['name'],
                       form.cleaned_data['message'])
         return super(FeedbackFormView, self).form_valid(form)
 
