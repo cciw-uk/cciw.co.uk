@@ -3,7 +3,6 @@ from cciw.cciwmain.utils import python_to_json
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.safestring import mark_safe
-from django.views.generic.base import TemplateResponseMixin
 from django.views.generic.edit import FormView
 import cciw.middleware.threadlocals as threadlocals
 import datetime
@@ -37,19 +36,23 @@ def standard_extra_context(title=None, description=None, keywords=None):
 
 
 # Class based version
-class DefaultMetaData(TemplateResponseMixin):
+class DefaultMetaData(object):
+    """
+    Mixin that provides some default metadata and other standard variable to the
+    page context. Assumes the use of TemplateView.
+    """
     metadata_title=u"Christian Camps in Wales"
     metadata_description= u"Details of camps, message boards and photos for the UK charity Christian Camps in Wales"
     metadata_keywords = u"camp, camps, summer camp, Christian, Christian camp, charity"
 
-    def get_context_instance(self, context):
+    def get_context_data(self, **kwargs):
         from cciw.cciwmain.models import Member
-        # Add some stuff:
         d = standard_extra_context(title=self.metadata_title,
                                    description=self.metadata_description,
                                    keywords=self.metadata_keywords)
-        context.update(d)
-        return super(DefaultMetaData, self).get_context_instance(context)
+        c = super(DefaultMetaData, self).get_context_data(**kwargs)
+        c.update(d)
+        return c
 
 
 class AjaxyFormView(FormView):
