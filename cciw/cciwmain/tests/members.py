@@ -2,13 +2,14 @@ import twill
 from twill import commands as tc
 from twill.shell import TwillCommandLoop
 
+from BeautifulSoup import BeautifulSoup
 from client import CciwClient
 from django.test import TestCase
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core import mail
 
-from cciw.cciwmain.models import Member
+from cciw.cciwmain.models import Member, Message
 import cciw.cciwmain.views.members
 import cciw.cciwmain.decorators
 
@@ -37,12 +38,14 @@ MEMBER_SIGNUP = reverse("cciwmain.memberadmin.signup")
 
 NEW_PASSWORD_URL = reverse("cciwmain.memberadmin.help_logging_in")
 
+
 def _get_file_size(path):
     return os.stat(path)[os.path.stat.ST_SIZE]
 
 def _remove_member_icons(user_name):
     for f in glob.glob("%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, user_name + ".*")):
         os.unlink(f)
+
 
 class MemberAdmin(TestCase):
     fixtures=['basic.json','test_members.json']
@@ -162,6 +165,7 @@ class MemberAdmin(TestCase):
     def tearDown(self):
         _remove_member_icons(TEST_MEMBER_USERNAME)
 
+
 class MemberSignup(TwillMixin, TestCase):
     fixtures=['basic.json','test_members.json']
 
@@ -263,6 +267,7 @@ class MemberSignup(TwillMixin, TestCase):
         response = self._follow_email_url(path, querydata)
         self.assertTrue("Error" in response.content, "Error should be reported if the email is incorrect")
 
+
 class MemberLists(TestCase):
     fixtures=['basic.json','test_members.json']
 
@@ -278,6 +283,147 @@ class MemberLists(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/atom+xml')
         self.assertContains(resp, TEST_MEMBER_USERNAME)
+
+
+class MessageLists(TestCase):
+
+    fixtures = ['basic.json','test_members.json']
+
+    def setUp(self):
+        self.client = CciwClient()
+        self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)
+        self.member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
+
+    def _get_inbox(self, page=None):
+        if page is not None:
+            qs = {'page': str(page)}
+        else:
+            qs = {}
+        return self.client.get(reverse("cciwmain.members.inbox",
+                                       kwargs={'user_name':TEST_MEMBER_USERNAME}),
+                               qs)
+
+    def _get_archived(self):
+        return self.client.get(reverse("cciwmain.members.archived_messages",
+                                       kwargs={'user_name':TEST_MEMBER_USERNAME}))
+
+    def test_empty_inbox(self):
+        # Sanity check:
+        self.assertEqual(self.member.messages_received.filter(box=Message.MESSAGE_BOX_INBOX).count(), 0)
+        resp = self._get_inbox()
+        self.assertContains(resp, "No messages found", count=1)
+
+    def _send_message(self, text):
+        from_member = Member.objects.get(user_name='test_poll_creator_1')
+        return Message.send_message(self.member, from_member, text)
+
+    def test_inbox_with_message(self):
+        msg = self._send_message("A quick message for you!")
+        # Sanity check:
+        self.assertEqual(self.member.messages_received.filter(box=Message.MESSAGE_BOX_INBOX).count(), 1)
+        resp = self._get_inbox()
+        self.assertContains(resp, msg.text, count=1)
+        self.assertContains(resp, ">%s<" % msg.from_member.user_name, count=1)
+
+    def _inbox_count(self):
+        return self.member.messages_received.filter(box=Message.MESSAGE_BOX_INBOX).count()
+
+    def _archived_count(self):
+        return self.member.messages_received.filter(box=Message.MESSAGE_BOX_SAVED).count()
+
+    def _msg_list_checkboxes(self, resp):
+        b = BeautifulSoup(resp.content)
+        checkboxes = [c for c in b.findAll(name='input', attrs={"type":"checkbox"})
+                      if c.attrMap['name'].startswith('msg_')]
+        return checkboxes
+
+    def test_archive_message_from_inbox(self):
+        # Setup
+        msg = self._send_message("A quick message")
+        msg2 = self._send_message("Another message")
+        inbox_count = self._inbox_count()
+        archived_count = self._archived_count()
+
+        # Get page
+        resp = self._get_inbox()
+        checkboxes = self._msg_list_checkboxes(resp)
+        self.assertTrue(len(checkboxes) == inbox_count)
+
+        # Archive
+        resp2 = self.client.post(reverse("cciwmain.members.inbox",
+                                         kwargs={'user_name': TEST_MEMBER_USERNAME}),
+                                 {checkboxes[0].attrMap['name']: '1',
+                                  'archive':'1'})
+        self.assertEqual(resp2.status_code, 200)
+        self.assertEqual(self._inbox_count(), inbox_count - 1)
+        self.assertEqual(self._archived_count(), archived_count + 1)
+
+    def test_delete_message_from_inbox(self):
+        # Setup
+        msg = self._send_message("A quick message")
+        inbox_count = self._inbox_count()
+        # Get page
+        resp = self._get_inbox()
+        checkboxes = self._msg_list_checkboxes(resp)
+        self.assertTrue(len(checkboxes) == inbox_count)
+
+        # Delete
+        resp2 = self.client.post(reverse("cciwmain.members.inbox",
+                                         kwargs={'user_name': TEST_MEMBER_USERNAME}),
+                                 {checkboxes[0].attrMap['name']: '1',
+                                  'delete':'1'})
+        self.assertEqual(resp2.status_code, 200)
+        self.assertEqual(self._inbox_count(), inbox_count - 1)
+
+    def test_move_to_inbox_from_archive(self):
+        # Setup
+        msg = self._send_message("A quick message")
+        msg2 = self._send_message("Another message")
+        msg.box = Message.MESSAGE_BOX_SAVED
+        msg2.box = Message.MESSAGE_BOX_SAVED
+        msg.save()
+        msg2.save()
+
+        inbox_count = self._inbox_count()
+        archived_count = self._archived_count()
+        self.assertEqual(archived_count, 2)
+
+        # Get page
+        resp = self._get_archived()
+        checkboxes = self._msg_list_checkboxes(resp)
+        self.assertTrue(len(checkboxes) == archived_count)
+
+        # Move to inbox
+        resp2 = self.client.post(reverse("cciwmain.members.archived_messages",
+                                         kwargs={'user_name': TEST_MEMBER_USERNAME}),
+                                 {checkboxes[0].attrMap['name']: '1',
+                                  'inbox':'1'})
+        self.assertEqual(resp2.status_code, 200)
+        self.assertEqual(self._inbox_count(), inbox_count + 1)
+        self.assertEqual(self._archived_count(), archived_count - 1)
+
+    def test_redirect(self):
+        """
+        Ensure that we get a redirect if the user deletes the last message on a
+        page to avoid a 404.
+        """
+        for i in range(0, settings.MEMBERS_PAGINATE_MESSAGES_BY + 1):
+            self._send_message("Message number %s" % i)
+
+        resp = self._get_inbox(page=2)
+        checkboxes = self._msg_list_checkboxes(resp)
+        # Sanity check
+        self.assertTrue(len(checkboxes) == 1)
+
+        # Delete
+        resp2 = self.client.post(reverse("cciwmain.members.inbox",
+                                         kwargs={'user_name': TEST_MEMBER_USERNAME})
+                                 + "?page=2",
+                                 {checkboxes[0].attrMap['name']: '1',
+                                  'delete':'1'})
+        self.assertEqual(resp2.status_code, 302)
+        self.assertTrue("page=1" in resp2['Location'])
+
 
 class MemberPosts(TestCase):
 

@@ -229,6 +229,7 @@ https://%(domain)s/members/%(from)s/messages/
 """ % {'from': from_member.user_name, 'to': to_member.user_name,
         'domain': utils.get_current_domain(), 'message': text},
         "website@cciw.co.uk", [to_member.email])
+        return msg
 
 
     def __unicode__(self):
