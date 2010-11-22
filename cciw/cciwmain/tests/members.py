@@ -112,22 +112,28 @@ class MemberAdmin(TestCase):
         self.assertEqual(1, len(files))
         self.assertNotEqual(0, _get_file_size(files[0]))
 
+        return response
+
     def _assert_icon_upload_fails(self, filename):
         new_icon = os.path.join(settings.TEST_DIR, filename)
 
         # ensure the file isn't there already
         _remove_member_icons(TEST_MEMBER_USERNAME)
 
-        self._upload_icon(new_icon)
+        resp = self._upload_icon(new_icon)
 
         # Ensure it didn't get there
         self.assertEqual(0, len(glob.glob("%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, self.member.user_name + ".*"))))
 
+        return resp
+
     def test_upload_bad_icon(self):
-        self._assert_icon_upload_fails("badicon.png")
+        resp = self._assert_icon_upload_fails("badicon.png")
 
     def test_upload_outsize_icon(self):
-        self._assert_icon_upload_fails("outsize_icon.png")
+        resp = self._assert_icon_upload_fails("outsize_icon.png")
+        # Ensure error message
+        self.assertContains(resp, "The image was bigger than")
 
     def _read_email_change_email(self, email):
         return read_email_url(email, "https://.*/change-email/.*")
