@@ -1,15 +1,13 @@
 import os
 
 from django import forms
-from django import shortcuts
-from django import template
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.utils.text import wrap
 from django.views.generic.base import TemplateView
 
-from cciw.cciwmain.common import standard_extra_context, get_thisyear, AjaxyFormView, DefaultMetaData
+from cciw.cciwmain.common import get_thisyear, AjaxyFormView, DefaultMetaData
 from cciw.cciwmain.forms import CciwFormMixin
 from cciw.cciwmain import utils
 
