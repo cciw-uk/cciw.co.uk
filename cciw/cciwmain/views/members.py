@@ -265,26 +265,30 @@ def archived_messages(request, user_name=None):
     return message_list(request, user_name, Message.MESSAGE_BOX_SAVED)
 
 
-def posts(request, user_name=None):
-    try:
-        member = Member.objects.get(user_name=user_name)
-    except Member.DoesNotExist:
-        raise Http404
+class MemberPosts(DefaultMetaData, FeedHandler, ListView):
+    template_name = 'cciw/members/posts.html'
+    paginate_by = settings.FORUM_PAGINATE_POSTS_BY
 
-    class MemberPosts(DefaultMetaData, FeedHandler, ListView):
-        metadata_title = u"Recent posts by %s" % member.user_name
-        feed_class = feeds.member_post_feed(member)
-        template_name = 'cciw/members/posts.html'
-        paginate_by = settings.FORUM_PAGINATE_POSTS_BY
+    def get(self, request, user_name=None):
+        try:
+            member = Member.objects.get(user_name=user_name)
+        except Member.DoesNotExist:
+            raise Http404
 
-        def get_queryset(self):
-            return member.posts.exclude(posted_at__isnull=True).order_by('-posted_at')
+        self.metadata_title = u"Recent posts by %s" % member.user_name
+        self.feed_class = feeds.member_post_feed(member)
 
-        def get_context_data(self, **kwargs):
+        self.get_queryset = lambda: \
+            member.posts.exclude(posted_at__isnull=True).order_by('-posted_at')
+
+        def get_context_data(**kwargs):
             c = super(MemberPosts, self).get_context_data(**kwargs)
             c['member'] = member
             c['breadcrumb'] = create_breadcrumb([get_member_link(user_name),
                                                  u'Recent posts'])
             return c
+        self.get_context_data = get_context_data
 
-    return MemberPosts.as_view()(request, user_name=user_name)
+        return super(MemberPosts, self).get(request, user_name=user_name)
+
+posts = MemberPosts.as_view()
