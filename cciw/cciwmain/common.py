@@ -90,7 +90,7 @@ class FeedHandler(object):
     def get(self, request, *args, **kwargs):
         if self.is_feed_request():
             feed_class = self.get_feed_class()
-            return feeds.handle_feed_request(self.request, feeds.MemberFeed, self.get_queryset())
+            return feeds.handle_feed_request(self.request, feed_class, self.get_queryset())
         else:
             return super(FeedHandler, self).get(request, *args, **kwargs)
 
