@@ -80,7 +80,7 @@ class MemberAdmin(TestCase):
         post_data = self._standard_post_data()
         f = open(iconpath)
         post_data['icon'] = f
-        resp = self.client.post(MEMBER_ADMIN_URL, data=post_data)
+        resp = self.client.post(MEMBER_ADMIN_URL, data=post_data, follow=True)
         f.close()
         return resp
 
@@ -135,7 +135,7 @@ class MemberAdmin(TestCase):
     def test_change_email(self):
         data = self._standard_post_data()
         data['email'] = "anewemailtoconfirm@email.com"
-        resp = self.client.post(MEMBER_ADMIN_URL, data=data)
+        resp = self.client.post(MEMBER_ADMIN_URL, data=data, follow=True)
         self.assertTrue("an e-mail has been sent" in resp.content)
         self.assertEqual(len(mail.outbox), 1)
         url, path, querydata = self._read_email_change_email(mail.outbox[0])

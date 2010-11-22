@@ -29,10 +29,12 @@ Please check your input below:
 </div>
 {% endif %}
 
-{% if message %}
-<div class="successMessage">
-	{{ message }}
-</div>
+{% if messages %}
+   {% for message in messages %}
+      <div class="successMessage">
+          {{ message }}
+      </div>
+   {% endfor %}
 {% endif %}
 
 {% if image_error %}

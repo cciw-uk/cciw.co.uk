@@ -64,7 +64,7 @@ class DefaultMetaData(object):
         return c
 
 
-class AjaxyFormView(FormView):
+class AjaxyFormMixin(object):
     """
     A FormView subclass that enables the returning of validation results by JSON
     if accessed with ?format=json.
@@ -76,7 +76,10 @@ class AjaxyFormView(FormView):
             return HttpResponse(python_to_json(form.errors),
                                 mimetype='text/javascript')
         else:
-            return super(AjaxyFormView, self).post(request, *args, **kwargs)
+            return super(AjaxyFormMixin, self).post(request, *args, **kwargs)
+
+class AjaxyFormView(AjaxyFormMixin, FormView):
+    pass
 
 
 class FeedHandler(object):
