@@ -52,16 +52,16 @@ class FeedbackDone(FeedbackBase, TemplateView):
 feedback = FeedbackFormView.as_view()
 feedback_done = FeedbackDone.as_view()
 
+
 class BookingForm(DefaultMetaData, TemplateView):
     metadata_title = "Booking form"
     template_name = "cciw/booking.html"
 
-    def get_context_data(self, **kwargs):
-        c = super(BookingForm, self).get_context_data(**kwargs)
+    def get(self, request):
         year = get_thisyear()
         bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
         if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath)):
-            c['bookingform'] = bookingform_relpath
-        return c
+            self.context['bookingform'] = bookingform_relpath
+        return super(BookingForm, self).get(request)
 
 bookingform = BookingForm.as_view()
