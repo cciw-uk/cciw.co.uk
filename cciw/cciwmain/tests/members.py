@@ -276,3 +276,21 @@ class MemberLists(TestCase):
         resp = self.client.get(reverse('cciwmain.members.index'), {'format':'atom'})
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(TEST_MEMBER_USERNAME in resp.content)
+
+class MemberPosts(TestCase):
+
+    fixtures = ['basic.json','test_members.json', 'basic_topic.json']
+
+    def test_index(self):
+        resp = self.client.get(reverse('cciwmain.members.posts',
+                                       kwargs={'user_name':TEST_MEMBER_USERNAME}))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(TEST_MEMBER_USERNAME in resp.content)
+
+    def test_atom(self):
+        # Just test for no error
+        resp = self.client.get(reverse('cciwmain.members.posts',
+                                       kwargs={'user_name':TEST_MEMBER_USERNAME}),
+                               {'format':'atom'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(TEST_MEMBER_USERNAME in resp.content)
