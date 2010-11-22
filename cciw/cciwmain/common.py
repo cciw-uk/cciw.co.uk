@@ -40,18 +40,25 @@ def standard_extra_context(title=None, description=None, keywords=None):
 # Class based version
 class DefaultMetaData(object):
     """
-    Mixin that provides some default metadata and other standard variable to the
+    Mixin that provides some default metadata and other standard variables to the
     page context. Assumes the use of TemplateView.
     """
     metadata_title=u"Christian Camps in Wales"
     metadata_description= u"Details of camps, message boards and photos for the UK charity Christian Camps in Wales"
     metadata_keywords = u"camp, camps, summer camp, Christian, Christian camp, charity"
 
+    def __init__(self, **kwargs):
+        # Provide place for arbitrary context to get stored.
+        self.context = {}
+        return super(DefaultMetaData, self).__init__(**kwargs)
+
     def get_context_data(self, **kwargs):
         from cciw.cciwmain.models import Member
         d = standard_extra_context(title=self.metadata_title,
                                    description=self.metadata_description,
                                    keywords=self.metadata_keywords)
+        # Allow context to overwrite standard_extra_context
+        d.update(self.context)
         c = super(DefaultMetaData, self).get_context_data(**kwargs)
         c.update(d)
         return c

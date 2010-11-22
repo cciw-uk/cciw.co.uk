@@ -278,16 +278,11 @@ class MemberPosts(DefaultMetaData, FeedHandler, ListView):
         self.metadata_title = u"Recent posts by %s" % member.user_name
         self.feed_class = feeds.member_post_feed(member)
 
-        self.get_queryset = lambda: \
-            member.posts.exclude(posted_at__isnull=True).order_by('-posted_at')
+        self.queryset = member.posts.exclude(posted_at__isnull=True).order_by('-posted_at')
 
-        def get_context_data(**kwargs):
-            c = super(MemberPosts, self).get_context_data(**kwargs)
-            c['member'] = member
-            c['breadcrumb'] = create_breadcrumb([get_member_link(user_name),
-                                                 u'Recent posts'])
-            return c
-        self.get_context_data = get_context_data
+        self.context['member'] = member
+        self.context['breadcrumb'] = create_breadcrumb([get_member_link(user_name),
+                                                        u'Recent posts'])
 
         return super(MemberPosts, self).get(request, user_name=user_name)
 
