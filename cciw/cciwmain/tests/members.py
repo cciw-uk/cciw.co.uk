@@ -269,13 +269,15 @@ class MemberLists(TestCase):
     def test_index(self):
         resp = self.client.get(reverse('cciwmain.members.index'))
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue(TEST_MEMBER_USERNAME in resp.content)
+        self.assertTrue(resp['Content-Type'].startswith('text/html'))
+        self.assertContains(resp, TEST_MEMBER_USERNAME)
 
     def test_atom(self):
         # Just test for no error
         resp = self.client.get(reverse('cciwmain.members.index'), {'format':'atom'})
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue(TEST_MEMBER_USERNAME in resp.content)
+        self.assertEqual(resp['Content-Type'], 'application/atom+xml')
+        self.assertContains(resp, TEST_MEMBER_USERNAME)
 
 class MemberPosts(TestCase):
 
@@ -285,7 +287,9 @@ class MemberPosts(TestCase):
         resp = self.client.get(reverse('cciwmain.members.posts',
                                        kwargs={'user_name':TEST_MEMBER_USERNAME}))
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue(TEST_MEMBER_USERNAME in resp.content)
+        self.assertTrue(resp['Content-Type'].startswith('text/html'))
+        self.assertContains(resp, TEST_MEMBER_USERNAME)
+        self.assertContains(resp, "unique message", count=1)
 
     def test_atom(self):
         # Just test for no error
@@ -293,4 +297,6 @@ class MemberPosts(TestCase):
                                        kwargs={'user_name':TEST_MEMBER_USERNAME}),
                                {'format':'atom'})
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue(TEST_MEMBER_USERNAME in resp.content)
+        self.assertEqual(resp['Content-Type'], 'application/atom+xml')
+        self.assertContains(resp, TEST_MEMBER_USERNAME)
+        self.assertContains(resp, "unique message", count=1)
