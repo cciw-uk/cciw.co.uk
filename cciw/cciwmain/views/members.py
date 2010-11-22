@@ -7,7 +7,7 @@ from django.conf import settings
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Member, Message
-from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb, DefaultMetaData, FeedHandler
+from cciw.cciwmain.common import get_order_option, create_breadcrumb, DefaultMetaData, FeedHandler
 from cciw.middleware.threadlocals import get_current_member, remove_member_session
 from cciw.cciwmain.decorators import member_required, member_required_for_post, _display_login_form
 from cciw.cciwmain.utils import get_member_link
@@ -99,93 +99,102 @@ def login(request):
     else:
         return _display_login_form(request, login_page=True)
 
-@member_required
-def send_message(request, user_name=None):
-    """View function that handles the 'send message' form"""
 
+class SendMessage(DefaultMetaData, TemplateView):
+    """
+    View function that handles the 'send message' form
+    """
     # Two modes:
-    #  - if user_name is current user, have a field that
-    #    allows them to enter the recipient
-    #  - otherwise, the page is a 'leave message for {{ user_name }} page
+    #  - if user_name is current user, there is a field that
+    #    allows them to enter the recipient.
+    #  - otherwise, the page is a 'leave message for {{ user_name }}' page.
+    # It is easier to handle this without a Django 'Form'.
 
-    # General setup
-    current_member = get_current_member()
+    template_name = 'cciw/members/messages/send.html'
 
-    try:
-        member = Member.objects.get(user_name=user_name)
-    except Member.DoesNotExist:
-        raise Http404
+    def dispatch(self, request, user_name=None):
+        # General setup
+        self.request = request
+        current_member = get_current_member()
 
-    # Handle input:
-    errors = []
-    message_sent = False
-    preview = None
-    message_text = None
+        try:
+            member = Member.objects.get(user_name=user_name)
+        except Member.DoesNotExist:
+            raise Http404
 
-    no_messages = False
-    to_name = u''
+        c = self.context
 
-    to = None
-    if current_member.user_name != member.user_name:
-        to = member
-        if to.message_option == Member.MESSAGES_NONE:
-            no_messages = True
+        # Handle input:
+        errors = []
+        message_sent = False
+        preview = None
+        message_text = None
 
-    if request.method == 'POST':
-        # Recipient
-        if to is None:
-            to_name = request.POST.get('to', u'').strip()
-            if to_name == u'':
-                errors.append('No user name given.')
+        no_messages = False
+        to_name = u''
+
+        to = None
+        if current_member.user_name != member.user_name:
+            to = member
+            if to.message_option == Member.MESSAGES_NONE:
+                no_messages = True
+
+        if request.method == 'POST':
+            # Recipient
+            if to is None:
+                to_name = request.POST.get('to', u'').strip()
+                if to_name == u'':
+                    errors.append('No user name given.')
+                else:
+                    try:
+                        to = Member.objects.get(user_name=to_name)
+                    except Member.DoesNotExist:
+                        errors.append(u'The user %s could not be found' % to_name)
+
+            if to is not None and to.message_option == Member.MESSAGES_NONE:
+                errors.append(u'This user has chosen not to receive any messages.')
             else:
-                try:
-                    to = Member.objects.get(user_name=to_name)
-                except Member.DoesNotExist:
-                    errors.append(u'The user %s could not be found' % to_name)
+                # Message
+                message_text = request.POST.get('message', u'').strip()
+                if message_text == u'':
+                    errors.append(u'No message entered.')
 
-        if to is not None and to.message_option == Member.MESSAGES_NONE:
-            errors.append(u'This user has chosen not to receive any messages.')
+                # Always do a preview (for 'preview' and 'send')
+                preview = mark_safe(bbcode.bb2xhtml(message_text))
+                if len(errors) == 0 and request.POST.has_key('send'):
+                    Message.send_message(to, current_member, message_text)
+                    message_sent = True
+                    message_text = u'' # don't persist.
+                else:
+                    # Persist text entered, but corrected:
+                    message_text = bbcode.correct(message_text)
+
+        # Context vars
+        crumbs = [get_member_link(user_name)]
+        if current_member.user_name == member.user_name:
+            c['mode'] = 'send'
+            self.metadata_title = u"Send a message"
+            crumbs.append(u'Messages &lt; Send | <a href="inbox/">Inbox</a> | <a href="archived/">Archived</a> &gt;')
+            # to_name = to_name (from POST)
         else:
-            # Message
-            message_text = request.POST.get('message', u'').strip()
-            if message_text == u'':
-                errors.append(u'No message entered.')
+            c['mode'] = 'leave'
+            self.metadata_title = u"Leave a message for %s" % member.user_name
+            crumbs.append(u'Send message')
+            to_name = user_name
 
-            # Always do a preview (for 'preview' and 'send')
-            preview = mark_safe(bbcode.bb2xhtml(message_text))
-            if len(errors) == 0 and request.POST.has_key('send'):
-                Message.send_message(to, current_member, message_text)
-                message_sent = True
-                message_text = u'' # don't persist.
-            else:
-                # Persist text entered, but corrected:
-                message_text = bbcode.correct(message_text)
+        c['breadcrumb'] = create_breadcrumb(crumbs)
+        c['member'] = member
+        c['to'] = to_name
+        c['preview'] = preview
+        c['errors'] = errors
+        c['message_sent'] = message_sent
+        c['message_text'] = message_text
+        c['no_messages'] = no_messages
 
-    # Context vars
-    crumbs = [get_member_link(user_name)]
-    if current_member.user_name == member.user_name:
-        mode = 'send'
-        title = u"Send a message"
-        crumbs.append(u'Messages &lt; Send | <a href="inbox/">Inbox</a> | <a href="archived/">Archived</a> &gt;')
-        # to_name = to_name (from POST)
-    else:
-        mode = 'leave'
-        title = u"Leave a message for %s" % member.user_name
-        crumbs.append(u'Send message')
-        to_name = user_name
+        return self.get(request, user_name)
 
-    c = RequestContext(request, standard_extra_context(title=title))
-    c['breadcrumb'] = create_breadcrumb(crumbs)
-    c['member'] = member
-    c['to'] = to_name
-    c['mode'] = mode
-    c['preview'] = preview
-    c['errors'] = errors
-    c['message_sent'] = message_sent
-    c['message_text'] = message_text
-    c['no_messages'] = no_messages
+send_message = member_required(SendMessage.as_view())
 
-    return render_to_response('cciw/members/messages/send.html', context_instance=c)
 
 # Utility functions for handling message actions
 def _msg_move_inbox(msg):
