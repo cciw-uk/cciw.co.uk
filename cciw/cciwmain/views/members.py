@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Member, Message
-from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb, DefaultMetaData, FeedHandler, object_list
+from cciw.cciwmain.common import standard_extra_context, get_order_option, create_breadcrumb, DefaultMetaData, FeedHandler
 from cciw.middleware.threadlocals import get_current_member, remove_member_session
 from cciw.cciwmain.decorators import member_required, member_required_for_post, _display_login_form
 from cciw.cciwmain.utils import get_member_link
@@ -196,19 +196,30 @@ def _msg_del(msg):
 
 _id_vars_re = re.compile('msg_(\d+)')
 
-def message_list(request, user_name, box):
-    """View function to display inbox or archived messages."""
-    try:
-        member = Member.objects.get(user_name=user_name)
-    except Member.DoesNotExist:
-        raise Http404
+class MessageList(DefaultMetaData, ListView):
+    """
+    View to display inbox or archived messages.
+    """
+    template_name = 'cciw/members/messages/index.html'
+    paginate_by = settings.MEMBERS_PAGINATE_MESSAGES_BY
+    box = None # must be supplied at some point
 
-    current_member = get_current_member()
-    if current_member is None or user_name != current_member.user_name:
-        return HttpResponseForbidden(u'<h1>Access denied</h1>')
+    def dispatch(self, request, user_name=None):
+        # Initial common setup
+        try:
+            member = Member.objects.get(user_name=user_name)
+        except Member.DoesNotExist:
+            raise Http404
 
-    # Deal with moves/deletes:
-    if request.method == 'POST':
+        current_member = get_current_member()
+        if current_member is None or user_name != current_member.user_name:
+            return HttpResponseForbidden(u'<h1>Access denied</h1>')
+
+        self.member = member
+        return super(MessageList, self).dispatch(request, user_name=user_name)
+
+    def post(self, request, user_name=None):
+        member = self.member
         ids = [int(m.groups()[0]) for m in map(_id_vars_re.match, request.POST.keys()) if m is not None]
         actions = {
             'delete': _msg_del,
@@ -223,7 +234,7 @@ def message_list(request, user_name, box):
                         action(msg)
                     except Message.DoesNotExist:
                         pass
-        message_count = member.messages_received.filter(box=box).count()
+        message_count = member.messages_received.filter(box=self.box).count()
         page = request.GET.get('page', 1)
         last_page = int(math.ceil(float(message_count)/settings.MEMBERS_PAGINATE_MESSAGES_BY))
         last_page = max(last_page, 1)
@@ -231,38 +242,30 @@ def message_list(request, user_name, box):
             # User may have deleted/moved everything on the last page,
             # so need to redirect to avoid a 404
             return HttpResponseRedirect(request.path + "?page=%s" % last_page)
+        else:
+            return self.get(request, user_name)
 
+    def get(self, request, user_name=None):
+        # Context
+        crumbs = [get_member_link(user_name)]
+        if self.box == Message.MESSAGE_BOX_INBOX:
+            self.context['title'] = u"%s: Inbox" % user_name
+            crumbs.append(u'Messages &lt; <a href="../">Send</a> | Inbox | <a href="../archived/">Archived</a> &gt;')
+            self.context['show_archive_button'] = True
+        else:
+            self.context['title'] = u"%s: Archived messages" % user_name
+            crumbs.append(u'Messages &lt; <a href="../">Send</a> | <a href="../inbox/">Inbox</a> | Archived &gt;')
+            self.context['show_move_inbox_button'] = True
 
-    # Context
-    extra_context = standard_extra_context()
-    crumbs = [get_member_link(user_name)]
-    if box == Message.MESSAGE_BOX_INBOX:
-        extra_context['title'] = u"%s: Inbox" % user_name
-        crumbs.append(u'Messages &lt; <a href="../">Send</a> | Inbox | <a href="../archived/">Archived</a> &gt;')
-        extra_context['show_archive_button'] = True
-    else:
-        extra_context['title'] = u"%s: Archived messages" % user_name
-        crumbs.append(u'Messages &lt; <a href="../">Send</a> | <a href="../inbox/">Inbox</a> | Archived &gt;')
-        extra_context['show_move_inbox_button'] = True
+        self.context['show_delete_button'] = True
+        self.context['breadcrumb'] = create_breadcrumb(crumbs)
 
-    extra_context['show_delete_button'] = True
-    extra_context['breadcrumb'] = create_breadcrumb(crumbs)
+        self.queryset = self.member.messages_received.filter(box=self.box).order_by('-time')
 
-    messages = member.messages_received.filter(box=box).order_by('-time')
+        return super(MessageList, self).get(request, user_name=user_name)
 
-    return object_list(request, messages,
-        extra_context=extra_context,
-        template_name='cciw/members/messages/index.html',
-        paginate_by=settings.MEMBERS_PAGINATE_MESSAGES_BY)
-
-@member_required
-def inbox(request, user_name=None):
-    "Shows inbox for a user"
-    return message_list(request, user_name, Message.MESSAGE_BOX_INBOX)
-
-@member_required
-def archived_messages(request, user_name=None):
-    return message_list(request, user_name, Message.MESSAGE_BOX_SAVED)
+inbox = member_required(MessageList.as_view(box=Message.MESSAGE_BOX_INBOX))
+archived_messages = member_required(MessageList.as_view(box=Message.MESSAGE_BOX_SAVED))
 
 
 class MemberPosts(DefaultMetaData, FeedHandler, ListView):
