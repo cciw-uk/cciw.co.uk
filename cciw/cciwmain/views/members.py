@@ -1,4 +1,5 @@
 from django.views.generic.list import ListView
+from django.views.generic.base import TemplateView
 from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -61,24 +62,29 @@ class MemberList(DefaultMetaData, FeedHandler, ListView):
 index = MemberList.as_view()
 
 
-def detail(request, user_name=None):
-    try:
-        member = Member.objects.get(user_name=user_name)
-    except Member.DoesNotExist:
-        raise Http404
+class MemberDetail(DefaultMetaData, TemplateView):
 
-    if request.method == 'POST':
+    template_name = 'cciw/members/detail.html'
+
+    def get(self, request, user_name):
+        try:
+            member = Member.objects.get(user_name=user_name)
+        except Member.DoesNotExist:
+            raise Http404
+        self.context['member'] = member
+        self.context['awards'] = member.personal_awards.all()
+        self.metadata_title = u"Member: %s" % member.user_name
+        return super(MemberDetail, self).get(request, user_name)
+
+    def post(self, request, user_name):
         if request.POST.has_key('logout'):
-            try:
-                remove_member_session(request)
-            except KeyError:
-                pass
+            remove_member_session(request)
+            return HttpResponseRedirect(request.path)
+        else:
+            return self.get(request, user_name)
 
-    c = RequestContext(request,
-        standard_extra_context(title=u"Member: %s" % member.user_name))
-    c['member'] = member
-    c['awards'] = member.personal_awards.all()
-    return render_to_response('cciw/members/detail.html', context_instance=c)
+detail = MemberDetail.as_view()
+
 
 # The real work here is done in member_required_for_post,
 # and _display_login_form, after that it is just redirecting
