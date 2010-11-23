@@ -275,7 +275,8 @@ class MemberSignup(TwillMixin, TestCase):
 
 
 class MemberLists(TestCase):
-    fixtures=['basic.json','test_members.json']
+
+    fixtures = ['basic.json','test_members.json']
 
     def test_index(self):
         resp = self.client.get(reverse('cciwmain.members.index'))
@@ -299,6 +300,7 @@ class MessageLists(TestCase):
         self.client = CciwClient()
         self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)
         self.member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
+        self.member.messages_received.all().delete()
 
     def _get_inbox(self, page=None):
         if page is not None:
@@ -320,7 +322,7 @@ class MessageLists(TestCase):
         self.assertContains(resp, "No messages found", count=1)
 
     def _send_message(self, text):
-        from_member = Member.objects.get(user_name='test_poll_creator_1')
+        from_member = Member.objects.get(user_name=TEST_POLL_CREATOR_USERNAME)
         return Message.send_message(self.member, from_member, text)
 
     def test_inbox_with_message(self):
