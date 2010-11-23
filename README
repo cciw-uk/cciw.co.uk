@@ -18,14 +18,22 @@ various media files.
 
 URLS
 ----
+
 You should be using the {{ url }} tag instead of hard coding URLs as I have
 done -- Adrian wrote RegexURLResolver after I wrote this.
 
-Luke
+Views
+-----
+
+These are done using a mixture of classic functions and Class Based Views,
+depending on whether the move to CBVs was worth the effort. This means that
+there is sometimes some duplication between the function based way of doing
+something and the equivalent CBV way, and you need to be comfortable with both
+styles.
+
 
 INSTALLATION HINTS
 ==================
-- You need to have the unpacked directory in your Python path somewhere
-- You need to create a settings_pri.py file (should be obvious if you
-  try to run it).  This file needs the various settings that I cannot
+- The fabfile contains info about how to develop and deploy
+- You need to create a settings_priv.py withthe various settings that I cannot
   release publically (database, passwords, secret key)

@@ -17,8 +17,13 @@ class PagingControlNode(template.Node):
     def render(self, context):
         # context has been populated by
         # generic view paging mechanism
-        cur_page = int(context['page'])
-        total_pages = int(context['pages'])
+        page_obj = context['page_obj']
+        if page_obj is None:
+            return ''
+
+        cur_page = page_obj.number
+        total_pages = page_obj.paginator.num_pages
+
         request = context['request']
 
         output = []

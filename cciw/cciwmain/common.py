@@ -1,9 +1,18 @@
+"""
+Utility functions and base classes that are common to all views etc.
+"""
+from cciw.cciwmain.utils import python_to_json
 from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse
 from django.utils.safestring import mark_safe
-from django.views.generic.base import TemplateResponseMixin
+from django.views.generic.edit import FormView
+from django.views.generic.list import ListView
 import cciw.middleware.threadlocals as threadlocals
 import datetime
+import re
 import urllib
+
 
 def standard_extra_context(title=None, description=None, keywords=None):
     """
@@ -32,20 +41,120 @@ def standard_extra_context(title=None, description=None, keywords=None):
     return extra_dict
 
 
-# Class based version
-class DefaultMetaData(TemplateResponseMixin):
+# CBV equivalent to standard_extra_context (and other base class functionality)
+class DefaultMetaData(object):
+    """
+    Mixin that provides some default metadata and other standard variables to the
+    page context. Assumes the use of TemplateView.
+
+    Also provides a mechanism for other context data:
+
+     * 'extra_context' attribute can be stored on the class
+       and will be used as a starting point for context data
+
+     * After the instance has been initialised, 'context'
+       will be available on the instance as a place to store context data.
+    """
     metadata_title=u"Christian Camps in Wales"
     metadata_description= u"Details of camps, message boards and photos for the UK charity Christian Camps in Wales"
     metadata_keywords = u"camp, camps, summer camp, Christian, Christian camp, charity"
+    extra_context = None
 
-    def get_context_instance(self, context):
+    def __init__(self, **kwargs):
+        # Provide place for arbitrary context to get stored.
+        self.context = {}
+        # Merge in statically defined context on the class, in a way that won't
+        # mean that the class atttribute will be mutated.
+        extra_context = self.extra_context
+        if extra_context is not None:
+            self.context.update(extra_context)
+
+        return super(DefaultMetaData, self).__init__(**kwargs)
+
+    def get_context_data(self, **kwargs):
         from cciw.cciwmain.models import Member
-        # Add some stuff:
         d = standard_extra_context(title=self.metadata_title,
                                    description=self.metadata_description,
                                    keywords=self.metadata_keywords)
-        context.update(d)
-        return super(DefaultMetaData, self).get_context_instance(context)
+        # Allow context to overwrite standard_extra_context
+        d.update(self.context)
+        c = super(DefaultMetaData, self).get_context_data(**kwargs)
+        c.update(d)
+        return c
+
+
+def json_validation_request(request, form):
+    """
+    Returns a JSON validation response for a form, if the request is for JSON
+    validation.
+    """
+
+    if request.GET.get('format') == 'json':
+        return HttpResponse(python_to_json(form.errors),
+                            mimetype='text/javascript')
+    else:
+        return None
+
+
+# CBV equivalent to json_validation_request
+class AjaxyFormMixin(object):
+    """
+    A FormView subclass that enables the returning of validation results by JSON
+    if accessed with ?format=json.
+    """
+    def post(self, request, *args, **kwargs):
+        if request.GET.get('format', None) == 'json':
+            form_class = self.get_form_class()
+            form = self.get_form(form_class)
+            return HttpResponse(python_to_json(form.errors),
+                                mimetype='text/javascript')
+        else:
+            return super(AjaxyFormMixin, self).post(request, *args, **kwargs)
+
+
+class AjaxyFormView(AjaxyFormMixin, FormView):
+    pass
+
+
+# CBV wrapper for feeds.handle_feed_request
+class FeedHandler(object):
+    """
+    Mixin that handles requests for a feed rather than HTML
+    """
+    feed_class = None
+
+    def get_feed_class(self):
+        if self.feed_class is None:
+            raise NotImplementedError("Attribute feed_class not defined.")
+        else:
+            return self.feed_class
+
+    def is_feed_request(self):
+        return self.request.GET.get('format', None) == 'atom'
+
+    def get(self, request, *args, **kwargs):
+        if self.is_feed_request():
+            feed_class = self.get_feed_class()
+            return feeds.handle_feed_request(self.request, feed_class, self.get_queryset())
+        else:
+            return super(FeedHandler, self).get(request, *args, **kwargs)
+
+
+def object_list(request, queryset, extra_context=None,
+                template_name='', paginate_by=None):
+    # list_detail.object_list replacement with all the things we need
+    class ObjectList(ListView):
+        def post(self, request, *args, **kwargs):
+            return self.get(request, *args, **kwargs)
+
+        def get_context_data(self, **kwargs):
+            c = super(ObjectList, self).get_context_data(**kwargs)
+            c.update(extra_context)
+            return c
+
+    return ObjectList.as_view(template_name=template_name,
+                              paginate_by=paginate_by,
+                              queryset=queryset)(request)
 
 
 _thisyear = None
@@ -117,3 +226,51 @@ def standard_processor(request):
     context['current_member'] = threadlocals.get_current_member()
 
     return context
+
+
+member_username_re = re.compile(r'^[A-Za-z0-9_]{3,15}$')
+
+def get_member_href(user_name):
+    if not member_username_re.match(user_name):
+        # This can get called from feeds, and we need to ensure
+        # we don't generate a URL, as it will go nowhere (also causes problems
+        # with the feed framework and utf-8).
+        # Also, this can be called via bbcode, so we need to ensure
+        # that we don't pass anything to urlresolvers.reverse that
+        # will make it die.
+        return u''
+    else:
+        return reverse('cciwmain.members.detail', kwargs={'user_name':user_name})
+
+
+def get_member_link(user_name):
+    user_name = user_name.strip()
+    if user_name.startswith(u"'"):
+        return user_name
+    else:
+        return mark_safe(u'<a title="Information about user \'%s\'" href="%s">%s</a>' % \
+               (user_name, get_member_href(user_name), user_name))
+
+
+def get_member_icon(user_name):
+    from django.conf import settings
+    user_name = user_name.strip()
+    if user_name.startswith(u"'"): # dummy user
+        return u''
+    else:
+        # We use content negotiation to get the right file i.e.
+        # apache will add the right extension on for us.
+        return mark_safe(u'<img src="%s%s/%s.png" class="userIcon" alt="icon" />' % \
+            (settings.MEDIA_URL, settings.MEMBER_ICON_PATH, user_name))
+
+
+_current_domain = None
+def get_current_domain():
+    global _current_domain
+    if _current_domain is None:
+        from django.contrib.sites.models import Site
+        _current_domain = Site.objects.get_current().domain
+    return _current_domain
+
+
+from cciw.cciwmain import feeds

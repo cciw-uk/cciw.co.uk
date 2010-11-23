@@ -3,7 +3,7 @@ import sys
 import os
 
 import bbcode
-from cciw.cciwmain.utils import get_member_link
+from cciw.cciwmain.common import get_member_link
 
 
 tests = (
