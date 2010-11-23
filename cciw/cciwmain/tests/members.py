@@ -292,6 +292,88 @@ class MemberLists(TestCase):
         self.assertContains(resp, TEST_MEMBER_USERNAME)
 
 
+class SendMessage(TestCase):
+
+    fixtures = ['basic.json','test_members.json']
+
+    def setUp(self):
+        self.client = CciwClient()
+        self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)
+        self.member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
+        self.other_member = Member.objects.get(user_name=TEST_POLL_CREATOR_USERNAME)
+        self.member.messages_received.all().delete()
+        self.other_member.messages_received.all().delete()
+
+    def _send_msg_page(self):
+        return reverse("cciwmain.members.send_message",
+                       kwargs={'user_name': self.member.user_name})
+
+    def _leave_msg_page(self):
+        return reverse("cciwmain.members.send_message",
+                       kwargs={'user_name': self.other_member.user_name})
+
+    def test_send_page_get(self):
+        """
+        Tests that we can view the 'send message' page for sending to any user
+        """
+        resp = self.client.get(self._send_msg_page())
+        self.assertEqual(200, resp.status_code)
+
+        self.assertContains(resp, "Send a message")
+
+    def test_leave_page_get(self):
+        """
+        Tests that we can view the 'leave message' page for leaving a message
+        to a specific user.
+        """
+        resp = self.client.get(self._leave_msg_page())
+        self.assertEqual(200, resp.status_code)
+
+        self.assertContains(resp, "Leave a message")
+
+    def test_send_page_post(self):
+        """
+        Tests that we can use the 'send message' page for sending to any user
+        """
+        resp = self.client.post(self._send_msg_page(),
+                                {'to': self.other_member.user_name,
+                                 'message': 'My message',
+                                 'send': '1'},
+                                follow=True)
+        self.assertEqual(200, resp.status_code)
+
+        self.assertContains(resp, "Message was sent")
+        self.assertEqual(self.other_member.messages_received.count(), 1)
+
+    def test_leave_page_post(self):
+        """
+        Tests that we can use the 'leave message' page for leaving a message
+        to a specific user.
+        """
+        resp = self.client.post(self._leave_msg_page(),
+                                {'message': 'My message',
+                                 'send': '1'},
+                                follow=True)
+        self.assertEqual(200, resp.status_code)
+
+        self.assertContains(resp, "Message was sent")
+        self.assertEqual(self.other_member.messages_received.count(), 1)
+
+    def test_preview(self):
+        """
+        Tests that the preview functionality works
+        """
+        resp = self.client.post(self._leave_msg_page(),
+                                {'message': '[b]My message',
+                                 'preview': '1'},
+                                follow=True)
+        self.assertEqual(200, resp.status_code)
+        # Check that the preview is there
+        self.assertContains(resp, "<b>My message</b>")
+        # Check that bbcode has been corrected
+        self.assertContains(resp, "[b]My message[/b]")
+
+
 class MessageLists(TestCase):
 
     fixtures = ['basic.json','test_members.json']
