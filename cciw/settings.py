@@ -62,6 +62,7 @@ INSTALLED_APPS = (
     'mailer',
     'securedownload',
     'django.contrib.staticfiles',
+    'south',
 )
 
 if DEBUG:

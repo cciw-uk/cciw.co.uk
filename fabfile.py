@@ -259,6 +259,7 @@ def _build_static(version):
 
     run("chmod -R ugo+r %s" % version.static_dir)
 
+
 def _deploy(target):
     _prepare_deploy()
     label = datetime.now().strftime("%Y-%m-%d_%H.%M.%S")
@@ -276,13 +277,16 @@ def _deploy(target):
     # - if unsuccessful
     #    - rollback db migrations
     #      - if unsuccessful, restore from db_backup_name
-    # - if successful
-    #    - remove 'current' symlink (OK if not present)
-    #    - add new current symlink to '$datetime' dir
-    #  - start apache
-
     _update_symlink(target, version)
     _start_apache(target)
+
+
+def _install_south(target):
+    # A one time task to be run after South has been first added
+    with virtualenv(target.current_version.venv_dir):
+        with cd(target.current_version.project_dir):
+            run_venv("./manage.py syncdb")
+            run_venv("./manage.py migrate --all 0001 --fake")
 
 
 def deploy_staging():
@@ -299,6 +303,7 @@ def deploy_production():
     #  Update 'live' branch so that we can switch to it easily if needed.
     with cd(this_dir):
         local('hg update -r live && hg merge -r default && hg commit -m "Merged from default" && hg update -r default', capture=False)
+
 
 def stop_apache_production():
     _stop_apache(PRODUCTION)
@@ -322,6 +327,14 @@ def restart_apache_production():
 
 def restart_apache_staging():
     _restart_apache(STAGING)
+
+
+def install_south_staging():
+    _install_south(STAGING)
+
+
+def install_south_production():
+    _install_south(PRODUCTION)
 
 
 # TODO:
