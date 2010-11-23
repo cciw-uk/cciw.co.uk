@@ -1,5 +1,4 @@
 from cciw.cciwmain import feeds
-from cciw.cciwmain.templatetags import view_extras
 from cciw.cciwmain.utils import python_to_json
 from django.conf import settings
 from django.http import HttpResponse
@@ -204,7 +203,5 @@ def standard_processor(request):
 
     context['menulinks'] = links
     context['current_member'] = threadlocals.get_current_member()
-
-    context.update(view_extras.get_view_extras_context(request))
 
     return context

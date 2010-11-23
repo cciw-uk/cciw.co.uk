@@ -3,12 +3,6 @@ from django.utils import html
 from django.conf import settings
 from cciw.cciwmain.utils import *
 
-def get_view_extras_context(request):
-    """
-    Returns the context required for view_extras tags
-    """
-    return {'request': request }
-
 def page_link(request, page_number, fragment = ''):
     """
     Constructs a link to a specific page using the request.
