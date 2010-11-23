@@ -1,7 +1,8 @@
+from django.conf import settings
+from django.contrib import messages
+from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
 from django.views.generic.list import ListView
 from django.views.generic.base import TemplateView
-from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
-from django.conf import settings
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Member, Message
@@ -161,8 +162,8 @@ class SendMessage(DefaultMetaData, TemplateView):
                 preview = mark_safe(bbcode.bb2xhtml(message_text))
                 if len(errors) == 0 and request.POST.has_key('send'):
                     Message.send_message(to, current_member, message_text)
-                    message_sent = True
-                    message_text = u'' # don't persist.
+                    messages.info(request, "Message was sent")
+                    return HttpResponseRedirect(request.path)
                 else:
                     # Persist text entered, but corrected:
                     message_text = bbcode.correct(message_text)

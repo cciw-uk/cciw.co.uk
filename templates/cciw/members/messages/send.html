@@ -1,59 +1,54 @@
 {% extends "cciw/standard.html" %}
 {% block content %}
 
-{% if message_sent %}
-	<h3>Message was sent:</h3>	
-	<div class="messagePreview">
-	{{ preview }}
-	</div>
-	<div><a href="./">Send another</a></div>
-{% else %}
-	{% if no_messages %}
-		<p>This user has chosen not to receive any messages.</p>
-	{% else %}
+{% include "cciw/show_messages.html" %}
 
-		{% include "cciw/errors.html" %}
-		
-		{% include "cciw/msgpreview.html" %}
-		
-		<form action="" method="post" accept-charset="utf-8">{% csrf_token %}
-		{% if mode == "send" %}
-			{% if preview  %}
-				<p>Change your message below if necessary:</p>
-			{% else %}
-				<p>Please enter recipient and message:</p>
-			{% endif %}
-			<table class="simpleform">
-				<tr>
-					<th scope="row">To:</th>
-					<td><input type="text" name="to" value="{{ to }}" /></td>	
-				</tr>
-				<tr>
-					<th scope="row">Message:</th>
-					<td>{% include "cciw/message.html" %}</td>
-				</tr>
-			</table>
-		{% else %}
-			{% if preview  %}
-				<p>Change your message below if necessary:</p>
-			{% else %}
-				<p>Leave a message for {{ member.user_name }}:</p>
-			{% endif %}
-	
-			<table class="simpleform">
-				<tr>
-					<th scope="row">Message:</th>
-					<td>{% include "cciw/message.html" %}</td>
-				</tr>
-			</table>
-		{% endif %}
-		<div>
-		<br/>
-		<input type="submit" name="preview" value="Preview" />&nbsp;
-		<input type="submit" name="send" value="Send" />
-		</div>
-		</form>
-	{% endif %}
+{% if no_messages %}
+<p>This user has chosen not to receive any messages.</p>
+{% else %}
+
+  {% include "cciw/errors.html" %}
+
+  {% include "cciw/msgpreview.html" %}
+
+  <form action="" method="post" accept-charset="utf-8">{% csrf_token %}
+    {% if mode == "send" %}
+      {% if preview %}
+        <p>Change your message below if necessary:</p>
+      {% else %}
+        <p>Please enter recipient and message:</p>
+      {% endif %}
+      <table class="simpleform">
+        <tr>
+          <th scope="row">To:</th>
+          <td><input type="text" name="to" value="{{ to }}" /></td>
+        </tr>
+        <tr>
+          <th scope="row">Message:</th>
+          <td>{% include "cciw/message.html" %}</td>
+        </tr>
+      </table>
+    {% else %}
+      {% if preview  %}
+        <p>Change your message below if necessary:</p>
+      {% else %}
+        <p>Leave a message for {{ member.user_name }}:</p>
+      {% endif %}
+
+      <table class="simpleform">
+        <tr>
+          <th scope="row">Message:</th>
+          <td>{% include "cciw/message.html" %}</td>
+        </tr>
+      </table>
+    {% endif %}
+
+    <div>
+      <br/>
+      <input type="submit" name="preview" value="Preview" />&nbsp;
+      <input type="submit" name="send" value="Send" />
+    </div>
+  </form>
 {% endif %}
 
 {% endblock %}

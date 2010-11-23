@@ -29,13 +29,7 @@ Please check your input below:
 </div>
 {% endif %}
 
-{% if messages %}
-   {% for message in messages %}
-      <div class="successMessage">
-          {{ message }}
-      </div>
-   {% endfor %}
-{% endif %}
+{% include "cciw/show_messages.html" %}
 
 {% if image_error %}
 <div class="userError">
