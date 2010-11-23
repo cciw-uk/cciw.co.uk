@@ -124,6 +124,9 @@ def object_list(request, queryset, extra_context=None,
                 template_name='', paginate_by=None):
     # list_detail.object_list replacement with all the things we need
     class ObjectList(ListView):
+        def post(self, request, *args, **kwargs):
+            return self.get(request, *args, **kwargs)
+
         def get_context_data(self, **kwargs):
             c = super(ObjectList, self).get_context_data(**kwargs)
             c.update(extra_context)
