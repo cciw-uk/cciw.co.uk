@@ -1,31 +1,10 @@
 {% extends "cciw/standard.html" %}
 {% load forums %}
 {% load standardpage %}
-{% load tagging %}
 {% block content %}
-	{% get_tag_summaries for member as tagsummaries %}
-	<h2>Tags</h2>
-	{% if tagsummaries %}
-		<p>{{ member.user_name }} has been tagged as:</p>
-		<ul>
-		{% for tagsum in tagsummaries %}
-			<li><a class="tag" href="/tags/{{ tagsum.text }}/" title="View other things tagged as {{ tagsum.text }}">{{ tagsum.text }}</a>&nbsp;<a class="tagcount" href="/tag_targets/member/{{ member.user_name }}/{{ tagsum.text }}/" title="View details">x{{ tagsum.count }}</a></li>
-		{% endfor %}
-		</ul>
-		<p><a href="/tag_targets/member/{{ member.user_name }}/">View full tag history</a></p>
-	{% else %}
-		<p>{{ member.user_name }} has not been tagged by anyone yet.</p>
-	{% endif %}
-	
-	{% if current_member %}
-	<div><a class="addtag" href="/edit_tag/member/{{ member.user_name }}/?r={{ request.path|urlencode }}" title="Add a tag for {{ member.user_name }}">+ Tag {{ member.user_name }}</a></div>
-	<br/>
-	{% endif %}
-
 	
 	<h2>{{ member.user_name }}'s stuff</h2>
 	<ul>
-		<li><a href="tags/">Tags created by {{ member.user_name }}</a></li>
 		<li><a href="posts/">Recent posts by {{ member.user_name }}</a></li>
 	</ul>
 

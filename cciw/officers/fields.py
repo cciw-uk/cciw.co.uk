@@ -29,13 +29,21 @@ if not threadlocals.is_web_request():
     ExplicitBooleanField = models.NullBooleanField
 
 def required_field(field_class, *args, **kwargs):
-    """Returns a field with options set appropiately
-    for "required fields" -- field.formfield() objects
-    have '.required_field = True'."""
+    """
+    Returns a field with options set appropiately for "required fields" --
+    field.formfield() objects have '.required_field = True'.
+    """
     kwargs['blank'] = True
     class NewDBField(field_class):
         def formfield(self, *args, **kwargs):
             f = super(NewDBField, self).formfield(*args, **kwargs)
             f.required_field = True
             return f
+    NewDBField.__name__ = "Required" + field_class.__name__
     return NewDBField(*args, **kwargs)
+
+# Allow South to introspect these - they are all based on builtin fields.
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^cciw\.officers\.fields\.Required*"])
+add_introspection_rules([], ["^cciw\.officers\.fields\.YyyyMmField"])
+add_introspection_rules([], ["^cciw\.officers\.fields\.AddressField"])

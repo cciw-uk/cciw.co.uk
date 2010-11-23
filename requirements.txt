@@ -4,3 +4,4 @@ psycopg2==2.2.2
 twill==0.9
 zc.lockfile==1.0.0
 ipython
+south==0.7.2

@@ -57,12 +57,12 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'cciw.cciwmain',
     'cciw.officers',
-    'cciw.tagging',
     'cciw.utils',
     'django.contrib.messages',
     'mailer',
     'securedownload',
     'django.contrib.staticfiles',
+    'south',
 )
 
 if DEBUG:

@@ -16,18 +16,6 @@ It also doesn't include various bit and pieces that would not have
 been useful to other people e.g. my database migration scripts and
 various media files.
 
-GenericRelations
-----------------
-I rolled my own because Django at the time didn't have any functionality for
-this.  Some of my code made it's way into Django's implementation, but it
-isn't compatible AFAIK.
-
-Tagging 
-------- 
-The project `django-tagging' (http://code.google.com/p/django-tagging/ )
-didn't exist when I wrote this -- I imagine that you would be much better
-off using that project than my implementation.
-
 URLS
 ----
 You should be using the {{ url }} tag instead of hard coding URLs as I have
@@ -38,6 +26,6 @@ Luke
 INSTALLATION HINTS
 ==================
 - You need to have the unpacked directory in your Python path somewhere
-- You need to create a settings_private.py file (should be obvious if you
+- You need to create a settings_pri.py file (should be obvious if you
   try to run it).  This file needs the various settings that I cannot
   release publically (database, passwords, secret key)

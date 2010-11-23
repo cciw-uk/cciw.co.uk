@@ -21,7 +21,6 @@
 		{% for topic in object_list %}
 			<tr>
 				<td class="topicLink">
-				<span class="taglist">{% tag_summary_list for topic %} {% add_tag_link for topic %}</span>
 				{% if topic.news_item_id %}<div class="center">NEWS ITEM</div>{% endif %}
 				{% if topic.poll_id %}<div class="center">POLL</div>
 					{% poll_vote_box request topic topic.poll 2 %}

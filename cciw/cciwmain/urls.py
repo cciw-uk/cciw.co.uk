@@ -85,18 +85,6 @@ patterns('cciw.cciwmain.views',
     (r'^posts/(?P<id>\d+)/$', 'forums.post'),
     (r'^topics/$', 'forums.all_topics'),
 
-    # Tagging
-    (r'^members/(?P<user_name>[A-Za-z0-9_]+)/tags/$', 'tagging.members_tags'),
-    (r'^members/(?P<user_name>[A-Za-z0-9_]+)/tags/(?P<text>[^/]*)/$', 'tagging.members_tags_single_text'),
-    (r'^edit_tag/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/$', 'tagging.edit_tag'),
-    (r'^tags/$', 'tagging.index'),
-    (r'^tags/(?P<text>[^/]*)/$', 'tagging.recent_and_popular_targets'),
-    (r'^tag_targets/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/$', 'tagging.tag_target'),
-    (r'^tag_targets/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/(?P<text>[^/]*)/$', 'tagging.tag_target_single_text'),
-    (r'^tag_targets/(?P<model_name>[A-Za-z0-9_]+)/(?P<object_id>[^/]*)/(?P<text>[^/]*)/(?P<tag_id>[^/]*)/$', 'tagging.single_tag'),
-    (r'^tag_search/$', 'tagging.search'),
-
-
     # Services
     (r'^services/esv_passage/$', 'services.esv_passage'),
 
