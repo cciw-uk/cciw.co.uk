@@ -285,8 +285,8 @@ def _install_south(target):
     # A one time task to be run after South has been first added
     with virtualenv(target.current_version.venv_dir):
         with cd(target.current_version.project_dir):
-            run_venv("./manage.py syncdb")
-            run_venv("./manage.py migrate --all 0001 --fake")
+            run_venv("./manage.py syncdb --settings=cciw.settings")
+            run_venv("./manage.py migrate --all 0001 --fake --settings=cciw.settings")
 
 
 def deploy_staging():
