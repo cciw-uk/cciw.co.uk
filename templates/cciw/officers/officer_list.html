@@ -1,4 +1,5 @@
 {% extends "cciw/officers/base.html" %}
+{% load url from future %}
 {% load adminmedia %}
 {% block title %}Officer list :: CCIW{% endblock %}
 
@@ -150,7 +151,7 @@
             // Need to retrieve details (we don't know first name and last name)
             $.ajax({
                 type: "GET",
-                url: "{% url cciw.officers.views.officer_details %}?officer_id=" + officerId.toString() + "&" + Math.random().toString(),
+                url: "{% url 'cciw.officers.views.officer_details' %}?officer_id=" + officerId.toString() + "&" + Math.random().toString(),
                 dataType: 'json',
                 success: function(officer) {
                     var escape = function(t) {
@@ -181,7 +182,7 @@
                         officer.email = $('#id_officer_email').val();
                         $.ajax({
                             type: 'POST',
-                            url: "{% url cciw.officers.views.update_officer %}",
+                            url: "{% url 'cciw.officers.views.update_officer' %}",
                             data: {'officer_id': officer.id,
                                    'first_name': officer.first_name,
                                    'last_name': officer.last_name,
@@ -201,7 +202,7 @@
             // Remove from list
             $.ajax({
                 type: "POST",
-                url:  "{% url cciw.officers.views.remove_officer camp.year camp.number %}",
+                url:  "{% url 'cciw.officers.views.remove_officer' camp.year camp.number %}",
                 data: "officer_id=" + officerId.toString(),
                 dataType: 'json',
                 success: refreshLists
@@ -216,7 +217,7 @@
                 var officerId = parseFloat(ev.target.id.substring(9), 10);
                 $.ajax({
                     type: "POST",
-                    url: "{% url cciw.officers.views.resend_email %}",
+                    url: "{% url 'cciw.officers.views.resend_email' %}",
                     data: "officer_id=" + officerId.toString(),
                     dataType: 'json'
                 });
@@ -236,7 +237,7 @@
         }
         $.ajax({
             type: "POST",
-            url: "{% url cciw.officers.views.add_officer camp.year camp.number %}",
+            url: "{% url 'cciw.officers.views.add_officer' camp.year camp.number %}",
             data: "officer_id=" + officer_id,
             dataType: 'json',
             success: refreshLists
@@ -245,7 +246,7 @@
 
     var newOfficerHandler = function(ev) {
         var popup = $('#id_add_officer_popup');
-        popup.find(".iframe_container").html('<iframe src="{% url cciw.officers.views.create_officer %}?is_popup=1&camp_id={{ camp.id }}" width="780" frameborder=0 height="400">');
+        popup.find(".iframe_container").html('<iframe src="{% url 'cciw.officers.views.create_officer' %}?is_popup=1&camp_id={{ camp.id }}" width="780" frameborder=0 height="400">');
         popup.css({
             "position": "fixed",
             "top": ($(window).height()/2 - popup.height()/2).toString() + "px",
