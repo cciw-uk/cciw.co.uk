@@ -1,7 +1,7 @@
 from cciw.cciwmain.tests.client import CciwClient
 from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD, TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD
 from django.test import TestCase
-from cciw.cciwmain.models import Topic, Member, Poll
+from cciw.cciwmain.models import Topic, Member, Poll, Forum
 from django.core.urlresolvers import reverse
 from datetime import datetime
 from cciw.cciwmain import decorators
@@ -10,6 +10,21 @@ FORUM_1_YEAR = 2000
 FORUM_1_CAMP_NUMBER = 1
 ADD_POLL_URL =  reverse("cciwmain.camps.add_poll",
                         kwargs=dict(year=FORUM_1_YEAR, number=FORUM_1_CAMP_NUMBER))
+
+
+class ForumPage(TestCase):
+
+    fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
+
+    def setUp(self):
+        self.client = CciwClient()
+
+    def test_get(self):
+        forum = Forum.objects.get(id=1)
+        response = self.client.get(forum.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Jill &amp; Jane")
+
 
 class TopicPage(TestCase):
     fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
@@ -57,6 +72,7 @@ class CreatePollPage(TestCase):
             rules="0",
             rule_parameter="1",
             )
+
     def test_cant_create_poll_if_anonymous(self):
         response = self.client.get(ADD_POLL_URL)
         # response should be a login form
