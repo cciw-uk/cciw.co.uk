@@ -6,6 +6,8 @@ from fabric.contrib import console
 from fabric.decorators import hosts, runs_once
 from fabric.context_managers import cd, settings
 import os
+import os.path
+join = os.path.join
 import sys
 
 #  fabfile for deploying CCIW
@@ -41,6 +43,7 @@ import sys
 #            django/
 #            django-mailer/
 #          static/                 # built once uploaded
+#       current/                   # symlink to src-???
 
 # At the same level as 'srf-2010-10-11_07-20-34', there is a 'current' symlink
 # which points to the most recent one. The apache instance looks at this (and
@@ -66,17 +69,6 @@ import sys
 
 env.hosts = ["cciw@cciw.co.uk"]
 
-Target = namedtuple('Target', 'django_app dbname')
-
-STAGING = Target(
-    django_app = "cciw_staging",
-    dbname = "cciw_staging",
-)
-PRODUCTION = Target(
-    django_app = "cciw",
-    dbname = "cciw",
-)
-
 this_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(this_dir)
 webapps_root = '/home/cciw/webapps'
@@ -87,12 +79,56 @@ project_dir = 'project'
 # not installed using pip)
 deps_dir = 'deps'
 
-
 def _get_subdirs(dirname):
     return [f for f in os.listdir(dirname)
-            if os.path.isdir(os.path.join(dirname, f))]
+            if os.path.isdir(join(dirname, f))]
 
-deps = _get_subdirs(parent_dir + "/" + deps_dir)
+deps = _get_subdirs(join(parent_dir, deps_dir))
+
+class Target(object):
+    """
+    Represents a place where the project is deployed to
+    """
+    def __init__(self, django_app='', dbname=''):
+        self.django_app = django_app
+        self.dbname = dbname
+
+        self.webapp_root = join(webapps_root, self.django_app)
+        # src_root - the root of all sources on this target.
+        self.src_root = join(self.webapp_root, 'src')
+        self.current_version = SrcVersion('current', join(self.src_root, 'current'))
+
+    def make_version(self, label):
+        return SrcVersion(label, join(self.src_root, "src-%s" % label))
+
+class SrcVersion(object):
+    """
+    Represents a version of the project sources on a Target
+    """
+    def __init__(self, label, src_dir):
+        self.label = label
+        # src_dir - the root of all sources for this version
+        self.src_dir = src_dir
+        # venv_dir - note that _update_virtualenv assumes this relative layout
+        # of the 'env' dir and the 'project' and 'deps' dirs.
+        self.venv_dir = join(self.src_dir, 'env')
+        # project_dir - where the CCIW project srcs are stored.
+        self.project_dir = join(self.src_dir, project_dir)
+        # deps_dir - where additional dependencies are stored
+        self.deps_dir = join(self.src_dir, deps_dir)
+        # static_dir - this is defined with way in settings.py
+        self.static_dir = join(self.src_dir, 'static')
+
+        self.additional_sys_paths = [join(deps_dir, d) for d in deps] + [project_dir]
+
+STAGING = Target(
+    django_app = "cciw_staging",
+    dbname = "cciw_staging",
+)
+PRODUCTION = Target(
+    django_app = "cciw",
+    dbname = "cciw",
+)
 
 
 @runs_once
@@ -113,8 +149,8 @@ def _prepare_deploy():
     # check that there are no outstanding changes.
 
 
-def backup_database(target, label):
-    fname = "%s-%s.db" % (target.dbname, label)
+def backup_database(target, version):
+    fname = "%s-%s.db" % (target.dbname, version.label)
     run("dump_cciw_db.sh %s %s" % (target.dbname, fname))
 
 
@@ -124,16 +160,15 @@ def run_venv(command):
 
 def virtualenv(venv_dir):
     """
-    Context manager that established a virtualenv to use,
+    Context manager that establishes a virtualenv to use,
     """
     return settings(venv=venv_dir)
 
 
-def _update_symlink(dest_dir):
-    with cd(dest_dir + "/../"):
-        if files.exists("current"):
-            run("rm current")
-        run("ln -s %s current" % os.path.basename(dest_dir))
+def _update_symlink(target, version):
+    if files.exists(target.current_version.src_dir):
+        run("rm %s" % target.current_version.src_dir) # assumes symlink
+    run("ln -s %s %s" % (version.src_dir, target.current_version.src_dir))
 
 
 def _fix_ipython():
@@ -143,34 +178,34 @@ def _fix_ipython():
         run_venv("pip install ipython")
 
 
-def _update_virtualenv(dest_dir, additional_sys_paths):
+def _update_virtualenv(version):
     # Update virtualenv in new dir.
-    with cd(dest_dir):
+    with cd(version.src_dir):
         # We should already have a virtualenv, but it will need paths updating
         run("virtualenv --python=python2.5 env")
         # Need this to stop ~/lib/ dirs getting in:
         run("touch env/lib/python2.5/sitecustomize.py")
-        with virtualenv(dest_dir + "/env"):
-            with cd("project"):
+        with virtualenv(version.venv_dir):
+            with cd(version.project_dir):
                 run_venv("pip install -r requirements.txt")
             _fix_ipython()
 
         # Need to add project and deps to path.
         # Could do 'python setup.py develop' but not all projects support it
-        pth_file = '\n'.join("../../../../" + n for n in additional_sys_paths)
+        pth_file = '\n'.join("../../../../" + n for n in version.additional_sys_paths)
         pth_name = "deps.pth"
         with open(pth_name, "w") as fd:
             fd.write(pth_file)
-        put(pth_name, dest_dir + "/env/lib/python2.5/site-packages")
+        put(pth_name, join(version.venv_dir, "lib/python2.5/site-packages"))
         os.unlink(pth_name)
 
 
 def _stop_apache(target):
-    run (webapps_root + "/" + target.django_app + "/apache2/bin/stop")
+    run(join(target.webapp_root, "apache2/bin/stop"))
 
 
 def _start_apache(target):
-    run (webapps_root + "/" + target.django_app + "/apache2/bin/start")
+    run(join(target.webapp_root, "apache2/bin/start"))
 
 
 def _restart_apache(target):
@@ -183,67 +218,59 @@ def rsync_dir(local_dir, dest_dir):
     # clean first
     with settings(warn_only=True):
         local("find %s -name '*.pyc' -exec 'rm {}' ';'" % local_dir)
-    local("rsync -r -L --delete --exclude='_build' --exclude='.hg' --exclude='.git' --exclude='.svn' --delete-excluded %s cciw@cciw.co.uk:%s/" % (local_dir, dest_dir), capture=False)
+    local("rsync -r -L --delete --exclude='_build' --exclude='.hg' --exclude='.git' --exclude='.svn' --delete-excluded %s/ cciw@cciw.co.uk:%s" % (local_dir, dest_dir), capture=False)
 
 
-def _copy_local_sources(dest_dir):
+def _copy_local_sources(target, version):
     # Upload local sources. For speed, we:
     # - make a copy of the sources that are there already, if they exist.
     # - rsync to the copies.
     # This also copies the virtualenv which is contained in the same folder,
     # which saves a lot of time with installing.
 
-    current_srcs = os.path.dirname(dest_dir) + "/current"
+    current_srcs = target.current_version.src_dir
 
     if files.exists(current_srcs):
-        run("cp -a -L %s %s" % (current_srcs, dest_dir))
+        run("cp -a -L %s %s" % (current_srcs, version.src_dir))
     else:
-        run("mkdir %s" % dest_dir)
+        run("mkdir %s" % version.src_dir)
 
     with cd(parent_dir):
         # rsync the project.
-        rsync_dir(project_dir, dest_dir)
+        rsync_dir(project_dir, version.project_dir)
         # rsync the deps
-        rsync_dir(deps_dir, dest_dir)
+        rsync_dir(deps_dir, version.deps_dir)
 
 
 def _copy_protected_downloads():
     # We currently don't need this to be separate for staging and production
-    rsync_dir(os.path.join(parent_dir, "resources/protected_downloads"),
-              os.path.join(webapps_root, 'cciw_protected_downloads_src'))
+    rsync_dir(join(parent_dir, "resources/protected_downloads"),
+              join(webapps_root, 'cciw_protected_downloads_src'))
 
 
-def _build_static(dest_dir):
+def _build_static(version):
     # This always copies all files anyway, and we want to delete any unwanted
     # files, so we start from clean dir.
-    with cd(dest_dir):
-        run("rm -rf static/")
+    run("rm -rf %s" % version.static_dir)
 
-    with virtualenv(dest_dir + "/env"):
-        with cd(dest_dir + "/" + project_dir):
+    with virtualenv(version.venv_dir):
+        with cd(version.project_dir):
             run_venv("./manage.py collectstatic --settings=cciw.settings --noinput")
 
-    with cd(dest_dir):
-        run("chmod -R ugo+r static")
+    run("chmod -R ugo+r %s" % version.static_dir)
 
 def _deploy(target):
-    label = datetime.now().strftime("%Y-%m-%d_%H.%M.%S")
     _prepare_deploy()
-    db_backup_name = backup_database(target, label)
+    label = datetime.now().strftime("%Y-%m-%d_%H.%M.%S")
+    version = target.make_version(label)
+    db_backup_name = backup_database(target, version)
 
-    dest_dirname = "src-%s" % label
-    dest_dir = webapps_root + "/" + target.django_app + "/src/" + dest_dirname
-
-    additional_sys_paths = [deps_dir + "/" + d for d in deps] + [project_dir]
-
-    _copy_local_sources(dest_dir)
+    _copy_local_sources(target, version)
     _copy_protected_downloads()
-    _update_virtualenv(dest_dir, additional_sys_paths)
-
-    _build_static(dest_dir)
+    _update_virtualenv(version)
+    _build_static(version)
 
     _stop_apache(target)
-
     # TODO
     # - do db migrations
     # - if unsuccessful
@@ -254,7 +281,7 @@ def _deploy(target):
     #    - add new current symlink to '$datetime' dir
     #  - start apache
 
-    _update_symlink(dest_dir)
+    _update_symlink(target, version)
     _start_apache(target)
 
 
