@@ -1,13 +1,18 @@
-from cciw.cciwmain import feeds
+"""
+Utility functions and base classes that are common to all views etc.
+"""
 from cciw.cciwmain.utils import python_to_json
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.utils.safestring import mark_safe
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 import cciw.middleware.threadlocals as threadlocals
 import datetime
+import re
 import urllib
+
 
 def standard_extra_context(title=None, description=None, keywords=None):
     """
@@ -36,7 +41,7 @@ def standard_extra_context(title=None, description=None, keywords=None):
     return extra_dict
 
 
-# Class based version
+# CBV equivalent to standard_extra_context (and other base class functionality)
 class DefaultMetaData(object):
     """
     Mixin that provides some default metadata and other standard variables to the
@@ -78,6 +83,20 @@ class DefaultMetaData(object):
         return c
 
 
+def json_validation_request(request, form):
+    """
+    Returns a JSON validation response for a form, if the request is for JSON
+    validation.
+    """
+
+    if request.GET.get('format') == 'json':
+        return HttpResponse(python_to_json(form.errors),
+                            mimetype='text/javascript')
+    else:
+        return None
+
+
+# CBV equivalent to json_validation_request
 class AjaxyFormMixin(object):
     """
     A FormView subclass that enables the returning of validation results by JSON
@@ -92,10 +111,12 @@ class AjaxyFormMixin(object):
         else:
             return super(AjaxyFormMixin, self).post(request, *args, **kwargs)
 
+
 class AjaxyFormView(AjaxyFormMixin, FormView):
     pass
 
 
+# CBV wrapper for feeds.handle_feed_request
 class FeedHandler(object):
     """
     Mixin that handles requests for a feed rather than HTML
@@ -205,3 +226,51 @@ def standard_processor(request):
     context['current_member'] = threadlocals.get_current_member()
 
     return context
+
+
+member_username_re = re.compile(r'^[A-Za-z0-9_]{3,15}$')
+
+def get_member_href(user_name):
+    if not member_username_re.match(user_name):
+        # This can get called from feeds, and we need to ensure
+        # we don't generate a URL, as it will go nowhere (also causes problems
+        # with the feed framework and utf-8).
+        # Also, this can be called via bbcode, so we need to ensure
+        # that we don't pass anything to urlresolvers.reverse that
+        # will make it die.
+        return u''
+    else:
+        return reverse('cciwmain.members.detail', kwargs={'user_name':user_name})
+
+
+def get_member_link(user_name):
+    user_name = user_name.strip()
+    if user_name.startswith(u"'"):
+        return user_name
+    else:
+        return mark_safe(u'<a title="Information about user \'%s\'" href="%s">%s</a>' % \
+               (user_name, get_member_href(user_name), user_name))
+
+
+def get_member_icon(user_name):
+    from django.conf import settings
+    user_name = user_name.strip()
+    if user_name.startswith(u"'"): # dummy user
+        return u''
+    else:
+        # We use content negotiation to get the right file i.e.
+        # apache will add the right extension on for us.
+        return mark_safe(u'<img src="%s%s/%s.png" class="userIcon" alt="icon" />' % \
+            (settings.MEDIA_URL, settings.MEMBER_ICON_PATH, user_name))
+
+
+_current_domain = None
+def get_current_domain():
+    global _current_domain
+    if _current_domain is None:
+        from django.contrib.sites.models import Site
+        _current_domain = Site.objects.get_current().domain
+    return _current_domain
+
+
+from cciw.cciwmain import feeds

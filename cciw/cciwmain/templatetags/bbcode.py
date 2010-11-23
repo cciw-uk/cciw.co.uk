@@ -61,7 +61,8 @@ import re
 import urllib
 
 #### CCIW specific imports #####
-from cciw.cciwmain.utils import get_member_link, obfuscate_email
+from cciw.cciwmain.utils import obfuscate_email
+from cciw.cciwmain.common import get_member_link
 from django.conf import settings
 EMOTICONS_ROOT = settings.STATIC_URL + 'images/emoticons/'
 ESV_BROWSE_URL = settings.ESV_BROWSE_URL

@@ -1,9 +1,6 @@
 from django.contrib.syndication import views as feed_views
 from django.http import Http404, HttpResponse
-from cciw.cciwmain.models import Member, Topic, Post, NewsItem
-from django.contrib.sites.models import Site
 from django.utils.feedgenerator import Atom1Feed
-from cciw.cciwmain.utils import get_member_href, get_current_domain
 
 MEMBER_FEED_MAX_ITEMS = 20
 NEWS_FEED_MAX_ITEMS = 20
@@ -139,3 +136,6 @@ def gallery_photo_feed(gallery_name):
     class GalleryPhotoFeed(PhotoFeed):
         title = gallery_name
     return GalleryPhotoFeed
+
+
+from cciw.cciwmain.common import get_member_href, get_current_domain

@@ -1,4 +1,4 @@
-from cciw.cciwmain import utils
+from cciw.cciwmain import common
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.references import reference_form_to_text
@@ -82,7 +82,7 @@ CCIW website.  It is also attached to this e-mail as an RTF file.
 def make_update_email_url(application):
     email = application.address_email
     old_email = application.officer.email
-    return 'https://%(domain)s%(path)s?email=%(email)s&hash=%(hash)s' % dict(domain=utils.get_current_domain(),
+    return 'https://%(domain)s%(path)s?email=%(email)s&hash=%(hash)s' % dict(domain=common.get_current_domain(),
                                                                            path=reverse('cciw.officers.views.update_email', kwargs={'username': application.officer.username}),
                                                                            email=urllib.quote(email),
                                                                            hash=make_update_email_hash(old_email, email))
@@ -124,7 +124,7 @@ def make_ref_form_url_hash(ref_id, prev_ref_id):
 
 def make_ref_form_url(ref_id, prev_ref_id):
     if prev_ref_id is None: prev_ref_id = ""
-    return  "https://%s%s" % (utils.get_current_domain(),
+    return  "https://%s%s" % (common.get_current_domain(),
                                reverse('cciw.officers.views.create_reference_form',
                                        kwargs=dict(ref_id=ref_id,
                                                    prev_ref_id=prev_ref_id,

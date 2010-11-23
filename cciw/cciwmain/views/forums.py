@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission, Poll, PollOption
-from cciw.cciwmain.common import create_breadcrumb, standard_extra_context, get_order_option, object_list
+from cciw.cciwmain.common import create_breadcrumb, standard_extra_context, get_order_option, object_list, json_validation_request
 from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.decorators import login_redirect
 from django.utils.html import escape
@@ -344,7 +344,7 @@ def edit_poll(request, poll_id=None, breadcrumb_extra=None):
     if request.method == 'POST':
         form = CreatePollForm(request.POST, instance=existing_poll)
 
-        json = utils.json_validation_request(request, form)
+        json = json_validation_request(request, form)
         if json: return json
 
         if form.is_valid():

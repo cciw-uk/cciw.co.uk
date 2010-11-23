@@ -1,10 +1,9 @@
 from django.db import models
 from django.conf import settings
 from django.core import mail
+from cciw.cciwmain import common
 from cciw.middleware import threadlocals
-from cciw.cciwmain import utils
 from datetime import datetime
-from cciw.cciwmain.utils import get_member_link, get_member_href
 
 import os
 
@@ -93,13 +92,13 @@ class Member(models.Model):
         if self.dummy_member:
             return None
         else:
-            return get_member_href(self.user_name)
+            return common.get_member_href(self.user_name)
 
     def get_link(self):
         if self.dummy_member:
             return self.user_name
         else:
-            return get_member_link(self.user_name)
+            return common.get_member_link(self.user_name)
 
     def check_password(self, plaintextPass):
         """Checks a password is correct"""
@@ -227,7 +226,7 @@ You can reply here:
 https://%(domain)s/members/%(from)s/messages/
 
 """ % {'from': from_member.user_name, 'to': to_member.user_name,
-        'domain': utils.get_current_domain(), 'message': text},
+        'domain': common.get_current_domain(), 'message': text},
         "website@cciw.co.uk", [to_member.email])
         return msg
 

@@ -9,12 +9,12 @@ from django.core.validators import email_re
 from django.http import Http404, HttpResponseRedirect
 from django.views.generic.edit import ModelFormMixin
 from django import forms
-from cciw.cciwmain.common import standard_extra_context, DefaultMetaData, AjaxyFormView
+from cciw.cciwmain.common import standard_extra_context, DefaultMetaData, AjaxyFormView, member_username_re
 from cciw.cciwmain.models import Member
 from cciw.middleware.threadlocals import set_member_session, get_current_member
 from cciw.cciwmain.decorators import member_required
+from cciw.cciwmain import common
 from cciw.cciwmain import imageutils
-from cciw.cciwmain import utils
 from cciw.cciwmain.forms import CciwFormMixin
 import md5
 import urllib
@@ -37,7 +37,7 @@ class ValidationError(Exception):
 
 # Ideally would add synchronize lock here, but YAGNI with any imaginable amount of traffic
 def create_user(user_name, password1, password2):
-    if utils.member_username_re.match(user_name) is None:
+    if member_username_re.match(user_name) is None:
         raise ValidationError("The user name is invalid, please check and try again")
     elif Member.all_objects.filter(user_name__iexact=user_name).exists():
         # Can't just try to create it and catch exceptions,
@@ -119,7 +119,7 @@ the link into your web browser.
 If you did not attempt to sign up on the CCIW web-site, you can just
 ignore this e-mail.
 
-""" % {'domain': utils.get_current_domain(), 'email': urllib.quote(email), 'hash': email_hash(email)},
+""" % {'domain': common.get_current_domain(), 'email': urllib.quote(email), 'hash': email_hash(email)},
 "website@cciw.co.uk", [email])
 
 def send_username_reminder(member):
@@ -131,7 +131,7 @@ You can log in at:
 https://%(domain)s/login/
 
 Thanks.
-""" % {'domain': utils.get_current_domain(), 'user_name': member.user_name },
+""" % {'domain': common.get_current_domain(), 'user_name': member.user_name },
     "website@cciw.co.uk", [member.email])
 
 def send_newpassword_email(member):
@@ -160,7 +160,7 @@ on the link:  this e-mail has been triggered by someone else entering your
 e-mail addess and asking for a new password.  The password will not actually
 be changed until you click the link, so you can safely ignore this e-mail.
 
-""" % {'domain': utils.get_current_domain(), 'user_name': member.user_name,
+""" % {'domain': common.get_current_domain(), 'user_name': member.user_name,
        'password': password, 'hash': hash},
     "website@cciw.co.uk", [member.email])
 
@@ -212,7 +212,7 @@ https://%(domain)s/memberadmin/change-email/?email=%(email)s&u=%(user_name)s&h=%
 If clicking on the link does not do anything, please copy and paste
 the entire link into your web browser.
 
-""" % {'domain': utils.get_current_domain(), 'email': urllib.quote(new_email),
+""" % {'domain': common.get_current_domain(), 'email': urllib.quote(new_email),
        'user_name': urllib.quote(member.user_name),
        'hash': email_and_username_hash(new_email, member.user_name)},
     "website@cciw.co.uk", [new_email])
