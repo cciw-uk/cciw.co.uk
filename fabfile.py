@@ -104,7 +104,7 @@ def ensure_dependencies():
 
 def test():
     ensure_dependencies()
-    local("cd project; ./manage.py test cciwmain officers tagging utils --settings=cciw.settings_tests", capture=False)
+    local("cd project; ./manage.py test cciwmain officers utils --settings=cciw.settings_tests", capture=False)
 
 
 def _prepare_deploy():

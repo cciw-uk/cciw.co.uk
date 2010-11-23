@@ -259,89 +259,6 @@ div.pollBarChart
 	vertical-align: top;
 }
 
-.tag a, a.tag
-{
-	padding: 0 2px;
-	color: #303030;	
-	background-color: #80a080;
-	line-height: 1.5;
-}
-
-.tag a:link, a.tag:link 
-{
-	background-color: #80a080;
-}
-
-.tag a:visited, a.tag:visited
-{
-	background-color: #80a080;
-}
-.tag a:hover, a.tag:hover
-{
-	background-color: #b0c0b0;
-}
-
-a.addtag, .otherstagged a, a.otherstagged
-{
-	padding: 0 2px;
-	color: #303030;
-}
-
-a.addtag:link, .otherstagged a:link, a.otherstagged:link
-{
-	background-color: #a89080;
-}
-
-a.addtag:visited, .otherstagged a:visited, a.otherstagged:visited 
-{
-	background-color: #a89080;
-}
-a.addtag:hover, .otherstagged a:hover, a.otherstagged:hover 
-{
-	background-color: #c8a890;
-}
-
-a.tagcount, .tagcount a
-{
-	padding: 0 2px;
-	color: #303030;
-}
-
-a.tagcount:link, .tagcount a:link 
-{
-	background-color: #a0a080;
-}
-
-a.tagcount:visited, .tagcount a:visited 
-{
-	background-color: #a0a080;
-}
-a.tagcount:hover, .tagcount a:hover 
-{
-	background-color: #c0c090;
-}
-
-/* small inline tags */
-
-a.smtag:link, a.smtag:visited, a.smtag:hover
-{
-	background-color: #80a080;
-	color: black;
-	padding: 0px 2px;
-	font-weight: normal;
-}
-
-a.smtag:hover
-{
-	background-color: #b0c0b0;
-}
-
-.taglist a.tagcount
-{
-	border-left: 1px solid black;
-	font-weight: normal;
-}
-
 div.bottomlinks, div.bottomlinks a:link, div.bottomlinks a:visited
 {
 	color: #a0a0a0;
@@ -349,12 +266,6 @@ div.bottomlinks, div.bottomlinks a:link, div.bottomlinks a:visited
 div.bottomlinks a:hover
 {
 	color: #c0c0c0;
-}
-div.tagdetail
-{
-	padding-top: .8em;
-	padding-bottom: .8em;
-	border-bottom: 1px solid #663300;
 }
 
 
@@ -919,68 +830,6 @@ div.center
 	font-style: italic;
 }
 
-
-/* Tags */
-.otherstagged a
-{
-	font-size: 90%;
-}
-
-.tagtitle
-{
-	font-size: 150%;
-}
-
-.weight0
-{
-	font-size: 80%
-}
-
-.weight1
-{
-	font-size: 100%
-}
-
-.weight2
-{
-	font-size: 110%;
-}
-
-.weight3
-{
-	font-size: 130%;
-}
-
-.weight4
-{
-	font-size: 150%;
-}
-
-.weight5
-{
-	font-size: 160%;
-}
-
-.tagtimesince
-{
-	font-size: 95%;
-	font-style: italic;
-	padding-left: 1em;
-}
-
-.seealltags
-{
-	font-size: 90%;
-	vertical-align: 25%;
-
-}
-
-/* Small inline tags */
-span.taglist
-{
-	float:right;
-	font-size: 95%;
-}
 
 .verse-num
 {

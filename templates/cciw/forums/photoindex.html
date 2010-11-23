@@ -18,7 +18,7 @@
 				<td>{% if photo.created_at %}{{ photo.created_at|date:"d M Y H:i" }}{% endif %}</td>
 				<td class="photoCol"><a href="{{ photo.get_absolute_url }}"><img class="photoThumbnail" src="{{ MEDIA_URL }}photos/thumbnails/{{ photo.filename }}" alt="Photo {{ photo.filename }}" /></a>
 				</td>
-				<td>{{ photo.description }} <span class="taglist">{% tag_summary_list for photo %} {% add_tag_link for photo %}</span>
+				<td>{{ photo.description }}
 				</td>
 				<td>{{ photo.post_count }}</td>
 				<td>{% if photo.last_post_at %}{{ photo.last_post_at|date:"d M Y H:i" }}<br/>{% endif %}

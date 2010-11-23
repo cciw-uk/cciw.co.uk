@@ -57,7 +57,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'cciw.cciwmain',
     'cciw.officers',
-    'cciw.tagging',
     'cciw.utils',
     'django.contrib.messages',
     'mailer',
