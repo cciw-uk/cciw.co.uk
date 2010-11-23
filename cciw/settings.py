@@ -167,7 +167,7 @@ _MIDDLEWARE_CLASSES = (
     (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
     (LIVEBOX and PRODUCTION, "cciw.middleware.http.ForceSSLMiddleware"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
-    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
+#    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
 #    (DEVBOX,     "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware"),
     (True,       'django.middleware.csrf.CsrfViewMiddleware'),
     (True,       "django.contrib.sessions.middleware.SessionMiddleware"),

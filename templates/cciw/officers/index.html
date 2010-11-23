@@ -1,13 +1,14 @@
 {% extends "cciw/officers/base.html" %}
+{% load url from future %}
 {% block content %}<div id="content-main">
 <h1>Officer's home page</h1>
 
 <h2>Menu:</h2>
 <ul>
-  <li><a href="{% url cciw.officers.views.applications %}">Submit/view applications</a></li>
-  <li><a href="{% url cciw.officers.views.info %}">Information about camp</a></li>
+  <li><a href="{% url 'cciw.officers.views.applications' %}">Submit/view applications</a></li>
+  <li><a href="{% url 'cciw.officers.views.info' %}">Information about camp</a></li>
   {% if show_leader_links %}
-    <li><a href="{% url cciw.officers.views.leaders_index %}">Tools for leaders</a></li>
+    <li><a href="{% url 'cciw.officers.views.leaders_index' %}">Tools for leaders</a></li>
   {% endif %}
   {% if show_admin_link %}
     <li><a href="/admin/">General admin interface</a> (manage camps, camp sites, officers etc)</li>

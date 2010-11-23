@@ -1,3 +1,4 @@
+{% load url from future %}
 <h3 class="referencestart">{{ ref.application.officer.first_name }} {{ ref.application.officer.last_name }}</h3>
 <h4>From: {{ ref.referee.name }}</h4>
 <div class="reference">
@@ -12,7 +13,7 @@
 {% endif %}
 
 {% if mode == "received" %}
-  <p><a href="{% url cciw.officers.views.view_reference ref_id=ref.id %}" rel="external">View reference from {{ ref.referee.name }}</a> (in new window)
+  <p><a href="{% url 'cciw.officers.views.view_reference' ref_id=ref.id %}" rel="external">View reference from {{ ref.referee.name }}</a> (in new window)
   <br/><span class="referencebutton"><button
     onclick="manageReferenceManually({{ ref.id }});">Manage reference manually</button></span>
   </p>

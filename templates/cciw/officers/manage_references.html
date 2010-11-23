@@ -1,5 +1,6 @@
 {% extends "cciw/officers/base.html" %}
 {% load reference_utils %}
+{% load url from future %}
 {% block title %}Manage references :: CCIW{% endblock %}
 {% block extrastyle %}{{ block.super }}
 <script type="text/javascript">
@@ -42,7 +43,7 @@ connect(window, 'onload',
 )
 
 function requestGeneric(query) {
-    window.open('{% url cciw.officers.views.request_reference %}?' + query,
+    window.open('{% url "cciw.officers.views.request_reference" %}?' + query,
                 '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
 }
 

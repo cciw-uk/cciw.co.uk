@@ -1,9 +1,10 @@
 {% extends "cciw/officers/base.html" %}
+{% load url from future %}
 {% block extrastyle %}{{ block.super }}
 <script type="text/javascript">
 <!--
 function createReferenceFormManually() {
-   window.open('{% url cciw.officers.views.edit_reference_form_manually ref_id=ref.id %}',
+   window.open('{% url "cciw.officers.views.edit_reference_form_manually" ref_id=ref.id %}',
                 '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
 
 }
