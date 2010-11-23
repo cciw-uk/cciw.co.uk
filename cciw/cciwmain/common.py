@@ -42,14 +42,29 @@ class DefaultMetaData(object):
     """
     Mixin that provides some default metadata and other standard variables to the
     page context. Assumes the use of TemplateView.
+
+    Also provides a mechanism for other context data:
+
+     * 'extra_context' attribute can be stored on the class
+       and will be used as a starting point for context data
+
+     * After the instance has been initialised, 'context'
+       will be available on the instance as a place to store context data.
     """
     metadata_title=u"Christian Camps in Wales"
     metadata_description= u"Details of camps, message boards and photos for the UK charity Christian Camps in Wales"
     metadata_keywords = u"camp, camps, summer camp, Christian, Christian camp, charity"
+    extra_context = None
 
     def __init__(self, **kwargs):
         # Provide place for arbitrary context to get stored.
         self.context = {}
+        # Merge in statically defined context on the class, in a way that won't
+        # mean that the class atttribute will be mutated.
+        extra_context = self.extra_context
+        if extra_context is not None:
+            self.context.update(extra_context)
+
         return super(DefaultMetaData, self).__init__(**kwargs)
 
     def get_context_data(self, **kwargs):

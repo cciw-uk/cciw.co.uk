@@ -23,6 +23,10 @@ class MemberList(DefaultMetaData, FeedHandler, ListView):
     feed_class = feeds.MemberFeed
     template_name = "cciw/members/index.html"
     paginate_by = 50
+    extra_context = {
+        'default_order': 'aun',
+        'atom_feed_title': u"Atom feed for new members"
+        }
 
     def get_queryset(self):
         members = Member.objects.filter(dummy_member=False)
@@ -43,20 +47,11 @@ class MemberList(DefaultMetaData, FeedHandler, ListView):
             self.request, ('user_name',))
         members = members.order_by(*order_by)
 
-        try:
-            search = self.request.GET['search']
-            if len(search) > 0:
-                members = (members.filter(user_name__icontains=search) | members.filter(real_name__icontains=search))
-        except KeyError:
-            pass
+        search = self.request.GET.get('search', '')
+        if len(search) > 0:
+            members = (members.filter(user_name__icontains=search) | members.filter(real_name__icontains=search))
 
         return members
-
-    def get_context_data(self, **kwargs):
-        c = super(MemberList, self).get_context_data(**kwargs)
-        c['default_order'] = 'aun'
-        c['atom_feed_title'] = u"Atom feed for new members"
-        return c
 
 index = MemberList.as_view()
 
