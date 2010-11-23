@@ -1,5 +1,4 @@
 from django.conf import settings
-from cciw.cciwmain.templatetags import view_extras
 from django.utils.safestring import mark_safe
 from django.views.generic.base import TemplateResponseMixin
 import cciw.middleware.threadlocals as threadlocals
@@ -116,7 +115,5 @@ def standard_processor(request):
 
     context['menulinks'] = links
     context['current_member'] = threadlocals.get_current_member()
-
-    context.update(view_extras.get_view_extras_context(request))
 
     return context
