@@ -109,15 +109,12 @@ class CreatePollPage(TestCase):
         self.assertEqual(p.intro_text, poll_data['intro_text'])
         self.assertEqual(p.poll_options.count(), 4, "Poll does not have right number of options created")
 
-    def test_cant_edit_someone_elses_poll(self):
-        p = Poll(title="test",
-                 voting_starts=datetime.now(),
-                 voting_ends=datetime.now(),
-                 rules = 0,
-                 rule_parameter=1,
-                 have_vote_info=True,
-                 created_by_id=TEST_MEMBER_USERNAME)
-        p.save()
+    def test_edit_poll(self):
+        self.test_create_poll()
+        self.client.logout()
+
+        # Get the poll just created.
+        p = Poll.objects.get(created_by=TEST_POLL_CREATOR_USERNAME)
 
         self.client.member_login(TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD)
         url = reverse("cciwmain.camps.edit_poll",
@@ -125,5 +122,20 @@ class CreatePollPage(TestCase):
                                   number=FORUM_1_CAMP_NUMBER,
                                   poll_id=p.id))
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
 
+
+    def test_cant_edit_someone_elses_poll(self):
+        self.test_create_poll()
+        self.client.logout()
+
+        # Get the poll just created.
+        p = Poll.objects.get(created_by=TEST_POLL_CREATOR_USERNAME)
+
+        self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)
+        url = reverse("cciwmain.camps.edit_poll",
+                      kwargs=dict(year=FORUM_1_YEAR,
+                                  number=FORUM_1_CAMP_NUMBER,
+                                  poll_id=p.id))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)

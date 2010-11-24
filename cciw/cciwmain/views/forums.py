@@ -2,6 +2,7 @@ from datetime import datetime, date
 import string
 
 from django.views.generic import list_detail
+from django.views.generic.edit import ModelFormMixin
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.template import RequestContext
 from django.shortcuts import render_to_response
@@ -12,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission, Poll, PollOption
-from cciw.cciwmain.common import create_breadcrumb, standard_extra_context, get_order_option, object_list, json_validation_request
+from cciw.cciwmain.common import create_breadcrumb, standard_extra_context, get_order_option, object_list, DefaultMetaData, AjaxyFormView
 from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.decorators import login_redirect
 from django.utils.html import escape
@@ -321,63 +322,61 @@ class CreatePollForm(cciwforms.CciwFormMixin, forms.ModelForm):
 # is currently rather tricky.  Easiest hack is this:
 CreatePollForm.base_fields.keyOrder = ['title', 'intro_text', 'polloptions', 'outro_text', 'voting_starts', 'voting_ends', 'rules', 'rule_parameter']
 
-@member_required
-def edit_poll(request, poll_id=None, breadcrumb_extra=None):
-    if poll_id is None:
-        suffix = 'add_poll/'
-        title = u"Create poll"
-        existing_poll = None
-    else:
-        suffix = '/'.join(request.path.split('/')[-3:]) # 'edit_poll/xx/'
-        title = u"Edit poll"
-        existing_poll = get_object_or_404(Poll.objects.filter(id=poll_id))
 
-    cur_member = get_current_member()
-    if not cur_member.has_perm(Permission.POLL_CREATOR):
-        return HttpResponseForbidden("Permission denied")
-    if existing_poll and existing_poll.created_by != cur_member:
-        return HttpResponseForbidden("Access denied.")
+class EditPoll(DefaultMetaData, AjaxyFormView, ModelFormMixin):
+    form_class = CreatePollForm
+    template_name = 'cciw/forums/edit_poll.html'
 
-    forum = _get_forum_or_404(request.path, suffix)
-    c = standard_extra_context(title=title)
-
-    if request.method == 'POST':
-        form = CreatePollForm(request.POST, instance=existing_poll)
-
-        json = json_validation_request(request, form)
-        if json: return json
-
-        if form.is_valid():
-            new_poll = form.save(commit=False)
-            new_poll.created_by_id = cur_member.user_name
-            new_poll.save()
-
-            if existing_poll is None:
-                # new poll, create a topic to go with it
-                topic = Topic.create_topic(cur_member, new_poll.title, forum)
-                topic.poll_id = new_poll.id
-                topic.save()
-            else:
-                # It will already have a topic associated
-                topic = new_poll.topics.all()[0]
-                topic.subject = new_poll.title
-                topic.save()
-
-            update_poll_options(new_poll, form.cleaned_data['polloptions'])
-
-            return HttpResponseRedirect(topic.get_absolute_url())
-    else:
-        if existing_poll:
-            form = CreatePollForm(instance=existing_poll)
+    def dispatch(self, request, *args, **kwargs):
+        poll_id = kwargs.get('poll_id', None)
+        if poll_id is None:
+            self.suffix = 'add_poll/'
+            self.metadata_title = u"Create poll"
+            self.object = None
         else:
-            today = datetime.today()
-            today = datetime(today.year, today.month, today.day)
-            form = CreatePollForm(initial=dict(voting_starts=today))
+            self.suffix = '/'.join(request.path.split('/')[-3:]) # 'edit_poll/xx/'
+            self.metadata_title = u"Edit poll"
 
-    c['form'] = form
-    c['existing_poll'] = existing_poll
-    return render_to_response('cciw/forums/edit_poll.html',
-                              context_instance=RequestContext(request, c))
+            self.object = get_object_or_404(Poll.objects.filter(id=poll_id))
+
+        current_member = get_current_member()
+        if not current_member.has_perm(Permission.POLL_CREATOR):
+            return HttpResponseForbidden("Permission denied")
+        if self.object and self.object.created_by != current_member:
+            return HttpResponseForbidden("Access denied.")
+
+        self.current_member = current_member
+        self.forum = _get_forum_or_404(request.path, self.suffix)
+        self.context['breadcrumb'] = create_breadcrumb(kwargs.get('breadcrumb_extra',[]) +
+                                                       topic_breadcrumb(self.forum, None))
+        return super(EditPoll, self).dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        today = datetime.today()
+        today = datetime(today.year, today.month, today.day)
+        return dict(voting_starts=today)
+
+    def form_valid(self, form):
+        new_poll = form.save(commit=False)
+        new_poll.created_by = self.current_member
+        new_poll.save()
+
+        if self.object is None:
+            # new poll, create a topic to go with it
+            topic = Topic.create_topic(self.current_member, new_poll.title, self.forum)
+            topic.poll_id = new_poll.id
+            topic.save()
+        else:
+            # It will already have a topic associated
+            topic = new_poll.topics.all()[0]
+            topic.subject = new_poll.title
+            topic.save()
+
+        update_poll_options(new_poll, form.cleaned_data['polloptions'])
+        # avoid ModelFormMixin.form_valid()
+        return HttpResponseRedirect(topic.get_absolute_url())
+
+edit_poll = member_required(EditPoll.as_view())
 
 
 # Used as part of a view function

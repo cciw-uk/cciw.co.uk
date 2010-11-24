@@ -181,7 +181,7 @@ def add_news(request, year, number):
 
 def edit_poll(request, year, number, poll_id=None):
     camp, breadcrumb_extra = _get_camp_and_breadcrumb(year, number)
-    return forums_views.edit_poll(request, poll_id, breadcrumb_extra)
+    return forums_views.edit_poll(request, poll_id=poll_id, breadcrumb_extra=breadcrumb_extra)
 
 def gallery(request, year, number):
     try:
