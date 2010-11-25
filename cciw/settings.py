@@ -172,6 +172,7 @@ _MIDDLEWARE_CLASSES = (
     (True,       "django.contrib.messages.middleware.MessageMiddleware"),
     (True,       "django.contrib.auth.middleware.AuthenticationMiddleware"),
     (True,       "django.middleware.common.CommonMiddleware"),
+    (True,       "django.middleware.transaction.TransactionMiddleware"),
     (True,       "cciw.middleware.threadlocals.ThreadLocals"),
 )
 
