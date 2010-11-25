@@ -69,7 +69,7 @@ class PostFeed(CCIWFeed):
     title = u"CCIW message boards posts"
 
     def modify_query(self, query_set):
-        return query_set.order_by('-posted_at')[:POST_FEED_MAX_ITEMS]
+        return query_set.select_related('topic', 'photo').order_by('-posted_at')[:POST_FEED_MAX_ITEMS]
 
     def item_author_name(self, post):
         return post.posted_by_id

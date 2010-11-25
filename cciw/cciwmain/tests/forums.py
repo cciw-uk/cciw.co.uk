@@ -1,7 +1,11 @@
+from __future__ import with_statement
 from cciw.cciwmain.tests.client import CciwClient
 from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD, TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD
+from django.contrib.auth.models import AnonymousUser
+from django.contrib.sessions.backends.file import SessionStore
 from django.test import TestCase
-from cciw.cciwmain.models import Topic, Member, Poll, Forum
+from django.test.client import RequestFactory
+from cciw.cciwmain.models import Topic, Member, Poll, Forum, Post
 from django.core.urlresolvers import reverse
 from datetime import datetime
 from cciw.cciwmain import decorators
@@ -18,6 +22,7 @@ class ForumPage(TestCase):
 
     def setUp(self):
         self.client = CciwClient()
+        self.factory = RequestFactory()
 
     def test_get(self):
         forum = Forum.objects.get(id=1)
@@ -25,15 +30,50 @@ class ForumPage(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Jill &amp; Jane")
 
+    def test_atom(self):
+        forum = Forum.objects.get(id=1)
+        response = self.client.get(forum.get_absolute_url(), {'format':'atom'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Jill &amp; Jane")
+        self.assertEqual(response['Content-Type'], 'application/atom+xml')
+
+    def test_query_count(self):
+        """
+        Test the number of queries for topic index (HTML and Atom)
+        """
+        forum = Forum.objects.get(id=1)
+
+        member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
+        # Make sure we have lots of topics
+        for i in xrange(100):
+            topic = Topic.create_topic(member, "Topic %s" % i, forum)
+            topic.save()
+            post = Post.create_post(member, "Message %s" % i, topic, None)
+            post.save()
+
+        from cciw.cciwmain.views.forums import topicindex
+
+        request = self.factory.get(forum.get_absolute_url())
+        request.session = SessionStore()
+        with self.assertNumQueries(6):
+            topicindex(request, title="Title", forum=forum)
+
+        request = self.factory.get(forum.get_absolute_url(), {'format':'atom'})
+        request.session = SessionStore()
+        with self.assertNumQueries(3):
+            topicindex(request, title="Title", forum=forum)
+
 
 class TopicPage(TestCase):
     fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
 
     def setUp(self):
         self.client = CciwClient()
+        self.factory = RequestFactory()
+        self.topic = Topic.objects.get(id=1)
 
     def path(self):
-        return Topic.objects.get(id=1).get_absolute_url()
+        return self.topic.get_absolute_url()
 
     def test_topic_html(self):
         response = self.client.get(self.path())
@@ -52,6 +92,34 @@ class TopicPage(TestCase):
                         "Title not escaped properly")
         self.assertTrue('A &lt;b&gt;unique message&lt;/b&gt; with some bbcode &amp;amp; &amp;lt;stuff&amp;gt; to be escaped' in response.content,
                         "Message posts not escaped properly")
+        self.assertEqual(response['Content-Type'], 'application/atom+xml')
+
+    def test_query_count(self):
+        """
+        Test the number of queries for topic page (HTML and Atom)
+        """
+        forum = Forum.objects.get(id=1)
+
+        member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
+        # Make sure we have lots of posts
+        for i in xrange(100):
+            post = Post.create_post(member, "Message %s" % i, self.topic, None)
+            post.save()
+
+        from cciw.cciwmain.views.forums import topic
+
+        request = self.factory.get(self.topic.get_absolute_url())
+        request.session = SessionStore()
+        request.user = AnonymousUser()
+        with self.assertNumQueries(9):
+            topic(request, title_start="Title", topicid=self.topic.id)
+
+        request = self.factory.get(self.topic.get_absolute_url(), {'format':'atom'})
+        request.session = SessionStore()
+        request.user = AnonymousUser()
+        with self.assertNumQueries(2):
+            topic(request, title_start="Title", topicid=self.topic.id)
+
 
 class CreatePollPage(TestCase):
     fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']

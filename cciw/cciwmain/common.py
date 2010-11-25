@@ -206,10 +206,21 @@ def create_breadcrumb(links):
     return mark_safe(u" :: ".join(links))
 
 def standard_processor(request):
-    """Processor that does standard processing of request
-    that we need for all pages."""
-    from cciw.cciwmain.models import MenuLink
+    """
+    Processor that does standard processing of request that we need for all
+    pages.
+    """
     context = {}
+    context['current_member'] = threadlocals.get_current_member()
+    format = request.GET.get('format')
+    if format is not None:
+        # json or atom - we are not rendering typical pages, and don't want the
+        # overhead of additional queries. This is especially important for Atom,
+        # which can render many templates with separate RequestContext
+        # instances.
+        return context
+
+    from cciw.cciwmain.models import MenuLink
     assert type(request.path) is unicode
     context['homepage'] = (request.path == u"/")
     links = MenuLink.objects.filter(parent_item__isnull=True, visible=True)
@@ -223,7 +234,6 @@ def standard_processor(request):
             l.isCurrentSection = True
 
     context['menulinks'] = links
-    context['current_member'] = threadlocals.get_current_member()
 
     return context
 

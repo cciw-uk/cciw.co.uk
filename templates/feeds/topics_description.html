@@ -16,8 +16,6 @@
 		</ul>
 		{{ obj.poll.outro_text|bb2html }}
 	{% else %}
-		{% ifnotequal obj.post_count 0 %}
-			{{ obj.posts.all.0.message|bb2html }}
-		{% endifnotequal %}
+		{{ obj.post_count }} posts.
 	{% endif %}
 {% endif %}

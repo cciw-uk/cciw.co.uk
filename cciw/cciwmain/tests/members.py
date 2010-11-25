@@ -1,3 +1,4 @@
+from __future__ import with_statement
 import twill
 from twill import commands as tc
 from twill.shell import TwillCommandLoop
@@ -5,6 +6,7 @@ from twill.shell import TwillCommandLoop
 from BeautifulSoup import BeautifulSoup
 from client import CciwClient
 from django.test import TestCase
+from django.test.client import RequestFactory
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core import mail
@@ -16,6 +18,7 @@ import cciw.cciwmain.decorators
 from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_twill_url
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 
+import datetime
 import os
 import glob
 import urllib
@@ -278,6 +281,9 @@ class MemberLists(TestCase):
 
     fixtures = ['basic.json','test_members.json']
 
+    def setUp(self):
+        self.factory = RequestFactory()
+
     def test_index(self):
         resp = self.client.get(reverse('cciwmain.members.index'))
         self.assertEqual(resp.status_code, 200)
@@ -290,6 +296,22 @@ class MemberLists(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/atom+xml')
         self.assertContains(resp, TEST_MEMBER_USERNAME)
+
+    def test_query_count(self):
+        for i in xrange(100):
+            Member.objects.create(user_name="NewMember%d" % i,
+                                  date_joined=datetime.datetime.now())
+
+        from cciw.cciwmain.views.members import index
+
+        request = self.factory.get(reverse('cciwmain.members.index'))
+        with self.assertNumQueries(5):
+            index(request)
+
+
+        request = self.factory.get(reverse('cciwmain.members.index'), {'format':'atom'})
+        with self.assertNumQueries(2):
+            index(request)
 
 
 class SendMessage(TestCase):
@@ -426,6 +448,16 @@ class MessageLists(TestCase):
         checkboxes = [c for c in b.findAll(name='input', attrs={"type":"checkbox"})
                       if c.attrMap['name'].startswith('msg_')]
         return checkboxes
+
+    def test_query_count(self):
+        for i in xrange(settings.MEMBERS_PAGINATE_MESSAGES_BY):
+            self._send_message("Message %s" % i)
+
+        with self.assertNumQueries(8):
+            resp = self._get_inbox()
+
+        for i in xrange(settings.MEMBERS_PAGINATE_MESSAGES_BY):
+            self.assertContains(resp, "Message %s" % i)
 
     def test_archive_message_from_inbox(self):
         # Setup
