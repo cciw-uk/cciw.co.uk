@@ -39,8 +39,6 @@ LANGUAGE_CODE = 'en-gb'
 
 SITE_ID = 1
 
-CACHE_MIDDLEWARE_SECONDS = 200
-
 ROOT_URLCONF = 'cciw.urls'
 
 TIME_ZONE = "Europe/London"
