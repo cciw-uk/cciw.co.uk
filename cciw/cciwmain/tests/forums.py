@@ -208,6 +208,7 @@ class PhotoIndexPage(TestCase):
         # Make sure we have lots of topics
         for i in xrange(100):
             photo = Photo.create_default_photo("2000-1-myphoto-%s" % i, self.gallery)
+            post = Post.create_post(member, "A message %s" % i, photo=photo)
 
         request = self.factory.get(self.gallery.get_absolute_url())
         request.session = SessionStore()

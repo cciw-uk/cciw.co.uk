@@ -22,22 +22,6 @@ def do_email(parser, token):
     parser.delete_first_token()
     return EmailNode(nodelist)
 
-class MemberLinkNode(template.Node):
-    def __init__(self, nodelist):
-        self.nodelist = nodelist
-    def render(self, context):
-        user_name = self.nodelist.render(context)
-        return get_member_link(user_name)
-
-def do_member_link(parser, token):
-    """
-    Creates a link to a member, using the member name between the
-    'memberlink' and 'endmemberlink' tags.
-    """
-    nodelist = parser.parse(('endmemberlink',))
-    parser.delete_first_token()
-    return MemberLinkNode(nodelist)
-
 class MemberIconNode(template.Node):
     def __init__(self, nodelist):
         self.nodelist = nodelist
@@ -112,7 +96,6 @@ register = template.Library()
 register.filter(standard_subs)
 register.filter(obfuscate_email)
 register.tag('email', do_email)
-register.tag('memberlink', do_member_link)
 register.tag('membericon', do_member_icon)
 register.tag('htmlchunk', do_htmlchunk)
 register.tag('atomfeedlink', AtomFeedLink)

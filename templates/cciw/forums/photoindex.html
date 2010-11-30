@@ -22,7 +22,7 @@
 				</td>
 				<td>{{ photo.post_count }}</td>
 				<td>{% if photo.last_post_at %}{{ photo.last_post_at|date:"d M Y H:i" }}<br/>{% endif %}
-				    {% if photo.last_post_by_id %}{% memberlink %}{{ photo.last_post_by_id }}{% endmemberlink %}{% endif %}</td>
+				    {% if photo.last_post_by_id %}{{ photo.last_post_by.get_link }}{% endif %}</td>
 			</tr>
 		{% endfor %}
 		</table>

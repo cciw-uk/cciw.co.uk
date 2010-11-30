@@ -11,11 +11,12 @@ which is a list of 'Award' objects
 		<img src="{{ award.imageurl }}" alt="{{ award.nice_name }} image" />  {{award.description}}
 		</div>
 		<div class="awardList">
-		{% if award.personal_awards.all %}
+                {% with award.personal_awards.all as pawards %}
+                {% if pawards %}
 			<p>Awarded to:</p>
 			<ul>
-			{% for paward in award.personal_awards.all %}
-				<li>{% memberlink %}{{ paward.member_id }}{% endmemberlink %} 
+			{% for paward in pawards %}
+				<li>{{ paward.member.get_link }}
 					{% if paward.date_awarded %}, on {{ paward.date_awarded|date:"d M Y" }} {% endif %}
 				for:<br/> {{ paward.reason }}</li>
 			{% endfor %}
@@ -24,6 +25,7 @@ which is a list of 'Award' objects
 		{% else %}
 			<p>Not awarded to anyone yet.</p>
 		{% endif %}
+                {% endwith %}
 		</div>
 	{% endfor %}
 {% endblock %}

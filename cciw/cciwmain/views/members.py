@@ -268,7 +268,7 @@ class MessageList(DefaultMetaData, ListView):
         self.context['show_delete_button'] = True
         self.context['breadcrumb'] = create_breadcrumb(crumbs)
 
-        self.queryset = self.member.messages_received.filter(box=self.box).order_by('-time')
+        self.queryset = self.member.messages_received.filter(box=self.box).order_by('-time').select_related('from_member')
 
         return super(MessageList, self).get(request, user_name=user_name)
 

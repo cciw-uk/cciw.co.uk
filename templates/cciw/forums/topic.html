@@ -8,7 +8,7 @@
 	<br/>
 	<div class="newsItem">
 		<div class="newsItemDetails">Posted: {{ news_item.created_at|date:"d M Y, H:i" }}, 
-		by {% memberlink %}{{ news_item.created_by_id }}{% endmemberlink %}</div>
+		by {{ news_item.created_by.get_link }}</div>
 		<div class="newsItemFull">
 		{% if news_item.full_item %}
 			{{ news_item.full_item|safe|standard_subs }}

@@ -62,7 +62,7 @@ def topicindex(request, title=None, extra_context=None, forum=None,
     forum = _get_forum_or_404(request.path, '')
 
     ### TOPICS ###
-    topics = forum.topics.all().select_related('forum', 'news_item')
+    topics = forum.topics.all().select_related('forum', 'news_item', 'started_by', 'last_post_by', 'news_item__created_by')
 
     ### FEED ###
     resp = feeds.handle_feed_request(request, feeds.forum_topic_feed(forum), query_set=topics)
@@ -478,7 +478,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
     except Topic.DoesNotExist:
         raise Http404
 
-    posts = topic.posts.all()
+    posts = topic.posts.all().select_related('posted_by')
 
     ### Feed: ###
     # Requires 'topic' and 'posts'
@@ -548,7 +548,7 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
     "Displays an a gallery of photos"
 
     ### PHOTOS ###
-    photos = gallery.photos.all().select_related('gallery')
+    photos = gallery.photos.all().select_related('gallery', 'last_post_by')
 
     ### FEED ###
     resp = feeds.handle_feed_request(request,
@@ -579,7 +579,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     "Displays a photo"
 
     ## POSTS ###
-    posts = photo.posts.all()
+    posts = photo.posts.all().select_related('posted_by')
 
     ### Feed: ###
     resp = feeds.handle_feed_request(request, feeds.photo_post_feed(photo), query_set=posts)
@@ -609,7 +609,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
 
 def all_posts(request):
     context = standard_extra_context(title=u"Recent posts")
-    posts = Post.objects.exclude(posted_at__isnull=True).order_by('-posted_at').select_related('topic__forum', 'photo__gallery')
+    posts = Post.objects.exclude(posted_at__isnull=True).order_by('-posted_at').select_related('topic__forum', 'photo__gallery', 'posted_by')
 
     resp = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
     if resp: return resp
@@ -633,7 +633,7 @@ def post(request, id):
 
 def all_topics(request):
     context = standard_extra_context(title=u"Recent new topics")
-    topics = Topic.objects.exclude(created_at__isnull=True).order_by('-created_at').select_related('forum')
+    topics = Topic.objects.exclude(created_at__isnull=True).order_by('-created_at').select_related('forum', 'started_by')
 
     resp = feeds.handle_feed_request(request, feeds.TopicFeed, query_set=topics)
     if resp: return resp

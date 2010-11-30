@@ -28,7 +28,7 @@
 			<tr>
 				<td class="postFrom">
 					<span class="postMemberIcon">{% membericon %}{{ post.posted_by_id }}{% endmembericon %}</span>
-					{% memberlink %}{{ post.posted_by_id }}{% endmemberlink %}<br/>
+					{{ post.posted_by.get_link }}<br/>
 					<span class="postDate">{% if post.posted_at %}{{ post.posted_at|date:"d M y, H:i" }}{% endif %}</span>
 					{% if post.hidden %}
 						{% if moderator %}

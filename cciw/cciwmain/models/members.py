@@ -167,6 +167,14 @@ class Award(models.Model):
         app_label = "cciwmain"
         ordering = ('-year', 'name',)
 
+
+class PersonalAwardManager(models.Manager):
+
+    def get_query_set(self, *args, **kwargs):
+        qs = super(PersonalAwardManager, self).get_query_set(*args, **kwargs)
+        return qs.select_related('member')
+
+
 class PersonalAward(models.Model):
     reason = models.CharField("Reason for award", max_length=200)
     date_awarded = models.DateField("Date awarded", null=True, blank=True)
@@ -176,6 +184,8 @@ class PersonalAward(models.Model):
     member = models.ForeignKey(Member,
         verbose_name="member",
         related_name="personal_awards")
+
+    objects = PersonalAwardManager()
 
     def __unicode__(self):
         return "%s to %s" % (self.award.name, self.member.user_name)

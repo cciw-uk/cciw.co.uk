@@ -16,7 +16,7 @@
 		<tr>
 			<td class="postFrom">
 				<span class="postMemberIcon">{% membericon %}{{ message.from_member_id }}{% endmembericon %}</span>
-				{% memberlink %}{{ message.from_member_id }}{% endmemberlink %}<br/>
+				{{ message.from_member.get_link }}<br/>
 				<span class="postDate">{% if message.time %}{{ message.time|date:"d M y, H:i" }}{% endif %}</span><br/>
 				<a href="/members/{{ message.from_member_id }}/messages/" title="Reply to {{ messge.from_member_id }}">&raquo; reply</a>
 			</td>
