@@ -643,3 +643,11 @@ def all_topics(request):
     return object_list(request, topics,
         extra_context=context, template_name='cciw/forums/topics.html',
         paginate_by=settings.FORUM_PAGINATE_TOPICS_BY)
+
+def news(request):
+    return topicindex(request,
+                      title='News',
+                      template_name='cciw/forums/newsindex.html',
+                      paginate_by=settings.FORUM_PAGINATE_NEWS_BY,
+                      default_order= ('-created_at',)
+                      )

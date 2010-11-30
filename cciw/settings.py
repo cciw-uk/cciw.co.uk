@@ -212,6 +212,7 @@ CAMP_FORUM_RE = r'camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/'
 FORUM_PAGINATE_POSTS_BY = 20
 FORUM_PAGINATE_PHOTOS_BY = 20
 FORUM_PAGINATE_TOPICS_BY = 30
+FORUM_PAGINATE_NEWS_BY = 10
 ESV_BROWSE_URL = "http://www.gnpcb.org/esv/search/"
 FEEDBACK_EMAIL_TO = "feedback@cciw.co.uk"
 BOOKINGFORMDIR = "downloads"

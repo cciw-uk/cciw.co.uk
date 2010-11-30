@@ -61,12 +61,7 @@ patterns('cciw.cciwmain.views',
     (r'^camps/(?P<year>.*)/(?P<galleryname>.*)/photos/(?P<photonumber>\d+)/$', 'camps.oldcampphoto'),
 
     # News
-    (r'^news/$', 'forums.topicindex',
-        {'title': 'News',
-        'template_name': 'cciw/forums/newsindex.html',
-        'paginate_by' : 6,
-        'default_order': ('-created_at',)},
-     'cciwmain.site-news-index'),
+    url(r'^news/$', 'forums.news', name= 'cciwmain.site-news-index'),
     (r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'},
      'cciwmain.site-news-detail'),
 
