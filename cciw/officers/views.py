@@ -262,7 +262,7 @@ def _thisyears_camp_for_leader(user):
 def manage_applications(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     context = template.RequestContext(request)
-    context['finished_applications'] =  camp.application_set.filter(finished=True)
+    context['finished_applications'] =  camp.application_set.filter(finished=True).select_related('officer', 'camp')
     context['camp'] = camp
 
     return render_to_response('cciw/officers/manage_applications.html',
