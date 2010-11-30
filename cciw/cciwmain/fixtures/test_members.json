@@ -1,8 +1,9 @@
 [
     {
-        "pk": "test_member_1", 
+        "pk": 1,
         "model": "cciwmain.member", 
         "fields": {
+            "user_name": "test_member_1",
             "dummy_member": false, 
             "message_option": 1, 
             "icon": "", 
@@ -27,9 +28,10 @@
         }
     }, 
     {
-        "pk": "test_poll_creator_1", 
+        "pk": 2,
         "model": "cciwmain.member", 
         "fields": {
+            "user_name": "test_poll_creator_1",
             "dummy_member": false, 
             "message_option": 1, 
             "icon": "", 
