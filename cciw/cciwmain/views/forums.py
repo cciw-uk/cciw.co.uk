@@ -62,7 +62,7 @@ def topicindex(request, title=None, extra_context=None, forum=None,
     forum = _get_forum_or_404(request.path, '')
 
     ### TOPICS ###
-    topics = forum.topics.all().select_related('forum')
+    topics = forum.topics.all().select_related('forum', 'news_item')
 
     ### FEED ###
     resp = feeds.handle_feed_request(request, feeds.forum_topic_feed(forum), query_set=topics)
