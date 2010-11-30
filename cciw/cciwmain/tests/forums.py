@@ -18,14 +18,19 @@ ADD_POLL_URL =  reverse("cciwmain.camps.add_poll",
                         kwargs=dict(year=FORUM_1_YEAR, number=FORUM_1_CAMP_NUMBER))
 
 
-class ForumPage(TestCase):
+class TopicIndexPage(TestCase):
+    """
+    Tests for the topicindex view (i.e. the view that displays a Forum).
+    """
 
     fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
 
     def setUp(self):
+        super(TopicIndexPage, self).setUp()
         self.client = CciwClient()
         self.factory = RequestFactory()
         self.forum = Forum.objects.get(id=1)
+        init_query_caches()
 
     def test_get(self):
         response = self.client.get(self.forum.get_absolute_url())
@@ -64,9 +69,11 @@ class TopicPage(TestCase):
     fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
 
     def setUp(self):
+        super(TopicPage, self).setUp()
         self.client = CciwClient()
         self.factory = RequestFactory()
         self.topic = Topic.objects.get(id=1)
+        init_query_caches()
 
     def path(self):
         return self.topic.get_absolute_url()
@@ -114,9 +121,11 @@ class PhotoPage(TestCase):
     fixtures = ['basic.json', 'test_members.json', 'basic_photo.json']
 
     def setUp(self):
+        super(PhotoPage, self).setUp()
         self.client = CciwClient()
         self.factory = RequestFactory()
         self.photo = Photo.objects.get(id=1)
+        init_query_caches()
 
     def path(self):
         return self.photo.get_absolute_url()
@@ -163,6 +172,7 @@ class CreatePollPage(TestCase):
     fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
 
     def setUp(self):
+        super(CreatePollPage, self).setUp()
         self.client = CciwClient()
 
     def _poll_data_1(self):
