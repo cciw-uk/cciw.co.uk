@@ -6,7 +6,7 @@ from django.contrib.sessions.backends.file import SessionStore
 from django.test import TestCase
 from django.test.client import RequestFactory
 from cciw.cciwmain.models import Topic, Member, Poll, Forum, Post, Photo, Gallery
-from cciw.cciwmain.tests.utils import init_query_caches
+from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
 from cciw.cciwmain.views import forums
 from django.core.urlresolvers import reverse
 from datetime import datetime
@@ -60,7 +60,7 @@ class TopicIndexPage(TestCase):
 
         request = self.factory.get(self.forum.get_absolute_url(), {'format':'atom'})
         request.session = SessionStore()
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(FuzzyInt(1, 3)):
             forums.topicindex(request, title="Title", forum=self.forum)
 
 
