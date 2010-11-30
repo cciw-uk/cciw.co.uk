@@ -17,6 +17,7 @@ import cciw.cciwmain.decorators
 
 from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_twill_url
 from cciw.cciwmain.tests.mailhelpers import read_email_url
+from cciw.cciwmain.tests.utils import init_query_caches
 
 import datetime
 import os
@@ -282,7 +283,9 @@ class MemberLists(TestCase):
     fixtures = ['basic.json','test_members.json']
 
     def setUp(self):
+        super(MemberLists, self).setUp()
         self.factory = RequestFactory()
+        init_query_caches()
 
     def test_index(self):
         resp = self.client.get(reverse('cciwmain.members.index'))
@@ -310,7 +313,7 @@ class MemberLists(TestCase):
 
 
         request = self.factory.get(reverse('cciwmain.members.index'), {'format':'atom'})
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             index(request)
 
 

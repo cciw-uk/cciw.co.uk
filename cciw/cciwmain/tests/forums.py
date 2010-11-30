@@ -60,7 +60,7 @@ class TopicIndexPage(TestCase):
 
         request = self.factory.get(self.forum.get_absolute_url(), {'format':'atom'})
         request.session = SessionStore()
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
             forums.topicindex(request, title="Title", forum=self.forum)
 
 
@@ -207,7 +207,7 @@ class PhotoPage(TestCase):
         request = self.factory.get(self.photo.get_absolute_url(), {'format':'atom'})
         request.session = SessionStore()
         request.user = AnonymousUser()
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             forums.photo(request, self.photo, {}, [''])
 
 
