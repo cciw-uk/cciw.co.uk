@@ -54,12 +54,14 @@ class NewsItem(models.Model):
 
     @staticmethod
     def create_item(member, subject, short_item):
-        """Create a news item with the correct defaults for a member."""
-        return NewsItem(created_by=member,
-                        created_at=datetime.now(),
-                        summary=short_item,
-                        full_item="",
-                        subject=subject)
+        """
+        Creates a news item with the correct defaults for a member.
+        """
+        return NewsItem.objects.create(created_by=member,
+                                       created_at=datetime.now(),
+                                       summary=short_item,
+                                       full_item="",
+                                       subject=subject)
 
     class Meta:
         app_label = "cciwmain"
@@ -122,15 +124,21 @@ class Topic(models.Model):
         return mark_safe(u'<a href="%s">%s</a>' % (self.get_absolute_url(), escape(self.subject)))
 
     @staticmethod
-    def create_topic(member, subject, forum):
-        """Create a topic with the correct defaults for a member"""
-        return Topic(started_by=member,
-                     subject=subject,
-                     forum=forum,
-                     created_at=datetime.now(),
-                     hidden=(member.moderated == Member.MODERATE_ALL),
-                     needs_approval=(member.moderated == Member.MODERATE_ALL),
-                     open=True)
+    def create_topic(member, subject, forum, commit=True):
+        """
+        Creates a topic with the correct defaults for a member.
+        It will be already saved unless 'commit' is False
+        """
+        topic = Topic(started_by=member,
+                      subject=subject,
+                      forum=forum,
+                      created_at=datetime.now(),
+                      hidden=(member.moderated == Member.MODERATE_ALL),
+                      needs_approval=(member.moderated == Member.MODERATE_ALL),
+                      open=True)
+        if commit:
+            topic.save()
+        return topic
 
     class Meta:
         app_label = "cciwmain"
@@ -197,16 +205,19 @@ class Photo(models.Model):
 
     @staticmethod
     def create_default_photo(filename, gallery):
-        Photo.objects.create(
-                    created_at=datetime.now(),
-                    open=True,
-                    hidden=False,
-                    filename=filename,
-                    description="",
-                    gallery=gallery,
-                    checked_by=None,
-                    approved=None,
-                    needs_approval=False
+        """
+        Creates a (saved) photo with default attributes
+        """
+        return Photo.objects.create(
+            created_at=datetime.now(),
+            open=True,
+            hidden=False,
+            filename=filename,
+            description="",
+            gallery=gallery,
+            checked_by=None,
+            approved=None,
+            needs_approval=False
         )
 
     class Meta:
@@ -279,8 +290,8 @@ class Post(models.Model):
         if changed:
             parent.save()
 
-    def save(self):
-        super(Post, self).save()
+    def save(self, **kwargs):
+        super(Post, self).save(**kwargs)
         # Update parent topic/photo
 
         if self.topic_id is not None:
@@ -336,17 +347,17 @@ class Post(models.Model):
 
     @staticmethod
     def create_post(member, message, topic=None, photo=None):
-        """Creates a post with the correct defaults for a member."""
-        post = Post(posted_by=member,
-                    subject='',
-                    message=message,
-                    topic=topic,
-                    photo=photo,
-                    hidden=(member.moderated == Member.MODERATE_ALL),
-                    needs_approval=(member.moderated == Member.MODERATE_ALL),
-                    posted_at=datetime.now())
-        return post
-
+        """
+        Creates a (saved) post with the correct defaults for a member.
+        """
+        return Post.objects.create(posted_by=member,
+                                   subject='',
+                                   message=message,
+                                   topic=topic,
+                                   photo=photo,
+                                   hidden=(member.moderated == Member.MODERATE_ALL),
+                                   needs_approval=(member.moderated == Member.MODERATE_ALL),
+                                   posted_at=datetime.now())
 
     class Meta:
         app_label = "cciwmain"

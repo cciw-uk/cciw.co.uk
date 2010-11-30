@@ -46,9 +46,7 @@ class ForumPage(TestCase):
         # Make sure we have lots of topics
         for i in xrange(100):
             topic = Topic.create_topic(member, "Topic %s" % i, self.forum)
-            topic.save()
             post = Post.create_post(member, "Message %s" % i, topic, None)
-            post.save()
 
         request = self.factory.get(self.forum.get_absolute_url())
         request.session = SessionStore()
@@ -95,7 +93,6 @@ class TopicPage(TestCase):
         # Make sure we have lots of posts
         for i in xrange(100):
             post = Post.create_post(member, "Message %s" % i, topic=self.topic)
-            post.save()
 
         init_query_caches()
 
@@ -147,7 +144,6 @@ class PhotoPage(TestCase):
         # Make sure we have lots of posts
         for i in xrange(100):
             post = Post.create_post(member, "Message %s" % i, photo=self.photo)
-            post.save()
 
         request = self.factory.get(self.photo.get_absolute_url())
         request.session = SessionStore()

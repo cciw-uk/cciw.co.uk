@@ -150,9 +150,7 @@ def add_topic(request, breadcrumb_extra=None):
         if not errors:
             if request.POST.has_key('post'):
                 topic = Topic.create_topic(cur_member, subject, forum)
-                topic.save()
                 post = Post.create_post(cur_member, msg_text, topic, None)
-                post.save()
                 return HttpResponseRedirect('../%s/' % topic.id)
             else:
                 context['preview'] = mark_safe(bbcode.bb2xhtml(msg_text))
@@ -201,8 +199,7 @@ def add_news(request, breadcrumb_extra=None):
         if not errors:
             if request.POST.has_key('post'):
                 newsitem = NewsItem.create_item(cur_member, subject, msg_text)
-                newsitem.save()
-                topic = Topic.create_topic(cur_member, subject, forum)
+                topic = Topic.create_topic(cur_member, subject, forum, commit=False)
                 topic.news_item_id = newsitem.id
                 topic.save()
                 return HttpResponseRedirect('../%s/' % topic.id)
@@ -363,7 +360,8 @@ class EditPoll(DefaultMetaData, AjaxyFormView, ModelFormMixin):
 
         if self.object is None:
             # new poll, create a topic to go with it
-            topic = Topic.create_topic(self.current_member, new_poll.title, self.forum)
+            topic = Topic.create_topic(self.current_member, new_poll.title, self.forum,
+                                       commit=False)
             topic.poll_id = new_poll.id
             topic.save()
         else:
@@ -420,7 +418,6 @@ def process_post(request, topic, photo, context):
     # Post
     if not errors and request.POST.has_key('post'):
         post = Post.create_post(cur_member, msg_text, topic, photo)
-        post.save()
         return HttpResponseRedirect(post.get_forum_url())
 
 def process_vote(request, topic, context):
