@@ -5,7 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.backends.file import SessionStore
 from django.test import TestCase
 from django.test.client import RequestFactory
-from cciw.cciwmain.models import Topic, Member, Poll, Forum, Post, Photo
+from cciw.cciwmain.models import Topic, Member, Poll, Forum, Post, Photo, Gallery
 from cciw.cciwmain.tests.utils import init_query_caches
 from cciw.cciwmain.views import forums
 from django.core.urlresolvers import reverse
@@ -114,6 +114,50 @@ class TopicPage(TestCase):
         request.user = AnonymousUser()
         with self.assertNumQueries(2):
             forums.topic(request, title_start="Title", topicid=self.topic.id)
+
+
+class PhotoIndexPage(TestCase):
+    """
+    Tests for the photoindex view (i.e. the view that displays a Gallery).
+    """
+
+    fixtures = ['basic.json', 'test_members.json', 'basic_photo.json']
+
+    def setUp(self):
+        super(PhotoIndexPage, self).setUp()
+        self.client = CciwClient()
+        self.factory = RequestFactory()
+        self.gallery = Gallery.objects.get(id=1)
+        init_query_caches()
+
+    def test_get(self):
+        response = self.client.get(self.gallery.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response['Content-Type'].startswith('text/html'))
+
+    def test_atom(self):
+        response = self.client.get(self.gallery.get_absolute_url(), {'format':'atom'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/atom+xml')
+
+    def test_query_count(self):
+        """
+        Test the number of queries for photoindex (HTML and Atom)
+        """
+        member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
+        # Make sure we have lots of topics
+        for i in xrange(100):
+            photo = Photo.create_default_photo("2000-1-myphoto-%s" % i, self.gallery)
+
+        request = self.factory.get(self.gallery.get_absolute_url())
+        request.session = SessionStore()
+        with self.assertNumQueries(4):
+            forums.photoindex(request, self.gallery, {'title':'test'}, [''])
+
+        request = self.factory.get(self.gallery.get_absolute_url(), {'format':'atom'})
+        request.session = SessionStore()
+        with self.assertNumQueries(1):
+            forums.photoindex(request, self.gallery, {'title':'test'}, [''])
 
 
 class PhotoPage(TestCase):
