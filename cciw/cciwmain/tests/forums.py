@@ -415,7 +415,7 @@ class CreatePollPage(TestCase):
         self.client.logout()
 
         # Get the poll just created.
-        p = Poll.objects.get(created_by=TEST_POLL_CREATOR_USERNAME)
+        p = Poll.objects.get(created_by__user_name=TEST_POLL_CREATOR_USERNAME)
 
         self.client.member_login(TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD)
         url = reverse("cciwmain.camps.edit_poll",
@@ -431,7 +431,7 @@ class CreatePollPage(TestCase):
         self.client.logout()
 
         # Get the poll just created.
-        p = Poll.objects.get(created_by=TEST_POLL_CREATOR_USERNAME)
+        p = Poll.objects.get(created_by__user_name=TEST_POLL_CREATOR_USERNAME)
 
         self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)
         url = reverse("cciwmain.camps.edit_poll",

@@ -2,6 +2,7 @@
 {% load view_extras %}
 {% load standardpage %}
 {% load forums %}
+{% load url from future %}
 {% block content %}
 {% if object_list %}
 	<form action="" method="post" >{% csrf_token %}
@@ -18,7 +19,7 @@
 				<span class="postMemberIcon">{{ message.from_member.get_icon }}</span>
 				{{ message.from_member.get_link }}<br/>
 				<span class="postDate">{% if message.time %}{{ message.time|date:"d M y, H:i" }}{% endif %}</span><br/>
-				<a href="/members/{{ message.from_member_id }}/messages/" title="Reply to {{ messge.from_member_id }}">&raquo; reply</a>
+				<a href="{% url 'cciwmain.members.send_message' user_name=message.from_member.user_name %}" title="Reply to {{ message.from_member.user_name }}">&raquo; reply</a>
 			</td>
 			<td class="postMessage">{{ message.text|bb2html }}</td>
 			<td style="text-align: center;"><input type="checkbox" name="msg_{{ message.id }}" /></td>

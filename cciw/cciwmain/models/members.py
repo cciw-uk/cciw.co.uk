@@ -22,6 +22,7 @@ class Permission(models.Model):
         app_label = "cciwmain"
 
 class UserSpecificMembers(models.Manager):
+
     def get_query_set(self):
         user = threadlocals.get_current_user()
         if threadlocals.is_web_request() and \
@@ -30,6 +31,9 @@ class UserSpecificMembers(models.Manager):
             return super(UserSpecificMembers, self).get_query_set().filter(hidden=False)
         else:
             return super(UserSpecificMembers, self).get_query_set()
+
+    def get_by_natural_key(self, user_name):
+        return self.get(user_name=user_name)
 
 class Member(models.Model):
     """Represents a user of the CCIW message boards."""
@@ -86,6 +90,9 @@ class Member(models.Model):
     all_objects = models.Manager()
 
     def __unicode__(self):
+        return self.user_name
+
+    def natural_key(self):
         return self.user_name
 
     def get_absolute_url(self):

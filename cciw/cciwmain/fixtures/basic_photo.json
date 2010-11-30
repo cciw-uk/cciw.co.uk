@@ -20,7 +20,7 @@
             "approved": false,
             "needs_approval": false,
             "last_post_at": "2006-09-03 12:16:57",
-            "last_post_by": "test_member_1",
+            "last_post_by": ["test_member_1"],
             "post_count": 1
         }
     },
@@ -30,7 +30,7 @@
         "fields": {
             "hidden": false,
             "needs_approval": false,
-            "posted_by": "test_member_1",
+            "posted_by": ["test_member_1"],
             "approved": null,
             "topic": null,
             "checked_by": null,

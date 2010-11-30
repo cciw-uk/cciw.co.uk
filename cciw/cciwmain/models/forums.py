@@ -78,7 +78,7 @@ class UserSpecificTopics(models.Manager):
             member = threadlocals.get_current_member()
             if member is not None:
                 # include hidden topics by that user
-                return (queryset.filter(started_by=member.user_name) | queryset.filter(hidden=False))
+                return (queryset.filter(started_by=member) | queryset.filter(hidden=False))
             else:
                 return queryset.filter(hidden=False)
         else:
@@ -237,7 +237,7 @@ class UserSpecificPosts(models.Manager):
             member = threadlocals.get_current_member()
             if member is not None:
                 # include hidden posts by that user
-                return (queryset.filter(posted_by=member.user_name) | queryset.filter(hidden=False))
+                return (queryset.filter(posted_by=member) | queryset.filter(hidden=False))
             else:
                 return queryset.filter(hidden=False)
         else:

@@ -44,9 +44,9 @@ class Poll(models.Model):
         queries = [] # queries representing users relevant votes
         for po in self.poll_options.all():
             if self.rules == Poll.X_VOTES_PER_USER:
-                queries.append(po.votes.filter(member=member.user_name))
+                queries.append(po.votes.filter(member=member.pk))
             elif self.rules == Poll.X_VOTES_PER_USER_PER_DAY:
-                queries.append(po.votes.filter(member=member.user_name,
+                queries.append(po.votes.filter(member=member.pk,
                                                 date__gte=datetime.now() - timedelta(1)))
         # combine them all and do an SQL count.
         if len(queries) == 0:
