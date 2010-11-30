@@ -29,7 +29,7 @@
 
 		{% for member in object_list %}
 		<tr>
-			<td>{% membericon %}{{ member.user_name }}{% endmembericon %}</td>
+			<td>{{ member.get_icon }}</td>
 			<td>{{ member.get_link }}{% if member.hidden %}<br/>HIDDEN{% endif %}{% if member.banned %}<br/>BANNED{% endif %}</td>
 			<td>{{ member.real_name }}</td>
 			<td>{{ member.comments|bb2html }}</td>

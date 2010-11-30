@@ -100,6 +100,9 @@ class Member(models.Model):
         else:
             return common.get_member_link(self.user_name)
 
+    def get_icon(self):
+        return common.get_member_icon(self.user_name)
+
     def check_password(self, plaintextPass):
         """Checks a password is correct"""
         import crypt

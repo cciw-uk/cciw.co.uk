@@ -1,7 +1,7 @@
 from django.utils.http import urlquote, urlencode
 from django import template
 from cciw.cciwmain.models import HtmlChunk, Member, Post, Topic, Photo
-from cciw.cciwmain.common import standard_subs, get_member_link, get_member_icon, get_current_domain
+from cciw.cciwmain.common import standard_subs, get_current_domain
 from cciw.cciwmain.utils import obfuscate_email
 from cciw.middleware.threadlocals import get_current_member
 from django.utils.html import escape
@@ -21,22 +21,6 @@ def do_email(parser, token):
     nodelist = parser.parse(('endemail',))
     parser.delete_first_token()
     return EmailNode(nodelist)
-
-class MemberIconNode(template.Node):
-    def __init__(self, nodelist):
-        self.nodelist = nodelist
-    def render(self, context):
-        user_name = self.nodelist.render(context)
-        return get_member_icon(user_name)
-
-def do_member_icon(parser, token):
-    """
-    Creates an <img> tag for a member icon, using the member name between the
-    'membericon' and 'endmembericon' tags.
-    """
-    nodelist = parser.parse(('endmembericon',))
-    parser.delete_first_token()
-    return MemberIconNode(nodelist)
 
 class RenderHtmlChunk(template.Node):
     def __init__(self, chunk_name):
@@ -96,7 +80,6 @@ register = template.Library()
 register.filter(standard_subs)
 register.filter(obfuscate_email)
 register.tag('email', do_email)
-register.tag('membericon', do_member_icon)
 register.tag('htmlchunk', do_htmlchunk)
 register.tag('atomfeedlink', AtomFeedLink)
 register.tag('atomfeedlinkvisible', AtomFeedLinkVisible)

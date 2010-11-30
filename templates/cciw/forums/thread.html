@@ -27,7 +27,7 @@
 			{% for post in object_list %}
 			<tr>
 				<td class="postFrom">
-					<span class="postMemberIcon">{% membericon %}{{ post.posted_by_id }}{% endmembericon %}</span>
+					<span class="postMemberIcon">{{ post.posted_by.get_icon }}</span>
 					{{ post.posted_by.get_link }}<br/>
 					<span class="postDate">{% if post.posted_at %}{{ post.posted_at|date:"d M y, H:i" }}{% endif %}</span>
 					{% if post.hidden %}

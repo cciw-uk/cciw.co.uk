@@ -49,7 +49,7 @@
 			</tr>
 			<tr>
 				<th scope="row">Icon</th>
-				<td>{% membericon %}{{ member.user_name }}{% endmembericon %}</td>
+				<td>{{ member.get_icon }}</td>
 			</tr>
 			{% if member.show_email %}
 			<tr>
