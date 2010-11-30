@@ -100,7 +100,7 @@ class AllTopicsPage(TestCase):
 
     def test_query_count(self):
         """
-        Test the number of queries for topic index (HTML and Atom)
+        Test the number of queries (HTML and Atom)
         """
         member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         # Make sure we have lots of topics
@@ -276,13 +276,14 @@ class AllPostsPage(TestCase):
     Tests for the recent posts view
     """
 
-    fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
+    fixtures = ['basic.json', 'test_members.json', 'basic_topic.json', 'basic_photo.json']
 
     def setUp(self):
         super(AllPostsPage, self).setUp()
         self.client = CciwClient()
         self.factory = RequestFactory()
         self.forum = Forum.objects.get(id=1)
+        self.gallery = Gallery.objects.get(id=1)
         init_query_caches()
 
     def path(self):
@@ -299,9 +300,9 @@ class AllPostsPage(TestCase):
         self.assertContains(response, "Jill &amp;amp; Jane")
         self.assertEqual(response['Content-Type'], 'application/atom+xml')
 
-    def test_query_count(self):
+    def test_query_count_topics(self):
         """
-        Test the number of queries for topic index (HTML and Atom)
+        Test the number of queries (HTML and Atom) when there are lots of topics
         """
         member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         # Make sure we have lots of topics
@@ -309,7 +310,32 @@ class AllPostsPage(TestCase):
         assert settings.FORUM_PAGINATE_POSTS_BY < num
         for i in xrange(num):
             topic = Topic.create_topic(member, "Topic %s" % i, self.forum)
-            post = Post.create_post(member, "Message %s" % i, topic, None)
+            post = Post.create_post(member, "Message %s" % i, topic=topic)
+
+        request = self.factory.get(self.path())
+        request.session = SessionStore()
+        with self.assertNumQueries(5):
+            resp = forums.all_posts(request)
+            expected_count = settings.FORUM_PAGINATE_POSTS_BY
+            self.assertContains(resp, "<a title=\"Information about user",
+                                count=FuzzyInt(expected_count, expected_count + 2))
+
+        request = self.factory.get(self.path(), {'format':'atom'})
+        request.session = SessionStore()
+        with self.assertNumQueries(2):
+            forums.all_posts(request)
+
+    def test_query_count_photos(self):
+        """
+        Test the number of queries (HTML and Atom) when there are lots of photos
+        """
+        member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
+        # Make sure we have lots of topics
+        num = 100
+        assert settings.FORUM_PAGINATE_POSTS_BY < num
+        for i in xrange(num):
+            photo = Photo.create_default_photo("2000-1-a-photo-%s" % i, self.gallery)
+            post = Post.create_post(member, "Message %s" % i, photo=photo)
 
         request = self.factory.get(self.path())
         request.session = SessionStore()

@@ -609,7 +609,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
 
 def all_posts(request):
     context = standard_extra_context(title=u"Recent posts")
-    posts = Post.objects.exclude(posted_at__isnull=True).order_by('-posted_at').select_related('topic', 'topic__forum')
+    posts = Post.objects.exclude(posted_at__isnull=True).order_by('-posted_at').select_related('topic__forum', 'photo__gallery')
 
     resp = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
     if resp: return resp
