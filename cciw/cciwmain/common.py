@@ -3,6 +3,7 @@ Utility functions and base classes that are common to all views etc.
 """
 from cciw.cciwmain.utils import python_to_json
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.utils.safestring import mark_safe
@@ -274,13 +275,8 @@ def get_member_icon(user_name):
             (settings.MEDIA_URL, settings.MEMBER_ICON_PATH, user_name))
 
 
-_current_domain = None
 def get_current_domain():
-    global _current_domain
-    if _current_domain is None:
-        from django.contrib.sites.models import Site
-        _current_domain = Site.objects.get_current().domain
-    return _current_domain
+    return Site.objects.get_current().domain
 
 
 from cciw.cciwmain import feeds
