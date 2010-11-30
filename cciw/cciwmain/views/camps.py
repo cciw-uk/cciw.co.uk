@@ -37,7 +37,7 @@ def index(request, year=None):
                                 .order_by('-year', 'number')
         if len(camps) == 0:
             raise Http404
-    c['camps'] = camps;
+    c['camps'] = camps
 
     return render_to_response('cciw/camps/index.html',
             context_instance=RequestContext(request, c))
