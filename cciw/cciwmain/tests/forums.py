@@ -1,6 +1,7 @@
 from __future__ import with_statement
 from cciw.cciwmain.tests.client import CciwClient
 from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD, TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.backends.file import SessionStore
 from django.test import TestCase
@@ -49,19 +50,78 @@ class TopicIndexPage(TestCase):
         """
         member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         # Make sure we have lots of topics
-        for i in xrange(100):
+        num = 100
+        assert num > settings.FORUM_PAGINATE_TOPICS_BY
+        for i in xrange(num):
             topic = Topic.create_topic(member, "Topic %s" % i, self.forum)
             post = Post.create_post(member, "Message %s" % i, topic, None)
 
         request = self.factory.get(self.forum.get_absolute_url())
         request.session = SessionStore()
         with self.assertNumQueries(6):
-            forums.topicindex(request, title="Title", forum=self.forum)
+            resp = forums.topicindex(request, title="Title", forum=self.forum)
+            expected_count = settings.FORUM_PAGINATE_TOPICS_BY * 2
+            self.assertContains(resp, "<a title=\"Information about",
+                                count=FuzzyInt(expected_count, expected_count + 2))
 
         request = self.factory.get(self.forum.get_absolute_url(), {'format':'atom'})
         request.session = SessionStore()
         with self.assertNumQueries(FuzzyInt(1, 3)):
             forums.topicindex(request, title="Title", forum=self.forum)
+
+
+class AllTopicsPage(TestCase):
+    """
+    Tests for the recent topics page.
+    """
+
+    fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
+
+    def setUp(self):
+        super(AllTopicsPage, self).setUp()
+        self.client = CciwClient()
+        self.factory = RequestFactory()
+        self.forum = Forum.objects.get(id=1)
+        init_query_caches()
+
+    def path(self):
+        return reverse("cciw.cciwmain.views.forums.all_topics")
+
+    def test_get(self):
+        response = self.client.get(self.path())
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Jill &amp; Jane")
+
+    def test_atom(self):
+        response = self.client.get(self.path(), {'format':'atom'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Jill &amp; Jane")
+        self.assertEqual(response['Content-Type'], 'application/atom+xml')
+
+    def test_query_count(self):
+        """
+        Test the number of queries for topic index (HTML and Atom)
+        """
+        member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
+        # Make sure we have lots of topics
+        num = 100
+        assert settings.FORUM_PAGINATE_TOPICS_BY < num
+        for i in xrange(num):
+            topic = Topic.create_topic(member, "Topic %s" % i, self.forum)
+            post = Post.create_post(member, "Message %s" % i, topic, None)
+
+        request = self.factory.get(self.path())
+        request.session = SessionStore()
+        with self.assertNumQueries(5):
+            resp = forums.all_topics(request)
+            expected_count = settings.FORUM_PAGINATE_TOPICS_BY
+            self.assertContains(resp, "<a title=\"Information about user",
+                                count=FuzzyInt(expected_count, expected_count + 2))
+
+        request = self.factory.get(self.path(), {'format':'atom'})
+        request.session = SessionStore()
+        with self.assertNumQueries(2):
+            forums.all_topics(request)
 
 
 class TopicPage(TestCase):
@@ -209,6 +269,60 @@ class PhotoPage(TestCase):
         request.user = AnonymousUser()
         with self.assertNumQueries(1):
             forums.photo(request, self.photo, {}, [''])
+
+
+class AllPostsPage(TestCase):
+    """
+    Tests for the recent posts view
+    """
+
+    fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
+
+    def setUp(self):
+        super(AllPostsPage, self).setUp()
+        self.client = CciwClient()
+        self.factory = RequestFactory()
+        self.forum = Forum.objects.get(id=1)
+        init_query_caches()
+
+    def path(self):
+        return reverse("cciw.cciwmain.views.forums.all_posts")
+
+    def test_get(self):
+        response = self.client.get(self.path())
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Jill &amp; Jane")
+
+    def test_atom(self):
+        response = self.client.get(self.path(), {'format':'atom'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Jill &amp;amp; Jane")
+        self.assertEqual(response['Content-Type'], 'application/atom+xml')
+
+    def test_query_count(self):
+        """
+        Test the number of queries for topic index (HTML and Atom)
+        """
+        member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
+        # Make sure we have lots of topics
+        num = 100
+        assert settings.FORUM_PAGINATE_POSTS_BY < num
+        for i in xrange(num):
+            topic = Topic.create_topic(member, "Topic %s" % i, self.forum)
+            post = Post.create_post(member, "Message %s" % i, topic, None)
+
+        request = self.factory.get(self.path())
+        request.session = SessionStore()
+        with self.assertNumQueries(5):
+            resp = forums.all_posts(request)
+            expected_count = settings.FORUM_PAGINATE_POSTS_BY
+            self.assertContains(resp, "<a title=\"Information about user",
+                                count=FuzzyInt(expected_count, expected_count + 2))
+
+        request = self.factory.get(self.path(), {'format':'atom'})
+        request.session = SessionStore()
+        with self.assertNumQueries(2):
+            forums.all_posts(request)
 
 
 class CreatePollPage(TestCase):

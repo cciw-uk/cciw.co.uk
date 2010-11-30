@@ -609,7 +609,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
 
 def all_posts(request):
     context = standard_extra_context(title=u"Recent posts")
-    posts = Post.objects.exclude(posted_at__isnull=True).order_by('-posted_at')
+    posts = Post.objects.exclude(posted_at__isnull=True).order_by('-posted_at').select_related('topic', 'topic__forum')
 
     resp = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
     if resp: return resp
@@ -633,7 +633,7 @@ def post(request, id):
 
 def all_topics(request):
     context = standard_extra_context(title=u"Recent new topics")
-    topics = Topic.objects.exclude(created_at__isnull=True).order_by('-created_at')
+    topics = Topic.objects.exclude(created_at__isnull=True).order_by('-created_at').select_related('forum')
 
     resp = feeds.handle_feed_request(request, feeds.TopicFeed, query_set=topics)
     if resp: return resp
@@ -642,4 +642,4 @@ def all_topics(request):
 
     return object_list(request, topics,
         extra_context=context, template_name='cciw/forums/topics.html',
-        paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
+        paginate_by=settings.FORUM_PAGINATE_TOPICS_BY)
