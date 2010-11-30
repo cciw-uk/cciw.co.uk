@@ -6,6 +6,7 @@ from django.contrib.sessions.backends.file import SessionStore
 from django.test import TestCase
 from django.test.client import RequestFactory
 from cciw.cciwmain.models import Topic, Member, Poll, Forum, Post, Photo
+from cciw.cciwmain.tests.utils import init_query_caches
 from cciw.cciwmain.views import forums
 from django.core.urlresolvers import reverse
 from datetime import datetime
@@ -96,11 +97,12 @@ class TopicPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, topic=self.topic)
             post.save()
 
+        init_query_caches()
 
         request = self.factory.get(self.topic.get_absolute_url())
         request.session = SessionStore()
         request.user = AnonymousUser()
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(7):
             forums.topic(request, title_start="Title", topicid=self.topic.id)
 
         request = self.factory.get(self.topic.get_absolute_url(), {'format':'atom'})
