@@ -6,6 +6,7 @@ from django.contrib.sessions.backends.file import SessionStore
 from django.test import TestCase
 from django.test.client import RequestFactory
 from cciw.cciwmain.models import Topic, Member, Poll, Forum, Post
+from cciw.cciwmain.views import forums
 from django.core.urlresolvers import reverse
 from datetime import datetime
 from cciw.cciwmain import decorators
@@ -23,16 +24,15 @@ class ForumPage(TestCase):
     def setUp(self):
         self.client = CciwClient()
         self.factory = RequestFactory()
+        self.forum = Forum.objects.get(id=1)
 
     def test_get(self):
-        forum = Forum.objects.get(id=1)
-        response = self.client.get(forum.get_absolute_url())
+        response = self.client.get(self.forum.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Jill &amp; Jane")
 
     def test_atom(self):
-        forum = Forum.objects.get(id=1)
-        response = self.client.get(forum.get_absolute_url(), {'format':'atom'})
+        response = self.client.get(self.forum.get_absolute_url(), {'format':'atom'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Jill &amp; Jane")
         self.assertEqual(response['Content-Type'], 'application/atom+xml')
@@ -41,30 +41,27 @@ class ForumPage(TestCase):
         """
         Test the number of queries for topic index (HTML and Atom)
         """
-        forum = Forum.objects.get(id=1)
-
         member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         # Make sure we have lots of topics
         for i in xrange(100):
-            topic = Topic.create_topic(member, "Topic %s" % i, forum)
+            topic = Topic.create_topic(member, "Topic %s" % i, self.forum)
             topic.save()
             post = Post.create_post(member, "Message %s" % i, topic, None)
             post.save()
 
-        from cciw.cciwmain.views.forums import topicindex
-
-        request = self.factory.get(forum.get_absolute_url())
+        request = self.factory.get(self.forum.get_absolute_url())
         request.session = SessionStore()
         with self.assertNumQueries(6):
-            topicindex(request, title="Title", forum=forum)
+            forums.topicindex(request, title="Title", forum=self.forum)
 
-        request = self.factory.get(forum.get_absolute_url(), {'format':'atom'})
+        request = self.factory.get(self.forum.get_absolute_url(), {'format':'atom'})
         request.session = SessionStore()
         with self.assertNumQueries(3):
-            topicindex(request, title="Title", forum=forum)
+            forums.topicindex(request, title="Title", forum=self.forum)
 
 
 class TopicPage(TestCase):
+
     fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
 
     def setUp(self):
@@ -98,30 +95,28 @@ class TopicPage(TestCase):
         """
         Test the number of queries for topic page (HTML and Atom)
         """
-        forum = Forum.objects.get(id=1)
-
         member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         # Make sure we have lots of posts
         for i in xrange(100):
-            post = Post.create_post(member, "Message %s" % i, self.topic, None)
+            post = Post.create_post(member, "Message %s" % i, topic=self.topic)
             post.save()
 
-        from cciw.cciwmain.views.forums import topic
 
         request = self.factory.get(self.topic.get_absolute_url())
         request.session = SessionStore()
         request.user = AnonymousUser()
         with self.assertNumQueries(9):
-            topic(request, title_start="Title", topicid=self.topic.id)
+            forums.topic(request, title_start="Title", topicid=self.topic.id)
 
         request = self.factory.get(self.topic.get_absolute_url(), {'format':'atom'})
         request.session = SessionStore()
         request.user = AnonymousUser()
         with self.assertNumQueries(2):
-            topic(request, title_start="Title", topicid=self.topic.id)
+            forums.topic(request, title_start="Title", topicid=self.topic.id)
 
 
 class CreatePollPage(TestCase):
+
     fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
 
     def setUp(self):
