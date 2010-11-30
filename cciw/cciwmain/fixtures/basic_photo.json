@@ -1,0 +1,43 @@
+[
+    {
+        "pk": "1",
+        "model": "cciwmain.gallery",
+        "fields": {
+            "needs_approval": true,
+            "location": "camps/2000/1/photos/"
+        }
+    },
+    {
+        "pk": "1",
+        "model": "cciwmain.photo",
+        "fields": {
+            "created_at": "2006-09-03 12:16:57",
+            "open": true,
+            "hidden": false,
+            "filename": "2000-1-a-nice-photo.jpeg",
+            "gallery": 1,
+            "checked_by": null,
+            "approved": false,
+            "needs_approval": false,
+            "last_post_at": "2006-09-03 12:16:57",
+            "last_post_by": "test_member_1",
+            "post_count": 1
+        }
+    },
+    {
+        "pk": "2",
+        "model": "cciwmain.post",
+        "fields": {
+            "hidden": false,
+            "needs_approval": false,
+            "posted_by": "test_member_1",
+            "approved": null,
+            "topic": null,
+            "checked_by": null,
+            "photo": 1,
+            "message": "A [b]photo message[/b] with <stuff> to be escaped",
+            "posted_at": "2006-09-03 12:16:57",
+            "subject": ""
+        }
+    }
+]

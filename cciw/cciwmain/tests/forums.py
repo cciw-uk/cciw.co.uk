@@ -5,7 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.backends.file import SessionStore
 from django.test import TestCase
 from django.test.client import RequestFactory
-from cciw.cciwmain.models import Topic, Member, Poll, Forum, Post
+from cciw.cciwmain.models import Topic, Member, Poll, Forum, Post, Photo
 from cciw.cciwmain.views import forums
 from django.core.urlresolvers import reverse
 from datetime import datetime
@@ -113,6 +113,56 @@ class TopicPage(TestCase):
         request.user = AnonymousUser()
         with self.assertNumQueries(2):
             forums.topic(request, title_start="Title", topicid=self.topic.id)
+
+
+class PhotoPage(TestCase):
+
+    fixtures = ['basic.json', 'test_members.json', 'basic_photo.json']
+
+    def setUp(self):
+        self.client = CciwClient()
+        self.factory = RequestFactory()
+        self.photo = Photo.objects.get(id=1)
+
+    def path(self):
+        return self.photo.get_absolute_url()
+
+    def test_photo_html(self):
+        response = self.client.get(self.path())
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(response, "A <b>photo message</b> with &lt;stuff&gt; to be escaped")
+        self.assertContains(response, '<a href="/camps/">Forums and photos</a>')
+
+    def test_photo_atom(self):
+        response = self.client.get(self.path(), {'format':'atom'})
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(response, '<title>CCIW - Posts on photo Photo: 2000-1-a-nice-photo.jpeg</title>')
+        self.assertContains(response, 'A &lt;b&gt;photo message&lt;/b&gt; with &amp;lt;stuff&amp;gt; to be escaped')
+        self.assertEqual(response['Content-Type'], 'application/atom+xml')
+
+    def test_query_count(self):
+        """
+        Test the number of queries for photo (HTML and Atom)
+        """
+        member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
+        # Make sure we have lots of posts
+        for i in xrange(100):
+            post = Post.create_post(member, "Message %s" % i, photo=self.photo)
+            post.save()
+
+        request = self.factory.get(self.photo.get_absolute_url())
+        request.session = SessionStore()
+        request.user = AnonymousUser()
+        with self.assertNumQueries(6):
+            forums.photo(request, self.photo, {}, [''])
+
+        request = self.factory.get(self.photo.get_absolute_url(), {'format':'atom'})
+        request.session = SessionStore()
+        request.user = AnonymousUser()
+        with self.assertNumQueries(2):
+            forums.photo(request, self.photo, {}, [''])
 
 
 class CreatePollPage(TestCase):
