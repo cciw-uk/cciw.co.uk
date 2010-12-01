@@ -260,6 +260,36 @@ def _build_static(version):
     run("chmod -R ugo+r %s" % version.static_dir)
 
 
+def _is_south_installed(target):
+    cmd = """psql -d %s -U %s -h localhost -c "select tablename from pg_catalog.pg_tables where tablename='south_migrationhistory';" """ % (target.dbname, target.dbname)
+    out = run(cmd)
+    if 'south_migrationhistory' not in out:
+        return False
+
+    cmd2 = """psql -d %s -U %s -h localhost -c "select migration from south_migrationhistory where migration='0001_initial';" """ % (target.dbname, target.dbname)
+    out2 = run(cmd2)
+    if '0001_initial' not in out2:
+        return False
+
+    return True
+
+def _install_south(target, version):
+    # A one time task to be run after South has been first added
+    with virtualenv(version.venv_dir):
+        with cd(version.project_dir):
+            run_venv("./manage.py syncdb --settings=cciw.settings")
+            run_venv("./manage.py migrate --all 0001 --fake --settings=cciw.settings")
+
+def _update_db(target, version):
+    if not _is_south_installed(target):
+        _install_south(target, version)
+
+    with virtualenv(version.venv_dir):
+        with cd(version.project_dir):
+            run_venv("./manage.py syncdb --settings=cciw.settings")
+            run_venv("./manage.py migrate --all --settings=cciw.settings")
+
+
 def _deploy(target):
     _prepare_deploy()
     label = datetime.now().strftime("%Y-%m-%d_%H.%M.%S")
@@ -272,21 +302,14 @@ def _deploy(target):
     _build_static(version)
 
     _stop_apache(target)
-    # TODO
-    # - do db migrations
-    # - if unsuccessful
-    #    - rollback db migrations
-    #      - if unsuccessful, restore from db_backup_name
+
+    # Ideally, we rollback if unsuccessful.
+    # In practice, this may be impossible for some migrations,
+    # and we are better off restoring from the backup db.
+    _update_db(target, version)
     _update_symlink(target, version)
     _start_apache(target)
 
-
-def _install_south(target):
-    # A one time task to be run after South has been first added
-    with virtualenv(target.current_version.venv_dir):
-        with cd(target.current_version.project_dir):
-            run_venv("./manage.py syncdb --settings=cciw.settings")
-            run_venv("./manage.py migrate --all 0001 --fake --settings=cciw.settings")
 
 
 def deploy_staging():
@@ -328,13 +351,6 @@ def restart_apache_production():
 def restart_apache_staging():
     _restart_apache(STAGING)
 
-
-def install_south_staging():
-    _install_south(STAGING)
-
-
-def install_south_production():
-    _install_south(PRODUCTION)
 
 
 # TODO:
