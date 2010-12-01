@@ -66,7 +66,7 @@ INSTALLED_APPS = (
 if DEBUG:
     INSTALLED_APPS += (
         'django.contrib.admindocs',
-        'lukeplant_me_uk.django.validator',
+        'output_validator',
         'debug_toolbar',
     )
 
@@ -166,7 +166,7 @@ _MIDDLEWARE_CLASSES = (
     (LIVEBOX and PRODUCTION, "cciw.middleware.http.ForceSSLMiddleware"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
 #    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
-#    (DEVBOX,     "lukeplant_me_uk.django.middleware.validator.ValidatorMiddleware"),
+    (DEVBOX,     "output_validator.middleware.ValidatorMiddleware"),
     (True,       'django.middleware.csrf.CsrfViewMiddleware'),
     (True,       "django.contrib.sessions.middleware.SessionMiddleware"),
     (True,       "django.contrib.messages.middleware.MessageMiddleware"),
@@ -226,12 +226,12 @@ REFERENCE_CONCERNS_CONTACT_DETAILS = "Colin Davies on 029 20 617391 or Shirley E
 ESV_KEY = 'IP'
 
 if DEVBOX:
-    VALIDATOR_APP_VALIDATORS = {
+    OUTPUT_VALIDATOR_VALIDATORS = {
         'text/html': '/home/luke/httpd/myvalidate.sh',
         'application/xml+xhtml': '/home/luke/httpd/myvalidate.sh',
     }
 
-    VALIDATOR_APP_IGNORE_PATHS = (
+    OUTPUT_VALIDATOR_IGNORE_PATHS = (
         '/admin/',
     )
 

@@ -22,7 +22,7 @@ if settings.DEBUG:
     import os
     django_root = os.path.dirname(django.__file__)
     urlpatterns += patterns('',
-                            (r'^validator/', include('lukeplant_me_uk.django.validator.urls')),
+                            (r'^validator/', include('output_validator.urls')),
                             (r'^admin_doc/', include('django.contrib.admindocs.urls')),
                             (r'^usermedia/(?P<path>.*)$', 'django.contrib.staticfiles.views.serve',
                              {'document_root': settings.MEDIA_ROOT}),
