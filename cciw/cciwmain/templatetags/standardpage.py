@@ -61,16 +61,10 @@ class AtomFeedLinkVisible(template.Node):
             thisurl = context['request'].path
             thisfullurl = 'https://%s%s' % (get_current_domain(), thisurl)
             return (u'<a class="atomlink" href="%(atomurl)s" rel="external" title="%(atomtitle)s" >' +
-                    u' <img src="%(atomimgurl)s" alt="Feed icon" /></a> ' +
-                    u' <a href="/website/feeds/" title="Help on Atom feeds">?</a> |' +
-                    u' <a class="atomlink" href="%(emailurl)s" rel="external" title="Subscribe to this page by email">' +
-                    u' <img src="%(emailimgurl)s" alt="Email icon" /></a> ' +
-                    u' <a href="/website/feeds/#emailupdates" title="Help on Email updates">?</a> |') \
+                    u' <img src="%(atomimgurl)s" alt="Feed icon" /></a> |') \
             % dict(atomurl="%s?format=atom" % thisurl,
                    atomtitle=title,
                    atomimgurl="%simages/feed.gif" % settings.STATIC_URL,
-                   emailurl=escape("http://www.rssfwd.com/rssfwd/preview?%s" % urlencode({'url':thisfullurl, 'submit url':'Submit'})),
-                   emailimgurl="%simages/email.gif" % settings.STATIC_URL
                )
         else:
             return ''
