@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.core import mail
+from django.utils.safestring import mark_safe
 from cciw.cciwmain import common
 from cciw.middleware import threadlocals
 from datetime import datetime
@@ -102,7 +103,12 @@ class Member(models.Model):
             return common.get_member_link(self.user_name)
 
     def get_icon(self):
-        return common.get_member_icon(self.user_name)
+        user_name = self.user_name.strip()
+        if user_name.startswith(u"'"): # dummy user
+            return u''
+        else:
+            return mark_safe(u'<img src="%s%s/%s.png" class="userIcon" alt="icon" />'
+                             % (settings.MEDIA_URL, settings.MEMBER_ICON_PATH, user_name))
 
     def check_password(self, plaintextPass):
         """Checks a password is correct"""

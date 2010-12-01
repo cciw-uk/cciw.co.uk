@@ -263,18 +263,6 @@ def get_member_link(user_name):
                (user_name, get_member_href(user_name), user_name))
 
 
-def get_member_icon(user_name):
-    from django.conf import settings
-    user_name = user_name.strip()
-    if user_name.startswith(u"'"): # dummy user
-        return u''
-    else:
-        # We use content negotiation to get the right file i.e.
-        # apache will add the right extension on for us.
-        return mark_safe(u'<img src="%s%s/%s.png" class="userIcon" alt="icon" />' % \
-            (settings.MEDIA_URL, settings.MEMBER_ICON_PATH, user_name))
-
-
 def get_current_domain():
     return Site.objects.get_current().domain
 
