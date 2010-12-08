@@ -60,6 +60,7 @@ class TopicIndexPage(TestCase):
         request.session = SessionStore()
         with self.assertNumQueries(6):
             resp = forums.topicindex(request, title="Title", forum=self.forum)
+            resp.render()
             expected_count = settings.FORUM_PAGINATE_TOPICS_BY * 2
             self.assertContains(resp, "<a title=\"Information about",
                                 count=FuzzyInt(expected_count, expected_count + 2))
@@ -114,6 +115,7 @@ class AllTopicsPage(TestCase):
         request.session = SessionStore()
         with self.assertNumQueries(5):
             resp = forums.all_topics(request)
+            resp.render()
             expected_count = settings.FORUM_PAGINATE_TOPICS_BY
             self.assertContains(resp, "<a title=\"Information about user",
                                 count=FuzzyInt(expected_count, expected_count + 2))
@@ -167,7 +169,7 @@ class TopicPage(TestCase):
         request.session = SessionStore()
         request.user = AnonymousUser()
         with self.assertNumQueries(7):
-            forums.topic(request, title_start="Title", topicid=self.topic.id)
+            forums.topic(request, title_start="Title", topicid=self.topic.id).render()
 
         request = self.factory.get(self.topic.get_absolute_url(), {'format':'atom'})
         request.session = SessionStore()
@@ -213,7 +215,7 @@ class PhotoIndexPage(TestCase):
         request = self.factory.get(self.gallery.get_absolute_url())
         request.session = SessionStore()
         with self.assertNumQueries(4):
-            forums.photoindex(request, self.gallery, {'title':'test'}, [''])
+            forums.photoindex(request, self.gallery, {'title':'test'}, ['']).render()
 
         request = self.factory.get(self.gallery.get_absolute_url(), {'format':'atom'})
         request.session = SessionStore()
@@ -263,7 +265,7 @@ class PhotoPage(TestCase):
         request.session = SessionStore()
         request.user = AnonymousUser()
         with self.assertNumQueries(6):
-            forums.photo(request, self.photo, {}, [''])
+            forums.photo(request, self.photo, {}, ['']).render()
 
         request = self.factory.get(self.photo.get_absolute_url(), {'format':'atom'})
         request.session = SessionStore()
@@ -317,6 +319,7 @@ class AllPostsPage(TestCase):
         request.session = SessionStore()
         with self.assertNumQueries(5):
             resp = forums.all_posts(request)
+            resp.render()
             expected_count = settings.FORUM_PAGINATE_POSTS_BY
             self.assertContains(resp, "<a title=\"Information about user",
                                 count=FuzzyInt(expected_count, expected_count + 2))
@@ -342,6 +345,7 @@ class AllPostsPage(TestCase):
         request.session = SessionStore()
         with self.assertNumQueries(5):
             resp = forums.all_posts(request)
+            resp.render()
             expected_count = settings.FORUM_PAGINATE_POSTS_BY
             self.assertContains(resp, "<a title=\"Information about user",
                                 count=FuzzyInt(expected_count, expected_count + 2))

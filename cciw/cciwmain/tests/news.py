@@ -99,6 +99,7 @@ class AllNewsPage(TestCase):
         request.user = AnonymousUser()
         with self.assertNumQueries(6):
             resp = forums.news(request)
+            resp.render()
             expected_count = settings.FORUM_PAGINATE_NEWS_BY
             self.assertContains(resp, "<a title=\"Information about",
                                 count=FuzzyInt(expected_count, expected_count + 2))
@@ -108,4 +109,5 @@ class AllNewsPage(TestCase):
         request.user = AnonymousUser()
         with self.assertNumQueries(2):
             response = forums.news(request)
+            resp.render()
             self.assertEqual(response['Content-Type'], 'application/atom+xml')

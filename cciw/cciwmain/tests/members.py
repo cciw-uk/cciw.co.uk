@@ -309,7 +309,7 @@ class MemberLists(TestCase):
 
         request = self.factory.get(reverse('cciwmain.members.index'))
         with self.assertNumQueries(5):
-            index(request)
+            index(request).render()
 
 
         request = self.factory.get(reverse('cciwmain.members.index'), {'format':'atom'})
@@ -458,6 +458,7 @@ class MessageLists(TestCase):
 
         with self.assertNumQueries(8):
             resp = self._get_inbox()
+            resp.render()
 
         for i in xrange(settings.MEMBERS_PAGINATE_MESSAGES_BY):
             self.assertContains(resp, "Message %s" % i)
