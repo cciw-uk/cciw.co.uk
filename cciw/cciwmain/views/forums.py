@@ -1,7 +1,6 @@
 from datetime import datetime, date
 import string
 
-from django.views.generic import list_detail
 from django.views.generic.edit import ModelFormMixin
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.template import RequestContext
