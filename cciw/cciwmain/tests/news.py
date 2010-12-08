@@ -1,13 +1,10 @@
 from __future__ import with_statement
-from client import CciwClient
 from django.conf import settings
-from django.contrib.auth.models import AnonymousUser
-from django.contrib.sessions.backends.file import SessionStore
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from django.test.client import RequestFactory
 from cciw.cciwmain.models import Topic, Member, NewsItem, Post, Forum
 from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME
+from cciw.cciwmain.tests.client import CciwClient, RequestFactory
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
 from cciw.cciwmain.views import forums
 
@@ -95,8 +92,6 @@ class AllNewsPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, topic, None)
 
         request = factory.get(path)
-        request.session = SessionStore()
-        request.user = AnonymousUser()
         with self.assertNumQueries(6):
             resp = forums.news(request)
             resp.render()
@@ -105,8 +100,6 @@ class AllNewsPage(TestCase):
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
         request = factory.get(path, {'format':'atom'})
-        request.session = SessionStore()
-        request.user = AnonymousUser()
         with self.assertNumQueries(2):
             response = forums.news(request)
             resp.render()

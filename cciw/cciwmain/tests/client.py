@@ -1,7 +1,11 @@
+from django.contrib.auth.models import AnonymousUser
+from django.contrib.sessions.backends.file import SessionStore
 from django.test import client
+
 import cciw.cciwmain.decorators
 
 LOGIN_URL = '/login/'
+
 
 class CciwClient(client.Client):
     """
@@ -45,3 +49,11 @@ def get_context_var(context_list, var, default=None):
             return context_list[var]
     return default
 
+
+class RequestFactory(client.RequestFactory):
+
+    def request(self, **request):
+        retval = super(RequestFactory, self).request(**request)
+        retval.user = AnonymousUser()
+        retval.session = SessionStore()
+        return retval

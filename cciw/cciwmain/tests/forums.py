@@ -1,11 +1,8 @@
 from __future__ import with_statement
-from cciw.cciwmain.tests.client import CciwClient
+from cciw.cciwmain.tests.client import CciwClient, RequestFactory
 from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD, TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD
 from django.conf import settings
-from django.contrib.auth.models import AnonymousUser
-from django.contrib.sessions.backends.file import SessionStore
 from django.test import TestCase
-from django.test.client import RequestFactory
 from cciw.cciwmain.models import Topic, Member, Poll, Forum, Post, Photo, Gallery
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
 from cciw.cciwmain.views import forums
@@ -57,7 +54,6 @@ class TopicIndexPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, topic, None)
 
         request = self.factory.get(self.forum.get_absolute_url())
-        request.session = SessionStore()
         with self.assertNumQueries(6):
             resp = forums.topicindex(request, title="Title", forum=self.forum)
             resp.render()
@@ -66,7 +62,6 @@ class TopicIndexPage(TestCase):
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
         request = self.factory.get(self.forum.get_absolute_url(), {'format':'atom'})
-        request.session = SessionStore()
         with self.assertNumQueries(FuzzyInt(1, 3)):
             forums.topicindex(request, title="Title", forum=self.forum)
 
@@ -112,7 +107,6 @@ class AllTopicsPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, topic, None)
 
         request = self.factory.get(self.path())
-        request.session = SessionStore()
         with self.assertNumQueries(5):
             resp = forums.all_topics(request)
             resp.render()
@@ -121,7 +115,6 @@ class AllTopicsPage(TestCase):
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
         request = self.factory.get(self.path(), {'format':'atom'})
-        request.session = SessionStore()
         with self.assertNumQueries(2):
             forums.all_topics(request)
 
@@ -166,14 +159,10 @@ class TopicPage(TestCase):
         init_query_caches()
 
         request = self.factory.get(self.topic.get_absolute_url())
-        request.session = SessionStore()
-        request.user = AnonymousUser()
         with self.assertNumQueries(7):
             forums.topic(request, title_start="Title", topicid=self.topic.id).render()
 
         request = self.factory.get(self.topic.get_absolute_url(), {'format':'atom'})
-        request.session = SessionStore()
-        request.user = AnonymousUser()
         with self.assertNumQueries(2):
             forums.topic(request, title_start="Title", topicid=self.topic.id)
 
@@ -213,12 +202,10 @@ class PhotoIndexPage(TestCase):
             post = Post.create_post(member, "A message %s" % i, photo=photo)
 
         request = self.factory.get(self.gallery.get_absolute_url())
-        request.session = SessionStore()
         with self.assertNumQueries(4):
             forums.photoindex(request, self.gallery, {'title':'test'}, ['']).render()
 
         request = self.factory.get(self.gallery.get_absolute_url(), {'format':'atom'})
-        request.session = SessionStore()
         with self.assertNumQueries(1):
             forums.photoindex(request, self.gallery, {'title':'test'}, [''])
 
@@ -262,14 +249,10 @@ class PhotoPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, photo=self.photo)
 
         request = self.factory.get(self.photo.get_absolute_url())
-        request.session = SessionStore()
-        request.user = AnonymousUser()
         with self.assertNumQueries(6):
             forums.photo(request, self.photo, {}, ['']).render()
 
         request = self.factory.get(self.photo.get_absolute_url(), {'format':'atom'})
-        request.session = SessionStore()
-        request.user = AnonymousUser()
         with self.assertNumQueries(1):
             forums.photo(request, self.photo, {}, [''])
 
@@ -316,7 +299,6 @@ class AllPostsPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, topic=topic)
 
         request = self.factory.get(self.path())
-        request.session = SessionStore()
         with self.assertNumQueries(5):
             resp = forums.all_posts(request)
             resp.render()
@@ -325,7 +307,6 @@ class AllPostsPage(TestCase):
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
         request = self.factory.get(self.path(), {'format':'atom'})
-        request.session = SessionStore()
         with self.assertNumQueries(2):
             forums.all_posts(request)
 
@@ -342,7 +323,6 @@ class AllPostsPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, photo=photo)
 
         request = self.factory.get(self.path())
-        request.session = SessionStore()
         with self.assertNumQueries(5):
             resp = forums.all_posts(request)
             resp.render()
@@ -351,7 +331,6 @@ class AllPostsPage(TestCase):
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
         request = self.factory.get(self.path(), {'format':'atom'})
-        request.session = SessionStore()
         with self.assertNumQueries(2):
             forums.all_posts(request)
 

@@ -4,9 +4,8 @@ from twill import commands as tc
 from twill.shell import TwillCommandLoop
 
 from BeautifulSoup import BeautifulSoup
-from client import CciwClient
+
 from django.test import TestCase
-from django.test.client import RequestFactory
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core import mail
@@ -15,6 +14,7 @@ from cciw.cciwmain.models import Member, Message
 import cciw.cciwmain.views.members
 import cciw.cciwmain.decorators
 
+from cciw.cciwmain.tests.client import CciwClient, RequestFactory
 from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_twill_url
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.tests.utils import init_query_caches
