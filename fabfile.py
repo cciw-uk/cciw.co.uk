@@ -4,7 +4,7 @@ from fabric.api import run, local, abort, env, put
 from fabric.contrib import files
 from fabric.contrib import console
 from fabric.decorators import hosts, runs_once
-from fabric.context_managers import cd, settings
+from fabric.context_managers import cd, settings, hide
 import os
 import os.path
 join = os.path.join
@@ -45,7 +45,7 @@ import sys
 #          static/                 # built once uploaded
 #       current/                   # symlink to src-???
 
-# At the same level as 'srf-2010-10-11_07-20-34', there is a 'current' symlink
+# At the same level as 'src-2010-10-11_07-20-34', there is a 'current' symlink
 # which points to the most recent one. The apache instance looks at this (and
 # the virtualenv dir inside it) to run the app.
 
@@ -311,6 +311,24 @@ def _deploy(target):
     _start_apache(target)
 
 
+def _clean(target):
+    """
+    Misc clean-up tasks
+    """
+    # Remove old src versions.
+    with cd(target.src_root):
+        with hide("stdout"):
+            currentlink = run("readlink current").split('/')[-1]
+            otherlinks = set([x.strip() for x in run("ls src-* -1d").split("\n")])
+        otherlinks.remove(currentlink)
+        otherlinks = list(otherlinks)
+        otherlinks.sort()
+        otherlinks.reverse()
+
+        # Leave the most recent previous version, delete the rest
+        for d in otherlinks[1:]:
+            run("rm -rf %s" % d)
+
 
 def deploy_staging():
     _deploy(STAGING)
@@ -352,6 +370,12 @@ def restart_apache_staging():
     _restart_apache(STAGING)
 
 
+def clean_staging():
+    _clean(STAGING)
+
+
+def clean_production():
+    _clean(PRODUCTION)
 
 # TODO:
 #  - backup usermedia task
