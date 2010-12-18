@@ -54,7 +54,7 @@ class TopicIndexPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, topic, None)
 
         request = self.factory.get(self.forum.get_absolute_url())
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             resp = forums.topicindex(request, title="Title", forum=self.forum)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_TOPICS_BY * 2
@@ -107,7 +107,7 @@ class AllTopicsPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, topic, None)
 
         request = self.factory.get(self.path())
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(4):
             resp = forums.all_topics(request)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_TOPICS_BY
@@ -159,7 +159,7 @@ class TopicPage(TestCase):
         init_query_caches()
 
         request = self.factory.get(self.topic.get_absolute_url())
-        with self.assertNumQueries(7):
+        with self.assertNumQueries(6):
             forums.topic(request, title_start="Title", topicid=self.topic.id).render()
 
         request = self.factory.get(self.topic.get_absolute_url(), {'format':'atom'})
@@ -202,7 +202,7 @@ class PhotoIndexPage(TestCase):
             post = Post.create_post(member, "A message %s" % i, photo=photo)
 
         request = self.factory.get(self.gallery.get_absolute_url())
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(3):
             forums.photoindex(request, self.gallery, {'title':'test'}, ['']).render()
 
         request = self.factory.get(self.gallery.get_absolute_url(), {'format':'atom'})
@@ -249,7 +249,7 @@ class PhotoPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, photo=self.photo)
 
         request = self.factory.get(self.photo.get_absolute_url())
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             forums.photo(request, self.photo, {}, ['']).render()
 
         request = self.factory.get(self.photo.get_absolute_url(), {'format':'atom'})
@@ -299,7 +299,7 @@ class AllPostsPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, topic=topic)
 
         request = self.factory.get(self.path())
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(4):
             resp = forums.all_posts(request)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_POSTS_BY
@@ -323,7 +323,7 @@ class AllPostsPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, photo=photo)
 
         request = self.factory.get(self.path())
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(4):
             resp = forums.all_posts(request)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_POSTS_BY

@@ -92,7 +92,7 @@ class AllNewsPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, topic, None)
 
         request = factory.get(path)
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             resp = forums.news(request)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_NEWS_BY

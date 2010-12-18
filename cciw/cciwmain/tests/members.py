@@ -308,7 +308,7 @@ class MemberLists(TestCase):
         from cciw.cciwmain.views.members import index
 
         request = self.factory.get(reverse('cciwmain.members.index'))
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(4):
             index(request).render()
 
 
