@@ -74,7 +74,7 @@ class Camp(models.Model):
         verbose_name="admins",
         null=True, blank=True)
     site = models.ForeignKey(Site)
-    online_applications = models.BooleanField("Accepts online applications from officers.")
+    online_applications = models.BooleanField("Accepts online applications from officers.", default=True)
     officers = models.ManyToManyField(User, through='officers.Invitation')
 
     objects = CampManager()
