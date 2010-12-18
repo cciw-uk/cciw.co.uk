@@ -140,7 +140,7 @@ def ensure_dependencies():
 
 def test():
     ensure_dependencies()
-    local("cd project; ./manage.py test cciwmain officers utils --settings=cciw.settings_tests", capture=False)
+    local("./manage.py test cciwmain officers utils --settings=cciw.settings_tests", capture=False)
 
 
 def _prepare_deploy():
@@ -273,12 +273,14 @@ def _is_south_installed(target):
 
     return True
 
+
 def _install_south(target, version):
     # A one time task to be run after South has been first added
     with virtualenv(version.venv_dir):
         with cd(version.project_dir):
             run_venv("./manage.py syncdb --settings=cciw.settings")
             run_venv("./manage.py migrate --all 0001 --fake --settings=cciw.settings")
+
 
 def _update_db(target, version):
     if not _is_south_installed(target):
