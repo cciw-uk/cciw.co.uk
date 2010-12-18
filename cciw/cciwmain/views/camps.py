@@ -71,7 +71,7 @@ def detail(request, year, number):
 def thisyear(request):
     c = RequestContext(request,
                        standard_extra_context(title=u"Camps %d" % get_thisyear()))
-    c['camps'] = Camp.objects.filter(year=get_thisyear()).order_by('site', 'number')
+    c['camps'] = Camp.objects.filter(year=get_thisyear()).order_by('number')
     return render_to_response('cciw/camps/thisyear.html', context_instance=c)
 
 def get_forum_for_camp(camp):
