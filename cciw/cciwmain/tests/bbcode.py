@@ -1,11 +1,14 @@
-# # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import sys
 import os
 
-import bbcode
+from django.utils import unittest
+
 from cciw.cciwmain.common import get_member_link
+from cciw.cciwmain.templatetags import bbcode
 
 
+# 'tests' format: (input bbcode, output xhtml)
 tests = (
     ('<test&',
         '<div>&lt;test&amp;</div>'),
@@ -74,43 +77,43 @@ tests = (
         'title="Browse John 3:16 in the ESV">John 3:16:</a></div><blockquote class="bible"><div>For God so loved the world</div></blockquote>'),
 )
 
-def check_xhtml(bb, xhtml):
-    assert bbcode.bb2xhtml(bb) == xhtml
 
-def test_render_xhtml():
-    for bb, xhtml in tests:
-        yield check_xhtml, bb, xhtml
+class BBCode(unittest.TestCase):
 
-def check_correction(bb):
-    "utility function for generating tests"
-    corrected_bb = bbcode.correct(bb)
-    twice_corrected_bb = bbcode.correct(corrected_bb)
-    assert corrected_bb == twice_corrected_bb
+    # Most tests are added to this class dynamically. Additional tests below:
 
-def test_correct():
-    # After a single 'correction', doing correct()
-    # should be an identity transformation in all cases
-    for bb, xhtml in tests:
-        yield check_correction, bb
+    def test_correct_preserves_whitespace(self):
+        # These examples are correct bbcode with whitespace
+        # in various places, and 'correct' shouldn't mess with our whitespace!
+        bb = " Hello\nHow\nAre \n\nYou "
+        self.assertEqual(bb, bbcode.correct(bb))
+        bb = "[list]\n  [*]Item1\n[*]Item2 \n[/list]\n"
+        self.assertEqual(bb, bbcode.correct(bb))
 
-def test_unicode():
-    # Should always return unicode objects
-    for bb, xhtml in tests:
-        yield check_unicode, bb
+    def test_correct_eliminates_div(self):
+        # Check we don't get '[div]' in corrected output
+        bb = "[quote]test[/quote]"
+        self.assertEqual(bb, bbcode.correct(bb))
 
-def check_unicode(bb):
-    assert type(bbcode.bb2xhtml(bb)) is unicode
 
-def test_correct_preserves_whitespace():
-    # These examples are correct bbcode with whitespace
-    # in various places, and 'correct' shouldn't mess with our whitespace!
-    bb = " Hello\nHow\nAre \n\nYou "
-    assert bb == bbcode.correct(bb)
-    bb = "[list]\n  [*]Item1\n[*]Item2 \n[/list]\n"
-    assert bb == bbcode.correct(bb)
+for i, (bb, xhtml) in enumerate(tests):
+    # Use kwargs in functions so that name binding creates the closures we want
 
-def test_correct_eliminates_div():
-    # Check we don't get '[div]' in corrected output
-    bb = "[quote]test[/quote]"
-    assert bb == bbcode.correct(bb)
+    # Test the XHTML
+    def test_xhtml(self, bb=bb, xhtml=xhtml):
+        output = bbcode.bb2xhtml(bb)
+        self.assertEqual(output, xhtml)
+        self.assertEqual(type(output), unicode)
+    name = 'test_xhtml_%d' % i
+    test_xhtml.__name__ = name
+    setattr(BBCode, name, test_xhtml)
 
+    # Test 'correction'.  After a single 'correction', doing correct() should be
+    # an identity transformation in all cases.
+    def test_correction(self, bb=bb, xhtml=xhtml):
+        corrected_bb = bbcode.correct(bb)
+        twice_corrected_bb = bbcode.correct(corrected_bb)
+        self.assertEqual(corrected_bb, twice_corrected_bb)
+    name = 'test_correct_%d' % i
+    test_correction.__name__ = name
+    setattr(BBCode, name, test_correction)

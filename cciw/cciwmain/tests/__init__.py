@@ -5,3 +5,4 @@ from cciw.cciwmain.tests.htmlchunks import *
 from cciw.cciwmain.tests.sites import *
 from cciw.cciwmain.tests.decorators import *
 from cciw.cciwmain.tests.contact import *
+from cciw.cciwmain.tests.bbcode import *
