@@ -3,7 +3,9 @@ from twill.shell import TwillCommandLoop
 from twill import commands as tc
 
 from django.core import mail
+from django.core.urlresolvers import reverse
 from django.test import TestCase
+
 from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application
@@ -187,3 +189,27 @@ class CreateReference(TwillMixin, TestCase):
         # Check it is pre-filled as we expect
         tc.find('name="referee_name" value="Referee1 Name"')
         tc.find('name="how_long_known" value="Forever"')
+
+
+class EditReferenceFormManually(TestCase):
+
+    fixtures = ['basic.json', 'officers_users.json', 'references.json']
+
+    def test_creates_referenceform(self):
+        """
+        Ensure that 'edit_reference_form_manually' creates a ReferenceForm if
+        one doesn't exist initially
+        """
+        app = Application.objects.get(pk=1)
+        ref = app.references[0]
+        assert ref.reference_form is None
+        self.client.login(username=LEADER_USERNAME, password=LEADER_PASSWORD)
+        resp = self.client.get(reverse('cciw.officers.views.edit_reference_form_manually',
+                                       kwargs={'ref_id': ref.id}))
+
+        # Expect a redirect to admin page
+        self.assertEqual(302, resp.status_code)
+        self.assertTrue("admin/officers/referenceform" in resp['Location'])
+
+        # Object should be created now.
+        self.assertTrue(ref.reference_form is not None)

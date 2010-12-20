@@ -539,9 +539,10 @@ def edit_reference_form_manually(request, ref_id=None):
     editing it.
     """
     ref = get_object_or_404(Reference.objects.filter(id=int(ref_id)))
-    if not ref.referenceform_set.exists():
+    if ref.reference_form is None:
         # Create it
-        ref.referenceform_set.create(referee_name=ref.referee.name,
+        ReferenceForm.objects.create(reference_info=ref,
+                                     referee_name=ref.referee.name,
                                      date_created=datetime.date.today(),
                                      known_offences=False)
     return HttpResponseRedirect(reverse("admin:officers_referenceform_change",
