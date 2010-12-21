@@ -37,19 +37,16 @@ def send_application_emails(request, application):
 
     if len(leader_emails) > 0:
         send_leader_email(leader_emails, application, application_text, rtf_attachment)
+        messages.info(request, "The completed application form has been sent to the leaders via e-mail.")
 
     # If an admin user corrected an application, we don't send the user a copy
     # (usually they just get the year of the camp wrong(!))
-    user = request.user
-    if len(leader_emails) > 0:
-        messages.info(request, "The completed application form has been sent to the leaders via e-mail.")
-
-    if user == application.officer:
+    if request.user == application.officer:
         send_officer_email(application.officer, application, application_text, rtf_attachment)
         messages.info(request, "A copy of the application form has been sent to you via e-mail.")
 
         if application.officer.email.lower() != application.address_email.lower():
-            send_email_change_emails(user, application)
+            send_email_change_emails(application.officer, application)
 
 def send_officer_email(officer, application, application_text, rtf_attachment):
     subject = "CCIW application form submitted"
@@ -89,7 +86,7 @@ def make_update_email_url(application):
 
 def send_email_change_emails(officer, application):
     subject = "E-mail change on CCIW"
-    user_email = formatted_email(application.officer)
+    user_email = formatted_email(officer)
     user_msg = (
 u"""%(name)s,
 
