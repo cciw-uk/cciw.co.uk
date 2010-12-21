@@ -382,3 +382,19 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.formvalue('1', 'camp', '1') # change
         tc.submit('_save')
         tc.find('You have already submitted')
+
+    def test_initial_form(self):
+        """
+        Ensure that the 'camp' field is filled out initially when we can do so.
+        """
+        u = User.objects.get(username=OFFICER[0])
+        c = Camp.objects.get(id=1)
+        c.invitation_set.create(officer=u)
+
+        self._twill_login(OFFICER)
+        tc.go(self._application_add_url())
+        form = tc.get_browser().get_form(1)
+        self.assertEqual(form.get_value('camp'), [str(c.id)])
+
+        tc.find("%s %s" % (u.first_name, u.last_name))
+        tc.find(u.email)

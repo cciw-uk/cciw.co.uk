@@ -7,9 +7,38 @@ from cciw.middleware import threadlocals
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.models import Application, Reference, Invitation, ReferenceForm
 from cciw.officers import widgets, email
+from cciw.officers.views import get_next_camp_guess
 from cciw.utils.views import close_window_response
 
 class ApplicationAdminModelForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+
+        if 'instance' not in kwargs:
+            # Set some initial values for new form
+            try:
+                initial = kwargs['initial']
+            except KeyError:
+                initial = {}
+                kwargs['initial'] = initial
+
+            # Set camp and officer
+            user = threadlocals.get_current_user()
+            if user is not None:
+                # Setting 'officer' is needed when leaders/admins are using the form
+                # to fill in their own application form, rather than editing someone
+                # else's.
+                initial['officer'] = user
+                # Try to guess the camp, based on invitations
+                camp = get_next_camp_guess(user=user)
+                if camp is not None:
+                    initial['camp'] = camp
+                # Fill out officer name
+                initial['full_name'] = "%s %s" % (user.first_name, user.last_name)
+                initial['address_email'] = user.email
+
+        super(ApplicationAdminModelForm, self).__init__(*args, **kwargs)
+
     def clean(self):
         app_finished = self.cleaned_data.get('finished', False)
         user = threadlocals.get_current_user()

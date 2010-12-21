@@ -116,16 +116,30 @@ def leaders_index(request):
     return render_to_response('cciw/officers/leaders_index.html', context_instance=context)
 
 
-def get_next_camp_guess(camp):
+def get_next_camp_guess(camp=None, user=None):
     """
-    Given a camp that an officer had been on, returns the camp that they are
-    likely to apply to, or None if no suitable guess can be found.
+    Given a camp that an officer had been on, and/or the officer, returns the
+    camp that they are likely to apply to, or None if no suitable guess can be
+    found.
     """
+    if user is not None:
+        # Use Invitations
+        for invite in user.invitation_set.filter(camp__end_date__gte=datetime.date.today()):
+            if camp is not None:
+                # Don't guess a camp that they have already started an application for.
+                if user.application_set.filter(camp=camp).exists():
+                    continue
+            return invite.camp
+
+    # No suitable invitations, carry on
+    if camp is None:
+        return None
+
     next_camps = list(camp.next_camps.filter(online_applications=True))
     if len(next_camps) > 0:
         next_camp = next_camps[0]
         if next_camp.is_past():
-            return get_next_camp_guess(next_camp)
+            return get_next_camp_guess(camp=next_camp)
         else:
             return next_camp
     else:
@@ -168,7 +182,7 @@ def applications(request):
             new_obj = _copy_application(obj)
             # We *have* to set 'camp' otherwise object cannot be seen
             # in admin, due to default 'ordering'
-            next_camp = get_next_camp_guess(obj.camp)
+            next_camp = get_next_camp_guess(camp=obj.camp, user=user)
             if next_camp is not None:
                 new_obj.camp = next_camp
             else:
