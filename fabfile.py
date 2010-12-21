@@ -217,8 +217,8 @@ def _restart_apache(target):
 def rsync_dir(local_dir, dest_dir):
     # clean first
     with settings(warn_only=True):
-        local("find %s -name '*.pyc' -exec 'rm {}' ';'" % local_dir)
-    local("rsync -r -L --delete --exclude='_build' --exclude='.hg' --exclude='.git' --exclude='.svn' --delete-excluded %s/ cciw@cciw.co.uk:%s" % (local_dir, dest_dir), capture=False)
+        local("find -L %s -name '*.pyc' | xargs rm" % local_dir)
+    local("rsync -z -r -L --delete --exclude='_build' --exclude='.hg' --exclude='.git' --exclude='.svn' --delete-excluded %s/ cciw@cciw.co.uk:%s" % (local_dir, dest_dir), capture=False)
 
 
 def _copy_local_sources(target, version):
