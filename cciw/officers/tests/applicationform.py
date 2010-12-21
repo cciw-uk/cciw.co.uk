@@ -2,6 +2,7 @@ import datetime
 
 from django.contrib.auth.models import User
 from django.core import mail
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 from twill import commands as tc
 
@@ -111,7 +112,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
         tc.submit('_save')
-        tc.url('officers/applications/$')
+        tc.url(reverse("cciw.officers.views.applications"))
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
 
@@ -126,7 +127,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
         tc.submit('_save')
-        tc.url('officers/applications/$')
+        tc.url(reverse("cciw.officers.views.applications"))
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
 
@@ -142,7 +143,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
         tc.submit('_save')
-        tc.url('officers/applications/$')
+        tc.url(reverse("cciw.officers.views.applications"))
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
 
@@ -163,7 +164,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.code(200)
         tc.formvalue('1', 'full_name', 'Changed full name')
         tc.submit('_save')
-        tc.url('officers/applications/$')
+        tc.url(reverse("cciw.officers.views.applications"))
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Changed full name')
 
@@ -195,7 +196,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.formvalue('1', 'full_name', 'Test full name')
         tc.formvalue('1', 'address_email', new_email)
         tc.submit('_save')
-        tc.url('officers/applications/$')
+        tc.url(reverse("cciw.officers.views.applications"))
 
         self.assertEqual(u.application_set.count(), 1)
 
@@ -280,7 +281,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         self._finish_application_form()
 
         tc.submit('_save')
-        tc.url('officers/applications/$')
+        tc.url(reverse("cciw.officers.views.applications"))
 
         self.assertEqual(u.application_set.count(), 1)
 
@@ -345,7 +346,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         Ensure that normal officers can't see the list of applications
         """
         self._twill_login(OFFICER)
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/"))
+        tc.go(make_django_url("admin:officers_application_changelist"))
         tc.code(403)
 
     def test_list_applications_leaders(self):
@@ -353,7 +354,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         Ensure that leaders can see the list of applications
         """
         self._twill_login(LEADER)
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/"))
+        tc.go(make_django_url("admin:officers_application_changelist"))
         tc.code(200)
 
     def test_add_application_duplicate_camp(self):
