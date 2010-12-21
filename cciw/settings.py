@@ -1,6 +1,7 @@
 # Settings file
 import os
 import socket
+import sys
 
 hostname = socket.gethostname()
 
@@ -12,6 +13,8 @@ LIVEBOX = not DEVBOX
 
 if LIVEBOX:
     from cciw.settings_priv import PRODUCTION, STAGING
+
+WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
 
 ### MISC ###
 
@@ -41,6 +44,8 @@ SITE_ID = 1
 
 ROOT_URLCONF = 'cciw.urls'
 
+CACHE_BACKEND = 'dummy://'
+
 TIME_ZONE = "Europe/London"
 
 USE_I18N = False
@@ -59,6 +64,11 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'mailer',
     'securedownload',
+)
+
+if not (LIVEBOX and WEBSERVER_RUNNING):
+    # Don't want the memory overhead of these if are serving requests
+    INSTALLED_APPS += (
     'django.contrib.staticfiles',
     'south',
 )
