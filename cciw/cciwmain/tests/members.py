@@ -1,29 +1,28 @@
 from __future__ import with_statement
-import twill
-from twill import commands as tc
-from twill.shell import TwillCommandLoop
-
-from BeautifulSoup import BeautifulSoup
-
-from django.test import TestCase
-from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.core import mail
-
-from cciw.cciwmain.models import Member, Message
-import cciw.cciwmain.views.members
-import cciw.cciwmain.decorators
-
-from cciw.cciwmain.tests.client import CciwClient, RequestFactory
-from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_twill_url
-from cciw.cciwmain.tests.mailhelpers import read_email_url
-from cciw.cciwmain.tests.utils import init_query_caches
 
 import datetime
-import os
 import glob
-import urllib
+import os
 import re
+import urllib
+
+from BeautifulSoup import BeautifulSoup
+from django.conf import settings
+from django.core import mail
+from django.core.urlresolvers import reverse
+from django.test import TestCase
+from twill import commands as tc
+from twill.shell import TwillCommandLoop
+import twill
+
+from cciw.cciwmain.models import Member, Message
+from cciw.cciwmain.tests.client import CciwClient, RequestFactory
+from cciw.cciwmain.tests.mailhelpers import read_email_url
+from cciw.cciwmain.tests.utils import init_query_caches
+from cciw.utils.tests.twillhelpers import TwillMixin, make_twill_url
+import cciw.cciwmain.decorators
+import cciw.cciwmain.views.members
+
 
 # created by fixture
 TEST_MEMBER_USERNAME = 'test_member_1'

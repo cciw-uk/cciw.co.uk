@@ -6,10 +6,10 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application
 from cciw.officers.views import get_previous_references
+from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
 
 
 OFFICER_USERNAME = 'mrofficer2'

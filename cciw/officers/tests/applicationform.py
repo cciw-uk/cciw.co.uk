@@ -1,13 +1,15 @@
-from cciw.cciwmain.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
-from cciw.cciwmain.tests.mailhelpers import read_email_url
-from cciw.cciwmain.models import Camp
-from cciw.officers.models import Application
-from cciw.officers.tests.references import OFFICER, LEADER
+import datetime
+
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase
 from twill import commands as tc
-import datetime
+
+from cciw.cciwmain.tests.mailhelpers import read_email_url
+from cciw.cciwmain.models import Camp
+from cciw.officers.models import Application
+from cciw.officers.tests.references import OFFICER, LEADER
+from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
 
 class ApplicationFormView(TwillMixin, TestCase):
     fixtures = ['basic.json', 'officers_users.json']
