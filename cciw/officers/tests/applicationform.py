@@ -12,6 +12,12 @@ import datetime
 class ApplicationFormView(TwillMixin, TestCase):
     fixtures = ['basic.json', 'officers_users.json']
 
+    def _application_add_url(self):
+        return make_django_url('admin:officers_application_add')
+
+    def _application_edit_url(self, app_id):
+        return make_django_url('admin:officers_application_change', app_id)
+
     def setUp(self):
         # make sure camp 1 has end date in future, otherwise
         # we won't be able to save
@@ -94,7 +100,7 @@ class ApplicationFormView(TwillMixin, TestCase):
 
     def test_add_application(self):
         self._twill_login(OFFICER)
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.go(self._application_add_url())
         tc.code(200)
         tc.find('Save and continue editing')
         tc.notfind('Save and add another')
@@ -113,7 +119,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         u = User.objects.get(username=LEADER[0])
         self.assertEqual(u.application_set.count(), 0)
         self._twill_login(LEADER)
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.go(self._application_add_url())
         tc.code(200)
         tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
@@ -127,7 +133,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         a = self._add_application()
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 1)
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
+        tc.go(self._application_edit_url(a.id))
         tc.code(200)
         tc.find('Save and continue editing')
         tc.notfind('Save and add another')
@@ -151,7 +157,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         u = User.objects.get(username=OFFICER[0])
         apps = u.application_set.all()
         self.assertEqual(len(apps), 1)
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/%s/" % apps[0].id))
+        tc.go(self._application_edit_url(apps[0].id))
         tc.code(200)
         tc.formvalue('1', 'full_name', 'Changed full name')
         tc.submit('_save')
@@ -180,7 +186,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         self.assertNotEqual(orig_email, new_email)
 
         # visit page
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
+        tc.go(self._application_edit_url(a.id))
         tc.code(200)
         self._finish_application_form()
         tc.formvalue('1', 'camp', '1')
@@ -237,7 +243,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         a = self._add_application()
         self.assertEqual(u.application_set.count(), 1)
 
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
+        tc.go(self._application_edit_url(a.id))
         tc.code(200)
         self._finish_application_form()
         tc.formvalue('1', 'address_email', u.email.upper())
@@ -251,12 +257,13 @@ class ApplicationFormView(TwillMixin, TestCase):
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 0)
         self._twill_login(OFFICER)
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.go(self._application_add_url())
+        url = tc.browser.get_url()
         tc.code(200)
         tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'finished', 'on')
         tc.submit('_save')
-        tc.url('admin/officers/application/add/$')
+        tc.url(url)
         tc.find("Please correct the errors below")
         tc.find("form-row errors full_name")
         self.assertEqual(u.application_set.count(), 0) # shouldn't have been saved
@@ -266,7 +273,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         self.assertEqual(u.application_set.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
         self._twill_login(OFFICER)
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.go(self._application_add_url())
         tc.code(200)
         self._finish_application_form()
 
@@ -299,12 +306,13 @@ class ApplicationFormView(TwillMixin, TestCase):
         camp.end_date = datetime.date.today() - datetime.timedelta(100)
         camp.save()
 
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/%s/" % a.id))
+        tc.go(self._application_edit_url(a.id))
+        url = tc.browser.get_url()
         tc.code(200)
         tc.formvalue('1', 'full_name', 'A Changed Full Name')
         tc.submit('_save')
         # we should be on same page:
-        tc.url('officers/application/%s/$' % a.id)
+        tc.url(url)
         tc.find("You cannot change a submitted")
         # shouldn't have changed data:
         self.assertNotEqual(a.full_name, 'A Changed Full Name')
@@ -318,14 +326,15 @@ class ApplicationFormView(TwillMixin, TestCase):
         camp.save()
 
         self._twill_login(OFFICER)
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.go(self._application_add_url())
+        url = tc.browser.get_url()
         tc.code(200)
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 0)
         tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
         tc.submit('_save')
-        tc.url('admin/officers/application/add/$')
+        tc.url(url) # same page
         tc.find("You cannot submit an application")
         self.assertEqual(u.application_set.count(), 0)
 
@@ -351,7 +360,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         """
         self._twill_login(OFFICER)
         a1 = self._add_application(camp_id=1)
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/add/"))
+        tc.go(self._application_add_url())
         tc.formvalue('1', 'camp', '1')
         tc.submit('_save')
         tc.find('You have already submitted')
@@ -366,7 +375,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         self._twill_login(OFFICER)
         a1 = self._add_application(camp_id=1)
         a2 = self._add_application(camp_id=2)
-        tc.go(make_twill_url("https://www.cciw.co.uk/admin/officers/application/%s/" % a2.id))
+        tc.go(self._application_edit_url(a2.id))
         tc.formvalue('1', 'camp', '1') # change
         tc.submit('_save')
         tc.find('You have already submitted')
