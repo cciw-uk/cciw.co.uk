@@ -9,6 +9,7 @@ from twill import commands as tc
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
+from cciw.officers.applications import application_difference
 from cciw.officers.tests.references import OFFICER, LEADER
 from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
 
@@ -22,12 +23,10 @@ class ApplicationFormView(TwillMixin, TestCase):
         return make_django_url('admin:officers_application_change', app_id)
 
     def setUp(self):
-        # make sure camp 1 has end date in future, otherwise
-        # we won't be able to save
-        c = Camp.objects.get(id=1)
-        c.end_date = datetime.date.today() + datetime.timedelta(100)
-        c.save()
-
+        # make sure camps have end date in future, otherwise we won't be able to
+        # save
+        Camp.objects.filter(id=1).update(end_date=datetime.date.today() + datetime.timedelta(100))
+        Camp.objects.filter(id=2).update(end_date=datetime.date.today() + datetime.timedelta(465))
         super(ApplicationFormView, self).setUp()
 
     def _add_application(self, camp_id=1, officer=OFFICER):
@@ -398,3 +397,50 @@ class ApplicationFormView(TwillMixin, TestCase):
 
         tc.find("%s %s" % (u.first_name, u.last_name))
         tc.find(u.email)
+
+    def test_application_differences_email(self):
+        """
+        Tests the 'application difference' e-mail that is sent when an
+        application form is submitted
+        """
+        u = User.objects.get(username=OFFICER[0])
+
+        # Create one application
+        self.test_finish_complete()
+
+        # Empty outbox
+        mail.outbox[:] = []
+
+        # Create another application
+        tc.go(self._application_add_url())
+        self._finish_application_form()
+        # Now change some values
+        tc.formvalue('1', 'camp', '2')
+        tc.formvalue('1', 'full_name', 'New Full Name')
+        tc.submit('_save')
+        tc.url(reverse("cciw.officers.views.applications"))
+
+        emails = self._get_application_form_emails()
+        self.assertEqual(len(emails), 2)
+        leader_email = [e for e in emails
+                        if e.subject == u'CCIW application form from New Full Name'][0]
+        msg = leader_email.message()
+
+        # E-mail will have 3 parts - text, RTF, and differences from last year
+        # as an HTML file.
+        attachments = msg.get_payload()
+        self.assertEqual(len(attachments), 3)
+
+        # Testing the actual content is hard from this point, due to e-mail
+        # formatting, so we do it manually:
+
+        apps = u.application_set.order_by('camp__year')
+        assert len(apps) == 2
+
+        application_diff = application_difference(apps[0], apps[1])
+        self.assertTrue('<INS TITLE="i=95">New Full Name</INS>'
+                        in application_diff)
+        self.assertTrue('<DEL TITLE="i=95">x</DEL>'
+                        in application_diff)
+
+

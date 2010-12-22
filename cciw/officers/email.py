@@ -1,5 +1,6 @@
 from cciw.cciwmain import common
-from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename
+from cciw.cciwmain.models import Camp
+from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.references import reference_form_to_text
 from django.conf import settings
@@ -35,8 +36,23 @@ def send_application_emails(request, application):
     application_rtf = application_to_rtf(application)
     rtf_attachment = (application_rtf_filename(application), application_rtf, 'text/rtf')
 
+    # Did the officer submit one last year for the 'same' camp?
+    previous_camp = application.camp.previous_camp
+    application_diff = None
+    if previous_camp is not None:
+        officer = application.officer
+        try:
+            previous_app = officer.application_set.filter(camp=previous_camp, finished=True)[0]
+        except IndexError:
+            previous_app = None
+        if previous_app is not None:
+            application_diff = ("differences_from_last_year.html",
+                                application_difference(previous_app, application),
+                                "text/html")
+
     if len(leader_emails) > 0:
-        send_leader_email(leader_emails, application, application_text, rtf_attachment)
+        send_leader_email(leader_emails, application, application_text, rtf_attachment,
+                          application_diff)
         messages.info(request, "The completed application form has been sent to the leaders via e-mail.")
 
     # If an admin user corrected an application, we don't send the user a copy
@@ -65,16 +81,29 @@ to CCIW. It is also attached to this e-mail as an RTF file.
         send_mail_with_attachments(subject, user_msg, settings.SERVER_EMAIL,
                                    [user_email], attachments=[rtf_attachment])
 
-def send_leader_email(leader_emails, application, application_text, rtf_attachment):
+def send_leader_email(leader_emails, application, application_text, rtf_attachment,
+                      application_diff):
     subject = "CCIW application form from %s" % application.full_name
     body = \
 u"""The following application form has been submitted via the
 CCIW website.  It is also attached to this e-mail as an RTF file.
 
-""" + application_text
+"""
+    if application_diff is not None:
+        body += \
+u"""The second attachment shows the differences between this year's
+application form and last year's - pink indicates information that has
+been removed, green indicates new information.
+
+"""
+    body += application_text
+
+    attachments = [rtf_attachment]
+    if application_diff is not None:
+        attachments.append(application_diff)
 
     send_mail_with_attachments(subject, body, settings.SERVER_EMAIL,
-                               leader_emails, attachments=[rtf_attachment])
+                               leader_emails, attachments=attachments)
 
 def make_update_email_url(application):
     email = application.address_email
