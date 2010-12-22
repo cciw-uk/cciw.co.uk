@@ -38,7 +38,6 @@ def _copy_application(application):
     for field in Application._meta.fields:
         if field.attname != 'id':
             setattr(new_obj, field.attname, getattr(application, field.attname))
-    new_obj.camp = None
     new_obj.youth_work_declined = None
     new_obj.relevant_illness = None
     new_obj.crime_declaration = None
