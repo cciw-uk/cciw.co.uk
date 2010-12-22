@@ -7,12 +7,12 @@ from cciw.middleware import threadlocals
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.models import Application, Reference, Invitation, ReferenceForm
 from cciw.officers import widgets, email
-from cciw.officers.views import get_next_camp_guess
 from cciw.utils.views import close_window_response
 
 class ApplicationAdminModelForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
+        from cciw.officers.views import get_next_camp_guess
 
         if 'instance' not in kwargs:
             # Set some initial values for new form
