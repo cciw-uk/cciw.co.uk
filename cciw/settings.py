@@ -127,7 +127,8 @@ if DEBUG:
 
 #####  EMAIL  #######
 
-EMAIL_BACKEND = "mailer.backend.DbBackend"
+if LIVEBOX:
+    EMAIL_BACKEND = "mailer.backend.DbBackend"
 
 if DEVBOX:
     # For e-mail testing, run:
