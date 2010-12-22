@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.validators import email_re
 from django.http import Http404, HttpResponseRedirect
+from django.utils.crypto import salted_hmac
 from django.views.generic.edit import ModelFormMixin
 from django import forms
 from cciw.cciwmain.common import standard_extra_context, DefaultMetaData, AjaxyFormView, member_username_re
@@ -16,7 +17,6 @@ from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain import common
 from cciw.cciwmain import imageutils
 from cciw.cciwmain.forms import CciwFormMixin
-import md5
 import urllib
 import re
 import datetime
@@ -65,9 +65,9 @@ def create_user(user_name, password1, password2):
         return m
 
 def email_hash(email):
-    """Gets a hash of an email address, to be used in the sign process"""
+    """Gets a hash of an email address, to be used in the signup process"""
     # Use every other character to make it shorter and friendlier
-    return md5.new(settings.SECRET_KEY + email).hexdigest()[::2]
+    return salted_hmac("cciw.cciwmain.memberadmin.signupemail", email).hexdigest()[::2]
 
 def email_address_used(email):
     return Member.all_objects.filter(email__iexact=email).count() != 0
@@ -92,7 +92,7 @@ def validate_email_and_hash(email, hash):
 def email_and_username_hash(email, user_name):
     """Gets a hash of an email address + user_name"""
     # Use every other character to make it shorter and friendlier
-    return md5.new(settings.SECRET_KEY + email + user_name).hexdigest()[::2]
+    return salted_hmac("cciw.cciwmain.memberadmin.changeemail", email + ":" + user_name).hexdigest()[::2]
 
 def validate_email_username_and_hash(email, user_name, hash):
     if email_address_used(email):

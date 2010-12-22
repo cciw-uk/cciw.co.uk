@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
-from django.utils.hashcompat import sha_constructor
+from django.utils.crypto import salted_hmac
 import cciw.middleware.threadlocals as threadlocals
 import urllib
 
@@ -15,7 +15,7 @@ def make_update_email_hash(oldemail, newemail):
     """
     Returns a hash for use in confirmation of e-mail change.
     """
-    return sha_constructor("emailupdate" + settings.SECRET_KEY + ':' + oldemail + ':' + newemail).hexdigest()[::2]
+    return salted_hmac("cciw.officers.emailupdate", oldemail + ':' + newemail).hexdigest()[::2]
 
 def admin_emails_for_application(application):
     leaders = [user for leader in application.camp.leaders.all()
@@ -146,7 +146,7 @@ This was an automated response by the CCIW website.
               [user_email, application.address_email] , fail_silently=True)
 
 def make_ref_form_url_hash(ref_id, prev_ref_id):
-    return sha_constructor("create_reference_form%s:%s:%s" % (settings.SECRET_KEY, ref_id, prev_ref_id)).hexdigest()[::2]
+    return salted_hmac("cciw.officers.create_reference_form", "%s:%s" % (ref_id, prev_ref_id)).hexdigest()[::2]
 
 def make_ref_form_url(ref_id, prev_ref_id):
     if prev_ref_id is None: prev_ref_id = ""

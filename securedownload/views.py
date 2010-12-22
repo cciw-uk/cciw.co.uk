@@ -5,7 +5,7 @@ import posixpath
 import urllib
 from django.conf import settings
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
-from django.utils.hashcompat import sha_hmac
+from django.utils.crypto import salted_hmac
 
 def serve_secure_file(filename):
     """
@@ -22,8 +22,8 @@ def serve_secure_file(filename):
     ts = datetime.datetime.now().strftime("%s")
     # Make a directory that cannot be guessed, and that contains the timestamp
     # so that we can remove it easily by timestamp later.
-    key = "cciw.officers.secure_file" + settings.SECRET_KEY
-    nonce = hmac.new(key, "%s-%s" % (ts, filename), sha_hmac).hexdigest()
+    key = "cciw.officers.secure_file"
+    nonce = salted_hmac(key, "%s-%s" % (ts, filename)).hexdigest()
     dirname = "%s-%s" % (ts, nonce)
     abs_destdir = os.path.join(settings.SECUREDOWNLOAD_SERVE_ROOT, dirname)
     if not os.path.isdir(abs_destdir):
