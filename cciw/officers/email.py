@@ -96,6 +96,16 @@ application form and last year's - pink indicates information that has
 been removed, green indicates new information.
 
 """
+
+    officer = application.officer
+    if not officer.invitation_set.filter(camp=application.camp).exists():
+        body += \
+u"""PLEASE NOTE: %s %s is not currently on your officer list. It is
+important for CRB records and other purposes that you add this officer
+to your officer list if they will be coming on camp.
+
+""" % (officer.first_name, officer.last_name)
+
     body += application_text
 
     attachments = [rtf_attachment]

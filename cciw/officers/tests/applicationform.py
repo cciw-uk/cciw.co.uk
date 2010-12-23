@@ -288,9 +288,9 @@ class ApplicationFormView(TwillMixin, TestCase):
         # leader.  This assumes that there is a leader for the camp,
         # and it is associated with a User object.
         a = u.application_set.all()[0]
-        self.assertEqual(a.camp.leaders.count(), 1)
+        assert a.camp.leaders.count() == 1
         l = a.camp.leaders.all()[0]
-        self.assertEqual(l.users.count(), 1)
+        assert l.users.count() == 1
         self.assertEqual(len(self._get_application_form_emails()), 2)
 
     def test_change_application_after_camp_past(self):
@@ -444,3 +444,20 @@ class ApplicationFormView(TwillMixin, TestCase):
                         in application_diff)
 
 
+    def test_uninvited_officer(self):
+        """
+        Checks that when an officer is not on the officer list and submits an
+        application form, the leaders are notified.
+        """
+        u = User.objects.get(username=OFFICER[0])
+        u.invitation_set.all().delete()
+        self.test_finish_complete()
+        email = [m for m in mail.outbox if m.subject.startswith("CCIW application form from")][0]
+        self.assertTrue("Mr Officer2 is not currently on your officer list" in email.body)
+
+    def test_invited_officer(self):
+        u = User.objects.get(username=OFFICER[0])
+        u.invitation_set.create(camp=Camp.objects.get(id=1))
+        self.test_finish_complete()
+        email = [m for m in mail.outbox if m.subject.startswith("CCIW application form from")][0]
+        self.assertTrue("is not currently on your officer list" not in email.body)
