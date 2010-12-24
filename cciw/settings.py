@@ -67,19 +67,23 @@ INSTALLED_APPS = (
 )
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
-    # Don't want the memory overhead of these if are serving requests
+    # Don't want the memory overhead of these if we are serving requests
     INSTALLED_APPS += (
     'django.contrib.staticfiles',
     'south',
 )
 
-if DEBUG:
+if DEVBOX and DEBUG:
     INSTALLED_APPS += (
         'django.contrib.admindocs',
         'output_validator',
         'debug_toolbar',
     )
 
+if DEVBOX:
+    INSTALLED_APPS += (
+        'anonymizer',
+)
 
 ######  DATABASE   ####
 
