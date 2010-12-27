@@ -80,7 +80,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
 class ApplicationAdmin(admin.ModelAdmin):
     save_as = False
     list_display = ('full_name', 'officer', 'camp', 'finished', 'date_submitted')
-    list_filter = ('finished','date_submitted')
+    list_filter = ('finished','date_submitted', 'camp')
     ordering = ('full_name',)
     search_fields = ('full_name',)
     form = ApplicationAdminModelForm
