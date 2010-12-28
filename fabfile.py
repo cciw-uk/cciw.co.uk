@@ -154,8 +154,8 @@ def backup_database(target, version):
     run("dump_cciw_db.sh %s %s" % (target.dbname, fname))
 
 
-def run_venv(command):
-    run("source %s/bin/activate" % env.venv + " && " + command)
+def run_venv(command, **kwargs):
+    run("source %s/bin/activate" % env.venv + " && " + command, **kwargs)
 
 
 def virtualenv(venv_dir):
@@ -347,6 +347,12 @@ def deploy_production():
     with cd(this_dir):
         local('hg update -r live && hg merge -r default && hg commit -m "Merged from default" && hg update -r default', capture=False)
 
+def _test_remote(target):
+    version = target.current_version
+    with virtualenv(version.venv_dir):
+        with cd(version.project_dir):
+            run_venv("./manage.py test cciwmain officers --settings=cciw.settings_tests")
+
 
 def stop_apache_production():
     _stop_apache(PRODUCTION)
@@ -379,7 +385,14 @@ def clean_staging():
 def clean_production():
     _clean(PRODUCTION)
 
+
+def test_staging():
+    _test_remote(STAGING)
+
+
+def test_production():
+    _test_remote(PRODUCTION)
+
 # TODO:
 #  - backup usermedia task
 #  - backup db task
-#  - clean out old copies of sources.
