@@ -418,7 +418,7 @@ class PreferencesForm(CciwFormMixin, forms.ModelForm):
                                        widget=forms.RadioSelect,
                                        label="Message storing")
     icon = forms.FileField(widget=widgets.FileInput,
-                           label="Icon")
+                           label="Icon", required=False)
 
     class Meta:
         model = Member
