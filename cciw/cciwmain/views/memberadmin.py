@@ -6,6 +6,7 @@ from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.validators import email_re
+from django.forms import widgets
 from django.http import Http404, HttpResponseRedirect
 from django.utils.crypto import salted_hmac
 from django.views.generic.edit import ModelFormMixin
@@ -416,6 +417,9 @@ class PreferencesForm(CciwFormMixin, forms.ModelForm):
     message_option = forms.ChoiceField(choices=Member.MESSAGE_OPTIONS,
                                        widget=forms.RadioSelect,
                                        label="Message storing")
+    icon = forms.FileField(widget=widgets.FileInput,
+                           label="Icon")
+
     class Meta:
         model = Member
         fields = preferences_fields
