@@ -247,7 +247,6 @@ if DEVBOX:
     }
 
     OUTPUT_VALIDATOR_IGNORE_PATHS = (
-        '/admin/',
     )
 
     FIXTURE_DIRS = [
