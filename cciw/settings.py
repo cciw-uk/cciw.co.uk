@@ -252,7 +252,6 @@ if DEVBOX:
     FIXTURE_DIRS = [
         basedir + r'/cciw/cciwmain/fixtures'
     ]
-    TEST_DIR = basedir + r'/cciw/cciwmain/tests'
 
 DEFAULT_CONTENT_TYPE = "text/html"
 

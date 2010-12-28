@@ -20,8 +20,12 @@ MIDDLEWARE_CLASSES = (
     "cciw.middleware.threadlocals.ThreadLocals",
 )
 
-INSTALLED_APPS = filter(lambda x: x != "lukeplant_me_uk.django.validator"
-                        and x != "south", INSTALLED_APPS)
+INSTALLED_APPS = filter(lambda x: x != "south"
+                        and x != 'output_validator'
+                        and x != 'anonymizer'
+                        and x != 'debug_toolbar',
+                        INSTALLED_APPS)
 
 SEND_BROKEN_LINK_EMAILS = False
 
+TEST_DIR = basedir + r'/cciw/cciwmain/tests'
