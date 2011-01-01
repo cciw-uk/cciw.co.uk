@@ -9,6 +9,7 @@ from cciw.officers.models import Application, Reference, Invitation, ReferenceFo
 from cciw.officers import widgets, email
 from cciw.utils.views import close_window_response
 
+
 class ApplicationAdminModelForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
@@ -76,6 +77,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
                     if data is None or data == u"":
                         self._errors[name] = ErrorList(["This is a required field"])
         return self.cleaned_data
+
 
 class ApplicationAdmin(admin.ModelAdmin):
     save_as = False
@@ -297,14 +299,17 @@ class ApplicationAdmin(admin.ModelAdmin):
         super(ApplicationAdmin, self).save_model(request, obj, form, change)
         email.send_application_emails(request, obj)
 
+
 class ReferenceAdmin(admin.ModelAdmin):
     list_display = ['__unicode__', 'requested', 'received']
     search_fields = ['application__officer__first_name', 'application__officer__last_name']
+
 
 class InvitationAdmin(admin.ModelAdmin):
     list_display = ['officer', 'camp']
     list_filter = ['camp']
     search_fields = ['officer__first_name', 'officer__last_name', 'officer__username']
+
 
 class ReferenceFormAdmin(admin.ModelAdmin):
     save_as = False
