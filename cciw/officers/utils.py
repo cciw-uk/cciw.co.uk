@@ -2,11 +2,13 @@
 Utility functions for officers app.
 """
 
+
 def camp_officer_list(camp):
     """
     Returns complete list of officers for a camp
     """
     return list(camp.officers.all().order_by('first_name', 'last_name', 'email'))
+
 
 def camp_slacker_list(camp):
     """

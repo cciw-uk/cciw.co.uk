@@ -20,6 +20,7 @@ class AddressField(models.TextField):
         kwargs['help_text'] = u'Full address, including post code and country'
         return  super(AddressField, self).__init__(*args, **kwargs)
 
+
 class ExplicitBooleanField(models.NullBooleanField):
     def __init__(self, *args, **kwargs):
         kwargs['default'] = None

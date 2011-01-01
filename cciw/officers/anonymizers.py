@@ -4,6 +4,7 @@ from anonymizer import Anonymizer
 from cciw.officers.models import Application, ReferenceForm
 from django.contrib.auth.models import User
 
+
 class UserAnonymizer(Anonymizer):
 
     order = 1
@@ -31,6 +32,7 @@ class UserAnonymizer(Anonymizer):
 
 
 yyyymmpattern = lambda self, obj, field, val: self.faker.simple_pattern("####/##", field=field)
+
 
 class ApplicationAnonymizer(Anonymizer):
 

@@ -11,11 +11,13 @@ from django.utils.crypto import salted_hmac
 import cciw.middleware.threadlocals as threadlocals
 import urllib
 
+
 def make_update_email_hash(oldemail, newemail):
     """
     Returns a hash for use in confirmation of e-mail change.
     """
     return salted_hmac("cciw.officers.emailupdate", oldemail + ':' + newemail).hexdigest()[::2]
+
 
 def admin_emails_for_application(application):
     leaders = [user for leader in application.camp.leaders.all()
@@ -23,6 +25,7 @@ def admin_emails_for_application(application):
               list(application.camp.admins.all())
     return filter(lambda x: x is not None,
                   map(formatted_email, leaders))
+
 
 def send_application_emails(request, application):
     if not application.finished:
@@ -64,6 +67,7 @@ def send_application_emails(request, application):
         if application.officer.email.lower() != application.address_email.lower():
             send_email_change_emails(application.officer, application)
 
+
 def send_officer_email(officer, application, application_text, rtf_attachment):
     subject = "CCIW application form submitted"
 
@@ -80,6 +84,7 @@ to CCIW. It is also attached to this e-mail as an RTF file.
     if user_email is not None:
         send_mail_with_attachments(subject, user_msg, settings.SERVER_EMAIL,
                                    [user_email], attachments=[rtf_attachment])
+
 
 def send_leader_email(leader_emails, application, application_text, rtf_attachment,
                       application_diff):
@@ -115,6 +120,7 @@ to your officer list if they will be coming on camp.
     send_mail_with_attachments(subject, body, settings.SERVER_EMAIL,
                                leader_emails, attachments=attachments)
 
+
 def make_update_email_url(application):
     email = application.address_email
     old_email = application.officer.email
@@ -122,6 +128,7 @@ def make_update_email_url(application):
                                                                            path=reverse('cciw.officers.views.update_email', kwargs={'username': application.officer.username}),
                                                                            email=urllib.quote(email),
                                                                            hash=make_update_email_hash(old_email, email))
+
 
 def send_email_change_emails(officer, application):
     subject = "E-mail change on CCIW"
@@ -155,8 +162,10 @@ This was an automated response by the CCIW website.
     send_mail(subject, user_msg, settings.SERVER_EMAIL,
               [user_email, application.address_email] , fail_silently=True)
 
+
 def make_ref_form_url_hash(ref_id, prev_ref_id):
     return salted_hmac("cciw.officers.create_reference_form", "%s:%s" % (ref_id, prev_ref_id)).hexdigest()[::2]
+
 
 def make_ref_form_url(ref_id, prev_ref_id):
     if prev_ref_id is None: prev_ref_id = ""
@@ -174,6 +183,7 @@ def send_reference_request_email(message, ref):
                                settings.DEFAULT_FROM_EMAIL,
                                [ref.referee.email],
                                fail_silently=False)
+
 
 def send_leaders_reference_email(refform):
     """

@@ -401,6 +401,7 @@ class SendMessageForm(forms.Form):
             del cleaned_data['message']
         return cleaned_data
 
+
 @staff_member_required
 @camp_admin_required # we don't care which camp they are admin for.
 def request_reference(request):

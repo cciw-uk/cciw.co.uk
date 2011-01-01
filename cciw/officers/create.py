@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.core.validators import email_re
 
+
 def make_username(first_name, last_name, guess_number=1):
     """
     Makes a username for an officer, based on 'first_name' and 'last_name',
@@ -23,6 +24,7 @@ def make_username(first_name, last_name, guess_number=1):
         return make_username(first_name, last_name, guess_number + 1)
     else:
         return guess
+
 
 def create_multiple_officers(csv_data, dryrun, verbose=False):
     # csv_data is hopefully a list of lists, where each inner list
@@ -73,8 +75,10 @@ def create_multiple_officers(csv_data, dryrun, verbose=False):
             if verbose:
                 print "Skipping row - %s:  %r" % (msg, officer_details)
 
+
 class EmailError(Exception):
     pass
+
 
 def create_officer(username, first_name, last_name, email, update=False,
                    is_leader=False, person=None, dryrun=False, verbose=False):
@@ -110,6 +114,7 @@ def create_officer(username, first_name, last_name, email, update=False,
         User.objects.get(username=username).delete()
         raise EmailError()
     return officer
+
 
 def _create_officer(username, first_name, last_name, email, password, dryrun=False,
                     update=False, person=None, is_leader=False, verbose=False):
@@ -212,7 +217,7 @@ You have been set up to receive CCIW application forms from officers
 using the online system.  Here is what you need to know:
 
 1) You will need to log in to the website:
-   
+
    Go to:
      https://www.cciw.co.uk/officers/
 
@@ -247,6 +252,7 @@ If you have any problems, please e-mail me at %(webmasteremail)s
 
 The CCIW webmaster.
     """
+
 
 def email_officer(username, first_name, email, password, is_leader=False, dryrun=False, update=False):
     if update:

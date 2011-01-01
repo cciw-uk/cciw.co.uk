@@ -6,6 +6,7 @@ from cciw.cciwmain.models import Camp
 from django.contrib.auth.models import User
 from cciw.officers.fields import YyyyMmField, AddressField, ExplicitBooleanField, required_field
 
+
 class Referee(object):
     """
     Helper class for more convenient access to referee* attributes
@@ -28,6 +29,7 @@ class Referee(object):
 
     def __eq__(self, other):
         return self.name == other.name and self.email == other.email
+
 
 class Application(models.Model):
     camp = models.ForeignKey(Camp, limit_choices_to={'online_applications': True})
@@ -153,11 +155,13 @@ class Application(models.Model):
     class Meta:
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name', 'camp__number')
 
+
 class ReferenceManager(models.Manager):
     # manager to reduce number of SQL queries, especially in admin
     use_for_related_fields = True
     def get_query_set(self):
         return super(ReferenceManager, self).get_query_set().select_related('application__camp', 'application__officer')
+
 
 class Reference(models.Model):
     """
@@ -214,6 +218,7 @@ class Reference(models.Model):
                     'referee_number')
         unique_together = (("application", "referee_number"),)
 
+
 class ReferenceFormManager(models.Manager):
     # manager to reduce number of SQL queries, especially in admin
     use_for_related_fields = True
@@ -257,10 +262,12 @@ class ReferenceForm(models.Model):
     class Meta:
         verbose_name = "Reference"
 
+
 class InvitationManager(models.Manager):
     use_for_related_fields = True
     def get_query_set(self):
         return super(InvitationManager, self).get_query_set().select_related('officer', 'camp__chaplain', 'camp__leaders')
+
 
 class Invitation(models.Model):
     officer = models.ForeignKey(User)

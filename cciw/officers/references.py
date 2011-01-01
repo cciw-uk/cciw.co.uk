@@ -4,8 +4,10 @@ Utilities for dealing with ReferenceForm and Reference
 from django.template.loader import render_to_string
 from django import template
 
+
 def first_letter_cap(s):
     return s[0].upper()+s[1:]
+
 
 def _present_val(v):
     # presentation function used in view_reference
@@ -15,6 +17,7 @@ def _present_val(v):
         return "Yes"
     else:
         return v
+
 
 def reference_form_info(refform):
     """
@@ -26,11 +29,13 @@ def reference_form_info(refform):
     return [(first_letter_cap(f.verbose_name), _present_val(getattr(refform, f.attname)))
             for f in ReferenceForm._meta.fields if f.attname not in ('id','reference_info_id')]
 
+
 _REFERENCE_FORM_TEXT_TEMPLATE = """{% load reference_utils %}{% autoescape off %}{% for name, val in info %}
 {{ name|wordwrap:65 }}
 
 {{ val|wordwrap:62|indent:3 }}
 {% endfor %}{% endautoescape %}"""
+
 
 def reference_form_to_text(refform):
     c = template.Context({'info': reference_form_info(refform)})
