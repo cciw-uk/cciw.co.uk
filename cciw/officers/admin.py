@@ -16,6 +16,8 @@ from cciw.utils.views import close_window_response
 
 class ApplicationAdminModelForm(forms.ModelForm):
 
+    officer = ModelChoiceField('user')
+
     def __init__(self, *args, **kwargs):
         from cciw.officers.views import get_next_camp_guess
 
