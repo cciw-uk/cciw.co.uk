@@ -14,8 +14,35 @@ import sys
 #
 # == Overview ==
 #
-# There are two targets, STAGING and PRODUCTION.
-# They are almost identical, with these differences
+# === Development ===
+#
+# You need a root directory to hold everything, and the following
+# sub directories:
+#
+#  project/    - holds a checkout of this repository
+#                i.e. fabfile.py and siblings live in that dir.
+#
+#  deps/       - holds all dependendencies that I have had to fork to add fixes,
+#                or that don't have proper packages.  These are all mirrored on
+#                github or bitbucket under the account 'spookylukey'.  Currently
+#                includes:
+#                 - diff_match_patch from google
+#                 - django
+#                 - django-autocomplete
+#                 - django-mailer
+#
+#                These can be symlinks
+#
+#  usermedia/  - corresponds to MEDIA_ROOT
+#
+#  protected_downloads/     - corresponds to SECUREDOWNLOAD_SERVE_ROOT
+#
+#  protected_downloads_src/ - corresponds to SECUREDOWNLOAD_SOURCE
+#
+# === Deployment ===
+#
+# There are two targets, STAGING and PRODUCTION, which live on the same
+# server. They are almost identical, with these differences:
 # - STAGING is on staging.cciw.co.uk
 # - PRODUCTION is on www.cciw.co.uk
 # - They have different databases
@@ -41,7 +68,7 @@ import sys
 #          project/                # uploaded from local
 #          deps/
 #            django/
-#            django-mailer/
+#            django-mailer/        # etc
 #          static/                 # built once uploaded
 #       current/                   # symlink to src-???
 
@@ -87,7 +114,8 @@ deps = _get_subdirs(join(parent_dir, deps_dir))
 
 class Target(object):
     """
-    Represents a place where the project is deployed to
+    Represents a place where the project is deployed to.
+
     """
     def __init__(self, django_app='', dbname=''):
         self.django_app = django_app

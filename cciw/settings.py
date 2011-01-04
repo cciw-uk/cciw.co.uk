@@ -169,7 +169,7 @@ SECUREDOWNLOAD_SERVE_URL = "/file/"
 SECUREDOWNLOAD_TIMEOUT = 3600
 
 if DEVBOX:
-    SECUREDOWNLOAD_SOURCE = os.path.join(parentdir, "resources/protected_downloads")
+    SECUREDOWNLOAD_SOURCE = os.path.join(parentdir, "protected_downloads_src")
     SECUREDOWNLOAD_SERVE_ROOT = os.path.join(parentdir, "protected_downloads")
 else:
     from cciw.settings_priv import SECUREDOWNLOAD_SOURCE, SECUREDOWNLOAD_SERVE_ROOT
