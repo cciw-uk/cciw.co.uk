@@ -12,7 +12,7 @@ handler404 = 'cciw.cciwmain.views.handler404'
 
 autocomplete.register(
     id='user',
-    queryset=User.objects.all(),
+    queryset=User.objects.all().order_by('first_name', 'last_name', 'email'),
     fields=('first_name__istartswith', 'last_name__istartswith'),
     limit=10,
     label=lambda user: "%s %s <%s>" % (user.first_name, user.last_name, user.email),
