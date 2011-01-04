@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 
 import cciw.officers.views
-import mailer.admin
+import mailer.admin # Make sure this gets imported, so that it shows in admin
 
 handler404 = 'cciw.cciwmain.views.handler404'
 
@@ -33,10 +33,8 @@ urlpatterns = patterns('',
 
 )
 
-if settings.DEBUG:
-    import django
-    import os
-    django_root = os.path.dirname(django.__file__)
+if settings.DEVBOX:
+    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
     urlpatterns += patterns('',
                             (r'^validator/', include('output_validator.urls')),
                             (r'^admin_doc/', include('django.contrib.admindocs.urls')),
@@ -46,7 +44,6 @@ if settings.DEBUG:
                              {'document_root': settings.SECUREDOWNLOAD_SERVE_ROOT}),
     )
 
-    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
     urlpatterns += staticfiles_urlpatterns()
 
 urlpatterns = urlpatterns + patterns('',
