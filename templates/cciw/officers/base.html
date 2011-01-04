@@ -5,3 +5,9 @@
 {% block title %}
 CCIW Officers
 {% endblock %}
+{% block extrastyle %}{{ block.super }}
+
+{% if form %}
+  {{ form.media }}
+{% endif %}
+{% endblock %}

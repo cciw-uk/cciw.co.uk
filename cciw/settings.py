@@ -64,6 +64,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'mailer',
     'securedownload',
+    'autocomplete',
 )
 
 if not (LIVEBOX and WEBSERVER_RUNNING):

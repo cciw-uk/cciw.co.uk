@@ -167,3 +167,9 @@ tr.refrow td.nopadding
     z-index:1;
     opacity: 0.7;
 }
+
+/* Autocomplete */
+/* Need to override something set in admin CSS */
+ul.ui-autocomplete li {
+    list-style: none;
+}

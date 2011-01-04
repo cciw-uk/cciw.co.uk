@@ -283,4 +283,14 @@ class Invitation(models.Model):
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name')
         unique_together = (('officer', 'camp'),)
 
+
+class CRBApplication(models.Model):
+    officer = models.ForeignKey(User)
+    crb_number = models.CharField("CRB Number", max_length=20)
+    completed = models.DateField()
+
+    class Meta:
+        verbose_name = "CRB Application"
+
+
 import cciw.officers.admin

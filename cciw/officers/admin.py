@@ -1,11 +1,15 @@
+import datetime
+
+import autocomplete
 from django.contrib import admin
 from django.core import urlresolvers
 from django import forms
 from django.forms.util import ErrorList
-import datetime
+
 from cciw.middleware import threadlocals
 from cciw.officers.fields import ExplicitBooleanField
-from cciw.officers.models import Application, Reference, Invitation, ReferenceForm
+from cciw.officers.formfields import ModelChoiceField
+from cciw.officers.models import Application, Reference, Invitation, ReferenceForm, CRBApplication
 from cciw.officers import widgets, email
 from cciw.utils.views import close_window_response
 
@@ -349,7 +353,31 @@ class ReferenceFormAdmin(admin.ModelAdmin):
         else:
             return super(ReferenceFormAdmin, self).response_change(request, obj)
 
+
+class CRBApplicationModelForm(forms.ModelForm):
+
+    officer = ModelChoiceField('user')
+
+    class Meta:
+        model = CRBApplication
+
+
+class CRBApplicationAdmin(admin.ModelAdmin):
+
+    form = CRBApplicationModelForm
+
+    search_fields = ('officer__first_name', 'officer__last_name')
+    list_display = ('crb_number', 'first_name', 'last_name', 'completed')
+
+    def first_name(self, obj):
+        return obj.officer.first_name
+
+    def last_name(self, obj):
+        return obj.officer.last_name
+
+
 admin.site.register(Application, ApplicationAdmin)
 admin.site.register(Reference, ReferenceAdmin)
 admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(ReferenceForm, ReferenceFormAdmin)
+admin.site.register(CRBApplication, CRBApplicationAdmin)

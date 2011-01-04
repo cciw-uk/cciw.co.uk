@@ -1,10 +1,24 @@
+from autocomplete.views import autocomplete
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth.models import User
+
 import cciw.officers.views
 import mailer.admin
 
 handler404 = 'cciw.cciwmain.views.handler404'
+
+
+autocomplete.register(
+    id='user',
+    queryset=User.objects.all(),
+    fields=('first_name__istartswith', 'last_name__istartswith'),
+    limit=10,
+    label=lambda user: "%s %s <%s>" % (user.first_name, user.last_name, user.email),
+    auth=lambda request: request.user.is_authenticated() and cciw.officers.views._is_camp_admin(request.user)
+    )
+
 
 urlpatterns = patterns('',
     # Plug in the password reset views
@@ -14,7 +28,9 @@ urlpatterns = patterns('',
     (r'^reset/done/$', 'django.contrib.auth.views.password_reset_complete'),
     # Normal views
     (r'^admin/', include(admin.site.urls)),
-    (r'^officers/', include('cciw.officers.urls'))
+    (r'^officers/', include('cciw.officers.urls')),
+    url('^autocomplete/(\w+)/$', autocomplete, name='autocomplete'),
+
 )
 
 if settings.DEBUG:
