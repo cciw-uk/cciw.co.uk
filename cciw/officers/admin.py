@@ -1,6 +1,5 @@
 import datetime
 
-import autocomplete
 from django.contrib import admin
 from django.core import urlresolvers
 from django import forms

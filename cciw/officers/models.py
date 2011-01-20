@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from django.db import models
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.db import models
 
 from cciw.cciwmain.models import Camp
-from django.contrib.auth.models import User
 from cciw.officers.fields import YyyyMmField, AddressField, ExplicitBooleanField, required_field
 
 
@@ -145,7 +145,9 @@ class Application(models.Model):
 
     def __unicode__(self):
         if self.camp is not None:
-            return u"Application from %s, %d, camp %d" % (self.full_name, self.camp.year, self.camp.number)
+            return u"Application from %s, %d, camp %d" % (self.full_name,
+                                                          self.camp.year,
+                                                          self.camp.number)
         else:
             return u"Application from %s" % self.full_name
 
