@@ -16,8 +16,6 @@ class UserAnonymizer(Anonymizer):
         ('first_name', 'first_name'),
         ('last_name',  'last_name'),
         ('email',      'email'),
-        # Set the date_joined to a similar time to when they actually joined,
-        # by passing the 'val' paramater
         ('date_joined', 'similar_datetime'),
         # Set to today:
         ('last_login', lambda *args: datetime.now()),
@@ -39,8 +37,7 @@ class ApplicationAnonymizer(Anonymizer):
     model = Application
 
     attributes = [
-        # 'full_name': "name", - see below
-        #'full_maiden_name': "name",
+        # 'full_name' and 'full_maiden_name' - see below
         ('birth_date', "date"),
         ('birth_place', "city"),
         ('address_firstline', "street_address"),
