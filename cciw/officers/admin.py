@@ -194,9 +194,14 @@ class ApplicationAdmin(admin.ModelAdmin):
             {'fields': ('finished',),
              'classes': ('wide',),
              'description': """<div>By ticking the following box and pressing save, you confirm
-             that:</div> <ol><li>the information you have submitted is <strong>correct and complete</strong>,</li>
+             that:</div>
+             <ol>
+             <li>the information you have submitted is <strong>correct and complete</strong>,</li>
              <li>you have <strong>read and understood</strong> the relevant sections of the
-             <a rel="external" href="/officers/files/CCIW%20CPP.doc">camp manual</a>.</li></ol>
+             <a rel="external" href="/officers/files/CCIW%20CPP.doc">camp manual</a>.</li>
+             <li>you permit CCIW to store this information and the references that we will collect
+             for as long as necessary.</li>
+             </ol>
              <div>Your information will then be sent to the camp leader.  By leaving this
              box un-ticked, you can save what you have done so far and edit it later.</div>"""
              }
