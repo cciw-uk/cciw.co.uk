@@ -18,7 +18,7 @@ class CampAdmin(admin.ModelAdmin):
         ),
     )
     ordering = ['-year','number']
-    list_filter = ('age', 'site', 'online_applications')
+    list_filter = ('age', 'site')
     filter_horizontal = ('leaders', 'admins')
     date_hierarchy = 'start_date'
 
