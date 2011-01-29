@@ -283,7 +283,7 @@ def _build_static(version):
 
     with virtualenv(version.venv_dir):
         with cd(version.project_dir):
-            run_venv("./manage.py collectstatic --settings=cciw.settings --noinput")
+            run_venv("./manage.py collectstatic -v 0 --settings=cciw.settings --noinput")
 
     run("chmod -R ugo+r %s" % version.static_dir)
 
