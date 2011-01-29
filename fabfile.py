@@ -272,7 +272,7 @@ def _copy_local_sources(target, version):
 
 def _copy_protected_downloads():
     # We currently don't need this to be separate for staging and production
-    rsync_dir(join(parent_dir, "resources/protected_downloads"),
+    rsync_dir(join(parent_dir, "protected_downloads_src"),
               join(webapps_root, 'cciw_protected_downloads_src'))
 
 
