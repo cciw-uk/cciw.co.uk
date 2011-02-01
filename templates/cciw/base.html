@@ -3,20 +3,18 @@
 <head>
 <title>{% block title %}CCIW: {{ title }}{% endblock %}</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link rel="stylesheet" title="dark" href="{{ STATIC_URL }}css/style.css" type="text/css" />
-<!--[if lt IE 6]><link rel="stylesheet" title="dark" href="{{ STATIC_URL }}css/ielt6.css" type="text/css" /><![endif]-->
-<!--[if gte IE 6]><link rel="stylesheet" title="dark" href="{{ STATIC_URL }}css/iegte6.css" type="text/css" /><![endif]-->
+<link rel="stylesheet" href="{{ STATIC_URL }}css/style.css" type="text/css" />
 {% block extraheader %}{% endblock %}
 </head>
 <body>
 {% block bodystart %}
 {% endblock %}
-<div id="header">
-	<div id="headerlogo">
-		{% if not homepage %}
-			<a href="/" title="Home page" style="height: 60px; width:183px; display: block;"></a>
-		{% endif %}
-	</div>
+<div id="header" {% block headerattr %}{% endblock %}>
+  <div id="headerlogo">
+    {% block extrapageheader %}
+    {% endblock %}
+    <a href="/" title="Home page" style="height: 66px; width: 200px; display: block;"></a>
+  </div>
 </div>
 {% block main %}
 	<div id="mainbase">
@@ -29,7 +27,13 @@
 		</div>
 	</div>
 {% endblock %}
-{% block footer %}
-{% endblock %}
+
+    <!--[if lte IE 6]>
+    <div id="ie-message">
+      Your browser is obsolete, and probably doesn't display this site
+      correctly. Please upgrade to <a href="http://abetterbrowser.org/">a better
+      browser</a>.
+    </div>
+    <![endif]-->
 </body>
 </html>

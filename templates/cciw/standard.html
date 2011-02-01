@@ -25,19 +25,19 @@
 {% endblock %}
 {% block main %}
 <div id="mainstandard">
-	<div id="sidebarOuter">
-		<div id="sidebar">
-			<h1>Site contents</h1>
+	<div id="menubarOuter">
+		<div id="menubar">
 			<ul
 			>{% for menulink in menulinks %}<li
 					><a href="{{ menulink.url }}"
 					{% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
-					{% if menulink.isCurrentPage %} class="currentPage" {% endif %}
+					{% if menulink.isCurrentPage %} class="active" {% endif %}
 					{% if menulink.isCurrentSection %} class="currentSection" {% endif %}
 					>{{ menulink.title }}</a></li
 			>{% endfor %}</ul
 			>
 		</div>
+                <div class="clearer">&nbsp;</div>
 	</div>
 	<div id="contentOuter">
 		<div id="content">
@@ -60,10 +60,10 @@
 </div>
 {% endblock %}
 
+{% block headerattr %}class="mainstandard"{% endblock %}
 
-{% block footer %}
-<div id="footer">
-	<h1>Quick Links</h1>
+{% block extrapageheader %}
+<div id="quicklinks">
 	<ul>
 	{% if current_member %}	
 		<li>Logged in as :  <a href="{{current_member.get_absolute_url}}">{{current_member.user_name}}</a></li>
@@ -74,5 +74,4 @@
 		<li><a href="/members/?online=1"> {{ misc.logged_in_members }} member(s) online</a></li>
 	</ul>
 </div>
-
 {% endblock %}

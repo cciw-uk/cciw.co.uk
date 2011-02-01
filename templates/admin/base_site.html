@@ -22,3 +22,14 @@
 {% block userlinks %}<a href="/officers/">Officer homepage</a> / <a href="/admin/password_change/">{% trans 'Change password' %}</a> / <a href="/admin/logout/">{% trans 'Log out' %}</a>{% endblock %}
 
 {% block nav-global %}{% endblock %}
+
+{% block footer %}
+{{ block.super }}
+<!--[if lte IE 6]>
+<div id="ie-message">
+  Your browser is obsolete, and probably doesn't display this site
+  correctly. Please upgrade to <a href="http://abetterbrowser.org/">a better
+    browser</a>.
+</div>
+<![endif]-->
+{% endblock %}

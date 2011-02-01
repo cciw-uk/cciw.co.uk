@@ -9,7 +9,7 @@
 }
 #header2
 {
-	height: 63px;
+	height: 72px;
 	background-repeat: repeat-x;
 }
 
@@ -17,12 +17,22 @@
 {
 	background-repeat: no-repeat;
 	margin-left: 0px;
-	height: 63px;
+	height: 72px;
 }
 
-#header	{ background:black; color:white; min-height:2.4em; overflow:auto; }
-#header a:link, #header a:visited { color:#00bb55; }
-#header a:hover { text-decoration:underline; }
+#header	{
+        background:black;
+        color:white;
+        min-height:2.4em;
+        overflow:auto;
+}
+#header a:link, #header a:visited {
+        color: #ff8900;
+}
+#header a:hover {
+        color: #ffa640;
+        text-decoration: underline;
+}
 
 #helplink 
 { 
@@ -172,4 +182,16 @@ tr.refrow td.nopadding
 /* Need to override something set in admin CSS */
 ul.ui-autocomplete li {
     list-style: none;
+}
+
+/* Internet Explorer message */
+#ie-message {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    text-align: center;
+    background-color: #800000;
+    color: white;
+    padding: 5px;
 }
