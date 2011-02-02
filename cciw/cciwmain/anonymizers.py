@@ -1,3 +1,5 @@
+import mailer.models as mailer_models
+
 from cciw.cciwmain.models import Member, PersonalAward, Message, Poll, PollOption, NewsItem, Topic, Photo, Post
 from anonymizer import Anonymizer
 
@@ -94,4 +96,42 @@ class PostAnonymizer(Anonymizer):
     attributes = [
         ('subject', "similar_lorem"),
         ('message', "similar_lorem"),
+    ]
+
+
+class MessageAnonymizer(Anonymizer):
+
+    model = mailer_models.Message
+
+    attributes = [
+         # Skipping field id
+        ('message_data', "similar_lorem"),
+        #('when_added', "datetime"),
+        #('priority', "choice"),
+    ]
+
+
+class DontSendEntryAnonymizer(Anonymizer):
+
+    model = mailer_models.DontSendEntry
+
+    attributes = [
+         # Skipping field id
+        ('to_address', "email"),
+        #('when_added', "datetime"),
+    ]
+
+
+class MessageLogAnonymizer(Anonymizer):
+
+    model = mailer_models.MessageLog
+
+    attributes = [
+         # Skipping field id
+        ('message_data', "similar_lorem"),
+        #('when_added', "datetime"),
+        #('priority', "choice"),
+        #('when_attempted', "datetime"),
+        #('result', "choice"),
+        ('log_message', "lorem"),
     ]
