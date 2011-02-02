@@ -74,60 +74,36 @@ a:hover {
 
 
 /* menubar */
+
 #menubar {
-    float:left;
-    width:100%;
-    background:#f8f8f8;
-    overflow:hidden;
-    position:relative;
     font-weight: bold;
-    margin: 0px;
+    padding: 3px 0 3px 0; /* equals padding on #menubar a */
 }
 #menubar ul {
-    clear:left;
-    float:left;
-    list-style:none;
-    margin:0;
-    padding:0;
-    position:relative;
-    left:50%;
-    text-align:center;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    text-align: center;
 }
 #menubar ul li {
-    display:block;
-    float:left;
-    list-style:none;
-    margin:0;
-    padding:0;
-    position:relative;
-    right:50%;
+    display: inline;
 }
 #menubar ul li a {
-    display:block;
-    margin:0 0 0 1px;
-    padding:3px 10px;
-    background:#ddd;
-    color:#000;
-    text-decoration:none;
+    text-decoration: none;
+    padding: 3px 10px;
+    color: #000;
+    background-color: #ddd;
     line-height:1.3em;
+    margin: 0px 1px 0px 0px;
 }
 #menubar ul li a:hover {
-    background:#9bdab7;
     color:#fff;
+    background-color:#9bdab7;
 }
 #menubar ul li a.active,
 #menubar ul li a.active:hover {
    color:#fff;
    background:#007633;
-   font-weight:bold;
-}
-
-.clearer {
-	clear: both;
-	height: 0;
-	background-color: #000; 
-	font-size: 1px;
-	line-height: 0;
 }
 
 
@@ -438,26 +414,6 @@ p
 #mainstandard #editfooter
 {
     padding: 0 5px;
-}
-
-/* Menubar styles */
-
-#menubar ul,
-#menubar li
-{
-    padding: 0px;
-    margin: 0px;
-    list-style-type: none;
-}
-
-#menubar a
-{
-    padding-left: 8px;
-    padding-right: 8px;
-    padding-top: 2px;
-    padding-bottom: 3px;
-    display: block;
-    text-decoration: none;
 }
 
 /* Quicklinks */
