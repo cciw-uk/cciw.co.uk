@@ -72,6 +72,12 @@ a:hover {
     margin-top: 0px;
 }
 
+#mainstandard #contentBody
+{
+    background-image: url('/static/images/contentbg.png');
+    background-repeat: no-repeat;
+    background-position: right bottom;
+}
 
 /* menubar */
 
