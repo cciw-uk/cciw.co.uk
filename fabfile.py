@@ -320,25 +320,35 @@ def _update_db(target, version):
             run_venv("./manage.py migrate --all --settings=cciw.settings")
 
 
-def _deploy(target):
+def _deploy(target, quick=False):
+    # If 'quick=True', then it assumes all changes are small presentation
+    # changes, with no database changes or Python code changes or server restart
+    # needed.  (This depends on the assumption that HTML/CSS/js are not cached
+    # in the webserver in any way).
     _prepare_deploy()
+
     label = datetime.now().strftime("%Y-%m-%d_%H.%M.%S")
     version = target.make_version(label)
-    db_backup_name = backup_database(target, version)
 
-    _copy_local_sources(target, version)
-    _copy_protected_downloads()
-    _update_virtualenv(version)
-    _build_static(version)
+    if quick:
+        _copy_local_sources(target, version)
+        _copy_protected_downloads()
+        _update_symlink(target, version)
+        _build_static(version)
+    else:
+        db_backup_name = backup_database(target, version)
+        _copy_local_sources(target, version)
+        _copy_protected_downloads()
+        _update_virtualenv(version)
+        _build_static(version)
 
-    _stop_apache(target)
-
-    # Ideally, we rollback if unsuccessful.
-    # In practice, this may be impossible for some migrations,
-    # and we are better off restoring from the backup db.
-    _update_db(target, version)
-    _update_symlink(target, version)
-    _start_apache(target)
+        _stop_apache(target)
+        # Ideally, we rollback if unsuccessful.
+        # In practice, this may be impossible for some migrations,
+        # and we are better off restoring from the backup db.
+        _update_db(target, version)
+        _update_symlink(target, version)
+        _start_apache(target)
 
 
 def _clean(target):
@@ -360,20 +370,29 @@ def _clean(target):
             run("rm -rf %s" % d)
 
 
-def deploy_staging():
-    _deploy(STAGING)
+def deploy_staging(quick=False):
+    _deploy(STAGING, quick=quick)
 
 
-def deploy_production():
+def deploy_production(quick=False):
     with cd(this_dir):
         if local("hg st").strip() != "":
             if not console.confirm("Project dir is not clean, merge to live will fail. Continue anyway?", default=False):
                 sys.exit()
 
-    _deploy(PRODUCTION)
+    _deploy(PRODUCTION, quick=quick)
     #  Update 'live' branch so that we can switch to it easily if needed.
     with cd(this_dir):
         local('hg update -r live && hg merge -r default && hg commit -m "Merged from default" && hg update -r default', capture=False)
+
+
+def quick_deploy_staging():
+    deploy_staging(quick=True)
+
+
+def quick_deploy_production():
+    deploy_production(quick=True)
+
 
 def _test_remote(target):
     version = target.current_version
