@@ -1,12 +1,11 @@
 /******************* COLOURS *******************/
 /*
 Primary Color:
-00B64F	22884F	007633	37DA7E	9BDAB7
+00B64F	22884F	007633	(37DA7E) BACB97
+
 Secondary Color A:
 FF8900	BF7D30	A65900	FFA640	FFBE73
 
-(Secondary Color B:
-DC0055	A52959	8F0037	EE3B80	EE6B9E)
 */
 
 /* Include all borders here too */
@@ -104,7 +103,7 @@ a:hover {
 }
 #menubar ul li a:hover {
     color:#fff;
-    background-color:#9bdab7;
+    background-color:#bacb97;
 }
 #menubar ul li a.active,
 #menubar ul li a.active:hover {
@@ -128,7 +127,7 @@ table.sideheaders th,
 table.simpleform th,
 table.topheaders th
 {
-    background-color: #9bdab7;
+    background-color: #bacb97;
 }
 
 table.sideheaders th,
@@ -183,7 +182,7 @@ div.validationErrorBottom
 .successMessage
 {
     border: 1px solid #007633;
-    background-color: #9bdab7;
+    background-color: #bacb97;
 }
 
 div.awardInfo
@@ -234,7 +233,7 @@ div.newsItem h2
 .postMessage blockquote
 {
     border-left: 2px solid #00b64f;
-    background-color: #9bdab7;
+    background-color: #bacb97;
 }
 .postMessage .memberquote
 {
