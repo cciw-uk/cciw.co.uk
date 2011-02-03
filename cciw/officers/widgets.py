@@ -39,9 +39,9 @@ class JQueryAutoCompleteWidget(AutoCompleteWidget):
 
     class Media:
         extend = False
-        css = {'all': ('http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css',),
+        css = {'all': ('https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css',),
                }
         js = (
-            "http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.js",
-            "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.js",
+            "https://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.js",
+            "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.js",
             "js/jquery_autocomplete.js")
