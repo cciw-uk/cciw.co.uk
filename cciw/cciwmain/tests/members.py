@@ -296,7 +296,7 @@ class MemberLists(TestCase):
         # Just test for no error
         resp = self.client.get(reverse('cciwmain.members.index'), {'format':'atom'})
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp['Content-Type'], 'application/atom+xml')
+        self.assertTrue(resp['Content-Type'].startswith('application/atom+xml'))
         self.assertContains(resp, TEST_MEMBER_USERNAME)
 
     def test_query_count(self):
@@ -568,6 +568,6 @@ class MemberPosts(TestCase):
                                        kwargs={'user_name':TEST_MEMBER_USERNAME}),
                                {'format':'atom'})
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp['Content-Type'], 'application/atom+xml')
+        self.assertTrue(resp['Content-Type'].startswith('application/atom+xml'))
         self.assertContains(resp, TEST_MEMBER_USERNAME)
         self.assertContains(resp, "unique message", count=1)

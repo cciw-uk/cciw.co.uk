@@ -39,7 +39,7 @@ class TopicIndexPage(TestCase):
         response = self.client.get(self.forum.get_absolute_url(), {'format':'atom'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Jill &amp; Jane")
-        self.assertEqual(response['Content-Type'], 'application/atom+xml')
+        self.assertTrue(response['Content-Type'].startswith('application/atom+xml'))
 
     def test_query_count(self):
         """
@@ -92,7 +92,7 @@ class AllTopicsPage(TestCase):
         response = self.client.get(self.path(), {'format':'atom'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Jill &amp; Jane")
-        self.assertEqual(response['Content-Type'], 'application/atom+xml')
+        self.assertTrue(response['Content-Type'].startswith('application/atom+xml'))
 
     def test_query_count(self):
         """
@@ -145,7 +145,7 @@ class TopicPage(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '<title>CCIW - Posts on topic "&lt;Jill &amp; Jane&gt;"</title>')
         self.assertContains(response, 'A &lt;b&gt;unique message&lt;/b&gt; with some bbcode &amp;amp; &amp;lt;stuff&amp;gt; to be escaped')
-        self.assertEqual(response['Content-Type'], 'application/atom+xml')
+        self.assertTrue(response['Content-Type'].startswith('application/atom+xml'))
 
     def test_query_count(self):
         """
@@ -189,7 +189,7 @@ class PhotoIndexPage(TestCase):
     def test_atom(self):
         response = self.client.get(self.gallery.get_absolute_url(), {'format':'atom'})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/atom+xml')
+        self.assertTrue(response['Content-Type'].startswith('application/atom+xml'))
 
     def test_query_count(self):
         """
@@ -237,7 +237,7 @@ class PhotoPage(TestCase):
 
         self.assertContains(response, '<title>CCIW - Posts on photo Photo: 2000-1-a-nice-photo.jpeg</title>')
         self.assertContains(response, 'A &lt;b&gt;photo message&lt;/b&gt; with &amp;lt;stuff&amp;gt; to be escaped')
-        self.assertEqual(response['Content-Type'], 'application/atom+xml')
+        self.assertTrue(response['Content-Type'].startswith('application/atom+xml'))
 
     def test_query_count(self):
         """
@@ -284,7 +284,7 @@ class AllPostsPage(TestCase):
         response = self.client.get(self.path(), {'format':'atom'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Jill &amp;amp; Jane")
-        self.assertEqual(response['Content-Type'], 'application/atom+xml')
+        self.assertTrue(response['Content-Type'].startswith('application/atom+xml'))
 
     def test_query_count_topics(self):
         """

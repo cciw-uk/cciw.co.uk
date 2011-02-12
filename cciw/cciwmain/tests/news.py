@@ -103,4 +103,4 @@ class AllNewsPage(TestCase):
         with self.assertNumQueries(2):
             response = forums.news(request)
             resp.render()
-            self.assertEqual(response['Content-Type'], 'application/atom+xml')
+            self.assertTrue(response['Content-Type'].startswith('application/atom+xml'))
