@@ -739,10 +739,10 @@ def remove_officer(request, year=None, number=None):
 @staff_member_required
 @camp_admin_required
 @json_response
-def add_officer(request, year=None, number=None):
+def add_officers(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
-    officer_id = request.POST['officer_id']
-    Invitation.objects.get_or_create(camp=camp, officer=User.objects.get(id=int(officer_id)))
+    for officer_id in request.POST['officer_ids'].split(','):
+        Invitation.objects.get_or_create(camp=camp, officer=User.objects.get(id=int(officer_id)))
     return {'status':'success'}
 
 

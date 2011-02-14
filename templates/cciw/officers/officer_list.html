@@ -25,8 +25,11 @@
 <h2 style="margin-top: 2em;">Add to list</h2>
 
 <div class="selector-filter">
-<img style="vertical-align: middle" alt="search" src="{% admin_media_prefix %}img/admin/selector-search.gif" />
+ <a href="#" id="id_add_officer_btn">Add  <img style="vertical-align: middle"
+ alt="Add" src="{{ STATIC_URL }}images/officer-list-add.gif" /></a>
+ &nbsp;&nbsp;&nbsp;
  <input type="text" id="id_available_officers_filter" />
+ <img style="vertical-align: middle" alt="search" src="{% admin_media_prefix %}img/admin/selector-search.gif" />
 </div>
 <div>
 <select multiple="multiple" id="id_available_officers" style="min-width:30em;height: 30em;" name="officers">
@@ -36,8 +39,9 @@
 
 <h3>Help</h3>
 <ul>
-<li>Add an officer from those registered on the system by double clicking
- on the entry above (or use arrow keys and 'Enter').  </li>
+<li>Add an officer from by double clicking on the entry,
+ or by selecting and pressing 'Enter' or clicking the 'Add' button.</li>
+<li>Use Shift or Ctrl buttons to select multiple officers.</li>
 <li>Type in the search box to quickly find an officer.</li>
 <li>Officers from last year are at the start of the list and starred (if the information is available)</li>
 </ul>
@@ -183,6 +187,7 @@
             }
         });
     };
+
     var officerAddHandler = function(ev) {
         if (ev.type == "keyup") {
             var code = (ev.keyCode ? ev.keyCode : ev.which);
@@ -190,14 +195,20 @@
                 return;
             }
         }
-        var officer_id = ev.target.value;
-        if (officer_id == "") {
+        var officer_ids = [];
+        var options = $('#id_available_officers').get(0).options;
+        for (var i = 0; i < options.length; i++) {
+            if (options[i].selected) {
+               officer_ids.push(options[i].value)
+            }
+        }
+        if (officer_ids.length == 0) {
             return;
         }
         $.ajax({
             type: "POST",
-            url: "{% url 'cciw.officers.views.add_officer' camp.year camp.number %}",
-            data: "officer_id=" + officer_id,
+            url: "{% url 'cciw.officers.views.add_officers' camp.year camp.number %}",
+            data: "officer_ids=" + officer_ids.join(','),
             dataType: 'json',
             success: refreshLists
         });
@@ -229,6 +240,7 @@
         $("#id_available_officers")
            .dblclick(officerAddHandler)
            .keyup(officerAddHandler);
+        $('#id_add_officer_btn').click(officerAddHandler);
         $('#id_new_officer_btn').click(newOfficerHandler);
         $('#id_popup_close_btn').click(newOfficerClose);
         $("#loading").ajaxStart(function(){

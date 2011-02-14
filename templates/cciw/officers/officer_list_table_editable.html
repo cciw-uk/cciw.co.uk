@@ -15,7 +15,7 @@
       <img class="editbtn" id="id_edit_{{ officer.id }}" src="{% admin_media_prefix %}img/admin/icon_changelink.gif" alt="Edit" title="Edit" />
     </td>
     <td>
-      <img class="removebtn" id="id_remove_{{ officer.id }}" src="{% admin_media_prefix %}img/admin/icon_deletelink.gif" alt="Remove" title="Remove" />
+      <img class="removebtn" id="id_remove_{{ officer.id }}" src="{{ STATIC_URL }}images/officer-list-remove.gif" alt="Remove" title="Remove" />
     </td>
     <td>
       <img class="emailbtn" id="id_email_{{ officer.id }}" src="{{ STATIC_URL }}images/sendemail.gif" alt="Re-send initial e-mail" title="Re-send initial e-mail" />
