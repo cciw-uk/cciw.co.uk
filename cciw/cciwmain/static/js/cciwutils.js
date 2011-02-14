@@ -55,6 +55,48 @@
             }
         });
     };
+
+    // Define multiSelectFilter jQuery plugin
+    $.fn.multiSelectFilter = function(selectElem){
+        var filterbox = this;
+        // Make clone that stores options
+        var select = $(selectElem);
+        var clone;
+
+        var init = function() {
+            if (clone != undefined) {
+                clone.remove();
+            }
+            clone = select.clone();
+            clone.removeAttr('id').removeAttr('name').hide();
+            clone.appendTo(select.parent());
+        };
+
+        var filter = function(){
+            select.children().remove();
+            var term = $.trim(filterbox.val().toLowerCase());
+            var tmp = [];
+            clone.children().each(function(i, elem) {
+                                      if (!term || elem.text.toLowerCase().indexOf(term) != -1) {
+                                          tmp.push($('<div>').append($(elem).eq(0).clone()).html());
+                                      }
+                                  });
+            select.append(tmp.join(''));
+        };
+
+        init();
+        this.keyup(filter);
+
+        // If the contents are changed, the clone needs to be refreshed, so the
+        // 'refresh' event should be triggered on the filterbox.
+        this.bind('refresh', function() {
+            init();
+            filter();
+        });
+        return this;
+
+    };
+
     $('html').ajaxSend(function(event, xhr, settings) {
         function getCookie(name) {
             var cookieValue = null;
