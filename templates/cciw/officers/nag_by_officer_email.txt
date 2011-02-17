@@ -1,0 +1,16 @@
+{% autoescape off %}Hi {{ officer.first_name }},
+
+You put down {{ referee.name }} as one of your referees on your camp application form, but they are not responding to our requests for a reference. CCIW policy is that you *must* have two up-to-date references every year if you want to come on camp, so could you get in contact with them and ask them to do the reference?
+
+The details you gave us:
+
+E-mail: {{ referee.email }}
+Tel: {{ referee.tel }}
+Mobile: {{ referee.mobile }}
+
+If the e-mail is wrong, please let us know.
+
+Thanks.
+
+On behalf of the leaders of camp {{ camp.number }}, {{ camp.year }} - {{ camp.leaders_formatted }}.
+{% endautoescape %}

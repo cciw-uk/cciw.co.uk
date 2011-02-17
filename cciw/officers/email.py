@@ -206,3 +206,11 @@ CCIW website for officer %s %s.
 
     send_mail(subject, body, settings.SERVER_EMAIL,
               leader_emails, fail_silently=False)
+
+
+def send_nag_by_officer(message, officer, ref):
+    send_mail("Need reference from %s" % ref.referee.name,
+              message,
+              settings.DEFAULT_FROM_EMAIL,
+              [officer.email],
+              fail_silently=False)

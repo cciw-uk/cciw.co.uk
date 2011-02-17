@@ -33,6 +33,11 @@ function manageReferenceManually(ref_id) {
     requestGeneric('ref_id=' + ref_id.toString() + '&manual=1');
 }
 
+function nagByOfficer(ref_id) {
+    window.open('{% url "cciw.officers.views.nag_by_officer" %}?ref_id=' + ref_id.toString(),
+                '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+}
+
 
 //-->
 </script>
@@ -57,8 +62,9 @@ function manageReferenceManually(ref_id) {
 <p>All of the 'request' action buttons open new windows in which you may need to
   edit a default e-mail and confirm.</p>
 
-<p>If the referee does not respond quickly, you can request the reference
-  again.</p>
+<p>If the referee does not respond quickly, you can request the reference again,
+  or ask the officer concerned to contact their referee and ask for the
+  reference.</p>
 
 {% if message %}
 <p><strong>{{ message }}</strong></p>

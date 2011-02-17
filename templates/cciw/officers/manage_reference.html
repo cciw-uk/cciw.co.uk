@@ -20,6 +20,14 @@
 {% else %}
   <p>Ask for reference{% if mode == "requested" %} again{% endif %} - choose from the options:</p>
 <ul>
+  {% if mode == "requested" %}
+  <li>Ask {{ ref.application.officer.first_name }} to prompt their referee:
+    <span class="referencebutton">
+      <button onclick="nagByOfficer({{ ref.id }});">Get {{ ref.application.officer.first_name }} to do the nagging</button>
+    </span>
+  </li>
+
+  {% endif %}
   {% if ref.previous_reference %}
   <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
     has done a reference for {{ ref.application.officer.first_name}} before, so: 

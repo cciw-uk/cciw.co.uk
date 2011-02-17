@@ -23,7 +23,7 @@ from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
 from cciw.officers import create
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
-from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email
+from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm, Invitation
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
@@ -494,6 +494,50 @@ def request_reference(request):
     c['emailform'] = emailform
     c['messageform'] = messageform
     return render_to_response('cciw/officers/request_reference.html',
+                              context_instance=c)
+
+
+class SendNagByOfficerForm(SendMessageForm):
+    def get_message_template(self):
+        return 'cciw/officers/nag_by_officer_email.txt'
+
+
+@staff_member_required
+@camp_admin_required # we don't care which camp they are admin for.
+def nag_by_officer(request):
+    try:
+        ref_id = int(request.GET.get('ref_id'))
+    except ValueError, TypeError:
+        raise Http404
+    ref = get_object_or_404(Reference.objects.filter(id=ref_id))
+    app = ref.application
+    camp = app.camp
+    officer = app.officer
+
+    c = template.RequestContext(request)
+    messageform_info = dict(referee=ref.referee,
+                            officer=officer,
+                            camp=camp)
+
+    if request.method == 'POST':
+        if 'send' in request.POST:
+            messageform = SendNagByOfficerForm(request.POST, message_info=messageform_info)
+            # It's impossible for the form to be invalid, so assume valid
+            messageform.is_valid()
+            send_nag_by_officer(wordwrap(messageform.cleaned_data['message'], 70), officer, ref)
+            return close_window_response()
+        else:
+            # cancel
+            return close_window_response()
+
+    messageform = SendNagByOfficerForm(message_info=messageform_info)
+
+    c['referee'] = ref.referee
+    c['app'] = app
+    c['officer'] = officer
+    c['messageform'] = messageform
+    c['is_popup'] = True
+    return render_to_response('cciw/officers/nag_by_officer.html',
                               context_instance=c)
 
 
