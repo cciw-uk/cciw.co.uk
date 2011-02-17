@@ -20,6 +20,16 @@
 <p>No camps found.</p>
 {% endif %}
 
+<h2>Stats</h2>
+
+<p>Some statistics showing how we are doing with application forms and
+  references:</p>
+<ul>
+  {% for year in statsyears %}
+    <li><a href="{% url cciw.officers.views.stats year=year %}">Stats {{ year }}</a></li>
+  {% endfor %}
+</ul>
+
 <h2>General</h2>
 
 <p>Management of officers, camps, camp sites and various other parts

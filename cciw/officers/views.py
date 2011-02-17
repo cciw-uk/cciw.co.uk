@@ -111,6 +111,7 @@ def leaders_index(request):
     thisyear = common.get_thisyear()
     context['current_camps'] = _camps_as_admin_or_leader(user).filter(year=thisyear)
     context['old_camps'] = _camps_as_admin_or_leader(user).filter(year__lt=thisyear)
+    context['statsyears'] = [thisyear, thisyear - 1, thisyear - 2]
 
     return render_to_response('cciw/officers/leaders_index.html', context_instance=context)
 
@@ -894,3 +895,51 @@ def resend_email(request):
 officer_files = access_folder_securely("officers",
                                        lambda request: _is_camp_officer(request.user))
 
+
+@staff_member_required
+@camp_admin_required
+def stats(request, year=None):
+    year = int(year)
+    thisyear = common.get_thisyear()
+    stats = []
+    all_past = True
+    for c in Camp.objects.filter(year=year).order_by('number'):
+        stat = {}
+        if not c.is_past():
+            all_past = False
+        stat['camp'] = c
+        stat['num_invited_officers'] = c.invitation_set.count()
+        application_forms = c.application_set.filter(finished=True)
+        num_application_forms = application_forms.count()
+        stat['num_application_forms'] = num_application_forms
+        received_reference_set = Reference.objects.filter(received=True, application__camp=c)
+        num_received_references = received_reference_set.count()
+        expected_references = 2 * num_application_forms
+        stat['num_received_references'] = num_received_references
+        missing_references = expected_references - num_received_references
+        stat['missing_references'] = missing_references
+        if expected_references == 0:
+            missing_references_percent = 0
+        else:
+            missing_references_percent = float(missing_references) / expected_references * 100.0
+        stat['missing_references_percent'] = missing_references_percent
+        # Officers with no references - trying not to do O(n) queries...
+        r = set([r.application_id for r in received_reference_set])
+        applications_no_reference = [a for a in application_forms if a.id not in r]
+        stat['officers_no_reference'] = len(applications_no_reference)
+        stats.append(stat)
+
+    # Those with no application forms yet are losing, then it goes on the
+    # fraction of references that are missing.
+    ranks = sorted(stats,
+                   key=lambda d: (d['num_application_forms'] == 0,
+                                  d['missing_references_percent']))
+    for i, s in enumerate(ranks):
+        s['rank'] = i + 1
+
+    d = {}
+    d['stats'] = stats
+    d['year'] = year
+    d['all_past'] = all_past
+    return render_to_response('cciw/officers/stats.html',
+                              context_instance=template.RequestContext(request, d))
