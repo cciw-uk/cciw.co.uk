@@ -235,7 +235,7 @@ class ReferenceForm(models.Model):
     known_offences_details = models.TextField("If the answer is yes, please identify", blank=True)
     capability_children = models.TextField("Please comment on the applicant's capability of working with children and young people (ie. previous experience of similar work, sense of responsibility, sensitivity, ability to work with others, ability to communicate with children and young people, leadership skills)")
     character = models.TextField("Please comment on aspects of the applicants character (ie. Christian experience honesty, trustworthiness, reliability, disposition, faithful attendance at worship/prayer meetings.)")
-    concerns = models.TextField("Have you ever had concerns about either this applicant's ability or suitability to work with children and young people? If you would prefer to discuss your concerns on the telephone and in confidence, please contact either: " + settings.REFERENCE_CONCERNS_CONTACT_DETAILS)
+    concerns = models.TextField("Have you ever had concerns about either this applicant's ability or suitability to work with children and young people? If you would prefer to discuss your concerns on the telephone and in confidence, please contact: " + settings.REFERENCE_CONCERNS_CONTACT_DETAILS)
     comments = models.TextField("Any other comments you wish to make", blank=True)
     date_created = models.DateField("date created")
     reference_info = models.OneToOneField(Reference, related_name='_reference_form')
