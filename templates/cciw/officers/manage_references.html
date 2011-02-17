@@ -6,42 +6,6 @@
 <script type="text/javascript">
 <!--
 
-function toggleAddress(ev) {
-    var addrblock = ev.src().nextSibling;
-    if (hasElementClass(addrblock, "hidden")) {
-        removeElementClass(addrblock, "hidden");
-    } else {
-        addElementClass(addrblock, "hidden");
-    }
-}
-
-function toggleRefControls(ev) {
-    var refcontrols = ev.src().nextSibling;
-    if (hasElementClass(refcontrols, "hidden")) {
-        removeElementClass(refcontrols, "hidden");
-    } else {
-        addElementClass(refcontrols, "hidden");
-    }
-}
-
-
-function addToggleHandlers(ev) {
-    var elems = getElementsByTagAndClassName("div", "firstline");
-    for (var i = 0; i < elems.length; i++) {
-        connect(elems[i], 'onclick', toggleAddress);
-    }
-    elems = getElementsByTagAndClassName("div", "refdetails");
-    for (var i = 0; i < elems.length; i++) {
-        connect(elems[i], 'onclick', toggleRefControls);
-    }
-}
-
-connect(window, 'onload',
-        function(ev) {
-            addToggleHandlers();
-        }
-)
-
 function requestGeneric(query) {
     window.open('{% url "cciw.officers.views.request_reference" %}?' + query,
                 '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
