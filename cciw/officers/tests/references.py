@@ -67,7 +67,7 @@ class RequestReference(TwillMixin, TestCase):
         tc.code(200)
         tc.notfind("No e-mail address")
         tc.find("The following e-mail")
-        tc.formvalue("sendmessage", "send", "send")
+        tc.formvalue("2", "send", "send")
         tc.submit()
         self.assertEqual(len([e for e in mail.outbox if "Reference for" in e.subject]), 1)
 
@@ -99,7 +99,7 @@ class RequestReference(TwillMixin, TestCase):
         self._twill_login(LEADER)
         tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
         tc.code(200)
-        tc.formvalue("sendmessage", "cancel", "cancel")
+        tc.formvalue("2", "cancel", "cancel")
         tc.submit()
         self.assertEqual(len(mail.outbox), 0)
 
@@ -109,7 +109,7 @@ class RequestReference(TwillMixin, TestCase):
         self._twill_login(LEADER)
         tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
         tc.code(200)
-        tc.formvalue('sendmessage', 'message', 'I removed the link! Haha')
+        tc.formvalue('2', 'message', 'I removed the link! Haha')
         tc.submit()
         url = make_ref_form_url(refinfo.id, None)
         tc.find(url)
