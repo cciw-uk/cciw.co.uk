@@ -381,17 +381,25 @@ class SendMessageForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         message_info = kwargs.pop('message_info', {})
-
-        if message_info['update']:
-            msg_template = 'cciw/officers/request_reference_update.txt'
-        else:
-            msg_template = 'cciw/officers/request_reference_new.txt'
+        self.message_info = message_info
+        msg_template = self.get_message_template()
         msg = render_to_string(msg_template, message_info)
         initial = kwargs.pop('initial', {})
         initial['message'] = msg
         kwargs['initial'] = initial
-        self.message_info = message_info
         return super(SendMessageForm, self).__init__(*args, **kwargs)
+
+    def get_message_template(self):
+        raise NotImplementedError
+
+
+class SendReferenceRequestForm(SendMessageForm):
+
+    def get_message_template(self):
+        if self.message_info['update']:
+            return 'cciw/officers/request_reference_update.txt'
+        else:
+            return 'cciw/officers/request_reference_new.txt'
 
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -449,7 +457,7 @@ def request_reference(request):
 
     if request.method == 'POST':
         if 'send' in request.POST:
-            messageform = SendMessageForm(request.POST, message_info=messageform_info)
+            messageform = SendReferenceRequestForm(request.POST, message_info=messageform_info)
             if messageform.is_valid():
                 try:
                     send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), ref)
@@ -474,7 +482,7 @@ def request_reference(request):
     if emailform is None:
         emailform = SetEmailForm(initial={'email': ref.referee.email})
     if messageform is None:
-        messageform = SendMessageForm(message_info=messageform_info)
+        messageform = SendReferenceRequestForm(message_info=messageform_info)
 
     if not email_re.match(ref.referee.email.strip()):
         c['bad_email'] = True
