@@ -1,6 +1,6 @@
 {% autoescape off %}Dear {{ referee.name }},
 
-{{ applicant.first_name }} {{ applicant.last_name }} has applied to be an officer on a CCIW camp, and has put your name down as a referee.  You have done a reference for {{ applicant.first_name }} in the past, which is stored in our database, and we would appreciate it if you could take a few minutes check and update your reference, by visiting the following page in your web browser:
+{{ applicant.first_name }} {{ applicant.last_name }} has applied to be an officer on a CCIW camp, and has put your name down as a referee.  You have done a reference for {{ applicant.first_name }} in the past, which is stored in our database, and we would appreciate it if you could take a few minutes to check and update your reference, by visiting the following page in your web browser:
 
 {{ url }}
 
