@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+import re
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
@@ -209,6 +212,27 @@ class Reference(models.Model):
             return self._reference_form
         except ReferenceForm.DoesNotExist:
             return None
+
+    log_datetime_format = "%Y-%m-%d %H:%M:%S"
+
+    @property
+    def last_requested(self):
+        """
+        Returns the last date the reference was requested,
+        or None if it is not known.
+        """
+        # Parse the comments field:
+        dt = None
+        for l in self.comments.split("\n"):
+            m = re.match("Reference requested by .* on (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", l)
+            if m is not None:
+                dt = datetime.strptime(m.groups()[0], self.log_datetime_format)
+        return dt
+
+    def log_request_made(self, user, date):
+        self.comments = self.comments + \
+            ("\nReference requested by user %s via online system on %s\n" % \
+                 (user.username, date.strftime(self.log_datetime_format)))
 
     class Meta:
         verbose_name = "Reference Metadata"

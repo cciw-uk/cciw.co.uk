@@ -464,9 +464,7 @@ def request_reference(request):
                 except smtplib.SMTPException:
                     return email_sending_failed_response()
                 ref.requested = True
-                ref.comments = ref.comments + \
-                    ("\nReference requested by user %s via online system on %s\n" % \
-                         (request.user.username, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                ref.log_request_made(request.user, datetime.datetime.now())
                 ref.save()
                 return close_window_response()
         elif 'setemail' in request.POST:

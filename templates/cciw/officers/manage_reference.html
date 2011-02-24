@@ -7,6 +7,9 @@
 {% else %}
 {% if ref.requested %}
 <div class="ok"><strong>Requested</strong></div>
+  {% if ref.last_requested %}
+  <div>Last requested: <b> {{ ref.last_requested|timesince }} ago</b></div>
+  {% endif %}
 {% else %}
 <div><strong>Not requested</strong></div>
 {% endif %}
