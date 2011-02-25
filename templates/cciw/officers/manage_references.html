@@ -4,11 +4,48 @@
 {% block title %}Manage references :: CCIW{% endblock %}
 {% block extrastyle %}{{ block.super }}
 <script type="text/javascript">
-<!--
+//<![CDATA[
 
 function requestGeneric(query) {
     window.open('{% url "cciw.officers.views.request_reference" %}?' + query,
                 '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+}
+
+function refreshReferenceSection(ref_id) {
+    jQuery.ajax({
+        type: "GET",
+        url: "?ref_id=" + ref_id.toString(),
+        dataType: 'text',
+        success: function(data, textStatus, xhr) {
+                     // Replace existing div and move to correct place,
+                     // which might be under a different 'mode'
+                     var section = jQuery('#officerref' + ref_id.toString());
+                     var officerName = section.find("h3.referencestart").text();
+                     var mode = jQuery(data).find('div.referencemode').text();
+
+                     // Look through other officer names in same section
+                     var allOfficerNames = jQuery('#' + mode + 'refs h3.referencestart');
+                     var dest = null;
+                     allOfficerNames.each(function(i, elem) {
+                         if (officerName < elem.innerHTML) {
+                             // parent() depends on 'h3' being immediate child
+                             // of the element we want:
+                             dest = jQuery(elem).parent();
+                             return false;
+                         };
+                     });
+                     if (!dest) {
+                         dest = jQuery('#' + mode + 'end');
+                     }
+
+                     section.fadeOut('slow', function() {
+                         section.insertBefore(dest);
+                         // Don't use 'replaceWith' so we can control animation.
+                         section.html(jQuery(data).html());
+                         section.fadeIn('slow');
+                    });
+                }
+    });
 }
 
 function requestReference(ref_id) {
@@ -39,7 +76,7 @@ function nagByOfficer(ref_id) {
 }
 
 
-//-->
+//]]>
 </script>
 {% endblock %}
 
@@ -72,6 +109,7 @@ function nagByOfficer(ref_id) {
 
 <h2>References to be requested</h2>
 
+<div id="notrequestedrefs">
 {% for ref in notrequested %}
 
 {% with "notrequested" as mode %}
@@ -81,9 +119,12 @@ function nagByOfficer(ref_id) {
 {% empty %}
 <p>No outstanding references to be requested.</p>
 {% endfor %}
+<div id="notrequestedend"></div>
+</div>
 
 <h2 class="ok">References requested</h2>
 
+<div id="requestedrefs">
 {% for ref in requested %}
 
 {% with "requested" as mode %}
@@ -93,9 +134,12 @@ function nagByOfficer(ref_id) {
 {% empty %}
 <p>No references requested.</p>
 {% endfor %}
+<div id="requestedend"></div>
+</div>
 
 <h2 class="good">References received</h2>
 
+<div id="receivedrefs">
 {% for ref in received %}
 
 {% with "received" as mode %}
@@ -105,6 +149,8 @@ function nagByOfficer(ref_id) {
 {% empty %}
 <p>No references received.</p>
 {% endfor %}
+<div id="receivedend"></div>
+</div>
 
 </div>
 {% endblock %}

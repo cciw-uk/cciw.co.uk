@@ -86,6 +86,14 @@ def _camps_as_admin_or_leader(user):
 
     return camps.distinct()
 
+def close_window_and_update_ref(ref_id):
+    """
+    HttpResponse that closes the current window, and updates the reference
+    in the parent window. Applies to popup from manage_references view.
+    """
+    return HttpResponse("""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd"><html><head><title>Close</title><script type="text/javascript">window.opener.refreshReferenceSection(%s); window.close()</script></head><body></body></html>""" % ref_id)
+
 
 # /officers/
 @staff_member_required
@@ -328,24 +336,32 @@ def get_previous_references(ref):
 @camp_admin_required # we don't care which camp they are admin for.
 @never_cache
 def manage_references(request, year=None, number=None):
-    camp = _get_camp_or_404(year, number)
-
     c = template.RequestContext(request)
-    c['camp'] = camp
 
-    apps = camp.application_set.filter(finished=True)
-    # force creation of Reference objects.
-    if Reference.objects.filter(application__finished=True,
-                                application__camp=camp).count() < apps.count() * 2:
-        [a.references for a in apps]
+    # If ref_id is set, we just want to update part of the page.
+    ref_id = request.GET.get('ref_id')
 
-    # TODO - check for case where user has submitted multiple application forms.
-    # User.objects.all().filter(application__camp=camp).annotate(num_applications=models.Count('application')).filter(num_applications__gt=1)
+    if ref_id is None:
+        camp = _get_camp_or_404(year, number)
+        c['camp'] = camp
 
-    refinfo = Reference.objects\
-              .filter(application__camp=camp, application__finished=True)\
-              .order_by('application__officer__first_name', 'application__officer__last_name',
-                        'referee_number')
+        apps = camp.application_set.filter(finished=True)
+        # force creation of Reference objects.
+        if Reference.objects.filter(application__finished=True,
+                                    application__camp=camp).count() < apps.count() * 2:
+            [a.references for a in apps]
+
+            # TODO - check for case where user has submitted multiple application forms.
+            # User.objects.all().filter(application__camp=camp).annotate(num_applications=models.Count('application')).filter(num_applications__gt=1)
+
+        refinfo = Reference.objects\
+            .filter(application__camp=camp, application__finished=True)\
+            .order_by('application__officer__first_name', 'application__officer__last_name',
+                      'referee_number')
+
+    else:
+        refinfo = Reference.objects.filter(pk=ref_id).order_by()
+
     received = refinfo.filter(received=True)
     requested = refinfo.filter(received=False, requested=True)
     notrequested = refinfo.filter(received=False, requested=False)
@@ -359,12 +375,18 @@ def manage_references(request, year=None, number=None):
             else:
                 curref.possible_previous_references = prev
 
-    c['notrequested'] = notrequested
-    c['requested'] = requested
-    c['received'] = received
+    if ref_id is None:
+        c['notrequested'] = notrequested
+        c['requested'] = requested
+        c['received'] = received
+        template_name = 'cciw/officers/manage_references.html'
+    else:
+        c['mode'] = 'notrequested' if notrequested else \
+            ('requested' if requested else 'received')
+        c['ref'] = refinfo[0]
+        template_name = 'cciw/officers/manage_reference.html'
 
-    return render_to_response('cciw/officers/manage_references.html',
-                              context_instance=c)
+    return render_to_response(template_name, context_instance=c)
 
 
 def email_sending_failed_response():
@@ -466,7 +488,7 @@ def request_reference(request):
                 ref.requested = True
                 ref.log_request_made(request.user, datetime.datetime.now())
                 ref.save()
-                return close_window_response()
+                return close_window_and_update_ref(ref_id)
         elif 'setemail' in request.POST:
             emailform = SetEmailForm(request.POST)
             if emailform.is_valid():
@@ -585,7 +607,7 @@ def manage_reference_manually(request, ref):
             form = ReferenceEditForm(request.POST, instance=ref)
             if form.is_valid():
                 form.save()
-                return close_window_response()
+                return close_window_and_update_ref(ref.id)
         else:
             return close_window_response()
     else:

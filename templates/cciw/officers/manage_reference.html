@@ -1,18 +1,21 @@
 {% load url from future %}
+<div id="officerref{{ ref.id }}">
 <h3 class="referencestart">{{ ref.application.officer.first_name }} {{ ref.application.officer.last_name }}</h3>
 <h4>From: {{ ref.referee.name }}</h4>
+
+<div class="referencemode" style="display:none;">{{ mode }}</div>
 <div class="reference">
 {% if ref.received %}
-<div class="good"><strong>Received</strong></div>
+  <div class="good"><strong>Received</strong></div>
 {% else %}
-{% if ref.requested %}
-<div class="ok"><strong>Requested</strong></div>
-  {% if ref.last_requested %}
-  <div>Last requested: <b> {{ ref.last_requested|timesince }} ago</b></div>
+  {% if ref.requested %}
+    <div class="ok"><strong>Requested</strong></div>
+    {% if ref.last_requested %}
+      <div>Last requested: <b> {{ ref.last_requested|timesince }} ago</b></div>
+    {% endif %}
+  {% else %}
+    <div><strong>Not requested</strong></div>
   {% endif %}
-{% else %}
-<div><strong>Not requested</strong></div>
-{% endif %}
 {% endif %}
 
 {% if mode == "received" %}
@@ -76,3 +79,4 @@
 
 </div>
 <p>If you need to amend details of the referee, <a href="/admin/officers/application/{{ ref.application_id }}/" rel="external">view/edit officer's application form (in new window)</a></p>
+</div>
