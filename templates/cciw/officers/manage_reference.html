@@ -1,7 +1,7 @@
 {% load url from future %}
-<div id="officerref{{ ref.id }}">
+<div id="officerref{{ ref.id }}" class="referencesection">
 <h3 class="referencestart">{{ ref.application.officer.first_name }} {{ ref.application.officer.last_name }}</h3>
-<h4>From: {{ ref.referee.name }}</h4>
+<h4 class="refereename">From: {{ ref.referee.name }}</h4>
 
 <div class="referencemode" style="display:none;">{{ mode }}</div>
 <div class="reference">

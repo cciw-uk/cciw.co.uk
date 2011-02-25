@@ -21,16 +21,20 @@ function refreshReferenceSection(ref_id) {
                      // which might be under a different 'mode'
                      var section = jQuery('#officerref' + ref_id.toString());
                      var officerName = section.find("h3.referencestart").text();
+                     var refereeName = section.find(".refereename").text();
                      var mode = jQuery(data).find('div.referencemode').text();
 
                      // Look through other officer names in same section
-                     var allOfficerNames = jQuery('#' + mode + 'refs h3.referencestart');
+                     var allOfficerRefs = jQuery('#' + mode + 'refs .referencesection');
                      var dest = null;
-                     allOfficerNames.each(function(i, elem) {
-                         if (officerName < elem.innerHTML) {
-                             // parent() depends on 'h3' being immediate child
-                             // of the element we want:
-                             dest = jQuery(elem).parent();
+                     allOfficerRefs.each(function(i, elem) {
+                         var oName = jQuery(elem).find('.referencestart').text();
+                         var rName = jQuery(elem).find('.refereename').text();
+                         // references are sorted alphabetical by officer names
+                         // and then by referee name.
+                         if (officerName < oName ||
+                             (officerName == oName && refereeName < rName)) {
+                             dest = jQuery(elem);
                              return false;
                          };
                      });
