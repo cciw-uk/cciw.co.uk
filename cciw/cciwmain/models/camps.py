@@ -72,6 +72,7 @@ class Camp(models.Model):
     admins = models.ManyToManyField(User,
         related_name="camps_as_admin",
         verbose_name="admins",
+        help_text="These users can manage references/applications for the camp. Not for normal officers.",
         null=True, blank=True)
     site = models.ForeignKey(Site)
     online_applications = models.BooleanField("Accepts online applications from officers.", default=True)

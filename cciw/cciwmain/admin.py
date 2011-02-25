@@ -11,11 +11,16 @@ class PersonAdmin(admin.ModelAdmin):
 
 class CampAdmin(admin.ModelAdmin):
     fieldsets = (
-        (None, {'fields': ('year', 'number', 'age', 'start_date', 'end_date',
-                           'chaplain', 'leaders', 'site', 'previous_camp',
-                           'online_applications', 'admins')
-                }
+        ('Public info',
+         {'fields': ('year', 'number', 'age', 'start_date', 'end_date',
+                     'chaplain', 'leaders', 'site', 'previous_camp')
+          }
         ),
+        ('Applications and references',
+         {'fields': ('online_applications', 'admins'),
+          'description': '<div>Options for managing applications. Officer lists are managed <a href="/officers/leaders/">elsewhere</a>, not here.</div>',
+          }
+         ),
     )
     ordering = ('-year','number')
     def leaders(camp):
