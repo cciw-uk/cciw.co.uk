@@ -381,9 +381,15 @@ def manage_references(request, year=None, number=None):
         c['received'] = received
         template_name = 'cciw/officers/manage_references.html'
     else:
-        c['mode'] = 'notrequested' if notrequested else \
-            ('requested' if requested else 'received')
-        c['ref'] = refinfo[0]
+        if received:
+            c['mode'] = 'received'
+            c['ref'] = received[0]
+        elif requested:
+            c['mode'] = 'requested'
+            c['ref'] = requested[0]
+        else:
+            c['mode'] = 'notrequested'
+            c['ref'] = notrequested[0]
         template_name = 'cciw/officers/manage_reference.html'
 
     return render_to_response(template_name, context_instance=c)
