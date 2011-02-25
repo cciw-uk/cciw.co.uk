@@ -14,7 +14,7 @@ function requestGeneric(query) {
 function refreshReferenceSection(ref_id) {
     jQuery.ajax({
         type: "GET",
-        url: "?ref_id=" + ref_id.toString(),
+        url: "?ref_id=" + ref_id.toString() + "&" + Math.random().toString(),
         dataType: 'text',
         success: function(data, textStatus, xhr) {
                      // Replace existing div and move to correct place,
