@@ -454,6 +454,18 @@ def request_reference(request):
         return manage_reference_manually(request, ref)
 
     c = template.RequestContext(request)
+
+    # Need to handle any changes to the referees first, for correctness of what
+    # follows
+    if request.method == "POST" and 'setemail' in request.POST:
+        emailform = SetEmailForm(request.POST)
+        if emailform.is_valid():
+            app.referees[ref.referee_number-1].email = emailform.cleaned_data['email']
+            app.save()
+            messages.info(request, "E-mail address updated.")
+
+    # Work out 'old_referee' or 'known_email_address', and the URL to use in the
+    # message.
     update = 'update' in request.GET
     if update:
         (possible, exact) = get_previous_references(ref)
@@ -495,14 +507,7 @@ def request_reference(request):
                 ref.log_request_made(request.user, datetime.datetime.now())
                 ref.save()
                 return close_window_and_update_ref(ref_id)
-        elif 'setemail' in request.POST:
-            emailform = SetEmailForm(request.POST)
-            if emailform.is_valid():
-                app.referees[ref.referee_number-1].email = emailform.cleaned_data['email']
-                app.save()
-                messages.info(request, "E-mail address updated.")
-        else:
-            # cancel
+        elif 'cancel' in request.POST:
             return close_window_response()
 
     if emailform is None:
