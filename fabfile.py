@@ -311,9 +311,6 @@ def _install_south(target, version):
 
 
 def _update_db(target, version):
-    if not _is_south_installed(target):
-        _install_south(target, version)
-
     with virtualenv(version.venv_dir):
         with cd(version.project_dir):
             run_venv("./manage.py syncdb --settings=cciw.settings")
