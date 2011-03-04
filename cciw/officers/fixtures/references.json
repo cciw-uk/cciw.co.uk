@@ -45,7 +45,7 @@
             "referee2_email": "referee2@email.co.uk", 
             "youth_work_declined_details": "", 
             "court_declaration": false, 
-            "camp": 1, 
+            "camp": [2000, 1], 
             "employer1_job": "Pilot", 
             "youth_experience": "Lots", 
             "employer1_name": "Employer 1", 
@@ -108,7 +108,7 @@
             "referee2_email": "referee4@email.co.uk", 
             "youth_work_declined_details": "", 
             "court_declaration": false, 
-            "camp": 1, 
+            "camp": [2000, 1], 
             "employer1_job": "Pilot", 
             "youth_experience": "Lots", 
             "employer1_name": "Employer 1", 
@@ -171,7 +171,7 @@
             "referee2_email": "", 
             "youth_work_declined_details": "", 
             "court_declaration": false, 
-            "camp": 1, 
+            "camp": [2000, 1], 
             "employer1_job": "Pilot", 
             "youth_experience": "Lots", 
             "employer1_name": "Employer 1", 
@@ -223,7 +223,7 @@
     }, 
     {
         "fields": {
-            "camp": 1, 
+            "camp": [2000, 1], 
             "officer": 1
         }, 
         "model": "officers.invitation", 
@@ -231,7 +231,7 @@
     }, 
     {
         "fields": {
-            "camp": 1, 
+            "camp": [2000, 1], 
             "officer": 2
         }, 
         "model": "officers.invitation", 
@@ -239,7 +239,7 @@
     }, 
     {
         "fields": {
-            "camp": 1, 
+            "camp": [2000, 1], 
             "officer": 3
         }, 
         "model": "officers.invitation", 

@@ -50,6 +50,10 @@ class CampManager(models.Manager):
     def get_query_set(self):
         return super(CampManager, self).get_query_set().select_related('chaplain')
 
+    def get_by_natural_key(self, year, number):
+        return self.get(year=year, number=number)
+
+
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")
     number = models.PositiveSmallIntegerField("number")
@@ -85,6 +89,9 @@ class Camp(models.Model):
         super(Camp, self).save()
         if new:
             signals.camp_created.send(self)
+
+    def natural_key(self):
+        return (self.year, self.number)
 
     def __unicode__(self):
         leaders = list(self.leaders.all())

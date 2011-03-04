@@ -29,7 +29,7 @@
     }, 
     {
         "fields": {
-            "previous_camp": 1, 
+            "previous_camp": [2000, 1], 
             "leaders": [
                 1
             ], 
