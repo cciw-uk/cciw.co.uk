@@ -127,3 +127,4 @@ class Camp(models.Model):
     class Meta:
         app_label = "cciwmain"
         ordering = ['-year','number']
+        unique_together = (('year', 'number'),)
