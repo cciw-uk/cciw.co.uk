@@ -30,8 +30,7 @@
 
 {% else %}
   {% if is_update and known_email_address %}
-  <p>{{ referee.name }} has done a reference for {{ app.officer.first_name }} in
-    the past.</p>
+  <p>{{ referee.name }} has done a reference for {{ app.officer.first_name }} in the past.</p>
   {% endif %}
 
   {% if not is_update %}

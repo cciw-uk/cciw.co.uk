@@ -129,6 +129,39 @@ class RequestReference(TwillMixin, TestCase):
         tc.find("You removed the link")
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_update_with_exact_match(self):
+        """
+        Test the case where we ask for an update, and there is an exact match
+        """
+        app = Application.objects.get(pk=4)
+        refinfo = app.references[0]
+        prev_refs, exact = get_previous_references(refinfo)
+        assert exact is not None
+        self._twill_login(LEADER)
+        tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, exact.id))
+        tc.code(200)
+        tc.find("Mr Referee1 Name has done a reference for Mr in the past.")
+
+    def test_update_with_no_exact_match(self):
+        """
+        Test the case where we ask for an update, and there is no exact match
+        """
+        app = Application.objects.get(pk=4)
+        # We make a change, so we don't get exact match
+        app.referees[0].email = "a_new_email_for_ref1@example.com"
+        app.save()
+        refinfo = app.references[0]
+        prev_refs, exact = get_previous_references(refinfo)
+        assert exact is None
+        assert prev_refs[0].reference_form.referee_name == "Mr Referee1 Name"
+        self._twill_login(LEADER)
+        tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, prev_refs[0].id))
+        tc.code(200)
+        tc.notfind("Mr Referee1 Name has done a reference for Mr in the past.")
+        tc.find("""In the past, "Mr Referee1 Name &lt;referee1@email.co.uk&gt;" did""")
+        tc.find("If you have confirmed")
+        tc.find("""email address is now "Mr Referee1 Name &lt;a_new_email_for_ref1@example.com&gt;",""")
+
 
 class CreateReference(TwillMixin, TestCase):
     """

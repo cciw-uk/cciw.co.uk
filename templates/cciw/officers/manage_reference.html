@@ -38,7 +38,7 @@
   <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
     has done a reference for {{ ref.application.officer.first_name}} before, so: 
     <span class="referencebutton">
-      <button onclick="requestUpdate({{ ref.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button>
+      <button onclick="requestUpdate({{ ref.id }}, {{ ref.previous_reference.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button>
     </span>
   </li>
   {% else %}

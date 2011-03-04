@@ -56,8 +56,8 @@ function requestReference(ref_id) {
     requestGeneric('ref_id=' + ref_id.toString());
 }
 
-function requestUpdate(ref_id) {
-    requestGeneric('ref_id=' + ref_id.toString() + '&update=1');
+function requestUpdate(ref_id, prev_ref_id) {
+    requestGeneric('ref_id=' + ref_id.toString() + '&update=1&prev_ref_id=' + prev_ref_id.toString());
 }
 
 function requestUpdateCustom(ref_id) {
