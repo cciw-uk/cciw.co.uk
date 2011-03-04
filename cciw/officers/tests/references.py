@@ -32,7 +32,8 @@ class ReferencesPage(TwillMixin, TestCase):
         tc.go(make_django_url("cciw.officers.views.manage_references", year=2000, number=1))
         tc.code(200)
         tc.find('For camp 2000-1')
-        tc.find('referee2@email.co.uk')
+        tc.notfind('referee1@email.co.uk') # Received
+        tc.find('referee2@email.co.uk')    # Not received
         tc.find('referee3@email.co.uk')
         tc.find('referee4@email.co.uk')
 
@@ -58,6 +59,9 @@ class RequestReference(TwillMixin, TestCase):
     fixtures = ReferencesPage.fixtures
 
     def test_with_email(self):
+        """
+        Ensure page allows you to proceed if there is an e-mail address for referee
+        """
         # Application 3 has an e-mail address for first referee
         app = Application.objects.get(pk=3)
         self.assertTrue(app.referees[0].email != '')
@@ -72,6 +76,9 @@ class RequestReference(TwillMixin, TestCase):
         self.assertEqual(len([e for e in mail.outbox if "Reference for" in e.subject]), 1)
 
     def test_no_email(self):
+        """
+        Ensure page requires an e-mail address to be entered if it isn't set.
+        """
         # Application 3 has no e-mail address for second referee
         app = Application.objects.get(pk=3)
         self.assertTrue(app.referees[1].email == '')
@@ -84,6 +91,9 @@ class RequestReference(TwillMixin, TestCase):
         tc.notfind("The following e-mail")
 
     def test_add_email(self):
+        """
+        Ensure we can add the e-mail address
+        """
         self.test_no_email()
         tc.formvalue('1', 'email', 'addedemail@example.com')
         tc.submit()
@@ -104,6 +114,9 @@ class RequestReference(TwillMixin, TestCase):
         self.assertEqual(len(mail.outbox), 0)
 
     def test_dont_remove_link(self):
+        """
+        Test the error that should appear if the link is removed or altered
+        """
         app = Application.objects.get(pk=3)
         refinfo = app.references[0]
         self._twill_login(LEADER)
@@ -129,7 +142,7 @@ class CreateReference(TwillMixin, TestCase):
         """
         Test for 200 code if we get the right URL
         """
-        app = Application.objects.get(pk=1)
+        app = Application.objects.get(pk=2)
         url = make_ref_form_url(app.references[0].id, None)
         tc.go(make_twill_url(url))
         tc.code(200)
@@ -139,12 +152,12 @@ class CreateReference(TwillMixin, TestCase):
         Check that a reference can be created using the page,
         and that the name on the application form is updated.
         """
-        app = Application.objects.get(pk=1)
-        self.assertEqual(app.referees[0].name, "Mr Referee1 Name")
+        app = Application.objects.get(pk=2)
+        self.assertEqual(app.referees[0].name, "Mr Referee3 Name")
         self.assertTrue(app.references[0].reference_form is None)
         self.test_page_ok()
 
-        tc.formvalue('1', 'referee_name', 'Referee1 Name')
+        tc.formvalue('1', 'referee_name', 'Referee3 Name')
         tc.formvalue('1', 'how_long_known', 'Forever')
         tc.formvalue('1', 'capacity_known', 'Minister')
         tc.formvalue('1', 'capability_children', 'Fine')
@@ -153,14 +166,14 @@ class CreateReference(TwillMixin, TestCase):
         tc.submit()
 
         # Check the data has been saved
-        app = Application.objects.get(pk=1)
+        app = Application.objects.get(pk=2)
         ref_form = app.references[0].reference_form
         self.assertTrue(ref_form is not None)
-        self.assertEqual(ref_form.referee_name, "Referee1 Name")
+        self.assertEqual(ref_form.referee_name, "Referee3 Name")
         self.assertEqual(ref_form.how_long_known, "Forever")
 
         # Check the application has been updated with amended referee name
-        self.assertEqual(app.referees[0].name, "Referee1 Name")
+        self.assertEqual(app.referees[0].name, "Referee3 Name")
 
     def test_reference_update(self):
         """
@@ -169,10 +182,10 @@ class CreateReference(TwillMixin, TestCase):
         # This is story style - start with submitting "last year's" reference.
         self.test_page_submit()
 
-        app = Application.objects.get(pk=1)
+        app = Application.objects.get(pk=2)
         # Now officer makes a new application form based on original
         # (which was updated in test_page_submit)
-        app2 = Application.objects.get(pk=1)
+        app2 = Application.objects.get(pk=2)
         app2.id = None # force creation of new
         app2.camp_id = 2
         app2.save()
@@ -187,7 +200,7 @@ class CreateReference(TwillMixin, TestCase):
         tc.code(200)
 
         # Check it is pre-filled as we expect
-        tc.find('name="referee_name" value="Referee1 Name"')
+        tc.find('name="referee_name" value="Referee3 Name"')
         tc.find('name="how_long_known" value="Forever"')
 
 
@@ -200,7 +213,7 @@ class EditReferenceFormManually(TestCase):
         Ensure that 'edit_reference_form_manually' creates a ReferenceForm if
         one doesn't exist initially
         """
-        app = Application.objects.get(pk=1)
+        app = Application.objects.get(pk=2)
         ref = app.references[0]
         assert ref.reference_form is None
         self.client.login(username=LEADER_USERNAME, password=LEADER_PASSWORD)
