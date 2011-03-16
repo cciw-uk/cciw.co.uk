@@ -10,6 +10,7 @@ from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
 from cciw.officers.applications import application_difference
+from cciw.officers.views import get_next_camp_guess
 from cciw.officers.tests.references import OFFICER, LEADER
 from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
 
@@ -24,7 +25,7 @@ class ApplicationFormView(TwillMixin, TestCase):
 
     def setUp(self):
         # make sure camps have end date in future, otherwise we won't be able to
-        # save
+        # save and we won't be able to test get_next_camp_guess logic.
         Camp.objects.filter(id=1).update(end_date=datetime.date.today() + datetime.timedelta(100))
         Camp.objects.filter(id=2).update(end_date=datetime.date.today() + datetime.timedelta(465))
         super(ApplicationFormView, self).setUp()
@@ -443,7 +444,6 @@ class ApplicationFormView(TwillMixin, TestCase):
         self.assertTrue('<DEL TITLE="i=95">x</DEL>'
                         in application_diff)
 
-
     def test_uninvited_officer(self):
         """
         Checks that when an officer is not on the officer list and submits an
@@ -461,3 +461,42 @@ class ApplicationFormView(TwillMixin, TestCase):
         self.test_finish_complete()
         email = [m for m in mail.outbox if m.subject.startswith("CCIW application form from")][0]
         self.assertTrue("is not currently on your officer list" not in email.body)
+
+    def test_get_next_camp_guess(self):
+
+        u = User.objects.get(username=OFFICER[0])
+        c1 = Camp.objects.get(id=1)
+        c2 = c1.next_camps.all()[0]
+
+        u.invitation_set.all().delete()
+        u.application_set.all().delete()
+        u.invitation_set.create(camp=c1)
+
+        # If passed user, should guess the camp the user is invited to
+        self.assertEqual(c1, get_next_camp_guess(user=u))
+
+        # If passed one camp, should guess the next year's camp
+        self.assertEqual(c2, get_next_camp_guess(camp=c1))
+
+        # If an application form is started for a camp, don't guess that one
+        u.application_set.create(camp=c1)
+        self.assertNotEqual(c1, get_next_camp_guess(user=u))
+
+        u.application_set.create(camp=c2)
+        self.assertNotEqual(c2, get_next_camp_guess(camp=c1, user=u))
+
+        # With no invitations or previous camp, we should guess any camp that is
+        # not past, as long as applications aren't started.
+        u.application_set.all().delete()
+        u.invitation_set.all().delete()
+
+        # Put camp 1 in past
+        c1.end_date=datetime.date.today() - datetime.timedelta(100)
+        c1.save()
+
+        self.assertEqual(c2, get_next_camp_guess(user=u))
+
+        # When we run out of options, should return None
+        u.application_set.create(camp=c2)
+        self.assertEqual(None, get_next_camp_guess(user=u))
+

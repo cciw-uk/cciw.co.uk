@@ -124,34 +124,54 @@ def leaders_index(request):
     return render_to_response('cciw/officers/leaders_index.html', context_instance=context)
 
 
+def _get_next_camp_guess_by_user(user):
+    if user is not None:
+        # Use Invitations
+        for invite in user.invitation_set.filter(camp__end_date__gte=datetime.date.today()):
+            if user.application_set.filter(camp=invite.camp).exists():
+                # Already done an application form, don't guess this.
+                continue
+            return invite.camp
+
+def _get_next_camp_guess_by_camp(camp, user):
+    next_camps = list(camp.next_camps.filter(online_applications=True))
+    if len(next_camps) > 0:
+        next_camp = next_camps[0]
+        if next_camp.is_past():
+            return _get_next_camp_guess_by_camp(camp, user)
+        else:
+            if user is not None and user.application_set.filter(camp=next_camp).exists():
+                # Already done an application form, don't guess this.
+                return None
+            return next_camp
+    else:
+        return None
+
+
 def get_next_camp_guess(camp=None, user=None):
     """
     Given a camp that an officer had been on, and/or the officer, returns the
     camp that they are likely to apply to, or None if no suitable guess can be
     found.
     """
-    if user is not None:
-        # Use Invitations
-        for invite in user.invitation_set.filter(camp__end_date__gte=datetime.date.today()):
-            if camp is not None:
-                # Don't guess a camp that they have already started an application for.
-                if user.application_set.filter(camp=camp).exists():
-                    continue
-            return invite.camp
+    guess = _get_next_camp_guess_by_user(user)
 
-    # No suitable invitations, carry on
-    if camp is None:
-        return None
+    if guess is not None:
+        return guess
 
-    next_camps = list(camp.next_camps.filter(online_applications=True))
-    if len(next_camps) > 0:
-        next_camp = next_camps[0]
-        if next_camp.is_past():
-            return get_next_camp_guess(camp=next_camp)
-        else:
-            return next_camp
-    else:
-        return None
+    if camp is not None:
+        guess = _get_next_camp_guess_by_camp(camp, user)
+
+    if guess is not None:
+        return guess
+
+    # Just return any which are not past, and which the user hasn't started a
+    # form for.
+    for c in Camp.objects.filter(end_date__gte=datetime.date.today()):
+        if user is not None and user.application_set.filter(camp=c).exists():
+            continue
+        return c
+    return None
 
 
 @staff_member_required
@@ -193,13 +213,12 @@ def applications(request):
             next_camp = get_next_camp_guess(camp=obj.camp, user=user)
             if next_camp is not None:
                 new_obj.camp = next_camp
+                new_obj.save()
+                return HttpResponseRedirect('/admin/officers/application/%s/' % \
+                                                new_obj.id)
             else:
-                new_obj.camp = Camp.objects\
-                               .filter(online_applications=True)\
-                               .order_by('-year', 'number')[0]
-            new_obj.save()
-            return HttpResponseRedirect('/admin/officers/application/%s/' % \
-                                        new_obj.id)
+                messages.error(request, "There are no more camps that you can create an application for.")
+                # fall through to show same page again
 
     elif request.POST.has_key('delete'):
         # Delete an unfinished application
