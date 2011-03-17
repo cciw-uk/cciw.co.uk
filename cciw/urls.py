@@ -38,7 +38,7 @@ if settings.DEVBOX:
     urlpatterns += patterns('',
                             (r'^validator/', include('output_validator.urls')),
                             (r'^admin_doc/', include('django.contrib.admindocs.urls')),
-                            (r'^usermedia/(?P<path>.*)$', 'django.contrib.staticfiles.views.serve',
+                            (r'^usermedia/(?P<path>.*)$', 'django.views.static.serve',
                              {'document_root': settings.MEDIA_ROOT}),
                             (r'^file/(?P<path>.*)$', 'django.contrib.staticfiles.views.serve',
                              {'document_root': settings.SECUREDOWNLOAD_SERVE_ROOT}),
