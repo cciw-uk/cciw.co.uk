@@ -332,8 +332,8 @@ def _deploy(target, quick=False):
     if quick:
         _copy_local_sources(target, version)
         _copy_protected_downloads()
-        _update_symlink(target, version)
         _build_static(version)
+        _update_symlink(target, version)
     else:
         db_backup_name = backup_database(target, version)
         _copy_local_sources(target, version)
