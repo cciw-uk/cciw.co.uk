@@ -1,4 +1,6 @@
 import datetime
+import itertools
+
 from django import forms
 from django import template
 from django.conf import settings
@@ -128,24 +130,19 @@ def _get_next_camp_guess_by_user(user):
     if user is not None:
         # Use Invitations
         for invite in user.invitation_set.filter(camp__end_date__gte=datetime.date.today()):
-            if user.application_set.filter(camp=invite.camp).exists():
-                # Already done an application form, don't guess this.
-                continue
-            return invite.camp
+            yield invite.camp
 
-def _get_next_camp_guess_by_camp(camp, user):
-    next_camps = list(camp.next_camps.filter(online_applications=True))
-    if len(next_camps) > 0:
-        next_camp = next_camps[0]
-        if next_camp.is_past():
-            return _get_next_camp_guess_by_camp(camp, user)
-        else:
-            if user is not None and user.application_set.filter(camp=next_camp).exists():
-                # Already done an application form, don't guess this.
-                return None
-            return next_camp
-    else:
-        return None
+
+def _get_next_camp_guess_by_camp(camp):
+    if camp is not None:
+        next_camps = list(camp.next_camps.filter(online_applications=True))
+        if len(next_camps) > 0:
+            next_camp = next_camps[0]
+            if next_camp.is_past():
+                for c in _get_next_camp_guess_by_camp(camp):
+                    yield c
+            else:
+                yield next_camp
 
 
 def get_next_camp_guess(camp=None, user=None):
@@ -153,24 +150,28 @@ def get_next_camp_guess(camp=None, user=None):
     Given a camp that an officer had been on, and/or the officer, returns the
     camp that they are likely to apply to, or None if no suitable guess can be
     found.
+
+    user is the officer
+    camp is a past camp they have been on or submitted an application form for.
     """
-    guess = _get_next_camp_guess_by_user(user)
+    guesses = itertools.chain(
+        # First use invitations
+        _get_next_camp_guess_by_user(user),
+        # Then guess from last year's camp
+        _get_next_camp_guess_by_camp(camp),
+        # Then use camps that aren't finished
+        Camp.objects.filter(end_date__gte=datetime.date.today())
+        )
 
-    if guess is not None:
-        return guess
-
-    if camp is not None:
-        guess = _get_next_camp_guess_by_camp(camp, user)
-
-    if guess is not None:
-        return guess
-
-    # Just return any which are not past, and which the user hasn't started a
-    # form for.
-    for c in Camp.objects.filter(end_date__gte=datetime.date.today()):
-        if user is not None and user.application_set.filter(camp=c).exists():
-            continue
-        return c
+    # We must never return a camp that already has an application form
+    # started. We cache the excluded ids for efficiency
+    if user is not None:
+        camp_ids = set([a.camp_id for a in user.application_set.all()])
+    else:
+        camp_ids = set()
+    for guess in guesses:
+        if guess.id not in camp_ids:
+            return guess
     return None
 
 
