@@ -105,6 +105,8 @@ project_dir = 'project'
 # The relative path to where the dependencies source code is stored (for those
 # not installed using pip)
 deps_dir = 'deps'
+usermedia_local = os.path.join(parent_dir, 'usermedia')
+usermedia_production = os.path.join(webapps_root, 'cciw_usermedia')
 
 def _get_subdirs(dirname):
     return [f for f in os.listdir(dirname)
@@ -437,6 +439,15 @@ def test_staging():
 def test_production():
     _test_remote(PRODUCTION)
 
+
+def upload_usermedia():
+    local("rsync -z -r %s/ cciw@cciw.co.uk:%s" % (usermedia_local, usermedia_production), capture=False)
+
+
+def backup_usermedia():
+    local("rsync -z -r  cciw@cciw.co.uk:%s/ %s" % (usermedia_production, usermedia_local), capture=False)
+
+
 # TODO:
-#  - backup usermedia task
-#  - backup db task
+#  - backup db task. This should be run only in production, and copies
+#    files to Amazon S3 service.
