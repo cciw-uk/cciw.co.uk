@@ -159,6 +159,7 @@ class Application(models.Model):
 
     class Meta:
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name', 'camp__number')
+        unique_together = (('camp', 'officer'),)
 
 
 class ReferenceManager(models.Manager):
@@ -250,6 +251,7 @@ class ReferenceFormManager(models.Manager):
     use_for_related_fields = True
     def get_query_set(self):
         return super(ReferenceFormManager, self).get_query_set().select_related('reference_info__application__camp', 'reference_info__application__officer')
+
 
 class ReferenceForm(models.Model):
     referee_name = models.CharField("name of referee", max_length=100)
