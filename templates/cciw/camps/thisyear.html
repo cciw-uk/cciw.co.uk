@@ -4,7 +4,6 @@
 	{% if camps %}
 		{% htmlchunk camp_dates_intro_text %}
 		<h2>Dates</h2>
-		<p>Click on the number of the camp for more information</p>
 		<div>
 		<table class="topheaders" summary="Details of all camps running in {{ thisyear }}">
 			<thead>
@@ -32,7 +31,7 @@
 							title="{{ camp.nice_name }}">{{ camp.number }}</a></td>
 						<td>{{ camp.age	}}</td>
 						<td>{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M" }}</td>
-						<td>{{ camp.leaders.all|join:", " }}</td>
+						<td><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">{{ camp.leaders.all|join:", " }}</a></td>
 						<td>{% if camp.chaplain %}{{ camp.chaplain }}{% else %}TBA{% endif %}</td>
 					</tr>
 					{% endfor %}
