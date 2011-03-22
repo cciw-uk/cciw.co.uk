@@ -225,13 +225,21 @@ def standard_processor(request):
     assert type(request.path) is unicode
     context['homepage'] = (request.path == u"/")
     links = MenuLink.objects.filter(parent_item__isnull=True, visible=True)
+
+    # Ugly special casing for 'thisyear' camps
+    m = re.match(u'/camps/%s/(\d+)/' % unicode(get_thisyear()),  request.path)
+    if m is not None:
+        request_path = u'/thisyear/%s/' % m.groups()[0]
+    else:
+        request_path = request.path
+
     for l in links:
         l.title = standard_subs(l.title)
         l.isCurrentPage = False
         l.isCurrentSection = False
-        if l.url == request.path:
+        if l.url == request_path:
             l.isCurrentPage = True
-        elif request.path.startswith(l.url) and l.url != u'/':
+        elif request_path.startswith(l.url) and l.url != u'/':
             l.isCurrentSection = True
 
     context['menulinks'] = links

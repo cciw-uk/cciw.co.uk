@@ -101,14 +101,16 @@ a:hover {
     line-height:1.3em;
     margin: 0px 1px 0px 0px;
 }
-#menubar ul li a:hover {
+#menubar ul li a:hover,
+#menubar ul li a.currentSection:hover {
     color:#fff;
     background-color:#bacb97;
 }
 #menubar ul li a.active,
-#menubar ul li a.active:hover {
-   color:#fff;
-   background:#007633;
+#menubar ul li a.active:hover,
+#menubar ul li a.currentSection {
+    color:#fff;
+    background:#007633;
 }
 
 
