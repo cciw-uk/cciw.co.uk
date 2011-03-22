@@ -27,6 +27,7 @@ class CampAdmin(admin.ModelAdmin):
         return camp.leaders_formatted
     list_display = ('year', 'number', leaders, 'chaplain', 'age', 'site', 'start_date')
     list_display_links = ('number', leaders)
+    del leaders
     list_filter = ('age', 'site')
     filter_horizontal = ('leaders', 'admins')
     date_hierarchy = 'start_date'
