@@ -373,7 +373,10 @@ class CRBApplicationAdmin(admin.ModelAdmin):
     form = CRBApplicationModelForm
 
     search_fields = ('officer__first_name', 'officer__last_name')
-    list_display = ('crb_number', 'first_name', 'last_name', 'completed')
+    list_display = ('first_name', 'last_name', 'crb_number', 'completed')
+    list_display_links = ('first_name', 'last_name', 'crb_number')
+    ordering = ('-completed',)
+    date_hierarchy = 'completed'
 
     def first_name(self, obj):
         return obj.officer.first_name
