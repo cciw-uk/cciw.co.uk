@@ -1,10 +1,7 @@
-import twill
-from twill.shell import TwillCommandLoop
-from twill import commands as tc
-
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from twill import commands as tc
 
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application
