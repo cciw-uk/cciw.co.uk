@@ -377,9 +377,11 @@ class CRBApplicationAdmin(admin.ModelAdmin):
 
     def first_name(self, obj):
         return obj.officer.first_name
+    first_name.admin_order_field = 'officer__first_name'
 
     def last_name(self, obj):
         return obj.officer.last_name
+    last_name.admin_order_field = 'officer__last_name'
 
 
 admin.site.register(Application, ApplicationAdmin)
