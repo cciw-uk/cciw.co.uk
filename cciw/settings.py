@@ -44,7 +44,11 @@ SITE_ID = 1
 
 ROOT_URLCONF = 'cciw.urls'
 
-CACHE_BACKEND = 'dummy://'
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
+    }
 
 TIME_ZONE = "Europe/London"
 
