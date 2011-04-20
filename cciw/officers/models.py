@@ -312,10 +312,17 @@ class Invitation(models.Model):
         unique_together = (('officer', 'camp'),)
 
 
+class CRBApplicationManager(models.Manager):
+    use_for_related_fields = True
+    def get_query_set(self):
+        return super(CRBApplicationManager, self).get_query_set().select_related('officer')
+
 class CRBApplication(models.Model):
     officer = models.ForeignKey(User)
     crb_number = models.CharField("CRB Number", max_length=20)
     completed = models.DateField()
+
+    objects = CRBApplicationManager()
 
     def __unicode__(self):
         return "CRB application for %s %s, %s" % (self.officer.first_name,
