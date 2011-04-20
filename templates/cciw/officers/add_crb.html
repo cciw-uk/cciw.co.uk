@@ -1,0 +1,27 @@
+{% extends "cciw/officers/base.html" %}
+{% load url from future %}
+{% load adminmedia %}
+{% block title %}Add CRB information :: CCIW{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />
+{% endblock %}
+{% block content %}
+
+<h1>Add CRB information</h1>
+
+<p>If you have a completed CRB disclosure, please enter the details below.</p>
+
+<p>Or <a href="{% url 'cciw.officers.views.index' %}">return to the menu</a>.</p>
+
+<form action="." method="post">
+{% csrf_token %}
+<div>
+  <table>
+    {{ form.as_table }}
+  </table>
+</div>
+
+<p><input type="submit" name="add" value="Add information" /></p>
+</form>
+
+{% endblock %}

@@ -5,6 +5,7 @@ from django import forms
 from django import template
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.admin import widgets
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -17,6 +18,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import render_to_string
 from django.template.defaultfilters import wordwrap
 from django.views.decorators.cache import never_cache
+
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
@@ -27,7 +29,7 @@ from cciw.officers import create
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
-from cciw.officers.models import Application, Reference, ReferenceForm, Invitation
+from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.officers.references import reference_form_info
 from cciw.utils.views import close_window_response
@@ -1045,3 +1047,32 @@ def stats(request, year=None):
     d['all_past'] = all_past
     return render_to_response('cciw/officers/stats.html',
                               context_instance=template.RequestContext(request, d))
+
+
+class AddCrbForm(forms.ModelForm):
+    class Meta:
+        model = CRBApplication
+        fields = ('crb_number',
+                  'completed',
+                  )
+AddCrbForm.base_fields['completed'].widget = widgets.AdminDateWidget()
+
+@staff_member_required
+def add_crb(request):
+    """
+    Form for an officer to add info about their CRB applications
+    """
+    if request.method == "POST":
+        form = AddCrbForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.officer = request.user
+            obj.save()
+            messages.info(request, "CRB information added, thank you.")
+            return HttpResponseRedirect(reverse('cciw.officers.views.index'))
+    else:
+        form = AddCrbForm()
+    c = {'form': form}
+
+    return render_to_response('cciw/officers/add_crb.html',
+                              context_instance=template.RequestContext(request, c))

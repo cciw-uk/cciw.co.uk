@@ -6,6 +6,7 @@
 <h2>Menu:</h2>
 <ul>
   <li><a href="{% url 'cciw.officers.views.applications' %}">Submit/view applications</a></li>
+  <li><a href="{% url 'cciw.officers.views.add_crb' %}">Add your CRB information</a></li>
   <li><a href="{% url 'cciw.officers.views.info' %}">Information about camp</a></li>
   {% if show_leader_links %}
     <li><a href="{% url 'cciw.officers.views.leaders_index' %}">Tools for leaders</a></li>

@@ -23,6 +23,7 @@ urlpatterns = patterns('cciw.officers.views',
     (r'^ref/(?P<ref_id>\d+)-(?P<prev_ref_id>\d*)-(?P<hash>.*)/$', 'create_reference_form'),
     (r'^ref/thanks/$', 'create_reference_thanks'),
     (r'^add-officer/$', 'create_officer'),
+    (r'^add-crb/$', 'add_crb'),
     (r'^files/(.*)$', 'officer_files'),
     url(r'^info/$', TemplateView.as_view(template_name='cciw/officers/info.html'), name="cciw.officers.views.info"),
 )
