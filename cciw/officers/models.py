@@ -330,7 +330,8 @@ class CRBApplication(models.Model):
                                                   self.completed.strftime("%Y-%m-%d"))
 
     class Meta:
-        verbose_name = "CRB Application"
+        verbose_name = "CRB Disclosure"
+        verbose_name_plural = "CRB Disclosures"
 
 
 import cciw.officers.admin
