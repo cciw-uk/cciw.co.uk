@@ -319,8 +319,8 @@ class CRBApplicationManager(models.Manager):
 
 class CRBApplication(models.Model):
     officer = models.ForeignKey(User)
-    crb_number = models.CharField("CRB Number", max_length=20)
-    completed = models.DateField()
+    crb_number = models.CharField("Disclosure number", max_length=20)
+    completed = models.DateField("Date of issue")
 
     objects = CRBApplicationManager()
 
