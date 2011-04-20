@@ -317,6 +317,11 @@ class CRBApplication(models.Model):
     crb_number = models.CharField("CRB Number", max_length=20)
     completed = models.DateField()
 
+    def __unicode__(self):
+        return "CRB application for %s %s, %s" % (self.officer.first_name,
+                                                  self.officer.last_name,
+                                                  self.completed.strftime("%Y-%m-%d"))
+
     class Meta:
         verbose_name = "CRB Application"
 
