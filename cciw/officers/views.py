@@ -93,8 +93,7 @@ def close_window_and_update_ref(ref_id):
     HttpResponse that closes the current window, and updates the reference
     in the parent window. Applies to popup from manage_references view.
     """
-    return HttpResponse("""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-            "http://www.w3.org/TR/html4/loose.dtd"><html><head><title>Close</title><script type="text/javascript">window.opener.refreshReferenceSection(%s); window.close()</script></head><body></body></html>""" % ref_id)
+    return HttpResponse("""<!DOCTYPE HTML><html><head><title>Close</title><script type="text/javascript">window.opener.refreshReferenceSection(%s); window.close()</script></head><body></body></html>""" % ref_id)
 
 
 # /officers/
