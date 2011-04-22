@@ -12,10 +12,14 @@ from cciw.officers.models import Application, Reference, Invitation, ReferenceFo
 from cciw.officers import widgets, email
 from cciw.utils.views import close_window_response
 
+officer_autocomplete_field = \
+    lambda: ModelChoiceField('user',
+                             widget=widgets.JQueryAutoCompleteWidget('user',
+                                                                     attrs={'size':'50'}))
 
 class ApplicationAdminModelForm(forms.ModelForm):
 
-    officer = ModelChoiceField('user')
+    officer = officer_autocomplete_field()
 
     def __init__(self, *args, **kwargs):
         from cciw.officers.views import get_next_camp_guess
@@ -362,7 +366,7 @@ class ReferenceFormAdmin(admin.ModelAdmin):
 
 class CRBApplicationModelForm(forms.ModelForm):
 
-    officer = ModelChoiceField('user')
+    officer = officer_autocomplete_field()
 
     class Meta:
         model = CRBApplication
