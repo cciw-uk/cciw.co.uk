@@ -3,7 +3,12 @@ import datetime
 from django import template
 from django.template import loader
 
+from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
+
+# To enable Applications to be shared between camps, and in some cases to belong
+# to no camps, there is no direct connection between a Camp and an Application.
+# This means we need another way to do it, and we're using dates.
 
 
 def thisyears_applications(user):
@@ -38,11 +43,37 @@ def camps_for_application(application):
     return [i.camp for i in invites]
 
 def applications_for_camp(camp):
+    """
+    Returns the applications that are relevant for a camp.
+    """
+    # Use invitations to work out which officers we care about
     officer_ids = camp.invitation_set.values_list('officer__id', flat=True)
-    return Application.objects.filter(date_submitted__lte=camp.start_date,
-                                      date_submitted__gt=camp.start_date - datetime.timedelta(365),
-                                      finished=True,
+    apps = Application.objects.filter(finished=True,
                                       officer__in=officer_ids)
+
+    # It's important that we require a new application form every year.
+    apps = apps.filter(date_submitted__lte=camp.start_date,
+                       date_submitted__gt=camp.start_date - datetime.timedelta(365))
+
+    # However, a simple 12 month period before the camp is not sufficient,
+    # because if the camp is late one year, and the application forms are late,
+    # and it is early the next year, the application form might be less than 12
+    # months before the *following* year's camp.
+
+    # So we use the the Camp.year field to group the camps, and require
+    # applications to be after all the previous year's camps.
+    previous_camps = Camp.objects.filter(year=camp.year - 1)\
+        .order_by('-end_date')
+    last = None
+    try:
+        last = previous_camps[0]
+    except IndexError:
+        pass
+    if last is not None:
+        # We have some previous camps
+        apps = apps.filter(date_submitted__gt=last.end_date)
+    return apps
+
 
 def application_to_text(app):
     t = loader.get_template('cciw/officers/application_email.txt');
