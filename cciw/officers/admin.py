@@ -94,6 +94,7 @@ class ApplicationAdmin(admin.ModelAdmin):
     list_filter = ('finished','date_submitted', 'camp')
     ordering = ('full_name',)
     search_fields = ('full_name',)
+    date_hierarchy = 'date_submitted'
     form = ApplicationAdminModelForm
 
     camp_officer_application_fieldsets = (
