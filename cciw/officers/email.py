@@ -32,7 +32,7 @@ def admin_emails_for_application(application):
                    for user in leader.users.all()] + \
                    list(camp.admins.all())
         groups.append((camp, filter(lambda x: x is not None,
-                             map(formatted_email, leaders))))
+                                    map(formatted_email, leaders))))
     return groups
 
 
