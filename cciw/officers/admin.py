@@ -7,7 +7,6 @@ from django.forms.util import ErrorList
 
 from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
-from cciw.officers.applications import thisyears_applications
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.formfields import ModelChoiceField
 from cciw.officers.models import Application, Reference, Invitation, ReferenceForm, CRBApplication
@@ -46,6 +45,9 @@ class ApplicationAdminModelForm(forms.ModelForm):
         super(ApplicationAdminModelForm, self).__init__(*args, **kwargs)
 
     def clean(self):
+        # Import here to avoid cycle
+        from cciw.officers.applications import thisyears_applications
+
         app_finished = self.cleaned_data.get('finished', False)
         user = threadlocals.get_current_user()
         officer = self.cleaned_data.get('officer', None)
