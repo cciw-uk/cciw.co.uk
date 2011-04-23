@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from cciw.cciwmain.models import Camp
+from cciw.cciwmain.models import Camp, Site
+from cciw.officers import applications
 from cciw.officers.models import Application
 from cciw.officers.tests.references import OFFICER_USERNAME, OFFICER_PASSWORD
 
@@ -114,3 +115,65 @@ class PersonalApplicationList(TestCase):
         resp = self.client.post(self.url, {'new':'Create'})
         self.assertEqual(200, resp.status_code)
         self.assertEqual(list(self.user.application_set.all()), [app])
+
+
+class ApplicationUtils(TestCase):
+
+    fixtures = ['basic.json']
+
+    def test_date_submitted_logic(self):
+
+        # Setup::
+        # * two camps, different years, but within 12 months of each
+        #   other.
+        # * An application form that is submitted just before the first.
+        #   This should not appear in the following years applications.
+        # * An application form for the second year, that is submitted
+        #   just after the last camp for the first year
+
+        # We have to use datetime.today(), because this is used by
+        # thisyears_applications.
+
+        future_camp_start = datetime.date.today() + datetime.timedelta(100)
+        past_camp_start = future_camp_start - datetime.timedelta(30 * 11)
+
+        site = Site.objects.get(id=1)
+        c1 = Camp.objects.create(year=2010, number=5, age='Jnr',
+                                 start_date=past_camp_start,
+                                 end_date=past_camp_start + datetime.timedelta(7),
+                                 site=site)
+        c2 = Camp.objects.create(year=2011, number=1, age='Jnr',
+                                 start_date=future_camp_start,
+                                 end_date=future_camp_start + datetime.timedelta(7),
+                                 site=site)
+
+        u = User.objects.create(username='test')
+        u.invitation_set.create(camp=c1)
+        u.invitation_set.create(camp=c2)
+
+        app1 = Application.objects.create(officer=u,
+                                          finished=True,
+                                          date_submitted = past_camp_start - datetime.timedelta(1))
+
+        # First, check we don't have any apps that are counted as 'this years'
+        self.assertFalse(applications.thisyears_applications(u).exists())
+
+        # Create an application for this year
+        app2 = Application.objects.create(officer=u,
+                                          finished=True,
+                                          date_submitted = past_camp_start + datetime.timedelta(10))
+
+        # Now we should have one
+        self.assertTrue(applications.thisyears_applications(u).exists())
+
+        # Check that applications_for_camp agrees
+        self.assertEqual([app1], list(applications.applications_for_camp(c1)))
+        self.assertEqual([app2], list(applications.applications_for_camp(c2)))
+
+        # Check that camps_for_application agrees
+        self.assertEqual([c1], list(applications.camps_for_application(app1)))
+        self.assertEqual([c2], list(applications.camps_for_application(app2)))
+
+        # Check that thisyears_applications works if there are no future camps
+        c2.delete()
+        self.assertTrue(applications.thisyears_applications(u).exists())

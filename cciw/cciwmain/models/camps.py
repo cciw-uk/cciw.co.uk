@@ -84,9 +84,9 @@ class Camp(models.Model):
 
     objects = CampManager()
 
-    def save(self):
+    def save(self, *args, **kwargs):
         new = self.id is None
-        super(Camp, self).save()
+        super(Camp, self).save(*args, **kwargs)
         if new:
             signals.camp_created.send(self)
 
