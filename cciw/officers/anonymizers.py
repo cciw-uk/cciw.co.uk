@@ -90,7 +90,7 @@ class ApplicationAnonymizer(Anonymizer):
         ('allegation_declaration', "bool"),
         ('crb_check_consent', "bool"),
         # 'finished', "bool", - leave as is
-        ('date_submitted', "date"),
+        # ('date_submitted', "date"), - leave as is
     ]
 
     order = 2

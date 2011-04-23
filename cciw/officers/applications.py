@@ -1,5 +1,79 @@
+import datetime
+
 from django import template
 from django.template import loader
+
+from cciw.cciwmain.models import Camp
+from cciw.officers.models import Application
+
+# To enable Applications to be shared between camps, and in some cases to belong
+# to no camps, there is no direct connection between a Camp and an Application.
+# This means we need another way to do it, and we're using dates.
+
+
+def thisyears_applications(user):
+    """
+    Returns a QuerySet containing the applications a user has that
+    apply to 'this year', i.e. to camps still in the future.
+    """
+    from cciw.officers.models import Camp
+    future_camps = Camp.objects.filter(start_date__gte=datetime.date.today())
+    try:
+        c = future_camps[0]
+        return user.application_set.filter(date_submitted__gte=c.end_date - datetime.timedelta(365))
+    except IndexError:
+        # Fall back to finding camps in the past - any applications after the
+        # last one is 'this year' (although we shouldn't really allow these to
+        # be created)
+        c = Camp.objects.order_by('-start_date')[0]
+        return user.application_set.filter(date_submitted__gte=c.end_date)
+
+def camps_for_application(application):
+    """
+    For an Application, returns the camps it is relevant to, in terms of
+    notifying people.
+    """
+    # We get all camps that are in the year following the application form
+    # submitted date.
+    if application.date_submitted is None:
+        return []
+    invites = application.officer.invitation_set.filter(camp__start_date__gte=application.date_submitted,
+                                                        camp__start_date__lt=application.date_submitted +
+                                                        datetime.timedelta(365))
+    return [i.camp for i in invites]
+
+def applications_for_camp(camp):
+    """
+    Returns the applications that are relevant for a camp.
+    """
+    # Use invitations to work out which officers we care about
+    officer_ids = camp.invitation_set.values_list('officer__id', flat=True)
+    apps = Application.objects.filter(finished=True,
+                                      officer__in=officer_ids)
+
+    # It's important that we require a new application form every year.
+    apps = apps.filter(date_submitted__lte=camp.start_date,
+                       date_submitted__gt=camp.start_date - datetime.timedelta(365))
+
+    # However, a simple 12 month period before the camp is not sufficient,
+    # because if the camp is late one year, and the application forms are late,
+    # and it is early the next year, the application form might be less than 12
+    # months before the *following* year's camp.
+
+    # So we use the the Camp.year field to group the camps, and require
+    # applications to be after all the previous year's camps.
+    previous_camps = Camp.objects.filter(year=camp.year - 1)\
+        .order_by('-end_date')
+    last = None
+    try:
+        last = previous_camps[0]
+    except IndexError:
+        pass
+    if last is not None:
+        # We have some previous camps
+        apps = apps.filter(date_submitted__gt=last.end_date)
+    return apps
+
 
 def application_to_text(app):
     t = loader.get_template('cciw/officers/application_email.txt');
@@ -16,7 +90,11 @@ def application_txt_filename(app):
     return _application_filename_stem(app) + ".txt"
 
 def _application_filename_stem(app):
-    return 'Application_%s_%s' % (app.officer.username, app.camp.year)
+    if app.date_submitted is None:
+        submitted = ''
+    else:
+        submitted = '_' + app.date_submitted.strftime('%Y-%m-%d')
+    return 'Application_%s%s' % (app.officer.username, submitted)
 
 def application_difference(app1, app2):
     from diff_match_patch import diff_match_patch

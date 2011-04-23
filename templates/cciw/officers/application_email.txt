@@ -1,5 +1,4 @@
-{% autoescape off %}For camp:         {{ app.camp }}
-
+{% autoescape off %}
 Personal info
 =============
 Name:             {{ app.full_name }}

@@ -4,14 +4,11 @@
 <h1>Your applications</h1>
 
 <h2>Status:</h2>
-{% if finished_applications %}
-<p>To date, you have submitted the following application forms:</p>
-<ul>
-  {% for app in finished_applications %}
-    <li>{{ app.camp }}, submitted {{ app.date_submitted|date:"Y-m-d" }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
+{% if has_completed_app %}
+<p>You have filled in your application form for this year.  Thanks!</p>
+
+{% else %}
+<p>We haven't received your application form for this year yet.<p>
 
 <h2>Tasks:</h2>
 
@@ -27,7 +24,7 @@
 <label for="edit_application">Choose application:</label>&nbsp;
 	<select name="edit_application" id="edit_application">
 	{% for app in unfinished_applications %}
-	        <option value="{{ app.id }}">{{ app.camp }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
+	        <option value="{{ app.id }}">Submitted {{ app.date_submitted|date:"Y-m-d" }}</option>
 	{% endfor %}
 	</select>
 	<input type="submit" name="edit" value="Edit" />
@@ -36,15 +33,9 @@
 </li>
 {% endif %}
 
-{% if finished_applications %}
-<li>Create new application based on an existing one:<br/>
-  <label for="new_application">Choose application</label>&nbsp;
-	<select name="new_application" id="new_application">
-		{% for app in finished_applications %}
-			<option value="{{ app.id }}">{{ app.camp }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
-		{% endfor %}
-	</select>
-	<input type="submit" name="new" value="Create" />
+{% if finished_applications and not has_thisyears_app %}
+<li>Create new application based on your previous one:<br/>
+  <input type="submit" name="new" value="Create" />
 <br/><br/>
 <p>Once you have pressed 'Create', you will need to update any information necessary, including
 your address, and re-check the declarations.</p>
@@ -52,8 +43,13 @@ your address, and re-check the declarations.</p>
 
 {% endif %}
 
-<li><a href="/admin/officers/application/add/">Create new application (blank)</a></li>
+{% if not has_thisyears_app %}
+<li><a href="/admin/officers/application/add/">Create new application
+    (blank)</a></li>
+{% endif %}
+
 </ul>
+
 
 <h2>Help filling in the form</h2>
 <p>You can save your work at any time (using the 'Save' button at the bottom)
@@ -65,8 +61,9 @@ your address, and re-check the declarations.</p>
   try to save), your data won't have been saved.  You'll need to correct the
   data before it is actually saved.</p>
 
-
 </form>
+
+{% endif %}
 
 {% if finished_applications %}
 <h2>Download</h2>
@@ -78,7 +75,7 @@ your address, and re-check the declarations.</p>
   <label for="application">Choose application</label>
   <select name="application" id="application">
     {% for app in finished_applications %}
-    <option value="{{ app.id }}">{{ app.camp }}, updated {{ app.date_submitted|date:"Y-m-d" }}</option>
+    <option value="{{ app.id }}">Submitted {{ app.date_submitted|date:"Y-m-d" }}</option>
     {% endfor %}
   </select>
   </div>

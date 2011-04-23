@@ -3,6 +3,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from twill import commands as tc
 
+from cciw.cciwmain.models import Camp
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application
 from cciw.officers.views import get_previous_references
@@ -17,6 +18,11 @@ OFFICER = (OFFICER_USERNAME, OFFICER_PASSWORD)
 LEADER_USERNAME = 'davestott'
 LEADER_PASSWORD = 'test_normaluser_password'
 LEADER = (LEADER_USERNAME, LEADER_PASSWORD)
+
+# Data: Applications 1 to 3 are in year 2000, for camps in summer 2000
+# Application 4 is for 2001
+#
+#
 
 
 class ReferencesPage(TwillMixin, TestCase):
@@ -64,7 +70,7 @@ class RequestReference(TwillMixin, TestCase):
         self.assertTrue(app.referees[0].email != '')
         refinfo = app.references[0]
         self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
+        tc.go(make_django_url("cciw.officers.views.request_reference", year=2000, number=1) + "?ref_id=%d" % refinfo.id)
         tc.code(200)
         tc.notfind("No e-mail address")
         tc.find("The following e-mail")
@@ -81,7 +87,7 @@ class RequestReference(TwillMixin, TestCase):
         self.assertTrue(app.referees[1].email == '')
         refinfo = app.references[1]
         self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
+        tc.go(make_django_url("cciw.officers.views.request_reference", year=2000, number=1) + "?ref_id=%d" % refinfo.id)
         tc.code(200)
         tc.find("No e-mail address")
         tc.notfind("This field is required") # Don't want errors on first view
@@ -104,7 +110,7 @@ class RequestReference(TwillMixin, TestCase):
         self.assertTrue(app.referees[0].email != '')
         refinfo = app.references[0]
         self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
+        tc.go(make_django_url("cciw.officers.views.request_reference", year=2000, number=1) + "?ref_id=%d" % refinfo.id)
         tc.code(200)
         tc.formvalue("2", "cancel", "cancel")
         tc.submit()
@@ -117,7 +123,7 @@ class RequestReference(TwillMixin, TestCase):
         app = Application.objects.get(pk=3)
         refinfo = app.references[0]
         self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d" % refinfo.id)
+        tc.go(make_django_url("cciw.officers.views.request_reference", year=2000, number=1) + "?ref_id=%d" % refinfo.id)
         tc.code(200)
         tc.formvalue('2', 'message', 'I removed the link! Haha')
         tc.submit()
@@ -131,11 +137,12 @@ class RequestReference(TwillMixin, TestCase):
         Test the case where we ask for an update, and there is an exact match
         """
         app = Application.objects.get(pk=4)
+        camp = Camp.objects.get(year=2001)
         refinfo = app.references[0]
-        prev_refs, exact = get_previous_references(refinfo)
+        prev_refs, exact = get_previous_references(refinfo, camp)
         assert exact is not None
         self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, exact.id))
+        tc.go(make_django_url("cciw.officers.views.request_reference", year=2001, number=1) + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, exact.id))
         tc.code(200)
         tc.find("Mr Referee1 Name has done a reference for Mr in the past.")
 
@@ -144,15 +151,16 @@ class RequestReference(TwillMixin, TestCase):
         Test the case where we ask for an update, and there is no exact match
         """
         app = Application.objects.get(pk=4)
+        camp = Camp.objects.get(year=2001)
         # We make a change, so we don't get exact match
         app.referees[0].email = "a_new_email_for_ref1@example.com"
         app.save()
         refinfo = app.references[0]
-        prev_refs, exact = get_previous_references(refinfo)
+        prev_refs, exact = get_previous_references(refinfo, camp)
         assert exact is None
         assert prev_refs[0].reference_form.referee_name == "Mr Referee1 Name"
         self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.request_reference") + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, prev_refs[0].id))
+        tc.go(make_django_url("cciw.officers.views.request_reference", year=2001, number=1) + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, prev_refs[0].id))
         tc.code(200)
         tc.notfind("Mr Referee1 Name has done a reference for Mr in the past.")
         tc.find("""In the past, "Mr Referee1 Name &lt;referee1@email.co.uk&gt;" did""")
@@ -209,13 +217,14 @@ class CreateReference(TwillMixin, TestCase):
         Check that if we are updating a reference that previous data appears
         """
         app1 = Application.objects.get(pk=1)
+        camp = Camp.objects.get(year=2000)
         # app1 already has a reference done
         assert app1.references[0].reference_form is not None
         app2 = Application.objects.get(pk=4)
         assert app1.officer == app2.officer
 
         # We should be able to find an exact match for references
-        prev_refs, exact = get_previous_references(app2.references[0])
+        prev_refs, exact = get_previous_references(app2.references[0], camp)
         self.assertEqual(exact, app1.references[0])
 
         # Go to the corresponding URL

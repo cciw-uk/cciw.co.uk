@@ -1,6 +1,7 @@
+import datetime
+
 from cciw.cciwmain import common
-from cciw.cciwmain.models import Camp
-from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference
+from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference, camps_for_application
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.references import reference_form_to_text
 from django.conf import settings
@@ -20,11 +21,19 @@ def make_update_email_hash(oldemail, newemail):
 
 
 def admin_emails_for_application(application):
-    leaders = [user for leader in application.camp.leaders.all()
-                    for user in leader.users.all()] + \
-              list(application.camp.admins.all())
-    return filter(lambda x: x is not None,
-                  map(formatted_email, leaders))
+    """
+    For the supplied application, finds the camps admins that are relevant.
+    Returns results in groups of (camp, leaders), for each relevant camp.
+    """
+    camps = camps_for_application(application)
+    groups = []
+    for camp in camps:
+        leaders = [user for leader in camp.leaders.all()
+                   for user in leader.users.all()] + \
+                   list(camp.admins.all())
+        groups.append((camp, filter(lambda x: x is not None,
+                                    map(formatted_email, leaders))))
+    return groups
 
 
 def send_application_emails(request, application):
@@ -32,31 +41,43 @@ def send_application_emails(request, application):
         return
 
     # Email to the leaders:
-    # Collect e-mails to send to
-    leader_emails = admin_emails_for_application(application)
 
     application_text = application_to_text(application)
     application_rtf = application_to_rtf(application)
     rtf_attachment = (application_rtf_filename(application), application_rtf, 'text/rtf')
 
-    # Did the officer submit one last year for the 'same' camp?
-    previous_camp = application.camp.previous_camp
-    application_diff = None
-    if previous_camp is not None:
-        officer = application.officer
-        try:
-            previous_app = officer.application_set.filter(camp=previous_camp, finished=True)[0]
-        except IndexError:
+    # Collect e-mails to send to
+    leader_email_groups = admin_emails_for_application(application)
+    for camp, leader_emails in leader_email_groups:
+        # Did the officer submit one last year?
+        previous_camp = camp.previous_camp
+        application_diff = None
+        if previous_camp is not None:
+            officer = application.officer
             previous_app = None
-        if previous_app is not None:
-            application_diff = ("differences_from_last_year.html",
-                                application_difference(previous_app, application),
-                                "text/html")
+            if previous_camp.invitation_set.filter(officer=officer).exists():
+                try:
+                    previous_app = officer.application_set.filter(date_submitted__lte=previous_camp.start_date,
+                                                                  date_submitted__gte=previous_camp.start_date + datetime.timedelta(-365),
+                                                                  finished=True)[0]
+                except IndexError:
+                    pass
+            if previous_app is not None:
+                application_diff = ("differences_from_last_year.html",
+                                    application_difference(previous_app, application),
+                                    "text/html")
 
-    if len(leader_emails) > 0:
-        send_leader_email(leader_emails, application, application_text, rtf_attachment,
-                          application_diff)
+        if len(leader_emails) > 0:
+            send_leader_email(leader_emails, application, application_text, rtf_attachment,
+                              application_diff)
         messages.info(request, "The completed application form has been sent to the leaders via e-mail.")
+
+    if len(leader_email_groups) == 0:
+        application_text = """PLEASE NOTE: This has not been sent to any leaders,
+since the officer was not on any invitation list.
+
+""" + application_text
+        send_leader_email([settings.WEBMASTER_EMAIL], application, application_text, rtf_attachment, None)
 
     # If an admin user corrected an application, we don't send the user a copy
     # (usually they just get the year of the camp wrong(!))
@@ -101,15 +122,6 @@ application form and last year's - pink indicates information that has
 been removed, green indicates new information.
 
 """
-
-    officer = application.officer
-    if not officer.invitation_set.filter(camp=application.camp).exists():
-        body += \
-u"""PLEASE NOTE: %s %s is not currently on your officer list. It is
-important for CRB records and other purposes that you add this officer
-to your officer list if they will be coming on camp.
-
-""" % (officer.first_name, officer.last_name)
 
     body += application_text
 
@@ -194,7 +206,6 @@ def send_leaders_reference_email(refform):
     app = ref.application
     officer = app.officer
 
-    leader_emails = admin_emails_for_application(app)
     refform_text = reference_form_to_text(refform)
     subject = "CCIW reference form for %s %s from %s" % (officer.first_name, officer.last_name, ref.referee.name)
     body = \
@@ -204,8 +215,11 @@ CCIW website for officer %s %s.
 %s
 """ % (officer.first_name, officer.last_name, refform_text)
 
-    send_mail(subject, body, settings.SERVER_EMAIL,
-              leader_emails, fail_silently=False)
+
+    leader_email_groups = admin_emails_for_application(app)
+    for camp, leader_emails in leader_email_groups:
+        send_mail(subject, body, settings.SERVER_EMAIL,
+                  leader_emails, fail_silently=False)
 
 
 def send_nag_by_officer(message, officer, ref):
