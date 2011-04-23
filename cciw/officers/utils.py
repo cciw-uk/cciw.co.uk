@@ -12,9 +12,9 @@ def camp_officer_list(camp):
 
 def camp_slacker_list(camp):
     """
-    Returns list of officers who have not filled out application form
+    Returns list of officers who have not filled out an application form
     """
-    finished_apps_off_ids = [o['officer__id']
-                             for o in camp.application_set.filter(finished=True).values('officer__id')]
-    return list(camp.officers.order_by('first_name', 'last_name', 'email').exclude(id__in=finished_apps_off_ids))
+    from cciw.officers.applications import applications_for_camp
+    finished_apps_ids = applications_for_camp(camp).values_list('officer__id', flat=True)
+    return list(camp.officers.order_by('first_name', 'last_name', 'email').exclude(id__in=finished_apps_ids))
 

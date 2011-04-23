@@ -60,7 +60,7 @@
       <option value="{{ opt.id }}"
               {% if forloop.first %}selected="selected"{% endif %}>
         {{ opt.referee.name }} &lt;{{ opt.referee.email }}&gt;
-        ({{ opt.application.camp.year }})
+        ({{ opt.application.date_submitted|date:"Y" }})
       </option>
       {% endfor %}
     </select>

@@ -3,6 +3,9 @@ import datetime
 from django import template
 from django.template import loader
 
+from cciw.officers.models import Application
+
+
 def thisyears_applications(user):
     """
     Returns a QuerySet containing the applications a user has that
@@ -33,6 +36,13 @@ def camps_for_application(application):
                                                         camp__start_date__lt=application.date_submitted +
                                                         datetime.timedelta(365))
     return [i.camp for i in invites]
+
+def applications_for_camp(camp):
+    officer_ids = camp.invitation_set.values_list('officer__id', flat=True)
+    return Application.objects.filter(date_submitted__lte=camp.start_date,
+                                      date_submitted__gt=camp.start_date - datetime.timedelta(365),
+                                      finished=True,
+                                      officer__in=officer_ids)
 
 def application_to_text(app):
     t = loader.get_template('cciw/officers/application_email.txt');

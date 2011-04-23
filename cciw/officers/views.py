@@ -24,7 +24,7 @@ from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
-from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename, thisyears_applications
+from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename, thisyears_applications, applications_for_camp
 from cciw.officers import create
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer
@@ -250,7 +250,7 @@ def _thisyears_camp_for_leader(user):
 def manage_applications(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     context = template.RequestContext(request)
-    context['finished_applications'] =  camp.application_set.filter(finished=True).select_related('officer', 'camp')
+    context['finished_applications'] = applications_for_camp(camp).order_by('officer__first_name', 'officer__last_name')
     context['camp'] = camp
 
     return render_to_response('cciw/officers/manage_applications.html',
@@ -264,7 +264,7 @@ def _get_camp_or_404(year, number):
         raise Http404
 
 
-def get_previous_references(ref):
+def get_previous_references(ref, camp):
     """
     Returns a tuple of:
      (possible previous References ordered by relevance,
@@ -273,14 +273,14 @@ def get_previous_references(ref):
     # Look for ReferenceForms for same officer, within the previous five
     # years.  Don't look for references from this year's
     # application (which will be the other referee).
-    cutoffdate = ref.application.camp.start_date - datetime.timedelta(365*5)
+    cutoffdate = camp.start_date - datetime.timedelta(365*5)
     prev = list(ReferenceForm.objects\
                 .filter(reference_info__application__officer=ref.application.officer,
                         reference_info__application__finished=True,
                         reference_info__received=True,
                         date_created__gte=cutoffdate)\
                 .exclude(reference_info__application=ref.application)\
-                .order_by('-reference_info__application__camp__year'))
+                .order_by('-reference_info__application__date_submitted'))
 
     # Sort by relevance
     def relevance_key(refform):
@@ -288,7 +288,7 @@ def get_previous_references(ref):
         # so it comes first.
         return -(int(refform.reference_info.referee.email==ref.referee.email) +
                  int(refform.reference_info.referee.name ==ref.referee.name))
-    prev.sort(key=relevance_key) # sort is stable, so previous sort by year should be kept
+    prev.sort(key=relevance_key) # sort is stable, so previous sort by date should be kept
 
     exact = None
     for refform in prev:
@@ -307,21 +307,18 @@ def manage_references(request, year=None, number=None):
     # If ref_id is set, we just want to update part of the page.
     ref_id = request.GET.get('ref_id')
 
-    if ref_id is None:
-        camp = _get_camp_or_404(year, number)
-        c['camp'] = camp
+    camp = _get_camp_or_404(year, number)
+    c['camp'] = camp
 
-        apps = camp.application_set.filter(finished=True)
+    if ref_id is None:
+        apps = applications_for_camp(camp)
+        app_ids = [app.id for app in apps]
         # force creation of Reference objects.
-        if Reference.objects.filter(application__finished=True,
-                                    application__camp=camp).count() < apps.count() * 2:
+        if Reference.objects.filter(application__in=app_ids).count() < len(apps) * 2:
             [a.references for a in apps]
 
-            # TODO - check for case where user has submitted multiple application forms.
-            # User.objects.all().filter(application__camp=camp).annotate(num_applications=models.Count('application')).filter(num_applications__gt=1)
-
         refinfo = Reference.objects\
-            .filter(application__camp=camp, application__finished=True)\
+            .filter(application__in=app_ids)\
             .order_by('application__officer__first_name', 'application__officer__last_name',
                       'referee_number')
 
@@ -335,7 +332,7 @@ def manage_references(request, year=None, number=None):
     for l in (received, requested, notrequested):
         # decorate each Reference with suggested previous ReferenceForms.
         for curref in l:
-            (prev, exact) = get_previous_references(curref)
+            (prev, exact) = get_previous_references(curref, camp)
             if exact is not None:
                 curref.previous_reference = exact
             else:
@@ -407,14 +404,14 @@ class SendReferenceRequestForm(SendMessageForm):
 
 @staff_member_required
 @camp_admin_required # we don't care which camp they are admin for.
-def request_reference(request):
+def request_reference(request, year=None, number=None):
+    camp = _get_camp_or_404(year, number)
     try:
         ref_id = int(request.GET.get('ref_id'))
     except ValueError, TypeError:
         raise Http404
     ref = get_object_or_404(Reference.objects.filter(id=ref_id))
     app = ref.application
-    camp = app.camp
 
     if 'manual' in request.GET:
         return manage_reference_manually(request, ref)
@@ -434,7 +431,7 @@ def request_reference(request):
     # message.
     update = 'update' in request.GET
     if update:
-        (possible, exact) = get_previous_references(ref)
+        (possible, exact) = get_previous_references(ref, camp)
         prev_ref_id = int(request.GET['prev_ref_id'])
         if exact is not None:
             # the prev_ref_id must be the same as exact.id by the logic of the
@@ -501,14 +498,14 @@ class SendNagByOfficerForm(SendMessageForm):
 
 @staff_member_required
 @camp_admin_required # we don't care which camp they are admin for.
-def nag_by_officer(request):
+def nag_by_officer(request, year=None, number=None):
+    camp = _get_camp_or_404(year, number)
     try:
         ref_id = int(request.GET.get('ref_id'))
     except ValueError, TypeError:
         raise Http404
     ref = get_object_or_404(Reference.objects.filter(id=ref_id))
     app = ref.application
-    camp = app.camp
     officer = app.officer
 
     c = template.RequestContext(request)
@@ -645,14 +642,6 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
         prev_ref = None
         if prev_ref_id != "":
             prev_ref = get_object_or_404(Reference.objects.filter(id=int(prev_ref_id)))
-        else:
-            # If we can find an exact match, use that.  This covers the case
-            # where a reference is filled in for the same person for another
-            # camp in the same year, after the e-mail was sent out (so the
-            # e-mail has an out-of-date link).
-            (_, exact) = get_previous_references(ref)
-            if exact is not None:
-                prev_ref = exact
 
         if prev_ref is not None:
             prev_ref_form = prev_ref.reference_form
@@ -958,10 +947,11 @@ def stats(request, year=None):
             all_past = False
         stat['camp'] = c
         stat['num_invited_officers'] = c.invitation_set.count()
-        application_forms = c.application_set.filter(finished=True)
-        num_application_forms = application_forms.count()
+        application_forms = applications_for_camp(c)
+        app_ids = [a.id for a in application_forms]
+        num_application_forms = len(app_ids)
         stat['num_application_forms'] = num_application_forms
-        received_reference_set = Reference.objects.filter(received=True, application__camp=c)
+        received_reference_set = Reference.objects.filter(received=True, application__in=app_ids)
         num_received_references = received_reference_set.count()
         expected_references = 2 * num_application_forms
         stat['num_received_references'] = num_received_references

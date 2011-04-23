@@ -7,7 +7,7 @@
 //<![CDATA[
 
 function requestGeneric(query) {
-    window.open('{% url "cciw.officers.views.request_reference" %}?' + query,
+    window.open('{% url "cciw.officers.views.request_reference" year=camp.year number=camp.number %}?' + query,
                 '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
 }
 
@@ -75,7 +75,7 @@ function manageReferenceManually(ref_id) {
 }
 
 function nagByOfficer(ref_id) {
-    window.open('{% url "cciw.officers.views.nag_by_officer" %}?ref_id=' + ref_id.toString(),
+    window.open('{% url "cciw.officers.views.nag_by_officer" year=camp.year number=camp.number %}?ref_id=' + ref_id.toString(),
                 '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
 }
 

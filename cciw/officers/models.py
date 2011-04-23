@@ -34,6 +34,12 @@ class Referee(object):
         return self.name == other.name and self.email == other.email
 
 
+class ApplicationManager(models.Manager):
+    use_for_related_fields = True
+    def get_query_set(self):
+        return super(ApplicationManager, self).get_query_set().select_related('officer')
+
+
 class Application(models.Model):
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
     full_name = required_field(models.CharField, 'full name', max_length=60)
@@ -122,6 +128,8 @@ class Application(models.Model):
     finished = models.BooleanField("is the above information complete?", default=False)
 
     date_submitted = models.DateField('date submitted', null=True, blank=True)
+
+    objects = ApplicationManager()
 
     # Convenience wrapper around 'referee?_*' fields:
     @property
