@@ -35,7 +35,6 @@ class Referee(object):
 
 
 class Application(models.Model):
-    camp = models.ForeignKey(Camp, limit_choices_to={'online_applications': True})
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
     full_name = required_field(models.CharField, 'full name', max_length=60)
     full_maiden_name = models.CharField('full maiden name', max_length=60, blank=True)
@@ -147,26 +146,24 @@ class Application(models.Model):
             return retval
 
     def __unicode__(self):
-        if self.camp is not None:
-            return u"Application from %s, %d, camp %d" % (self.full_name,
-                                                          self.camp.year,
-                                                          self.camp.number)
+        if self.date_submitted is not None:
+            submitted = "submitted " + self.date_submitted.strftime("%Y-%m-%d")
         else:
-            return u"Application from %s" % self.full_name
+            submitted = "incomplete"
+        return u"Application from %s (%s)" % (self.full_name, submitted)
 
     def _ref(self, num):
         return self.reference_set.get_or_create(referee_number=num)[0]
 
     class Meta:
-        ordering = ('-camp__year', 'officer__first_name', 'officer__last_name', 'camp__number')
-        unique_together = (('camp', 'officer'),)
+        ordering = ('-date_submitted', 'officer__first_name', 'officer__last_name',)
 
 
 class ReferenceManager(models.Manager):
     # manager to reduce number of SQL queries, especially in admin
     use_for_related_fields = True
     def get_query_set(self):
-        return super(ReferenceManager, self).get_query_set().select_related('application__camp', 'application__officer')
+        return super(ReferenceManager, self).get_query_set().select_related('application__officer')
 
 
 class Reference(models.Model):
@@ -238,10 +235,9 @@ class Reference(models.Model):
     class Meta:
         verbose_name = "Reference Metadata"
         verbose_name_plural = verbose_name
-        ordering = ('application__camp__year',
+        ordering = ('application__date_submitted',
                     'application__officer__first_name',
                     'application__officer__last_name',
-                    'application__camp__number',
                     'referee_number')
         unique_together = (("application", "referee_number"),)
 
@@ -250,7 +246,7 @@ class ReferenceFormManager(models.Manager):
     # manager to reduce number of SQL queries, especially in admin
     use_for_related_fields = True
     def get_query_set(self):
-        return super(ReferenceFormManager, self).get_query_set().select_related('reference_info__application__camp', 'reference_info__application__officer')
+        return super(ReferenceFormManager, self).get_query_set().select_related('reference_info__application__officer')
 
 
 class ReferenceForm(models.Model):
