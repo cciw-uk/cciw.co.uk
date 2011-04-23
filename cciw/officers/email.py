@@ -72,6 +72,13 @@ def send_application_emails(request, application):
                               application_diff)
         messages.info(request, "The completed application form has been sent to the leaders via e-mail.")
 
+    if len(leader_email_groups) == 0:
+        application_text = """PLEASE NOTE: This has not been sent to any leaders,
+since the officer was not on any invitation list.
+
+""" + application_text
+        send_leader_email([settings.WEBMASTER_EMAIL], application, application_text, rtf_attachment, None)
+
     # If an admin user corrected an application, we don't send the user a copy
     # (usually they just get the year of the camp wrong(!))
     if request.user == application.officer:
