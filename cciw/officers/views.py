@@ -24,7 +24,7 @@ from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
-from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename
+from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename, thisyears_applications
 from cciw.officers import create
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer
@@ -133,45 +133,39 @@ def applications(request):
     """Displays a list of tasks related to applications."""
     user = request.user
     context = template.RequestContext(request)
-    context['finished_applications'] = user.application_set\
-                                       .filter(finished=True)\
-                                       .order_by('-date_submitted')
-    context['unfinished_applications'] = user.application_set\
-                                         .filter(finished=False)\
-                                         .order_by('-date_submitted')
+    finished_applications = user.application_set\
+        .filter(finished=True)\
+        .order_by('-date_submitted')
+    unfinished_applications = user.application_set\
+        .filter(finished=False)\
+        .order_by('-date_submitted')
+    has_thisyears_app = thisyears_applications(user).exists()
+    has_completed_app = thisyears_applications(user).filter(finished=True).exists()
+
+    context['finished_applications'] = finished_applications
+    context['unfinished_applications'] = unfinished_applications
+    context['has_thisyears_app'] = has_thisyears_app
+    context['has_completed_app'] = has_completed_app
 
     if request.POST.has_key('edit'):
         # Edit existing application
         id = request.POST.get('edit_application', None)
         if id is not None:
             return HttpResponseRedirect('/admin/officers/application/%s/' % id)
-    elif request.POST.has_key('new'):
+    elif not has_thisyears_app and request.POST.has_key('new'):
         # Create new application based on old one
         obj = None
         try:
-            id = int(request.POST['new_application'])
-        except (ValueError, KeyError):
-            id = None
-        if id is not None:
-            try:
-                obj = Application.objects.get(pk=id)
-            except Application.DoesNotExist:
-                # should never get here
-                obj = None
+            obj = finished_applications[0]
+        except IndexError:
+            # should never get here
+            obj = None
         if obj is not None:
             # Create a copy
             new_obj = _copy_application(obj)
-            # We *have* to set 'camp' otherwise object cannot be seen
-            # in admin, due to default 'ordering'
-            next_camp = get_next_camp_guess(camp=obj.camp, user=user)
-            if next_camp is not None:
-                new_obj.camp = next_camp
-                new_obj.save()
-                return HttpResponseRedirect('/admin/officers/application/%s/' % \
-                                                new_obj.id)
-            else:
-                messages.error(request, "There are no more camps that you can create an application for.")
-                # fall through to show same page again
+            new_obj.save()
+            return HttpResponseRedirect('/admin/officers/application/%s/' % \
+                                            new_obj.id)
 
     elif request.POST.has_key('delete'):
         # Delete an unfinished application

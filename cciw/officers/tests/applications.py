@@ -1,7 +1,12 @@
-from django.test import TestCase
-from cciw.officers.models import Application
+import datetime
 
-from cciw.officers.tests.references import OFFICER_USERNAME
+from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
+from django.test import TestCase
+
+from cciw.cciwmain.models import Camp
+from cciw.officers.models import Application
+from cciw.officers.tests.references import OFFICER_USERNAME, OFFICER_PASSWORD
 
 class ApplicationModel(TestCase):
     fixtures = ['basic.json', 'officers_users.json', 'references.json']
@@ -38,3 +43,74 @@ class ApplicationModel(TestCase):
             app = Application.objects.get(id=appid)
             self.assertEqual(app.references[0], app.reference_set.get(referee_number=1))
             self.assertEqual(app.references[1], app.reference_set.get(referee_number=2))
+
+
+class PersonalApplicationList(TestCase):
+
+    fixtures = ['basic.json', 'officers_users.json']
+
+    _create_button = """<input type="submit" name="new" value="Create" """
+    _edit_button = """<input type="submit" name="edit" value="Edit" """
+
+    def setUp(self):
+        self.client.login(username=OFFICER_USERNAME, password=OFFICER_PASSWORD)
+        self.url = reverse('cciw.officers.views.applications')
+        self.user = User.objects.get(username=OFFICER_USERNAME)
+        self.user.application_set.all().delete()
+        # Set Camps so that one is in the future, and one in the past,
+        # so that is possible to have an application for an old camp
+        Camp.objects.filter(id=1).update(start_date=datetime.date.today() + datetime.timedelta(100-365),
+                                         end_date=datetime.date.today() + datetime.timedelta(107-365))
+        Camp.objects.filter(id=2).update(start_date=datetime.date.today() + datetime.timedelta(100),
+                                         end_date=datetime.date.today() + datetime.timedelta(107))
+
+
+    def test_get(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(200, resp.status_code)
+        self.assertContains(resp, "Your applications")
+
+    def test_no_existing_application(self):
+        resp = self.client.get(self.url)
+        self.assertNotContains(resp, self._create_button)
+        self.assertNotContains(resp, self._edit_button)
+
+    def test_finished_application(self):
+        app = self.user.application_set.create(finished=True,
+                                               date_submitted=datetime.date.today())
+        resp = self.client.get(self.url)
+        self.assertContains(resp, self._create_button)
+
+    def test_finished_application(self):
+        app = self.user.application_set.create(finished=True,
+                                               date_submitted=datetime.date.today()
+                                               - datetime.timedelta(365))
+        resp = self.client.get(self.url)
+        self.assertContains(resp, self._create_button)
+
+    def test_finished_application_recent(self):
+        app = self.user.application_set.create(finished=True,
+                                               date_submitted=datetime.date.today())
+        resp = self.client.get(self.url)
+        self.assertNotContains(resp, self._create_button)
+
+    def test_unfinished_application(self):
+        app = self.user.application_set.create(finished=False,
+                                               date_submitted=datetime.date.today())
+        resp = self.client.get(self.url)
+        self.assertContains(resp, self._edit_button)
+
+    def test_create(self):
+        app = self.user.application_set.create(finished=True,
+                                               date_submitted=datetime.date.today() - datetime.timedelta(365))
+        resp = self.client.post(self.url, {'new':'Create'})
+        self.assertEqual(302, resp.status_code)
+        self.assertEqual(len(self.user.application_set.all()), 2)
+
+    def test_create_when_already_done(self):
+        # Should not create a new application if a recent one is submitted
+        app = self.user.application_set.create(finished=True,
+                                               date_submitted=datetime.date.today())
+        resp = self.client.post(self.url, {'new':'Create'})
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(list(self.user.application_set.all()), [app])

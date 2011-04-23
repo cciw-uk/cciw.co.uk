@@ -7,6 +7,7 @@ from django.forms.util import ErrorList
 
 from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
+from cciw.officers.applications import thisyears_applications
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.formfields import ModelChoiceField
 from cciw.officers.models import Application, Reference, Invitation, ReferenceForm, CRBApplication
@@ -63,14 +64,10 @@ class ApplicationAdminModelForm(forms.ModelForm):
                 self._errors.setdefault('__all__', ErrorList()).append("You cannot submit an application form until the upcoming camps are decided on.")
 
             else:
-                other_apps = officer.application_set.all()
+                thisyears_apps = thisyears_applications(officer)
                 if self.instance.pk is not None:
-                    other_apps = other_apps.exclude(id=self.instance.pk)
-                # Check for other applications submitted in the year before the
-                # upcoming camps. This assumes there are some camps in the
-                # future, which is enforced above.
-                c = future_camps.order_by('-end_date')[0]
-                if other_apps.filter(date_submitted__gte=c.end_date + datetime.timedelta(-365)).exists():
+                    thisyears_apps = thisyears_apps.exclude(id=self.instance.pk)
+                if thisyears_apps.exists():
                     self._errors.setdefault('__all__', ErrorList()).append("You've already submitted an application form this year.")
 
         if editing_old:

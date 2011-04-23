@@ -1,5 +1,24 @@
+import datetime
+
 from django import template
 from django.template import loader
+
+def thisyears_applications(user):
+    """
+    Returns a QuerySet containing the applications a user has that
+    apply to 'this year', i.e. to camps still in the future.
+    """
+    from cciw.officers.models import Camp
+    future_camps = Camp.objects.filter(start_date__gte=datetime.date.today())
+    try:
+        c = future_camps[0]
+        return user.application_set.filter(date_submitted__gte=c.end_date - datetime.timedelta(365))
+    except IndexError:
+        # Fall back to finding camps in the past - any applications after the
+        # last one is 'this year' (although we shouldn't really allow these to
+        # be created)
+        c = Camp.objects.order_by('-start_date')[0]
+        return user.application_set.filter(date_submitted__gte=c.end_date)
 
 def application_to_text(app):
     t = loader.get_template('cciw/officers/application_email.txt');
