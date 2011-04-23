@@ -10,7 +10,7 @@ from cciw.middleware import threadlocals
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.formfields import ModelChoiceField
 from cciw.officers.models import Application, Reference, Invitation, ReferenceForm, CRBApplication
-from cciw.officers import widgets, email
+from cciw.officers import widgets
 from cciw.utils.views import close_window_response
 
 officer_autocomplete_field = \
@@ -306,6 +306,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         return self._redirect(request, resp)
 
     def save_model(self, request, obj, form, change):
+        from cciw.officers import email
         super(ApplicationAdmin, self).save_model(request, obj, form, change)
         email.send_application_emails(request, obj)
 
