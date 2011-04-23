@@ -13,15 +13,20 @@ class Migration(SchemaMigration):
         #    are doing 2 camps one year
         # 2) We can accept Applications for officers not invited on a camp yet
 
-        # However, we still need to associate application forms with camps. We now
-        # do this by the Invitation model, so we need to create instances for all
-        # existing Applications
-
+        # However, we still need to associate application forms with camps. We
+        # now cover this by the Invitation model. For older data, however, the
+        # Invitation model wasn't used (very much), so we create instances for
+        # all but years 2010/2011.  This is not 100% accurate, because the
+        # existence of an Application does not strictly imply that the person
+        # went on the camp, but it is good enough for old data.
 
         # We can't do app.camp because that doesn't field doesn't exist any more
+        # so we need some raw queries.
         apps = db.execute('SELECT id, officer_id, camp_id FROM officers_application;')
+        camp_years = dict(db.execute('SELECT id, year from cciwmain_camp;'))
         for app_id, officer_id, camp_id in apps:
-            orm['officers.Invitation'].objects.get_or_create(officer_id=officer_id, camp_id=camp_id)
+            if camp_years[camp_id] < 2010:
+                orm['officers.Invitation'].objects.get_or_create(officer_id=officer_id, camp_id=camp_id)
 
         # Removing unique constraint on 'Application', fields ['camp', 'officer']
         db.delete_unique('officers_application', ['camp_id', 'officer_id'])
