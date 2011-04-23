@@ -20,13 +20,24 @@ class Migration(SchemaMigration):
         # existence of an Application does not strictly imply that the person
         # went on the camp, but it is good enough for old data.
 
+        # Another problem is that we are now using date_submitted for business
+        # logic.  However, this field could have been corrupted by admins editing
+        # application forms, which used to cause the date_submitted field to
+        # be altered (incorrectly). To fix this, if the date_submitted is after
+        # the camp start_date, we adjust it to be before
+
         # We can't do app.camp because that doesn't field doesn't exist any more
         # so we need some raw queries.
-        apps = db.execute('SELECT id, officer_id, camp_id FROM officers_application;')
-        camp_years = dict(db.execute('SELECT id, year from cciwmain_camp;'))
-        for app_id, officer_id, camp_id in apps:
+        apps = db.execute('SELECT id, officer_id, camp_id, date_submitted FROM officers_application;')
+        camps = list(orm['cciwmain.Camp'].objects.all())
+        camp_years = dict([(c.id, c.year) for c in camps])
+        camp_starts = dict([(c.id, c.start_date) for c in camps])
+        for app_id, officer_id, camp_id, date_submitted in apps:
             if camp_years[camp_id] < 2010:
                 orm['officers.Invitation'].objects.get_or_create(officer_id=officer_id, camp_id=camp_id)
+            camp_start = camp_starts[camp_id]
+            if date_submitted is not None and date_submitted >= camp_start:
+                orm.Application.objects.filter(pk=app_id).update(date_submitted=camp_start - datetime.timedelta(1))
 
         # Removing unique constraint on 'Application', fields ['camp', 'officer']
         db.delete_unique('officers_application', ['camp_id', 'officer_id'])
