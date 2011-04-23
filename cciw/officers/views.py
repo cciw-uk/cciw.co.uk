@@ -127,55 +127,6 @@ def leaders_index(request):
     return render_to_response('cciw/officers/leaders_index.html', context_instance=context)
 
 
-def _get_next_camp_guess_by_user(user):
-    if user is not None:
-        # Use Invitations
-        for invite in user.invitation_set.filter(camp__end_date__gte=datetime.date.today()):
-            yield invite.camp
-
-
-def _get_next_camp_guess_by_camp(camp):
-    if camp is not None:
-        next_camps = list(camp.next_camps.filter(online_applications=True))
-        if len(next_camps) > 0:
-            next_camp = next_camps[0]
-            if next_camp.is_past():
-                for c in _get_next_camp_guess_by_camp(camp):
-                    yield c
-            else:
-                yield next_camp
-
-
-def get_next_camp_guess(camp=None, user=None):
-    """
-    Given a camp that an officer had been on, and/or the officer, returns the
-    camp that they are likely to apply to, or None if no suitable guess can be
-    found.
-
-    user is the officer
-    camp is a past camp they have been on or submitted an application form for.
-    """
-    guesses = itertools.chain(
-        # First use invitations
-        _get_next_camp_guess_by_user(user),
-        # Then guess from last year's camp
-        _get_next_camp_guess_by_camp(camp),
-        # Then use camps that aren't finished
-        Camp.objects.filter(end_date__gte=datetime.date.today())
-        )
-
-    # We must never return a camp that already has an application form
-    # started. We cache the excluded ids for efficiency
-    if user is not None:
-        camp_ids = set([a.camp_id for a in user.application_set.all()])
-    else:
-        camp_ids = set()
-    for guess in guesses:
-        if guess.id not in camp_ids:
-            return guess
-    return None
-
-
 @staff_member_required
 @never_cache
 def applications(request):

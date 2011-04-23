@@ -16,7 +16,11 @@ def application_txt_filename(app):
     return _application_filename_stem(app) + ".txt"
 
 def _application_filename_stem(app):
-    return 'Application_%s_%s' % (app.officer.username, app.camp.year)
+    if app.date_submitted is None:
+        submitted = ''
+    else:
+        submitted = '_' + app.date_submitted.strftime('%Y-%m-%d')
+    return 'Application_%s%s' % (app.officer.username, submitted)
 
 def application_difference(app1, app2):
     from diff_match_patch import diff_match_patch

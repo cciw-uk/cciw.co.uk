@@ -5,6 +5,7 @@ from django.core import urlresolvers
 from django import forms
 from django.forms.util import ErrorList
 
+from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.formfields import ModelChoiceField
@@ -22,8 +23,6 @@ class ApplicationAdminModelForm(forms.ModelForm):
     officer = officer_autocomplete_field()
 
     def __init__(self, *args, **kwargs):
-        from cciw.officers.views import get_next_camp_guess
-
         if 'instance' not in kwargs:
             # Set some initial values for new form
             try:
@@ -32,17 +31,13 @@ class ApplicationAdminModelForm(forms.ModelForm):
                 initial = {}
                 kwargs['initial'] = initial
 
-            # Set camp and officer
+            # Set officer
             user = threadlocals.get_current_user()
             if user is not None:
                 # Setting 'officer' is needed when leaders/admins are using the form
                 # to fill in their own application form, rather than editing someone
                 # else's.
                 initial['officer'] = user
-                # Try to guess the camp, based on invitations
-                camp = get_next_camp_guess(user=user)
-                if camp is not None:
-                    initial['camp'] = camp
                 # Fill out officer name
                 initial['full_name'] = "%s %s" % (user.first_name, user.last_name)
                 initial['address_email'] = user.email
@@ -53,29 +48,34 @@ class ApplicationAdminModelForm(forms.ModelForm):
         app_finished = self.cleaned_data.get('finished', False)
         user = threadlocals.get_current_user()
         officer = self.cleaned_data.get('officer', None)
-        # We don't allow them to submit application form for a camp that is
-        # past.  This stops people submitting for incorrect camps.  Also, once
-        # an Application has been marked 'finished' and the camp is past, we
-        # don't allow any value to be changed, to stop the possibility of
-        # tampering with saved data.
-        camp = self.cleaned_data.get('camp', None)
-        if self.instance.pk is None:
-            if camp is not None and camp.is_past():
-                self._errors.setdefault('camp', ErrorList()).append("You cannot submit an application form for a camp that is already finished")
 
-        else:
-            if not user.has_perm('officers.change_application'):
-                # NB: next line uses 'instance' and *not* cleaned_data, since we
-                # need to look at saved data, not form data.
-                if self.instance.finished and self.instance.camp.is_past():
-                    self._errors.setdefault('__all__', ErrorList()).append("You cannot change a submitted application form once the camp is finished.")
+        editing_old = self.instance.pk is not None and self.instance.finished
+        if editing_old and not user.has_perm('officers.change_application'):
+            # Once an Application has been marked 'finished' we don't allow any
+            # value to be changed, to stop the possibility of tampering with saved
+            # data.
+            self._errors.setdefault('__all__', ErrorList()).append("You cannot change a submitted application form.")
 
-        # Ensure no duplicates:
-        if camp is not None and officer is not None:
-            apps = officer.application_set.filter(camp=camp.id)
-            if (self.instance.pk is None and apps.exists()) or \
-                    (self.instance.pk is not None and apps.exclude(id=self.instance.pk).exists()):
-                self._errors.setdefault('camp', ErrorList()).append("You have already submitted an application for this camp")
+        future_camps = Camp.objects.filter(start_date__gte=datetime.date.today())
+
+        if not editing_old:
+            if len(future_camps) == 0:
+                self._errors.setdefault('__all__', ErrorList()).append("You cannot submit an application form until the upcoming camps are decided on.")
+
+            else:
+                other_apps = officer.application_set.all()
+                if self.instance.pk is not None:
+                    other_apps = other_apps.exclude(id=self.instance.pk)
+                # Check for other applications submitted in the year before the
+                # upcoming camps. This assumes there are some camps in the
+                # future, which is enforced above.
+                c = future_camps.order_by('-end_date')[0]
+                if other_apps.filter(date_submitted__gte=c.end_date + datetime.timedelta(-365)).exists():
+                    self._errors.setdefault('__all__', ErrorList()).append("You've already submitted an application form this year.")
+
+        if editing_old:
+            # Ensure we don't overwrite this
+            self.cleaned_data['date_submitted'] = self.instance.date_submitted
 
         if app_finished:
             # All fields decorated with 'required_field' need to be

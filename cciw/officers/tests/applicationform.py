@@ -10,7 +10,6 @@ from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
 from cciw.officers.applications import application_difference
-from cciw.officers.views import get_next_camp_guess
 from cciw.officers.tests.references import OFFICER, LEADER
 from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
 
@@ -24,22 +23,28 @@ class ApplicationFormView(TwillMixin, TestCase):
         return make_django_url('admin:officers_application_change', app_id)
 
     def setUp(self):
-        # make sure camps have end date in future, otherwise we won't be able to
-        # save and we won't be able to test get_next_camp_guess logic.
-        Camp.objects.filter(id=1).update(end_date=datetime.date.today() + datetime.timedelta(100))
-        Camp.objects.filter(id=2).update(end_date=datetime.date.today() + datetime.timedelta(465))
+        # Make sure second camp has end date in future, otherwise we won't be able to
+        # save. Previous camp should be one year earlier
+        Camp.objects.filter(id=1).update(start_date=datetime.date.today() + datetime.timedelta(100-365),
+                                         end_date=datetime.date.today() + datetime.timedelta(107-365))
+        Camp.objects.filter(id=2).update(start_date=datetime.date.today() + datetime.timedelta(100),
+                                         end_date=datetime.date.today() + datetime.timedelta(107))
+
+        # Add some invitations:
+        u = User.objects.get(username=OFFICER[0])
+        for pk in [1,2]:
+            u.invitation_set.create(camp=Camp.objects.get(id=pk))
+
         super(ApplicationFormView, self).setUp()
 
-    def _add_application(self, camp_id=1, officer=OFFICER):
+    def _add_application(self, officer=OFFICER):
         u = User.objects.get(username=officer[0])
-        c = Camp.objects.get(id=camp_id)
-        a = Application(officer=u, camp=c, address_email=u.email)
+        a = Application(officer=u, address_email=u.email)
         a.save()
         return a
 
     def _finish_application_form(self):
         # A full set of values that pass validation.
-        tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'x')
         tc.formvalue('1', 'full_maiden_name', 'x')
         tc.formvalue('1', 'birth_date', '2000-01-01')
@@ -109,7 +114,6 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.notfind('Save and add another')
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 0)
-        tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
         tc.submit('_save')
         tc.url(reverse("cciw.officers.views.applications"))
@@ -124,7 +128,6 @@ class ApplicationFormView(TwillMixin, TestCase):
         self._twill_login(LEADER)
         tc.go(self._application_add_url())
         tc.code(200)
-        tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
         tc.submit('_save')
         tc.url(reverse("cciw.officers.views.applications"))
@@ -140,7 +143,6 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.code(200)
         tc.find('Save and continue editing')
         tc.notfind('Save and add another')
-        tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
         tc.submit('_save')
         tc.url(reverse("cciw.officers.views.applications"))
@@ -192,7 +194,6 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.go(self._application_edit_url(a.id))
         tc.code(200)
         self._finish_application_form()
-        tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'full_name', 'Test full name')
         tc.formvalue('1', 'address_email', new_email)
         tc.submit('_save')
@@ -263,7 +264,6 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.go(self._application_add_url())
         url = tc.browser.get_url()
         tc.code(200)
-        tc.formvalue('1', 'camp', '1')
         tc.formvalue('1', 'finished', 'on')
         tc.submit('_save')
         tc.url(url)
@@ -288,26 +288,17 @@ class ApplicationFormView(TwillMixin, TestCase):
         # There should be two emails in outbox, one to officer, one to
         # leader.  This assumes that there is a leader for the camp,
         # and it is associated with a User object.
-        a = u.application_set.all()[0]
-        assert a.camp.leaders.count() == 1
-        l = a.camp.leaders.all()[0]
-        assert l.users.count() == 1
         self.assertEqual(len(self._get_application_form_emails()), 2)
 
     def test_change_application_after_camp_past(self):
         """
         Ensure that the user can't change an application after it has been
-        'finished', and the camp is now past.
+        'finished'
         """
         self._twill_login(OFFICER)
         a = self._add_application()
         a.finished = True
         a.save()
-
-        # Make the camp past
-        camp = a.camp
-        camp.end_date = datetime.date.today() - datetime.timedelta(100)
-        camp.save()
 
         tc.go(self._application_edit_url(a.id))
         url = tc.browser.get_url()
@@ -319,27 +310,6 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.find("You cannot change a submitted")
         # shouldn't have changed data:
         self.assertNotEqual(a.full_name, 'A Changed Full Name')
-
-    def test_submit_application_after_camp_past(self):
-        """
-        Ensure that the user can't create an application after the camp is past.
-        """
-        camp = Camp.objects.get(pk=1)
-        camp.end_date = datetime.date.today() - datetime.timedelta(100)
-        camp.save()
-
-        self._twill_login(OFFICER)
-        tc.go(self._application_add_url())
-        url = tc.browser.get_url()
-        tc.code(200)
-        u = User.objects.get(username=OFFICER[0])
-        self.assertEqual(u.application_set.count(), 0)
-        tc.formvalue('1', 'camp', '1')
-        tc.formvalue('1', 'full_name', 'Test full name')
-        tc.submit('_save')
-        tc.url(url) # same page
-        tc.find("You cannot submit an application")
-        self.assertEqual(u.application_set.count(), 0)
 
     def test_list_applications_officers(self):
         """
@@ -357,45 +327,29 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.go(make_django_url("admin:officers_application_changelist"))
         tc.code(200)
 
-    def test_add_application_duplicate_camp(self):
+    def test_add_application_duplicate(self):
         """
-        Test that we can't add a new application for the same camp
+        Test that we can't add a new application twice in a year
         """
         self._twill_login(OFFICER)
-        a1 = self._add_application(camp_id=1)
+        a1 = self._add_application()
+        a1.date_submitted = datetime.date.today()
+        a1.save()
         tc.go(self._application_add_url())
-        tc.formvalue('1', 'camp', '1')
+        self._finish_application_form()
         tc.submit('_save')
-        tc.find('You have already submitted')
+        tc.find("You&#39;ve already submitted")
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 1)
 
-    def test_change_application_duplicate_camp(self):
-        """
-        Ensure that we can't change the 'camp' field so that we end up with
-        duplicates.
-        """
-        self._twill_login(OFFICER)
-        a1 = self._add_application(camp_id=1)
-        a2 = self._add_application(camp_id=2)
-        tc.go(self._application_edit_url(a2.id))
-        tc.formvalue('1', 'camp', '1') # change
-        tc.submit('_save')
-        tc.find('You have already submitted')
-
     def test_initial_form(self):
         """
-        Ensure that the 'camp' field is filled out initially when we can do so.
+        Ensure that name fields are filled out initially when we can do so.
         """
         u = User.objects.get(username=OFFICER[0])
-        c = Camp.objects.get(id=1)
-        c.invitation_set.create(officer=u)
 
         self._twill_login(OFFICER)
         tc.go(self._application_add_url())
-        form = tc.get_browser().get_form(1)
-        self.assertEqual(form.get_value('camp'), [str(c.id)])
-
         tc.find("%s %s" % (u.first_name, u.last_name))
         tc.find(u.email)
 
@@ -412,11 +366,16 @@ class ApplicationFormView(TwillMixin, TestCase):
         # Empty outbox
         mail.outbox[:] = []
 
+        # Change the date on the existing app, so that we can
+        # create a new one
+        app0 = u.application_set.all()[0]
+        app0.date_submitted = datetime.date.today() + datetime.timedelta(-365)
+        app0.save()
+
         # Create another application
         tc.go(self._application_add_url())
         self._finish_application_form()
         # Now change some values
-        tc.formvalue('1', 'camp', '2')
         tc.formvalue('1', 'full_name', 'New Full Name')
         tc.submit('_save')
         tc.url(reverse("cciw.officers.views.applications"))
@@ -435,68 +394,11 @@ class ApplicationFormView(TwillMixin, TestCase):
         # Testing the actual content is hard from this point, due to e-mail
         # formatting, so we do it manually:
 
-        apps = u.application_set.order_by('camp__year')
+        apps = u.application_set.order_by('date_submitted')
         assert len(apps) == 2
 
         application_diff = application_difference(apps[0], apps[1])
-        self.assertTrue('<INS TITLE="i=95">New Full Name</INS>'
+        self.assertTrue('>New Full Name</INS>'
                         in application_diff)
-        self.assertTrue('<DEL TITLE="i=95">x</DEL>'
+        self.assertTrue('>x</DEL>'
                         in application_diff)
-
-    def test_uninvited_officer(self):
-        """
-        Checks that when an officer is not on the officer list and submits an
-        application form, the leaders are notified.
-        """
-        u = User.objects.get(username=OFFICER[0])
-        u.invitation_set.all().delete()
-        self.test_finish_complete()
-        email = [m for m in mail.outbox if m.subject.startswith("CCIW application form from")][0]
-        self.assertTrue("Mr Officer2 is not currently on your officer list" in email.body)
-
-    def test_invited_officer(self):
-        u = User.objects.get(username=OFFICER[0])
-        u.invitation_set.create(camp=Camp.objects.get(id=1))
-        self.test_finish_complete()
-        email = [m for m in mail.outbox if m.subject.startswith("CCIW application form from")][0]
-        self.assertTrue("is not currently on your officer list" not in email.body)
-
-    def test_get_next_camp_guess(self):
-
-        u = User.objects.get(username=OFFICER[0])
-        c1 = Camp.objects.get(id=1)
-        c2 = c1.next_camps.all()[0]
-
-        u.invitation_set.all().delete()
-        u.application_set.all().delete()
-        u.invitation_set.create(camp=c1)
-
-        # If passed user, should guess the camp the user is invited to
-        self.assertEqual(c1, get_next_camp_guess(user=u))
-
-        # If passed one camp, should guess the next year's camp
-        self.assertEqual(c2, get_next_camp_guess(camp=c1))
-
-        # If an application form is started for a camp, don't guess that one
-        u.application_set.create(camp=c1)
-        self.assertNotEqual(c1, get_next_camp_guess(user=u))
-
-        u.application_set.create(camp=c2)
-        self.assertNotEqual(c2, get_next_camp_guess(camp=c1, user=u))
-
-        # With no invitations or previous camp, we should guess any camp that is
-        # not past, as long as applications aren't started.
-        u.application_set.all().delete()
-        u.invitation_set.all().delete()
-
-        # Put camp 1 in past
-        c1.end_date=datetime.date.today() - datetime.timedelta(100)
-        c1.save()
-
-        self.assertEqual(c2, get_next_camp_guess(user=u))
-
-        # When we run out of options, should return None
-        u.application_set.create(camp=c2)
-        self.assertEqual(None, get_next_camp_guess(user=u))
-
