@@ -20,6 +20,20 @@ def thisyears_applications(user):
         c = Camp.objects.order_by('-start_date')[0]
         return user.application_set.filter(date_submitted__gte=c.end_date)
 
+def camps_for_application(application):
+    """
+    For an Application, returns the camps it is relevant to, in terms of
+    notifying people.
+    """
+    # We get all camps that are in the year following the application form
+    # submitted date.
+    if application.date_submitted is None:
+        return []
+    invites = application.officer.invitation_set.filter(camp__start_date__gte=application.date_submitted,
+                                                        camp__start_date__lt=application.date_submitted +
+                                                        datetime.timedelta(365))
+    return [i.camp for i in invites]
+
 def application_to_text(app):
     t = loader.get_template('cciw/officers/application_email.txt');
     return t.render(template.Context({'app': app}))

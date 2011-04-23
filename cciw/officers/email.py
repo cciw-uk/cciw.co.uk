@@ -1,7 +1,7 @@
 import datetime
 
 from cciw.cciwmain import common
-from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference
+from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference, camps_for_application
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.references import reference_form_to_text
 from django.conf import settings
@@ -18,21 +18,6 @@ def make_update_email_hash(oldemail, newemail):
     Returns a hash for use in confirmation of e-mail change.
     """
     return salted_hmac("cciw.officers.emailupdate", oldemail + ':' + newemail).hexdigest()[::2]
-
-
-def camps_for_application(application):
-    """
-    For an Application, returns the camps it is relevant to, in terms of
-    notifying people.
-    """
-    # We get all camps that are in the year following the application form
-    # submitted date.
-    if application.date_submitted is None:
-        return []
-    invites = application.officer.invitation_set.filter(camp__start_date__gte=application.date_submitted,
-                                                        camp__start_date__lt=application.date_submitted +
-                                                        datetime.timedelta(365))
-    return [i.camp for i in invites]
 
 
 def admin_emails_for_application(application):
