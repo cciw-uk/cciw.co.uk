@@ -1,7 +1,6 @@
 import datetime
 
 from cciw.cciwmain import common
-from cciw.cciwmain.models import Camp
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.references import reference_form_to_text
@@ -21,7 +20,7 @@ def make_update_email_hash(oldemail, newemail):
     return salted_hmac("cciw.officers.emailupdate", oldemail + ':' + newemail).hexdigest()[::2]
 
 
-def camp_for_application(application):
+def camps_for_application(application):
     """
     For an Application, returns the camps it is relevant to, in terms of
     notifying people.
@@ -41,7 +40,7 @@ def admin_emails_for_application(application):
     For the supplied application, finds the camps admins that are relevant.
     Returns results in groups of (camp, leaders), for each relevant camp.
     """
-    camps = camp_for_application(application)
+    camps = camps_for_application(application)
     groups = []
     for camp in camps:
         leaders = [user for leader in camp.leaders.all()
