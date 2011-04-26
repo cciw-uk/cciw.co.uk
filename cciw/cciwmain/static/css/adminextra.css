@@ -121,11 +121,35 @@ tr.refrow td.nopadding
     margin-bottom: 3em;
 }
 
-.referencestart
+.referencesection
 {
     border-top: 1px solid #888;
-    padding-top: 0.5em;
+    padding-left: 1em;
+    padding-right: 1em;
 }
+
+
+#notrequestedrefs
+{
+    background-color: #f8f8f8;
+}
+
+#requestedrefs
+{
+    background-color: #fff8d0;
+}
+#receivedrefs
+{
+    background-color: #f0fff0;
+}
+
+#notrequestedrefs,
+#requestedrefs,
+#receivedrefs
+{
+    border-bottom: 1px solid #888;
+}
+
 
 .referencebutton
 {
