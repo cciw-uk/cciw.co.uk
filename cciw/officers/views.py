@@ -56,7 +56,7 @@ def _copy_application(application):
 
 def _is_camp_admin(user):
     """
-    Returns True is the user is an admin for any camp.
+    Returns True if the user is an admin for any camp.
     """
     return (user.groups.filter(name='Leaders').exists()) \
         or user.camps_as_admin.exists() > 0
