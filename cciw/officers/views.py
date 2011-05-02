@@ -957,14 +957,16 @@ def stats(request, year=None):
     thisyear = common.get_thisyear()
     stats = []
     all_past = True
-    for c in Camp.objects.filter(year=year).order_by('number'):
+    for camp in Camp.objects.filter(year=year).order_by('number'):
         stat = {}
-        if not c.is_past():
+        if not camp.is_past():
             all_past = False
-        stat['camp'] = c
-        invited_officers_count = c.invitation_set.count()
+        # For efficiency, we are careful about what DB queries we do and what is
+        # done in Python.
+        stat['camp'] = camp
+        invited_officers_count = camp.invitation_set.count()
         stat['invited_officers_count'] = invited_officers_count
-        application_forms = applications_for_camp(c)
+        application_forms = applications_for_camp(camp)
         app_ids = [a.id for a in application_forms]
 
         application_forms_count = len(app_ids)
@@ -993,9 +995,10 @@ def stats(request, year=None):
         ref_dates.sort()
 
         # Make a plot by going through each day in the year before the camp and
-        # incrementing a counter.
-        graph_start_date = c.start_date - datetime.timedelta(365)
-        graph_end_date = min(c.start_date, datetime.date.today())
+        # incrementing a counter. This requires the data to be sorted already,
+        # as above.
+        graph_start_date = camp.start_date - datetime.timedelta(365)
+        graph_end_date = min(camp.start_date, datetime.date.today())
         a = 0 # applications
         r = 0 # references
         app_dates_data = []
@@ -1005,6 +1008,7 @@ def stats(request, year=None):
             # Application forms
             while a < len(app_dates) and app_dates[a] <= d:
                 a += 1
+            # References
             while r < len(ref_dates) and ref_dates[r] <= d:
                 r += 1
             # Formats are those needed by 'flot' library
@@ -1015,7 +1019,7 @@ def stats(request, year=None):
         stat['application_dates_data'] = app_dates_data
         stat['reference_dates_data'] = ref_dates_data
         stat['officer_list_data'] = [[date_to_js_ts(graph_start_date), invited_officers_count],
-                                     [date_to_js_ts(c.start_date), invited_officers_count]]
+                                     [date_to_js_ts(camp.start_date), invited_officers_count]]
         stats.append(stat)
 
     # Those with no application forms yet are losing, then it goes on the
