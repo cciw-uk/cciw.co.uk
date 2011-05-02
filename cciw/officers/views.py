@@ -934,6 +934,13 @@ officer_files = access_folder_securely("officers",
                                        lambda request: _is_camp_officer(request.user))
 
 
+def date_to_js_ts(d):
+    """
+    Converts a date object to the timestamp required by the flot library
+    """
+    return int(d.strftime('%s'))*1000
+
+
 @staff_member_required
 @camp_admin_required
 def stats(request, year=None):
@@ -946,9 +953,11 @@ def stats(request, year=None):
         if not c.is_past():
             all_past = False
         stat['camp'] = c
-        stat['invited_officers_count'] = c.invitation_set.count()
+        invited_officers_count = c.invitation_set.count()
+        stat['invited_officers_count'] = invited_officers_count
         application_forms = applications_for_camp(c)
         app_ids = [a.id for a in application_forms]
+
         application_forms_count = len(app_ids)
         stat['application_forms_count'] = application_forms_count
         received_reference_set = Reference.objects.filter(received=True, application__in=app_ids)
@@ -966,6 +975,38 @@ def stats(request, year=None):
         r = set([r.application_id for r in received_reference_set])
         applications_no_reference = [a for a in application_forms if a.id not in r]
         stat['officers_no_reference'] = len(applications_no_reference)
+
+        # Stats for graphs
+        app_dates = [a.date_submitted for a in application_forms]
+        app_dates.sort()
+        reference_forms = ReferenceForm.objects.filter(reference_info__application__in=app_ids)
+        ref_dates = [r.date_created for r in reference_forms]
+        ref_dates.sort()
+
+        # Make a plot by going through each day in the year before the camp and
+        # incrementing a counter.
+        graph_start_date = c.start_date - datetime.timedelta(365)
+        graph_end_date = min(c.start_date, datetime.date.today())
+        a = 0 # applications
+        r = 0 # references
+        app_dates_data = []
+        ref_dates_data = []
+        d = graph_start_date
+        while d <= graph_end_date:
+            # Application forms
+            while a < len(app_dates) and app_dates[a] <= d:
+                a += 1
+            while r < len(ref_dates) and ref_dates[r] <= d:
+                r += 1
+            # Formats are those needed by 'flot' library
+            ts = date_to_js_ts(d)
+            app_dates_data.append([ts, a])
+            ref_dates_data.append([ts, r/2.0])
+            d = d + datetime.timedelta(1)
+        stat['application_dates_data'] = app_dates_data
+        stat['reference_dates_data'] = ref_dates_data
+        stat['officer_list_data'] = [[date_to_js_ts(graph_start_date), invited_officers_count],
+                                     [date_to_js_ts(graph_end_date), invited_officers_count]]
         stats.append(stat)
 
     # Those with no application forms yet are losing, then it goes on the

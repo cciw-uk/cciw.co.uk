@@ -1,10 +1,12 @@
 {% extends "cciw/officers/base.html" %}
 {% load url from future %}
 {% load adminmedia %}
+{% load json_filters %}
 {% block title %}Officer stats :: CCIW{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.flot.min.js"></script>
 
 {% endblock %}
 {% block bodyclass%}change-form{% endblock %}
@@ -52,5 +54,44 @@
 {% if year == thisyear %}
 <p>Camps may not be finished yet - there is still time to </p>
 {% endif %}
+
+{# Graphs #}
+
+<h1 style="margin-top: 1em;">Timelines</h1>
+
+{% for stat in stats %}
+<h2>{{ stat.camp.number }} - {{ stat.camp.leaders_formatted }}</h2>
+
+<div id="camp-graph-{{ stat.camp.number }}" style="width:600px;height:150px;">
+</div>
+<script type="text/javascript">
+$(function() {
+    var app_dates_data = {{ stat.application_dates_data|jsonify }};
+    var ref_dates_data = {{ stat.reference_dates_data|jsonify }};
+    var officer_list_data = {{ stat.officer_list_data|jsonify }};
+    $.plot("#camp-graph-{{ stat.camp.number }}",
+           [
+            {label: "Final officer list",
+             data: officer_list_data},
+            {label: "Application forms",
+             data: app_dates_data},
+            {label: "References received / 2",
+             data: ref_dates_data}
+           ],
+           { xaxis: { mode: "time" },
+             legend: { position: "nw" }
+           });
+
+});
+</script>
+{% endfor %}
+
+
+<canvas height="50">
+  Your browser is obsolete, and won't display the graphs above. Please upgrade
+  to <a href="http://abetterbrowser.org/">a better browser</a>.
+</canvas>
+
+
 </div>
 {% endblock %}
