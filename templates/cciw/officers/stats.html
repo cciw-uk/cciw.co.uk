@@ -70,6 +70,7 @@
 $(function() {
     var app_dates_data = {{ stat.application_dates_data|jsonify }};
     var ref_dates_data = {{ stat.reference_dates_data|jsonify }};
+    var crb_dates_data = {{ stat.crb_dates_data|jsonify }};
     var officer_list_data = {{ stat.officer_list_data|jsonify }};
     $.plot("#camp-graph-{{ stat.camp.number }}",
            [
@@ -78,7 +79,9 @@ $(function() {
             {label: "Application forms",
              data: app_dates_data},
             {label: "References received / 2",
-             data: ref_dates_data}
+             data: ref_dates_data},
+            {label: "Up-to-date CRBs",
+             data: crb_dates_data}
            ],
            { xaxis: { mode: "time" },
              yaxis: { min: 0 },
