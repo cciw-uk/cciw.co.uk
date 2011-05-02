@@ -60,6 +60,7 @@
 <h1 style="margin-top: 1em;">Timelines</h1>
 
 {% for stat in stats %}
+<div style="float:left; margin-right: 20px;">
 <h2>{{ stat.camp.number }} - {{ stat.camp.leaders_formatted }}</h2>
 
 <div id="camp-graph-{{ stat.camp.number }}" style="width:600px;height:150px;">
@@ -84,13 +85,16 @@ $(function() {
 
 });
 </script>
+</div>
 {% endfor %}
 
 
+<div style="float: clear;">
 <canvas height="50">
   Your browser is obsolete, and won't display the graphs above. Please upgrade
   to <a href="http://abetterbrowser.org/">a better browser</a>.
 </canvas>
+</div>
 
 
 </div>
