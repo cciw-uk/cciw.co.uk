@@ -1,5 +1,6 @@
 import datetime
 import itertools
+import operator
 
 from django import forms
 from django.conf import settings
@@ -1058,3 +1059,38 @@ def add_crb(request):
     c = {'form': form}
 
     return render(request, 'cciw/officers/add_crb.html', c)
+
+
+@staff_member_required
+@camp_admin_required
+def manage_crbs(request, year=None):
+    year = int(year)
+    # We need a lot of information. Try to get it in a few up-front queries
+    camps = list(Camp.objects.filter(year=year).order_by('number'))
+    camps_officers = [[i.officer for i in c.invitation_set.all()] for c in camps]
+    all_officers = reduce(operator.or_, map(set, camps_officers))
+    all_officers = sorted(all_officers, key=lambda o: (o.first_name, o.last_name))
+    apps = list(reduce(operator.or_, map(applications_for_camp, camps)))
+    valid_crb_officer_ids = set(reduce(operator.or_, map(CRBApplication.objects.get_for_camp, camps)).values_list('officer_id', flat=True))
+    all_crb_officer_ids = set(CRBApplication.objects.values_list('officer_id', flat=True))
+    # Work out, without doing any more queries:
+    #   which camps each officer is on
+    #   if they have an application form
+    #   if they have an up to date CRB
+    officer_ids = dict([(camp.id, set([o.id for o in officers]))
+                        for camp, officers in zip(camps, camps_officers)])
+    officer_apps = dict([(a.officer_id, a) for a in apps])
+
+    for o in all_officers:
+        o.temp = {}
+        officer_camps = []
+        for c in camps:
+            if o.id in officer_ids[c.id]:
+                officer_camps.append(c)
+        o.temp['camps'] = officer_camps
+        o.temp['has_application_form'] = o.id in officer_apps
+        o.temp['has_crb'] = o.id in all_crb_officer_ids
+        o.temp['has_valid_crb'] = o.id in valid_crb_officer_ids
+
+    c = {'all_officers': all_officers}
+    return render(request, 'cciw/officers/manage_crbs.html', c)

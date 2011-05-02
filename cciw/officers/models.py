@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 
 from django.conf import settings
@@ -319,6 +319,14 @@ class CRBApplicationManager(models.Manager):
     use_for_related_fields = True
     def get_query_set(self):
         return super(CRBApplicationManager, self).get_query_set().select_related('officer')
+
+    def get_for_camp(self, camp):
+        """
+        Returns the CRBs that might be valid for a camp (ignoring the camp
+        officer list)
+        """
+        # CRBs are valid for 3 years, measuring from the start of the camp
+        return self.get_query_set().filter(completed__gte=camp.start_date - timedelta(3 * 365))
 
 class CRBApplication(models.Model):
     officer = models.ForeignKey(User)
