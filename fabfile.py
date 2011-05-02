@@ -4,7 +4,7 @@ from fabric.api import run, local, abort, env, put
 from fabric.contrib import files
 from fabric.contrib import console
 from fabric.decorators import hosts, runs_once
-from fabric.context_managers import cd, settings, hide
+from fabric.context_managers import cd, lcd, settings, hide
 import os
 import os.path
 join = os.path.join
@@ -163,9 +163,10 @@ PRODUCTION = Target(
 
 @runs_once
 def ensure_dependencies():
-    hg_branch = local("cd deps/django; hg branch")
-    if hg_branch.strip() != 'default':
-        abort("Django src on incorrect branch")
+    with lcd(parent_dir):
+        hg_branch = local("cd deps/django; hg branch", capture=True)
+        if hg_branch.strip() != 'default':
+            abort("Django src on incorrect branch")
 
 
 def test():
@@ -247,7 +248,7 @@ def _restart_apache(target):
 def rsync_dir(local_dir, dest_dir):
     # clean first
     with settings(warn_only=True):
-        local("find -L %s -name '*.pyc' | xargs rm" % local_dir)
+        local("find -L %s -name '*.pyc' | xargs rm || true" % local_dir, capture=True)
     local("rsync -z -r -L --delete --exclude='_build' --exclude='.hg' --exclude='.git' --exclude='.svn' --delete-excluded %s/ cciw@cciw.co.uk:%s" % (local_dir, dest_dir), capture=False)
 
 
@@ -265,7 +266,7 @@ def _copy_local_sources(target, version):
     else:
         run("mkdir %s" % version.src_dir)
 
-    with cd(parent_dir):
+    with lcd(parent_dir):
         # rsync the project.
         rsync_dir(project_dir, version.project_dir)
         # rsync the deps
@@ -374,14 +375,14 @@ def deploy_staging(quick=False):
 
 
 def deploy_production(quick=False):
-    with cd(this_dir):
-        if local("hg st").strip() != "":
+    with lcd(this_dir):
+        if local("hg st", capture=True).strip() != "":
             if not console.confirm("Project dir is not clean, merge to live will fail. Continue anyway?", default=False):
                 sys.exit()
 
     _deploy(PRODUCTION, quick=quick)
     #  Update 'live' branch so that we can switch to it easily if needed.
-    with cd(this_dir):
+    with lcd(this_dir):
         local('hg update -r live && hg merge -r default && hg commit -m "Merged from default" && hg update -r default', capture=False)
 
 
