@@ -946,21 +946,21 @@ def stats(request, year=None):
         if not c.is_past():
             all_past = False
         stat['camp'] = c
-        stat['num_invited_officers'] = c.invitation_set.count()
+        stat['invited_officers_count'] = c.invitation_set.count()
         application_forms = applications_for_camp(c)
         app_ids = [a.id for a in application_forms]
-        num_application_forms = len(app_ids)
-        stat['num_application_forms'] = num_application_forms
+        application_forms_count = len(app_ids)
+        stat['application_forms_count'] = application_forms_count
         received_reference_set = Reference.objects.filter(received=True, application__in=app_ids)
-        num_received_references = received_reference_set.count()
-        expected_references = 2 * num_application_forms
-        stat['num_received_references'] = num_received_references
-        missing_references = expected_references - num_received_references
-        stat['missing_references'] = missing_references
+        received_references_count = received_reference_set.count()
+        expected_references = 2 * application_forms_count
+        stat['received_references_count'] = received_references_count
+        missing_references_count = expected_references - received_references_count
+        stat['missing_references_count'] = missing_references_count
         if expected_references == 0:
             missing_references_percent = 0
         else:
-            missing_references_percent = float(missing_references) / expected_references * 100.0
+            missing_references_percent = float(missing_references_count) / expected_references * 100.0
         stat['missing_references_percent'] = missing_references_percent
         # Officers with no references - trying not to do O(n) queries...
         r = set([r.application_id for r in received_reference_set])
@@ -971,7 +971,7 @@ def stats(request, year=None):
     # Those with no application forms yet are losing, then it goes on the
     # fraction of references that are missing.
     ranks = sorted(stats,
-                   key=lambda d: (d['num_application_forms'] == 0,
+                   key=lambda d: (d['application_forms_count'] == 0,
                                   d['missing_references_percent']))
     for i, s in enumerate(ranks):
         s['rank'] = i + 1

@@ -31,10 +31,10 @@
   {% for stat in stats %}
   <tr>
     <td>{{ stat.camp.number }} - {{ stat.camp.leaders_formatted }}</td>
-    <td>{{ stat.num_invited_officers }}</td>
-    <td>{{ stat.num_application_forms }}</td>
-    <td>{{ stat.num_received_references }}</td>
-    <td>{{ stat.missing_references }} ({{ stat.missing_references_percent|floatformat }}%) </td>
+    <td>{{ stat.invited_officers_count }}</td>
+    <td>{{ stat.application_forms_count }}</td>
+    <td>{{ stat.received_references_count }}</td>
+    <td>{{ stat.missing_references_count }} ({{ stat.missing_references_percent|floatformat }}%) </td>
     <td>{{ stat.officers_no_reference }}</td>
     <td>{{ stat.rank }}
       {% if all_past %}
