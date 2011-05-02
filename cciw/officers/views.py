@@ -1015,7 +1015,7 @@ def stats(request, year=None):
         stat['application_dates_data'] = app_dates_data
         stat['reference_dates_data'] = ref_dates_data
         stat['officer_list_data'] = [[date_to_js_ts(graph_start_date), invited_officers_count],
-                                     [date_to_js_ts(graph_end_date), invited_officers_count]]
+                                     [date_to_js_ts(c.start_date), invited_officers_count]]
         stats.append(stat)
 
     # Those with no application forms yet are losing, then it goes on the
