@@ -960,7 +960,7 @@ def rank_data(data, key):
             current_rank += 1
         ranks[row[1]] = current_rank
         prev_row = row
-    return ranks
+    return ranks, current_rank
 
 @staff_member_required
 @camp_admin_required
@@ -1032,11 +1032,11 @@ def stats(request, year=None):
 
     # Those with no application forms yet are losing, then it goes on the
     # fraction of references that are missing.
-    ranks = rank_data(stats, lambda d: (d['application_forms_count'] == 0,
-                                        d['missing_references_percent']))
+    ranks, max_rank = rank_data(stats, lambda d: (d['application_forms_count'] == 0,
+                                                  d['missing_references_percent']))
     for stat, rank in zip(stats, ranks):
         stat['rank'] = rank
-        stat['lowest_rank'] = ranks[-1]
+        stat['lowest_rank'] = max_rank
 
     d = {}
     d['stats'] = stats
