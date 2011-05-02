@@ -2,7 +2,6 @@ import datetime
 import itertools
 
 from django import forms
-from django import template
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.admin import widgets
@@ -14,7 +13,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.core.validators import email_re
 from django.http import Http404, HttpResponseRedirect, HttpResponse
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.template.loader import render_to_string
 from django.template.defaultfilters import wordwrap
 from django.views.decorators.cache import never_cache
@@ -104,13 +103,12 @@ def close_window_and_update_ref(ref_id):
 def index(request):
     """Displays a list of links/buttons for various actions."""
     user = request.user
-    context = template.RequestContext(request)
+    c = {}
     if _is_camp_admin(user):
-        context['show_leader_links'] = True
-        context['show_admin_link'] = True
+        c['show_leader_links'] = True
+        c['show_admin_link'] = True
 
-    return render_to_response('cciw/officers/index.html',
-                              context_instance=context)
+    return render(request, 'cciw/officers/index.html', c)
 
 
 @staff_member_required
@@ -118,13 +116,13 @@ def index(request):
 def leaders_index(request):
     """Displays a list of links for actions for leaders"""
     user = request.user
-    context = template.RequestContext(request)
+    c = {}
     thisyear = common.get_thisyear()
-    context['current_camps'] = _camps_as_admin_or_leader(user).filter(year=thisyear)
-    context['old_camps'] = _camps_as_admin_or_leader(user).filter(year__lt=thisyear)
-    context['statsyears'] = [thisyear, thisyear - 1, thisyear - 2]
+    c['current_camps'] = _camps_as_admin_or_leader(user).filter(year=thisyear)
+    c['old_camps'] = _camps_as_admin_or_leader(user).filter(year__lt=thisyear)
+    c['statsyears'] = [thisyear, thisyear - 1, thisyear - 2]
 
-    return render_to_response('cciw/officers/leaders_index.html', context_instance=context)
+    return render(request, 'cciw/officers/leaders_index.html', c)
 
 
 @staff_member_required
@@ -132,7 +130,7 @@ def leaders_index(request):
 def applications(request):
     """Displays a list of tasks related to applications."""
     user = request.user
-    context = template.RequestContext(request)
+    c = {}
     finished_applications = user.application_set\
         .filter(finished=True)\
         .order_by('-date_submitted')
@@ -142,10 +140,10 @@ def applications(request):
     has_thisyears_app = thisyears_applications(user).exists()
     has_completed_app = thisyears_applications(user).filter(finished=True).exists()
 
-    context['finished_applications'] = finished_applications
-    context['unfinished_applications'] = unfinished_applications
-    context['has_thisyears_app'] = has_thisyears_app
-    context['has_completed_app'] = has_completed_app
+    c['finished_applications'] = finished_applications
+    c['unfinished_applications'] = unfinished_applications
+    c['has_thisyears_app'] = has_thisyears_app
+    c['has_completed_app'] = has_completed_app
 
     if request.POST.has_key('edit'):
         # Edit existing application
@@ -171,8 +169,7 @@ def applications(request):
         # Delete an unfinished application
         pass
 
-    return render_to_response('cciw/officers/applications.html',
-                              context_instance=context)
+    return render(request, 'cciw/officers/applications.html', c)
 
 
 @staff_member_required
@@ -249,13 +246,11 @@ def _thisyears_camp_for_leader(user):
 @never_cache
 def manage_applications(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
-    context = template.RequestContext(request)
-    context['finished_applications'] = applications_for_camp(camp).order_by('officer__first_name', 'officer__last_name')
-    context['camp'] = camp
+    c = {}
+    c['finished_applications'] = applications_for_camp(camp).order_by('officer__first_name', 'officer__last_name')
+    c['camp'] = camp
 
-    return render_to_response('cciw/officers/manage_applications.html',
-                              context_instance=context)
-
+    return render(request, 'cciw/officers/manage_applications.html', c)
 
 def _get_camp_or_404(year, number):
     try:
@@ -302,7 +297,7 @@ def get_previous_references(ref, camp):
 @camp_admin_required # we don't care which camp they are admin for.
 @never_cache
 def manage_references(request, year=None, number=None):
-    c = template.RequestContext(request)
+    c = {}
 
     # If ref_id is set, we just want to update part of the page.
     ref_id = request.GET.get('ref_id')
@@ -355,7 +350,7 @@ def manage_references(request, year=None, number=None):
             c['ref'] = notrequested[0]
         template_name = 'cciw/officers/manage_reference.html'
 
-    return render_to_response(template_name, context_instance=c)
+    return render(request, template_name, c)
 
 
 def email_sending_failed_response():
@@ -416,7 +411,7 @@ def request_reference(request, year=None, number=None):
     if 'manual' in request.GET:
         return manage_reference_manually(request, ref)
 
-    c = template.RequestContext(request)
+    c = {}
 
     # Need to handle any changes to the referees first, for correctness of what
     # follows
@@ -487,8 +482,7 @@ def request_reference(request, year=None, number=None):
     c['is_update'] = update
     c['emailform'] = emailform
     c['messageform'] = messageform
-    return render_to_response('cciw/officers/request_reference.html',
-                              context_instance=c)
+    return render(request, 'cciw/officers/request_reference.html', c)
 
 
 class SendNagByOfficerForm(SendMessageForm):
@@ -508,7 +502,7 @@ def nag_by_officer(request, year=None, number=None):
     app = ref.application
     officer = app.officer
 
-    c = template.RequestContext(request)
+    c = {}
     messageform_info = dict(referee=ref.referee,
                             officer=officer,
                             camp=camp)
@@ -531,8 +525,7 @@ def nag_by_officer(request, year=None, number=None):
     c['officer'] = officer
     c['messageform'] = messageform
     c['is_popup'] = True
-    return render_to_response('cciw/officers/nag_by_officer.html',
-                              context_instance=c)
+    return render(request, 'cciw/officers/nag_by_officer.html', c)
 
 
 class ReferenceFormForm(forms.ModelForm):
@@ -572,7 +565,7 @@ def manage_reference_manually(request, ref):
     """
     Returns page for manually editing Reference and ReferenceForm details.
     """
-    c = template.RequestContext(request)
+    c = {}
     c['ref'] = ref
     c['referee'] = ref.referee
     c['officer'] = ref.application.officer
@@ -588,8 +581,7 @@ def manage_reference_manually(request, ref):
         form = ReferenceEditForm(instance=ref)
     c['form'] = form
     c['is_popup'] = True
-    return render_to_response("cciw/officers/manage_reference_manual.html",
-                              context_instance=c)
+    return render(request, "cciw/officers/manage_reference_manual.html", c)
 
 
 @staff_member_required
@@ -634,7 +626,7 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
     """
     View for allowing referee to submit reference (create the ReferenceForm object)
     """
-    c = template.RequestContext(request)
+    c = {}
     if hash != make_ref_form_url_hash(ref_id, prev_ref_id):
         c['incorrect_url'] = True
     else:
@@ -667,7 +659,7 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
             c['already_submitted'] = True
         else:
             if request.method == 'POST':
-                form = ReferenceFormForm(request.POST, instance=instance) # A form bound to the POST data
+                form = ReferenceFormForm(request.POST, instance=instance)
                 if form.is_valid():
                     obj = form.save(commit=False)
                     obj.reference_info = ref
@@ -693,13 +685,11 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                     form = ReferenceFormForm(initial=initial_data)
             c['form'] = form
         c['officer'] = ref.application.officer
-    return render_to_response('cciw/officers/create_reference.html',
-                              context_instance=c)
+    return render(request, 'cciw/officers/create_reference.html', c)
 
 
 def create_reference_thanks(request):
-    return render_to_response('cciw/officers/create_reference_thanks.html',
-                              context_instance=template.RequestContext(request))
+    return render(request, 'cciw/officers/create_reference_thanks.html', {})
 
 
 @staff_member_required
@@ -707,7 +697,7 @@ def create_reference_thanks(request):
 def view_reference(request, ref_id=None):
     ref = get_object_or_404(Reference.objects.filter(id=ref_id))
     ref_form = ref.reference_form
-    c = template.RequestContext(request)
+    c = {}
     if ref_form is not None:
         c['refform'] = ref_form
         c['info'] = reference_form_info(ref_form)
@@ -716,8 +706,7 @@ def view_reference(request, ref_id=None):
     c['referee'] = ref.referee
     c['is_popup'] = True
 
-    return render_to_response("cciw/officers/view_reference_form.html",
-                              context_instance=c)
+    return render(request, "cciw/officers/view_reference_form.html", c)
 
 
 @staff_member_required
@@ -725,7 +714,7 @@ def view_reference(request, ref_id=None):
 def officer_list(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
 
-    c = template.RequestContext(request)
+    c = {}
     c['camp'] = camp
     # Make sure these queries come after the above data modification
     officer_list = camp_officer_list(camp)
@@ -762,7 +751,7 @@ def officer_list(request, year=None, number=None):
         return HttpResponse(python_to_json(retval),
                             mimetype="text/javascript")
     else:
-        return render_to_response("cciw/officers/officer_list.html", context_instance=c)
+        return render(request, "cciw/officers/officer_list.html", c)
 
 
 @staff_member_required
@@ -826,8 +815,7 @@ def update_email(request, username=''):
             u.email = email
             u.save()
 
-    return render_to_response('cciw/officers/email_update.html',
-                              context_instance=template.RequestContext(request, c))
+    return render(request, 'cciw/officers/email_update.html', c)
 
 
 class StripStringsMixin(object):
@@ -914,8 +902,7 @@ def create_officer(request):
          'message': message,
          'is_popup': True,
          }
-    return render_to_response('cciw/officers/create_officer.html',
-                              context_instance=template.RequestContext(request, c))
+    return render(request, 'cciw/officers/create_officer.html', c)
 
 
 @staff_member_required
@@ -1042,8 +1029,7 @@ def stats(request, year=None):
     d['stats'] = stats
     d['year'] = year
     d['all_past'] = all_past
-    return render_to_response('cciw/officers/stats.html',
-                              context_instance=template.RequestContext(request, d))
+    return render(request, 'cciw/officers/stats.html', d)
 
 
 class AddCrbForm(forms.ModelForm):
@@ -1071,5 +1057,4 @@ def add_crb(request):
         form = AddCrbForm()
     c = {'form': form}
 
-    return render_to_response('cciw/officers/add_crb.html',
-                              context_instance=template.RequestContext(request, c))
+    return render(request, 'cciw/officers/add_crb.html', c)
