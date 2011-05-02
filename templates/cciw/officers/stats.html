@@ -41,10 +41,10 @@
     <td>{{ stat.rank }}
       {% if all_past %}
          {% if stat.rank == 1 %}<i>Winner!</i>{% endif %}
-         {% if stat.rank == stats|length %}<i>Loser!</i>{% endif %}
+         {% if stat.rank == stat.lowest_rank %}<i>Loser!</i>{% endif %}
       {% else %}
          {% if stat.rank == 1 %}<i>Winning</i>{% endif %}
-         {% if stat.rank == stats|length %}<i>Losing</i>{% endif %}
+         {% if stat.rank == stat.lowest_rank %}<i>Losing</i>{% endif %}
       {% endif %}
     </td>
   </tr>

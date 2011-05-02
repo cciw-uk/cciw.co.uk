@@ -941,6 +941,27 @@ def date_to_js_ts(d):
     return int(d.strftime('%s'))*1000
 
 
+def rank_data(data, key):
+    """
+    Given a list of data and a key function, returns a list of the ranks of the
+    data, where equal data are given equal ranks, starting with 1.
+    """
+    # Decorate, keeping original order information
+    combined = [[key(d), i, d] for i, d in enumerate(data)]
+    # Sort by the key
+    combined.sort(key=lambda x:x[0])
+    # Calculate the ranks using already calculated keys
+    current_rank = 0
+    prev_row = None
+    ranks = [None] * len(data)
+    for row in combined:
+        if prev_row is None or prev_row[0] != row[0]:
+            # Different keys (or first time through)
+            current_rank += 1
+        ranks[row[1]] = current_rank
+        prev_row = row
+    return ranks
+
 @staff_member_required
 @camp_admin_required
 def stats(request, year=None):
@@ -1011,11 +1032,11 @@ def stats(request, year=None):
 
     # Those with no application forms yet are losing, then it goes on the
     # fraction of references that are missing.
-    ranks = sorted(stats,
-                   key=lambda d: (d['application_forms_count'] == 0,
-                                  d['missing_references_percent']))
-    for i, s in enumerate(ranks):
-        s['rank'] = i + 1
+    ranks = rank_data(stats, lambda d: (d['application_forms_count'] == 0,
+                                        d['missing_references_percent']))
+    for stat, rank in zip(stats, ranks):
+        stat['rank'] = rank
+        stat['lowest_rank'] = ranks[-1]
 
     d = {}
     d['stats'] = stats
