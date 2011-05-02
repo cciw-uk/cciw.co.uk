@@ -2,11 +2,14 @@
 <div  id="id_officer_list_table">
 <p>Total: {{ officers_all|length }}</p>
 <table style="width:43em;">
+ <thead>
   <tr>
     <th>Name</th>
     <th>E-mail</th>
     <th colspan="3">Edit</th>
   </tr>
+ </thead>
+ <tbody>
 {% for officer in officers_all %}
   <tr id="id_officer_table_tr_{{ officer.id }}">
     <td>{{ officer.first_name }} {{ officer.last_name }}</td>
@@ -28,5 +31,6 @@
     </td>
   </tr>
 {% endfor %}
+ </tbody>
 </table>
 </div>
