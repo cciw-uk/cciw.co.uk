@@ -73,11 +73,16 @@ $(function() {
                 previousPoint = item;
 
                 $("#tooltip").remove();
-                var num = item.datapoint[1].toFixed(0),
-                d = new Date(item.datapoint[0]);
-
+                var d = new Date(item.datapoint[0]);
+                var num = item.datapoint[1];
+                var label = item.series.label;
+                var stat = num.toFixed(0);
+                if (item.series.label == "References % 2") {
+                    label = "References";
+                    stat = (num * 2).toFixed(0);
+                }
                 showTooltip(item.pageX, item.pageY,
-                            item.series.label + ", on " + d.toLocaleDateString() + ": <b>" + num + "</b>");
+                            label + ", on " + d.toLocaleDateString() + ": <b>" + stat + "</b>");
             }
         }
         else {
