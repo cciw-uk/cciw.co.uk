@@ -68,11 +68,12 @@
 </div>
 <script type="text/javascript">
 $(function() {
+    var placeholder_id = "#camp-graph-{{ stat.camp.number }}";
     var app_dates_data = {{ stat.application_dates_data|jsonify }};
     var ref_dates_data = {{ stat.reference_dates_data|jsonify }};
     var crb_dates_data = {{ stat.crb_dates_data|jsonify }};
     var officer_list_data = {{ stat.officer_list_data|jsonify }};
-    $.plot("#camp-graph-{{ stat.camp.number }}",
+    $.plot(placeholder_id,
            [
             {label: "Final officer list",
              data: officer_list_data},
@@ -86,8 +87,44 @@ $(function() {
            { xaxis: { mode: "time",
                       ticks: 12 },
              yaxis: { min: 0 },
-             legend: { position: "nw" }
+             legend: { position: "nw" },
+             grid: { hoverable: true }
            });
+
+    function showTooltip(x, y, contents) {
+        $('<div id="tooltip">' + contents + '</div>').css( {
+            position: 'absolute',
+            display: 'none',
+            top: y + 5,
+            left: x + 5,
+            border: '1px solid #ddd',
+            padding: '2px',
+            'background-color': '#eee',
+            opacity: 0.90
+        }).appendTo("body").fadeIn(200);
+    }
+
+    var previousPoint = null;
+    $(placeholder_id).bind("plothover", function (event, pos, item) {
+        if (item) {
+            if (previousPoint == null ||
+                (previousPoint.dataIndex != item.dataIndex ||
+                 previousPoint.series != item.series)) {
+                previousPoint = item;
+
+                $("#tooltip").remove();
+                var num = item.datapoint[1].toFixed(0),
+                d = new Date(item.datapoint[0]);
+
+                showTooltip(item.pageX, item.pageY,
+                            item.series.label + ", on " + d.toLocaleDateString() + ": <b>" + num + "</b>");
+            }
+        }
+        else {
+            $("#tooltip").remove();
+            previousPoint = null;
+        }
+    });
 
 });
 </script>
