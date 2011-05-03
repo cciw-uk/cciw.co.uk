@@ -1081,6 +1081,7 @@ def manage_crbs(request, year=None):
         o.temp['has_valid_crb'] = o.id in valid_crb_officer_ids
         o.temp['last_crb_form_sent'] = crb_forms_sent_for_officers.get(o.id, None)
         o.temp['address'] = app.one_line_address if app is not None else ""
+        o.temp['crb_check_consent'] = app.crb_check_consent if app is not None else False
 
     c = {'all_officers': all_officers,
          'year':year}

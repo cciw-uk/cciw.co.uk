@@ -63,14 +63,19 @@ regarding needing CRB forms.</p>
         <td>
           {% if not officer.temp.has_valid_crb %}
             {% if officer.temp.has_application_form %}
-              <a href="javascript:void(0)" onclick="$('#id_address_{{ officer.id }}').toggle();">Show address</a> <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ officer.temp.address }}</span>
+              {% if officer.temp.crb_check_consent %}
+                <a href="javascript:void(0)" onclick="$('#id_address_{{ officer.id }}').toggle();">Show address</a> <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ officer.temp.address }}</span>
+              {% else %}
+                <b>Officer does not<br/> consent to CRB check.<br/>
+                Leaders should be told.</b>
+              {% endif %}
             {% else %}
               Need application form!
             {% endif %}
           {% endif %}
         </td>
         <td>
-          {% if not officer.temp.has_valid_crb and officer.temp.has_application_form %}
+          {% if not officer.temp.has_valid_crb and officer.temp.has_application_form and officer.temp.crb_check_consent %}
             <button onclick="CRBFormSent({{ officer.id }});">Click when sent</button>
           {% endif %}
         </td>
