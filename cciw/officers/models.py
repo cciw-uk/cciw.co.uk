@@ -328,6 +328,7 @@ class CRBApplicationManager(models.Manager):
         # CRBs are valid for 3 years, measuring from the start of the camp
         return self.get_query_set().filter(completed__gte=camp.start_date - timedelta(3 * 365))
 
+
 class CRBApplication(models.Model):
     officer = models.ForeignKey(User)
     crb_number = models.CharField("Disclosure number", max_length=20)
@@ -344,5 +345,25 @@ class CRBApplication(models.Model):
         verbose_name = "CRB Disclosure"
         verbose_name_plural = "CRB Disclosures"
 
+
+class CRBFormLogManager(models.Manager):
+    use_for_related_fields = True
+    def get_query_set(self):
+        return super(CRBFormLogManager, self).get_query_set().select_related('officer')
+
+
+class CRBFormLog(models.Model):
+    """
+    Represents a log of a  CRB form sent to an officer
+    """
+    officer = models.ForeignKey(User)
+    sent = models.DateTimeField("Date sent")
+
+    objects = CRBFormLogManager()
+
+    def __unicode__(self):
+        return "Log of CRB form sent to %s %s on %s" % (self.officer.first_name,
+                                                        self.officer.last_name,
+                                                        self.sent.strftime("%Y-%m-%d"))
 
 import cciw.officers.admin
