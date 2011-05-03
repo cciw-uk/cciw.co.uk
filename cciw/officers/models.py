@@ -366,4 +366,8 @@ class CRBFormLog(models.Model):
                                                         self.officer.last_name,
                                                         self.sent.strftime("%Y-%m-%d"))
 
+    class Meta:
+        verbose_name = "CRB form log"
+        verbose_name_plural = "CRB form logs"
+
 import cciw.officers.admin

@@ -9,7 +9,7 @@ from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.formfields import ModelChoiceField
-from cciw.officers.models import Application, Reference, Invitation, ReferenceForm, CRBApplication
+from cciw.officers.models import Application, Reference, Invitation, ReferenceForm, CRBApplication, CRBFormLog
 from cciw.officers import widgets
 from cciw.utils.views import close_window_response
 
@@ -388,8 +388,36 @@ class CRBApplicationAdmin(admin.ModelAdmin):
     last_name.admin_order_field = 'officer__last_name'
 
 
+class CRBFormLogModelForm(forms.ModelForm):
+
+    officer = officer_autocomplete_field()
+
+    class Meta:
+        model = CRBFormLog
+
+
+class CRBFormLogAdmin(admin.ModelAdmin):
+
+    form = CRBFormLogModelForm
+
+    search_fields = ('officer__first_name', 'officer__last_name')
+    list_display = ('first_name', 'last_name', 'sent')
+    list_display_links = ('first_name', 'last_name')
+    ordering = ('-sent',)
+    date_hierarchy = 'sent'
+
+    def first_name(self, obj):
+        return obj.officer.first_name
+    first_name.admin_order_field = 'officer__first_name'
+
+    def last_name(self, obj):
+        return obj.officer.last_name
+    last_name.admin_order_field = 'officer__last_name'
+
+
 admin.site.register(Application, ApplicationAdmin)
 admin.site.register(Reference, ReferenceAdmin)
 admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(ReferenceForm, ReferenceFormAdmin)
 admin.site.register(CRBApplication, CRBApplicationAdmin)
+admin.site.register(CRBFormLog, CRBFormLogAdmin)
