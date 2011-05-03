@@ -333,8 +333,8 @@ class CRBApplicationManager(models.Manager):
         Returns the CRBs that might be valid for a camp (ignoring the camp
         officer list)
         """
-        # CRBs are valid for 3 years, measuring from the start of the camp
-        return self.get_query_set().filter(completed__gte=camp.start_date - timedelta(3 * 365))
+        # This logic is duplicated in cciw.officers.views.stats
+        return self.get_query_set().filter(completed__gte=camp.start_date - timedelta(settings.CRB_VALID_FOR))
 
 
 class CRBApplication(models.Model):

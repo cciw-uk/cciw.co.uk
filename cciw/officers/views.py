@@ -1007,9 +1007,12 @@ def stats(request, year=None):
         reference_forms = ReferenceForm.objects.filter(reference_info__application__in=app_ids)
         ref_dates = [r.date_created for r in reference_forms]
         ref_dates.sort()
-        crb_dates = list(CRBApplication.objects.get_for_camp(camp).filter(officer__in=[o.id for o in invited_officers]).values_list('completed', flat=True))
-        crb_dates.sort()
-
+        all_crb_dates = list(CRBApplication.objects.filter(officer__in=[o.id for o in invited_officers]).values_list('completed', flat=True))
+        all_crb_dates.sort()
+        # We duplicate logic from CRBApplication.get_for_camp here to avoid
+        # duplicating queries
+        valid_crb_dates = [d for d in all_crb_dates
+                           if d >= camp.start_date - datetime.timedelta(settings.CRB_VALID_FOR)]
         # Make a plot by going through each day in the year before the camp and
         # incrementing a counter. This requires the data to be sorted already,
         # as above.
@@ -1017,10 +1020,12 @@ def stats(request, year=None):
         graph_end_date = min(camp.start_date, datetime.date.today())
         a = 0 # applications
         r = 0 # references
+        v = 0 # valid CRBs
         c = 0 # CRBs
         app_dates_data = []
         ref_dates_data = []
-        crb_dates_data = []
+        all_crb_dates_data = []
+        valid_crb_dates_data = []
         d = graph_start_date
         while d <= graph_end_date:
             # Application forms
@@ -1029,18 +1034,23 @@ def stats(request, year=None):
             # References
             while r < len(ref_dates) and ref_dates[r] <= d:
                 r += 1
+            # Valid CRBs
+            while v < len(valid_crb_dates) and valid_crb_dates[v] <= d:
+                v += 1
             # CRBs
-            while c < len(crb_dates) and crb_dates[c] <= d:
+            while c < len(all_crb_dates) and all_crb_dates[c] <= d:
                 c += 1
             # Formats are those needed by 'flot' library
             ts = date_to_js_ts(d)
             app_dates_data.append([ts, a])
             ref_dates_data.append([ts, r/2.0])
-            crb_dates_data.append([ts, c])
+            all_crb_dates_data.append([ts, c])
+            valid_crb_dates_data.append([ts, v])
             d = d + datetime.timedelta(1)
         stat['application_dates_data'] = app_dates_data
         stat['reference_dates_data'] = ref_dates_data
-        stat['crb_dates_data'] = crb_dates_data
+        stat['all_crb_dates_data'] = all_crb_dates_data
+        stat['valid_crb_dates_data'] = valid_crb_dates_data
         stat['officer_list_data'] = [[date_to_js_ts(graph_start_date), invited_officers_count],
                                      [date_to_js_ts(camp.start_date), invited_officers_count]]
         stats.append(stat)

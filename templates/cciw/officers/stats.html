@@ -71,14 +71,17 @@ $(function() {
     var placeholder_id = "#camp-graph-{{ stat.camp.number }}";
     var app_dates_data = {{ stat.application_dates_data|jsonify }};
     var ref_dates_data = {{ stat.reference_dates_data|jsonify }};
-    var crb_dates_data = {{ stat.crb_dates_data|jsonify }};
+    var all_crb_dates_data = {{ stat.all_crb_dates_data|jsonify }};
+    var valid_crb_dates_data = {{ stat.valid_crb_dates_data|jsonify }};
     var officer_list_data = {{ stat.officer_list_data|jsonify }};
     $.plot(placeholder_id,
            [
             {label: "Final officer list",
              data: officer_list_data},
+            {label: "Any CRBs",
+             data: all_crb_dates_data},
             {label: "Up-to-date CRBs",
-             data: crb_dates_data},
+             data: valid_crb_dates_data},
             {label: "Application forms",
              data: app_dates_data},
             {label: "References received / 2",
