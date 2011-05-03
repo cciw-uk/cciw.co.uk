@@ -4,13 +4,13 @@
 <script type="text/javascript">
 function CRBFormSent(officerId) {
     jQuery.ajax({
-             type: "POST",
-             url: "{% url 'cciw.officers.views.mark_crb_sent' %}",
-             data: "officer_id=" + officerId.toString(),
-             dataType: 'json',
-             success: function() {
-                        jQuery('#id_last_crb_form_sent_' + officerId.toString()).html('Just now');
-             }
+        type: "POST",
+        url: "{% url 'cciw.officers.views.mark_crb_sent' %}",
+        data: "officer_id=" + officerId.toString(),
+        dataType: 'json',
+        success: function() {
+            jQuery('#id_last_crb_form_sent_' + officerId.toString()).html('Just now');
+        }
     });
 }
 </script>
