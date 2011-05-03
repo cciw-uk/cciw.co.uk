@@ -65,6 +65,10 @@ def _is_camp_admin(user):
 camp_admin_required = user_passes_test(_is_camp_admin)
 
 
+def _is_cciw_secretary(user):
+    return user.groups.filter(name='Secretaries').exists()
+
+
 def _is_camp_officer(user):
     return user.is_authenticated() and \
         (user.groups.filter(name='Officers') |
@@ -105,8 +109,12 @@ def index(request):
     """Displays a list of links/buttons for various actions."""
     user = request.user
     c = {}
+    c['thisyear'] = common.get_thisyear()
     if _is_camp_admin(user):
         c['show_leader_links'] = True
+        c['show_admin_link'] = True
+    if _is_cciw_secretary(user):
+        c['show_secretary_links'] = True
         c['show_admin_link'] = True
 
     return render(request, 'cciw/officers/index.html', c)
