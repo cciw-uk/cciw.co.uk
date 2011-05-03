@@ -33,7 +33,7 @@ $(function() {
     var officer_list_data = {{ stat.officer_list_data|jsonify }};
     $.plot(placeholder_id,
            [
-            {label: "Final officer list",
+            {label: "Officer list",
              data: officer_list_data},
             {label: "Any CRBs",
              data: all_crb_dates_data},
@@ -105,6 +105,17 @@ $(function() {
 </canvas>
 </div>
 
+<p>Notes:</p>
+
+<ul>
+  <li>Ideally all lines should reach the 'Officer list' line by the start
+    of camp.</li>
+  <li>The figure for references received has been divided by 2 to make the plot
+    fit the same target, since each officer needs 2 references. Correct figures
+    are shown when hovering.</li>
+  <li>Changes to the officer list are not tracked over time — only the current
+    total is used.</li>
+</ul>
 
 </div>
 {% endblock %}
