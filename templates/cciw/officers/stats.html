@@ -41,7 +41,7 @@ $(function() {
              data: valid_crb_dates_data},
             {label: "Application forms",
              data: app_dates_data},
-            {label: "References % 2",
+            {label: "References \u00F7 2",
              data: ref_dates_data}
            ],
            { xaxis: { mode: "time",
@@ -77,7 +77,7 @@ $(function() {
                 var num = item.datapoint[1];
                 var label = item.series.label;
                 var stat = num.toFixed(0);
-                if (item.series.label == "References % 2") {
+                if (item.series.label == "References \u00F7 2") {
                     label = "References";
                     stat = (num * 2).toFixed(0);
                 }
