@@ -15,6 +15,7 @@ from django.db import models
 from django.core.validators import email_re
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
+from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.template.defaultfilters import wordwrap
 from django.views.decorators.cache import never_cache
@@ -760,7 +761,7 @@ def officer_list(request, year=None, number=None):
                   ("noapplicationform", "cciw/officers/officer_list_noapplicationform.html")]
         retval = {}
         for section, tname in tnames:
-            retval[section] = render_to_string(tname, context_instance=c)
+            retval[section] = render_to_string(tname, context_instance=RequestContext(request, c))
         return HttpResponse(python_to_json(retval),
                             mimetype="text/javascript")
     else:
