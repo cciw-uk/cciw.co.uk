@@ -153,6 +153,14 @@ class Application(models.Model):
             self._references_cache = retval
             return retval
 
+    @property
+    def one_line_address(self):
+        return ", ".join(filter(bool, [self.address_firstline,
+                                       self.address_town,
+                                       self.address_county,
+                                       self.address_postcode,
+                                       self.address_country]))
+
     def __unicode__(self):
         if self.date_submitted is not None:
             submitted = "submitted " + self.date_submitted.strftime("%Y-%m-%d")

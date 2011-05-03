@@ -29,7 +29,7 @@ from cciw.officers import create
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
-from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication
+from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication, CRBFormLog
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.officers.references import reference_form_info
 from cciw.utils.views import close_window_response
@@ -1087,13 +1087,22 @@ def manage_crbs(request, year=None):
     apps = list(reduce(operator.or_, map(applications_for_camp, camps)))
     valid_crb_officer_ids = set(reduce(operator.or_, map(CRBApplication.objects.get_for_camp, camps)).values_list('officer_id', flat=True))
     all_crb_officer_ids = set(CRBApplication.objects.values_list('officer_id', flat=True))
+    # CRB forms sent: set cutoff to a year before now, on the basis that
+    # anything more than that will have been lost, and we don't want to load
+    # everything into membery.
+    crb_forms_sent = list(CRBFormLog.objects.filter(sent__gt=datetime.datetime.now() - datetime.timedelta(365)).order_by('sent'))
     # Work out, without doing any more queries:
     #   which camps each officer is on
     #   if they have an application form
     #   if they have an up to date CRB
+    #   when the last CRB form was sent to officer
     officer_ids = dict([(camp.id, set([o.id for o in officers]))
                         for camp, officers in zip(camps, camps_officers)])
     officer_apps = dict([(a.officer_id, a) for a in apps])
+    officer_addresses = dict([(a.officer_id, a.one_line_address) for a in apps])
+    # NB: order_by('sent') above means that requests sent later will overwrite
+    # those sent earlier in the following dictionary
+    crb_forms_sent_for_officers = dict([(f.officer_id, f.sent) for f in crb_forms_sent])
 
     for o in all_officers:
         o.temp = {}
@@ -1105,6 +1114,21 @@ def manage_crbs(request, year=None):
         o.temp['has_application_form'] = o.id in officer_apps
         o.temp['has_crb'] = o.id in all_crb_officer_ids
         o.temp['has_valid_crb'] = o.id in valid_crb_officer_ids
+        o.temp['last_crb_form_sent'] = crb_forms_sent_for_officers.get(o.id, None)
+        o.temp['address'] = officer_addresses.get(o.id, "")
 
-    c = {'all_officers': all_officers}
+    c = {'all_officers': all_officers,
+         'year':year}
     return render(request, 'cciw/officers/manage_crbs.html', c)
+
+
+@staff_member_required
+@camp_admin_required
+@json_response
+def mark_crb_sent(request):
+    officer_id = int(request.POST['officer_id'])
+    officer = User.objects.get(id=officer_id)
+    CRBFormLog.objects.create(officer=officer,
+                              sent=datetime.datetime.now())
+    return {'status':'success'}
+

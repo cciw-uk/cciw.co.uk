@@ -200,3 +200,8 @@ ul.ui-autocomplete li {
     color: white;
     padding: 5px;
 }
+
+.address {
+    background-color: #f8f8f8;
+    padding: 2px;
+}

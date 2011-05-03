@@ -1,6 +1,34 @@
 {% extends "cciw/officers/base.html" %}
 {% load url from future %}
 {% block content %}
+<script type="text/javascript">
+function CRBFormSent(officerId) {
+    jQuery.ajax({
+             type: "POST",
+             url: "{% url 'cciw.officers.views.mark_crb_sent' %}",
+             data: "officer_id=" + officerId.toString(),
+             dataType: 'json',
+             success: function() {
+                        jQuery('#id_last_crb_form_sent_' + officerId.toString()).html('Just now');
+             }
+    });
+}
+</script>
+
+<h1>Manage CRBs</h1>
+
+<p>This pages shows all officers on camps, year {{ year }}, and their status
+regarding needing CRB forms.</p>
+
+<p>For officers needing CRBs:</p>
+
+<ul>
+  <li>Use 'Show address' to view the officer's address (from application form)</li>
+  <li>Press 'CRB form sent' to indicate you've physically sent them a CRB form to fill in.</li>
+</ul>
+
+<p>To enter information for CRBs that have been <em>completed</em>, use the <a href="{% url 'admin:officers_crbapplication_changelist' %}">CRB Disclosures admin</a>.</p>
+
 <table>
   <thead>
     <tr>
@@ -8,6 +36,8 @@
       <th>Camps</th>
       <th>Application form</th>
       <th>CRB</th>
+      <th>CRB form sent</th>
+      <th>Manage</th>
     </tr>
   </thead>
   <tbody>
@@ -20,6 +50,25 @@
         </td>
         <td>{% if officer.temp.has_application_form %}<img src="{{ STATIC_URL }}admin/img/admin/icon-yes.gif">{% endif %}</td>
         <td>{% if not officer.temp.has_crb %}<img src="{{ STATIC_URL }}admin/img/admin/icon_error.gif"> Never{% else %}{% if officer.temp.has_valid_crb %}<img src="{{ STATIC_URL }}admin/img/admin/icon_success.gif"> Recent{% else %}<img src="{{ STATIC_URL }}admin/img/admin/icon_alert.gif"> Out of date{% endif %}{% endif %}</td>
+        <td id="id_last_crb_form_sent_{{ officer.id }}">
+          {% if officer.temp.has_valid_crb %}
+            n/a
+          {% else %}
+            {% if officer.temp.last_crb_form_sent %}
+              {{ officer.temp.last_crb_form_sent|timesince }} ago
+            {% endif %}
+          {% endif %}
+        </td>
+        <td>
+          {% if not officer.temp.has_valid_crb %}
+            {% if officer.temp.has_application_form %}
+              <a href="javascript:void(0)" onclick="$('#id_address_{{ officer.id }}').toggle();">Show address</a> <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ officer.temp.address }}</span>
+              <button onclick="CRBFormSent({{ officer.id }});">CRB form sent</button>
+            {% else %}
+              Need application form!
+            {% endif %}
+          {% endif %}
+        </td>
       </tr>
     {% endfor %}
   </tbody>
