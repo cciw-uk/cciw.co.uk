@@ -953,16 +953,12 @@ def stats(request, year=None):
         # done in Python.
         stat['camp'] = camp
 
-        invited_officers = [i.officer for i in camp.invitation_set.all()]
-        application_forms = applications_for_camp(camp)
-        app_ids = [a.id for a in application_forms]
-        app_dates = [a.date_submitted for a in application_forms]
-        app_dates.sort()
-        reference_forms = ReferenceForm.objects.filter(reference_info__application__in=app_ids)
-        ref_dates = [r.date_created for r in reference_forms]
-        ref_dates.sort()
-        all_crb_dates = list(CRBApplication.objects.filter(officer__in=[o.id for o in invited_officers]).values_list('completed', flat=True))
-        all_crb_dates.sort()
+        invited_officer_ids = list(camp.invitation_set.all().values_list('officer_id', flat=True))
+        application_forms = list(applications_for_camp(camp).order_by('date_submitted').values_list('id', 'date_submitted'))
+        app_ids = [a[0] for a in application_forms]
+        app_dates = [a[1] for a in application_forms]
+        ref_dates = list(ReferenceForm.objects.filter(reference_info__application__in=app_ids).order_by('date_created').values_list('date_created', flat=True))
+        all_crb_dates = list(CRBApplication.objects.filter(officer__in=invited_officer_ids).order_by('completed').values_list('completed', flat=True))
         # We duplicate logic from CRBApplication.get_for_camp here to avoid
         # duplicating queries
         valid_crb_dates = [d for d in all_crb_dates
@@ -1005,8 +1001,8 @@ def stats(request, year=None):
         stat['reference_dates_data'] = ref_dates_data
         stat['all_crb_dates_data'] = all_crb_dates_data
         stat['valid_crb_dates_data'] = valid_crb_dates_data
-        stat['officer_list_data'] = [[date_to_js_ts(graph_start_date), len(invited_officers)],
-                                     [date_to_js_ts(camp.start_date), len(invited_officers)]]
+        stat['officer_list_data'] = [[date_to_js_ts(graph_start_date), len(invited_officer_ids)],
+                                     [date_to_js_ts(camp.start_date), len(invited_officer_ids)]]
         stats.append(stat)
 
 
