@@ -206,3 +206,7 @@ ul.ui-autocomplete li {
     padding: 2px;
     border: 1px solid #d0d0d0;
 }
+
+.actionable {
+    background-color: #ffd0d0;
+}
