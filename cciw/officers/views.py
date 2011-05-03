@@ -1077,6 +1077,7 @@ def manage_crbs(request, year=None):
         app = officer_apps.get(o.id, None)
         o.temp['camps'] = officer_camps
         o.temp['has_application_form'] = app is not None
+        o.temp['application_id'] = app.id if app is not None else None
         o.temp['has_crb'] = o.id in all_crb_officer_ids
         o.temp['has_valid_crb'] = o.id in valid_crb_officer_ids
         o.temp['last_crb_form_sent'] = crb_forms_sent_for_officers.get(o.id, None)

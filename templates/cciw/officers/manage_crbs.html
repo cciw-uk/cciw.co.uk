@@ -49,7 +49,7 @@ regarding needing CRB forms.</p>
               <a href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}">{{ camp.number }}</a>{% if not forloop.last %}, {% endif %}
             {% endfor %}
         </td>
-        <td>{% if officer.temp.has_application_form %}<img src="{{ STATIC_URL }}admin/img/admin/icon-yes.gif">{% endif %}</td>
+        <td>{% if officer.temp.has_application_form %}<img src="{{ STATIC_URL }}admin/img/admin/icon-yes.gif"> <a href="{% url 'admin:officers_application_change' officer.temp.application_id %}" rel="external">View/edit</a>{% endif %}</td>
         <td>{% if not officer.temp.has_crb %}<img src="{{ STATIC_URL }}admin/img/admin/icon_error.gif"> Never{% else %}{% if officer.temp.has_valid_crb %}<img src="{{ STATIC_URL }}admin/img/admin/icon_success.gif"> Recent{% else %}<img src="{{ STATIC_URL }}admin/img/admin/icon_alert.gif"> Out of date{% endif %}{% endif %}</td>
         <td id="id_last_crb_form_sent_{{ officer.id }}">
           {% if officer.temp.has_valid_crb %}
