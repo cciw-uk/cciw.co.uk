@@ -48,29 +48,10 @@
     cursor: pointer;
 }
 
-.firstline,
-.refdetails
-{
-    cursor: pointer;
-}
-
-.firstline,
-.addrblock,
-.refdetails
-{
-    background: #d0d0d0;
-}
 
 .hidden
 {
     display: none;
-}
-
-.refdetails
-{
-    border-top: 1px solid #808080;
-    border-bottom: 1px solid #808080;
-    margin-top: 2px;
 }
 
 .good
