@@ -1095,7 +1095,17 @@ def manage_crbs(request, year=None):
 def mark_crb_sent(request):
     officer_id = int(request.POST['officer_id'])
     officer = User.objects.get(id=officer_id)
-    CRBFormLog.objects.create(officer=officer,
-                              sent=datetime.datetime.now())
-    return {'status':'success'}
+    c = CRBFormLog.objects.create(officer=officer,
+                                  sent=datetime.datetime.now())
+    return {'status':'success',
+            'crbFormLogId': str(c.id)
+            }
 
+
+@staff_member_required
+@camp_admin_required
+@json_response
+def undo_mark_crb_sent(request):
+    crbformlog_id = int(request.POST['crbformlog_id'])
+    c = CRBFormLog.objects.filter(id=crbformlog_id).delete()
+    return {'status':'success'}
