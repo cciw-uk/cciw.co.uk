@@ -82,7 +82,8 @@ $(function() {
                     stat = (num * 2).toFixed(0);
                 }
                 showTooltip(item.pageX, item.pageY,
-                            label + ", on " + d.toLocaleDateString() + ": <b>" + stat + "</b>");
+                            label + ": <b>" + stat + "</b>" +
+                            "<br/><i>" + d.toLocaleDateString() + "</i>");
             }
         }
         else {
