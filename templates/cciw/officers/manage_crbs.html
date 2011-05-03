@@ -24,7 +24,7 @@ regarding needing CRB forms.</p>
 
 <ul>
   <li>Use 'Show address' to view the officer's address (from application form)</li>
-  <li>Press 'CRB form sent' to indicate you've physically sent them a CRB form to fill in.</li>
+  <li>Use the buttons in the 'Manage' column to indicate you've physically sent them a CRB form to fill in.</li>
 </ul>
 
 <p>To enter information for CRBs that have been <em>completed</em>, use the <a href="{% url 'admin:officers_crbapplication_changelist' %}">CRB Disclosures admin</a>.</p>
@@ -37,6 +37,7 @@ regarding needing CRB forms.</p>
       <th>Application form</th>
       <th>CRB</th>
       <th>CRB form sent</th>
+      <th>Address</th>
       <th>Manage</th>
     </tr>
   </thead>
@@ -63,10 +64,14 @@ regarding needing CRB forms.</p>
           {% if not officer.temp.has_valid_crb %}
             {% if officer.temp.has_application_form %}
               <a href="javascript:void(0)" onclick="$('#id_address_{{ officer.id }}').toggle();">Show address</a> <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ officer.temp.address }}</span>
-              <button onclick="CRBFormSent({{ officer.id }});">CRB form sent</button>
             {% else %}
               Need application form!
             {% endif %}
+          {% endif %}
+        </td>
+        <td>
+          {% if not officer.temp.has_valid_crb and officer.temp.has_application_form %}
+            <button onclick="CRBFormSent({{ officer.id }});">Click when sent</button>
           {% endif %}
         </td>
       </tr>
