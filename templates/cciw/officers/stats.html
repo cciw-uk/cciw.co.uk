@@ -14,51 +14,8 @@
 {% block content %}
 <div id="content-main">
 <h1>Stats {{ year }}</h1>
-<table>
-  <tr>
-    <th>Camp</th>
-    <th>Officer list</th>
-    <th>Application forms</th>
-    <th>Received references</th>
-    <th colspan="2" style="text-align:center;">Based on number of application forms:</th>
-    <th>Rank</th>
-  </tr>
-  <tr>
-    <th colspan="4"></th>
-    <th>Missing references</th>
-    <th>Officers with no references</th>
-    <th></th>
-  </tr>
-
-  {% for stat in stats %}
-  <tr>
-    <td>{{ stat.camp.number }} - {{ stat.camp.leaders_formatted }}</td>
-    <td>{{ stat.invited_officers_count }}</td>
-    <td>{{ stat.application_forms_count }}</td>
-    <td>{{ stat.received_references_count }}</td>
-    <td>{{ stat.missing_references_count }} ({{ stat.missing_references_percent|floatformat }}%) </td>
-    <td>{{ stat.officers_no_reference }}</td>
-    <td>{{ stat.rank }}
-      {% if all_past %}
-         {% if stat.rank == 1 %}<i>Winner!</i>{% endif %}
-         {% if stat.rank == stat.lowest_rank %}<i>Loser!</i>{% endif %}
-      {% else %}
-         {% if stat.rank == 1 %}<i>Winning</i>{% endif %}
-         {% if stat.rank == stat.lowest_rank %}<i>Losing</i>{% endif %}
-      {% endif %}
-    </td>
-  </tr>
-  {% endfor %}
-</table>
-
-{% if year == thisyear %}
-<p>Camps may not be finished yet - there is still time to </p>
-{% endif %}
-
-{# Graphs #}
-
-<h1 style="margin-top: 1em;">Timelines</h1>
 <p>Charts span the year leading up to the start date of the camp.</p>
+<p>Exact numbers can be seen by hovering your mouse over the charts.</p>
 
 {% for stat in stats %}
 <div style="float:left; margin-right: 20px;">

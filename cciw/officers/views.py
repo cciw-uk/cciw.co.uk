@@ -942,66 +942,20 @@ def date_to_js_ts(d):
     return int(d.strftime('%s'))*1000
 
 
-def rank_data(data, key):
-    """
-    Given a list of data and a key function, returns a list of the ranks of the
-    data, where equal data are given equal ranks, starting with 1.
-    """
-    # Decorate, keeping original order information
-    combined = [[key(d), i, d] for i, d in enumerate(data)]
-    # Sort by the key
-    combined.sort(key=lambda x:x[0])
-    # Calculate the ranks using already calculated keys
-    current_rank = 0
-    prev_row = None
-    ranks = [None] * len(data)
-    for row in combined:
-        if prev_row is None or prev_row[0] != row[0]:
-            # Different keys (or first time through)
-            current_rank += 1
-        ranks[row[1]] = current_rank
-        prev_row = row
-    return ranks, current_rank
-
 @staff_member_required
 @camp_admin_required
 def stats(request, year=None):
     year = int(year)
-    thisyear = common.get_thisyear()
     stats = []
-    all_past = True
     for camp in Camp.objects.filter(year=year).order_by('number'):
         stat = {}
-        if not camp.is_past():
-            all_past = False
         # For efficiency, we are careful about what DB queries we do and what is
         # done in Python.
         stat['camp'] = camp
+
         invited_officers = [i.officer for i in camp.invitation_set.all()]
-        invited_officers_count = len(invited_officers)
-        stat['invited_officers_count'] = invited_officers_count
         application_forms = applications_for_camp(camp)
         app_ids = [a.id for a in application_forms]
-
-        application_forms_count = len(app_ids)
-        stat['application_forms_count'] = application_forms_count
-        received_reference_set = Reference.objects.filter(received=True, application__in=app_ids)
-        received_references_count = received_reference_set.count()
-        expected_references = 2 * application_forms_count
-        stat['received_references_count'] = received_references_count
-        missing_references_count = expected_references - received_references_count
-        stat['missing_references_count'] = missing_references_count
-        if expected_references == 0:
-            missing_references_percent = 0
-        else:
-            missing_references_percent = float(missing_references_count) / expected_references * 100.0
-        stat['missing_references_percent'] = missing_references_percent
-        # Officers with no references - trying not to do O(n) queries...
-        r = set([r.application_id for r in received_reference_set])
-        applications_no_reference = [a for a in application_forms if a.id not in r]
-        stat['officers_no_reference'] = len(applications_no_reference)
-
-        # Stats for graphs
         app_dates = [a.date_submitted for a in application_forms]
         app_dates.sort()
         reference_forms = ReferenceForm.objects.filter(reference_info__application__in=app_ids)
@@ -1051,22 +1005,14 @@ def stats(request, year=None):
         stat['reference_dates_data'] = ref_dates_data
         stat['all_crb_dates_data'] = all_crb_dates_data
         stat['valid_crb_dates_data'] = valid_crb_dates_data
-        stat['officer_list_data'] = [[date_to_js_ts(graph_start_date), invited_officers_count],
-                                     [date_to_js_ts(camp.start_date), invited_officers_count]]
+        stat['officer_list_data'] = [[date_to_js_ts(graph_start_date), len(invited_officers)],
+                                     [date_to_js_ts(camp.start_date), len(invited_officers)]]
         stats.append(stat)
 
-    # Those with no application forms yet are losing, then it goes on the
-    # fraction of references that are missing.
-    ranks, max_rank = rank_data(stats, lambda d: (d['application_forms_count'] == 0,
-                                                  d['missing_references_percent']))
-    for stat, rank in zip(stats, ranks):
-        stat['rank'] = rank
-        stat['lowest_rank'] = max_rank
 
     d = {}
     d['stats'] = stats
     d['year'] = year
-    d['all_past'] = all_past
     return render(request, 'cciw/officers/stats.html', d)
 
 
