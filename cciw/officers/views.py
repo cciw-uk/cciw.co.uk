@@ -1064,7 +1064,6 @@ def manage_crbs(request, year=None):
     officer_ids = dict([(camp.id, set([o.id for o in officers]))
                         for camp, officers in zip(camps, camps_officers)])
     officer_apps = dict([(a.officer_id, a) for a in apps])
-    officer_addresses = dict([(a.officer_id, a.one_line_address) for a in apps])
     # NB: order_by('sent') above means that requests sent later will overwrite
     # those sent earlier in the following dictionary
     crb_forms_sent_for_officers = dict([(f.officer_id, f.sent) for f in crb_forms_sent])
@@ -1075,12 +1074,13 @@ def manage_crbs(request, year=None):
         for c in camps:
             if o.id in officer_ids[c.id]:
                 officer_camps.append(c)
+        app = officer_apps.get(o.id, None)
         o.temp['camps'] = officer_camps
-        o.temp['has_application_form'] = o.id in officer_apps
+        o.temp['has_application_form'] = app is not None
         o.temp['has_crb'] = o.id in all_crb_officer_ids
         o.temp['has_valid_crb'] = o.id in valid_crb_officer_ids
         o.temp['last_crb_form_sent'] = crb_forms_sent_for_officers.get(o.id, None)
-        o.temp['address'] = officer_addresses.get(o.id, "")
+        o.temp['address'] = app.one_line_address if app is not None else ""
 
     c = {'all_officers': all_officers,
          'year':year}
