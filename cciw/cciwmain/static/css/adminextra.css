@@ -204,4 +204,5 @@ ul.ui-autocomplete li {
 .address {
     background-color: #f8f8f8;
     padding: 2px;
+    border: 1px solid #d0d0d0;
 }
