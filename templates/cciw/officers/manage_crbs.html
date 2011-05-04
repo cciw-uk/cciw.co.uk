@@ -75,7 +75,7 @@ regarding needing CRB forms.</p>
 </ul>
 
 <p>To enter information for CRBs that have been <em>completed</em>, use the
- <a href="{% url 'admin:officers_crbapplication_changelist' %}">CRB Disclosures admin</a>.</p>
+ <a href="{% url 'admin:officers_crbapplication_changelist' %}" rel="external">CRB Disclosures admin</a>.</p>
 
 <table>
   <thead>
@@ -94,7 +94,7 @@ regarding needing CRB forms.</p>
       <tr id="id_highlightdiv_{{ officer.id }}" {% if not officer.temp.has_valid_crb and officer.temp.has_application_form and not officer.temp.last_crb_form_sent %}class="actionable"{% endif %}>
         <td>{{ officer.first_name }} {{ officer.last_name }}</td>
         <td>{% for camp in officer.temp.camps %}
-              <a href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}">{{ camp.number }}</a>{% if not forloop.last %}, {% endif %}
+              <a href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}" rel="external">{{ camp.number }}</a>{% if not forloop.last %}, {% endif %}
             {% endfor %}
         </td>
         <td>{% if officer.temp.has_application_form %}<img src="{{ STATIC_URL }}admin/img/admin/icon-yes.gif">
