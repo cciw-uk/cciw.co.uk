@@ -53,6 +53,12 @@ function CRBFormSent(officerId) {
         }
     });
 }
+
+function alertLeadersCrbConsentCheck(applicationId) {
+    window.open("{% url 'cciw.officers.views.crb_consent_problem' %}?application_id=" + applicationId.toString(),
+                '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+
+}
 </script>
 
 <h1>Manage CRBs</h1>
@@ -107,8 +113,8 @@ regarding needing CRB forms.</p>
               {% if officer.temp.crb_check_consent %}
                 <a href="javascript:void(0)" onclick="$('#id_address_{{ officer.id }}').toggle();">Show address</a> <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ officer.temp.address }}</span>
               {% else %}
-                <b>Officer does not<br/> consent to CRB check.<br/>
-                Leaders should be told.</b>
+                <b>Officer does not<br/> consent to CRB check.<br/></b>
+                <button onclick="alertLeadersCrbConsentCheck({{ officer.temp.application_id }})">Alert leaders</button>
               {% endif %}
             {% else %}
               Needs application form

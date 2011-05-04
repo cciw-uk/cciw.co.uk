@@ -25,10 +25,10 @@ from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
-from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename, thisyears_applications, applications_for_camp
+from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename, thisyears_applications, applications_for_camp, camps_for_application
 from cciw.officers import create
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
-from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer
+from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer, send_crb_consent_problem_email
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication, CRBFormLog
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
@@ -1109,3 +1109,44 @@ def undo_mark_crb_sent(request):
     crbformlog_id = int(request.POST['crbformlog_id'])
     c = CRBFormLog.objects.filter(id=crbformlog_id).delete()
     return {'status':'success'}
+
+
+class CrbConsentProblemForm(SendMessageForm):
+    def get_message_template(self):
+        return 'cciw/officers/crb_consent_problem_email.txt'
+
+
+@staff_member_required
+@camp_admin_required
+def crb_consent_problem(request):
+    try:
+        app_id = int(request.GET.get('application_id'))
+    except ValueError, TypeError:
+        raise Http404
+    app = get_object_or_404(Application.objects.filter(id=app_id))
+    officer = app.officer
+    camps = camps_for_application(app)
+
+    c = {}
+    messageform_info = dict(application=app,
+                            officer=officer,
+                            camps=camps,
+                            sender=request.user)
+
+    if request.method == 'POST':
+        if 'send' in request.POST:
+            messageform = CrbConsentProblemForm(request.POST, message_info=messageform_info)
+            # It's impossible for the form to be invalid, so assume valid
+            messageform.is_valid()
+            send_crb_consent_problem_email(wordwrap(messageform.cleaned_data['message'], 70), officer, camps)
+            return close_window_response()
+        else:
+            # cancel
+            return close_window_response()
+
+    messageform = CrbConsentProblemForm(message_info=messageform_info)
+
+    c['messageform'] = messageform
+    c['officer'] = officer
+    c['is_popup'] = True
+    return render(request, 'cciw/officers/crb_consent_problem.html', c)

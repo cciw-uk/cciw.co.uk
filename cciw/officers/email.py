@@ -20,6 +20,15 @@ def make_update_email_hash(oldemail, newemail):
     return salted_hmac("cciw.officers.emailupdate", oldemail + ':' + newemail).hexdigest()[::2]
 
 
+def admin_emails_for_camp(camp):
+    leaders = [user for leader in camp.leaders.all()
+               for user in leader.users.all()] + \
+               list(camp.admins.all())
+
+    return filter(lambda x: x is not None,
+                  map(formatted_email, leaders))
+
+
 def admin_emails_for_application(application):
     """
     For the supplied application, finds the camps admins that are relevant.
@@ -28,11 +37,7 @@ def admin_emails_for_application(application):
     camps = camps_for_application(application)
     groups = []
     for camp in camps:
-        leaders = [user for leader in camp.leaders.all()
-                   for user in leader.users.all()] + \
-                   list(camp.admins.all())
-        groups.append((camp, filter(lambda x: x is not None,
-                                    map(formatted_email, leaders))))
+        groups.append((camp, admin_emails_for_camp(camp)))
     return groups
 
 
@@ -227,4 +232,18 @@ def send_nag_by_officer(message, officer, ref):
               message,
               settings.DEFAULT_FROM_EMAIL,
               [officer.email],
+              fail_silently=False)
+
+
+def send_crb_consent_problem_email(message, officer, camps):
+    # If more than one camp involved, we deliberately put all camp leaders
+    # together on a single e-mail, so that they can see that more than one camp
+    # is involved
+    emails = []
+    for c in camps:
+        emails.extend(admin_emails_for_camp(c))
+    send_mail("CRB consent problem for %s %s" % (officer.first_name, officer.last_name),
+              message,
+              settings.DEFAULT_FROM_EMAIL,
+              emails,
               fail_silently=False)
