@@ -74,7 +74,8 @@ regarding needing CRB forms.</p>
   <li>Officers most likely to need attention are <span class="actionable">highlighted</span>.</li>
 </ul>
 
-<p>To enter information for CRBs that have been <em>completed</em>, use the <a href="{% url 'admin:officers_crbapplication_changelist' %}">CRB Disclosures admin</a>.</p>
+<p>To enter information for CRBs that have been <em>completed</em>, use the
+ <a href="{% url 'admin:officers_crbapplication_changelist' %}">CRB Disclosures admin</a>.</p>
 
 <table>
   <thead>
@@ -96,8 +97,13 @@ regarding needing CRB forms.</p>
               <a href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}">{{ camp.number }}</a>{% if not forloop.last %}, {% endif %}
             {% endfor %}
         </td>
-        <td>{% if officer.temp.has_application_form %}<img src="{{ STATIC_URL }}admin/img/admin/icon-yes.gif"> <a href="{% url 'admin:officers_application_change' officer.temp.application_id %}" rel="external">View/edit</a>{% endif %}</td>
-        <td>{% if not officer.temp.has_crb %}<img src="{{ STATIC_URL }}admin/img/admin/icon_error.gif"> Never{% else %}{% if officer.temp.has_valid_crb %}<img src="{{ STATIC_URL }}admin/img/admin/icon_success.gif"> Recent{% else %}<img src="{{ STATIC_URL }}admin/img/admin/icon_alert.gif"> Out of date{% endif %}{% endif %}</td>
+        <td>{% if officer.temp.has_application_form %}<img src="{{ STATIC_URL }}admin/img/admin/icon-yes.gif">
+          <a href="{% url 'admin:officers_application_change' officer.temp.application_id %}" rel="external">View/edit</a>{% endif %}</td>
+        <td>{% if not officer.temp.has_crb %}<img src="{{ STATIC_URL }}admin/img/admin/icon_error.gif"> Never
+            {% else %}{% if officer.temp.has_valid_crb %}<img src="{{ STATIC_URL }}admin/img/admin/icon_success.gif"> Recent
+                     {% else %}<img src="{{ STATIC_URL }}admin/img/admin/icon_alert.gif"> Out of date
+                     {% endif %}
+            {% endif %}</td>
         <td id="id_last_crb_form_sent_{{ officer.id }}">
           {% if officer.temp.has_valid_crb %}
             n/a
@@ -111,7 +117,8 @@ regarding needing CRB forms.</p>
           {% if not officer.temp.has_valid_crb %}
             {% if officer.temp.has_application_form %}
               {% if officer.temp.crb_check_consent %}
-                <a href="javascript:void(0)" onclick="$('#id_address_{{ officer.id }}').toggle();">Show address</a> <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ officer.temp.address }}</span>
+                <a href="javascript:void(0)" onclick="$('#id_address_{{ officer.id }}').toggle();">Show address</a>
+                <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ officer.temp.address }}</span>
               {% else %}
                 <b>Officer does not<br/> consent to CRB check.<br/></b>
                 <button onclick="alertLeadersCrbConsentCheck({{ officer.temp.application_id }})">Alert leaders</button>
