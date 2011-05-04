@@ -5,6 +5,7 @@
     <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw.officers.views.officer_list' year=c.year number=c.number %}">Officer list</a>
     <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw.officers.views.manage_applications' year=c.year number=c.number %}">Applications</a>
     <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw.officers.views.manage_references' year=c.year number=c.number %}">References</a>
+    <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw.officers.views.stats' year=c.year %}">Stats {{ c.year }}</a>
     </li>
     {% endfor %}
 
