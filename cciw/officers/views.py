@@ -958,11 +958,11 @@ def stats(request, year=None):
         app_ids = [a[0] for a in application_forms]
         app_dates = [a[1] for a in application_forms]
         ref_dates = list(ReferenceForm.objects.filter(reference_info__application__in=app_ids).order_by('date_created').values_list('date_created', flat=True))
-        all_crb_dates = list(CRBApplication.objects.filter(officer__in=invited_officer_ids).order_by('completed').values_list('completed', flat=True))
+        all_crb_info = list(CRBApplication.objects.filter(officer__in=invited_officer_ids).order_by('completed').values_list('officer_id', 'completed'))
         # We duplicate logic from CRBApplication.get_for_camp here to avoid
         # duplicating queries
-        valid_crb_dates = [d for d in all_crb_dates
-                           if d >= camp.start_date - datetime.timedelta(settings.CRB_VALID_FOR)]
+        valid_crb_info = [(off_id, d) for off_id, d in all_crb_info
+                          if d >= camp.start_date - datetime.timedelta(settings.CRB_VALID_FOR)]
         # Make a plot by going through each day in the year before the camp and
         # incrementing a counter. This requires the data to be sorted already,
         # as above.
@@ -970,12 +970,16 @@ def stats(request, year=None):
         graph_end_date = min(camp.start_date, datetime.date.today())
         a = 0 # applications
         r = 0 # references
-        v = 0 # valid CRBs
-        c = 0 # CRBs
+        v_idx = 0 # valid CRBs - index into valid_crb_info
+        c_idx = 0 # CRBs       - index into all_crb_info
+        v_tot = 0 #            - total for valid CRBs
+        c_tot = 0 #            - total for all CRBs
         app_dates_data = []
         ref_dates_data = []
         all_crb_dates_data = []
+        _all_crb_seen_officers = set()
         valid_crb_dates_data = []
+        _valid_crb_seen_officers = set()
         d = graph_start_date
         while d <= graph_end_date:
             # Application forms
@@ -984,18 +988,30 @@ def stats(request, year=None):
             # References
             while r < len(ref_dates) and ref_dates[r] <= d:
                 r += 1
+
+            # CRBs: there can be multiple CRBs for each officer. If we've
+            # already seen one, we don't increase the count.
+
             # Valid CRBs
-            while v < len(valid_crb_dates) and valid_crb_dates[v] <= d:
-                v += 1
+            while v_idx < len(valid_crb_info) and valid_crb_info[v_idx][1] <= d:
+                off_id = valid_crb_info[v_idx][0]
+                v_idx += 1
+                if off_id not in _valid_crb_seen_officers:
+                    v_tot += 1
+                    _valid_crb_seen_officers.add(off_id)
             # CRBs
-            while c < len(all_crb_dates) and all_crb_dates[c] <= d:
-                c += 1
+            while c_idx < len(all_crb_info) and all_crb_info[c_idx][1] <= d:
+                off_id = all_crb_info[c_idx][0]
+                c_idx += 1
+                if off_id not in _all_crb_seen_officers:
+                    c_tot += 1
+                    _all_crb_seen_officers.add(off_id)
             # Formats are those needed by 'flot' library
             ts = date_to_js_ts(d)
             app_dates_data.append([ts, a])
             ref_dates_data.append([ts, r/2.0])
-            all_crb_dates_data.append([ts, c])
-            valid_crb_dates_data.append([ts, v])
+            all_crb_dates_data.append([ts, c_tot])
+            valid_crb_dates_data.append([ts, v_tot])
             d = d + datetime.timedelta(1)
         stat['application_dates_data'] = app_dates_data
         stat['reference_dates_data'] = ref_dates_data
