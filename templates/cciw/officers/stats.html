@@ -33,15 +33,15 @@ $(function() {
     var officer_list_data = {{ stat.officer_list_data|jsonify }};
     $.plot(placeholder_id,
            [
-            {label: "Officer list",
+            {label: "<a href='{% url "cciw.officers.views.officer_list" year=stat.camp.year number=stat.camp.number %}' target='_blank'>Officer list</a>",
              data: officer_list_data},
             {label: "Any CRBs",
              data: all_crb_dates_data},
             {label: "Up-to-date CRBs",
              data: valid_crb_dates_data},
-            {label: "Application forms",
+            {label: "<a href='{% url "cciw.officers.views.manage_applications" year=stat.camp.year number=stat.camp.number %}' target='_blank'>Applications</a>",
              data: app_dates_data},
-            {label: "References \u00F7 2",
+            {label: "<a href='{% url "cciw.officers.views.manage_references" year=stat.camp.year number=stat.camp.number %}' target='_blank'>References</a> \u00F7 2",
              data: ref_dates_data}
            ],
            { xaxis: { mode: "time",
@@ -75,9 +75,9 @@ $(function() {
                 $("#tooltip").remove();
                 var d = new Date(item.datapoint[0]);
                 var num = item.datapoint[1];
-                var label = item.series.label;
+                var label = $('<div>' + item.series.label + '</div>').text();
                 var stat = num.toFixed(0);
-                if (item.series.label == "References \u00F7 2") {
+                if (item.series.label.match(/References/)) {
                     label = "References";
                     stat = (num * 2).toFixed(0);
                 }
