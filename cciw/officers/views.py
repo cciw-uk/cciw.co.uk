@@ -1053,6 +1053,22 @@ def manage_crbs(request, year=None):
     year = int(year)
     # We need a lot of information. Try to get it in a few up-front queries
     camps = list(Camp.objects.filter(year=year).order_by('number'))
+    # Selected camps:
+    # We need to support URLs that indicate which camp to select, so we
+    # can permalink nicely.
+    selected_camp_numbers = None
+    if 'camp' in request.GET:
+        try:
+            selected_camp_numbers = set(map(int, request.GET.getlist('camp')))
+        except ValueError:
+            pass
+    if not selected_camp_numbers: # empty or None
+        # Assume all, because having none is never useful
+        selected_camp_numbers = set([c.number for c in camps])
+
+    # We need all the officers, and we need to know which camp(s) they belong
+    # to. Even if we have only selected one camp, it might be nice to know if
+    # they are on other camps. So we get data for all camps, and filter later.
     camps_officers = [[i.officer for i in c.invitation_set.all()] for c in camps]
     all_officers = reduce(operator.or_, map(set, camps_officers))
     all_officers = sorted(all_officers, key=lambda o: (o.first_name, o.last_name))
@@ -1078,11 +1094,15 @@ def manage_crbs(request, year=None):
     for o in all_officers:
         o.temp = {}
         officer_camps = []
+        selected = False
         for c in camps:
             if o.id in officer_ids[c.id]:
                 officer_camps.append(c)
+                if c.number in selected_camp_numbers:
+                    selected = True
         app = officer_apps.get(o.id, None)
         o.temp['camps'] = officer_camps
+        o.temp['selected'] = selected
         o.temp['has_application_form'] = app is not None
         o.temp['application_id'] = app.id if app is not None else None
         o.temp['has_crb'] = o.id in all_crb_officer_ids
@@ -1091,7 +1111,9 @@ def manage_crbs(request, year=None):
         o.temp['address'] = app.one_line_address if app is not None else ""
         o.temp['crb_check_consent'] = app.crb_check_consent if app is not None else False
 
-    c = {'all_officers': all_officers,
+    c = {'all_officers': [o for o in all_officers if o.temp['selected']],
+         'camps': camps,
+         'selected_camps': selected_camp_numbers,
          'year':year}
     return render(request, 'cciw/officers/manage_crbs.html', c)
 

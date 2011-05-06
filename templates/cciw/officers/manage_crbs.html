@@ -78,6 +78,14 @@ regarding needing CRB forms.</p>
 <p>To enter information for CRBs that have been <em>completed</em>, use the
  <a href="{% url 'admin:officers_crbapplication_changelist' %}" rel="external">CRB Disclosures admin</a>.</p>
 
+<form action="." method="GET">
+<p>Select camps: {% for camp in camps %}
+<label><input type="checkbox" name="camp" value="{{ camp.number }}"
+{% if camp.number in selected_camps %}checked{% endif %}> {{ camp.number }}</label>
+{% endfor %} <input type="submit" value="Update">
+</p>
+</form>
+
 <table>
   <thead>
     <tr>
