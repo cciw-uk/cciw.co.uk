@@ -1,8 +1,9 @@
 {% extends "cciw/officers/base.html" %}
 {% load url from future %}
-{% block title %}Manage applications | CCIW Officers{% endblock %}
+{% block title %}Manage applications {{ camp.year }}-{{ camp.number }} | CCIW Officers{% endblock %}
 {% block content %}<div id="content-main">
 <h1>Manage applications</h1>
+<h2>For camp {{ camp }}</h2>
 
 <p>This page allows you to view/download submitted applications in
   different formats. Normally the leaders of the camps (and any
