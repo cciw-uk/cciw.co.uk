@@ -35,7 +35,6 @@ from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.officers.references import reference_form_info
 from cciw.utils.views import close_window_response
 from securedownload.views import access_folder_securely
-import smtplib
 
 
 def _copy_application(application):
@@ -367,11 +366,6 @@ def manage_references(request, year=None, number=None):
     return render(request, template_name, c)
 
 
-def email_sending_failed_response():
-    return HttpResponse("""<p>E-mail failed to send.  This is likely a temporary
-    error, please press back in your browser and try again.</p>""")
-
-
 class SetEmailForm(forms.Form):
     email = forms.EmailField(widget=forms.TextInput(attrs={'size':'50'}))
 
@@ -471,10 +465,7 @@ def request_reference(request, year=None, number=None):
         if 'send' in request.POST:
             messageform = SendReferenceRequestForm(request.POST, message_info=messageform_info)
             if messageform.is_valid():
-                try:
-                    send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), ref)
-                except smtplib.SMTPException:
-                    return email_sending_failed_response()
+                send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), ref)
                 ref.requested = True
                 ref.log_request_made(request.user, datetime.datetime.now())
                 ref.save()
