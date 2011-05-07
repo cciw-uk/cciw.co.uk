@@ -938,7 +938,10 @@ def date_to_js_ts(d):
 def stats(request, year=None):
     year = int(year)
     stats = []
-    for camp in Camp.objects.filter(year=year).order_by('number'):
+    camps = list(Camp.objects.filter(year=year).order_by('number'))
+    if len(camps) == 0:
+        raise Http404
+    for camp in camps:
         stat = {}
         # For efficiency, we are careful about what DB queries we do and what is
         # done in Python.
