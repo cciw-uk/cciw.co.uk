@@ -126,7 +126,7 @@ regarding needing CRB forms.</p>
 <form action="." method="GET">
 <p>Select camps: {% for camp in camps %}
 <label><input type="checkbox" name="camp" value="{{ camp.number }}"
-{% if camp.number in selected_camps %}checked{% endif %}> {{ camp.number }}</label>
+{% if camp.number in selected_camps %}checked{% endif %}> {{ camp.number }}</label>&nbsp;&nbsp;
 {% endfor %} <input type="submit" value="Update">
 </p>
 </form>
