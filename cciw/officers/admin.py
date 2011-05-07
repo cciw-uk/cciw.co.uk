@@ -327,6 +327,7 @@ class ReferenceFormAdmin(admin.ModelAdmin):
     list_display = ('referee_name', 'applicant_name', 'date_created')
     ordering = ('referee_name', )
     search_fields = ('referee_name','reference_info__application__officer__last_name', 'reference_info__application__officer__first_name')
+    date_hierarchy = 'date_created'
 
     fieldsets = (
         (None,
