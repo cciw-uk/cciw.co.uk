@@ -1053,6 +1053,8 @@ def manage_crbs(request, year=None):
     year = int(year)
     # We need a lot of information. Try to get it in a few up-front queries
     camps = list(Camp.objects.filter(year=year).order_by('number'))
+    if len(camps) == 0:
+        raise Http404
     # Selected camps:
     # We need to support URLs that indicate which camp to select, so we
     # can permalink nicely.
