@@ -70,6 +70,7 @@ $(document).ready(function() {
 
     // Handler for camp checkboxes
     function selectedCampsChanged(ev) {
+        $('#id_campselector input[type=submit]').removeAttr('disabled');
         var selectedCamps = []
         $('#id_campselector input[type=checkbox]:checked').each(function(idx, elem) {
             selectedCamps.push($(elem).val());
@@ -99,9 +100,9 @@ $(document).ready(function() {
     // Add event handler
     $('#id_campselector input[type=checkbox]').bind('change', selectedCampsChanged);
 
-    // Remove the 'Update' box, because it is now confusing, since updates
-    // happen immediately.
-    $('#id_campselector input[type=submit]').hide();
+    // Change the caption on 'update' box, because it is now only useful for
+    // updating the URL, as other updates happen immediately.
+    $('#id_campselector input[type=submit]').attr('disabled', 'disabled').val('Update page address');
 
 });
 </script>
@@ -127,7 +128,7 @@ regarding needing CRB forms.</p>
 <p>Select camps: {% for camp in camps %}
 <label><input type="checkbox" name="camp" value="{{ camp.number }}"
 {% if camp.number in selected_camps %}checked{% endif %}> {{ camp.number }}</label>&nbsp;&nbsp;
-{% endfor %} <input type="submit" value="Update">
+{% endfor %} <input type="submit" value="Update page">
 </p>
 </form>
 </div>
