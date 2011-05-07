@@ -1069,6 +1069,7 @@ def manage_crbs(request, year=None):
     # We need all the officers, and we need to know which camp(s) they belong
     # to. Even if we have only selected one camp, it might be nice to know if
     # they are on other camps. So we get data for all camps, and filter later.
+    # We also want to be able to filtering by javascript in the frontend.
     camps_officers = [[i.officer for i in c.invitation_set.all()] for c in camps]
     all_officers = reduce(operator.or_, map(set, camps_officers))
     all_officers = sorted(all_officers, key=lambda o: (o.first_name, o.last_name))
@@ -1111,7 +1112,7 @@ def manage_crbs(request, year=None):
         o.temp['address'] = app.one_line_address if app is not None else ""
         o.temp['crb_check_consent'] = app.crb_check_consent if app is not None else False
 
-    c = {'all_officers': [o for o in all_officers if o.temp['selected']],
+    c = {'all_officers': all_officers,
          'camps': camps,
          'selected_camps': selected_camp_numbers,
          'year':year}

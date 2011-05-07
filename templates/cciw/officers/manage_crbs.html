@@ -60,6 +60,50 @@ function alertLeadersCrbConsentCheck(applicationId) {
                 '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
 
 }
+
+$(document).ready(function() {
+
+    // convert 'data-camps' into jQuery data
+    $('#id_officer_table tbody tr').each(function(idx, elem) {
+        $(elem).data('camps', $(elem).attr('data-camps').split(','));
+    });
+
+    // Handler for camp checkboxes
+    function selectedCampsChanged(ev) {
+        var selectedCamps = []
+        $('#id_campselector input[type=checkbox]:checked').each(function(idx, elem) {
+            selectedCamps.push($(elem).val());
+        });
+        // For locating selected camps, we use a comma delimited string
+        // to make it easier to match by using string matching.
+        var campMatch = "," + selectedCamps.join(",") + ",";
+
+        // Now go through all rows
+        $('#id_officer_table tbody tr').each(function(idx, elem) {
+            var show = false;
+            var tr = $(elem);
+            $.each(tr.data('camps'), function(idx, val) {
+                if (campMatch.indexOf(',' + val + ',') != -1) {
+                    show = true;
+                    return false;
+                }
+            });
+            if (show) {
+                tr.show();
+            } else {
+                tr.hide();
+            }
+        });
+    }
+
+    // Add event handler
+    $('#id_campselector input[type=checkbox]').bind('change', selectedCampsChanged);
+
+    // Remove the 'Update' box, because it is now confusing, since updates
+    // happen immediately.
+    $('#id_campselector input[type=submit]').hide();
+
+});
 </script>
 
 <h1>Manage CRBs</h1>
@@ -78,6 +122,7 @@ regarding needing CRB forms.</p>
 <p>To enter information for CRBs that have been <em>completed</em>, use the
  <a href="{% url 'admin:officers_crbapplication_changelist' %}" rel="external">CRB Disclosures admin</a>.</p>
 
+<div id='id_campselector'>
 <form action="." method="GET">
 <p>Select camps: {% for camp in camps %}
 <label><input type="checkbox" name="camp" value="{{ camp.number }}"
@@ -85,8 +130,9 @@ regarding needing CRB forms.</p>
 {% endfor %} <input type="submit" value="Update">
 </p>
 </form>
+</div>
 
-<table>
+<table id="id_officer_table">
   <thead>
     <tr>
       <th>Name</th>
@@ -100,7 +146,11 @@ regarding needing CRB forms.</p>
   </thead>
   <tbody>
     {% for officer in all_officers %}
-      <tr id="id_highlightdiv_{{ officer.id }}" {% if not officer.temp.has_valid_crb and officer.temp.has_application_form and not officer.temp.last_crb_form_sent %}class="actionable"{% endif %}>
+      <tr id="id_highlightdiv_{{ officer.id }}"
+          {% if not officer.temp.has_valid_crb and officer.temp.has_application_form and not officer.temp.last_crb_form_sent %}class="actionable"{% endif %}
+          data-camps="{% for camp in officer.temp.camps %}{{ camp.number }}{% if not forloop.last %},{% endif %}{% endfor %}"
+          {% if not officer.temp.selected %}style="display: none;"{% endif %}
+>
         <td>{{ officer.first_name }} {{ officer.last_name }}</td>
         <td>{% for camp in officer.temp.camps %}
               <a href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}" rel="external">{{ camp.number }}</a>{% if not forloop.last %}, {% endif %}
