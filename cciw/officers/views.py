@@ -871,8 +871,8 @@ def create_officer(request):
                         duplicate_message = "A user with that first name and last name " + \
                                             "already exists:"
                     else:
-                        duplicate_message = "%d users with that first name and last name " + \
-                                            "already exist:" % len(existing_users)
+                        duplicate_message = ("%d users with that first name and last name " +
+                                            "already exist:") % len(existing_users)
                 elif len(same_email_users):
                     existing_users = same_email_users
                     if len(existing_users) == 1:
