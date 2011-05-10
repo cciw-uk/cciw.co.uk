@@ -114,8 +114,9 @@
             var officerId = parseFloat(ev.target.id.substring(8), 10);
             // Need to retrieve details (we don't know first name and last name)
             $.ajax({
-                type: "GET",
-                url: "{% url 'cciw.officers.views.officer_details' %}?officer_id=" + officerId.toString() + "&" + Math.random().toString(),
+                type: "POST",
+                url: "{% url 'cciw.officers.views.officer_details' %}",
+                data: {officer_id: officerId.toString()},
                 dataType: 'json',
                 success: function(officer) {
                     var escape = function(t) {

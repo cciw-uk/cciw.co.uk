@@ -783,7 +783,9 @@ def add_officers(request, year=None, number=None):
 @camp_admin_required
 @json_response
 def officer_details(request):
-    user = User.objects.get(pk=int(request.GET['officer_id']))
+    # We use POST here, to avoid information leaks associated with JSON over GET
+    # by 3rd party <script> tags.
+    user = User.objects.get(pk=int(request.POST['officer_id']))
     return {'username': user.username,
             'first_name': user.first_name,
             'last_name': user.last_name,
