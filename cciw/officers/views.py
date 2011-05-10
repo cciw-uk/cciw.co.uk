@@ -144,11 +144,15 @@ def applications(request):
     """Displays a list of tasks related to applications."""
     user = request.user
     c = {}
+
     finished_applications = user.application_set\
         .filter(finished=True)\
         .order_by('-date_submitted')
+    # A NULL date_submitted means they never pressed save, so there is no point
+    # re-editing, so we ignore them.
     unfinished_applications = user.application_set\
         .filter(finished=False)\
+        .exclude(date_submitted__isnull=True)\
         .order_by('-date_submitted')
     has_thisyears_app = thisyears_applications(user).exists()
     has_completed_app = thisyears_applications(user).filter(finished=True).exists()
