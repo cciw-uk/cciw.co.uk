@@ -34,19 +34,20 @@
 </li>
 {% endif %}
 
-{% if finished_applications and not has_thisyears_app %}
+{% if not has_thisyears_app %}
+  {% if finished_applications %}
 <li>Create new application based on your previous one:<br/>
   <input type="submit" name="new" value="Create" />
-<br/><br/>
-<p>Once you have pressed 'Create', you will need to update any information necessary, including
-your address, and re-check the declarations.</p>
+  <br/><br/>
+  <p>Once you have pressed 'Create', you will need to update any
+    information necessary, including your address, and re-check the
+    declarations.</p>
 </li>
-
-{% endif %}
-
-{% if not has_thisyears_app %}
-<li><a href="/admin/officers/application/add/">Create new application
-    (blank)</a></li>
+  {% else %}
+<li>Start application form:<br/>
+  <input type="submit" name="new" value="Start" />
+</li>
+  {% endif %}
 {% endif %}
 
 </ul>

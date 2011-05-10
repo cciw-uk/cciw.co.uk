@@ -165,18 +165,14 @@ def applications(request):
             return HttpResponseRedirect('/admin/officers/application/%s/' % id)
     elif not has_thisyears_app and request.POST.has_key('new'):
         # Create new application based on old one
-        obj = None
-        try:
-            obj = finished_applications[0]
-        except IndexError:
-            # should never get here
-            obj = None
-        if obj is not None:
-            # Create a copy
-            new_obj = _copy_application(obj)
+        if finished_applications:
+            new_obj = _copy_application(finished_applications[0])
             new_obj.save()
-            return HttpResponseRedirect('/admin/officers/application/%s/' % \
-                                            new_obj.id)
+        else:
+            new_obj = Application.objects.create(officer=user)
+
+        return HttpResponseRedirect('/admin/officers/application/%s/' %
+                                    new_obj.id)
 
     elif request.POST.has_key('delete'):
         # Delete an unfinished application
