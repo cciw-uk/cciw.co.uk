@@ -17,9 +17,9 @@
 
 <form action="" method="post">{% csrf_token %}
 
-<ul>
+
 {% if unfinished_applications %}
-<li>Continue filling in an application:
+<p>Continue filling in an application:</p>
 <p>The following applications are unfinished and you may continue to edit them.</p>
 <div>
 <label for="edit_application">Choose application:</label>&nbsp;
@@ -31,26 +31,25 @@
 	<input type="submit" name="edit" value="Edit" />
 </div>
 <br/><br/>
-</li>
+
 {% endif %}
 
 {% if not has_thisyears_app %}
   {% if finished_applications %}
-<li>Create new application based on your previous one:<br/>
+<p>Create new application based on your previous one:<br/>
   <input type="submit" name="new" value="Create" />
-  <br/><br/>
-  <p>Once you have pressed 'Create', you will need to update any
-    information necessary, including your address, and re-check the
-    declarations.</p>
-</li>
+  <br/><br/></p>
+
+<p>Once you have pressed 'Create', you will need to update any
+  information necessary, including your address, and re-check the
+  declarations.</p>
+
   {% else %}
-<li>Start application form:<br/>
+<p>Start application form:<br/>
   <input type="submit" name="new" value="Start" />
-</li>
+</p>
   {% endif %}
 {% endif %}
-
-</ul>
 
 
 <h2>Help filling in the form</h2>
