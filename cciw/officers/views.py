@@ -174,10 +174,6 @@ def applications(request):
         return HttpResponseRedirect('/admin/officers/application/%s/' %
                                     new_obj.id)
 
-    elif request.POST.has_key('delete'):
-        # Delete an unfinished application
-        pass
-
     return render(request, 'cciw/officers/applications.html', c)
 
 
