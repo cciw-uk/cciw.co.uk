@@ -173,7 +173,8 @@ def applications(request):
             new_obj = _copy_application(finished_applications[0])
             new_obj.save()
         else:
-            new_obj = Application.objects.create(officer=user)
+            new_obj = Application.objects.create(officer=user,
+                                                 full_name=u"%s %s" % (user.first_name, user.last_name))
 
         return HttpResponseRedirect('/admin/officers/application/%s/' %
                                     new_obj.id)
