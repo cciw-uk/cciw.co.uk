@@ -51,7 +51,7 @@ class PersonalApplicationList(TestCase):
     fixtures = ['basic.json', 'officers_users.json']
 
     _create_button = """<input type="submit" name="new" value="Create" """
-    _edit_button = """<input type="submit" name="edit" value="Edit" """
+    _edit_button = """<input type="submit" name="edit" value="Continue" """
 
     def setUp(self):
         self.client.login(username=OFFICER_USERNAME, password=OFFICER_PASSWORD)
