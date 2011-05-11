@@ -16,9 +16,6 @@ from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url, make_twil
 class ApplicationFormView(TwillMixin, TestCase):
     fixtures = ['basic.json', 'officers_users.json']
 
-    def _application_add_url(self):
-        return make_django_url('admin:officers_application_add')
-
     def _application_edit_url(self, app_id):
         return make_django_url('admin:officers_application_change', app_id)
 
@@ -105,34 +102,6 @@ class ApplicationFormView(TwillMixin, TestCase):
 
     def _get_email_change_emails(self):
         return [e for e in mail.outbox if "E-mail change" in e.subject]
-
-    def test_add_application(self):
-        self._twill_login(OFFICER)
-        tc.go(self._application_add_url())
-        tc.code(200)
-        tc.find('Save and continue editing')
-        tc.notfind('Save and add another')
-        u = User.objects.get(username=OFFICER[0])
-        self.assertEqual(u.application_set.count(), 0)
-        tc.formvalue('1', 'full_name', 'Test full name')
-        tc.submit('_save')
-        tc.url(reverse("cciw.officers.views.applications"))
-        self.assertEqual(u.application_set.count(), 1)
-        self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
-
-    def test_add_application_leader(self):
-        # Test that we don't get an error if a leader is using it, and forgets
-        # to do fill out the 'officer' box.
-        u = User.objects.get(username=LEADER[0])
-        self.assertEqual(u.application_set.count(), 0)
-        self._twill_login(LEADER)
-        tc.go(self._application_add_url())
-        tc.code(200)
-        tc.formvalue('1', 'full_name', 'Test full name')
-        tc.submit('_save')
-        tc.url(reverse("cciw.officers.views.applications"))
-        self.assertEqual(u.application_set.count(), 1)
-        self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
 
     def test_change_application(self):
         self._twill_login(OFFICER)
@@ -261,7 +230,8 @@ class ApplicationFormView(TwillMixin, TestCase):
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 0)
         self._twill_login(OFFICER)
-        tc.go(self._application_add_url())
+        a = self._add_application()
+        tc.go(self._application_edit_url(a.id))
         url = tc.browser.get_url()
         tc.code(200)
         tc.formvalue('1', 'finished', 'on')
@@ -269,14 +239,15 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.url(url)
         tc.find("Please correct the errors below")
         tc.find("form-row errors address")
-        self.assertEqual(u.application_set.count(), 0) # shouldn't have been saved
+        self.assertEqual(u.application_set.exclude(date_submitted__isnull=True).count(), 0) # shouldn't have been saved
 
     def test_finish_complete(self):
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
         self._twill_login(OFFICER)
-        tc.go(self._application_add_url())
+        a = self._add_application()
+        tc.go(self._application_edit_url(a.id))
         tc.code(200)
         self._finish_application_form()
 
@@ -335,23 +306,13 @@ class ApplicationFormView(TwillMixin, TestCase):
         a1 = self._add_application()
         a1.date_submitted = datetime.date.today()
         a1.save()
-        tc.go(self._application_add_url())
+        a2 = self._add_application()
+        tc.go(self._application_edit_url(a2.id))
         self._finish_application_form()
         tc.submit('_save')
         tc.find("You&#39;ve already submitted")
         u = User.objects.get(username=OFFICER[0])
-        self.assertEqual(u.application_set.count(), 1)
-
-    def test_initial_form(self):
-        """
-        Ensure that name fields are filled out initially when we can do so.
-        """
-        u = User.objects.get(username=OFFICER[0])
-
-        self._twill_login(OFFICER)
-        tc.go(self._application_add_url())
-        tc.find("%s %s" % (u.first_name, u.last_name))
-        tc.find(u.email)
+        self.assertEqual(u.application_set.exclude(date_submitted__isnull=True).count(), 1)
 
     def test_application_differences_email(self):
         """
@@ -373,7 +334,8 @@ class ApplicationFormView(TwillMixin, TestCase):
         app0.save()
 
         # Create another application
-        tc.go(self._application_add_url())
+        app1 = self._add_application()
+        tc.go(self._application_edit_url(app1.id))
         self._finish_application_form()
         # Now change some values
         tc.formvalue('1', 'full_name', 'New Full Name')

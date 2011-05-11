@@ -258,27 +258,11 @@ class ApplicationAdmin(admin.ModelAdmin):
         self._force_user_val(request)
         self._update_timestamp(request)
 
-    # Officers do not even have 'officers.add_application' permission
-    # - this is to prevent them adding things via the normal interface.
-    # So we special case things in the permission methods
-
-    def add_view(self, request):
-        if request.method == "POST":
-            self._force_post_vals(request)
-
-        return super(ApplicationAdmin, self).add_view(request)
-
     def change_view(self, request, obj_id):
         if request.method == "POST":
             self._force_post_vals(request)
 
         return super(ApplicationAdmin, self).change_view(request, obj_id)
-
-    def has_add_permission(self, request):
-        if request.user is not None and request.user.groups.filter(name='Officers').exists():
-            return True
-        else:
-            return super(ApplicationAdmin, self).has_add_permission(request)
 
     def has_change_permission(self, request, obj=None):
         # Normal users do not have change permission, unless they are editing
@@ -296,10 +280,6 @@ class ApplicationAdmin(admin.ModelAdmin):
                                        urlresolvers.reverse('cciw.officers.views.applications'))
             response["Location"] = location
         return response
-
-    def response_add(self, request, new_object):
-        resp = super(ApplicationAdmin, self).response_add(request, new_object)
-        return self._redirect(request, resp)
 
     def response_change(self, request, new_object):
         resp = super(ApplicationAdmin, self).response_change(request, new_object)
