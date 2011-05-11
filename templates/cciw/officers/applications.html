@@ -25,7 +25,7 @@
 <label for="edit_application">Choose application:</label>&nbsp;
 	<select name="edit_application" id="edit_application">
 	{% for app in unfinished_applications %}
-	        <option value="{{ app.id }}">Submitted {{ app.date_submitted|date:"Y-m-d" }}</option>
+	        <option value="{{ app.id }}">Saved {{ app.date_submitted|date:"Y-m-d" }}</option>
 	{% endfor %}
 	</select>
 	<input type="submit" name="edit" value="Edit" />
