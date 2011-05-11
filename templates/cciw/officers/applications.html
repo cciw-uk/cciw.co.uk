@@ -19,18 +19,9 @@
 
 
 {% if unfinished_applications %}
-<p>Continue filling in an application:</p>
-<p>The following applications are unfinished and you may continue to edit them.</p>
-<div>
-<label for="edit_application">Choose application:</label>&nbsp;
-	<select name="edit_application" id="edit_application">
-	{% for app in unfinished_applications %}
-	        <option value="{{ app.id }}">Saved {{ app.date_submitted|date:"Y-m-d" }}</option>
-	{% endfor %}
-	</select>
-	<input type="submit" name="edit" value="Edit" />
-</div>
-<br/><br/>
+<p>Continue filling in an application:<br/>
+  <input type="submit" name="edit" value="Continue" />
+</p>
 
 {% endif %}
 
@@ -38,7 +29,7 @@
   {% if finished_applications %}
 <p>Create new application based on your previous one:<br/>
   <input type="submit" name="new" value="Create" />
-  <br/><br/></p>
+</p>
 
 <p>Once you have pressed 'Create', you will need to update any
   information necessary, including your address, and re-check the

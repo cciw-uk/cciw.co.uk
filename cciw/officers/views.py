@@ -162,11 +162,13 @@ def applications(request):
     c['has_thisyears_app'] = has_thisyears_app
     c['has_completed_app'] = has_completed_app
 
-    if request.POST.has_key('edit'):
-        # Edit existing application
-        id = request.POST.get('edit_application', None)
-        if id is not None:
-            return HttpResponseRedirect('/admin/officers/application/%s/' % id)
+    if not has_completed_app and unfinished_applications and request.POST.has_key('edit'):
+        # Edit existing application.
+        # It should now only be possible for there to be one unfinished
+        # application, so we just continue with the most recent.
+        return HttpResponseRedirect(
+            reverse("admin:officers_application_change",
+                    args=(unfinished_applications[0].id,)))
     elif not has_thisyears_app and request.POST.has_key('new'):
         # Create new application based on old one
         if finished_applications:
