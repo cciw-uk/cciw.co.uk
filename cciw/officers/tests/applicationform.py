@@ -246,6 +246,8 @@ class ApplicationFormView(TwillMixin, TestCase):
         self.assertEqual(u.application_set.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
         self._twill_login(OFFICER)
+        # An old, unfinished application form
+        a_old = self._add_application()
         a = self._add_application()
         tc.go(self._application_edit_url(a.id))
         tc.code(200)
@@ -254,7 +256,10 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.submit('_save')
         tc.url(reverse("cciw.officers.views.applications"))
 
-        self.assertEqual(u.application_set.count(), 1)
+        apps = list(u.application_set.all())
+        # The old one should have been deleted.
+        self.assertEqual(len(apps), 1)
+        self.assertEqual(a.id, apps[0].id)
 
         # There should be two emails in outbox, one to officer, one to
         # leader.  This assumes that there is a leader for the camp,

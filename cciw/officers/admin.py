@@ -288,6 +288,10 @@ class ApplicationAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         from cciw.officers import email
         super(ApplicationAdmin, self).save_model(request, obj, form, change)
+        if obj.finished and obj.officer == request.user:
+            # We clear out any unfinished application forms
+            # they will just confuse the officer in future.
+            obj.officer.application_set.filter(finished=False).delete()
         email.send_application_emails(request, obj)
 
 
