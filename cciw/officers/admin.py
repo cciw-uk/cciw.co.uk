@@ -289,9 +289,15 @@ class ApplicationAdmin(admin.ModelAdmin):
         from cciw.officers import email
         super(ApplicationAdmin, self).save_model(request, obj, form, change)
         if obj.finished and obj.officer == request.user:
-            # We clear out any unfinished application forms
-            # they will just confuse the officer in future.
-            obj.officer.application_set.filter(finished=False).delete()
+            # We clear out any unfinished application forms, as they will just
+            # confuse the officer in future.  It is possible for an admin to be
+            # editing an old form of their own, while a new form of their own is
+            # still unfinished. So we filter on date_submitted.  If
+            # date_submitted is NULL, the form has never been saved, so its fine
+            # to delete.
+            old = obj.officer.application_set.filter(finished=False)
+            old = old.filter(date_submitted__isnull=True) | old.filter(date_submitted__lt=obj.date_submitted)
+            old.delete()
         email.send_application_emails(request, obj)
 
 
