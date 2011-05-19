@@ -33,11 +33,6 @@ def standard_extra_context(title=None, description=None, keywords=None):
     extra_dict['meta_description'] = description
     extra_dict['meta_keywords'] = keywords
     extra_dict['thisyear'] = get_thisyear()
-    extra_dict['misc'] = {
-        'logged_in_members':
-            Member.objects.filter(last_seen__gte=datetime.datetime.now() \
-                                           - datetime.timedelta(minutes=3)).count(),
-    }
 
     return extra_dict
 
