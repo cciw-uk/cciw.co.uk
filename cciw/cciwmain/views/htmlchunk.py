@@ -1,7 +1,5 @@
-from django import template
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.http import Http404
-from django.template import RequestContext
 
 from cciw.cciwmain.common import *
 from cciw.cciwmain.models import HtmlChunk, MenuLink
@@ -17,6 +15,6 @@ def find(request):
     except IndexError:
         raise Http404()
 
-    c = RequestContext(request, standard_extra_context(title=chunk.page_title))
+    c = dict(title=chunk.page_title)
     c['contentBody'] = chunk.render(request)
-    return render_to_response('cciw/standard.html', context_instance=c)
+    return render(request, 'cciw/standard.html', c)

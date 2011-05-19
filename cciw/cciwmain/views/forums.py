@@ -3,8 +3,7 @@ import string
 
 from django.views.generic.edit import ModelFormMixin
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
-from django.template import RequestContext
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.conf import settings
 from django import forms
 from django.forms import widgets
@@ -12,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission, Poll, PollOption
-from cciw.cciwmain.common import create_breadcrumb, standard_extra_context, get_order_option, object_list, DefaultMetaData, AjaxyFormView
+from cciw.cciwmain.common import create_breadcrumb, get_order_option, object_list, DefaultMetaData, AjaxyFormView
 from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.decorators import login_redirect
 from django.utils.html import escape
@@ -67,10 +66,11 @@ def topicindex(request, title=None, extra_context=None, forum=None,
     resp = feeds.handle_feed_request(request, feeds.forum_topic_feed(forum), query_set=topics)
     if resp: return resp
 
+    # Title could be either in extra_context or in title
     if extra_context is None:
-        if title is None:
-            raise Exception("No title provided for page")
-        extra_context = standard_extra_context(title=title)
+        extra_context = {}
+    if title is not None:
+        extra_context['title'] = title
 
     extra_context['forum'] = forum
     extra_context['atom_feed_title'] = u"Atom feed for new topics on this board."
@@ -124,7 +124,7 @@ def add_topic(request, breadcrumb_extra=None):
     forum = _get_forum_or_404(request.path, 'add/')
 
     cur_member = get_current_member()
-    context = RequestContext(request, standard_extra_context(title='Add topic'))
+    context = dict(title='Add topic')
 
     if not forum.open:
         context['message'] = u'This forum is closed - new topics cannot be added.'
@@ -158,7 +158,7 @@ def add_topic(request, breadcrumb_extra=None):
     if breadcrumb_extra is None:
         breadcrumb_extra = []
     context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(forum, None))
-    return render_to_response('cciw/forums/add_topic.html', context_instance=context)
+    return render(request, 'cciw/forums/add_topic.html', context)
 
 # Called directly as a view for /website/forum/, and used by other views
 @member_required
@@ -173,7 +173,7 @@ def add_news(request, breadcrumb_extra=None):
     if not cur_member.has_perm(Permission.NEWS_CREATOR):
         return HttpResponseForbidden("Permission denied")
 
-    context = RequestContext(request, standard_extra_context(title='Add short news item'))
+    context = dict(title='Add short news item')
 
     if not forum.open:
         context['message'] = 'This forum is closed - new news items cannot be added.'
@@ -209,7 +209,7 @@ def add_news(request, breadcrumb_extra=None):
     if breadcrumb_extra is None:
         breadcrumb_extra = []
     context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(forum, None))
-    return render_to_response('cciw/forums/add_news.html', context_instance=context)
+    return render(request, 'cciw/forums/add_news.html', context)
 
 def update_poll_options(poll, new_option_list):
     """Takes a Poll object and a list of strings,
@@ -491,7 +491,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
     title = topic.subject[0:40]
     if len(title_start) > 0:
         title = title_start + u": " + title
-    extra_context = standard_extra_context(title=title)
+    extra_context = dict(title=title)
 
     if breadcrumb_extra is None:
         breadcrumb_extra = []
@@ -607,7 +607,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
         paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
 
 def all_posts(request):
-    context = standard_extra_context(title=u"Recent posts")
+    context = dict(title=u"Recent posts")
     posts = Post.objects.exclude(posted_at__isnull=True).order_by('-posted_at').select_related('topic__forum', 'photo__gallery', 'posted_by')
 
     resp = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
@@ -631,7 +631,7 @@ def post(request, id):
     return HttpResponseRedirect(url)
 
 def all_topics(request):
-    context = standard_extra_context(title=u"Recent new topics")
+    context = dict(title=u"Recent new topics")
     topics = Topic.objects.exclude(created_at__isnull=True).order_by('-created_at').select_related('forum', 'started_by')
 
     resp = feeds.handle_feed_request(request, feeds.TopicFeed, query_set=topics)

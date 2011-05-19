@@ -1,5 +1,5 @@
 """Administrative views for members (signup, password change etc)"""
-from django import shortcuts, template
+from django.shortcuts import render
 from django.core import mail
 from django.contrib import messages
 from django.contrib.sites.models import Site
@@ -11,7 +11,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.utils.crypto import salted_hmac
 from django.views.generic.edit import ModelFormMixin
 from django import forms
-from cciw.cciwmain.common import standard_extra_context, DefaultMetaData, AjaxyFormView, member_username_re
+from cciw.cciwmain.common import DefaultMetaData, AjaxyFormView, member_username_re
 from cciw.cciwmain.models import Member
 from cciw.middleware.threadlocals import set_member_session, get_current_member
 from cciw.cciwmain.decorators import member_required
@@ -33,8 +33,10 @@ password_re = re.compile(r'^[A-Za-z0-9]{5,15}$')
 # a user's e-mails).
 NEW_PASSWORD_EXPIRY = 5
 
+
 class ValidationError(Exception):
     pass
+
 
 # Ideally would add synchronize lock here, but YAGNI with any imaginable amount of traffic
 def create_user(user_name, password1, password2):
@@ -65,18 +67,22 @@ def create_user(user_name, password1, password2):
                     "%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, iconfilename))
         return m
 
+
 def email_hash(email):
     """Gets a hash of an email address, to be used in the signup process"""
     # Use every other character to make it shorter and friendlier
     return salted_hmac("cciw.cciwmain.memberadmin.signupemail", email).hexdigest()[::2]
 
+
 def email_address_used(email):
     return Member.all_objects.filter(email__iexact=email).count() != 0
+
 
 def random_password():
     chars = list(string.lowercase)
     random.shuffle(chars)
     return ''.join(chars[0:8])
+
 
 def validate_email_and_hash(email, hash):
     if email_address_used(email):
@@ -89,6 +95,7 @@ def validate_email_and_hash(email, hash):
  ensure you have copied the URL from the e-mail correctly.""")
     else:
         return (True, '')
+
 
 def email_and_username_hash(email, user_name):
     """Gets a hash of an email address + user_name"""
@@ -103,6 +110,7 @@ def validate_email_username_and_hash(email, user_name, hash):
  ensure you have copied the URL from the e-mail correctly.""")
     else:
         return (True, '')
+
 
 def send_signup_mail(email):
     mail.send_mail("CCIW - Sign-up instructions",
@@ -123,6 +131,7 @@ ignore this e-mail.
 """ % {'domain': common.get_current_domain(), 'email': urllib.quote(email), 'hash': email_hash(email)},
 "website@cciw.co.uk", [email])
 
+
 def send_username_reminder(member):
     mail.send_mail("CCIW - user name reminder",
 """You requested a user name reminder on the CCIW website.
@@ -134,6 +143,7 @@ https://%(domain)s/login/
 Thanks.
 """ % {'domain': common.get_current_domain(), 'user_name': member.user_name },
     "website@cciw.co.uk", [member.email])
+
 
 def send_newpassword_email(member):
     # Create a new password
@@ -165,10 +175,12 @@ be changed until you click the link, so you can safely ignore this e-mail.
        'password': password, 'hash': hash},
     "website@cciw.co.uk", [member.email])
 
+
 def create_new_password_hash(password, user_name):
     # Create string used to verify user_name and date.
     hash_str = u':'.join([datetime.date.today().isoformat(), user_name, password])
     return base64.urlsafe_b64encode(hash_str.encode("utf-8"))
+
 
 def extract_new_password(hash, user_name):
     """Extracts the new password from the hash, throwing a ValidationError
@@ -222,7 +234,7 @@ the entire link into your web browser.
 #################  VIEW FUNCTIONS #####################
 
 def signup(request):
-    c = standard_extra_context(title="Sign up")
+    c = dict(title="Sign up")
 
     if not request.POST and not request.GET:
         ######## 1. START #########
@@ -296,17 +308,14 @@ def signup(request):
             c['stage'] = 'invalid'
             c['error_message'] = msg
 
-    ## Do this at end, so that the context_processors
-    ## are executed after set_member_session
-    ctx = template.RequestContext(request, c)
-
-    return shortcuts.render_to_response('cciw/members/signup.html',
-        context_instance=ctx)
+    # RequestContext should be created at the end, so that the
+    # context_processors are executed after set_member_session
+    return render(request, 'cciw/members/signup.html', c)
 
 
 def help_logging_in(request):
     """View that has reset password and username reminder functionality."""
-    c = standard_extra_context(title="Logging in problems.")
+    c = dict(title="Logging in problems.")
     if request.method == 'POST':
         # Check e-mail
         email = request.POST.get('email', '').strip()
@@ -333,8 +342,7 @@ def help_logging_in(request):
                 send_newpassword_email(member)
                 c['success_message'] = "An e-mail has been sent to you with a new password."
 
-    ctx = template.RequestContext(request, c)
-    return shortcuts.render_to_response('cciw/members/help_logging_in.html', context_instance=ctx)
+    return render(request, 'cciw/members/help_logging_in.html', c)
 
 
 def change_password(request):
@@ -343,7 +351,7 @@ def change_password(request):
     user_name = request.GET.get('u', '')
     hash = request.GET.get('h', '')
 
-    c = standard_extra_context(title="Change password")
+    c = dict(title="Change password")
     if user_name:
         # New password from e-mail
         try:
@@ -380,13 +388,12 @@ def change_password(request):
             else:
                 c['error_message'] = error_message
 
-    ctx = template.RequestContext(request, c)
-    return shortcuts.render_to_response('cciw/members/change_password.html',
-            context_instance=ctx)
+    return render(request, 'cciw/members/change_password.html', c)
+
 
 def change_email(request):
     """View that responds to links in the 'change e-mail' emails."""
-    c = standard_extra_context(title="Change email")
+    c = dict(title="Change email")
 
     user_name = request.GET.get('u')
     email = request.GET.get('email', '')
@@ -404,9 +411,8 @@ def change_email(request):
     else:
         c['error_message'] = msg
 
-    ctx = template.RequestContext(request, c)
-    return shortcuts.render_to_response('cciw/members/change_email.html',
-            context_instance=ctx)
+    return render(request, 'cciw/members/change_email.html', c)
+
 
 preferences_fields = ["real_name", "email", "show_email", "comments", "message_option", "icon"]
 class PreferencesForm(CciwFormMixin, forms.ModelForm):

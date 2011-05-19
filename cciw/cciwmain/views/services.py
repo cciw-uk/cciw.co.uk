@@ -1,10 +1,7 @@
 import urllib
 from django.conf import settings
-from django import shortcuts
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils.safestring import mark_safe
-
-from cciw.cciwmain.common import standard_extra_context
 
 options = [ 'output-format=html',
             'include-footnotes=0' # otherwise we'll have to strip them out in the javascript function.
@@ -17,10 +14,10 @@ def esv_passage(request):
     passage = request.GET.get('passage', '')
     url = esv_base_url % urllib.urlencode({'passage':passage})
     page = urllib.urlopen(url)
-    c = standard_extra_context(title="Bible passage lookup")
+    c = {}
+    c['title'] = "Bible passage lookup"
     c['passagetext'] = mark_safe(page.read())
     c['passage'] = passage
-    return shortcuts.render_to_response('cciw/services/esv_passage.html',
-            context_instance=RequestContext(request, c))
+    return render(request,'cciw/services/esv_passage.html', c)
 
 

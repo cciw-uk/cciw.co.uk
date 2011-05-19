@@ -2,8 +2,20 @@
 {% load standardpage %}
 
 {% block extraheader %}
+  {% if meta_description %}
 	<meta name="description" content="{{ meta_description }}" />
+  {% else %}
+     {% if homepage %}
+        <meta name="description" content="Details of camps, message boards and photos for the UK charity Christian Camps in Wales" />
+     {% endif %}
+  {% endif %}
+  {% if meta_keywords %}
 	<meta name="keywords" content="{{ meta_keywords }}" />
+  {% else %}
+    {% if homepage %}
+        <meta name="keywords" content="camp, camps, summer camp, Christian, Christian camp, charity" />
+    {% endif %}
+ {% endif %}
 	{{ block.super }}
 	{% block atomfeed %}
 		{% atomfeedlink %}
@@ -41,7 +53,7 @@
 	<div id="contentOuter">
 		<div id="content">
 			<div id="pageTitle">
-				<h1>{% block title %}{{ title }}{% endblock %}</h1>
+				<h1>{{ title }}</h1>
 			</div>
 			<div id="contentBody">
 				{% block breadcrumb %}

@@ -15,29 +15,7 @@ import re
 import urllib
 
 
-def standard_extra_context(title=None, description=None, keywords=None):
-    """
-    Gets the 'extra_dict' dictionary used for all pages
-    """
-    from cciw.cciwmain.models import Member
-
-    if title is None:
-        title = u"Christian Camps in Wales"
-    if description is None:
-        description = u"Details of camps, message boards and photos for the UK charity Christian Camps in Wales"
-    if keywords is None:
-        keywords = u"camp, camps, summer camp, Christian, Christian camp, charity"
-
-    extra_dict = {}
-    extra_dict['title'] = title
-    extra_dict['meta_description'] = description
-    extra_dict['meta_keywords'] = keywords
-    extra_dict['thisyear'] = get_thisyear()
-
-    return extra_dict
-
-
-# CBV equivalent to standard_extra_context (and other base class functionality)
+# CBV baseclass functionality
 class DefaultMetaData(object):
     """
     Mixin that provides some default metadata and other standard variables to the
@@ -51,9 +29,9 @@ class DefaultMetaData(object):
      * After the instance has been initialised, 'context'
        will be available on the instance as a place to store context data.
     """
-    metadata_title=u"Christian Camps in Wales"
-    metadata_description= u"Details of camps, message boards and photos for the UK charity Christian Camps in Wales"
-    metadata_keywords = u"camp, camps, summer camp, Christian, Christian camp, charity"
+    metadata_title = None
+    metadata_description = None
+    metadata_keywords = None
     extra_context = None
 
     def __init__(self, **kwargs):
@@ -68,11 +46,10 @@ class DefaultMetaData(object):
         return super(DefaultMetaData, self).__init__(**kwargs)
 
     def get_context_data(self, **kwargs):
-        from cciw.cciwmain.models import Member
-        d = standard_extra_context(title=self.metadata_title,
-                                   description=self.metadata_description,
-                                   keywords=self.metadata_keywords)
-        # Allow context to overwrite standard_extra_context
+        d = dict(title=self.metadata_title,
+                 description=self.metadata_description,
+                 keywords=self.metadata_keywords)
+        # Allow context to overwrite
         d.update(self.context)
         c = super(DefaultMetaData, self).get_context_data(**kwargs)
         c.update(d)
@@ -217,12 +194,14 @@ def standard_processor(request):
         return context
 
     from cciw.cciwmain.models import MenuLink
+    thisyear = get_thisyear()
+    context['thisyear'] = thisyear
     assert type(request.path) is unicode
     context['homepage'] = (request.path == u"/")
     links = MenuLink.objects.filter(parent_item__isnull=True, visible=True)
 
     # Ugly special casing for 'thisyear' camps
-    m = re.match(u'/camps/%s/(\d+)/' % unicode(get_thisyear()),  request.path)
+    m = re.match(u'/camps/%s/(\d+)/' % unicode(thisyear),  request.path)
     if m is not None:
         request_path = u'/thisyear/%s/' % m.groups()[0]
     else:

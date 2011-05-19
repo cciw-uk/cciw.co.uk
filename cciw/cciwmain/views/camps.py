@@ -1,12 +1,11 @@
 import datetime
 
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.conf import settings
 
 from cciw.cciwmain.models import Camp, HtmlChunk, Forum, Gallery, Photo
-from cciw.cciwmain.common import standard_extra_context, create_breadcrumb, get_thisyear, standard_subs
+from cciw.cciwmain.common import create_breadcrumb, get_thisyear, standard_subs
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain.templatetags import bbcode
 import cciw.cciwmain.utils as utils
@@ -25,7 +24,7 @@ def index(request, year=None):
         camps
             List of all Camp objects (or all Camp objects in the specified year).
     """
-    c = standard_extra_context()
+    c = {}
     c['title'] = u"Camp forums and photos"
     all_camps = Camp.objects.filter(end_date__lte=datetime.datetime.today())
     if (year == None):
@@ -39,8 +38,7 @@ def index(request, year=None):
             raise Http404
     c['camps'] = camps
 
-    return render_to_response('cciw/camps/index.html',
-            context_instance=RequestContext(request, c))
+    return render(request, 'cciw/camps/index.html', c)
 
 def detail(request, year, number):
     """
@@ -58,7 +56,7 @@ def detail(request, year, number):
     except Camp.DoesNotExist:
         raise Http404
 
-    c = RequestContext(request, standard_extra_context())
+    c = {}
     c['camp'] = camp
     c['title'] = camp.nice_name
 
@@ -66,13 +64,12 @@ def detail(request, year, number):
         c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(unicode(camp.year)) + [camp.nice_name])
     else:
         c['breadcrumb'] = create_breadcrumb([standard_subs(u'<a href="/thisyear/">Camps {{thisyear}}</a>'), "Camp " + number])
-    return render_to_response('cciw/camps/detail.html', context_instance=c)
+    return render(request, 'cciw/camps/detail.html', c)
 
 def thisyear(request):
-    c = RequestContext(request,
-                       standard_extra_context(title=u"Camps %d" % get_thisyear()))
+    c = dict(title=u"Camps %d" % get_thisyear())
     c['camps'] = Camp.objects.filter(year=get_thisyear()).order_by('number')
-    return render_to_response('cciw/camps/thisyear.html', context_instance=c)
+    return render(request, 'cciw/camps/thisyear.html', c)
 
 def get_forum_for_camp(camp):
     location = camp.get_absolute_url()[1:] + 'forum/'
@@ -146,7 +143,7 @@ def forum(request, year, number):
         title = u"%s - Forum" % camp.nice_name
         breadcrumb_extra = camp_forum_breadcrumb(camp)
 
-    c = standard_extra_context(title=title)
+    c = dict(title=title)
     return forums_views.topicindex(request, extra_context=c, forum=forum,
         template_name='cciw/forums/topicindex.html', breadcrumb_extra=breadcrumb_extra)
 
@@ -195,7 +192,7 @@ def gallery(request, year, number):
 
     breadcrumb_extra = camp_forum_breadcrumb(camp)
 
-    ec = standard_extra_context(title=camp.nice_name + " - Photos")
+    ec = dict(title=camp.nice_name + " - Photos")
     return forums_views.photoindex(request, gallery, ec, breadcrumb_extra)
 
 def oldcampgallery(request, year, galleryname):
@@ -206,7 +203,7 @@ def oldcampgallery(request, year, galleryname):
 
     breadcrumb_extra = year_forum_breadcrumb(year) + [utils.unslugify(galleryname)]
 
-    ec = standard_extra_context(title=utils.unslugify(year+", " + galleryname) + " - Photos")
+    ec = dict(title=utils.unslugify(year+", " + galleryname) + " - Photos")
     return forums_views.photoindex(request, gallery, ec, breadcrumb_extra)
 
 def photo(request, year, number, photonumber):
@@ -221,7 +218,7 @@ def photo(request, year, number, photonumber):
     except Photo.DoesNotExist:
         raise Http404
 
-    ec = standard_extra_context(title=u"Photos: %s" % camp.nice_name)
+    ec = dict(title=u"Photos: %s" % camp.nice_name)
 
     return forums_views.photo(request, photo, ec, breadcrumb_extra)
 
@@ -239,8 +236,8 @@ def oldcampphoto(request, year, galleryname, photonumber):
     except Photo.DoesNotExist:
         raise Http404
 
-    ec = standard_extra_context(title=u"%s, %s - Photos" %
-                                (utils.unslugify(year), utils.unslugify(galleryname)))
+    ec = dict(title=u"%s, %s - Photos" %
+              (utils.unslugify(year), utils.unslugify(galleryname)))
     return forums_views.photo(request, photo, ec, breadcrumb_extra)
 
 def camp_forum_breadcrumb(camp):

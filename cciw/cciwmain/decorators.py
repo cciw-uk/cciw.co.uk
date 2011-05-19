@@ -1,10 +1,9 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django import template
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.core.mail import mail_admins
 
 from cciw.middleware.threadlocals import get_current_member, set_member_session
-from cciw.cciwmain.common import standard_extra_context
 from cciw.cciwmain.utils import python_to_json
 
 import urllib
@@ -21,11 +20,9 @@ LOGIN_FORM_KEY = 'this_is_the_login_form'
 ERROR_MESSAGE = u"Please enter a correct username and password. Note that both fields are case-sensitive."
 
 def _display_login_form(request, error_message='', login_page=False):
-    c = template.RequestContext(request, standard_extra_context(title="Login"))
-    return render_to_response('cciw/members/login.html', {
-        'app_path': request.get_full_path(),
-        'error_message': error_message
-    }, context_instance=c)
+    return render(request, 'cciw/members/login.html', {'app_path': request.get_full_path(),
+                                                       'error_message': error_message,
+                                                       'title': "Login"})
 
 def member_required_generic(except_methods):
     """Returns a decorator that forces a member to be logged in to access the view.
