@@ -54,7 +54,7 @@ class TopicIndexPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, topic, None)
 
         request = self.factory.get(self.forum.get_absolute_url())
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(FuzzyInt(1, 5)):
             resp = forums.topicindex(request, title="Title", forum=self.forum)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_TOPICS_BY * 2
@@ -107,7 +107,7 @@ class AllTopicsPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, topic, None)
 
         request = self.factory.get(self.path())
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(FuzzyInt(3, 4)):
             resp = forums.all_topics(request)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_TOPICS_BY
@@ -115,7 +115,7 @@ class AllTopicsPage(TestCase):
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
         request = self.factory.get(self.path(), {'format':'atom'})
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(FuzzyInt(1, 2)):
             forums.all_topics(request)
 
 
@@ -159,11 +159,11 @@ class TopicPage(TestCase):
         init_query_caches()
 
         request = self.factory.get(self.topic.get_absolute_url())
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(FuzzyInt(1, 6)):
             forums.topic(request, title_start="Title", topicid=self.topic.id).render()
 
         request = self.factory.get(self.topic.get_absolute_url(), {'format':'atom'})
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(FuzzyInt(1, 2)):
             forums.topic(request, title_start="Title", topicid=self.topic.id)
 
 
@@ -299,7 +299,7 @@ class AllPostsPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, topic=topic)
 
         request = self.factory.get(self.path())
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(FuzzyInt(1, 4)):
             resp = forums.all_posts(request)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_POSTS_BY
@@ -307,7 +307,7 @@ class AllPostsPage(TestCase):
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
         request = self.factory.get(self.path(), {'format':'atom'})
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(FuzzyInt(1, 2)):
             forums.all_posts(request)
 
     def test_query_count_photos(self):
@@ -323,7 +323,7 @@ class AllPostsPage(TestCase):
             post = Post.create_post(member, "Message %s" % i, photo=photo)
 
         request = self.factory.get(self.path())
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(FuzzyInt(1, 3)):
             resp = forums.all_posts(request)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_POSTS_BY
@@ -331,7 +331,7 @@ class AllPostsPage(TestCase):
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
         request = self.factory.get(self.path(), {'format':'atom'})
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(FuzzyInt(1, 2)):
             forums.all_posts(request)
 
 

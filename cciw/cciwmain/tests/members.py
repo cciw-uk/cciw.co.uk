@@ -18,7 +18,7 @@ import twill
 from cciw.cciwmain.models import Member, Message
 from cciw.cciwmain.tests.client import CciwClient, RequestFactory
 from cciw.cciwmain.tests.mailhelpers import read_email_url
-from cciw.cciwmain.tests.utils import init_query_caches
+from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
 from cciw.utils.tests.twillhelpers import TwillMixin, make_twill_url
 import cciw.cciwmain.decorators
 import cciw.cciwmain.views.members
@@ -307,9 +307,8 @@ class MemberLists(TestCase):
         from cciw.cciwmain.views.members import index
 
         request = self.factory.get(reverse('cciwmain.members.index'))
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(FuzzyInt(1, 4)):
             index(request).render()
-
 
         request = self.factory.get(reverse('cciwmain.members.index'), {'format':'atom'})
         with self.assertNumQueries(1):
@@ -455,7 +454,7 @@ class MessageLists(TestCase):
         for i in xrange(settings.MEMBERS_PAGINATE_MESSAGES_BY):
             self._send_message("Message %s" % i)
 
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(FuzzyInt(1, 8)):
             resp = self._get_inbox()
             resp.render()
 
