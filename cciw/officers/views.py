@@ -1023,34 +1023,6 @@ def stats(request, year=None):
     return render(request, 'cciw/officers/stats.html', d)
 
 
-class AddCrbForm(forms.ModelForm):
-    class Meta:
-        model = CRBApplication
-        fields = ('crb_number',
-                  'completed',
-                  )
-AddCrbForm.base_fields['completed'].widget = widgets.AdminDateWidget()
-
-@staff_member_required
-def add_crb(request):
-    """
-    Form for an officer to add info about their CRB applications
-    """
-    if request.method == "POST":
-        form = AddCrbForm(request.POST)
-        if form.is_valid():
-            obj = form.save(commit=False)
-            obj.officer = request.user
-            obj.save()
-            messages.info(request, "CRB information added, thank you.")
-            return HttpResponseRedirect(reverse('cciw.officers.views.index'))
-    else:
-        form = AddCrbForm()
-    c = {'form': form}
-
-    return render(request, 'cciw/officers/add_crb.html', c)
-
-
 @staff_member_required
 @camp_admin_required
 def manage_crbs(request, year=None):
