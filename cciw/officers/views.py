@@ -774,7 +774,12 @@ def remove_officer(request, year=None, number=None):
 def add_officers(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     for officer_id in request.POST['officer_ids'].split(','):
-        Invitation.objects.get_or_create(camp=camp, officer=User.objects.get(id=int(officer_id)))
+        try:
+            i = Invitation.objects.get(camp=camp, officer=User.objects.get(id=int(officer_id)))
+        except Invitation.DoesNotExist:
+            i = Invitation.objects.create(camp=camp,
+                                          officer=User.objects.get(id=int(officer_id)),
+                                          date_added=datetime.date.today())
     return {'status':'success'}
 
 
