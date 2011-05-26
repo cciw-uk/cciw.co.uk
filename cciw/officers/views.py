@@ -786,29 +786,6 @@ def add_officers(request, year=None, number=None):
 @staff_member_required
 @camp_admin_required
 @json_response
-def officer_details(request):
-    # We use POST here, to avoid information leaks associated with JSON over GET
-    # by 3rd party <script> tags.
-
-    # We base things on the user id and camp id, rather than on invitation id,
-    # since it is much less likely that camps and users will be deleted (they
-    # never will be in practice), but an invitation can be deleted, potentially
-    # leading to overwriting of the wrong data if invitation ids are re-used in
-    # the database
-    user = User.objects.get(pk=int(request.POST['officer_id']))
-    invitation = user.invitation_set.get(camp=int(request.POST['camp_id']))
-    return {'username': user.username,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'email': user.email,
-            'notes': invitation.notes,
-            'id': user.id,
-            }
-
-
-@staff_member_required
-@camp_admin_required
-@json_response
 def update_officer(request):
     User.objects.filter(pk=int(request.POST['officer_id'])).update(first_name=request.POST['first_name'].strip(),
                                                                    last_name=request.POST['last_name'].strip(),

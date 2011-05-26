@@ -8,7 +8,7 @@
     <th>Last name</th>
     <th>E-mail</th>
     <th>Leader's notes</th>
-    <th colspan="3">Edit</th>
+    <th>Edit</th>
   </tr>
  </thead>
  <tbody>
@@ -19,12 +19,8 @@
     <td><a href="mailto:{{ invite.officer.email }}">{{ invite.officer.email }}</a></td>
     <td>{{ invite.notes }}</a></td>
     <td>
-      <img class="editbtn" id="id_edit_{{ invite.officer.id }}" src="{% admin_media_prefix %}img/admin/icon_changelink.gif" alt="Edit" title="Edit" />
-    </td>
-    <td>
-      <img class="removebtn" id="id_remove_{{ invite.officer.id }}" src="{{ STATIC_URL }}images/officer-list-remove.gif" alt="Remove" title="Remove" />
-    </td>
-    <td>
+      <img class="editbtn" id="id_edit_{{ invite.officer.id }}" src="{% admin_media_prefix %}img/admin/icon_changelink.gif" alt="Edit" title="Edit" style="margin-right: 4px;"/>
+      <img class="removebtn" id="id_remove_{{ invite.officer.id }}" src="{{ STATIC_URL }}images/officer-list-remove.gif" alt="Remove" title="Remove" style="margin-right: 4px;"/>
       <img class="emailbtn" id="id_email_{{ invite.officer.id }}" src="{{ STATIC_URL }}images/sendemail.gif" alt="Re-send initial e-mail" title="Re-send initial e-mail" />
    </td>
   </tr>
