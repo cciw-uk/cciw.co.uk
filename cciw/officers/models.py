@@ -312,6 +312,7 @@ class Invitation(models.Model):
     officer = models.ForeignKey(User)
     camp = models.ForeignKey(Camp)
     date_added = models.DateField()
+    notes = models.CharField(max_length=255, blank=True)
 
     objects = InvitationManager()
 
