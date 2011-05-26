@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import re
 
 from django.conf import settings
@@ -242,10 +242,10 @@ class Reference(models.Model):
                 dt = datetime.strptime(m.groups()[0], self.log_datetime_format)
         return dt
 
-    def log_request_made(self, user, date):
+    def log_request_made(self, user, dt):
         self.comments = self.comments + \
             ("\nReference requested by user %s via online system on %s\n" % \
-                 (user.username, date.strftime(self.log_datetime_format)))
+                 (user.username, dt.strftime(self.log_datetime_format)))
 
     class Meta:
         verbose_name = "Reference Metadata"
@@ -311,7 +311,7 @@ class InvitationManager(models.Manager):
 class Invitation(models.Model):
     officer = models.ForeignKey(User)
     camp = models.ForeignKey(Camp)
-    date_added = models.DateField()
+    date_added = models.DateField(default=date.today)
     notes = models.CharField(max_length=255, blank=True)
 
     objects = InvitationManager()
