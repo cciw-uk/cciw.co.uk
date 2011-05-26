@@ -815,7 +815,7 @@ def update_officer(request):
                                                                    email=request.POST['email'].strip()
                                                                    )
     Invitation.objects.filter(camp=int(request.POST['camp_id']),
-                              officer=int(request.POST['officer_id'])).update(notes=request.POST['notes'].strip())
+                              officer=int(request.POST['officer_id'])).update(notes=request.POST['notes'].strip().replace('\n', ' ').replace('\r', ' ')[0:255])
     return {'status':'success'}
 
 
