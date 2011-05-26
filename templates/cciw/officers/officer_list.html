@@ -4,6 +4,7 @@
 {% block title %}Officer list {{ camp.year }}-{{ camp.number }} | CCIW Officers{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.tablesorter.min.js"></script>
 <link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />
 <style type="text/css">
 
@@ -32,6 +33,26 @@
     background-color: #f0f0f0;
 }
 
+
+table.tablesorter thead th {
+    background-color: #f0f0f0;
+    background-image: none;
+}
+
+table.tablesorter thead .header {
+    background-image: url({{ STATIC_URL }}images/ascdesc.gif);
+    background-repeat: no-repeat;
+    background-position: center right;
+    cursor: pointer;
+}
+
+table.tablesorter thead .header.headerSortDown {
+    background-image: url({{ STATIC_URL }}images/desc.gif);
+}
+
+table.tablesorter thead .header.headerSortUp {
+    background-image: url({{ STATIC_URL }}images/asc.gif);
+}
 </style>
 {% endblock %}
 {% block bodyclass%}change-form{% endblock %}
@@ -50,6 +71,7 @@
 
 {% include "cciw/officers/officer_list_table_editable.html" %}
 
+<p><br/>(You can sort the list by clicking on the headers. Hold down shift while clicking to sort by multiple columns)</p>
 </div>
 </div>
 </div>
@@ -126,11 +148,17 @@
         });
     };
 
+    var addTableSorter = function() {
+        $("#id_officer_list_table table").tablesorter({headers: { 4: { sorter: false}}});
+    }
+
+
     var refreshChosenList = function(text) {
         $("#id_officer_list_table").children().remove();
         $("#id_officer_list_table").html(text);
         editOfficerMode = false;
         addOfficerListHandlers();
+        addTableSorter();
     };
 
     var refreshAvailableList = function(text) {
@@ -329,6 +357,7 @@
     $(document).ready(function(){
         $("#id_available_officers_filter").multiSelectFilter("#id_available_officers");
         addOfficerListHandlers();
+        addTableSorter();
         $("#id_available_officers")
            .dblclick(officerAddHandler)
            .keyup(officerAddHandler);
