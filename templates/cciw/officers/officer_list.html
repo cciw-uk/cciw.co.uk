@@ -5,7 +5,33 @@
 
 {% block extrastyle %}{{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />
+<style type="text/css">
 
+.innerleft {
+    margin: 0px 10px 0px 0px;
+}
+
+.innerright {
+    margin: 0px 10px;
+}
+
+.leftcolumnwrapper {
+    float: left;
+    width: 100%;
+}
+
+.leftcolumn {
+    margin-right: 35em; /* Same as width of right column */
+}
+
+.rightcolumn {
+    float: left;
+    width: 35em; /* Width of right column */
+    margin-left: -35em; /* Same as  -(width of right column) */
+    background-color: #f0f0f0;
+}
+
+</style>
 {% endblock %}
 {% block bodyclass%}change-form{% endblock %}
 
@@ -16,14 +42,20 @@
 <p>This page can be used for viewing and managing the officers on your list,
  and for viewing those who have not yet filled in an application form.</p>
 
-<div style="float: left; width: 44em;">
+<div class="leftcolumnwrapper">
+<div class="leftcolumn">
+<div class="innerleft">
 <h2>Current list</h2>
 
 {% include "cciw/officers/officer_list_table_editable.html" %}
 
 </div>
-<div style="margin-left: 45em;">
-<h2 style="margin-top: 2em;">Add to list</h2>
+</div>
+</div>
+
+<div class="rightcolumn">
+<div class="innerright">
+<h2>Add to list</h2>
 
 <div class="selector-filter">
  <a href="#" id="id_add_officer_btn">Add  <img style="vertical-align: middle"
@@ -55,7 +87,7 @@
 <li>If you have a list on a computer, you can <a href="mailto:webmaster@cciw.co.uk">e-mail
   the webmaster</a> to have them imported more quickly.</li>
 </ul>
-
+</div>
 </div>
 
 <br style="clear: left;" />
