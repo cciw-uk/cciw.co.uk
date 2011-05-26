@@ -106,16 +106,22 @@
     var showAddOfficerBlock = true;
 
 
-    var refreshLists = function() {
+    var refreshLists = function(areas) {
         // Refresh different areas of the page:
+        if (areas == null) {
+            areas = ["chosen", "available", "noapplication"];
+        }
         $.ajax({
             type: "GET",
             url: "?sections=1&" + Math.random().toString(),
             dataType: 'json',
             success: function(data) {
-                refreshChosenList(data.chosen);
-                refreshAvailableList(data.available);
-                refreshNoApplicationFormList(data.noapplicationform);
+                if (areas.indexOf("chosen") != -1)
+                    refreshChosenList(data.chosen);
+                if (areas.indexOf("available") != -1)
+                    refreshAvailableList(data.available);
+                if (areas.indexOf("noapplication") != -1)
+                    refreshNoApplicationFormList(data.noapplicationform);
             }
         });
     };
@@ -183,9 +189,8 @@
                 addOfficerBlockToggle();
                 restoreAddBlockState = addOfficerBlockToggle;
             }
-              // 'Cancel' handler:
-            row.find('#id_officer_cancel').click(function(ev) {
-                ev.preventDefault();
+
+            function setOfficerRow(officerData) {
                 firstNameCell.html(escape(officer.firstName));
                 lastNameCell.html(escape(officer.lastName));
                 emailCell.html('<a href="mailto:' + escape(officer.email) + '">' + escape(officer.email) + '</a>')
@@ -194,24 +199,36 @@
                 editCell.find('span').remove();
                 restoreAddBlockState();
                 editOfficerMode = false;
+            }
+
+            // 'Cancel' handler:
+            row.find('#id_officer_cancel').click(function(ev) {
+                ev.preventDefault();
+                setOfficerRow(officer);
             });
             // 'Save' handler
             row.find('#id_officer_save').click(function(ev) {
                 ev.preventDefault();
+                officer.firstName = $('#id_officer_first_name').val();
+                officer.lastName  = $('#id_officer_last_name').val();
+                officer.email     = $('#id_officer_email').val();
+                officer.notes     = $('#id_officer_notes').val();
+                setOfficerRow(officer);
+                // For responsiveness, we update UI before server has
+                // saved data.
                 $.ajax({
                     type: 'POST',
                     url: "{% url 'cciw.officers.views.update_officer' %}",
                     data: {'officer_id': officerId.toString(),
-                           'first_name': $('#id_officer_first_name').val(),
-                           'last_name': $('#id_officer_last_name').val(),
-                           'email': $('#id_officer_email').val(),
-                           'notes': $('#id_officer_notes').val(),
+                           'first_name': officer.firstName,
+                           'last_name': officer.lastName,
+                           'email': officer.email,
+                           'notes': officer.notes,
                            'camp_id': campId.toString()
                            },
                     dataType: 'json',
                     success: function() {
-                        refreshLists();
-                        restoreAddBlockState();
+                        refreshLists("noapplication");
                     }
                 });
             });
@@ -226,7 +243,7 @@
                 url:  "{% url 'cciw.officers.views.remove_officer' camp.year camp.number %}",
                 data: "officer_id=" + officerId.toString(),
                 dataType: 'json',
-                success: refreshLists
+                success: function(ev) { refreshLists(); }
             });
             ev.preventDefault();
         });
@@ -268,7 +285,7 @@
             url: "{% url 'cciw.officers.views.add_officers' camp.year camp.number %}",
             data: "officer_ids=" + officer_ids.join(','),
             dataType: 'json',
-            success: refreshLists
+            success: function(ev) { refreshLists(); }
         });
     };
 
