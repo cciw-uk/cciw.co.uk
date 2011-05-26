@@ -948,12 +948,15 @@ def stats(request, year=None):
         # done in Python.
         stat['camp'] = camp
 
-        invited_officer_ids = list(camp.invitation_set.all().values_list('officer_id', flat=True))
+        invited_officers = list(camp.invitation_set.all().order_by('date_added').values_list('officer_id', 'date_added'))
         application_forms = list(applications_for_camp(camp).order_by('date_submitted').values_list('id', 'date_submitted'))
+
+        officer_ids = [o[0] for o in invited_officers]
+        officer_dates = [o[1] for o in invited_officers]
         app_ids = [a[0] for a in application_forms]
         app_dates = [a[1] for a in application_forms]
         ref_dates = list(ReferenceForm.objects.filter(reference_info__application__in=app_ids).order_by('date_created').values_list('date_created', flat=True))
-        all_crb_info = list(CRBApplication.objects.filter(officer__in=invited_officer_ids).order_by('completed').values_list('officer_id', 'completed'))
+        all_crb_info = list(CRBApplication.objects.filter(officer__in=officer_ids).order_by('completed').values_list('officer_id', 'completed'))
         # We duplicate logic from CRBApplication.get_for_camp here to avoid
         # duplicating queries
         valid_crb_info = [(off_id, d) for off_id, d in all_crb_info
@@ -965,12 +968,14 @@ def stats(request, year=None):
         graph_end_date = min(camp.start_date, datetime.date.today())
         a = 0 # applications
         r = 0 # references
+        o = 0 # officers
         v_idx = 0 # valid CRBs - index into valid_crb_info
         c_idx = 0 # CRBs       - index into all_crb_info
         v_tot = 0 #            - total for valid CRBs
         c_tot = 0 #            - total for all CRBs
         app_dates_data = []
         ref_dates_data = []
+        officer_dates_data = []
         all_crb_dates_data = []
         _all_crb_seen_officers = set()
         valid_crb_dates_data = []
@@ -983,6 +988,9 @@ def stats(request, year=None):
             # References
             while r < len(ref_dates) and ref_dates[r] <= d:
                 r += 1
+            # Officers
+            while o < len(officer_dates) and officer_dates[o] <= d:
+                o += 1
 
             # CRBs: there can be multiple CRBs for each officer. If we've
             # already seen one, we don't increase the count.
@@ -1005,6 +1013,7 @@ def stats(request, year=None):
             ts = date_to_js_ts(d)
             app_dates_data.append([ts, a])
             ref_dates_data.append([ts, r/2.0])
+            officer_dates_data.append([ts, o])
             all_crb_dates_data.append([ts, c_tot])
             valid_crb_dates_data.append([ts, v_tot])
             d = d + datetime.timedelta(1)
@@ -1012,8 +1021,10 @@ def stats(request, year=None):
         stat['reference_dates_data'] = ref_dates_data
         stat['all_crb_dates_data'] = all_crb_dates_data
         stat['valid_crb_dates_data'] = valid_crb_dates_data
-        stat['officer_list_data'] = [[date_to_js_ts(graph_start_date), len(invited_officer_ids)],
-                                     [date_to_js_ts(camp.start_date), len(invited_officer_ids)]]
+        # Project officer list graphs at either end, to make the graph stretch that far.
+        officer_dates_data.insert(0, [date_to_js_ts(graph_start_date), 0])
+        officer_dates_data.append([date_to_js_ts(camp.start_date), len(officer_ids)])
+        stat['officer_list_data'] = officer_dates_data
         stats.append(stat)
 
 

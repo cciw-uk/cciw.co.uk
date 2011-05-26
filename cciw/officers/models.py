@@ -311,6 +311,7 @@ class InvitationManager(models.Manager):
 class Invitation(models.Model):
     officer = models.ForeignKey(User)
     camp = models.ForeignKey(Camp)
+    date_added = models.DateField()
 
     objects = InvitationManager()
 
