@@ -165,9 +165,10 @@
                     var row = $('#id_officer_table_tr_' + officerId.toString());
                     // Make input boxes, and save/cancel buttons
                     row.html('<td>' +
-                                '<nobr><input size=6 id="id_officer_first_name" type="text" value="' +
-                                    escape(officer.first_name) + '" />' +
-                                '<input size=6 id="id_officer_last_name" type="text" value="' +
+                                '<input size=8 id="id_officer_first_name" type="text" value="' +
+                                    escape(officer.first_name) + '" /></td>' +
+                             '<td>' +
+                                '<input size=8 id="id_officer_last_name" type="text" value="' +
                                     escape(officer.last_name) + '" /></nobr>' +
                              '</td>' +
                              '<td><input size=30 id="id_officer_email" type="text" value="' +

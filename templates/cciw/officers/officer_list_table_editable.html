@@ -4,7 +4,8 @@
 <table>
  <thead>
   <tr>
-    <th>Name</th>
+    <th>First name</th>
+    <th>Last name</th>
     <th>E-mail</th>
     <th>Leader's notes</th>
     <th colspan="3">Edit</th>
@@ -13,7 +14,8 @@
  <tbody>
 {% for invite in invitations %}
   <tr id="id_officer_table_tr_{{ invite.officer.id }}">
-    <td>{{ invite.officer.first_name }} {{ invite.officer.last_name }}</td>
+    <td>{{ invite.officer.first_name }}</td>
+    <td>{{ invite.officer.last_name }}</td>
     <td><a href="mailto:{{ invite.officer.email }}">{{ invite.officer.email }}</a></td>
     <td>{{ invite.notes }}</a></td>
     <td>
