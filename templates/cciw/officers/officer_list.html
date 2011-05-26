@@ -254,6 +254,7 @@ table.tablesorter thead .header.headerSortUp {
                 officer.email     = $('#id_officer_email').val();
                 officer.notes     = $('#id_officer_notes').val();
                 setOfficerRow(officer);
+                $('#id_officer_list_table table').trigger('update');
                 // For responsiveness, we update UI before server has
                 // saved data.
                 $.ajax({
