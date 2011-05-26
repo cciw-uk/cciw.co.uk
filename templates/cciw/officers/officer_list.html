@@ -153,17 +153,24 @@ table.tablesorter thead .header.headerSortUp {
         });
     };
 
-    var addTableSorter = function() {
-        $("#id_officer_list_table table").tablesorter({headers: { 4: { sorter: false}}});
+    var addTableSorter = function(sortList) {
+        if (sortList == undefined) {
+            sortList = [[0,0]];
+        }
+        $("#id_officer_list_table table").tablesorter({headers:
+                                                        { 4: { sorter: false }},
+                                                       sortList: sortList
+                                                      });
     }
 
 
     var refreshChosenList = function(text) {
+        var savedSortOrder = $("#id_officer_list_table table").data('tablesorter').sortList;
         $("#id_officer_list_table").children().remove();
         $("#id_officer_list_table").html(text);
         editOfficerMode = false;
         addOfficerListHandlers();
-        addTableSorter();
+        addTableSorter(savedSortOrder);
     };
 
     var refreshAvailableList = function(text) {
