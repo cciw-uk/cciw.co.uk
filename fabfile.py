@@ -336,13 +336,13 @@ def _deploy(target, quick=False):
         _build_static(version)
         _update_symlink(target, version)
     else:
-        db_backup_name = backup_database(target, version)
         _copy_local_sources(target, version)
         _copy_protected_downloads()
         _update_virtualenv(version)
         _build_static(version)
 
         _stop_apache(target)
+        db_backup_name = backup_database(target, version)
         # Ideally, we rollback if unsuccessful.
         # In practice, this may be impossible for some migrations,
         # and we are better off restoring from the backup db.
