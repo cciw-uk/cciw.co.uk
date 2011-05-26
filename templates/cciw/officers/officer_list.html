@@ -154,7 +154,7 @@
                 dataType: 'json',
                 success: function(officer) {
                     var escape = function(t) {
-                        return $('<div/>').text(t).html();
+                        return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
                     };
                     var row = $('#id_officer_table_tr_' + officerId.toString());
                     // Make input boxes, and save/cancel buttons
