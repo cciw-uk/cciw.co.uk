@@ -21,6 +21,7 @@
 }
 
 .leftcolumn {
+    /* see javascript below for other instances of '35em' */
     margin-right: 35em; /* Same as width of right column */
 }
 
@@ -43,7 +44,7 @@
  and for viewing those who have not yet filled in an application form.</p>
 
 <div class="leftcolumnwrapper">
-<div class="leftcolumn">
+<div class="leftcolumn" id="id_officer_list_div">
 <div class="innerleft">
 <h2>Current list</h2>
 
@@ -53,7 +54,8 @@
 </div>
 </div>
 
-<div class="rightcolumn">
+<div class="rightcolumn" id="id_add_officer_div">
+<div style="text-align: right;"><small><a href="#" id="id_hide_add_officer_div">(hide)</a></small></div>
 <div class="innerright">
 <h2>Add to list</h2>
 
@@ -99,6 +101,10 @@
 
     // Global that is true if a row of officer details is in 'edit mode'
     var editOfficerMode = false;
+
+    // Global that is true if the 'add officer' block is visible
+    var showAddOfficerBlock = true;
+
 
     var refreshLists = function() {
         // Refresh different areas of the page:
@@ -170,10 +176,22 @@
                                 escape(officer.notes) + '" /></td>' +
                              '<td colspan=2><a href="#" id="id_officer_save">Save</a> / ' +
                              '<a href="#" id="id_officer_cancel">Cancel</a> </td>');
+
+                    var showAddOfficerBlockSaved = showAddOfficerBlock;
+                    if (showAddOfficerBlock) {
+                        // Make room for editing
+                        addOfficerBlockToggle();
+                    }
+
+
                     // 'Cancel' handler:
                     row.find('#id_officer_cancel').click(function(ev) {
                         ev.preventDefault();
                         refreshLists();
+                        if (showAddOfficerBlock != showAddOfficerBlockSaved) {
+                            // restore state
+                            addOfficerBlockToggle();
+                        }
                     });
                     // 'Save' handler
                     row.find('#id_officer_save').click(function(ev) {
@@ -193,7 +211,13 @@
                                    'camp_id': campId.toString()
                                    },
                             dataType: 'json',
-                            success: refreshLists
+                            success: function() {
+                                refreshLists();
+                                if (showAddOfficerBlock != showAddOfficerBlockSaved) {
+                                    // restore state
+                                    addOfficerBlockToggle();
+                                }
+                            }
                         });
                     });
                 }
@@ -275,6 +299,20 @@
         ev.preventDefault();
     };
 
+    var addOfficerBlockToggle = function(ev) {
+        showAddOfficerBlock = !showAddOfficerBlock;
+        var width = showAddOfficerBlock ? '35em' : '4em';
+        $('#id_add_officer_div').css({'width':width, 'margin-left': '-' + width})
+        $('#id_officer_list_div').css({'margin-right': width})
+        if (showAddOfficerBlock) {
+            $('#id_add_officer_div .innerright').show();
+            $('#id_hide_add_officer_div').text('(hide)');
+        } else {
+            $('#id_add_officer_div .innerright').hide();
+            $('#id_hide_add_officer_div').text('(show)');
+        }
+    }
+
     $(document).ready(function(){
         $("#id_available_officers_filter").multiSelectFilter("#id_available_officers");
         addOfficerListHandlers();
@@ -284,6 +322,8 @@
         $('#id_add_officer_btn').click(officerAddHandler);
         $('#id_new_officer_btn').click(newOfficerHandler);
         $('#id_popup_close_btn').click(newOfficerClose);
+        $('#id_hide_add_officer_div').click(addOfficerBlockToggle);
+
         $("#loading").ajaxStart(function(){
             $(this).show();
         });
