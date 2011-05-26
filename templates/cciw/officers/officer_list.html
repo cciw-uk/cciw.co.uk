@@ -22,14 +22,14 @@
 }
 
 .leftcolumn {
-    /* see javascript below for other instances of '35em' */
-    margin-right: 35em; /* Same as width of right column */
+    /* see javascript below for other instances of this width */
+    margin-right: 30em; /* Same as width of right column */
 }
 
 .rightcolumn {
     float: left;
-    width: 35em; /* Width of right column */
-    margin-left: -35em; /* Same as  -(width of right column) */
+    width: 30em; /* Width of right column */
+    margin-left: -30em; /* Same as  -(width of right column) */
     background-color: #f0f0f0;
 }
 
@@ -52,6 +52,11 @@ table.tablesorter thead .header.headerSortDown {
 
 table.tablesorter thead .header.headerSortUp {
     background-image: url({{ STATIC_URL }}images/asc.gif);
+}
+
+#id_officer_list_div table thead th:nth-child(3),
+#id_officer_list_div table thead th:nth-child(4) {
+    min-width:25ex;
 }
 </style>
 {% endblock %}
@@ -204,8 +209,8 @@ table.tablesorter thead .header.headerSortUp {
             // Make input boxes, and save/cancel buttons
             firstNameCell.html('<input size=8 id="id_officer_first_name" type="text" value="' + escape(officer.firstName) + '" /></td>');
             lastNameCell.html('<input size=8 id="id_officer_last_name" type="text" value="' +  escape(officer.lastName) + '" />');
-            emailCell.html('<input size=30 id="id_officer_email" type="text" value="' + escape(officer.email) + '" />');
-            notesCell.html('<input size=50 id="id_officer_notes" type="text" value="' + escape(officer.notes) + '" />');
+            emailCell.html('<input size=25 id="id_officer_email" type="text" value="' + escape(officer.email) + '" />');
+            notesCell.html('<input size=25 id="id_officer_notes" type="text" value="' + escape(officer.notes) + '" />');
             editCell.find('img').hide();
             editCell.append(
                      '<span><a href="#" id="id_officer_save">Save</a> / ' +
@@ -342,7 +347,7 @@ table.tablesorter thead .header.headerSortUp {
             ev.preventDefault();
         }
         showAddOfficerBlock = !showAddOfficerBlock;
-        var width = showAddOfficerBlock ? '35em' : '4em';
+        var width = showAddOfficerBlock ? '30em' : '4em';
         $('#id_add_officer_div').css({'width':width, 'margin-left': '-' + width})
         $('#id_officer_list_div').css({'margin-right': width})
         if (showAddOfficerBlock) {
