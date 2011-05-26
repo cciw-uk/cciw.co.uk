@@ -300,6 +300,9 @@
     };
 
     var addOfficerBlockToggle = function(ev) {
+        if (ev != null) {
+            ev.preventDefault();
+        }
         showAddOfficerBlock = !showAddOfficerBlock;
         var width = showAddOfficerBlock ? '35em' : '4em';
         $('#id_add_officer_div').css({'width':width, 'margin-left': '-' + width})
