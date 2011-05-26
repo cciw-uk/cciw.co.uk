@@ -721,9 +721,9 @@ def officer_list(request, year=None, number=None):
     c = {}
     c['camp'] = camp
     # Make sure these queries come after the above data modification
-    officer_list = camp_officer_list(camp)
-    officer_list_ids = set(u.id for u in officer_list)
-    c['officers_all'] = officer_list
+    invitation_list = camp.invitation_set.all()
+    officer_list_ids = set(i.officer_id for i in invitation_list)
+    c['invitations'] = invitation_list
     c['officers_noapplicationform'] = camp_slacker_list(camp)
     c['address_all'] = address_for_camp_officers(camp)
     c['address_noapplicationform'] = address_for_camp_slackers(camp)
@@ -789,11 +789,19 @@ def add_officers(request, year=None, number=None):
 def officer_details(request):
     # We use POST here, to avoid information leaks associated with JSON over GET
     # by 3rd party <script> tags.
+
+    # We base things on the user id and camp id, rather than on invitation id,
+    # since it is much less likely that camps and users will be deleted (they
+    # never will be in practice), but an invitation can be deleted, potentially
+    # leading to overwriting of the wrong data if invitation ids are re-used in
+    # the database
     user = User.objects.get(pk=int(request.POST['officer_id']))
+    invitation = user.invitation_set.get(camp=int(request.POST['camp_id']))
     return {'username': user.username,
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
+            'notes': invitation.notes,
             'id': user.id,
             }
 
@@ -806,6 +814,8 @@ def update_officer(request):
                                                                    last_name=request.POST['last_name'],
                                                                    email=request.POST['email']
                                                                    )
+    Invitation.objects.filter(camp=int(request.POST['camp_id']),
+                              officer=int(request.POST['officer_id'])).update(notes=request.POST['notes'])
     return {'status':'success'}
 
 

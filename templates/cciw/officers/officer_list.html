@@ -95,6 +95,7 @@
 //<![CDATA[
 (function($){
     // Code specific to page
+    var campId = {{ camp.id }};
 
     // Global that is true if a row of officer details is in 'edit mode'
     var editOfficerMode = false;
@@ -148,7 +149,8 @@
             $.ajax({
                 type: "POST",
                 url: "{% url 'cciw.officers.views.officer_details' %}",
-                data: {officer_id: officerId.toString()},
+                data: {officer_id: officerId.toString(),
+                       camp_id: campId.toString()},
                 dataType: 'json',
                 success: function(officer) {
                     var escape = function(t) {
@@ -164,6 +166,8 @@
                              '</td>' +
                              '<td><input size=30 id="id_officer_email" type="text" value="' +
                                 escape(officer.email) + '" /></td>' +
+                             '<td><input size=30 id="id_officer_notes" type="text" value="' +
+                                escape(officer.notes) + '" /></td>' +
                              '<td colspan=2><a href="#" id="id_officer_save">Save</a> / ' +
                              '<a href="#" id="id_officer_cancel">Cancel</a> </td>');
                     // 'Cancel' handler:
@@ -177,13 +181,16 @@
                         officer.first_name = $('#id_officer_first_name').val();
                         officer.last_name = $('#id_officer_last_name').val();
                         officer.email = $('#id_officer_email').val();
+                        officer.notes = $('#id_officer_notes').val();
                         $.ajax({
                             type: 'POST',
                             url: "{% url 'cciw.officers.views.update_officer' %}",
                             data: {'officer_id': officer.id,
                                    'first_name': officer.first_name,
                                    'last_name': officer.last_name,
-                                   'email': officer.email
+                                   'email': officer.email,
+                                   'notes': officer.notes,
+                                   'camp_id': campId.toString()
                                    },
                             dataType: 'json',
                             success: refreshLists
