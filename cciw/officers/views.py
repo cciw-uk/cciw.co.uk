@@ -810,12 +810,12 @@ def officer_details(request):
 @camp_admin_required
 @json_response
 def update_officer(request):
-    User.objects.filter(pk=int(request.POST['officer_id'])).update(first_name=request.POST['first_name'],
-                                                                   last_name=request.POST['last_name'],
-                                                                   email=request.POST['email']
+    User.objects.filter(pk=int(request.POST['officer_id'])).update(first_name=request.POST['first_name'].strip(),
+                                                                   last_name=request.POST['last_name'].strip(),
+                                                                   email=request.POST['email'].strip()
                                                                    )
     Invitation.objects.filter(camp=int(request.POST['camp_id']),
-                              officer=int(request.POST['officer_id'])).update(notes=request.POST['notes'])
+                              officer=int(request.POST['officer_id'])).update(notes=request.POST['notes'].strip())
     return {'status':'success'}
 
 
