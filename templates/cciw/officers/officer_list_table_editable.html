@@ -19,9 +19,11 @@
     <td><a href="mailto:{{ invite.officer.email }}">{{ invite.officer.email }}</a></td>
     <td>{{ invite.notes }}</a></td>
     <td>
+      <nobr>
       <img class="editbtn" id="id_edit_{{ invite.officer.id }}" src="{% admin_media_prefix %}img/admin/icon_changelink.gif" alt="Edit" title="Edit" style="margin-right: 4px;"/>
       <img class="removebtn" id="id_remove_{{ invite.officer.id }}" src="{{ STATIC_URL }}images/officer-list-remove.gif" alt="Remove" title="Remove" style="margin-right: 4px;"/>
       <img class="emailbtn" id="id_email_{{ invite.officer.id }}" src="{{ STATIC_URL }}images/sendemail.gif" alt="Re-send initial e-mail" title="Re-send initial e-mail" />
+      </nobr>
    </td>
   </tr>
 {% empty %}
