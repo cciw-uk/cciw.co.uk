@@ -13,7 +13,7 @@
 {% for officer in officers_all %}
   <tr id="id_officer_table_tr_{{ officer.id }}">
     <td>{{ officer.first_name }} {{ officer.last_name }}</td>
-    <td>{{ officer.email }}</td>
+    <td><a href="mailto:{{ officer.email }}">{{ officer.email }}</a></td>
     <td>
       <img class="editbtn" id="id_edit_{{ officer.id }}" src="{% admin_media_prefix %}img/admin/icon_changelink.gif" alt="Edit" title="Edit" />
     </td>
