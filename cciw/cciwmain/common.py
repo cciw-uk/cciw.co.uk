@@ -1,7 +1,10 @@
 """
 Utility functions and base classes that are common to all views etc.
 """
-from cciw.cciwmain.utils import python_to_json
+import datetime
+import re
+import urllib
+
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
@@ -9,10 +12,9 @@ from django.http import HttpResponse
 from django.utils.safestring import mark_safe
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
+
+from cciw.cciwmain.utils import python_to_json
 import cciw.middleware.threadlocals as threadlocals
-import datetime
-import re
-import urllib
 
 
 # CBV baseclass functionality
@@ -151,12 +153,14 @@ def get_thisyear():
         _thisyear_timestamp = datetime.datetime.now()
     return _thisyear
 
+
 def standard_subs(value):
     """Standard substitutions made on HTML content"""
     return value.replace('{{thisyear}}', str(get_thisyear()))\
                 .replace('{{media}}', settings.MEDIA_URL)\
                 .replace('{{static}}', settings.STATIC_URL)
 standard_subs.is_safe = True # provided our substitutions don't introduce anything that must be escaped
+
 
 def get_order_option(order_options, request, default_order_by):
     """Get the order_by parameter from the request, if the request
@@ -175,8 +179,10 @@ def get_order_option(order_options, request, default_order_by):
         order_by = default_order_by
     return order_by
 
+
 def create_breadcrumb(links):
     return mark_safe(u" :: ".join(links))
+
 
 def standard_processor(request):
     """
