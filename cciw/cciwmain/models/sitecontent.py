@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.admin.views.main import quote
 from django.utils.safestring import mark_safe
-import cciw.cciwmain.common
+from cciw.cciwmain.common import standard_subs
 import cciw.middleware.threadlocals as threadlocals
 
 class MenuLink(models.Model):
@@ -15,7 +15,6 @@ class MenuLink(models.Model):
         related_name="child_links")
 
     def __unicode__(self):
-        from cciw.cciwmain.common import standard_subs
         return  u"%s [%s]" % (self.url, standard_subs(self.title))
 
     def get_visible_children(self, request):
@@ -44,7 +43,7 @@ class HtmlChunk(models.Model):
     def render(self, request):
         """Render the HTML chunk as HTML, with replacements
         made and any member specific adjustments."""
-        html = cciw.cciwmain.common.standard_subs(self.html)
+        html = standard_subs(self.html)
         user = threadlocals.get_current_user()
         if user and not user.is_anonymous() and user.is_staff \
             and user.has_perm('cciwmain.change_htmlchunk'):
