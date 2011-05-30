@@ -188,6 +188,7 @@ _MIDDLEWARE_CLASSES = (
 #    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
     (DEVBOX,     "output_validator.middleware.ValidatorMiddleware"),
     (True,       'django.middleware.csrf.CsrfViewMiddleware'),
+    (True,       'django.middleware.clickjacking.XFrameOptionsMiddleware'),
     (True,       "django.contrib.sessions.middleware.SessionMiddleware"),
     (True,       "django.contrib.messages.middleware.MessageMiddleware"),
     (True,       "django.contrib.auth.middleware.AuthenticationMiddleware"),
