@@ -184,7 +184,6 @@ else:
 _MIDDLEWARE_CLASSES = (
     (DEVBOX,     "cciw.middleware.http.ActAsProxy"),
     (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
-    (LIVEBOX and PRODUCTION, "cciw.middleware.http.ForceSSLMiddleware"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
 #    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
     (DEVBOX,     "output_validator.middleware.ValidatorMiddleware"),

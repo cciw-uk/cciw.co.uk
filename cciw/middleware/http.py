@@ -1,5 +1,6 @@
 from django.http import HttpResponsePermanentRedirect
 
+
 class WebFactionFixes(object):
     """
     Middleware that applies some fixes for people using
@@ -30,17 +31,6 @@ class WebFactionFixes(object):
         if 'HTTP_X_FORWARDED_SSL' in request.META:
             request.is_secure = lambda: request.META['HTTP_X_FORWARDED_SSL'] == 'on'
 
-class ForceSSLMiddleware(object):
-    """
-    Middleware that performs redirects from HTTP to HTTPS.
-    """
-    # We need SESSION_COOKIE_SECURE = True to have any genuine security over
-    # SSH.  But it is a global setting, so sessions won't work over
-    # HTTP. Therefore need to force everything to be HTTPS.
-    def process_view(self, request, view_func, view_args, view_kwargs):
-        if not request.is_secure():
-            newurl = "https://%s%s" % (request.get_host(), request.get_full_path())
-            return HttpResponsePermanentRedirect(newurl)
 
 class ActAsProxy(object):
     """
