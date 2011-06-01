@@ -110,6 +110,7 @@ else:
 
 if LIVEBOX and PRODUCTION:
     SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 ######  TEMPLATES  ###########
 
