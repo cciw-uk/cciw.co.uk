@@ -89,7 +89,11 @@ class ApplicationAdminModelForm(forms.ModelForm):
 
 class ApplicationAdmin(admin.ModelAdmin):
     save_as = False
-    list_display = ('full_name', 'officer', 'finished', 'date_submitted')
+    def officer_username(self, obj):
+        return obj.officer.username
+    officer_username.admin_order_field = 'officer__username'
+    officer_username.short_description = 'username'
+    list_display = ('full_name', 'officer_username', 'finished', 'date_submitted')
     list_filter = ('finished','date_submitted')
     ordering = ('full_name',)
     search_fields = ('full_name',)
