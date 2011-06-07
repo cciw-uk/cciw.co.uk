@@ -17,6 +17,7 @@ OFFICER = (OFFICER_USERNAME, OFFICER_PASSWORD)
 
 LEADER_USERNAME = 'davestott'
 LEADER_PASSWORD = 'test_normaluser_password'
+LEADER_EMAIL = 'leader@somewhere.com'
 LEADER = (LEADER_USERNAME, LEADER_PASSWORD)
 
 # Data: Applications 1 to 3 are in year 2000, for camps in summer 2000
@@ -76,7 +77,9 @@ class RequestReference(TwillMixin, TestCase):
         tc.find("The following e-mail")
         tc.formvalue("2", "send", "send")
         tc.submit()
-        self.assertEqual(len([e for e in mail.outbox if "Reference for" in e.subject]), 1)
+        msgs = [e for e in mail.outbox if "Reference for" in e.subject]
+        self.assertEqual(len(msgs), 1)
+        self.assertEqual(msgs[0].extra_headers.get('Reply-To', ''), LEADER_EMAIL)
 
     def test_no_email(self):
         """
@@ -167,6 +170,21 @@ class RequestReference(TwillMixin, TestCase):
         tc.find("If you have confirmed")
         tc.find("""email address is now "Mr Referee1 Name &lt;a_new_email_for_ref1@example.com&gt;",""")
 
+    def test_nag(self):
+        """
+        Tests for 'nag officer' page
+        """
+        app = Application.objects.get(pk=1)
+        refinfo = app.references[0]
+        self._twill_login(LEADER)
+        tc.go(make_django_url("cciw.officers.views.nag_by_officer", year=2000, number=1) + "?ref_id=%d" % refinfo.id)
+        tc.code(200)
+        tc.find("to nag their referee")
+        tc.formvalue("1", "send", "send")
+        tc.submit()
+        msgs = [e for e in mail.outbox if "Need reference from" in e.subject]
+        self.assertEqual(len(msgs), 1)
+        self.assertEqual(msgs[0].extra_headers.get('Reply-To', ''), LEADER_EMAIL)
 
 class CreateReference(TwillMixin, TestCase):
     """

@@ -6,7 +6,7 @@ from cciw.officers.email_utils import send_mail_with_attachments, formatted_emai
 from cciw.officers.references import reference_form_to_text
 from django.conf import settings
 from django.contrib import messages
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.core.urlresolvers import reverse
 from django.utils.crypto import salted_hmac
 import cciw.middleware.threadlocals as threadlocals
@@ -193,14 +193,13 @@ def make_ref_form_url(ref_id, prev_ref_id):
                                                    hash=make_ref_form_url_hash(ref_id, prev_ref_id))))
 
 
-def send_reference_request_email(message, ref):
+def send_reference_request_email(message, ref, sending_officer):
     officer = ref.application.officer
-    send_mail_with_attachments("Reference for %s %s" % (officer.first_name, officer.last_name),
-                               message,
-                               settings.DEFAULT_FROM_EMAIL,
-                               [ref.referee.email],
-                               fail_silently=False)
-
+    EmailMessage(subject="Reference for %s %s" % (officer.first_name, officer.last_name),
+                 body=message,
+                 from_email=settings.DEFAULT_FROM_EMAIL,
+                 to=[ref.referee.email],
+                 headers={'Reply-To': sending_officer.email}).send()
 
 def send_leaders_reference_email(refform):
     """
@@ -227,12 +226,12 @@ CCIW website for officer %s %s.
                   leader_emails, fail_silently=False)
 
 
-def send_nag_by_officer(message, officer, ref):
-    send_mail("Need reference from %s" % ref.referee.name,
-              message,
-              settings.DEFAULT_FROM_EMAIL,
-              [officer.email],
-              fail_silently=False)
+def send_nag_by_officer(message, officer, ref, sending_officer):
+    EmailMessage(subject="Need reference from %s" % ref.referee.name,
+                 body=message,
+                 from_email=settings.DEFAULT_FROM_EMAIL,
+                 to=[officer.email],
+                 headers={'Reply-To': sending_officer.email}).send()
 
 
 def send_crb_consent_problem_email(message, officer, camps):

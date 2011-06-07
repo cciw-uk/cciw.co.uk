@@ -456,6 +456,7 @@ def request_reference(request, year=None, number=None):
                             applicant=app.officer,
                             camp=camp,
                             url=url,
+                            sender=request.user,
                             update=update)
     emailform = None
     messageform = None
@@ -464,7 +465,7 @@ def request_reference(request, year=None, number=None):
         if 'send' in request.POST:
             messageform = SendReferenceRequestForm(request.POST, message_info=messageform_info)
             if messageform.is_valid():
-                send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), ref)
+                send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), ref, request.user)
                 ref.requested = True
                 ref.log_request_made(request.user, datetime.datetime.now())
                 ref.save()
@@ -509,6 +510,7 @@ def nag_by_officer(request, year=None, number=None):
     c = {}
     messageform_info = dict(referee=ref.referee,
                             officer=officer,
+                            sender=request.user,
                             camp=camp)
 
     if request.method == 'POST':
@@ -516,7 +518,8 @@ def nag_by_officer(request, year=None, number=None):
             messageform = SendNagByOfficerForm(request.POST, message_info=messageform_info)
             # It's impossible for the form to be invalid, so assume valid
             messageform.is_valid()
-            send_nag_by_officer(wordwrap(messageform.cleaned_data['message'], 70), officer, ref)
+            send_nag_by_officer(wordwrap(messageform.cleaned_data['message'], 70),
+                                officer, ref, request.user)
             return close_window_response()
         else:
             # cancel
