@@ -1,23 +1,11 @@
 from django.conf.urls.defaults import patterns, url
-import cciw.cciwmain.common as cciw_common
-from cciw.cciwmain.common import DefaultMetaData
-from cciw.forums.models import Award
 from django.conf import settings
-from django.views.generic.list import ListView
-
-class AwardList(DefaultMetaData, ListView):
-    metadata_title = "Website Awards"
-    template_name = "cciw/awards/index.html"
-    queryset = Award.objects.order_by('-year', '-value')
 
 # Forums and news items are tightly integrated (read: tangled) into the main
 # site, and always have been, so URLs and some view code for forums are part of
 # the 'cciwmain' app rather than the 'forums' app.
 
 urlpatterns = \
-patterns('',
-         url(r'^awards/$', AwardList.as_view(), name="cciwmain.awards.index"),
-) + \
 patterns('cciw.cciwmain.views',
     # Members
     (r'^login/$', 'members.login'),
@@ -71,6 +59,9 @@ patterns('cciw.cciwmain.views',
     (r'^website/forum/edit_poll/(?P<poll_id>\d+)/$', 'edit_poll', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
     (r'^website/forum/(?P<topicid>\d+)/$', 'topic', {'title_start': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+
+    url(r'^awards/$', 'award_index'),
+
 
     # Shortcuts
     (r'^posts/$', 'all_posts'),

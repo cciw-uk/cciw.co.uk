@@ -9,8 +9,9 @@ from django import forms
 from django.forms import widgets
 from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
+from django.views.generic.list import ListView
 
-from cciw.forums.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission, Poll, PollOption
+from cciw.forums.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission, Poll, PollOption, Award
 from cciw.cciwmain.common import create_breadcrumb, get_order_option, object_list, DefaultMetaData, AjaxyFormView
 from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.decorators import login_redirect
@@ -650,3 +651,10 @@ def news(request):
                       paginate_by=settings.FORUM_PAGINATE_NEWS_BY,
                       default_order= ('-created_at',)
                       )
+
+class AwardList(DefaultMetaData, ListView):
+    metadata_title = "Website Awards"
+    template_name = "cciw/awards/index.html"
+    queryset = Award.objects.order_by('-year', '-value')
+
+award_index = AwardList.as_view()
