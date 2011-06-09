@@ -1,6 +1,6 @@
 from BeautifulSoup import BeautifulSoup
 from django.test import TestCase
-from cciw.cciwmain.tests.client import CciwClient, get_context_var
+from cciw.cciwmain.tests.client import CciwClient
 from cciw.cciwmain.tests.forums import CreatePollPage, ADD_POLL_URL
 from cciw.cciwmain.decorators import LOGIN_FORM_KEY
 from cciw.cciwmain.tests import members

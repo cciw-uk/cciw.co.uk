@@ -38,17 +38,6 @@ class CciwClient(client.Client):
     def member_logout(self):
         self.cookies.clear()
 
-def get_context_var(context_list, var, default=None):
-    """Returns a context variable from the Django response.context object"""
-    if isinstance(context_list, list):
-        for d in reversed(context_list):
-            if d.has_key(var):
-                return d[var]
-    else:
-        if context_list.has_key(var):
-            return context_list[var]
-    return default
-
 
 class RequestFactory(client.RequestFactory):
 
