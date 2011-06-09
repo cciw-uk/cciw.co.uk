@@ -1,7 +1,7 @@
 [
     {
         "pk": 1,
-        "model": "cciwmain.member", 
+        "model": "forums.member", 
         "fields": {
             "user_name": "test_member_1",
             "dummy_member": false, 
@@ -22,14 +22,14 @@
     }, 
     {
         "pk": 1, 
-        "model": "cciwmain.permission", 
+        "model": "forums.permission", 
         "fields": {
             "description": "Poll creator"
         }
     }, 
     {
         "pk": 2,
-        "model": "cciwmain.member", 
+        "model": "forums.member", 
         "fields": {
             "user_name": "test_poll_creator_1",
             "dummy_member": false, 

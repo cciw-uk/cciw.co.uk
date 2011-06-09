@@ -132,17 +132,17 @@
                 ], 
                 [
                     "add_newsitem", 
-                    "cciwmain", 
+                    "forums", 
                     "newsitem"
                 ], 
                 [
                     "change_newsitem", 
-                    "cciwmain", 
+                    "forums", 
                     "newsitem"
                 ], 
                 [
                     "delete_newsitem", 
-                    "cciwmain", 
+                    "forums", 
                     "newsitem"
                 ], 
                 [

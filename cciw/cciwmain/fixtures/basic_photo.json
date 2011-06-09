@@ -1,7 +1,7 @@
 [
     {
         "pk": "1",
-        "model": "cciwmain.gallery",
+        "model": "forums.gallery",
         "fields": {
             "needs_approval": true,
             "location": "camps/2000/1/photos/"
@@ -9,7 +9,7 @@
     },
     {
         "pk": "1",
-        "model": "cciwmain.photo",
+        "model": "forums.photo",
         "fields": {
             "created_at": "2006-09-03 12:16:57",
             "open": true,
@@ -26,7 +26,7 @@
     },
     {
         "pk": "2",
-        "model": "cciwmain.post",
+        "model": "forums.post",
         "fields": {
             "hidden": false,
             "needs_approval": false,

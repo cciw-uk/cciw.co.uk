@@ -1,7 +1,7 @@
 [
     {
         "pk": "1", 
-        "model": "cciwmain.forum", 
+        "model": "forums.forum", 
         "fields": {
             "open": true, 
             "location": "camps/2000/1/forum/"
@@ -9,7 +9,7 @@
     }, 
     {
         "pk": "1", 
-        "model": "cciwmain.topic", 
+        "model": "forums.topic", 
         "fields": {
             "poll": null, 
             "forum": 1, 
@@ -29,7 +29,7 @@
     }, 
     {
         "pk": "1", 
-        "model": "cciwmain.post", 
+        "model": "forums.post", 
         "fields": {
             "hidden": false, 
             "needs_approval": false, 
