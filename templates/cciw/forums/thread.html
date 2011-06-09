@@ -2,6 +2,7 @@
 {% load standardpage %}
 {% load view_extras %}
 {% load forums %}
+{% load url from future %}
 {% block content %}
 	{% block thread_top %}{% endblock %}
 
@@ -37,7 +38,7 @@
 							<br/><span class="postHiddenMsg">HIDDEN</span> (awaiting moderator approval)
 						{% endif %}
 					{% endif %}
-					{% if moderator %}&nbsp;<span class="editPost"><a href="/admin/cciwmain/post/{{ post.id }}/" title="Edit this post" ><img width="16" height="16" src="{{ STATIC_URL }}images/edit.png" alt="Edit this post" /></a></span>
+					{% if moderator %}&nbsp;<span class="editPost"><a href="{% url 'admin:forums_post_change' post.id %}" title="Edit this post" ><img width="16" height="16" src="{{ STATIC_URL }}images/edit.png" alt="Edit this post" /></a></span>
 					{% endif %}
 				</td>
 				<td class="postMessage" id="id{{ post.id }}">
