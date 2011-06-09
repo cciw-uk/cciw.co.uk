@@ -60,7 +60,7 @@ patterns('cciw.cciwmain.views',
     (r'^website/forum/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
 
-    url(r'^awards/$', 'forums.award_index'),
+    url(r'^awards/$', 'awards.index'),
 
 
     # Shortcuts

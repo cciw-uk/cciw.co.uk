@@ -651,10 +651,3 @@ def news(request):
                       paginate_by=settings.FORUM_PAGINATE_NEWS_BY,
                       default_order= ('-created_at',)
                       )
-
-class AwardList(DefaultMetaData, ListView):
-    metadata_title = "Website Awards"
-    template_name = "cciw/awards/index.html"
-    queryset = Award.objects.order_by('-year', '-value')
-
-award_index = AwardList.as_view()
