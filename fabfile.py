@@ -341,12 +341,19 @@ def _deploy(target, quick=False):
         _update_virtualenv(version)
         _build_static(version)
 
-        _stop_apache(target)
+        # Ideally, we:
+        # 1) stop web server
+        # 2) updated db
+        # 3) rollback if unsuccessful.
+        # 4) restart webserver
+
+        # In practice, for this low traffic site it is better to keep website
+        # going for as much time as possible, and cope with any small bugs that
+        # come from mismatch of db and code.
+
         db_backup_name = backup_database(target, version)
-        # Ideally, we rollback if unsuccessful.
-        # In practice, this may be impossible for some migrations,
-        # and we are better off restoring from the backup db.
         _update_db(target, version)
+        _stop_apache(target)
         _update_symlink(target, version)
         _start_apache(target)
 
