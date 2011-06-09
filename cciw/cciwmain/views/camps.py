@@ -6,11 +6,11 @@ from django.conf import settings
 
 from cciw.cciwmain.models import Camp, HtmlChunk
 from cciw.forums.models import Forum, Gallery, Photo
+from cciw.forums.views import forums as forums_views
 from cciw.cciwmain.common import create_breadcrumb, get_thisyear, standard_subs
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain.templatetags import bbcode
 import cciw.cciwmain.utils as utils
-import cciw.forums.views as forums_views
 
 
 def index(request, year=None):

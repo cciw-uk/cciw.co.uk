@@ -6,7 +6,7 @@ from cciw.forums.models import Topic, Member, NewsItem, Post, Forum
 from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME
 from cciw.cciwmain.tests.client import CciwClient, RequestFactory
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
-from cciw.forums import views as forums_views
+from cciw.forums.views import forums as forums_views
 
 
 class NewsPage(TestCase):

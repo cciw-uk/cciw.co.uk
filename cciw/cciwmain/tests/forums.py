@@ -5,7 +5,7 @@ from django.conf import settings
 from django.test import TestCase
 from cciw.forums.models import Topic, Member, Poll, Forum, Post, Photo, Gallery
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
-from cciw.forums import views as forums_views
+from cciw.forums.views import forums as forums_views
 from django.core.urlresolvers import reverse
 from datetime import datetime
 from cciw.cciwmain import decorators
@@ -81,7 +81,7 @@ class AllTopicsPage(TestCase):
         init_query_caches()
 
     def path(self):
-        return reverse("cciw.forums.views.all_topics")
+        return reverse("cciw.forums.views.forums.all_topics")
 
     def test_get(self):
         response = self.client.get(self.path())
@@ -273,7 +273,7 @@ class AllPostsPage(TestCase):
         init_query_caches()
 
     def path(self):
-        return reverse("cciw.forums.views.all_posts")
+        return reverse("cciw.forums.views.forums.all_posts")
 
     def test_get(self):
         response = self.client.get(self.path())

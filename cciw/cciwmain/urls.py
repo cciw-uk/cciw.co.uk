@@ -46,27 +46,27 @@ patterns('cciw.cciwmain.views',
 
 ) + patterns('cciw.forums.views',
     # News
-    url(r'^news/$', 'news', name= 'cciwmain.site-news-index'),
-    (r'^news/(?P<topicid>\d+)/$', 'topic', {'title_start': 'News'},
+    url(r'^news/$', 'forums.news', name= 'cciwmain.site-news-index'),
+    (r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'},
      'cciwmain.site-news-detail'),
 
     # Misc website stuff
-    (r'^website/forum/$', 'topicindex', {'title': 'Website forum',
+    (r'^website/forum/$', 'forums.topicindex', {'title': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/add/$', 'add_topic', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/add_news/$', 'add_news', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/add_poll/$', 'edit_poll', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/edit_poll/(?P<poll_id>\d+)/$', 'edit_poll', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/(?P<topicid>\d+)/$', 'topic', {'title_start': 'Website forum',
+    (r'^website/forum/add/$', 'forums.add_topic', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+    (r'^website/forum/add_news/$', 'forums.add_news', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+    (r'^website/forum/add_poll/$', 'forums.edit_poll', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+    (r'^website/forum/edit_poll/(?P<poll_id>\d+)/$', 'forums.edit_poll', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+    (r'^website/forum/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
 
-    url(r'^awards/$', 'award_index'),
+    url(r'^awards/$', 'forums.award_index'),
 
 
     # Shortcuts
-    (r'^posts/$', 'all_posts'),
-    (r'^posts/(?P<id>\d+)/$', 'post'),
-    (r'^topics/$', 'all_topics'),
+    (r'^posts/$', 'forums.all_posts'),
+    (r'^posts/(?P<id>\d+)/$', 'forums.post'),
+    (r'^topics/$', 'forums.all_topics'),
 
 ) + patterns('cciw.cciwmain.views',
 
