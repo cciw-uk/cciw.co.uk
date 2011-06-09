@@ -53,7 +53,7 @@
 	<div id="contentOuter">
 		<div id="content">
 			<div id="pageTitle">
-				<h1>{{ title }}</h1>
+				<h1>{% block pagetitle %}{{ title }}{% endblock %}</h1>
 			</div>
 			<div id="contentBody">
 				{% block breadcrumb %}
