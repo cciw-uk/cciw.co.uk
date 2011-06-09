@@ -23,7 +23,7 @@ def set_current_member(member):
     _thread_locals.member = member
 
 def _get_member_from_request(request):
-    from cciw.cciwmain.models import Member
+    from cciw.forums.models import Member
     try:
         return Member.objects.get(user_name=request.session['member_id'])
     except (KeyError, Member.DoesNotExist):

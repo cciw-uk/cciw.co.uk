@@ -36,7 +36,7 @@ def member_required_generic(except_methods):
         user to log in.  It is also used by the normal '/login/' view.
         """
 
-        from cciw.cciwmain.models import Member
+        from cciw.forums.models import Member
         def _checklogin(request, *args, **kwargs):
 
             if request.method in except_methods or get_current_member() is not None:

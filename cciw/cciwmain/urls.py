@@ -1,7 +1,8 @@
 from django.conf.urls.defaults import patterns, url
 import cciw.cciwmain.common as cciw_common
 from cciw.cciwmain.common import DefaultMetaData
-from cciw.cciwmain.models import Site, Award
+from cciw.cciwmain.models import Site
+from cciw.forums.models import Award
 from django.conf import settings
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView

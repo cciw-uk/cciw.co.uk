@@ -15,7 +15,7 @@ from twill import commands as tc
 from twill.shell import TwillCommandLoop
 import twill
 
-from cciw.cciwmain.models import Member, Message
+from cciw.forums.models import Member, Message
 from cciw.cciwmain.tests.client import CciwClient, RequestFactory
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt

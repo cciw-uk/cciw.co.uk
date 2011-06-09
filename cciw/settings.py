@@ -63,6 +63,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'cciw.cciwmain',
+    'cciw.forums',
     'cciw.officers',
     'cciw.utils',
     'django.contrib.messages',

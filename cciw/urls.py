@@ -5,10 +5,10 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 
 import cciw.officers.views
-import mailer.admin # Make sure this gets imported, so that it shows in admin
 
 handler404 = 'cciw.cciwmain.views.handler404'
 
+admin.autodiscover()
 
 autocomplete.register(
     id='user',
@@ -18,7 +18,6 @@ autocomplete.register(
     label=lambda user: "%s %s <%s>" % (user.first_name, user.last_name, user.email),
     auth=lambda request: request.user.is_authenticated() and cciw.officers.views._is_camp_admin(request.user)
     )
-
 
 urlpatterns = patterns('',
     # Plug in the password reset views

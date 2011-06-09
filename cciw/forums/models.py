@@ -1,16 +1,400 @@
-from django.db import models
-from django.utils.safestring import mark_safe
-from cciw.cciwmain.models.members import Member
-from cciw.cciwmain.models.polls import Poll
-from datetime import datetime
-from django.contrib.auth.models import User
+from datetime import datetime, timedelta
+import operator
+import os
 import re
+
+
 from django.conf import settings
-import cciw.middleware.threadlocals as threadlocals
+from django.contrib.auth.models import User
+from django.core import mail
+from django.db import models
 from django.utils.html import escape
+from django.utils.safestring import mark_safe
+
+from cciw.cciwmain import common
+from cciw.middleware import threadlocals
+import cciw.middleware.threadlocals as threadlocals
+
 
 # regex used to match forums that belong to camps
 _camp_forum_re = re.compile('^' + settings.CAMP_FORUM_RE + '$')
+
+
+class Permission(models.Model):
+    POLL_CREATOR = "Poll creator"
+    NEWS_CREATOR = "News creator"
+
+    id = models.PositiveSmallIntegerField("ID", primary_key=True)
+    description = models.CharField("Description", max_length=40)
+
+    def __unicode__(self):
+        return self.description
+
+    class Meta:
+        ordering = ('id',)
+
+
+class UserSpecificMembers(models.Manager):
+
+    def get_query_set(self):
+        user = threadlocals.get_current_user()
+        if threadlocals.is_web_request() and \
+           (user is None or user.is_anonymous() or not user.is_staff or \
+            not user.has_perm('cciwmain.change_member')):
+            return super(UserSpecificMembers, self).get_query_set().filter(hidden=False)
+        else:
+            return super(UserSpecificMembers, self).get_query_set()
+
+    def get_by_natural_key(self, user_name):
+        return self.get(user_name=user_name)
+
+
+class Member(models.Model):
+    """Represents a user of the CCIW message boards."""
+    MESSAGES_NONE = 0
+    MESSAGES_WEBSITE = 1
+    MESSAGES_EMAIL = 2
+    MESSAGES_EMAIL_AND_WEBSITE = 3
+
+    MODERATE_OFF = 0
+    MODERATE_NOTIFY = 1
+    MODERATE_ALL = 2
+
+    MESSAGE_OPTIONS = (
+        (MESSAGES_NONE,     u"Don't allow messages"),
+        (MESSAGES_WEBSITE,  u"Store messages on the website"),
+        (MESSAGES_EMAIL,    u"Send messages via email"),
+        (MESSAGES_EMAIL_AND_WEBSITE, u"Store messages and send via email")
+    )
+
+    MODERATE_OPTIONS = (
+        (MODERATE_OFF,      u"Off"),
+        (MODERATE_NOTIFY,   u"Unmoderated, but notify"),
+        (MODERATE_ALL,      u"Fully moderated")
+    )
+
+    user_name   = models.CharField("User name", max_length=30, unique=True)
+    real_name   = models.CharField("'Real' name", max_length=30, blank=True)
+    email       = models.EmailField("Email address")
+    password    = models.CharField("Password", max_length=30)
+    date_joined = models.DateTimeField("Date joined", null=True)
+    last_seen   = models.DateTimeField("Last on website", null=True)
+    show_email  = models.BooleanField("Make email address visible", default=False)
+    message_option = models.PositiveSmallIntegerField("Message storing",
+        choices=MESSAGE_OPTIONS, default=1)
+    comments    = models.TextField("Comments", blank=True)
+    moderated   = models.PositiveSmallIntegerField("Moderated", default=0,
+        choices=MODERATE_OPTIONS)
+    hidden      = models.BooleanField("Hidden", default=False)
+    banned      = models.BooleanField("Banned", default=False)
+    permissions = models.ManyToManyField(Permission,
+        verbose_name="permissions", related_name="member_with_permission",
+        blank=True, null=True)
+    icon         = models.ImageField("Icon", upload_to=settings.MEMBER_ICON_UPLOAD_PATH, blank=True)
+    dummy_member = models.BooleanField("Dummy member status", default=False) # supports ancient posts in message boards
+
+    # Managers
+    objects = UserSpecificMembers()
+    all_objects = models.Manager()
+
+    def __unicode__(self):
+        return self.user_name
+
+    def natural_key(self):
+        return self.user_name
+
+    def get_absolute_url(self):
+        if self.dummy_member:
+            return None
+        else:
+            return common.get_member_href(self.user_name)
+
+    def get_link(self):
+        if self.dummy_member:
+            return self.user_name
+        else:
+            return common.get_member_link(self.user_name)
+
+    def get_icon(self):
+        user_name = self.user_name.strip()
+        if user_name.startswith(u"'"): # dummy user
+            return u''
+        else:
+            return mark_safe(u'<img src="%s%s/%s.png" class="userIcon" alt="icon" />'
+                             % (settings.MEDIA_URL, settings.MEMBER_ICON_PATH, user_name))
+
+    def check_password(self, plaintextPass):
+        """Checks a password is correct"""
+        import crypt
+        return crypt.crypt(plaintextPass, self.password) == self.password
+
+    def new_messages(self):
+        return self.messages_received.filter(box=Message.MESSAGE_BOX_INBOX).count()
+
+    def saved_messages(self):
+        return self.messages_received.filter(box=Message.MESSAGE_BOX_SAVED).count()
+
+    def has_perm(self, perm):
+        """Does the member has the specified permission?
+        perm is one of the permission constants in Permission."""
+        return len(self.permissions.filter(description=perm)) > 0
+
+    @property
+    def can_add_news(self):
+        return self.has_perm(Permission.NEWS_CREATOR)
+
+    @property
+    def can_add_poll(self):
+        return self.has_perm(Permission.POLL_CREATOR)
+
+    @staticmethod
+    def generate_salt():
+        import random, datetime
+        rand64= "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+        random.seed(datetime.datetime.today().microsecond)
+        return rand64[int(random.random()*64)] + rand64[int(random.random()*64)]
+
+    @staticmethod
+    def encrypt_password(memberPass):
+        import crypt
+        """Encrypt a members password"""
+        # written to maintain compatibility with existing password file
+        return crypt.crypt(memberPass, Member.generate_salt())
+
+    class Meta:
+        ordering = ('user_name',)
+
+
+class Award(models.Model):
+    name = models.CharField("Award name", max_length=50)
+    value = models.SmallIntegerField("Value")
+    year = models.PositiveSmallIntegerField("Year")
+    description = models.CharField("Description", max_length=200)
+    image = models.ImageField("Award image",
+        upload_to=settings.AWARD_UPLOAD_PATH)
+
+    def __unicode__(self):
+        return self.name + u" " + unicode(self.year)
+
+    def nice_name(self):
+        return str(self)
+
+    def imageurl(self):
+        return self.image.url
+
+    def get_absolute_url(self):
+        from django.template.defaultfilters import slugify
+        return "/awards/#" + slugify(unicode(self))
+
+    class Meta:
+        ordering = ('-year', 'name',)
+
+
+class PersonalAwardManager(models.Manager):
+
+    def get_query_set(self, *args, **kwargs):
+        qs = super(PersonalAwardManager, self).get_query_set(*args, **kwargs)
+        return qs.select_related('member')
+
+
+class PersonalAward(models.Model):
+    reason = models.CharField("Reason for award", max_length=200)
+    date_awarded = models.DateField("Date awarded", null=True, blank=True)
+    award = models.ForeignKey(Award,
+        verbose_name="award",
+        related_name="personal_awards")
+    member = models.ForeignKey(Member,
+        verbose_name="member",
+        related_name="personal_awards")
+
+    objects = PersonalAwardManager()
+
+    def __unicode__(self):
+        return "%s to %s" % (self.award.name, self.member.user_name)
+
+    class Meta:
+        ordering = ('date_awarded',)
+
+
+class Message(models.Model):
+    MESSAGE_BOX_INBOX = 0
+    MESSAGE_BOX_SAVED = 1
+
+    MESSAGE_BOXES = (
+        (MESSAGE_BOX_INBOX, "Inbox"),
+        (MESSAGE_BOX_SAVED, "Saved")
+    )
+    from_member = models.ForeignKey(Member,
+        verbose_name="from member",
+        related_name="messages_sent"
+    )
+    to_member = models.ForeignKey(Member,
+        verbose_name="to member",
+        related_name="messages_received")
+    time = models.DateTimeField("At")
+    text = models.TextField("Message")
+    box = models.PositiveSmallIntegerField("Message box",
+        choices=MESSAGE_BOXES)
+
+    @staticmethod
+    def send_message(to_member, from_member, text):
+        if to_member.message_option == Member.MESSAGES_NONE:
+            return
+        if to_member.message_option != Member.MESSAGES_EMAIL:
+            msg = Message(to_member=to_member, from_member=from_member,
+                        text=text, time=datetime.now(),
+                        box=Message.MESSAGE_BOX_INBOX)
+            msg.save()
+        if to_member.message_option != Member.MESSAGES_WEBSITE:
+            mail.send_mail("Message on cciw.co.uk",
+"""You have received a message on cciw.co.uk from user %(from)s:
+
+%(message)s
+----
+You can view your inbox here:
+https://%(domain)s/members/%(to)s/messages/inbox/
+
+You can reply here:
+https://%(domain)s/members/%(from)s/messages/
+
+""" % {'from': from_member.user_name, 'to': to_member.user_name,
+        'domain': common.get_current_domain(), 'message': text},
+        "website@cciw.co.uk", [to_member.email])
+        return msg
+
+
+    def __unicode__(self):
+        return u"[%s] to %s from %s" % (unicode(self.id), unicode(self.to_member), unicode(self.from_member))
+
+    class Meta:
+        ordering = ('-time',)
+
+
+VOTING_RULES = (
+    (0, u"Unlimited"),
+    (1, u"'X' votes per member"),
+    (2, u"'X' votes per member per day")
+)
+
+class Poll(models.Model):
+    UNLIMITED = 0
+    X_VOTES_PER_USER = 1
+    X_VOTES_PER_USER_PER_DAY = 2
+
+    title = models.CharField("Title", max_length=100)
+    intro_text = models.CharField("Intro text", max_length=400, blank=True)
+    outro_text = models.CharField("Closing text", max_length=400, blank=True)
+    voting_starts = models.DateTimeField("Voting starts")
+    voting_ends = models.DateTimeField("Voting ends")
+    rules = models.PositiveSmallIntegerField("Rules",
+        choices=VOTING_RULES)
+    rule_parameter = models.PositiveSmallIntegerField("Parameter for rule",
+        default=1)
+    have_vote_info = models.BooleanField("Full vote information available",
+        default=True)
+    created_by = models.ForeignKey(Member, verbose_name="created by",
+        related_name="polls_created")
+
+    def __unicode__(self):
+        return self.title
+
+    def can_vote(self, member):
+        """Returns true if member can vote on the poll"""
+        if not self.can_anyone_vote():
+            return False
+        if not self.have_vote_info:
+            # Can't calculate this, but it will only happen
+            # for legacy polls, which are all closed.
+            return True
+        if self.rules == Poll.UNLIMITED:
+            return True
+        queries = [] # queries representing users relevant votes
+        for po in self.poll_options.all():
+            if self.rules == Poll.X_VOTES_PER_USER:
+                queries.append(po.votes.filter(member=member.pk))
+            elif self.rules == Poll.X_VOTES_PER_USER_PER_DAY:
+                queries.append(po.votes.filter(member=member.pk,
+                                                date__gte=datetime.now() - timedelta(1)))
+        # combine them all and do an SQL count.
+        if len(queries) == 0:
+            return False # no options to vote on!
+        count = reduce(operator.or_, queries).count()
+        if count >= self.rule_parameter:
+            return False
+        else:
+            return True
+
+    def total_votes(self):
+        return self.poll_options.all().aggregate(models.Sum('total'))['total__sum']
+
+    def can_anyone_vote(self):
+        return (self.voting_ends > datetime.now()) and \
+            (self.voting_starts < datetime.now())
+
+    def verbose_rules(self):
+        if self.rules == Poll.UNLIMITED:
+            return u"Unlimited number of votes."
+        elif self.rules == Poll.X_VOTES_PER_USER:
+            return u"%s vote(s) per user." % self.rule_parameter
+        elif self.rules == Poll.X_VOTES_PER_USER_PER_DAY:
+            return u"%s vote(s) per user per day." % self.rule_parameter
+
+    class Meta:
+        ordering = ('title',)
+
+class PollOption(models.Model):
+    text = models.CharField("Option text", max_length=200)
+    total = models.PositiveSmallIntegerField("Number of votes")
+    poll = models.ForeignKey(Poll, verbose_name="Associated poll",
+        related_name="poll_options")
+    listorder = models.PositiveSmallIntegerField("Order in list")
+
+    def __unicode__(self):
+        return self.text
+
+    def percentage(self):
+        """
+        Get the percentage of votes this option got
+        compared to the total number of votes in the whole. Return
+        'n/a' if total votes = 0
+        """
+        sum = self.poll.total_votes()
+        if sum == 0:
+            return 'n/a'
+        else:
+            if self.total == 0:
+                return '0%'
+            else:
+                return '%.1f' % (float(self.total)/sum*100) + '%'
+
+    def bar_width(self):
+        sum = self.poll.total_votes()
+        if sum == 0:
+            return 0
+        else:
+            return int(float(self.total)/sum*300)
+
+    class Meta:
+        ordering = ('poll', 'listorder',)
+
+class VoteInfo(models.Model):
+    poll_option = models.ForeignKey(PollOption,
+        related_name="votes")
+    member = models.ForeignKey(Member,
+        verbose_name="member",
+        related_name="poll_votes")
+    date = models.DateTimeField("Date")
+
+    def save(self):
+        # Manually update the parent
+        #  - this is the easiest way for vote counts to work
+        #    with legacy polls that don't have VoteInfo objects
+        is_new = (self.id is None)
+        super(VoteInfo, self).save()
+        if is_new:
+            self.poll_option.total += 1
+        self.poll_option.save()
+
 
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
@@ -35,9 +419,6 @@ class Forum(models.Model):
         else:
             return u"forum at %s" % self.location
 
-
-    class Meta:
-        app_label = "cciwmain"
 
 class NewsItem(models.Model):
     created_by = models.ForeignKey(Member, related_name="news_items_created")
@@ -64,8 +445,8 @@ class NewsItem(models.Model):
                                        subject=subject)
 
     class Meta:
-        app_label = "cciwmain"
         ordering = ('-created_at',)
+
 
 class UserSpecificTopics(models.Manager):
     def get_query_set(self):
@@ -83,6 +464,7 @@ class UserSpecificTopics(models.Manager):
                 return queryset.filter(hidden=False)
         else:
             return queryset
+
 
 class Topic(models.Model):
     subject = models.CharField("Subject", max_length=240)
@@ -141,8 +523,8 @@ class Topic(models.Model):
         return topic
 
     class Meta:
-        app_label = "cciwmain"
         ordering = ('-started_by',)
+
 
 class Gallery(models.Model):
     location = models.CharField("Location/URL", max_length=50)
@@ -155,9 +537,9 @@ class Gallery(models.Model):
         return '/' + self.location
 
     class Meta:
-        app_label = "cciwmain"
         verbose_name_plural = "Galleries"
         ordering = ('-location',)
+
 
 class UserSpecificPhotos(models.Manager):
     def get_query_set(self):
@@ -170,6 +552,7 @@ class UserSpecificPhotos(models.Manager):
             return queryset.filter(hidden=False)
         else:
             return queryset
+
 
 class Photo(models.Model):
     created_at = models.DateTimeField("Started", null=True)
@@ -220,8 +603,6 @@ class Photo(models.Model):
             needs_approval=False
         )
 
-    class Meta:
-        app_label = "cciwmain"
 
 class UserSpecificPosts(models.Manager):
     def get_query_set(self):
@@ -242,6 +623,7 @@ class UserSpecificPosts(models.Manager):
                 return queryset.filter(hidden=False)
         else:
             return queryset
+
 
 class Post(models.Model):
     posted_by = models.ForeignKey(Member,
@@ -360,7 +742,6 @@ class Post(models.Model):
                                    posted_at=datetime.now())
 
     class Meta:
-        app_label = "cciwmain"
         # Order by the autoincrement id, rather than  posted_at, because
         # this matches the old system (in the old system editing a post
         # would also cause its posted_at date to change, but not it's order,

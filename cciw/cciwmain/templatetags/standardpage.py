@@ -1,6 +1,7 @@
 from django.utils.http import urlquote, urlencode
 from django import template
-from cciw.cciwmain.models import HtmlChunk, Member, Post, Topic, Photo
+from cciw.cciwmain.models import HtmlChunk
+from cciw.forums.models import Member, Post, Topic, Photo
 from cciw.cciwmain.common import standard_subs, get_current_domain
 from cciw.cciwmain.utils import obfuscate_email
 from cciw.middleware.threadlocals import get_current_member

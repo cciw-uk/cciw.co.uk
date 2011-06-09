@@ -10,7 +10,7 @@ from django.forms import widgets
 from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 
-from cciw.cciwmain.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission, Poll, PollOption
+from cciw.forums.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission, Poll, PollOption
 from cciw.cciwmain.common import create_breadcrumb, get_order_option, object_list, DefaultMetaData, AjaxyFormView
 from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.decorators import login_redirect

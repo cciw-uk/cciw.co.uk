@@ -1,6 +1,6 @@
 import mailer.models as mailer_models
 
-from cciw.cciwmain.models import Member, PersonalAward, Message, Poll, PollOption, NewsItem, Topic, Photo, Post
+from cciw.forums.models import Member, PersonalAward, Message, Poll, PollOption, NewsItem, Topic, Photo, Post
 from anonymizer import Anonymizer
 
 class MemberAnonymizer(Anonymizer):

@@ -2,7 +2,7 @@ from __future__ import with_statement
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from cciw.cciwmain.models import Topic, Member, NewsItem, Post, Forum
+from cciw.forums.models import Topic, Member, NewsItem, Post, Forum
 from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME
 from cciw.cciwmain.tests.client import CciwClient, RequestFactory
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt

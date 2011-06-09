@@ -12,7 +12,7 @@ from django.utils.crypto import salted_hmac
 from django.views.generic.edit import ModelFormMixin
 from django import forms
 from cciw.cciwmain.common import DefaultMetaData, AjaxyFormView, member_username_re
-from cciw.cciwmain.models import Member
+from cciw.forums.models import Member
 from cciw.middleware.threadlocals import set_member_session, get_current_member
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain import common

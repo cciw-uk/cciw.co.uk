@@ -3,7 +3,7 @@ from cciw.cciwmain.tests.client import CciwClient, RequestFactory
 from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD, TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD
 from django.conf import settings
 from django.test import TestCase
-from cciw.cciwmain.models import Topic, Member, Poll, Forum, Post, Photo, Gallery
+from cciw.forums.models import Topic, Member, Poll, Forum, Post, Photo, Gallery
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
 from cciw.cciwmain.views import forums
 from django.core.urlresolvers import reverse

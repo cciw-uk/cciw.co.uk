@@ -5,7 +5,7 @@ from django.views.generic.list import ListView
 from django.views.generic.base import TemplateView
 from django.utils.safestring import mark_safe
 
-from cciw.cciwmain.models import Member, Message
+from cciw.forums.models import Member, Message
 from cciw.cciwmain.common import get_order_option, create_breadcrumb, DefaultMetaData, FeedHandler, get_member_link
 from cciw.middleware.threadlocals import get_current_member, remove_member_session
 from cciw.cciwmain.decorators import member_required, member_required_for_post, _display_login_form
