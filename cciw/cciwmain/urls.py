@@ -1,27 +1,14 @@
 from django.conf.urls.defaults import patterns, url
 import cciw.cciwmain.common as cciw_common
 from cciw.cciwmain.common import DefaultMetaData
-from cciw.cciwmain.models import Site
 from cciw.forums.models import Award
 from django.conf import settings
 from django.views.generic.list import ListView
-from django.views.generic.detail import DetailView
 
 class AwardList(DefaultMetaData, ListView):
     metadata_title = "Website Awards"
     template_name = "cciw/awards/index.html"
     queryset = Award.objects.order_by('-year', '-value')
-
-class SiteList(DefaultMetaData, ListView):
-    metadata_title = "Camp sites"
-    template_name='cciw/sites/index.html'
-    queryset = Site.objects.all()
-
-class SiteDetail(DefaultMetaData, DetailView):
-    queryset = Site.objects.all()
-    slug_field = 'slug_name'
-    template_name = 'cciw/sites/detail.html'
-
 
 # Forums and news items are tightly integrated (read: tangled) into the main
 # site, and always have been, so URLs and some view code for forums are part of
@@ -30,8 +17,6 @@ class SiteDetail(DefaultMetaData, DetailView):
 urlpatterns = \
 patterns('',
          url(r'^awards/$', AwardList.as_view(), name="cciwmain.awards.index"),
-         url(r'^sites/$', SiteList.as_view(), name="cciwmain.sites.index"),
-         url(r'^sites/(?P<slug>.*)/$', SiteDetail.as_view(), name="cciwmain.sites.detail"),
 ) + \
 patterns('cciw.cciwmain.views',
     # Members
@@ -65,6 +50,11 @@ patterns('cciw.cciwmain.views',
     (r'^camps/(?P<year>\d{4})/(?P<number>\d+)/photos/(?P<photonumber>\d+)/$', 'camps.photo'),
     (r'^camps/(?P<year>.*)/(?P<galleryname>.*)/photos/$', 'camps.oldcampgallery'),
     (r'^camps/(?P<year>.*)/(?P<galleryname>.*)/photos/(?P<photonumber>\d+)/$', 'camps.oldcampphoto'),
+
+    # Sites
+    url(r'^sites/$', 'sites.index', name="cciwmain.sites.index"),
+    url(r'^sites/(?P<slug>.*)/$', 'sites.detail', name="cciwmain.sites.detail"),
+
 
 ) + patterns('cciw.forums.views',
     # News
