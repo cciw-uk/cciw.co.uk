@@ -199,7 +199,7 @@ def standard_processor(request):
         # instances.
         return context
 
-    from cciw.cciwmain.models import MenuLink
+    from cciw.sitecontent.models import MenuLink
     thisyear = get_thisyear()
     context['thisyear'] = thisyear
     assert type(request.path) is unicode

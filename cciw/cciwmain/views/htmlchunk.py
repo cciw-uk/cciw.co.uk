@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import Http404
 
 from cciw.cciwmain.common import *
-from cciw.cciwmain.models import HtmlChunk, MenuLink
+from cciw.sitecontent.models import MenuLink
 
 def find(request):
     try:

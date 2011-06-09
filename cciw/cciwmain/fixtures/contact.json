@@ -5,7 +5,7 @@
             "html": "\n<p>If you have an enquiry to make to the CCIW directors,\nplease use the form below and your message will be forwarded \nto the relevant person, who will reply by e-mail.</p>\n", 
             "page_title": ""
         }, 
-        "model": "cciwmain.htmlchunk", 
+        "model": "sitecontent.htmlchunk", 
         "pk": "feedback_intro"
     }, 
     {
@@ -14,7 +14,7 @@
             "html": "", 
             "page_title": ""
         }, 
-        "model": "cciwmain.htmlchunk", 
+        "model": "sitecontent.htmlchunk", 
         "pk": "feedback_outro"
     }
 ]

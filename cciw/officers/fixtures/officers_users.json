@@ -102,32 +102,32 @@
                 ], 
                 [
                     "add_htmlchunk", 
-                    "cciwmain", 
+                    "sitecontent", 
                     "htmlchunk"
                 ], 
                 [
                     "change_htmlchunk", 
-                    "cciwmain", 
+                    "sitecontent", 
                     "htmlchunk"
                 ], 
                 [
                     "delete_htmlchunk", 
-                    "cciwmain", 
+                    "sitecontent", 
                     "htmlchunk"
                 ], 
                 [
                     "add_menulink", 
-                    "cciwmain", 
+                    "sitecontent", 
                     "menulink"
                 ], 
                 [
                     "change_menulink", 
-                    "cciwmain", 
+                    "sitecontent", 
                     "menulink"
                 ], 
                 [
                     "delete_menulink", 
-                    "cciwmain", 
+                    "sitecontent", 
                     "menulink"
                 ], 
                 [

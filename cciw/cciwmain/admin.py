@@ -1,4 +1,4 @@
-from cciw.cciwmain.models import Site, Person, Camp, MenuLink, HtmlChunk
+from cciw.cciwmain.models import Site, Person, Camp
 from django.contrib import admin
 
 class SiteAdmin(admin.ModelAdmin):
@@ -35,16 +35,6 @@ class CampAdmin(admin.ModelAdmin):
     filter_horizontal = ('leaders', 'admins')
     date_hierarchy = 'start_date'
 
-class MenuLinkAdmin(admin.ModelAdmin):
-    list_display = ('title', 'url', 'listorder','visible','parent_item')
-
-class HtmlChunkAdmin(admin.ModelAdmin):
-    list_display = ('name', 'page_title', 'menu_link')
-
 admin.site.register(Site, SiteAdmin)
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Camp, CampAdmin)
-admin.site.register(MenuLink, MenuLinkAdmin)
-admin.site.register(HtmlChunk, HtmlChunkAdmin)
-
-from django.contrib.auth import admin

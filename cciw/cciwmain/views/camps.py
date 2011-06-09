@@ -4,12 +4,13 @@ from django.shortcuts import render
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.conf import settings
 
-from cciw.cciwmain.models import Camp, HtmlChunk
+from cciw.cciwmain.models import Camp
 from cciw.forums.models import Forum, Gallery, Photo
 from cciw.forums.views import forums as forums_views
 from cciw.cciwmain.common import create_breadcrumb, get_thisyear, standard_subs
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain.templatetags import bbcode
+from cciw.sitecontent.models import HtmlChunk
 import cciw.cciwmain.utils as utils
 
 

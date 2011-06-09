@@ -54,7 +54,7 @@
             "url": "/", 
             "listorder": 0
         }, 
-        "model": "cciwmain.menulink", 
+        "model": "sitecontent.menulink", 
         "pk": "1"
     }, 
     {

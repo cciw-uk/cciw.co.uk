@@ -28,9 +28,9 @@
             "last_login": "2007-12-17 18:49:13", 
             "groups": [], 
             "user_permissions": [
-                ["add_htmlchunk", "cciwmain", "htmlchunk"],
-                ["change_htmlchunk", "cciwmain", "htmlchunk"],
-                ["delete_htmlchunk", "cciwmain", "htmlchunk"]
+                ["add_htmlchunk", "sitecontent", "htmlchunk"],
+                ["change_htmlchunk", "sitecontent", "htmlchunk"],
+                ["delete_htmlchunk", "sitecontent", "htmlchunk"]
             ], 
             "password": "sha1$72713$4d655a356d9dfde29f74d04e8c40a6e412d26d0a", 
             "email": "editor@somewhere.com", 
