@@ -1,33 +1,6 @@
 [
     {
         "fields": {
-            "codename": "add_htmlchunk", 
-            "name": "Can add HTML chunk", 
-            "content_type": 21
-        }, 
-        "model": "auth.permission", 
-        "pk": 1
-    }, 
-    {
-        "fields": {
-            "codename": "change_htmlchunk", 
-            "name": "Can change HTML chunk", 
-            "content_type": 21
-        }, 
-        "model": "auth.permission", 
-        "pk": 2
-    }, 
-    {
-        "fields": {
-            "codename": "delete_htmlchunk", 
-            "name": "Can delete HTML chunk", 
-            "content_type": 21
-        }, 
-        "model": "auth.permission", 
-        "pk": 3
-    }, 
-    {
-        "fields": {
             "username": "admin", 
             "first_name": "Admin", 
             "last_name": "", 
@@ -55,9 +28,9 @@
             "last_login": "2007-12-17 18:49:13", 
             "groups": [], 
             "user_permissions": [
-                1, 
-                2, 
-                3
+                ["add_htmlchunk", "cciwmain", "htmlchunk"],
+                ["change_htmlchunk", "cciwmain", "htmlchunk"],
+                ["delete_htmlchunk", "cciwmain", "htmlchunk"]
             ], 
             "password": "sha1$72713$4d655a356d9dfde29f74d04e8c40a6e412d26d0a", 
             "email": "editor@somewhere.com", 
