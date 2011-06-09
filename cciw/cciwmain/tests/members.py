@@ -21,7 +21,6 @@ from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
 from cciw.utils.tests.twillhelpers import TwillMixin, make_twill_url
 import cciw.cciwmain.decorators
-import cciw.cciwmain.views.members
 
 
 # created by fixture
@@ -304,7 +303,7 @@ class MemberLists(TestCase):
             Member.objects.create(user_name="NewMember%d" % i,
                                   date_joined=datetime.datetime.now())
 
-        from cciw.cciwmain.views.members import index
+        from cciw.forums.views.members import index
 
         request = self.factory.get(reverse('cciwmain.members.index'))
         with self.assertNumQueries(FuzzyInt(1, 4)):

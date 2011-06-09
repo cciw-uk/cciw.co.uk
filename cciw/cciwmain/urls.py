@@ -6,7 +6,7 @@ from django.conf import settings
 # the 'cciwmain' app rather than the 'forums' app.
 
 urlpatterns = \
-patterns('cciw.cciwmain.views',
+patterns('cciw.forums.views',
     # Members
     (r'^login/$', 'members.login'),
     url(r'^members/$', 'members.index', name="cciwmain.members.index"),
@@ -20,7 +20,8 @@ patterns('cciw.cciwmain.views',
     (r'^memberadmin/change-email/$', 'memberadmin.change_email'),
     url(r'^memberadmin/preferences/$', 'memberadmin.preferences', name="cciwmain.memberadmin.preferences"),
     url(r'^help/logging-in/$', 'memberadmin.help_logging_in', name="cciwmain.memberadmin.help_logging_in"),
-
+) + \
+patterns('cciw.cciwmain.views',
     # Camps
     (r'^thisyear/$', 'camps.thisyear'),
     (r'^thisyear/bookingform/$', 'misc.bookingform'),
