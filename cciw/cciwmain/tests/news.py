@@ -6,7 +6,7 @@ from cciw.forums.models import Topic, Member, NewsItem, Post, Forum
 from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME
 from cciw.cciwmain.tests.client import CciwClient, RequestFactory
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
-from cciw.cciwmain.views import forums
+from cciw.forums import views as forums_views
 
 
 class NewsPage(TestCase):
@@ -93,7 +93,7 @@ class AllNewsPage(TestCase):
 
         request = factory.get(path)
         with self.assertNumQueries(FuzzyInt(1, 5)):
-            resp = forums.news(request)
+            resp = forums_views.news(request)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_NEWS_BY
             self.assertContains(resp, "<a title=\"Information about",
@@ -101,6 +101,6 @@ class AllNewsPage(TestCase):
 
         request = factory.get(path, {'format':'atom'})
         with self.assertNumQueries(2):
-            response = forums.news(request)
+            response = forums_views.news(request)
             resp.render()
             self.assertTrue(response['Content-Type'].startswith('application/atom+xml'))

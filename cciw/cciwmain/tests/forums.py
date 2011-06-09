@@ -5,7 +5,7 @@ from django.conf import settings
 from django.test import TestCase
 from cciw.forums.models import Topic, Member, Poll, Forum, Post, Photo, Gallery
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
-from cciw.cciwmain.views import forums
+from cciw.forums import views as forums_views
 from django.core.urlresolvers import reverse
 from datetime import datetime
 from cciw.cciwmain import decorators
@@ -55,7 +55,7 @@ class TopicIndexPage(TestCase):
 
         request = self.factory.get(self.forum.get_absolute_url())
         with self.assertNumQueries(FuzzyInt(1, 5)):
-            resp = forums.topicindex(request, title="Title", forum=self.forum)
+            resp = forums_views.topicindex(request, title="Title", forum=self.forum)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_TOPICS_BY * 2
             self.assertContains(resp, "<a title=\"Information about",
@@ -63,7 +63,7 @@ class TopicIndexPage(TestCase):
 
         request = self.factory.get(self.forum.get_absolute_url(), {'format':'atom'})
         with self.assertNumQueries(FuzzyInt(1, 3)):
-            forums.topicindex(request, title="Title", forum=self.forum)
+            forums_views.topicindex(request, title="Title", forum=self.forum)
 
 
 class AllTopicsPage(TestCase):
@@ -81,7 +81,7 @@ class AllTopicsPage(TestCase):
         init_query_caches()
 
     def path(self):
-        return reverse("cciw.cciwmain.views.forums.all_topics")
+        return reverse("cciw.forums.views.all_topics")
 
     def test_get(self):
         response = self.client.get(self.path())
@@ -108,7 +108,7 @@ class AllTopicsPage(TestCase):
 
         request = self.factory.get(self.path())
         with self.assertNumQueries(FuzzyInt(3, 4)):
-            resp = forums.all_topics(request)
+            resp = forums_views.all_topics(request)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_TOPICS_BY
             self.assertContains(resp, "<a title=\"Information about user",
@@ -116,7 +116,7 @@ class AllTopicsPage(TestCase):
 
         request = self.factory.get(self.path(), {'format':'atom'})
         with self.assertNumQueries(FuzzyInt(1, 2)):
-            forums.all_topics(request)
+            forums_views.all_topics(request)
 
 
 class TopicPage(TestCase):
@@ -160,11 +160,11 @@ class TopicPage(TestCase):
 
         request = self.factory.get(self.topic.get_absolute_url())
         with self.assertNumQueries(FuzzyInt(1, 6)):
-            forums.topic(request, title_start="Title", topicid=self.topic.id).render()
+            forums_views.topic(request, title_start="Title", topicid=self.topic.id).render()
 
         request = self.factory.get(self.topic.get_absolute_url(), {'format':'atom'})
         with self.assertNumQueries(FuzzyInt(1, 2)):
-            forums.topic(request, title_start="Title", topicid=self.topic.id)
+            forums_views.topic(request, title_start="Title", topicid=self.topic.id)
 
 
 class PhotoIndexPage(TestCase):
@@ -203,11 +203,11 @@ class PhotoIndexPage(TestCase):
 
         request = self.factory.get(self.gallery.get_absolute_url())
         with self.assertNumQueries(3):
-            forums.photoindex(request, self.gallery, {'title':'test'}, ['']).render()
+            forums_views.photoindex(request, self.gallery, {'title':'test'}, ['']).render()
 
         request = self.factory.get(self.gallery.get_absolute_url(), {'format':'atom'})
         with self.assertNumQueries(1):
-            forums.photoindex(request, self.gallery, {'title':'test'}, [''])
+            forums_views.photoindex(request, self.gallery, {'title':'test'}, [''])
 
 
 class PhotoPage(TestCase):
@@ -250,11 +250,11 @@ class PhotoPage(TestCase):
 
         request = self.factory.get(self.photo.get_absolute_url())
         with self.assertNumQueries(5):
-            forums.photo(request, self.photo, {}, ['']).render()
+            forums_views.photo(request, self.photo, {}, ['']).render()
 
         request = self.factory.get(self.photo.get_absolute_url(), {'format':'atom'})
         with self.assertNumQueries(1):
-            forums.photo(request, self.photo, {}, [''])
+            forums_views.photo(request, self.photo, {}, [''])
 
 
 class AllPostsPage(TestCase):
@@ -273,7 +273,7 @@ class AllPostsPage(TestCase):
         init_query_caches()
 
     def path(self):
-        return reverse("cciw.cciwmain.views.forums.all_posts")
+        return reverse("cciw.forums.views.all_posts")
 
     def test_get(self):
         response = self.client.get(self.path())
@@ -300,7 +300,7 @@ class AllPostsPage(TestCase):
 
         request = self.factory.get(self.path())
         with self.assertNumQueries(FuzzyInt(1, 4)):
-            resp = forums.all_posts(request)
+            resp = forums_views.all_posts(request)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_POSTS_BY
             self.assertContains(resp, "<a title=\"Information about user",
@@ -308,7 +308,7 @@ class AllPostsPage(TestCase):
 
         request = self.factory.get(self.path(), {'format':'atom'})
         with self.assertNumQueries(FuzzyInt(1, 2)):
-            forums.all_posts(request)
+            forums_views.all_posts(request)
 
     def test_query_count_photos(self):
         """
@@ -324,7 +324,7 @@ class AllPostsPage(TestCase):
 
         request = self.factory.get(self.path())
         with self.assertNumQueries(FuzzyInt(1, 3)):
-            resp = forums.all_posts(request)
+            resp = forums_views.all_posts(request)
             resp.render()
             expected_count = settings.FORUM_PAGINATE_POSTS_BY
             self.assertContains(resp, "<a title=\"Information about user",
@@ -332,7 +332,7 @@ class AllPostsPage(TestCase):
 
         request = self.factory.get(self.path(), {'format':'atom'})
         with self.assertNumQueries(FuzzyInt(1, 2)):
-            forums.all_posts(request)
+            forums_views.all_posts(request)
 
 
 class CreatePollPage(TestCase):

@@ -24,9 +24,8 @@ class SiteDetail(DefaultMetaData, DetailView):
 
 
 # Forums and news items are tightly integrated (read: tangled) into the main
-# site, and always have been, so URLs and view code for forums are part of the
-# 'cciwmain' app rather than the 'forums' app. Some view code could be easily
-# moved into forums, some not so easily.
+# site, and always have been, so URLs and some view code for forums are part of
+# the 'cciwmain' app rather than the 'forums' app.
 
 urlpatterns = \
 patterns('',
@@ -67,25 +66,28 @@ patterns('cciw.cciwmain.views',
     (r'^camps/(?P<year>.*)/(?P<galleryname>.*)/photos/$', 'camps.oldcampgallery'),
     (r'^camps/(?P<year>.*)/(?P<galleryname>.*)/photos/(?P<photonumber>\d+)/$', 'camps.oldcampphoto'),
 
+) + patterns('cciw.forums.views',
     # News
-    url(r'^news/$', 'forums.news', name= 'cciwmain.site-news-index'),
-    (r'^news/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'News'},
+    url(r'^news/$', 'news', name= 'cciwmain.site-news-index'),
+    (r'^news/(?P<topicid>\d+)/$', 'topic', {'title_start': 'News'},
      'cciwmain.site-news-detail'),
 
     # Misc website stuff
-    (r'^website/forum/$', 'forums.topicindex', {'title': 'Website forum',
+    (r'^website/forum/$', 'topicindex', {'title': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/add/$', 'forums.add_topic', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/add_news/$', 'forums.add_news', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/add_poll/$', 'forums.edit_poll', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/edit_poll/(?P<poll_id>\d+)/$', 'forums.edit_poll', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'Website forum',
+    (r'^website/forum/add/$', 'add_topic', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+    (r'^website/forum/add_news/$', 'add_news', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+    (r'^website/forum/add_poll/$', 'edit_poll', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+    (r'^website/forum/edit_poll/(?P<poll_id>\d+)/$', 'edit_poll', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+    (r'^website/forum/(?P<topicid>\d+)/$', 'topic', {'title_start': 'Website forum',
         'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
 
     # Shortcuts
-    (r'^posts/$', 'forums.all_posts'),
-    (r'^posts/(?P<id>\d+)/$', 'forums.post'),
-    (r'^topics/$', 'forums.all_topics'),
+    (r'^posts/$', 'all_posts'),
+    (r'^posts/(?P<id>\d+)/$', 'post'),
+    (r'^topics/$', 'all_topics'),
+
+) + patterns('cciw.cciwmain.views',
 
     # Services
     (r'^services/esv_passage/$', 'services.esv_passage'),
