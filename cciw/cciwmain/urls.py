@@ -22,6 +22,12 @@ class SiteDetail(DefaultMetaData, DetailView):
     slug_field = 'slug_name'
     template_name = 'cciw/sites/detail.html'
 
+
+# Forums and news items are tightly integrated (read: tangled) into the main
+# site, and always have been, so URLs and view code for forums are part of the
+# 'cciwmain' app rather than the 'forums' app. Some view code could be easily
+# moved into forums, some not so easily.
+
 urlpatterns = \
 patterns('',
          url(r'^awards/$', AwardList.as_view(), name="cciwmain.awards.index"),
