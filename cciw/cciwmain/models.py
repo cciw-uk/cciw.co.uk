@@ -1,9 +1,14 @@
 import datetime
 
-from cciw.cciwmain import signals
-from django.db import models
+from django.contrib.admin.views.main import quote
 from django.contrib.auth.models import User
+from django.db import models
 from django.utils.safestring import mark_safe
+
+from cciw.cciwmain import signals
+from cciw.cciwmain.common import standard_subs
+import cciw.middleware.threadlocals as threadlocals
+
 
 class Site(models.Model):
     short_name = models.CharField("Short name", max_length="25", blank=False, unique=True)
@@ -22,9 +27,6 @@ class Site(models.Model):
         self.slug_name = slugify(self.short_name)
         super(Site, self).save()
 
-    class Meta:
-        app_label = "cciwmain"
-        pass
 
 class Person(models.Model):
     name = models.CharField("Name", max_length=40)
@@ -38,12 +40,13 @@ class Person(models.Model):
     class Meta:
         ordering = ('name',)
         verbose_name_plural = 'people'
-        app_label = "cciwmain"
+
 
 CAMP_AGES = (
     (u'Jnr',u'Junior'),
     (u'Snr',u'Senior')
 )
+
 
 class CampManager(models.Manager):
     use_for_related_fields = True
@@ -132,6 +135,60 @@ class Camp(models.Model):
         return self.end_date <= datetime.date.today()
 
     class Meta:
-        app_label = "cciwmain"
         ordering = ['-year','number']
         unique_together = (('year', 'number'),)
+
+
+class MenuLink(models.Model):
+    title = models.CharField("title", max_length=50)
+    url = models.CharField("URL", max_length=100)
+    extra_title = models.CharField("Disambiguation title", max_length=100, blank=True)
+    listorder = models.SmallIntegerField("order in list")
+    visible = models.BooleanField("Visible", default=True)
+    parent_item = models.ForeignKey("self", null=True, blank=True,
+        verbose_name="Parent item (none = top level)",
+        related_name="child_links")
+
+    def __unicode__(self):
+        return  u"%s [%s]" % (self.url, standard_subs(self.title))
+
+    def get_visible_children(self, request):
+        """Gets a list of child menu links that should be visible given the current url"""
+        if request.path == self.url:
+            return self.child_links
+        else:
+            return []
+
+    class Meta:
+        # put top level items at top of list, others into groups, for the admin
+        ordering = ('-parent_item__id', 'listorder')
+
+
+class HtmlChunk(models.Model):
+    name = models.SlugField("name", primary_key=True, db_index=True)
+    html = models.TextField("HTML")
+    menu_link = models.ForeignKey(MenuLink, verbose_name="Associated URL",
+        null=True, blank=True)
+    page_title = models.CharField("page title (for chunks that are pages)", max_length=100,
+        blank=True)
+
+    def __unicode__(self):
+        return self.name
+
+    def render(self, request):
+        """Render the HTML chunk as HTML, with replacements
+        made and any member specific adjustments."""
+        html = standard_subs(self.html)
+        user = threadlocals.get_current_user()
+        if user and not user.is_anonymous() and user.is_staff \
+            and user.has_perm('cciwmain.change_htmlchunk'):
+            html += (u"""<div class="editChunkLink">&laquo;
+                        <a href="/admin/cciwmain/htmlchunk/%s/">Edit %s</a> &raquo;
+                        </div>""" % (quote(self.name), self.name))
+        return mark_safe(html)
+
+    class Meta:
+        verbose_name = "HTML chunk"
+
+
+import cciw.cciwmain.hooks
