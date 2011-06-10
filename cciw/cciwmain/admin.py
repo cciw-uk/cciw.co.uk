@@ -1,6 +1,33 @@
 from cciw.cciwmain.models import Site, Person, Camp
 from django.contrib import admin
 
+
+from functools import wraps
+def rename_app_list(func):
+    m = {'Cciwmain': 'Camp info',
+         'Sitecontent': 'Site content',
+         'Sites': 'Web sites'
+         }
+    @wraps(func)
+    def _wrapper(*args, **kwargs):
+        response = func(*args, **kwargs)
+        app_list = response.context_data.get('app_list')
+        if app_list is not None:
+            for a in app_list:
+                name = a['name']
+                a['name'] = m.get(name, name)
+        title = response.context_data.get('title')
+        if title is not None:
+            app_label = title.split(' ')[0]
+            if app_label in m:
+                response.context_data['title'] = "%s administration" % m[app_label]
+        return response
+    return _wrapper
+
+admin.site.index = rename_app_list(admin.site.index)
+admin.site.app_index = rename_app_list(admin.site.app_index)
+
+
 class SiteAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {'fields': ('short_name', 'long_name', 'info')}),
