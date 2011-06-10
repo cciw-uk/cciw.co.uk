@@ -3,7 +3,6 @@ Utility functions and base classes that are common to all views etc.
 """
 import datetime
 import re
-import urllib
 
 from django.conf import settings
 from django.contrib.sites.models import Site

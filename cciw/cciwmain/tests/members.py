@@ -4,7 +4,6 @@ import datetime
 import glob
 import os
 import re
-import urllib
 
 from BeautifulSoup import BeautifulSoup
 from django.conf import settings
@@ -12,15 +11,12 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from twill import commands as tc
-from twill.shell import TwillCommandLoop
-import twill
 
 from cciw.forums.models import Member, Message
 from cciw.cciwmain.tests.client import CciwClient, RequestFactory
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
 from cciw.utils.tests.twillhelpers import TwillMixin, make_twill_url
-import cciw.cciwmain.decorators
 
 
 # created by fixture
@@ -130,7 +126,7 @@ class MemberAdmin(TestCase):
         return resp
 
     def test_upload_bad_icon(self):
-        resp = self._assert_icon_upload_fails("badicon.png")
+        self._assert_icon_upload_fails("badicon.png")
 
     def test_upload_outsize_icon(self):
         resp = self._assert_icon_upload_fails("outsize_icon.png")
@@ -462,8 +458,8 @@ class MessageLists(TestCase):
 
     def test_archive_message_from_inbox(self):
         # Setup
-        msg = self._send_message("A quick message")
-        msg2 = self._send_message("Another message")
+        self._send_message("A quick message")
+        self._send_message("Another message")
         inbox_count = self._inbox_count()
         archived_count = self._archived_count()
 
@@ -483,7 +479,7 @@ class MessageLists(TestCase):
 
     def test_delete_message_from_inbox(self):
         # Setup
-        msg = self._send_message("A quick message")
+        self._send_message("A quick message")
         inbox_count = self._inbox_count()
         # Get page
         resp = self._get_inbox()

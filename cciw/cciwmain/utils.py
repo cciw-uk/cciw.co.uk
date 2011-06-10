@@ -4,13 +4,12 @@ Utility functions and classes.
 
 For CCIW specific utilities see cciw.cciwmain.common
 """
-import datetime
 import operator
+
 from django.utils.safestring import mark_safe
 from django.utils import simplejson
 from django.utils.functional import Promise
 from django.utils.encoding import force_unicode
-from django.http import HttpResponse
 
 def obfuscate_email(email):
     safe_email = email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ')
@@ -29,15 +28,6 @@ def strip_control_chars(text):
     for i in range(0,32):
         text = text.replace(chr(i), '')
     return text
-
-def validate_xml(filename):
-    from xml.sax import sax2exts
-    from xml.dom.ext.reader import Sax2
-
-    p = sax2exts.XMLValParserFactory.make_parser()
-    reader = Sax2.Reader(parser=p)
-    dom_object = reader.fromUri(filename)
-    return True
 
 def unslugify(slug):
     "Turns dashes and underscores into spaces and applies title casing"

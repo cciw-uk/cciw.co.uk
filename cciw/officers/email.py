@@ -1,4 +1,5 @@
 import datetime
+import urllib
 
 from cciw.cciwmain import common
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference, camps_for_application
@@ -9,8 +10,7 @@ from django.contrib import messages
 from django.core.mail import send_mail, EmailMessage
 from django.core.urlresolvers import reverse
 from django.utils.crypto import salted_hmac
-import cciw.middleware.threadlocals as threadlocals
-import urllib
+
 
 
 def make_update_email_hash(oldemail, newemail):

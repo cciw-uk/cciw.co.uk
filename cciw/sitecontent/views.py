@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.http import Http404
 
-from cciw.cciwmain.common import *
 from cciw.sitecontent.models import MenuLink
 
 def find(request):

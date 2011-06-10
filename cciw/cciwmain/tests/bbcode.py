@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-import sys
-import os
-
 from django.utils import unittest
 
 from cciw.cciwmain.common import get_member_link

@@ -82,17 +82,6 @@ class MultiReplace:
     def __init__(self, repl_dict):
         # "compile" replacement dictionary
 
-        # assume char to char mapping
-        charmap = map(chr, range(256))
-        for k, v in repl_dict.items():
-            if len(k) != 1 or len(v) != 1:
-                self.charmap = None
-                break
-            charmap[ord(k)] = v
-        else:
-            self.charmap = string.join(charmap, u"")
-            return
-
         # string to string mapping; use a regular expression
         keys = repl_dict.keys()
         keys.sort() # lexical order
@@ -103,8 +92,6 @@ class MultiReplace:
 
     def replace(self, str):
         # apply replacement dictionary to string
-        if self.charmap:
-            return string.translate(str, self.charmap)
         def repl(match, get=self.dict.get):
             item = match.group(0)
             return get(item, item)
@@ -144,7 +131,7 @@ class BBTag(object):
         Renders a node of this BBTag as HTML.
         node is the node to render.
         """
-        raise NotImplementedException()
+        raise NotImplemented()
 
     def render_node_bbcode(self, node):
         opening = self.name # opening tag

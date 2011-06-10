@@ -1,17 +1,14 @@
 import datetime
-import itertools
 import operator
 
 from django import forms
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.admin import widgets
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.core.urlresolvers import reverse
-from django.db import models
 from django.core.validators import email_re
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
@@ -31,7 +28,7 @@ from cciw.officers.email_utils import send_mail_with_attachments, formatted_emai
 from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer, send_crb_consent_problem_email
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication, CRBFormLog
-from cciw.officers.utils import camp_officer_list, camp_slacker_list
+from cciw.officers.utils import camp_slacker_list
 from cciw.officers.references import reference_form_info
 from cciw.utils.views import close_window_response
 from securedownload.views import access_folder_securely
@@ -267,7 +264,7 @@ def manage_applications(request, year=None, number=None):
 def _get_camp_or_404(year, number):
     try:
         return Camp.objects.get(year=int(year), number=int(number))
-    except Camp.DoesNotExist, ValueError:
+    except (Camp.DoesNotExist, ValueError):
         raise Http404
 
 
@@ -410,7 +407,7 @@ def request_reference(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     try:
         ref_id = int(request.GET.get('ref_id'))
-    except ValueError, TypeError:
+    except (ValueError, TypeError):
         raise Http404
     ref = get_object_or_404(Reference.objects.filter(id=ref_id))
     app = ref.application
@@ -501,7 +498,7 @@ def nag_by_officer(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     try:
         ref_id = int(request.GET.get('ref_id'))
-    except ValueError, TypeError:
+    except (ValueError, TypeError):
         raise Http404
     ref = get_object_or_404(Reference.objects.filter(id=ref_id))
     app = ref.application
@@ -778,11 +775,11 @@ def add_officers(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     for officer_id in request.POST['officer_ids'].split(','):
         try:
-            i = Invitation.objects.get(camp=camp, officer=User.objects.get(id=int(officer_id)))
+            Invitation.objects.get(camp=camp, officer=User.objects.get(id=int(officer_id)))
         except Invitation.DoesNotExist:
-            i = Invitation.objects.create(camp=camp,
-                                          officer=User.objects.get(id=int(officer_id)),
-                                          date_added=datetime.date.today())
+            Invitation.objects.create(camp=camp,
+                                      officer=User.objects.get(id=int(officer_id)),
+                                      date_added=datetime.date.today())
     return {'status':'success'}
 
 
@@ -1121,7 +1118,7 @@ def mark_crb_sent(request):
 @json_response
 def undo_mark_crb_sent(request):
     crbformlog_id = int(request.POST['crbformlog_id'])
-    c = CRBFormLog.objects.filter(id=crbformlog_id).delete()
+    CRBFormLog.objects.filter(id=crbformlog_id).delete()
     return {'status':'success'}
 
 
@@ -1135,7 +1132,7 @@ class CrbConsentProblemForm(SendMessageForm):
 def crb_consent_problem(request):
     try:
         app_id = int(request.GET.get('application_id'))
-    except ValueError, TypeError:
+    except (ValueError, TypeError):
         raise Http404
     app = get_object_or_404(Application.objects.filter(id=app_id))
     officer = app.officer

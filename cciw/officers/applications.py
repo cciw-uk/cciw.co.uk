@@ -20,7 +20,6 @@ def thisyears_applications(user):
     Returns a QuerySet containing the applications a user has that
     apply to 'this year', i.e. to camps still in the future.
     """
-    from cciw.officers.models import Camp
     future_camps = Camp.objects.filter(start_date__gte=datetime.date.today())
     apps = user.application_set.all()
     future_camp = None

@@ -89,7 +89,7 @@ class AllNewsPage(TestCase):
             topic = Topic.create_topic(member, "Topic %s" % i, forum)
             topic.news_item = news_item
             topic.save()
-            post = Post.create_post(member, "Message %s" % i, topic, None)
+            Post.create_post(member, "Message %s" % i, topic, None)
 
         request = factory.get(path)
         with self.assertNumQueries(FuzzyInt(1, 5)):

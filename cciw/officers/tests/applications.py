@@ -77,33 +77,27 @@ class PersonalApplicationList(TestCase):
         self.assertNotContains(resp, self._edit_button)
 
     def test_finished_application(self):
-        app = self.user.application_set.create(finished=True,
-                                               date_submitted=datetime.date.today())
-        resp = self.client.get(self.url)
-        self.assertContains(resp, self._create_button)
-
-    def test_finished_application(self):
-        app = self.user.application_set.create(finished=True,
-                                               date_submitted=datetime.date.today()
-                                               - datetime.timedelta(365))
+        self.user.application_set.create(finished=True,
+                                         date_submitted=datetime.date.today()
+                                         - datetime.timedelta(365))
         resp = self.client.get(self.url)
         self.assertContains(resp, self._create_button)
 
     def test_finished_application_recent(self):
-        app = self.user.application_set.create(finished=True,
-                                               date_submitted=datetime.date.today())
+        self.user.application_set.create(finished=True,
+                                         date_submitted=datetime.date.today())
         resp = self.client.get(self.url)
         self.assertNotContains(resp, self._create_button)
 
     def test_unfinished_application(self):
-        app = self.user.application_set.create(finished=False,
-                                               date_submitted=datetime.date.today())
+        self.user.application_set.create(finished=False,
+                                         date_submitted=datetime.date.today())
         resp = self.client.get(self.url)
         self.assertContains(resp, self._edit_button)
 
     def test_create(self):
-        app = self.user.application_set.create(finished=True,
-                                               date_submitted=datetime.date.today() - datetime.timedelta(365))
+        self.user.application_set.create(finished=True,
+                                         date_submitted=datetime.date.today() - datetime.timedelta(365))
         resp = self.client.post(self.url, {'new':'Create'})
         self.assertEqual(302, resp.status_code)
         self.assertEqual(len(self.user.application_set.all()), 2)

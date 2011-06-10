@@ -7,7 +7,6 @@ from cciw.forums.models import Topic, Member, Poll, Forum, Post, Photo, Gallery
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
 from cciw.forums.views import forums as forums_views
 from django.core.urlresolvers import reverse
-from datetime import datetime
 from cciw.cciwmain import decorators
 
 FORUM_1_YEAR = 2000
@@ -51,7 +50,7 @@ class TopicIndexPage(TestCase):
         assert num > settings.FORUM_PAGINATE_TOPICS_BY
         for i in xrange(num):
             topic = Topic.create_topic(member, "Topic %s" % i, self.forum)
-            post = Post.create_post(member, "Message %s" % i, topic, None)
+            Post.create_post(member, "Message %s" % i, topic, None)
 
         request = self.factory.get(self.forum.get_absolute_url())
         with self.assertNumQueries(FuzzyInt(1, 5)):
@@ -104,7 +103,7 @@ class AllTopicsPage(TestCase):
         assert settings.FORUM_PAGINATE_TOPICS_BY < num
         for i in xrange(num):
             topic = Topic.create_topic(member, "Topic %s" % i, self.forum)
-            post = Post.create_post(member, "Message %s" % i, topic, None)
+            Post.create_post(member, "Message %s" % i, topic, None)
 
         request = self.factory.get(self.path())
         with self.assertNumQueries(FuzzyInt(3, 4)):
@@ -154,7 +153,7 @@ class TopicPage(TestCase):
         member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         # Make sure we have lots of posts
         for i in xrange(100):
-            post = Post.create_post(member, "Message %s" % i, topic=self.topic)
+            Post.create_post(member, "Message %s" % i, topic=self.topic)
 
         init_query_caches()
 
@@ -199,7 +198,7 @@ class PhotoIndexPage(TestCase):
         # Make sure we have lots of topics
         for i in xrange(100):
             photo = Photo.create_default_photo("2000-1-myphoto-%s" % i, self.gallery)
-            post = Post.create_post(member, "A message %s" % i, photo=photo)
+            Post.create_post(member, "A message %s" % i, photo=photo)
 
         request = self.factory.get(self.gallery.get_absolute_url())
         with self.assertNumQueries(3):
@@ -246,7 +245,7 @@ class PhotoPage(TestCase):
         member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         # Make sure we have lots of posts
         for i in xrange(100):
-            post = Post.create_post(member, "Message %s" % i, photo=self.photo)
+            Post.create_post(member, "Message %s" % i, photo=self.photo)
 
         request = self.factory.get(self.photo.get_absolute_url())
         with self.assertNumQueries(5):
@@ -296,7 +295,7 @@ class AllPostsPage(TestCase):
         assert settings.FORUM_PAGINATE_POSTS_BY < num
         for i in xrange(num):
             topic = Topic.create_topic(member, "Topic %s" % i, self.forum)
-            post = Post.create_post(member, "Message %s" % i, topic=topic)
+            Post.create_post(member, "Message %s" % i, topic=topic)
 
         request = self.factory.get(self.path())
         with self.assertNumQueries(FuzzyInt(1, 4)):
@@ -320,7 +319,7 @@ class AllPostsPage(TestCase):
         assert settings.FORUM_PAGINATE_POSTS_BY < num
         for i in xrange(num):
             photo = Photo.create_default_photo("2000-1-a-photo-%s" % i, self.gallery)
-            post = Post.create_post(member, "Message %s" % i, photo=photo)
+            Post.create_post(member, "Message %s" % i, photo=photo)
 
         request = self.factory.get(self.path())
         with self.assertNumQueries(FuzzyInt(1, 3)):

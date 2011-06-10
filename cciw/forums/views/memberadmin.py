@@ -2,7 +2,6 @@
 from django.shortcuts import render
 from django.core import mail
 from django.contrib import messages
-from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.validators import email_re

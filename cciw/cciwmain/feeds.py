@@ -1,5 +1,4 @@
 from django.contrib.syndication import views as feed_views
-from django.http import Http404, HttpResponse
 from django.utils.feedgenerator import Atom1Feed
 
 MEMBER_FEED_MAX_ITEMS = 20

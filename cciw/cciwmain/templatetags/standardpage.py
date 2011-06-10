@@ -1,11 +1,7 @@
-from django.utils.http import urlquote, urlencode
 from django import template
 from cciw.sitecontent.models import HtmlChunk
-from cciw.forums.models import Member, Post, Topic, Photo
-from cciw.cciwmain.common import standard_subs, get_current_domain
+from cciw.cciwmain.common import standard_subs
 from cciw.cciwmain.utils import obfuscate_email
-from cciw.middleware.threadlocals import get_current_member
-from django.utils.html import escape
 from django.conf import settings
 
 class EmailNode(template.Node):
@@ -60,7 +56,6 @@ class AtomFeedLinkVisible(template.Node):
         title = context.get('atom_feed_title', None)
         if title:
             thisurl = context['request'].path
-            thisfullurl = 'https://%s%s' % (get_current_domain(), thisurl)
             return (u'<a class="atomlink" href="%(atomurl)s" rel="external" title="%(atomtitle)s" >' +
                     u' <img src="%(atomimgurl)s" alt="Feed icon" /></a> |') \
             % dict(atomurl="%s?format=atom" % thisurl,

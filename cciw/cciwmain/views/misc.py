@@ -9,7 +9,6 @@ from django.views.generic.base import TemplateView
 
 from cciw.cciwmain.common import get_thisyear, AjaxyFormView, DefaultMetaData
 from cciw.cciwmain.forms import CciwFormMixin
-from cciw.cciwmain import utils
 
 def send_feedback(email, name, message):
     message = wrap(message, 70)

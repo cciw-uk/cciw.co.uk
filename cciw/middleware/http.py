@@ -1,5 +1,3 @@
-from django.http import HttpResponsePermanentRedirect
-
 
 class WebFactionFixes(object):
     """

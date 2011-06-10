@@ -380,4 +380,3 @@ class CRBFormLog(models.Model):
         verbose_name = "CRB form log"
         verbose_name_plural = "CRB form logs"
 
-import cciw.officers.admin

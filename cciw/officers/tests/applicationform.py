@@ -11,7 +11,7 @@ from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
 from cciw.officers.applications import application_difference
 from cciw.officers.tests.references import OFFICER, LEADER
-from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
+from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url
 
 class ApplicationFormView(TwillMixin, TestCase):
     fixtures = ['basic.json', 'officers_users.json']
@@ -247,7 +247,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         self.assertEqual(len(mail.outbox), 0)
         self._twill_login(OFFICER)
         # An old, unfinished application form
-        a_old = self._add_application()
+        self._add_application()
         a = self._add_application()
         tc.go(self._application_edit_url(a.id))
         tc.code(200)

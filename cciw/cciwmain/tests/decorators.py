@@ -1,4 +1,3 @@
-from BeautifulSoup import BeautifulSoup
 from django.test import TestCase
 from cciw.cciwmain.tests.client import CciwClient
 from cciw.cciwmain.tests.forums import CreatePollPage, ADD_POLL_URL
@@ -31,29 +30,14 @@ class MemberRequiredPage(TestCase):
         r = self.client.get(ADD_POLL_URL)
         self.assertTrue(LOGIN_FORM_KEY not in r.content, "Should not get a login form.")
 
-    def test_get_anonymous_produces_redirect(self):
-        """Ensure that when we start with a GET request and have to log in, the user ultimately receives a 'GET' request, not a 'POST' to the view"""
-        r = self.client.get(ADD_POLL_URL)
-
-        data = self.client.get_member_login_data(members.TEST_POLL_CREATOR_USERNAME,
-                                                 members.TEST_POLL_CREATOR_PASSWORD)
-        r2 = self.client.post(ADD_POLL_URL, data=data)
-
-        # should be back at orignal page.
-        self.assertTrue(LOGIN_FORM_KEY not in r2.content, "Should not get a login form.")
-        self.assertEqual(r2.status_code, 302)
-
     def test_post_produces_redirect(self):
         """Ensure that when we start with a POST request and have to log in, we get a redirect to the view."""
 
-        orig_data = {'some':'random_data', 'details':'dont matter'}
-        r = self.client.post(ADD_POLL_URL, data=orig_data)
-
         data = self.client.get_member_login_data(members.TEST_POLL_CREATOR_USERNAME,
                                                  members.TEST_POLL_CREATOR_PASSWORD)
-        r2 = self.client.post(ADD_POLL_URL, data=data)
+        r = self.client.post(ADD_POLL_URL, data=data)
 
         # should be back at orignal page.
-        self.assertTrue(LOGIN_FORM_KEY not in r2.content, "Should not get a login form.")
-        self.assertEqual(r2.status_code, 302)
+        self.assertTrue(LOGIN_FORM_KEY not in r.content, "Should not get a login form.")
+        self.assertEqual(r.status_code, 302)
 

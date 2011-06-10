@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime
 import string
 
 from django.views.generic.edit import ModelFormMixin
@@ -9,14 +9,11 @@ from django import forms
 from django.forms import widgets
 from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
-from django.views.generic.list import ListView
 
-from cciw.forums.models import Forum, Topic, Photo, Post, Member, VoteInfo, NewsItem, Permission, Poll, PollOption, Award
+from cciw.forums.models import Forum, Topic, Photo, Post, VoteInfo, NewsItem, Permission, Poll, PollOption
 from cciw.cciwmain.common import create_breadcrumb, get_order_option, object_list, DefaultMetaData, AjaxyFormView
 from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.decorators import login_redirect
-from django.utils.html import escape
-from cciw.cciwmain import utils
 from cciw.cciwmain.templatetags import bbcode
 from cciw.cciwmain.decorators import member_required, member_required_for_post
 from cciw.cciwmain import feeds
@@ -150,7 +147,7 @@ def add_topic(request, breadcrumb_extra=None):
         if not errors:
             if request.POST.has_key('post'):
                 topic = Topic.create_topic(cur_member, subject, forum)
-                post = Post.create_post(cur_member, msg_text, topic, None)
+                Post.create_post(cur_member, msg_text, topic, None)
                 return HttpResponseRedirect('../%s/' % topic.id)
             else:
                 context['preview'] = mark_safe(bbcode.bb2xhtml(msg_text))

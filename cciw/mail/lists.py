@@ -38,7 +38,7 @@ def create_mailboxes(camp):
                     address_for_camp_leaders(camp),
                     address_for_camp_leaders_year(camp.year)]:
         try:
-            email = s.create_email(address, settings.LIST_MAILBOX_NAME)
+            s.create_email(address, settings.LIST_MAILBOX_NAME)
         except xmlrpclib.Fault, e:
             if e.faultString == 'username: Value already exists':
                 pass

@@ -1,16 +1,12 @@
 import datetime
 
 from django.shortcuts import render
-from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.conf import settings
+from django.http import Http404
 
 from cciw.cciwmain.models import Camp
 from cciw.forums.models import Forum, Gallery, Photo
 from cciw.forums.views import forums as forums_views
 from cciw.cciwmain.common import create_breadcrumb, get_thisyear, standard_subs
-from cciw.cciwmain.decorators import member_required
-from cciw.cciwmain.templatetags import bbcode
-from cciw.sitecontent.models import HtmlChunk
 import cciw.cciwmain.utils as utils
 
 
@@ -227,7 +223,7 @@ def photo(request, year, number, photonumber):
 def oldcampphoto(request, year, galleryname, photonumber):
     # Do need to check the gallery exists, just for checking the URL
     try:
-        gallery = Gallery.objects.get(location= 'camps/%s/%s/photos/' % (year, galleryname))
+        Gallery.objects.get(location= 'camps/%s/%s/photos/' % (year, galleryname))
     except Gallery.DoesNotExist:
         raise Http404
 

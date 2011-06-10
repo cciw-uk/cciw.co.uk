@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta
 import operator
-import os
+import random
 import re
-
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -13,8 +12,6 @@ from django.utils.safestring import mark_safe
 
 from cciw.cciwmain import common
 from cciw.middleware import threadlocals
-import cciw.middleware.threadlocals as threadlocals
-
 
 # regex used to match forums that belong to camps
 _camp_forum_re = re.compile('^' + settings.CAMP_FORUM_RE + '$')
@@ -149,9 +146,8 @@ class Member(models.Model):
 
     @staticmethod
     def generate_salt():
-        import random, datetime
         rand64= "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-        random.seed(datetime.datetime.today().microsecond)
+        random.seed(datetime.now().microsecond)
         return rand64[int(random.random()*64)] + rand64[int(random.random()*64)]
 
     @staticmethod
@@ -714,14 +710,12 @@ class Post(models.Model):
     def is_parent_visible(self):
         if self.topic_id is not None:
             try:
-                topic = self.topic
-                return True
+                return not self.topic.hidden
             except Topic.DoesNotExist:
                 return False
         elif self.photo_id is not None:
             try:
-                photo = self.photo
-                return True
+                return not self.photo.hidden
             except Photo.DoesNotExist:
                 return False
         else:
