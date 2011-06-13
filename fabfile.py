@@ -202,13 +202,6 @@ def _update_symlink(target, version):
     run("ln -s %s %s" % (version.src_dir, target.current_version.src_dir))
 
 
-def _fix_ipython():
-    # Fix up IPython, which gets borked by the re-installation of the virtualenv
-    with settings(warn_only=True):
-        run_venv("pip uninstall -y ipython")
-        run_venv("pip install ipython")
-
-
 def _update_virtualenv(version):
     # Update virtualenv in new dir.
     with cd(version.src_dir):
@@ -219,7 +212,6 @@ def _update_virtualenv(version):
         with virtualenv(version.venv_dir):
             with cd(version.project_dir):
                 run_venv("pip install -r requirements.txt")
-            _fix_ipython()
 
         # Need to add project and deps to path.
         # Could do 'python setup.py develop' but not all projects support it
