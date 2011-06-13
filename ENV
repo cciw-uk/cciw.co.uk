@@ -1,2 +1,0 @@
-workon cciw
-export DJANGO_SETTINGS_MODULE=cciw.settings
