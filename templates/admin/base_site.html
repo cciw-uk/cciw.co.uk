@@ -10,10 +10,11 @@
    $(document).ready(cciw.externalLinks);
 })(jQuery);
 </script>
+{% if GOOGLE_ANALYTICS_ACCOUNT %}
 <script type="text/javascript">
 
   var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-23715914-1']);
+  _gaq.push(['_setAccount', '{{ GOOGLE_ANALYTICS_ACCOUNT }}']);
   _gaq.push(['_trackPageview']);
 
   (function() {
@@ -23,6 +24,7 @@
   })();
 
 </script>
+{% endif %}
 {% endblock %}
 {% block branding %}
 <div id="header2">

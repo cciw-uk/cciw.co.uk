@@ -222,6 +222,7 @@ def standard_processor(request):
             l.isCurrentSection = True
 
     context['menulinks'] = links
+    context['GOOGLE_ANALYTICS_ACCOUNT'] = getattr(settings, 'GOOGLE_ANALYTICS_ACCOUNT', '')
 
     return context
 

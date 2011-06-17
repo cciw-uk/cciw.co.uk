@@ -6,10 +6,11 @@
 <link href="https://fonts.googleapis.com/css?family=Amaranth" rel="stylesheet" type="text/css" />
 <link rel="stylesheet" href="{{ STATIC_URL }}css/style.css" type="text/css" />
 {% block extraheader %}{% endblock %}
+{% if GOOGLE_ANALYTICS_ACCOUNT %}
 <script type="text/javascript">
 
   var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-23715914-1']);
+  _gaq.push(['_setAccount', '{{ GOOGLE_ANALYTICS_ACCOUNT }}']);
   _gaq.push(['_trackPageview']);
 
   (function() {
@@ -19,6 +20,7 @@
   })();
 
 </script>
+{% endif %}
 </head>
 <body>
 {% block bodystart %}

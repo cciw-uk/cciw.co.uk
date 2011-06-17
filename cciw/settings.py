@@ -12,7 +12,7 @@ DEVBOX = ('webfaction' not in hostname)
 LIVEBOX = not DEVBOX
 
 if LIVEBOX:
-    from cciw.settings_priv import PRODUCTION, STAGING
+    from cciw.settings_priv import PRODUCTION, STAGING, GOOGLE_ANALYTICS_ACCOUNT
 
 WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
 
