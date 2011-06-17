@@ -8,12 +8,18 @@ from cciw.officers.models import Application
 
 # To enable Applications to be shared between camps, and in some cases to belong
 # to no camps, there is no direct connection between a Camp and an Application.
-# This means we need another way to do it, and we're using dates.
+# This means we need another way to associate them. We also need to have a
+# concept of 'this year', so that an officer submits once application form 'per
+# year'. To manage this logic we're using dates of camps (which are clustered in
+# the summer) and the invitations to camp that ab officer has.
 
 # Logic for dates:
 # - an application is considered valid for a camp/year if the date_submitted
 #   - is within 12 months of the start date of the camp/first camp that year
 #   - is after the previous year's camps' end dates.
+#
+# i.e. we assume all camps happen in a cluster, and application forms are
+# submitted in the period leading up to that cluster.
 
 def thisyears_applications(user):
     """
