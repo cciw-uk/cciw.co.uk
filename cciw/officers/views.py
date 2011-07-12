@@ -16,6 +16,7 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.template.defaultfilters import wordwrap
 from django.views.decorators.cache import never_cache
+from django.views.generic.base import TemplateView
 
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
@@ -1161,3 +1162,6 @@ def crb_consent_problem(request):
     c['officer'] = officer
     c['is_popup'] = True
     return render(request, 'cciw/officers/crb_consent_problem.html', c)
+
+
+officer_info = staff_member_required(TemplateView.as_view(template_name='cciw/officers/info.html'))

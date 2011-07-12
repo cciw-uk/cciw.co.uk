@@ -1,5 +1,4 @@
 from django.conf.urls.defaults import patterns, url
-from django.views.generic.base import TemplateView
 
 urlpatterns = patterns('cciw.officers.views',
     (r'^$', 'index'),
@@ -27,5 +26,5 @@ urlpatterns = patterns('cciw.officers.views',
     (r'^ref/thanks/$', 'create_reference_thanks'),
     (r'^add-officer/$', 'create_officer'),
     (r'^files/(.*)$', 'officer_files'),
-    url(r'^info/$', TemplateView.as_view(template_name='cciw/officers/info.html'), name="cciw.officers.views.info"),
+    url(r'^info/$', 'officer_info', name="cciw.officers.views.info"),
 )
