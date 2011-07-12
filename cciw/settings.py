@@ -219,7 +219,6 @@ else:
 
 MEDIA_URL = '/usermedia/'
 STATIC_URL = '/static/'
-ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
 
