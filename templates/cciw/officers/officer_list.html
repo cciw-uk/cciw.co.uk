@@ -1,11 +1,11 @@
 {% extends "cciw/officers/base.html" %}
 {% load url from future %}
-{% load adminmedia %}
+{% load static %}
 {% block title %}Officer list {{ camp.year }}-{{ camp.number }} | CCIW Officers{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.tablesorter.min.js"></script>
-<link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />
+<script type="text/javascript" src="{% static "js/jquery.tablesorter.min.js" %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static "css/forms.css" %}" />
 <style type="text/css">
 
 .innerleft {
@@ -91,7 +91,7 @@ table.tablesorter thead .header.headerSortUp {
  alt="Add" src="{{ STATIC_URL }}images/officer-list-add.gif" /></a>
  &nbsp;&nbsp;&nbsp;
  <input type="text" id="id_available_officers_filter" />
- <img style="vertical-align: middle" alt="search" src="{% admin_media_prefix %}img/admin/selector-search.gif" />
+ <img style="vertical-align: middle" alt="search" src="{% static "admin/img/selector-search.gif" %}" />
 </div>
 <div>
 <select multiple="multiple" id="id_available_officers" style="min-width:30em;height: 30em;" name="officers">

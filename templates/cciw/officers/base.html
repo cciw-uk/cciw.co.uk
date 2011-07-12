@@ -1,13 +1,13 @@
 {% extends "admin/base_site.html" %}
-{% load adminmedia admin_modify %}
-{% block stylesheet %}{% admin_media_prefix %}css/base.css{% endblock %}
+{% load adminmedia static %}
+{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}
 {% block breadcrumbs %}{% endblock %}
 {% block title %}
 CCIW Officers
 {% endblock %}
 {% block extrastyle %}{{ block.super }}
 <script type="text/javascript" src="/admin/jsi18n/"></script>
-<script type="text/javascript" src="/static/admin/js/core.js"></script>
+<script type="text/javascript" src="{% static "admin/js/core.js" %}"></script>
 {% if form %}
   {{ form.media }}
 {% endif %}
