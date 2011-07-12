@@ -1,9 +1,11 @@
 import datetime
 import operator
+import urlparse
 
 from django import forms
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -109,6 +111,16 @@ def close_window_and_update_ref(ref_id):
 @never_cache
 def index(request):
     """Displays a list of links/buttons for various actions."""
+
+    # Handle redirects, since this page is LOGIN_URL
+    redirect_to = request.REQUEST.get(REDIRECT_FIELD_NAME, '')
+    if redirect_to:
+        netloc = urlparse.urlparse(redirect_to)[1]
+        # Heavier security check -- don't allow redirection to a different
+        # host.
+        if netloc == '' or netloc == request.get_host():
+            return HttpResponseRedirect(redirect_to)
+
     user = request.user
     c = {}
     c['thisyear'] = common.get_thisyear()

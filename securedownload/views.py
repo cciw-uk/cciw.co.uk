@@ -3,7 +3,9 @@ import hmac
 import os
 import posixpath
 import urllib
+
 from django.conf import settings
+from django.contrib.auth.views import redirect_to_login
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 from django.utils.crypto import salted_hmac
 
@@ -62,5 +64,9 @@ def access_folder_securely(folder, check_permission):
                 raise Http404()
             return serve_secure_file(os.path.join(folder, fname))
         else:
+            user = getattr(request, 'user', None)
+            if user is not None and not user.is_authenticated():
+                # redirect to login
+                return redirect_to_login(request.get_full_path())
             return HttpResponseForbidden("<h1>Access denied</h1>")
     return view
