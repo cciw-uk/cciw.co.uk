@@ -404,9 +404,11 @@ table.tablesorter thead .header.headerSortUp {
 <h2>Export officer data</h2>
 
 <p>The officer list above, along with address details from this year's
-  application forms, can be downloaded from the link below:</p>
+  application forms, can be downloaded below:</p>
 
-<p><a href="{% url 'cciw.officers.views.export_officer_data' year=camp.year number=camp.number %}">Download officer data, camp {{ camp.number }}, {{ camp.year }}</a></p>
+<ul>
+<li><a href="{% url 'cciw.officers.views.export_officer_data' year=camp.year number=camp.number %}">Officer data, camp {{ camp.number }}, {{ camp.year }} - Excel spreadsheet</a></li>
+</ul>
 
 </div> {# id=content-main #}
 
