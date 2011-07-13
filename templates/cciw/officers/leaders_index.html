@@ -1,4 +1,5 @@
 {% extends "cciw/officers/base.html" %}
+{% load url from future %}
 {% block title %}Leaders' tools | CCIW Officers {% endblock %}
 {% block content %}<div id="content-main">
 <h1>Leaders' tools</h1>
@@ -27,7 +28,7 @@
   references:</p>
 <ul>
   {% for year in statsyears %}
-    <li><a href="{% url cciw.officers.views.stats year=year %}">Stats {{ year }}</a></li>
+    <li><a href="{% url 'cciw.officers.views.stats' year=year %}">Stats {{ year }}</a></li>
   {% endfor %}
 </ul>
 
