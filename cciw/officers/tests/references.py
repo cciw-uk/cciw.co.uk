@@ -49,9 +49,7 @@ class ReferencesPage(TwillMixin, TestCase):
     def test_page_officers_denied(self):
         self._twill_login(OFFICER)
         tc.go(make_django_url("cciw.officers.views.manage_references", year=2000, number=1))
-        # Currently we get redirected to /officers/ page if insufficient
-        # privileges.
-        self.assertEqual(tc.get_browser().get_url().split('?')[0], make_django_url("cciw.officers.views.index"))
+        tc.code(403)
         tc.notfind('For camp 2000-1')
 
 
