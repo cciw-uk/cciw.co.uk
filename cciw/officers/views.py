@@ -31,7 +31,7 @@ from cciw.officers.email_utils import send_mail_with_attachments, formatted_emai
 from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer, send_crb_consent_problem_email
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication, CRBFormLog
-from cciw.officers.utils import camp_slacker_list
+from cciw.officers.utils import camp_slacker_list, officer_data_to_xls
 from cciw.officers.references import reference_form_info
 from cciw.utils.views import close_window_response
 from securedownload.views import access_folder_securely
@@ -926,6 +926,16 @@ def resend_email(request):
     u.save()
     create.email_officer(u.username, u.first_name, u.email, password, is_leader=False, update=True)
     return {'status':'success'}
+
+
+@staff_member_required
+@camp_admin_required
+def export_officer_data(request, year=None, number=None):
+    camp = _get_camp_or_404(year, number)
+    response = HttpResponse(officer_data_to_xls(camp), mimetype="application/vnd.ms-excel")
+    response['Content-Disposition'] = ('attachment; filename=camp-%d-%d-officers.xls'
+                                       % (camp.year, camp.number))
+    return response
 
 
 officer_files = access_folder_securely("officers",
