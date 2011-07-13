@@ -45,7 +45,6 @@ def officer_data_to_xls(camp):
                ('Country', app_attr_getter('address_country')),
                ('Tel', app_attr_getter('address_tel')),
                ('Mobile', app_attr_getter('address_mobile')),
-               ('Email', app_attr_getter('address_email')),
                ('Birth date', app_attr_getter('birth_date')),
                ]
 
