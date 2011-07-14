@@ -6,8 +6,6 @@ from StringIO import StringIO
 
 import xlwt
 
-from cciw.officers.applications import applications_for_camp
-
 
 def camp_officer_list(camp):
     """
@@ -26,6 +24,9 @@ def camp_slacker_list(camp):
 
 
 def officer_data_to_xls(camp):
+    # Import here to avoid import cycle when starting from handle_mail script
+    from cciw.officers.applications import applications_for_camp
+
     # All the data we need:
     invites = camp.invitation_set.all().select_related('officer').order_by('officer__first_name',
                                                                            'officer__last_name')
