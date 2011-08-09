@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="en-gb">
 <head>
 <title>{% block title %}{{ title }} | CCIW{% endblock %}</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <link href="https://fonts.googleapis.com/css?family=Amaranth" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" href="{{ STATIC_URL }}css/style.css" type="text/css" />
+<link rel="stylesheet" href="{% static "css/style.css" %}" type="text/css" />
 {% block extraheader %}{% endblock %}
 {% if GOOGLE_ANALYTICS_ACCOUNT %}
 <script type="text/javascript">

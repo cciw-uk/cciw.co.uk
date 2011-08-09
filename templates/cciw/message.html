@@ -1,3 +1,4 @@
+{% load static %}
 <script type="text/javascript">
 <!--
 var cciw = (function(pub, $) {
@@ -34,17 +35,17 @@ var cciw = (function(pub, $) {
 <div>
 <textarea name="message" rows="12" cols="60" id="message">{% if message_text %}{{ message_text }}{% endif %}</textarea>
 <div class="messageiconrow">
-<a class="button" href="javascript: void cciw.messageInsert(':-)');"><img src="{{ STATIC_URL }}images/emoticons/smile.gif" alt=":-)" title="Add emoticon" /></a>
-<a class="button" href="javascript: void cciw.messageInsert(':-(');"><img src="{{ STATIC_URL }}images/emoticons/sad.gif" alt=":-(" title="Add emoticon" /></a>
-<a class="button" href="javascript: void cciw.messageInsert(':-/');"><img src="{{ STATIC_URL }}images/emoticons/unsure.gif" alt=":-/" title="Add emoticon" /></a>
-<a class="button" href="javascript: void cciw.messageInsert(';-)');"><img src="{{ STATIC_URL }}images/emoticons/wink.gif" alt=";-)" title="Add emoticon" /></a>
-<a class="button" href="javascript: void cciw.messageInsert(':eyebrow:');"><img src="{{ STATIC_URL }}images/emoticons/eyebrow.gif" alt=":eyebrow:" title="Add emoticon" /></a>
+<a class="button" href="javascript: void cciw.messageInsert(':-)');"><img src="{% static "images/emoticons/smile.gif" %}" alt=":-)" title="Add emoticon" /></a>
+<a class="button" href="javascript: void cciw.messageInsert(':-(');"><img src="{% static "images/emoticons/sad.gif" %}" alt=":-(" title="Add emoticon" /></a>
+<a class="button" href="javascript: void cciw.messageInsert(':-/');"><img src="{% static "images/emoticons/unsure.gif" %}" alt=":-/" title="Add emoticon" /></a>
+<a class="button" href="javascript: void cciw.messageInsert(';-)');"><img src="{% static "images/emoticons/wink.gif" %}" alt=";-)" title="Add emoticon" /></a>
+<a class="button" href="javascript: void cciw.messageInsert(':eyebrow:');"><img src="{% static "images/emoticons/eyebrow.gif" %}" alt=":eyebrow:" title="Add emoticon" /></a>
  |
 <a class="button" href="javascript: void cciw.messageWrap('[b]', '[/b]');" title="Add bold text tags"><b>B</b></a>
 <a class="button" href="javascript: void cciw.messageWrap('[i]','[/i]');" title="Add italic text tags"><b><i>I</i></b></a>
 <a class="button" href="javascript: void cciw.messageWrap('[quote]', '[/quote]');" title="Add tags for quoting someone"><b>Q</b></a>
 
- | Bible: <input name="passageinput" id="passageinput" type="text" title="Enter Bible passage and click the icon to do a lookup in a popup window" /><a title="Enter Bible passage and click the icon to do a lookup in a popup window" class="button" href="javascript:void cciw.bibleWindow();"><img src="{{ STATIC_URL }}images/book.png" alt="bible icon" /></a>
+ | Bible: <input name="passageinput" id="passageinput" type="text" title="Enter Bible passage and click the icon to do a lookup in a popup window" /><a title="Enter Bible passage and click the icon to do a lookup in a popup window" class="button" href="javascript:void cciw.bibleWindow();"><img src="{% static "images/book.png" %}" alt="bible icon" /></a>
  |
 <a title="More details about creating messages." rel="external" href="/website/bbcode/" >Help</a>
 </div>

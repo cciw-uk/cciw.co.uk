@@ -40,18 +40,18 @@ table.tablesorter thead th {
 }
 
 table.tablesorter thead .header {
-    background-image: url({{ STATIC_URL }}images/ascdesc.gif);
+    background-image: url({% static "images/ascdesc.gif" %});
     background-repeat: no-repeat;
     background-position: center right;
     cursor: pointer;
 }
 
 table.tablesorter thead .header.headerSortDown {
-    background-image: url({{ STATIC_URL }}images/desc.gif);
+    background-image: url({% static "images/desc.gif" %});
 }
 
 table.tablesorter thead .header.headerSortUp {
-    background-image: url({{ STATIC_URL }}images/asc.gif);
+    background-image: url({% static "images/asc.gif" %});
 }
 
 #id_officer_list_div table thead th:nth-child(3),
@@ -88,7 +88,7 @@ table.tablesorter thead .header.headerSortUp {
 
 <div class="selector-filter">
  <a href="#" id="id_add_officer_btn">Add  <img style="vertical-align: middle"
- alt="Add" src="{{ STATIC_URL }}images/officer-list-add.gif" /></a>
+ alt="Add" src="{% static "images/officer-list-add.gif" %}" /></a>
  &nbsp;&nbsp;&nbsp;
  <input type="text" id="id_available_officers_filter" />
  <img style="vertical-align: middle" alt="search" src="{% static "admin/img/selector-search.gif" %}" />
@@ -423,7 +423,7 @@ table.tablesorter thead .header.headerSortUp {
 <div class="inlinepopup_background" id="id_popup_background"></div>
 
 <div id="loading" style="text-align: center; background-color: white; border: 1px solid #888; position: fixed; bottom: 0px; right: 0px; width: 224px; height: 40px; display: none;">
-<img src="{{ STATIC_URL }}images/loading.gif" alt="" />
+<img src="{% static "images/loading.gif" %}" alt="" />
 <br/>Loading...
 </div>
 {% endblock %}

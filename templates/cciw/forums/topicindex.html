@@ -1,4 +1,5 @@
 {% extends "cciw/standard.html" %}
+{% load static %}
 {% load standardpage %}
 {% load view_extras %}
 {% load forums %}
@@ -26,7 +27,7 @@
 					{% poll_vote_box request topic topic.poll 2 %}
 				{% endif %}
 				{{ topic.get_link }}
-				{% if moderator %}&nbsp;<span class="editTopic"><a href="/admin/cciwmain/topic/{{ topic.id }}/" title="Edit this topic" ><img width="16" height="16" src="{{ STATIC_URL }}images/edit.png" alt="Edit this topic" /></a></span>
+				{% if moderator %}&nbsp;<span class="editTopic"><a href="/admin/cciwmain/topic/{{ topic.id }}/" title="Edit this topic" ><img width="16" height="16" src="{% static "images/edit.png" %}" alt="Edit this topic" /></a></span>
 				{% endif %}
 				{% if topic.hidden %}
 					{% if moderator %}

@@ -1,4 +1,5 @@
 {% extends "cciw/base.html" %}
+{% load static %}
 {% load standardpage %}
 
 {% block extraheader %}
@@ -20,8 +21,8 @@
 	{% block atomfeed %}
 		{% atomfeedlink %}
 	{% endblock %}
-        <script type="text/javascript" src="{{ STATIC_URL }}admin/js/jquery.min.js"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}js/cciwutils.js"></script>
+        <script type="text/javascript" src="{% static "admin/js/jquery.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>
         <script type="text/javascript">
 <!--
 (function($) {
