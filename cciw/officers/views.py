@@ -1194,4 +1194,10 @@ def crb_consent_problem(request):
     return render(request, 'cciw/officers/crb_consent_problem.html', c)
 
 
-officer_info = staff_member_required(TemplateView.as_view(template_name='cciw/officers/info.html'))
+class OfficerInfo(TemplateView):
+    template_name='cciw/officers/info.html'
+    def get_context_data(self, *args, **kwargs):
+        return dict(show_wiki_link=is_wiki_user(self.request.user))
+
+
+officer_info = staff_member_required(OfficerInfo.as_view())
