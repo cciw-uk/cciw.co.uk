@@ -29,7 +29,8 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
     (r'^officers/', include('cciw.officers.urls')),
     url('^autocomplete/(\w+)/$', autocomplete, name='autocomplete'),
-    (r'wiki/', include('djiki.urls')),
+    (r'^wiki/$', 'django.views.generic.simple.redirect_to', {'url': u'/wiki/Index'}),
+    (r'^wiki/', include('djiki.urls')),
 
 )
 
