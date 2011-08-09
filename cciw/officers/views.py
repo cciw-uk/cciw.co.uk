@@ -20,6 +20,7 @@ from django.template.defaultfilters import wordwrap
 from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
+from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
@@ -54,19 +55,6 @@ def _copy_application(application):
     return new_obj
 
 
-SECRETARY_GROUP_NAME = 'Secretaries'
-LEADER_GROUP_NAME = 'Leaders'
-
-def _is_camp_admin(user):
-    """
-    Returns True if the user is an admin for any camp, or has rights
-    for editing camp/officer/reference/CRB information
-    """
-    return (user.groups.filter(name=LEADER_GROUP_NAME) |
-            user.groups.filter(name=SECRETARY_GROUP_NAME)).exists() \
-        or user.camps_as_admin.exists() > 0
-
-
 def user_passes_test_improved(test_func):
     """
     Like user_passes_test, but doesn't redirect user to login screen if they are
@@ -95,17 +83,8 @@ def user_passes_test_improved(test_func):
     return decorator
 
 
-camp_admin_required = user_passes_test_improved(_is_camp_admin)
+camp_admin_required = user_passes_test_improved(is_camp_admin)
 
-
-def _is_cciw_secretary(user):
-    return user.groups.filter(name=SECRETARY_GROUP_NAME).exists()
-
-
-def _is_camp_officer(user):
-    return user.is_authenticated() and \
-        (user.groups.filter(name='Officers') |
-         user.groups.filter(name='Leaders')).exists()
 
 
 def _camps_as_admin_or_leader(user):
@@ -153,10 +132,10 @@ def index(request):
     user = request.user
     c = {}
     c['thisyear'] = common.get_thisyear()
-    if _is_camp_admin(user):
+    if is_camp_admin(user):
         c['show_leader_links'] = True
         c['show_admin_link'] = True
-    if _is_cciw_secretary(user):
+    if is_cciw_secretary(user):
         c['show_secretary_links'] = True
         c['show_admin_link'] = True
 
@@ -236,7 +215,7 @@ def view_application(request):
         raise Http404
 
     if app.officer_id != request.user.id and \
-            not _is_camp_admin(request.user):
+            not is_camp_admin(request.user):
         raise PermissionDenied
 
     # NB, this is is called by both normal users and leaders.
@@ -968,7 +947,7 @@ def export_officer_data(request, year=None, number=None):
 
 
 officer_files = access_folder_securely("officers",
-                                       lambda request: _is_camp_officer(request.user))
+                                       lambda request: request.user.is_authenticated() and is_camp_officer(request.user))
 
 
 def date_to_js_ts(d):

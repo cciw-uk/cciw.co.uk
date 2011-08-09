@@ -196,6 +196,7 @@ _MIDDLEWARE_CLASSES = (
     (True,       "django.contrib.messages.middleware.MessageMiddleware"),
     (True,       "django.contrib.auth.middleware.AuthenticationMiddleware"),
     (True,       "django.middleware.common.CommonMiddleware"),
+    (True,       "cciw.middleware.auth.PrivateWiki"),
     (True,       "django.middleware.transaction.TransactionMiddleware"),
     (True,       "cciw.middleware.threadlocals.ThreadLocals"),
 )
@@ -226,6 +227,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
 #####  DJIKI  ######
 
 DJIKI_IMAGES_PATH = 'wiki/images/'
+DJIKI_ALLOW_ANONYMOUS_EDITS = False
 
 ####################
 

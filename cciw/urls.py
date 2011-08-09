@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.models import User
 
-import cciw.officers.views
+import cciw.auth
 
 handler404 = 'cciw.cciwmain.views.handler404'
 
@@ -16,7 +16,7 @@ autocomplete.register(
     fields=('first_name__istartswith', 'last_name__istartswith'),
     limit=10,
     label=lambda user: "%s %s <%s>" % (user.first_name, user.last_name, user.email),
-    auth=lambda request: request.user.is_authenticated() and cciw.officers.views._is_camp_admin(request.user)
+    auth=lambda request: request.user.is_authenticated() and cciw.auth.is_camp_admin(request.user)
     )
 
 urlpatterns = patterns('',
