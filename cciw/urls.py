@@ -29,6 +29,7 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
     (r'^officers/', include('cciw.officers.urls')),
     url('^autocomplete/(\w+)/$', autocomplete, name='autocomplete'),
+    (r'wiki/', include('djiki.urls')),
 
 )
 

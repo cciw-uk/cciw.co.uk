@@ -71,6 +71,7 @@ INSTALLED_APPS = (
     'mailer',
     'securedownload',
     'autocomplete',
+    'djiki',
 )
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
@@ -221,6 +222,12 @@ MEDIA_URL = '/usermedia/'
 STATIC_URL = '/static/'
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
+
+#####  DJIKI  ######
+
+DJIKI_IMAGES_PATH = 'wiki/images/'
+
+####################
 
 ## CCIW SPECIFIC SETTINGS AND CONSTANTS
 AWARD_UPLOAD_PATH = 'images/awards'
