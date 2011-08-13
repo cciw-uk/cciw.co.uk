@@ -1,9 +1,15 @@
 {% extends "cciw/standard.html" %}
 {% load standardpage %}
 {% block content %}
+
+{% htmlchunk prices %}
+
+{% htmlchunk booking_overview %}
+
 {% if bookingform %}
 	{% htmlchunk bookingform_start %}
-	<div><a href="{{ MEDIA_URL }}{{ bookingform }}">Download the CCIW booking for {{ thisyear }}</a> </div>
+	<div><a href="{{ MEDIA_URL }}{{ bookingform }}">Download the CCIW
+	booking form for {{ thisyear }}</a> </div>
 	{% htmlchunk bookingform_end %}
 {% else %}
 	{% htmlchunk no_bookingform_yet %}

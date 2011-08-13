@@ -20,6 +20,7 @@ autocomplete.register(
     )
 
 urlpatterns = patterns('',
+    (r'^booking/', include('cciw.bookings.urls')),
     # Plug in the password reset views
     (r'^admin/password_reset/$', 'django.contrib.auth.views.password_reset'),
     (r'^admin/password_reset/done/$', 'django.contrib.auth.views.password_reset_done'),

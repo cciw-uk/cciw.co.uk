@@ -67,6 +67,7 @@ INSTALLED_APPS = (
     'cciw.forums',
     'cciw.officers',
     'cciw.utils',
+    'cciw.bookings',
     'django.contrib.messages',
     'mailer',
     'securedownload',
