@@ -35,9 +35,9 @@ import sys
 #
 #  usermedia/  - corresponds to MEDIA_ROOT
 #
-#  protected_downloads/     - corresponds to SECUREDOWNLOAD_SERVE_ROOT
+#  secure_downloads/     - corresponds to SECUREDOWNLOAD_SERVE_ROOT
 #
-#  protected_downloads_src/ - corresponds to SECUREDOWNLOAD_SOURCE
+#  secure_downloads_src/ - corresponds to SECUREDOWNLOAD_SOURCE
 #
 # === Deployment ===
 #
@@ -267,7 +267,7 @@ def _copy_local_sources(target, version):
 
 def _copy_protected_downloads():
     # We currently don't need this to be separate for staging and production
-    rsync_dir(join(parent_dir, "protected_downloads_src"),
+    rsync_dir(join(parent_dir, "secure_downloads_src"),
               join(webapps_root, 'cciw_protected_downloads_src'))
 
 
