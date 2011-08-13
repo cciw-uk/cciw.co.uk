@@ -133,10 +133,12 @@
 import os
 
 from django.conf import settings
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, TemplateResponseMixin
+from django.views.generic.edit import ProcessFormView, FormMixin
 
 from cciw.cciwmain.common import get_thisyear, DefaultMetaData
 
+from cciw.bookings.forms import EmailForm
 
 class BookingIndex(DefaultMetaData, TemplateView):
     metadata_title = "Booking"
@@ -149,5 +151,13 @@ class BookingIndex(DefaultMetaData, TemplateView):
             self.context['bookingform'] = bookingform_relpath
         return super(BookingIndex, self).get(request)
 
-index = BookingIndex.as_view()
 
+class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFormView):
+    metadata_title = "Booking account details"
+    form_class = EmailForm
+    template_name = 'cciw/bookings/start.html'
+
+
+
+index = BookingIndex.as_view()
+start = BookingStart.as_view()

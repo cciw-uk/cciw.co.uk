@@ -1,0 +1,17 @@
+{% extends "cciw/standard.html" %}
+{% block content %}
+<h2>Booking account - email address</h2>
+
+<p>To book online, you must have a credit card, debit card, or Paypal account,
+  and must not be a minor.</p>
+
+<p>To get started, we first need your email address. Note - this is the email address
+  of the person booking, not of the camper.</p>
+
+<form method="POST" action="">
+{% csrf_token %}
+{{ form.as_p }}
+<p><input type="submit" name="submit" value="Submit" /></p>
+</form>
+
+{% endblock %}
