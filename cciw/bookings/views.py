@@ -130,6 +130,28 @@
 #   and it could need to be corrected by an admin, before or after payment is made.
 #   So we need to be flexible, and allow a second payment to be made.
 
+# = Admin process =
+#
+# For dealing with paper bookings, an admin enters essentially the same
+# information into the system.
+#
+# Admin step 1 - account information
+#  - covers step 1 to 3 of user process.
+#  - requires an AJAX view to retrieve suggestions for the account,
+#    which means that a new BookingAccount will not be created
+#
+# Admin step 2 - booking info
+# - covers step 4 to 5 of user process
+
+# Admin payments info
+# - 'Add cheque payment' form
+#   - the amount of the cheque payment is entered (and cheque number?)
+#   - includes name/address, with AJAX view to select account
+# - 'Add refund payment' form
+# - link to general admin page that allows payments to be corrected or deleted
+# - (but not added)
+
+
 import os
 
 from django.conf import settings
