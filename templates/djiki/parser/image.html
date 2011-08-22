@@ -1,6 +1,7 @@
+{% load url from future %}
 <div class="image{% if not image %} external{% endif %}">
 	{% if image %}
-	<a href="{% url djiki-image-view url_name %}">
+	<a href="{% url 'djiki-image-view' url_name %}">
           <img src="{{ image.last_revision.file.url }}" alt="{{ title }}" />
 	</a>
 	{% else %}
