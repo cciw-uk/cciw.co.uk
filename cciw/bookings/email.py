@@ -39,8 +39,8 @@ class EmailVerifyTokenGenerator(object):
         return True
 
     def _make_token_with_timestamp(self, account, timestamp):
-        # timestamp is number of days since 2001-1-1.  Converted to
-        # base 36, this gives us a 3 digit string until about 2121
+        # timestamp is number of days since 2011-1-1.  Converted to
+        # base 36, this gives us a 3 digit string until about 2131
         ts_b36 = int_to_base36(timestamp)
 
         key_salt = "cciw.bookings.EmailVerifyTokenGenerator"
@@ -50,7 +50,7 @@ class EmailVerifyTokenGenerator(object):
         return "%s-%s" % (ts_b36, hash)
 
     def _num_days(self, dt):
-        return (dt - date(2001,1,1)).days
+        return (dt - date(2011,1,1)).days
 
     def _today(self):
         # Used for mocking in tests
