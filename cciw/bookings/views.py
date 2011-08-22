@@ -133,12 +133,16 @@
 import os
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.views.generic.base import TemplateView, TemplateResponseMixin
 from django.views.generic.edit import ProcessFormView, FormMixin
 
 from cciw.cciwmain.common import get_thisyear, DefaultMetaData
 
+from cciw.bookings.email import send_verify_email
 from cciw.bookings.forms import EmailForm
+from cciw.bookings.models import BookingAccount
+
 
 class BookingIndex(DefaultMetaData, TemplateView):
     metadata_title = "Booking"
@@ -157,7 +161,21 @@ class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFor
     form_class = EmailForm
     template_name = 'cciw/bookings/start.html'
 
+    def get_success_url(self):
+        return reverse('cciw.bookings.views.email_sent')
+
+    def form_valid(self, form):
+        account, new = BookingAccount.objects.get_or_create(email=form.cleaned_data['email'])
+        send_verify_email(self.request, account)
+        return super(BookingStart, self).form_valid(form)
+
+
+class BookingEmailSent(DefaultMetaData, TemplateView):
+    metadata_title = "Booking account details"
+    template_name = "cciw/bookings/email_sent.html"
 
 
 index = BookingIndex.as_view()
 start = BookingStart.as_view()
+email_sent = BookingEmailSent.as_view()
+verify_email = lambda request, account_id, token: None # TODO
