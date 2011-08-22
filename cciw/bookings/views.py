@@ -151,6 +151,17 @@
 # - link to general admin page that allows payments to be corrected or deleted
 # - (but not added)
 
+# = Leader tools =
+#
+# Leaders should be able to download a spreadsheet with all current info about
+# campers. Sheets:
+#  - all campers
+#  - boys
+#  - girls
+#  - birthdays on camps
+#
+# Leaders need to be presented with a list of bookings that they need to manually
+# approve. If they don't approve, need to send email to person booking.
 
 import os
 
