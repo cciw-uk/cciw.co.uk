@@ -24,3 +24,11 @@ class TestBookingStart(TestCase):
         self.assertEqual(b.activated, None)
         self.assertEqual(len(mail.outbox), 1)
 
+    def test_complete_form_existing_email(self):
+        BookingAccount.objects.create(email="booker@bookers.com")
+        self.assertEqual(BookingAccount.objects.all().count(), 1)
+        resp = self.client.post(reverse('cciw.bookings.views.start'),
+                                {'email': 'booker@bookers.com'})
+        self.assertEqual(BookingAccount.objects.all().count(), 1)
+        self.assertEqual(len(mail.outbox), 1)
+
