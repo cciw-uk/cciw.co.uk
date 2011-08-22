@@ -128,7 +128,7 @@ If you did not attempt to sign up on the CCIW web-site, you can just
 ignore this e-mail.
 
 """ % {'domain': common.get_current_domain(), 'email': urllib.quote(email), 'hash': email_hash(email)},
-"website@cciw.co.uk", [email])
+                   settings.SERVER_EMAIL, [email])
 
 
 def send_username_reminder(member):
@@ -141,7 +141,7 @@ https://%(domain)s/login/
 
 Thanks.
 """ % {'domain': common.get_current_domain(), 'user_name': member.user_name },
-    "website@cciw.co.uk", [member.email])
+    settings.SERVER_EMAIL, [member.email])
 
 
 def send_newpassword_email(member):
@@ -172,7 +172,7 @@ be changed until you click the link, so you can safely ignore this e-mail.
 
 """ % {'domain': common.get_current_domain(), 'user_name': member.user_name,
        'password': password, 'hash': hash},
-    "website@cciw.co.uk", [member.email])
+    settings.SERVER_EMAIL, [member.email])
 
 
 def create_new_password_hash(password, user_name):
@@ -227,7 +227,7 @@ the entire link into your web browser.
 """ % {'domain': common.get_current_domain(), 'email': urllib.quote(new_email),
        'user_name': urllib.quote(member.user_name),
        'hash': email_and_username_hash(new_email, member.user_name)},
-    "website@cciw.co.uk", [new_email])
+    settings.SERVER_EMAIL, [new_email])
 
 
 #################  VIEW FUNCTIONS #####################

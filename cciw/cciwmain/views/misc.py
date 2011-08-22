@@ -20,7 +20,7 @@ Email: %(email)s
 Message:
 %(message)s
 
-""" % locals(), "website@cciw.co.uk", [settings.FEEDBACK_EMAIL_TO])
+""" % locals(), settings.SERVER_EMAIL, [settings.FEEDBACK_EMAIL_TO])
 
 class FeedbackForm(CciwFormMixin, forms.Form):
     email = forms.EmailField(label="Email address", max_length=320)
