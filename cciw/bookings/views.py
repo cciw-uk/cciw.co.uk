@@ -18,15 +18,16 @@
 #      - if BookingAccount.name already set skip to step 4
 #      - otherwise skip to step 3
 #
+#  - if new account, create in DB
 #  - send email verification email
 #    - has a link to step 2
 #
 #  - inform about checking email
 
 # Step 2 /booking/v/
-#  - if new account, create in DB
 #  - set signed cookie with timestamp, lasting x weeks
 #  - redirect to step 3
+#  - redirect to failure message if it went wrong
 
 # Step 3 /booking/account/
 #  - enter account name and address
@@ -167,12 +168,13 @@ import os
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.views.generic.base import TemplateView, TemplateResponseMixin
 from django.views.generic.edit import ProcessFormView, FormMixin
 
 from cciw.cciwmain.common import get_thisyear, DefaultMetaData
 
-from cciw.bookings.email import send_verify_email
+from cciw.bookings.email import send_verify_email, check_email_verification_token
 from cciw.bookings.forms import EmailForm
 from cciw.bookings.models import BookingAccount
 
@@ -208,7 +210,35 @@ class BookingEmailSent(DefaultMetaData, TemplateView):
     template_name = "cciw/bookings/email_sent.html"
 
 
+def verify_email(request, account_id, token):
+    fail = lambda: HttpResponseRedirect(reverse('cciw.bookings.views.verify_email_failed'))
+    correct = lambda: HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
+    try:
+        account = BookingAccount.objects.get(id=account_id)
+    except BookingAccount.DoesNotExist:
+        return fail()
+
+    if check_email_verification_token(account, token):
+        resp = correct()
+        set_booking_account_cookie(resp, account)
+        return resp
+    else:
+        return fail()
+
+
+def set_booking_account_cookie(response, account):
+    response.set_signed_cookie('bookingaccount', account.id,
+                               salt='cciw.bookings.BookingAccount cookie',
+                               max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS)
+
+
+class BookingVerifyEmailFailed(DefaultMetaData, TemplateView):
+    metadata_title = "Booking account email verification failed"
+    template_name = "cciw/bookings/email_verification_failed.html"
+
+
 index = BookingIndex.as_view()
 start = BookingStart.as_view()
 email_sent = BookingEmailSent.as_view()
-verify_email = lambda request, account_id, token: None # TODO
+verify_email_failed = BookingVerifyEmailFailed.as_view()
+account_details = lambda request: None # TODO

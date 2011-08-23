@@ -33,7 +33,7 @@ class EmailVerifyTokenGenerator(object):
             return False
 
         # Check the timestamp is within limit
-        if (self._num_days(self._today()) - ts) > settings.EMAIL_VERIFY_TIMEOUT_DAYS:
+        if (self._num_days(self._today()) - ts) > settings.BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS:
             return False
 
         return True
@@ -73,3 +73,7 @@ def send_verify_email(request, booking_account):
     body = loader.render_to_string("cciw/bookings/verification_email.txt", c)
     subject = "CCIW booking account"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [booking_account.email])
+
+
+def check_email_verification_token(account, token):
+    return EmailVerifyTokenGenerator().check_token(account, token)
