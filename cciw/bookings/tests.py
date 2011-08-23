@@ -53,9 +53,29 @@ class TestBookingVerify(TestCase):
         resp = self.client.get(path, querydata)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.account_details')
-        self.assertEqual(resp['Location'][-len(newpath):], newpath)
+        self.assertTrue(resp['Location'].endswith(newpath))
         self.assertEqual(str(BookingAccount.objects.get(email='booker@bookers.com').id),
                          resp.cookies['bookingaccount'].value.split(':')[0])
+
+    def test_verify_correct_and_has_details(self):
+        """
+        Test the email verification stage when the URL is correct and the
+        account already has name and address
+        """
+        # Assumes booking_start works:
+        self.client.post(reverse('cciw.bookings.views.start'),
+                         {'email': 'booker@bookers.com'})
+        b = BookingAccount.objects.get(email='booker@bookers.com')
+        b.name = "Joe"
+        b.address = "Home"
+        b.post_code = "XY1 D45"
+        b.save()
+
+        url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
+        resp = self.client.get(path, querydata)
+        self.assertEqual(resp.status_code, 302)
+        newpath = reverse('cciw.bookings.views.add_place')
+        self.assertTrue(resp['Location'].endswith(newpath))
 
     def test_verify_incorrect(self):
         """
@@ -84,3 +104,45 @@ class TestBookingVerify(TestCase):
         resp = self.client.get(badpath, querydata, follow=True)
         self.assertContains(resp, "failed")
         self.assertTrue('bookingaccount' not in resp.cookies)
+
+
+class TestAccountDetails(TestCase):
+
+    fixtures = ['basic.json']
+    email = 'booker@bookers.com'
+
+    def login(self):
+        # Easiest way is to simulate what the user actually has to do
+        self.client.post(reverse('cciw.bookings.views.start'),
+                         {'email': self.email})
+        url, path, querydata = read_email_url(mail.outbox[-1], "https?://.*/booking/v/.*")
+        self.client.get(path, querydata)
+
+    def test_redirect_if_not_logged_in(self):
+        resp = self.client.get(reverse('cciw.bookings.views.account_details'))
+        self.assertEqual(resp.status_code, 302)
+
+    def test_show_if_logged_in(self):
+        self.login()
+        resp = self.client.get(reverse('cciw.bookings.views.account_details'))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_missing_name(self):
+        self.login()
+        resp = self.client.post(reverse('cciw.bookings.views.account_details'), {})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "This field is required")
+
+    def test_complete(self):
+        """
+        Test that we can complete the account details page
+        """
+        self.login()
+        resp = self.client.post(reverse('cciw.bookings.views.account_details'),
+                                {'name': 'Mr Booker',
+                                 'address': '123, A Street',
+                                 'post_code': 'XY1 D45',
+                                 })
+        self.assertEqual(resp.status_code, 302)
+        b = BookingAccount.objects.get(email=self.email)
+        self.assertEqual(b.name, 'Mr Booker')

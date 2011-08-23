@@ -38,10 +38,14 @@ class BookingAccount(models.Model):
     address = models.TextField(blank=True)
     post_code = models.CharField(blank=True, max_length=10)
     phone_number = models.CharField(blank=True, max_length=22)
-    share_phone_number = models.BooleanField(blank=True, default=False)
+    share_phone_number = models.BooleanField("Allow this phone number to be passed on "
+                                             "to other parents to help organise transport",
+                                             blank=True, default=False)
     total_received = models.DecimalField(default=Decimal('0.00'), decimal_places=2, max_digits=10)
     activated = models.DateField(null=True)
 
+    def has_account_details(self):
+        return self.name != "" and self.address != "" and self.post_code != ""
 
 class Booking(models.Model):
     account = models.ForeignKey(BookingAccount)

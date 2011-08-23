@@ -26,7 +26,7 @@
 
 # Step 2 /booking/v/
 #  - set signed cookie with timestamp, lasting x weeks
-#  - redirect to step 3
+#  - redirect to step 3 (or step 4 if already has a name)
 #  - redirect to failure message if it went wrong
 
 # Step 3 /booking/account/
@@ -164,19 +164,55 @@
 # Leaders need to be presented with a list of bookings that they need to manually
 # approve. If they don't approve, need to send email to person booking.
 
+from functools import wraps
 import os
 
 from django.conf import settings
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
 from django.views.generic.base import TemplateView, TemplateResponseMixin
-from django.views.generic.edit import ProcessFormView, FormMixin
+from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView
 
 from cciw.cciwmain.common import get_thisyear, DefaultMetaData
 
 from cciw.bookings.email import send_verify_email, check_email_verification_token
-from cciw.bookings.forms import EmailForm
+from cciw.bookings.forms import EmailForm, AccountDetailsForm
 from cciw.bookings.models import BookingAccount
+
+
+# decorators and utilities
+
+BOOKING_COOKIE_SALT = 'cciw.bookings.BookingAccount cookie'
+
+def set_booking_account_cookie(response, account):
+    response.set_signed_cookie('bookingaccount', account.id,
+                               salt=BOOKING_COOKIE_SALT,
+                               max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS)
+
+
+def booking_account_required(view_func):
+    """
+    Requires a signed cookie that verifies the booking account,
+    redirecting if this is not satisfied,
+    and attaches the BookingAccount object to the request.
+    """
+    @wraps(view_func)
+    def view(request, *args, **kwargs):
+        fail = lambda: HttpResponseRedirect(reverse('cciw.bookings.views.not_logged_in'))
+        cookie = request.get_signed_cookie('bookingaccount',
+                                           salt=BOOKING_COOKIE_SALT,
+                                           default=None,
+                                           max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS)
+        if cookie is None:
+            return fail()
+        try:
+            account = BookingAccount.objects.get(id=cookie)
+        except BookingAccount.DoesNotExist:
+            return fail()
+
+        request.booking_account = account
+        return view_func(request, *args, **kwargs)
+    return view
 
 
 class BookingIndex(DefaultMetaData, TemplateView):
@@ -192,7 +228,7 @@ class BookingIndex(DefaultMetaData, TemplateView):
 
 
 class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFormView):
-    metadata_title = "Booking account details"
+    metadata_title = "Booking email address"
     form_class = EmailForm
     template_name = 'cciw/bookings/start.html'
     success_url = reverse_lazy('cciw.bookings.views.email_sent')
@@ -204,30 +240,27 @@ class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFor
 
 
 class BookingEmailSent(DefaultMetaData, TemplateView):
-    metadata_title = "Booking account details"
+    metadata_title = "Booking email address"
     template_name = "cciw/bookings/email_sent.html"
 
 
 def verify_email(request, account_id, token):
     fail = lambda: HttpResponseRedirect(reverse('cciw.bookings.views.verify_email_failed'))
-    correct = lambda: HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
     try:
         account = BookingAccount.objects.get(id=account_id)
     except BookingAccount.DoesNotExist:
         return fail()
 
     if check_email_verification_token(account, token):
-        resp = correct()
+        if account.has_account_details():
+            resp = HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
+        else:
+            resp = HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
+
         set_booking_account_cookie(resp, account)
         return resp
     else:
         return fail()
-
-
-def set_booking_account_cookie(response, account):
-    response.set_signed_cookie('bookingaccount', account.id,
-                               salt='cciw.bookings.BookingAccount cookie',
-                               max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS)
 
 
 class BookingVerifyEmailFailed(DefaultMetaData, TemplateView):
@@ -235,8 +268,25 @@ class BookingVerifyEmailFailed(DefaultMetaData, TemplateView):
     template_name = "cciw/bookings/email_verification_failed.html"
 
 
+class BookingNotLoggedIn(DefaultMetaData, TemplateView):
+    metadata_title = "Booking - not logged in"
+    template_name = "cciw/bookings/not_logged_in.html"
+
+
+class BookingAccountDetails(DefaultMetaData, TemplateResponseMixin, BaseUpdateView):
+    metadata_title = "Booking account details"
+    form_class = AccountDetailsForm
+    template_name = 'cciw/bookings/account_details.html'
+    success_url = reverse_lazy('cciw.bookings.views.add_place')
+
+    def get_object(self):
+        return self.request.booking_account
+
+
 index = BookingIndex.as_view()
 start = BookingStart.as_view()
 email_sent = BookingEmailSent.as_view()
 verify_email_failed = BookingVerifyEmailFailed.as_view()
-account_details = lambda request: None # TODO
+account_details = booking_account_required(BookingAccountDetails.as_view())
+not_logged_in = BookingNotLoggedIn.as_view()
+add_place = lambda request: None # TODO

@@ -1,0 +1,14 @@
+{% extends 'cciw/standard.html' %}
+{% block content %}
+<p>Please enter your name and address:</p>
+
+<form action="" method="POST">
+{% csrf_token %}
+{{ form.as_p }}
+<div class="formrow">
+<br/><br/>
+<input type="submit" name="submit" value="Save and continue" />
+</div>
+</form>
+
+{% endblock %}
