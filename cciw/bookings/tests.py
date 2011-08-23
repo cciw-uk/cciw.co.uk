@@ -34,6 +34,32 @@ class TestBookingStart(TestCase):
         self.assertEqual(BookingAccount.objects.all().count(), 1)
         self.assertEqual(len(mail.outbox), 1)
 
+    def test_skip_if_logged_in(self):
+        # This assumes verification process works
+        def login():
+            self.client.post(reverse('cciw.bookings.views.start'),
+                             {'email': 'booker@bookers.com'})
+            url, path, querydata = read_email_url(mail.outbox[-1], "https?://.*/booking/v/.*")
+            self.client.get(path, querydata)
+        login()
+
+        # Check redirect to step 3 - account details
+        resp = self.client.get(reverse('cciw.bookings.views.start'))
+        self.assertEqual(resp.status_code, 302)
+        newpath = reverse('cciw.bookings.views.account_details')
+        self.assertTrue(resp['Location'].endswith(newpath))
+
+        # Check redirect to step 4 - add place
+        b = BookingAccount.objects.get(email="booker@bookers.com")
+        b.name = "Joe"
+        b.address = "Home"
+        b.post_code = "XY1 D45"
+        b.save()
+        resp = self.client.get(reverse('cciw.bookings.views.start'))
+        self.assertEqual(resp.status_code, 302)
+        newpath = reverse('cciw.bookings.views.add_place')
+        self.assertTrue(resp['Location'].endswith(newpath))
+
 
 class TestBookingVerify(TestCase):
 

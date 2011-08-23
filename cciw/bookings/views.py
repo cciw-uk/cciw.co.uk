@@ -190,6 +190,20 @@ def set_booking_account_cookie(response, account):
                                max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS)
 
 
+def get_booking_account_from_cookie(request):
+    cookie = request.get_signed_cookie('bookingaccount',
+                                       salt=BOOKING_COOKIE_SALT,
+                                       default=None,
+                                       max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS)
+    if cookie is None:
+        return None
+    try:
+        account = BookingAccount.objects.get(id=cookie)
+    except BookingAccount.DoesNotExist:
+        return None
+    return account
+
+
 def booking_account_required(view_func):
     """
     Requires a signed cookie that verifies the booking account,
@@ -198,18 +212,9 @@ def booking_account_required(view_func):
     """
     @wraps(view_func)
     def view(request, *args, **kwargs):
-        fail = lambda: HttpResponseRedirect(reverse('cciw.bookings.views.not_logged_in'))
-        cookie = request.get_signed_cookie('bookingaccount',
-                                           salt=BOOKING_COOKIE_SALT,
-                                           default=None,
-                                           max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS)
-        if cookie is None:
-            return fail()
-        try:
-            account = BookingAccount.objects.get(id=cookie)
-        except BookingAccount.DoesNotExist:
-            return fail()
-
+        account = get_booking_account_from_cookie(request)
+        if account is None:
+            return HttpResponseRedirect(reverse('cciw.bookings.views.not_logged_in'))
         request.booking_account = account
         return view_func(request, *args, **kwargs)
     return view
@@ -227,11 +232,23 @@ class BookingIndex(DefaultMetaData, TemplateView):
         return super(BookingIndex, self).get(request)
 
 
+def next_step(account):
+    if account.has_account_details():
+        return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
+    else:
+        return HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
+
 class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFormView):
     metadata_title = "Booking email address"
     form_class = EmailForm
     template_name = 'cciw/bookings/start.html'
     success_url = reverse_lazy('cciw.bookings.views.email_sent')
+
+    def dispatch(self, request, *args, **kwargs):
+        account = get_booking_account_from_cookie(request)
+        if account is not None:
+            return next_step(account)
+        return super(BookingStart, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         account, new = BookingAccount.objects.get_or_create(email=form.cleaned_data['email'])
@@ -252,11 +269,7 @@ def verify_email(request, account_id, token):
         return fail()
 
     if check_email_verification_token(account, token):
-        if account.has_account_details():
-            resp = HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
-        else:
-            resp = HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
-
+        resp = next_step(account)
         set_booking_account_cookie(resp, account)
         return resp
     else:
