@@ -167,7 +167,7 @@
 import os
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
 from django.views.generic.base import TemplateView, TemplateResponseMixin
 from django.views.generic.edit import ProcessFormView, FormMixin
@@ -195,9 +195,7 @@ class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFor
     metadata_title = "Booking account details"
     form_class = EmailForm
     template_name = 'cciw/bookings/start.html'
-
-    def get_success_url(self):
-        return reverse('cciw.bookings.views.email_sent')
+    success_url = reverse_lazy('cciw.bookings.views.email_sent')
 
     def form_valid(self, form):
         account, new = BookingAccount.objects.get_or_create(email=form.cleaned_data['email'])

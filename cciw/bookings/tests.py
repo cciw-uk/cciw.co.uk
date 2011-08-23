@@ -20,6 +20,7 @@ class TestBookingStart(TestCase):
         self.assertEqual(BookingAccount.objects.all().count(), 0)
         resp = self.client.post(reverse('cciw.bookings.views.start'),
                                 {'email': 'booker@bookers.com'})
+        self.assertEqual(resp.status_code, 302)
         self.assertEqual(BookingAccount.objects.all().count(), 1)
         b = BookingAccount.objects.get(email='booker@bookers.com')
         self.assertEqual(b.activated, None)
