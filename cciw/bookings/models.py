@@ -58,10 +58,29 @@ class BookingAccount(models.Model):
                                              "to other parents to help organise transport",
                                              blank=True, default=False)
     total_received = models.DecimalField(default=Decimal('0.00'), decimal_places=2, max_digits=10)
-    activated = models.DateField(null=True)
+    activated = models.DateField(null=True, blank=True)
 
     def has_account_details(self):
         return self.name != "" and self.address != "" and self.post_code != ""
+
+    def __unicode__(self):
+        out = []
+        if self.name:
+            out.append(self.name)
+        if self.post_code:
+            out.append(self.post_code)
+        if self.email:
+            out.append("<" + self.email + ">")
+        if not out:
+            out.append("(empty)")
+        return u", ".join(out)
+
+
+class BookingManager(models.Manager):
+    use_for_related_fields = True
+    def get_query_set(self):
+        return super(BookingManager, self).get_query_set().select_related('camp', 'account')
+
 
 class Booking(models.Model):
     account = models.ForeignKey(BookingAccount)
@@ -75,7 +94,7 @@ class Booking(models.Model):
     post_code = models.CharField(max_length=10)
     phone_number = models.CharField(blank=True, max_length=22)
     church = models.CharField("name of church", max_length=100)
-    south_wales_transport = models.BooleanField("requires transport from South Wales",
+    south_wales_transport = models.BooleanField("require transport from South Wales",
                                                 blank=True, default=False)
 
     # Contact - from user
@@ -92,7 +111,7 @@ class Booking(models.Model):
 
     # Medical details - from user
     medical_card_number = models.CharField(max_length=100) # no idea how long it should be
-    last_tetanus_injection = models.DateField(null=True)
+    last_tetanus_injection = models.DateField(null=True, blank=True)
     allergies = models.TextField(blank=True)
     regular_medication_required = models.TextField(blank=True)
     illnesses = models.TextField(blank=True)
@@ -100,15 +119,21 @@ class Booking(models.Model):
     serious_illness = models.BooleanField(blank=True, default=False)
 
     # Agreement - from user
-    agreement = models.BooleanField(default=False, blank=False)
+    agreement = models.BooleanField(default=False)
     agreement_date = models.DateField()
 
     # Price - partly from user (must fit business rules)
-    price_type = models.IntegerField(choices=PRICE_TYPES)
+    price_type = models.PositiveSmallIntegerField(choices=PRICE_TYPES)
     amount_due = models.DecimalField(decimal_places=2, max_digits=10)
 
     # State - internal
     state = models.IntegerField(choices=BOOKING_STATES)
     created = models.DateField(default=datetime.now)
-    booking_expires = models.DateField(null=True)
+    booking_expires = models.DateField(null=True, blank=True)
 
+
+    objects = BookingManager()
+
+    def __unicode__(self):
+        return "%s, %s-%s, %s" % (self.name, self.camp.year, self.camp.number,
+                                  self.account)
