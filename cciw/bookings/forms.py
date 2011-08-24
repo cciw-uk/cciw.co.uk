@@ -1,6 +1,6 @@
 from django import forms
 
-from cciw.bookings.models import BookingAccount
+from cciw.bookings.models import BookingAccount, Booking
 from cciw.cciwmain.forms import CciwFormMixin
 
 
@@ -24,3 +24,33 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
 AccountDetailsForm.base_fields['name'].required = True
 AccountDetailsForm.base_fields['address'].required = True
 AccountDetailsForm.base_fields['post_code'].required = True
+
+
+class AddPlaceForm(CciwFormMixin, forms.ModelForm):
+    class Meta:
+        model = Booking
+        fields = [
+            'camp',
+            'price_type',
+            'name',
+            'sex',
+            'date_of_birth',
+            'address',
+            'post_code',
+            'church',
+            'south_wales_transport',
+            'contact_name',
+            'contact_phone_number',
+            'dietary_requirements',
+            'gp_name',
+            'gp_address',
+            'gp_phone_number',
+            'medical_card_number',
+            'last_tetanus_injection',
+            'allergies',
+            'regular_medication_required',
+            'illnesses',
+            'learning_difficulties',
+            'serious_illness',
+            'agreement'
+            ]

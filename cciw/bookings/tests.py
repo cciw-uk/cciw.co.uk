@@ -1,8 +1,14 @@
+from datetime import datetime, timedelta
+from decimal import Decimal
+
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from cciw.bookings.models import BookingAccount
+from cciw.bookings.models import BookingAccount, Price
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD
+from cciw.cciwmain.common import get_thisyear
+from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 
 
@@ -132,9 +138,7 @@ class TestBookingVerify(TestCase):
         self.assertTrue('bookingaccount' not in resp.cookies)
 
 
-class TestAccountDetails(TestCase):
-
-    fixtures = ['basic.json']
+class LogInMixin(object):
     email = 'booker@bookers.com'
 
     def login(self):
@@ -143,6 +147,11 @@ class TestAccountDetails(TestCase):
                          {'email': self.email})
         url, path, querydata = read_email_url(mail.outbox[-1], "https?://.*/booking/v/.*")
         self.client.get(path, querydata)
+
+
+class TestAccountDetails(LogInMixin, TestCase):
+
+    fixtures = ['basic.json']
 
     def test_redirect_if_not_logged_in(self):
         resp = self.client.get(reverse('cciw.bookings.views.account_details'))
@@ -172,3 +181,96 @@ class TestAccountDetails(TestCase):
         self.assertEqual(resp.status_code, 302)
         b = BookingAccount.objects.get(email=self.email)
         self.assertEqual(b.name, 'Mr Booker')
+
+
+class TestAddPlace(LogInMixin, TestCase):
+
+    fixtures = ['basic.json']
+
+    def add_prices(self):
+        year = get_thisyear()
+        Price.objects.create(year=year,
+                             price_type=PRICE_FULL,
+                             price=Decimal('100.00'))
+        Price.objects.create(year=year,
+                             price_type=PRICE_2ND_CHILD,
+                             price=Decimal('75.00'))
+        Price.objects.create(year=year,
+                             price_type=PRICE_3RD_CHILD,
+                             price=Decimal('50.00'))
+
+
+    def setUp(self):
+        super(TestAddPlace, self).setUp()
+        # Need to create a Camp that we can choose i.e. is in the future
+        Camp.objects.create(year=get_thisyear(), number=1,
+                            start_date=datetime.now() + timedelta(20),
+                            end_date=datetime.now() + timedelta(27),
+                            site_id=1)
+
+    def test_redirect_if_not_logged_in(self):
+        resp = self.client.get(reverse('cciw.bookings.views.add_place'))
+        self.assertEqual(resp.status_code, 302)
+
+    def test_show_if_logged_in(self):
+        self.login()
+        resp = self.client.get(reverse('cciw.bookings.views.add_place'))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_show_error_if_no_prices(self):
+        self.login()
+        resp = self.client.get(reverse('cciw.bookings.views.add_place'), follow=True)
+        self.assertContains(resp, "prices have not been set")
+
+    def test_post_not_allowed_if_no_prices(self):
+        self.login()
+        resp = self.client.post(reverse('cciw.bookings.views.add_place'), {}, follow=True)
+        self.assertContains(resp, "prices have not been set")
+
+    def test_allowed_if_prices_set(self):
+        self.login()
+        self.add_prices()
+        resp = self.client.get(reverse('cciw.bookings.views.add_place'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "Prices have not been set")
+
+    def test_incomplete(self):
+        self.login()
+        self.add_prices()
+        resp = self.client.post(reverse('cciw.bookings.views.add_place'), {})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "This field is required")
+
+    def test_old_camp(self):
+        self.login()
+        # TODO
+
+    def test_complete(self):
+        self.login()
+        self.add_prices()
+        b = BookingAccount.objects.get(email=self.email)
+        camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
+        self.assertEqual(b.booking_set.count(), 0)
+
+        resp = self.client.post(reverse('cciw.bookings.views.add_place'),
+                                {'camp': camp.id,
+                                 'name': 'Joe',
+                                 'sex': 'm',
+                                 'date_of_birth': '1990-01-01',
+                                 'address': 'x',
+                                 'post_code': 'ABC 123',
+                                 'contact_name': 'Mary',
+                                 'contact_phone_number': '01982 987654',
+                                 'gp_name': 'Doctor Who',
+                                 'gp_address': 'The Tardis',
+                                 'gp_phone_number': '01234 456789',
+                                 'medical_card_number': 'asdfasdf',
+                                 'agreement': '1',
+                                 'price_type': '0',
+                                 })
+        self.assertEqual(resp.status_code, 302)
+        newpath = reverse('cciw.bookings.views.list_bookings')
+        self.assertTrue(resp['Location'].endswith(newpath))
+
+        # Did we create it?
+        self.assertEqual(b.booking_set.count(), 1)

@@ -93,7 +93,7 @@ class Booking(models.Model):
     address = models.TextField()
     post_code = models.CharField(max_length=10)
     phone_number = models.CharField(blank=True, max_length=22)
-    church = models.CharField("name of church", max_length=100)
+    church = models.CharField("name of church", max_length=100, blank=True)
     south_wales_transport = models.BooleanField("require transport from South Wales",
                                                 blank=True, default=False)
 
@@ -134,6 +134,13 @@ class Booking(models.Model):
 
     objects = BookingManager()
 
+    # Methods
+
     def __unicode__(self):
         return "%s, %s-%s, %s" % (self.name, self.camp.year, self.camp.number,
                                   self.account)
+
+    def auto_set_amount_due(self):
+        if self.price_type != PRICE_CUSTOM:
+            self.amount_due = Price.objects.get(year=self.camp.year,
+                                                price_type=self.price_type).price

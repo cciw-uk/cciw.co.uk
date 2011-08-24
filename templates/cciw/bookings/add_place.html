@@ -1,0 +1,34 @@
+{% extends 'cciw/standard.html' %}
+{% block content %}
+{% if not booking_open %}
+
+<p>Booking for {{ thisyear }} cannot continue because prices have not been set.</p>
+
+{% else %}
+
+<script type="text/javascript">
+<!--
+
+(function($) {
+   $(document).ready(function() {
+       cciw.standardformAddOnchangeHandlers('id_addplaceform');
+
+   });
+})(jQuery);
+
+//-->
+</script>
+<p>Please enter the choice of camp and the camper details:</p>
+
+<form action="" method="POST" id="id_addplaceform">
+{% csrf_token %}
+{{ form.as_p }}
+<div class="formrow">
+<br/><br/>
+<input type="submit" name="submit" value="Save and continue" />
+</div>
+</form>
+
+
+{% endif %}
+{% endblock %}

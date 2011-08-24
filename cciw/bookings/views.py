@@ -167,6 +167,7 @@
 # Leaders need to be presented with a list of bookings that they need to manually
 # approve. If they don't approve, need to send email to person booking.
 
+from datetime import datetime
 from functools import wraps
 import os
 
@@ -174,14 +175,14 @@ from django.conf import settings
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
 from django.views.generic.base import TemplateView, TemplateResponseMixin
-from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView
+from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView, BaseCreateView
 
-from cciw.cciwmain.common import get_thisyear, DefaultMetaData
+from cciw.cciwmain.common import get_thisyear, DefaultMetaData, AjaxyFormMixin
 
 from cciw.bookings.email import send_verify_email, check_email_verification_token
-from cciw.bookings.forms import EmailForm, AccountDetailsForm
+from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
 from cciw.bookings.models import BookingAccount, Price
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, BOOKING_INFO_COMPLETE
 
 
 # decorators and utilities
@@ -231,6 +232,9 @@ def is_booking_open(prices):
     return len(prices) == 3
 
 
+is_booking_open_thisyear = lambda: is_booking_open(Price.objects.filter(year=get_thisyear()))
+
+
 # Views
 
 class BookingIndex(DefaultMetaData, TemplateView):
@@ -258,13 +262,12 @@ def next_step(account):
     else:
         return HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
 
-
 class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFormView):
     metadata_title = "Booking email address"
     form_class = EmailForm
     template_name = 'cciw/bookings/start.html'
     success_url = reverse_lazy('cciw.bookings.views.email_sent')
-    extra_context = {'booking_open': lambda: is_booking_open(Price.objects.filter(year=get_thisyear()))}
+    extra_context = {'booking_open': is_booking_open_thisyear}
 
     def dispatch(self, request, *args, **kwargs):
         account = get_booking_account_from_cookie(request)
@@ -318,10 +321,51 @@ class BookingAccountDetails(DefaultMetaData, TemplateResponseMixin, BaseUpdateVi
         return self.request.booking_account
 
 
+# MRO problem for BookingAddPlace: we need BaseCreateView.post to come first in
+# MRO, to provide self.object = None, then AjaxyFormMixin must be called before
+# ProcessFormView, so that for AJAX right thing happens. So we need to hack the
+# MRO using a metaclass.
+
+class AjaxMroFixer(type):
+
+    def mro(cls):
+        classes = type.mro(cls)
+        # Move AjaxyFormMixin to one before last that has a 'post' defined.
+        new_list = [c for c in classes if c is not AjaxyFormMixin]
+        have_post = [c for c in new_list if 'post' in c.__dict__]
+        last = have_post[-1]
+        new_list.insert(new_list.index(last), AjaxyFormMixin)
+        return new_list
+
+
+class BookingAddPlace(DefaultMetaData, TemplateResponseMixin, BaseCreateView, AjaxyFormMixin):
+    __metaclass__ = AjaxMroFixer
+    metadata_title = "Booking - add place"
+    form_class = AddPlaceForm
+    template_name = 'cciw/bookings/add_place.html'
+    success_url = reverse_lazy('cciw.bookings.views.list_bookings')
+    extra_context = {'booking_open': is_booking_open_thisyear}
+
+    def post(self, request, *args, **kwargs):
+        if not is_booking_open_thisyear():
+            # Redirect to same view, but GET
+            return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
+        else:
+            return super(BookingAddPlace, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.account = self.request.booking_account
+        form.instance.agreement_date = datetime.now()
+        form.instance.auto_set_amount_due()
+        form.instance.state = BOOKING_INFO_COMPLETE
+        return super(BookingAddPlace, self).form_valid(form)
+
+
 index = BookingIndex.as_view()
 start = BookingStart.as_view()
 email_sent = BookingEmailSent.as_view()
 verify_email_failed = BookingVerifyEmailFailed.as_view()
 account_details = booking_account_required(BookingAccountDetails.as_view())
 not_logged_in = BookingNotLoggedIn.as_view()
-add_place = lambda request: None # TODO
+add_place = booking_account_required(BookingAddPlace.as_view())
+list_bookings = lambda request: None
