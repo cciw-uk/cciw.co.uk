@@ -4,13 +4,13 @@
 # Step 0 /booking/
 #  - shows overview of options, including
 #    - get brochure through post
-#    - print booking m=form yourself
+#    - print booking form yourself
 #    - book online
 
 # Step 1  /booking/start/
 #  - enter email address
 #    - must be contact address for person booking
-#      "You may want to add 'bookings@cciw.co.uk' to your known contacts list to
+#      "You may want to add 'website@cciw.co.uk' to your known contacts list to
 #      ensure our email is not treated as spam"
 
 #  - On POST
@@ -107,6 +107,9 @@
 #  Booking details     (step 4)
 #  Booking summary     (step 5)
 #  Payment             (step 6)
+
+# Individual place details can be edited, if the place is
+# not confirmed
 
 # = Business logic =
 #
