@@ -2,7 +2,32 @@
 {% load standardpage %}
 {% block content %}
 
-{% htmlchunk prices %}
+<h2>Prices {{ thisyear }}</h2>
+
+{% if booking_open %}
+  <p>
+    <table>
+      <tr>
+        <td>Full price:</td>
+        <td>£{{ price_full }}</td>
+      </tr>
+
+      <tr>
+        <td>2nd camper from the same family:</td>
+        <td>£{{ price_2nd_child }}</td>
+      </tr>
+
+      <tr>
+        <td>Subsequent children from the same family:</td>
+        <td>£{{ price_3rd_child }}</td>
+      </tr>
+    </table>
+  </p>
+
+{% else %}
+  <p>Prices for {{ thisyear }} have not been finalised yet.</p>
+
+{% endif %}
 
 {% htmlchunk booking_overview %}
 

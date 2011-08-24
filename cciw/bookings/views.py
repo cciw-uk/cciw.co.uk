@@ -177,7 +177,8 @@ from cciw.cciwmain.common import get_thisyear, DefaultMetaData
 
 from cciw.bookings.email import send_verify_email, check_email_verification_token
 from cciw.bookings.forms import EmailForm, AccountDetailsForm
-from cciw.bookings.models import BookingAccount
+from cciw.bookings.models import BookingAccount, Price
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD
 
 
 # decorators and utilities
@@ -220,6 +221,16 @@ def booking_account_required(view_func):
     return view
 
 
+def is_booking_open(prices):
+    """
+    When passed a Price QuerySet/list for a given year,
+    it return True if booking is open.
+    """
+    return len(prices) == 3
+
+
+# Views
+
 class BookingIndex(DefaultMetaData, TemplateView):
     metadata_title = "Booking"
     template_name = "cciw/bookings/index.html"
@@ -229,6 +240,13 @@ class BookingIndex(DefaultMetaData, TemplateView):
         bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
         if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath)):
             self.context['bookingform'] = bookingform_relpath
+        prices = list(Price.objects.filter(year=year))
+        booking_open = is_booking_open(prices)
+        self.context['booking_open'] = booking_open
+        if booking_open:
+            self.context['price_full'] = [p for p in prices if p.price_type == PRICE_FULL][0].price
+            self.context['price_2nd_child'] = [p for p in prices if p.price_type == PRICE_2ND_CHILD][0].price
+            self.context['price_3rd_child'] = [p for p in prices if p.price_type == PRICE_3RD_CHILD][0].price
         return super(BookingIndex, self).get(request)
 
 
@@ -238,11 +256,13 @@ def next_step(account):
     else:
         return HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
 
+
 class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFormView):
     metadata_title = "Booking email address"
     form_class = EmailForm
     template_name = 'cciw/bookings/start.html'
     success_url = reverse_lazy('cciw.bookings.views.email_sent')
+    extra_context = {'booking_open': lambda: is_booking_open(Price.objects.filter(year=get_thisyear()))}
 
     def dispatch(self, request, *args, **kwargs):
         account = get_booking_account_from_cookie(request)

@@ -20,6 +20,9 @@ PRICE_TYPES = [
     (PRICE_CUSTOM,    'Custom'),
 ]
 
+# Price types that are used by Price model
+VALUED_PRICE_TYPES = [(v,d) for (v,d) in PRICE_TYPES if v is not PRICE_CUSTOM]
+
 BOOKING_STARTED, BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_EXPIRED = range(0, 5)
 BOOKING_STATES = [
     (BOOKING_STARTED, 'Started'),
@@ -28,6 +31,19 @@ BOOKING_STATES = [
     (BOOKING_BOOKED, 'Booked'),
     (BOOKING_EXPIRED, 'Place booking expired'),
 ]
+
+
+class Price(models.Model):
+    year = models.PositiveSmallIntegerField()
+    price_type = models.PositiveSmallIntegerField(choices=VALUED_PRICE_TYPES)
+    price = models.DecimalField(decimal_places=2, max_digits=10)
+
+    class Meta:
+        unique_together = ['year', 'price_type']
+
+    def __unicode__(self):
+        return u"%s %s - %s" % (self.get_price_type_display(), self.year, self.price)
+
 
 class BookingAccount(models.Model):
     # For online bookings, email is required, but not for paper. Initially for online
