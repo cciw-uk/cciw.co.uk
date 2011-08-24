@@ -202,10 +202,9 @@ def get_booking_account_from_cookie(request):
     if cookie is None:
         return None
     try:
-        account = BookingAccount.objects.get(id=cookie)
+        return BookingAccount.objects.get(id=cookie)
     except BookingAccount.DoesNotExist:
         return None
-    return account
 
 
 def booking_account_required(view_func):
