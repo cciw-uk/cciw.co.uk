@@ -207,6 +207,7 @@ class TestAddPlace(LogInMixin, TestCase):
                             start_date=datetime.now() + timedelta(20),
                             end_date=datetime.now() + timedelta(27),
                             site_id=1)
+        self._ensure_thisyear_reset()
 
     def test_redirect_if_not_logged_in(self):
         resp = self.client.get(reverse('cciw.bookings.views.add_place'))
@@ -245,6 +246,26 @@ class TestAddPlace(LogInMixin, TestCase):
         self.login()
         # TODO
 
+    place_details = {
+        'name': 'Joe',
+        'sex': 'm',
+        'date_of_birth': '1990-01-01',
+        'address': 'x',
+        'post_code': 'ABC 123',
+        'contact_name': 'Mary',
+        'contact_phone_number': '01982 987654',
+        'gp_name': 'Doctor Who',
+        'gp_address': 'The Tardis',
+        'gp_phone_number': '01234 456789',
+        'medical_card_number': 'asdfasdf',
+        'agreement': '1',
+        'price_type': '0',
+        }
+
+    def _ensure_thisyear_reset(self):
+        from cciw.cciwmain import common
+        common._thisyear = None
+
     def test_complete(self):
         self.login()
         self.add_prices()
@@ -252,25 +273,25 @@ class TestAddPlace(LogInMixin, TestCase):
         camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
         self.assertEqual(b.booking_set.count(), 0)
 
-        resp = self.client.post(reverse('cciw.bookings.views.add_place'),
-                                {'camp': camp.id,
-                                 'name': 'Joe',
-                                 'sex': 'm',
-                                 'date_of_birth': '1990-01-01',
-                                 'address': 'x',
-                                 'post_code': 'ABC 123',
-                                 'contact_name': 'Mary',
-                                 'contact_phone_number': '01982 987654',
-                                 'gp_name': 'Doctor Who',
-                                 'gp_address': 'The Tardis',
-                                 'gp_phone_number': '01234 456789',
-                                 'medical_card_number': 'asdfasdf',
-                                 'agreement': '1',
-                                 'price_type': '0',
-                                 })
+        data = self.place_details.copy()
+        data['camp'] = camp.id
+        resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.list_bookings')
         self.assertTrue(resp['Location'].endswith(newpath))
 
         # Did we create it?
         self.assertEqual(b.booking_set.count(), 1)
+
+    def test_old_camp_year(self):
+        self.login()
+        self.add_prices()
+        b = BookingAccount.objects.get(email=self.email)
+        self.assertEqual(b.booking_set.count(), 0)
+
+        data = self.place_details.copy()
+        data['camp'] = 1 # an old camp
+        resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
+        self.assertEqual(resp.status_code, 200)
+        year = get_thisyear()
+        self.assertContains(resp, 'Only a camp in %s can be selected' % year)

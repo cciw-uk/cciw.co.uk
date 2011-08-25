@@ -2,7 +2,7 @@ from django import forms
 
 from cciw.bookings.models import BookingAccount, Booking
 from cciw.cciwmain.forms import CciwFormMixin
-
+from cciw.cciwmain.common import get_thisyear
 
 class EmailForm(CciwFormMixin, forms.Form):
     email = forms.EmailField()
@@ -54,3 +54,13 @@ class AddPlaceForm(CciwFormMixin, forms.ModelForm):
             'serious_illness',
             'agreement'
             ]
+
+    def clean_camp(self):
+        camp = self.cleaned_data['camp']
+        thisyear = get_thisyear()
+        if camp.year != thisyear:
+            raise forms.ValidationError('Only a camp in %s can be selected.' % thisyear)
+
+        return camp
+
+AddPlaceForm.base_fields['agreement'].required = True
