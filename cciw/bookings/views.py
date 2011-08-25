@@ -178,6 +178,7 @@ from django.views.generic.base import TemplateView, TemplateResponseMixin
 from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView, BaseCreateView
 
 from cciw.cciwmain.common import get_thisyear, DefaultMetaData, AjaxyFormMixin
+from cciw.cciwmain.models import Camp
 
 from cciw.bookings.email import send_verify_email, check_email_verification_token
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
@@ -224,15 +225,13 @@ def booking_account_required(view_func):
     return view
 
 
-def is_booking_open(prices):
+def is_booking_open(year):
     """
-    When passed a Price QuerySet/list for a given year,
-    it return True if booking is open.
+    When passed a given year, returns True if booking is open.
     """
-    return len(prices) == 3
+    return Price.objects.filter(year=year).count() == 3 and Camp.objects.filter(year=year).exists()
 
-
-is_booking_open_thisyear = lambda: is_booking_open(Price.objects.filter(year=get_thisyear()))
+is_booking_open_thisyear = lambda: is_booking_open(get_thisyear())
 
 
 # Views
@@ -247,7 +246,7 @@ class BookingIndex(DefaultMetaData, TemplateView):
         if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath)):
             self.context['bookingform'] = bookingform_relpath
         prices = list(Price.objects.filter(year=year))
-        booking_open = is_booking_open(prices)
+        booking_open = is_booking_open(year)
         self.context['booking_open'] = booking_open
         if booking_open:
             self.context['price_full'] = [p for p in prices if p.price_type == PRICE_FULL][0].price
