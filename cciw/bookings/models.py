@@ -17,7 +17,7 @@ PRICE_TYPES = [
     (PRICE_FULL,      'Full price'),
     (PRICE_2ND_CHILD, '2nd child discount'),
     (PRICE_3RD_CHILD, '3rd child discount'),
-    (PRICE_CUSTOM,    'Custom'),
+    (PRICE_CUSTOM,    'Custom discount'),
 ]
 
 # Price types that are used by Price model
@@ -101,13 +101,13 @@ class Booking(models.Model):
     contact_name = models.CharField(max_length=100)
     contact_phone_number = models.CharField(max_length=22)
 
-    # Diet - from user
-    dietary_requirements = models.TextField(blank=True)
-
     # GP details - from user
     gp_name = models.CharField("GP name", max_length=100)
     gp_address = models.TextField("GP address")
     gp_phone_number = models.CharField("GP phone number", max_length=22)
+
+    # Diet - from user
+    dietary_requirements = models.TextField(blank=True)
 
     # Medical details - from user
     medical_card_number = models.CharField(max_length=100) # no idea how long it should be

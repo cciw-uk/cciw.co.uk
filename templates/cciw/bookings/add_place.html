@@ -1,4 +1,5 @@
 {% extends 'cciw/standard.html' %}
+{% load cciwform %}
 {% block content %}
 {% if not booking_open %}
 
@@ -18,17 +19,132 @@
 
 //-->
 </script>
-<p>Please enter the choice of camp and the camper details:</p>
-
 <form action="" method="POST" id="id_addplaceform">
 {% csrf_token %}
-{{ form.as_p }}
-<div class="formrow">
-<br/><br/>
-<input type="submit" name="submit" value="Save and continue" />
+
+{% if form.errors %}
+<div class="userError">The details could not be saved - please check your input below:
+
+{{ form.non_field_errors }}
 </div>
+{% else %}
+<p>Please enter the details needed to book a place on a camp. Required fields
+are starred.</p>
+
+
+{% endif %}
+
+<h2>Camp</h2>
+{% cciw_form_field form 'camp' 'Choose camp:' %}
+<div id="id_camp_availability">
+</div>
+
+<h2>Price</h2>
+<p>The 2nd child from the same family is eligible for '2nd child discount'.
+Subsequent children from the same family are eligible for '3rd child
+discount'.</p>
+
+<p>If you will struggle to pay the full fee, you can also apply for a custom
+  discount. The exact price will have to be arranged by contacting the booking
+  secretary, and you will not be able to complete the booking process online
+  until this has been done if you choose this option.</p>
+
+{% cciw_form_field form 'price_type' 'Price' %}
+
+<h2>Camper details</h2>
+
+{% cciw_form_field form 'name' 'Name' %}
+{% cciw_form_field form 'sex' 'Sex' %}
+{% cciw_form_field form 'date_of_birth' 'Date of birth (YYYY-MM-DD)' %}
+{% cciw_form_field form 'address' 'Address' %}
+{% cciw_form_field form 'post_code' 'Post code' %}
+
+<h2>Church</h2>
+
+{% cciw_form_field form 'church' 'Name of church (if any)' %}
+
+
+<h2>Transport</h2>
+
+<p>If you require transport from South Wales on the CCIW minibus, please tick
+this box. The cost for this transport is an additional £20.</p>
+
+{% cciw_form_field form 'south_wales_transport' 'South Wales transport required' %}
+<br/><br/>
+
+<h2>Contact details</h2>
+
+<p>Please enter a contact name and number that can be used <strong>during the week of camp</strong> in case of emergency.</p>
+
+{% cciw_form_field form 'contact_name' 'Name' %}
+{% cciw_form_field form 'contact_phone_number' 'Phone number' %}
+
+<h2>Dietary requirements</h2>
+
+<p>Please enter any special deitary requirements here (e.g. vegetarian).</p>
+{% cciw_form_field form 'dietary_requirements' 'Dietary requirements' %}
+
+<h2>GP details</h2>
+
+<p>Please enter the details of the camper's GP:</p>
+
+{% cciw_form_field form 'gp_name' 'Name' %}
+{% cciw_form_field form 'gp_address' 'Address' %}
+{% cciw_form_field form 'gp_phone_number' 'Phone number' %}
+
+<h2>Medical details</h2>
+
+{% cciw_form_field form 'medical_card_number' 'Medical card number' %}
+{% cciw_form_field form 'last_tetanus_injection' 'Last tetanus injection (if any) (YYYY-MM-DD)' %}
+{% cciw_form_field form 'allergies' 'Allergies (including medication)' %}
+{% cciw_form_field form 'regular_medication_required' 'Regular medication required' %}
+{% cciw_form_field form 'illnesses' 'Illnesses (e.g. asthma, epilepsy)' %}
+{% cciw_form_field form 'learning_difficulties' 'Any learning/behavioural difficulties' %}
+
+<p>If the illnesses, allergies or learning/behavioural difficulties above
+include conditions that would affect the safety of camp or our ability to look
+after the camper, please indicate below.</p>
+
+<p>This includes, for example, significant deafness or blindness, unstabilised
+diabetes or epilepsy, life-threatening allergies, or other conditions which
+would normally require supervision in school life, such as autism. You do not
+need to tick this box for conditions that are easily managed by medication,
+where the camper can administer the medication themselves.</p>
+
+<p>If the box is ticked, a camp leader will then have to manually approve this
+place before booking and payment can proceed. This system is needed to avoid
+disappointment in the case where we will not be able to cater for the camper's
+condition on camp.</p>
+
+{% cciw_form_field form 'serious_illness' 'Serious condition/illness' %}
+
+<h2>Agreements</h2>
+
+<h3>Camper agreement</h3>
+
+<p>The camper must agree to observe the camp's code of conduct. Failure to obey
+camp rules can result in the camper being sent home, with no refund.</p>
+
+<h3>Parent/guardian agreement</h3>
+
+<p>In the event of any medical treatment becoming necessary during the camp
+every effort will be made to contact the parent/guardian. However, parents are
+required to authorise the leadership team to act in their absence where urgent
+treatment becomes necessary.</p>
+
+<p>If both camper and parent/guardian agree, tick the box to continue:</p>
+
+{% cciw_form_field form 'agreement' 'Agree to above condtions' %}
+
+<h2>Save</h2>
+
+<p>All done! now just:
+
+
+<input type="submit" name="submit" value="Save place details" />
+
+
+
 </form>
-
-
 {% endif %}
 {% endblock %}
