@@ -4,6 +4,7 @@ from cciw.bookings.models import BookingAccount, Booking
 from cciw.cciwmain.forms import CciwFormMixin
 from cciw.cciwmain.common import get_thisyear
 
+
 class EmailForm(CciwFormMixin, forms.Form):
     email = forms.EmailField()
 
@@ -19,8 +20,7 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
             'share_phone_number',
             ]
 
-# Need to override these to fix various details for
-# use by user
+# Need to override these to fix various details for use by user
 AccountDetailsForm.base_fields['name'].required = True
 AccountDetailsForm.base_fields['address'].required = True
 AccountDetailsForm.base_fields['post_code'].required = True
@@ -38,6 +38,7 @@ class AddPlaceForm(CciwFormMixin, forms.ModelForm):
             'address',
             'post_code',
             'phone_number',
+            'email',
             'church',
             'south_wales_transport',
             'contact_name',

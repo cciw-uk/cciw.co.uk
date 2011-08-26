@@ -58,7 +58,7 @@ class BookingAccount(models.Model):
                                              "to other parents to help organise transport",
                                              blank=True, default=False)
     total_received = models.DecimalField(default=Decimal('0.00'), decimal_places=2, max_digits=10)
-    activated = models.DateField(null=True, blank=True)
+    activated = models.DateTimeField(null=True, blank=True)
 
     def has_account_details(self):
         return self.name != "" and self.address != "" and self.post_code != ""
@@ -93,6 +93,7 @@ class Booking(models.Model):
     address = models.TextField()
     post_code = models.CharField(max_length=10)
     phone_number = models.CharField(blank=True, max_length=22)
+    email = models.EmailField(blank=True)
     church = models.CharField("name of church", max_length=100, blank=True)
     south_wales_transport = models.BooleanField("require transport from South Wales",
                                                 blank=True, default=False)
@@ -120,7 +121,6 @@ class Booking(models.Model):
 
     # Agreement - from user
     agreement = models.BooleanField(default=False)
-    agreement_date = models.DateField()
 
     # Price - partly from user (must fit business rules)
     price_type = models.PositiveSmallIntegerField(choices=PRICE_TYPES)
@@ -128,8 +128,8 @@ class Booking(models.Model):
 
     # State - internal
     state = models.IntegerField(choices=BOOKING_STATES)
-    created = models.DateField(default=datetime.now)
-    booking_expires = models.DateField(null=True, blank=True)
+    created = models.DateTimeField(default=datetime.now)
+    booking_expires = models.DateTimeField(null=True, blank=True)
 
 
     objects = BookingManager()
