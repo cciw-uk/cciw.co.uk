@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.db import models
 
+from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 
 
@@ -80,6 +81,10 @@ class BookingManager(models.Manager):
     use_for_related_fields = True
     def get_query_set(self):
         return super(BookingManager, self).get_query_set().select_related('camp', 'account')
+
+    def ready_to_book(self, year):
+        qs = self.get_query_set().filter(camp__year__exact=year)
+        return qs.filter(state=BOOKING_INFO_COMPLETE) | qs.filter(state=BOOKING_APPROVED)
 
 
 class Booking(models.Model):
@@ -162,6 +167,20 @@ class Booking(models.Model):
         # Custom price - not auto bookable
         if self.price_type == PRICE_CUSTOM:
             retval.append("A custom discount needs to be arranged by the booking secretary")
+
+        # 2nd/3rd child discounts
+        if self.price_type == PRICE_2ND_CHILD:
+            qs = self.account.bookings.ready_to_book(get_thisyear())
+            if not qs.filter(price_type=PRICE_FULL).exists():
+                retval.append("You cannot use a 2nd child discount unless you have "
+                              "a child at full price.")
+
+        if self.price_type == PRICE_3RD_CHILD:
+            qs = self.account.bookings.ready_to_book(get_thisyear())
+            qs = qs.filter(price_type=PRICE_FULL) | qs.filter(price_type=PRICE_2ND_CHILD)
+            if qs.count() < 2:
+                retval.append("You cannot use a 3rd child discount unless you have "
+                              "two other places without this discount.")
 
         return retval
 

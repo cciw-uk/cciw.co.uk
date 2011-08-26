@@ -403,10 +403,7 @@ class BookingListBookings(DefaultMetaData, TemplateView):
 
     def get_context_data(self, **kwargs):
         c = super(BookingListBookings, self).get_context_data(**kwargs)
-        all_bookings = self.request.booking_account.bookings.filter(camp__year__exact=get_thisyear())
-        new_bookings = (all_bookings.filter(state=BOOKING_INFO_COMPLETE) |
-                        all_bookings.filter(state=BOOKING_APPROVED))
-        new_bookings = list(new_bookings)
+        new_bookings = list(self.request.booking_account.bookings.ready_to_book(get_thisyear()))
 
         # Now apply business rules and other custom processing
         total = Decimal('0.00')

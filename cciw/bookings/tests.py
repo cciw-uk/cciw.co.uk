@@ -374,6 +374,37 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertNotContains(resp, "id_book_now_btn")
         self.assertContains(resp, "This place cannot be booked for the reasons described above")
 
+    def test_2nd_child_discount_allowed(self):
+        self.login()
+        self.create_place({'price_type': PRICE_2ND_CHILD})
+
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "You cannot use a 2nd child discount")
+        self.assertNotContains(resp, "id_book_now_btn")
+
+        # 2 places, both at 2nd child discount, is not allowed.
+        self.create_place({'price_type': PRICE_2ND_CHILD})
+
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "You cannot use a 2nd child discount")
+        self.assertNotContains(resp, "id_book_now_btn")
+
+    def test_3rd_child_discount_allowed(self):
+        self.login()
+        self.create_place({'price_type': PRICE_FULL})
+        self.create_place({'price_type': PRICE_3RD_CHILD})
+
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "You cannot use a 3rd child discount")
+        self.assertNotContains(resp, "id_book_now_btn")
+
+        # 3 places, with 2 at 3rd child discount, is not allowed.
+        self.create_place({'price_type': PRICE_3RD_CHILD})
+
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "You cannot use a 3rd child discount")
+        self.assertNotContains(resp, "id_book_now_btn")
+
     def test_handle_two_problem_bookings(self):
         # Test the error we get for more than one problem booking
         self.login()
@@ -413,6 +444,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "£200")
 
     def test_manually_approved(self):
+        # manually approved places should appear as OK to book
         self.login()
         self.create_place() # bookable
         self.create_place({'name': 'Another Child',
