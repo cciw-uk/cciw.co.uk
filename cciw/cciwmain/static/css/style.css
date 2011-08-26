@@ -142,8 +142,10 @@ table.topheaders td
     border: solid 1px #336633;
 }
 
-tr.sectionbottom td,
-tr.sectionbottom th
+table tr.sectionbottom td,
+table tr.sectionbottom th,
+table td.sectionbottom,
+table th.sectionbottom
 {
     border-bottom-width: 2px;
 }

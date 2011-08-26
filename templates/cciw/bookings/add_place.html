@@ -15,6 +15,11 @@
 
    $(document).ready(function() {
 
+{% if read_only %}
+       $('input,select,textarea').attr('disabled', 'disabled');
+
+{% else %}
+
        cciw.standardformAddOnchangeHandlers('id_addplaceform');
 
        var placeData = [];
@@ -151,6 +156,8 @@
            success: handleExistingPlacesData
        });
 
+{% endif %}
+
    });
 })(jQuery);
 
@@ -165,8 +172,17 @@
 {{ form.non_field_errors }}
 </div>
 {% else %}
-<p>Please enter the details needed to book a place on a camp. Required fields
-are starred.</p>
+
+  {% if read_only %}
+     <p>This place has been approved or booked, and information here
+       can only be changed by an admin.</p>
+
+  {% else %}
+
+     <p>Please enter the details needed to book a place on a camp. Required fields
+       are starred.</p>
+
+  {% endif %}
 
 
 {% endif %}
@@ -275,12 +291,16 @@ treatment becomes necessary.</p>
 
 {% cciw_form_field form 'agreement' 'Agree to above condtions' %}
 
+{% if not read_only %}
+
 <h2>Save</h2>
 
 <p>All done! now just:
 
 
-<input type="submit" name="submit" value="Save place details" />
+<input type="submit" name="submit" value="Save place details" id="id_save_btn" />
+
+{% endif %}
 
 </form>
 

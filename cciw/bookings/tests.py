@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.utils import simplejson
 
 from cciw.bookings.models import BookingAccount, Price, Booking
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, BOOKING_APPROVED
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
@@ -296,49 +296,95 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         # Did we create it?
         self.assertEqual(b.bookings.count(), 1)
 
-    def test_old_camp_year(self):
+
+class TestEditPlace(CreatePlaceMixin, TestCase):
+
+    fixtures = ['basic.json']
+
+    # Most functionality is shared with the 'add' form, so doesn't need testing separately.
+
+    def test_redirect_if_not_logged_in(self):
+        resp = self.client.get(reverse('cciw.bookings.views.edit_place', kwargs={'id':'1'}))
+        self.assertEqual(resp.status_code, 302)
+
+    def test_show_if_owner(self):
         self.login()
         self.add_prices()
-        b = BookingAccount.objects.get(email=self.email)
-        self.assertEqual(b.bookings.count(), 0)
-
-        data = self.place_details.copy()
-        data['camp'] = 1 # an old camp
-        resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
+        self.create_place()
+        acc = BookingAccount.objects.get(email=self.email)
+        b = acc.bookings.all()[0]
+        resp = self.client.get(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}))
         self.assertEqual(resp.status_code, 200)
-        year = get_thisyear()
-        self.assertContains(resp, 'The details could not be saved')
+        self.assertContains(resp, "id_save_btn")
 
-    def test_custom_price(self):
+    def test_404_if_not_owner(self):
         self.login()
         self.add_prices()
-        b = BookingAccount.objects.get(email=self.email)
+        self.create_place()
+        other_account = BookingAccount.objects.create(email='other@mail.com')
+        Booking.objects.all().update(account=other_account)
+        b = Booking.objects.all()[0]
+        resp = self.client.get(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}))
+        self.assertEqual(resp.status_code, 404)
+
+    def test_incomplete(self):
+        self.login()
+        self.add_prices()
+        self.create_place()
+        acc = BookingAccount.objects.get(email=self.email)
+        b = acc.bookings.all()[0]
+        resp = self.client.post(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}), {})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "This field is required")
+
+    def test_complete(self):
+        self.login()
+        self.add_prices()
+        self.create_place()
+        acc = BookingAccount.objects.get(email=self.email)
+        b = acc.bookings.all()[0]
         camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
-        self.assertEqual(b.bookings.count(), 0)
 
         data = self.place_details.copy()
+        data['name'] = "A New Name"
         data['camp'] = camp.id
-        data['price_type'] = PRICE_CUSTOM
-        resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
+        resp = self.client.post(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}), data)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.list_bookings')
         self.assertTrue(resp['Location'].endswith(newpath))
 
-        # Did we create it?
-        self.assertEqual(b.bookings.count(), 1)
-        self.assertEqual(b.bookings.all()[0].amount_due, Decimal('0.00'))
+        # Did we alter it?
+        self.assertEqual(acc.bookings.all()[0].name, "A New Name")
 
-    def test_json_place_view(self):
+    def test_edit_booked(self):
+        """
+        Test we can't edit a booking when it is already booked.
+        (or anything but BOOKING_INFO_COMPLETE)
+        """
         self.login()
+        self.add_prices()
         self.create_place()
-        b = BookingAccount.objects.get(email=self.email)
-        bookings = list(b.bookings.all())
+        acc = BookingAccount.objects.get(email=self.email)
+        b = acc.bookings.all()[0]
 
-        # test view:
-        resp = self.client.get(reverse('cciw.bookings.views.places_json'))
-        self.assertEqual(resp.status_code, 200)
-        d = simplejson.loads(resp.content)
-        self.assertEqual(len(d["places"]), len(bookings))
+        for state in [BOOKING_APPROVED, BOOKING_BOOKED]:
+            b.state = state
+            b.save()
+
+            # Check there is no save button
+            resp = self.client.get(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}))
+            self.assertNotContains(resp, "id_save_btn")
+            # Check for message
+            self.assertContains(resp, "can only be changed by an admin.")
+
+            # Attempt a post
+            camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
+            data = self.place_details.copy()
+            data['name'] = "A New Name"
+            data['camp'] = camp.id
+            resp = self.client.post(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}), data)
+            # Check we didn't alter it
+            self.assertNotEqual(acc.bookings.all()[0].name, "A New Name")
 
 
 class TestListBookings(CreatePlaceMixin, TestCase):

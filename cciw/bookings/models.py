@@ -24,13 +24,11 @@ PRICE_TYPES = [
 # Price types that are used by Price model
 VALUED_PRICE_TYPES = [(v,d) for (v,d) in PRICE_TYPES if v is not PRICE_CUSTOM]
 
-BOOKING_STARTED, BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_EXPIRED = range(0, 5)
+BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED = range(0, 3)
 BOOKING_STATES = [
-    (BOOKING_STARTED, 'Started'),
     (BOOKING_INFO_COMPLETE, 'Information complete'),
     (BOOKING_APPROVED, 'Manually approved'),
     (BOOKING_BOOKED, 'Booked'),
-    (BOOKING_EXPIRED, 'Place booking expired'),
 ]
 
 
@@ -187,6 +185,9 @@ class Booking(models.Model):
             retval.append("Must be approved by leader due to serious illness/condition")
 
         return retval
+
+    def is_user_editable(self):
+        return self.state == BOOKING_INFO_COMPLETE
 
     class Meta:
         ordering = ['-created']

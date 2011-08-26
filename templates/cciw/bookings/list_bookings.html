@@ -20,6 +20,7 @@
     <th scope="col">Name</th>
     <th scope="col">Camp</th>
     <th scope="col">Price</th>
+    <th scope="col">Actions</th>
   </tr>
 
 {% for b in new_bookings %}
@@ -34,11 +35,16 @@
     <td>
       {% if b.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ b.amount_due_normalised }}{% endif %}
     </td>
-    <tr class="sectionbottom">
-      <th scope="row">Status:</th>
+    <td rowspan="2" class="sectionbottom">
+      <a href="{% url 'cciw.bookings.views.edit_place' id=b.id %}">View/edit</a>
+    </td>
+  </tr>
+  <tr class="sectionbottom">
+      <td><b>Status:</b></td>
       <td colspan="2">
         {% if b.bookable %}
           <img src="{% static "admin/img/icon-yes.gif" %}"> This place can be booked
+          {% if b.manually_approved %}<b> - MANUALLY APPROVED</b>{% endif %}
         {% else %}
           <img src="{% static "admin/img/icon-no.gif" %}"> This place cannot be booked:
           <ul>
@@ -52,7 +58,7 @@
   </tr>
 {% endfor %}
   <tr>
-    <td colspan="2" style="text-align:right;">Total</td>
+    <td colspan="2" style="text-align:right; border: 0px;"><b>Total:</b></td>
     <td>{% if total|default_if_none:"None" == "None" %}TBA{% else %}£{{ total }}{% endif %}</td>
   </tr>
 </table>

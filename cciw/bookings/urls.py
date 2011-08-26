@@ -10,6 +10,7 @@ urlpatterns = \
              (r'^account/$', 'account_details'),
              (r'^loggedout/$', 'not_logged_in'),
              (r'^add-place/$', 'add_place'),
+             (r'^edit-place/(?P<id>\d+)/$', 'edit_place'),
              (r'^places-json/$', 'places_json'),
              (r'^check/$', 'list_bookings'),
              )

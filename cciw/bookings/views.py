@@ -174,7 +174,7 @@ import os
 
 from django.conf import settings
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.views.generic.base import TemplateView, TemplateResponseMixin
 from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView, BaseCreateView
 
@@ -184,7 +184,7 @@ from cciw.cciwmain.models import Camp
 
 from cciw.bookings.email import send_verify_email, check_email_verification_token
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
-from cciw.bookings.models import BookingAccount, Price
+from cciw.bookings.models import BookingAccount, Price, Booking
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, \
     BOOKING_INFO_COMPLETE, BOOKING_APPROVED
 
@@ -339,11 +339,7 @@ class AjaxMroFixer(type):
         new_list.insert(new_list.index(last), AjaxyFormMixin)
         return new_list
 
-
-class BookingAddPlace(DefaultMetaData, TemplateResponseMixin, BaseCreateView, AjaxyFormMixin):
-    __metaclass__ = AjaxMroFixer
-    metadata_title = "Booking - add place"
-    form_class = AddPlaceForm
+class BookingEditAddBase(DefaultMetaData, TemplateResponseMixin, AjaxyFormMixin):
     template_name = 'cciw/bookings/add_place.html'
     success_url = reverse_lazy('cciw.bookings.views.list_bookings')
     extra_context = {'booking_open': is_booking_open_thisyear}
@@ -351,16 +347,48 @@ class BookingAddPlace(DefaultMetaData, TemplateResponseMixin, BaseCreateView, Aj
     def post(self, request, *args, **kwargs):
         if not is_booking_open_thisyear():
             # Redirect to same view, but GET
-            return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
+            return HttpResponseRedirect(request.get_full_path())
         else:
-            return super(BookingAddPlace, self).post(request, *args, **kwargs)
+            return super(BookingEditAddBase, self).post(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.account = self.request.booking_account
         form.instance.agreement_date = datetime.now()
         form.instance.auto_set_amount_due()
         form.instance.state = BOOKING_INFO_COMPLETE
-        return super(BookingAddPlace, self).form_valid(form)
+        return super(BookingEditAddBase, self).form_valid(form)
+
+
+class BookingAddPlace(BookingEditAddBase, BaseCreateView):
+    __metaclass__ = AjaxMroFixer
+    metadata_title = "Booking - add place"
+    form_class = AddPlaceForm
+
+
+class BookingEditPlace(BookingEditAddBase, BaseUpdateView):
+    __metaclass__ = AjaxMroFixer
+    metadata_title = "Booking - edit place"
+    form_class = AddPlaceForm
+
+    def post(self, request, *args, **kwargs):
+        if not self.get_object().is_user_editable():
+            # just do a redirect to same view, which will display
+            # the message about read only
+            return HttpResponseRedirect(request.get_full_path())
+        else:
+            return super(BookingEditPlace, self).post(request, *args, **kwargs)
+
+    def get_object(self):
+        try:
+            return self.request.booking_account.bookings.get(id=int(self.kwargs['id']))
+        except Booking.DoesNotExist, ValueError:
+            raise Http404
+
+    def get_context_data(self, **kwargs):
+        c = super(BookingEditPlace, self).get_context_data(**kwargs)
+        if not self.object.is_user_editable():
+            c['read_only'] = True
+        return c
 
 
 BOOKING_PLACE_PUBLIC_ATTRS = [
@@ -410,8 +438,10 @@ class BookingListBookings(DefaultMetaData, TemplateView):
         all_bookable = True
         all_unbookable = True
         for b in new_bookings:
+            # decorate object with some attributes to make it easier in template
             b.booking_problems = b.get_booking_problems()
             b.bookable = len(b.booking_problems) == 0
+            b.manually_approved = b.state == BOOKING_APPROVED
             if b.bookable:
                 all_unbookable = False
             else:
@@ -443,4 +473,5 @@ verify_email_failed = BookingVerifyEmailFailed.as_view()
 account_details = booking_account_required(BookingAccountDetails.as_view())
 not_logged_in = BookingNotLoggedIn.as_view()
 add_place = booking_account_required(BookingAddPlace.as_view())
+edit_place = booking_account_required(BookingEditPlace.as_view())
 list_bookings = booking_account_required(BookingListBookings.as_view())
