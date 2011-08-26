@@ -465,6 +465,11 @@ class BookingListBookings(DefaultMetaData, TemplateView):
         c['total'] = total
         return c
 
+    def post(self, request, *args, **kwargs):
+        if 'add_another' in request.POST:
+            return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
+        return self.get(request, *args, **kwargs)
+
 
 index = BookingIndex.as_view()
 start = BookingStart.as_view()

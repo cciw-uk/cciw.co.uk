@@ -519,3 +519,12 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "id_book_now_btn")
         # Total:
         self.assertContains(resp, "£100.01")
+
+    def test_add_another_btn(self):
+        self.login()
+        self.create_place()
+        resp = self.client.post(reverse('cciw.bookings.views.list_bookings'), {'add_another': '1'})
+        self.assertEqual(302, resp.status_code)
+        newpath = reverse('cciw.bookings.views.add_place')
+        self.assertTrue(resp['Location'].endswith(newpath))
+
