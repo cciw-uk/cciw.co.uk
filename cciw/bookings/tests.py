@@ -485,7 +485,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(200, resp.status_code)
 
         self.assertNotContains(resp, "id_book_now_btn")
-        self.assertContains(resp, "Some of the places cannot be booked")
+        self.assertContains(resp, "One or more of the places cannot be booked")
 
     def test_total(self):
         self.login()
