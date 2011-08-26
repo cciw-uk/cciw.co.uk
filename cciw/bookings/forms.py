@@ -37,6 +37,7 @@ class AddPlaceForm(CciwFormMixin, forms.ModelForm):
             'date_of_birth',
             'address',
             'post_code',
+            'phone_number',
             'church',
             'south_wales_transport',
             'contact_name',
