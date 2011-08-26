@@ -393,7 +393,7 @@ BOOKING_PLACE_PUBLIC_ATTRS = [
 def places_json(request):
     retval = {'status': 'success'}
     retval['places'] = [dict((k, getattr(b, k)) for k in BOOKING_PLACE_PUBLIC_ATTRS)
-                        for b in request.booking_account.booking_set.all()]
+                        for b in request.booking_account.bookings.all()]
     return retval
 
 
@@ -403,7 +403,7 @@ class BookingListBookings(DefaultMetaData, TemplateView):
 
     def get_context_data(self, **kwargs):
         c = super(BookingListBookings, self).get_context_data(**kwargs)
-        all_bookings = self.request.booking_account.booking_set.filter(camp__year__exact=get_thisyear())
+        all_bookings = self.request.booking_account.bookings.filter(camp__year__exact=get_thisyear())
         new_bookings = (all_bookings.filter(state=BOOKING_INFO_COMPLETE) |
                         all_bookings.filter(state=BOOKING_APPROVED))
         new_bookings = list(new_bookings)

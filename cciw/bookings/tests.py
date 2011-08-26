@@ -284,7 +284,7 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         self.add_prices()
         b = BookingAccount.objects.get(email=self.email)
         camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
-        self.assertEqual(b.booking_set.count(), 0)
+        self.assertEqual(b.bookings.count(), 0)
 
         data = self.place_details.copy()
         data['camp'] = camp.id
@@ -294,13 +294,13 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         self.assertTrue(resp['Location'].endswith(newpath))
 
         # Did we create it?
-        self.assertEqual(b.booking_set.count(), 1)
+        self.assertEqual(b.bookings.count(), 1)
 
     def test_old_camp_year(self):
         self.login()
         self.add_prices()
         b = BookingAccount.objects.get(email=self.email)
-        self.assertEqual(b.booking_set.count(), 0)
+        self.assertEqual(b.bookings.count(), 0)
 
         data = self.place_details.copy()
         data['camp'] = 1 # an old camp
@@ -314,7 +314,7 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         self.add_prices()
         b = BookingAccount.objects.get(email=self.email)
         camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
-        self.assertEqual(b.booking_set.count(), 0)
+        self.assertEqual(b.bookings.count(), 0)
 
         data = self.place_details.copy()
         data['camp'] = camp.id
@@ -325,14 +325,14 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         self.assertTrue(resp['Location'].endswith(newpath))
 
         # Did we create it?
-        self.assertEqual(b.booking_set.count(), 1)
-        self.assertEqual(b.booking_set.all()[0].amount_due, Decimal('0.00'))
+        self.assertEqual(b.bookings.count(), 1)
+        self.assertEqual(b.bookings.all()[0].amount_due, Decimal('0.00'))
 
     def test_json_place_view(self):
         self.login()
         self.create_place()
         b = BookingAccount.objects.get(email=self.email)
-        bookings = list(b.booking_set.all())
+        bookings = list(b.bookings.all())
 
         # test view:
         resp = self.client.get(reverse('cciw.bookings.views.places_json'))

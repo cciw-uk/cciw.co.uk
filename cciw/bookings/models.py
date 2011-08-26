@@ -83,7 +83,7 @@ class BookingManager(models.Manager):
 
 
 class Booking(models.Model):
-    account = models.ForeignKey(BookingAccount)
+    account = models.ForeignKey(BookingAccount, related_name='bookings')
 
     # Booking details - from user
     camp = models.ForeignKey(Camp)
