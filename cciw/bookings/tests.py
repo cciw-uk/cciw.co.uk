@@ -184,7 +184,31 @@ class TestAccountDetails(LogInMixin, TestCase):
         self.assertEqual(b.name, 'Mr Booker')
 
 
-class TestAddPlace(LogInMixin, TestCase):
+class CreatePlaceMixin(object):
+    place_details = {
+        'name': 'Joe',
+        'sex': 'm',
+        'date_of_birth': '1990-01-01',
+        'address': 'x',
+        'post_code': 'ABC 123',
+        'contact_name': 'Mary',
+        'contact_phone_number': '01982 987654',
+        'gp_name': 'Doctor Who',
+        'gp_address': 'The Tardis',
+        'gp_phone_number': '01234 456789',
+        'medical_card_number': 'asdfasdf',
+        'agreement': '1',
+        'price_type': '0',
+        }
+
+    def create_camp(self):
+        # Need to create a Camp that we can choose i.e. is in the future
+        Camp.objects.create(year=get_thisyear(), number=1,
+                            start_date=datetime.now() + timedelta(20),
+                            end_date=datetime.now() + timedelta(27),
+                            site_id=1)
+
+class TestAddPlace(LogInMixin, CreatePlaceMixin, TestCase):
 
     fixtures = ['basic.json']
 
@@ -203,12 +227,7 @@ class TestAddPlace(LogInMixin, TestCase):
 
     def setUp(self):
         super(TestAddPlace, self).setUp()
-        # Need to create a Camp that we can choose i.e. is in the future
-        Camp.objects.create(year=get_thisyear(), number=1,
-                            start_date=datetime.now() + timedelta(20),
-                            end_date=datetime.now() + timedelta(27),
-                            site_id=1)
-        self._ensure_thisyear_reset()
+        self.create_camp()
 
     def test_redirect_if_not_logged_in(self):
         resp = self.client.get(reverse('cciw.bookings.views.add_place'))
@@ -242,26 +261,6 @@ class TestAddPlace(LogInMixin, TestCase):
         resp = self.client.post(reverse('cciw.bookings.views.add_place'), {})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "This field is required")
-
-    place_details = {
-        'name': 'Joe',
-        'sex': 'm',
-        'date_of_birth': '1990-01-01',
-        'address': 'x',
-        'post_code': 'ABC 123',
-        'contact_name': 'Mary',
-        'contact_phone_number': '01982 987654',
-        'gp_name': 'Doctor Who',
-        'gp_address': 'The Tardis',
-        'gp_phone_number': '01234 456789',
-        'medical_card_number': 'asdfasdf',
-        'agreement': '1',
-        'price_type': '0',
-        }
-
-    def _ensure_thisyear_reset(self):
-        from cciw.cciwmain import common
-        common._thisyear = None
 
     def test_complete(self):
         self.login()
