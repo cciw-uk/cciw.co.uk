@@ -243,10 +243,6 @@ class TestAddPlace(LogInMixin, TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "This field is required")
 
-    def test_old_camp(self):
-        self.login()
-        # TODO
-
     place_details = {
         'name': 'Joe',
         'sex': 'm',
