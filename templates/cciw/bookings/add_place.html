@@ -1,5 +1,6 @@
 {% extends 'cciw/standard.html' %}
 {% load cciwform %}
+{% load url from future %}
 {% block content %}
 {% if not booking_open %}
 
@@ -11,15 +12,141 @@
 <!--
 
 (function($) {
+
    $(document).ready(function() {
+
        cciw.standardformAddOnchangeHandlers('id_addplaceform');
+
+       var placeData = [];
+
+       var escape = function(t) {
+           return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+       };
+
+       var handleExistingPlacesData = function(json) {
+           var places = json['places'];
+           placeData['places'] = places;
+           if (places.length > 0) {
+               var cont = $('#id_use_existing_radio_container');
+               $('#id_use_existing_btn').show();
+               for (var i=0; i < places.length; i++) {
+                   var place = places[i];
+                   var html = ("<label><input type='radio' name='use_which_booking' value='" +
+                       i.toString() + "'>" + escape(place.name) + " " +
+                       place.created.substr(0,4) + "<br/>" +
+                       "&nbsp;&nbsp; Post code: " + escape(place.post_code) + "<br/>" +
+                       "&nbsp;&nbsp; GP: " + escape(place.gp_name) + "</label><br/>" );
+                   cont.append(html);
+               }
+           }
+       };
+
+       var useExistingDataShow = function(ev) {
+           ev.preventDefault();
+           var popup = $('#id_use_existing_data_popup');
+           popup.css({
+               "position": "fixed",
+               "top": ($(window).height()/2 - popup.height()/2).toString() + "px",
+               "left": ($(window).width()/2 - popup.width()/2).toString() + "px"
+            });
+            popup.fadeIn("fast");
+            $('#id_popup_background').fadeIn('fast');
+       };
+
+       var useExistingDataClose = function(ev) {
+           $('#id_use_existing_data_popup').fadeOut('fast');
+           $('#id_popup_background').fadeOut('fast');
+       };
+
+       var address_attrs = [
+           'address',
+           'post_code',
+           'phone_number',
+           'contact_name',
+           'contact_phone_number'
+       ];
+
+       var gp_info_attrs = [
+           'gp_name',
+           'gp_address',
+           'gp_phone_number'
+       ];
+
+       var all_attrs = [].concat(address_attrs, gp_info_attrs, [
+           'name',
+           'sex',
+           'date_of_birth',
+           'church',
+           'south_wales_transport',
+           'dietary_requirements',
+           'medical_card_number',
+           'last_tetanus_injection',
+           'allergies',
+           'regular_medication_required',
+           'learning_difficulties',
+           'serious_illness'
+       ]);
+
+       var useData = function(attrs) {
+           var radios = $('input[name=use_which_booking]');
+           var chosen = null;
+           for (var i=0; i < radios.length; i++) {
+               if (radios[i].checked) {
+                   chosen = parseInt(radios[i].value, 10);
+                   place = placeData['places'][chosen];
+                   var mainform = document.addplaceform;
+                   for (var j=0; j < attrs.length; j++) {
+                       var attr = attrs[j];
+                       if (mainform[attr].type == 'checkbox') {
+                           mainform[attr].checked = place[attr];
+                       } else {
+                           mainform[attr].value = place[attr];
+                       }
+                   }
+               }
+           }
+           if (chosen === null) {
+               alert('Please select a set of details on the left');
+           } else {
+               useExistingDataClose();
+           }
+       };
+
+       var useAllBtnClick = function(ev) {
+           ev.preventDefault();
+           useData(all_attrs);
+       };
+
+       var useAddressBtnClick = function(ev) {
+           ev.preventDefault();
+           useData(address_attrs);
+       };
+
+       var useGPInfoBtnClick = function(ev) {
+           ev.preventDefault();
+           useData(gp_info_attrs);
+       };
+
+       $('#id_popup_close_btn').click(useExistingDataClose);
+       $('#id_use_existing_btn').click(useExistingDataShow);
+       $('#id_use_all_btn').click(useAllBtnClick);
+       $('#id_use_address_btn').click(useAddressBtnClick);
+       $('#id_use_gp_info_btn').click(useGPInfoBtnClick);
+
+       /* Load data about existing places */
+       $.ajax({
+           type: "GET",
+           url: '{% url "cciw.bookings.views.places_json" %}',
+           dataType: "json",
+           success: handleExistingPlacesData
+       });
 
    });
 })(jQuery);
 
 //-->
 </script>
-<form action="" method="POST" id="id_addplaceform">
+<form action="" method="POST" id="id_addplaceform" name="addplaceform">
 {% csrf_token %}
 
 {% if form.errors %}
@@ -52,7 +179,7 @@ discount'.</p>
 {% cciw_form_field form 'price_type' 'Price' %}
 
 <h2>Camper details</h2>
-
+ <input type="submit" id="id_use_existing_btn" value="Use previous data" style="display:none; float: right;">
 {% cciw_form_field form 'name' 'Name' %}
 {% cciw_form_field form 'sex' 'Sex' %}
 {% cciw_form_field form 'date_of_birth' 'Date of birth (YYYY-MM-DD)' %}
@@ -144,8 +271,45 @@ treatment becomes necessary.</p>
 
 <input type="submit" name="submit" value="Save place details" />
 
-
-
 </form>
+
+<div id="id_use_existing_data_popup" class="inlinepopup">
+<div class="closebar">
+<a href="#" id="id_popup_close_btn">Close</a>
+</div>
+<div class="popupbody">
+<p>You can copy information previously entered to save time. Please check
+ the data after using this to ensure it is all up to date.</p>
+
+<table>
+<tr>
+<th>Select previous booking to copy from</th>
+<th>Choose which information to copy</th>
+</tr>
+<tr>
+<td>
+  <div style="max-height: 20em; overflow: auto;";>
+    <form name="select_place">
+    <div id="id_use_existing_radio_container">
+    </div>
+    </form>
+  </div>
+</td>
+<td style="vertical-align:top; text-align:center;">
+  <input type="submit" id="id_use_all_btn" value="Use all personal information" /> <br/>
+  <input type="submit" id="id_use_address_btn" value="Use address and contact information" /> <br/>
+  <input type="submit" id="id_use_gp_info_btn" value="Use GP information" />
+</td>
+
+</tr>
+</table>
+</div>
+</div>
+
+<div class="inlinepopup_background" id="id_popup_background"></div>
+
+<div style="display:nonex;">
+</div>
+
 {% endif %}
 {% endblock %}

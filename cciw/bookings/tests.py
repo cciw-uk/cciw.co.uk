@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.utils import simplejson
 
 from cciw.bookings.models import BookingAccount, Price
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD
@@ -295,3 +296,17 @@ class TestAddPlace(LogInMixin, TestCase):
         self.assertEqual(resp.status_code, 200)
         year = get_thisyear()
         self.assertContains(resp, 'Only a camp in %s can be selected' % year)
+
+    def test_json_place_view(self):
+        self.login()
+        # create a booking object
+        self.test_complete()
+        b = BookingAccount.objects.get(email=self.email)
+        bookings = list(b.booking_set.all())
+
+        # test view:
+        resp = self.client.get(reverse('cciw.bookings.views.places_json'))
+        self.assertEqual(resp.status_code, 200)
+        d = simplejson.loads(resp.content)
+        self.assertEqual(len(d["places"]), len(bookings))
+

@@ -178,6 +178,7 @@ from django.views.generic.base import TemplateView, TemplateResponseMixin
 from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView, BaseCreateView
 
 from cciw.cciwmain.common import get_thisyear, DefaultMetaData, AjaxyFormMixin
+from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 
 from cciw.bookings.email import send_verify_email, check_email_verification_token
@@ -358,6 +359,40 @@ class BookingAddPlace(DefaultMetaData, TemplateResponseMixin, BaseCreateView, Aj
         form.instance.auto_set_amount_due()
         form.instance.state = BOOKING_INFO_COMPLETE
         return super(BookingAddPlace, self).form_valid(form)
+
+
+BOOKING_PLACE_PUBLIC_ATTRS = [
+    'id',
+    'name',
+    'sex',
+    'date_of_birth',
+    'address',
+    'post_code',
+    'phone_number',
+    'church',
+    'south_wales_transport',
+    'contact_name',
+    'contact_phone_number',
+    'dietary_requirements',
+    'gp_name',
+    'gp_address',
+    'gp_phone_number',
+    'medical_card_number',
+    'last_tetanus_injection',
+    'allergies',
+    'regular_medication_required',
+    'learning_difficulties',
+    'serious_illness',
+    'created',
+]
+
+@booking_account_required
+@json_response
+def places_json(request):
+    retval = {'status': 'success'}
+    retval['places'] = [dict((k, getattr(b, k)) for k in BOOKING_PLACE_PUBLIC_ATTRS)
+                        for b in request.booking_account.booking_set.all()]
+    return retval
 
 
 index = BookingIndex.as_view()

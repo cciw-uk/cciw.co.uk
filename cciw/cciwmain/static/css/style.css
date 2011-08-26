@@ -829,6 +829,65 @@ div.bottomlinks img
     vertical-align: top;
 }
 
+/* Popups */
+
+.inlinepopup {
+    display:none;
+    position:fixed;
+    top:0px;
+    left:0px;
+    z-index: 2;
+    background-color: white;
+    color: black;
+}
+
+.inlinepopup .closebar {
+    padding: 3px;
+    background-color: black;
+    color: white;
+    text-align: right;
+}
+
+.inlinepopup .closebar a {
+    color: white;
+}
+
+.inlinepopup_background {
+    display:none;
+    position:fixed;
+    height:100%;
+    width:100%;
+    top:0;
+    left:0;
+    background:#000000;
+    z-index:1;
+    opacity: 0.7;
+}
+
+.inlinepopup .popupbody {
+    padding: 5px;
+}
+
+.inlinepopup table {
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
+.inlinepopup th,
+.inlinepopup td {
+    padding: 2px;
+    border-left: 1px solid black
+}
+
+/* Specific popups */
+#id_use_existing_data_popup {
+    max-width: 50em;
+
+}
+#id_use_existing_data_popup table {
+    width: 100%;
+}
+
 
 /* Internet Explorer message */
 #ie-message {

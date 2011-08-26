@@ -101,13 +101,13 @@ class Booking(models.Model):
     contact_name = models.CharField(max_length=100)
     contact_phone_number = models.CharField(max_length=22)
 
+    # Diet - from user
+    dietary_requirements = models.TextField(blank=True)
+
     # GP details - from user
     gp_name = models.CharField("GP name", max_length=100)
     gp_address = models.TextField("GP address")
     gp_phone_number = models.CharField("GP phone number", max_length=22)
-
-    # Diet - from user
-    dietary_requirements = models.TextField(blank=True)
 
     # Medical details - from user
     medical_card_number = models.CharField(max_length=100) # no idea how long it should be
@@ -144,3 +144,6 @@ class Booking(models.Model):
         if self.price_type != PRICE_CUSTOM:
             self.amount_due = Price.objects.get(year=self.camp.year,
                                                 price_type=self.price_type).price
+
+    class Meta:
+        ordering = ['-created']

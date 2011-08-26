@@ -4,6 +4,7 @@ Utility functions and classes.
 
 For CCIW specific utilities see cciw.cciwmain.common
 """
+from datetime import date, datetime
 import operator
 
 from django.utils.safestring import mark_safe
@@ -41,6 +42,9 @@ class LazyEncoder(simplejson.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Promise):
             return force_unicode(obj)
+        elif isinstance(obj, date):
+            # The format we need for filling in date fields:
+            return obj.strftime('%Y-%m-%d')
         return obj
 
 json_encoder = LazyEncoder(ensure_ascii=False)
