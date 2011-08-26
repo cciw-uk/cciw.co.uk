@@ -3,6 +3,7 @@ from django import forms
 from cciw.bookings.models import BookingAccount, Booking
 from cciw.cciwmain.forms import CciwFormMixin
 from cciw.cciwmain.common import get_thisyear
+from cciw.cciwmain.models import Camp
 
 
 class EmailForm(CciwFormMixin, forms.Form):
@@ -27,6 +28,10 @@ AccountDetailsForm.base_fields['post_code'].required = True
 
 
 class AddPlaceForm(CciwFormMixin, forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AddPlaceForm, self).__init__(*args, **kwargs)
+        self.fields['camp'].queryset = Camp.objects.filter(year=get_thisyear())
+
     class Meta:
         model = Booking
         fields = [
@@ -61,6 +66,8 @@ class AddPlaceForm(CciwFormMixin, forms.ModelForm):
         camp = self.cleaned_data['camp']
         thisyear = get_thisyear()
         if camp.year != thisyear:
+            # This will not ever trigger if the limiting of the camp queryset
+            # above works as intended. Instead you get 'Select a valid choice'
             raise forms.ValidationError('Only a camp in %s can be selected.' % thisyear)
 
         return camp

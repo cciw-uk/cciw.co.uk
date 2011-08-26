@@ -295,7 +295,7 @@ class TestAddPlace(LogInMixin, TestCase):
         resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
         self.assertEqual(resp.status_code, 200)
         year = get_thisyear()
-        self.assertContains(resp, 'Only a camp in %s can be selected' % year)
+        self.assertContains(resp, 'The details could not be saved')
 
     def test_json_place_view(self):
         self.login()
