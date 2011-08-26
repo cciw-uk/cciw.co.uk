@@ -184,7 +184,7 @@ class TestAccountDetails(LogInMixin, TestCase):
         self.assertEqual(b.name, 'Mr Booker')
 
 
-class CreatePlaceMixin(object):
+class CreatePlaceMixin(LogInMixin):
     place_details = {
         'name': 'Joe',
         'sex': 'm',
@@ -201,6 +201,18 @@ class CreatePlaceMixin(object):
         'price_type': '0',
         }
 
+    def add_prices(self):
+        year = get_thisyear()
+        Price.objects.get_or_create(year=year,
+                                    price_type=PRICE_FULL,
+                                    price=Decimal('100.00'))
+        Price.objects.get_or_create(year=year,
+                                    price_type=PRICE_2ND_CHILD,
+                                    price=Decimal('75.00'))
+        Price.objects.get_or_create(year=year,
+                                    price_type=PRICE_3RD_CHILD,
+                                    price=Decimal('50.00'))
+
     def create_camp(self):
         # Need to create a Camp that we can choose i.e. is in the future
         Camp.objects.create(year=get_thisyear(), number=1,
@@ -208,26 +220,30 @@ class CreatePlaceMixin(object):
                             end_date=datetime.now() + timedelta(27),
                             site_id=1)
 
-class TestAddPlace(LogInMixin, CreatePlaceMixin, TestCase):
+    def create_place(self):
+        # We use public views to create place, to ensure that they are created
+        # in the same way that a user would.
+        self.login()
+        self.add_prices()
+        b = BookingAccount.objects.get(email=self.email)
+        camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
+        self.assertEqual(b.booking_set.count(), 0)
 
-    fixtures = ['basic.json']
-
-    def add_prices(self):
-        year = get_thisyear()
-        Price.objects.create(year=year,
-                             price_type=PRICE_FULL,
-                             price=Decimal('100.00'))
-        Price.objects.create(year=year,
-                             price_type=PRICE_2ND_CHILD,
-                             price=Decimal('75.00'))
-        Price.objects.create(year=year,
-                             price_type=PRICE_3RD_CHILD,
-                             price=Decimal('50.00'))
-
+        data = self.place_details.copy()
+        data['camp'] = camp.id
+        resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
+        self.assertEqual(resp.status_code, 302)
+        newpath = reverse('cciw.bookings.views.list_bookings')
+        self.assertTrue(resp['Location'].endswith(newpath))
 
     def setUp(self):
-        super(TestAddPlace, self).setUp()
+        super(CreatePlaceMixin, self).setUp()
         self.create_camp()
+
+
+class TestAddPlace(CreatePlaceMixin, TestCase):
+
+    fixtures = ['basic.json']
 
     def test_redirect_if_not_logged_in(self):
         resp = self.client.get(reverse('cciw.bookings.views.add_place'))
@@ -294,8 +310,7 @@ class TestAddPlace(LogInMixin, CreatePlaceMixin, TestCase):
 
     def test_json_place_view(self):
         self.login()
-        # create a booking object
-        self.test_complete()
+        self.create_place()
         b = BookingAccount.objects.get(email=self.email)
         bookings = list(b.booking_set.all())
 
