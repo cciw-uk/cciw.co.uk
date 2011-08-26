@@ -133,6 +133,16 @@
        $('#id_use_address_btn').click(useAddressBtnClick);
        $('#id_use_gp_info_btn').click(useGPInfoBtnClick);
 
+       // Typing enter on text boxes shouldn't activate the 'Use existing
+       // data' button
+       $('#id_addplaceform input[type=text]').keypress(function(ev) {
+           var code = (ev.keyCode || e.which);
+           if (code == 13) {
+               ev.preventDefault();
+
+           }
+       });
+
        /* Load data about existing places */
        $.ajax({
            type: "GET",
