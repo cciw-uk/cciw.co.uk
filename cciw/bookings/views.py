@@ -168,6 +168,7 @@
 # approve. If they don't approve, need to send email to person booking.
 
 from datetime import datetime
+from decimal import Decimal
 from functools import wraps
 import os
 
@@ -184,7 +185,8 @@ from cciw.cciwmain.models import Camp
 from cciw.bookings.email import send_verify_email, check_email_verification_token
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
 from cciw.bookings.models import BookingAccount, Price
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, BOOKING_INFO_COMPLETE
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, \
+    BOOKING_INFO_COMPLETE, BOOKING_APPROVED
 
 
 # decorators and utilities
@@ -395,6 +397,48 @@ def places_json(request):
     return retval
 
 
+class BookingListBookings(DefaultMetaData, TemplateView):
+    metadata_title = "Booking - check and book"
+    template_name = "cciw/bookings/list_bookings.html"
+
+    def get_context_data(self, **kwargs):
+        c = super(BookingListBookings, self).get_context_data(**kwargs)
+        all_bookings = self.request.booking_account.booking_set.filter(camp__year__exact=get_thisyear())
+        new_bookings = (all_bookings.filter(state=BOOKING_INFO_COMPLETE) |
+                        all_bookings.filter(state=BOOKING_APPROVED))
+        new_bookings = list(new_bookings)
+
+        # Now apply business rules and other custom processing
+        total = Decimal('0.00')
+        all_bookable = True
+        all_unbookable = True
+        for b in new_bookings:
+            b.booking_problems = b.get_booking_problems()
+            b.bookable = len(b.booking_problems) == 0
+            if b.bookable:
+                all_unbookable = False
+            else:
+                all_bookable = False
+
+            # Where booking.price_type = PRICE_CUSTOM, and state is not approved,
+            # amount_due is meaningless. So we have a new attr, amount_due_normalised
+            if b.price_type == PRICE_CUSTOM and b.state != BOOKING_APPROVED:
+                b.amount_due_normalised = None
+            else:
+                b.amount_due_normalised = b.amount_due
+
+            if b.amount_due_normalised is None or total is None:
+                total = None
+            else:
+                total = total + b.amount_due_normalised
+
+        c['new_bookings'] = new_bookings
+        c['all_bookable'] = all_bookable
+        c['all_unbookable'] = all_unbookable
+        c['total'] = total
+        return c
+
+
 index = BookingIndex.as_view()
 start = BookingStart.as_view()
 email_sent = BookingEmailSent.as_view()
@@ -402,4 +446,4 @@ verify_email_failed = BookingVerifyEmailFailed.as_view()
 account_details = booking_account_required(BookingAccountDetails.as_view())
 not_logged_in = BookingNotLoggedIn.as_view()
 add_place = booking_account_required(BookingAddPlace.as_view())
-list_bookings = lambda request: None
+list_bookings = booking_account_required(BookingListBookings.as_view())

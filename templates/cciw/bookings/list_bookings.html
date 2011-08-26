@@ -1,0 +1,94 @@
+{% extends 'cciw/standard.html' %}
+{% load url from future %}
+{% load static %}
+
+{% block content %}
+{% if new_bookings %}
+<h2>Bookings to confirm</h2>
+
+<p>Please review the details and press 'Book now' to book the places and pay for
+  them online.</p>
+
+<p>If you have more places to add before booking and paying, choose 'Add another
+  place'.</p>
+
+<form action="" method="POST">
+{% csrf_token %}
+
+<table class="topheaders">
+  <tr>
+    <th scope="col">Name</th>
+    <th scope="col">Camp</th>
+    <th scope="col">Price</th>
+  </tr>
+
+{% for b in new_bookings %}
+  <tr>
+    <td>
+      {{ b.name }}
+    </td>
+    <td>
+      <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">Camp {{ b.camp.number }}, {{ b.camp.leaders_formatted }}</a>,
+      {{ b.camp.start_date|date:"j M Y" }}
+    </td>
+    <td>
+      {% if b.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ b.amount_due_normalised }}{% endif %}
+    </td>
+    <tr class="sectionbottom">
+      <th scope="row">Status:</th>
+      <td colspan="2">
+        {% if b.bookable %}
+          <img src="{% static "admin/img/icon-yes.gif" %}"> This place can be booked
+        {% else %}
+          <img src="{% static "admin/img/icon-no.gif" %}"> This place cannot be booked:
+          <ul>
+          {% for p in b.booking_problems %}
+            <li>{{ p }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      </td>
+    </tr>
+  </tr>
+{% endfor %}
+  <tr>
+    <td colspan="2" style="text-align:right;">Total</td>
+    <td>{% if total|default_if_none:"None" == "None" %}TBA{% else %}£{{ total }}{% endif %}</td>
+  </tr>
+</table>
+
+
+<p>
+  <input type="submit" name="add_another" value="Add another place">
+</p>
+{% if all_bookable %}
+<p>
+  <input type="submit" name="book_now" value="Book now" id="id_book_now_btn" >
+</p>
+{% else %}
+  {% if all_unbookable %}
+    {% if new_bookings|length > 1 %}
+       <p>These places cannot be booked for the reasons described above.
+       You will need to wait for manual approval of the places.</p>
+    {% else %}
+       <p>This place cannot be booked for the reasons described above.
+         You will need to wait for manual approval of the place.</p>
+    {% endif %}
+  {% else %}
+     <p>Some of the places cannot be booked, so this set cannot be booked as a group.
+       You can either:</p>
+     <ul>
+       <li>Use the 'save for later' button on the places that cannot be booked,
+         and book the other places.</li>
+       <li>or wait for the camp leader/booking secretary to manually
+         approve the place (or be in contact about why that is not possible).</li>
+     </ul>
+  {% endif %}
+{% endif %}
+
+</form>
+
+
+{% endif %}
+
+{% endblock %}

@@ -141,9 +141,29 @@ class Booking(models.Model):
                                   self.account)
 
     def auto_set_amount_due(self):
-        if self.price_type != PRICE_CUSTOM:
+        if self.price_type == PRICE_CUSTOM:
+            if self.amount_due is None:
+                self.amount_due = Decimal('0.00')
+        else:
             self.amount_due = Price.objects.get(year=self.camp.year,
                                                 price_type=self.price_type).price
+
+    def get_booking_problems(self):
+        """
+        Returns a list of reasons why booking cannot be done. If empty list,
+        then it can be.
+        """
+        # Main business rules here
+        retval = []
+
+        if self.state == BOOKING_APPROVED:
+            return retval
+
+        # Custom price - not auto bookable
+        if self.price_type == PRICE_CUSTOM:
+            retval.append("A custom discount needs to be arranged by the booking secretary")
+
+        return retval
 
     class Meta:
         ordering = ['-created']

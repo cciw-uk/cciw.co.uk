@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 from decimal import Decimal
 
@@ -6,8 +7,8 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import simplejson
 
-from cciw.bookings.models import BookingAccount, Price
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD
+from cciw.bookings.models import BookingAccount, Price, Booking
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, BOOKING_APPROVED
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
@@ -186,12 +187,12 @@ class TestAccountDetails(LogInMixin, TestCase):
 
 class CreatePlaceMixin(LogInMixin):
     place_details = {
-        'name': 'Joe',
+        'name': 'Joe Bloggs',
         'sex': 'm',
         'date_of_birth': '1990-01-01',
         'address': 'x',
         'post_code': 'ABC 123',
-        'contact_name': 'Mary',
+        'contact_name': 'Mary Bloggs',
         'contact_phone_number': '01982 987654',
         'gp_name': 'Doctor Who',
         'gp_address': 'The Tardis',
@@ -220,17 +221,17 @@ class CreatePlaceMixin(LogInMixin):
                             end_date=datetime.now() + timedelta(27),
                             site_id=1)
 
-    def create_place(self):
+    def create_place(self, extra=None):
         # We use public views to create place, to ensure that they are created
         # in the same way that a user would.
         self.login()
         self.add_prices()
-        b = BookingAccount.objects.get(email=self.email)
         camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
-        self.assertEqual(b.booking_set.count(), 0)
 
         data = self.place_details.copy()
         data['camp'] = camp.id
+        if extra is not None:
+            data.update(extra)
         resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.list_bookings')
@@ -308,6 +309,25 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         year = get_thisyear()
         self.assertContains(resp, 'The details could not be saved')
 
+    def test_custom_price(self):
+        self.login()
+        self.add_prices()
+        b = BookingAccount.objects.get(email=self.email)
+        camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
+        self.assertEqual(b.booking_set.count(), 0)
+
+        data = self.place_details.copy()
+        data['camp'] = camp.id
+        data['price_type'] = PRICE_CUSTOM
+        resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
+        self.assertEqual(resp.status_code, 302)
+        newpath = reverse('cciw.bookings.views.list_bookings')
+        self.assertTrue(resp['Location'].endswith(newpath))
+
+        # Did we create it?
+        self.assertEqual(b.booking_set.count(), 1)
+        self.assertEqual(b.booking_set.all()[0].amount_due, Decimal('0.00'))
+
     def test_json_place_view(self):
         self.login()
         self.create_place()
@@ -320,3 +340,96 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         d = simplejson.loads(resp.content)
         self.assertEqual(len(d["places"]), len(bookings))
 
+
+class TestListBookings(CreatePlaceMixin, TestCase):
+
+    fixtures = ['basic.json']
+
+    def test_redirect_if_not_logged_in(self):
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertEqual(302, resp.status_code)
+
+    def test_show_bookings(self):
+        self.login()
+        self.create_place()
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertEqual(200, resp.status_code)
+
+        self.assertContains(resp, "Camp 1")
+        self.assertContains(resp, "Joe Bloggs")
+        self.assertContains(resp, "£100")
+        self.assertContains(resp, "This place can be booked")
+        self.assertContains(resp, "id_book_now_btn")
+
+    def test_handle_custom_price(self):
+        self.login()
+        self.create_place({'price_type': PRICE_CUSTOM})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertEqual(200, resp.status_code)
+
+        self.assertContains(resp, "Camp 1")
+        self.assertContains(resp, "Joe Bloggs")
+        self.assertContains(resp, "TBA")
+        self.assertContains(resp, "A custom discount needs to be arranged by the booking secretary")
+        self.assertNotContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "This place cannot be booked for the reasons described above")
+
+    def test_handle_two_problem_bookings(self):
+        # Test the error we get for more than one problem booking
+        self.login()
+        self.create_place({'price_type': PRICE_CUSTOM})
+        self.create_place({'name': 'Another Child',
+                           'price_type': PRICE_CUSTOM})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertEqual(200, resp.status_code)
+
+        self.assertContains(resp, "Camp 1")
+        self.assertContains(resp, "Joe Bloggs")
+        self.assertContains(resp, "TBA")
+        self.assertContains(resp, "A custom discount needs to be arranged by the booking secretary")
+        self.assertNotContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "These places cannot be booked for the reasons described above")
+
+    def test_handle_mixed_problem_and_non_problem(self):
+        # Test the message we get if one place is bookable and the other is not
+        self.login()
+        self.create_place() # bookable
+        self.create_place({'name': 'Another Child',
+                           'price_type': PRICE_CUSTOM}) # not bookable
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertEqual(200, resp.status_code)
+
+        self.assertNotContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "Some of the places cannot be booked")
+
+    def test_total(self):
+        self.login()
+        self.create_place()
+        self.create_place({'name': 'Another Child'})
+
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertEqual(200, resp.status_code)
+
+        self.assertContains(resp, "£200")
+
+    def test_manually_approved(self):
+        self.login()
+        self.create_place() # bookable
+        self.create_place({'name': 'Another Child',
+                           'price_type': PRICE_CUSTOM}) # not bookable
+        Booking.objects.filter(price_type=PRICE_CUSTOM).update(state=BOOKING_APPROVED,
+                                                               amount_due=Decimal('0.01'))
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertEqual(200, resp.status_code)
+
+        self.assertContains(resp, "Camp 1")
+        self.assertContains(resp, "Joe Bloggs")
+        self.assertContains(resp, "£100")
+        self.assertContains(resp, "This place can be booked")
+
+        self.assertContains(resp, "Another Child")
+        self.assertContains(resp, "£0.01")
+
+        self.assertContains(resp, "id_book_now_btn")
+        # Total:
+        self.assertContains(resp, "£100.01")
