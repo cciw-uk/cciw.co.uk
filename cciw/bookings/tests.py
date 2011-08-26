@@ -405,6 +405,14 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "You cannot use a 3rd child discount")
         self.assertNotContains(resp, "id_book_now_btn")
 
+    def test_handle_serious_illness(self):
+        self.login()
+        self.create_place({'serious_illness': '1'})
+
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "Must be approved by leader due to serious illness/condition")
+        self.assertNotContains(resp, "id_book_now_btn")
+
     def test_handle_two_problem_bookings(self):
         # Test the error we get for more than one problem booking
         self.login()

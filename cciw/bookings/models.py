@@ -182,6 +182,10 @@ class Booking(models.Model):
                 retval.append("You cannot use a 3rd child discount unless you have "
                               "two other places without this discount.")
 
+        # serious illness
+        if self.serious_illness:
+            retval.append("Must be approved by leader due to serious illness/condition")
+
         return retval
 
     class Meta:
