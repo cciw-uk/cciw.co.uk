@@ -187,7 +187,7 @@ from cciw.bookings.email import send_verify_email, check_email_verification_toke
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
 from cciw.bookings.models import BookingAccount, Price, Booking
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, \
-    BOOKING_INFO_COMPLETE, BOOKING_APPROVED
+    BOOKING_INFO_COMPLETE, BOOKING_APPROVED, VALUED_PRICE_TYPES
 
 
 # decorators and utilities
@@ -233,7 +233,7 @@ def is_booking_open(year):
     """
     When passed a given year, returns True if booking is open.
     """
-    return Price.objects.filter(year=year).count() == 4 and Camp.objects.filter(year=year).exists()
+    return Price.objects.filter(year=year).count() == len(VALUED_PRICE_TYPES) and Camp.objects.filter(year=year).exists()
 
 is_booking_open_thisyear = lambda: is_booking_open(get_thisyear())
 
