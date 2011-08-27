@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from cciw.bookings.models import Price, BookingAccount, Booking
-
+from cciw.cciwmain.common import get_thisyear
 
 class PriceAdmin(admin.ModelAdmin):
     list_display = ['price_type', 'year', 'price']
@@ -19,7 +19,9 @@ class YearFilter(admin.SimpleListFilter):
     parameter_name = "year"
 
     def lookups(self, request, model_admin):
-        vals = set(Booking.objects.values_list('camp__year', flat=True))
+        # No easy way to create efficient query with Django's ORM,
+        # so hard code first year we did bookings online:
+        vals = range(2012, get_thisyear() + 1)
         return [(str(v),str(v)) for v in vals]
 
     def queryset(self, request, queryset):
