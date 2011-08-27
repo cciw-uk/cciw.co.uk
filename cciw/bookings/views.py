@@ -171,6 +171,7 @@ from datetime import datetime
 from decimal import Decimal
 from functools import wraps
 import os
+import re
 
 from django.conf import settings
 from django.core.urlresolvers import reverse, reverse_lazy
@@ -431,35 +432,41 @@ class BookingListBookings(DefaultMetaData, TemplateView):
 
     def get_context_data(self, **kwargs):
         c = super(BookingListBookings, self).get_context_data(**kwargs)
-        new_bookings = list(self.request.booking_account.bookings.ready_to_book(get_thisyear()))
-
+        bookings = self.request.booking_account.bookings
+        basket_bookings = list(bookings.ready_to_book(get_thisyear()))
+        shelf_bookings = list(bookings.ready_to_book(get_thisyear(), shelved=True))
         # Now apply business rules and other custom processing
         total = Decimal('0.00')
         all_bookable = True
         all_unbookable = True
-        for b in new_bookings:
-            # decorate object with some attributes to make it easier in template
-            b.booking_problems = b.get_booking_problems()
-            b.bookable = len(b.booking_problems) == 0
-            b.manually_approved = b.state == BOOKING_APPROVED
-            if b.bookable:
-                all_unbookable = False
-            else:
-                all_bookable = False
+        for l in basket_bookings, shelf_bookings:
+            for b in l:
+                # decorate object with some attributes to make it easier in template
+                b.booking_problems = b.get_booking_problems()
+                b.bookable = len(b.booking_problems) == 0
+                b.manually_approved = b.state == BOOKING_APPROVED
 
-            # Where booking.price_type = PRICE_CUSTOM, and state is not approved,
-            # amount_due is meaningless. So we have a new attr, amount_due_normalised
-            if b.price_type == PRICE_CUSTOM and b.state != BOOKING_APPROVED:
-                b.amount_due_normalised = None
-            else:
-                b.amount_due_normalised = b.amount_due
+                # Where booking.price_type = PRICE_CUSTOM, and state is not approved,
+                # amount_due is meaningless. So we have a new attr, amount_due_normalised
+                if b.price_type == PRICE_CUSTOM and b.state != BOOKING_APPROVED:
+                    b.amount_due_normalised = None
+                else:
+                    b.amount_due_normalised = b.amount_due
 
-            if b.amount_due_normalised is None or total is None:
-                total = None
-            else:
-                total = total + b.amount_due_normalised
+                # For basket bookings only:
+                if not b.shelved:
+                    if b.bookable:
+                        all_unbookable = False
+                    else:
+                        all_bookable = False
 
-        c['new_bookings'] = new_bookings
+                    if b.amount_due_normalised is None or total is None:
+                        total = None
+                    else:
+                        total = total + b.amount_due_normalised
+
+        c['basket_bookings'] = basket_bookings
+        c['shelf_bookings'] = shelf_bookings
         c['all_bookable'] = all_bookable
         c['all_unbookable'] = all_unbookable
         c['total'] = total
@@ -468,6 +475,21 @@ class BookingListBookings(DefaultMetaData, TemplateView):
     def post(self, request, *args, **kwargs):
         if 'add_another' in request.POST:
             return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
+
+        bookings = request.booking_account.bookings
+        for k in request.POST.keys():
+            # handle shelve and unshelve buttons
+            m = re.match(r"^(un)?shelve_(\d+)", k)
+            if m is not None:
+                try:
+                    b_id = int(m.groups()[1])
+                    to_shelve = m.groups()[0] == None
+                    place = bookings.ready_to_book(get_thisyear(),
+                                                   shelved=(not to_shelve)).get(id=b_id)
+                    place.shelved = to_shelve
+                    place.save()
+                except (ValueError, Booking.DoesNotExist):
+                    pass
         return self.get(request, *args, **kwargs)
 
 

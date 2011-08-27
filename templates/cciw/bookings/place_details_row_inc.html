@@ -1,0 +1,40 @@
+{% load url from future %}
+{% load static %}
+  <tr>
+    <td>
+      {{ b.name }}
+    </td>
+    <td>
+      <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">Camp {{ b.camp.number }}, {{ b.camp.leaders_formatted }}</a>,
+      {{ b.camp.start_date|date:"j M Y" }}
+    </td>
+    <td>
+      {% if b.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ b.amount_due_normalised }}{% endif %}
+    </td>
+    <td rowspan="2" class="sectionbottom" style="text-align:center;">
+      <a href="{% url 'cciw.bookings.views.edit_place' id=b.id %}">View/edit</a><br/>
+      {% if basket %}
+        <input type="submit" name="shelve_{{ b.id }}" value="Save for later">
+      {% endif %}
+      {% if shelf %}
+        <input type="submit" name="unshelve_{{ b.id }}" value="Move to basket">
+      {% endif %}
+    </td>
+  </tr>
+  <tr class="sectionbottom">
+      <td><b>Status:</b></td>
+      <td colspan="2">
+        {% if b.bookable %}
+          <img src="{% static "admin/img/icon-yes.gif" %}"> This place can be booked
+          {% if b.manually_approved %}<b> - MANUALLY APPROVED</b>{% endif %}
+        {% else %}
+          <img src="{% static "admin/img/icon-no.gif" %}"> This place cannot be booked:
+          <ul>
+          {% for p in b.booking_problems %}
+            <li>{{ p }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      </td>
+    </tr>
+  </tr>

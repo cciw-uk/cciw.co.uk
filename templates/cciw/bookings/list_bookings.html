@@ -3,18 +3,20 @@
 {% load static %}
 
 {% block content %}
-{% if new_bookings %}
+
+<form action="" method="POST">
+
+{% csrf_token %}
+
 <h2>Basket</h2>
 
+{% if basket_bookings %}
 <ul>
   <li>Review and press 'Book now' to book the places and pay for
   them online.</li>
   <li>Choose 'Add another place' if you have more places to add before booking
   and paying.</li>
 </ul>
-
-<form action="" method="POST">
-{% csrf_token %}
 
 <table class="topheaders">
   <tr>
@@ -24,39 +26,8 @@
     <th scope="col">Actions</th>
   </tr>
 
-{% for b in new_bookings %}
-  <tr>
-    <td>
-      {{ b.name }}
-    </td>
-    <td>
-      <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">Camp {{ b.camp.number }}, {{ b.camp.leaders_formatted }}</a>,
-      {{ b.camp.start_date|date:"j M Y" }}
-    </td>
-    <td>
-      {% if b.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ b.amount_due_normalised }}{% endif %}
-    </td>
-    <td rowspan="2" class="sectionbottom">
-      <a href="{% url 'cciw.bookings.views.edit_place' id=b.id %}">View/edit</a>
-    </td>
-  </tr>
-  <tr class="sectionbottom">
-      <td><b>Status:</b></td>
-      <td colspan="2">
-        {% if b.bookable %}
-          <img src="{% static "admin/img/icon-yes.gif" %}"> This place can be booked
-          {% if b.manually_approved %}<b> - MANUALLY APPROVED</b>{% endif %}
-        {% else %}
-          <img src="{% static "admin/img/icon-no.gif" %}"> This place cannot be booked:
-          <ul>
-          {% for p in b.booking_problems %}
-            <li>{{ p }}</li>
-          {% endfor %}
-          </ul>
-        {% endif %}
-      </td>
-    </tr>
-  </tr>
+{% for b in basket_bookings %}
+  {% include "cciw/bookings/place_details_row_inc.html" with b=b basket=1 %}
 {% endfor %}
   <tr>
     <td colspan="2" style="text-align:right; border: 0px;"><b>Total:</b></td>
@@ -72,7 +43,7 @@
 </p>
 {% if not all_bookable %}
   {% if all_unbookable %}
-    {% if new_bookings|length > 1 %}
+    {% if basket_bookings|length > 1 %}
        <p>These places cannot be booked for the reasons described above.
        You will need to wait for manual approval of the places.</p>
     {% else %}
@@ -91,9 +62,35 @@
   {% endif %}
 {% endif %}
 
-</form>
+{% else %}
+
+<p>Nothing in your basket.</p>
+
+{% endif %} {# basket_bookings #}
+
+{% if shelf_bookings %}
+
+<h2>Shelf</h2>
+
+<p>These place details are 'on the shelf' for later use - move them to the
+  basket in order to book them.</p>
+
+<table class="topheaders">
+  <tr>
+    <th scope="col">Name</th>
+    <th scope="col">Camp</th>
+    <th scope="col">Price</th>
+    <th scope="col">Actions</th>
+  </tr>
+{% for b in shelf_bookings %}
+  {% include "cciw/bookings/place_details_row_inc.html" with b=b shelf=1 %}
+{% endfor %}
+</table>
 
 
 {% endif %}
+
+</form>
+
 
 {% endblock %}

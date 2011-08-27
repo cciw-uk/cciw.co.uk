@@ -528,3 +528,48 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         newpath = reverse('cciw.bookings.views.add_place')
         self.assertTrue(resp['Location'].endswith(newpath))
 
+    def test_move_to_shelf(self):
+        self.login()
+        self.create_place()
+        acc = BookingAccount.objects.get(email=self.email)
+        b = acc.bookings.all()[0]
+        self.assertEqual(b.shelved, False)
+        resp = self.client.post(reverse('cciw.bookings.views.list_bookings'))
+
+        # Move to shelf button should be there
+        self.assertContains(resp, "name=\"shelve_%s\"" % b.id)
+
+        # Now click it
+        resp2 = self.client.post(reverse('cciw.bookings.views.list_bookings'), {'shelve_%s' % b.id: '1'})
+
+        # Should be changed
+        b2 = acc.bookings.all()[0]
+        self.assertEqual(b2.shelved, True)
+
+        # Different button should appear
+        self.assertNotContains(resp2, "name=\"shelve_%s\"" % b.id)
+        self.assertContains(resp2, "name=\"unshelve_%s\"" % b.id)
+
+        self.assertContains(resp2, "<h2>Shelf</h2>")
+
+    def test_move_to_basket(self):
+        self.login()
+        self.create_place()
+        acc = BookingAccount.objects.get(email=self.email)
+        b = acc.bookings.all()[0]
+        b.shelved = True
+        b.save()
+
+        # Move to basket button should be there
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "name=\"unshelve_%s\"" % b.id)
+
+        # Now click it
+        resp2 = self.client.post(reverse('cciw.bookings.views.list_bookings'), {'unshelve_%s' % b.id: '1'})
+
+        # Should be changed
+        b2 = acc.bookings.all()[0]
+        self.assertEqual(b2.shelved, False)
+
+        # Shelf section should disappear.
+        self.assertNotContains(resp2, "<h2>Shelf</h2>")

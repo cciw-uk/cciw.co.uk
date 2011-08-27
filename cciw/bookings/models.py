@@ -80,8 +80,8 @@ class BookingManager(models.Manager):
     def get_query_set(self):
         return super(BookingManager, self).get_query_set().select_related('camp', 'account')
 
-    def ready_to_book(self, year):
-        qs = self.get_query_set().filter(camp__year__exact=year)
+    def ready_to_book(self, year, shelved=False):
+        qs = self.get_query_set().filter(camp__year__exact=year, shelved=shelved)
         return qs.filter(state=BOOKING_INFO_COMPLETE) | qs.filter(state=BOOKING_APPROVED)
 
 
@@ -128,6 +128,9 @@ class Booking(models.Model):
     # Price - partly from user (must fit business rules)
     price_type = models.PositiveSmallIntegerField(choices=PRICE_TYPES)
     amount_due = models.DecimalField(decimal_places=2, max_digits=10)
+
+    # State - user driven
+    shelved = models.BooleanField(default=False)
 
     # State - internal
     state = models.IntegerField(choices=BOOKING_STATES)
