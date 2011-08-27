@@ -39,7 +39,8 @@ class BookingAdmin(admin.ModelAdmin):
     del camp
     search_fields = ['name']
     ordering = ['-camp__year', 'camp__number']
-    list_filter = ['sex', YearFilter]
+    date_hierarchy = 'created'
+    list_filter = [YearFilter, 'sex', 'price_type', 'serious_illness', 'south_wales_transport']
 
 
 admin.site.register(Price, PriceAdmin)
