@@ -19,7 +19,7 @@ class YearFilter(admin.SimpleListFilter):
     parameter_name = "year"
 
     def lookups(self, request, model_admin):
-        vals = Booking.objects.values_list('camp__year', flat=True).distinct()
+        vals = set(Booking.objects.values_list('camp__year', flat=True))
         return [(str(v),str(v)) for v in vals]
 
     def queryset(self, request, queryset):
