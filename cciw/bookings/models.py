@@ -177,14 +177,14 @@ class Booking(models.Model):
 
         # 2nd/3rd child discounts
         if self.price_type == PRICE_2ND_CHILD:
-            qs = self.account.bookings.ready_to_book(get_thisyear())
+            qs = self.account.bookings.filter(shelved=False, camp__year__exact=get_thisyear())
             if not qs.filter(price_type=PRICE_FULL).exists():
                 retval.append("You cannot use a 2nd child discount unless you have "
                               "a child at full price. Please edit the place details "
                               "and choose an appropriate price type.")
 
         if self.price_type == PRICE_3RD_CHILD:
-            qs = self.account.bookings.ready_to_book(get_thisyear())
+            qs = self.account.bookings.filter(shelved=False, camp__year__exact=get_thisyear())
             qs = qs.filter(price_type=PRICE_FULL) | qs.filter(price_type=PRICE_2ND_CHILD)
             if qs.count() < 2:
                 retval.append("You cannot use a 3rd child discount unless you have "
