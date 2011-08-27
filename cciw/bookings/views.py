@@ -233,7 +233,7 @@ def is_booking_open(year):
     """
     When passed a given year, returns True if booking is open.
     """
-    return Price.objects.filter(year=year).count() == 3 and Camp.objects.filter(year=year).exists()
+    return Price.objects.filter(year=year).count() == 4 and Camp.objects.filter(year=year).exists()
 
 is_booking_open_thisyear = lambda: is_booking_open(get_thisyear())
 

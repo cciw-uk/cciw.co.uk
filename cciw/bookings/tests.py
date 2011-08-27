@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.utils import simplejson
 
 from cciw.bookings.models import BookingAccount, Price, Booking
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
@@ -213,6 +213,9 @@ class CreatePlaceMixin(LogInMixin):
         Price.objects.get_or_create(year=year,
                                     price_type=PRICE_3RD_CHILD,
                                     price=Decimal('50.00'))
+        Price.objects.get_or_create(year=year,
+                                    price_type=PRICE_SOUTH_WALES_TRANSPORT,
+                                    price=Decimal('20.00'))
 
     def create_camp(self):
         # Need to create a Camp that we can choose i.e. is in the future
@@ -295,6 +298,25 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
 
         # Did we create it?
         self.assertEqual(b.bookings.count(), 1)
+
+        # Check amount_due
+        self.assertEqual(b.bookings.all()[0].amount_due, Price.objects.get(price_type=PRICE_FULL,
+                                                                           year=get_thisyear()).price)
+
+    def test_south_wales_surcharge(self):
+        self.login()
+        self.add_prices()
+        b = BookingAccount.objects.get(email=self.email)
+        camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
+        self.assertEqual(b.bookings.count(), 0)
+
+        data = self.place_details.copy()
+        data['camp'] = camp.id
+        data['south_wales_transport'] = '1'
+        resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
+        p = Price.objects.get(price_type=PRICE_FULL, year=get_thisyear()).price + \
+            Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT, year=get_thisyear()).price
+        self.assertEqual(b.bookings.all()[0].amount_due, p)
 
 
 class TestEditPlace(CreatePlaceMixin, TestCase):

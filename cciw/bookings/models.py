@@ -13,7 +13,7 @@ SEXES = [
     (SEX_FEMALE, 'Female'),
 ]
 
-PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM = range(0, 4)
+PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT = range(0, 5)
 PRICE_TYPES = [
     (PRICE_FULL,      'Full price'),
     (PRICE_2ND_CHILD, '2nd child discount'),
@@ -22,7 +22,9 @@ PRICE_TYPES = [
 ]
 
 # Price types that are used by Price model
-VALUED_PRICE_TYPES = [(v,d) for (v,d) in PRICE_TYPES if v is not PRICE_CUSTOM]
+VALUED_PRICE_TYPES = [(v,d) for (v,d) in PRICE_TYPES if v is not PRICE_CUSTOM] + \
+    [(PRICE_SOUTH_WALES_TRANSPORT, 'South wales transport surcharge')]
+
 
 BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED = range(0, 3)
 BOOKING_STATES = [
@@ -151,8 +153,12 @@ class Booking(models.Model):
             if self.amount_due is None:
                 self.amount_due = Decimal('0.00')
         else:
-            self.amount_due = Price.objects.get(year=self.camp.year,
-                                                price_type=self.price_type).price
+            amount = Price.objects.get(year=self.camp.year,
+                                       price_type=self.price_type).price
+            if self.south_wales_transport:
+                amount += Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT,
+                                            year=self.camp.year).price
+            self.amount_due = amount
 
     def get_booking_problems(self):
         """
