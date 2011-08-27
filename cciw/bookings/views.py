@@ -187,7 +187,7 @@ from cciw.bookings.email import send_verify_email, check_email_verification_toke
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
 from cciw.bookings.models import BookingAccount, Price, Booking
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, \
-    BOOKING_INFO_COMPLETE, BOOKING_APPROVED, VALUED_PRICE_TYPES
+    BOOKING_INFO_COMPLETE, BOOKING_APPROVED, VALUED_PRICE_TYPES, PRICE_SOUTH_WALES_TRANSPORT
 
 
 # decorators and utilities
@@ -343,7 +343,9 @@ class AjaxMroFixer(type):
 class BookingEditAddBase(DefaultMetaData, TemplateResponseMixin, AjaxyFormMixin):
     template_name = 'cciw/bookings/add_place.html'
     success_url = reverse_lazy('cciw.bookings.views.list_bookings')
-    extra_context = {'booking_open': is_booking_open_thisyear}
+    extra_context = {'booking_open': is_booking_open_thisyear,
+                     'south_wales_surcharge': lambda: Price.objects.get(year=get_thisyear(),
+                                                                        price_type=PRICE_SOUTH_WALES_TRANSPORT).price}
 
     def post(self, request, *args, **kwargs):
         if not is_booking_open_thisyear():
