@@ -426,7 +426,7 @@ def places_json(request):
 
 
 class BookingListBookings(DefaultMetaData, TemplateView):
-    metadata_title = "Booking - check and book"
+    metadata_title = "Booking - checkout"
     template_name = "cciw/bookings/list_bookings.html"
 
     def get_context_data(self, **kwargs):

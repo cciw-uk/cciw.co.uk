@@ -4,13 +4,14 @@
 
 {% block content %}
 {% if new_bookings %}
-<h2>Bookings to confirm</h2>
+<h2>Basket</h2>
 
-<p>Please review the details and press 'Book now' to book the places and pay for
-  them online.</p>
-
-<p>If you have more places to add before booking and paying, choose 'Add another
-  place'.</p>
+<ul>
+  <li>Review and press 'Book now' to book the places and pay for
+  them online.</li>
+  <li>Choose 'Add another place' if you have more places to add before booking
+  and paying.</li>
+</ul>
 
 <form action="" method="POST">
 {% csrf_token %}
@@ -66,9 +67,8 @@
 
 <p style="text-align: right; margin-top: 1em;">
   <input type="submit" name="add_another" value="Add another place">&nbsp;
-  {% if all_bookable %}
-  <input type="submit" name="book_now" value="Book now" id="id_book_now_btn" >
-  {% endif %}
+  <input type="submit" name="book_now" value="Book now" id="id_book_now_btn"{% if not all_bookable %} disabled{% endif %}>
+
 </p>
 {% if not all_bookable %}
   {% if all_unbookable %}

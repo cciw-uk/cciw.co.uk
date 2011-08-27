@@ -405,7 +405,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "Joe Bloggs")
         self.assertContains(resp, "£100")
         self.assertContains(resp, "This place can be booked")
-        self.assertContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "id_book_now_btn\">")
 
     def test_handle_custom_price(self):
         self.login()
@@ -417,7 +417,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "Joe Bloggs")
         self.assertContains(resp, "TBA")
         self.assertContains(resp, "A custom discount needs to be arranged by the booking secretary")
-        self.assertNotContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
         self.assertContains(resp, "This place cannot be booked for the reasons described above")
 
     def test_2nd_child_discount_allowed(self):
@@ -426,14 +426,14 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
         resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
         self.assertContains(resp, "You cannot use a 2nd child discount")
-        self.assertNotContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
 
         # 2 places, both at 2nd child discount, is not allowed.
         self.create_place({'price_type': PRICE_2ND_CHILD})
 
         resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
         self.assertContains(resp, "You cannot use a 2nd child discount")
-        self.assertNotContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
 
     def test_3rd_child_discount_allowed(self):
         self.login()
@@ -442,14 +442,14 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
         resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
         self.assertContains(resp, "You cannot use a 3rd child discount")
-        self.assertNotContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
 
         # 3 places, with 2 at 3rd child discount, is not allowed.
         self.create_place({'price_type': PRICE_3RD_CHILD})
 
         resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
         self.assertContains(resp, "You cannot use a 3rd child discount")
-        self.assertNotContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
 
     def test_handle_serious_illness(self):
         self.login()
@@ -457,7 +457,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
         resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
         self.assertContains(resp, "Must be approved by leader due to serious illness/condition")
-        self.assertNotContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
 
     def test_handle_two_problem_bookings(self):
         # Test the error we get for more than one problem booking
@@ -472,7 +472,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "Joe Bloggs")
         self.assertContains(resp, "TBA")
         self.assertContains(resp, "A custom discount needs to be arranged by the booking secretary")
-        self.assertNotContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
         self.assertContains(resp, "These places cannot be booked for the reasons described above")
 
     def test_handle_mixed_problem_and_non_problem(self):
@@ -484,7 +484,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
         self.assertEqual(200, resp.status_code)
 
-        self.assertNotContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
         self.assertContains(resp, "One or more of the places cannot be booked")
 
     def test_total(self):
@@ -516,7 +516,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "Another Child")
         self.assertContains(resp, "£0.01")
 
-        self.assertContains(resp, "id_book_now_btn")
+        self.assertContains(resp, "id_book_now_btn\">")
         # Total:
         self.assertContains(resp, "£100.01")
 
