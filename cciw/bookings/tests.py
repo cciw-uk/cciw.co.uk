@@ -595,3 +595,19 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
         # Shelf section should disappear.
         self.assertNotContains(resp2, "<h2>Shelf</h2>")
+
+    def test_delete_place(self):
+        self.login()
+        self.create_place()
+        acc = BookingAccount.objects.get(email=self.email)
+        b = acc.bookings.all()[0]
+        resp = self.client.post(reverse('cciw.bookings.views.list_bookings'))
+
+        # Delete button should be there
+        self.assertContains(resp, "name=\"delete_%s\"" % b.id)
+
+        # Now click it
+        resp2 = self.client.post(reverse('cciw.bookings.views.list_bookings'), {'delete_%s' % b.id: '1'})
+
+        # Should be gone
+        self.assertEqual(0, acc.bookings.count())

@@ -477,19 +477,33 @@ class BookingListBookings(DefaultMetaData, TemplateView):
             return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
 
         bookings = request.booking_account.bookings
+        places = (bookings.ready_to_book(get_thisyear(), shelved=True) |
+                  bookings.ready_to_book(get_thisyear(), shelved=False))
+
+        def shelve(place):
+            place.shelved = True
+            place.save()
+
+        def unshelve(place):
+            place.shelved = False
+            place.save()
+
+        def delete(place):
+            place.delete()
+
         for k in request.POST.keys():
             # handle shelve and unshelve buttons
-            m = re.match(r"^(un)?shelve_(\d+)", k)
-            if m is not None:
-                try:
-                    b_id = int(m.groups()[1])
-                    to_shelve = m.groups()[0] == None
-                    place = bookings.ready_to_book(get_thisyear(),
-                                                   shelved=(not to_shelve)).get(id=b_id)
-                    place.shelved = to_shelve
-                    place.save()
-                except (ValueError, Booking.DoesNotExist):
-                    pass
+            for r, action in [(r'shelve_(\d+)', shelve),
+                              (r'unshelve_(\d+)', unshelve),
+                              (r'delete_(\d+)', delete)]:
+                m = re.match(r, k)
+                if m is not None:
+                    try:
+                        b_id = int(m.groups()[0])
+                        place = places.get(id=b_id)
+                        action(place)
+                    except (ValueError, Booking.DoesNotExist):
+                        pass
         return self.get(request, *args, **kwargs)
 
 

@@ -14,11 +14,12 @@
     <td rowspan="2" class="sectionbottom" style="text-align:center;">
       <a href="{% url 'cciw.bookings.views.edit_place' id=b.id %}">View/edit</a><br/>
       {% if basket %}
-        <input type="submit" name="shelve_{{ b.id }}" value="Save for later">
+        <input type="submit" name="shelve_{{ b.id }}" value="Save for later"><br/>
       {% endif %}
       {% if shelf %}
-        <input type="submit" name="unshelve_{{ b.id }}" value="Move to basket">
+        <input type="submit" name="unshelve_{{ b.id }}" value="Move to basket"><br/>
       {% endif %}
+        <input type="submit" name="delete_{{ b.id }}" value="Delete">
     </td>
   </tr>
   <tr class="sectionbottom">
