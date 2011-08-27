@@ -382,7 +382,7 @@ class BookingEditPlace(BookingEditAddBase, BaseUpdateView):
     def get_object(self):
         try:
             return self.request.booking_account.bookings.get(id=int(self.kwargs['id']))
-        except Booking.DoesNotExist, ValueError:
+        except (ValueError, Booking.DoesNotExist):
             raise Http404
 
     def get_context_data(self, **kwargs):
