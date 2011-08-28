@@ -39,12 +39,6 @@ class Person(models.Model):
         verbose_name_plural = 'people'
 
 
-CAMP_AGES = (
-    (u'Jnr',u'Junior'),
-    (u'Snr',u'Senior')
-)
-
-
 class CampManager(models.Manager):
     use_for_related_fields = True
     def get_query_set(self):
@@ -57,8 +51,8 @@ class CampManager(models.Manager):
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")
     number = models.PositiveSmallIntegerField("number")
-    age = models.CharField("age", blank=False, max_length=3,
-                        choices=CAMP_AGES)
+    minimum_age = models.PositiveSmallIntegerField()
+    maximum_age = models.PositiveSmallIntegerField()
     start_date = models.DateField("start date")
     end_date = models.DateField("end date")
     previous_camp = models.ForeignKey("self",
@@ -130,6 +124,10 @@ class Camp(models.Model):
 
     def is_past(self):
         return self.end_date <= datetime.date.today()
+
+    @property
+    def age(self):
+        return "%d-%d" % (self.minimum_age, self.maximum_age)
 
     class Meta:
         ordering = ['-year','number']
