@@ -186,21 +186,23 @@ class TestAccountDetails(LogInMixin, TestCase):
 
 
 class CreatePlaceMixin(LogInMixin):
-    place_details = {
-        'name': 'Joe Bloggs',
-        'sex': 'm',
-        'date_of_birth': '1990-01-01',
-        'address': 'x',
-        'post_code': 'ABC 123',
-        'contact_name': 'Mary Bloggs',
-        'contact_phone_number': '01982 987654',
-        'gp_name': 'Doctor Who',
-        'gp_address': 'The Tardis',
-        'gp_phone_number': '01234 456789',
-        'medical_card_number': 'asdfasdf',
-        'agreement': '1',
-        'price_type': '0',
-        }
+    @property
+    def place_details(self):
+        return {
+            'name': 'Joe Bloggs',
+            'sex': 'm',
+            'date_of_birth': '%d-01-01' % (get_thisyear() - 14),
+            'address': 'x',
+            'post_code': 'ABC 123',
+            'contact_name': 'Mary Bloggs',
+            'contact_phone_number': '01982 987654',
+            'gp_name': 'Doctor Who',
+            'gp_address': 'The Tardis',
+            'gp_phone_number': '01234 456789',
+            'medical_card_number': 'asdfasdf',
+            'agreement': '1',
+            'price_type': '0',
+            }
 
     def add_prices(self):
         year = get_thisyear()
@@ -481,6 +483,38 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
         self.assertContains(resp, "Must be approved by leader due to serious illness/condition")
         self.assertContains(resp, "id_book_now_btn\" disabled>")
+
+    def test_minimum_age(self):
+        self.login()
+        # if born Aug 31st 2001, and thisyear == 2012, should be allowed on camp with
+        # minimum_age == 11
+        Booking.objects.all().delete()
+        self.create_place({'date_of_birth': '%d-08-31' % (get_thisyear() - 11)})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertNotContains(resp, "below the minimum age")
+
+        # if born 1st Sept 2001, and thisyear == 2012, should not be allowed on camp with
+        # minimum_age == 11
+        Booking.objects.all().delete()
+        self.create_place({'date_of_birth': '%d-09-01' % (get_thisyear() - 11)})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "below the minimum age")
+
+    def test_maximum_age(self):
+        self.login()
+        # if born 1st Sept 2001, and thisyear == 2019, should be allowed on camp with
+        # maximum_age == 17
+        Booking.objects.all().delete()
+        self.create_place({'date_of_birth': '%d-09-01' % (get_thisyear() - 18)})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertNotContains(resp, "above the maximum age")
+
+        # if born Aug 31st 2001, and thisyear == 2019, should not be allowed on camp with
+        # maximum_age == 17
+        Booking.objects.all().delete()
+        self.create_place({'date_of_birth': '%d-08-31' % (get_thisyear() - 18)})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "above the maximum age")
 
     def test_handle_two_problem_bookings(self):
         # Test the error we get for more than one problem booking

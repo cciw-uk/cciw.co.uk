@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 
+from dateutil.relativedelta import relativedelta
 from django.db import models
 
 from cciw.cciwmain.common import get_thisyear
@@ -194,6 +195,17 @@ class Booking(models.Model):
         # serious illness
         if self.serious_illness:
             retval.append("Must be approved by leader due to serious illness/condition")
+
+        # Check age.
+        # Age is calculated based on shool years, i.e. age on 31st August
+        camper_age = relativedelta(date(self.camp.year, 8, 31), self.date_of_birth)
+        if camper_age.years < self.camp.minimum_age:
+            retval.append("Camper will be below the minimum age (%d) on the 31st August %d"
+                          % (self.camp.minimum_age, self.camp.year))
+
+        if camper_age.years > self.camp.maximum_age:
+            retval.append("Camper will be above the maximum age (%d) on the 31st August %d"
+                          % (self.camp.maximum_age, self.camp.year))
 
         return retval
 
