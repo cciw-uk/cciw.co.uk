@@ -19,7 +19,8 @@
             "online_applications": true, 
             "number": 1, 
             "site": 1, 
-            "age": "Jnr", 
+            "minimum_age": 11, 
+            "maximum_age": 17, 
             "year": 2000, 
             "start_date": "2000-07-01", 
             "chaplain": null
@@ -37,7 +38,8 @@
             "online_applications": true, 
             "number": 1, 
             "site": 1, 
-            "age": "Jnr", 
+            "minimum_age": 11, 
+            "maximum_age": 17, 
             "year": 2001, 
             "start_date": "2001-07-01", 
             "chaplain": null

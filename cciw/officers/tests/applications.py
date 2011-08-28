@@ -132,11 +132,11 @@ class ApplicationUtils(TestCase):
         past_camp_start = future_camp_start - datetime.timedelta(30 * 11)
 
         site = Site.objects.get(id=1)
-        c1 = Camp.objects.create(year=2010, number=5, age='Jnr',
+        c1 = Camp.objects.create(year=2010, number=5, minimum_age=11, maximum_age=17,
                                  start_date=past_camp_start,
                                  end_date=past_camp_start + datetime.timedelta(7),
                                  site=site)
-        c2 = Camp.objects.create(year=2011, number=1, age='Jnr',
+        c2 = Camp.objects.create(year=2011, number=1, minimum_age=11, maximum_age=17,
                                  start_date=future_camp_start,
                                  end_date=future_camp_start + datetime.timedelta(7),
                                  site=site)

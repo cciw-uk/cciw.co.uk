@@ -220,6 +220,7 @@ class CreatePlaceMixin(LogInMixin):
     def create_camp(self):
         # Need to create a Camp that we can choose i.e. is in the future
         Camp.objects.create(year=get_thisyear(), number=1,
+                            minimum_age=11, maximum_age=17,
                             start_date=datetime.now() + timedelta(20),
                             end_date=datetime.now() + timedelta(27),
                             site_id=1)
