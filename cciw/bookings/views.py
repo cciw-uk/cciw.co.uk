@@ -544,12 +544,24 @@ class BookingListBookings(DefaultMetaData, TemplateView):
                                "to the details. Please check the details and try again.")
             else:
                 if book_basket_now(basket_bookings):
+                    messages.info(request, "Places booked!")
                     return HttpResponseRedirect(reverse('cciw.bookings.views.pay'))
                 else:
                     messages.error(request, "These places cannot be booked for the reasons "
                                    "given below.")
 
         return self.get(request, *args, **kwargs)
+
+
+class BookingPay(DefaultMetaData, TemplateView):
+    metadata_title = "Booking - Pay"
+    template_name = "cciw/bookings/pay.html"
+
+    def get(self, request):
+        acc = self.request.booking_account
+        self.context['balance'] = acc.get_balance()
+        self.context['account_id'] = acc.id
+        return super(BookingPay, self).get(request)
 
 
 index = BookingIndex.as_view()
@@ -561,4 +573,4 @@ not_logged_in = BookingNotLoggedIn.as_view()
 add_place = booking_account_required(BookingAddPlace.as_view())
 edit_place = booking_account_required(BookingEditPlace.as_view())
 list_bookings = booking_account_required(BookingListBookings.as_view())
-pay = lambda: None
+pay = booking_account_required(BookingPay.as_view())

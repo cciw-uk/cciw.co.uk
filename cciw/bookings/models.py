@@ -79,6 +79,14 @@ class BookingAccount(models.Model):
             out.append("(empty)")
         return u", ".join(out)
 
+    # Business methods:
+
+    def get_balance(self):
+        total = self.bookings.filter(state=BOOKING_BOOKED).aggregate(models.Sum('amount_due'))['amount_due__sum']
+        if total is None:
+            total = Decimal('0.00')
+        return total - self.total_received
+
 
 class BookingManager(models.Manager):
     use_for_related_fields = True

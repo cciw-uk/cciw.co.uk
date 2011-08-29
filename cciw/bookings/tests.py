@@ -444,6 +444,7 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
 
 
 class TestListBookings(CreatePlaceMixin, TestCase):
+    # This includes tests for most of the business logic
 
     fixtures = ['basic.json']
 
@@ -852,3 +853,27 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp2, "Places were not booked due to modifications made")
 
 
+class TestPay(CreatePlaceMixin, TestCase):
+
+    fixtures = ['basic.json']
+
+    url = reverse('cciw.bookings.views.list_bookings')
+
+    def test_balance_empty(self):
+        self.login()
+        resp = self.client.get(reverse('cciw.bookings.views.pay'))
+        self.assertContains(resp, '£0.00')
+
+    def test_balance_after_booking(self):
+        self.login()
+        self.create_place()
+        self.create_place()
+        acc = BookingAccount.objects.get(email=self.email)
+        acc.bookings.all().update(state=BOOKING_BOOKED)
+
+        resp = self.client.get(reverse('cciw.bookings.views.pay'))
+
+        # 2 places:
+        expected_price = 2 * Price.objects.get(year=get_thisyear(),
+                                               price_type=PRICE_FULL).price
+        self.assertContains(resp, '£%s' % expected_price)
