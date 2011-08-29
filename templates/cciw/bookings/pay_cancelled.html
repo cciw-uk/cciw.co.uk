@@ -1,0 +1,12 @@
+{% extends 'cciw/standard.html' %}
+{% load url from future %}
+{% block content %}
+<h3>Payment cancelled</h3>
+
+<p>You cancelled your payment. Please ensure you
+<a href="{% url 'cciw.bookings.views.pay' %}">pay</a> within 24 hours, or your
+booking will expire and the place can be taken by someone else.
+</p>
+
+
+{% endblock %}

@@ -1,6 +1,7 @@
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 import os
+import re
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
@@ -8,6 +9,13 @@ from django.db import models
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import Lock
+
+# = Business rules =
+#
+# Business rules are implemented in relevant models and managers.
+#
+#
+
 
 
 SEX_MALE, SEX_FEMALE = 'm', 'f'
@@ -81,11 +89,93 @@ class BookingAccount(models.Model):
 
     # Business methods:
 
-    def get_balance(self):
-        total = self.bookings.filter(state=BOOKING_BOOKED).aggregate(models.Sum('amount_due'))['amount_due__sum']
+    def get_balance(self, confirmed_only=False):
+        """
+        Gets the balance to pay on the account.
+        If confirmed_only=True, then only bookings that are confirmed
+        (no expiration date) are included as 'received goods'
+        """
+        if confirmed_only:
+            total = self.bookings.confirmed().aggregate(models.Sum('amount_due'))['amount_due__sum']
+
+        else:
+            total = self.bookings.booked().aggregate(models.Sum('amount_due'))['amount_due__sum']
         if total is None:
             total = Decimal('0.00')
         return total - self.total_received
+
+    def receive_payment(self, amount):
+        # = Receiving payments =
+        #
+        # This system needs to be robust, and cope with all kinds of user error, and
+        # things not matching up. The essential philosophy of this code is to assume the
+        # worst, most complicated scenario, and this will then easily handle the more
+        # simple case where everything matches up as a special case.
+        #
+        # When a payment is received, django-paypal creates an object
+        # and a signal handler calls BookingAccount.receive_payment
+        #
+        # We also need to set the 'Booking.booking_expires' field of relevant Booking
+        # objects. to null, so that the place is securely booked.
+        #
+        # There are a number of scenarios where the amount paid doesn't cover the total
+        # amount due:
+        # 1) user fiddles with the form client side and alters the amount
+        # 2) user starts paying for one place, then books another place in a different
+        # tab/window
+        #
+        # It is also possible for a place to be partially paid for, yet booked e.g. if a
+        # user selects a discount for which they were not eligible, and pays. This is then
+        # discovered, and the 'amount due' for that place is altered.
+        #
+        # So, we need a method to distribute any incoming payment so that we stop the
+        # booked place from expiring. It is better to be too generous than too stingy in
+        # stopping places from expiring, because:
+        #
+        # * on camp we can generally cope with one too many campers
+        # * we don't want people slipping off the camp lists by accident
+        # * we can always check whether people still have money outstanding by just checking
+        #   the total amount paid against the total amount due.
+        #
+        # Therefore, we ignore the partially paid case, and for distributing payment treat
+        # any place which is 'booked' with no 'booking_expires' as fully paid.
+        #
+        # When a payment is received, we don't know which place it is for, and in general
+        # it could be for any combination of the places that need payment. So, for
+        # simplicity we simply go through all places which are 'booked' and have a
+        # 'booking_expires' date, starting with the earliest 'booking_expires', on the
+        # assumption that we will get payment for that one first. If the amount for that
+        # place is less than or equal to incoming payment, we remove the
+        # 'booking_expires', deduct the amount from the incoming funds, and
+        # continue. Otherwise, we skip and continue.
+        #
+        # At the end, we check the outstanding balance, and any places that still have
+        # 'booking_expires' dates, and send an email as appropriate.
+
+        # Use update and F objects to avoid concurrency problems
+        BookingAccount.objects.filter(id=self.id).update(total_received=models.F('total_received') + amount)
+
+        # Need new data from DB, so get a fresh object
+        acc = BookingAccount.objects.get(id=self.id)
+        self.total_received = acc.total_received
+
+        # In order to distribute funds, need to take into account the total
+        # amount in the account that is not covered by confirmed places
+        existing_balance = acc.get_balance(confirmed_only=True)
+        # The 'pot' is the amount we have as excess and can use to mark places
+        # as confirmed.
+        pot = -existing_balance
+        # Order by booking_expires ascending i.e. earliest first
+        candidate_bookings = list(self.bookings.unconfirmed()
+                                  .order_by('booking_expires'))
+        i = 0
+        while pot > 0 and i < len(candidate_bookings):
+            b = candidate_bookings[i]
+            if b.amount_due <= pot:
+                b.confirm()
+                b.save()
+                pot -= b.amount_due
+            i += 1
 
 
 class BookingManager(models.Manager):
@@ -103,8 +193,16 @@ class BookingManager(models.Manager):
         qs = self.get_query_set().filter(camp__year__exact=year, shelved=shelved)
         return qs.filter(state=BOOKING_INFO_COMPLETE) | qs.filter(state=BOOKING_APPROVED)
 
-    def confirmed(self):
+    def booked(self):
         return self.get_query_set().filter(state=BOOKING_BOOKED)
+
+    def confirmed(self):
+        return self.get_query_set().filter(state=BOOKING_BOOKED,
+                                           booking_expires__isnull=True)
+
+    def unconfirmed(self):
+        return self.get_query_set().filter(state=BOOKING_BOOKED,
+                                           booking_expires__isnull=False)
 
 
 class Booking(models.Model):
@@ -228,9 +326,9 @@ class Booking(models.Model):
                           % (self.camp.maximum_age, self.camp.year))
 
         # Check place availability
-        places_booked = self.camp.bookings.confirmed().count()
-        places_booked_male = self.camp.bookings.confirmed().filter(sex=SEX_MALE).count()
-        places_booked_female = self.camp.bookings.confirmed().filter(sex=SEX_FEMALE).count()
+        places_booked = self.camp.bookings.booked().count()
+        places_booked_male = self.camp.bookings.booked().filter(sex=SEX_MALE).count()
+        places_booked_female = self.camp.bookings.booked().filter(sex=SEX_FEMALE).count()
 
         # We only want one message about places not being available, and the
         # order here is important - if there are no places full stop, we don't
@@ -280,6 +378,9 @@ class Booking(models.Model):
 
         return retval
 
+    def confirm(self):
+        self.booking_expires = None
+
     def is_user_editable(self):
         return self.state == BOOKING_INFO_COMPLETE
 
@@ -305,3 +406,28 @@ def book_basket_now(bookings):
         return True
     finally:
         lock.release()
+
+
+def unrecognised_payment(ipn_obj):
+    # If an online payment does not reference an existing BookingAccount, we accept it
+    # but complain loudly by email.
+    pass # TODO
+
+
+def paypal_payment_received(sender, **kwargs):
+    ipn_obj = sender
+    m = re.match("account:(\d+);", ipn_obj.custom)
+    if m is None:
+        unrecognised_payment(ipn_obj)
+        return
+
+    try:
+        account = BookingAccount.objects.get(id=int(m.groups()[0]))
+        account.receive_payment(ipn_obj.mc_gross)
+    except BookingAccount.DoesNotExist:
+        unrecognised_payment(ipn_obj)
+
+
+# Payment signals
+from paypal.standard.ipn.signals import payment_was_successful
+payment_was_successful.connect(paypal_payment_received)

@@ -8,4 +8,4 @@ xlwt==0.7.2
 xlrd==0.7.1
 creole>=1.2
 dateutil=2.0
-
+-e git+https://github.com/dcramer/django-paypal#egg=paypal

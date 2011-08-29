@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import simplejson
 
-from cciw.bookings.models import BookingAccount, Price, Booking
+from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
@@ -877,3 +877,55 @@ class TestPay(CreatePlaceMixin, TestCase):
         expected_price = 2 * Price.objects.get(year=get_thisyear(),
                                                price_type=PRICE_FULL).price
         self.assertContains(resp, '£%s' % expected_price)
+
+
+class TestPaymentReceived(CreatePlaceMixin, TestCase):
+
+    fixtures = ['basic.json']
+
+    def test_receive_payment(self):
+        self.login()
+        self.create_place()
+        acc = BookingAccount.objects.get(email=self.email)
+        book_basket_now(acc.bookings.basket(self.camp.year))
+        self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
+
+        p = Price.objects.get(year=get_thisyear(), price_type=PRICE_FULL).price
+        acc.receive_payment(p)
+
+        acc = BookingAccount.objects.get(email=self.email)
+
+        # Check we updated the account
+        self.assertEqual(acc.total_received, p)
+
+        # Check we updated the bookings
+        self.assertTrue(acc.bookings.all()[0].booking_expires is None)
+
+    def test_insufficient_receive_payment(self):
+        self.login()
+        self.create_place()
+        self.create_place({'price_type': PRICE_2ND_CHILD})
+        acc = BookingAccount.objects.get(email=self.email)
+        book_basket_now(acc.bookings.basket(self.camp.year))
+        self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
+
+        p1 = Price.objects.get(year=get_thisyear(), price_type=PRICE_FULL).price
+        p2 = Price.objects.get(year=get_thisyear(), price_type=PRICE_2ND_CHILD).price
+
+        # Between the two
+        p = (p1 + p2) / 2
+        acc.receive_payment(p)
+
+        # Check we updated the account
+        self.assertEqual(acc.total_received, p)
+
+        # Check we updated the one we had enough funds for
+        self.assertTrue(acc.bookings.filter(price_type=PRICE_2ND_CHILD)[0].booking_expires is None)
+        # but not the one which was too much.
+        self.assertTrue(acc.bookings.filter(price_type=PRICE_FULL)[0].booking_expires is not None)
+
+
+        # We can rectify it with a payment of the rest
+        acc.receive_payment((p1 + p2) - p)
+        self.assertTrue(acc.bookings.filter(price_type=PRICE_FULL)[0].booking_expires is None)
+

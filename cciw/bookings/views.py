@@ -180,8 +180,9 @@ from django.http import HttpResponseRedirect, Http404
 from django.utils.crypto import salted_hmac
 from django.views.generic.base import TemplateView, TemplateResponseMixin
 from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView, BaseCreateView
+from paypal.standard.forms import PayPalPaymentsForm
 
-from cciw.cciwmain.common import get_thisyear, DefaultMetaData, AjaxyFormMixin
+from cciw.cciwmain.common import get_thisyear, DefaultMetaData, AjaxyFormMixin, get_current_domain
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 
@@ -559,9 +560,40 @@ class BookingPay(DefaultMetaData, TemplateView):
 
     def get(self, request):
         acc = self.request.booking_account
-        self.context['balance'] = acc.get_balance()
+        balance = acc.get_balance()
+        self.context['balance'] = balance
         self.context['account_id'] = acc.id
+
+        domain = get_current_domain()
+        protocol = 'https' if self.request.is_secure() else 'http'
+        paypal_dict = {
+            "business": settings.PAYPAL_RECEIVER_EMAIL,
+            "amount": str(balance),
+            "item_name": "booking",
+            "invoice": "%s-%s-%s" % (acc.id, balance,
+                                     datetime.now()), # We don't need this, but must be unique
+            "notify_url":  "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
+            "return_url": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_done')),
+            "cancel_return": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_cancelled')),
+            "custom": "account:%s;" % str(acc.id),
+            "currency_code": "GBP",
+            }
+
+        # Create the instance.
+        form = PayPalPaymentsForm(initial=paypal_dict)
+        self.context['form'] = form
+
         return super(BookingPay, self).get(request)
+
+
+class BookingPayDone(DefaultMetaData, TemplateView):
+    metadata_title = "Booking - payment complete"
+    template_name = "cciw/bookings/pay_done.html"
+
+
+class BookingPayCancelled(DefaultMetaData, TemplateView):
+    metadata_title = "Booking - payment cancelled"
+    template_name = "cciw/bookings/pay_cancelled.html"
 
 
 index = BookingIndex.as_view()
@@ -574,3 +606,6 @@ add_place = booking_account_required(BookingAddPlace.as_view())
 edit_place = booking_account_required(BookingEditPlace.as_view())
 list_bookings = booking_account_required(BookingListBookings.as_view())
 pay = booking_account_required(BookingPay.as_view())
+pay_done = BookingPayDone.as_view()
+pay_cancelled = BookingPayCancelled.as_view()
+

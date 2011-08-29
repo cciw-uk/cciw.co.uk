@@ -73,6 +73,7 @@ INSTALLED_APPS = (
     'securedownload',
     'autocomplete',
     'djiki',
+    'paypal.standard.ipn',
 )
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
@@ -277,3 +278,7 @@ if DEVBOX:
 
 DEFAULT_CONTENT_TYPE = "text/html"
 
+
+## PayPal ##
+
+PAYPAL_RECEIVER_EMAIL = "paypal@cciw.co.uk"
