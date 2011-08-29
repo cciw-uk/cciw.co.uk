@@ -12,7 +12,7 @@
       {% if b.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ b.amount_due_normalised }}{% endif %}
     </td>
     <td rowspan="2" style="text-align:center;">
-      <a href="{% url 'cciw.bookings.views.edit_place' id=b.id %}">View/edit</a><br/>
+      <input type="submit" name="edit_{{ b.id }}" value="View/edit"><br/>
       {% if basket %}
         <input type="submit" name="shelve_{{ b.id }}" value="Save for later"><br/>
       {% endif %}

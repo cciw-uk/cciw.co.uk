@@ -724,3 +724,18 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
         # Should be gone
         self.assertEqual(0, acc.bookings.count())
+
+    def test_edit_place_btn(self):
+        self.login()
+        self.create_place()
+        acc = BookingAccount.objects.get(email=self.email)
+        b = acc.bookings.all()[0]
+        resp = self.client.post(reverse('cciw.bookings.views.list_bookings'))
+
+        # Delete button should be there
+        self.assertContains(resp, "name=\"edit_%s\"" % b.id)
+
+        # Now click it
+        resp2 = self.client.post(reverse('cciw.bookings.views.list_bookings'), {'edit_%s' % b.id: '1'})
+        self.assertEqual(resp2.status_code, 302)
+        self.assertTrue(resp2['Location'].endswith(reverse('cciw.bookings.views.edit_place', kwargs={'id':b.id})))

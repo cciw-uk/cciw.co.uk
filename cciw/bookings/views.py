@@ -493,17 +493,25 @@ class BookingListBookings(DefaultMetaData, TemplateView):
         def delete(place):
             place.delete()
 
+        def edit(place):
+            return HttpResponseRedirect(reverse('cciw.bookings.views.edit_place',
+                                                kwargs={'id':str(place.id)}))
+
         for k in request.POST.keys():
             # handle shelve and unshelve buttons
             for r, action in [(r'shelve_(\d+)', shelve),
                               (r'unshelve_(\d+)', unshelve),
-                              (r'delete_(\d+)', delete)]:
+                              (r'delete_(\d+)', delete),
+                              (r'edit_(\d+)', edit),
+                              ]:
                 m = re.match(r, k)
                 if m is not None:
                     try:
                         b_id = int(m.groups()[0])
                         place = places.get(id=b_id)
-                        action(place)
+                        retval = action(place)
+                        if retval is not None:
+                            return retval
                     except (ValueError, Booking.DoesNotExist):
                         pass
         return self.get(request, *args, **kwargs)
