@@ -74,15 +74,17 @@ class TestBookingStart(TestCase):
 
     fixtures = ['basic.json']
 
+    url = reverse('cciw.bookings.views.start')
+
     def test_show_form(self):
-        resp = self.client.get(reverse('cciw.bookings.views.start'))
+        resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
         self.assertContains(resp, 'id_email')
 
     def test_complete_form(self):
         self.assertEqual(BookingAccount.objects.all().count(), 0)
-        resp = self.client.post(reverse('cciw.bookings.views.start'),
+        resp = self.client.post(self.url,
                                 {'email': 'booker@bookers.com'})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(BookingAccount.objects.all().count(), 1)
@@ -93,7 +95,7 @@ class TestBookingStart(TestCase):
     def test_complete_form_existing_email(self):
         BookingAccount.objects.create(email="booker@bookers.com")
         self.assertEqual(BookingAccount.objects.all().count(), 1)
-        resp = self.client.post(reverse('cciw.bookings.views.start'),
+        resp = self.client.post(self.url,
                                 {'email': 'booker@bookers.com'})
         self.assertEqual(BookingAccount.objects.all().count(), 1)
         self.assertEqual(len(mail.outbox), 1)
@@ -101,14 +103,14 @@ class TestBookingStart(TestCase):
     def test_skip_if_logged_in(self):
         # This assumes verification process works
         def login():
-            self.client.post(reverse('cciw.bookings.views.start'),
+            self.client.post(self.url,
                              {'email': 'booker@bookers.com'})
             url, path, querydata = read_email_url(mail.outbox[-1], "https?://.*/booking/v/.*")
             self.client.get(path, querydata)
         login()
 
         # Check redirect to step 3 - account details
-        resp = self.client.get(reverse('cciw.bookings.views.start'))
+        resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.account_details')
         self.assertTrue(resp['Location'].endswith(newpath))
@@ -119,7 +121,7 @@ class TestBookingStart(TestCase):
         b.address = "Home"
         b.post_code = "XY1 D45"
         b.save()
-        resp = self.client.get(reverse('cciw.bookings.views.start'))
+        resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.add_place')
         self.assertTrue(resp['Location'].endswith(newpath))
@@ -211,18 +213,20 @@ class TestAccountDetails(LogInMixin, TestCase):
 
     fixtures = ['basic.json']
 
+    url = reverse('cciw.bookings.views.account_details')
+
     def test_redirect_if_not_logged_in(self):
-        resp = self.client.get(reverse('cciw.bookings.views.account_details'))
+        resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)
 
     def test_show_if_logged_in(self):
         self.login()
-        resp = self.client.get(reverse('cciw.bookings.views.account_details'))
+        resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
     def test_missing_name(self):
         self.login()
-        resp = self.client.post(reverse('cciw.bookings.views.account_details'), {})
+        resp = self.client.post(self.url, {})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "This field is required")
 
@@ -231,7 +235,7 @@ class TestAccountDetails(LogInMixin, TestCase):
         Test that we can complete the account details page
         """
         self.login()
-        resp = self.client.post(reverse('cciw.bookings.views.account_details'),
+        resp = self.client.post(self.url,
                                 {'name': 'Mr Booker',
                                  'address': '123, A Street',
                                  'post_code': 'XY1 D45',
@@ -284,36 +288,38 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
 
     fixtures = ['basic.json']
 
+    url = reverse('cciw.bookings.views.add_place')
+
     def test_redirect_if_not_logged_in(self):
-        resp = self.client.get(reverse('cciw.bookings.views.add_place'))
+        resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)
 
     def test_show_if_logged_in(self):
         self.login()
-        resp = self.client.get(reverse('cciw.bookings.views.add_place'))
+        resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
     def test_show_error_if_no_prices(self):
         self.login()
-        resp = self.client.get(reverse('cciw.bookings.views.add_place'), follow=True)
+        resp = self.client.get(self.url, follow=True)
         self.assertContains(resp, "prices have not been set")
 
     def test_post_not_allowed_if_no_prices(self):
         self.login()
-        resp = self.client.post(reverse('cciw.bookings.views.add_place'), {}, follow=True)
+        resp = self.client.post(self.url, {}, follow=True)
         self.assertContains(resp, "prices have not been set")
 
     def test_allowed_if_prices_set(self):
         self.login()
         self.add_prices()
-        resp = self.client.get(reverse('cciw.bookings.views.add_place'))
+        resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertNotContains(resp, "Prices have not been set")
 
     def test_incomplete(self):
         self.login()
         self.add_prices()
-        resp = self.client.post(reverse('cciw.bookings.views.add_place'), {})
+        resp = self.client.post(self.url, {})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "This field is required")
 
@@ -324,7 +330,7 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         self.assertEqual(b.bookings.count(), 0)
 
         data = self.place_details.copy()
-        resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
+        resp = self.client.post(self.url, data)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.list_bookings')
         self.assertTrue(resp['Location'].endswith(newpath))
@@ -344,7 +350,7 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
 
         data = self.place_details.copy()
         data['south_wales_transport'] = '1'
-        resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
+        resp = self.client.post(self.url, data)
         p = Price.objects.get(price_type=PRICE_FULL, year=get_thisyear()).price + \
             Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT, year=get_thisyear()).price
         self.assertEqual(b.bookings.all()[0].amount_due, p)
@@ -440,14 +446,16 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
     fixtures = ['basic.json']
 
+    url = reverse('cciw.bookings.views.list_bookings')
+
     def test_redirect_if_not_logged_in(self):
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertEqual(302, resp.status_code)
 
     def test_show_bookings(self):
         self.login()
         self.create_place()
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
 
         self.assertContains(resp, "Camp 1")
@@ -459,7 +467,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
     def test_handle_custom_price(self):
         self.login()
         self.create_place({'price_type': PRICE_CUSTOM})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
 
         self.assertContains(resp, "Camp 1")
@@ -473,14 +481,14 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.login()
         self.create_place({'price_type': PRICE_2ND_CHILD})
 
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "You cannot use a 2nd child discount")
         self.assertContains(resp, "id_book_now_btn\" disabled>")
 
         # 2 places, both at 2nd child discount, is not allowed.
         self.create_place({'price_type': PRICE_2ND_CHILD})
 
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "You cannot use a 2nd child discount")
         self.assertContains(resp, "id_book_now_btn\" disabled>")
 
@@ -489,14 +497,14 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.create_place({'price_type': PRICE_FULL})
         self.create_place({'price_type': PRICE_3RD_CHILD})
 
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "You cannot use a 3rd child discount")
         self.assertContains(resp, "id_book_now_btn\" disabled>")
 
         # 3 places, with 2 at 3rd child discount, is not allowed.
         self.create_place({'price_type': PRICE_3RD_CHILD})
 
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "You cannot use a 3rd child discount")
         self.assertContains(resp, "id_book_now_btn\" disabled>")
 
@@ -504,7 +512,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.login()
         self.create_place({'serious_illness': '1'})
 
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "Must be approved by leader due to serious illness/condition")
         self.assertContains(resp, "id_book_now_btn\" disabled>")
 
@@ -515,7 +523,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         Booking.objects.all().delete()
         self.create_place({'date_of_birth': '%d-08-31' %
                            (get_thisyear() - self.camp_minimum_age)})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertNotContains(resp, "below the minimum age")
 
         # if born 1st Sept 2001, and thisyear == 2012, should not be allowed on camp with
@@ -523,7 +531,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         Booking.objects.all().delete()
         self.create_place({'date_of_birth': '%d-09-01' %
                            (get_thisyear() - self.camp_minimum_age)})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "below the minimum age")
 
     def test_maximum_age(self):
@@ -533,7 +541,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         Booking.objects.all().delete()
         self.create_place({'date_of_birth': '%d-09-01' %
                            (get_thisyear() - (self.camp_maximum_age + 1))})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertNotContains(resp, "above the maximum age")
 
         # if born Aug 31st 2001, and thisyear == 2019, should not be allowed on camp with
@@ -541,7 +549,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         Booking.objects.all().delete()
         self.create_place({'date_of_birth': '%d-08-31' %
                            (get_thisyear() - (self.camp_maximum_age + 1))})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "above the maximum age")
 
     def test_no_places_left(self):
@@ -551,7 +559,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.camp.bookings.update(state=BOOKING_BOOKED)
 
         self.create_place({'sex':'m'})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "There are no places left on this camp")
         self.assertContains(resp, "id_book_now_btn\" disabled>")
 
@@ -565,14 +573,14 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.camp.bookings.update(state=BOOKING_BOOKED)
 
         self.create_place({'sex':'m'})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "There are no places left for boys")
         self.assertContains(resp, "id_book_now_btn\" disabled>")
 
         # Check that we can still book female places
         Booking.objects.filter(state=BOOKING_INFO_COMPLETE).delete()
         self.create_place({'sex':'f'})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertNotContains(resp, "There are no places left")
         self.assertContains(resp, "id_book_now_btn\">")
 
@@ -583,7 +591,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.camp.bookings.update(state=BOOKING_BOOKED)
 
         self.create_place({'sex':'f'})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "There are no places left for girls")
         self.assertContains(resp, "id_book_now_btn\" disabled>")
 
@@ -595,7 +603,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
         self.create_place({'sex':'f'})
         self.create_place({'sex':'f'})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "There are not enough places left on this camp")
         self.assertContains(resp, "id_book_now_btn\" disabled>")
 
@@ -607,7 +615,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
         self.create_place({'sex':'m'})
         self.create_place({'sex':'m'})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "There are not enough places for boys left on this camp")
         self.assertContains(resp, "id_book_now_btn\" disabled>")
 
@@ -619,7 +627,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
         self.create_place({'sex':'f'})
         self.create_place({'sex':'f'})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "There are not enough places for girls left on this camp")
         self.assertContains(resp, "id_book_now_btn\" disabled>")
 
@@ -629,7 +637,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.create_place({'price_type': PRICE_CUSTOM})
         self.create_place({'name': 'Another Child',
                            'price_type': PRICE_CUSTOM})
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
 
         self.assertContains(resp, "Camp 1")
@@ -645,7 +653,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.create_place() # bookable
         self.create_place({'name': 'Another Child',
                            'price_type': PRICE_CUSTOM}) # not bookable
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
 
         self.assertContains(resp, "id_book_now_btn\" disabled>")
@@ -656,7 +664,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.create_place()
         self.create_place({'name': 'Another Child'})
 
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
 
         self.assertContains(resp, "£200")
@@ -669,7 +677,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
                            'price_type': PRICE_CUSTOM}) # not bookable
         Booking.objects.filter(price_type=PRICE_CUSTOM).update(state=BOOKING_APPROVED,
                                                                amount_due=Decimal('0.01'))
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
 
         self.assertContains(resp, "Camp 1")
@@ -687,7 +695,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
     def test_add_another_btn(self):
         self.login()
         self.create_place()
-        resp = self.client.post(reverse('cciw.bookings.views.list_bookings'), {'add_another': '1'})
+        resp = self.client.post(self.url, {'add_another': '1'})
         self.assertEqual(302, resp.status_code)
         newpath = reverse('cciw.bookings.views.add_place')
         self.assertTrue(resp['Location'].endswith(newpath))
@@ -698,13 +706,13 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         acc = BookingAccount.objects.get(email=self.email)
         b = acc.bookings.all()[0]
         self.assertEqual(b.shelved, False)
-        resp = self.client.post(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.post(self.url)
 
         # Move to shelf button should be there
         self.assertContains(resp, "name=\"shelve_%s\"" % b.id)
 
         # Now click it
-        resp2 = self.client.post(reverse('cciw.bookings.views.list_bookings'), {'shelve_%s' % b.id: '1'})
+        resp2 = self.client.post(self.url, {'shelve_%s' % b.id: '1'})
 
         # Should be changed
         b2 = acc.bookings.all()[0]
@@ -725,11 +733,11 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         b.save()
 
         # Move to basket button should be there
-        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.get(self.url)
         self.assertContains(resp, "name=\"unshelve_%s\"" % b.id)
 
         # Now click it
-        resp2 = self.client.post(reverse('cciw.bookings.views.list_bookings'), {'unshelve_%s' % b.id: '1'})
+        resp2 = self.client.post(self.url, {'unshelve_%s' % b.id: '1'})
 
         # Should be changed
         b2 = acc.bookings.all()[0]
@@ -743,13 +751,13 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.create_place()
         acc = BookingAccount.objects.get(email=self.email)
         b = acc.bookings.all()[0]
-        resp = self.client.post(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.post(self.url)
 
         # Delete button should be there
         self.assertContains(resp, "name=\"delete_%s\"" % b.id)
 
         # Now click it
-        resp2 = self.client.post(reverse('cciw.bookings.views.list_bookings'), {'delete_%s' % b.id: '1'})
+        resp2 = self.client.post(self.url, {'delete_%s' % b.id: '1'})
 
         # Should be gone
         self.assertEqual(0, acc.bookings.count())
@@ -759,12 +767,12 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.create_place()
         acc = BookingAccount.objects.get(email=self.email)
         b = acc.bookings.all()[0]
-        resp = self.client.post(reverse('cciw.bookings.views.list_bookings'))
+        resp = self.client.post(self.url)
 
         # Delete button should be there
         self.assertContains(resp, "name=\"edit_%s\"" % b.id)
 
         # Now click it
-        resp2 = self.client.post(reverse('cciw.bookings.views.list_bookings'), {'edit_%s' % b.id: '1'})
+        resp2 = self.client.post(self.url, {'edit_%s' % b.id: '1'})
         self.assertEqual(resp2.status_code, 302)
         self.assertTrue(resp2['Location'].endswith(reverse('cciw.bookings.views.edit_place', kwargs={'id':b.id})))
