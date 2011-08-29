@@ -9,3 +9,4 @@ xlrd==0.7.1
 creole>=1.2
 python-dateutil==2.0
 -e git+https://github.com/dcramer/django-paypal#egg=paypal
+-e hg+https://bitbucket.org/spookylukey/django/@00f11ed96fe8#egg=django
