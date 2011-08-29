@@ -55,6 +55,10 @@ class Camp(models.Model):
     maximum_age = models.PositiveSmallIntegerField()
     start_date = models.DateField("start date")
     end_date = models.DateField("end date")
+    max_campers = models.PositiveSmallIntegerField("maximum campers", default=80)
+    max_male_campers = models.PositiveSmallIntegerField("maximum male campers", default=60)
+    max_female_campers = models.PositiveSmallIntegerField("maximum female campers", default=60)
+
     previous_camp = models.ForeignKey("self",
         related_name="next_camps",
         verbose_name="previous camp",

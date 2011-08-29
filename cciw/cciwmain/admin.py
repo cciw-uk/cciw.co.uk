@@ -43,6 +43,10 @@ class CampAdmin(admin.ModelAdmin):
                      'chaplain', 'leaders', 'site', 'previous_camp')
           }
         ),
+        ('Booking constraints',
+         {'fields': ('max_campers', 'max_male_campers', 'max_female_campers')
+          }
+         ),
         ('Applications and references',
          {'fields': ('online_applications', 'admins'),
           'description': '<div>Options for managing applications. Officer lists are managed <a href="/officers/leaders/">elsewhere</a>, not here.</div>',

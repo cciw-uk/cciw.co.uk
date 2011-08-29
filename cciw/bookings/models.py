@@ -87,12 +87,15 @@ class BookingManager(models.Manager):
         qs = self.get_query_set().filter(camp__year__exact=year, shelved=shelved)
         return qs.filter(state=BOOKING_INFO_COMPLETE) | qs.filter(state=BOOKING_APPROVED)
 
+    def confirmed(self):
+        return self.get_query_set().filter(state=BOOKING_BOOKED)
+
 
 class Booking(models.Model):
     account = models.ForeignKey(BookingAccount, related_name='bookings')
 
     # Booking details - from user
-    camp = models.ForeignKey(Camp)
+    camp = models.ForeignKey(Camp, related_name='bookings')
     name = models.CharField(max_length=100)
     sex = models.CharField(max_length=1, choices=SEXES)
     date_of_birth = models.DateField()
@@ -149,6 +152,8 @@ class Booking(models.Model):
         return "%s, %s-%s, %s" % (self.name, self.camp.year, self.camp.number,
                                   self.account)
 
+    ### Main business rules here ###
+
     def auto_set_amount_due(self):
         if self.price_type == PRICE_CUSTOM:
             if self.amount_due is None:
@@ -166,7 +171,6 @@ class Booking(models.Model):
         Returns a list of reasons why booking cannot be done. If empty list,
         then it can be.
         """
-        # Main business rules here
         retval = []
 
         if self.state == BOOKING_APPROVED:
@@ -206,6 +210,57 @@ class Booking(models.Model):
         if camper_age.years > self.camp.maximum_age:
             retval.append("Camper will be above the maximum age (%d) on the 31st August %d"
                           % (self.camp.maximum_age, self.camp.year))
+
+        # Check place availability
+        places_booked = self.camp.bookings.confirmed().count()
+        places_booked_male = self.camp.bookings.confirmed().filter(sex=SEX_MALE).count()
+        places_booked_female = self.camp.bookings.confirmed().filter(sex=SEX_FEMALE).count()
+
+        # We only want one message about places not being available, and the
+        # order here is important - if there are no places full stop, we don't
+        # want to display message about there being no places for boys etc.
+        places_available = True
+
+        # Simple - no places left
+        if self.camp.max_campers <= places_booked:
+            retval.append("There are no places left on this camp.")
+            places_available = False
+
+        if places_available and self.sex == SEX_MALE:
+            if self.camp.max_male_campers <= places_booked_male:
+                retval.append("There are no places left for boys on this camp.")
+                places_available = False
+
+        if places_available and self.sex == SEX_FEMALE:
+            if self.camp.max_female_campers <= places_booked_female:
+                retval.append("There are no places left for girls on this camp.")
+                places_available = False
+
+        if places_available:
+            # Complex - need to check the other places that are about to be booked.
+            # (if there is one place left, and two campers for it, we can't say that
+            # there are enough places)
+            same_camp_bookings = self.account.bookings.ready_to_book(self.camp.year).filter(camp=self.camp)
+            places_to_be_booked = same_camp_bookings.count()
+            places_to_be_booked_male = same_camp_bookings.filter(sex=SEX_MALE).count()
+            places_to_be_booked_female = same_camp_bookings.filter(sex=SEX_FEMALE).count()
+
+            if self.camp.max_campers < places_booked + places_to_be_booked:
+                retval.append("There are not enough places left on this camp "
+                              "for the campers in this set of bookings.")
+                places_available = False
+
+            if places_available and self.sex == SEX_MALE:
+                if self.camp.max_male_campers < places_booked_male + places_to_be_booked_male:
+                    retval.append("There are not enough places for boys left on this camp "
+                                  "for the campers in this set of bookings.")
+                    places_available = False
+
+            if places_available and self.sex == SEX_FEMALE:
+                if self.camp.max_female_campers < places_booked_female + places_to_be_booked_female:
+                    retval.append("There are not enough places for girls left on this camp "
+                                  "for the campers in this set of bookings.")
+                    places_available = False
 
         return retval
 

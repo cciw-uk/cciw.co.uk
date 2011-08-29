@@ -515,6 +515,85 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
         self.assertContains(resp, "above the maximum age")
 
+    def test_no_places_left(self):
+        self.login()
+        for i in range(0, self.camp.max_campers):
+            self.create_place({'sex':'m'})
+        self.camp.bookings.update(state=BOOKING_BOOKED)
+
+        self.create_place({'sex':'m'})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "There are no places left on this camp")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
+
+        # Don't want a redundant message
+        self.assertNotContains(resp, "There are no places left for boys")
+
+    def test_no_male_places_left(self):
+        self.login()
+        for i in range(0, self.camp.max_male_campers):
+            self.create_place({'sex': 'm'})
+        self.camp.bookings.update(state=BOOKING_BOOKED)
+
+        self.create_place({'sex':'m'})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "There are no places left for boys")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
+
+        # Check that we can still book female places
+        Booking.objects.filter(state=BOOKING_INFO_COMPLETE).delete()
+        self.create_place({'sex':'f'})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertNotContains(resp, "There are no places left")
+        self.assertContains(resp, "id_book_now_btn\">")
+
+    def test_no_female_places_left(self):
+        self.login()
+        for i in range(0, self.camp.max_female_campers):
+            self.create_place({'sex': 'f'})
+        self.camp.bookings.update(state=BOOKING_BOOKED)
+
+        self.create_place({'sex':'f'})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "There are no places left for girls")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
+
+    def test_not_enough_places_left(self):
+        self.login()
+        for i in range(0, self.camp.max_campers - 1):
+            self.create_place({'sex':'m'})
+        self.camp.bookings.update(state=BOOKING_BOOKED)
+
+        self.create_place({'sex':'f'})
+        self.create_place({'sex':'f'})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "There are not enough places left on this camp")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
+
+    def test_not_enough_male_places_left(self):
+        self.login()
+        for i in range(0, self.camp.max_male_campers - 1):
+            self.create_place({'sex':'m'})
+        self.camp.bookings.update(state=BOOKING_BOOKED)
+
+        self.create_place({'sex':'m'})
+        self.create_place({'sex':'m'})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "There are not enough places for boys left on this camp")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
+
+    def test_not_enough_female_places_left(self):
+        self.login()
+        for i in range(0, self.camp.max_female_campers - 1):
+            self.create_place({'sex':'f'})
+        self.camp.bookings.update(state=BOOKING_BOOKED)
+
+        self.create_place({'sex':'f'})
+        self.create_place({'sex':'f'})
+        resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
+        self.assertContains(resp, "There are not enough places for girls left on this camp")
+        self.assertContains(resp, "id_book_now_btn\" disabled>")
+
     def test_handle_two_problem_bookings(self):
         # Test the error we get for more than one problem booking
         self.login()
