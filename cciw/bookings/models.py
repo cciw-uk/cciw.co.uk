@@ -85,7 +85,13 @@ class BookingManager(models.Manager):
     def get_query_set(self):
         return super(BookingManager, self).get_query_set().select_related('camp', 'account')
 
-    def ready_to_book(self, year, shelved=False):
+    def basket(self, year):
+        return self._ready_to_book(year, False)
+
+    def shelf(self, year):
+        return self._ready_to_book(year, True)
+
+    def _ready_to_book(self, year, shelved):
         qs = self.get_query_set().filter(camp__year__exact=year, shelved=shelved)
         return qs.filter(state=BOOKING_INFO_COMPLETE) | qs.filter(state=BOOKING_APPROVED)
 
@@ -242,7 +248,7 @@ class Booking(models.Model):
             # Complex - need to check the other places that are about to be booked.
             # (if there is one place left, and two campers for it, we can't say that
             # there are enough places)
-            same_camp_bookings = self.account.bookings.ready_to_book(self.camp.year).filter(camp=self.camp)
+            same_camp_bookings = self.account.bookings.basket(self.camp.year).filter(camp=self.camp)
             places_to_be_booked = same_camp_bookings.count()
             places_to_be_booked_male = same_camp_bookings.filter(sex=SEX_MALE).count()
             places_to_be_booked_female = same_camp_bookings.filter(sex=SEX_FEMALE).count()
@@ -273,11 +279,11 @@ class Booking(models.Model):
         ordering = ['-created']
 
 
-def book_basket_now(account, year):
+def book_basket_now(bookings):
     try:
         lock = Lock(os.path.join(os.environ['HOME'], '.cciw_booking_lock'))
         lock.acquire()
-        bookings = list(account.bookings.ready_to_book(year))
+        bookings = list(bookings)
         now = datetime.now()
         for b in bookings:
             if len(b.get_booking_problems()) > 0:

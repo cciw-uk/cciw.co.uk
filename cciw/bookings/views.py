@@ -447,8 +447,8 @@ class BookingListBookings(DefaultMetaData, TemplateView):
         c = super(BookingListBookings, self).get_context_data(**kwargs)
         year = get_thisyear()
         bookings = self.request.booking_account.bookings
-        basket_bookings = list(bookings.ready_to_book(year))
-        shelf_bookings = list(bookings.ready_to_book(year, shelved=True))
+        basket_bookings = list(bookings.basket(year))
+        shelf_bookings = list(bookings.shelf(year))
         # Now apply business rules and other custom processing
         total = Decimal('0.00')
         all_bookable = True
@@ -493,8 +493,11 @@ class BookingListBookings(DefaultMetaData, TemplateView):
 
         year = get_thisyear()
         bookings = request.booking_account.bookings
-        places = (bookings.ready_to_book(year, shelved=True) |
-                  bookings.ready_to_book(year, shelved=False))
+        # NB - use lists here, not querysets, so that both state_token and book_now
+        # functionality apply against same set of bookings.
+        basket_bookings = list(bookings.basket(year))
+        shelf_bookings = list(bookings.shelf(year))
+        places = basket_bookings + shelf_bookings
 
         def shelve(place):
             place.shelved = True
@@ -525,20 +528,22 @@ class BookingListBookings(DefaultMetaData, TemplateView):
                 if m is not None:
                     try:
                         b_id = int(m.groups()[0])
-                        place = places.get(id=b_id)
+                        place = [p for p in places if p.id == b_id][0]
                         retval = action(place)
                         if retval is not None:
                             return retval
-                    except (ValueError, Booking.DoesNotExist):
+                    except (ValueError, # converting to string
+                            IndexError, # not in list
+                            ):
                         pass
 
         if 'book_now' in request.POST:
             state_token = request.POST.get('state_token', '')
-            if make_state_token(list(bookings.ready_to_book(year))) != state_token:
+            if make_state_token(basket_bookings) != state_token:
                 messages.error(request, "Places were not booked due to modifications made "
                                "to the details. Please check the details and try again.")
             else:
-                if book_basket_now(request.booking_account, year):
+                if book_basket_now(basket_bookings):
                     return HttpResponseRedirect(reverse('cciw.bookings.views.pay'))
                 else:
                     messages.error(request, "These places cannot be booked for the reasons "
