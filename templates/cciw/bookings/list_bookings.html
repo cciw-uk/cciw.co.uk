@@ -7,6 +7,7 @@
 <form action="" method="POST">
 
 {% csrf_token %}
+<input type="hidden" name="state_token" value="{{ state_token }}"/>
 
 <h2>Basket</h2>
 

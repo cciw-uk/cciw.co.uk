@@ -1,11 +1,13 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from decimal import Decimal
+import os
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
 
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
+from cciw.cciwmain.utils import Lock
 
 
 SEX_MALE, SEX_FEMALE = 'm', 'f'
@@ -269,3 +271,23 @@ class Booking(models.Model):
 
     class Meta:
         ordering = ['-created']
+
+
+def book_basket_now(account, year):
+    try:
+        lock = Lock(os.path.join(os.environ['HOME'], '.cciw_booking_lock'))
+        lock.acquire()
+        bookings = list(account.bookings.ready_to_book(year))
+        now = datetime.now()
+        for b in bookings:
+            if len(b.get_booking_problems()) > 0:
+                return False
+
+        for b in bookings:
+            b.state = BOOKING_BOOKED
+            b.booking_expires = now + timedelta(1) # 24 hours
+            b.save()
+
+        return True
+    finally:
+        lock.release()

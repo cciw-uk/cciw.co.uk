@@ -13,4 +13,5 @@ urlpatterns = \
              (r'^edit-place/(?P<id>\d+)/$', 'edit_place'),
              (r'^places-json/$', 'places_json'),
              (r'^checkout/$', 'list_bookings'),
+             (r'^pay/$', 'pay'),
              )

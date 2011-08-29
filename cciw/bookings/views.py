@@ -177,6 +177,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponseRedirect, Http404
+from django.utils.crypto import salted_hmac
 from django.views.generic.base import TemplateView, TemplateResponseMixin
 from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView, BaseCreateView
 
@@ -186,7 +187,7 @@ from cciw.cciwmain.models import Camp
 
 from cciw.bookings.email import send_verify_email, check_email_verification_token
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
-from cciw.bookings.models import BookingAccount, Price, Booking
+from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, \
     BOOKING_INFO_COMPLETE, BOOKING_APPROVED, VALUED_PRICE_TYPES, PRICE_SOUTH_WALES_TRANSPORT
 
@@ -430,15 +431,24 @@ def places_json(request):
     return retval
 
 
+def make_state_token(bookings):
+    # Hash some key data about booking, without which the booking isn't valid.
+    bookings.sort(key=lambda b: b.id)
+    data = '|'.join([':'.join(map(str, [b.id, b.camp.id, b.amount_due, b.name, b.price_type, b.state]))
+                     for b in bookings])
+    return salted_hmac('cciw.bookings.state_token', data).hexdigest()
+
+
 class BookingListBookings(DefaultMetaData, TemplateView):
     metadata_title = "Booking - checkout"
     template_name = "cciw/bookings/list_bookings.html"
 
     def get_context_data(self, **kwargs):
         c = super(BookingListBookings, self).get_context_data(**kwargs)
+        year = get_thisyear()
         bookings = self.request.booking_account.bookings
-        basket_bookings = list(bookings.ready_to_book(get_thisyear()))
-        shelf_bookings = list(bookings.ready_to_book(get_thisyear(), shelved=True))
+        basket_bookings = list(bookings.ready_to_book(year))
+        shelf_bookings = list(bookings.ready_to_book(year, shelved=True))
         # Now apply business rules and other custom processing
         total = Decimal('0.00')
         all_bookable = True
@@ -473,6 +483,7 @@ class BookingListBookings(DefaultMetaData, TemplateView):
         c['shelf_bookings'] = shelf_bookings
         c['all_bookable'] = all_bookable
         c['all_unbookable'] = all_unbookable
+        c['state_token'] = make_state_token(basket_bookings)
         c['total'] = total
         return c
 
@@ -480,9 +491,10 @@ class BookingListBookings(DefaultMetaData, TemplateView):
         if 'add_another' in request.POST:
             return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
 
+        year = get_thisyear()
         bookings = request.booking_account.bookings
-        places = (bookings.ready_to_book(get_thisyear(), shelved=True) |
-                  bookings.ready_to_book(get_thisyear(), shelved=False))
+        places = (bookings.ready_to_book(year, shelved=True) |
+                  bookings.ready_to_book(year, shelved=False))
 
         def shelve(place):
             place.shelved = True
@@ -519,6 +531,19 @@ class BookingListBookings(DefaultMetaData, TemplateView):
                             return retval
                     except (ValueError, Booking.DoesNotExist):
                         pass
+
+        if 'book_now' in request.POST:
+            state_token = request.POST.get('state_token', '')
+            if make_state_token(list(bookings.ready_to_book(year))) != state_token:
+                messages.error(request, "Places were not booked due to modifications made "
+                               "to the details. Please check the details and try again.")
+            else:
+                if book_basket_now(request.booking_account, year):
+                    return HttpResponseRedirect(reverse('cciw.bookings.views.pay'))
+                else:
+                    messages.error(request, "These places cannot be booked for the reasons "
+                                   "given below.")
+
         return self.get(request, *args, **kwargs)
 
 
@@ -531,3 +556,4 @@ not_logged_in = BookingNotLoggedIn.as_view()
 add_place = booking_account_required(BookingAddPlace.as_view())
 edit_place = booking_account_required(BookingEditPlace.as_view())
 list_bookings = booking_account_required(BookingListBookings.as_view())
+pay = lambda: None

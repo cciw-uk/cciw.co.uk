@@ -5,7 +5,9 @@ Utility functions and classes.
 For CCIW specific utilities see cciw.cciwmain.common
 """
 from datetime import date, datetime
+import fcntl
 import operator
+import os
 
 from django.utils.safestring import mark_safe
 from django.utils import simplejson
@@ -72,6 +74,25 @@ class StandardReprMixin(object):
     def __repr__(self):
         return u"<%s %s>" % (self.__class__.__name__,
                              u' '.join(u"%s=%r" % (k,v) for (k,v) in sorted(self.__dict__.iteritems())))
+
+
+class Lock(object):
+
+    def __init__(self, filename):
+        self.filename = filename
+        # This will create it if it does not exist already
+        self.handle = open(filename, 'w')
+
+    # Bitwise OR fcntl.LOCK_NB if you need a non-blocking lock
+    def acquire(self):
+        fcntl.flock(self.handle, fcntl.LOCK_EX)
+
+    def release(self):
+        fcntl.flock(self.handle, fcntl.LOCK_UN)
+
+    def __del__(self):
+        self.handle.close()
+
 
 def _test():
     import doctest

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 from decimal import Decimal
+import re
 
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -776,3 +777,78 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         resp2 = self.client.post(self.url, {'edit_%s' % b.id: '1'})
         self.assertEqual(resp2.status_code, 302)
         self.assertTrue(resp2['Location'].endswith(reverse('cciw.bookings.views.edit_place', kwargs={'id':b.id})))
+
+    def test_book_ok(self):
+        """
+        Test that we can book a place
+        """
+        self.login()
+        self.create_place()
+        resp = self.client.get(self.url)
+        state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
+        resp2 = self.client.post(self.url, {'state_token': state_token,
+                                            'book_now': '1'})
+        acc = BookingAccount.objects.get(email=self.email)
+        b = acc.bookings.all()[0]
+        self.assertEqual(b.state, BOOKING_BOOKED)
+        self.assertEqual(resp2.status_code, 302)
+        self.assertTrue(resp2['Location'].endswith(reverse('cciw.bookings.views.pay')))
+
+    def test_book_unbookable(self):
+        """
+        Test that an unbookable place can't be booked
+        """
+        self.login()
+        self.create_place({'serious_illness': '1'})
+        resp = self.client.get(self.url)
+        state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
+        resp2 = self.client.post(self.url, {'state_token': state_token,
+                                            'book_now': '1'})
+        acc = BookingAccount.objects.get(email=self.email)
+        b = acc.bookings.all()[0]
+        self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
+        self.assertContains(resp2, "These places cannot be booked")
+
+    def test_book_one_unbookable(self):
+        """
+        Test that if one places is unbookable, no place can be booked
+        """
+        self.login()
+        self.create_place()
+        self.create_place({'serious_illness': '1'})
+        resp = self.client.get(self.url)
+        state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
+        resp2 = self.client.post(self.url, {'state_token': state_token,
+                                            'book_now': '1'})
+        acc = BookingAccount.objects.get(email=self.email)
+        for b in acc.bookings.all():
+            self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
+        self.assertContains(resp2, "These places cannot be booked")
+
+    def test_book_now_safeguard(self):
+        # It might be possible to alter the list of items in the basket in one
+        # tab, and then press 'Book now' from an out-of-date representation of
+        # the basket. We need a safeguard against this.
+
+        # Must include at least id,price,camp choice for each booking
+        self.login()
+        self.create_place()
+        resp = self.client.get(self.url)
+        state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
+
+        # Now modify
+        acc = BookingAccount.objects.get(email=self.email)
+        b = acc.bookings.all()[0]
+        b.south_wales_transport = True
+        b.auto_set_amount_due()
+        b.save()
+
+        resp2 = self.client.post(self.url, {'state_token': state_token,
+                                            'book_now': '1'})
+
+        # Should not be modified
+        b = acc.bookings.all()[0]
+        self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
+        self.assertContains(resp2, "Places were not booked due to modifications made")
+
+
