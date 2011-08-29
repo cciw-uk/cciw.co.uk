@@ -12,6 +12,62 @@ from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, P
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
+from cciw.sitecontent.models import HtmlChunk
+
+
+class CreateCampMixin(object):
+
+    camp_minimum_age = 11
+    camp_maximum_age = 17
+
+    def create_camp(self):
+        # Need to create a Camp that we can choose i.e. is in the future
+        self.camp = Camp.objects.create(year=get_thisyear(), number=1,
+                                        minimum_age=self.camp_minimum_age,
+                                        maximum_age=self.camp_maximum_age,
+                                        start_date=datetime.now() + timedelta(20),
+                                        end_date=datetime.now() + timedelta(27),
+                                        site_id=1)
+
+
+class CreatePricesMixin(object):
+    def add_prices(self):
+        year = get_thisyear()
+        Price.objects.get_or_create(year=year,
+                                    price_type=PRICE_FULL,
+                                    price=Decimal('100.00'))
+        Price.objects.get_or_create(year=year,
+                                    price_type=PRICE_2ND_CHILD,
+                                    price=Decimal('75.00'))
+        Price.objects.get_or_create(year=year,
+                                    price_type=PRICE_3RD_CHILD,
+                                    price=Decimal('50.00'))
+        Price.objects.get_or_create(year=year,
+                                    price_type=PRICE_SOUTH_WALES_TRANSPORT,
+                                    price=Decimal('20.00'))
+
+
+class TestBookingIndex(CreatePricesMixin, CreateCampMixin, TestCase):
+
+    fixtures = ['basic.json']
+
+    def setUp(self):
+        super(TestBookingIndex, self).setUp()
+        HtmlChunk.objects.get_or_create(name="booking_overview")
+        HtmlChunk.objects.get_or_create(name="bookingform_start")
+        HtmlChunk.objects.get_or_create(name="bookingform_end")
+        HtmlChunk.objects.get_or_create(name="no_bookingform_yet")
+
+    def test_show_with_no_prices(self):
+        resp = self.client.get(reverse('cciw.bookings.views.index'))
+        self.assertContains(resp, "Prices for %d have not been finalised yet" % get_thisyear())
+
+
+    def test_show_with_prices(self):
+        self.add_prices()
+        self.create_camp() # need for booking to be open
+        resp = self.client.get(reverse('cciw.bookings.views.index'))
+        self.assertContains(resp, "£100")
 
 
 class TestBookingStart(TestCase):
@@ -185,7 +241,7 @@ class TestAccountDetails(LogInMixin, TestCase):
         self.assertEqual(b.name, 'Mr Booker')
 
 
-class CreatePlaceMixin(LogInMixin):
+class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
     @property
     def place_details(self):
         return {
@@ -204,33 +260,6 @@ class CreatePlaceMixin(LogInMixin):
             'agreement': '1',
             'price_type': '0',
             }
-
-    def add_prices(self):
-        year = get_thisyear()
-        Price.objects.get_or_create(year=year,
-                                    price_type=PRICE_FULL,
-                                    price=Decimal('100.00'))
-        Price.objects.get_or_create(year=year,
-                                    price_type=PRICE_2ND_CHILD,
-                                    price=Decimal('75.00'))
-        Price.objects.get_or_create(year=year,
-                                    price_type=PRICE_3RD_CHILD,
-                                    price=Decimal('50.00'))
-        Price.objects.get_or_create(year=year,
-                                    price_type=PRICE_SOUTH_WALES_TRANSPORT,
-                                    price=Decimal('20.00'))
-
-    camp_minimum_age = 11
-    camp_maximum_age = 17
-
-    def create_camp(self):
-        # Need to create a Camp that we can choose i.e. is in the future
-        self.camp = Camp.objects.create(year=get_thisyear(), number=1,
-                                        minimum_age=self.camp_minimum_age,
-                                        maximum_age=self.camp_maximum_age,
-                                        start_date=datetime.now() + timedelta(20),
-                                        end_date=datetime.now() + timedelta(27),
-                                        site_id=1)
 
     def create_place(self, extra=None):
         # We use public views to create place, to ensure that they are created
