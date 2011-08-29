@@ -7,4 +7,5 @@ south==0.7.2
 xlwt==0.7.2
 xlrd==0.7.1
 creole>=1.2
+-e hg+https://bitbucket.org/spookylukey/django/@00f11ed96fe8#egg=django
 

@@ -27,7 +27,6 @@ import sys
 #                github or bitbucket under the account 'spookylukey'.  Currently
 #                includes:
 #                 - diff_match_patch from google
-#                 - django
 #                 - django-autocomplete
 #                 - django-mailer
 #
@@ -163,10 +162,7 @@ PRODUCTION = Target(
 
 @runs_once
 def ensure_dependencies():
-    with lcd(parent_dir):
-        hg_branch = local("cd deps/django; hg branch", capture=True)
-        if hg_branch.strip() != 'default':
-            abort("Django src on incorrect branch")
+    pass
 
 
 def test():
