@@ -11,7 +11,7 @@ class StagingBackend(BaseEmailBackend):
         connection = get_connection(backend="django.core.mail.backends.smtp.EmailBackend")
         num_sent = 0
         for email in email_messages:
-            if "booking" in email.subject:
+            if "booking" in email.subject or "Internal Server Error" in email.subject:
                 email.connection = connection
                 email.send()
             else:
