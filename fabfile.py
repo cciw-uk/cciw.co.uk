@@ -304,8 +304,8 @@ def _install_south(target, version):
 def _update_db(target, version):
     with virtualenv(version.venv_dir):
         with cd(version.project_dir):
-            run_venv("./manage.py syncdb --settings=cciw.settings")
-            run_venv("./manage.py migrate --all --settings=cciw.settings")
+            run_venv("./manage.py syncdb --settings=cciw.settings --noinput")
+            run_venv("./manage.py migrate --all --settings=cciw.settings --noinput")
 
 
 def _deploy(target, quick=False):
