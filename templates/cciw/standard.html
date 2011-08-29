@@ -57,14 +57,25 @@
 				<h1>{% block pagetitle %}{{ title }}{% endblock %}</h1>
 			</div>
 			<div id="contentBody">
-				{% block breadcrumb %}
-					{% if breadcrumb %}
-						<div class='breadcrumb'>{{ breadcrumb }}</div>
-					{% endif %}
-				{% endblock %}
-				{% block content %}
-					{{ contentBody }}
-				{% endblock %}
+                          {% block contentTop %}
+                            {% block messages %}
+                            {% if messages %}
+                            <ul class="messagelist">{% for message in messages %}
+                              <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                              {% endfor %}</ul>
+                            {% endif %}
+                            {% endblock messages %}
+                          {% endblock contentTop %}
+                          <div id="contentInner">
+			    {% block breadcrumb %}
+			    {% if breadcrumb %}
+			    <div class='breadcrumb'>{{ breadcrumb }}</div>
+			    {% endif %}
+			    {% endblock %}
+			    {% block content %}
+			    {{ contentBody }}
+			    {% endblock %}
+                          </div>
 			</div>
 			<div class="bottomlinks">{% atomfeedlinkvisible %} <a href="/website/help/" title="Get help or report problems with the site">Help</a> | <a href="/website/abuse/" title="How to report absue of the web site">Report abuse</a></div>
 		</div>

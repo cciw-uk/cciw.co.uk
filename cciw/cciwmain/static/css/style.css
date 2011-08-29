@@ -423,6 +423,10 @@ p
 {
     margin-top: 1em;
     margin-bottom: 1em;
+}
+
+#mainstandard #contentBody #contentInner
+{
     padding: 0.5em 0.8em 32px 0.8em;
 }
 
@@ -905,4 +909,28 @@ div.bottomlinks img
     background-color: #800000;
     color: white;
     padding: 5px;
+}
+
+/* Messages */
+ul.messagelist {
+    padding: 0 0 5px 0;
+    margin: 0;
+}
+
+ul.messagelist li {
+    font-size: 12px;
+    display: block;
+    padding: 4px 5px 4px 25px;
+    margin: 0 0 3px 0;
+    border-bottom: 1px solid #ddd;
+    color: #666;
+    background: #ffc url(../admin/img/icon_success.gif) 5px .3em no-repeat;
+}
+
+ul.messagelist li.warning{
+    background-image: url(../admin/img/icon_alert.gif);
+}
+
+ul.messagelist li.error{
+    background-image: url(../admin/img/icon_error.gif);
 }
