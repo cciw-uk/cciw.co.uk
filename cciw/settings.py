@@ -145,7 +145,10 @@ if DEBUG:
 #####  EMAIL  #######
 
 if LIVEBOX:
-    EMAIL_BACKEND = "mailer.backend.DbBackend"
+    if PRODUCTION:
+        EMAIL_BACKEND = "mailer.backend.DbBackend"
+    elif STAGING:
+        EMAIL_BACKEND = "cciw.mail.backend.StagingBackend"
 
 if DEVBOX:
     # For e-mail testing, run:
