@@ -178,6 +178,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponseRedirect, Http404
 from django.utils.crypto import salted_hmac
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import TemplateView, TemplateResponseMixin
 from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView, BaseCreateView
 from paypal.standard.forms import PayPalPaymentsForm
@@ -606,6 +607,6 @@ add_place = booking_account_required(BookingAddPlace.as_view())
 edit_place = booking_account_required(BookingEditPlace.as_view())
 list_bookings = booking_account_required(BookingListBookings.as_view())
 pay = booking_account_required(BookingPay.as_view())
-pay_done = BookingPayDone.as_view()
-pay_cancelled = BookingPayCancelled.as_view()
+pay_done = csrf_exempt(BookingPayDone.as_view())
+pay_cancelled = csrf_exempt(BookingPayCancelled.as_view())
 
