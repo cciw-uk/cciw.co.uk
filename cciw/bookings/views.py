@@ -569,7 +569,7 @@ class BookingPay(DefaultMetaData, TemplateView):
         paypal_dict = {
             "business": settings.PAYPAL_RECEIVER_EMAIL,
             "amount": str(balance),
-            "item_name": "booking",
+            "item_name": "Camp place booking",
             "invoice": "%s-%s-%s" % (acc.id, balance,
                                      datetime.now()), # We don't need this, but must be unique
             "notify_url":  "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
