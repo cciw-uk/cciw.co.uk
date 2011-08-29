@@ -189,6 +189,7 @@ class CreatePlaceMixin(LogInMixin):
     @property
     def place_details(self):
         return {
+            'camp': self.camp.id,
             'name': 'Joe Bloggs',
             'sex': 'm',
             'date_of_birth': '%d-01-01' % (get_thisyear() - 14),
@@ -224,22 +225,20 @@ class CreatePlaceMixin(LogInMixin):
 
     def create_camp(self):
         # Need to create a Camp that we can choose i.e. is in the future
-        Camp.objects.create(year=get_thisyear(), number=1,
-                            minimum_age=self.camp_minimum_age,
-                            maximum_age=self.camp_maximum_age,
-                            start_date=datetime.now() + timedelta(20),
-                            end_date=datetime.now() + timedelta(27),
-                            site_id=1)
+        self.camp = Camp.objects.create(year=get_thisyear(), number=1,
+                                        minimum_age=self.camp_minimum_age,
+                                        maximum_age=self.camp_maximum_age,
+                                        start_date=datetime.now() + timedelta(20),
+                                        end_date=datetime.now() + timedelta(27),
+                                        site_id=1)
 
     def create_place(self, extra=None):
         # We use public views to create place, to ensure that they are created
         # in the same way that a user would.
         self.login()
         self.add_prices()
-        camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
 
         data = self.place_details.copy()
-        data['camp'] = camp.id
         if extra is not None:
             data.update(extra)
         resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
@@ -293,11 +292,9 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         self.login()
         self.add_prices()
         b = BookingAccount.objects.get(email=self.email)
-        camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
         self.assertEqual(b.bookings.count(), 0)
 
         data = self.place_details.copy()
-        data['camp'] = camp.id
         resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.list_bookings')
@@ -314,11 +311,9 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         self.login()
         self.add_prices()
         b = BookingAccount.objects.get(email=self.email)
-        camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
         self.assertEqual(b.bookings.count(), 0)
 
         data = self.place_details.copy()
-        data['camp'] = camp.id
         data['south_wales_transport'] = '1'
         resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
         p = Price.objects.get(price_type=PRICE_FULL, year=get_thisyear()).price + \
@@ -372,11 +367,9 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
         self.create_place()
         acc = BookingAccount.objects.get(email=self.email)
         b = acc.bookings.all()[0]
-        camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
 
         data = self.place_details.copy()
         data['name'] = "A New Name"
-        data['camp'] = camp.id
         resp = self.client.post(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}), data)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.list_bookings')
@@ -407,10 +400,8 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
             self.assertContains(resp, "can only be changed by an admin.")
 
             # Attempt a post
-            camp = Camp.objects.filter(start_date__gte=datetime.now())[0]
             data = self.place_details.copy()
             data['name'] = "A New Name"
-            data['camp'] = camp.id
             resp = self.client.post(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}), data)
             # Check we didn't alter it
             self.assertNotEqual(acc.bookings.all()[0].name, "A New Name")
