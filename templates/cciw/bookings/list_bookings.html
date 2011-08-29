@@ -45,20 +45,16 @@
   {% if all_unbookable %}
     {% if basket_bookings|length > 1 %}
        <p>These places cannot be booked for the reasons described above.
-       You will need to wait for manual approval of the places.</p>
     {% else %}
        <p>This place cannot be booked for the reasons described above.
-         You will need to wait for manual approval of the place.</p>
     {% endif %}
+         For the cases of serious illness or custom discount, the booking will be reviewed and you will be notified when this is done.</p>
   {% else %}
      <p>One or more of the places cannot be booked, so this set cannot be booked as a group.
-       You can either:</p>
-     <ul>
-       <li>Use the 'save for later' button on the place(s) that cannot be booked,
-         and book the other place(s).</li>
-       <li>or wait for the camp leader/booking secretary to manually
-         approve the place(s) (or be in contact about why that is not possible).</li>
-     </ul>
+         For the cases of serious illness or custom discount, the booking will be reviewed and you will be notified when this is done.</p>
+
+     <p>You can also use the 'save for later' button on the place(s) that cannot be booked,
+       and book the other place(s).</p>
   {% endif %}
 {% endif %}
 
