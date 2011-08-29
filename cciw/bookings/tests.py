@@ -219,10 +219,14 @@ class CreatePlaceMixin(LogInMixin):
                                     price_type=PRICE_SOUTH_WALES_TRANSPORT,
                                     price=Decimal('20.00'))
 
+    camp_minimum_age = 11
+    camp_maximum_age = 17
+
     def create_camp(self):
         # Need to create a Camp that we can choose i.e. is in the future
         Camp.objects.create(year=get_thisyear(), number=1,
-                            minimum_age=11, maximum_age=17,
+                            minimum_age=self.camp_minimum_age,
+                            maximum_age=self.camp_maximum_age,
                             start_date=datetime.now() + timedelta(20),
                             end_date=datetime.now() + timedelta(27),
                             site_id=1)
@@ -489,14 +493,16 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         # if born Aug 31st 2001, and thisyear == 2012, should be allowed on camp with
         # minimum_age == 11
         Booking.objects.all().delete()
-        self.create_place({'date_of_birth': '%d-08-31' % (get_thisyear() - 11)})
+        self.create_place({'date_of_birth': '%d-08-31' %
+                           (get_thisyear() - self.camp_minimum_age)})
         resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
         self.assertNotContains(resp, "below the minimum age")
 
         # if born 1st Sept 2001, and thisyear == 2012, should not be allowed on camp with
         # minimum_age == 11
         Booking.objects.all().delete()
-        self.create_place({'date_of_birth': '%d-09-01' % (get_thisyear() - 11)})
+        self.create_place({'date_of_birth': '%d-09-01' %
+                           (get_thisyear() - self.camp_minimum_age)})
         resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
         self.assertContains(resp, "below the minimum age")
 
@@ -505,14 +511,16 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         # if born 1st Sept 2001, and thisyear == 2019, should be allowed on camp with
         # maximum_age == 17
         Booking.objects.all().delete()
-        self.create_place({'date_of_birth': '%d-09-01' % (get_thisyear() - 18)})
+        self.create_place({'date_of_birth': '%d-09-01' %
+                           (get_thisyear() - (self.camp_maximum_age + 1))})
         resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
         self.assertNotContains(resp, "above the maximum age")
 
         # if born Aug 31st 2001, and thisyear == 2019, should not be allowed on camp with
         # maximum_age == 17
         Booking.objects.all().delete()
-        self.create_place({'date_of_birth': '%d-08-31' % (get_thisyear() - 18)})
+        self.create_place({'date_of_birth': '%d-08-31' %
+                           (get_thisyear() - (self.camp_maximum_age + 1))})
         resp = self.client.get(reverse('cciw.bookings.views.list_bookings'))
         self.assertContains(resp, "above the maximum age")
 
