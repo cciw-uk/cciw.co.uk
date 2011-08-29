@@ -223,6 +223,7 @@ def standard_processor(request):
 
     context['menulinks'] = links
     context['GOOGLE_ANALYTICS_ACCOUNT'] = getattr(settings, 'GOOGLE_ANALYTICS_ACCOUNT', '')
+    context['PRODUCTION'] = (settings.LIVEBOX and settings.PRODUCTION)
 
     return context
 

@@ -28,7 +28,11 @@
 
 {% if balance > 0 %}
 
-{{ form.render }}
+{% if PRODUCTION %}
+  {{ form.render }}
+{% else %}
+  {{ form.sandbox }}
+{% endif %}
 
 {% endif %}
 

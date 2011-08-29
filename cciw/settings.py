@@ -14,6 +14,8 @@ LIVEBOX = not DEVBOX
 if LIVEBOX:
     from cciw.settings_priv import PRODUCTION, STAGING, GOOGLE_ANALYTICS_ACCOUNT
 
+from cciw.settings_priv import PAYPAL_TEST, PAYPAL_RECEIVER_EMAIL
+
 WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
 
 ### MISC ###
@@ -278,7 +280,3 @@ if DEVBOX:
 
 DEFAULT_CONTENT_TYPE = "text/html"
 
-
-## PayPal ##
-
-PAYPAL_RECEIVER_EMAIL = "paypal@cciw.co.uk"
