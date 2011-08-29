@@ -174,6 +174,7 @@ import os
 import re
 
 from django.conf import settings
+from django.contrib import messages
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponseRedirect, Http404
 from django.views.generic.base import TemplateView, TemplateResponseMixin
@@ -359,6 +360,7 @@ class BookingEditAddBase(DefaultMetaData, TemplateResponseMixin, AjaxyFormMixin)
         form.instance.agreement_date = datetime.now()
         form.instance.auto_set_amount_due()
         form.instance.state = BOOKING_INFO_COMPLETE
+        messages.info(self.request, 'Details for "%s" were saved successfully' % form.instance.name)
         return super(BookingEditAddBase, self).form_valid(form)
 
 
@@ -485,12 +487,15 @@ class BookingListBookings(DefaultMetaData, TemplateView):
         def shelve(place):
             place.shelved = True
             place.save()
+            messages.info(self.request, 'Place for "%s" moved to shelf' % place.name)
 
         def unshelve(place):
             place.shelved = False
             place.save()
+            messages.info(self.request, 'Place for "%s" moved to basket' % place.name)
 
         def delete(place):
+            messages.info(self.request, 'Place for "%s" deleted' % place.name)
             place.delete()
 
         def edit(place):
