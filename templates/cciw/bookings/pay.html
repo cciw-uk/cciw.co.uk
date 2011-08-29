@@ -1,0 +1,35 @@
+{% extends 'cciw/standard.html' %}
+
+{% block content %}
+
+<p>After booking you have 24 hours to complete payment online, or the bookings
+  will expire.</p>
+
+<p>Payment is done via Paypal. You do not need to have a Paypal account - any
+  credit card or debit card can be used.</p>
+
+<p> Please note that if you have recently paid, it can take a few minutes for
+  our records to be updated - please do not pay twice!</p>
+
+
+<h2>Balance</h2>
+
+
+<p><b>Amount due: £{{ balance }}</b></p>
+
+{% if balance == 0 %}
+<p>You have no outstanding payments.</p>
+{% endif %}
+
+{% if balance < 0 %}
+<b>We owe you this money!</b>. Our team will ensure that you are
+  refunded this amount!</p>
+{% endif %}
+
+{% if balance > 0 %}
+
+{{ form.render }}
+
+{% endif %}
+
+{% endblock %}
