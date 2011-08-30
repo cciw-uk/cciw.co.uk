@@ -879,6 +879,29 @@ class TestPay(CreatePlaceMixin, TestCase):
         self.assertContains(resp, '£%s' % expected_price)
 
 
+class TestPayReturnPoints(LogInMixin, TestCase):
+
+    fixtures = ['basic.json']
+
+    url = reverse('cciw.bookings.views.list_bookings')
+
+    def test_pay_done(self):
+        self.login()
+        resp = self.client.get(reverse('cciw.bookings.views.pay_done'))
+        self.assertEqual(resp.status_code, 200)
+        # Paypal posts to these, check we support that
+        resp = self.client.post(reverse('cciw.bookings.views.pay_done'), {})
+        self.assertEqual(resp.status_code, 200)
+
+    def test_pay_cancelled(self):
+        self.login()
+        resp = self.client.get(reverse('cciw.bookings.views.pay_cancelled'))
+        self.assertEqual(resp.status_code, 200)
+        # Paypal posts to these, check we support that
+        resp = self.client.post(reverse('cciw.bookings.views.pay_cancelled'), {})
+        self.assertEqual(resp.status_code, 200)
+
+
 class TestPaymentReceived(CreatePlaceMixin, TestCase):
 
     fixtures = ['basic.json']
