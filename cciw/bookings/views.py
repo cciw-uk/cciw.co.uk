@@ -217,6 +217,11 @@ def get_booking_account_from_cookie(request):
         return None
 
 
+def ensure_booking_acount_attr(request):
+    if not hasattr(request, 'booking_account'):
+        request.booking_account = get_booking_account_from_cookie(request)
+
+
 def booking_account_required(view_func):
     """
     Requires a signed cookie that verifies the booking account,
@@ -225,10 +230,9 @@ def booking_account_required(view_func):
     """
     @wraps(view_func)
     def view(request, *args, **kwargs):
-        account = get_booking_account_from_cookie(request)
-        if account is None:
+        ensure_booking_acount_attr(request)
+        if request.booking_account is None:
             return HttpResponseRedirect(reverse('cciw.bookings.views.not_logged_in'))
-        request.booking_account = account
         return view_func(request, *args, **kwargs)
     return view
 
@@ -274,7 +278,8 @@ class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFor
     form_class = EmailForm
     template_name = 'cciw/bookings/start.html'
     success_url = reverse_lazy('cciw.bookings.views.email_sent')
-    extra_context = {'booking_open': is_booking_open_thisyear}
+    extra_context = {'booking_open': is_booking_open_thisyear,
+                     'stage': 'email'}
 
     def dispatch(self, request, *args, **kwargs):
         account = get_booking_account_from_cookie(request)
@@ -291,6 +296,7 @@ class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFor
 class BookingEmailSent(DefaultMetaData, TemplateView):
     metadata_title = "Booking email address"
     template_name = "cciw/bookings/email_sent.html"
+    extra_context = {'stage': 'email'}
 
 
 def verify_email(request, account_id, token):
@@ -311,6 +317,7 @@ def verify_email(request, account_id, token):
 class BookingVerifyEmailFailed(DefaultMetaData, TemplateView):
     metadata_title = "Booking account email verification failed"
     template_name = "cciw/bookings/email_verification_failed.html"
+    extra_context = {'stage': 'email'}
 
 
 class BookingNotLoggedIn(DefaultMetaData, TemplateView):
@@ -323,6 +330,7 @@ class BookingAccountDetails(DefaultMetaData, TemplateResponseMixin, BaseUpdateVi
     form_class = AccountDetailsForm
     template_name = 'cciw/bookings/account_details.html'
     success_url = reverse_lazy('cciw.bookings.views.add_place')
+    extra_context = {'stage': 'account'}
 
     def get_object(self):
         return self.request.booking_account
@@ -349,7 +357,9 @@ class BookingEditAddBase(DefaultMetaData, TemplateResponseMixin, AjaxyFormMixin)
     success_url = reverse_lazy('cciw.bookings.views.list_bookings')
     extra_context = {'booking_open': is_booking_open_thisyear,
                      'south_wales_surcharge': lambda: Price.objects.get(year=get_thisyear(),
-                                                                        price_type=PRICE_SOUTH_WALES_TRANSPORT).price}
+                                                                        price_type=PRICE_SOUTH_WALES_TRANSPORT).price,
+                     'stage': 'place'}
+
 
     def post(self, request, *args, **kwargs):
         if not is_booking_open_thisyear():
@@ -444,6 +454,7 @@ def make_state_token(bookings):
 class BookingListBookings(DefaultMetaData, TemplateView):
     metadata_title = "Booking - checkout"
     template_name = "cciw/bookings/list_bookings.html"
+    extra_context = {'stage': 'list'}
 
     def get_context_data(self, **kwargs):
         c = super(BookingListBookings, self).get_context_data(**kwargs)
@@ -558,6 +569,7 @@ class BookingListBookings(DefaultMetaData, TemplateView):
 class BookingPay(DefaultMetaData, TemplateView):
     metadata_title = "Booking - Pay"
     template_name = "cciw/bookings/pay.html"
+    extra_context = {'stage': 'pay'}
 
     def get(self, request):
         acc = self.request.booking_account
@@ -590,6 +602,7 @@ class BookingPay(DefaultMetaData, TemplateView):
 class BookingPayDone(DefaultMetaData, TemplateView):
     metadata_title = "Booking - payment complete"
     template_name = "cciw/bookings/pay_done.html"
+    extra_context = {'stage': 'pay'}
 
     # Paypal wants to post to this view
     def post(self, *args, **kwargs):
@@ -598,6 +611,7 @@ class BookingPayDone(DefaultMetaData, TemplateView):
 class BookingPayCancelled(DefaultMetaData, TemplateView):
     metadata_title = "Booking - payment cancelled"
     template_name = "cciw/bookings/pay_cancelled.html"
+    extra_context = {'stage': 'pay'}
 
     def post(self, *args, **kwargs):
         return self.get(*args, **kwargs)
