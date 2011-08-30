@@ -1,19 +1,5 @@
 {% extends "cciw/standard.html" %}
 {% block content %}
-
-<script type="text/javascript">
-<!--
-
-(function($) {
-   $(document).ready(function() {
-       cciw.standardformAddOnchangeHandlers('editpollform');
-
-   });
-})(jQuery);
-
-//-->
-</script>
-
 {% if object %}
 <p>Edit the poll details below.  Please note, you can either:</p>
 <ul>
@@ -34,7 +20,7 @@ created for this poll.</p>
 	</div>
 {% endif %}
 
-<form action="" method="post" id="editpollform">{% csrf_token %}
+<form action="" method="post" id="editpollform" class="ajaxify">{% csrf_token %}
 
 {{ form.as_p }}
 

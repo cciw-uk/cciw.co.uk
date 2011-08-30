@@ -20,8 +20,6 @@
 
 {% else %}
 
-       cciw.standardformAddOnchangeHandlers('id_addplaceform');
-
        var placeData = [];
 
        var escape = function(t) {
@@ -163,7 +161,7 @@
 
 //-->
 </script>
-<form action="" method="POST" id="id_addplaceform" name="addplaceform">
+<form action="" method="POST" id="id_addplaceform" name="addplaceform" class="ajaxify">
 {% csrf_token %}
 
 {% if form.errors %}

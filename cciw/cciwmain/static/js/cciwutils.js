@@ -151,16 +151,12 @@ var cciw = (function(pub, $) {
         return accept;
     };
 
-    var addFormOnchangeHandlers = function(form_id, mk_input_change_handler) {
+    var addFormOnchangeHandlers = function(form, mk_input_change_handler) {
         // Summary: Adds 'onchange' handlers to all inputs in a form
-        // form_id: id of the form in the DOM
+        // form: jQuery object containing the form
         // mk_input_change_handler: when called with one of the
         //   form elements, returns a handler to be connected to
         //   that element.
-        var form = $('#' + form_id);
-        if (form == null) {
-            return null;
-        }
         var inputs = form.find('input,textarea,select');
         inputs.each(function(i, elem) {
             if (submittableControl(elem)) {
@@ -224,15 +220,15 @@ var cciw = (function(pub, $) {
         return handler;
     };
 
-    var standardformGetInputChangeHandler = function(form_id, control_name, control_id) {
+    var standardformGetInputChangeHandler = function(form, control_name, control_id) {
         // Summary: returns an event handler to be added to a control,
-        // form_id: id of the form the control belongs to
+        // form: jQuery object containing the form the control belongs to
         // control_name: the name of the control
         // control_id: id of the control
         var on_input_change = function(ev) {
             $.ajax({
                 type: "POST",
-                data: $('#' + form_id).serialize(),
+                data: form.serialize(),
                 url: "?format=json",
                 dataType: "json",
                 success: standardformGetValidatorCallback(control_name, control_id)
@@ -242,9 +238,9 @@ var cciw = (function(pub, $) {
     };
 
     // Public interface:
-    pub.standardformAddOnchangeHandlers = function(form_id) {
-        addFormOnchangeHandlers(form_id, function(input) {
-            return standardformGetInputChangeHandler(form_id, input.name, input.id);
+    pub.standardformAddOnchangeHandlers = function(form) {
+        addFormOnchangeHandlers(form, function(input) {
+            return standardformGetInputChangeHandler(form, input.name, input.id);
         });
     };
 
@@ -255,6 +251,12 @@ var cciw = (function(pub, $) {
                                             elem.target = "_blank";
                                         });
     };
+
+    $(document).ready(function() {
+        $('form.ajaxify').each(function(i, elem) {
+            pub.standardformAddOnchangeHandlers($(this));
+        });
+    });
 
     return pub;
 })(cciw || {}, jQuery);

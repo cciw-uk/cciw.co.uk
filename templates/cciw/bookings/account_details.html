@@ -1,24 +1,9 @@
 {% extends 'cciw/bookings/standard.html' %}
 {% block content %}
 
-
-<script type="text/javascript">
-<!--
-
-(function($) {
-
-   $(document).ready(function() {
-       cciw.standardformAddOnchangeHandlers('id_accountdetails');
-
-   });
-})(jQuery);
-
-//-->
-</script>
-
 <p>Please enter your name and address:</p>
 
-<form id='id_accountdetails' action="" method="POST">
+<form id='id_accountdetails' action="" method="POST" class="ajaxify">
 {% csrf_token %}
 {{ form.as_p }}
 <div class="formrow">

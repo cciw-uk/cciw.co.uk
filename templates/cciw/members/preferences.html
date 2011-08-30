@@ -1,19 +1,6 @@
 {% extends "cciw/standard.html" %}
 {% block content %}
 
-<script type="text/javascript">
-<!--
-
-(function($) {
-   $(document).ready(function() {
-       cciw.standardformAddOnchangeHandlers('preferencesform');
-
-   });
-})(jQuery);
-
-//-->
-</script>
-
 <h2>Preferences</h2>
 <p>Edit your preferences below.  Changes to your e-mail address
 will require confirmation by an e-mail.</p>
@@ -38,7 +25,8 @@ Please check your input below:
 {% endif %}
 
 
-<form method="post" action="" enctype="multipart/form-data" id="preferencesform">{% csrf_token %}
+<form method="post" action="" enctype="multipart/form-data" id="preferencesform" class="ajaxify">
+{% csrf_token %}
 
 {{ form.as_p }}
 
