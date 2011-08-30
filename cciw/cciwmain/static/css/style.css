@@ -971,8 +971,9 @@ ul.messagelist li.error{
     font-weight: bold;
 }
 
-#bookingbar ul li a:hover {
-    background-color:	#668099;
+#bookingbar ul li a:hover,
+#bookingbar ul li span:hover {
+    background-color: #668099;
 }
 
 #bookingbar ul li a.active,
