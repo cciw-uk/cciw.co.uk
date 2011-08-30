@@ -952,3 +952,16 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
         acc.receive_payment((p1 + p2) - p)
         self.assertTrue(acc.bookings.filter(price_type=PRICE_FULL)[0].booking_expires is None)
 
+
+class TestAjaxViews(CreatePlaceMixin, TestCase):
+    # Basic tests to ensure that the views that serve AJAX return something
+    # sensible
+
+    fixtures = ['basic.json']
+
+    def test_places_json(self):
+        self.login()
+        self.create_place()
+        resp = self.client.get(reverse('cciw.bookings.views.places_json'))
+        json = simplejson.loads(resp.content)
+        self.assertEqual(json['places'][0]['name'], self.place_details['name'])
