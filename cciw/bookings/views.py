@@ -353,6 +353,10 @@ class BookingAccountDetails(DefaultMetaData, AjaxyFormMixin, TemplateResponseMix
     def get_object(self):
         return self.request.booking_account
 
+    def form_valid(self, form):
+        messages.info(self.request, 'Account details updated, thank you.')
+        return super(BookingAccountDetails, self).form_valid(form)
+
 
 class BookingEditAddBase(DefaultMetaData, TemplateResponseMixin, AjaxyFormMixin):
     template_name = 'cciw/bookings/add_place.html'
