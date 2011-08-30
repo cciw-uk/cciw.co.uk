@@ -202,9 +202,9 @@ def _update_virtualenv(version):
     # Update virtualenv in new dir.
     with cd(version.src_dir):
         # We should already have a virtualenv, but it will need paths updating
-        run("virtualenv --python=python2.5 env")
+        run("virtualenv --python=python2.7 env")
         # Need this to stop ~/lib/ dirs getting in:
-        run("touch env/lib/python2.5/sitecustomize.py")
+        run("touch env/lib/python2.7/sitecustomize.py")
         with virtualenv(version.venv_dir):
             with cd(version.project_dir):
                 run_venv("pip install -r requirements.txt")
@@ -215,7 +215,7 @@ def _update_virtualenv(version):
         pth_name = "deps.pth"
         with open(pth_name, "w") as fd:
             fd.write(pth_file)
-        put(pth_name, join(version.venv_dir, "lib/python2.5/site-packages"))
+        put(pth_name, join(version.venv_dir, "lib/python2.7/site-packages"))
         os.unlink(pth_name)
 
 

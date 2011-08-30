@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python2.7
 import warnings
 #warnings.simplefilter("error", PendingDeprecationWarning)
 import os
