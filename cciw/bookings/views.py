@@ -246,6 +246,23 @@ def is_booking_open(year):
 is_booking_open_thisyear = lambda: is_booking_open(get_thisyear())
 
 
+# MRO problem for BookingAddPlace: we need BaseCreateView.post to come first in
+# MRO, to provide self.object = None, then AjaxyFormMixin must be called before
+# ProcessFormView, so that for AJAX right thing happens. So we need to hack the
+# MRO using a metaclass.
+
+class AjaxMroFixer(type):
+
+    def mro(cls):
+        classes = type.mro(cls)
+        # Move AjaxyFormMixin to one before last that has a 'post' defined.
+        new_list = [c for c in classes if c is not AjaxyFormMixin]
+        have_post = [c for c in new_list if 'post' in c.__dict__]
+        last = have_post[-1]
+        new_list.insert(new_list.index(last), AjaxyFormMixin)
+        return new_list
+
+
 # Views
 
 class BookingIndex(DefaultMetaData, TemplateView):
@@ -325,7 +342,8 @@ class BookingNotLoggedIn(DefaultMetaData, TemplateView):
     template_name = "cciw/bookings/not_logged_in.html"
 
 
-class BookingAccountDetails(DefaultMetaData, TemplateResponseMixin, BaseUpdateView):
+class BookingAccountDetails(DefaultMetaData, AjaxyFormMixin, TemplateResponseMixin, BaseUpdateView):
+    __metaclass__ = AjaxMroFixer
     metadata_title = "Booking account details"
     form_class = AccountDetailsForm
     template_name = 'cciw/bookings/account_details.html'
@@ -335,22 +353,6 @@ class BookingAccountDetails(DefaultMetaData, TemplateResponseMixin, BaseUpdateVi
     def get_object(self):
         return self.request.booking_account
 
-
-# MRO problem for BookingAddPlace: we need BaseCreateView.post to come first in
-# MRO, to provide self.object = None, then AjaxyFormMixin must be called before
-# ProcessFormView, so that for AJAX right thing happens. So we need to hack the
-# MRO using a metaclass.
-
-class AjaxMroFixer(type):
-
-    def mro(cls):
-        classes = type.mro(cls)
-        # Move AjaxyFormMixin to one before last that has a 'post' defined.
-        new_list = [c for c in classes if c is not AjaxyFormMixin]
-        have_post = [c for c in new_list if 'post' in c.__dict__]
-        last = have_post[-1]
-        new_list.insert(new_list.index(last), AjaxyFormMixin)
-        return new_list
 
 class BookingEditAddBase(DefaultMetaData, TemplateResponseMixin, AjaxyFormMixin):
     template_name = 'cciw/bookings/add_place.html'
