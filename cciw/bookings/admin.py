@@ -35,12 +35,13 @@ class BookingAdmin(admin.ModelAdmin):
     def camp(obj):
         return "%s-%s" % (obj.camp.year, obj.camp.number)
     camp.admin_order_field = 'camp__year'
-    list_display = ['name', 'sex', 'account', camp, 'state']
+    list_display = ['name', 'sex', 'account', camp, 'state', 'confirmed_booking']
     del camp
     search_fields = ['name']
     ordering = ['-camp__year', 'camp__number']
     date_hierarchy = 'created'
-    list_filter = [YearFilter, 'sex', 'price_type', 'serious_illness', 'south_wales_transport']
+    list_filter = [YearFilter, 'sex', 'price_type', 'serious_illness', 'south_wales_transport',
+                   'state']
 
 
 admin.site.register(Price, PriceAdmin)

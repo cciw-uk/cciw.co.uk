@@ -5,6 +5,7 @@ import re
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
+from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
@@ -253,7 +254,12 @@ class Booking(models.Model):
     shelved = models.BooleanField(default=False)
 
     # State - internal
-    state = models.IntegerField(choices=BOOKING_STATES)
+    state = models.IntegerField(choices=BOOKING_STATES,
+                                help_text=mark_safe(
+            "<ul><li>Move to 'Manually approved' to allow user to book and pay</li>"
+            "<li>To book, move to 'Booked' <b>and</b> ensure 'Booking expires' is empty</li>"
+            "</ul>"))
+
     created = models.DateTimeField(default=datetime.now)
     booking_expires = models.DateTimeField(null=True, blank=True)
 
@@ -267,6 +273,10 @@ class Booking(models.Model):
                                   self.account)
 
     ### Main business rules here ###
+
+    def confirmed_booking(self):
+        return self.state == BOOKING_BOOKED and self.booking_expires is None
+    confirmed_booking.boolean = True
 
     def auto_set_amount_due(self):
         if self.price_type == PRICE_CUSTOM:
