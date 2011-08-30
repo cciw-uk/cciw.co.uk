@@ -965,3 +965,13 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.get(reverse('cciw.bookings.views.places_json'))
         json = simplejson.loads(resp.content)
         self.assertEqual(json['places'][0]['name'], self.place_details['name'])
+
+    def test_account_json(self):
+        self.login()
+        acc = BookingAccount.objects.get(email=self.email)
+        acc.address = '123 Main Street'
+        acc.save()
+
+        resp = self.client.get(reverse('cciw.bookings.views.account_json'))
+        json = simplejson.loads(resp.content)
+        self.assertEqual(json['account']['address'], '123 Main Street')

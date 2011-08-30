@@ -20,7 +20,7 @@
 
 {% else %}
 
-       var placeData = [];
+       var userData = [];
 
        var escape = function(t) {
            return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
@@ -28,7 +28,7 @@
 
        var handleExistingPlacesData = function(json) {
            var places = json['places'];
-           placeData['places'] = places;
+           userData['places'] = places;
            if (places.length > 0) {
                var cont = $('#id_use_existing_radio_container');
                $('#id_use_existing_btn').show();
@@ -43,6 +43,20 @@
                }
            }
        };
+
+       var handleAccountData = function(json) {
+           var account = json['account'];
+           userData['account'] = account;
+           /* Easiest way to get them where we want is to move it using javascript */
+           var btn1 = $('#id_use_account_1_btn');
+           btn1.appendTo(btn1.prev('div.form').find('div.formrow'));
+           btn1.css({'float':'right'}).show();
+
+           var btn2 = $('#id_use_account_2_btn');
+           btn2.appendTo(btn2.prev('div.form').find('div.formrow'));
+           btn2.css({'float':'right'}).show();
+
+       }
 
        var useExistingDataShow = function(ev) {
            ev.preventDefault();
@@ -96,7 +110,7 @@
            for (var i=0; i < radios.length; i++) {
                if (radios[i].checked) {
                    chosen = parseInt(radios[i].value, 10);
-                   place = placeData['places'][chosen];
+                   place = userData['places'][chosen];
                    var mainform = document.addplaceform;
                    for (var j=0; j < attrs.length; j++) {
                        var attr = attrs[j];
@@ -130,11 +144,26 @@
            useData(gp_info_attrs);
        };
 
+       var useAccountForCamperAddressClick = function(ev) {
+           ev.preventDefault();
+           $('#id_address').val(userData['account']['address']);
+           $('#id_post_code').val(userData['account']['post_code']);
+           $('#id_phone_number').val(userData['account']['phone_number']);
+       }
+
+       var useAccountForContactDetailsClick = function(ev) {
+           ev.preventDefault();
+           $('#id_contact_name').val(userData['account']['name']);
+           $('#id_contact_phone_number').val(userData['account']['phone_number']);
+       }
+
        $('#id_popup_close_btn').click(useExistingDataClose);
        $('#id_use_existing_btn').click(useExistingDataShow);
        $('#id_use_all_btn').click(useAllBtnClick);
        $('#id_use_address_btn').click(useAddressBtnClick);
        $('#id_use_gp_info_btn').click(useGPInfoBtnClick);
+       $('#id_use_account_1_btn').click(useAccountForCamperAddressClick);
+       $('#id_use_account_2_btn').click(useAccountForContactDetailsClick);
 
        // Typing enter on text boxes shouldn't activate the 'Use existing
        // data' button
@@ -152,6 +181,14 @@
            url: '{% url "cciw.bookings.views.places_json" %}',
            dataType: "json",
            success: handleExistingPlacesData
+       });
+
+       /* Load account data */
+       $.ajax({
+           type: "GET",
+           url: '{% url "cciw.bookings.views.account_json" %}',
+           dataType: "json",
+           success: handleAccountData
        });
 
 {% endif %}
@@ -207,7 +244,7 @@ discount'.</p>
 {% cciw_form_field form 'name' 'Name' %}
 {% cciw_form_field form 'sex' 'Sex' %}
 {% cciw_form_field form 'date_of_birth' 'Date of birth (YYYY-MM-DD)' %}
-{% cciw_form_field form 'address' 'Address' %}
+{% cciw_form_field form 'address' 'Address' %} <input style="display:none;" type="submit" id="id_use_account_1_btn" value="Use account address">
 {% cciw_form_field form 'post_code' 'Post code' %}
 {% cciw_form_field form 'phone_number' 'Phone number' %}
 {% cciw_form_field form 'email' 'Email' %}
@@ -229,7 +266,7 @@ this box. The cost for this transport is an additional £{{ south_wales_surcharg
 
 <p>Please enter a contact name and number that can be used <strong>during the week of camp</strong> in case of emergency.</p>
 
-{% cciw_form_field form 'contact_name' 'Name' %}
+{% cciw_form_field form 'contact_name' 'Name' %} <input style="display:none;" type="submit" id="id_use_account_2_btn" value="Use account name and number">
 {% cciw_form_field form 'contact_phone_number' 'Phone number' %}
 
 <h2>Dietary requirements</h2>

@@ -415,6 +415,7 @@ class BookingEditPlace(BookingEditAddBase, BaseUpdateView):
         return c
 
 
+# Public attributes - i.e. that the account holder is allowed to see
 BOOKING_PLACE_PUBLIC_ATTRS = [
     'id',
     'name',
@@ -440,12 +441,30 @@ BOOKING_PLACE_PUBLIC_ATTRS = [
     'created',
 ]
 
+# Public attributes - i.e. that the account holder is allowed to see
+ACCOUNT_PUBLIC_ATTRS = [
+    'email',
+    'name',
+    'address',
+    'post_code',
+    'phone_number',
+]
+
 @booking_account_required
 @json_response
 def places_json(request):
     retval = {'status': 'success'}
     retval['places'] = [dict((k, getattr(b, k)) for k in BOOKING_PLACE_PUBLIC_ATTRS)
                         for b in request.booking_account.bookings.all()]
+    return retval
+
+
+@booking_account_required
+@json_response
+def account_json(request):
+    retval = {'status': 'success'}
+    retval['account'] = dict((k, getattr(request.booking_account, k))
+                             for k in ACCOUNT_PUBLIC_ATTRS)
     return retval
 
 
