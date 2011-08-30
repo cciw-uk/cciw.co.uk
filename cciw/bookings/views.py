@@ -591,10 +591,16 @@ class BookingPayDone(DefaultMetaData, TemplateView):
     metadata_title = "Booking - payment complete"
     template_name = "cciw/bookings/pay_done.html"
 
+    # Paypal wants to post to this view
+    def post(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
 
 class BookingPayCancelled(DefaultMetaData, TemplateView):
     metadata_title = "Booking - payment cancelled"
     template_name = "cciw/bookings/pay_cancelled.html"
+
+    def post(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
 
 
 index = BookingIndex.as_view()
