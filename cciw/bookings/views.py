@@ -291,7 +291,7 @@ def next_step(account):
         return HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
 
 class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFormView):
-    metadata_title = "Booking email address"
+    metadata_title = "Booking - email address"
     form_class = EmailForm
     template_name = 'cciw/bookings/start.html'
     success_url = reverse_lazy('cciw.bookings.views.email_sent')
@@ -311,7 +311,7 @@ class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFor
 
 
 class BookingEmailSent(DefaultMetaData, TemplateView):
-    metadata_title = "Booking email address"
+    metadata_title = "Booking - email address"
     template_name = "cciw/bookings/email_sent.html"
     extra_context = {'stage': 'email'}
 
@@ -332,7 +332,7 @@ def verify_email(request, account_id, token):
 
 
 class BookingVerifyEmailFailed(DefaultMetaData, TemplateView):
-    metadata_title = "Booking account email verification failed"
+    metadata_title = "Booking - account email verification failed"
     template_name = "cciw/bookings/email_verification_failed.html"
     extra_context = {'stage': 'email'}
 
@@ -344,7 +344,7 @@ class BookingNotLoggedIn(DefaultMetaData, TemplateView):
 
 class BookingAccountDetails(DefaultMetaData, AjaxyFormMixin, TemplateResponseMixin, BaseUpdateView):
     __metaclass__ = AjaxMroFixer
-    metadata_title = "Booking account details"
+    metadata_title = "Booking - account details"
     form_class = AccountDetailsForm
     template_name = 'cciw/bookings/account_details.html'
     success_url = reverse_lazy('cciw.bookings.views.add_place')
@@ -569,7 +569,7 @@ class BookingListBookings(DefaultMetaData, TemplateView):
 
 
 class BookingPay(DefaultMetaData, TemplateView):
-    metadata_title = "Booking - Pay"
+    metadata_title = "Booking - pay"
     template_name = "cciw/bookings/pay.html"
     extra_context = {'stage': 'pay'}
 
