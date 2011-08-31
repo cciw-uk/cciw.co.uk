@@ -237,6 +237,16 @@ def booking_account_required(view_func):
     return view
 
 
+def account_details_required(view_func):
+    @wraps(view_func)
+    def view(request, *args, **kwargs):
+        ensure_booking_acount_attr(request)
+        if not request.booking_account.has_account_details():
+            return next_step(request.booking_account)
+        return view_func(request, *args, **kwargs)
+    return view
+
+
 def is_booking_open(year):
     """
     When passed a given year, returns True if booking is open.
@@ -289,6 +299,7 @@ def next_step(account):
         return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
     else:
         return HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
+
 
 class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFormView):
     metadata_title = "Booking - email address"
@@ -648,8 +659,8 @@ email_sent = BookingEmailSent.as_view()
 verify_email_failed = BookingVerifyEmailFailed.as_view()
 account_details = booking_account_required(BookingAccountDetails.as_view())
 not_logged_in = BookingNotLoggedIn.as_view()
-add_place = booking_account_required(BookingAddPlace.as_view())
-edit_place = booking_account_required(BookingEditPlace.as_view())
+add_place = booking_account_required(account_details_required(BookingAddPlace.as_view()))
+edit_place = booking_account_required(account_details_required(BookingEditPlace.as_view()))
 list_bookings = booking_account_required(BookingListBookings.as_view())
 pay = booking_account_required(BookingPay.as_view())
 pay_done = csrf_exempt(BookingPayDone.as_view())

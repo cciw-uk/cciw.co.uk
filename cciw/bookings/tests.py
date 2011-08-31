@@ -202,12 +202,16 @@ class TestBookingVerify(TestCase):
 class LogInMixin(object):
     email = 'booker@bookers.com'
 
-    def login(self):
+    def login(self, add_account_details=True):
         # Easiest way is to simulate what the user actually has to do
         self.client.post(reverse('cciw.bookings.views.start'),
                          {'email': self.email})
         url, path, querydata = read_email_url(mail.outbox[-1], "https?://.*/booking/v/.*")
         self.client.get(path, querydata)
+        if add_account_details:
+            BookingAccount.objects.filter(email=self.email).update(name='Joe',
+                                                                   address='123',
+                                                                   post_code='XYZ')
 
 
 class TestAccountDetails(LogInMixin, TestCase):
@@ -221,12 +225,12 @@ class TestAccountDetails(LogInMixin, TestCase):
         self.assertEqual(resp.status_code, 302)
 
     def test_show_if_logged_in(self):
-        self.login()
+        self.login(add_account_details=False)
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
     def test_missing_name(self):
-        self.login()
+        self.login(add_account_details=False)
         resp = self.client.post(self.url, {})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "This field is required")
@@ -235,7 +239,7 @@ class TestAccountDetails(LogInMixin, TestCase):
         """
         Test that we can complete the account details page
         """
-        self.login()
+        self.login(add_account_details=False)
         resp = self.client.post(self.url,
                                 {'name': 'Mr Booker',
                                  'address': '123, A Street',
@@ -292,6 +296,11 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
     url = reverse('cciw.bookings.views.add_place')
 
     def test_redirect_if_not_logged_in(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_redirect_if_no_account_details(self):
+        self.login(add_account_details=False)
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)
 
