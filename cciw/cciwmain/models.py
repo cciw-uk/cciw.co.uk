@@ -133,22 +133,25 @@ class Camp(models.Model):
     def age(self):
         return "%d-%d" % (self.minimum_age, self.maximum_age)
 
-    def get_places_left(self, sex=None):
+    def get_places_left(self):
+        """
+        Return 3 tuple containing (places left, places left for boys, places left for girls).
+        Note that the first isn't necessarily the sum of 2nd and 3rd.
+        """
         from cciw.bookings.models import SEX_MALE, SEX_FEMALE
-        qs = self.bookings.booked()
-        if sex is not None:
-            qs = qs.filter(sex=sex)
-        booked = qs.count()
-
-        if sex is None:
-            retval = self.max_campers - booked
-        elif sex == SEX_MALE:
-            retval = self.max_male_campers - booked
-        elif sex == SEX_FEMALE:
-            retval = self.max_female_campers - booked
-        else:
-            assert False, "%s is not a valid sex" % sex
-        return max(0, retval) # negative numbers of places available is confusing for our purposes
+        females_booked = 0
+        males_booked = 0
+        q = self.bookings.booked().values_list('sex').annotate(count=models.Count("id")).order_by()
+        for (s, c) in q:
+            if s == SEX_MALE:
+                males_booked = c
+            elif s == SEX_FEMALE:
+                females_booked = c
+        total_booked = males_booked + females_booked
+        # negative numbers of places available is confusing for our purposes, so use max
+        return (max(self.max_campers - total_booked, 0),
+                max(self.max_male_campers - males_booked, 0),
+                max(self.max_female_campers - females_booked, 0))
 
     class Meta:
         ordering = ['-year','number']

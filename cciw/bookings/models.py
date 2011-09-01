@@ -336,9 +336,7 @@ class Booking(models.Model):
                           % (self.camp.maximum_age, self.camp.year))
 
         # Check place availability
-        places_left = self.camp.get_places_left()
-        places_left_male = self.camp.get_places_left(sex=SEX_MALE)
-        places_left_female = self.camp.get_places_left(sex=SEX_FEMALE)
+        places_left, places_left_male, places_left_female = self.camp.get_places_left()
 
         # We only want one message about places not being available, and the
         # order here is important - if there are no places full stop, we don't
