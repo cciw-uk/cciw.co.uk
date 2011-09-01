@@ -1,7 +1,6 @@
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 import os
-import re
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
@@ -11,12 +10,13 @@ from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import Lock
 
+from .signals import place_confirmed
+
 # = Business rules =
 #
 # Business rules are implemented in relevant models and managers.
 #
 #
-
 
 
 SEX_MALE, SEX_FEMALE = 'm', 'f'
@@ -179,6 +179,7 @@ class BookingAccount(models.Model):
             if b.amount_due <= pot:
                 b.confirm()
                 b.save()
+                place_confirmed.send(b, payment_received=True)
                 pot -= b.amount_due
             i += 1
 
@@ -437,28 +438,5 @@ def book_basket_now(bookings):
         lock.release()
 
 
-### Payments ####
-
-def unrecognised_payment(ipn_obj):
-    # If an online payment does not reference an existing BookingAccount, we accept it
-    # but complain loudly by email.
-    pass # TODO
-
-
-def paypal_payment_received(sender, **kwargs):
-    ipn_obj = sender
-    m = re.match("account:(\d+);", ipn_obj.custom)
-    if m is None:
-        unrecognised_payment(ipn_obj)
-        return
-
-    try:
-        account = BookingAccount.objects.get(id=int(m.groups()[0]))
-        account.receive_payment(ipn_obj.mc_gross)
-    except BookingAccount.DoesNotExist:
-        unrecognised_payment(ipn_obj)
-
-
-# Payment signals
-from paypal.standard.ipn.signals import payment_was_successful
-payment_was_successful.connect(paypal_payment_received)
+# Very important that the setup done in .hooks happens:
+from .hooks import *

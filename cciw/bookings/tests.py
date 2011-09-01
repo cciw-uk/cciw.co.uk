@@ -1001,6 +1001,59 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
         acc.receive_payment((p1 + p2) - p)
         self.assertTrue(acc.bookings.filter(price_type=PRICE_FULL)[0].booking_expires is None)
 
+    def test_email_for_bad_payment_1(self):
+        from cciw.bookings.models import paypal_payment_received
+
+        class IpnMock(object):
+            pass
+
+        ipn_1 = IpnMock()
+        ipn_1.id = 123
+        ipn_1.mc_gross = Decimal('1.00')
+        ipn_1.custom = "x" # wrong format
+
+        mail.outbox = []
+        self.assertEqual(len(mail.outbox), 0)
+        paypal_payment_received(ipn_1)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertTrue('/admin/ipn/paypal' in mail.outbox[0].body)
+
+    def test_email_for_bad_payment_2(self):
+        from cciw.bookings.models import paypal_payment_received
+
+        class IpnMock(object):
+            pass
+
+        ipn_1 = IpnMock()
+        ipn_1.id = 123
+        ipn_1.mc_gross = Decimal('1.00')
+        ipn_1.custom = "account:1234;" # bad id
+
+        mail.outbox = []
+        self.assertEqual(len(mail.outbox), 0)
+        paypal_payment_received(ipn_1)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertTrue('/admin/ipn/paypal' in mail.outbox[0].body)
+
+    def test_email_for_good_payment(self):
+        # This email could be triggered by whenever BookingAccount.distribute_funds
+        # is called, which can be from multiple routes. So we test it directly.
+
+        self.login()
+        self.create_place()
+        acc = BookingAccount.objects.get(email=self.email)
+        book_basket_now(acc.bookings.basket(self.camp.year))
+
+        mail.outbox = []
+        acc.receive_payment(acc.bookings.all()[0].amount_due)
+
+        self.assertEqual(len(mail.outbox), 1)
+
+        self.assertEqual(mail.outbox[0].subject, "CCIW booking - place confirmed")
+        self.assertEqual(mail.outbox[0].to, [self.email])
+        self.assertTrue("Thank you for your payment" in mail.outbox[0].body)
 
 class TestAjaxViews(CreatePlaceMixin, TestCase):
     # Basic tests to ensure that the views that serve AJAX return something

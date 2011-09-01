@@ -1,0 +1,15 @@
+{% load url from future %}{% autoescape off %}
+{% if payment_received %}Thank you for your payment{% endif %}
+The following place on a CCIW camp has been confirmed:
+
+Camper name: {{ booking.name }}
+Camp: {{ camp }}
+Dates: {{ camp.start_date|date:"d M Y" }} to {{ camp.end_date|date:"d M" }}
+
+The camp leaders will be in contact with more details in due time.
+
+Many thanks!
+
+The cciw.co.uk team.
+
+{% endautoescape %}

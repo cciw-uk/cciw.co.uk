@@ -77,3 +77,40 @@ def send_verify_email(request, booking_account):
 
 def check_email_verification_token(account, token):
     return EmailVerifyTokenGenerator().check_token(account, token)
+
+
+def site_address_url_start():
+    """
+    Returns start of URL (protocol and domain) for this site
+    (a guess)
+    """
+    protocol = 'https' if settings.SESSION_COOKIE_SECURE else 'http' # best guess
+    return protocol + '://' + get_current_site(None).domain
+
+
+def send_unrecognised_payment_email(ipn_obj):
+    c = {
+        'url_start': site_address_url_start(),
+        'ipn_obj': ipn_obj,
+        }
+
+    body = loader.render_to_string("cciw/bookings/unrecognised_payment_email.txt", c)
+    subject = "CCIW booking - unrecognised payment"
+    mail.send_mail(subject, body, settings.SERVER_EMAIL, [settings.WEBMASTER_EMAIL])
+
+
+def send_place_confirmed_email(booking, **kwargs):
+    account = booking.account
+    emails = list(set([e for e in [account.email, booking.email] if e.strip() != '']))
+    if not emails:
+        return
+
+    c = {
+        'url_start': site_address_url_start(),
+        'booking': booking,
+        'camp': booking.camp,
+        'payment_received': 'payment_received' in kwargs,
+        }
+    body = loader.render_to_string('cciw/bookings/place_confirmed_email.txt', c)
+    subject = "CCIW booking - place confirmed"
+    mail.send_mail(subject, body, settings.SERVER_EMAIL, emails)
