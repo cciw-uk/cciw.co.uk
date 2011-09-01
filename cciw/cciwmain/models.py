@@ -133,7 +133,7 @@ class Camp(models.Model):
     def age(self):
         return "%d-%d" % (self.minimum_age, self.maximum_age)
 
-    def get_places_available(self, sex=None):
+    def get_places_left(self, sex=None):
         from cciw.bookings.models import SEX_MALE, SEX_FEMALE
         qs = self.bookings.booked()
         if sex is not None:
