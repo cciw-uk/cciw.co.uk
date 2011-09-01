@@ -576,7 +576,7 @@ div.formrow .field ul
 
 div.formrow .field ul label
 {
-    // Override what we set before under div.formrow label
+    /* Override what we set before under div.formrow label */
     float: none;
     width: auto;
 }
