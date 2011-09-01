@@ -416,6 +416,8 @@ def book_basket_now(bookings):
         lock.release()
 
 
+### Payments ####
+
 def unrecognised_payment(ipn_obj):
     # If an online payment does not reference an existing BookingAccount, we accept it
     # but complain loudly by email.
