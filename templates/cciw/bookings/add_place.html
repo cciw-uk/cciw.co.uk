@@ -49,11 +49,11 @@
            userData['account'] = account;
            /* Easiest way to get them where we want is to move it using javascript */
            var btn1 = $('#id_use_account_1_btn');
-           btn1.appendTo(btn1.prev('div.form').find('div.formrow'));
+           btn1.prependTo(btn1.prev('div.form').find('div.formrow'));
            btn1.css({'float':'right'}).show();
 
            var btn2 = $('#id_use_account_2_btn');
-           btn2.appendTo(btn2.prev('div.form').find('div.formrow'));
+           btn2.prependTo(btn2.prev('div.form').find('div.formrow'));
            btn2.css({'float':'right'}).show();
 
        }

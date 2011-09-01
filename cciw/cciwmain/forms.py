@@ -7,13 +7,17 @@ class CciwFormMixin(object):
     """Form mixin that provides the rendering methods used on the CCIW site"""
 
     # These constants are also used by the cciwfield template tag
-    normal_row_template = '<div id="%(divid)s" class="%(class)s">%(label)s %(field)s%(help_text)s</div>'
-    error_row_template = u'<div class="validationErrorTop">%s</div>'
+    normal_row_template = \
+        '<div id="%(divid)s" class="%(class)s">%(errors_html)s' + \
+        '<div class="field">%(label)s %(field)s%(help_text)s</div></div>'
+    error_row_template = u'<div class="userError">%s</div>'
+    errors_template = u'<div class="fieldMessages">%s</div>'
+
 
     help_text_html_template = u' %s'
 
     div_normal_class = u'formrow'
-    div_error_class = u'formrow validationErrorBottom'
+    div_error_class = u'formrow validationErrors'
 
     start_template = u'<div class="form">'
     end_template = u'</div>'
@@ -51,9 +55,10 @@ class CciwFormMixin(object):
             hidden_fields.append(unicode(bf))
         else:
             if bf_errors:
-                output.append(self.error_row_template % force_unicode(bf_errors))
+                errors_html = self.errors_template % force_unicode(bf_errors)
                 cssclass = self.div_error_class
             else:
+                errors_html = ''
                 cssclass = self.div_normal_class
             if label_text is None and bf.label:
                 label_text = escape(force_unicode(bf.label))
@@ -76,7 +81,7 @@ class CciwFormMixin(object):
             else:
                 help_text = u''
             output.append(self.normal_row_template % {
-                    'errors': force_unicode(bf_errors),
+                    'errors_html': errors_html,
                     'label': force_unicode(label),
                     'field': unicode(bf),
                     'help_text': help_text,

@@ -167,23 +167,9 @@ span.sortingControl img.sortDescActive
 }
 
 div.userError,
-div.validationErrorTop,
-div.validationErrorBottom {
+div.validationErrors {
     background-color: #ffbe73;
-}
-
-div.userError
-{
     border-top: 1px solid #ff8900;
-    border-bottom: 1px solid #ff8900;
-}
-
-div.validationErrorTop
-{
-    border-top: 1px solid #ff8900;
-}
-div.validationErrorBottom
-{
     border-bottom: 1px solid #ff8900;
 }
 
@@ -567,7 +553,7 @@ div.formrow
 }
 
 /* LHS of form */
-div.formrow label
+div.formrow .field label
 {
     display: block;
     float: left;
@@ -575,20 +561,20 @@ div.formrow label
 }
 
 /* RHS of form */
-div.formrow ul,
-div.formrow ul li
+div.formrow .field ul,
+div.formrow .field ul li
 {
     list-style-type: none;
     margin-left: 0px;
     padding-left: 0px;
 }
 
-div.formrow ul
+div.formrow .field ul
 {
     margin-left: 16em;
 }
 
-div.formrow ul label
+div.formrow .field ul label
 {
     // Override what we set before under div.formrow label
     float: none;

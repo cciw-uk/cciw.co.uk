@@ -179,14 +179,15 @@ var cciw = (function(pub, $) {
         if (row.size() == 0) {
             return;
         }
-        if (!row.hasClass("validationErrorBottom")) {
-            // insert <ul> before it
-            var content = $("<div class='validationErrorTop'><ul class='errorlist'></ul</div>");
+        if (!row.hasClass("validationErrors")) {
+            // insert <ul> inside it
+            var content = $("<div class='fieldMessages'><ul class='errorlist'></ul></div>");
             $.each(errors, function(i, val) {
-                       content.find("ul").append("<li>").html(val);
+                       content.find("ul").append($('<li></li>').html(val));
+
                    });
-            row.before(content);
-            row.addClass("validationErrorBottom");
+            row.prepend(content);
+            row.addClass("validationErrors");
         }
     };
 
@@ -195,11 +196,10 @@ var cciw = (function(pub, $) {
         if (row.size() == 0) {
             return;
         }
-        if (row.hasClass("validationErrorBottom")) {
-            row.removeClass("validationErrorBottom");
-            // there will be a previous sibling
-            // which holds the error message
-            row.prev().remove();
+        if (row.hasClass("validationErrors")) {
+            row.removeClass("validationErrors");
+            // there will be a child which holds the error message
+            row.find('.fieldMessages').remove();
         }
     };
 
