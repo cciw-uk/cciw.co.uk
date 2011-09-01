@@ -114,10 +114,11 @@ class BookingAccount(models.Model):
         # simple case where everything matches up as a special case.
         #
         # When a payment is received, django-paypal creates an object
-        # and a signal handler calls BookingAccount.receive_payment
+        # and a signal handler calls BookingAccount.receive_payment, which must
+        # update the 'total_received' field.
         #
         # We also need to set the 'Booking.booking_expires' field of relevant Booking
-        # objects. to null, so that the place is securely booked.
+        # objects to null, so that the place is securely booked.
         #
         # There are a number of scenarios where the amount paid doesn't cover the total
         # amount due:
@@ -127,7 +128,7 @@ class BookingAccount(models.Model):
         #
         # It is also possible for a place to be partially paid for, yet booked e.g. if a
         # user selects a discount for which they were not eligible, and pays. This is then
-        # discovered, and the 'amount due' for that place is altered.
+        # discovered, and the 'amount due' for that place is altered by an admin.
         #
         # So, we need a method to distribute any incoming payment so that we stop the
         # booked place from expiring. It is better to be too generous than too stingy in
@@ -141,18 +142,14 @@ class BookingAccount(models.Model):
         # Therefore, we ignore the partially paid case, and for distributing payment treat
         # any place which is 'booked' with no 'booking_expires' as fully paid.
         #
-        # When a payment is received, we don't know which place it is for, and in general
-        # it could be for any combination of the places that need payment. So, for
-        # simplicity we simply go through all places which are 'booked' and have a
-        # 'booking_expires' date, starting with the earliest 'booking_expires', on the
-        # assumption that we will get payment for that one first. If the amount for that
-        # place is less than or equal to incoming payment, we remove the
-        # 'booking_expires', deduct the amount from the incoming funds, and
-        # continue. Otherwise, we skip and continue.
+        # When a payment is received, we don't know which place it is for, and
+        # in general it could be for any combination of the places that need
+        # payment. There could also be money in the account that is still
+        # 'unclaimed'. So, for simplicity we simply go through all places which
+        # are 'booked' and have a 'booking_expires' date, starting with the
+        # earliest 'booking_expires', on the assumption that we will get payment
+        # for that one first.
         #
-        # At the end, we check the outstanding balance, and any places that still have
-        # 'booking_expires' dates, and send an email as appropriate.
-
         # Use update and F objects to avoid concurrency problems
         BookingAccount.objects.filter(id=self.id).update(total_received=models.F('total_received') + amount)
 
@@ -163,6 +160,10 @@ class BookingAccount(models.Model):
         self.distribute_balance()
 
     def distribute_balance(self):
+        """
+        Distribute any money in the account to mark unconfirmed places as
+        confirmed.
+        """
         # In order to distribute funds, need to take into account the total
         # amount in the account that is not covered by confirmed places
         existing_balance = self.get_balance(confirmed_only=True)
