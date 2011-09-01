@@ -23,20 +23,19 @@
     </td>
   </tr>
   <tr class="sectionbottom">
-      <td colspan="3">
-        {% if b.bookable %}
-          <img src="{% static "admin/img/icon-yes.gif" %}"> This place can be booked
-          {% if b.manually_approved %}<b> - MANUALLY APPROVED</b>{% endif %}
-        {% else %}
-          <img src="{% static "admin/img/icon-no.gif" %}"> This place cannot be booked:
-          <ul>
+    <td colspan="3">
+      {% if b.bookable %}
+        <img src="{% static "admin/img/icon-yes.gif" %}"> This place can be booked
+        {% if b.manually_approved %}<b> - MANUALLY APPROVED</b>{% endif %}
+      {% else %}
+        <img src="{% static "admin/img/icon-no.gif" %}"> This place cannot be booked:
+        <ul>
           {% for p in b.booking_problems %}
             <li>{{ p }}</li>
           {% endfor %}
-          </ul>
-        {% endif %}
-      </td>
-    </tr>
+        </ul>
+      {% endif %}
+    </td>
   </tr>
   {% if not forloop.last %}
   <tr class="spacer">
