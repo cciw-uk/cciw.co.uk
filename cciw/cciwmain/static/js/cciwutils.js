@@ -252,6 +252,8 @@ var cciw = (function(pub, $) {
                                         });
     };
 
+    pub.standardformClearError = standardformClearError;
+
     $(document).ready(function() {
         $('form.ajaxify').each(function(i, elem) {
             pub.standardformAddOnchangeHandlers($(this));

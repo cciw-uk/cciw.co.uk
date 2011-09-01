@@ -119,6 +119,10 @@
                        } else {
                            mainform[attr].value = place[attr];
                        }
+                       // If details are copied from something saved,
+                       // value is guaranteed to be good. So we clear
+                       // errors.
+                       cciw.standardformClearError(mainform[attr].id)
                    }
                }
            }
@@ -144,18 +148,24 @@
            useData(gp_info_attrs);
        };
 
+       var useAccountData = function(nameList, prefix) {
+           // exploit the fact that we've named things nicely.
+           $.each(nameList, function(idx, val) {
+               $('#id_' + prefix + val).val(userData['account'][val]);
+               cciw.standardformClearError('id_' + prefix + val);
+           });
+       };
+
        var useAccountForCamperAddressClick = function(ev) {
            ev.preventDefault();
-           $('#id_address').val(userData['account']['address']);
-           $('#id_post_code').val(userData['account']['post_code']);
-           $('#id_phone_number').val(userData['account']['phone_number']);
-       }
+           useAccountData(['address', 'post_code', 'phone_number'], '');
+       };
 
        var useAccountForContactDetailsClick = function(ev) {
            ev.preventDefault();
-           $('#id_contact_name').val(userData['account']['name']);
-           $('#id_contact_phone_number').val(userData['account']['phone_number']);
-       }
+           // copy contact_name, contact_phone_number
+           useAccountData(['name', 'phone_number'], 'contact_');
+       };
 
        $('#id_popup_close_btn').click(useExistingDataClose);
        $('#id_use_existing_btn').click(useExistingDataShow);
