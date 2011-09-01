@@ -1040,6 +1040,25 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertTrue('/admin/ipn/paypal' in mail.outbox[0].body)
 
+    def test_receive_payment_handler(self):
+        # Use the actual signal handler, check the good path.
+        from cciw.bookings.models import paypal_payment_received
+        self.login()
+
+        class IpnMock(object):
+            pass
+
+        ipn_1 = IpnMock()
+        ipn_1.id = 123
+        ipn_1.mc_gross = Decimal('1.00')
+        ipn_1.custom = "account:%s;" % self.get_account().id
+
+        mail.outbox = []
+        self.assertEqual(len(mail.outbox), 0)
+        paypal_payment_received(ipn_1)
+
+        self.assertEqual(self.get_account().total_received, ipn_1.mc_gross)
+
     def test_email_for_good_payment(self):
         # This email could be triggered by whenever BookingAccount.distribute_funds
         # is called, which can be from multiple routes. So we test it directly.
