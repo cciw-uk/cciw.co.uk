@@ -204,6 +204,10 @@ def set_booking_account_cookie(response, account):
                                max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS)
 
 
+def unset_booking_account_cookie(response):
+    response.delete_cookie('bookingaccount')
+
+
 def get_booking_account_from_cookie(request):
     cookie = request.get_signed_cookie('bookingaccount',
                                        salt=BOOKING_COOKIE_SALT,
@@ -669,6 +673,20 @@ class BookingAccountOverview(DefaultMetaData, TemplateView):
         return c
 
 
+class BookingLogOut(DefaultMetaData, TemplateView):
+    metadata_title = "Booking - log out"
+    template_name = 'cciw/bookings/logout.html'
+    extra_context = {'stage': ''}
+
+    def post(self, request, *args, **kwargs):
+        if 'logout' in request.POST:
+            response = HttpResponseRedirect(reverse('cciw.bookings.views.index'))
+            unset_booking_account_cookie(response)
+            return response
+        else:
+            return self.get(request, *args, **kwargs)
+
+
 index = BookingIndex.as_view()
 start = BookingStart.as_view()
 email_sent = BookingEmailSent.as_view()
@@ -682,4 +700,4 @@ pay = booking_account_required(BookingPay.as_view())
 pay_done = csrf_exempt(BookingPayDone.as_view())
 pay_cancelled = csrf_exempt(BookingPayCancelled.as_view())
 account_overview = booking_account_required(BookingAccountOverview.as_view())
-
+logout = booking_account_required(BookingLogOut.as_view())

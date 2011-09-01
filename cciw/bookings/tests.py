@@ -1162,3 +1162,25 @@ class TestAccountOverview(CreatePlaceMixin, TestCase):
 
         # Basket/Shelf
         self.assertContains(resp, 'items in your basket')
+
+
+class TestLogOut(LogInMixin, TestCase):
+
+    fixtures = ['basic']
+
+    url = reverse('cciw.bookings.views.logout')
+
+    def test_get(self):
+        self.login()
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_logout(self):
+        self.login()
+        resp = self.client.post(self.url, {'logout': '1'})
+        self.assertEqual(resp.status_code, 302)
+
+        # Try accessing a page which is restricted
+        resp2 = self.client.get(reverse('cciw.bookings.views.account_overview'))
+        self.assertEqual(resp2.status_code, 302)
+
