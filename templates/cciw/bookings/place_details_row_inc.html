@@ -35,6 +35,16 @@
           {% endfor %}
         </ul>
       {% endif %}
+      {% if b.booking_warnings %}
+        <div>
+        <img src="{% static "admin/img/icon_alert.gif" %}">Warning:
+        <ul>
+          {% for w in b.booking_warnings %}
+          <li>{{ w }}</li>
+          {% endfor %}
+        </ul>
+        </div>
+      {% endif %}
     </td>
   </tr>
   {% if not forloop.last %}

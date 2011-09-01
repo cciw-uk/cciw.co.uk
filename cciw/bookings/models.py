@@ -296,23 +296,25 @@ class Booking(models.Model):
 
     def get_booking_problems(self):
         """
-        Returns a list of reasons why booking cannot be done. If empty list,
-        then it can be.
+        Returns a two tuple (errors, warnings), where 'errors' is a list of
+        reasons why booking cannot be done. If empty list, then it can be.
+        'warnings' is a list of possible problems that don't stop booking.
         """
-        retval = []
+        errors = []
+        warnings = []
 
         if self.state == BOOKING_APPROVED:
-            return retval
+            return ([], [])
 
         # Custom price - not auto bookable
         if self.price_type == PRICE_CUSTOM:
-            retval.append("A custom discount needs to be arranged by the booking secretary")
+            errors.append("A custom discount needs to be arranged by the booking secretary")
 
         # 2nd/3rd child discounts
         if self.price_type == PRICE_2ND_CHILD:
             qs = self.account.bookings.filter(shelved=False, camp__year__exact=self.camp.year)
             if not qs.filter(price_type=PRICE_FULL).exists():
-                retval.append("You cannot use a 2nd child discount unless you have "
+                errors.append("You cannot use a 2nd child discount unless you have "
                               "a child at full price. Please edit the place details "
                               "and choose an appropriate price type.")
 
@@ -320,23 +322,23 @@ class Booking(models.Model):
             qs = self.account.bookings.filter(shelved=False, camp__year__exact=self.camp.year)
             qs = qs.filter(price_type=PRICE_FULL) | qs.filter(price_type=PRICE_2ND_CHILD)
             if qs.count() < 2:
-                retval.append("You cannot use a 3rd child discount unless you have "
+                errors.append("You cannot use a 3rd child discount unless you have "
                               "two other places without this discount. Please edit the "
                               "place details and choose an appropriate price type.")
 
         # serious illness
         if self.serious_illness:
-            retval.append("Must be approved by leader due to serious illness/condition")
+            errors.append("Must be approved by leader due to serious illness/condition")
 
         # Check age.
         # Age is calculated based on shool years, i.e. age on 31st August
         camper_age = relativedelta(date(self.camp.year, 8, 31), self.date_of_birth)
         if camper_age.years < self.camp.minimum_age:
-            retval.append("Camper will be below the minimum age (%d) on the 31st August %d"
+            errors.append("Camper will be below the minimum age (%d) on the 31st August %d"
                           % (self.camp.minimum_age, self.camp.year))
 
         if camper_age.years > self.camp.maximum_age:
-            retval.append("Camper will be above the maximum age (%d) on the 31st August %d"
+            errors.append("Camper will be above the maximum age (%d) on the 31st August %d"
                           % (self.camp.maximum_age, self.camp.year))
 
         # Check place availability
@@ -349,17 +351,17 @@ class Booking(models.Model):
 
         # Simple - no places left
         if places_left <= 0:
-            retval.append("There are no places left on this camp.")
+            errors.append("There are no places left on this camp.")
             places_available = False
 
         if places_available and self.sex == SEX_MALE:
             if places_left_male <= 0:
-                retval.append("There are no places left for boys on this camp.")
+                errors.append("There are no places left for boys on this camp.")
                 places_available = False
 
         if places_available and self.sex == SEX_FEMALE:
             if places_left_female <= 0:
-                retval.append("There are no places left for girls on this camp.")
+                errors.append("There are no places left for girls on this camp.")
                 places_available = False
 
         if places_available:
@@ -372,23 +374,28 @@ class Booking(models.Model):
             places_to_be_booked_female = same_camp_bookings.filter(sex=SEX_FEMALE).count()
 
             if places_left < places_to_be_booked:
-                retval.append("There are not enough places left on this camp "
+                errors.append("There are not enough places left on this camp "
                               "for the campers in this set of bookings.")
                 places_available = False
 
             if places_available and self.sex == SEX_MALE:
                 if places_left_male < places_to_be_booked_male:
-                    retval.append("There are not enough places for boys left on this camp "
+                    errors.append("There are not enough places for boys left on this camp "
                                   "for the campers in this set of bookings.")
                     places_available = False
 
             if places_available and self.sex == SEX_FEMALE:
                 if places_left_female < places_to_be_booked_female:
-                    retval.append("There are not enough places for girls left on this camp "
+                    errors.append("There are not enough places for girls left on this camp "
                                   "for the campers in this set of bookings.")
                     places_available = False
 
-        return retval
+        if self.account.bookings.filter(name=self.name).exclude(id=self.id):
+            warnings.append("You have entered another set of place details for a camper "
+                            "called '%s' on camp %d. Please ensure you don't book multiple "
+                            "places for the same camper!" % (self.name, self.camp.number))
+
+        return (errors, warnings)
 
     def confirm(self):
         self.booking_expires = None
@@ -407,7 +414,7 @@ def book_basket_now(bookings):
         bookings = list(bookings)
         now = datetime.now()
         for b in bookings:
-            if len(b.get_booking_problems()) > 0:
+            if len(b.get_booking_problems()[0]) > 0:
                 return False
 
         for b in bookings:

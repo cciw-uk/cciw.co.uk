@@ -505,7 +505,7 @@ class BookingListBookings(DefaultMetaData, TemplateView):
         for l in basket_bookings, shelf_bookings:
             for b in l:
                 # decorate object with some attributes to make it easier in template
-                b.booking_problems = b.get_booking_problems()
+                b.booking_problems, b.booking_warnings = b.get_booking_problems()
                 b.bookable = len(b.booking_problems) == 0
                 b.manually_approved = b.state == BOOKING_APPROVED
 

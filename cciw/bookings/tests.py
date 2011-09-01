@@ -838,6 +838,16 @@ class TestListBookings(CreatePlaceMixin, TestCase):
             self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
         self.assertContains(resp2, "These places cannot be booked")
 
+    def test_same_name_same_camp(self):
+        self.login()
+        self.create_place()
+        self.create_place() # Identical
+
+        resp = self.client.get(self.url)
+        self.assertContains(resp, "You have entered another set of place details for a camper called")
+        # This is only a warning:
+        self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
+
     def test_book_now_safeguard(self):
         # It might be possible to alter the list of items in the basket in one
         # tab, and then press 'Book now' from an out-of-date representation of
