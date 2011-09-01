@@ -10,7 +10,7 @@ from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import Lock
 
-from .signals import place_confirmed
+from .signals import places_confirmed
 
 # = Business rules =
 #
@@ -174,14 +174,18 @@ class BookingAccount(models.Model):
         candidate_bookings = list(self.bookings.unconfirmed()
                                   .order_by('booking_expires'))
         i = 0
+        confirmed_bookings = []
         while pot > 0 and i < len(candidate_bookings):
             b = candidate_bookings[i]
             if b.amount_due <= pot:
                 b.confirm()
                 b.save()
-                place_confirmed.send(b, payment_received=True)
+                confirmed_bookings.append(b)
                 pot -= b.amount_due
             i += 1
+        if confirmed_bookings:
+            places_confirmed.send(confirmed_bookings, payment_received=True)
+
 
 
 class BookingManager(models.Manager):

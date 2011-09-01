@@ -1055,6 +1055,25 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
         self.assertEqual(mail.outbox[0].to, [self.email])
         self.assertTrue("Thank you for your payment" in mail.outbox[0].body)
 
+    def test_only_one_email_for_multiple_places(self):
+        self.login()
+        self.create_place()
+        self.create_place({'name': 'Another Child'})
+
+        acc = BookingAccount.objects.get(email=self.email)
+        book_basket_now(acc.bookings.basket(self.camp.year))
+
+        mail.outbox = []
+        acc.receive_payment(acc.get_balance())
+
+        self.assertEqual(len(mail.outbox), 1)
+
+        self.assertEqual(mail.outbox[0].subject, "CCIW booking - place confirmed")
+        self.assertEqual(mail.outbox[0].to, [self.email])
+        self.assertTrue(self.place_details['name'] in mail.outbox[0].body)
+        self.assertTrue('Another Child' in mail.outbox[0].body)
+
+
 class TestAjaxViews(CreatePlaceMixin, TestCase):
     # Basic tests to ensure that the views that serve AJAX return something
     # sensible

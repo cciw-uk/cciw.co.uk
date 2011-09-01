@@ -99,18 +99,19 @@ def send_unrecognised_payment_email(ipn_obj):
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [settings.WEBMASTER_EMAIL])
 
 
-def send_place_confirmed_email(booking, **kwargs):
-    account = booking.account
-    emails = list(set([e for e in [account.email, booking.email] if e.strip() != '']))
-    if not emails:
+def send_places_confirmed_email(bookings, **kwargs):
+    if not bookings:
+        return
+    account = bookings[0].account
+    if account.email == '':
         return
 
     c = {
         'url_start': site_address_url_start(),
-        'booking': booking,
-        'camp': booking.camp,
+        'account': account,
+        'bookings': bookings,
         'payment_received': 'payment_received' in kwargs,
         }
     body = loader.render_to_string('cciw/bookings/place_confirmed_email.txt', c)
     subject = "CCIW booking - place confirmed"
-    mail.send_mail(subject, body, settings.SERVER_EMAIL, emails)
+    mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])

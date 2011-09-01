@@ -2,8 +2,8 @@ import re
 
 from paypal.standard.ipn.signals import payment_was_successful
 
-from .signals import place_confirmed
-from .email import send_unrecognised_payment_email, send_place_confirmed_email
+from .signals import places_confirmed
+from .email import send_unrecognised_payment_email, send_places_confirmed_email
 from .models import BookingAccount
 
 #### Handlers #####
@@ -30,12 +30,12 @@ def paypal_payment_received(sender, **kwargs):
 
 ### Place confirmation ###
 
-def place_confirmed_handler(sender, **kwargs):
-    booking = sender
-    send_place_confirmed_email(booking, **kwargs)
+def places_confirmed_handler(sender, **kwargs):
+    bookings = sender
+    send_places_confirmed_email(bookings, **kwargs)
 
 
 #### Wiring ####
 
 payment_was_successful.connect(paypal_payment_received)
-place_confirmed.connect(place_confirmed_handler)
+places_confirmed.connect(places_confirmed_handler)
