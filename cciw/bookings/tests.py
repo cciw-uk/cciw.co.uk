@@ -861,6 +861,33 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
         self.assertContains(resp2, "Places were not booked due to modifications made")
 
+    def test_book_with_money_in_account(self):
+        self.login()
+        self.create_place()
+
+        # Put some money in my account.
+        acc = BookingAccount.objects.get(email=self.email)
+        acc.total_received = acc.bookings.all()[0].amount_due
+        acc.save()
+
+        # Book
+        resp = self.client.get(self.url)
+        state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
+
+        resp2 = self.client.post(self.url, {'state_token': state_token,
+                                            'book_now': '1'},
+                                 follow=True)
+
+        # Place should be booked AND should not expire
+        b = acc.bookings.all()[0]
+        self.assertEqual(b.state, BOOKING_BOOKED)
+        self.assertEqual(b.booking_expires, None)
+
+        # balance should be zero
+        acc = BookingAccount.objects.get(email=self.email)
+        self.assertEqual(acc.get_balance(), Decimal('0.00'))
+        self.assertEqual(acc.get_balance(confirmed_only=True), Decimal('0.00'))
+
 
 class TestPay(CreatePlaceMixin, TestCase):
 

@@ -156,13 +156,16 @@ class BookingAccount(models.Model):
         # Use update and F objects to avoid concurrency problems
         BookingAccount.objects.filter(id=self.id).update(total_received=models.F('total_received') + amount)
 
-        # Need new data from DB, so get a fresh object
+        # Need new data from DB:
         acc = BookingAccount.objects.get(id=self.id)
         self.total_received = acc.total_received
 
+        self.distribute_balance()
+
+    def distribute_balance(self):
         # In order to distribute funds, need to take into account the total
         # amount in the account that is not covered by confirmed places
-        existing_balance = acc.get_balance(confirmed_only=True)
+        existing_balance = self.get_balance(confirmed_only=True)
         # The 'pot' is the amount we have as excess and can use to mark places
         # as confirmed.
         pot = -existing_balance
@@ -410,6 +413,16 @@ def book_basket_now(bookings):
             b.state = BOOKING_BOOKED
             b.booking_expires = now + timedelta(1) # 24 hours
             b.save()
+
+        # In some cases we may have enough money to pay for places from money in
+        # account. Since a payment will not be needed or received, we need to
+        # make sure these don't expire.
+        seen_accounts = set()
+        for b in bookings:
+            if b.account_id in seen_accounts:
+                continue
+            b.account.distribute_balance()
+            seen_accounts.add(b.account_id)
 
         return True
     finally:
