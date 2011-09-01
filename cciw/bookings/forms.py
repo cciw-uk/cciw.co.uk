@@ -1,4 +1,6 @@
 from django import forms
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
 
 from cciw.bookings.models import BookingAccount, Booking
 from cciw.cciwmain.forms import CciwFormMixin
@@ -28,9 +30,22 @@ AccountDetailsForm.base_fields['post_code'].required = True
 
 
 class AddPlaceForm(CciwFormMixin, forms.ModelForm):
+
+    camp = forms.ChoiceField(choices=[],
+                             widget=forms.RadioSelect)
+
     def __init__(self, *args, **kwargs):
         super(AddPlaceForm, self).__init__(*args, **kwargs)
-        self.fields['camp'].queryset = Camp.objects.filter(year=get_thisyear())
+        def render_camp(c):
+            return (escape("Camp %d, %s, %s" % (c.number, c.leaders_formatted,
+                                                c.start_date.strftime("%e %b %Y"))) +
+                    '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+                    '<span class="placeAvailability">' +
+                    escape("(Places left: %d total, max %d for boys, max %d for girls)" %
+                           c.get_places_left()) + '</span>')
+        self.fields['camp'].choices = [(c.id, mark_safe(render_camp(c)))
+                                       for c in Camp.objects.filter(year=get_thisyear())]
+
 
     class Meta:
         model = Booking
@@ -63,13 +78,7 @@ class AddPlaceForm(CciwFormMixin, forms.ModelForm):
             ]
 
     def clean_camp(self):
-        camp = self.cleaned_data['camp']
-        thisyear = get_thisyear()
-        if camp.year != thisyear:
-            # This will not ever trigger if the limiting of the camp queryset
-            # above works as intended. Instead you get 'Select a valid choice'
-            raise forms.ValidationError('Only a camp in %s can be selected.' % thisyear)
-
-        return camp
+        camp_id = self.cleaned_data['camp']
+        return Camp.objects.get(id=int(camp_id))
 
 AddPlaceForm.base_fields['agreement'].required = True

@@ -825,6 +825,10 @@ div.bottomlinks img
     vertical-align: top;
 }
 
+.placeAvailability {
+    color: #404040;
+}
+
 /* Popups */
 
 .inlinepopup {
