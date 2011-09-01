@@ -133,6 +133,23 @@ class Camp(models.Model):
     def age(self):
         return "%d-%d" % (self.minimum_age, self.maximum_age)
 
+    def get_places_available(self, sex=None):
+        from cciw.bookings.models import SEX_MALE, SEX_FEMALE
+        qs = self.bookings.booked()
+        if sex is not None:
+            qs = qs.filter(sex=sex)
+        booked = qs.count()
+
+        if sex is None:
+            retval = self.max_campers - booked
+        elif sex == SEX_MALE:
+            retval = self.max_male_campers - booked
+        elif sex == SEX_FEMALE:
+            retval = self.max_female_campers - booked
+        else:
+            assert False, "%s is not a valid sex" % sex
+        return max(0, retval) # negative numbers of places available is confusing for our purposes
+
     class Meta:
         ordering = ['-year','number']
         unique_together = (('year', 'number'),)
