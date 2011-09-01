@@ -12,6 +12,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'email', 'post_code', 'phone_number']
     ordering = ['email']
     search_fields = ['email', 'name']
+    readonly_fields = ['total_received']
 
 
 class YearFilter(admin.SimpleListFilter):
