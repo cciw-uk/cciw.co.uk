@@ -216,6 +216,9 @@ class LogInMixin(object):
                                                                    address='123',
                                                                    post_code='XYZ')
 
+    def get_account(self):
+        return BookingAccount.objects.get(email=self.email)
+
 
 class TestAccountDetails(LogInMixin, TestCase):
 
@@ -383,7 +386,7 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
         self.login()
         self.add_prices()
         self.create_place()
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         b = acc.bookings.all()[0]
         resp = self.client.get(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}))
         self.assertEqual(resp.status_code, 200)
@@ -403,7 +406,7 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
         self.login()
         self.add_prices()
         self.create_place()
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         b = acc.bookings.all()[0]
         resp = self.client.post(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}), {})
         self.assertEqual(resp.status_code, 200)
@@ -413,7 +416,7 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
         self.login()
         self.add_prices()
         self.create_place()
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         b = acc.bookings.all()[0]
 
         data = self.place_details.copy()
@@ -434,7 +437,7 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
         self.login()
         self.add_prices()
         self.create_place()
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         b = acc.bookings.all()[0]
 
         for state in [BOOKING_APPROVED, BOOKING_BOOKED]:
@@ -717,7 +720,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
     def test_move_to_shelf(self):
         self.login()
         self.create_place()
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         b = acc.bookings.all()[0]
         self.assertEqual(b.shelved, False)
         resp = self.client.post(self.url)
@@ -741,7 +744,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
     def test_move_to_basket(self):
         self.login()
         self.create_place()
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         b = acc.bookings.all()[0]
         b.shelved = True
         b.save()
@@ -763,7 +766,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
     def test_delete_place(self):
         self.login()
         self.create_place()
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         b = acc.bookings.all()[0]
         resp = self.client.post(self.url)
 
@@ -779,7 +782,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
     def test_edit_place_btn(self):
         self.login()
         self.create_place()
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         b = acc.bookings.all()[0]
         resp = self.client.post(self.url)
 
@@ -801,7 +804,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
         resp2 = self.client.post(self.url, {'state_token': state_token,
                                             'book_now': '1'})
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         b = acc.bookings.all()[0]
         self.assertEqual(b.state, BOOKING_BOOKED)
         self.assertEqual(resp2.status_code, 302)
@@ -817,7 +820,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
         resp2 = self.client.post(self.url, {'state_token': state_token,
                                             'book_now': '1'})
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         b = acc.bookings.all()[0]
         self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
         self.assertContains(resp2, "These places cannot be booked")
@@ -833,7 +836,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
         resp2 = self.client.post(self.url, {'state_token': state_token,
                                             'book_now': '1'})
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         for b in acc.bookings.all():
             self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
         self.assertContains(resp2, "These places cannot be booked")
@@ -860,7 +863,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
 
         # Now modify
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         b = acc.bookings.all()[0]
         b.south_wales_transport = True
         b.auto_set_amount_due()
@@ -879,7 +882,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.create_place()
 
         # Put some money in my account.
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         acc.total_received = acc.bookings.all()[0].amount_due
         acc.save()
 
@@ -897,7 +900,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(b.booking_expires, None)
 
         # balance should be zero
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         self.assertEqual(acc.get_balance(), Decimal('0.00'))
         self.assertEqual(acc.get_balance(confirmed_only=True), Decimal('0.00'))
 
@@ -917,7 +920,7 @@ class TestPay(CreatePlaceMixin, TestCase):
         self.login()
         self.create_place()
         self.create_place()
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         acc.bookings.all().update(state=BOOKING_BOOKED)
 
         resp = self.client.get(reverse('cciw.bookings.views.pay'))
@@ -958,14 +961,14 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
     def test_receive_payment(self):
         self.login()
         self.create_place()
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         book_basket_now(acc.bookings.basket(self.camp.year))
         self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
 
         p = Price.objects.get(year=get_thisyear(), price_type=PRICE_FULL).price
         acc.receive_payment(p)
 
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
 
         # Check we updated the account
         self.assertEqual(acc.total_received, p)
@@ -977,7 +980,7 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
         self.login()
         self.create_place()
         self.create_place({'price_type': PRICE_2ND_CHILD})
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         book_basket_now(acc.bookings.basket(self.camp.year))
         self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
 
@@ -1043,7 +1046,7 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
 
         self.login()
         self.create_place()
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         book_basket_now(acc.bookings.basket(self.camp.year))
 
         mail.outbox = []
@@ -1060,7 +1063,7 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
         self.create_place()
         self.create_place({'name': 'Another Child'})
 
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         book_basket_now(acc.bookings.basket(self.camp.year))
 
         mail.outbox = []
@@ -1089,7 +1092,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
 
     def test_account_json(self):
         self.login()
-        acc = BookingAccount.objects.get(email=self.email)
+        acc = self.get_account()
         acc.address = '123 Main Street'
         acc.save()
 
