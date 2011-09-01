@@ -1,6 +1,6 @@
 import re
 
-from paypal.standard.ipn.signals import payment_was_successful
+from paypal.standard.ipn.signals import payment_was_successful, payment_was_flagged
 
 from .signals import places_confirmed
 from .email import send_unrecognised_payment_email, send_places_confirmed_email
@@ -10,7 +10,7 @@ from .models import BookingAccount
 
 ### Payments ####
 
-def unrecognised_payment(ipn_obj):
+def unrecognised_payment(ipn_obj, **kwargs):
     send_unrecognised_payment_email(ipn_obj)
 
 
@@ -38,4 +38,5 @@ def places_confirmed_handler(sender, **kwargs):
 #### Wiring ####
 
 payment_was_successful.connect(paypal_payment_received)
+payment_was_flagged.connect(unrecognised_payment)
 places_confirmed.connect(places_confirmed_handler)
