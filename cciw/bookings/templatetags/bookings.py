@@ -52,7 +52,7 @@ def bookingbar(context):
         out.append("Not logged in")
     else:
         out.append("Bookings: %s" % escape(request.booking_account.email))
-        out.append(' | <a href="%s">Account overview</a>' % 'TODO')
+        out.append(' | <a href="%s">Account overview</a>' % escape(reverse('cciw.bookings.views.account_overview')))
         out.append(' | <a href="%s">Log out</a>' % 'TODO')
     out.append("</div>")
 

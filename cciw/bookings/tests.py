@@ -206,6 +206,8 @@ class LogInMixin(object):
     email = 'booker@bookers.com'
 
     def login(self, add_account_details=True):
+        if hasattr(self, '_logged_in'):
+            return
         # Easiest way is to simulate what the user actually has to do
         self.client.post(reverse('cciw.bookings.views.start'),
                          {'email': self.email})
@@ -215,6 +217,7 @@ class LogInMixin(object):
             BookingAccount.objects.filter(email=self.email).update(name='Joe',
                                                                    address='123',
                                                                    post_code='XYZ')
+        self._logged_in = True
 
     def get_account(self):
         return BookingAccount.objects.get(email=self.email)
@@ -1118,3 +1121,44 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.get(reverse('cciw.bookings.views.account_json'))
         json = simplejson.loads(resp.content)
         self.assertEqual(json['account']['address'], '123 Main Street')
+
+
+class TestAccountOverview(CreatePlaceMixin, TestCase):
+
+    fixtures = ['basic.json']
+
+    url = reverse('cciw.bookings.views.account_overview')
+
+    def test_show(self):
+        self.login()
+
+        acc = self.get_account()
+
+        # Book a place and pay
+        self.create_place()
+        book_basket_now(acc.bookings.basket(self.camp.year))
+        acc.receive_payment(acc.bookings.all()[0].amount_due)
+
+        # Book another
+        self.create_place({'name': 'Another Child'})
+        book_basket_now(acc.bookings.basket(self.camp.year))
+
+        # 3rd place, not booked at all
+        self.create_place({'name': '3rd child'})
+
+        resp = self.client.get(self.url)
+
+        # Another one, so that messages are cleared
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
+        # Confirmed place
+        self.assertContains(resp, self.place_details['name'])
+
+
+        # Booked place
+        self.assertContains(resp, 'Another Child')
+        self.assertContains(resp, 'remember to pay')
+
+        # Basket/Shelf
+        self.assertContains(resp, 'items in your basket')

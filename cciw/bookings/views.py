@@ -653,6 +653,22 @@ class BookingPayCancelled(DefaultMetaData, TemplateView):
         return self.get(*args, **kwargs)
 
 
+class BookingAccountOverview(DefaultMetaData, TemplateView):
+    metadata_title = "Booking - account overview"
+    template_name = 'cciw/bookings/account_overview.html'
+    extra_context = {'stage': ''}
+
+    def get_context_data(self, *args, **kwargs):
+        c = super(BookingAccountOverview, self).get_context_data(*args, **kwargs)
+        acc = self.request.booking_account
+        year = get_thisyear()
+        c['confirmed_places'] = acc.bookings.confirmed().filter(camp__year__exact=year)
+        c['unconfirmed_places'] = acc.bookings.unconfirmed().filter(camp__year__exact=year)
+        c['basket'] = acc.bookings.basket(year).exists()
+        c['shelf'] = acc.bookings.shelf(year).exists()
+        return c
+
+
 index = BookingIndex.as_view()
 start = BookingStart.as_view()
 email_sent = BookingEmailSent.as_view()
@@ -665,4 +681,5 @@ list_bookings = booking_account_required(BookingListBookings.as_view())
 pay = booking_account_required(BookingPay.as_view())
 pay_done = csrf_exempt(BookingPayDone.as_view())
 pay_cancelled = csrf_exempt(BookingPayCancelled.as_view())
+account_overview = booking_account_required(BookingAccountOverview.as_view())
 

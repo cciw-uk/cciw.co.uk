@@ -17,4 +17,5 @@ urlpatterns = \
              (r'^pay/$', 'pay'),
              (r'^pay/done/$', 'pay_done'),
              (r'^pay/cancelled/$', 'pay_cancelled'),
+             (r'^overview/$', 'account_overview'),
              )
