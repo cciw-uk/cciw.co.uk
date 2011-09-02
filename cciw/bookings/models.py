@@ -71,7 +71,8 @@ class BookingAccount(models.Model):
                                              "to other parents to help organise transport",
                                              blank=True, default=False)
     total_received = models.DecimalField(default=Decimal('0.00'), decimal_places=2, max_digits=10)
-    activated = models.DateTimeField(null=True, blank=True)
+    first_login = models.DateTimeField(null=True, blank=True)
+    last_login = models.DateTimeField(null=True, blank=True)
 
     def has_account_details(self):
         return self.name != "" and self.address != "" and self.post_code != ""

@@ -93,7 +93,6 @@ class TestBookingStart(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(BookingAccount.objects.all().count(), 1)
         b = BookingAccount.objects.get(email='booker@bookers.com')
-        self.assertEqual(b.activated, None)
         self.assertEqual(len(mail.outbox), 1)
 
     def test_complete_form_existing_email(self):
@@ -145,13 +144,20 @@ class TestBookingVerify(TestCase):
         # Assumes booking_start works:
         self.client.post(reverse('cciw.bookings.views.start'),
                          {'email': 'booker@bookers.com'})
+        acc = BookingAccount.objects.get(email='booker@bookers.com')
+        self.assertTrue(acc.last_login is None)
+        self.assertTrue(acc.first_login is None)
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         resp = self.client.get(path, querydata)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.account_details')
         self.assertTrue(resp['Location'].endswith(newpath))
-        self.assertEqual(str(BookingAccount.objects.get(email='booker@bookers.com').id),
+        acc = BookingAccount.objects.get(email='booker@bookers.com')
+        self.assertEqual(str(acc.id),
                          resp.cookies['bookingaccount'].value.split(':')[0])
+        self.assertTrue(acc.last_login is not None)
+        self.assertTrue(acc.first_login is not None)
+
 
     def test_verify_correct_and_has_details(self):
         """

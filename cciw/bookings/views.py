@@ -339,6 +339,12 @@ def verify_email(request, account_id, token):
         return fail()
 
     if check_email_verification_token(account, token):
+        dt = datetime.now()
+        if account.first_login is None:
+            account.first_login = dt
+        account.last_login = dt
+        account.save()
+
         resp = next_step(account)
         set_booking_account_cookie(resp, account)
         return resp
