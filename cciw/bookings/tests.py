@@ -1112,6 +1112,21 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         json = simplejson.loads(resp.content)
         self.assertEqual(json['places'][0]['name'], self.place_details['name'])
 
+    def test_places_json_with_exclusion(self):
+        self.login()
+        self.create_place()
+        acc = self.get_account()
+        resp = self.client.get(reverse('cciw.bookings.views.places_json') +
+                               ("?exclude=%d" % acc.bookings.all()[0].id))
+        json = simplejson.loads(resp.content)
+        self.assertEqual(json['places'], [])
+
+    def test_places_json_with_bad_exclusion(self):
+        self.login()
+        resp = self.client.get(reverse('cciw.bookings.views.places_json') +"?exclude=x")
+        json = simplejson.loads(resp.content)
+        self.assertEqual(json['places'], [])
+
     def test_account_json(self):
         self.login()
         acc = self.get_account()

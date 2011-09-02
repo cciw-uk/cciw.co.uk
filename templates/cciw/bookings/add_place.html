@@ -188,7 +188,7 @@
        /* Load data about existing places */
        $.ajax({
            type: "GET",
-           url: '{% url "cciw.bookings.views.places_json" %}',
+           url: '{% url "cciw.bookings.views.places_json" %}?exclude={{ form.instance.id }}',
            dataType: "json",
            success: handleExistingPlacesData
        });

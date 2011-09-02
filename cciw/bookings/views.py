@@ -469,8 +469,15 @@ ACCOUNT_PUBLIC_ATTRS = [
 @json_response
 def places_json(request):
     retval = {'status': 'success'}
+    qs = request.booking_account.bookings.all()
+    if 'exclude' in request.GET:
+        try:
+            exclude_id = int(request.GET['exclude'])
+            qs = qs.exclude(id=exclude_id)
+        except ValueError:
+            pass
     retval['places'] = [dict((k, getattr(b, k)) for k in BOOKING_PLACE_PUBLIC_ATTRS)
-                        for b in request.booking_account.bookings.all()]
+                        for b in qs]
     return retval
 
 
