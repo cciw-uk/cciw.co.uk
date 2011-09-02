@@ -861,6 +861,44 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         # This is only a warning:
         self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
 
+    def test_warn_about_multiple_full_price(self):
+        self.login()
+        self.create_place()
+        self.create_place({'name': 'Mary Bloggs'})
+
+        resp = self.client.get(self.url)
+        self.assertContains(resp, "You have multiple places at &#39;Full price")
+        self.assertContains(resp, "If Mary Bloggs and Frédéric Bloggs")
+        # This is only a warning:
+        self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
+
+        # Check for more than 2
+        self.create_place({'name': 'Peter Bloggs'})
+        resp = self.client.get(self.url)
+        self.assertContains(resp, "If Mary Bloggs, Peter Bloggs and Frédéric Bloggs")
+
+    def test_warn_about_multiple_2nd_child(self):
+        self.login()
+        self.create_place()
+        self.create_place({'name': 'Mary Bloggs',
+                           'price_type': PRICE_2ND_CHILD})
+        self.create_place({'name': 'Peter Bloggs',
+                           'price_type': PRICE_2ND_CHILD})
+
+        resp = self.client.get(self.url)
+        self.assertContains(resp, "You have multiple places at &#39;2nd child")
+        self.assertContains(resp, "If Peter Bloggs and Mary Bloggs")
+        self.assertContains(resp, "one is eligible")
+        # This is only a warning:
+        self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
+
+
+        self.create_place({'name': 'Zac Bloggs',
+                           'price_type': PRICE_2ND_CHILD})
+        resp = self.client.get(self.url)
+        self.assertContains(resp, "2 are eligible")
+
+
     def test_book_now_safeguard(self):
         # It might be possible to alter the list of items in the basket in one
         # tab, and then press 'Book now' from an out-of-date representation of

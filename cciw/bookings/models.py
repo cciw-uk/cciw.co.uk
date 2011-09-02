@@ -396,10 +396,49 @@ class Booking(models.Model):
                                   u"for the campers in this set of bookings.")
                     places_available = False
 
-        if self.account.bookings.filter(name=self.name).exclude(id=self.id):
-            warnings.append("You have entered another set of place details for a camper "
-                            "called '%s' on camp %d. Please ensure you don't book multiple "
-                            "places for the same camper!" % (self.name, self.camp.number))
+        ### Warnings ###
+
+        if self.account.bookings.filter(name=self.name, camp=self.camp).exclude(id=self.id):
+            warnings.append(u"You have entered another set of place details for a camper "
+                            u"called '%s' on camp %d. Please ensure you don't book multiple "
+                            u"places for the same camper!" % (self.name, self.camp.number))
+
+
+        if self.price_type == PRICE_FULL:
+            full_pricers = self.account.bookings.filter(price_type=PRICE_FULL,
+                                                        camp__year__exact=self.camp.year,
+                                                        shelved=False).order_by('name')
+            if len(full_pricers) > 1:
+                names = [b.name for b in full_pricers]
+                pretty_names = u', '.join(names[1:]) + u" and " + names[0]
+                warning = u"You have multiple places at 'Full price'. "
+                if len(names) == 2:
+                    warning += (u"If %s are from the same family, one is eligible "
+                                u"for the 2nd child discount." % pretty_names)
+                else:
+                    warning += (u"If %s are from the same family, one or more is eligible "
+                                u"for the 2nd or 3rd child discounts." % pretty_names)
+
+                warnings.append(warning)
+
+        if self.price_type == PRICE_2ND_CHILD:
+            second_childers = self.account.bookings.filter(price_type=PRICE_2ND_CHILD,
+                                                           camp__year__exact=self.camp.year,
+                                                           shelved=False).order_by('name')
+            if len(second_childers) > 1:
+                names = [b.name for b in second_childers]
+                pretty_names = u', '.join(names[1:]) + u" and " + names[0]
+                warning = u"You have multiple places at '2nd child discount'. "
+                if len(names) == 2:
+                    warning += (u"If %s are from the same family, one is eligible "
+                                u"for the 3rd child discount." % pretty_names)
+                else:
+                    warning += (u"If %s are from the same family, %d are eligible "
+                                u"for the 3rd child discount." % (pretty_names,
+                                                                 len(names) - 1))
+
+                warnings.append(warning)
+
 
         return (errors, warnings)
 
