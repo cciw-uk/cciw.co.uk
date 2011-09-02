@@ -71,7 +71,6 @@ INSTALLED_APPS = (
     'cciw.utils',
     'cciw.bookings',
     'django.contrib.messages',
-    'mailer',
     'securedownload',
     'autocomplete',
     'djiki',
@@ -95,6 +94,11 @@ if DEVBOX and DEBUG:
 if DEVBOX:
     INSTALLED_APPS += (
         'anonymizer',
+)
+
+if LIVEBOX and PRODUCTION:
+    INSTALLED_APPS += (
+    'mailer',
 )
 
 ######  DATABASE   ####
