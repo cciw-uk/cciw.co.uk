@@ -151,8 +151,16 @@
        var useAccountData = function(nameList, prefix) {
            // exploit the fact that we've named things nicely.
            $.each(nameList, function(idx, val) {
-               $('#id_' + prefix + val).val(userData['account'][val]);
-               cciw.standardformClearError('id_' + prefix + val);
+               var control_id = '#id_' + prefix + val;
+               $(control_id).val(userData['account'][val]);
+
+               // Data is not quite guaranteed to be good in this case
+               // (e.g. Booking.contact_phone_number is required, but
+               // BookingAccount.phone_number is not), so we trigger AJAX
+               // validation. With fewer fields than for copying place data,
+               // this is only a few AJAX calls.
+
+               $(control_id).change();
            });
        };
 
