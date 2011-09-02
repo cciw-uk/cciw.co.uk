@@ -350,6 +350,7 @@ def verify_email(request, account_id, token):
 
         resp = next_step(account)
         set_booking_account_cookie(resp, account)
+        messages.info(request, u"Logged in!")
         return resp
     else:
         return fail()
