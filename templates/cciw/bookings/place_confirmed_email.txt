@@ -9,7 +9,7 @@ Dear {{ account.name }},
 {% for b in bookings %}
 Name: {{ b.name }}
 Camp: {{ b.camp }}
-Dates: {{ b.camp.start_date|date:"d F Y" }} to {{ b.camp.end_date|date:"d F" }}
+Dates: {{ b.camp.start_date|date:"d F" }} to {{ b.camp.end_date|date:"d F Y" }}
 {% endfor %}
 
 The camp leaders will be in contact with more details in due time.
