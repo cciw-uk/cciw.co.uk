@@ -400,7 +400,7 @@ class BookingEditAddBase(DefaultMetaData, TemplateResponseMixin, AjaxyFormMixin)
 
 class BookingAddPlace(BookingEditAddBase, BaseCreateView):
     __metaclass__ = AjaxMroFixer
-    metadata_title = "Booking - add place"
+    metadata_title = "Booking - add new place"
     form_class = AddPlaceForm
 
 

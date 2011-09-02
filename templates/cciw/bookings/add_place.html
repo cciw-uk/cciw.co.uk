@@ -224,8 +224,12 @@
 
   {% else %}
 
+     {% if form.instance.id %}
+     <p>Details for <b>{{ form.instance.name }}</b>:</p>
+     {% else %}
      <p>Please enter the details needed to book a place on a camp. Required fields
        are starred.</p>
+     {% endif %}
 
   {% endif %}
 
