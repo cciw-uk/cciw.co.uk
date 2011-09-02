@@ -8,6 +8,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import simplejson
 
+from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED
 from cciw.cciwmain.common import get_thisyear
@@ -1205,3 +1206,94 @@ class TestLogOut(LogInMixin, TestCase):
         resp2 = self.client.get(reverse('cciw.bookings.views.account_overview'))
         self.assertEqual(resp2.status_code, 302)
 
+
+class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
+
+    fixtures = ['basic']
+
+    def test_just_created(self):
+        """
+        Test no mail if just created
+        """
+        self.login()
+        self.create_place()
+
+        acc = self.get_account()
+        book_basket_now(acc.bookings.basket(get_thisyear()))
+
+        mail.outbox = []
+
+        ExpireBookingsCommand().handle()
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_warning(self):
+        """
+        Test that we get a warning email after 12 hours
+        """
+        self.login()
+        self.create_place()
+
+        acc = self.get_account()
+        book_basket_now(acc.bookings.basket(get_thisyear()))
+        b = acc.bookings.all()[0]
+        b.booking_expires = b.booking_expires - timedelta(0.6)
+        b.save()
+
+        mail.outbox = []
+        ExpireBookingsCommand().handle()
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertTrue("warning" in mail.outbox[0].subject)
+
+        b = acc.bookings.all()[0]
+        self.assertNotEqual(b.booking_expires, None)
+        self.assertEqual(b.state, BOOKING_BOOKED)
+
+    def test_expires(self):
+        """
+        Test that we get an expiry email after 24 hours
+        """
+        self.login()
+        self.create_place()
+
+        acc = self.get_account()
+        book_basket_now(acc.bookings.basket(get_thisyear()))
+        b = acc.bookings.all()[0]
+        b.booking_expires = b.booking_expires - timedelta(1.01)
+        b.save()
+
+        mail.outbox = []
+        ExpireBookingsCommand().handle()
+        # NB - should get one, not two (shouldn't get warning)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertTrue("expired" in mail.outbox[0].subject)
+        self.assertTrue("have expired" in mail.outbox[0].body)
+
+        b = acc.bookings.all()[0]
+        self.assertEqual(b.booking_expires, None)
+        self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
+
+    def test_grouping(self):
+        """
+        Test the emails are grouped as we expect
+        """
+        self.login()
+        self.create_place({'name':'Child One'})
+        self.create_place({'name':'Child Two'})
+
+        acc = self.get_account()
+        book_basket_now(acc.bookings.basket(get_thisyear()))
+        acc.bookings.update(booking_expires = datetime.now() - timedelta(1))
+
+        mail.outbox = []
+        ExpireBookingsCommand().handle()
+
+        # Should get one, not two, because they will be grouped.
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertTrue("expired" in mail.outbox[0].subject)
+        self.assertTrue("have expired" in mail.outbox[0].body)
+        self.assertTrue("Child One" in mail.outbox[0].body)
+        self.assertTrue("Child Two" in mail.outbox[0].body)
+
+        for b in acc.bookings.all():
+            self.assertEqual(b.booking_expires, None)
+            self.assertEqual(b.state, BOOKING_INFO_COMPLETE)

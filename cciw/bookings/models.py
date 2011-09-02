@@ -406,6 +406,10 @@ class Booking(models.Model):
     def confirm(self):
         self.booking_expires = None
 
+    def expire(self):
+        self.booking_expires = None
+        self.state = BOOKING_INFO_COMPLETE
+
     def is_user_editable(self):
         return self.state == BOOKING_INFO_COMPLETE
 

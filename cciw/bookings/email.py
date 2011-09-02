@@ -115,3 +115,21 @@ def send_places_confirmed_email(bookings, **kwargs):
     body = loader.render_to_string('cciw/bookings/place_confirmed_email.txt', c)
     subject = "CCIW booking - place confirmed"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+
+
+def send_booking_expiry_mail(account, bookings, expired):
+    if account.email == '':
+        return
+
+    c = {
+        'url_start': site_address_url_start(),
+        'account': account,
+        'bookings': bookings,
+        'expired': expired,
+        }
+    body = loader.render_to_string('cciw/bookings/place_expired_mail.txt', c)
+    if expired:
+        subject = "CCIW booking - booking expired"
+    else:
+        subject = "CCIW booking - booking expiry warning"
+    mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
