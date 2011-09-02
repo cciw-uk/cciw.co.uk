@@ -271,7 +271,7 @@ class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
     def place_details(self):
         return {
             'camp': self.camp.id,
-            'name': 'Joe Bloggs',
+            'name': u'Frédéric Bloggs',
             'sex': 'm',
             'date_of_birth': '%d-01-01' % (get_thisyear() - 14),
             'address': 'x',
@@ -486,7 +486,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(200, resp.status_code)
 
         self.assertContains(resp, "Camp 1")
-        self.assertContains(resp, "Joe Bloggs")
+        self.assertContains(resp, "Frédéric Bloggs")
         self.assertContains(resp, "£100")
         self.assertContains(resp, "This place can be booked")
         self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
@@ -498,7 +498,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(200, resp.status_code)
 
         self.assertContains(resp, "Camp 1")
-        self.assertContains(resp, "Joe Bloggs")
+        self.assertContains(resp, "Frédéric Bloggs")
         self.assertContains(resp, "TBA")
         self.assertContains(resp, "A custom discount needs to be arranged by the booking secretary")
         self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
@@ -668,7 +668,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(200, resp.status_code)
 
         self.assertContains(resp, "Camp 1")
-        self.assertContains(resp, "Joe Bloggs")
+        self.assertContains(resp, "Frédéric Bloggs")
         self.assertContains(resp, "TBA")
         self.assertContains(resp, "A custom discount needs to be arranged by the booking secretary")
         self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
@@ -708,7 +708,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(200, resp.status_code)
 
         self.assertContains(resp, "Camp 1")
-        self.assertContains(resp, "Joe Bloggs")
+        self.assertContains(resp, "Frédéric Bloggs")
         self.assertContains(resp, "£100")
         self.assertContains(resp, "This place can be booked")
 

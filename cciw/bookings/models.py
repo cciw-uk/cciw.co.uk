@@ -84,9 +84,9 @@ class BookingAccount(models.Model):
         if self.post_code:
             out.append(self.post_code)
         if self.email:
-            out.append("<" + self.email + ">")
+            out.append(u"<" + self.email + u">")
         if not out:
-            out.append("(empty)")
+            out.append(u"(empty)")
         return u", ".join(out)
 
     # Business methods:
@@ -279,7 +279,7 @@ class Booking(models.Model):
     # Methods
 
     def __unicode__(self):
-        return "%s, %s-%s, %s" % (self.name, self.camp.year, self.camp.number,
+        return u"%s, %s-%s, %s" % (self.name, self.camp.year, self.camp.number,
                                   self.account)
 
     ### Main business rules here ###
@@ -314,37 +314,37 @@ class Booking(models.Model):
 
         # Custom price - not auto bookable
         if self.price_type == PRICE_CUSTOM:
-            errors.append("A custom discount needs to be arranged by the booking secretary")
+            errors.append(u"A custom discount needs to be arranged by the booking secretary")
 
         # 2nd/3rd child discounts
         if self.price_type == PRICE_2ND_CHILD:
             qs = self.account.bookings.filter(shelved=False, camp__year__exact=self.camp.year)
             if not qs.filter(price_type=PRICE_FULL).exists():
-                errors.append("You cannot use a 2nd child discount unless you have "
-                              "a child at full price. Please edit the place details "
-                              "and choose an appropriate price type.")
+                errors.append(u"You cannot use a 2nd child discount unless you have "
+                              u"a child at full price. Please edit the place details "
+                              u"and choose an appropriate price type.")
 
         if self.price_type == PRICE_3RD_CHILD:
             qs = self.account.bookings.filter(shelved=False, camp__year__exact=self.camp.year)
             qs = qs.filter(price_type=PRICE_FULL) | qs.filter(price_type=PRICE_2ND_CHILD)
             if qs.count() < 2:
-                errors.append("You cannot use a 3rd child discount unless you have "
-                              "two other places without this discount. Please edit the "
-                              "place details and choose an appropriate price type.")
+                errors.append(u"You cannot use a 3rd child discount unless you have "
+                              u"two other places without this discount. Please edit the "
+                              u"place details and choose an appropriate price type.")
 
         # serious illness
         if self.serious_illness:
-            errors.append("Must be approved by leader due to serious illness/condition")
+            errors.append(u"Must be approved by leader due to serious illness/condition")
 
         # Check age.
         # Age is calculated based on shool years, i.e. age on 31st August
         camper_age = relativedelta(date(self.camp.year, 8, 31), self.date_of_birth)
         if camper_age.years < self.camp.minimum_age:
-            errors.append("Camper will be below the minimum age (%d) on the 31st August %d"
+            errors.append(u"Camper will be below the minimum age (%d) on the 31st August %d"
                           % (self.camp.minimum_age, self.camp.year))
 
         if camper_age.years > self.camp.maximum_age:
-            errors.append("Camper will be above the maximum age (%d) on the 31st August %d"
+            errors.append(u"Camper will be above the maximum age (%d) on the 31st August %d"
                           % (self.camp.maximum_age, self.camp.year))
 
         # Check place availability
@@ -357,17 +357,17 @@ class Booking(models.Model):
 
         # Simple - no places left
         if places_left <= 0:
-            errors.append("There are no places left on this camp.")
+            errors.append(u"There are no places left on this camp.")
             places_available = False
 
         if places_available and self.sex == SEX_MALE:
             if places_left_male <= 0:
-                errors.append("There are no places left for boys on this camp.")
+                errors.append(u"There are no places left for boys on this camp.")
                 places_available = False
 
         if places_available and self.sex == SEX_FEMALE:
             if places_left_female <= 0:
-                errors.append("There are no places left for girls on this camp.")
+                errors.append(u"There are no places left for girls on this camp.")
                 places_available = False
 
         if places_available:
@@ -380,20 +380,20 @@ class Booking(models.Model):
             places_to_be_booked_female = same_camp_bookings.filter(sex=SEX_FEMALE).count()
 
             if places_left < places_to_be_booked:
-                errors.append("There are not enough places left on this camp "
-                              "for the campers in this set of bookings.")
+                errors.append(u"There are not enough places left on this camp "
+                              u"for the campers in this set of bookings.")
                 places_available = False
 
             if places_available and self.sex == SEX_MALE:
                 if places_left_male < places_to_be_booked_male:
-                    errors.append("There are not enough places for boys left on this camp "
-                                  "for the campers in this set of bookings.")
+                    errors.append(u"There are not enough places for boys left on this camp "
+                                  u"for the campers in this set of bookings.")
                     places_available = False
 
             if places_available and self.sex == SEX_FEMALE:
                 if places_left_female < places_to_be_booked_female:
-                    errors.append("There are not enough places for girls left on this camp "
-                                  "for the campers in this set of bookings.")
+                    errors.append(u"There are not enough places for girls left on this camp "
+                                  u"for the campers in this set of bookings.")
                     places_available = False
 
         if self.account.bookings.filter(name=self.name).exclude(id=self.id):

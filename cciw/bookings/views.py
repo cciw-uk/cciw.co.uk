@@ -280,7 +280,7 @@ class AjaxMroFixer(type):
 # Views
 
 class BookingIndex(DefaultMetaData, TemplateView):
-    metadata_title = "Booking"
+    metadata_title = u"Booking"
     template_name = "cciw/bookings/index.html"
 
     def get(self, request):
@@ -306,7 +306,7 @@ def next_step(account):
 
 
 class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFormView):
-    metadata_title = "Booking - email address"
+    metadata_title = u"Booking - email address"
     form_class = EmailForm
     template_name = 'cciw/bookings/start.html'
     success_url = reverse_lazy('cciw.bookings.views.email_sent')
@@ -326,7 +326,7 @@ class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFor
 
 
 class BookingEmailSent(DefaultMetaData, TemplateView):
-    metadata_title = "Booking - email address"
+    metadata_title = u"Booking - email address"
     template_name = "cciw/bookings/email_sent.html"
     extra_context = {'stage': 'email'}
 
@@ -353,19 +353,19 @@ def verify_email(request, account_id, token):
 
 
 class BookingVerifyEmailFailed(DefaultMetaData, TemplateView):
-    metadata_title = "Booking - account email verification failed"
+    metadata_title = u"Booking - account email verification failed"
     template_name = "cciw/bookings/email_verification_failed.html"
     extra_context = {'stage': 'email'}
 
 
 class BookingNotLoggedIn(DefaultMetaData, TemplateView):
-    metadata_title = "Booking - not logged in"
+    metadata_title = u"Booking - not logged in"
     template_name = "cciw/bookings/not_logged_in.html"
 
 
 class BookingAccountDetails(DefaultMetaData, AjaxyFormMixin, TemplateResponseMixin, BaseUpdateView):
     __metaclass__ = AjaxMroFixer
-    metadata_title = "Booking - account details"
+    metadata_title = u"Booking - account details"
     form_class = AccountDetailsForm
     template_name = 'cciw/bookings/account_details.html'
     success_url = reverse_lazy('cciw.bookings.views.add_place')
@@ -375,7 +375,7 @@ class BookingAccountDetails(DefaultMetaData, AjaxyFormMixin, TemplateResponseMix
         return self.request.booking_account
 
     def form_valid(self, form):
-        messages.info(self.request, 'Account details updated, thank you.')
+        messages.info(self.request, u'Account details updated, thank you.')
         return super(BookingAccountDetails, self).form_valid(form)
 
 
@@ -400,19 +400,19 @@ class BookingEditAddBase(DefaultMetaData, TemplateResponseMixin, AjaxyFormMixin)
         form.instance.agreement_date = datetime.now()
         form.instance.auto_set_amount_due()
         form.instance.state = BOOKING_INFO_COMPLETE
-        messages.info(self.request, 'Details for "%s" were saved successfully' % form.instance.name)
+        messages.info(self.request, u'Details for "%s" were saved successfully' % form.instance.name)
         return super(BookingEditAddBase, self).form_valid(form)
 
 
 class BookingAddPlace(BookingEditAddBase, BaseCreateView):
     __metaclass__ = AjaxMroFixer
-    metadata_title = "Booking - add new place"
+    metadata_title = u"Booking - add new place"
     form_class = AddPlaceForm
 
 
 class BookingEditPlace(BookingEditAddBase, BaseUpdateView):
     __metaclass__ = AjaxMroFixer
-    metadata_title = "Booking - edit place"
+    metadata_title = u"Booking - edit place"
     form_class = AddPlaceForm
 
     def post(self, request, *args, **kwargs):
@@ -499,9 +499,9 @@ def account_json(request):
 def make_state_token(bookings):
     # Hash some key data about booking, without which the booking isn't valid.
     bookings.sort(key=lambda b: b.id)
-    data = '|'.join([':'.join(map(str, [b.id, b.camp.id, b.amount_due, b.name, b.price_type, b.state]))
+    data = u'|'.join([u':'.join(map(unicode, [b.id, b.camp.id, b.amount_due, b.name, b.price_type, b.state]))
                      for b in bookings])
-    return salted_hmac('cciw.bookings.state_token', data).hexdigest()
+    return salted_hmac('cciw.bookings.state_token', data.encode('utf-8')).hexdigest()
 
 
 class BookingListBookings(DefaultMetaData, TemplateView):
@@ -568,15 +568,15 @@ class BookingListBookings(DefaultMetaData, TemplateView):
         def shelve(place):
             place.shelved = True
             place.save()
-            messages.info(self.request, 'Place for "%s" moved to shelf' % place.name)
+            messages.info(self.request, u'Place for "%s" moved to shelf' % place.name)
 
         def unshelve(place):
             place.shelved = False
             place.save()
-            messages.info(self.request, 'Place for "%s" moved to basket' % place.name)
+            messages.info(self.request, u'Place for "%s" moved to basket' % place.name)
 
         def delete(place):
-            messages.info(self.request, 'Place for "%s" deleted' % place.name)
+            messages.info(self.request, u'Place for "%s" deleted' % place.name)
             place.delete()
 
         def edit(place):
@@ -606,15 +606,15 @@ class BookingListBookings(DefaultMetaData, TemplateView):
         if 'book_now' in request.POST:
             state_token = request.POST.get('state_token', '')
             if make_state_token(basket_bookings) != state_token:
-                messages.error(request, "Places were not booked due to modifications made "
-                               "to the details. Please check the details and try again.")
+                messages.error(request, u"Places were not booked due to modifications made "
+                               u"to the details. Please check the details and try again.")
             else:
                 if book_basket_now(basket_bookings):
-                    messages.info(request, "Places booked!")
+                    messages.info(request, u"Places booked!")
                     return HttpResponseRedirect(reverse('cciw.bookings.views.pay'))
                 else:
-                    messages.error(request, "These places cannot be booked for the reasons "
-                                   "given below.")
+                    messages.error(request, u"These places cannot be booked for the reasons "
+                                   u"given below.")
 
         return self.get(request, *args, **kwargs)
 
@@ -635,7 +635,7 @@ class BookingPay(DefaultMetaData, TemplateView):
         paypal_dict = {
             "business": settings.PAYPAL_RECEIVER_EMAIL,
             "amount": str(balance),
-            "item_name": "Camp place booking",
+            "item_name": u"Camp place booking",
             "invoice": "%s-%s-%s" % (acc.id, balance,
                                      datetime.now()), # We don't need this, but must be unique
             "notify_url":  "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
@@ -653,7 +653,7 @@ class BookingPay(DefaultMetaData, TemplateView):
 
 
 class BookingPayDone(DefaultMetaData, TemplateView):
-    metadata_title = "Booking - payment complete"
+    metadata_title = u"Booking - payment complete"
     template_name = "cciw/bookings/pay_done.html"
     extra_context = {'stage': 'pay'}
 
@@ -662,7 +662,7 @@ class BookingPayDone(DefaultMetaData, TemplateView):
         return self.get(*args, **kwargs)
 
 class BookingPayCancelled(DefaultMetaData, TemplateView):
-    metadata_title = "Booking - payment cancelled"
+    metadata_title = u"Booking - payment cancelled"
     template_name = "cciw/bookings/pay_cancelled.html"
     extra_context = {'stage': 'pay'}
 
@@ -671,7 +671,7 @@ class BookingPayCancelled(DefaultMetaData, TemplateView):
 
 
 class BookingAccountOverview(DefaultMetaData, TemplateView):
-    metadata_title = "Booking - account overview"
+    metadata_title = u"Booking - account overview"
     template_name = 'cciw/bookings/account_overview.html'
     extra_context = {'stage': ''}
 

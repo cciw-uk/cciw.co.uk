@@ -71,7 +71,7 @@ def send_verify_email(request, booking_account):
         }
 
     body = loader.render_to_string("cciw/bookings/verification_email.txt", c)
-    subject = "CCIW booking account"
+    subject = u"CCIW booking account"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [booking_account.email])
 
 
@@ -95,7 +95,7 @@ def send_unrecognised_payment_email(ipn_obj):
         }
 
     body = loader.render_to_string("cciw/bookings/unrecognised_payment_email.txt", c)
-    subject = "CCIW booking - unrecognised payment"
+    subject = u"CCIW booking - unrecognised payment"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [settings.WEBMASTER_EMAIL])
 
 
@@ -113,7 +113,7 @@ def send_places_confirmed_email(bookings, **kwargs):
         'payment_received': 'payment_received' in kwargs,
         }
     body = loader.render_to_string('cciw/bookings/place_confirmed_email.txt', c)
-    subject = "CCIW booking - place confirmed"
+    subject = u"CCIW booking - place confirmed"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
 
@@ -129,7 +129,7 @@ def send_booking_expiry_mail(account, bookings, expired):
         }
     body = loader.render_to_string('cciw/bookings/place_expired_mail.txt', c)
     if expired:
-        subject = "CCIW booking - booking expired"
+        subject = u"CCIW booking - booking expired"
     else:
-        subject = "CCIW booking - booking expiry warning"
+        subject = u"CCIW booking - booking expiry warning"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
