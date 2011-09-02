@@ -20,6 +20,9 @@ from cciw.sitecontent.models import HtmlChunk
 DISABLED_BOOK_NOW_BTN = "id_book_now_btn\" disabled>"
 ENABLED_BOOK_NOW_BUTTON = "id_book_now_btn\">"
 
+
+### Mixins to reduce duplication ###
+
 class CreateCampMixin(object):
 
     camp_minimum_age = 11
@@ -52,6 +55,70 @@ class CreatePricesMixin(object):
                                     price=Decimal('20.00'))
 
 
+class LogInMixin(object):
+    email = 'booker@bookers.com'
+
+    def login(self, add_account_details=True):
+        if hasattr(self, '_logged_in'):
+            return
+        # Easiest way is to simulate what the user actually has to do
+        self.client.post(reverse('cciw.bookings.views.start'),
+                         {'email': self.email})
+        url, path, querydata = read_email_url(mail.outbox[-1], "https?://.*/booking/v/.*")
+        mail.outbox.pop()
+        self.client.get(path, querydata)
+        if add_account_details:
+            BookingAccount.objects.filter(email=self.email).update(name='Joe',
+                                                                   address='123',
+                                                                   post_code='XYZ')
+        self._logged_in = True
+
+    def get_account(self):
+        return BookingAccount.objects.get(email=self.email)
+
+
+class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
+    @property
+    def place_details(self):
+        return {
+            'camp': self.camp.id,
+            'name': u'Frédéric Bloggs',
+            'sex': 'm',
+            'date_of_birth': '%d-01-01' % (get_thisyear() - 14),
+            'address': 'x',
+            'post_code': 'ABC 123',
+            'contact_name': 'Mary Bloggs',
+            'contact_phone_number': '01982 987654',
+            'gp_name': 'Doctor Who',
+            'gp_address': 'The Tardis',
+            'gp_phone_number': '01234 456789',
+            'medical_card_number': 'asdfasdf',
+            'agreement': '1',
+            'price_type': '0',
+            }
+
+    def create_place(self, extra=None):
+        # We use public views to create place, to ensure that they are created
+        # in the same way that a user would.
+        self.login()
+        self.add_prices()
+
+        data = self.place_details.copy()
+        if extra is not None:
+            data.update(extra)
+        resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
+        self.assertEqual(resp.status_code, 302)
+        newpath = reverse('cciw.bookings.views.list_bookings')
+        self.assertTrue(resp['Location'].endswith(newpath))
+
+    def setUp(self):
+        super(CreatePlaceMixin, self).setUp()
+        self.create_camp()
+
+
+### Test cases ###
+
+
 class TestBookingIndex(CreatePricesMixin, CreateCampMixin, TestCase):
 
     fixtures = ['basic.json']
@@ -75,7 +142,7 @@ class TestBookingIndex(CreatePricesMixin, CreateCampMixin, TestCase):
         self.assertContains(resp, "£100")
 
 
-class TestBookingStart(TestCase):
+class TestBookingStart(CreatePlaceMixin, TestCase):
 
     fixtures = ['basic.json']
 
@@ -106,30 +173,28 @@ class TestBookingStart(TestCase):
 
     def test_skip_if_logged_in(self):
         # This assumes verification process works
-        def login():
-            self.client.post(self.url,
-                             {'email': 'booker@bookers.com'})
-            url, path, querydata = read_email_url(mail.outbox[-1], "https?://.*/booking/v/.*")
-            self.client.get(path, querydata)
-        login()
-
         # Check redirect to step 3 - account details
+        self.login(add_account_details=False)
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.account_details')
         self.assertTrue(resp['Location'].endswith(newpath))
 
+    def test_skip_if_account_details(self):
         # Check redirect to step 4 - add place
-        b = BookingAccount.objects.get(email="booker@bookers.com")
-        b.name = "Joe"
-        b.address = "Home"
-        b.post_code = "XY1 D45"
-        b.save()
+        self.login()
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.add_place')
         self.assertTrue(resp['Location'].endswith(newpath))
 
+    def test_skip_if_has_place_details(self):
+        # Check redirect to step 5 - checkout
+        self.login()
+        self.create_place()
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(resp['Location'].endswith(reverse('cciw.bookings.views.list_bookings')))
 
 class TestBookingVerify(TestCase):
 
@@ -209,27 +274,6 @@ class TestBookingVerify(TestCase):
         self.assertTrue('bookingaccount' not in resp.cookies)
 
 
-class LogInMixin(object):
-    email = 'booker@bookers.com'
-
-    def login(self, add_account_details=True):
-        if hasattr(self, '_logged_in'):
-            return
-        # Easiest way is to simulate what the user actually has to do
-        self.client.post(reverse('cciw.bookings.views.start'),
-                         {'email': self.email})
-        url, path, querydata = read_email_url(mail.outbox[-1], "https?://.*/booking/v/.*")
-        self.client.get(path, querydata)
-        if add_account_details:
-            BookingAccount.objects.filter(email=self.email).update(name='Joe',
-                                                                   address='123',
-                                                                   post_code='XYZ')
-        self._logged_in = True
-
-    def get_account(self):
-        return BookingAccount.objects.get(email=self.email)
-
-
 class TestAccountDetails(LogInMixin, TestCase):
 
     fixtures = ['basic.json']
@@ -264,45 +308,6 @@ class TestAccountDetails(LogInMixin, TestCase):
         self.assertEqual(resp.status_code, 302)
         b = BookingAccount.objects.get(email=self.email)
         self.assertEqual(b.name, 'Mr Booker')
-
-
-class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
-    @property
-    def place_details(self):
-        return {
-            'camp': self.camp.id,
-            'name': u'Frédéric Bloggs',
-            'sex': 'm',
-            'date_of_birth': '%d-01-01' % (get_thisyear() - 14),
-            'address': 'x',
-            'post_code': 'ABC 123',
-            'contact_name': 'Mary Bloggs',
-            'contact_phone_number': '01982 987654',
-            'gp_name': 'Doctor Who',
-            'gp_address': 'The Tardis',
-            'gp_phone_number': '01234 456789',
-            'medical_card_number': 'asdfasdf',
-            'agreement': '1',
-            'price_type': '0',
-            }
-
-    def create_place(self, extra=None):
-        # We use public views to create place, to ensure that they are created
-        # in the same way that a user would.
-        self.login()
-        self.add_prices()
-
-        data = self.place_details.copy()
-        if extra is not None:
-            data.update(extra)
-        resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
-        self.assertEqual(resp.status_code, 302)
-        newpath = reverse('cciw.bookings.views.list_bookings')
-        self.assertTrue(resp['Location'].endswith(newpath))
-
-    def setUp(self):
-        super(CreatePlaceMixin, self).setUp()
-        self.create_camp()
 
 
 class TestAddPlace(CreatePlaceMixin, TestCase):

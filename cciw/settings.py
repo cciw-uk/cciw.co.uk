@@ -177,6 +177,8 @@ if LIVEBOX:
 
 if LIVEBOX:
     from cciw.settings_priv import WEBFACTION_PASSWORD, WEBFACTION_USER
+else:
+    WEBFACTION_USER, WEBFACTION_PASSWORD = None, None
 
 ##### SECUREDOWNLOAD #####
 

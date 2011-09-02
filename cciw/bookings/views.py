@@ -300,7 +300,10 @@ class BookingIndex(DefaultMetaData, TemplateView):
 
 def next_step(account):
     if account.has_account_details():
-        return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
+        if account.bookings.basket(get_thisyear()).exists():
+            return HttpResponseRedirect(reverse('cciw.bookings.views.list_bookings'))
+        else:
+            return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
     else:
         return HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
 
