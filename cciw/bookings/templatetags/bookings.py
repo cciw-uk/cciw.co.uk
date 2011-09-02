@@ -21,7 +21,7 @@ def bookingbar(context):
     msg_need_login = u'Must be logged in to access this'
     msg_need_account_details = u'Need account details to access this' if logged_in else 'Must be logged in to access this'
     stages = [
-        ('email',  u'Log in', False,
+        ('login',  u'Log in', False,
          '',
          u'Use the "log out" link if you need to log in as someone else'),
 

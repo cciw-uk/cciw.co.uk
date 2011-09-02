@@ -309,12 +309,12 @@ def next_step(account):
 
 
 class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFormView):
-    metadata_title = u"Booking - email address"
+    metadata_title = u"Booking - log in"
     form_class = EmailForm
     template_name = 'cciw/bookings/start.html'
     success_url = reverse_lazy('cciw.bookings.views.email_sent')
     extra_context = {'booking_open': is_booking_open_thisyear,
-                     'stage': 'email'}
+                     'stage': 'login'}
 
     def dispatch(self, request, *args, **kwargs):
         account = get_booking_account_from_cookie(request)
@@ -329,9 +329,9 @@ class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFor
 
 
 class BookingEmailSent(DefaultMetaData, TemplateView):
-    metadata_title = u"Booking - email address"
+    metadata_title = u"Booking - log in"
     template_name = "cciw/bookings/email_sent.html"
-    extra_context = {'stage': 'email'}
+    extra_context = {'stage': 'login'}
 
 
 def verify_email(request, account_id, token):
@@ -358,7 +358,7 @@ def verify_email(request, account_id, token):
 class BookingVerifyEmailFailed(DefaultMetaData, TemplateView):
     metadata_title = u"Booking - account email verification failed"
     template_name = "cciw/bookings/email_verification_failed.html"
-    extra_context = {'stage': 'email'}
+    extra_context = {'stage': 'login'}
 
 
 class BookingNotLoggedIn(DefaultMetaData, TemplateView):
