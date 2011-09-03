@@ -115,10 +115,20 @@ def list_for_address(address):
 def forward_email_to_list(mail, addresslist, original_to):
     from_addr = mail['From']
 
-    # search and erase the original 'To' address in the 'Received'
-    # headers, to hinder recipients from mailing the address themselves
-    mail._headers = [(name, val.replace(original_to, "private@cciw.co.uk"))
-                     for name, val in mail._headers]
+    # Various headers seem to cause problems. We whitelist the ones
+    # that are OK:
+    good_headers = [
+        'content-type',
+        'content-transfer-encoding',
+        'subject',
+        'from',
+        'mime-version',
+        'user-agent',
+        'content-disposition',
+        'date',
+        ]
+    mail._headers = [(name, val) for name, val in mail._headers
+                     if name.lower() in good_headers]
 
     # Use Django's wrapper object for connection,
     # but not the message.
@@ -130,7 +140,6 @@ def forward_email_to_list(mail, addresslist, original_to):
         mail['To'] = addr
         # Need new message ID, or webfaction's mail server will only send one
         del mail['Message-ID']
-        del mail['Message-Id']
         mail['Message-ID'] = make_msgid()
         c.connection.sendmail(from_addr, [addr], mail.as_string())
     c.close()
