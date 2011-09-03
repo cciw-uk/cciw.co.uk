@@ -10,14 +10,18 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         now = datetime.now()
-        nowplus12h = now + timedelta(0.5)
+
+        # For the warning, we send out between 12 and 13 hours before booking
+        # expires.  This relies on this job being run once an hour, and only
+        # once an hour.
+        nowplus12h = now + timedelta(0, 3600 * 12)
+        nowplus13h = now + timedelta(0, 3600 * 13)
 
         unconfirmed = Booking.objects.unconfirmed().order_by('account')
-        to_warn = unconfirmed.filter(booking_expires__lt=nowplus12h)
-        to_expire = unconfirmed.filter(booking_expires__lt=now)
+        to_warn = unconfirmed.filter(booking_expires__lte=nowplus13h,
+                                     booking_expires__gte=nowplus12h)
+        to_expire = unconfirmed.filter(booking_expires__lte=now)
 
-        # We do the 'to_expire' first, so we don't warn those that have already
-        # expired (works since query sets are lazy)
         for booking_set, expired in [(to_expire, True),
                                      (to_warn, False)]:
             groups = []

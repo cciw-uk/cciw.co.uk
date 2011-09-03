@@ -1279,7 +1279,7 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         acc = self.get_account()
         book_basket_now(acc.bookings.basket(get_thisyear()))
         b = acc.bookings.all()[0]
-        b.booking_expires = b.booking_expires - timedelta(0.6)
+        b.booking_expires = b.booking_expires - timedelta(0.49)
         b.save()
 
         mail.outbox = []
