@@ -19,7 +19,7 @@ from django.template.defaultfilters import wordwrap
 from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
-from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer
+from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
@@ -109,6 +109,8 @@ def index(request):
     if is_cciw_secretary(user):
         c['show_secretary_links'] = True
         c['show_admin_link'] = True
+    if is_booking_secretary(user):
+        c['show_booking_secretary_links'] = True
 
     return render(request, 'cciw/officers/index.html', c)
 
