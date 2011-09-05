@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 
 from cciw.bookings.models import Price, BookingAccount, Booking
 from cciw.cciwmain.common import get_thisyear
@@ -6,6 +7,41 @@ from cciw.cciwmain.common import get_thisyear
 class PriceAdmin(admin.ModelAdmin):
     list_display = ['price_type', 'year', 'price']
     ordering = ['-year', 'price_type']
+
+
+class BookingAccountForm(forms.ModelForm):
+
+    class Meta:
+        model = BookingAccount
+
+    # We need to ensure that email/name/post_code that are blank get saved as
+    # NULL, so that they can pass our uniqueness constraints if they are empty
+    # (NULLs do not compare equal, but empty strings do)
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if email == u'':
+            email = None
+        return email
+
+    def clean_name(self):
+        name = self.cleaned_data['name']
+        if name == u'':
+            name = None
+        return name
+
+    def clean_post_code(self):
+        post_code = self.cleaned_data['post_code']
+        if post_code == u'':
+            post_code = None
+        return post_code
+
+    def clean(self):
+        super(BookingAccountForm, self).clean()
+        if (self.cleaned_data['name'] == None and
+            self.cleaned_data['email'] == None):
+            raise forms.ValidationError("Either name or email must be defined")
+        return self.cleaned_data
 
 
 class BookingAccountAdmin(admin.ModelAdmin):
