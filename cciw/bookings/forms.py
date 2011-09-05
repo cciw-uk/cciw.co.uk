@@ -30,7 +30,18 @@ AccountDetailsForm.base_fields['address'].required = True
 AccountDetailsForm.base_fields['post_code'].required = True
 
 
-class AddPlaceForm(CciwFormMixin, forms.ModelForm):
+class FixPriceMixin(object):
+    def fix_price_choices(self):
+        price_choices = self.fields['price_type'].choices
+        prices = dict((p.price_type, p.price) for p in Price.objects.filter(year=get_thisyear()))
+
+        for i, (price_type, label) in enumerate(price_choices):
+            if price_type in prices:
+                price_choices[i] = (price_choices[i][0], price_choices[i][1] + " - £%s" % prices[price_type])
+        self.fields['price_type'].choices = price_choices
+
+
+class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
 
     camp = forms.ChoiceField(choices=[],
                              widget=forms.RadioSelect)
@@ -46,13 +57,7 @@ class AddPlaceForm(CciwFormMixin, forms.ModelForm):
                            c.get_places_left()) + '</span>')
         self.fields['camp'].choices = [(c.id, mark_safe(render_camp(c)))
                                        for c in Camp.objects.filter(year=get_thisyear())]
-        price_choices = self.fields['price_type'].choices
-        prices = dict((p.price_type, p.price) for p in Price.objects.filter(year=get_thisyear()))
-
-        for i, (price_type, label) in enumerate(price_choices):
-            if price_type in prices:
-                price_choices[i] = (price_choices[i][0], price_choices[i][1] + " - £%s" % prices[price_type])
-        self.fields['price_type'].choices = price_choices
+        self.fix_price_choices()
 
 
     class Meta:
