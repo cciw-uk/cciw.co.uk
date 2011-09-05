@@ -14,6 +14,7 @@ from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, P
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
+from cciw.officers.tests.references import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD
 from cciw.sitecontent.models import HtmlChunk
 
 
@@ -1154,7 +1155,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
     # Basic tests to ensure that the views that serve AJAX return something
     # sensible
 
-    fixtures = ['basic.json']
+    fixtures = ['basic.json', 'officers_users.json']
 
     def test_places_json(self):
         self.login()
@@ -1187,6 +1188,26 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.get(reverse('cciw.bookings.views.account_json'))
         json = simplejson.loads(resp.content)
         self.assertEqual(json['account']['address'], '123 Main Street')
+
+    def test_all_account_json(self):
+        acc1 = BookingAccount.objects.create(email="foo@foo.com",
+                                             post_code="ABC",
+                                             name="Mr Foo")
+        acc2 = BookingAccount.objects.create(email="goo@foo.com",
+                                             post_code="XYZ",
+                                             name="Mr Goo")
+
+        self.client.login(username=OFFICER_USERNAME, password=OFFICER_PASSWORD)
+        resp = self.client.get(reverse('cciw.bookings.views.all_account_json'))
+        self.assertEqual(resp.status_code, 403)
+
+        # Now as booking secretary
+        self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
+        resp = self.client.get(reverse('cciw.bookings.views.all_account_json') + "?id=%d" % acc1.id)
+        self.assertEqual(resp.status_code, 200)
+
+        json = simplejson.loads(resp.content)
+        self.assertEqual(json['account']['post_code'], 'ABC')
 
 
 class TestAccountOverview(CreatePlaceMixin, TestCase):

@@ -1,6 +1,8 @@
 from functools import wraps
 import urlparse
 
+from django.conf import settings
+from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.views import redirect_to_login
 from django.http import HttpResponse, HttpResponseForbidden
 
@@ -9,7 +11,7 @@ def close_window_response():
     return HttpResponse("""<!DOCTYPE html><html><head><title>Close</title><script type="text/javascript">window.close()</script></head><body></body></html>""")
 
 
-def user_passes_test_improved(test_func):
+def user_passes_test_improved(test_func, login_url=None, redirect_field_name=REDIRECT_FIELD_NAME):
     """
     Like user_passes_test, but doesn't redirect user to login screen if they are
     already logged in.

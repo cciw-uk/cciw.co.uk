@@ -1,0 +1,59 @@
+{% extends "admin/change_form.html" %}
+{% load url from future %}
+{% block after_related_objects %}
+{# Some javascript enhancements  #}
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#id_address').parent().append('<input type="submit" value="Copy address details from account"' +
+                                     'id="id_use_account_for_camper">');
+    $('#id_contact_name').parent().append('<input type="submit" value="Copy contact details from account"' +
+                                     'id="id_use_account_for_contact">');
+
+
+    var getCurrentAccountId = function() {
+        var val = $('#id_hidden_account').val();
+        val = parseInt(val, 10);
+        // NaN madness
+        if (val == val) {
+            return val;
+        } else {
+            return undefined;
+        }
+    }
+
+    $('#id_use_account_for_camper').click(function(ev) {
+        ev.preventDefault();
+        var accId = getCurrentAccountId();
+        if (accId == undefined) return;
+        $.ajax({
+            type: "GET",
+            url: '{% url "cciw.bookings.views.all_account_json" %}?id=' + accId.toString(),
+            dataType: "json",
+            success: function(json) {
+                $('#id_address').val(json.account.address);
+                $('#id_post_code').val(json.account.post_code);
+                $('#id_phone_number').val(json.account.phone_number);
+            }
+        })
+    });
+
+    $('#id_use_account_for_contact').click(function(ev) {
+        ev.preventDefault();
+        var accId = getCurrentAccountId();
+        if (accId == undefined) return;
+        $.ajax({
+            type: "GET",
+            url: '{% url "cciw.bookings.views.all_account_json" %}?id=' + accId.toString(),
+            dataType: "json",
+            success: function(json) {
+                $('#id_contact_name').val(json.account.name);
+                $('#id_contact_phone_number').val(json.account.phone_number);
+            }
+        })
+    });
+
+
+});
+</script>
+{% endblock %}
+

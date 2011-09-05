@@ -183,9 +183,11 @@ from django.views.generic.base import TemplateView, TemplateResponseMixin
 from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView, BaseCreateView
 from paypal.standard.forms import PayPalPaymentsForm
 
+from cciw.auth import is_booking_secretary
 from cciw.cciwmain.common import get_thisyear, DefaultMetaData, AjaxyFormMixin, get_current_domain
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
+from cciw.utils.views import user_passes_test_improved
 
 from cciw.bookings.email import send_verify_email, check_email_verification_token
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
@@ -249,6 +251,9 @@ def account_details_required(view_func):
             return next_step(request.booking_account)
         return view_func(request, *args, **kwargs)
     return view
+
+
+booking_secretary_required = user_passes_test_improved(is_booking_secretary)
 
 
 def is_booking_open(year):
@@ -483,6 +488,10 @@ ACCOUNT_PUBLIC_ATTRS = [
     'phone_number',
 ]
 
+booking_to_dict = lambda b: dict((k, getattr(b, k)) for k in BOOKING_PLACE_PUBLIC_ATTRS)
+account_to_dict = lambda acc: dict((k, getattr(acc, k))
+                                   for k in ACCOUNT_PUBLIC_ATTRS)
+
 @booking_account_required
 @json_response
 def places_json(request):
@@ -494,8 +503,7 @@ def places_json(request):
             qs = qs.exclude(id=exclude_id)
         except ValueError:
             pass
-    retval['places'] = [dict((k, getattr(b, k)) for k in BOOKING_PLACE_PUBLIC_ATTRS)
-                        for b in qs]
+    retval['places'] = [booking_to_dict(b) for b in qs]
     return retval
 
 
@@ -503,8 +511,16 @@ def places_json(request):
 @json_response
 def account_json(request):
     retval = {'status': 'success'}
-    retval['account'] = dict((k, getattr(request.booking_account, k))
-                             for k in ACCOUNT_PUBLIC_ATTRS)
+    retval['account'] = account_to_dict(request.booking_account)
+    return retval
+
+
+@booking_secretary_required
+@json_response
+def all_account_json(request):
+    acc = BookingAccount.objects.get(id=int(request.GET['id']))
+    retval = {'status': 'success'}
+    retval['account'] = account_to_dict(acc)
     return retval
 
 

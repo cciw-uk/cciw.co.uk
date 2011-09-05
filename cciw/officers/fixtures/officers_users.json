@@ -182,6 +182,40 @@
     }, 
     {
         "fields": {
+            "name": "Booking secretaries", 
+            "permissions": [
+                [
+                    "add_booking", 
+                    "bookings", 
+                    "booking"
+                ], 
+                [
+                    "change_booking", 
+                    "bookings", 
+                    "booking"
+                ], 
+                [
+                    "delete_booking", 
+                    "bookings", 
+                    "booking"
+                ], 
+                [
+                    "add_bookingaccount", 
+                    "bookings", 
+                    "bookingaccount"
+                ], 
+                [
+                    "change_bookingaccount", 
+                    "bookings", 
+                    "bookingaccount"
+                ]
+            ]
+        }, 
+        "model": "auth.group", 
+        "pk": 4
+    }, 
+    {
+        "fields": {
             "username": "mrofficer2", 
             "first_name": "Mr", 
             "last_name": "Officer2", 
@@ -239,5 +273,26 @@
         }, 
         "model": "auth.user", 
         "pk": 4
+    },
+    {
+        "fields": {
+            "username": "booker", 
+            "first_name": "Mr", 
+            "last_name": "Booking Secretary", 
+            "is_active": true, 
+            "is_superuser": false, 
+            "is_staff": true, 
+            "last_login": "2008-04-23 14:49:25", 
+            "groups": [
+                4
+            ], 
+            "user_permissions": [], 
+            "password": "sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba", 
+            "email": "booker@booker.com", 
+            "date_joined": "2008-03-21 16:48:46"
+        }, 
+        "model": "auth.user", 
+        "pk": 4
     }
+
 ]
