@@ -81,12 +81,12 @@ def email_errors_silently(func):
         try:
             return func(*args, **kwargs)
         except:
-            import traceback
-            subject = 'Error on CCIW site'
-            message = '\n'.join(traceback.format_exception(*sys.exc_info()))
-            mail_admins(subject, message, fail_silently=True)
+            from cciw.cciwmain.common import exception_notify_admins
+            exception_notify_admins('Error on CCIW site')
             return None
+
     return wraps(func)(_inner)
+
 
 def json_response(view_func):
     def _inner(request, *args, **kwargs):
