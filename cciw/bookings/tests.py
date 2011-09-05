@@ -1239,6 +1239,31 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
                         problems)
 
 
+    def test_booking_problems_price_check(self):
+        # Test that the price is checked.
+        # This is a check that is only run for booking secretary
+        self.add_prices()
+        acc1 = BookingAccount.objects.create(email="foo@foo.com",
+                                             post_code="ABC",
+                                             name="Mr Foo")
+        self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
+
+        data = self.place_details.copy()
+        data['account'] = str(acc1.id)
+        data['created_0'] = '1970-01-01'
+        data['created_1'] = '00:00:00'
+        data['state'] = BOOKING_BOOKED
+        data['amount_due'] = '0.00'
+        data['price_type'] = PRICE_FULL
+        resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
+                                data)
+
+        json = simplejson.loads(resp.content)
+        problems = json['problems']
+        self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of ")
+                            for p in problems))
+
+
 class TestAccountOverview(CreatePlaceMixin, TestCase):
 
     fixtures = ['basic.json']

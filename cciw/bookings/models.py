@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 import os
@@ -303,17 +304,20 @@ class Booking(models.Model):
         return self.state == BOOKING_BOOKED and self.booking_expires is None
     confirmed_booking.boolean = True
 
+    def expected_amount_due(self):
+        amount = Price.objects.get(year=self.camp.year,
+                                   price_type=self.price_type).price
+        if self.south_wales_transport:
+            amount += Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT,
+                                        year=self.camp.year).price
+        return amount
+
     def auto_set_amount_due(self):
         if self.price_type == PRICE_CUSTOM:
             if self.amount_due is None:
                 self.amount_due = Decimal('0.00')
         else:
-            amount = Price.objects.get(year=self.camp.year,
-                                       price_type=self.price_type).price
-            if self.south_wales_transport:
-                amount += Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT,
-                                            year=self.camp.year).price
-            self.amount_due = amount
+            self.amount_due = self.expected_amount_due()
 
     def get_booking_problems(self, booking_sec=False):
         """
@@ -457,6 +461,10 @@ class Booking(models.Model):
 
                 warnings.append(warning)
 
+        if booking_sec and self.price_type != PRICE_CUSTOM:
+            expected_amount = self.expected_amount_due()
+            if self.amount_due != expected_amount:
+                errors.append(u"The 'amount due' is not the expected value of £%s." % expected_amount)
 
         return (errors, warnings)
 
