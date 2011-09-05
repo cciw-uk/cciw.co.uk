@@ -1,7 +1,6 @@
 import datetime
 import operator
 import urlparse
-from functools import wraps
 
 from django import forms
 from django.conf import settings
@@ -34,7 +33,7 @@ from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication, CRBFormLog
 from cciw.officers.utils import camp_slacker_list, officer_data_to_xls
 from cciw.officers.references import reference_form_info
-from cciw.utils.views import close_window_response
+from cciw.utils.views import close_window_response, user_passes_test_improved
 from securedownload.views import access_folder_securely
 
 
@@ -53,34 +52,6 @@ def _copy_application(application):
     new_obj.finished = False
     new_obj.date_submitted = None
     return new_obj
-
-
-def user_passes_test_improved(test_func):
-    """
-    Like user_passes_test, but doesn't redirect user to login screen if they are
-    already logged in.
-    """
-    def decorator(view_func):
-        @wraps(view_func)
-        def _wrapped_view(request, *args, **kwargs):
-            if test_func(request.user):
-                return view_func(request, *args, **kwargs)
-            if request.user.is_authenticated():
-                return HttpResponseForbidden("<h1>Access denied</h1>")
-
-            path = request.build_absolute_uri()
-            # If the login url is the same scheme and net location then just
-            # use the path as the "next" url.
-            login_scheme, login_netloc = urlparse.urlparse(login_url or
-                                                           settings.LOGIN_URL)[:2]
-            current_scheme, current_netloc = urlparse.urlparse(path)[:2]
-            if ((not login_scheme or login_scheme == current_scheme) and
-                (not login_netloc or login_netloc == current_netloc)):
-                path = request.get_full_path()
-            from django.contrib.auth.views import redirect_to_login
-            return redirect_to_login(path, login_url, redirect_field_name)
-        return _wrapped_view
-    return decorator
 
 
 camp_admin_required = user_passes_test_improved(is_camp_admin)
