@@ -323,7 +323,15 @@ class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFor
         return super(BookingStart, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        account, new = BookingAccount.objects.get_or_create(email=form.cleaned_data['email'])
+        email = form.cleaned_data['email']
+        try:
+            account = BookingAccount.objects.get(email=email)
+        except BookingAccount.DoesNotExist:
+            # Ensure we use NULLs, not empty strings, or we will not be able to
+            # create more than one, as they will have same 'name and post_code'
+            account = BookingAccount.objects.create(email=email,
+                                                    name=None,
+                                                    post_code=None)
         send_verify_email(self.request, account)
         return super(BookingStart, self).form_valid(form)
 
