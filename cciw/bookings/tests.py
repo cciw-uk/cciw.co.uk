@@ -1209,6 +1209,35 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         json = simplejson.loads(resp.content)
         self.assertEqual(json['account']['post_code'], 'ABC')
 
+    def test_booking_problems(self):
+        acc1 = BookingAccount.objects.create(email="foo@foo.com",
+                                             post_code="ABC",
+                                             name="Mr Foo")
+        self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
+        resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
+                                {'account':str(acc1.id)})
+
+
+        self.assertEqual(resp.status_code, 200)
+        json = simplejson.loads(resp.content)
+        self.assertEqual(json['valid'], False)
+
+        data = self.place_details.copy()
+        data['account'] = str(acc1.id)
+        data['created_0'] = '1970-01-01' # Simulate form, which doesn't supply created
+        data['created_1'] = '00:00:00'
+        data['state'] = BOOKING_APPROVED
+        data['amount_due'] = '100.00'
+        data['price_type'] = PRICE_CUSTOM
+        resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
+                                data)
+
+        json = simplejson.loads(resp.content)
+        self.assertEqual(json['valid'], True)
+        problems = json['problems']
+        self.assertTrue(u"A custom discount needs to be arranged by the booking secretary" in
+                        problems)
+
 
 class TestAccountOverview(CreatePlaceMixin, TestCase):
 

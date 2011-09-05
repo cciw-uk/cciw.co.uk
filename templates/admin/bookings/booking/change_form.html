@@ -2,6 +2,20 @@
 {% load url from future %}
 {% block after_related_objects %}
 {# Some javascript enhancements  #}
+<div>
+<h2>Problems and warnings:</h2>
+<p>Please check the following list of problems and warnings before saving. They
+include problems that normally will stop a booking from being automatically
+approved, like the camp being out of space, or a custom discount being applied
+for, amd warnings due to likely errors, like booking the same place twice.</p>
+
+<p>The booking secretary has the right to ignore these problems, after
+ checking with the camp leader where necessary.</p>
+
+<div class="bookingProblems" id="id_problems">
+
+</div>
+</div>
 <script type="text/javascript">
 $(document).ready(function() {
     $('#id_address').parent().append('<input type="submit" value="Copy address details from account"' +
@@ -51,6 +65,38 @@ $(document).ready(function() {
             }
         })
     });
+
+    var getBookingProblems = function() {
+        var formData = $('#booking_form').serialize();
+{% if change %}
+        formData = formData + "&booking_id={{ object_id }};";
+{% endif %}
+        $.ajax({
+            type: "POST",
+            url: '{% url "cciw.bookings.views.booking_problems_json" %}',
+            dataType: "json",
+            data: formData,
+            success: function(json) {
+                if (json.valid) {
+                    if (json.problems.length == 0) {
+                        $('#id_problems').html('<p>No problems found</p>');
+                    } else {
+                        $('#id_problems').html('<ul></ul>');
+                        $.each(json.problems, function(idx, val) {
+                            var html = $('<li></li>').text(val);
+                            $('#id_problems ul').append(html);
+                        });
+                    }
+                } else {
+                    $('#id_problems').html('<i>Form has validation errors, ' +
+                        'please correct first. You can see validation errors ' +
+                        'by pressing "Save"</i>');
+                }
+            }});
+    }
+
+    getBookingProblems();
+    $('input,select,textarea').change(getBookingProblems);
 
 
 });

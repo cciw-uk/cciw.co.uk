@@ -524,6 +524,42 @@ def all_account_json(request):
     return retval
 
 
+@booking_secretary_required
+@json_response
+def booking_problems_json(request):
+    """
+    Get the booking problems associated with the data POSTed.
+    """
+    # This is used by the admin.
+    # We have to create a Booking object, but not save it.
+    from .admin import BookingAdminForm
+
+    # Make it easy on front end:
+    data = request.POST.copy()
+    try:
+        data['created'] = data['created_0'] + ' ' + data['created_1']
+    except KeyError:
+        pass
+
+
+    if 'booking_id' in data:
+        booking_obj = Booking.objects.get(id=int(data['booking_id']))
+        form = BookingAdminForm(data, booking_obj)
+    else:
+        form = BookingAdminForm(data)
+
+    retval = {'status': 'success'}
+    if form.is_valid():
+        retval['valid'] = True
+        instance = form.save(commit=False)
+        problems, warnings = instance.get_booking_problems(booking_sec=True)
+        retval['problems'] = problems + warnings
+    else:
+        retval['valid'] = False
+        retval['errors'] = form.errors
+    return retval
+
+
 def make_state_token(bookings):
     # Hash some key data about booking, without which the booking isn't valid.
     bookings.sort(key=lambda b: b.id)
