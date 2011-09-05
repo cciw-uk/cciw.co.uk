@@ -17,7 +17,7 @@ autocomplete.register(
     queryset=User.objects.all().order_by('first_name', 'last_name', 'email'),
     fields=('first_name__istartswith', 'last_name__istartswith'),
     limit=10,
-    label=lambda user: "%s %s <%s>" % (user.first_name, user.last_name, user.email),
+    label=lambda user: u"%s %s <%s>" % (user.first_name, user.last_name, user.email),
     auth=lambda request: request.user.is_authenticated() and cciw.auth.is_camp_admin(request.user)
     )
 
