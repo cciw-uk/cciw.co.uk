@@ -4,7 +4,7 @@ from paypal.standard.ipn.signals import payment_was_successful, payment_was_flag
 
 from .signals import places_confirmed
 from .email import send_unrecognised_payment_email, send_places_confirmed_email
-from .models import BookingAccount
+from .models import BookingAccount, send_payment
 
 #### Handlers #####
 
@@ -23,7 +23,7 @@ def paypal_payment_received(sender, **kwargs):
 
     try:
         account = BookingAccount.objects.get(id=int(m.groups()[0]))
-        account.receive_payment(ipn_obj.mc_gross)
+        send_payment(ipn_obj.mc_gross, account, ipn_obj)
     except BookingAccount.DoesNotExist:
         unrecognised_payment(ipn_obj)
 

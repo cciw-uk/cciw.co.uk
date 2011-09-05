@@ -3,8 +3,11 @@ Utility functions and base classes that are common to all views etc.
 """
 import datetime
 import re
+import sys
+import traceback
 
 from django.conf import settings
+from django.core.mail import mail_admins
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
@@ -254,6 +257,15 @@ def get_member_link(user_name):
 
 def get_current_domain():
     return Site.objects.get_current().domain
+
+
+def exception_notify_admins(subject):
+    """
+    Send admins notification of an exception that occurred
+    """
+    exc_info = sys.exc_info()
+    message = '\n'.join(traceback.format_exception(*exc_info))
+    mail_admins(subject, message, fail_silently=True)
 
 
 from cciw.cciwmain import feeds

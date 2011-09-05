@@ -289,3 +289,4 @@ if DEVBOX:
 
 DEFAULT_CONTENT_TYPE = "text/html"
 
+BASE_DIR = basedir

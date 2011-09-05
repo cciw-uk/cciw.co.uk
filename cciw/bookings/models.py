@@ -3,6 +3,9 @@ from decimal import Decimal
 import os
 
 from dateutil.relativedelta import relativedelta
+from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
 from django.db import models
 from django.utils.safestring import mark_safe
 
@@ -107,6 +110,11 @@ class BookingAccount(models.Model):
         return total - self.total_received
 
     def receive_payment(self, amount):
+        """
+        Adds the amount to the account's total_received field.  This should only
+        ever be called by the 'process_payments' management command. Client code
+        should use the 'send_payment' function.
+        """
         # = Receiving payments =
         #
         # This system needs to be robust, and cope with all kinds of user error, and
@@ -484,6 +492,38 @@ def book_basket_now(bookings):
         return True
     finally:
         lock.release()
+
+
+# See process_payments management command for explanation
+
+class Payment(models.Model):
+    amount = models.DecimalField(decimal_places=2, max_digits=10)
+    account = models.ForeignKey(BookingAccount)
+    origin_id = models.PositiveIntegerField()
+    origin_type = models.ForeignKey(ContentType)
+    origin = generic.GenericForeignKey('origin_type', 'origin_id')
+    processed = models.DateTimeField(null=True)
+    created = models.DateTimeField()
+
+    def __unicode__(self):
+        return u"<Payment: %s to %s from %s>" % (self.amount, self.account, self.origin)
+
+
+def trigger_payment_processing():
+    # NB - this is always called from a web request, for which the virtualenv
+    # has been set up in os.environ, so this is passed on and the correct python
+    # runs manage.py.
+    manage_py = os.path.join(settings.BASE_DIR, 'manage.py')
+    os.spawnl(os.P_NOWAIT, manage_py, 'manage.py', 'process_payments')
+
+
+def send_payment(amount, to_account, from_obj):
+    Payment.objects.create(amount=amount,
+                           account=to_account,
+                           origin=from_obj,
+                           processed=None,
+                           created=datetime.now())
+    trigger_payment_processing()
 
 
 # Very important that the setup done in .hooks happens:

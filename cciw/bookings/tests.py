@@ -1098,19 +1098,20 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
         from cciw.bookings.models import paypal_payment_received
         self.login()
 
+        from paypal.standard.ipn.models import PayPalIPN
         class IpnMock(object):
             pass
 
-        ipn_1 = IpnMock()
-        ipn_1.id = 123
-        ipn_1.mc_gross = Decimal('1.00')
-        ipn_1.custom = "account:%s;" % self.get_account().id
-
+        ipn_1 = PayPalIPN.objects.create(mc_gross = Decimal('1.00'),
+                                         custom = "account:%s;" % self.get_account().id,
+                                         ipaddress='127.0.0.1',
+                                         )
         mail.outbox = []
         self.assertEqual(len(mail.outbox), 0)
         paypal_payment_received(ipn_1)
 
-        self.assertEqual(self.get_account().total_received, ipn_1.mc_gross)
+        # Since payments are processed in a separate process, we cannot
+        # test that the account was updated in this process.
 
     def test_email_for_good_payment(self):
         # This email could be triggered by whenever BookingAccount.distribute_funds
