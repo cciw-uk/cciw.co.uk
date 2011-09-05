@@ -1,8 +1,12 @@
+from autocomplete.fields import ModelChoiceField
 from django.contrib import admin
 from django import forms
 
 from cciw.bookings.models import Price, BookingAccount, Booking
 from cciw.cciwmain.common import get_thisyear
+from cciw.utils.views import close_window_response
+
+from .widgets import AccountAutoCompleteWidget
 
 class PriceAdmin(admin.ModelAdmin):
     list_display = ['price_type', 'year', 'price']
@@ -48,7 +52,37 @@ class BookingAccountAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'email', 'post_code', 'phone_number']
     ordering = ['email']
     search_fields = ['email', 'name']
-    readonly_fields = ['total_received']
+    readonly_fields = ['first_login', 'last_login', 'total_received']
+    form = BookingAccountForm
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = [
+            (None,
+             {'fields':
+                  ['name',
+                   'email',
+                   'address',
+                   'post_code',
+                   'phone_number',
+                   'share_phone_number',
+                   ]})
+            ]
+        if '_popup' not in request.GET:
+            fieldsets.append(
+                ('Automatically managed',
+                 {'fields':
+                      ['first_login',
+                       'last_login',
+                       'total_received',
+                       ]}))
+        return fieldsets
+
+    def response_change(self, request, obj):
+        # Little hack to allow popups for changing BookingAccount
+        if '_popup' in request.POST:
+            return close_window_response()
+        else:
+            return super(BookingAccountAdmin, self).response_change(request, obj)
 
 
 class YearFilter(admin.SimpleListFilter):
@@ -68,6 +102,20 @@ class YearFilter(admin.SimpleListFilter):
         return queryset.filter(camp__year__exact=val)
 
 
+account_autocomplete_field = \
+    lambda: ModelChoiceField('account',
+                             label='Account name',
+                             widget=AccountAutoCompleteWidget('account',
+                                                              attrs={'size':'70'}))
+
+class BookingAdminForm(forms.ModelForm):
+
+    account = account_autocomplete_field()
+
+    class Meta:
+        model = Booking
+
+
 class BookingAdmin(admin.ModelAdmin):
     def camp(obj):
         return "%s-%s" % (obj.camp.year, obj.camp.number)
@@ -80,6 +128,70 @@ class BookingAdmin(admin.ModelAdmin):
     list_filter = [YearFilter, 'sex', 'price_type', 'serious_illness', 'south_wales_transport',
                    'state']
 
+    form = BookingAdminForm
+
+
+    fieldsets = (
+        ('Account',
+         {'fields':
+              ['account',
+               ],
+          'description': "Enter the account name, then choose from the suggestions, or choose 'New account' if there is no match. Use 'edit' to change the details of a selected account." }),
+        ('Camp',
+         {'fields':
+              ['camp']}),
+        ('Camper details',
+         {'fields':
+              ['name',
+               'sex',
+               'date_of_birth',
+               'address',
+              'post_code',
+               'phone_number',
+               'email',
+               ]}),
+        ('Church',
+         {'fields': ['church']}),
+        ('Contact details',
+         {'fields':
+              ['contact_name',
+               'contact_phone_number',
+               ]}),
+        ('Diet',
+         {'fields':
+              ['dietary_requirements']}),
+        ('GP details',
+         {'fields':
+              ['gp_name',
+               'gp_address',
+               'gp_phone_number',
+               ]}),
+        ('Medical details',
+         {'fields':
+              ['medical_card_number',
+               'last_tetanus_injection',
+               'allergies',
+               'regular_medication_required',
+               'illnesses',
+               'learning_difficulties',
+               'serious_illness',
+               ]}),
+        ('Camper/parent agree to terms',
+         {'fields':
+              ['agreement']}),
+        ('Price',
+         {'fields':
+              ['price_type',
+               'south_wales_transport',
+               'amount_due',
+               ]}),
+        ('Internal',
+         {'fields':
+              ['state',
+               'booking_expires',
+               'created',
+               'shelved']}),
+        )
 
 admin.site.register(Price, PriceAdmin)
 admin.site.register(BookingAccount, BookingAccountAdmin)

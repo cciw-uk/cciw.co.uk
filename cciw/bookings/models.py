@@ -273,14 +273,17 @@ class Booking(models.Model):
     amount_due = models.DecimalField(decimal_places=2, max_digits=10)
 
     # State - user driven
-    shelved = models.BooleanField(default=False)
+    shelved = models.BooleanField(default=False, help_text=
+                                  u"Used by user to put on 'shelf'")
 
     # State - internal
     state = models.IntegerField(choices=BOOKING_STATES,
                                 help_text=mark_safe(
-            "<ul><li>Move to 'Manually approved' to allow user to book and pay</li>"
-            "<li>To book, move to 'Booked' <b>and</b> ensure 'Booking expires' is empty</li>"
-            "</ul>"))
+            u"<ul>"
+            u"<li>To book, set to 'Booked' <b>and</b> ensure 'Booking expires' is empty</li>"
+            u"<li>For people paying online and needing custom discounts, set to 'Manually approved' to allow them to book and pay</li>"
+            u"<li>If there are queries before it can be booked, set to 'Information complete'</li>"
+            u"</ul>"))
 
     created = models.DateTimeField(default=datetime.now)
     booking_expires = models.DateTimeField(null=True, blank=True)

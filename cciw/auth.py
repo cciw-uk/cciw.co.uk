@@ -2,6 +2,7 @@ WIKI_USERS_GROUP_NAME = 'Wiki users'
 SECRETARY_GROUP_NAME = 'Secretaries'
 OFFICER_GROUP_NAME = 'Officers'
 LEADER_GROUP_NAME = 'Leaders'
+BOOKING_SECRETARY_GROUP_NAME = 'Booking secretaries'
 
 
 def is_camp_admin(user):
@@ -25,4 +26,8 @@ def is_cciw_secretary(user):
 def is_camp_officer(user):
     return (user.groups.filter(name=OFFICER_GROUP_NAME) |
             user.groups.filter(name=LEADER_GROUP_NAME)).exists()
+
+
+def is_booking_secretary(user):
+    return user.groups.filter(name=BOOKING_SECRETARY_GROUP_NAME).exists()
 

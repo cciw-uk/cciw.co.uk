@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.views.generic.base import RedirectView
 
 import cciw.auth
+from cciw.bookings.models import BookingAccount
 
 handler404 = 'cciw.cciwmain.views.handler404'
 
@@ -18,6 +19,15 @@ autocomplete.register(
     limit=10,
     label=lambda user: "%s %s <%s>" % (user.first_name, user.last_name, user.email),
     auth=lambda request: request.user.is_authenticated() and cciw.auth.is_camp_admin(request.user)
+    )
+
+autocomplete.register(
+    id='account',
+    queryset=BookingAccount.objects.all().order_by('name', 'post_code'),
+    fields=('name__icontains',),
+    limit=20,
+    label=lambda acc: unicode(acc),
+    auth=lambda request: request.user.is_authenticated and cciw.auth.is_booking_secretary(request.user)
     )
 
 urlpatterns = patterns('',
