@@ -3,7 +3,7 @@ from django.contrib import admin
 from django import forms
 
 from cciw.bookings.forms import FixPriceMixin
-from cciw.bookings.models import Price, BookingAccount, Booking
+from cciw.bookings.models import Price, BookingAccount, Booking, ChequePayment
 from cciw.cciwmain.common import get_thisyear
 from cciw.utils.views import close_window_response
 
@@ -105,7 +105,7 @@ class YearFilter(admin.SimpleListFilter):
 
 account_autocomplete_field = \
     lambda: ModelChoiceField('account',
-                             label='Account name',
+                             label='Account',
                              widget=AccountAutoCompleteWidget('account',
                                                               attrs={'size':'70'}))
 
@@ -198,6 +198,38 @@ class BookingAdmin(admin.ModelAdmin):
                'shelved']}),
         )
 
+
+class ChequePaymentAdminForm(forms.ModelForm):
+
+    account = account_autocomplete_field()
+
+    class Meta:
+        model = ChequePayment
+
+    def clean(self):
+        retval = super(ChequePaymentAdminForm, self).clean()
+        if self.instance is not None and self.instance.id is not None:
+            raise forms.ValidationError("Cheque payments cannot be changed "
+                                        "after being created. If an error was made, "
+                                        "delete this record and create a new one. ")
+        return retval
+
+
+class ChequePaymentAdmin(admin.ModelAdmin):
+    list_display = ['account', 'amount', 'created']
+    form = ChequePaymentAdminForm
+    fieldsets = [(None,
+                  {'fields':
+                       ['account', 'amount', 'created']})]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is not None:
+            return ['account', 'amount', 'created']
+        else:
+            return []
+
+
 admin.site.register(Price, PriceAdmin)
 admin.site.register(BookingAccount, BookingAccountAdmin)
 admin.site.register(Booking, BookingAdmin)
+admin.site.register(ChequePayment, ChequePaymentAdmin)

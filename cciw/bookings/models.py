@@ -527,10 +527,22 @@ class Payment(models.Model):
         return u"<Payment: %s to %s from %s>" % (self.amount, self.account, self.origin)
 
 
+class ChequePaymentManager(models.Manager):
+    use_for_related_fields = True
+
+    def get_query_set(self):
+        return super(ChequePaymentManager, self).get_query_set().select_related('account')
+
+
 class ChequePayment(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount)
     created = models.DateTimeField(default=datetime.now)
+
+    objects = ChequePaymentManager()
+
+    def __unicode__(self):
+        return u"Cheque payment of £%s from %s" % (self.amount, self.account)
 
     def save(self, **kwargs):
         if self.id is not None:
