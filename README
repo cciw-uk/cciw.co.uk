@@ -23,5 +23,5 @@ styles.
 INSTALLATION HINTS
 ==================
 - The fabfile contains info about how to develop and deploy
-- You need to create a settings_priv.py withthe various settings that I cannot
+- You need to create a settings_priv.py with the various settings that I cannot
   release publically (database, passwords, secret key)
