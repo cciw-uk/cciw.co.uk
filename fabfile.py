@@ -28,7 +28,6 @@ import sys
 #                includes:
 #                 - diff_match_patch from google
 #                 - django-autocomplete
-#                 - django-mailer
 #
 #                These can be symlinks
 #
