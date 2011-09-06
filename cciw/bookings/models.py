@@ -97,6 +97,18 @@ class BookingAccount(models.Model):
         unique_together = [('name', 'post_code'),
                            ('name', 'email')]
 
+    def save(self, **kwargs):
+        # We have to ensure that only receive_payment touches the total_received
+        # field when doing updates
+        if self.id is None:
+            return super(BookingAccount, self).save(**kwargs)
+        else:
+            update_fields = [f for f in self._meta.fields if
+                             f.name != 'id' and f.name != 'total_received']
+            update_kwargs = dict((f.attname, getattr(self, f.attname)) for
+                                 f in update_fields)
+            BookingAccount.objects.filter(id=self.id).update(**update_kwargs)
+
     # Business methods:
 
     def get_balance(self, confirmed_only=False):

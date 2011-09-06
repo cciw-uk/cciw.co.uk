@@ -937,7 +937,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
         # Put some money in my account.
         acc = self.get_account()
-        acc.total_received = acc.bookings.all()[0].amount_due
+        acc.receive_payment(acc.bookings.all()[0].amount_due)
         acc.save()
 
         # Book
@@ -1152,6 +1152,20 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
         self.assertEqual(mail.outbox[0].to, [self.email])
         self.assertTrue(self.place_details['name'] in mail.outbox[0].body)
         self.assertTrue('Another Child' in mail.outbox[0].body)
+
+    def test_concurrent_save(self):
+        acc1 = BookingAccount.objects.create(email='foo@foo.com')
+        acc2 = BookingAccount.objects.get(email='foo@foo.com')
+
+        acc1.receive_payment(Decimal('100.00'))
+
+        self.assertEqual(BookingAccount.objects.get(email='foo@foo.com').total_received,
+                         Decimal('100.00'))
+
+        acc2.save() # this will have total_received = 0.00
+
+        self.assertEqual(BookingAccount.objects.get(email='foo@foo.com').total_received,
+                         Decimal('100.00'))
 
 
 class TestAjaxViews(CreatePlaceMixin, TestCase):
