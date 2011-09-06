@@ -518,6 +518,13 @@ def book_basket_now(bookings):
 
 # See process_payments management command for explanation
 
+class PaymentManager(models.Manager):
+    use_for_related_fields = True
+
+    def get_query_set(self):
+        return super(PaymentManager, self).get_query_set().select_related('account')
+
+
 class Payment(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount)
@@ -526,6 +533,8 @@ class Payment(models.Model):
     origin = generic.GenericForeignKey('origin_type', 'origin_id')
     processed = models.DateTimeField(null=True)
     created = models.DateTimeField()
+
+    objects = PaymentManager()
 
     def __unicode__(self):
         return u"<Payment: %s to %s from %s>" % (self.amount, self.account, self.origin)
