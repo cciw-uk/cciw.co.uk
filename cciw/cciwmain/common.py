@@ -11,6 +11,7 @@ from django.core.mail import mail_admins
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
+from django.utils.functional import lazy
 from django.utils.safestring import mark_safe
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
@@ -206,7 +207,6 @@ def standard_processor(request):
     context['thisyear'] = thisyear
     assert type(request.path) is unicode
     context['homepage'] = (request.path == u"/")
-    links = MenuLink.objects.filter(parent_item__isnull=True, visible=True)
 
     # Ugly special casing for 'thisyear' camps
     m = re.match(u'/camps/%s/(\d+)/' % unicode(thisyear),  request.path)
@@ -215,16 +215,19 @@ def standard_processor(request):
     else:
         request_path = request.path
 
-    for l in links:
-        l.title = standard_subs(l.title)
-        l.isCurrentPage = False
-        l.isCurrentSection = False
-        if l.url == request_path:
-            l.isCurrentPage = True
-        elif request_path.startswith(l.url) and l.url != u'/':
-            l.isCurrentSection = True
+    def get_links():
+        links = list(MenuLink.objects.filter(parent_item__isnull=True, visible=True))
+        for l in links:
+            l.title = standard_subs(l.title)
+            l.isCurrentPage = False
+            l.isCurrentSection = False
+            if l.url == request_path:
+                l.isCurrentPage = True
+            elif request_path.startswith(l.url) and l.url != u'/':
+                l.isCurrentSection = True
+        return links
 
-    context['menulinks'] = links
+    context['menulinks'] = lazy(get_links, list)
     context['GOOGLE_ANALYTICS_ACCOUNT'] = getattr(settings, 'GOOGLE_ANALYTICS_ACCOUNT', '')
     context['PRODUCTION'] = (settings.LIVEBOX and settings.PRODUCTION)
 
