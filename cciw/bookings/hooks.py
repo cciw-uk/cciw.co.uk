@@ -1,10 +1,11 @@
 import re
 
+from django.db.models.signals import post_save, post_delete
 from paypal.standard.ipn.signals import payment_was_successful, payment_was_flagged
 
 from .signals import places_confirmed
 from .email import send_unrecognised_payment_email, send_places_confirmed_email
-from .models import BookingAccount, send_payment
+from .models import BookingAccount, ChequePayment, send_payment
 
 #### Handlers #####
 
@@ -28,6 +29,16 @@ def paypal_payment_received(sender, **kwargs):
         unrecognised_payment(ipn_obj)
 
 
+def cheque_payment_received(sender, **kwargs):
+    instance = kwargs['instance']
+    send_payment(instance.amount, instance.account, instance)
+
+
+def cheque_payment_deleted(sender, **kwargs):
+    instance = kwargs['instance']
+    send_payment(-instance.amount, instance.account, instance)
+
+
 ### Place confirmation ###
 
 def places_confirmed_handler(sender, **kwargs):
@@ -40,3 +51,5 @@ def places_confirmed_handler(sender, **kwargs):
 payment_was_successful.connect(paypal_payment_received)
 payment_was_flagged.connect(unrecognised_payment)
 places_confirmed.connect(places_confirmed_handler)
+post_save.connect(cheque_payment_received, sender=ChequePayment)
+post_delete.connect(cheque_payment_deleted, sender=ChequePayment)

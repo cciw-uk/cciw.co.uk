@@ -527,6 +527,18 @@ class Payment(models.Model):
         return u"<Payment: %s to %s from %s>" % (self.amount, self.account, self.origin)
 
 
+class ChequePayment(models.Model):
+    amount = models.DecimalField(decimal_places=2, max_digits=10)
+    account = models.ForeignKey(BookingAccount)
+    created = models.DateTimeField(default=datetime.now)
+
+    def save(self, **kwargs):
+        if self.id is not None:
+            raise Exception("ChequePayment cannot be edited after it has been saved to DB")
+        else:
+            return super(ChequePayment, self).save(**kwargs)
+
+
 def trigger_payment_processing():
     # NB - this is always called from a web request, for which the virtualenv
     # has been set up in os.environ, so this is passed on and the correct python

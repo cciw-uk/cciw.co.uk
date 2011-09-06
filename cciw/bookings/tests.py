@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.utils import simplejson
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
-from cciw.bookings.models import BookingAccount, Price, Booking, Payment, book_basket_now
+from cciw.bookings.models import BookingAccount, Price, Booking, Payment, ChequePayment, book_basket_now
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
@@ -1419,3 +1419,34 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         for b in acc.bookings.all():
             self.assertEqual(b.booking_expires, None)
             self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
+
+
+class TestChequePayment(TestCase):
+
+    def test_create(self):
+        acc = BookingAccount.objects.create(email='foo@foo.com')
+        self.assertEqual(Payment.objects.count(), 0)
+        ChequePayment.objects.create(account=acc,
+                                     amount=Decimal('100.00'))
+        self.assertEqual(Payment.objects.count(), 1)
+
+    def test_delete(self):
+        # Setup
+        acc = BookingAccount.objects.create(email='foo@foo.com')
+        cp = ChequePayment.objects.create(account=acc,
+                                          amount=Decimal('100.00'))
+        Payment.objects.all().delete() # reset
+
+        # Test
+        cp.delete()
+        self.assertEqual(Payment.objects.count(), 1)
+        self.assertEqual(Payment.objects.all()[0].amount, -cp.amount)
+
+    def test_edit(self):
+        # Setup
+        acc = BookingAccount.objects.create(email='foo@foo.com')
+        cp = ChequePayment.objects.create(account=acc,
+                                          amount=Decimal('100.00'))
+
+        cp.amount=Decimal("101.00")
+        self.assertRaises(Exception, cp.save)
