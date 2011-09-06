@@ -217,6 +217,8 @@ class ChequePaymentAdminForm(forms.ModelForm):
 
 class ChequePaymentAdmin(admin.ModelAdmin):
     list_display = ['account', 'amount', 'created']
+    search_fields = ['account__name']
+    date_hierarchy = 'created'
     form = ChequePaymentAdminForm
     fieldsets = [(None,
                   {'fields':
