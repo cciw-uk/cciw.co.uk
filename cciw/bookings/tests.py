@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.utils import simplejson
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
-from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now
+from cciw.bookings.models import BookingAccount, Price, Booking, Payment, book_basket_now
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
@@ -1113,6 +1113,9 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
 
         # Since payments are processed in a separate process, we cannot
         # test that the account was updated in this process.
+        # But we can test for Payment objects
+        self.assertEqual(Payment.objects.count(), 1)
+        self.assertEqual(Payment.objects.all()[0].amount, ipn_1.mc_gross)
 
     def test_email_for_good_payment(self):
         # This email could be triggered by whenever BookingAccount.distribute_funds
