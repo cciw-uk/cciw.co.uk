@@ -41,7 +41,6 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
     (r'^officers/', include('cciw.officers.urls')),
     url('^autocomplete/(\w+)/$', autocomplete, name='autocomplete'),
-    (r'^wiki/$', RedirectView.as_view(url=u'/wiki/Index')),
     (r'^wiki/', include('djiki.urls')),
     (r'^paypal/ipn/', include('paypal.standard.ipn.urls')),
 )
