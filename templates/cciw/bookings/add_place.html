@@ -220,7 +220,8 @@
 {% csrf_token %}
 
 {% if form.errors %}
-<div class="userError">The details could not be saved - please check your input below:
+<div class="userError">The details could not be saved - please correct the
+  errors flagged below:
 
 {{ form.non_field_errors }}
 </div>
