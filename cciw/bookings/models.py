@@ -483,6 +483,10 @@ class Booking(models.Model):
 
 
 def book_basket_now(bookings):
+    """
+    Book a basket of bookings, returning True if successful,
+    False otherwise.
+    """
     try:
         lock = Lock(os.path.join(os.environ['HOME'], '.cciw_booking_lock'))
         lock.acquire()
