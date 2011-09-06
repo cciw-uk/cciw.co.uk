@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import logging
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -49,6 +50,11 @@ def process_one_payment(payment):
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
+
+        # Silence warnings about lock files from zc.lockfile
+        logging.basicConfig()
+        logger = logging.getLogger('zc.lockfile')
+        logger.setLevel(logging.CRITICAL)
 
         # We use a lock that errors if the lock already exists, and we quit if
         # so. This is done to ensure we don't have a pile up of processes waiting
