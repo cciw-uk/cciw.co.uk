@@ -178,6 +178,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponseRedirect, Http404
 from django.utils.crypto import salted_hmac
+from django.utils.http import base36_to_int
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import TemplateView, TemplateResponseMixin
 from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView, BaseCreateView
@@ -349,6 +350,10 @@ class BookingEmailSent(DefaultMetaData, TemplateView):
 
 def verify_email(request, account_id, token):
     fail = lambda: HttpResponseRedirect(reverse('cciw.bookings.views.verify_email_failed'))
+    try:
+        account_id = base36_to_int(account_id)
+    except ValueError:
+        return fail()
     try:
         account = BookingAccount.objects.get(id=account_id)
     except BookingAccount.DoesNotExist:
