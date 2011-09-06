@@ -276,8 +276,8 @@ BOOKING_SESSION_TIMEOUT_SECONDS = 60*60*24*14 # 2 weeks
 
 if DEVBOX:
     OUTPUT_VALIDATOR_VALIDATORS = {
-        'text/html': '/home/luke/httpd/myvalidate.sh',
-        'application/xml+xhtml': '/home/luke/httpd/myvalidate.sh',
+        'text/html': '/home/luke/devel/myvalidate.sh',
+        'application/xml+xhtml': '/home/luke/devel/myvalidate.sh',
     }
 
     OUTPUT_VALIDATOR_IGNORE_PATHS = (
