@@ -215,17 +215,24 @@ def standard_processor(request):
     else:
         request_path = request.path
 
+    # Memoized, lazy function to avoid queries we don't
+    # always need.
+    links_cache = []
     def get_links():
-        links = list(MenuLink.objects.filter(parent_item__isnull=True, visible=True))
-        for l in links:
-            l.title = standard_subs(l.title)
-            l.isCurrentPage = False
-            l.isCurrentSection = False
-            if l.url == request_path:
-                l.isCurrentPage = True
-            elif request_path.startswith(l.url) and l.url != u'/':
-                l.isCurrentSection = True
-        return links
+        if len(links_cache) > 0:
+            return links_cache
+        else:
+            links = list(MenuLink.objects.filter(parent_item__isnull=True, visible=True))
+            for l in links:
+                l.title = standard_subs(l.title)
+                l.isCurrentPage = False
+                l.isCurrentSection = False
+                if l.url == request_path:
+                    l.isCurrentPage = True
+                elif request_path.startswith(l.url) and l.url != u'/':
+                    l.isCurrentSection = True
+            links_cache.extend(links)
+            return links
 
     context['menulinks'] = lazy(get_links, list)
     context['GOOGLE_ANALYTICS_ACCOUNT'] = getattr(settings, 'GOOGLE_ANALYTICS_ACCOUNT', '')
