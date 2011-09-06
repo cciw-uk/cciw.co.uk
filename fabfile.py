@@ -27,7 +27,6 @@ import sys
 #                github or bitbucket under the account 'spookylukey'.  Currently
 #                includes:
 #                 - diff_match_patch from google
-#                 - django-autocomplete
 #
 #                These can be symlinks
 #
