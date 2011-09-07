@@ -222,8 +222,7 @@ def standard_processor(request):
         if len(links_cache) > 0:
             return links_cache
         else:
-            links = list(MenuLink.objects.filter(parent_item__isnull=True, visible=True))
-            for l in links:
+            for l in MenuLink.objects.filter(parent_item__isnull=True, visible=True):
                 l.title = standard_subs(l.title)
                 l.isCurrentPage = False
                 l.isCurrentSection = False
@@ -231,8 +230,8 @@ def standard_processor(request):
                     l.isCurrentPage = True
                 elif request_path.startswith(l.url) and l.url != u'/':
                     l.isCurrentSection = True
-            links_cache.extend(links)
-            return links
+                links_cache.append(l)
+            return links_cache
 
     context['menulinks'] = get_links
     context['GOOGLE_ANALYTICS_ACCOUNT'] = getattr(settings, 'GOOGLE_ANALYTICS_ACCOUNT', '')
