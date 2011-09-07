@@ -11,7 +11,6 @@ from django.core.mail import mail_admins
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
-from django.utils.functional import lazy
 from django.utils.safestring import mark_safe
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
@@ -215,8 +214,9 @@ def standard_processor(request):
     else:
         request_path = request.path
 
-    # Memoized, lazy function to avoid queries we don't
-    # always need.
+    # As a callable, get_links will get called automatically by the template
+    # renderer *when needed*, so we avoid queries. We memoize in links_cache to
+    # avoid double queries
     links_cache = []
     def get_links():
         if len(links_cache) > 0:
@@ -234,7 +234,7 @@ def standard_processor(request):
             links_cache.extend(links)
             return links
 
-    context['menulinks'] = lazy(get_links, list)
+    context['menulinks'] = get_links
     context['GOOGLE_ANALYTICS_ACCOUNT'] = getattr(settings, 'GOOGLE_ANALYTICS_ACCOUNT', '')
     context['PRODUCTION'] = (settings.LIVEBOX and settings.PRODUCTION)
 
