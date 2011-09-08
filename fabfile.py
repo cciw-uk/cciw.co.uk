@@ -22,14 +22,6 @@ import sys
 #  project/    - holds a checkout of this repository
 #                i.e. fabfile.py and siblings live in that dir.
 #
-#  deps/       - holds all dependendencies that I have had to fork to add fixes,
-#                or that don't have proper packages.  These are all mirrored on
-#                github or bitbucket under the account 'spookylukey'.  Currently
-#                includes:
-#                 - diff_match_patch from google
-#
-#                These can be symlinks
-#
 #  usermedia/  - corresponds to MEDIA_ROOT
 #
 #  secure_downloads/     - corresponds to SECUREDOWNLOAD_SERVE_ROOT
@@ -63,9 +55,6 @@ import sys
 #       src-2010-10-11_07-20-34/
 #          env/                    # virtualenv dir
 #          project/                # uploaded from local
-#          deps/
-#            django/
-#            django-mailer/        # etc
 #          static/                 # built once uploaded
 #       current/                   # symlink to src-???
 
@@ -99,17 +88,8 @@ webapps_root = '/home/cciw/webapps'
 
 # The path (relative to parent_dir) to where the project source code is stored:
 project_dir = 'project'
-# The relative path to where the dependencies source code is stored (for those
-# not installed using pip)
-deps_dir = 'deps'
 usermedia_local = os.path.join(parent_dir, 'usermedia')
 usermedia_production = os.path.join(webapps_root, 'cciw_usermedia')
-
-def _get_subdirs(dirname):
-    return [f for f in os.listdir(dirname)
-            if os.path.isdir(join(dirname, f))]
-
-deps = _get_subdirs(join(parent_dir, deps_dir))
 
 class Target(object):
     """
@@ -137,16 +117,14 @@ class SrcVersion(object):
         # src_dir - the root of all sources for this version
         self.src_dir = src_dir
         # venv_dir - note that _update_virtualenv assumes this relative layout
-        # of the 'env' dir and the 'project' and 'deps' dirs.
+        # of the 'env' dir and the 'project' dir
         self.venv_dir = join(self.src_dir, 'env')
         # project_dir - where the CCIW project srcs are stored.
         self.project_dir = join(self.src_dir, project_dir)
-        # deps_dir - where additional dependencies are stored
-        self.deps_dir = join(self.src_dir, deps_dir)
         # static_dir - this is defined with way in settings.py
         self.static_dir = join(self.src_dir, 'static')
 
-        self.additional_sys_paths = [join(deps_dir, d) for d in deps] + [project_dir]
+        self.additional_sys_paths = [project_dir]
 
 STAGING = Target(
     django_app = "cciw_staging",
@@ -207,8 +185,7 @@ def _update_virtualenv(version):
             with cd(version.project_dir):
                 run_venv("pip install -r requirements.txt")
 
-        # Need to add project and deps to path.
-        # Could do 'python setup.py develop' but not all projects support it
+        # Need to add project to path.
         pth_file = '\n'.join("../../../../" + n for n in version.additional_sys_paths)
         pth_name = "deps.pth"
         with open(pth_name, "w") as fd:
@@ -255,8 +232,6 @@ def _copy_local_sources(target, version):
     with lcd(parent_dir):
         # rsync the project.
         rsync_dir(project_dir, version.project_dir)
-        # rsync the deps
-        rsync_dir(deps_dir, version.deps_dir)
 
 
 def _copy_protected_downloads():
