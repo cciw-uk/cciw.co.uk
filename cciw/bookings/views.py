@@ -428,13 +428,13 @@ class BookingEditAddBase(DefaultMetaData, TemplateResponseMixin, AjaxyFormMixin)
 
 class BookingAddPlace(BookingEditAddBase, BaseCreateView):
     __metaclass__ = AjaxMroFixer
-    metadata_title = u"Booking - add new place"
+    metadata_title = u"Booking - add new camper details"
     form_class = AddPlaceForm
 
 
 class BookingEditPlace(BookingEditAddBase, BaseUpdateView):
     __metaclass__ = AjaxMroFixer
-    metadata_title = u"Booking - edit place"
+    metadata_title = u"Booking - edit camper details"
     form_class = AddPlaceForm
 
     def post(self, request, *args, **kwargs):

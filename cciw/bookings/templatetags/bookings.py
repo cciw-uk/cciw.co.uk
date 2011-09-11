@@ -29,7 +29,7 @@ def bookingbar(context):
          reverse('cciw.bookings.views.account_details'),
          msg_need_login),
 
-        ('place', u'Place details', logged_in and has_account_details,
+        ('place', u'Camper details', logged_in and has_account_details,
          reverse('cciw.bookings.views.add_place'),
          msg_need_account_details),
 
