@@ -264,7 +264,7 @@ discount'.</p>
  <input type="submit" id="id_use_existing_btn" value="Use previous data" style="display:none; float: right;">
 {% cciw_form_field form 'name' 'Name' %}
 {% cciw_form_field form 'sex' 'Sex' %}
-{% cciw_form_field form 'date_of_birth' 'Date of birth (YYYY-MM-DD)' %}
+{% cciw_form_field form 'date_of_birth' 'Date of birth' %}
 {% cciw_form_field form 'address' 'Address' %} <input style="display:none;" type="submit" id="id_use_account_1_btn" value="Use account address">
 {% cciw_form_field form 'post_code' 'Post code' %}
 {% cciw_form_field form 'phone_number' 'Phone number' %}
@@ -306,7 +306,7 @@ this box. The cost for this transport is an additional £{{ south_wales_surcharg
 <h2>Medical details</h2>
 
 {% cciw_form_field form 'medical_card_number' 'Medical card number' %}
-{% cciw_form_field form 'last_tetanus_injection' 'Last tetanus injection (if any) (YYYY-MM-DD)' %}
+{% cciw_form_field form 'last_tetanus_injection' 'Last tetanus injection (if any)' %}
 {% cciw_form_field form 'allergies' 'Allergies (including medication)' %}
 {% cciw_form_field form 'regular_medication_required' 'Regular medication required' %}
 {% cciw_form_field form 'illnesses' 'Illnesses (e.g. asthma, epilepsy)' %}

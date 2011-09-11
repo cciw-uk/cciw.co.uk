@@ -95,3 +95,5 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
         return Camp.objects.get(id=int(camp_id))
 
 AddPlaceForm.base_fields['agreement'].required = True
+AddPlaceForm.base_fields['date_of_birth'].widget.attrs['placeholder'] = 'YYYY-MM-DD'
+AddPlaceForm.base_fields['last_tetanus_injection'].widget.attrs['placeholder'] = 'YYYY-MM-DD'
