@@ -254,11 +254,41 @@ var cciw = (function(pub, $) {
 
     pub.standardformClearError = standardformClearError;
 
-    $(document).ready(function() {
-        $('form.ajaxify').each(function(i, elem) {
-            pub.standardformAddOnchangeHandlers($(this));
-        });
-    });
-
     return pub;
 })(cciw || {}, jQuery);
+
+
+$(document).ready(function() {
+    // Ajax callbacks for labelled forms
+    $('form.ajaxify').each(function(i, elem) {
+        cciw.standardformAddOnchangeHandlers($(this));
+    });
+
+    // placeholder fallback for older browsers:
+    var i = document.createElement('input');
+    if (!('placeholder' in i)) {
+        $('[placeholder]').focus(function() {
+            var input = $(this);
+            if (input.val() == input.attr('placeholder')) {
+                input.val('');
+                input.removeClass('placeholder');
+            }
+        }).blur(function() {
+            var input = $(this);
+            if (input.val() == '' || input.val() == input.attr('placeholder')) {
+                input.addClass('placeholder');
+                input.val(input.attr('placeholder'));
+            }
+        }).blur();
+        $('[placeholder]').parents('form').submit(function() {
+            $(this).find('[placeholder]').each(function() {
+                var input = $(this);
+                if (input.val() == input.attr('placeholder')) {
+                    input.val('');
+                }
+            });
+        });
+
+    }
+});
+

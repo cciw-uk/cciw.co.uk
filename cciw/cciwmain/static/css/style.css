@@ -191,6 +191,11 @@ label.required {
     font-weight: bold;
 }
 
+input.placeholder {
+    background: #f0f0f0;
+    color: #808080;
+}
+
 .successMessage
 {
     border: 1px solid #007633;
