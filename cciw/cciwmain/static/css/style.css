@@ -171,6 +171,15 @@ div.validationErrors {
     border: 1px solid #ff8080;
 }
 
+div.validationErrors::after {
+    /* auto-clearing of floats */
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
 div.fieldMessages {
     background-color: red;
     color: white;
