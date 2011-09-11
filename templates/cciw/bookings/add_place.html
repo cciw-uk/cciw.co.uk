@@ -41,6 +41,10 @@
                        "&nbsp;&nbsp; GP: " + escape(place.gp_name) + "</label><br/>" );
                    cont.append(html);
                }
+               var btn = $('#id_use_existing_radio_container input');
+               if (btn.length == 1) {
+                   btn.attr('checked', 'checked');
+               }
            }
        };
 
