@@ -178,6 +178,10 @@ div.fieldMessages {
     margin-bottom: 6px;
 }
 
+label.required {
+    font-weight: bold;
+}
+
 .successMessage
 {
     border: 1px solid #007633;

@@ -21,8 +21,6 @@ class CciwFormMixin(object):
     start_template = u'<div class="form">'
     end_template = u'</div>'
 
-    required_text = u' <span class="required" title="This field is required">*</span>'
-
     def as_p(self):
         "Returns this form rendered as HTML <p>s."
 
@@ -66,7 +64,6 @@ class CciwFormMixin(object):
                     if label_text[-1] not in ':?.!':
                         label_text += self.label_suffix
                 if field.required:
-                    label_text += self.required_text
                     label_attrs = {'class':'required'}
                 else:
                     label_attrs = {}
