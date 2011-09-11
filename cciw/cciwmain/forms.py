@@ -6,7 +6,6 @@ from django.utils.safestring import mark_safe
 class CciwFormMixin(object):
     """Form mixin that provides the rendering methods used on the CCIW site"""
 
-    # These constants are also used by the cciwfield template tag
     normal_row_template = \
         '<div id="%(divid)s" class="%(class)s">%(errors_html)s' + \
         '<div class="field">%(label)s %(field)s%(help_text)s</div></div>'
@@ -29,8 +28,6 @@ class CciwFormMixin(object):
 
         ## Remember to change cciwutils.js standardform_ functions if the
         ## HTML here is changed
-
-
         top_errors = self.non_field_errors() # Errors that should be displayed above all fields.
         output, hidden_fields = [], []
         output.append(self.start_template)
