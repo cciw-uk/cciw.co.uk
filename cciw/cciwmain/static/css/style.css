@@ -168,9 +168,14 @@ span.sortingControl img.sortDescActive
 
 div.userError,
 div.validationErrors {
-    background-color: #ffbe73;
-    border-top: 1px solid #ff8900;
-    border-bottom: 1px solid #ff8900;
+    border: 1px solid #ff8080;
+}
+
+div.fieldMessages {
+    background-color: red;
+    color: white;
+    padding-bottom: 2px;
+    margin-bottom: 6px;
 }
 
 .successMessage
