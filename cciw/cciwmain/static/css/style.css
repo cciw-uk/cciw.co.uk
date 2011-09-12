@@ -181,7 +181,7 @@ div.validationErrors::after {
 }
 
 div.fieldMessages {
-    background-color: red;
+    background-color: #e00000;
     color: white;
     padding-bottom: 2px;
     margin-bottom: 6px;
