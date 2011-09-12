@@ -29,7 +29,8 @@ SEXES = [
     (SEX_FEMALE, 'Female'),
 ]
 
-PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT = range(0, 5)
+# Price types that can be selected for a booking
+PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT = range(0, 6)
 PRICE_TYPES = [
     (PRICE_FULL,      'Full price'),
     (PRICE_2ND_CHILD, '2nd child discount'),
@@ -39,14 +40,16 @@ PRICE_TYPES = [
 
 # Price types that are used by Price model
 VALUED_PRICE_TYPES = [(v,d) for (v,d) in PRICE_TYPES if v is not PRICE_CUSTOM] + \
-    [(PRICE_SOUTH_WALES_TRANSPORT, 'South wales transport surcharge')]
+    [(PRICE_SOUTH_WALES_TRANSPORT, 'South wales transport surcharge'),
+     (PRICE_DEPOSIT, 'Deposit'),
+     ]
 
-
-BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED = range(0, 3)
+BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED = range(0, 4)
 BOOKING_STATES = [
     (BOOKING_INFO_COMPLETE, 'Information complete'),
     (BOOKING_APPROVED, 'Manually approved'),
     (BOOKING_BOOKED, 'Booked'),
+    (BOOKING_CANCELLED, 'Cancelled'),
 ]
 
 
@@ -117,11 +120,7 @@ class BookingAccount(models.Model):
         If confirmed_only=True, then only bookings that are confirmed
         (no expiration date) are included as 'received goods'
         """
-        if confirmed_only:
-            total = self.bookings.confirmed().aggregate(models.Sum('amount_due'))['amount_due__sum']
-
-        else:
-            total = self.bookings.booked().aggregate(models.Sum('amount_due'))['amount_due__sum']
+        total = self.bookings.payable(confirmed_only).aggregate(models.Sum('amount_due'))['amount_due__sum']
         if total is None:
             total = Decimal('0.00')
         return total - self.total_received
@@ -240,6 +239,15 @@ class BookingManager(models.Manager):
         return self.get_query_set().filter(state=BOOKING_BOOKED,
                                            booking_expires__isnull=False)
 
+    def payable(self, confirmed_only):
+        """
+        Returns bookings for which payment is due.
+        If confirmed_only is True, unconfirmed places are excluded.
+        """
+        # Cancelled bookings have payment due - the deposit
+        cancelled = self.get_query_set().filter(state=BOOKING_CANCELLED)
+        return cancelled | (self.confirmed() if confirmed_only else self.booked())
+
 
 class Booking(models.Model):
     account = models.ForeignKey(BookingAccount, related_name='bookings')
@@ -317,12 +325,16 @@ class Booking(models.Model):
     confirmed_booking.boolean = True
 
     def expected_amount_due(self):
-        amount = Price.objects.get(year=self.camp.year,
-                                   price_type=self.price_type).price
-        if self.south_wales_transport:
-            amount += Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT,
-                                        year=self.camp.year).price
-        return amount
+        if self.state == BOOKING_CANCELLED:
+            return Price.objects.get(year=self.camp.year,
+                                     price_type=PRICE_DEPOSIT).price
+        else:
+            amount = Price.objects.get(year=self.camp.year,
+                                       price_type=self.price_type).price
+            if self.south_wales_transport:
+                amount += Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT,
+                                            year=self.camp.year).price
+            return amount
 
     def auto_set_amount_due(self):
         if self.price_type == PRICE_CUSTOM:

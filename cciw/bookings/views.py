@@ -194,7 +194,8 @@ from cciw.bookings.email import send_verify_email, check_email_verification_toke
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
 from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, \
-    BOOKING_INFO_COMPLETE, BOOKING_APPROVED, VALUED_PRICE_TYPES, PRICE_SOUTH_WALES_TRANSPORT
+    BOOKING_INFO_COMPLETE, BOOKING_APPROVED, VALUED_PRICE_TYPES, PRICE_SOUTH_WALES_TRANSPORT, \
+    PRICE_DEPOSIT
 
 
 # decorators and utilities
@@ -301,6 +302,7 @@ class BookingIndex(DefaultMetaData, TemplateView):
             self.context['price_full'] = [p for p in prices if p.price_type == PRICE_FULL][0].price
             self.context['price_2nd_child'] = [p for p in prices if p.price_type == PRICE_2ND_CHILD][0].price
             self.context['price_3rd_child'] = [p for p in prices if p.price_type == PRICE_3RD_CHILD][0].price
+            self.context['price_deposit'] = [p for p in prices if p.price_type == PRICE_DEPOSIT][0].price
         return super(BookingIndex, self).get(request)
 
 

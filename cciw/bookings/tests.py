@@ -10,7 +10,7 @@ from django.utils import simplejson
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.models import BookingAccount, Price, Booking, Payment, ChequePayment, book_basket_now
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
@@ -53,6 +53,9 @@ class CreatePricesMixin(object):
                                     price=Decimal('50.00'))
         Price.objects.get_or_create(year=year,
                                     price_type=PRICE_SOUTH_WALES_TRANSPORT,
+                                    price=Decimal('20.00'))
+        Price.objects.get_or_create(year=year,
+                                    price_type=PRICE_DEPOSIT,
                                     price=Decimal('20.00'))
 
 
@@ -107,6 +110,10 @@ class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
         data = self.place_details.copy()
         if extra is not None:
             data.update(extra)
+
+        # Sanity check:
+        resp0 = self.client.get(reverse('cciw.bookings.views.add_place'))
+        self.assertEqual(resp0.status_code, 200)
         resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.list_bookings')
@@ -126,10 +133,7 @@ class TestBookingIndex(CreatePricesMixin, CreateCampMixin, TestCase):
 
     def setUp(self):
         super(TestBookingIndex, self).setUp()
-        HtmlChunk.objects.get_or_create(name="booking_overview")
-        HtmlChunk.objects.get_or_create(name="bookingform_start")
-        HtmlChunk.objects.get_or_create(name="bookingform_end")
-        HtmlChunk.objects.get_or_create(name="no_bookingform_yet")
+        HtmlChunk.objects.get_or_create(name="bookingform_post_to")
 
     def test_show_with_no_prices(self):
         resp = self.client.get(reverse('cciw.bookings.views.index'))
@@ -141,6 +145,7 @@ class TestBookingIndex(CreatePricesMixin, CreateCampMixin, TestCase):
         self.create_camp() # need for booking to be open
         resp = self.client.get(reverse('cciw.bookings.views.index'))
         self.assertContains(resp, "£100")
+        self.assertContains(resp, "£20") # Deposit price
 
 
 class TestBookingStart(CreatePlaceMixin, TestCase):
@@ -1277,7 +1282,36 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
 
         json = simplejson.loads(resp.content)
         problems = json['problems']
-        self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of ")
+        p_full = Price.objects.get(price_type=PRICE_FULL, year=get_thisyear())
+        self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £%s"
+                                         % p_full.price)
+                            for p in problems))
+
+
+    def test_booking_problems_deposit_check(self):
+        # Test that the price is checked.
+        # This is a check that is only run for booking secretary
+        self.add_prices()
+        acc1 = BookingAccount.objects.create(email="foo@foo.com",
+                                             post_code="ABC",
+                                             name="Mr Foo")
+        self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
+
+        data = self.place_details.copy()
+        data['account'] = str(acc1.id)
+        data['created_0'] = '1970-01-01'
+        data['created_1'] = '00:00:00'
+        data['state'] = BOOKING_CANCELLED
+        data['amount_due'] = '0.00'
+        data['price_type'] = PRICE_FULL
+        resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
+                                data)
+
+        json = simplejson.loads(resp.content)
+        problems = json['problems']
+        p_deposit = Price.objects.get(price_type=PRICE_DEPOSIT, year=get_thisyear())
+        self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £%s"
+                                         % p_deposit.price)
                             for p in problems))
 
 
@@ -1464,3 +1498,28 @@ class TestChequePayment(TestCase):
 
         cp.amount=Decimal("101.00")
         self.assertRaises(Exception, cp.save)
+
+
+class TestCancel(CreatePlaceMixin, TestCase):
+    """
+    Tests covering what happens when a user cancels.
+    """
+    fixtures = ['basic.json']
+
+    def test_amount_due(self):
+        self.create_place()
+        acc = self.get_account()
+        place = acc.bookings.all()[0]
+        place.state = BOOKING_CANCELLED
+        self.assertEqual(place.expected_amount_due(), Price.objects.get(price_type=PRICE_DEPOSIT).price)
+
+    def test_account_amount_due(self):
+        self.create_place()
+        acc = self.get_account()
+        place = acc.bookings.all()[0]
+        place.state = BOOKING_CANCELLED
+        place.auto_set_amount_due()
+        place.save()
+
+        acc = self.get_account()
+        self.assertEqual(acc.get_balance(), place.amount_due)
