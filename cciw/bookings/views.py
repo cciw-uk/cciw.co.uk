@@ -700,6 +700,7 @@ class BookingPay(DefaultMetaData, TemplateView):
         balance = acc.get_balance()
         self.context['balance'] = balance
         self.context['account_id'] = acc.id
+        self.context['price_deposit'] = Price.objects.get(year=get_thisyear(), price_type=PRICE_DEPOSIT).price
 
         domain = get_current_domain()
         protocol = 'https' if self.request.is_secure() else 'http'
