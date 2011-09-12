@@ -948,6 +948,39 @@ ul.messagelist li.error{
     background-image: url(../admin/img/icon_error.gif);
 }
 
+/* Booking */
+
+div.booknow {
+
+
+}
+
+a.booknow {
+	-moz-box-shadow:inset 0px 1px 0px 0px #729e48;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #729e48;
+	box-shadow:inset 0px 1px 0px 0px #729e48;
+	background-color:#007633;
+	-moz-border-radius:6px;
+	-webkit-border-radius:6px;
+	border-radius:6px;
+	border:1px solid #005611;
+	display:inline-block;
+	color:#ffffff;
+	font-family:arial;
+	font-size:15px;
+	font-weight:bold;
+	padding:6px 24px;
+	text-decoration:none;
+	text-shadow:1px 1px 0px #528009;
+}
+a.booknow:hover {
+	background-color:#bacb97;
+	border-color:#f0fff0;
+}
+a.booknow:active {
+	position:relative;
+	top:1px;
+}
 
 #bookingbar {
     margin-top: -2px; /* cover green border at top */
