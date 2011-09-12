@@ -69,7 +69,7 @@ $(document).ready(function() {
     var getBookingProblems = function() {
         var formData = $('#booking_form').serialize();
 {% if change %}
-        formData = formData + "&booking_id={{ object_id }};";
+        formData = formData + "&booking_id={{ object_id }}";
 {% endif %}
         $.ajax({
             type: "POST",

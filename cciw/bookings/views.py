@@ -551,7 +551,7 @@ def booking_problems_json(request):
 
     if 'booking_id' in data:
         booking_obj = Booking.objects.get(id=int(data['booking_id']))
-        form = BookingAdminForm(data, booking_obj)
+        form = BookingAdminForm(data, instance=booking_obj)
     else:
         form = BookingAdminForm(data)
 
