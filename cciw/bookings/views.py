@@ -715,6 +715,8 @@ class BookingPay(DefaultMetaData, TemplateView):
             "cancel_return": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_cancelled')),
             "custom": "account:%s;" % str(acc.id),
             "currency_code": "GBP",
+            "no_note": "1",
+            "no_shipping": "1",
             }
 
         # Create the instance.
