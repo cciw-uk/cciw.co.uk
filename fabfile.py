@@ -215,23 +215,31 @@ def rsync_dir(local_dir, dest_dir):
     local("rsync -z -r -L --delete --exclude='_build' --exclude='.hg' --exclude='.git' --exclude='.svn' --delete-excluded %s/ cciw@cciw.co.uk:%s" % (local_dir, dest_dir), capture=False)
 
 
-def _copy_local_sources(target, version):
-    # Upload local sources. For speed, we:
-    # - make a copy of the sources that are there already, if they exist.
-    # - rsync to the copies.
+def _update_project_sources(target, version):
     # This also copies the virtualenv which is contained in the same folder,
     # which saves a lot of time with installing.
 
-    current_srcs = target.current_version.src_dir
+    run("mkdir -p %s" % version.src_dir)
+    with cd(version.src_dir):
+        if files.exists(target.current_version.project_dir + "/.hg"):
+            # Clone local copy if we can
+            run("hg clone %s project" % target.current_version.project_dir)
+        else:
+            run("hg clone ssh://hg@bitbucket.org/spookylukey/cciw-website project")
 
-    if files.exists(current_srcs):
-        run("cp -a -L %s %s" % (current_srcs, version.src_dir))
-    else:
-        run("mkdir %s" % version.src_dir)
+        with cd(version.project_dir):
+            # We update to the version that is currently checked out locally,
+            # because, at least for staging, it might not be the tip of default.
+            current_rev = local("hg id -i", capture=True)
+            run("hg pull && hg update -r %s" % current_rev.strip("+"))
 
-    with lcd(parent_dir):
-        # rsync the project.
-        rsync_dir(project_dir, version.project_dir)
+        # Avoid recreating the virtualenv if we can
+        if files.exists(target.current_version.venv_dir):
+            run("cp -a -L %s %s" % (target.current_version.venv_dir,
+                                    version.src_dir))
+
+    # Also need to sync files that are not in main sources VCS repo.
+    local("rsync cciw/settings_priv.py cciw@cciw.co.uk:%s/cciw/settings_priv.py" % version.project_dir)
 
 
 def _copy_protected_downloads():
@@ -292,12 +300,12 @@ def _deploy(target, quick=False):
     version = target.make_version(label)
 
     if quick:
-        _copy_local_sources(target, version)
+        _update_project_sources(target, version)
         _copy_protected_downloads()
         _build_static(version)
         _update_symlink(target, version)
     else:
-        _copy_local_sources(target, version)
+        _update_project_sources(target, version)
         _copy_protected_downloads()
         _update_virtualenv(version)
         _build_static(version)
