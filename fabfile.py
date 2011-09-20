@@ -231,7 +231,8 @@ def _update_project_sources(target, version):
             # We update to the version that is currently checked out locally,
             # because, at least for staging, it might not be the tip of default.
             current_rev = local("hg id -i", capture=True)
-            run("hg pull && hg update -r %s" % current_rev.strip("+"))
+            run("hg pull ssh://hg@bitbucket.org/spookylukey/cciw-website")
+            run("hg update -r %s" % current_rev.strip("+"))
 
         # Avoid recreating the virtualenv if we can
         if files.exists(target.current_version.venv_dir):
