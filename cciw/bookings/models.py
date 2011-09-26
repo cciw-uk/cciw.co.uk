@@ -44,12 +44,13 @@ VALUED_PRICE_TYPES = [(v,d) for (v,d) in PRICE_TYPES if v is not PRICE_CUSTOM] +
      (PRICE_DEPOSIT, 'Deposit'),
      ]
 
-BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED = range(0, 4)
+BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND = range(0, 5)
 BOOKING_STATES = [
     (BOOKING_INFO_COMPLETE, 'Information complete'),
     (BOOKING_APPROVED, 'Manually approved'),
     (BOOKING_BOOKED, 'Booked'),
     (BOOKING_CANCELLED, 'Cancelled'),
+    (BOOKING_CANCELLED_FULL_REFUND, 'Cancelled - full refund'),
 ]
 
 
@@ -328,6 +329,8 @@ class Booking(models.Model):
         if self.state == BOOKING_CANCELLED:
             return Price.objects.get(year=self.camp.year,
                                      price_type=PRICE_DEPOSIT).price
+        elif self.state == BOOKING_CANCELLED_FULL_REFUND:
+            return Decimal('0.00')
         else:
             amount = Price.objects.get(year=self.camp.year,
                                        price_type=self.price_type).price
