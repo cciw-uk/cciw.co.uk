@@ -972,6 +972,7 @@ class TestPay(CreatePlaceMixin, TestCase):
 
     def test_balance_empty(self):
         self.login()
+        self.add_prices()
         resp = self.client.get(reverse('cciw.bookings.views.pay'))
         self.assertContains(resp, '£0.00')
 
