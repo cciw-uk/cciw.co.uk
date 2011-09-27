@@ -66,6 +66,9 @@ class CampAdmin(admin.ModelAdmin):
     filter_horizontal = ('leaders', 'admins')
     date_hierarchy = 'start_date'
 
+    def queryset(self, request):
+        return super(CampAdmin, self).queryset(request).select_related('site', 'chaplain')
+
 admin.site.register(Site, SiteAdmin)
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Camp, CampAdmin)
