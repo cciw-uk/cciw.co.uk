@@ -1351,6 +1351,13 @@ class TestAccountOverview(CreatePlaceMixin, TestCase):
         # 3rd place, not booked at all
         self.create_place({'name': '3rd child'})
 
+        # 4th place, cancelled
+        self.create_place({'name': '4th child'})
+        b = acc.bookings.get(name='4th child')
+        b.state = BOOKING_CANCELLED
+        b.auto_set_amount_due()
+        b.save()
+
         resp = self.client.get(self.url)
 
         # Another one, so that messages are cleared
@@ -1367,6 +1374,10 @@ class TestAccountOverview(CreatePlaceMixin, TestCase):
 
         # Basket/Shelf
         self.assertContains(resp, 'items in your basket')
+
+        # Deposit for cancellation
+        self.assertContains(resp, u"Cancelled")
+        self.assertContains(resp, u"(£20 deposit)")
 
 
 class TestLogOut(LogInMixin, TestCase):

@@ -45,5 +45,14 @@
 <p>You have no confirmed places yet.</p>
 {% endif %}
 
+{% if cancelled_places %}
+<h2>Cancelled places</h2>
+
+<ul>
+{% for b in cancelled_places %}
+  <li>{{ b.name }}, on <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">camp {{ b.camp.number }}</a> (£{{ b.amount_due }} deposit)</li>
+{% endfor %}
+</ul>
+{% endif %}
 
 {% endblock %}

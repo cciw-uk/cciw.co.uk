@@ -755,6 +755,7 @@ class BookingAccountOverview(DefaultMetaData, TemplateView):
         year = get_thisyear()
         c['confirmed_places'] = acc.bookings.confirmed().filter(camp__year__exact=year)
         c['unconfirmed_places'] = acc.bookings.unconfirmed().filter(camp__year__exact=year)
+        c['cancelled_places'] = acc.bookings.cancelled().filter(camp__year__exact=year)
         c['basket'] = acc.bookings.basket(year).exists()
         c['shelf'] = acc.bookings.shelf(year).exists()
         return c

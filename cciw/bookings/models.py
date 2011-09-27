@@ -249,6 +249,9 @@ class BookingManager(models.Manager):
         cancelled = self.get_query_set().filter(state=BOOKING_CANCELLED)
         return cancelled | (self.confirmed() if confirmed_only else self.booked())
 
+    def cancelled(self):
+        return self.get_query_set().filter(state=BOOKING_CANCELLED)
+
 
 class Booking(models.Model):
     account = models.ForeignKey(BookingAccount, related_name='bookings')
