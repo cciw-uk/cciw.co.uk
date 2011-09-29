@@ -213,6 +213,7 @@ _MIDDLEWARE_CLASSES = (
     (True,       "django.middleware.transaction.TransactionMiddleware"),
     (True,       "cciw.middleware.threadlocals.ThreadLocals"),
 )
+DATABASE_ENGINE='postgresql'
 
 MIDDLEWARE_CLASSES = tuple([val for (test, val) in _MIDDLEWARE_CLASSES if test])
 
