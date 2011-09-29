@@ -577,21 +577,34 @@ class ChequePaymentManager(models.Manager):
         return super(ChequePaymentManager, self).get_query_set().select_related('account')
 
 
-class ChequePayment(models.Model):
+class ChequePaymentBase(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount)
     created = models.DateTimeField(default=datetime.now)
 
     objects = ChequePaymentManager()
 
+    def save(self, **kwargs):
+        if self.id is not None:
+            raise Exception("%s cannot be edited after it has been saved to DB" %
+                            self.__class__.__name__)
+        else:
+            return super(ChequePaymentBase, self).save(**kwargs)
+
+    class Meta:
+        abstract = True
+
+
+class ChequePayment(ChequePaymentBase):
+
     def __unicode__(self):
         return u"Cheque payment of £%s from %s" % (self.amount, self.account)
 
-    def save(self, **kwargs):
-        if self.id is not None:
-            raise Exception("ChequePayment cannot be edited after it has been saved to DB")
-        else:
-            return super(ChequePayment, self).save(**kwargs)
+
+class RefundPayment(ChequePaymentBase):
+
+    def __unicode__(self):
+        return u"Refund payment of £%s to %s" % (self.amount, self.account)
 
 
 def trigger_payment_processing():

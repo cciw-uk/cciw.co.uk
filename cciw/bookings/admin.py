@@ -3,7 +3,7 @@ from django.contrib import admin
 from django import forms
 
 from cciw.bookings.forms import FixPriceMixin
-from cciw.bookings.models import Price, BookingAccount, Booking, ChequePayment
+from cciw.bookings.models import Price, BookingAccount, Booking, ChequePayment, RefundPayment
 from cciw.cciwmain.common import get_thisyear
 from cciw.utils.views import close_window_response
 
@@ -199,15 +199,12 @@ class BookingAdmin(admin.ModelAdmin):
         )
 
 
-class ChequePaymentAdminForm(forms.ModelForm):
+class ChequePaymentAdminFormBase(forms.ModelForm):
 
     account = account_autocomplete_field()
 
-    class Meta:
-        model = ChequePayment
-
     def clean(self):
-        retval = super(ChequePaymentAdminForm, self).clean()
+        retval = super(ChequePaymentAdminFormBase, self).clean()
         if self.instance is not None and self.instance.id is not None:
             raise forms.ValidationError("Cheque payments cannot be changed "
                                         "after being created. If an error was made, "
@@ -215,11 +212,22 @@ class ChequePaymentAdminForm(forms.ModelForm):
         return retval
 
 
-class ChequePaymentAdmin(admin.ModelAdmin):
+class ChequePaymentAdminForm(ChequePaymentAdminFormBase):
+
+    class Meta:
+        model = ChequePayment
+
+
+class RefundPaymentAdminForm(ChequePaymentAdminFormBase):
+
+    class Meta:
+        model = RefundPayment
+
+
+class ChequePaymentAdminBase(admin.ModelAdmin):
     list_display = ['account', 'amount', 'created']
     search_fields = ['account__name']
     date_hierarchy = 'created'
-    form = ChequePaymentAdminForm
     fieldsets = [(None,
                   {'fields':
                        ['account', 'amount', 'created']})]
@@ -231,7 +239,16 @@ class ChequePaymentAdmin(admin.ModelAdmin):
             return []
 
 
+class ChequePaymentAdmin(ChequePaymentAdminBase):
+    form = ChequePaymentAdminForm
+
+
+class RefundPaymentAdmin(ChequePaymentAdminBase):
+    form = RefundPaymentAdminForm
+
+
 admin.site.register(Price, PriceAdmin)
 admin.site.register(BookingAccount, BookingAccountAdmin)
 admin.site.register(Booking, BookingAdmin)
 admin.site.register(ChequePayment, ChequePaymentAdmin)
+admin.site.register(RefundPayment, RefundPaymentAdmin)
