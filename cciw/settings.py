@@ -201,7 +201,7 @@ _MIDDLEWARE_CLASSES = (
     (DEVBOX,     "cciw.middleware.http.ActAsProxy"),
     (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
-#    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
+    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
     (DEVBOX,     "output_validator.middleware.ValidatorMiddleware"),
     (True,       'django.middleware.csrf.CsrfViewMiddleware'),
     (True,       'django.middleware.clickjacking.XFrameOptionsMiddleware'),
