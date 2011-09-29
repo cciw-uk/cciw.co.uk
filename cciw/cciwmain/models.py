@@ -42,7 +42,7 @@ class Person(models.Model):
 class CampManager(models.Manager):
     use_for_related_fields = True
     def get_query_set(self):
-        return super(CampManager, self).get_query_set().select_related('chaplain')
+        return super(CampManager, self).get_query_set().select_related('chaplain').prefetch_related('leaders')
 
     def get_by_natural_key(self, year, number):
         return self.get(year=year, number=number)
@@ -156,8 +156,6 @@ class Camp(models.Model):
     class Meta:
         ordering = ['-year','number']
         unique_together = (('year', 'number'),)
-
-
 
 
 import cciw.cciwmain.hooks
