@@ -358,11 +358,14 @@ class Booking(models.Model):
         If 'booking_sec', it shows the problems as they should be seen by the
         booking secretary.
         """
-        errors = []
-        warnings = []
-
         if self.state == BOOKING_APPROVED and not booking_sec:
             return ([], [])
+
+        return (self.get_booking_errors(booking_sec=booking_sec),
+                self.get_booking_warnings(booking_sec=booking_sec))
+
+    def get_booking_errors(self, booking_sec=False):
+        errors = []
 
         # Custom price - not auto bookable
         if self.price_type == PRICE_CUSTOM:
@@ -448,7 +451,14 @@ class Booking(models.Model):
                                   u"for the campers in this set of bookings.")
                     places_available = False
 
-        ### Warnings ###
+        if booking_sec and self.price_type != PRICE_CUSTOM:
+            expected_amount = self.expected_amount_due()
+            if self.amount_due != expected_amount:
+                errors.append(u"The 'amount due' is not the expected value of £%s." % expected_amount)
+        return errors
+
+    def get_booking_warnings(self, booking_sec=False):
+        warnings = []
 
         if self.account.bookings.filter(name=self.name, camp=self.camp).exclude(id=self.id):
             warnings.append(u"You have entered another set of place details for a camper "
@@ -491,12 +501,7 @@ class Booking(models.Model):
 
                 warnings.append(warning)
 
-        if booking_sec and self.price_type != PRICE_CUSTOM:
-            expected_amount = self.expected_amount_due()
-            if self.amount_due != expected_amount:
-                errors.append(u"The 'amount due' is not the expected value of £%s." % expected_amount)
-
-        return (errors, warnings)
+        return warnings
 
     def confirm(self):
         self.booking_expires = None
