@@ -143,7 +143,7 @@ def ensure_dependencies():
 
 def test():
     ensure_dependencies()
-    local("./manage.py test cciwmain officers --settings=cciw.settings_tests", capture=False)
+    local("./manage.py test cciwmain officers bookings --settings=cciw.settings_tests", capture=False)
 
 
 def _prepare_deploy():
