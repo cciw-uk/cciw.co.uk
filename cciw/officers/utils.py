@@ -1,10 +1,11 @@
 """
 Utility functions for officers app.
 """
-from datetime import date, datetime
 from StringIO import StringIO
 
 import xlwt
+
+from cciw.utils.xl import add_sheet_with_header_row
 
 
 def camp_officer_list(camp):
@@ -50,29 +51,17 @@ def officer_data_to_xls(camp):
                ]
 
     wkbk = xlwt.Workbook(encoding='utf8')
-    wksh = wkbk.add_sheet("Officers")
+    header_row = [h for h,f in columns]
+    def data_rows():
+        for inv in invites:
+            user = inv.officer
+            app = app_dict.get(user.id, None)
+            row = []
+            for header, f in columns:
+                row.append(f(user, inv, app))
+            yield row
 
-    # Headers:
-    font_header = xlwt.Font()
-    font_header.bold = True
-    style_header = xlwt.XFStyle()
-    style_header.font = font_header
-    for c, (header, f) in enumerate(columns):
-        wksh.write(0, c, header, style=style_header)
-
-    # Data:
-    date_style = xlwt.XFStyle()
-    date_style.num_format_str = 'YYYY/MM/DD'
-    for r, inv in enumerate(invites):
-        user = inv.officer
-        app = app_dict.get(user.id, None)
-        for c, (header, f) in enumerate(columns):
-            val = f(user, inv, app)
-            if isinstance(val, (datetime, date)):
-                style = date_style
-            else:
-                style = xlwt.Style.default_style
-            wksh.write(r + 1, c, val, style=style)
+    add_sheet_with_header_row(wkbk, "Officers", header_row, data_rows())
 
     # Write out to string:
     s = StringIO()
