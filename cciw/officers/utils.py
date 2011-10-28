@@ -1,11 +1,9 @@
 """
 Utility functions for officers app.
 """
-from StringIO import StringIO
-
 import xlwt
 
-from cciw.utils.xl import add_sheet_with_header_row
+from cciw.utils.xl import add_sheet_with_header_row, workbook_to_string
 
 
 def camp_officer_list(camp):
@@ -62,9 +60,4 @@ def officer_data_to_xls(camp):
             yield row
 
     add_sheet_with_header_row(wkbk, "Officers", header_row, data_rows())
-
-    # Write out to string:
-    s = StringIO()
-    wkbk.save(s)
-    s.seek(0)
-    return s.read()
+    return workbook_to_string(wkbk)

@@ -2,6 +2,8 @@
 Simplified xlwt interface
 """
 from datetime import datetime, date
+from StringIO import StringIO
+
 import xlwt
 
 
@@ -29,3 +31,10 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
             else:
                 style = xlwt.Style.default_style
             wksh.write(r + 1, c, val, style=style)
+
+
+def workbook_to_string(wkbk):
+    s = StringIO()
+    wkbk.save(s)
+    s.seek(0)
+    return s.read()
