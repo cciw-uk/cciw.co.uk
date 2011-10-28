@@ -20,6 +20,7 @@ from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
 from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
+from cciw.bookings.utils import camp_bookings_to_xls
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
@@ -915,6 +916,16 @@ def export_officer_data(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     response = HttpResponse(officer_data_to_xls(camp), mimetype="application/vnd.ms-excel")
     response['Content-Disposition'] = ('attachment; filename=camp-%d-%d-officers.xls'
+                                       % (camp.year, camp.number))
+    return response
+
+
+@staff_member_required
+@camp_admin_required
+def export_camper_data(request, year=None, number=None):
+    camp = _get_camp_or_404(year, number)
+    response = HttpResponse(camp_bookings_to_xls(camp), mimetype="application/vnd.ms-excel")
+    response['Content-Disposition'] = ('attachment; filename=camp-%d-%d-campers.xls'
                                        % (camp.year, camp.number))
     return response
 

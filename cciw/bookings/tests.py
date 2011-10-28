@@ -7,10 +7,12 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import simplejson
+import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.models import BookingAccount, Price, Booking, Payment, ChequePayment, RefundPayment, book_basket_now
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND
+from cciw.bookings.utils import camp_bookings_to_xls
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
@@ -1623,3 +1625,22 @@ class TestCancelFullRefund(CreatePlaceMixin, TestCase):
 
         acc = self.get_account()
         self.assertEqual(acc.get_balance(), place.amount_due)
+
+
+class TestExportPlaces(CreatePlaceMixin, TestCase):
+
+    fixtures = ['basic.json', 'officers_users.json']
+
+    def test_get(self):
+        self.create_place()
+        acc = self.get_account()
+        acc.bookings.update(state=BOOKING_BOOKED)
+
+        workbook = camp_bookings_to_xls(self.camp)
+        self.assertTrue(workbook is not None)
+        wkbk = xlrd.open_workbook(file_contents=workbook)
+        wksh_all = wkbk.sheet_by_index(0)
+
+        self.assertEqual(wksh_all.cell(0, 0).value, u"First name")
+        self.assertEqual(wksh_all.cell(1, 0).value, acc.bookings.all()[0].first_name)
+
