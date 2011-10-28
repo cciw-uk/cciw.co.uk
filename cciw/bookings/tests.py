@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from decimal import Decimal
 import re
 
@@ -36,8 +36,8 @@ class CreateCampMixin(object):
         self.camp = Camp.objects.create(year=get_thisyear(), number=1,
                                         minimum_age=self.camp_minimum_age,
                                         maximum_age=self.camp_maximum_age,
-                                        start_date=datetime.now() + timedelta(20),
-                                        end_date=datetime.now() + timedelta(27),
+                                        start_date=date.today() + timedelta(20),
+                                        end_date=date.today() + timedelta(27),
                                         site_id=1)
 
 
@@ -1631,16 +1631,36 @@ class TestExportPlaces(CreatePlaceMixin, TestCase):
 
     fixtures = ['basic.json', 'officers_users.json']
 
-    def test_get(self):
+    def test_summary(self):
         self.create_place()
         acc = self.get_account()
         acc.bookings.update(state=BOOKING_BOOKED)
 
         workbook = camp_bookings_to_xls(self.camp)
-        self.assertTrue(workbook is not None)
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh_all = wkbk.sheet_by_index(0)
 
         self.assertEqual(wksh_all.cell(0, 0).value, u"First name")
         self.assertEqual(wksh_all.cell(1, 0).value, acc.bookings.all()[0].first_name)
 
+    def test_birthdays(self):
+        camp = self.camp
+        bday = self.camp.start_date + timedelta(1)
+        dob = bday.replace(bday.year - 12)
+        self.create_place({'date_of_birth': dob.isoformat()})
+
+        acc = self.get_account()
+        acc.bookings.update(state=BOOKING_BOOKED)
+
+        workbook = camp_bookings_to_xls(self.camp)
+        wkbk = xlrd.open_workbook(file_contents=workbook)
+        wksh_bdays = wkbk.sheet_by_index(1)
+
+        self.assertEqual(wksh_bdays.cell(0, 0).value, u"First name")
+        self.assertEqual(wksh_bdays.cell(1, 0).value, acc.bookings.all()[0].first_name)
+
+        self.assertEqual(wksh_bdays.cell(0, 2).value, u"Birthday")
+        self.assertEqual(wksh_bdays.cell(1, 2).value, bday.strftime("%A %d %B"))
+
+        self.assertEqual(wksh_bdays.cell(0, 3).value, u"Age")
+        self.assertEqual(wksh_bdays.cell(1, 3).value, "12")
