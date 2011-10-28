@@ -355,6 +355,10 @@ class Booking(models.Model):
         else:
             self.amount_due = self.expected_amount_due()
 
+    def age_on_camp(self):
+        # Age is calculated based on shool years, i.e. age on 31st August
+        return relativedelta(date(self.camp.year, 8, 31), self.date_of_birth)
+
     def get_booking_problems(self, booking_sec=False):
         """
         Returns a two tuple (errors, warnings), where 'errors' is a list of
@@ -398,8 +402,7 @@ class Booking(models.Model):
             errors.append(u"Must be approved by leader due to serious illness/condition")
 
         # Check age.
-        # Age is calculated based on shool years, i.e. age on 31st August
-        camper_age = relativedelta(date(self.camp.year, 8, 31), self.date_of_birth)
+        camper_age = self.age_on_camp()
         if camper_age.years < self.camp.minimum_age:
             errors.append(u"Camper will be below the minimum age (%d) on the 31st August %d"
                           % (self.camp.minimum_age, self.camp.year))
