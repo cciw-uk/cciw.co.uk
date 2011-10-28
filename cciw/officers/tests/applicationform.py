@@ -365,7 +365,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         assert len(apps) == 2
 
         application_diff = application_difference(apps[0], apps[1])
-        self.assertTrue('>New Full Name</INS>'
-                        in application_diff)
-        self.assertTrue('>x</DEL>'
-                        in application_diff)
+        self.assertTrue('>new full name</ins>'
+                        in application_diff.lower())
+        self.assertTrue('>x</del>'
+                        in application_diff.lower())
