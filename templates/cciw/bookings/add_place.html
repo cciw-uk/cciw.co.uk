@@ -122,6 +122,9 @@
                        if (mainform[attr].type == 'checkbox') {
                            mainform[attr].checked = place[attr];
                        } else {
+                           if (place[attr] == null) {
+                               place[attr] = "";
+                           }
                            mainform[attr].value = place[attr];
                        }
                        // If details are copied from something saved,
