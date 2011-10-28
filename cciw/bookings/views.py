@@ -463,7 +463,8 @@ class BookingEditPlace(BookingEditAddBase, BaseUpdateView):
 # Public attributes - i.e. that the account holder is allowed to see
 BOOKING_PLACE_PUBLIC_ATTRS = [
     'id',
-    'name',
+    'first_name',
+    'last_name',
     'sex',
     'date_of_birth',
     'address',

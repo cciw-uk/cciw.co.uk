@@ -258,7 +258,8 @@ class Booking(models.Model):
 
     # Booking details - from user
     camp = models.ForeignKey(Camp, related_name='bookings')
-    name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
     sex = models.CharField(max_length=1, choices=SEXES)
     date_of_birth = models.DateField()
     address = models.TextField()
@@ -321,6 +322,11 @@ class Booking(models.Model):
     def __unicode__(self):
         return u"%s, %s-%s, %s" % (self.name, self.camp.year, self.camp.number,
                                   self.account)
+
+
+    @property
+    def name(self):
+        return u"%s %s" % (self.first_name, self.last_name)
 
     ### Main business rules here ###
 
@@ -460,7 +466,7 @@ class Booking(models.Model):
     def get_booking_warnings(self, booking_sec=False):
         warnings = []
 
-        if self.account.bookings.filter(name=self.name, camp=self.camp).exclude(id=self.id):
+        if self.account.bookings.filter(first_name=self.first_name, last_name=self.last_name, camp=self.camp).exclude(id=self.id):
             warnings.append(u"You have entered another set of place details for a camper "
                             u"called '%s' on camp %d. Please ensure you don't book multiple "
                             u"places for the same camper!" % (self.name, self.camp.number))
@@ -468,7 +474,7 @@ class Booking(models.Model):
 
         if self.price_type == PRICE_FULL:
             full_pricers = self.account.bookings.basket(self.camp.year)\
-                .filter(price_type=PRICE_FULL).order_by('name')
+                .filter(price_type=PRICE_FULL).order_by('first_name', 'last_name')
             if len(full_pricers) > 1:
                 names = [b.name for b in full_pricers]
                 pretty_names = u', '.join(names[1:]) + u" and " + names[0]
@@ -484,7 +490,7 @@ class Booking(models.Model):
 
         if self.price_type == PRICE_2ND_CHILD:
             second_childers = self.account.bookings.basket(self.camp.year)\
-                .filter(price_type=PRICE_2ND_CHILD).order_by('name')
+                .filter(price_type=PRICE_2ND_CHILD).order_by('first_name', 'last_name')
             if len(second_childers) > 1:
                 names = [b.name for b in second_childers]
                 pretty_names = u', '.join(names[1:]) + u" and " + names[0]

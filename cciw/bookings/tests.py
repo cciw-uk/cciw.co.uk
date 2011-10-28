@@ -86,7 +86,8 @@ class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
     def place_details(self):
         return {
             'camp': self.camp.id,
-            'name': u'Frédéric Bloggs',
+            'first_name': u'Frédéric',
+            'last_name': u'Bloggs',
             'sex': 'm',
             'date_of_birth': '%d-01-01' % (get_thisyear() - 14),
             'address': 'x',
@@ -441,14 +442,14 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
         b = acc.bookings.all()[0]
 
         data = self.place_details.copy()
-        data['name'] = "A New Name"
+        data['first_name'] = "A New Name"
         resp = self.client.post(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}), data)
         self.assertEqual(resp.status_code, 302)
         newpath = reverse('cciw.bookings.views.list_bookings')
         self.assertTrue(resp['Location'].endswith(newpath))
 
         # Did we alter it?
-        self.assertEqual(acc.bookings.all()[0].name, "A New Name")
+        self.assertEqual(acc.bookings.all()[0].first_name, "A New Name")
 
     def test_edit_booked(self):
         """
@@ -473,10 +474,10 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
 
             # Attempt a post
             data = self.place_details.copy()
-            data['name'] = "A New Name"
+            data['first_name'] = "A New Name"
             resp = self.client.post(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}), data)
             # Check we didn't alter it
-            self.assertNotEqual(acc.bookings.all()[0].name, "A New Name")
+            self.assertNotEqual(acc.bookings.all()[0].first_name, "A New Name")
 
 
 class TestListBookings(CreatePlaceMixin, TestCase):
@@ -673,7 +674,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         # Test the error we get for more than one problem booking
         self.login()
         self.create_place({'price_type': PRICE_CUSTOM})
-        self.create_place({'name': 'Another Child',
+        self.create_place({'first_name': 'Another',
+                           'last_name': 'Child',
                            'price_type': PRICE_CUSTOM})
         resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
@@ -689,7 +691,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         # Test the message we get if one place is bookable and the other is not
         self.login()
         self.create_place() # bookable
-        self.create_place({'name': 'Another Child',
+        self.create_place({'first_name': 'Another',
+                           'last_name': 'Child',
                            'price_type': PRICE_CUSTOM}) # not bookable
         resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
@@ -700,7 +703,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
     def test_total(self):
         self.login()
         self.create_place()
-        self.create_place({'name': 'Another Child'})
+        self.create_place({'first_name': 'Another',
+                           'last_name': 'Child'})
 
         resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
@@ -711,7 +715,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         # manually approved places should appear as OK to book
         self.login()
         self.create_place() # bookable
-        self.create_place({'name': 'Another Child',
+        self.create_place({'first_name': 'Another',
+                           'last_name': 'Child',
                            'price_type': PRICE_CUSTOM}) # not bookable
         Booking.objects.filter(price_type=PRICE_CUSTOM).update(state=BOOKING_APPROVED,
                                                                amount_due=Decimal('0.01'))
@@ -875,7 +880,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
     def test_warn_about_multiple_full_price(self):
         self.login()
         self.create_place()
-        self.create_place({'name': 'Mary Bloggs'})
+        self.create_place({'first_name': 'Mary',
+                           'last_name': 'Bloggs'})
 
         resp = self.client.get(self.url)
         self.assertContains(resp, "You have multiple places at &#39;Full price")
@@ -884,16 +890,19 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
 
         # Check for more than 2
-        self.create_place({'name': 'Peter Bloggs'})
+        self.create_place({'first_name': 'Peter',
+                           'last_name': 'Bloggs'})
         resp = self.client.get(self.url)
         self.assertContains(resp, "If Mary Bloggs, Peter Bloggs and Frédéric Bloggs")
 
     def test_warn_about_multiple_2nd_child(self):
         self.login()
         self.create_place()
-        self.create_place({'name': 'Mary Bloggs',
+        self.create_place({'first_name': 'Mary',
+                           'last_name': 'Bloggs',
                            'price_type': PRICE_2ND_CHILD})
-        self.create_place({'name': 'Peter Bloggs',
+        self.create_place({'first_name': 'Peter',
+                           'last_name': 'Bloggs',
                            'price_type': PRICE_2ND_CHILD})
 
         resp = self.client.get(self.url)
@@ -904,7 +913,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
 
 
-        self.create_place({'name': 'Zac Bloggs',
+        self.create_place({'first_name': 'Zac',
+                           'last_name': 'Bloggs',
                            'price_type': PRICE_2ND_CHILD})
         resp = self.client.get(self.url)
         self.assertContains(resp, "2 are eligible")
@@ -1144,7 +1154,8 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
     def test_only_one_email_for_multiple_places(self):
         self.login()
         self.create_place()
-        self.create_place({'name': 'Another Child'})
+        self.create_place({'first_name': 'Another',
+                           'last_name': 'Child'})
 
         acc = self.get_account()
         book_basket_now(acc.bookings.basket(self.camp.year))
@@ -1156,7 +1167,7 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
 
         self.assertEqual(mail.outbox[0].subject, "CCIW booking - place confirmed")
         self.assertEqual(mail.outbox[0].to, [self.email])
-        self.assertTrue(self.place_details['name'] in mail.outbox[0].body)
+        self.assertTrue(self.place_details['first_name'] in mail.outbox[0].body)
         self.assertTrue('Another Child' in mail.outbox[0].body)
 
     def test_concurrent_save(self):
@@ -1185,7 +1196,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         self.create_place()
         resp = self.client.get(reverse('cciw.bookings.views.places_json'))
         json = simplejson.loads(resp.content)
-        self.assertEqual(json['places'][0]['name'], self.place_details['name'])
+        self.assertEqual(json['places'][0]['first_name'], self.place_details['first_name'])
 
     def test_places_json_with_exclusion(self):
         self.login()
@@ -1345,15 +1356,18 @@ class TestAccountOverview(CreatePlaceMixin, TestCase):
         acc.receive_payment(acc.bookings.all()[0].amount_due)
 
         # Book another
-        self.create_place({'name': 'Another Child'})
+        self.create_place({'first_name': 'Another',
+                           'last_name': 'Child'})
         book_basket_now(acc.bookings.basket(self.camp.year))
 
         # 3rd place, not booked at all
-        self.create_place({'name': '3rd child'})
+        self.create_place({'first_name': '3rd',
+                           'last_name': 'child'})
 
         # 4th place, cancelled
-        self.create_place({'name': '4th child'})
-        b = acc.bookings.get(name='4th child')
+        self.create_place({'first_name': '4th',
+                           'last_name': 'child'})
+        b = acc.bookings.get(first_name='4th', last_name='child')
         b.state = BOOKING_CANCELLED
         b.auto_set_amount_due()
         b.save()
@@ -1365,7 +1379,7 @@ class TestAccountOverview(CreatePlaceMixin, TestCase):
         self.assertEqual(resp.status_code, 200)
 
         # Confirmed place
-        self.assertContains(resp, self.place_details['name'])
+        self.assertContains(resp, self.place_details['first_name'])
 
 
         # Booked place
@@ -1471,8 +1485,10 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         Test the emails are grouped as we expect
         """
         self.login()
-        self.create_place({'name':'Child One'})
-        self.create_place({'name':'Child Two'})
+        self.create_place({'first_name':'Child',
+                           'last_name': 'One'})
+        self.create_place({'first_name':'Child',
+                           'last_name': 'Two'})
 
         acc = self.get_account()
         book_basket_now(acc.bookings.basket(get_thisyear()))

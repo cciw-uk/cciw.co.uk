@@ -94,7 +94,8 @@
        ];
 
        var all_attrs = [].concat(address_attrs, gp_info_attrs, [
-           'name',
+           'first_name',
+           'last_name',
            'sex',
            'date_of_birth',
            'church',
@@ -266,7 +267,8 @@ discount'.</p>
 
 <h2>Camper details</h2>
  <input type="submit" id="id_use_existing_btn" value="Use previous data" style="display:none; float: right;">
-{% cciw_form_field form 'name' 'Name' %}
+{% cciw_form_field form 'first_name' 'First name' %}
+{% cciw_form_field form 'last_name' 'Surname' %}
 {% cciw_form_field form 'sex' 'Sex' %}
 {% cciw_form_field form 'date_of_birth' 'Date of birth' %}
 {% cciw_form_field form 'address' 'Address' %} <input style="display:none;" type="submit" id="id_use_account_1_btn" value="Use account address">

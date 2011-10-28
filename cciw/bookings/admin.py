@@ -125,9 +125,9 @@ class BookingAdmin(admin.ModelAdmin):
     def camp(obj):
         return "%s-%s" % (obj.camp.year, obj.camp.number)
     camp.admin_order_field = 'camp__year'
-    list_display = ['name', 'sex', 'account', camp, 'state', 'confirmed_booking']
+    list_display = ['first_name', 'last_name', 'sex', 'account', camp, 'state', 'confirmed_booking']
     del camp
-    search_fields = ['name']
+    search_fields = ['first_name', 'last_name']
     ordering = ['-camp__year', 'camp__number']
     date_hierarchy = 'created'
     list_filter = [YearFilter, 'sex', 'price_type', 'serious_illness', 'south_wales_transport',
@@ -147,7 +147,8 @@ class BookingAdmin(admin.ModelAdmin):
               ['camp']}),
         ('Camper details',
          {'fields':
-              ['name',
+              ['first_name',
+               'last_name',
                'sex',
                'date_of_birth',
                'address',

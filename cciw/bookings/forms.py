@@ -65,7 +65,8 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
         fields = [
             'camp',
             'price_type',
-            'name',
+            'first_name',
+            'last_name',
             'sex',
             'date_of_birth',
             'address',
