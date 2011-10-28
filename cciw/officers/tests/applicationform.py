@@ -238,7 +238,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.submit('_save')
         tc.url(url)
         tc.find("Please correct the errors below")
-        tc.find("form-row errors address")
+        tc.find("form-row errors field-address")
         self.assertEqual(u.application_set.exclude(date_submitted__isnull=True).count(), 0) # shouldn't have been saved
 
     def test_finish_complete(self):
