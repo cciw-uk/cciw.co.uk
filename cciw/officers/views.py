@@ -3,6 +3,7 @@ import operator
 import urlparse
 
 from django import forms
+from django.db.models import F, Sum
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME
@@ -56,7 +57,7 @@ def _copy_application(application):
 
 
 camp_admin_required = user_passes_test_improved(is_camp_admin)
-
+booking_secretary_required = user_passes_test_improved(is_booking_secretary)
 
 
 def _camps_as_admin_or_leader(user):
@@ -1182,6 +1183,41 @@ class OfficerInfo(TemplateView):
     template_name='cciw/officers/info.html'
     def get_context_data(self, *args, **kwargs):
         return dict(show_wiki_link=is_wiki_user(self.request.user))
+
+
+def booking_secretary_reports(request, year=None):
+    from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, BOOKING_BOOKED, BOOKING_CANCELLED, BookingAccount
+    year = int(year)
+    camps = Camp.objects.filter(year=year).prefetch_related('bookings')
+    # Do some filtering in Python to avoid multiple db hits
+    for c in camps:
+        c.confirmed_bookings = [b for b in c.bookings.all() if b.confirmed_booking()]
+        c.confirmed_bookings_boys = [b for b in c.confirmed_bookings if b.sex == SEX_MALE]
+        c.confirmed_bookings_girls = [b for b in c.confirmed_bookings if b.sex == SEX_FEMALE]
+
+
+    # Duplication of business logic here, for performance:
+    payable = BookingAccount.objects.all()
+    # Booked or cancelled places are included.
+    payable = payable.filter(bookings__state=BOOKING_BOOKED) | payable.filter(bookings__state=BOOKING_CANCELLED)
+    # annotation works over the bookings filtered above
+    outstanding = payable.annotate(total_amount_due=Sum('bookings__amount_due')).exclude(total_amount_due=F('total_received'))
+
+    total_amount_due_dict = dict((o.id, o.total_amount_due) for o in outstanding)
+
+    # This will actually exclude people who have outstanding fees but do not
+    # have bookings this year. That's OK - previous year's report page will catch them.
+    bookings = Booking.objects.filter(camp__year__exact=year,
+                                      account__in=[o.id for o in outstanding])
+    bookings = bookings.order_by('account__name','first_name','last_name')
+    # Decorate with the already calculated 'total_amount_due'
+    for b in bookings:
+        b.account.calculated_balance = total_amount_due_dict[b.account_id] - b.account.total_received
+
+    return render(request, 'cciw/officers/booking_secretary_reports.html',
+                  {'year': year, 'camps': camps,
+                   'bookings': bookings})
+
 
 
 officer_info = staff_member_required(OfficerInfo.as_view())

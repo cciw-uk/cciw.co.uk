@@ -29,4 +29,5 @@ urlpatterns = patterns('cciw.officers.views',
     (r'^add-officer/$', 'create_officer'),
     (r'^files/(.*)$', 'officer_files'),
     url(r'^info/$', 'officer_info', name="cciw.officers.views.info"),
+    (r'^booking-reports/(?P<year>\d{4})/$', 'booking_secretary_reports'),
 )

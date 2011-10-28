@@ -221,3 +221,14 @@ ul.ui-autocomplete li {
 .actionable {
     background-color: #ffd0d0;
 }
+
+table.data th,
+table.data td {
+    border: 1px solid #ddd;
+}
+
+table.data th {
+    text-align: center;
+    vertical-align: middle;
+    background-color: #f8f8f8;
+}
