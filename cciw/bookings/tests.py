@@ -533,6 +533,22 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "You cannot use a 2nd child discount")
         self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
 
+    def test_2nd_child_discount_allowed_if_booked(self):
+        """
+        Test that we can have 2nd child discount if full price
+        place is already booked.
+        """
+        self.login()
+        self.create_place()
+        acc = self.get_account()
+        acc.bookings.update(state=BOOKING_BOOKED)
+
+        self.create_place({'price_type': PRICE_2ND_CHILD,
+                           'first_name': 'Mary'})
+
+        resp = self.client.get(self.url)
+        self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
+
     def test_3rd_child_discount_allowed(self):
         self.login()
         self.create_place({'price_type': PRICE_FULL})

@@ -384,6 +384,7 @@ class Booking(models.Model):
         # 2nd/3rd child discounts
         if self.price_type == PRICE_2ND_CHILD:
             qs = self.account.bookings.basket(self.camp.year)
+            qs = qs | self.account.bookings.booked()
             if not qs.filter(price_type=PRICE_FULL).exists():
                 errors.append(u"You cannot use a 2nd child discount unless you have "
                               u"a child at full price. Please edit the place details "
@@ -391,6 +392,7 @@ class Booking(models.Model):
 
         if self.price_type == PRICE_3RD_CHILD:
             qs = self.account.bookings.basket(self.camp.year)
+            qs = qs | self.account.bookings.booked()
             qs = qs.filter(price_type=PRICE_FULL) | qs.filter(price_type=PRICE_2ND_CHILD)
             if qs.count() < 2:
                 errors.append(u"You cannot use a 3rd child discount unless you have "
