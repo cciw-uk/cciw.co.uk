@@ -1201,7 +1201,7 @@ def booking_secretary_reports(request, year=None):
     # Booked or cancelled places are included.
     payable = payable.filter(bookings__state=BOOKING_BOOKED) | payable.filter(bookings__state=BOOKING_CANCELLED)
     # annotation works over the bookings filtered above
-    outstanding = payable.annotate(total_amount_due=Sum('bookings__amount_due')).exclude(total_amount_due=F('total_received'))
+    outstanding = payable.only('id','total_received').annotate(total_amount_due=Sum('bookings__amount_due')).exclude(total_amount_due=F('total_received'))
 
     total_amount_due_dict = dict((o.id, o.total_amount_due) for o in outstanding)
 
