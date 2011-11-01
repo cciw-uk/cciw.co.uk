@@ -1,3 +1,4 @@
+from collections import defaultdict
 import datetime
 import operator
 import urlparse
@@ -1210,9 +1211,16 @@ def booking_secretary_reports(request, year=None):
     bookings = Booking.objects.filter(camp__year__exact=year,
                                       account__in=[o.id for o in outstanding])
     bookings = bookings.order_by('account__name','first_name','last_name')
-    # Decorate with the already calculated 'total_amount_due'
+
+    # Decorate with the already calculated 'total_amount_due', and with 'number
+    # of bookings for this account'
+    counts = defaultdict(int)
+    for b in bookings:
+        counts[b.account_id] += 1
+
     for b in bookings:
         b.account.calculated_balance = total_amount_due_dict[b.account_id] - b.account.total_received
+        b.count_for_account = counts[b.account_id]
 
     return render(request, 'cciw/officers/booking_secretary_reports.html',
                   {'year': year, 'camps': camps,
