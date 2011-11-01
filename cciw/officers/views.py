@@ -1215,8 +1215,8 @@ def booking_secretary_reports(request, year=None):
 
     # This will actually exclude people who have outstanding fees but do not
     # have bookings this year. That's OK - previous year's report page will catch them.
-    bookings = Booking.objects.filter(camp__year__exact=year,
-                                      account__in=[o.id for o in outstanding])
+    bookings = Booking.objects.payable(False).filter(camp__year__exact=year,
+                                                     account__in=[o.id for o in outstanding])
     bookings = bookings.order_by('account__name','first_name','last_name')
 
     # Decorate with the already calculated 'total_amount_due', and with 'number
