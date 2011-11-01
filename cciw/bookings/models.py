@@ -253,6 +253,11 @@ class BookingManager(models.Manager):
     def cancelled(self):
         return self.get_query_set().filter(state=BOOKING_CANCELLED)
 
+    def need_approving(self):
+        qs = self.get_query_set().filter(state=BOOKING_INFO_COMPLETE)
+        qs = qs.filter(price_type=PRICE_CUSTOM) | qs.filter(serious_illness=True)
+        return qs
+
 
 class Booking(models.Model):
     account = models.ForeignKey(BookingAccount, related_name='bookings')
@@ -522,6 +527,10 @@ class Booking(models.Model):
 
     def is_user_editable(self):
         return self.state == BOOKING_INFO_COMPLETE
+
+    @property
+    def is_custom_discount(self):
+        return self.price_type == PRICE_CUSTOM
 
     class Meta:
         ordering = ['-created']

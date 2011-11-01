@@ -1189,6 +1189,9 @@ class OfficerInfo(TemplateView):
 def booking_secretary_reports(request, year=None):
     from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, BOOKING_BOOKED, BOOKING_CANCELLED, BookingAccount
     year = int(year)
+
+    # 1. Camps and their booking levels.
+
     camps = Camp.objects.filter(year=year).prefetch_related('bookings')
     # Do some filtering in Python to avoid multiple db hits
     for c in camps:
@@ -1197,6 +1200,10 @@ def booking_secretary_reports(request, year=None):
         c.confirmed_bookings_girls = [b for b in c.confirmed_bookings if b.sex == SEX_FEMALE]
 
 
+    # 2. Online bookings needing attention
+    to_approve = Booking.objects.need_approving().filter(camp__year__exact=year)
+
+    # 3. Fees
     # Duplication of business logic here, for performance:
     payable = BookingAccount.objects.all()
     # Booked or cancelled places are included.
@@ -1224,7 +1231,8 @@ def booking_secretary_reports(request, year=None):
 
     return render(request, 'cciw/officers/booking_secretary_reports.html',
                   {'year': year, 'camps': camps,
-                   'bookings': bookings})
+                   'bookings': bookings,
+                   'to_approve': to_approve})
 
 
 
