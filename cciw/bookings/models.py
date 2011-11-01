@@ -20,7 +20,8 @@ from .signals import places_confirmed
 #
 # Business rules are implemented in relevant models and managers.
 #
-#
+# Some business logic duplicated in
+# cciw.officers.views.booking_secretary_reports for performance reasons.
 
 
 SEX_MALE, SEX_FEMALE = 'm', 'f'
