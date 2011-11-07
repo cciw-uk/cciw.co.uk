@@ -157,6 +157,23 @@ def backup_database(target, version):
     run("dump_cciw_db.sh %s %s" % (target.dbname, fname))
 
 
+def drop_local_db():
+    with cd('/'):
+        with settings(warn_only=True):
+            local("sudo -u postgres psql -U postgres -d template1 -c 'DROP DATABASE cciw;'")
+
+def create_local_db():
+    cmds = """
+CREATE DATABASE cciw;
+CREATE USER cciw WITH PASSWORD 'foo';
+GRANT ALL ON DATABASE cciw TO cciw;
+"""
+    with cd('/'):
+        for c in cmds.strip().split("\n"):
+            with settings(warn_only=True):
+                local("sudo -u postgres psql -U postgres -d template1 -c \"%s\"" % c)
+
+
 def run_venv(command, **kwargs):
     run("source %s/bin/activate" % env.venv + " && " + command, **kwargs)
 
