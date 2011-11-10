@@ -15,6 +15,7 @@ urlpatterns = \
              (r'^account-json/$', 'account_json'),
              (r'^all-account-json/$', 'all_account_json'),
              (r'^booking-problems-json/$', 'booking_problems_json'),
+             (r'^place-availability-json/$', 'place_availability_json'),
              (r'^checkout/$', 'list_bookings'),
              (r'^pay/$', 'pay'),
              (r'^pay/done/$', 'pay_done'),

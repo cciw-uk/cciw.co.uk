@@ -568,6 +568,18 @@ def booking_problems_json(request):
     return retval
 
 
+@json_response
+def place_availability_json(request):
+    retval = {'status': 'success'}
+    camp_id = int(request.GET['camp_id'])
+    camp = Camp.objects.get(id=camp_id)
+    places = camp.get_places_left()
+    retval['result'] = dict(total=places[0],
+                            male=places[1],
+                            female=places[2])
+    return retval
+
+
 def make_state_token(bookings):
     # Hash some key data about booking, without which the booking isn't valid.
     bookings.sort(key=lambda b: b.id)

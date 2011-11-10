@@ -95,9 +95,34 @@ $(document).ready(function() {
             }});
     }
 
+
+    $('div.field-camp').append('<div id="place-availability">');
+
+    var getPlaceAvailability = function() {
+        var campId = $('#id_camp').val();
+        if (campId == undefined || campId == "") {
+            $('#place-availability').html('');
+        }
+        $.ajax({
+            type: "GET",
+            url: '{% url "cciw.bookings.views.place_availability_json" %}?camp_id=' + campId,
+            dataType: "json",
+            success: function(json) {
+                if (json.status == 'success') {
+                    var html = ('Places available: total=' + json.result.total.toString() +
+                                ', male=' + json.result.male.toString() +
+                                ', female=' + json.result.female.toString())
+                    $('#place-availability').html(html);
+                }
+            }
+        })
+    };
+
     getBookingProblems();
     $('input,select,textarea').change(getBookingProblems);
 
+    getPlaceAvailability();
+    $('#id_camp').change(getPlaceAvailability);
 
 });
 </script>
