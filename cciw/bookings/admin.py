@@ -1,6 +1,8 @@
 from autocomplete.fields import ModelChoiceField
 from django.contrib import admin
 from django import forms
+from django.http import HttpResponse
+from django.utils.html import escape, escapejs
 
 from cciw.bookings.models import Price, BookingAccount, Booking, ChequePayment, RefundPayment
 from cciw.cciwmain.common import get_thisyear
@@ -80,7 +82,11 @@ class BookingAccountAdmin(admin.ModelAdmin):
     def response_change(self, request, obj):
         # Little hack to allow popups for changing BookingAccount
         if '_popup' in request.POST:
-            return close_window_response()
+            return HttpResponse(
+                '<!DOCTYPE html><html><head><title></title></head><body>'
+                '<script type="text/javascript">opener.dismissAddAnotherPopup(window, "%s", "%s");</script></body></html>' % \
+                # escape() calls force_unicode.
+                (escape(obj._get_pk_val()), escapejs(obj)))
         else:
             return super(BookingAccountAdmin, self).response_change(request, obj)
 
