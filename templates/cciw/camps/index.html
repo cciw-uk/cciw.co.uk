@@ -3,34 +3,34 @@
 
 {% regroup camps by year as grouped %}
 {% for yeargroup in grouped %}
-	<h2><a name="year{{ yeargroup.grouper }}">{{ yeargroup.grouper }}</a></h2>
-	<div><a href="/camps/{{ yeargroup.grouper }}/all/forum/">General forum</a></div>
-	<ul class="camplist">
-		{% for camp in yeargroup.list %}
-			<li><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">
-				Camp {{ camp.number }}</a>,
-				led by {{ camp.leaders.all|join:", " }}, 
-				chaplain {{ camp.chaplain }}
-				<ul>
-					<li><a href="{{ camp.get_absolute_url }}forum/" 
-						title="Message board for {{ camp.nice_name }}">Forum</a></li>
-					<li><a href="{{ camp.get_absolute_url }}photos/"
-						title="Photo gallery for {{ camp.nice_name }}">Photos</a></li>
-				</ul>
-			</li>
-		{% endfor %}
-	</ul>
+  <h2><a name="year{{ yeargroup.grouper }}">{{ yeargroup.grouper }}</a></h2>
+  <div><a href="/camps/{{ yeargroup.grouper }}/all/forum/">General forum</a></div>
+  <ul class="camplist">
+    {% for camp in yeargroup.list %}
+      <li><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">
+        Camp {{ camp.number }}</a>,
+        led by {{ camp.leaders.all|join:", " }}, 
+        chaplain {{ camp.chaplain }}
+        <ul>
+          <li><a href="{{ camp.get_absolute_url }}forum/" 
+            title="Message board for {{ camp.nice_name }}">Forum</a></li>
+          <li><a href="{{ camp.get_absolute_url }}photos/"
+            title="Photo gallery for {{ camp.nice_name }}">Photos</a></li>
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
 {% endfor %}
 {% if show_ancient %}
 <h2><a name="year1999">Pre-CCIW: 1999</a></h2>
 <ul>
-	<li><a href="/camps/1999/tywyn_site/photos/" title="Photos for pre-CCIW camps on the Tywyn site">Tywyn site</a></li>
-	<li><a href="/camps/1999/llys_andreas_site/photos/" title="Photos for pre-CCIW camps on the Llys Andreas site">Llys Andreas site</a></li>
+  <li><a href="/camps/1999/tywyn_site/photos/" title="Photos for pre-CCIW camps on the Tywyn site">Tywyn site</a></li>
+  <li><a href="/camps/1999/llys_andreas_site/photos/" title="Photos for pre-CCIW camps on the Llys Andreas site">Llys Andreas site</a></li>
 </ul>
 
 <h2><a name="yearancient">Pre-CCIW: Ancient</a></h2>
 <ul>
-	<li><a href="/camps/ancient/misc_sites/photos/" title="Really old photos on various sites">Misc sites</a></li>
+  <li><a href="/camps/ancient/misc_sites/photos/" title="Really old photos on various sites">Misc sites</a></li>
 </ul>
 {% endif %}
 

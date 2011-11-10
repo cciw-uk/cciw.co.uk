@@ -1,34 +1,34 @@
 {% extends "cciw/standard.html" %}
 {% block content %}
-	{% if message %}
-	<p>{{ message }}</p>
-	{% endif %}
+  {% if message %}
+  <p>{{ message }}</p>
+  {% endif %}
 
-	{% if show_form %}
-	<p>Enter the subject and body of the news item.</p>
-	<form action="#messageform" method="post">{% csrf_token %}
-		{% include "cciw/errors.html" %}
-		{% include "cciw/msgpreview.html" %}
-		{% if preview %}
-			<p>Make any changes below, and choose
-			'Preview' again or 'Post'.</p>
-		{% endif %}
-		<table class="simpleform">
-			<tr>
-				<th scope="row">Subject:</th>
-				<td><input type="text" size="50" name="subject" value="{{ subject_text }}" /></td>
-			</tr>
-			<tr>
-				<th scope="row">Body of news item:</th>
-				<td>
-					{% include "cciw/message.html" %}
-				</td>
-			</tr>
-		</table>
-		<div>
-		<br/><input type="submit" name="preview" value="Preview"/>&nbsp;
-		<input type="submit" name="post" value="Post" />
-		</div>
-	</form>
-	{% endif %}
+  {% if show_form %}
+  <p>Enter the subject and body of the news item.</p>
+  <form action="#messageform" method="post">{% csrf_token %}
+    {% include "cciw/errors.html" %}
+    {% include "cciw/msgpreview.html" %}
+    {% if preview %}
+      <p>Make any changes below, and choose
+      'Preview' again or 'Post'.</p>
+    {% endif %}
+    <table class="simpleform">
+      <tr>
+        <th scope="row">Subject:</th>
+        <td><input type="text" size="50" name="subject" value="{{ subject_text }}" /></td>
+      </tr>
+      <tr>
+        <th scope="row">Body of news item:</th>
+        <td>
+          {% include "cciw/message.html" %}
+        </td>
+      </tr>
+    </table>
+    <div>
+    <br/><input type="submit" name="preview" value="Preview"/>&nbsp;
+    <input type="submit" name="post" value="Post" />
+    </div>
+  </form>
+  {% endif %}
 {% endblock %}

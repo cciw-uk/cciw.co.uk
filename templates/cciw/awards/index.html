@@ -5,27 +5,27 @@ This template has a single variable 'object_list'
 which is a list of 'Award' objects
 {% endcomment %}
 {% block content %}
-	{% for award in object_list %}
-		<h2><a name="{{ award.nice_name|slugify }}">{{award.nice_name}}</a></h2>
-		<div class="awardDescription">
-		<img src="{{ award.imageurl }}" alt="{{ award.nice_name }} image" />  {{award.description}}
-		</div>
-		<div class="awardList">
+  {% for award in object_list %}
+    <h2><a name="{{ award.nice_name|slugify }}">{{award.nice_name}}</a></h2>
+    <div class="awardDescription">
+    <img src="{{ award.imageurl }}" alt="{{ award.nice_name }} image" />  {{award.description}}
+    </div>
+    <div class="awardList">
                 {% with award.personal_awards.all as pawards %}
                 {% if pawards %}
-			<p>Awarded to:</p>
-			<ul>
-			{% for paward in pawards %}
-				<li>{{ paward.member.get_link }}
-					{% if paward.date_awarded %}, on {{ paward.date_awarded|date:"d M Y" }} {% endif %}
-				for:<br/> {{ paward.reason }}</li>
-			{% endfor %}
-			</ul>
-		
-		{% else %}
-			<p>Not awarded to anyone yet.</p>
-		{% endif %}
+      <p>Awarded to:</p>
+      <ul>
+      {% for paward in pawards %}
+        <li>{{ paward.member.get_link }}
+          {% if paward.date_awarded %}, on {{ paward.date_awarded|date:"d M Y" }} {% endif %}
+        for:<br/> {{ paward.reason }}</li>
+      {% endfor %}
+      </ul>
+    
+    {% else %}
+      <p>Not awarded to anyone yet.</p>
+    {% endif %}
                 {% endwith %}
-		</div>
-	{% endfor %}
+    </div>
+  {% endfor %}
 {% endblock %}
