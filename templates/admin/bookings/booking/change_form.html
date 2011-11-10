@@ -118,11 +118,39 @@ $(document).ready(function() {
         })
     };
 
+    $('#id_amount_due').after('<input type="submit" id="id_amount_due_auto" value="">');
+    $('#id_amount_due_auto').hide();
+
+    var getExpectedAmountDue = function() {
+        $.ajax({
+            type: "POST",
+            url: '{% url "cciw.bookings.views.get_expected_amount_due" %}',
+            data: $('#booking_form').serialize(),
+            dataType: "json",
+            success: function(json) {
+                if (json.status == 'success') {
+                    if (json.amount == null) {
+                        $('#id_amount_due_auto').hide();
+                    } else {
+                        $('#id_amount_due_auto').show().val('Set to £' + json.amount.toString());
+                        $('#id_amount_due_auto').click(function(ev) {
+                            ev.preventDefault();
+                            $('#id_amount_due').val(json.amount.toString());
+                        });
+                    }
+                }
+            }
+        });
+    };
+
     getBookingProblems();
     $('input,select,textarea').change(getBookingProblems);
 
     getPlaceAvailability();
     $('#id_camp').change(getPlaceAvailability);
+
+    getExpectedAmountDue();
+    $('#id_south_wales_transport,#id_price_type,#id_camp').change(getExpectedAmountDue);
 
 });
 </script>

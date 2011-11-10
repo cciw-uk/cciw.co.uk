@@ -341,6 +341,8 @@ class Booking(models.Model):
     confirmed_booking.boolean = True
 
     def expected_amount_due(self):
+        if self.price_type == PRICE_CUSTOM:
+            return None
         if self.state == BOOKING_CANCELLED:
             return Price.objects.get(year=self.camp.year,
                                      price_type=PRICE_DEPOSIT).price

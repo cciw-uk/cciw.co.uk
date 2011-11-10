@@ -2,7 +2,6 @@ from autocomplete.fields import ModelChoiceField
 from django.contrib import admin
 from django import forms
 
-from cciw.bookings.forms import FixPriceMixin
 from cciw.bookings.models import Price, BookingAccount, Booking, ChequePayment, RefundPayment
 from cciw.cciwmain.common import get_thisyear
 from cciw.utils.views import close_window_response
@@ -109,13 +108,12 @@ account_autocomplete_field = \
                              widget=AccountAutoCompleteWidget('account',
                                                               attrs={'size':'70'}))
 
-class BookingAdminForm(FixPriceMixin, forms.ModelForm):
+class BookingAdminForm(forms.ModelForm):
 
     account = account_autocomplete_field()
 
     def __init__(self, *args, **kwargs):
         super(BookingAdminForm, self).__init__(*args, **kwargs)
-        self.fix_price_choices()
 
     class Meta:
         model = Booking

@@ -580,6 +580,30 @@ def place_availability_json(request):
     return retval
 
 
+@csrf_exempt
+@json_response
+def get_expected_amount_due(request):
+    fail = {'status':'success',
+            'amount': None}
+    try:
+        # Need to construct a partial object, that won't pass validation,
+        # so do manual parsing of posted vars.
+        b = Booking(price_type=int(request.POST['price_type']),
+                    south_wales_transport='south_wales_transport' in request.POST,
+                    camp_id=int(request.POST['camp']))
+    except ValueError, KeyError: # not a valid price_type/camp, data missing
+        return fail
+    try:
+        amount = b.expected_amount_due()
+    except Price.DoesNotExist:
+        return fail
+
+    if amount is not None:
+        amount = str(amount) # convert decimal
+    return {'status': 'success',
+            'amount': amount}
+
+
 def make_state_token(bookings):
     # Hash some key data about booking, without which the booking isn't valid.
     bookings.sort(key=lambda b: b.id)

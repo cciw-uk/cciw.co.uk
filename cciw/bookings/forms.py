@@ -31,6 +31,9 @@ AccountDetailsForm.base_fields['post_code'].required = True
 
 
 class FixPriceMixin(object):
+    """
+    Changes the 'price_type' field to include prices from the current year.
+    """
     def fix_price_choices(self):
         price_choices = self.fields['price_type'].choices
         prices = dict((p.price_type, p.price) for p in Price.objects.filter(year=get_thisyear()))
