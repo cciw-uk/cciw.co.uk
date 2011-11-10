@@ -1,4 +1,6 @@
 {% extends "cciw/standard.html" %}
+{% load url from future %}
+
 {% block content %}
 	<br/>
 {% if camp.is_past %}
@@ -55,5 +57,20 @@
 			</ul>
 		</td>
 	</tr>
+        {% if camp.year == thisyear and camp.is_booking_open %}
+        <tr>
+               <th scope="row">Places:</th>
+               <td>
+                 {% with total=camp.get_places_left.0 %}
+                 {% if total > 0 %}
+                     {{ total }} places still available:<br/><br/> <a class="booknow" href="{% url 'cciw.bookings.views.start' %}">Book online now!</a><br/><br/>
+                     <a href="{% url 'cciw.bookings.views.index' %}">See other booking options and prices</a>
+                 {% else %}
+                     No more places available on this camp, sorry.
+                 {% endif %}
+                 {% endwith %}
+               </td>
+        </tr>
+        {% endif %}
 </table>
 {% endblock %}
