@@ -135,7 +135,7 @@ $(document).ready(function() {
                         $('#id_amount_due_auto').show().val('Set to £' + json.amount.toString());
                         $('#id_amount_due_auto').click(function(ev) {
                             ev.preventDefault();
-                            $('#id_amount_due').val(json.amount.toString());
+                            $('#id_amount_due').val(json.amount.toString()).trigger('change');
                         });
                     }
                 }
