@@ -25,3 +25,8 @@ INSTALLATION HINTS
 - The fabfile contains info about how to develop and deploy
 - You need to create a settings_priv.py withthe various settings that I cannot
   release publically (database, passwords, secret key)
+
+Tests
+=====
+
+./manage.py test --settings=cciw.settings_tests cciwmain officers
