@@ -167,7 +167,7 @@
 # Leaders need to be presented with a list of bookings that they need to manually
 # approve. If they don't approve, need to send email to person booking.
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
 import os
@@ -362,6 +362,13 @@ def verify_email(request, account_id, token):
         return fail()
 
     if check_email_verification_token(account, token):
+        if account.last_login is not None and (datetime.now() - account.last_login) > \
+                timedelta(30*6): # six months
+            resp = HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
+            set_booking_account_cookie(resp, account)
+            messages.info(request, "Welcome back! Please check and update your account details")
+            return resp
+
         dt = datetime.now()
         if account.first_login is None:
             account.first_login = dt

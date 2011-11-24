@@ -254,6 +254,32 @@ class TestBookingVerify(TestCase):
         newpath = reverse('cciw.bookings.views.add_place')
         self.assertTrue(resp['Location'].endswith(newpath))
 
+    def test_verify_correct_and_has_old_details(self):
+        """
+        Test the email verification stage when the URL is correct and the
+        account already has name and address, but they haven't logged in
+        for 'a while'.
+        """
+        # Assumes booking_start works:
+        self.client.post(reverse('cciw.bookings.views.start'),
+                         {'email': 'booker@bookers.com'})
+        b = BookingAccount.objects.get(email='booker@bookers.com')
+        b.name = "Joe"
+        b.address = "Home"
+        b.post_code = "XY1 D45"
+        b.first_login = datetime.now() - timedelta(30*7)
+        b.last_login = b.first_login
+        b.save()
+
+        url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
+        resp = self.client.get(path, querydata)
+        self.assertEqual(resp.status_code, 302)
+        newpath = reverse('cciw.bookings.views.account_details')
+        self.assertTrue(resp['Location'].endswith(newpath))
+        resp2 = self.client.get(path, querydata, follow=True)
+        self.assertContains(resp2, "Welcome back")
+        self.assertContains(resp2, "Please check and update your account details")
+
     def test_verify_incorrect(self):
         """
         Test the email verification stage when the URL is incorrect
