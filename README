@@ -54,3 +54,8 @@ styles.
 The system was initially migrated from a PHP system. The migration scripts can
 be found in the VCS history, but have been removed from the current tree
 as they are clutter that is no longer needed.
+
+Tests
+=====
+
+./manage.py test --settings=cciw.settings_tests cciwmain officers

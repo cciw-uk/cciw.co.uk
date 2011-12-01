@@ -66,6 +66,9 @@ tests = (
     # empty string should return nothing
     ('',
         ''),
+    # [[/tag] test
+    ('[quote]Apple][[/quote]after tag',
+            '<blockquote><div>Apple][</div></blockquote><div>after tag</div>'),
     # Bible:
     ('[bible]test',
         '<blockquote class="bible"><div>test</div></blockquote>'),
