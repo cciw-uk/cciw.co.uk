@@ -369,11 +369,14 @@ class Booking(models.Model):
 
     def get_booking_problems(self, booking_sec=False):
         """
-        Returns a two tuple (errors, warnings), where 'errors' is a list of
-        reasons why booking cannot be done. If empty list, then it can be.
+        Returns a two tuple (errors, warnings).
+
+        'errors' is a list of reasons why booking cannot be done. If this is
+        empty, then it can be booked.
+
         'warnings' is a list of possible problems that don't stop booking.
 
-        If 'booking_sec', it shows the problems as they should be seen by the
+        If booking_sec=True, it shows the problems as they should be seen by the
         booking secretary.
         """
         if self.state == BOOKING_APPROVED and not booking_sec:
