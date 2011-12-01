@@ -71,21 +71,35 @@ $(document).ready(function() {
 
     // Handler for camp checkboxes
     function selectedCampsChanged(ev) {
-        $('#id_campselector input[type=submit]').removeAttr('disabled');
         var selectedCamps = []
         $('#id_campselector input[type=checkbox]:checked').each(function(idx, elem) {
             selectedCamps.push($(elem).val());
         });
-        // For locating selected camps, we use a comma delimited string
-        // to make it easier to match by using string matching.
-        var campMatch = "," + selectedCamps.join(",") + ",";
+        updateVisibleRows(selectedCamps);
+        if (Modernizr.history) {
+            var url = '';
+            if (selectedCamps.length == 0) {
+                // Special case - server side if there are no 'camp' query params,
+                // we treat this as if all camps are selected. To get behaviour to
+                // match, we specify an invalid camp number
+                url = '?camp=0';
+            } else {
+                url = "?" + $.map(selectedCamps,
+                                  function(c) { return ("camp=" + c); }).join("&");
+            }
+            history.pushState({selectedCamps:selectedCamps}, '', url);
+        } else {
+            $('#id_campselector input[type=submit]').removeAttr('disabled');
+        }
+    }
 
+    function updateVisibleRows(selectedCamps) {
         // Now go through all rows
         $('#id_officer_table tbody tr').each(function(idx, elem) {
             var show = false;
             var tr = $(elem);
             $.each(tr.data('camps'), function(idx, val) {
-                if (campMatch.indexOf(',' + val + ',') != -1) {
+                if ($.inArray(val, selectedCamps) != -1) {
                     show = true;
                     return false;
                 }
@@ -98,13 +112,36 @@ $(document).ready(function() {
         });
     }
 
+    function updateCheckBoxes(selectedCamps) {
+        $('#id_campselector input[type=checkbox]').each(function(idx, elem) {
+            var input = $(elem);
+            if ($.inArray(input.val(), selectedCamps) != -1) {
+                input.attr('checked', 'checked');
+            } else {
+                input.removeAttr('checked');
+            }
+        });
+    }
+
+    function handleHistoryPopState(ev) {
+        var selectedCamps = ev.originalEvent.state.selectedCamps
+        updateCheckBoxes(selectedCamps)
+        updateVisibleRows(selectedCamps);
+    }
+
     // Add event handler
     $('#id_campselector input[type=checkbox]').bind('change', selectedCampsChanged);
 
-    // Change the caption on 'update' box, because it is now only useful for
-    // updating the URL, as other updates happen immediately.
-    $('#id_campselector input[type=submit]').attr('disabled', 'disabled').val('Update page address');
-
+    if (Modernizr.history) {
+        // Don't need the 'update' button at all, we can use history.pushState
+        // to update the URL.
+        $('#id_campselector input[type=submit]').hide();
+        $(window).bind('popstate', handleHistoryPopState);
+    } else {
+        // Change the caption on 'update' box, because with javascript enabled it is 
+        // only useful for updating the URL, as other updates happen immediately.
+        $('#id_campselector input[type=submit]').attr('disabled', 'disabled').val('Update page address');
+    }
 });
 </script>
 
