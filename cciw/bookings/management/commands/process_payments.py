@@ -74,7 +74,14 @@ class Command(BaseCommand):
                 except Exception:
                     # Send email, but carry on with next payment
                     from cciw.cciwmain.common import exception_notify_admins
-                    exception_notify_admins('CCIW booking - payment processing error')
+                    try:
+                        exception_notify_admins('CCIW booking - payment processing error')
+                    except Exception:
+                        # Exception sending email - that's the most likely cause
+                        # of process_one_payment failing, since it can
+                        # indirectly cause email to be sent. In that case, the
+                        # admin notification is likely to fail too.
+                        continue
 
         finally:
             l.close()
