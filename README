@@ -58,4 +58,4 @@ as they are clutter that is no longer needed.
 Tests
 =====
 
-./manage.py test --settings=cciw.settings_tests cciwmain officers
+./manage.py test --settings=cciw.settings_tests cciwmain officers bookings
