@@ -69,12 +69,19 @@ $(document).ready(function() {
         $(elem).data('camps', $(elem).attr('data-camps').split(','));
     });
 
-    // Handler for camp checkboxes
-    function selectedCampsChanged(ev) {
+    function getSelectedCamps() {
         var selectedCamps = []
         $('#id_campselector input[type=checkbox]:checked').each(function(idx, elem) {
             selectedCamps.push($(elem).val());
         });
+        return selectedCamps;
+    }
+
+    var initalSelectedCamps = getSelectedCamps();
+
+    // Handler for camp checkboxes
+    function selectedCampsChanged(ev) {
+        var selectedCamps = getSelectedCamps();
         updateVisibleRows(selectedCamps);
         if (Modernizr.history) {
             var url = '';
@@ -124,8 +131,14 @@ $(document).ready(function() {
     }
 
     function handleHistoryPopState(ev) {
-        var selectedCamps = ev.originalEvent.state.selectedCamps
-        updateCheckBoxes(selectedCamps)
+        var state = ev.originalEvent.state;
+        var selectedCamps;
+        if (state == null) {
+            selectedCamps = initalSelectedCamps;
+        } else {
+            selectedCamps = state.selectedCamps;
+        }
+        updateCheckBoxes(selectedCamps);
         updateVisibleRows(selectedCamps);
     }
 
