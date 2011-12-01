@@ -25,7 +25,7 @@ from cciw.bookings.models import Payment
 # 'cciw.bookings.models.send_payment', which creates Payment objects for later
 # processing, rather than calling BookingAccount.receive_payment directly.
 #
-# Thos process_payments management command is always run in a separate process,
+# This process_payments management command is always run in a separate process,
 # so doesn't have the transaction management of web requests, but a manual
 # transaction around each payment processed. We use a file lock to guarantee
 # serial access, rather than rely on serializable transaction isolation level.
