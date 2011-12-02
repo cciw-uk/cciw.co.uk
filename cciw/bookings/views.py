@@ -255,7 +255,7 @@ def account_details_required(view_func):
     return view
 
 
-booking_secretary_required = user_passes_test_improved(is_booking_secretary)
+booking_secretary_required = user_passes_test_improved(lambda user: user.is_superuser or is_booking_secretary(user))
 
 
 def is_booking_open(year):
