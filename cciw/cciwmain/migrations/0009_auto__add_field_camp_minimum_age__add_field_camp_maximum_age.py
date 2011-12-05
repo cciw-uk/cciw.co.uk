@@ -15,7 +15,7 @@ class Migration(SchemaMigration):
         db.add_column('cciwmain_camp', 'maximum_age', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=0), keep_default=False)
 
         orm.Camp.objects.filter(age='Jnr').update(minimum_age=11, maximum_age=17)
-        orm.Camp.objects.filter(age='Snr').update(minimum_age=16, maximum_age=23)
+        orm.Camp.objects.filter(age='Snr').update(minimum_age=16, maximum_age=22)
 
 
     def backwards(self, orm):
