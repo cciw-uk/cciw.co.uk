@@ -277,7 +277,8 @@ class Booking(models.Model):
                                                 blank=True, default=False)
 
     # Contact - from user
-    contact_name = models.CharField(max_length=100)
+    contact_address = models.TextField()
+    contact_post_code = models.CharField(max_length=10)
     contact_phone_number = models.CharField(max_length=22)
 
     # Diet - from user

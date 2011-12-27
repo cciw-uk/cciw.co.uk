@@ -164,7 +164,8 @@ class BookingAdmin(admin.ModelAdmin):
          {'fields': ['church']}),
         ('Contact details',
          {'fields':
-              ['contact_name',
+              ['contact_address',
+               'contact_post_code',
                'contact_phone_number',
                ]}),
         ('Diet',

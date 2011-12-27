@@ -70,7 +70,8 @@
                  'address',
                  'post_code',
                  'phone_number',
-                 'contact_name',
+                 'contact_address',
+                 'contact_post_code',
                  'contact_phone_number'
              ];
 
@@ -166,8 +167,8 @@
 
              var useAccountForContactDetailsClick = function(ev) {
                  ev.preventDefault();
-                 // copy contact_name, contact_phone_number
-                 useAccountData(['name', 'phone_number'], 'contact_');
+                 // copy contact_address, contact_post_code, contact_phone_number
+                 useAccountData(['address', 'post_code', 'phone_number'], 'contact_');
              };
 
              $('#id_popup_close_btn').click(useExistingDataClose);
