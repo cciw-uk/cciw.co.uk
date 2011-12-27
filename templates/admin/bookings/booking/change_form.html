@@ -103,6 +103,7 @@ $(document).ready(function() {
         var campId = $('#id_camp').val();
         if (campId == undefined || campId == "") {
             $('#place-availability').html('');
+            return;
         }
         $.ajax({
             type: "GET",
