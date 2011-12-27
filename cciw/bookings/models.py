@@ -133,6 +133,8 @@ class BookingAccount(models.Model):
         ever be called by the 'process_payments' management command. Client code
         should use the 'send_payment' function.
         """
+        # See process_payments management command for an explanation of the above
+
         # = Receiving payments =
         #
         # This system needs to be robust, and cope with all kinds of user error, and
@@ -140,9 +142,9 @@ class BookingAccount(models.Model):
         # worst, most complicated scenario, and this will then easily handle the more
         # simple case where everything matches up as a special case.
         #
-        # When a payment is received, django-paypal creates an object
-        # and a signal handler calls BookingAccount.receive_payment, which must
-        # update the 'total_received' field.
+        # When a payment is received, django-paypal creates an object and a
+        # signal handler indirectly calls BookingAccount.receive_payment, which
+        # must update the 'total_received' field.
         #
         # We also need to set the 'Booking.booking_expires' field of relevant Booking
         # objects to null, so that the place is securely booked.
