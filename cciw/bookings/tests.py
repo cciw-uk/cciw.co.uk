@@ -1289,6 +1289,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         self.assertEqual(json['account']['post_code'], 'ABC')
 
     def test_booking_problems(self):
+        self.add_prices()
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
                                              post_code="ABC",
                                              name="Mr Foo")

@@ -570,8 +570,7 @@ def booking_problems_json(request):
         instance = form.save(commit=False)
         # We will get errors later on if prices don't exist for the year chosen, so
         # we check that first.
-        if not Price.objects.filter(year=instance.camp.year,
-                                    price_type=instance.price_type).exists():
+        if not is_booking_open(instance.camp.year):
             retval['problems'] = ['Prices have not been set for the year %d' % instance.camp.year]
         else:
             problems, warnings = instance.get_booking_problems(booking_sec=True)
