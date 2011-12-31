@@ -133,3 +133,20 @@ def send_booking_expiry_mail(account, bookings, expired):
     else:
         subject = u"CCIW booking - booking expiry warning"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+
+
+def send_booking_approved_mail(booking):
+    account = booking.account
+    if account.email == '':
+        return False
+
+    c = {
+        'url_start': site_address_url_start(),
+        'account': account,
+        'booking': booking,
+        }
+    body = loader.render_to_string('cciw/bookings/place_approved_email.txt', c)
+    subject = u"CCIW booking - approved"
+    mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+
+    return True

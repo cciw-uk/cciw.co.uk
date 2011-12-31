@@ -1,10 +1,12 @@
 from autocomplete.fields import ModelChoiceField
 from django.contrib import admin
+from django.contrib import messages
 from django import forms
 from django.http import HttpResponse
 from django.utils.html import escape, escapejs
 
-from cciw.bookings.models import Price, BookingAccount, Booking, ChequePayment, RefundPayment
+from cciw.bookings.email import send_booking_approved_mail
+from cciw.bookings.models import Price, BookingAccount, Booking, ChequePayment, RefundPayment, BOOKING_APPROVED, BOOKING_INFO_COMPLETE
 from cciw.cciwmain.common import get_thisyear
 from cciw.utils.views import close_window_response
 
@@ -204,6 +206,19 @@ class BookingAdmin(admin.ModelAdmin):
                'created',
                'shelved']}),
         )
+
+    def save_model(self, request, obj, form, change):
+        if obj.id is not None:
+            old_state = Booking.objects.get(id=obj.id).state
+        else:
+            old_state = None
+        retval = super(BookingAdmin, self).save_model(request, obj, form, change)
+        if old_state == BOOKING_INFO_COMPLETE and obj.state == BOOKING_APPROVED:
+            email_sent = send_booking_approved_mail(obj)
+            if email_sent:
+                messages.info(request, "An email has been sent to %s telling "
+                              "them the place has been approved." % (obj.account.email))
+        return retval
 
 
 class ChequePaymentAdminFormBase(forms.ModelForm):

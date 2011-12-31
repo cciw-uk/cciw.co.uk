@@ -7,6 +7,7 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import simplejson
+from twill import commands as tc
 import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
@@ -16,8 +17,9 @@ from cciw.bookings.utils import camp_bookings_to_xls
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
-from cciw.officers.tests.references import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD
+from cciw.officers.tests.references import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD, BOOKING_SEC
 from cciw.sitecontent.models import HtmlChunk
+from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url
 
 
 DISABLED_BOOK_NOW_BTN = "id_book_now_btn\" disabled>"
@@ -500,6 +502,25 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
             resp = self.client.post(reverse('cciw.bookings.views.edit_place', kwargs={'id':str(b.id)}), data)
             # Check we didn't alter it
             self.assertNotEqual(acc.bookings.all()[0].first_name, "A New Name")
+
+
+class TestEditPlaceAdmin(CreatePlaceMixin, TwillMixin, TestCase):
+
+    fixtures = ['basic.json', 'officers_users.json']
+
+    def test_approve(self):
+        self.create_place({'price_type': PRICE_CUSTOM})
+        acc = self.get_account()
+        b = acc.bookings.all()[0]
+
+        self._twill_login(BOOKING_SEC)
+        tc.go(make_django_url("admin:bookings_booking_change", b.id))
+        tc.code(200)
+        tc.fv('booking_form', 'state', str(BOOKING_APPROVED))
+        tc.submit()
+        tc.find("An email has been sent")
+        self.assertEqual(len(mail.outbox), 1)
+        print mail.outbox[0].body.encode('utf-8')
 
 
 class TestListBookings(CreatePlaceMixin, TestCase):
