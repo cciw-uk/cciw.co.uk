@@ -22,6 +22,7 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
             'post_code',
             'phone_number',
             'share_phone_number',
+            'email_communication',
             ]
 
 # Need to override these to fix various details for use by user

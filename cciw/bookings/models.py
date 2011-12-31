@@ -79,6 +79,7 @@ class BookingAccount(models.Model):
     share_phone_number = models.BooleanField("Allow this phone number to be passed on "
                                              "to other parents to help organise transport",
                                              blank=True, default=False)
+    email_communication = models.BooleanField("Receive all communication from CCIW by email where possible", blank=True, default=True)
     total_received = models.DecimalField(default=Decimal('0.00'), decimal_places=2, max_digits=10)
     first_login = models.DateTimeField(null=True, blank=True)
     last_login = models.DateTimeField(null=True, blank=True)

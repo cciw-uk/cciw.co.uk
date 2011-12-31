@@ -67,6 +67,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
                    'post_code',
                    'phone_number',
                    'share_phone_number',
+                   'email_communication',
                    ]})
             ]
         if '_popup' not in request.GET:
