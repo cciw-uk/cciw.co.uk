@@ -106,6 +106,9 @@ class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
             }
 
     def create_place(self, extra=None):
+        """
+        Logs in and creates a booking
+        """
         # We use public views to create place, to ensure that they are created
         # in the same way that a user would.
         self.login()
@@ -434,8 +437,6 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
         self.assertEqual(resp.status_code, 302)
 
     def test_show_if_owner(self):
-        self.login()
-        self.add_prices()
         self.create_place()
         acc = self.get_account()
         b = acc.bookings.all()[0]
@@ -444,8 +445,6 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "id_save_btn")
 
     def test_404_if_not_owner(self):
-        self.login()
-        self.add_prices()
         self.create_place()
         other_account = BookingAccount.objects.create(email='other@mail.com')
         Booking.objects.all().update(account=other_account)
@@ -454,8 +453,6 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
         self.assertEqual(resp.status_code, 404)
 
     def test_incomplete(self):
-        self.login()
-        self.add_prices()
         self.create_place()
         acc = self.get_account()
         b = acc.bookings.all()[0]
@@ -464,8 +461,6 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "This field is required")
 
     def test_complete(self):
-        self.login()
-        self.add_prices()
         self.create_place()
         acc = self.get_account()
         b = acc.bookings.all()[0]
@@ -485,8 +480,6 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
         Test we can't edit a booking when it is already booked.
         (or anything but BOOKING_INFO_COMPLETE)
         """
-        self.login()
-        self.add_prices()
         self.create_place()
         acc = self.get_account()
         b = acc.bookings.all()[0]
