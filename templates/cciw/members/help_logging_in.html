@@ -9,8 +9,8 @@
   {% if error_message %}
     <div class="userError">{{ error_message }}</div>
   {% endif %}
-  
-  
+
+
   <form action="" method="post">{% csrf_token %}
   <div>
   <label for="email">E-mail address:</label> <input type="text" name="email" id="email" value="{{ email }}" /><br/><br/>

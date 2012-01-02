@@ -2,7 +2,7 @@
 {% load forums %}
 {% load standardpage %}
 {% block content %}
-  
+
   <h2>{{ member.user_name }}'s stuff</h2>
   <ul>
     <li><a href="posts/">Recent posts by {{ member.user_name }}</a></li>
@@ -17,8 +17,8 @@
         <li><a href="messages/">Send a message</a></li>
         <li><a href="messages/inbox/">View {{ current_member.new_messages }} new message(s)</a></li>
         <li><a href="messages/archived/">View {{ current_member.saved_messages }} saved message(s)</a><br/><br/></li>
-        
-        
+
+
         <li><div><form method="post" action="{{request.url}}">{% csrf_token %}
         <p><input type="submit" name="logout" value="Log out" /></p>
         </form></div></li>
@@ -95,7 +95,7 @@
         Reason for award:
         <p>{{ paward.reason }}</p>
       </div>
-  
+
       {% endfor %}
 
 

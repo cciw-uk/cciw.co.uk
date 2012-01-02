@@ -23,11 +23,11 @@
             <a href="{{ campgroup.list.0.site.get_absolute_url }}">{{ campgroup.list.0.site }}</a>
             </th>
           </tr>
-        
+
 
           {% for camp in campgroup.list %}
           <tr>
-            <td><a href="{{ camp.get_absolute_url }}" 
+            <td><a href="{{ camp.get_absolute_url }}"
               title="{{ camp.nice_name }}">{{ camp.number }}</a></td>
             <td>{{ camp.age  }}</td>
             <td>{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M" }}</td>

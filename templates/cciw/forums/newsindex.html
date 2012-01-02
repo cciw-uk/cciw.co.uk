@@ -9,14 +9,14 @@
     {% for topic in object_list %}
       <div class="newsItem">
         <h2>{{ topic.news_item.subject }}</h2>
-        <div class="newsItemDetails">Posted: {{ topic.news_item.created_at|date:"d M Y, H:i" }}, 
+        <div class="newsItemDetails">Posted: {{ topic.news_item.created_at|date:"d M Y, H:i" }},
         by {{ topic.news_item.created_by.get_link }}</div>
         <div class="newsItemSummary">
         {{ topic.news_item.summary|bb2html }}
         </div>
-        
+
         {% if topic.news_item.has_full_item %}
-        <div class="newsItemReadMore"><a href="{{ topic.get_absolute_url }}" 
+        <div class="newsItemReadMore"><a href="{{ topic.get_absolute_url }}"
         title="Read full article '{{ topic.news_item.subject }}'" >Read more</a></div>
         {% endif %}
 
@@ -27,4 +27,4 @@
     <p>There are no news items yet.</p>
   {% endif %}
 
-{% endblock %} 
+{% endblock %}

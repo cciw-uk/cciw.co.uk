@@ -7,7 +7,7 @@
   {% if news_item %}
   <br/>
   <div class="newsItem">
-    <div class="newsItemDetails">Posted: {{ news_item.created_at|date:"d M Y, H:i" }}, 
+    <div class="newsItemDetails">Posted: {{ news_item.created_at|date:"d M Y, H:i" }},
     by {{ news_item.created_by.get_link }}</div>
     <div class="newsItemFull">
     {% if news_item.full_item %}
@@ -49,13 +49,13 @@
       </div>
     {% endif %}
     {% if voting_message %}<p><i>{{ voting_message }}</i></p>{% endif %}
-    
+
     {% if show_vote_box %}
       {% poll_vote_box request topic poll 2 %}
     {% else %}
       {% if allow_voting_box %}
         <form action="" method="get"><div>
-        Show the voting form: 
+        Show the voting form:
         <input type="submit" name="showvotebox" value="Show" />
         </div></form>
       {% endif %}
@@ -76,5 +76,5 @@
       {% endif %}
     {% endif %}
   {% endif %}
-{% endblock %} 
+{% endblock %}
 

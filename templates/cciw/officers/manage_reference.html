@@ -36,14 +36,14 @@
   {% endif %}
   {% if ref.previous_reference %}
   <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
-    has done a reference for {{ ref.application.officer.first_name}} before, so: 
+    has done a reference for {{ ref.application.officer.first_name}} before, so:
     <span class="referencebutton">
       <button onclick="requestUpdate({{ ref.id }}, {{ ref.previous_reference.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button>
     </span>
   </li>
   {% else %}
   <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
-    has not done an online reference for {{ ref.application.officer.first_name}} before, so: 
+    has not done an online reference for {{ ref.application.officer.first_name}} before, so:
     <span class="referencebutton"><button
     onclick="requestReference({{ ref.id }});">Request reference{% if mode == "requested" %} (again){% endif %}</button></span>
   </li>
@@ -69,7 +69,7 @@
   </li>
   {% endif %}
 
-  <li>{{ ref.referee.name }} can't do references using the online system, so: 
+  <li>{{ ref.referee.name }} can't do references using the online system, so:
     <span class="referencebutton"><button
     onclick="manageReferenceManually({{ ref.id }});">Manage reference manually</button></span>
   </li>
