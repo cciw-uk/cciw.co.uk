@@ -45,12 +45,13 @@ VALUED_PRICE_TYPES = [(v,d) for (v,d) in PRICE_TYPES if v is not PRICE_CUSTOM] +
      (PRICE_DEPOSIT, 'Deposit'),
      ]
 
-BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND = range(0, 5)
+BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_HALF_REFUND, BOOKING_CANCELLED_FULL_REFUND, = range(0, 6)
 BOOKING_STATES = [
     (BOOKING_INFO_COMPLETE, 'Information complete'),
     (BOOKING_APPROVED, 'Manually approved'),
     (BOOKING_BOOKED, 'Booked'),
-    (BOOKING_CANCELLED, 'Cancelled'),
+    (BOOKING_CANCELLED, 'Cancelled - deposit kept'),
+    (BOOKING_CANCELLED_HALF_REFUND, 'Cancelled - half refund'),
     (BOOKING_CANCELLED_FULL_REFUND, 'Cancelled - full refund'),
 ]
 
@@ -249,12 +250,16 @@ class BookingManager(models.Manager):
         Returns bookings for which payment is due.
         If confirmed_only is True, unconfirmed places are excluded.
         """
-        # Cancelled bookings have payment due - the deposit
-        cancelled = self.get_query_set().filter(state=BOOKING_CANCELLED)
+        # 'Full refund' cancelled bookings do not have payment due, but the
+        # others do.
+        cancelled = self.get_query_set().filter(state__in=[BOOKING_CANCELLED,
+                                                           BOOKING_CANCELLED_HALF_REFUND])
         return cancelled | (self.confirmed() if confirmed_only else self.booked())
 
     def cancelled(self):
-        return self.get_query_set().filter(state=BOOKING_CANCELLED)
+        return self.get_query_set().filter(state__in=[BOOKING_CANCELLED,
+                                                      BOOKING_CANCELLED_HALF_REFUND,
+                                                      BOOKING_CANCELLED_FULL_REFUND])
 
     def need_approving(self):
         qs = self.get_query_set().filter(state=BOOKING_INFO_COMPLETE)
@@ -358,7 +363,10 @@ class Booking(models.Model):
             if self.south_wales_transport:
                 amount += Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT,
                                             year=self.camp.year).price
-            return amount
+            if self.state == BOOKING_CANCELLED_HALF_REFUND:
+                return amount / 2
+            else:
+                return amount
 
     def auto_set_amount_due(self):
         if self.price_type == PRICE_CUSTOM:

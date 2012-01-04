@@ -12,7 +12,7 @@ import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.models import BookingAccount, Price, Booking, Payment, ChequePayment, RefundPayment, book_basket_now
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND, BOOKING_CANCELLED_HALF_REFUND
 from cciw.bookings.utils import camp_bookings_to_xls
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
@@ -1682,6 +1682,20 @@ class TestCancelFullRefund(CreatePlaceMixin, TestCase):
 
         acc = self.get_account()
         self.assertEqual(acc.get_balance(), place.amount_due)
+
+
+class TestCancelHalfRefund(CreatePlaceMixin, TestCase):
+    """
+    Tests covering what happens when user cancel late - half refund.
+    """
+    fixtures = ['basic.json']
+
+    def test_amount_due(self):
+        self.create_place()
+        acc = self.get_account()
+        place = acc.bookings.all()[0]
+        place.state = BOOKING_CANCELLED_HALF_REFUND
+        self.assertEqual(place.expected_amount_due(), Decimal('50.00'))
 
 
 class TestExportPlaces(CreatePlaceMixin, TestCase):
