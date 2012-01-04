@@ -1,12 +1,13 @@
+{% load url from future %}
 <div class="image{% if not image %} external{% endif %}">
-	{% if image %}
-	<a href="{% url djiki-image-view url_name %}">
-          <img src="{{ image.last_revision.file.url }}" alt="{{ title }}" />
-	</a>
-	{% else %}
-	<img src="{{ url }}" alt="{{ title }}" />
-	{% endif %}
-	{% if title %}
-	<p class="title">{{ title }}</p>
-	{% endif %}
+  {% if image %}
+  <a href="{% url 'djiki-image-view' url_name %}">
+    <img src="{{ image.last_revision.file.url }}" alt="{{ title }}" />
+  </a>
+  {% else %}
+  <img src="{{ url }}" alt="{{ title }}" />
+  {% endif %}
+  {% if title %}
+  <p class="title">{{ title }}</p>
+  {% endif %}
 </div>

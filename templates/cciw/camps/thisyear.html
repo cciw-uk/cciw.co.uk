@@ -1,48 +1,48 @@
 {% extends "cciw/standard.html" %}
 {% load standardpage %}
 {% block content %}
-	{% if camps %}
-		{% htmlchunk camp_dates_intro_text %}
-		<h2>Dates</h2>
-		<div>
-		<table class="topheaders" summary="Details of all camps running in {{ thisyear }}">
-			<thead>
-			<tr>
-				<th scope="col" abbr="Num">#</th>
-				<th scope="col">Age</th>
-				<th scope="col">Dates</th>
-				<th scope="col">Leaders</th>
-				<th scope="col">Chaplain</th>
-			</tr>
-			</thead>
-				<tbody>
-			{% regroup camps by site_id as campgroups %}
-			{% for campgroup in campgroups %}
-					<tr>
-						<th scope="rowgroup" colspan="5" class="siteDivision">
-						<a href="{{ campgroup.list.0.site.get_absolute_url }}">{{ campgroup.list.0.site }}</a>
-						</th>
-					</tr>
-				
+  {% if camps %}
+    {% htmlchunk camp_dates_intro_text %}
+    <h2>Dates</h2>
+    <div>
+    <table class="topheaders" summary="Details of all camps running in {{ thisyear }}">
+      <thead>
+      <tr>
+        <th scope="col" abbr="Num">#</th>
+        <th scope="col">Age</th>
+        <th scope="col">Dates</th>
+        <th scope="col">Leaders</th>
+        <th scope="col">Chaplain</th>
+      </tr>
+      </thead>
+        <tbody>
+      {% regroup camps by site_id as campgroups %}
+      {% for campgroup in campgroups %}
+          <tr>
+            <th scope="rowgroup" colspan="5" class="siteDivision">
+            <a href="{{ campgroup.list.0.site.get_absolute_url }}">{{ campgroup.list.0.site }}</a>
+            </th>
+          </tr>
 
-					{% for camp in campgroup.list %}
-					<tr>
-						<td><a href="{{ camp.get_absolute_url }}" 
-							title="{{ camp.nice_name }}">{{ camp.number }}</a></td>
-						<td>{{ camp.age	}}</td>
-						<td>{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M" }}</td>
-						<td><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">{{ camp.leaders.all|join:", " }}</a></td>
-						<td>{% if camp.chaplain %}{{ camp.chaplain }}{% else %}TBA{% endif %}</td>
-					</tr>
-					{% endfor %}
-			{% endfor %}
-				</tbody>
-		</table>
-		</div>
-		{% htmlchunk camp_dates_outro_text %}
-	{% else %}
-	<p>Information for camps in {{thisyear}} is not yet available.</p>
-	{% endif %}
+
+          {% for camp in campgroup.list %}
+          <tr>
+            <td><a href="{{ camp.get_absolute_url }}"
+              title="{{ camp.nice_name }}">{{ camp.number }}</a></td>
+            <td>{{ camp.age  }}</td>
+            <td>{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M" }}</td>
+            <td><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">{{ camp.leaders.all|join:", " }}</a></td>
+            <td>{% if camp.chaplain %}{{ camp.chaplain }}{% else %}TBA{% endif %}</td>
+          </tr>
+          {% endfor %}
+      {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% htmlchunk camp_dates_outro_text %}
+  {% else %}
+  <p>Information for camps in {{thisyear}} is not yet available.</p>
+  {% endif %}
 
 
 {% endblock %}

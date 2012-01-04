@@ -17,10 +17,10 @@ var cciw = (function(pub, $) {
             output = output + text;
         });
         output = "[bible=" + "{{ passage }}" + "]" + output + "[/bible]";
-	var messageBox = $(window.opener.document).find('#message');
-	if (messageBox.size() != 0) {
-		messageBox.insertAtCaret(output);
-	}
+        var messageBox = $(window.opener.document).find('#message');
+        if (messageBox.size() != 0) {
+            messageBox.insertAtCaret(output);
+        }
     };
 
    return pub;
@@ -29,22 +29,22 @@ var cciw = (function(pub, $) {
 
 //-->
 </script>
-	<div id="esvblock">
-	{{ passagetext }}
-	</div>
+  <div id="esvblock">
+    {{ passagetext }}
+  </div>
 
-	<h2>Refine Search</h2>
-	<form action="" method="get"><p>Passage: <input type="text" name="passage" value="{{ passage }}"/> <input type="submit" name="submit" value="Go" /></p>
-	</form>
-	<h2>Copy text into message</h2>
-	<p><a href="javascript: cciw.copyPassage();window.close();">Copy and close</a>
-	 | <a href="javascript:void cciw.copyPassage();">Copy</a></p>
+  <h2>Refine Search</h2>
+  <form action="" method="get"><p>Passage: <input type="text" name="passage" value="{{ passage }}"/> <input type="submit" name="submit" value="Go" /></p>
+  </form>
+  <h2>Copy text into message</h2>
+  <p><a href="javascript: cciw.copyPassage();window.close();">Copy and close</a>
+   | <a href="javascript:void cciw.copyPassage();">Copy</a></p>
 
-	<h2>Notice</h2>
-	<p>Scripture taken from The Holy Bible, English Standard Version. Copyright &copy;2001 by <a href="http://www.crosswaybibles.org">Crossway Bibles</a>, a division of Good News Publishers. Used by permission. All rights reserved. Text provided by the <a href="http://www.gnpcb.org/esv/share/services/">Crossway Bibles Web Service</a>.</p>
+  <h2>Notice</h2>
+  <p>Scripture taken from The Holy Bible, English Standard Version. Copyright &copy;2001 by <a href="http://www.crosswaybibles.org">Crossway Bibles</a>, a division of Good News Publishers. Used by permission. All rights reserved. Text provided by the <a href="http://www.gnpcb.org/esv/share/services/">Crossway Bibles Web Service</a>.</p>
 
-	<p>Please respect the service that <a href="http://www.gnpcb.org/">GNC</a> provides
-	by keeping queries to short passages (at most 500 verses), and please be considerate 
-	about copying large passages into messages.</p>
+  <p>Please respect the service that <a href="http://www.gnpcb.org/">GNC</a> provides
+  by keeping queries to short passages (at most 500 verses), and please be considerate
+  about copying large passages into messages.</p>
 
 {% endblock %}

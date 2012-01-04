@@ -3,23 +3,23 @@
 {% block content %}
 
 {% if success_message %}
-	<div class="successMessage">{{ success_message }}</div>
+  <div class="successMessage">{{ success_message }}</div>
 {% else %}
-	{% htmlchunk help_logging_in_intro %}
-	{% if error_message %}
-		<div class="userError">{{ error_message }}</div>
-	{% endif %}
-	
-	
-	<form action="" method="post">{% csrf_token %}
-	<div>
-	<label for="email">E-mail address:</label> <input type="text" name="email" id="email" value="{{ email }}" /><br/><br/>
-	Choose:<br/>
-	<input type="submit" name="newpassword" value="Send me a new password." /><br/>
-	or: <br/>
-	<input type="submit" name="usernamereminder" value="Remind me of my user name" /><br/>
-	</div>
-	</form>
+  {% htmlchunk help_logging_in_intro %}
+  {% if error_message %}
+    <div class="userError">{{ error_message }}</div>
+  {% endif %}
+
+
+  <form action="" method="post">{% csrf_token %}
+  <div>
+  <label for="email">E-mail address:</label> <input type="text" name="email" id="email" value="{{ email }}" /><br/><br/>
+  Choose:<br/>
+  <input type="submit" name="newpassword" value="Send me a new password." /><br/>
+  or: <br/>
+  <input type="submit" name="usernamereminder" value="Remind me of my user name" /><br/>
+  </div>
+  </form>
 {% endif %}
 
 {% endblock %}

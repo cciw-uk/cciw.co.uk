@@ -1,3 +1,4 @@
+from cciw.cciwmain.tests.camps import *
 from cciw.cciwmain.tests.members import *
 from cciw.cciwmain.tests.forums import *
 from cciw.cciwmain.tests.news import *

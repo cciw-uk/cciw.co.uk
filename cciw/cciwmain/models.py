@@ -39,16 +39,10 @@ class Person(models.Model):
         verbose_name_plural = 'people'
 
 
-CAMP_AGES = (
-    (u'Jnr',u'Junior'),
-    (u'Snr',u'Senior')
-)
-
-
 class CampManager(models.Manager):
     use_for_related_fields = True
     def get_query_set(self):
-        return super(CampManager, self).get_query_set().select_related('chaplain')
+        return super(CampManager, self).get_query_set().select_related('chaplain').prefetch_related('leaders')
 
     def get_by_natural_key(self, year, number):
         return self.get(year=year, number=number)
@@ -57,10 +51,14 @@ class CampManager(models.Manager):
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")
     number = models.PositiveSmallIntegerField("number")
-    age = models.CharField("age", blank=False, max_length=3,
-                        choices=CAMP_AGES)
+    minimum_age = models.PositiveSmallIntegerField()
+    maximum_age = models.PositiveSmallIntegerField()
     start_date = models.DateField("start date")
     end_date = models.DateField("end date")
+    max_campers = models.PositiveSmallIntegerField("maximum campers", default=80)
+    max_male_campers = models.PositiveSmallIntegerField("maximum male campers", default=60)
+    max_female_campers = models.PositiveSmallIntegerField("maximum female campers", default=60)
+
     previous_camp = models.ForeignKey("self",
         related_name="next_camps",
         verbose_name="previous camp",
@@ -131,11 +129,37 @@ class Camp(models.Model):
     def is_past(self):
         return self.end_date <= datetime.date.today()
 
+    @property
+    def age(self):
+        return "%d-%d" % (self.minimum_age, self.maximum_age)
+
+    def get_places_left(self):
+        """
+        Return 3 tuple containing (places left, places left for boys, places left for girls).
+        Note that the first isn't necessarily the sum of 2nd and 3rd.
+        """
+        from cciw.bookings.models import SEX_MALE, SEX_FEMALE
+        females_booked = 0
+        males_booked = 0
+        q = self.bookings.booked().values_list('sex').annotate(count=models.Count("id")).order_by()
+        for (s, c) in q:
+            if s == SEX_MALE:
+                males_booked = c
+            elif s == SEX_FEMALE:
+                females_booked = c
+        total_booked = males_booked + females_booked
+        # negative numbers of places available is confusing for our purposes, so use max
+        return (max(self.max_campers - total_booked, 0),
+                max(self.max_male_campers - males_booked, 0),
+                max(self.max_female_campers - females_booked, 0))
+
+    def is_booking_open(self):
+        from cciw.bookings.views import is_booking_open
+        return is_booking_open(self.year)
+
     class Meta:
         ordering = ['-year','number']
         unique_together = (('year', 'number'),)
-
-
 
 
 import cciw.cciwmain.hooks

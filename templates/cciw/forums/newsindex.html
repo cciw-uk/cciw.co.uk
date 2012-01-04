@@ -5,26 +5,26 @@
 
 {% block breadcrumb %}{% endblock %}
 {% block content %}
-	{% if object_list %}
-		{% for topic in object_list %}
-			<div class="newsItem">
-				<h2>{{ topic.news_item.subject }}</h2>
-				<div class="newsItemDetails">Posted: {{ topic.news_item.created_at|date:"d M Y, H:i" }}, 
-				by {{ topic.news_item.created_by.get_link }}</div>
-				<div class="newsItemSummary">
-				{{ topic.news_item.summary|bb2html }}
-				</div>
-				
-				{% if topic.news_item.has_full_item %}
-				<div class="newsItemReadMore"><a href="{{ topic.get_absolute_url }}" 
-				title="Read full article '{{ topic.news_item.subject }}'" >Read more</a></div>
-				{% endif %}
+  {% if object_list %}
+    {% for topic in object_list %}
+      <div class="newsItem">
+        <h2>{{ topic.news_item.subject }}</h2>
+        <div class="newsItemDetails">Posted: {{ topic.news_item.created_at|date:"d M Y, H:i" }},
+        by {{ topic.news_item.created_by.get_link }}</div>
+        <div class="newsItemSummary">
+        {{ topic.news_item.summary|bb2html }}
+        </div>
 
-			</div>
-		{% endfor %}
-		<div class="paging">{% paging_control %}</div>
-	{% else %}
-		<p>There are no news items yet.</p>
-	{% endif %}
+        {% if topic.news_item.has_full_item %}
+        <div class="newsItemReadMore"><a href="{{ topic.get_absolute_url }}"
+        title="Read full article '{{ topic.news_item.subject }}'" >Read more</a></div>
+        {% endif %}
 
-{% endblock %} 
+      </div>
+    {% endfor %}
+    <div class="paging">{% paging_control %}</div>
+  {% else %}
+    <p>There are no news items yet.</p>
+  {% endif %}
+
+{% endblock %}

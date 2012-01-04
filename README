@@ -1,32 +1,61 @@
 CCIW source code
 ================
 
-A lot of this code is quite old. It has been updated to work with latest
-Django, but might be quite different if written from scratch.
+In case I get hit by a bus, or for the freak possibility that someone wants to
+help me with this site, here are some tips for developers.
 
-URLS
-----
+Installation hints
+------------------
 
-A lot of code needs to be updated to use the {{ url }} tag which was added
-after I wrote the bulk of the code.
+- The fabfile contains info about how to develop and deploy
 
-Views
------
+- You need to create a settings_priv.py with the various settings that I cannot
+  release publicly (database, passwords, secret key)
 
-These are done using a mixture of classic functions and Class Based Views,
+- For creating the database, there is a complete set of South migration
+  scripts. However, some of the data migration scripts may depend on certain
+  data being present in the database. It is therefore better to get
+  a dump of live DB and use that. Use the anonymize_data command to
+  clear the DB of sensitive live data.
+
+
+Project organisation
+--------------------
+
+The first evolution of the project had a large models.py (cciw.cciwmain.models)
+that was split into sub modules. This has now been re-organised into
+cciw.cciwmain (camp and camp site information, and other core website
+functionality), cciw.forums and cciw.sitecontent. cciw.officers and
+cciw.bookings are newer and were written as separate apps from the start.
+
+Although the apps have been mainly separated, there are dependencies between
+them, and places where they have not been separated.
+
+- almost all apps use cciw.cciwmain.models.Camp, and other common functionality
+  found in cciwmain
+- tests for forums and sitecontent remain in cciwmain. This is partly because
+  cciwmain.views uses forums.views.
+- test fixtures are re-used by different apps.
+
+Other notes
+-----------
+
+A lot of this code is quite old. It has been continuously updated to work with
+latest Django, and fix deprecation warnings, but might be quite different if
+written from scratch. A lot of code in cciwmain, sitecontent and forums ought to
+be updated to use the {% url %} tag which was added after I wrote it.
+
+Views are done using a mixture of classic functions and Class Based Views,
 depending on whether the move to CBVs was worth the effort. This means that
 there is sometimes some duplication between the function based way of doing
 something and the equivalent CBV way, and you need to be comfortable with both
 styles.
 
-
-INSTALLATION HINTS
-==================
-- The fabfile contains info about how to develop and deploy
-- You need to create a settings_priv.py withthe various settings that I cannot
-  release publically (database, passwords, secret key)
+The system was initially migrated from a PHP system. The migration scripts can
+be found in the VCS history, but have been removed from the current tree
+as they are clutter that is no longer needed.
 
 Tests
 =====
 
-./manage.py test --settings=cciw.settings_tests cciwmain officers
+./manage.py test --settings=cciw.settings_tests cciwmain officers bookings

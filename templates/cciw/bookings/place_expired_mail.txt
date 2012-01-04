@@ -1,0 +1,39 @@
+{% load url from future %}{% autoescape off %}
+Dear {{ account.name }},
+{% if expired %}
+The following place(s) on CCIW camps have expired because no payment was
+received within 24 hours of booking online.
+{% else %}
+You have booked the following place(s) on CCIW camps, but have not yet
+paid:
+{% endif %}
+----------------------------------------
+{% for b in bookings %}
+Name: {{ b.name }}
+Camp: {{ b.camp }}
+Dates: {{ b.camp.start_date|date:"d F" }} to {{ b.camp.end_date|date:"d F Y" }}
+{% endfor %}
+----------------------------------------
+{% if expired %}
+The places have been moved back to your 'basket'. If you still want them,
+you can book and pay here:
+
+{{ url_start }}{% url 'cciw.bookings.views.list_bookings' %}
+
+{% else %}
+If you do not pay within 12 hours, the bookings will expire so that
+other people will be able to take the places.
+
+Please go to the following URL to pay online:
+
+{{ url_start }}{% url 'cciw.bookings.views.pay' %}
+{% endif %}
+If you think you have in fact paid, or have had some other problem
+with the web site that is preventing you from paying, please reply to
+this email and let us know, so that we can look into it.
+
+Thanks,
+
+The cciw.co.uk team.
+
+{% endautoescape %}

@@ -238,7 +238,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         tc.submit('_save')
         tc.url(url)
         tc.find("Please correct the errors below")
-        tc.find("form-row errors address")
+        tc.find("form-row errors field-address")
         self.assertEqual(u.application_set.exclude(date_submitted__isnull=True).count(), 0) # shouldn't have been saved
 
     def test_finish_complete(self):
@@ -365,7 +365,7 @@ class ApplicationFormView(TwillMixin, TestCase):
         assert len(apps) == 2
 
         application_diff = application_difference(apps[0], apps[1])
-        self.assertTrue('>New Full Name</INS>'
-                        in application_diff)
-        self.assertTrue('>x</DEL>'
-                        in application_diff)
+        self.assertTrue('>new full name</ins>'
+                        in application_diff.lower())
+        self.assertTrue('>x</del>'
+                        in application_diff.lower())

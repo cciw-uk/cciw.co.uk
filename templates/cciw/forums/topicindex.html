@@ -5,61 +5,61 @@
 {% load forums %}
 
 {% block content %}
-	<p>Select from the list of topics below by clicking on the topic name.</p>
-	{% if object_list %}
-		<div class="paging">{% paging_control %}</div>
-		<table class="topheaders">
-			<tr>
-				<th scope="col">Topic</th>
-				<th scope="col" class="topicStartedCol">Started 
-					{% sorting_control "aca" "dca" "Click to sort by date started, oldest first" "Sort by date started, newest first" %}</th>
-				<th scope="col">Posts 
-					{% sorting_control "apc" "dpc" "Click to sort by number of posts, ascending" "Sort by number of posts, descending" %}</th>
-				<th scope="col" class="topicLastPostCol">Last post 
-					{% sorting_control "alp" "dlp" "Click to sort by date of last post, oldest first" "Sort by date of last post, newest first" %}</th>
-				<th scope="col">Status</th>
-			</tr>
-		{% for topic in object_list %}
-			<tr>
-				<td class="topicLink">
-				{% if topic.news_item_id %}<div class="center">NEWS ITEM</div>{% endif %}
-				{% if topic.poll_id %}<div class="center">POLL</div>
-					{% poll_vote_box request topic topic.poll 2 %}
-				{% endif %}
-				{{ topic.get_link }}
-				{% if moderator %}&nbsp;<span class="editTopic"><a href="/admin/cciwmain/topic/{{ topic.id }}/" title="Edit this topic" ><img width="16" height="16" src="{% static "images/edit.png" %}" alt="Edit this topic" /></a></span>
-				{% endif %}
-				{% if topic.hidden %}
-					{% if moderator %}
-						<br/><span class="topicHidden">HIDDEN</span>
-					{% else %}
-						<br/><span class="topicHidden">HIDDEN</span> (awaiting moderator approval)
-					{% endif %}
-				{% endif %}
-				</td>
-				<td>{% if topic.created_at %}{{ topic.created_at|date:"d M Y H:i" }}<br/>{% endif %}
-				    {% if topic.started_by_id %}{{ topic.started_by.get_link }}{% endif %}</td>
-				<td>{{ topic.post_count }}</td>
-				<td>{% if topic.last_post_at %}{{ topic.last_post_at|date:"d M Y H:i" }}<br/>{% endif %}
-				    {% if topic.last_post_by_id %}{{ topic.last_post_by.get_link }}{% endif %}</td>
-				<td>{% if topic.open %}Open{% else %}Closed{% endif %}</td>
-			</tr>
-		{% endfor %}
-		</table>
-		<div class="paging">{% paging_control %}</div>
-	{% else %}
-		<p>There are no topics yet in this forum.</p>
-	{% endif %}
-	{% if forum.open %}
-		<p>&raquo; <a href="add/">Add new topic</a>
-		{% if current_member %}
-			{% if current_member.can_add_news %}
-				<br/>&raquo; <a href="add_news/">Add news item</a>
-			{% endif %}
-			{% if current_member.can_add_poll %}
-				<br/>&raquo; <a href="add_poll/">Add poll</a>
-			{% endif %}
-		{% endif %}
-		</p>
-	{% endif %}
-{% endblock %} 
+  <p>Select from the list of topics below by clicking on the topic name.</p>
+  {% if object_list %}
+    <div class="paging">{% paging_control %}</div>
+    <table class="topheaders">
+      <tr>
+        <th scope="col">Topic</th>
+        <th scope="col" class="topicStartedCol">Started
+          {% sorting_control "aca" "dca" "Click to sort by date started, oldest first" "Sort by date started, newest first" %}</th>
+        <th scope="col">Posts
+          {% sorting_control "apc" "dpc" "Click to sort by number of posts, ascending" "Sort by number of posts, descending" %}</th>
+        <th scope="col" class="topicLastPostCol">Last post
+          {% sorting_control "alp" "dlp" "Click to sort by date of last post, oldest first" "Sort by date of last post, newest first" %}</th>
+        <th scope="col">Status</th>
+      </tr>
+    {% for topic in object_list %}
+      <tr>
+        <td class="topicLink">
+        {% if topic.news_item_id %}<div class="center">NEWS ITEM</div>{% endif %}
+        {% if topic.poll_id %}<div class="center">POLL</div>
+          {% poll_vote_box request topic topic.poll 2 %}
+        {% endif %}
+        {{ topic.get_link }}
+        {% if moderator %}&nbsp;<span class="editTopic"><a href="/admin/cciwmain/topic/{{ topic.id }}/" title="Edit this topic" ><img width="16" height="16" src="{% static "images/edit.png" %}" alt="Edit this topic" /></a></span>
+        {% endif %}
+        {% if topic.hidden %}
+          {% if moderator %}
+            <br/><span class="topicHidden">HIDDEN</span>
+          {% else %}
+            <br/><span class="topicHidden">HIDDEN</span> (awaiting moderator approval)
+          {% endif %}
+        {% endif %}
+        </td>
+        <td>{% if topic.created_at %}{{ topic.created_at|date:"d M Y H:i" }}<br/>{% endif %}
+            {% if topic.started_by_id %}{{ topic.started_by.get_link }}{% endif %}</td>
+        <td>{{ topic.post_count }}</td>
+        <td>{% if topic.last_post_at %}{{ topic.last_post_at|date:"d M Y H:i" }}<br/>{% endif %}
+            {% if topic.last_post_by_id %}{{ topic.last_post_by.get_link }}{% endif %}</td>
+        <td>{% if topic.open %}Open{% else %}Closed{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </table>
+    <div class="paging">{% paging_control %}</div>
+  {% else %}
+    <p>There are no topics yet in this forum.</p>
+  {% endif %}
+  {% if forum.open %}
+    <p>&raquo; <a href="add/">Add new topic</a>
+    {% if current_member %}
+      {% if current_member.can_add_news %}
+        <br/>&raquo; <a href="add_news/">Add news item</a>
+      {% endif %}
+      {% if current_member.can_add_poll %}
+        <br/>&raquo; <a href="add_poll/">Add poll</a>
+      {% endif %}
+    {% endif %}
+    </p>
+  {% endif %}
+{% endblock %}

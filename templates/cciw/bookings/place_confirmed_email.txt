@@ -1,0 +1,21 @@
+{% load url from future %}{% autoescape off %}
+Dear {{ account.name }},
+
+{% if payment_received %}Thank you for your payment.
+{% endif %}
+{% if bookings|length == 1 %}The following place on a CCIW camp has been confirmed:
+{% else %}The following places on a CCIW camp have been confirmed:
+{%endif %}
+{% for b in bookings %}
+Name: {{ b.name }}
+Camp: {{ b.camp }}
+Dates: {{ b.camp.start_date|date:"d F" }} to {{ b.camp.end_date|date:"d F Y" }}
+{% endfor %}
+
+The camp leaders will be in contact with more details in due time.
+
+Many thanks!
+
+The cciw.co.uk team.
+
+{% endautoescape %}

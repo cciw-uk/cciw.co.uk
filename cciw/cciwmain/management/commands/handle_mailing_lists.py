@@ -17,13 +17,9 @@ class Command(BaseCommand):
                 from cciw.mail.lists import handle_all_mail
                 handle_all_mail()
             except:
-                from django.core.mail import mail_admins
-                import traceback
-                import sys
-                subject = 'Sending mail error'
-                exc_info = sys.exc_info()
-                message = '\n'.join(traceback.format_exception(*exc_info))
-                mail_admins(subject, message, fail_silently=True)
+                from cciw.cciwmain.common import exception_notify_admins
+                exception_notify_admins('Sending mail error')
+
         finally:
             # Delete the lock
             l.close()

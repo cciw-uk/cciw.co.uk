@@ -1,27 +1,27 @@
 {% load forums %}
 {% if show_form %}
 <div class="pollVoteBox">
-	<form action="{{ action_url }}" method="post">{% csrf_token %}
-	<div><h{{ heading_level }}>{{ poll.title }}</h{{ heading_level }}>
-	{{ poll.intro_text|bb2html }}
-	<ul>
-	{% for polloption in poll.poll_options.all %}
-		<li
-			><input type="radio" id="poll_{{ topic.poll_id }}_{{ polloption.id }}" name="polloption" value="{{ polloption.id }}" 
-			/>&nbsp; <label for="poll_{{ topic.poll_id }}_{{ polloption.id }}">{{ polloption.text|bb2html }}</label
-		></li>
-	{% endfor %}
-	</ul>
-	{{ poll.outro_text|bb2html }}
-	<div>
-		<input type="submit" name="vote" value="Vote" />
-	</div>
-	</div>
-	</form>
+  <form action="{{ action_url }}" method="post">{% csrf_token %}
+  <div><h{{ heading_level }}>{{ poll.title }}</h{{ heading_level }}>
+  {{ poll.intro_text|bb2html }}
+  <ul>
+  {% for polloption in poll.poll_options.all %}
+    <li
+      ><input type="radio" id="poll_{{ topic.poll_id }}_{{ polloption.id }}" name="polloption" value="{{ polloption.id }}"
+      />&nbsp; <label for="poll_{{ topic.poll_id }}_{{ polloption.id }}">{{ polloption.text|bb2html }}</label
+    ></li>
+  {% endfor %}
+  </ul>
+  {{ poll.outro_text|bb2html }}
+  <div>
+    <input type="submit" name="vote" value="Vote" />
+  </div>
+  </div>
+  </form>
 </div>
 {% else %}
 <div>
-	{% if message %}<div>{{ message }}</div>{% endif %}
-	{% if login_link %}&laquo; <a href="{{ login_link }}">Log in to vote</a> &raquo;{% endif %}
+  {% if message %}<div>{{ message }}</div>{% endif %}
+  {% if login_link %}&laquo; <a href="{{ login_link }}">Log in to vote</a> &raquo;{% endif %}
 </div>
 {% endif %}

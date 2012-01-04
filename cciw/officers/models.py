@@ -305,7 +305,7 @@ class ReferenceForm(models.Model):
 class InvitationManager(models.Manager):
     use_for_related_fields = True
     def get_query_set(self):
-        return super(InvitationManager, self).get_query_set().select_related('officer', 'camp__chaplain', 'camp__leaders')
+        return super(InvitationManager, self).get_query_set().select_related('officer', 'camp', 'camp__chaplain')
 
 
 class Invitation(models.Model):

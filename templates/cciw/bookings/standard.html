@@ -1,0 +1,7 @@
+{% extends 'cciw/standard.html' %}
+{% load url from future %}
+{% load bookings %}
+{% block contentTop %}
+{% bookingbar %}
+{{ block.super }}
+{% endblock %}

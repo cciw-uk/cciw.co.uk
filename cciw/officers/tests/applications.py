@@ -128,17 +128,19 @@ class ApplicationUtils(TestCase):
         # We have to use datetime.today(), because this is used by
         # thisyears_applications.
 
-        future_camp_start = datetime.date.today() + datetime.timedelta(100)
+        future_camp_start = datetime.date(datetime.date.today().year + 1, 8, 1)
         past_camp_start = future_camp_start - datetime.timedelta(30 * 11)
 
         site = Site.objects.get(id=1)
-        c1 = Camp.objects.create(year=2010, number=5, age='Jnr',
+        c1 = Camp.objects.create(year=past_camp_start.year, number=5,
                                  start_date=past_camp_start,
                                  end_date=past_camp_start + datetime.timedelta(7),
+                                 minimum_age=11, maximum_age=17,
                                  site=site)
-        c2 = Camp.objects.create(year=2011, number=1, age='Jnr',
+        c2 = Camp.objects.create(year=future_camp_start.year, number=1,
                                  start_date=future_camp_start,
                                  end_date=future_camp_start + datetime.timedelta(7),
+                                 minimum_age=11, maximum_age=17,
                                  site=site)
 
         u = User.objects.create(username='test')

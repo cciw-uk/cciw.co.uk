@@ -2,103 +2,103 @@
 {% load forums %}
 {% load standardpage %}
 {% block content %}
-	
-	<h2>{{ member.user_name }}'s stuff</h2>
-	<ul>
-		<li><a href="posts/">Recent posts by {{ member.user_name }}</a></li>
-	</ul>
 
-	{% if current_member %}
-		{% if current_member.user_name == member.user_name %}
-			<h2>Actions</h2>
-			<ul>
-				<li><a href="/memberadmin/preferences/">Preferences</a></li>
-				<li><a href="/memberadmin/change-password/">Change password</a><br/><br/></li>
-				<li><a href="messages/">Send a message</a></li>
-				<li><a href="messages/inbox/">View {{ current_member.new_messages }} new message(s)</a></li>
-				<li><a href="messages/archived/">View {{ current_member.saved_messages }} saved message(s)</a><br/><br/></li>
-				
-				
-				<li><div><form method="post" action="{{request.url}}">{% csrf_token %}
-				<p><input type="submit" name="logout" value="Log out" /></p>
-				</form></div></li>
-			</ul>
-		{% else %}
-			<h2>Actions</h2>
-			<ul>
-				<li><a href="messages/">Leave a message for {{ member.user_name }}</a></li>
-			</ul>
-		{% endif %}
-	{% else %}
-		<h2>Actions</h2>
-		<ul>
-			<li><a href="messages/">Leave a message for {{ member.user_name }}</a></li>
-		</ul>
-	{% endif %}
+  <h2>{{ member.user_name }}'s stuff</h2>
+  <ul>
+    <li><a href="posts/">Recent posts by {{ member.user_name }}</a></li>
+  </ul>
 
-	<div class="memberinfo">
-		<h2>Information</h2>
-		<table class="sideheaders">
-			<tr>
-				<th scope="row">User name</th>
-				<td>{{ member.user_name }}</td>
-			</tr>
-			<tr>
-				<th scope="row">'Real' name</th>
-				<td>{{ member.real_name }}</td>
-			</tr>
-			<tr>
-				<th scope="row">Icon</th>
-				<td>{{ member.get_icon }}</td>
-			</tr>
-			{% if member.show_email %}
-			<tr>
-				<th scope="row">Email</th>
-				<td>{{ member.email|obfuscate_email }}</td>
-			</tr>
-			{% endif %}
-			<tr>
-				<th scope="row">Date joined</th>
-				<td>{% if member.date_joined %}{{ member.date_joined|date:"d M Y H:i:s" }}{% endif %}</td>
-			</tr>
-			<tr>
-				<th scope="row">Last seen</th>
-				<td>{% if member.last_seen %}{{ member.last_seen|date:"d M Y H:i:s" }}{% endif %}</td>
-			</tr>
-			{% if member.comments %}
-			<tr>
-				<th scope="row">Comments</th>
-				<td>{{ member.comments|bb2html }}</td>
-			</tr>
-			{% endif %}
-			{% if member.website %}
-			<tr>
-				<th scope="row">Website</th>
-				<td>{{ member.website }}</td>
-			</tr>
-			{% endif %}
-		</table>
-		<br/>
-
-		{% if awards %}
-			<h2>Awards</h2>
-			<p><b>{{ member.user_name }}</b> has received the following awards:</p>
-			{% for paward in awards %}
-			<div class="awardInfo">
-				<a href="{{paward.award.get_absolute_url}}" class="awardlink"><img class="award" alt="{{paward.award.nice_name}}" src="{{paward.award.imageurl}}" /></a><br/>
-				<span class="awardname">
-				{{ paward.award.nice_name }}</span>
-				{% if paward.date_awarded %}
- 					on {{ paward.date_awarded|date:"d M Y" }}
-				{% endif %}
-				<br/>
-				Reason for award:
-				<p>{{ paward.reason }}</p>
-			</div>
-	
-			{% endfor %}
+  {% if current_member %}
+    {% if current_member.user_name == member.user_name %}
+      <h2>Actions</h2>
+      <ul>
+        <li><a href="/memberadmin/preferences/">Preferences</a></li>
+        <li><a href="/memberadmin/change-password/">Change password</a><br/><br/></li>
+        <li><a href="messages/">Send a message</a></li>
+        <li><a href="messages/inbox/">View {{ current_member.new_messages }} new message(s)</a></li>
+        <li><a href="messages/archived/">View {{ current_member.saved_messages }} saved message(s)</a><br/><br/></li>
 
 
-		{% endif %}
-	</div>
+        <li><div><form method="post" action="{{request.url}}">{% csrf_token %}
+        <p><input type="submit" name="logout" value="Log out" /></p>
+        </form></div></li>
+      </ul>
+    {% else %}
+      <h2>Actions</h2>
+      <ul>
+        <li><a href="messages/">Leave a message for {{ member.user_name }}</a></li>
+      </ul>
+    {% endif %}
+  {% else %}
+    <h2>Actions</h2>
+    <ul>
+      <li><a href="messages/">Leave a message for {{ member.user_name }}</a></li>
+    </ul>
+  {% endif %}
+
+  <div class="memberinfo">
+    <h2>Information</h2>
+    <table class="sideheaders">
+      <tr>
+        <th scope="row">User name</th>
+        <td>{{ member.user_name }}</td>
+      </tr>
+      <tr>
+        <th scope="row">'Real' name</th>
+        <td>{{ member.real_name }}</td>
+      </tr>
+      <tr>
+        <th scope="row">Icon</th>
+        <td>{{ member.get_icon }}</td>
+      </tr>
+      {% if member.show_email %}
+      <tr>
+        <th scope="row">Email</th>
+        <td>{{ member.email|obfuscate_email }}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <th scope="row">Date joined</th>
+        <td>{% if member.date_joined %}{{ member.date_joined|date:"d M Y H:i:s" }}{% endif %}</td>
+      </tr>
+      <tr>
+        <th scope="row">Last seen</th>
+        <td>{% if member.last_seen %}{{ member.last_seen|date:"d M Y H:i:s" }}{% endif %}</td>
+      </tr>
+      {% if member.comments %}
+      <tr>
+        <th scope="row">Comments</th>
+        <td>{{ member.comments|bb2html }}</td>
+      </tr>
+      {% endif %}
+      {% if member.website %}
+      <tr>
+        <th scope="row">Website</th>
+        <td>{{ member.website }}</td>
+      </tr>
+      {% endif %}
+    </table>
+    <br/>
+
+    {% if awards %}
+      <h2>Awards</h2>
+      <p><b>{{ member.user_name }}</b> has received the following awards:</p>
+      {% for paward in awards %}
+      <div class="awardInfo">
+        <a href="{{paward.award.get_absolute_url}}" class="awardlink"><img class="award" alt="{{paward.award.nice_name}}" src="{{paward.award.imageurl}}" /></a><br/>
+        <span class="awardname">
+        {{ paward.award.nice_name }}</span>
+        {% if paward.date_awarded %}
+           on {{ paward.date_awarded|date:"d M Y" }}
+        {% endif %}
+        <br/>
+        Reason for award:
+        <p>{{ paward.reason }}</p>
+      </div>
+
+      {% endfor %}
+
+
+    {% endif %}
+  </div>
 {% endblock %}

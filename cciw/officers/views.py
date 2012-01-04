@@ -1,9 +1,10 @@
+from collections import defaultdict
 import datetime
 import operator
 import urlparse
-from functools import wraps
 
 from django import forms
+from django.db.models import F, Sum
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME
@@ -20,7 +21,8 @@ from django.template.defaultfilters import wordwrap
 from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
-from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer
+from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
+from cciw.bookings.utils import camp_bookings_to_xls
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
@@ -34,7 +36,7 @@ from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication, CRBFormLog
 from cciw.officers.utils import camp_slacker_list, officer_data_to_xls
 from cciw.officers.references import reference_form_info
-from cciw.utils.views import close_window_response
+from cciw.utils.views import close_window_response, user_passes_test_improved
 from securedownload.views import access_folder_securely
 
 
@@ -55,36 +57,8 @@ def _copy_application(application):
     return new_obj
 
 
-def user_passes_test_improved(test_func):
-    """
-    Like user_passes_test, but doesn't redirect user to login screen if they are
-    already logged in.
-    """
-    def decorator(view_func):
-        @wraps(view_func)
-        def _wrapped_view(request, *args, **kwargs):
-            if test_func(request.user):
-                return view_func(request, *args, **kwargs)
-            if request.user.is_authenticated():
-                return HttpResponseForbidden("<h1>Access denied</h1>")
-
-            path = request.build_absolute_uri()
-            # If the login url is the same scheme and net location then just
-            # use the path as the "next" url.
-            login_scheme, login_netloc = urlparse.urlparse(login_url or
-                                                           settings.LOGIN_URL)[:2]
-            current_scheme, current_netloc = urlparse.urlparse(path)[:2]
-            if ((not login_scheme or login_scheme == current_scheme) and
-                (not login_netloc or login_netloc == current_netloc)):
-                path = request.get_full_path()
-            from django.contrib.auth.views import redirect_to_login
-            return redirect_to_login(path, login_url, redirect_field_name)
-        return _wrapped_view
-    return decorator
-
-
 camp_admin_required = user_passes_test_improved(is_camp_admin)
-
+booking_secretary_required = user_passes_test_improved(is_booking_secretary)
 
 
 def _camps_as_admin_or_leader(user):
@@ -138,6 +112,8 @@ def index(request):
     if is_cciw_secretary(user):
         c['show_secretary_links'] = True
         c['show_admin_link'] = True
+    if is_booking_secretary(user):
+        c['show_booking_secretary_links'] = True
 
     return render(request, 'cciw/officers/index.html', c)
 
@@ -946,6 +922,16 @@ def export_officer_data(request, year=None, number=None):
     return response
 
 
+@staff_member_required
+@camp_admin_required
+def export_camper_data(request, year=None, number=None):
+    camp = _get_camp_or_404(year, number)
+    response = HttpResponse(camp_bookings_to_xls(camp), mimetype="application/vnd.ms-excel")
+    response['Content-Disposition'] = ('attachment; filename=camp-%d-%d-campers.xls'
+                                       % (camp.year, camp.number))
+    return response
+
+
 officer_files = access_folder_securely("officers",
                                        lambda request: request.user.is_authenticated() and is_camp_officer(request.user))
 
@@ -1198,6 +1184,56 @@ class OfficerInfo(TemplateView):
     template_name='cciw/officers/info.html'
     def get_context_data(self, *args, **kwargs):
         return dict(show_wiki_link=is_wiki_user(self.request.user))
+
+
+def booking_secretary_reports(request, year=None):
+    from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, BOOKING_BOOKED, BOOKING_CANCELLED, BookingAccount
+    year = int(year)
+
+    # 1. Camps and their booking levels.
+
+    camps = Camp.objects.filter(year=year).prefetch_related('bookings')
+    # Do some filtering in Python to avoid multiple db hits
+    for c in camps:
+        c.confirmed_bookings = [b for b in c.bookings.all() if b.confirmed_booking()]
+        c.confirmed_bookings_boys = [b for b in c.confirmed_bookings if b.sex == SEX_MALE]
+        c.confirmed_bookings_girls = [b for b in c.confirmed_bookings if b.sex == SEX_FEMALE]
+
+
+    # 2. Online bookings needing attention
+    to_approve = Booking.objects.need_approving().filter(camp__year__exact=year)
+
+    # 3. Fees
+    # Duplication of business logic here, for performance:
+    payable = BookingAccount.objects.all()
+    # Booked or cancelled places are included.
+    payable = payable.filter(bookings__state=BOOKING_BOOKED) | payable.filter(bookings__state=BOOKING_CANCELLED)
+    # annotation works over the bookings filtered above
+    outstanding = payable.only('id','total_received').annotate(total_amount_due=Sum('bookings__amount_due')).exclude(total_amount_due=F('total_received'))
+
+    total_amount_due_dict = dict((o.id, o.total_amount_due) for o in outstanding)
+
+    # This will actually exclude people who have outstanding fees but do not
+    # have bookings this year. That's OK - previous year's report page will catch them.
+    bookings = Booking.objects.payable(False).filter(camp__year__exact=year,
+                                                     account__in=[o.id for o in outstanding])
+    bookings = bookings.order_by('account__name','first_name','last_name')
+
+    # Decorate with the already calculated 'total_amount_due', and with 'number
+    # of bookings for this account'
+    counts = defaultdict(int)
+    for b in bookings:
+        counts[b.account_id] += 1
+
+    for b in bookings:
+        b.account.calculated_balance = total_amount_due_dict[b.account_id] - b.account.total_received
+        b.count_for_account = counts[b.account_id]
+
+    return render(request, 'cciw/officers/booking_secretary_reports.html',
+                  {'year': year, 'camps': camps,
+                   'bookings': bookings,
+                   'to_approve': to_approve})
+
 
 
 officer_info = staff_member_required(OfficerInfo.as_view())

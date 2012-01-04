@@ -1,0 +1,60 @@
+{% extends 'cciw/bookings/standard.html' %}
+{% load url from future %}
+{% block content %}
+
+<h2>Basket</h2>
+
+{% if basket or shelf %}
+
+<p>You have items in your basket or shelf - please remember to
+  <a href="{% url 'cciw.bookings.views.list_bookings' %}">book and pay for
+  them</a>.</p>
+
+{% else %}
+
+<p>You have nothing in your basket.</p>
+
+{% endif %}
+
+{% if unconfirmed_places %}
+
+<h2>Booked places</h2>
+
+<p>The following places are booked, but not yet confirmed:</p>
+<ul>
+  {% for b in unconfirmed_places %}
+  <li>{{ b.name }}, on <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">camp {{ b.camp.number }}</a>, {{ b.get_price_type_display }}, £{{ b.amount_due }} {% if b.south_wales_transport %}(South Wales minibus){% endif %}</li>
+  {% endfor %}
+</ul>
+<p>Please <a href="{% url 'cciw.bookings.views.pay' %}">remember to pay</a> for
+  these places, otherwise they will expire, allowing someone else to take the
+  place.</p>
+
+{% endif %}
+
+<h2>Confirmed places</h2>
+{% if confirmed_places %}
+<p>You have the following confirmed places on camps this year:</p>
+<ul>
+  {% for b in confirmed_places %}
+  <li>{{ b.name }}, on <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">camp {{ b.camp.number }}</a>, {{ b.get_price_type_display }}, £{{ b.amount_due }} {% if b.south_wales_transport %}(South Wales minibus){% endif %}</li>
+  {% endfor %}
+</ul>
+
+{% else %}
+<p>You have no confirmed places yet.</p>
+{% endif %}
+
+{% if cancelled_places %}
+<h2>Cancelled places</h2>
+
+<ul>
+{% for b in cancelled_places %}
+  <li>{{ b.name }}, on <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">camp {{ b.camp.number }}</a> (£{{ b.amount_due }} deposit)</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% include 'cciw/bookings/help.html' %}
+
+{% endblock %}

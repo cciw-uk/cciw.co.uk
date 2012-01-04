@@ -3,8 +3,11 @@ Utility functions and base classes that are common to all views etc.
 """
 import datetime
 import re
+import sys
+import traceback
 
 from django.conf import settings
+from django.core.mail import mail_admins
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
@@ -144,7 +147,7 @@ def get_thisyear():
     if _thisyear is None or _thisyear_timestamp is None \
         or (datetime.datetime.now() - _thisyear_timestamp).seconds > 3600:
         from cciw.cciwmain.models import Camp
-        lastcamp = Camp.objects.order_by('-end_date')[0]
+        lastcamp = Camp.objects.prefetch_related(None).order_by('-end_date')[0]
         if lastcamp.is_past():
             _thisyear = lastcamp.year + 1
         else:
@@ -203,7 +206,6 @@ def standard_processor(request):
     context['thisyear'] = thisyear
     assert type(request.path) is unicode
     context['homepage'] = (request.path == u"/")
-    links = MenuLink.objects.filter(parent_item__isnull=True, visible=True)
 
     # Ugly special casing for 'thisyear' camps
     m = re.match(u'/camps/%s/(\d+)/' % unicode(thisyear),  request.path)
@@ -212,17 +214,28 @@ def standard_processor(request):
     else:
         request_path = request.path
 
-    for l in links:
-        l.title = standard_subs(l.title)
-        l.isCurrentPage = False
-        l.isCurrentSection = False
-        if l.url == request_path:
-            l.isCurrentPage = True
-        elif request_path.startswith(l.url) and l.url != u'/':
-            l.isCurrentSection = True
+    # As a callable, get_links will get called automatically by the template
+    # renderer *when needed*, so we avoid queries. We memoize in links_cache to
+    # avoid double queries
+    links_cache = []
+    def get_links():
+        if len(links_cache) > 0:
+            return links_cache
+        else:
+            for l in MenuLink.objects.filter(parent_item__isnull=True, visible=True):
+                l.title = standard_subs(l.title)
+                l.isCurrentPage = False
+                l.isCurrentSection = False
+                if l.url == request_path:
+                    l.isCurrentPage = True
+                elif request_path.startswith(l.url) and l.url != u'/':
+                    l.isCurrentSection = True
+                links_cache.append(l)
+            return links_cache
 
-    context['menulinks'] = links
+    context['menulinks'] = get_links
     context['GOOGLE_ANALYTICS_ACCOUNT'] = getattr(settings, 'GOOGLE_ANALYTICS_ACCOUNT', '')
+    context['PRODUCTION'] = (settings.LIVEBOX and settings.PRODUCTION)
 
     return context
 
@@ -253,6 +266,15 @@ def get_member_link(user_name):
 
 def get_current_domain():
     return Site.objects.get_current().domain
+
+
+def exception_notify_admins(subject):
+    """
+    Send admins notification of an exception that occurred
+    """
+    exc_info = sys.exc_info()
+    message = '\n'.join(traceback.format_exception(*exc_info))
+    mail_admins(subject, message, fail_silently=True)
 
 
 from cciw.cciwmain import feeds

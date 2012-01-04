@@ -19,5 +19,21 @@
         }, 
         "model": "sitecontent.htmlchunk", 
         "pk": "home_page"
+    },
+    {
+        "fields": {
+            "menu_link": null,
+            "html": ""
+        },
+        "model": "sitecontent.htmlchunk",
+        "pk": "camp_dates_intro_text"
+    },
+    {
+        "fields": {
+            "menu_link": null,
+            "html": ""
+        },
+        "model": "sitecontent.htmlchunk",
+        "pk": "camp_dates_outro_text"
     }
 ]

@@ -33,6 +33,8 @@ def address_for_camp_leaders_year(year):
 @email_errors_silently
 def create_mailboxes(camp):
     s = webfaction_session()
+    if s is None: # WEBFACTION_USER not set
+        return
     for address in [address_for_camp_officers(camp),
                     address_for_camp_slackers(camp),
                     address_for_camp_leaders(camp),

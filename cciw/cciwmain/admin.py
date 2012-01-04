@@ -39,10 +39,14 @@ class PersonAdmin(admin.ModelAdmin):
 class CampAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Public info',
-         {'fields': ('year', 'number', 'age', 'start_date', 'end_date',
+         {'fields': ('year', 'number', 'minimum_age', 'maximum_age', 'start_date', 'end_date',
                      'chaplain', 'leaders', 'site', 'previous_camp')
           }
         ),
+        ('Booking constraints',
+         {'fields': ('max_campers', 'max_male_campers', 'max_female_campers')
+          }
+         ),
         ('Applications and references',
          {'fields': ('online_applications', 'admins'),
           'description': '<div>Options for managing applications. Officer lists are managed <a href="/officers/leaders/">elsewhere</a>, not here.</div>',
@@ -58,9 +62,12 @@ class CampAdmin(admin.ModelAdmin):
     list_display = ('year', 'number', leaders, chaplain, 'age', 'site', 'start_date')
     list_display_links = ('number', leaders)
     del leaders, chaplain
-    list_filter = ('age', 'site')
+    list_filter = ('site',)
     filter_horizontal = ('leaders', 'admins')
     date_hierarchy = 'start_date'
+
+    def queryset(self, request):
+        return super(CampAdmin, self).queryset(request).select_related('site', 'chaplain')
 
 admin.site.register(Site, SiteAdmin)
 admin.site.register(Person, PersonAdmin)

@@ -1,16 +1,16 @@
 {% extends "cciw/forums/thread.html" %}
 
 {% block thread_top %}
-	<div class="photo">
-		{% if current_member %}
-		<img class="photo" src="{{ MEDIA_URL }}photos/real/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
-		{% else %}
-		<img class="photo" src="{{ MEDIA_URL }}photos/thumbnails/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
-		<br/><span class="note">You must be logged in to see full images</span>
-		{% endif %}
-	</div>
-{% endblock %} 
+  <div class="photo">
+    {% if current_member %}
+    <img class="photo" src="{{ MEDIA_URL }}photos/real/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
+    {% else %}
+    <img class="photo" src="{{ MEDIA_URL }}photos/thumbnails/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
+    <br/><span class="note">You must be logged in to see full images</span>
+    {% endif %}
+  </div>
+{% endblock %}
 
 {% block thread_bottom %}
-	<div class='bottombreadcrumb'>{{ breadcrumb }}</div>
-{% endblock %} 
+  <div class='bottombreadcrumb'>{{ breadcrumb }}</div>
+{% endblock %}

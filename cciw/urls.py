@@ -3,8 +3,10 @@ from django.conf.urls.defaults import *
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.views.generic.base import RedirectView
 
 import cciw.auth
+from cciw.bookings.models import BookingAccount
 
 handler404 = 'cciw.cciwmain.views.handler404'
 
@@ -15,11 +17,21 @@ autocomplete.register(
     queryset=User.objects.all().order_by('first_name', 'last_name', 'email'),
     fields=('first_name__istartswith', 'last_name__istartswith'),
     limit=10,
-    label=lambda user: "%s %s <%s>" % (user.first_name, user.last_name, user.email),
+    label=lambda user: u"%s %s <%s>" % (user.first_name, user.last_name, user.email),
     auth=lambda request: request.user.is_authenticated() and cciw.auth.is_camp_admin(request.user)
     )
 
+autocomplete.register(
+    id='account',
+    queryset=BookingAccount.objects.all().order_by('name', 'post_code'),
+    fields=('name__icontains',),
+    limit=20,
+    label=lambda acc: unicode(acc),
+    auth=lambda request: request.user.is_authenticated and cciw.auth.is_booking_secretary(request.user)
+    )
+
 urlpatterns = patterns('',
+    (r'^booking/', include('cciw.bookings.urls')),
     # Plug in the password reset views
     (r'^admin/password_reset/$', 'django.contrib.auth.views.password_reset'),
     (r'^admin/password_reset/done/$', 'django.contrib.auth.views.password_reset_done'),
@@ -30,7 +42,7 @@ urlpatterns = patterns('',
     (r'^officers/', include('cciw.officers.urls')),
     url('^autocomplete/(\w+)/$', autocomplete, name='autocomplete'),
     (r'^wiki/', include('djiki.urls')),
-
+    (r'^paypal/ipn/', include('paypal.standard.ipn.urls')),
 )
 
 if settings.DEVBOX:

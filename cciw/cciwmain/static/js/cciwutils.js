@@ -151,16 +151,12 @@ var cciw = (function(pub, $) {
         return accept;
     };
 
-    var addFormOnchangeHandlers = function(form_id, mk_input_change_handler) {
+    var addFormOnchangeHandlers = function(form, mk_input_change_handler) {
         // Summary: Adds 'onchange' handlers to all inputs in a form
-        // form_id: id of the form in the DOM
+        // form: jQuery object containing the form
         // mk_input_change_handler: when called with one of the
         //   form elements, returns a handler to be connected to
         //   that element.
-        var form = $('#' + form_id);
-        if (form == null) {
-            return null;
-        }
         var inputs = form.find('input,textarea,select');
         inputs.each(function(i, elem) {
             if (submittableControl(elem)) {
@@ -183,14 +179,15 @@ var cciw = (function(pub, $) {
         if (row.size() == 0) {
             return;
         }
-        if (!row.hasClass("validationErrorBottom")) {
-            // insert <ul> before it
-            var content = $("<div class='validationErrorTop'><ul class='errorlist'></ul</div>");
+        if (!row.hasClass("validationErrors")) {
+            // insert <ul> inside it
+            var content = $("<div class='fieldMessages'><ul class='errorlist'></ul></div>");
             $.each(errors, function(i, val) {
-                       content.find("ul").append("<li>").html(val);
+                       content.find("ul").append($('<li></li>').html(val));
+
                    });
-            row.before(content);
-            row.addClass("validationErrorBottom");
+            row.prepend(content);
+            row.addClass("validationErrors");
         }
     };
 
@@ -199,11 +196,10 @@ var cciw = (function(pub, $) {
         if (row.size() == 0) {
             return;
         }
-        if (row.hasClass("validationErrorBottom")) {
-            row.removeClass("validationErrorBottom");
-            // there will be a previous sibling
-            // which holds the error message
-            row.prev().remove();
+        if (row.hasClass("validationErrors")) {
+            row.removeClass("validationErrors");
+            // there will be a child which holds the error message
+            row.find('.fieldMessages').remove();
         }
     };
 
@@ -224,15 +220,15 @@ var cciw = (function(pub, $) {
         return handler;
     };
 
-    var standardformGetInputChangeHandler = function(form_id, control_name, control_id) {
+    var standardformGetInputChangeHandler = function(form, control_name, control_id) {
         // Summary: returns an event handler to be added to a control,
-        // form_id: id of the form the control belongs to
+        // form: jQuery object containing the form the control belongs to
         // control_name: the name of the control
         // control_id: id of the control
         var on_input_change = function(ev) {
             $.ajax({
                 type: "POST",
-                data: $('#' + form_id).serialize(),
+                data: form.serialize(),
                 url: "?format=json",
                 dataType: "json",
                 success: standardformGetValidatorCallback(control_name, control_id)
@@ -242,9 +238,9 @@ var cciw = (function(pub, $) {
     };
 
     // Public interface:
-    pub.standardformAddOnchangeHandlers = function(form_id) {
-        addFormOnchangeHandlers(form_id, function(input) {
-            return standardformGetInputChangeHandler(form_id, input.name, input.id);
+    pub.standardformAddOnchangeHandlers = function(form) {
+        addFormOnchangeHandlers(form, function(input) {
+            return standardformGetInputChangeHandler(form, input.name, input.id);
         });
     };
 
@@ -256,5 +252,43 @@ var cciw = (function(pub, $) {
                                         });
     };
 
+    pub.standardformClearError = standardformClearError;
+
     return pub;
 })(cciw || {}, jQuery);
+
+
+$(document).ready(function() {
+    // Ajax callbacks for labelled forms
+    $('form.ajaxify').each(function(i, elem) {
+        cciw.standardformAddOnchangeHandlers($(this));
+    });
+
+    // placeholder fallback for older browsers:
+    var i = document.createElement('input');
+    if (!('placeholder' in i)) {
+        $('[placeholder]').focus(function() {
+            var input = $(this);
+            if (input.val() == input.attr('placeholder')) {
+                input.val('');
+                input.removeClass('placeholder');
+            }
+        }).blur(function() {
+            var input = $(this);
+            if (input.val() == '' || input.val() == input.attr('placeholder')) {
+                input.addClass('placeholder');
+                input.val(input.attr('placeholder'));
+            }
+        }).blur();
+        $('[placeholder]').parents('form').submit(function() {
+            $(this).find('[placeholder]').each(function() {
+                var input = $(this);
+                if (input.val() == input.attr('placeholder')) {
+                    input.val('');
+                }
+            });
+        });
+
+    }
+});
+

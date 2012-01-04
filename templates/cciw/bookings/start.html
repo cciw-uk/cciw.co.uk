@@ -1,0 +1,21 @@
+{% extends "cciw/bookings/standard.html" %}
+{% block content %}
+
+{% if not booking_open %}
+<p><strong>PLEASE NOTE: Booking is not yet open for this year - you will not be
+  able to complete the booking process at this stage.</strong></p>
+{% endif %}
+
+<p>To book online, you must have a credit card, debit card, or Paypal account,
+  and must not be a minor.</p>
+
+<p>To get started, we first need your email address. Note - this is the email address
+  of the person booking, not of the camper.</p>
+
+<form method="POST" action="">
+{% csrf_token %}
+{{ form.as_p }}
+<p><input type="submit" name="submit" value="Submit" /></p>
+</form>
+
+{% endblock %}

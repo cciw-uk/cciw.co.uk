@@ -14,6 +14,8 @@ LIVEBOX = not DEVBOX
 if LIVEBOX:
     from cciw.settings_priv import PRODUCTION, STAGING, GOOGLE_ANALYTICS_ACCOUNT
 
+from cciw.settings_priv import PAYPAL_TEST, PAYPAL_RECEIVER_EMAIL
+
 WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
 
 ### MISC ###
@@ -67,11 +69,12 @@ INSTALLED_APPS = (
     'cciw.forums',
     'cciw.officers',
     'cciw.utils',
+    'cciw.bookings',
     'django.contrib.messages',
-    'mailer',
     'securedownload',
     'autocomplete',
     'djiki',
+    'paypal.standard.ipn',
 )
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
@@ -91,6 +94,11 @@ if DEVBOX and DEBUG:
 if DEVBOX:
     INSTALLED_APPS += (
         'anonymizer',
+)
+
+if LIVEBOX and PRODUCTION:
+    INSTALLED_APPS += (
+    'mailer',
 )
 
 ######  DATABASE   ####
@@ -141,7 +149,10 @@ if DEBUG:
 #####  EMAIL  #######
 
 if LIVEBOX:
-    EMAIL_BACKEND = "mailer.backend.DbBackend"
+    if PRODUCTION:
+        EMAIL_BACKEND = "mailer.backend.DbBackend"
+    elif STAGING:
+        EMAIL_BACKEND = "cciw.mail.backend.StagingBackend"
 
 if DEVBOX:
     # For e-mail testing, run:
@@ -170,6 +181,8 @@ if LIVEBOX:
 
 if LIVEBOX:
     from cciw.settings_priv import WEBFACTION_PASSWORD, WEBFACTION_USER
+else:
+    WEBFACTION_USER, WEBFACTION_PASSWORD = None, None
 
 ##### SECUREDOWNLOAD #####
 
@@ -188,7 +201,7 @@ _MIDDLEWARE_CLASSES = (
     (DEVBOX,     "cciw.middleware.http.ActAsProxy"),
     (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
-#    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
+    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
     (DEVBOX,     "output_validator.middleware.ValidatorMiddleware"),
     (True,       'django.middleware.csrf.CsrfViewMiddleware'),
     (True,       'django.middleware.clickjacking.XFrameOptionsMiddleware'),
@@ -200,6 +213,7 @@ _MIDDLEWARE_CLASSES = (
     (True,       "django.middleware.transaction.TransactionMiddleware"),
     (True,       "cciw.middleware.threadlocals.ThreadLocals"),
 )
+DATABASE_ENGINE='postgresql'
 
 MIDDLEWARE_CLASSES = tuple([val for (test, val) in _MIDDLEWARE_CLASSES if test])
 
@@ -245,7 +259,8 @@ FORUM_PAGINATE_PHOTOS_BY = 20
 FORUM_PAGINATE_TOPICS_BY = 30
 FORUM_PAGINATE_NEWS_BY = 10
 ESV_BROWSE_URL = "http://www.gnpcb.org/esv/search/"
-FEEDBACK_EMAIL_TO = "feedback@cciw.co.uk"
+FEEDBACK_EMAIL = "feedback@cciw.co.uk"
+BOOKING_SECRETARY_EMAIL = "bookings@cciw.co.uk"
 BOOKINGFORMDIR = "downloads"
 MEMBERS_PAGINATE_MESSAGES_BY = 20
 WEBMASTER_EMAIL = "webmaster@cciw.co.uk"
@@ -257,11 +272,14 @@ REFERENCE_CONCERNS_CONTACT_DETAILS = "Shirley Evans on 020 8569 0669."
 ESV_KEY = 'IP'
 CRB_VALID_FOR = 365 * 3 # We consider a CRB valid for 3 years
 
+## Bookings ##
+BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS = 3
+BOOKING_SESSION_TIMEOUT_SECONDS = 60*60*24*14 # 2 weeks
 
 if DEVBOX:
     OUTPUT_VALIDATOR_VALIDATORS = {
-        'text/html': '/home/luke/httpd/myvalidate.sh',
-        'application/xml+xhtml': '/home/luke/httpd/myvalidate.sh',
+        'text/html': '/home/luke/devel/myvalidate.sh',
+        'application/xml+xhtml': '/home/luke/devel/myvalidate.sh',
     }
 
     OUTPUT_VALIDATOR_IGNORE_PATHS = (
@@ -273,3 +291,4 @@ if DEVBOX:
 
 DEFAULT_CONTENT_TYPE = "text/html"
 
+BASE_DIR = basedir

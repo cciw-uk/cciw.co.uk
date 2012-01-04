@@ -12,9 +12,9 @@ var cciw = (function(pub, $) {
     }
 
     pub.bibleWindow = function() {
-	var passage = $('#passageinput').val();
-	window.open('/services/esv_passage/?passage=' + encodeURI(passage),
-		'bible',"toolbar=yes,height=600,width=500,location=no,menubar=no,scrollbars=yes,resizable=yes");
+        var passage = $('#passageinput').val();
+        window.open('/services/esv_passage/?passage=' + encodeURI(passage),
+        'bible',"toolbar=yes,height=600,width=500,location=no,menubar=no,scrollbars=yes,resizable=yes");
     };
 
     $(document).ready(function(ev) {
