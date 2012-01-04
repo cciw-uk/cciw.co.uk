@@ -520,7 +520,6 @@ class TestEditPlaceAdmin(CreatePlaceMixin, TwillMixin, TestCase):
         tc.submit()
         tc.find("An email has been sent")
         self.assertEqual(len(mail.outbox), 1)
-        print mail.outbox[0].body.encode('utf-8')
 
 
 class TestListBookings(CreatePlaceMixin, TestCase):
