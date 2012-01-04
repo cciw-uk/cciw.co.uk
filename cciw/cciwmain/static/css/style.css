@@ -345,7 +345,7 @@ h1
 h2
 {
     font-size: 1.3em;
-
+    margin-top: 0.5em; /* Needed for when h2 follows a form label */
 }
 
 h3
