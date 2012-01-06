@@ -23,6 +23,31 @@ def camp_bookings_to_xls(camp):
                                              [[f(b) for n, f in columns]
                                               for b in bookings])
 
+    medical_columns = \
+        [('First name', lambda b: b.first_name),
+         ('Last name', lambda b: b.last_name),
+         ('Sex', lambda b: b.get_sex_display()),
+         ('Date of birth', lambda b: b.date_of_birth),
+         ('Parent/guardian', lambda b: b.account.name),
+         ('Contact phone number', lambda b: b.contact_phone_number),
+         ('Contact address', lambda b: b.contact_address + ((u'\n' + b.contact_post_code) if
+                                                            b.contact_post_code else '')),
+         ('GP', lambda b: b.gp_name),
+         ('GP phone number', lambda b: b.gp_phone_number),
+         ('Medical card number', lambda b: b.medical_card_number),
+         ('Last tetanus injection', lambda b: b.last_tetanus_injection),
+         ('Allergies', lambda b: b.allergies),
+         ('Medication', lambda b: b.regular_medication_required),
+         ('Illnesses', lambda b: b.illnesses),
+         ('Learning difficulties', lambda b: b.learning_difficulties),
+         ]
+
+    wksh_medical = add_sheet_with_header_row(wkbk,
+                                             "Medical",
+                                             [n for n, f in medical_columns],
+                                             [[f(b) for n, f in medical_columns]
+                                              for b in bookings])
+
     def get_birthday(b):
         start = camp.start_date
         born = b.date_of_birth

@@ -1725,7 +1725,7 @@ class TestExportPlaces(CreatePlaceMixin, TestCase):
 
         workbook = camp_bookings_to_xls(self.camp)
         wkbk = xlrd.open_workbook(file_contents=workbook)
-        wksh_bdays = wkbk.sheet_by_index(1)
+        wksh_bdays = wkbk.sheet_by_index(2)
 
         self.assertEqual(wksh_bdays.cell(0, 0).value, u"First name")
         self.assertEqual(wksh_bdays.cell(1, 0).value, acc.bookings.all()[0].first_name)
