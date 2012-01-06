@@ -1,12 +1,9 @@
 from dateutil.relativedelta import relativedelta
-import xlwt
 
-from cciw.utils.xl import add_sheet_with_header_row, workbook_to_string
 
-def camp_bookings_to_xls(camp):
+def camp_bookings_to_spreadsheet(camp, spreadsheet):
     bookings = list(camp.bookings.confirmed().order_by('first_name', 'last_name'))
 
-    wkbk = xlwt.Workbook(encoding='utf8')
     columns = [('First name', lambda b: b.first_name),
                ('Last name', lambda b: b.last_name),
                ('Sex', lambda b: b.get_sex_display()),
@@ -17,11 +14,10 @@ def camp_bookings_to_xls(camp):
                ('Dietary requirements', lambda b: b.dietary_requirements),
                ]
 
-    wksh_campers = add_sheet_with_header_row(wkbk,
-                                             "Summary",
-                                             [n for n, f in columns],
-                                             [[f(b) for n, f in columns]
-                                              for b in bookings])
+    spreadsheet.add_sheet_with_header_row("Summary",
+                                          [n for n, f in columns],
+                                          [[f(b) for n, f in columns]
+                                           for b in bookings])
 
     medical_columns = \
         [('First name', lambda b: b.first_name),
@@ -42,11 +38,10 @@ def camp_bookings_to_xls(camp):
          ('Learning difficulties', lambda b: b.learning_difficulties),
          ]
 
-    wksh_medical = add_sheet_with_header_row(wkbk,
-                                             "Medical",
-                                             [n for n, f in medical_columns],
-                                             [[f(b) for n, f in medical_columns]
-                                              for b in bookings])
+    spreadsheet.add_sheet_with_header_row("Medical",
+                                          [n for n, f in medical_columns],
+                                          [[f(b) for n, f in medical_columns]
+                                           for b in bookings])
 
     def get_birthday(b):
         start = camp.start_date
@@ -65,13 +60,12 @@ def camp_bookings_to_xls(camp):
                     ]
 
 
-    wksh_bdays = add_sheet_with_header_row(wkbk,
-                                           "Birthdays on camp",
-                                           [n for n, f in bday_columns],
-                                           [[f(b) for n, f in bday_columns]
-                                            for b in bookings if
-                                            camp.start_date <= get_birthday(b) <= camp.end_date])
+    spreadsheet.add_sheet_with_header_row("Birthdays on camp",
+                                          [n for n, f in bday_columns],
+                                          [[f(b) for n, f in bday_columns]
+                                           for b in bookings if
+                                           camp.start_date <= get_birthday(b) <= camp.end_date])
 
-    return workbook_to_string(wkbk)
+    return spreadsheet.to_string()
 
 

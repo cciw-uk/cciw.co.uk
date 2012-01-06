@@ -13,12 +13,13 @@ import xlrd
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.models import BookingAccount, Price, Booking, Payment, ChequePayment, RefundPayment, book_basket_now
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND, BOOKING_CANCELLED_HALF_REFUND
-from cciw.bookings.utils import camp_bookings_to_xls
+from cciw.bookings.utils import camp_bookings_to_spreadsheet
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.officers.tests.references import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD, BOOKING_SEC
 from cciw.sitecontent.models import HtmlChunk
+from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url
 
 
@@ -1707,7 +1708,7 @@ class TestExportPlaces(CreatePlaceMixin, TestCase):
         acc = self.get_account()
         acc.bookings.update(state=BOOKING_BOOKED)
 
-        workbook = camp_bookings_to_xls(self.camp)
+        workbook = camp_bookings_to_spreadsheet(self.camp, ExcelFormatter())
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh_all = wkbk.sheet_by_index(0)
 
@@ -1723,7 +1724,7 @@ class TestExportPlaces(CreatePlaceMixin, TestCase):
         acc = self.get_account()
         acc.bookings.update(state=BOOKING_BOOKED)
 
-        workbook = camp_bookings_to_xls(self.camp)
+        workbook = camp_bookings_to_spreadsheet(self.camp, ExcelFormatter())
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh_bdays = wkbk.sheet_by_index(2)
 

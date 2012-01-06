@@ -22,7 +22,7 @@ from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
 from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
-from cciw.bookings.utils import camp_bookings_to_xls
+from cciw.bookings.utils import camp_bookings_to_spreadsheet
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
@@ -36,7 +36,7 @@ from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication, CRBFormLog
 from cciw.officers.utils import camp_slacker_list, officer_data_to_xls
 from cciw.officers.references import reference_form_info
-from cciw.utils.views import close_window_response, user_passes_test_improved
+from cciw.utils.views import close_window_response, user_passes_test_improved, get_spreadsheet_formatter
 from securedownload.views import access_folder_securely
 
 
@@ -926,9 +926,11 @@ def export_officer_data(request, year=None, number=None):
 @camp_admin_required
 def export_camper_data(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
-    response = HttpResponse(camp_bookings_to_xls(camp), mimetype="application/vnd.ms-excel")
-    response['Content-Disposition'] = ('attachment; filename=camp-%d-%d-campers.xls'
-                                       % (camp.year, camp.number))
+    formatter = get_spreadsheet_formatter(request)
+    response = HttpResponse(camp_bookings_to_spreadsheet(camp, formatter),
+                            mimetype=formatter.mimetype)
+    response['Content-Disposition'] = ('attachment; filename=camp-%d-%d-campers.%s'
+                                       % (camp.year, camp.number, formatter.file_ext))
     return response
 
 

@@ -6,6 +6,8 @@ from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.views import redirect_to_login
 from django.http import HttpResponse, HttpResponseForbidden
 
+from cciw.utils.spreadsheet import ExcelFormatter
+
 
 def close_window_response():
     return HttpResponse("""<!DOCTYPE html><html><head><title>Close</title><script type="text/javascript">window.close()</script></head><body></body></html>""")
@@ -36,3 +38,12 @@ def user_passes_test_improved(test_func, login_url=None, redirect_field_name=RED
             return redirect_to_login(path, login_url, redirect_field_name)
         return _wrapped_view
     return decorator
+
+
+formatters = {'xls': ExcelFormatter}
+
+def get_spreadsheet_formatter(request):
+    format = request.GET.get('format', 'xls')
+    if format not in formatters:
+        raise Http404
+    return formatters[format]()
