@@ -13,8 +13,9 @@ def camp_bookings_to_xls(camp):
                ('Date of birth', lambda b: b.date_of_birth),
                ('Age on camp', lambda b: b.age_on_camp().years),
                ('Address', lambda b: b.address),
+               ('Church', lambda b: b.church),
+               ('Dietary requirements', lambda b: b.dietary_requirements),
                ]
-
 
     wksh_campers = add_sheet_with_header_row(wkbk,
                                              "Summary",
