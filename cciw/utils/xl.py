@@ -15,13 +15,6 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
     """
     wksh = wkbk.add_sheet(name)
 
-    font_header = xlwt.Font()
-    font_header.bold = True
-    style_header = xlwt.XFStyle()
-    style_header.font = font_header
-    for c, header in enumerate(headers):
-        wksh.write(0, c, header, style=style_header)
-
     normal_style = xlwt.XFStyle()
     normal_style.alignment.vert = xlwt.Alignment.VERT_CENTER
     normal_style.borders.left = xlwt.Borders.THIN
@@ -34,6 +27,14 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
 
     date_style = deepcopy(normal_style)
     date_style.num_format_str = 'YYYY/MM/DD'
+
+    style_header = deepcopy(normal_style)
+    font_header = xlwt.Font()
+    font_header.bold = True
+    style_header.font = font_header
+
+    for c, header in enumerate(headers):
+        wksh.write(0, c, header, style=style_header)
 
     for r, row in enumerate(contents):
         row_height = normal_style.font.height
