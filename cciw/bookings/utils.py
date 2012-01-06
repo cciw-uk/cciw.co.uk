@@ -66,7 +66,7 @@ def camp_bookings_to_xls(camp):
 
 
     wksh_bdays = add_sheet_with_header_row(wkbk,
-                                           "Birthdays",
+                                           "Birthdays on camp",
                                            [n for n, f in bday_columns],
                                            [[f(b) for n, f in bday_columns]
                                             for b in bookings if
