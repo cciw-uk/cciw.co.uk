@@ -5,7 +5,8 @@ import xlrd
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Invitation, Application
 from cciw.officers.tests.references import OFFICER, LEADER
-from cciw.officers.utils import officer_data_to_xls
+from cciw.officers.utils import officer_data_to_spreadsheet
+from cciw.utils.spreadsheet import ExcelFormatter
 
 
 class TestExport(TestCase):
@@ -29,7 +30,7 @@ class TestExport(TestCase):
             inv.notes = "Some notes %s" % i
             inv.save()
 
-        workbook = officer_data_to_xls(c)
+        workbook = officer_data_to_spreadsheet(c, ExcelFormatter())
 
         self.assertTrue(workbook is not None)
         wkbk = xlrd.open_workbook(file_contents=workbook)
@@ -57,7 +58,7 @@ class TestExport(TestCase):
         app = Application.objects.get(pk=1)
         assert app.officer == u
 
-        workbook = officer_data_to_xls(c)
+        workbook = officer_data_to_spreadsheet(c, ExcelFormatter())
 
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh = wkbk.sheet_by_index(0)

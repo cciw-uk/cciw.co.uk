@@ -1,10 +1,6 @@
 """
 Utility functions for officers app.
 """
-import xlwt
-
-from cciw.utils.xl import add_sheet_with_header_row, workbook_to_string
-
 
 def camp_officer_list(camp):
     """
@@ -22,7 +18,7 @@ def camp_slacker_list(camp):
     return list(camp.officers.order_by('first_name', 'last_name', 'email').exclude(id__in=finished_apps_ids))
 
 
-def officer_data_to_xls(camp):
+def officer_data_to_spreadsheet(camp, spreadsheet):
     # Import here to avoid import cycle when starting from handle_mail script
     from cciw.officers.applications import applications_for_camp
 
@@ -48,7 +44,6 @@ def officer_data_to_xls(camp):
                ('Birth date', app_attr_getter('birth_date')),
                ]
 
-    wkbk = xlwt.Workbook(encoding='utf8')
     header_row = [h for h,f in columns]
     def data_rows():
         for inv in invites:
@@ -59,5 +54,5 @@ def officer_data_to_xls(camp):
                 row.append(f(user, inv, app))
             yield row
 
-    add_sheet_with_header_row(wkbk, "Officers", header_row, data_rows())
-    return workbook_to_string(wkbk)
+    spreadsheet.add_sheet_with_header_row("Officers", header_row, data_rows())
+    return spreadsheet.to_string()
