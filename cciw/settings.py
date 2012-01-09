@@ -261,6 +261,7 @@ FORUM_PAGINATE_NEWS_BY = 10
 ESV_BROWSE_URL = "http://www.gnpcb.org/esv/search/"
 FEEDBACK_EMAIL = "feedback@cciw.co.uk"
 BOOKING_SECRETARY_EMAIL = "bookings@cciw.co.uk"
+BOOKING_FORM_EMAIL = "bookingforms@cciw.co.uk"
 BOOKINGFORMDIR = "downloads"
 MEMBERS_PAGINATE_MESSAGES_BY = 20
 WEBMASTER_EMAIL = "webmaster@cciw.co.uk"
