@@ -12,7 +12,8 @@ from cciw.cciwmain.forms import CciwFormMixin
 
 def send_feedback(to_emails, from_email, name, message):
     message = wrap(message, 70)
-    mail.send_mail("CCIW website feedback", """
+    email = mail.EmailMessage(subject="CCIW website feedback",
+                              body="""
 The following message has been sent on the CCIW website feedback form:
 
 From: %(name)s
@@ -20,7 +21,11 @@ Email: %(from_email)s
 Message:
 %(message)s
 
-""" % locals(), settings.SERVER_EMAIL, to_emails)
+""" % locals(),
+                              from_email=settings.SERVER_EMAIL,
+                              to=to_emails,
+                              headers={'Reply-To': from_email})
+    email.send()
 
 CONTACT_CHOICE_GENERAL = 'general'
 CONTACT_CHOICE_WEBSITE = 'website'

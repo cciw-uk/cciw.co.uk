@@ -48,6 +48,7 @@ class ContactUsPage(TestCase):
                                                    subject="general"))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [settings.FEEDBACK_EMAIL])
+        self.assertEqual(mail.outbox[0].extra_headers['Reply-To'], 'validemail@somewhere.com')
 
     def test_send_to_booking_secretary(self):
         self.client.post(FEEDBACK_URL,
