@@ -62,7 +62,7 @@ class Price(models.Model):
     price = models.DecimalField(decimal_places=2, max_digits=10)
 
     class Meta:
-        unique_together = ['year', 'price_type']
+        unique_together = [('year', 'price_type')]
 
     def __unicode__(self):
         return u"%s %s - %s" % (self.get_price_type_display(), self.year, self.price)
