@@ -64,7 +64,7 @@ discount'.</p>
 {% cciw_form_field form 'price_type' 'Price' %}
 
 <h2>Camper details</h2>
- <input type="submit" id="id_use_existing_btn" value="Use previous data" style="display:none; float: right;">
+ <input type="submit" class="use_existing_btn" value="Use previous data" style="display:none; float: right;">
 {% cciw_form_field form 'first_name' 'First name' %}
 {% cciw_form_field form 'last_name' 'Surname' %}
 {% cciw_form_field form 'sex' 'Sex' %}
@@ -101,6 +101,7 @@ this box. The cost for this transport is an additional £{{ south_wales_surcharg
 {% cciw_form_field form 'dietary_requirements' 'Dietary requirements' %}
 
 <h2>GP details</h2>
+ <input type="submit" class="use_existing_btn" value="Use previous data" style="display:none; float: right;">
 
 <p>Please enter the details of the camper's GP:</p>
 
@@ -171,7 +172,9 @@ treatment becomes necessary.</p>
 </div>
 <div class="popupbody">
 <p>You can copy information previously entered to save time. Please check
- the data after using this to ensure it is all up to date.</p>
+ the data after using this to ensure it is all up to date.
+ <b>NB: This will overwrite existing data on this form!</b>
+</p>
 
 <table>
 <tr>

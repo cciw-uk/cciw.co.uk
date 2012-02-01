@@ -19,7 +19,7 @@
                  userData['places'] = places;
                  if (places.length > 0) {
                      var cont = $('#id_use_existing_radio_container');
-                     $('#id_use_existing_btn').show();
+                     $('.use_existing_btn').show();
                      for (var i=0; i < places.length; i++) {
                          var place = places[i];
                          var html = ("<label><input type='radio' name='use_which_booking' value='" +
@@ -64,6 +64,10 @@
              var useExistingDataClose = function(ev) {
                  $('#id_use_existing_data_popup').fadeOut('fast');
                  $('#id_popup_background').fadeOut('fast');
+                 if (ev != undefined) {
+                     // for links
+                     ev.preventDefault();
+                 }
              };
 
              var address_attrs = [
@@ -172,7 +176,7 @@
              };
 
              $('#id_popup_close_btn').click(useExistingDataClose);
-             $('#id_use_existing_btn').click(useExistingDataShow);
+             $('.use_existing_btn').click(useExistingDataShow);
              $('#id_use_all_btn').click(useAllBtnClick);
              $('#id_use_address_btn').click(useAddressBtnClick);
              $('#id_use_gp_info_btn').click(useGPInfoBtnClick);
