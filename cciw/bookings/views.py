@@ -333,8 +333,8 @@ class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFor
     def form_valid(self, form):
         email = form.cleaned_data['email']
         try:
-            account = BookingAccount.objects.get(email=email)
-        except BookingAccount.DoesNotExist:
+            account = BookingAccount.objects.filter(email__iexact=email)[0]
+        except IndexError:
             # Ensure we use NULLs, not empty strings, or we will not be able to
             # create more than one, as they will have same 'name and post_code'
             account = BookingAccount.objects.create(email=email,

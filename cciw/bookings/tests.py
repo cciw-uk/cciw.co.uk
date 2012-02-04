@@ -187,6 +187,14 @@ class TestBookingStart(CreatePlaceMixin, TestCase):
         self.assertEqual(BookingAccount.objects.all().count(), 1)
         self.assertEqual(len(mail.outbox), 1)
 
+    def test_complete_form_existing_email_different_case(self):
+        BookingAccount.objects.create(email="booker@bookers.com")
+        self.assertEqual(BookingAccount.objects.all().count(), 1)
+        resp = self.client.post(self.url,
+                                {'email': 'BOOKER@bookers.com'})
+        self.assertEqual(BookingAccount.objects.all().count(), 1)
+        self.assertEqual(len(mail.outbox), 1)
+
     def test_skip_if_logged_in(self):
         # This assumes verification process works
         # Check redirect to step 3 - account details
