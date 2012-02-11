@@ -65,10 +65,6 @@ the same rules apply to both paper bookings and online bookings.</p>
     <div><a href="{{ MEDIA_URL }}{{ bookingform }}">Download the CCIW
         booking form for {{ thisyear }}</a> </div>
 
-    <p><br/>The completed booking form must be sent to:</p>
-
-    {% htmlchunk bookingform_post_to %}
-
 {% else %}
 
     <p>There is no booking form for {{ thisyear }} available yet online. Booking
