@@ -313,16 +313,6 @@ body
     font-family: verdana, arial, sans;
 }
 
-a:link, a:visited
-{
-    text-decoration: none;
-}
-
-a:hover
-{
-    text-decoration: underline;
-}
-
 pre
 {
     margin-top: 0px;
