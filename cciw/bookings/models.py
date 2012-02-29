@@ -429,12 +429,12 @@ class Booking(models.Model):
         # Check age.
         camper_age = self.age_on_camp()
         if camper_age.years < self.camp.minimum_age:
-            errors.append(u"Camper will be below the minimum age (%d) on the 31st August %d"
-                          % (self.camp.minimum_age, self.camp.year))
+            errors.append(u"Camper will be %d which is below the minimum age (%d) on the 31st August %d"
+                          % (camper_age.years, self.camp.minimum_age, self.camp.year))
 
         if camper_age.years > self.camp.maximum_age:
-            errors.append(u"Camper will be above the maximum age (%d) on the 31st August %d"
-                          % (self.camp.maximum_age, self.camp.year))
+            errors.append(u"Camper will be %d which is above the maximum age (%d) on the 31st August %d"
+                          % (camper_age.years, self.camp.maximum_age, self.camp.year))
 
         # Check place availability
         places_left, places_left_male, places_left_female = self.camp.get_places_left()
