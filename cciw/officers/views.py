@@ -1190,6 +1190,7 @@ class OfficerInfo(TemplateView):
         return dict(show_wiki_link=is_wiki_user(self.request.user))
 
 
+@booking_secretary_required
 def booking_secretary_reports(request, year=None):
     from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, BOOKING_BOOKED, BOOKING_CANCELLED, BookingAccount
     year = int(year)
