@@ -914,6 +914,18 @@ div.bottomlinks img
     padding: 5px;
 }
 
+/* Internet Explorer on WinXP message */
+#winxp-ie-message {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    text-align: center;
+    background-color: #800000;
+    color: white;
+    padding: 5px;
+}
+
 /* Messages */
 ul.messagelist {
     padding: 0 0 5px 0;

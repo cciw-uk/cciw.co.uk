@@ -51,5 +51,20 @@
       browser</a>.
     </div>
     <![endif]-->
+    <!--[if IE]>
+    <div id="winxp-ie-message" style="display: none;">
+      You are running Internet Explorer on Windows XP. This does not suuport
+      modern ways of supporting HTTP/SSL, so you will have seen an SSL
+      certificate error to get to this page. Please use
+      a <a href="http://abetterbrowser.org/">different browser</a>, or upgrade
+      your operating system to a more recent version of Windows.
+    </div>
+    <script type="text/javascript">
+      if (/Windows NT 5.1/.test(window.navigator.userAgent)) {
+         document.getElementById("winxp-ie-message").style.display = "block";
+      }
+    </script>
+    <![endif]-->
+
 </body>
 </html>
