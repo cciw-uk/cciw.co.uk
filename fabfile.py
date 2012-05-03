@@ -264,6 +264,7 @@ def _copy_protected_downloads():
     # We currently don't need this to be separate for staging and production
     rsync_dir(join(parent_dir, "secure_downloads_src"),
               join(webapps_root, 'cciw_protected_downloads_src'))
+    run("chmod -R ugo+r %s" % join(webapps_root, 'cciw_protected_downloads_src'))
 
 
 def _build_static(version):
