@@ -11,7 +11,7 @@ from .models import BookingAccount, ChequePayment, RefundPayment, send_payment
 
 ### Payments ####
 
-def unrecognised_payment(ipn_obj, **kwargs):
+def unrecognised_payment(sender=ipn_obj, **kwargs):
     send_unrecognised_payment_email(ipn_obj)
 
 
