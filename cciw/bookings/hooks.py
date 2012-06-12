@@ -22,6 +22,10 @@ def paypal_payment_received(sender, **kwargs):
         unrecognised_payment(ipn_obj)
         return
 
+    if ipn_obj.payment_status.lower().strip() != 'completed':
+        unrecognised_payment(ipn_obj)
+        return
+
     try:
         account = BookingAccount.objects.get(id=int(m.groups()[0]))
         send_payment(ipn_obj.mc_gross, account, ipn_obj)
