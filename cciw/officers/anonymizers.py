@@ -12,6 +12,7 @@ class UserAnonymizer(Anonymizer):
     model = User
 
     attributes = [
+        ('id', "SKIP"),
         ('username',   'username'),
         ('first_name', 'first_name'),
         ('last_name',  'last_name'),
@@ -19,6 +20,10 @@ class UserAnonymizer(Anonymizer):
         ('date_joined', 'similar_datetime'),
         # Set to today:
         ('last_login', lambda *args: datetime.now()),
+        ('is_superuser', "SKIP"),
+        ('password', "SKIP"),
+        ('is_staff', "SKIP"),
+        ('is_active', "SKIP")
     ]
 
     def alter_object(self, obj):
@@ -37,7 +42,10 @@ class ApplicationAnonymizer(Anonymizer):
     model = Application
 
     attributes = [
-        # 'full_name' and 'full_maiden_name' - see below
+        ('id', "SKIP"),
+        ('officer_id', "SKIP"),
+        ('full_name', "SKIP"), # see below
+        ('full_maiden_name', "SKIP"),
         ('birth_date', "date"),
         ('birth_place', "city"),
         ('address_firstline', "street_address"),
@@ -89,8 +97,8 @@ class ApplicationAnonymizer(Anonymizer):
         ('concern_details', "lorem"),
         ('allegation_declaration', "bool"),
         ('crb_check_consent', "bool"),
-        # 'finished', "bool", - leave as is
-        # ('date_submitted', "date"), - leave as is
+        ('finished', "SKIP"),
+        ('date_submitted', "SKIP"),
     ]
 
     order = 2
@@ -106,6 +114,8 @@ class ReferenceFormAnonymizer(Anonymizer):
     model = ReferenceForm
 
     attributes = [
+        ('id', "SKIP"),
+        ('reference_info_id', "SKIP"),
         ('referee_name', "name"),
         ('how_long_known', "varchar"),
         ('capacity_known', "similar_lorem"),
@@ -115,5 +125,5 @@ class ReferenceFormAnonymizer(Anonymizer):
         ('character', "similar_lorem"),
         ('concerns', "lorem"),
         ('comments', "similar_lorem"),
-        # 'date_created': "date",
+        ('date_created', "SKIP"),
     ]

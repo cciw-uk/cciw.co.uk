@@ -6,16 +6,17 @@ class BookingAccountAnonymizer(Anonymizer):
     model = BookingAccount
 
     attributes = [
-        # Skipping field id
+        ('id', "SKIP"),
         ('email', "email"),
         ('name', "name"),
         ('address', "full_address"),
         ('post_code', "uk_postcode"),
         ('phone_number', "phonenumber"),
         ('share_phone_number', "bool"),
-        #('total_received', "decimal"),
-        #('first_login', "datetime"),
-        #('last_login', "datetime"),
+        ('total_received', "SKIP"),
+        ('first_login', "datetime"),
+        ('last_login', "SKIP"),
+        ('email_communication', "SKIP")
     ]
 
 
@@ -24,9 +25,9 @@ class BookingAnonymizer(Anonymizer):
     model = Booking
 
     attributes = [
-         # Skipping field id
-         # Skipping field account_id
-         # Skipping field camp_id
+        ('id', "SKIP"),
+        ('camp_id', "SKIP"),
+        ('account_id', "SKIP"),
         ('first_name', "first_name"),
         ('last_name', "last_name"),
         ('sex', "choice"),
@@ -36,9 +37,9 @@ class BookingAnonymizer(Anonymizer):
         ('phone_number', "phonenumber"),
         ('email', "email"),
         ('church', "similar_lorem"),
-        #('south_wales_transport', "bool"),
-        ('contact_address', "address"),
-        ('contact_post_code', "post_code"),
+        ('south_wales_transport', "SKIP"),
+        ('contact_address', "full_address"),
+        ('contact_post_code', "uk_postcode"),
         ('contact_phone_number', "phonenumber"),
         ('dietary_requirements', "similar_lorem"),
         ('gp_name', "name"),
@@ -51,12 +52,12 @@ class BookingAnonymizer(Anonymizer):
         ('illnesses', "similar_lorem"),
         ('learning_difficulties', "similar_lorem"),
         ('serious_illness', "bool"),
-        #('agreement', "bool"),
-        #('price_type', "choice"),
-        #('amount_due', "decimal"),
-        #('shelved', "bool"),
-        #('state', "choice"),
-        #('created', "datetime"),
-        #('booking_expires', "datetime"),
+        ('agreement', "SKIP"),
+        ('price_type', "SKIP"),
+        ('amount_due', "SKIP"),
+        ('shelved', "SKIP"),
+        ('state', "SKIP"),
+        ('created', "SKIP"),
+        ('booking_expires', "SKIP"),
     ]
 
