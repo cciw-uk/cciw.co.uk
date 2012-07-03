@@ -1,6 +1,6 @@
 from collections import namedtuple
 from datetime import datetime
-from fabric.api import run, local, abort, env, put
+from fabric.api import run, local, abort, env, put, get
 from fabric.contrib import files
 from fabric.contrib import console
 from fabric.decorators import hosts, runs_once
@@ -99,6 +99,7 @@ class Target(object):
     def __init__(self, django_app='', dbname=''):
         self.django_app = django_app
         self.dbname = dbname
+        self.dbuser = dbname
 
         self.webapp_root = join(webapps_root, self.django_app)
         # src_root - the root of all sources on this target.
@@ -447,3 +448,11 @@ def backup_usermedia():
 # TODO:
 #  - backup db task. This should be run only in production, and copies
 #    files to Amazon S3 service.
+
+def get_live_db():
+    filename = "dump_%s.db" % PRODUCTION.dbname
+    run("pg_dump -Fc -U %s -O -o -f ~/%s %s" % (PRODUCTION.dbuser, filename, PRODUCTION.dbname))
+    get("~/%s" % filename)
+
+def local_restore_from_dump(filename):
+    local("pg_restore -O -U cciw -c -d cciw < %s" % filename)
