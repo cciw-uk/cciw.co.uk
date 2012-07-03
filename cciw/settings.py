@@ -87,7 +87,6 @@ if not (LIVEBOX and WEBSERVER_RUNNING):
 if DEVBOX and DEBUG:
     INSTALLED_APPS += (
         'django.contrib.admindocs',
-        'output_validator',
         'debug_toolbar',
     )
 
@@ -202,7 +201,6 @@ _MIDDLEWARE_CLASSES = (
     (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
     (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
-    (DEVBOX,     "output_validator.middleware.ValidatorMiddleware"),
     (True,       'django.middleware.csrf.CsrfViewMiddleware'),
     (True,       'django.middleware.clickjacking.XFrameOptionsMiddleware'),
     (True,       "django.contrib.sessions.middleware.SessionMiddleware"),

@@ -48,7 +48,6 @@ urlpatterns = patterns('',
 if settings.DEVBOX:
     from django.contrib.staticfiles.urls import staticfiles_urlpatterns
     urlpatterns += patterns('',
-                            (r'^validator/', include('output_validator.urls')),
                             (r'^admin_doc/', include('django.contrib.admindocs.urls')),
                             (r'^usermedia/(?P<path>.*)$', 'django.views.static.serve',
                              {'document_root': settings.MEDIA_ROOT}),
