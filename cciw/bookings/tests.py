@@ -27,6 +27,11 @@ DISABLED_BOOK_NOW_BTN = "id_book_now_btn\" disabled>"
 ENABLED_BOOK_NOW_BUTTON = "id_book_now_btn\">"
 
 
+
+class IpnMock(object):
+    payment_status = 'completed'
+
+
 ### Mixins to reduce duplication ###
 
 class CreateCampMixin(object):
@@ -1144,9 +1149,6 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
     def test_email_for_bad_payment_1(self):
         from cciw.bookings.models import paypal_payment_received
 
-        class IpnMock(object):
-            pass
-
         ipn_1 = IpnMock()
         ipn_1.id = 123
         ipn_1.mc_gross = Decimal('1.00')
@@ -1161,9 +1163,6 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
 
     def test_email_for_bad_payment_2(self):
         from cciw.bookings.models import paypal_payment_received
-
-        class IpnMock(object):
-            pass
 
         ipn_1 = IpnMock()
         ipn_1.id = 123
@@ -1183,12 +1182,11 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
         self.login()
 
         from paypal.standard.ipn.models import PayPalIPN
-        class IpnMock(object):
-            pass
 
         ipn_1 = PayPalIPN.objects.create(mc_gross = Decimal('1.00'),
                                          custom = "account:%s;" % self.get_account().id,
                                          ipaddress='127.0.0.1',
+                                         payment_status = 'completed',
                                          )
         mail.outbox = []
         self.assertEqual(len(mail.outbox), 0)
