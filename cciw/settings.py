@@ -55,6 +55,7 @@ CACHES = {
 TIME_ZONE = "Europe/London"
 
 USE_I18N = False
+USE_TZ = False
 
 LOGIN_URL = "/officers/"
 
