@@ -1,5 +1,7 @@
 from dateutil.relativedelta import relativedelta
 
+from cciw.bookings.models import Booking
+
 
 def camp_bookings_to_spreadsheet(camp, spreadsheet):
     bookings = list(camp.bookings.confirmed().order_by('first_name', 'last_name'))
@@ -69,3 +71,23 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
     return spreadsheet.to_string()
 
 
+# Spreadsheet needed by booking secretary
+def year_bookings_to_spreadsheet(year, spreadsheet):
+    bookings = Booking.objects.filter(camp__year=year).order_by('camp__number', 'account__name', 'first_name', 'last_name').select_related('camp', 'account')
+
+    columns = [
+        ('Camp', lambda b: b.camp.number),
+        ('Account', lambda b: b.account.name),
+        ('First name', lambda b: b.first_name),
+        ('Last name', lambda b: b.last_name),
+        ('Sex', lambda b: b.get_sex_display()),
+        ('State', lambda b: b.get_state_display()),
+        ('Confirmed', lambda b: b.confirmed_booking()),
+        ('Date created', lambda b: b.created),
+        ]
+
+    spreadsheet.add_sheet_with_header_row("All bookings",
+                                          [n for n, f in columns],
+                                          [[f(b) for n, f in columns]
+                                           for b in bookings])
+    return spreadsheet.to_string()

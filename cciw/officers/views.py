@@ -22,7 +22,7 @@ from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
 from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
-from cciw.bookings.utils import camp_bookings_to_spreadsheet
+from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
@@ -933,6 +933,18 @@ def export_camper_data(request, year=None, number=None):
                             mimetype=formatter.mimetype)
     response['Content-Disposition'] = ('attachment; filename=camp-%d-%d-campers.%s'
                                        % (camp.year, camp.number, formatter.file_ext))
+    return response
+
+
+@staff_member_required
+@booking_secretary_required
+def export_camper_data_for_year(request, year=None):
+    year = int(year)
+    formatter = get_spreadsheet_formatter(request)
+    response = HttpResponse(year_bookings_to_spreadsheet(year, formatter),
+                            mimetype=formatter.mimetype)
+    response['Content-Disposition'] = ('attachment; filename=CCIW-bookings-%d.%s'
+                                       % (year, formatter.file_ext))
     return response
 
 
