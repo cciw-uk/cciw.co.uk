@@ -44,7 +44,8 @@ class CampAdmin(admin.ModelAdmin):
           }
         ),
         ('Booking constraints',
-         {'fields': ('max_campers', 'max_male_campers', 'max_female_campers')
+         {'fields': ('max_campers', 'max_male_campers', 'max_female_campers',
+                     'south_wales_transport_available')
           }
          ),
         ('Applications and references',

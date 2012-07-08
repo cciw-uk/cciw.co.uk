@@ -58,6 +58,7 @@ class Camp(models.Model):
     max_campers = models.PositiveSmallIntegerField("maximum campers", default=80)
     max_male_campers = models.PositiveSmallIntegerField("maximum male campers", default=60)
     max_female_campers = models.PositiveSmallIntegerField("maximum female campers", default=60)
+    south_wales_transport_available = models.BooleanField("South Wales transport available", default=True)
 
     previous_camp = models.ForeignKey("self",
         related_name="next_camps",
