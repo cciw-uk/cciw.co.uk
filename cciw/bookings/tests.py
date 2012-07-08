@@ -742,6 +742,16 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "There are not enough places for girls left on this camp")
         self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
 
+    def test_no_transport_places_left(self):
+        self.login()
+        self.create_place({'south_wales_transport': '1'})
+        self.camp.south_wales_transport_available = False
+        self.camp.save()
+
+        resp = self.client.get(self.url)
+        self.assertContains(resp, "Transport from South Wales is not available")
+        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+
     def test_handle_two_problem_bookings(self):
         # Test the error we get for more than one problem booking
         self.login()

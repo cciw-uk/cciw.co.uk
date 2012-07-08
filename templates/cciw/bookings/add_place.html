@@ -87,6 +87,17 @@ this box. The cost for this transport is an additional £{{ south_wales_surcharg
 {% cciw_form_field form 'south_wales_transport' 'South Wales transport required' %}
 <br/><br/>
 
+{% if south_wales_transport_exclude_camps %}
+<p><strong>NOTE:</strong> This is <strong>not available</strong> for new places on the following
+camps:</p>
+<ul>
+{% for c in south_wales_transport_exclude_camps %}
+<li>{{ c }}{% if not forloop.last %},{% endif %}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+
 <h2>Contact details</h2>
 
 <p>Please enter a contact name and number that can be used <strong>during the week of camp</strong> in case of emergency.</p>

@@ -485,10 +485,14 @@ class Booking(models.Model):
                                   u"for the campers in this set of bookings.")
                     places_available = False
 
+        if self.south_wales_transport and not self.camp.south_wales_transport_available:
+            errors.append(u"Transport from South Wales is not available for this camp, or all places have been taken already.")
+
         if booking_sec and self.price_type != PRICE_CUSTOM:
             expected_amount = self.expected_amount_due()
             if self.amount_due != expected_amount:
                 errors.append(u"The 'amount due' is not the expected value of £%s." % expected_amount)
+
         return errors
 
     def get_booking_warnings(self, booking_sec=False):

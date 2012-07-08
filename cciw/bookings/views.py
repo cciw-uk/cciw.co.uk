@@ -416,6 +416,7 @@ class BookingEditAddBase(DefaultMetaData, TemplateResponseMixin, AjaxyFormMixin)
     extra_context = {'booking_open': is_booking_open_thisyear,
                      'south_wales_surcharge': lambda: Price.objects.get(year=get_thisyear(),
                                                                         price_type=PRICE_SOUTH_WALES_TRANSPORT).price,
+                     'south_wales_transport_exclude_camps': lambda: Camp.objects.filter(year=get_thisyear(), south_wales_transport_available=False),
                      'stage': 'place'}
 
 
