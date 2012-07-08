@@ -155,7 +155,9 @@ if LIVEBOX:
         EMAIL_BACKEND = "cciw.mail.backend.StagingBackend"
 
 if DEVBOX:
-    # For e-mail testing, run:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    # For more advanced e-mail testing which requires the exact email dumped to
+    # a file, disable the above line and run:
     #  fakemail.py --path=/home/luke/devel/cciw.co.uk/tests/mail --background
     EMAIL_HOST = 'localhost'
     EMAIL_HOST_USER = None
