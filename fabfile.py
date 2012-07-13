@@ -210,10 +210,11 @@ def _update_virtualenv(version):
         # Need this to stop ~/lib/ dirs getting in:
         run("touch env/lib/python2.7/sitecustomize.py")
 
-        if not getattr(env, 'no_installs', False):
-            with virtualenv(version.venv_dir):
-                with cd(version.project_dir):
-                    run_venv("pip install -r requirements.txt")
+        # We have to do this whether we added anything to requirements.txt
+        # or not, otherwise easy_install.pth is not updated correctly.
+        with virtualenv(version.venv_dir):
+            with cd(version.project_dir):
+                run_venv("pip install -r requirements.txt")
 
         # Need to add project to path.
         pth_file = '\n'.join("../../../../" + n for n in version.additional_sys_paths)
@@ -391,13 +392,6 @@ def deploy():
 
 
 
-def no_installs():
-    """
-    Call first to skip installing anything.
-    """
-    env.no_installs = True
-
-
 def no_db():
     """
     Call first to skip upgrading DB
@@ -406,7 +400,6 @@ def no_db():
 
 
 def quick():
-    no_installs()
     no_db()
 
 
