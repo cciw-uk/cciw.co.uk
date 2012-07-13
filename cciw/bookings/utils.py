@@ -12,6 +12,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                ('Date of birth', lambda b: b.date_of_birth),
                ('Age on camp', lambda b: b.age_on_camp().years),
                ('Address', lambda b: b.address),
+               ('Email', lambda b: b.email),
                ('Church', lambda b: b.church),
                ('Dietary requirements', lambda b: b.dietary_requirements),
                ]
