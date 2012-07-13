@@ -209,9 +209,11 @@ def _update_virtualenv(version):
         run("virtualenv --python=python2.7 env")
         # Need this to stop ~/lib/ dirs getting in:
         run("touch env/lib/python2.7/sitecustomize.py")
-        with virtualenv(version.venv_dir):
-            with cd(version.project_dir):
-                run_venv("pip install -r requirements.txt")
+
+        if not getattr(env, 'no_installs', False):
+            with virtualenv(version.venv_dir):
+                with cd(version.project_dir):
+                    run_venv("pip install -r requirements.txt")
 
         # Need to add project to path.
         pth_file = '\n'.join("../../../../" + n for n in version.additional_sys_paths)
@@ -332,8 +334,7 @@ def _deploy(target):
 
     _update_project_sources(target, version)
     _copy_protected_downloads()
-    if not getattr(env, 'no_installs', False):
-        _update_virtualenv(version)
+    _update_virtualenv(version)
     _build_static(version)
 
     # Ideally, we:
