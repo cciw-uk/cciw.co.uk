@@ -243,14 +243,19 @@ def _update_project_sources(target, version):
             # Clone local copy if we can
             run("hg clone %s project" % target.current_version.project_dir)
         else:
-            run("hg clone ssh://hg@bitbucket.org/spookylukey/cciw-website project")
+            run("hg init")
 
         with cd(version.project_dir):
             # We update to the version that is currently checked out locally,
             # because, at least for staging, it might not be the tip of default.
-            current_rev = local("hg id -i", capture=True)
-            run("hg pull ssh://hg@bitbucket.org/spookylukey/cciw-website")
-            run("hg update -r %s" % current_rev.strip("+"))
+            current_rev = local("hg id -i", capture=True).strip("+")
+            local("hg push -f -r %(rev)s ssh://%(user)s@%(host)s/%(path)s || true" %
+                  dict(host=env.host,
+                       user=env.user,
+                       path=version.project_dir,
+                       rev=current_rev,
+                       ))
+            run("hg update -r %s" % current_rev)
 
         # Avoid recreating the virtualenv if we can
         if files.exists(target.current_version.venv_dir):
