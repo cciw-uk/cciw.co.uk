@@ -136,6 +136,16 @@ PRODUCTION = Target(
     dbname = "cciw",
 )
 
+current_target = None
+
+def production():
+    global current_target
+    current_target = PRODUCTION
+
+def staging():
+    global current_target
+    current_target = STAGING
+
 
 @runs_once
 def ensure_dependencies():
@@ -314,42 +324,35 @@ def _update_db(target, version):
             run_venv("./manage.py migrate --all --settings=cciw.settings --noinput")
 
 
-def _deploy(target, quick=False):
-    # If 'quick=True', then it assumes all changes are small presentation
-    # changes, with no database changes or Python code changes or server restart
-    # needed.  (This depends on the assumption that HTML/CSS/js are not cached
-    # in the webserver in any way).
+def _deploy(target):
     _prepare_deploy()
 
     label = datetime.now().strftime("%Y-%m-%d_%H.%M.%S")
     version = target.make_version(label)
 
-    if quick:
-        _update_project_sources(target, version)
-        _copy_protected_downloads()
-        _build_static(version)
-        _update_symlink(target, version)
-    else:
-        _update_project_sources(target, version)
-        _copy_protected_downloads()
+    _update_project_sources(target, version)
+    _copy_protected_downloads()
+    if not getattr(env, 'no_installs', False):
         _update_virtualenv(version)
-        _build_static(version)
+    _build_static(version)
 
-        # Ideally, we:
-        # 1) stop web server
-        # 2) updated db
-        # 3) rollback if unsuccessful.
-        # 4) restart webserver
+    # Ideally, we:
+    # 1) stop web server
+    # 2) update db
+    # 3) rollback if unsuccessful.
+    # 4) restart webserver
 
-        # In practice, for this low traffic site it is better to keep website
-        # going for as much time as possible, and cope with any small bugs that
-        # come from mismatch of db and code.
+    # In practice, for this low traffic site it is better to keep website
+    # going for as much time as possible, and cope with any small bugs that
+    # come from mismatch of db and code.
 
+    if not getattr(env, 'no_db', False):
         db_backup_name = backup_database(target, version)
         _update_db(target, version)
-        _stop_apache(target)
-        _update_symlink(target, version)
-        _start_apache(target)
+
+    _stop_apache(target)
+    _update_symlink(target, version)
+    _start_apache(target)
 
 
 def _clean(target):
@@ -371,28 +374,39 @@ def _clean(target):
             run("rm -rf %s" % d)
 
 
-def deploy_staging(quick=False):
-    _deploy(STAGING, quick=quick)
+def deploy():
+    if current_target is PRODUCTION:
 
+        with lcd(this_dir):
+            if local("hg st", capture=True).strip() != "":
+                if not console.confirm("Project dir is not clean, merge to live will fail. Continue anyway?", default=False):
+                    sys.exit()
 
-def deploy_production(quick=False):
-    with lcd(this_dir):
-        if local("hg st", capture=True).strip() != "":
-            if not console.confirm("Project dir is not clean, merge to live will fail. Continue anyway?", default=False):
-                sys.exit()
-
-    _deploy(PRODUCTION, quick=quick)
+    _deploy(current_target)
     #  Update 'live' branch so that we can switch to it easily if needed.
-    with lcd(this_dir):
-        local('hg update -r live && hg merge -r default && hg commit -m "Merged from default" && hg update -r default', capture=False)
+    if current_target is PRODUCTION:
+        with lcd(this_dir):
+            local('hg update -r live && hg merge -r default && hg commit -m "Merged from default" && hg update -r default', capture=False)
 
 
-def quick_deploy_staging():
-    deploy_staging(quick=True)
+
+def no_installs():
+    """
+    Call first to skip installing anything.
+    """
+    env.no_installs = True
 
 
-def quick_deploy_production():
-    deploy_production(quick=True)
+def no_db():
+    """
+    Call first to skip upgrading DB
+    """
+    env.no_db = True
+
+
+def quick():
+    no_installs()
+    no_db()
 
 
 def _test_remote(target):
@@ -401,45 +415,24 @@ def _test_remote(target):
         with cd(version.project_dir):
             run_venv("./manage.py test cciwmain officers --settings=cciw.settings_tests")
 
-
-def stop_apache_production():
-    _stop_apache(PRODUCTION)
-
-
-def stop_apache_staging():
-    _stop_apache(STAGING)
+def stop_apache():
+    _stop_apache(current_target)
 
 
-def start_apache_production():
-    _start_apache(PRODUCTION)
+def start_apache():
+    _start_apache(current_target)
 
 
-def start_apache_staging():
-    _start_apache(STAGING)
+def restart_apache():
+    _restart_apache(current_target)
 
 
-def restart_apache_production():
-    _restart_apache(PRODUCTION)
+def clean():
+    _clean(current_target)
 
 
-def restart_apache_staging():
-    _restart_apache(STAGING)
-
-
-def clean_staging():
-    _clean(STAGING)
-
-
-def clean_production():
-    _clean(PRODUCTION)
-
-
-def test_staging():
-    _test_remote(STAGING)
-
-
-def test_production():
-    _test_remote(PRODUCTION)
+def test_remote():
+    _test_remote(current_target)
 
 
 def upload_usermedia():
