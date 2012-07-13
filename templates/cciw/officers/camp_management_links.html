@@ -6,7 +6,7 @@
     <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw.officers.views.manage_applications' year=c.year number=c.number %}">Applications</a>
     <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw.officers.views.manage_references' year=c.year number=c.number %}">References</a>
     <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw.officers.views.stats' year=c.year %}">Stats {{ c.year }}</a>
-    <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw.officers.views.export_camper_data' year=c.year number=c.number %}">Campers</a>
+    <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw.officers.views.export_camper_data' year=c.year number=c.number %}">Campers (xls)</a>
     </li>
     {% endfor %}
 
