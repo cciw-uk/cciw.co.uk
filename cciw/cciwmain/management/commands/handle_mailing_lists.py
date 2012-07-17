@@ -10,6 +10,8 @@ class Command(BaseCommand):
         try:
             l = zc.lockfile.LockFile('.handle_mail_lock')
         except zc.lockfile.LockError:
+            from cciw.cciwmain.common import exception_notify_admins
+            exception_notify_admins('Sending mail lock error')
             return
 
         try:
