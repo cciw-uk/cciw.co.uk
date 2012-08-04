@@ -83,7 +83,7 @@ def year_bookings_to_spreadsheet(year, spreadsheet):
         ('Last name', lambda b: b.last_name),
         ('Sex', lambda b: b.get_sex_display()),
         ('State', lambda b: b.get_state_display()),
-        ('Confirmed', lambda b: b.confirmed_booking()),
+        ('Confirmed', lambda b: b.is_confirmed),
         ('Date created', lambda b: b.created),
         ]
 

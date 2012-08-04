@@ -1212,7 +1212,7 @@ def booking_secretary_reports(request, year=None):
     camps = Camp.objects.filter(year=year).prefetch_related('bookings')
     # Do some filtering in Python to avoid multiple db hits
     for c in camps:
-        c.confirmed_bookings = [b for b in c.bookings.all() if b.confirmed_booking()]
+        c.confirmed_bookings = [b for b in c.bookings.all() if b.is_confirmed]
         c.confirmed_bookings_boys = [b for b in c.confirmed_bookings if b.sex == SEX_MALE]
         c.confirmed_bookings_girls = [b for b in c.confirmed_bookings if b.sex == SEX_FEMALE]
 

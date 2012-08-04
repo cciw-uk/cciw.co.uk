@@ -344,10 +344,9 @@ class Booking(models.Model):
         return u"%s %s" % (self.first_name, self.last_name)
 
     ### Main business rules here ###
-
-    def confirmed_booking(self):
+    @property
+    def is_confirmed(self):
         return self.state == BOOKING_BOOKED and self.booking_expires is None
-    confirmed_booking.boolean = True
 
     def expected_amount_due(self):
         if self.price_type == PRICE_CUSTOM:
