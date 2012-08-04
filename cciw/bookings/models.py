@@ -345,8 +345,12 @@ class Booking(models.Model):
 
     ### Main business rules here ###
     @property
+    def is_booked(self):
+        return self.state == BOOKING_BOOKED
+
+    @property
     def is_confirmed(self):
-        return self.state == BOOKING_BOOKED and self.booking_expires is None
+        return self.is_booked and self.booking_expires is None
 
     def expected_amount_due(self):
         if self.price_type == PRICE_CUSTOM:
