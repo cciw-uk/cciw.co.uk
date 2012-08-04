@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, date
 from decimal import Decimal
 import re
 
+from django.contrib.auth.models import User
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -15,7 +16,7 @@ from cciw.bookings.models import BookingAccount, Price, Booking, Payment, Cheque
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND, BOOKING_CANCELLED_HALF_REFUND
 from cciw.bookings.utils import camp_bookings_to_spreadsheet
 from cciw.cciwmain.common import get_thisyear
-from cciw.cciwmain.models import Camp
+from cciw.cciwmain.models import Camp, Person
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.officers.tests.references import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD, BOOKING_SEC
 from cciw.sitecontent.models import HtmlChunk
@@ -47,6 +48,23 @@ class CreateCampMixin(object):
                                         start_date=date.today() + timedelta(20),
                                         end_date=date.today() + timedelta(27),
                                         site_id=1)
+
+
+class CreateLeadersMixin(object):
+    def create_leaders(self):
+        self.leader_1 = Person.objects.create(name="Mr Leader")
+        self.leader_2 = Person.objects.create(name="Mrs Leaderess")
+
+        self.leader_1_user = User.objects.create(username="leader1",
+                                            email="leader1@mail.com")
+        self.leader_2_user = User.objects.create(username="leader2",
+                                            email="leader2@mail.com")
+
+        self.leader_1.users.add(self.leader_1_user)
+        self.leader_2.users.add(self.leader_2_user)
+
+        self.camp.leaders.add(self.leader_1)
+        self.camp.leaders.add(self.leader_2)
 
 
 class CreatePricesMixin(object):
@@ -1106,17 +1124,19 @@ class TestPayReturnPoints(LogInMixin, TestCase):
         self.assertEqual(resp.status_code, 200)
 
 
-class TestPaymentReceived(CreatePlaceMixin, TestCase):
+class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
 
     fixtures = ['basic.json']
 
     def test_receive_payment(self):
         self.login()
         self.create_place()
+        self.create_leaders()
         acc = self.get_account()
         book_basket_now(acc.bookings.basket(self.camp.year))
         self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
 
+        mail.outbox = []
         p = Price.objects.get(year=get_thisyear(), price_type=PRICE_FULL).price
         acc.receive_payment(p)
 
@@ -1127,6 +1147,18 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
 
         # Check we updated the bookings
         self.assertTrue(acc.bookings.all()[0].booking_expires is None)
+
+        # Check for emails sent
+        # 1 to account
+        self.assertEqual(len([m for m in mail.outbox if m.to == [self.email]]), 1)
+
+        # This is a late booking, therefore there is also:
+        # 1 to camp leaders altogether
+        self.assertEqual(len([m for m in mail.outbox
+                              if sorted(m.to) == sorted([self.leader_1_user.email,
+                                                         self.leader_2_user.email])]),
+                         1)
+
 
     def test_insufficient_receive_payment(self):
         self.login()
@@ -1199,7 +1231,6 @@ class TestPaymentReceived(CreatePlaceMixin, TestCase):
                                          payment_status = 'completed',
                                          )
         mail.outbox = []
-        self.assertEqual(len(mail.outbox), 0)
         paypal_payment_received(ipn_1)
 
         # Since payments are processed in a separate process, we cannot

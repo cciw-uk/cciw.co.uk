@@ -379,7 +379,7 @@ class Booking(models.Model):
             self.amount_due = self.expected_amount_due()
 
     def age_on_camp(self):
-        # Age is calculated based on shool years, i.e. age on 31st August
+        # Age is calculated based on school years, i.e. age on 31st August
         return relativedelta(date(self.camp.year, 8, 31), self.date_of_birth)
 
     def get_booking_problems(self, booking_sec=False):

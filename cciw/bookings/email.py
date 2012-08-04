@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from django.conf import settings
 from django.contrib.sites.models import get_current_site
@@ -7,6 +7,10 @@ from django.template import loader
 from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.http import int_to_base36, base36_to_int
 
+from cciw.officers.email import admin_emails_for_camp
+
+
+LATE_BOOKING_THRESHOLD = 30 # days
 
 class EmailVerifyTokenGenerator(object):
     """
@@ -115,6 +119,28 @@ def send_places_confirmed_email(bookings, **kwargs):
     body = loader.render_to_string('cciw/bookings/place_confirmed_email.txt', c)
     subject = u"CCIW booking - place confirmed"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+
+    # Email leaders. Bookings could be for different camps, so send different
+    # emails.
+
+    # We don't care about timezones, or about accuracy better than 1 day,
+    # so use naive UTC datetimes, not aware datetimes.
+    today = datetime.utcnow().date()
+
+    for booking in bookings:
+        if (booking.camp.start_date - today).days < LATE_BOOKING_THRESHOLD:
+
+            c = {
+                'account': account,
+                'booking': booking,
+                'camp': booking.camp,
+                'url_start': site_address_url_start(),
+                }
+            body = loader.render_to_string('cciw/bookings/late_place_confirmed_email.txt', c)
+            subject = u"CCIW late booking: %s" % booking.name
+
+            mail.send_mail(subject, body, settings.SERVER_EMAIL,
+                           admin_emails_for_camp(booking.camp))
 
 
 def send_booking_expiry_mail(account, bookings, expired):
