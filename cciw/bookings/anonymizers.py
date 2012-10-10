@@ -1,4 +1,4 @@
-from cciw.bookings.models import Price, BookingAccount, Booking, Payment, ChequePayment, RefundPayment
+from cciw.bookings.models import Price, BookingAccount, Booking, Payment, ManualPayment, RefundPayment
 from anonymizer import Anonymizer
 
 class BookingAccountAnonymizer(Anonymizer):
