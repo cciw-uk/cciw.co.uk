@@ -618,38 +618,38 @@ class Payment(models.Model):
         return u"<Payment: %s to %s from %s>" % (self.amount, self.account, self.origin)
 
 
-class ChequePaymentManager(models.Manager):
+class ManualPaymentManager(models.Manager):
     use_for_related_fields = True
 
     def get_query_set(self):
-        return super(ChequePaymentManager, self).get_query_set().select_related('account')
+        return super(ManualPaymentManager, self).get_query_set().select_related('account')
 
 
-class ChequePaymentBase(models.Model):
+class ManualPaymentBase(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount)
     created = models.DateTimeField(default=datetime.now)
 
-    objects = ChequePaymentManager()
+    objects = ManualPaymentManager()
 
     def save(self, **kwargs):
         if self.id is not None:
             raise Exception("%s cannot be edited after it has been saved to DB" %
                             self.__class__.__name__)
         else:
-            return super(ChequePaymentBase, self).save(**kwargs)
+            return super(ManualPaymentBase, self).save(**kwargs)
 
     class Meta:
         abstract = True
 
 
-class ChequePayment(ChequePaymentBase):
+class ManualPayment(ManualPaymentBase):
 
     def __unicode__(self):
-        return u"Cheque payment of £%s from %s" % (self.amount, self.account)
+        return u"Manual payment of £%s from %s" % (self.amount, self.account)
 
 
-class RefundPayment(ChequePaymentBase):
+class RefundPayment(ManualPaymentBase):
 
     def __unicode__(self):
         return u"Refund payment of £%s to %s" % (self.amount, self.account)

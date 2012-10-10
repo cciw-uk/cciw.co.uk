@@ -83,7 +83,7 @@ if not (LIVEBOX and WEBSERVER_RUNNING):
     INSTALLED_APPS += (
     'django.contrib.staticfiles',
     'south',
-)
+    )
 
 if DEVBOX and DEBUG:
     INSTALLED_APPS += (

@@ -148,8 +148,8 @@
 # - covers step 4 to 5 of user process
 
 # Admin payments info
-# - 'Add cheque payment' form
-#   - the amount of the cheque payment is entered (and cheque number?)
+# - 'Add manual payment' form
+#   - the amount of the manual payment is entered
 #   - includes name/address, with AJAX view to select account
 # - 'Add refund payment' form
 # - link to general admin page that allows payments to be corrected or deleted

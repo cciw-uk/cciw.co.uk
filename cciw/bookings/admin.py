@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.utils.html import escape, escapejs
 
 from cciw.bookings.email import send_booking_approved_mail
-from cciw.bookings.models import Price, BookingAccount, Booking, ChequePayment, RefundPayment, BOOKING_APPROVED, BOOKING_INFO_COMPLETE
+from cciw.bookings.models import Price, BookingAccount, Booking, ManualPayment, RefundPayment, BOOKING_APPROVED, BOOKING_INFO_COMPLETE
 from cciw.cciwmain.common import get_thisyear
 from cciw.utils.views import close_window_response
 
@@ -226,32 +226,32 @@ class BookingAdmin(admin.ModelAdmin):
         return retval
 
 
-class ChequePaymentAdminFormBase(forms.ModelForm):
+class ManualPaymentAdminFormBase(forms.ModelForm):
 
     account = account_autocomplete_field()
 
     def clean(self):
-        retval = super(ChequePaymentAdminFormBase, self).clean()
+        retval = super(ManualPaymentAdminFormBase, self).clean()
         if self.instance is not None and self.instance.id is not None:
-            raise forms.ValidationError("Cheque payments cannot be changed "
+            raise forms.ValidationError("Manual payments cannot be changed "
                                         "after being created. If an error was made, "
                                         "delete this record and create a new one. ")
         return retval
 
 
-class ChequePaymentAdminForm(ChequePaymentAdminFormBase):
+class ManualPaymentAdminForm(ManualPaymentAdminFormBase):
 
     class Meta:
-        model = ChequePayment
+        model = ManualPayment
 
 
-class RefundPaymentAdminForm(ChequePaymentAdminFormBase):
+class RefundPaymentAdminForm(ManualPaymentAdminFormBase):
 
     class Meta:
         model = RefundPayment
 
 
-class ChequePaymentAdminBase(admin.ModelAdmin):
+class ManualPaymentAdminBase(admin.ModelAdmin):
     list_display = ['account', 'amount', 'created']
     search_fields = ['account__name']
     date_hierarchy = 'created'
@@ -266,16 +266,16 @@ class ChequePaymentAdminBase(admin.ModelAdmin):
             return []
 
 
-class ChequePaymentAdmin(ChequePaymentAdminBase):
-    form = ChequePaymentAdminForm
+class ManualPaymentAdmin(ManualPaymentAdminBase):
+    form = ManualPaymentAdminForm
 
 
-class RefundPaymentAdmin(ChequePaymentAdminBase):
+class RefundPaymentAdmin(ManualPaymentAdminBase):
     form = RefundPaymentAdminForm
 
 
 admin.site.register(Price, PriceAdmin)
 admin.site.register(BookingAccount, BookingAccountAdmin)
 admin.site.register(Booking, BookingAdmin)
-admin.site.register(ChequePayment, ChequePaymentAdmin)
+admin.site.register(ManualPayment, ManualPaymentAdmin)
 admin.site.register(RefundPayment, RefundPaymentAdmin)
