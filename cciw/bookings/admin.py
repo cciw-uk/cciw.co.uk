@@ -252,16 +252,16 @@ class RefundPaymentAdminForm(ManualPaymentAdminFormBase):
 
 
 class ManualPaymentAdminBase(admin.ModelAdmin):
-    list_display = ['account', 'amount', 'created']
+    list_display = ['account', 'amount', 'payment_type', 'created']
     search_fields = ['account__name']
     date_hierarchy = 'created'
     fieldsets = [(None,
                   {'fields':
-                       ['account', 'amount', 'created']})]
+                       ['account', 'amount', 'created', 'payment_type']})]
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:
-            return ['account', 'amount', 'created']
+            return ['account', 'amount', 'created', 'payment_type']
         else:
             return []
 

@@ -55,6 +55,15 @@ BOOKING_STATES = [
     (BOOKING_CANCELLED_FULL_REFUND, 'Cancelled - full refund'),
 ]
 
+MANUAL_PAYMENT_CHEQUE, MANUAL_PAYMENT_CASH, MANUAL_PAYMENT_ECHEQUE, MANUAL_PAYMENT_BACS = range(0, 4)
+
+MANUAL_PAYMENT_CHOICES = [
+    (MANUAL_PAYMENT_CHEQUE, "Cheque"),
+    (MANUAL_PAYMENT_CASH, "Cash"),
+    (MANUAL_PAYMENT_ECHEQUE, "e-Cheque"),
+    (MANUAL_PAYMENT_BACS, "Bank transfer"),
+]
+
 
 class Price(models.Model):
     year = models.PositiveSmallIntegerField()
@@ -629,6 +638,8 @@ class ManualPaymentBase(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount)
     created = models.DateTimeField(default=datetime.now)
+    payment_type = models.PositiveSmallIntegerField(choices=MANUAL_PAYMENT_CHOICES,
+                                                    default=MANUAL_PAYMENT_CHEQUE)
 
     objects = ManualPaymentManager()
 
