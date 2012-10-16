@@ -624,7 +624,7 @@ class Payment(models.Model):
     objects = PaymentManager()
 
     def __unicode__(self):
-        return u"<Payment: %s to %s from %s>" % (self.amount, self.account, self.origin)
+        return u"Payment: %s to %s from %s" % (self.amount, self.account, self.origin)
 
 
 class ManualPaymentManager(models.Manager):

@@ -22,7 +22,7 @@ from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
 from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
-from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet
+from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
@@ -38,6 +38,9 @@ from cciw.officers.utils import camp_slacker_list, officer_data_to_spreadsheet
 from cciw.officers.references import reference_form_info
 from cciw.utils.views import close_window_response, user_passes_test_improved, get_spreadsheet_formatter
 from securedownload.views import access_folder_securely
+
+
+EXPORT_PAYMENT_DATE_FORMAT = '%Y-%m-%d'
 
 
 def _copy_application(application):
@@ -1247,11 +1250,34 @@ def booking_secretary_reports(request, year=None):
         b.account.calculated_balance = total_amount_due_dict[b.account_id] - b.account.total_received
         b.count_for_account = counts[b.account_id]
 
+    export_start = datetime(year-1, 11, 1) # November previous year
+    export_end = datetime(year, 10, 31) # November this year
+    export_data_link = reverse('cciw.officers.views.export_payment_data',
+                               kwargs=dict(date_start=export_start.strftime(EXPORT_PAYMENT_DATE_FORMAT),
+                                           date_end=export_end.strftime(EXPORT_PAYMENT_DATE_FORMAT)))
+
     return render(request, 'cciw/officers/booking_secretary_reports.html',
                   {'year': year, 'camps': camps,
                    'bookings': bookings,
-                   'to_approve': to_approve})
+                   'to_approve': to_approve,
+                   'export_start': export_start,
+                   'export_end': export_end,
+                   'export_data_link': export_data_link,
+                   })
 
+
+@booking_secretary_required
+def export_payment_data(request, date_start, date_end):
+    date_start = datetime.strptime(date_start, EXPORT_PAYMENT_DATE_FORMAT)
+    date_end = datetime.strptime(date_end, EXPORT_PAYMENT_DATE_FORMAT)
+    formatter = get_spreadsheet_formatter(request)
+    response = HttpResponse(payments_to_spreadsheet(date_start, date_end, formatter),
+                            mimetype=formatter.mimetype)
+    response['Content-Disposition'] = ('attachment; filename=payments-%s-to-%s.%s'
+                                       % (date_start.strftime('%Y-%m-%d'),
+                                          date_end.strftime('%Y-%m-%d'),
+                                          formatter.file_ext))
+    return response
 
 
 officer_info = staff_member_required(OfficerInfo.as_view())

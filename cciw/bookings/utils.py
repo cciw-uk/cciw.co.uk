@@ -1,6 +1,9 @@
-from dateutil.relativedelta import relativedelta
+from datetime import datetime, timedelta, time
 
-from cciw.bookings.models import Booking
+from dateutil.relativedelta import relativedelta
+from django.utils import timezone
+
+from cciw.bookings.models import Booking, Payment
 
 
 def camp_bookings_to_spreadsheet(camp, spreadsheet):
@@ -91,4 +94,53 @@ def year_bookings_to_spreadsheet(year, spreadsheet):
                                           [n for n, f in columns],
                                           [[f(b) for n, f in columns]
                                            for b in bookings])
+    return spreadsheet.to_string()
+
+
+def payments_to_spreadsheet(date_start, date_end, spreadsheet):
+    # Convert to datetime
+    date_start = datetime.combine(date_start, time())
+    date_end = datetime.combine(date_end, time())
+    # Add one day to the date_end, since it is defined inclusively
+    date_end = date_end + timedelta(days=1)
+
+    # Make timezone aware
+    date_start = timezone.make_aware(date_start, timezone.utc)
+    date_end = timezone.make_aware(date_end, timezone.utc)
+    payments = (Payment.objects
+                .filter(created__gte=date_start,
+                        created__lt=date_end)
+                .select_related('account', 'origin_type')
+                .prefetch_related('origin')
+                .order_by('created')
+                )
+
+    from paypal.standard.ipn.models import PayPalIPN
+    from cciw.bookings.models import ManualPayment, RefundPayment
+
+    def get_payment_type(p):
+        c = p.origin_type.model_class()
+        if c is PayPalIPN:
+            return 'PayPal'
+        else:
+            v = p.origin.get_payment_type_display()
+            if c is ManualPayment:
+                return v
+            elif c is RefundPayment:
+                return "Refund " + v
+            else:
+                raise "Don't know what to do with %s" % c
+
+    columns = [
+        ('Account name', lambda p: p.account.name),
+        ('Account email', lambda p: p.account.email),
+        ('Amount', lambda p: p.amount),
+        ('Date', lambda p: p.created),
+        ('Type', get_payment_type),
+        ]
+
+    spreadsheet.add_sheet_with_header_row("Payments",
+                                          [n for n, f in columns],
+                                          [[f(p) for n, f in columns]
+                                           for p in payments])
     return spreadsheet.to_string()
