@@ -1631,12 +1631,11 @@ class TestManualPayment(TestCase):
         acc = BookingAccount.objects.create(email='foo@foo.com')
         cp = ManualPayment.objects.create(account=acc,
                                           amount=Decimal('100.00'))
-        Payment.objects.all().delete() # reset
+        self.assertEqual(Payment.objects.count(), 1)
 
         # Test
         cp.delete()
-        self.assertEqual(Payment.objects.count(), 1)
-        self.assertEqual(Payment.objects.all()[0].amount, -cp.amount)
+        self.assertEqual(Payment.objects.count(), 0)
 
     def test_edit(self):
         # Setup
@@ -1663,12 +1662,11 @@ class TestRefundPayment(TestCase):
         acc = BookingAccount.objects.create(email='foo@foo.com')
         cp = RefundPayment.objects.create(account=acc,
                                           amount=Decimal('100.00'))
-        Payment.objects.all().delete() # reset
+        self.assertEqual(Payment.objects.count(), 1)
 
         # Test
         cp.delete()
-        self.assertEqual(Payment.objects.count(), 1)
-        self.assertEqual(Payment.objects.all()[0].amount, cp.amount)
+        self.assertEqual(Payment.objects.count(), 0)
 
     def test_edit(self):
         # Setup
