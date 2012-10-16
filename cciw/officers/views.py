@@ -1,5 +1,5 @@
 from collections import defaultdict
-import datetime
+from datetime import datetime, date, timedelta
 import operator
 import urlparse
 
@@ -274,7 +274,7 @@ def get_previous_references(ref, camp):
     # Look for ReferenceForms for same officer, within the previous five
     # years.  Don't look for references from this year's
     # application (which will be the other referee).
-    cutoffdate = camp.start_date - datetime.timedelta(365*5)
+    cutoffdate = camp.start_date - timedelta(365*5)
     prev = list(ReferenceForm.objects\
                 .filter(reference_info__application__officer=ref.application.officer,
                         reference_info__application__finished=True,
@@ -461,7 +461,7 @@ def request_reference(request, year=None, number=None):
             if messageform.is_valid():
                 send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), ref, request.user)
                 ref.requested = True
-                ref.log_request_made(request.user, datetime.datetime.now())
+                ref.log_request_made(request.user, datetime.now())
                 ref.save()
                 return close_window_and_update_ref(ref_id)
         elif 'cancel' in request.POST:
@@ -597,7 +597,7 @@ def edit_reference_form_manually(request, ref_id=None):
         # Create it
         ReferenceForm.objects.create(reference_info=ref,
                                      referee_name=ref.referee.name,
-                                     date_created=datetime.date.today(),
+                                     date_created=date.today(),
                                      known_offences=False)
     return HttpResponseRedirect(reverse("admin:officers_referenceform_change",
                                         args=(ref.reference_form.id,)) + \
@@ -664,12 +664,12 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                 if form.is_valid():
                     obj = form.save(commit=False)
                     obj.reference_info = ref
-                    obj.date_created = datetime.date.today()
+                    obj.date_created = date.today()
                     obj.save()
                     ref.received = True
                     ref.comments = ref.comments + \
                                    ("\nReference received via online system on %s\n" % \
-                                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                     ref.save()
                     # Send e-mails
                     send_leaders_reference_email(obj)
@@ -776,7 +776,7 @@ def add_officers(request, year=None, number=None):
         except Invitation.DoesNotExist:
             Invitation.objects.create(camp=camp,
                                       officer=User.objects.get(id=int(officer_id)),
-                                      date_added=datetime.date.today())
+                                      date_added=date.today())
     return {'status':'success'}
 
 
@@ -985,12 +985,12 @@ def stats(request, year=None):
         # We duplicate logic from CRBApplication.get_for_camp here to avoid
         # duplicating queries
         valid_crb_info = [(off_id, d) for off_id, d in all_crb_info
-                          if d >= camp.start_date - datetime.timedelta(settings.CRB_VALID_FOR)]
+                          if d >= camp.start_date - timedelta(settings.CRB_VALID_FOR)]
         # Make a plot by going through each day in the year before the camp and
         # incrementing a counter. This requires the data to be sorted already,
         # as above.
-        graph_start_date = camp.start_date - datetime.timedelta(365)
-        graph_end_date = min(camp.start_date, datetime.date.today())
+        graph_start_date = camp.start_date - timedelta(365)
+        graph_end_date = min(camp.start_date, date.today())
         a = 0 # applications
         r = 0 # references
         o = 0 # officers
@@ -1041,7 +1041,7 @@ def stats(request, year=None):
             officer_dates_data.append([ts, o])
             all_crb_dates_data.append([ts, c_tot])
             valid_crb_dates_data.append([ts, v_tot])
-            d = d + datetime.timedelta(1)
+            d = d + timedelta(1)
         stat['application_dates_data'] = app_dates_data
         stat['reference_dates_data'] = ref_dates_data
         stat['all_crb_dates_data'] = all_crb_dates_data
@@ -1093,7 +1093,7 @@ def manage_crbs(request, year=None):
     # CRB forms sent: set cutoff to a year before now, on the basis that
     # anything more than that will have been lost, and we don't want to load
     # everything into membery.
-    crb_forms_sent = list(CRBFormLog.objects.filter(sent__gt=datetime.datetime.now() - datetime.timedelta(365)).order_by('sent'))
+    crb_forms_sent = list(CRBFormLog.objects.filter(sent__gt=datetime.now() - timedelta(365)).order_by('sent'))
     # Work out, without doing any more queries:
     #   which camps each officer is on
     #   if they have an application form
@@ -1140,7 +1140,7 @@ def mark_crb_sent(request):
     officer_id = int(request.POST['officer_id'])
     officer = User.objects.get(id=officer_id)
     c = CRBFormLog.objects.create(officer=officer,
-                                  sent=datetime.datetime.now())
+                                  sent=datetime.now())
     return {'status':'success',
             'crbFormLogId': str(c.id)
             }
