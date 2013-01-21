@@ -17,6 +17,7 @@
   {% endif %}
   {% if show_secretary_links %}
     <li><a href="{% url 'cciw.officers.views.manage_crbs' thisyear %}">Manage CRBs</a></li>
+    <li><a href="{% url 'cciw.officers.views.brochure_mailing_list' thisyear %}">Brochure mailing list ({{ thisyear }})</a></li>
   {% endif %}
   {% if show_admin_link %}
     <li><a href="/admin/">General admin interface</a> (manage camps, camp sites, officers etc)</li>

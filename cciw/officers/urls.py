@@ -33,4 +33,6 @@ urlpatterns = patterns('cciw.officers.views',
     (r'^bookings/reports/(?P<year>\d{4})/$', 'booking_secretary_reports'),
     (r'^bookings/export/(?P<date_start>\d{4}-\d{2}-\d{2})-to-(?P<date_end>\d{4}-\d{2}-\d{2})/$',
      'export_payment_data'),
+    (r'^bookings/brochure-mailing-list/(?P<year>\d{4})/$', 'brochure_mailing_list'),
+
 )

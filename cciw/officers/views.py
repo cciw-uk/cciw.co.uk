@@ -22,7 +22,7 @@ from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
 from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
-from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet, payments_to_spreadsheet
+from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet, payments_to_spreadsheet, addresses_for_mailing_list
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
@@ -62,6 +62,7 @@ def _copy_application(application):
 
 camp_admin_required = user_passes_test_improved(is_camp_admin)
 booking_secretary_required = user_passes_test_improved(is_booking_secretary)
+cciw_secretary_required = user_passes_test_improved(is_cciw_secretary)
 
 
 def _camps_as_admin_or_leader(user):
@@ -1281,3 +1282,12 @@ def export_payment_data(request, date_start, date_end):
                                           formatter.file_ext))
     return response
 
+
+@cciw_secretary_required
+def brochure_mailing_list(request, year):
+    formatter = get_spreadsheet_formatter(request)
+    response = HttpResponse(addresses_for_mailing_list(int(year), formatter),
+                            mimetype=formatter.mimetype)
+    response['Content-Disposition'] = ('attachment; filename=mailing-list-%s.%s'
+                                       % (year, formatter.file_ext))
+    return response

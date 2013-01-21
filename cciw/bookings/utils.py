@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, time
+from itertools import groupby
 
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
@@ -143,4 +144,49 @@ def payments_to_spreadsheet(date_start, date_end, spreadsheet):
                                           [n for n, f in columns],
                                           [[f(p) for n, f in columns]
                                            for p in payments])
+    return spreadsheet.to_string()
+
+
+def addresses_for_mailing_list(year, spreadsheet):
+    # We get the postal addresses that we have for the *previous* year
+    # to generate the mailing list for the given year.
+    bookings = (Booking.objects
+                .filter(camp__year=year - 1)
+                .order_by('account') # for easy duplicate elimination
+                .select_related('account')
+                )
+
+    headers = ['Name', 'Address', 'Post code', '# bookings']
+    rows = []
+    for account, acc_bookings in groupby(bookings, lambda b: b.account):
+        acc_bookings = list(acc_bookings)
+        if account.address.strip() != "":
+            # Account has postal address
+            rows.append([account.name,
+                         account.address,
+                         account.post_code,
+                         len(acc_bookings)])
+        else:
+            # Use bookings for address
+
+            # If they all have the same address, collapse
+            first_booking = acc_bookings[0]
+            if all(b.address == first_booking.address
+                   and b.post_code == first_booking.post_code
+                   for b in acc_bookings):
+                rows.append([account.name,
+                             first_booking.address,
+                             first_booking.post_code,
+                             len(acc_bookings)])
+            else:
+                for b in acc_bookings:
+                    rows.append([b.name,
+                                 b.address,
+                                 b.post_code,
+                                 1])
+    rows.sort() # first column (Name) alphabetical
+
+    spreadsheet.add_sheet_with_header_row("Addresses",
+                                          headers,
+                                          rows)
     return spreadsheet.to_string()
