@@ -1204,6 +1204,8 @@ class OfficerInfo(TemplateView):
     def get_context_data(self, *args, **kwargs):
         return dict(show_wiki_link=is_wiki_user(self.request.user))
 
+officer_info = staff_member_required(OfficerInfo.as_view())
+
 
 @booking_secretary_required
 def booking_secretary_reports(request, year=None):
@@ -1279,5 +1281,3 @@ def export_payment_data(request, date_start, date_end):
                                           formatter.file_ext))
     return response
 
-
-officer_info = staff_member_required(OfficerInfo.as_view())
