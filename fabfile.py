@@ -431,6 +431,7 @@ def test_remote():
 
 def upload_usermedia():
     local("rsync -z -r %s/ cciw@cciw.co.uk:%s" % (usermedia_local, usermedia_production), capture=False)
+    run("find %s -type f -exec chmod ugo+r {} ';'" % usermedia_production)
 
 
 def backup_usermedia():
