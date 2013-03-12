@@ -1,10 +1,9 @@
-import cgi
 import re
 import urlparse
 
 def url_to_path_and_query(url):
     scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)
-    querydata_t = cgi.parse_qs(query)
+    querydata_t = urlparse.parse_qs(query)
     querydata = {}
     for key, val in querydata_t.items():
         querydata[key] = val[-1]

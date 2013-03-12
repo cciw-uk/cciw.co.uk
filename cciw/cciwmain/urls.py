@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 from django.conf import settings
 
 # Forums and news items are tightly integrated (read: tangled) into the main
