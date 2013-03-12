@@ -9,7 +9,7 @@ xlrd==0.7.1
 creole>=1.2
 python-dateutil==2.0
 Django==1.4.5
--e git+https://github.com/spookylukey/django-paypal@94dae3d#egg=paypal
+-e git+https://github.com/spookylukey/django-paypal@27627681#egg=paypal
 -e git://github.com/jtauber/django-mailer.git@840d25bb9d#egg=django-mailer
 -e hg+https://bitbucket.org/spookylukey/django-autocomplete/@28490de155fb#egg=django-autocomplete
 -e git://github.com/spookylukey/djiki.git@fa8031ee46#egg=djiki

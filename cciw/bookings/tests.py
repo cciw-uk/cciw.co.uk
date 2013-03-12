@@ -30,7 +30,7 @@ ENABLED_BOOK_NOW_BUTTON = "id_book_now_btn\">"
 
 
 class IpnMock(object):
-    payment_status = 'completed'
+    payment_status = 'Completed'
 
 
 ### Mixins to reduce duplication ###
@@ -1222,22 +1222,37 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
         # Use the actual signal handler, check the good path.
         from cciw.bookings.models import paypal_payment_received
         self.login()
-
+        account = self.get_account()
         from paypal.standard.ipn.models import PayPalIPN
 
-        ipn_1 = PayPalIPN.objects.create(mc_gross = Decimal('1.00'),
-                                         custom = "account:%s;" % self.get_account().id,
-                                         ipaddress='127.0.0.1',
-                                         payment_status = 'completed',
-                                         )
-        mail.outbox = []
-        paypal_payment_received(ipn_1)
+        def mk_ipn(**kwargs):
+            defaults = dict(mc_gross=Decimal('1.00'),
+                            custom="account:%s;" % account.id,
+                            ipaddress='127.0.0.1',
+                            payment_status='Completed',
+                            txn_id='1'
+                            )
+            defaults.update(kwargs)
+            return PayPalIPN.objects.create(**defaults)
+
+        ipn_1 = mk_ipn()
+        ipn_1.send_signals()
 
         # Since payments are processed in a separate process, we cannot
         # test that the account was updated in this process.
         # But we can test for Payment objects
         self.assertEqual(Payment.objects.count(), 1)
         self.assertEqual(Payment.objects.all()[0].amount, ipn_1.mc_gross)
+
+        # Test refund is wired up
+        ipn_2 = mk_ipn(parent_txn_id='1', txn_id='2',
+                       mc_gross=Decimal('-1.00'),
+                       payment_status='Refunded')
+        ipn_2.send_signals()
+
+        self.assertEqual(Payment.objects.count(), 2)
+        self.assertEqual(Payment.objects.order_by('-created')[0].amount, ipn_2.mc_gross)
+
 
     def test_email_for_good_payment(self):
         # This email could be triggered by whenever BookingAccount.distribute_funds

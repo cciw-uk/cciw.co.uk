@@ -2,7 +2,7 @@ import re
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save, post_delete
-from paypal.standard.ipn.signals import payment_was_successful, payment_was_flagged
+from paypal.standard.ipn.signals import payment_was_successful, payment_was_flagged, payment_was_refunded, payment_was_reversed
 
 from .signals import places_confirmed
 from .email import send_unrecognised_payment_email, send_places_confirmed_email
@@ -23,7 +23,8 @@ def paypal_payment_received(sender, **kwargs):
         unrecognised_payment(ipn_obj)
         return
 
-    if ipn_obj.payment_status.lower().strip() != 'completed':
+    if ipn_obj.payment_status.lower().strip() not in \
+            ['completed', 'canceled_reversal', 'refunded']:
         unrecognised_payment(ipn_obj)
         return
 
@@ -72,6 +73,8 @@ def places_confirmed_handler(sender, **kwargs):
 #### Wiring ####
 
 payment_was_successful.connect(paypal_payment_received)
+payment_was_refunded.connect(paypal_payment_received)
+payment_was_reversed.connect(paypal_payment_received)
 payment_was_flagged.connect(unrecognised_payment)
 places_confirmed.connect(places_confirmed_handler)
 post_save.connect(manual_payment_received, sender=ManualPayment)
