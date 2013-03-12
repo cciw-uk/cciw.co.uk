@@ -59,6 +59,8 @@ USE_TZ = False
 
 LOGIN_URL = "/officers/"
 
+ALLOWED_HOSTS = [".cciw.co.uk"]
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.admin',
