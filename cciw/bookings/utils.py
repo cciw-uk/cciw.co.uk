@@ -36,6 +36,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
          ('Contact address', lambda b: b.contact_address + ((u'\n' + b.contact_post_code) if
                                                             b.contact_post_code else '')),
          ('GP', lambda b: b.gp_name),
+         ('GP address', lambda b: b.gp_address),
          ('GP phone number', lambda b: b.gp_phone_number),
          ('Medical card number', lambda b: b.medical_card_number),
          ('Last tetanus injection', lambda b: b.last_tetanus_injection),
