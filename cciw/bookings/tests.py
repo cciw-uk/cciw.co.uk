@@ -549,9 +549,42 @@ class TestEditPlaceAdmin(CreatePlaceMixin, TwillMixin, TestCase):
         tc.go(make_django_url("admin:bookings_booking_change", b.id))
         tc.code(200)
         tc.fv('booking_form', 'state', str(BOOKING_APPROVED))
-        tc.submit()
+        tc.submit('save')
         tc.find("An email has been sent")
         self.assertEqual(len(mail.outbox), 1)
+
+    def fill(self, form_id, fields):
+        for k, v in fields.items():
+            tc.fv(form_id, k, unicode(v).encode('utf-8'))
+
+    def test_create(self):
+        self._twill_login(BOOKING_SEC)
+        tc.go(make_django_url("admin:bookings_bookingaccount_add"))
+        self.fill('bookingaccount_form', {
+                'name': 'Joe',
+                'email': self.email,
+                'address': '123',
+                'post_code': 'XYZ',
+                })
+        tc.submit()
+        tc.code(200)
+        account = BookingAccount.objects.get(email=self.email)
+
+        tc.go(make_django_url("admin:bookings_booking_add"))
+        tc.code(200)
+        fields = self.place_details.copy()
+        fields.update({
+                'account': account.id,
+                'state': BOOKING_BOOKED,
+                'amount_due': '130.00',
+                })
+
+        # Ensure we can edit hidden 'account' field:
+        tc.browser.get_form('booking_form').set_all_readonly(False)
+        self.fill('booking_form', fields)
+        tc.submit('save')
+        tc.find('Select booking')
+        tc.find('A confirmation email has been sent')
 
 
 class TestListBookings(CreatePlaceMixin, TestCase):

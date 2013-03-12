@@ -176,3 +176,18 @@ def send_booking_approved_mail(booking):
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
     return True
+
+def send_booking_confirmed_mail(booking):
+    account = booking.account
+    if account.email == '':
+        return False
+
+    c = {
+        'account': account,
+        'booking': booking,
+        }
+    body = loader.render_to_string('cciw/bookings/place_booked_email.txt', c)
+    subject = u"CCIW booking - confirmed"
+    mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+
+    return True

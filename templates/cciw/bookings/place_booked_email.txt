@@ -1,0 +1,11 @@
+{% load url from future %}{% autoescape off %}
+Dear {{ account.name }},
+
+We have received your booking form for {{ booking.name }}
+on camp {{ booking.camp.number }}, and the place has now been booked.
+
+Thanks,
+
+The cciw.co.uk team.
+
+{% endautoescape %}

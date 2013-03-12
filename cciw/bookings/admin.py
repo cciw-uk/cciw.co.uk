@@ -5,8 +5,8 @@ from django import forms
 from django.http import HttpResponse
 from django.utils.html import escape, escapejs
 
-from cciw.bookings.email import send_booking_approved_mail
-from cciw.bookings.models import Price, BookingAccount, Booking, ManualPayment, RefundPayment, BOOKING_APPROVED, BOOKING_INFO_COMPLETE
+from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
+from cciw.bookings.models import Price, BookingAccount, Booking, ManualPayment, RefundPayment, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED
 from cciw.cciwmain.common import get_thisyear
 from cciw.utils.views import close_window_response
 
@@ -223,6 +223,11 @@ class BookingAdmin(admin.ModelAdmin):
             if email_sent:
                 messages.info(request, "An email has been sent to %s telling "
                               "them the place has been approved." % (obj.account.email))
+        if old_state != obj.state and obj.state == BOOKING_BOOKED:
+            email_sent = send_booking_confirmed_mail(obj)
+            if email_sent:
+                messages.info(request, "A confirmation email has been sent to %s "
+                              "telling them the place has been booked." % obj.account.email)
         return retval
 
 
