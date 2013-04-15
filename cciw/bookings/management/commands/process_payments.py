@@ -20,10 +20,14 @@ from cciw.bookings.models import Payment
 # a separate process, which can have its own transaction management, and/or
 # another mechanism to ensure serialized requests.
 #
-# To support this, the Payment model keeps track of payments to be created.  Any
-# function that needs to transfer funds into an account uses
-# 'cciw.bookings.models.send_payment', which creates Payment objects for later
-# processing, rather than calling BookingAccount.receive_payment directly.
+# To support this, the Payment model keeps track of payments to be credited
+# against an account. Any function that needs to transfer funds into an account
+# uses 'cciw.bookings.models.send_payment', which creates Payment objects for
+# later processing, rather than calling BookingAccount.receive_payment directly.
+#
+# The Payment model also allows payments from multiple sources to be handled
+# - the Payment has a GenericForeignKey to the source object, which could
+# be a PayPal payment object, or a ManualPayment object.
 #
 # This process_payments management command is always run in a separate process,
 # so doesn't have the transaction management of web requests, but a manual
@@ -36,8 +40,10 @@ from cciw.bookings.models import Payment
 #   the db is updated ASAP.
 # - as a cron job, every minute, to ensure that nothing slips through the cracks.
 #
-# The Payment objects also act as a log of everything that has happened
-# to the BookingAccount.total_received field.
+# The Payment objects also act as a log of everything that has happened to the
+# BookingAccount.total_received field. Payment objects are never deleted - if,
+# for example, a ManualPayment object is deleted because of an entry error, a
+# new (negative) Payment object is created.
 
 
 @transaction.commit_on_success

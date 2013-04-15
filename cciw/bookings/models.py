@@ -153,15 +153,25 @@ class BookingAccount(models.Model):
         # worst, most complicated scenario, and this will then easily handle the more
         # simple case where everything matches up as a special case.
         #
-        # When a payment is received, django-paypal creates an object and a
-        # signal handler indirectly calls BookingAccount.receive_payment, which
-        # must update the 'total_received' field.
+        # For online bookings, when the user clicks 'book place', the places are
+        # marked as 'booked', but with a 'booking_expires' field set to a
+        # non-NULL timestamp, so that the bookings will expire if the user does
+        # not complete payment.
         #
-        # We also need to set the 'Booking.booking_expires' field of relevant Booking
-        # objects to null, so that the place is securely booked.
+        # If the user does complete payment, the booking_expires field must be cleared,
+        # so that the place becomes 'confirmed'.
         #
-        # There are a number of scenarios where the amount paid doesn't cover the total
-        # amount due:
+        # When an online payment is received, django-paypal creates a record
+        # and a signal handler indirectly calls this method which must update
+        # the 'total_received' field.
+        #
+        # At the same time we also need to set the 'Booking.booking_expires'
+        # field of relevant Booking objects to null, so that the places are
+        # securely booked.
+        #
+        # There are a number of scenarios where the amount paid doesn't cover
+        # the total amount due:
+        #
         # 1) user fiddles with the form client side and alters the amount
         # 2) user starts paying for one place, then books another place in a different
         # tab/window
@@ -190,6 +200,10 @@ class BookingAccount(models.Model):
         # earliest 'booking_expires', on the assumption that we will get payment
         # for that one first.
         #
+        # The manual booking process, which uses the admin to record cheque
+        # payments, uses exactly the same process, although it is a different
+        # payment object which triggers the process.
+
         # Use update and F objects to avoid concurrency problems
         BookingAccount.objects.filter(id=self.id).update(total_received=models.F('total_received') + amount)
 
