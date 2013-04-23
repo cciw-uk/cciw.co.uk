@@ -111,17 +111,6 @@ class ApplicationAdmin(admin.ModelAdmin):
                         'address_mobile', 'address_since', 'address_email'),
              'classes': ('wide',),}
         ),
-        ('Previous addresses',
-            {'fields': ('address2_from', 'address2_to', 'address2_address'),
-             'classes': ('wide',),
-             'description': """If you have lived at your current address for less than 5 years
-                            please give previous address(es) with dates below. (If more than 2 addresses,
-                            use the second address box for the remaining addresses with their dates)"""}
-        ),
-        (None,
-            {'fields': ('address3_from', 'address3_to', 'address3_address'),
-             'classes': ('wide',),}
-        ),
         ('Experience',
             {'fields': ('christian_experience',),
              'classes': ('wide',),

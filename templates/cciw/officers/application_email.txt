@@ -15,23 +15,6 @@ Mobile:           {{ app.address_mobile }}
 E-mail:           {{ app.address_email }}
 At this address since: {{ app.address_since }}
 
-{% if app.address2_from or app.address3_from %}
-----------------------------------------------------------------------
-Previous addresses
-==================
-{% if app.address2_from %}Previous address 1:
-From:             {{ app.address2_from }}
-To:               {{ app.address2_to }}
-Address:
---------
-{{ app.address2_address }}{% endif %}
-
-{% if app.address3_from %}Previous address 2:
-From:             {{ app.address3_from }}
-To:               {{ app.address3_to }}
-Address:
---------
-{{ app.address3_address }}{% endif %}{% endif %}
 ----------------------------------------------------------------------
 Statements
 ==========

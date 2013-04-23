@@ -16,21 +16,6 @@
 {\trowd \intbl\cellx2000\cellx9000 {E-mail:          \cell {{ app.address_email|rtfescape }}\cell}\row}
 {\trowd \intbl\cellx3000\cellx9000 {At this address since: \cell {{ app.address_since|rtfescape }}\cell}\row}
 
-{% if app.address2_from or app.address3_from %}
-{\par {\ul Previous addresses}}
-{% if app.address2_from %}{\par Previous address 1:}
-\par
-{\trowd \intbl\cellx2000\cellx9000 {From:            \cell {{ app.address2_from|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {To:              \cell {{ app.address2_to|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Address:         \cell {{ app.address2_address|rtfescape|rtflinebreaks }}\cell}\row}{% endif %}
-
-{% if app.address3_from %}{\par Previous address 2:}
-\par
-{\trowd \intbl\cellx2000\cellx9000 {From:            \cell {{ app.address3_from|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {To:              \cell {{ app.address3_to|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Address:         \cell {{ app.address3_address|rtfescape|rtflinebreaks }}\cell}\row}{% endif %}
-{% endif %}
-
 {\par \brdrt \brdrhair {\ul Statements}}
 {\par {\b Christian experience}}
 {\par {{ app.christian_experience|rtfescape|rtflinebreaks }}}
