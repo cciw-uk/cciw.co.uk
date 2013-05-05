@@ -1,14 +1,18 @@
+import os
+import os.path
+import sys
+
 from collections import namedtuple
 from datetime import datetime
 from fabric.api import run, local, abort, env, put, get, task
-from fabric.contrib import files
+from fabric.contrib.files import exists
 from fabric.contrib import console
 from fabric.decorators import hosts, runs_once
 from fabric.context_managers import cd, lcd, settings, hide
-import os
-import os.path
+import psutil
+
 join = os.path.join
-import sys
+
 
 #  fabfile for deploying CCIW
 #
@@ -41,136 +45,326 @@ import sys
 # - STAGING has SSL turned off.
 #
 # settings_priv.py and settings.py controls these things.
-#
-# In each target, we aim for atomic switching from one version to the next.
-# This is not quite possible, but as much as possible the different versions
-# are kept separate, preparing the new one completely before switching to it.
-#
-# To achieve this, new code is uploaded to a new 'dest_dir' which is timestamped,
-# inside the 'src' dir in the cciw app directory.
-
-# /home/cciw/webapps/cciw/         # PRODUCTION or
-# /home/cciw/webapps/cciw_staging/ # STAGING
-#    src/
-#       src-2010-10-11_07-20-34/
-#          env/                    # virtualenv dir
-#          project/                # uploaded from local
-#          static/                 # built once uploaded
-#       current/                   # symlink to src-???
-
-# At the same level as 'src-2010-10-11_07-20-34', there is a 'current' symlink
-# which points to the most recent one. The apache instance looks at this (and
-# the virtualenv dir inside it) to run the app.
-
-# There is a webfaction app that points to src/current/static for serving static
-# media. (One for production, one for staging). There is also a 'cciw_usermedia'
-# app which is currently shared between production and staging. (This will only
-# be a problem if usermedia needs to be re-organised).
-
-# For speed, a new src-XXX dir is created by copying the 'current' one, and then
-# using rsync and other updates. This is much faster than transferring
-# everything and also rebuilding the virtualenv from scratch.
-
-# When deploying, once the new directory is ready, the apache instance is
-# stopped, the database is upgraded, and the 'current' symlink is switched. Then
-# the apache instance is started.
 
 # The information about this layout is unfortunately spread around a couple of
 # places - this file and the settings file - because it is needed in both at
 # different times.
 
 
-env.hosts = ["cciw@cciw.co.uk"]
+USER = 'cciw'
+HOST = 'cciw.co.uk'
+APP_NAME = 'cciw'
 
-this_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(this_dir)
-webapps_root = '/home/cciw/webapps'
+# Host and login username:
+env.hosts = ['%s@%s' % (USER, HOST)]
 
-# The path (relative to parent_dir) to where the project source code is stored:
-project_dir = 'project'
-usermedia_local = os.path.join(parent_dir, 'usermedia')
-usermedia_production = os.path.join(webapps_root, 'cciw_usermedia')
+# Subdirectory of DJANGO_APP_ROOT in which project sources will be stored
+SRC_SUBDIR = 'src'
+
+# Subdirectory of DJANGO_APP_ROOT in which virtualenv will be stored
+VENV_SUBDIR = 'venv'
+
+# Python version
+PYTHON_BIN = "python2.7"
+PYTHON_PREFIX = "" # e.g. /usr/local  Use "" for automatic
+PYTHON_FULL_PATH = "%s/bin/%s" % (PYTHON_PREFIX, PYTHON_BIN) if PYTHON_PREFIX else PYTHON_BIN
+
+WSGI_MODULE = '%s.wsgi' % APP_NAME
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+PARENT_DIR = os.path.dirname(THIS_DIR)
+WEBAPPS_ROOT = '/home/%s/webapps' % USER
+
+USERMEDIA_LOCAL = join(PARENT_DIR, 'usermedia')
+USERMEDIA_PRODUCTION = join(WEBAPPS_ROOT, 'cciw_usermedia')
+
 
 class Target(object):
-    """
-    Represents a place where the project is deployed to.
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
-    """
-    def __init__(self, django_app='', dbname=''):
-        self.django_app = django_app
-        self.dbname = dbname
-        self.dbuser = dbname
+        # Directory where everything to do with this app will be stored on the server.
+        self.DJANGO_APP_ROOT = '/home/%s/webapps/%s_django' % (USER, self.APP_BASE_NAME)
+        # Directory where static sources should be collected.  This must equal the value
+        # of STATIC_ROOT in the settings.py that is used on the server.
+        self.STATIC_ROOT = '/home/%s/webapps/%s_static' % (USER, self.APP_BASE_NAME)
 
-        self.webapp_root = join(webapps_root, self.django_app)
-        # src_root - the root of all sources on this target.
-        self.src_root = join(self.webapp_root, 'src')
-        self.current_version = SrcVersion('current', join(self.src_root, 'current'))
+        self.SRC_DIR = join(self.DJANGO_APP_ROOT, SRC_SUBDIR)
+        self.VENV_DIR = join(self.DJANGO_APP_ROOT, VENV_SUBDIR)
 
-    def make_version(self, label):
-        return SrcVersion(label, join(self.src_root, "src-%s" % label))
+        self.GUNICORN_PIDFILE = "%s/gunicorn.pid" % self.DJANGO_APP_ROOT
+        self.GUNICORN_LOGFILE = "/home/%s/logs/user/gunicorn_%s.log" % (USER, self.APP_BASE_NAME)
 
-class SrcVersion(object):
-    """
-    Represents a version of the project sources on a Target
-    """
-    def __init__(self, label, src_dir):
-        self.label = label
-        # src_dir - the root of all sources for this version
-        self.src_dir = src_dir
-        # venv_dir - note that _update_virtualenv assumes this relative layout
-        # of the 'env' dir and the 'project' dir
-        self.venv_dir = join(self.src_dir, 'env')
-        # project_dir - where the CCIW project srcs are stored.
-        self.project_dir = join(self.src_dir, project_dir)
-        # static_dir - this is defined with way in settings.py
-        self.static_dir = join(self.src_dir, 'static')
 
-        self.additional_sys_paths = [project_dir]
+PRODUCTION = Target(
+    NAME = "PRODUCTION",
+    APP_BASE_NAME = APP_NAME,
+    APP_PORT = 21182,
+    GUNICORN_WORKERS = 4,
+    DB_USER = "cciw",
+    DB_NAME = "cciw",
+)
 
 STAGING = Target(
-    django_app = "cciw_staging",
-    dbname = "cciw_staging",
-)
-PRODUCTION = Target(
-    django_app = "cciw",
-    dbname = "cciw",
+    NAME = "STAGING",
+    APP_BASE_NAME = "%s_staging" % APP_NAME,
+    APP_PORT = 30079,
+    GUNICORN_WORKERS = 1,
+    DB_USER = "cciw_staging",
+    DB_NAME = "cciw_staging",
 )
 
-current_target = None
+target = None
+
 
 @task
 def production():
-    global current_target
-    current_target = PRODUCTION
+    global target
+    target = PRODUCTION
 
 @task
 def staging():
-    global current_target
-    current_target = STAGING
+    global target
+    target = STAGING
 
 
-@runs_once
-def ensure_dependencies():
-    pass
+def virtualenv(venv_dir):
+    """
+    Context manager that establishes a virtualenv to use,
+    """
+    return settings(venv=venv_dir)
+
+
+def run_venv(command, **kwargs):
+    run("source %s/bin/activate" % env.venv + " && " + command, **kwargs)
 
 
 @task
 def test():
-    ensure_dependencies()
     local("./manage.py test cciwmain officers bookings --settings=cciw.settings_tests", capture=False)
 
 
-def _prepare_deploy():
-    ensure_dependencies()
-    # test that we can do forwards and backwards migrations?
-    # check that there are no outstanding changes.
+def install_dependencies():
+    if getattr(env, 'no_installs', False):
+        return
+    ensure_virtualenv()
+    with virtualenv(target.VENV_DIR):
+        with cd(target.SRC_DIR):
+            run_venv("pip install -r requirements.txt")
+
+
+def ensure_virtualenv():
+    if exists(target.VENV_DIR):
+        return
+
+    with cd(target.DJANGO_APP_ROOT):
+        run("virtualenv --no-site-packages --python=%s %s" %
+            (PYTHON_BIN, VENV_SUBDIR))
+        run("echo %s > %s/lib/%s/site-packages/projectsource.pth" %
+            (target.SRC_DIR, VENV_SUBDIR, PYTHON_BIN))
+
+
+def ensure_src_dir():
+    if not exists(target.SRC_DIR):
+        run("mkdir -p %s" % target.SRC_DIR)
+    with cd(target.SRC_DIR):
+        if not exists(join(target.SRC_DIR, '.hg')):
+            run("hg init")
 
 
 @task
-def backup_database(target, version):
-    fname = "%s-%s.db" % (target.dbname, version.label)
-    run("dump_cciw_db.sh %s %s" % (target.dbname, fname))
+def push_rev(rev):
+    """
+    Use the specified revision for deployment, instead of the current revision.
+    """
+    env.push_rev = rev
 
+
+def push_sources():
+    """
+    Push source code to server.
+    """
+    ensure_src_dir()
+    push_rev = getattr(env, 'push_rev', None)
+    if push_rev is None:
+        push_rev = local("hg id", capture=True).split(" ")[0].strip().strip("+")
+
+    local("hg push -f ssh://%(user)s@%(host)s/%(path)s || true" %
+          dict(host=env.host,
+               user=env.user,
+               path=target.SRC_DIR,
+               ))
+    with cd(target.SRC_DIR):
+        run("hg update %s" % push_rev)
+
+
+@task
+def webserver_stop():
+    """
+    Stop the webserver that is running the Django instance
+    """
+    run("kill $(cat %s)" % target.GUNICORN_PIDFILE)
+    run("rm %s" % target.GUNICORN_PIDFILE)
+
+
+def _webserver_command():
+    return ("%(venv_dir)s/bin/gunicorn --log-file=%(logfile)s -b 127.0.0.1:%(port)s -D -w %(workers)s --pid %(pidfile)s %(wsgimodule)s:application" %
+            {'venv_dir': target.VENV_DIR,
+             'pidfile': target.GUNICORN_PIDFILE,
+             'wsgimodule': WSGI_MODULE,
+             'port': target.APP_PORT,
+             'workers': target.GUNICORN_WORKERS,
+             'logfile': target.GUNICORN_LOGFILE,
+             }
+            )
+
+
+@task
+def webserver_start():
+    """
+    Starts the webserver that is running the Django instance
+    """
+    run(_webserver_command())
+
+
+@task
+def webserver_restart():
+    """
+    Restarts the webserver that is running the Django instance
+    """
+    try:
+        run("kill -HUP $(cat %s)" % target.GUNICORN_PIDFILE)
+    except:
+        webserver_start()
+
+
+def _is_webserver_running():
+    try:
+        pid = int(open(target.GUNICORN_PIDFILE).read().strip())
+    except (IOError, OSError):
+        return False
+    for ps in psutil.process_iter():
+        if (ps.pid == pid and
+            any('gunicorn' in c for c in ps.cmdline)
+            and ps.username == USER):
+            return True
+    return False
+
+
+@task
+def local_webserver_start():
+    """
+    Starts the webserver that is running the Django instance, on the local machine
+    """
+    if not _is_webserver_running():
+        local(_webserver_command())
+
+
+
+def rsync_dir(local_dir, dest_dir):
+    # clean first
+    with settings(warn_only=True):
+        local("find -L %s -name '*.pyc' | xargs rm || true" % local_dir, capture=True)
+    local("rsync -z -r -L --delete --exclude='_build' --exclude='.hg' --exclude='.git' --exclude='.svn' --delete-excluded %s/ cciw@cciw.co.uk:%s" % (local_dir, dest_dir), capture=False)
+
+
+def build_static():
+    with virtualenv(target.VENV_DIR):
+        with cd(target.SRC_DIR):
+            run_venv("./manage.py collectstatic -v 0 --noinput --clear")
+
+    run("chmod -R ugo+r %s" % target.STATIC_ROOT)
+
+
+@task
+def first_deployment_mode():
+    """
+    Use before first deployment to switch on fake south migrations.
+    """
+    env.initial_deploy = True
+
+
+def update_database():
+    with virtualenv(target.VENV_DIR):
+        with cd(target.SRC_DIR):
+            if getattr(env, 'initial_deploy', False):
+                run_venv("./manage.py syncdb --all")
+                run_venv("./manage.py migrate --fake --noinput")
+            else:
+                run_venv("./manage.py syncdb --noinput")
+                run_venv("./manage.py migrate --noinput")
+
+
+
+def _push_non_vcs_sources():
+    # Non-VCS sources:
+    local("rsync cciw/settings_priv.py cciw@cciw.co.uk:%s/cciw/settings_priv.py" % target.SRC_DIR)
+
+
+@task
+def deploy():
+    """
+    Deploy project.
+    """
+    assert target is not None
+    if target is PRODUCTION:
+
+        with lcd(THIS_DIR):
+            if local("hg st", capture=True).strip() != "":
+                if not console.confirm("Project dir is not clean, merge to live will fail. Continue anyway?", default=False):
+                    sys.exit()
+
+    push_sources()
+    _push_non_vcs_sources()
+    install_dependencies()
+    update_database()
+    build_static()
+
+    with settings(warn_only=True):
+        webserver_stop()
+    webserver_start()
+    _copy_protected_downloads()
+
+    #  Update 'live' branch so that we can switch to it easily if needed.
+    if target is PRODUCTION:
+        with lcd(THIS_DIR):
+            local('hg update -r live && hg merge -r default && hg commit -m "Merged from default" && hg update -r default', capture=False)
+
+
+def _copy_protected_downloads():
+    # We currently don't need this to be separate for staging and production
+    rsync_dir(join(PARENT_DIR, "secure_downloads_src"),
+              join(WEBAPPS_ROOT, 'cciw_protected_downloads_src'))
+    run("chmod -R ugo+r %s" % join(WEBAPPS_ROOT, 'cciw_protected_downloads_src'))
+
+
+@task
+def no_db():
+    """
+    Call first to skip upgrading DB
+    """
+    env.no_db = True
+
+
+@task
+def quick():
+    no_db()
+
+
+@task
+def upload_usermedia():
+    local("rsync -z -r %s/ cciw@cciw.co.uk:%s" % (USERMEDIA_LOCAL, USERMEDIA_PRODUCTION), capture=False)
+    run("find %s -type f -exec chmod ugo+r {} ';'" % USERMEDIA_PRODUCTION)
+
+
+@task
+def backup_usermedia():
+    local("rsync -z -r  cciw@cciw.co.uk:%s/ %s" % (USERMEDIA_PRODUCTION, USERMEDIA_LOCAL), capture=False)
+
+
+# TODO:
+#  - backup db task. This should be run only in production, and copies
+#    files to Amazon S3 service.
 
 @task
 def drop_local_db():
@@ -191,275 +385,10 @@ GRANT ALL ON DATABASE cciw TO cciw;
                 local("sudo -u postgres psql -U postgres -d template1 -c \"%s\"" % c)
 
 
-def run_venv(command, **kwargs):
-    run("source %s/bin/activate" % env.venv + " && " + command, **kwargs)
-
-
-def virtualenv(venv_dir):
-    """
-    Context manager that establishes a virtualenv to use,
-    """
-    return settings(venv=venv_dir)
-
-
-def _update_symlink(target, version):
-    if files.exists(target.current_version.src_dir):
-        run("rm %s" % target.current_version.src_dir) # assumes symlink
-    run("ln -s %s %s" % (version.src_dir, target.current_version.src_dir))
-
-
-def _update_virtualenv(version):
-    # Update virtualenv in new dir.
-    with cd(version.src_dir):
-        # We should already have a virtualenv, but it will need paths updating
-        run("virtualenv --python=python2.7 env")
-        # Need this to stop ~/lib/ dirs getting in:
-        run("touch env/lib/python2.7/sitecustomize.py")
-
-        # We have to do this whether we added anything to requirements.txt
-        # or not, otherwise easy_install.pth is not updated correctly.
-        with virtualenv(version.venv_dir):
-            with cd(version.project_dir):
-                run_venv("pip install -r requirements.txt")
-
-        # Need to add project to path.
-        pth_file = '\n'.join("../../../../" + n for n in version.additional_sys_paths)
-        pth_name = "deps.pth"
-        with open(pth_name, "w") as fd:
-            fd.write(pth_file)
-        put(pth_name, join(version.venv_dir, "lib/python2.7/site-packages"))
-        os.unlink(pth_name)
-
-
-def _stop_apache(target):
-    run(join(target.webapp_root, "apache2/bin/stop"))
-
-
-def _start_apache(target):
-    run(join(target.webapp_root, "apache2/bin/start"))
-
-
-def _restart_apache(target):
-    with settings(warn_only=True):
-        _stop_apache(target)
-    _start_apache(target)
-
-
-def rsync_dir(local_dir, dest_dir):
-    # clean first
-    with settings(warn_only=True):
-        local("find -L %s -name '*.pyc' | xargs rm || true" % local_dir, capture=True)
-    local("rsync -z -r -L --delete --exclude='_build' --exclude='.hg' --exclude='.git' --exclude='.svn' --delete-excluded %s/ cciw@cciw.co.uk:%s" % (local_dir, dest_dir), capture=False)
-
-
-def _update_project_sources(target, version):
-    # This also copies the virtualenv which is contained in the same folder,
-    # which saves a lot of time with installing.
-
-    run("mkdir -p %s" % version.src_dir)
-    with cd(version.src_dir):
-        if files.exists(target.current_version.project_dir + "/.hg"):
-            # Clone local copy if we can
-            run("hg clone %s project" % target.current_version.project_dir)
-        else:
-            run("hg init")
-
-        with cd(version.project_dir):
-            # We update to the version that is currently checked out locally,
-            # because, at least for staging, it might not be the tip of default.
-            current_rev = local("hg id -i", capture=True).strip("+")
-            local("hg push -f -r %(rev)s ssh://%(user)s@%(host)s/%(path)s || true" %
-                  dict(host=env.host,
-                       user=env.user,
-                       path=version.project_dir,
-                       rev=current_rev,
-                       ))
-            run("hg update -r %s" % current_rev)
-
-        # Avoid recreating the virtualenv if we can
-        if files.exists(target.current_version.venv_dir):
-            run("cp -a -L %s %s" % (target.current_version.venv_dir,
-                                    version.src_dir))
-
-    # Also need to sync files that are not in main sources VCS repo.
-    local("rsync cciw/settings_priv.py cciw@cciw.co.uk:%s/cciw/settings_priv.py" % version.project_dir)
-
-
-def _copy_protected_downloads():
-    # We currently don't need this to be separate for staging and production
-    rsync_dir(join(parent_dir, "secure_downloads_src"),
-              join(webapps_root, 'cciw_protected_downloads_src'))
-    run("chmod -R ugo+r %s" % join(webapps_root, 'cciw_protected_downloads_src'))
-
-
-def _build_static(version):
-    # This always copies all files anyway, and we want to delete any unwanted
-    # files, so we start from clean dir.
-    run("rm -rf %s" % version.static_dir)
-
-    with virtualenv(version.venv_dir):
-        with cd(version.project_dir):
-            run_venv("./manage.py collectstatic -v 0 --settings=cciw.settings --noinput")
-
-    run("chmod -R ugo+r %s" % version.static_dir)
-
-
-def _is_south_installed(target):
-    cmd = """psql -d %s -U %s -h localhost -c "select tablename from pg_catalog.pg_tables where tablename='south_migrationhistory';" """ % (target.dbname, target.dbname)
-    out = run(cmd)
-    if 'south_migrationhistory' not in out:
-        return False
-
-    cmd2 = """psql -d %s -U %s -h localhost -c "select migration from south_migrationhistory where migration='0001_initial';" """ % (target.dbname, target.dbname)
-    out2 = run(cmd2)
-    if '0001_initial' not in out2:
-        return False
-
-    return True
-
-
-def _install_south(target, version):
-    # A one time task to be run after South has been first added
-    with virtualenv(version.venv_dir):
-        with cd(version.project_dir):
-            run_venv("./manage.py syncdb --settings=cciw.settings")
-            run_venv("./manage.py migrate --all 0001 --fake --settings=cciw.settings")
-
-
-def _update_db(target, version):
-    with virtualenv(version.venv_dir):
-        with cd(version.project_dir):
-            run_venv("./manage.py syncdb --settings=cciw.settings --noinput")
-            run_venv("./manage.py migrate --all --settings=cciw.settings --noinput")
-
-
-def _deploy(target):
-    _prepare_deploy()
-
-    label = datetime.now().strftime("%Y-%m-%d_%H.%M.%S")
-    version = target.make_version(label)
-
-    _update_project_sources(target, version)
-    _copy_protected_downloads()
-    _update_virtualenv(version)
-    _build_static(version)
-
-    # Ideally, we:
-    # 1) stop web server
-    # 2) update db
-    # 3) rollback if unsuccessful.
-    # 4) restart webserver
-
-    # In practice, for this low traffic site it is better to keep website
-    # going for as much time as possible, and cope with any small bugs that
-    # come from mismatch of db and code.
-
-    if not getattr(env, 'no_db', False):
-        db_backup_name = backup_database(target, version)
-        _update_db(target, version)
-
-    _stop_apache(target)
-    _update_symlink(target, version)
-    _start_apache(target)
-
-
-def _clean(target):
-    """
-    Misc clean-up tasks
-    """
-    # Remove old src versions.
-    with cd(target.src_root):
-        with hide("stdout"):
-            currentlink = run("readlink current").split('/')[-1]
-            otherlinks = set([x.strip() for x in run("ls src-* -1d").split("\n")])
-        otherlinks.remove(currentlink)
-        otherlinks = list(otherlinks)
-        otherlinks.sort()
-        otherlinks.reverse()
-
-        # Leave the most recent previous version, delete the rest
-        for d in otherlinks[1:]:
-            run("rm -rf %s" % d)
-
-
-@task
-def deploy():
-    if current_target is PRODUCTION:
-
-        with lcd(this_dir):
-            if local("hg st", capture=True).strip() != "":
-                if not console.confirm("Project dir is not clean, merge to live will fail. Continue anyway?", default=False):
-                    sys.exit()
-
-    _deploy(current_target)
-    #  Update 'live' branch so that we can switch to it easily if needed.
-    if current_target is PRODUCTION:
-        with lcd(this_dir):
-            local('hg update -r live && hg merge -r default && hg commit -m "Merged from default" && hg update -r default', capture=False)
-
-
-
-@task
-def no_db():
-    """
-    Call first to skip upgrading DB
-    """
-    env.no_db = True
-
-
-@task
-def quick():
-    no_db()
-
-
-def _test_remote(target):
-    version = target.current_version
-    with virtualenv(version.venv_dir):
-        with cd(version.project_dir):
-            run_venv("./manage.py test cciwmain officers --settings=cciw.settings_tests")
-
-@task
-def stop_apache():
-    _stop_apache(current_target)
-
-
-@task
-def start_apache():
-    _start_apache(current_target)
-
-
-@task
-def restart_apache():
-    _restart_apache(current_target)
-
-
-def clean():
-    _clean(current_target)
-
-
-def test_remote():
-    _test_remote(current_target)
-
-
-@task
-def upload_usermedia():
-    local("rsync -z -r %s/ cciw@cciw.co.uk:%s" % (usermedia_local, usermedia_production), capture=False)
-    run("find %s -type f -exec chmod ugo+r {} ';'" % usermedia_production)
-
-
-@task
-def backup_usermedia():
-    local("rsync -z -r  cciw@cciw.co.uk:%s/ %s" % (usermedia_production, usermedia_local), capture=False)
-
-
-# TODO:
-#  - backup db task. This should be run only in production, and copies
-#    files to Amazon S3 service.
-
 @task
 def get_live_db():
-    filename = "dump_%s.db" % PRODUCTION.dbname
-    run("pg_dump -Fc -U %s -O -o -f ~/%s %s" % (PRODUCTION.dbuser, filename, PRODUCTION.dbname))
+    filename = "dump_%s.db" % PRODUCTION.DB_NAME
+    run("pg_dump -Fc -U %s -O -o -f ~/%s %s" % (PRODUCTION.DB_USER, filename, PRODUCTION.DB_NAME))
     get("~/%s" % filename)
 
 
