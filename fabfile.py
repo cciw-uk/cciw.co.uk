@@ -1,6 +1,6 @@
 from collections import namedtuple
 from datetime import datetime
-from fabric.api import run, local, abort, env, put, get
+from fabric.api import run, local, abort, env, put, get, task
 from fabric.contrib import files
 from fabric.contrib import console
 from fabric.decorators import hosts, runs_once
@@ -138,10 +138,12 @@ PRODUCTION = Target(
 
 current_target = None
 
+@task
 def production():
     global current_target
     current_target = PRODUCTION
 
+@task
 def staging():
     global current_target
     current_target = STAGING
@@ -152,6 +154,7 @@ def ensure_dependencies():
     pass
 
 
+@task
 def test():
     ensure_dependencies()
     local("./manage.py test cciwmain officers bookings --settings=cciw.settings_tests", capture=False)
@@ -163,16 +166,19 @@ def _prepare_deploy():
     # check that there are no outstanding changes.
 
 
+@task
 def backup_database(target, version):
     fname = "%s-%s.db" % (target.dbname, version.label)
     run("dump_cciw_db.sh %s %s" % (target.dbname, fname))
 
 
+@task
 def drop_local_db():
     with cd('/'):
         with settings(warn_only=True):
             local("sudo -u postgres psql -U postgres -d template1 -c 'DROP DATABASE cciw;'")
 
+@task
 def create_local_db():
     cmds = """
 CREATE DATABASE cciw;
@@ -376,6 +382,7 @@ def _clean(target):
             run("rm -rf %s" % d)
 
 
+@task
 def deploy():
     if current_target is PRODUCTION:
 
@@ -392,6 +399,7 @@ def deploy():
 
 
 
+@task
 def no_db():
     """
     Call first to skip upgrading DB
@@ -399,6 +407,7 @@ def no_db():
     env.no_db = True
 
 
+@task
 def quick():
     no_db()
 
@@ -409,14 +418,17 @@ def _test_remote(target):
         with cd(version.project_dir):
             run_venv("./manage.py test cciwmain officers --settings=cciw.settings_tests")
 
+@task
 def stop_apache():
     _stop_apache(current_target)
 
 
+@task
 def start_apache():
     _start_apache(current_target)
 
 
+@task
 def restart_apache():
     _restart_apache(current_target)
 
@@ -429,11 +441,13 @@ def test_remote():
     _test_remote(current_target)
 
 
+@task
 def upload_usermedia():
     local("rsync -z -r %s/ cciw@cciw.co.uk:%s" % (usermedia_local, usermedia_production), capture=False)
     run("find %s -type f -exec chmod ugo+r {} ';'" % usermedia_production)
 
 
+@task
 def backup_usermedia():
     local("rsync -z -r  cciw@cciw.co.uk:%s/ %s" % (usermedia_production, usermedia_local), capture=False)
 
@@ -442,10 +456,13 @@ def backup_usermedia():
 #  - backup db task. This should be run only in production, and copies
 #    files to Amazon S3 service.
 
+@task
 def get_live_db():
     filename = "dump_%s.db" % PRODUCTION.dbname
     run("pg_dump -Fc -U %s -O -o -f ~/%s %s" % (PRODUCTION.dbuser, filename, PRODUCTION.dbname))
     get("~/%s" % filename)
 
+
+@task
 def local_restore_from_dump(filename):
     local("pg_restore -O -U cciw -c -d cciw < %s" % filename)
