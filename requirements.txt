@@ -15,3 +15,5 @@ Django==1.4.5
 -e git://github.com/spookylukey/djiki.git@e2cf26eb34#egg=djiki
 diff-match-patch
 pytz
+gunicorn
+psutil

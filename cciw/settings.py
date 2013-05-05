@@ -231,11 +231,7 @@ if DEVBOX:
     MEDIA_ROOT = os.path.join(parentdir, 'usermedia')
     STATIC_ROOT = os.path.join(parentdir, 'static')
 else:
-    # Need this to be relative to current. At the time this is used, the
-    # directory above STATIC_ROOT will be one of many timestamped directories,
-    # and we can't use the 'current' symlink.
-    STATIC_ROOT = os.path.join(parentdir, 'static')
-    from cciw.settings_priv import MEDIA_ROOT
+    from cciw.settings_priv import MEDIA_ROOT, STATIC_ROOT
 
 MEDIA_URL = '/usermedia/'
 STATIC_URL = '/static/'
