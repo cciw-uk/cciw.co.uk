@@ -100,7 +100,7 @@ PRODUCTION = Target(
     NAME = "PRODUCTION",
     APP_BASE_NAME = APP_NAME,
     APP_PORT = 21182,
-    GUNICORN_WORKERS = 4,
+    GUNICORN_WORKERS = 3,
     DB_USER = "cciw",
     DB_NAME = "cciw",
 )
