@@ -352,9 +352,6 @@ class CRBApplicationModelForm(forms.ModelForm):
 
     officer = officer_autocomplete_field()
 
-    class Meta:
-        model = CRBApplication
-
 
 class CRBApplicationAdmin(admin.ModelAdmin):
 
@@ -378,9 +375,6 @@ class CRBApplicationAdmin(admin.ModelAdmin):
 class CRBFormLogModelForm(forms.ModelForm):
 
     officer = officer_autocomplete_field()
-
-    class Meta:
-        model = CRBFormLog
 
 
 class CRBFormLogAdmin(admin.ModelAdmin):
