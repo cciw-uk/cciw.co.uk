@@ -62,7 +62,8 @@ class EmailVerifyTokenGenerator(object):
 
 
 def send_verify_email(request, booking_account):
-
+    if not booking_account.email:
+        return
     current_site = get_current_site(request)
     site_name = current_site.name
     domain = current_site.domain
@@ -107,7 +108,7 @@ def send_places_confirmed_email(bookings, **kwargs):
     if not bookings:
         return
     account = bookings[0].account
-    if account.email == '':
+    if not account.email:
         return
 
     c = {
@@ -144,7 +145,7 @@ def send_places_confirmed_email(bookings, **kwargs):
 
 
 def send_booking_expiry_mail(account, bookings, expired):
-    if account.email == '':
+    if not account.email:
         return
 
     c = {
@@ -163,7 +164,7 @@ def send_booking_expiry_mail(account, bookings, expired):
 
 def send_booking_approved_mail(booking):
     account = booking.account
-    if account.email == '':
+    if not account.email:
         return False
 
     c = {
@@ -179,7 +180,7 @@ def send_booking_approved_mail(booking):
 
 def send_booking_confirmed_mail(booking):
     account = booking.account
-    if account.email == '':
+    if not account.email:
         return False
 
     c = {
