@@ -23,8 +23,8 @@ join = os.path.join
 # You need a root directory to hold everything, and the following
 # sub directories:
 #
-#  project/    - holds a checkout of this repository
-#                i.e. fabfile.py and siblings live in that dir.
+#  src/    - holds a checkout of this repository
+#            i.e. fabfile.py and siblings live in that dir.
 #
 #  usermedia/  - corresponds to MEDIA_ROOT
 #
