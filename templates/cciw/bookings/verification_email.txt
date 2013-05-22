@@ -1,4 +1,4 @@
-{% load url from future %}{% autoescape off %}
+{% autoescape off %}
 You're receiving this email because you entered your email address
 to use the online booking system at {{ domain }}.
 

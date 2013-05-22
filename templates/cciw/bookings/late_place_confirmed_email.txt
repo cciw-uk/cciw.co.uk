@@ -1,4 +1,4 @@
-{% load url from future %}{% autoescape off %}
+{% autoescape off %}
 A booking has been received for camp {{ camp }}
 
 Name: {{ booking.name }}

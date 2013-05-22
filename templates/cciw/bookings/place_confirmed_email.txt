@@ -1,4 +1,4 @@
-{% load url from future %}{% autoescape off %}
+{% autoescape off %}
 Dear {{ account.name }},
 
 {% if payment_received %}Thank you for your payment.

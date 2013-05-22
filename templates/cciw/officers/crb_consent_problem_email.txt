@@ -1,4 +1,4 @@
-{% load url from future %}{% autoescape off %}Dear camp leaders,
+{% autoescape off %}Dear camp leaders,
 
 On their application form, {{ officer.first_name }} {{ officer.last_name }} indicated that they do NOT consent to having a CRB check done. It is possible that this was simply a mistake. In this case, after contacting them you can edit and correct their application form:
 

@@ -2,7 +2,6 @@ from StringIO import StringIO
 
 import twill
 from twill import commands as tc
-from django.core.servers.basehttp import AdminMediaHandler
 from django.core.handlers.wsgi import WSGIHandler
 from django.core.urlresolvers import reverse
 from twill.shell import TwillCommandLoop
@@ -16,7 +15,7 @@ def make_django_url(view, *args, **kwargs):
     return make_twill_url(BASE + reverse(view, args=args, kwargs=kwargs))
 
 def twill_setup():
-    app = AdminMediaHandler(WSGIHandler())
+    app = WSGIHandler()
     twill.add_wsgi_intercept("127.0.0.1", 8080, lambda: app)
     b = twill.get_browser()
     b._browser._factory.is_html = True # make it handle XHTML

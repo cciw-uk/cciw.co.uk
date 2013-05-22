@@ -1,4 +1,4 @@
-{% load url from future %}{% autoescape off %}
+{% autoescape off %}
 Dear {{ account.name }},
 {% if expired %}
 The following place(s) on CCIW camps have expired because no payment was
