@@ -254,8 +254,9 @@ class CreateReference(TwillMixin, TestCase):
         tc.code(200)
 
         # Check it is pre-filled as we expect
-        tc.find('name="referee_name" value="Mr Referee1 Name"')
-        tc.find('name="how_long_known" value="A long time"')
+        html = tc.show()
+        self.assertInHTML("""<input id="id_referee_name" maxlength="100" name="referee_name" type="text" value="Mr Referee1 Name" />""", html)
+        self.assertInHTML("""<input id="id_how_long_known" maxlength="150" name="how_long_known" type="text" value="A long time" />""", html)
 
 
 class EditReferenceFormManually(TestCase):
