@@ -280,4 +280,5 @@ class EditReferenceFormManually(TestCase):
         self.assertTrue("admin/officers/referenceform" in resp['Location'])
 
         # Object should be created now.
+        ref = ref.__class__.objects.get(id=ref.id)
         self.assertTrue(ref.reference_form is not None)
