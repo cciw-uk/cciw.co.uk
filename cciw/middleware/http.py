@@ -27,7 +27,7 @@ class WebFactionFixes(object):
 
         # Fix HTTPS
         if 'HTTP_X_FORWARDED_SSL' in request.META:
-            request.is_secure = lambda: request.META['HTTP_X_FORWARDED_SSL'] == 'on'
+            request.is_secure = lambda: request.META['HTTP_X_FORWARDED_SSL'] in ['on', 'on,on']
 
 
 class ActAsProxy(object):
