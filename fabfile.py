@@ -349,6 +349,7 @@ def no_db():
 @task
 def quick():
     no_db()
+    no_installs()
 
 
 @task
