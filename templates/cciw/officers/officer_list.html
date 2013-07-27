@@ -304,6 +304,7 @@ table.tablesorter thead .header.headerSortUp {
     };
 
     var officerAddHandler = function(ev) {
+        ev.preventDefault();
         if (ev.type == "keyup") {
             var code = (ev.keyCode ? ev.keyCode : ev.which);
             if (code != 13) { // Enter
