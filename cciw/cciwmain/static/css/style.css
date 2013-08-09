@@ -91,7 +91,8 @@ a:hover {
     text-align: center;
 }
 #menubar ul li {
-    display: inline;
+    display: inline-block;
+    margin-top: 10px;	
 }
 #menubar ul li a {
     text-decoration: none;
@@ -393,10 +394,6 @@ p
 }
 
 /* standard template */
-#menubarOuter {
-    margin-top: 10px;
-}
-
 
 #mainstandard, #header.mainstandard #headerlogo
 {
