@@ -115,7 +115,11 @@ def list_for_address(address):
 
 
 def forward_email_to_list(mail, addresslist, original_to):
-    from_addr = mail['From']
+    orig_from_addr = mail['From']
+
+    new_from_addr = "lists@cciw.co.uk"
+    mail['From'] = new_from_addr
+    mail['Reply-To'] = orig_from_addr
 
     # Various headers seem to cause problems. We whitelist the ones
     # that are OK:
@@ -128,6 +132,7 @@ def forward_email_to_list(mail, addresslist, original_to):
         'user-agent',
         'content-disposition',
         'date',
+        'reply-to',
         ]
     mail._headers = [(name, val) for name, val in mail._headers
                      if name.lower() in good_headers]
@@ -143,7 +148,7 @@ def forward_email_to_list(mail, addresslist, original_to):
         # Need new message ID, or webfaction's mail server will only send one
         del mail['Message-ID']
         mail['Message-ID'] = make_msgid()
-        c.connection.sendmail(from_addr, [addr], mail.as_string())
+        c.connection.sendmail(new_from_addr, [addr], mail.as_string())
     c.close()
 
 
