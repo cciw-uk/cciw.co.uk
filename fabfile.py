@@ -50,6 +50,7 @@ join = os.path.join
 # places - this file and the settings file - because it is needed in both at
 # different times.
 
+rel = lambda *x: join(os.path.abspath(os.path.dirname(__file__)), *x)
 
 USER = 'cciw'
 HOST = 'cciw.co.uk'
@@ -71,12 +72,14 @@ PYTHON_FULL_PATH = "%s/bin/%s" % (PYTHON_PREFIX, PYTHON_BIN) if PYTHON_PREFIX el
 
 WSGI_MODULE = '%s.wsgi' % APP_NAME
 
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-PARENT_DIR = os.path.dirname(THIS_DIR)
+THIS_DIR = rel(".")
+PARENT_DIR = rel("..")
 WEBAPPS_ROOT = '/home/%s/webapps' % USER
 
 USERMEDIA_LOCAL = join(PARENT_DIR, 'usermedia')
 USERMEDIA_PRODUCTION = join(WEBAPPS_ROOT, 'cciw_usermedia')
+
+LOCAL_DB_BACKUPS = rel("..", "db_backups")
 
 
 class Target(object):
@@ -95,14 +98,21 @@ class Target(object):
         self.GUNICORN_PIDFILE = "%s/gunicorn.pid" % self.DJANGO_APP_ROOT
         self.GUNICORN_LOGFILE = "/home/%s/logs/user/gunicorn_%s.log" % (USER, self.APP_BASE_NAME)
 
+        if self.NAME == "PRODUCTION":
+            from cciw.settings_production import DATABASES
+        elif self.NAME == "STAGING":
+            from cciw.settings_staging import DATABASES
+        else:
+            assert False, "Unknown target %s" % self.NAME
+
+        self.DB = DATABASES['default']
+
 
 PRODUCTION = Target(
     NAME = "PRODUCTION",
     APP_BASE_NAME = APP_NAME,
     APP_PORT = 21182,
     GUNICORN_WORKERS = 3,
-    DB_USER = "cciw",
-    DB_NAME = "cciw",
 )
 
 STAGING = Target(
@@ -110,8 +120,6 @@ STAGING = Target(
     APP_BASE_NAME = "%s_staging" % APP_NAME,
     APP_PORT = 30079,
     GUNICORN_WORKERS = 1,
-    DB_USER = "cciw_staging",
-    DB_NAME = "cciw_staging",
 )
 
 target = None
@@ -298,7 +306,11 @@ def update_database():
 
 def _push_non_vcs_sources():
     # Non-VCS sources:
-    local("rsync cciw/settings_priv.py cciw@cciw.co.uk:%s/cciw/settings_priv.py" % target.SRC_DIR)
+    for s in ["cciw/settings_priv.py",
+              "cciw/settings_priv_common.py",
+              "cciw/settings_production.py",
+              "cciw/settings_staging.py"]:
+        local("rsync %s cciw@cciw.co.uk:%s/%s" % (s, target.SRC_DIR, s))
 
 
 @task
@@ -367,32 +379,67 @@ def backup_usermedia():
 #  - backup db task. This should be run only in production, and copies
 #    files to Amazon S3 service.
 
-@task
-def drop_local_db():
-    with cd('/'):
-        with settings(warn_only=True):
-            local("sudo -u postgres psql -U postgres -d template1 -c 'DROP DATABASE cciw;'")
 
-@task
-def create_local_db():
-    cmds = """
-CREATE DATABASE cciw;
-CREATE USER cciw WITH PASSWORD 'foo';
-GRANT ALL ON DATABASE cciw TO cciw;
-"""
-    with cd('/'):
-        for c in cmds.strip().split("\n"):
-            with settings(warn_only=True):
-                local("sudo -u postgres psql -U postgres -d template1 -c \"%s\"" % c)
+def make_django_db_filename(target):
+    return "/home/cciw/db-%s.django.%s.pgdump" % (target.DB['NAME'], datetime.now().strftime("%Y-%m-%d_%H.%M.%S"))
+
+
+def dump_db(target):
+    filename = make_django_db_filename(target)
+    run("pg_dump -Fc -U %s -O -o -f %s %s" % (target.DB['USER'], filename, target.DB['NAME']))
+    return filename
 
 
 @task
 def get_live_db():
-    filename = "dump_%s.db" % PRODUCTION.DB_NAME
-    run("pg_dump -Fc -U %s -O -o -f ~/%s %s" % (PRODUCTION.DB_USER, filename, PRODUCTION.DB_NAME))
-    get("~/%s" % filename)
+    filename = dump_db(PRODUCTION)
+    local("mkdir -p %s" % LOCAL_DB_BACKUPS)
+    get(filename, local_path=LOCAL_DB_BACKUPS + "/%(basename)s")
+
+
+def pg_restore_cmds(db, filename, clean=False):
+    return [
+        "pg_restore -O -U %s %s -d %s %s" %
+          (db['USER'], " -c " if clean else "", db['NAME'], filename),
+        ]
+
+
+
+def db_restore_commands(db, filename):
+    return [
+        # DB might not exist, allow error
+        """sudo -u postgres psql -U postgres -d template1 -c "DROP DATABASE %s;" | true """
+          % db['NAME'],
+
+        """sudo -u postgres psql -U postgres -d template1 -c "CREATE DATABASE %s;" """
+          % db['NAME'],
+
+        # User might already exist, allow error
+        """sudo -u postgres psql -U postgres -d template1 -c "CREATE USER %s WITH PASSWORD '%s';" | true """
+          % (db['USER'], db['PASSWORD']),
+
+        """sudo -u postgres psql -U postgres -d template1 -c "GRANT ALL ON DATABASE %s TO %s;" """
+        % (db['NAME'], db['USER']),
+
+        """sudo -u postgres psql -U postgres -d template1 -c "ALTER USER %s CREATEDB;" """ %
+          db['USER'],
+
+        ] + pg_restore_cmds(db, filename)
 
 
 @task
 def local_restore_from_dump(filename):
-    local("pg_restore -O -U cciw -c -d cciw < %s" % filename)
+    db = PRODUCTION.DB.copy()
+    db['PASSWORD'] = 'foo'
+    for cmd in db_restore_commands(db, filename):
+        local(cmd)
+
+
+@task
+def copy_production_db_to_staging():
+    filename = dump_db(PRODUCTION)
+    # Don't have permission to create databases on cciw.co.uk, so are limited to pg_restore
+
+    for cmd in pg_restore_cmds(STAGING.DB, filename, clean=True):
+        run(cmd)
+
