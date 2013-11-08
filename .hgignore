@@ -3,4 +3,6 @@ syntax:glob
 *.pyc
 *\.\#*
 *\#
-settings*priv.py
+settings*priv*.py
+settings_production.py
+settings_staging.py
