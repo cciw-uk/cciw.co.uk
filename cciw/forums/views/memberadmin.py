@@ -416,7 +416,7 @@ def change_email(request):
 preferences_fields = ["real_name", "email", "show_email", "comments", "message_option", "icon"]
 class PreferencesForm(CciwFormMixin, forms.ModelForm):
     real_name = forms.CharField(widget=forms.TextInput(attrs={'size':str(Member._meta.get_field('real_name').max_length)}),
-                                label="'Real' name", required=False,
+                                label="Real name", required=False,
                                 max_length=Member._meta.get_field('real_name').max_length)
     email = forms.EmailField(widget=forms.TextInput(attrs={'size':'40'}))
     message_option = forms.ChoiceField(choices=Member.MESSAGE_OPTIONS,
