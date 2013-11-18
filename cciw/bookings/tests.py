@@ -1184,6 +1184,9 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
     fixtures = ['basic.json']
 
     def test_receive_payment(self):
+        # Late booking:
+        Camp.objects.update(start_date=date.today() + timedelta(days=1))
+
         self.login()
         self.create_place()
         self.create_leaders()
@@ -1216,6 +1219,8 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
 
 
     def test_insufficient_receive_payment(self):
+        # Need to move into region where deposits are not allowed.
+        Camp.objects.update(start_date=date.today() + timedelta(days=20))
         self.login()
         self.create_place()
         self.create_place({'price_type': PRICE_2ND_CHILD})
@@ -1530,7 +1535,7 @@ class TestAccountOverview(CreatePlaceMixin, TestCase):
         # Book a place and pay
         self.create_place()
         book_basket_now(acc.bookings.basket(self.camp.year))
-        acc.receive_payment(acc.bookings.all()[0].amount_due)
+        acc.receive_payment(Price.objects.get(price_type=PRICE_DEPOSIT).price)
 
         # Book another
         self.create_place({'first_name': 'Another',
