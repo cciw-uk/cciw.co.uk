@@ -138,18 +138,47 @@ class BookingAccount(models.Model):
         today = date.today()
         # If allow_deposits, we only do the sum over bookings that require full
         # amount, then get the required deposit amounts in a separate step.
-        total = self.bookings.payable(confirmed_only, allow_deposits, today=today).aggregate(models.Sum('amount_due'))['amount_due__sum']
+
+        # bookings_list and use of _prefetched_objects_cache is necessary to
+        # support the booking_secretary_reports view. The two code paths should
+        # be equivalent, and must be kept in sync. This also propagates into
+        # BookingManager.payable and BookingManager.only_deposit_required.
+
+        if hasattr(self, '_prefetched_objects_cache') and 'bookings' in self._prefetched_objects_cache:
+            bookings_list = self._prefetched_objects_cache['bookings']
+        else:
+            bookings_list = None
+
+        if bookings_list is not None:
+            total = Decimal('0.00')
+            l = BookingManager.payable(self.bookings, confirmed_only, allow_deposits, today=today,
+                                       from_list=bookings_list)
+            assert type(l) == list
+            for item in l:
+                total += item.amount_due
+
+        else:
+            total = self.bookings.payable(confirmed_only, allow_deposits, today=today).aggregate(models.Sum('amount_due'))['amount_due__sum']
         if total is None:
             total = Decimal('0.00')
 
         if allow_deposits:
             # Need to add in the cost of deposits.
-            extra_bookings = list(self.bookings.only_deposit_required(confirmed_only, today=today).prefetch_related('camp'))
+            if bookings_list is not None:
+                extra_bookings = BookingManager.only_deposit_required(self.bookings, confirmed_only,
+                                                                      today=today,
+                                                                      from_list=bookings_list)
+            else:
+                extra_bookings = list(self.bookings.only_deposit_required(confirmed_only, today=today))
             # Need to use the deposit price for each.
             years = [b.camp.year for b in extra_bookings]
             prices = {p.year: p.price for p in Price.objects.filter(year__in=years, price_type=PRICE_DEPOSIT)}
             for b in extra_bookings:
-                total += prices[b.camp.year]
+                p = prices[b.camp.year]
+                if p < b.amount_due:
+                    total += p
+                else:
+                    total += b.amount_due
 
         return total - self.total_received
 
@@ -286,7 +315,7 @@ class BookingManager(models.Manager):
         return self.get_query_set().filter(state=BOOKING_BOOKED,
                                            booking_expires__isnull=False)
 
-    def payable(self, confirmed_only, full_amount_only, today=None):
+    def payable(self, confirmed_only, full_amount_only, today=None, from_list=None):
         """
         Returns bookings for which payment is due.
         If confirmed_only is True, unconfirmed places are excluded.
@@ -296,23 +325,43 @@ class BookingManager(models.Manager):
         # 'Full refund' cancelled bookings do not have payment due, but the
         # others do.
         # Logic duplicated in booking_secretary_reports.
-        cancelled = self.get_query_set().filter(state__in=[BOOKING_CANCELLED,
-                                                           BOOKING_CANCELLED_HALF_REFUND])
-        retval = cancelled | (self.confirmed() if confirmed_only else self.booked())
         if full_amount_only:
             if today is None:
                 today = date.today()
             cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
+
+        # Optimization - duplicates the logic below
+        if from_list is not None:
+            bookings = from_list
+            retval = [b for b in bookings if b.state in [BOOKING_CANCELLED, BOOKING_CANCELLED_HALF_REFUND]]
+            if confirmed_only:
+                retval = retval + [b for b in bookings if b.is_confirmed]
+            else:
+                retval = retval + [b for b in bookings if b.is_booked]
+
+            if full_amount_only:
+                retval = [b for b in retval if not (b.camp.start_date > cutoff)]
+
+            return retval
+
+
+        cancelled = self.get_query_set().filter(state__in=[BOOKING_CANCELLED,
+                                                           BOOKING_CANCELLED_HALF_REFUND])
+        retval = cancelled | (self.confirmed() if confirmed_only else self.booked())
+        if full_amount_only:
             retval = retval.exclude(camp__start_date__gt=cutoff)
         return retval
 
-    def only_deposit_required(self, confirmed_only, today=None):
+    def only_deposit_required(self, confirmed_only, today=None, from_list=None):
         if today is None:
             today = date.today()
-        retval = self.payable(confirmed_only, False, today=today)
         cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
-        retval = retval.filter(camp__start_date__gt=cutoff)
-        return retval
+
+        retval = self.payable(confirmed_only, False, today=today, from_list=from_list)
+        if isinstance(retval, list):
+            return [b for b in retval if b.camp.start_date > cutoff]
+        else:
+            return retval.filter(camp__start_date__gt=cutoff)
 
     def cancelled(self):
         return self.get_query_set().filter(state__in=[BOOKING_CANCELLED,
@@ -440,9 +489,10 @@ class Booking(models.Model):
         # Amount due, taking into account the fact that only a deposit might be due.
         cutoff = date.today() + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
         if self.camp.start_date > cutoff:
-            return Price.objects.get(price_type=PRICE_DEPOSIT, year=self.camp.year).price
-        else:
-            return self.amount_due
+            p = Price.objects.get(price_type=PRICE_DEPOSIT, year=self.camp.year).price
+            if p < self.amount_due:
+                return p
+        return self.amount_due
 
     def age_on_camp(self):
         # Age is calculated based on school years, i.e. age on 31st August

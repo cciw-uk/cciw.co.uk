@@ -1211,7 +1211,8 @@ officer_info = staff_member_required(OfficerInfo.as_view())
 @booking_secretary_required
 def booking_secretary_reports(request, year=None):
     from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, BOOKING_BOOKED, BOOKING_CANCELLED, BookingAccount,\
-        BOOKING_CANCELLED_HALF_REFUND
+        BOOKING_CANCELLED_HALF_REFUND, Price, PRICE_DEPOSIT
+    from decimal import Decimal
     year = int(year)
 
     # 1. Camps and their booking levels.
@@ -1229,18 +1230,8 @@ def booking_secretary_reports(request, year=None):
     to_approve = Booking.objects.need_approving().filter(camp__year__exact=year)
 
     # 3. Fees
-    # Duplication of business logic here, for performance:
-    payable = BookingAccount.objects.all()
-    # Booked or cancelled places are included.
-    # See BookingManager.payable
-    payable = (payable.filter(bookings__state=BOOKING_BOOKED) |
-               payable.filter(bookings__state=BOOKING_CANCELLED) |
-               payable.filter(bookings__state=BOOKING_CANCELLED_HALF_REFUND)
-               )
-    # annotation works over the bookings filtered above
-    outstanding = payable.only('id','total_received').annotate(total_amount_due=Sum('bookings__amount_due')).exclude(total_amount_due=F('total_received'))
 
-    total_amount_due_dict = dict((o.id, o.total_amount_due) for o in outstanding)
+    bookings = Booking.objects.payable(True, False).filter(camp__year__exact=year)
 
     # 3 concerns:
     # 1) people who have overpaid. This must be calculated with respect to the total amount due
@@ -1253,21 +1244,27 @@ def booking_secretary_reports(request, year=None):
     #
     # People in group 2b) possibly need to be chased. They are not highlighted here - TODO
 
-    # This will actually exclude people who have outstanding fees but do not
-    # have bookings this year. That's OK - previous year's report page will catch them.
-    bookings = Booking.objects.payable(False, False).filter(camp__year__exact=year,
-                                                            account__in=[o.id for o in outstanding])
     bookings = bookings.order_by('account__name','first_name','last_name')
+    bookings = list(bookings.prefetch_related('camp',
+                                              'account',
+                                              'account__bookings',
+                                              'account__bookings__camp',
+                                              ))
 
-    # Decorate with the already calculated 'total_amount_due', and with 'number
-    # of bookings for this account'
     counts = defaultdict(int)
     for b in bookings:
         counts[b.account_id] += 1
 
+    outstanding = []
     for b in bookings:
-        b.account.calculated_balance = total_amount_due_dict[b.account_id] - b.account.total_received
         b.count_for_account = counts[b.account_id]
+        if not hasattr(b.account, 'calculated_balance'):
+            b.account.calculated_balance = b.account.get_balance(confirmed_only=True, allow_deposits=False)
+            b.account.calculated_balance_due = b.account.get_balance(confirmed_only=True, allow_deposits=True)
+
+            if b.account.calculated_balance_due > 0 or b.account.calculated_balance < 0:
+                outstanding.append(b)
+
 
     export_start = datetime(year-1, 11, 1) # November previous year
     export_end = datetime(year, 10, 31) # November this year
@@ -1275,9 +1272,11 @@ def booking_secretary_reports(request, year=None):
                                kwargs=dict(date_start=export_start.strftime(EXPORT_PAYMENT_DATE_FORMAT),
                                            date_end=export_end.strftime(EXPORT_PAYMENT_DATE_FORMAT)))
 
+
+
     return render(request, 'cciw/officers/booking_secretary_reports.html',
                   {'year': year, 'camps': camps,
-                   'bookings': bookings,
+                   'bookings': outstanding,
                    'to_approve': to_approve,
                    'export_start': export_start,
                    'export_end': export_end,
