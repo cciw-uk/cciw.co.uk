@@ -35,12 +35,14 @@ class SiteAdmin(admin.ModelAdmin):
 
 class PersonAdmin(admin.ModelAdmin):
     filter_horizontal = ('users',)
+    search_fields = ['name']
+    list_display = ['name', 'info']
 
 class CampAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Public info',
          {'fields': ('year', 'number', 'minimum_age', 'maximum_age', 'start_date', 'end_date',
-                     'chaplain', 'leaders', 'site', 'previous_camp')
+                     'leaders', 'chaplain', 'site', 'previous_camp')
           }
         ),
         ('Booking constraints',
