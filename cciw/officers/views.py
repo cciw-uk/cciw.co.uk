@@ -1210,7 +1210,8 @@ officer_info = staff_member_required(OfficerInfo.as_view())
 
 @booking_secretary_required
 def booking_secretary_reports(request, year=None):
-    from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, BOOKING_BOOKED, BOOKING_CANCELLED, BookingAccount
+    from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, BOOKING_BOOKED, BOOKING_CANCELLED, BookingAccount,\
+        BOOKING_CANCELLED_HALF_REFUND
     year = int(year)
 
     # 1. Camps and their booking levels.
@@ -1231,7 +1232,11 @@ def booking_secretary_reports(request, year=None):
     # Duplication of business logic here, for performance:
     payable = BookingAccount.objects.all()
     # Booked or cancelled places are included.
-    payable = payable.filter(bookings__state=BOOKING_BOOKED) | payable.filter(bookings__state=BOOKING_CANCELLED)
+    # See BookingManager.payable
+    payable = (payable.filter(bookings__state=BOOKING_BOOKED) |
+               payable.filter(bookings__state=BOOKING_CANCELLED) |
+               payable.filter(bookings__state=BOOKING_CANCELLED_HALF_REFUND)
+               )
     # annotation works over the bookings filtered above
     outstanding = payable.only('id','total_received').annotate(total_amount_due=Sum('bookings__amount_due')).exclude(total_amount_due=F('total_received'))
 

@@ -277,6 +277,8 @@ class BookingManager(models.Manager):
         # others do.
         cancelled = self.get_query_set().filter(state__in=[BOOKING_CANCELLED,
                                                            BOOKING_CANCELLED_HALF_REFUND])
+        # See logic in booking_secretary_reports
+
         return cancelled | (self.confirmed() if confirmed_only else self.booked())
 
     def cancelled(self):
