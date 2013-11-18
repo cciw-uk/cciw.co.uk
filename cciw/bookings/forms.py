@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from django.utils.html import escape
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 
 from cciw.bookings.models import BookingAccount, Booking, Price
 from cciw.cciwmain.forms import CciwFormMixin
@@ -53,13 +52,15 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AddPlaceForm, self).__init__(*args, **kwargs)
         def render_camp(c):
-            return (escape("Camp %d, %s, %s" % (c.number, c.leaders_formatted,
-                                                c.start_date.strftime("%e %b %Y"))) +
-                    '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
-                    '<span class="placeAvailability">' +
-                    escape("(Places left: %d total, max %d for boys, max %d for girls)" %
-                           c.get_places_left()) + '</span>')
-        self.fields['camp'].choices = [(c.id, mark_safe(render_camp(c)))
+            return format_html("Camp {0}, {1}, {2}"
+                               '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+                               '<span class="placeAvailability">{3}</span>',
+                               c.number,
+                               c.leaders_formatted,
+                               c.start_date.strftime("%e %b %Y"),
+                               "Places available" if c.get_places_left()[0] > 0 else "No places available!",
+                               )
+        self.fields['camp'].choices = [(c.id, render_camp(c))
                                        for c in Camp.objects.filter(year=get_thisyear())]
         self.fix_price_choices()
 
