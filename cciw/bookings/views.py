@@ -741,6 +741,24 @@ class BookingListBookings(DefaultMetaData, TemplateView):
         return self.get(request, *args, **kwargs)
 
 
+def mk_paypal_form(account, balance, protocol, domain):
+    paypal_dict = {
+        "business": settings.PAYPAL_RECEIVER_EMAIL,
+        "amount": str(balance),
+        "item_name": u"Camp place booking",
+        "invoice": "%s-%s-%s" % (account.id, balance,
+                                 datetime.now()), # We don't need this, but must be unique
+        "notify_url":  "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
+        "return_url": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_done')),
+        "cancel_return": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_cancelled')),
+        "custom": "account:%s;" % str(account.id),
+        "currency_code": "GBP",
+        "no_note": "1",
+        "no_shipping": "1",
+        }
+    return PayPalPaymentsForm(initial=paypal_dict)
+
+
 class BookingPay(DefaultMetaData, TemplateView):
     metadata_title = "Booking - pay"
     template_name = "cciw/bookings/pay.html"
@@ -748,8 +766,12 @@ class BookingPay(DefaultMetaData, TemplateView):
 
     def get(self, request):
         acc = self.request.booking_account
-        balance = acc.get_balance()
-        self.context['balance'] = balance
+        balance_due = acc.get_balance(allow_deposits=True)
+        balance_full = acc.get_balance(allow_deposits=False)
+
+        self.context['unconfirmed_places'] = acc.bookings.unconfirmed()
+        self.context['balance_due'] = balance_due
+        self.context['balance_full'] = balance_full
         self.context['account_id'] = acc.id
         # This view should be accessible even if prices for the current year are
         # not defined.
@@ -762,24 +784,9 @@ class BookingPay(DefaultMetaData, TemplateView):
 
         domain = get_current_domain()
         protocol = 'https' if self.request.is_secure() else 'http'
-        paypal_dict = {
-            "business": settings.PAYPAL_RECEIVER_EMAIL,
-            "amount": str(balance),
-            "item_name": u"Camp place booking",
-            "invoice": "%s-%s-%s" % (acc.id, balance,
-                                     datetime.now()), # We don't need this, but must be unique
-            "notify_url":  "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
-            "return_url": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_done')),
-            "cancel_return": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_cancelled')),
-            "custom": "account:%s;" % str(acc.id),
-            "currency_code": "GBP",
-            "no_note": "1",
-            "no_shipping": "1",
-            }
 
-        # Create the instance.
-        form = PayPalPaymentsForm(initial=paypal_dict)
-        self.context['form'] = form
+        self.context['paypal_form'] = mk_paypal_form(acc, balance_due, protocol, domain)
+        self.context['paypal_form_full'] = mk_paypal_form(acc, balance_full, protocol, domain)
 
         return super(BookingPay, self).get(request)
 

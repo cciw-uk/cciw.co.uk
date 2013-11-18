@@ -1031,3 +1031,9 @@ a.booknow:active {
 #bookingbar a {
     color: white;
 }
+
+.paybox {
+    float: left;
+    margin-right: 50px;
+}
+

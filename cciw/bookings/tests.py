@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, date
 from decimal import Decimal
 import re
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -42,11 +43,13 @@ class CreateCampMixin(object):
 
     def create_camp(self):
         # Need to create a Camp that we can choose i.e. is in the future
+        # We also need it payments to be made when only the deposit is due
+        delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE_DAYS
         self.camp = Camp.objects.create(year=get_thisyear(), number=1,
                                         minimum_age=self.camp_minimum_age,
                                         maximum_age=self.camp_maximum_age,
-                                        start_date=date.today() + timedelta(20),
-                                        end_date=date.today() + timedelta(27),
+                                        start_date=date.today() + timedelta(delta_days),
+                                        end_date=date.today() + timedelta(delta_days+7),
                                         site_id=1)
 
 
@@ -1083,9 +1086,9 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.login()
         self.create_place()
 
-        # Put some money in my account.
+        # Put some money in the account - just the deposit price will do.
         acc = self.get_account()
-        acc.receive_payment(acc.bookings.all()[0].amount_due)
+        acc.receive_payment(Price.objects.get(price_type=PRICE_DEPOSIT).price)
         acc.save()
 
         # Book
@@ -1101,10 +1104,19 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(b.state, BOOKING_BOOKED)
         self.assertEqual(b.booking_expires, None)
 
-        # balance should be zero
         acc = self.get_account()
-        self.assertEqual(acc.get_balance(), Decimal('0.00'))
-        self.assertEqual(acc.get_balance(confirmed_only=True), Decimal('0.00'))
+        # balance should be zero
+        self.assertEqual(acc.get_balance(allow_deposits=True), Decimal('0.00'))
+        self.assertEqual(acc.get_balance(confirmed_only=True, allow_deposits=True), Decimal('0.00'))
+
+        # But for full amount, they still owe 80
+        self.assertEqual(acc.get_balance(allow_deposits=False), Decimal('80.00'))
+
+        # Test some model methods:
+        self.assertEqual(len(acc.bookings.only_deposit_required(False)),
+                         1)
+        self.assertEqual(len(acc.bookings.payable(False, True)),
+                         0)
 
 
 class TestPay(CreatePlaceMixin, TestCase):
@@ -1128,7 +1140,17 @@ class TestPay(CreatePlaceMixin, TestCase):
 
         resp = self.client.get(reverse('cciw.bookings.views.pay'))
 
-        # 2 places:
+        # 2 deposits
+        expected_price = 2 * Price.objects.get(year=get_thisyear(),
+                                               price_type=PRICE_DEPOSIT).price
+        self.assertContains(resp, '£%s' % expected_price)
+
+        # Move forward to after the time when just deposits are allowed:
+        Camp.objects.update(start_date=date.today() + timedelta(10))
+
+        resp = self.client.get(reverse('cciw.bookings.views.pay'))
+
+        # 2 full price
         expected_price = 2 * Price.objects.get(year=get_thisyear(),
                                                price_type=PRICE_FULL).price
         self.assertContains(resp, '£%s' % expected_price)

@@ -2,9 +2,11 @@
 
 {% block content %}
 
+{% if unconfirmed_places %}
 <p>After booking you have 24 hours to complete payment online, or the bookings
   will expire. If necessary you can go back and book other places and then pay
   for them all together.</p>
+{% endif %}
 
 <p>Payment is done via Paypal. You do not need to have a Paypal account - any
   credit card or debit card can be used.</p>
@@ -15,25 +17,63 @@
 
 <h2>Balance</h2>
 
+<p>Your total amount outstanding is:</p>
 
-<p><b>Amount due: £{{ balance }}</b></p>
+<p><b>Balance: £{{ balance_full }}</b></p>
 
-{% if balance == 0 %}
-<p>You have no outstanding payments.</p>
+{% if balance_full == 0 %}
+<p>You have nothing to pay.</p>
 {% endif %}
 
-{% if balance < 0 %}
-<b>We owe you this money!</b>. Our team will ensure that you are
-  refunded this amount!</p>
+{% if balance_full < 0 %}
+<b>We owe you this money!</b> Our team will ensure that you are
+  refunded this amount.</p>
 {% endif %}
 
-{% if balance > 0 %}
+{% if balance_full > 0 %}
 
-{% if PRODUCTION %}
-  {{ form.render }}
+{% if balance_full != balance_due %}
+
+{% if balance_due > 0 %}
+
+<p>You do not yet have to pay the full amount — at this point you only have to
+  pay the deposits to confirm your place. Choose from the options below:</p>
+
 {% else %}
-  {{ form.sandbox }}
+
+<p>You do not yet have to pay this amount, but can do so if you wish.</p>
+
 {% endif %}
+
+{% if balance_due > 0 %}
+<div class="paybox">
+<h3>Pay deposit</h3>
+
+<p><b>Amount: £{{ balance_due }}</b></o>
+{{ paypal_form.render }}
+
+</div>
+{% endif %}
+
+
+<div class="paybox">
+<h3>Pay full balance</h3>
+<p><b>Amount: £{{ balance_full }}</b></o>
+{{ paypal_form_full.render }}
+
+</div>
+
+<div style="clear:both;">&nbsp;</div>
+
+{% else %}
+
+<p>This amount is now due.</p>
+
+{{ paypal_form.render }}
+
+
+{% endif %}
+
 
 <br/><br/>
 <h2>Notes</h2>

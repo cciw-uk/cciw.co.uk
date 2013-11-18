@@ -1242,10 +1242,21 @@ def booking_secretary_reports(request, year=None):
 
     total_amount_due_dict = dict((o.id, o.total_amount_due) for o in outstanding)
 
+    # 3 concerns:
+    # 1) people who have overpaid. This must be calculated with respect to the total amount due
+    #    on the account.
+    # 2) people who have underpaid:
+    #    a) with respect to the total amount due
+    #    b) with respect to the total amount due at this point in time,
+    #       allowing for the fact that up to a certain point,
+    #       only the deposit is actually required.
+    #
+    # People in group 2b) possibly need to be chased. They are not highlighted here - TODO
+
     # This will actually exclude people who have outstanding fees but do not
     # have bookings this year. That's OK - previous year's report page will catch them.
-    bookings = Booking.objects.payable(False).filter(camp__year__exact=year,
-                                                     account__in=[o.id for o in outstanding])
+    bookings = Booking.objects.payable(False, False).filter(camp__year__exact=year,
+                                                            account__in=[o.id for o in outstanding])
     bookings = bookings.order_by('account__name','first_name','last_name')
 
     # Decorate with the already calculated 'total_amount_due', and with 'number

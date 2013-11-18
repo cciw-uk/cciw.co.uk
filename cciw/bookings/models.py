@@ -127,15 +127,30 @@ class BookingAccount(models.Model):
 
     # Business methods:
 
-    def get_balance(self, confirmed_only=False):
+    def get_balance(self, confirmed_only=False, allow_deposits=False):
         """
         Gets the balance to pay on the account.
         If confirmed_only=True, then only bookings that are confirmed
-        (no expiration date) are included as 'received goods'
+        (no expiration date) are included as 'received goods'.
+        If allow_deposits=True, then bookings that only require deposits
+        at this point in time will only count for the deposit amount.
         """
-        total = self.bookings.payable(confirmed_only).aggregate(models.Sum('amount_due'))['amount_due__sum']
+        today = date.today()
+        # If allow_deposits, we only do the sum over bookings that require full
+        # amount, then get the required deposit amounts in a separate step.
+        total = self.bookings.payable(confirmed_only, allow_deposits, today=today).aggregate(models.Sum('amount_due'))['amount_due__sum']
         if total is None:
             total = Decimal('0.00')
+
+        if allow_deposits:
+            # Need to add in the cost of deposits.
+            extra_bookings = list(self.bookings.only_deposit_required(confirmed_only, today=today).prefetch_related('camp'))
+            # Need to use the deposit price for each.
+            years = [b.camp.year for b in extra_bookings]
+            prices = {p.year: p.price for p in Price.objects.filter(year__in=years, price_type=PRICE_DEPOSIT)}
+            for b in extra_bookings:
+                total += prices[b.camp.year]
+
         return total - self.total_received
 
     def receive_payment(self, amount):
@@ -180,6 +195,8 @@ class BookingAccount(models.Model):
         # user selects a discount for which they were not eligible, and pays. This is then
         # discovered, and the 'amount due' for that place is altered by an admin.
         #
+        # Also, users have the option to pay only the deposit for a booking.
+        #
         # So, we need a method to distribute any incoming payment so that we stop the
         # booked place from expiring. It is better to be too generous than too stingy in
         # stopping places from expiring, because:
@@ -220,18 +237,20 @@ class BookingAccount(models.Model):
         """
         # In order to distribute funds, need to take into account the total
         # amount in the account that is not covered by confirmed places
-        existing_balance = self.get_balance(confirmed_only=True)
+        existing_balance = self.get_balance(confirmed_only=True, allow_deposits=True)
         # The 'pot' is the amount we have as excess and can use to mark places
         # as confirmed.
         pot = -existing_balance
         # Order by booking_expires ascending i.e. earliest first
         candidate_bookings = list(self.bookings.unconfirmed()
-                                  .order_by('booking_expires'))
+                                  .order_by('booking_expires')
+                                  .prefetch_related('camp')
+                                  )
         i = 0
         confirmed_bookings = []
         while pot > 0 and i < len(candidate_bookings):
             b = candidate_bookings[i]
-            if b.amount_due <= pot:
+            if b.amount_now_due() <= pot:
                 b.confirm()
                 b.save()
                 confirmed_bookings.append(b)
@@ -239,7 +258,6 @@ class BookingAccount(models.Model):
             i += 1
         if confirmed_bookings:
             places_confirmed.send(confirmed_bookings, payment_received=True)
-
 
 
 class BookingManager(models.Manager):
@@ -268,18 +286,33 @@ class BookingManager(models.Manager):
         return self.get_query_set().filter(state=BOOKING_BOOKED,
                                            booking_expires__isnull=False)
 
-    def payable(self, confirmed_only):
+    def payable(self, confirmed_only, full_amount_only, today=None):
         """
         Returns bookings for which payment is due.
         If confirmed_only is True, unconfirmed places are excluded.
+        If full_amount_only is True, places which require only the deposit
+        at this point in time are excluded.
         """
         # 'Full refund' cancelled bookings do not have payment due, but the
         # others do.
+        # Logic duplicated in booking_secretary_reports.
         cancelled = self.get_query_set().filter(state__in=[BOOKING_CANCELLED,
                                                            BOOKING_CANCELLED_HALF_REFUND])
-        # See logic in booking_secretary_reports
+        retval = cancelled | (self.confirmed() if confirmed_only else self.booked())
+        if full_amount_only:
+            if today is None:
+                today = date.today()
+            cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
+            retval = retval.exclude(camp__start_date__gt=cutoff)
+        return retval
 
-        return cancelled | (self.confirmed() if confirmed_only else self.booked())
+    def only_deposit_required(self, confirmed_only, today=None):
+        if today is None:
+            today = date.today()
+        retval = self.payable(confirmed_only, False, today=today)
+        cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
+        retval = retval.filter(camp__start_date__gt=cutoff)
+        return retval
 
     def cancelled(self):
         return self.get_query_set().filter(state__in=[BOOKING_CANCELLED,
@@ -402,6 +435,14 @@ class Booking(models.Model):
                 self.amount_due = Decimal('0.00')
         else:
             self.amount_due = self.expected_amount_due()
+
+    def amount_now_due(self):
+        # Amount due, taking into account the fact that only a deposit might be due.
+        cutoff = date.today() + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
+        if self.camp.start_date > cutoff:
+            return Price.objects.get(price_type=PRICE_DEPOSIT, year=self.camp.year).price
+        else:
+            return self.amount_due
 
     def age_on_camp(self):
         # Age is calculated based on school years, i.e. age on 31st August
