@@ -60,6 +60,15 @@
         "pk": "1"
     }, 
     {
+      "pk": "booking_secretary_address", 
+      "model": "sitecontent.htmlchunk", 
+      "fields": {
+        "menu_link": null, 
+        "html": "    <p>Booking Secretary,<br/>\r\n      James Bloggs,<br/>\r\n      12 Main Street", 
+        "page_title": ""
+      }
+    },
+    {
         "pk": 1, 
         "model": "sites.site", 
         "fields": {
