@@ -9,7 +9,6 @@ from django.utils.http import int_to_base36, base36_to_int
 
 from cciw.officers.email import admin_emails_for_camp
 
-
 LATE_BOOKING_THRESHOLD = 30 # days
 
 class EmailVerifyTokenGenerator(object):
@@ -192,3 +191,29 @@ def send_booking_confirmed_mail(booking):
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
     return True
+
+
+def send_payment_reminder_emails():
+    from cciw.bookings.models import BookingAccount
+    accounts = BookingAccount.objects.payments_due()
+
+    subject = "CCIW payments due"
+    now = datetime.now()
+    for account in accounts:
+        if (account.last_payment_reminder is not None and
+            (now - account.last_payment_reminder).days < settings.BOOKING_EMAIL_REMINDER_FREQUENCY_DAYS):
+            continue
+
+        if account.email is None:
+            continue
+
+        account.last_payment_reminder = now
+        account.save()
+
+        c = {
+            'account': account,
+            'account_id': int_to_base36(account.id),
+            'token': EmailVerifyTokenGenerator().make_token(account),
+            }
+        body = loader.render_to_string('cciw/bookings/payments_due_email.txt', c)
+        mail.send_mail(subject, body, settings.BOOKING_SECRETARY_EMAIL, [account.email])

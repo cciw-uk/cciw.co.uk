@@ -350,7 +350,7 @@ class BookingEmailSent(DefaultMetaData, TemplateView):
     extra_context = {'stage': 'login'}
 
 
-def verify_email(request, account_id, token):
+def verify_email(request, account_id, token, action):
     fail = lambda: HttpResponseRedirect(reverse('cciw.bookings.views.verify_email_failed'))
     try:
         account_id = base36_to_int(account_id)
@@ -362,25 +362,45 @@ def verify_email(request, account_id, token):
         return fail()
 
     if check_email_verification_token(account, token):
-        if account.last_login is not None and (datetime.now() - account.last_login) > \
+        return action(account)
+    else:
+        return fail()
+
+
+def verify_email_and_start(request, account_id, token):
+    def action(account):
+        now = datetime.now()
+        last_login = account.last_login
+
+        if account.first_login is None:
+            account.first_login = now
+        account.last_login = now
+        account.save()
+
+        if last_login is not None and (now - last_login) > \
                 timedelta(30*6): # six months
             resp = HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
             set_booking_account_cookie(resp, account)
             messages.info(request, "Welcome back! Please check and update your account details")
             return resp
 
-        dt = datetime.now()
-        if account.first_login is None:
-            account.first_login = dt
-        account.last_login = dt
-        account.save()
-
         resp = next_step(account)
         set_booking_account_cookie(resp, account)
         messages.info(request, u"Logged in!")
         return resp
-    else:
-        return fail()
+
+    return verify_email(request, account_id, token,
+                        action)
+
+
+def verify_email_and_pay(request, account_id, token):
+    def action(account):
+        resp = HttpResponseRedirect(reverse('cciw.bookings.views.pay'))
+        set_booking_account_cookie(resp, account)
+        return resp
+
+    return verify_email(request, account_id, token,
+                        action)
 
 
 class BookingVerifyEmailFailed(DefaultMetaData, TemplateView):

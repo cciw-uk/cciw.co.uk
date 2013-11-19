@@ -85,6 +85,29 @@ class Price(models.Model):
         return {p.year: p.price for p in q}
 
 
+class BookingAccountManager(models.Manager):
+    def payments_due(self):
+        """
+        Returns a list of accounts that owe money.
+        Account objects are annotated with attribute 'balance_due' as a Decimal
+        """
+        # To limit the size of queries, so do a SQL query for people who might
+        # owe money.
+        potentials = (
+            self.get_query_set()
+            .only('id','total_received')
+            .annotate(total_amount_due=models.Sum('bookings__amount_due'))
+            .exclude(total_amount_due=models.F('total_received'))
+            )
+        retval = []
+        for account in potentials:
+            balance_due = account.get_balance(confirmed_only=True,
+                                              allow_deposits=True)
+            if balance_due > 0:
+                account.balance_due = balance_due
+                retval.append(account)
+        return retval
+
 
 class BookingAccount(models.Model):
     # For online bookings, email is required, but not for paper. Initially for online
@@ -102,6 +125,9 @@ class BookingAccount(models.Model):
     total_received = models.DecimalField(default=Decimal('0.00'), decimal_places=2, max_digits=10)
     first_login = models.DateTimeField(null=True, blank=True)
     last_login = models.DateTimeField(null=True, blank=True)
+    last_payment_reminder = models.DateTimeField(null=True, blank=True)
+
+    objects = BookingAccountManager()
 
     def has_account_details(self):
         return self.name != "" and self.address != "" and self.post_code != ""
