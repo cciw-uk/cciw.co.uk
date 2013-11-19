@@ -468,7 +468,7 @@ class Topic(models.Model):
     started_by = models.ForeignKey(Member, related_name="topics_started",
         verbose_name="started by")
     created_at = models.DateTimeField("Started", null=True)
-    open = models.BooleanField("Open")
+    open = models.BooleanField("Open", default=False)
     hidden = models.BooleanField("Hidden", default=False)
     approved = models.NullBooleanField("Approved", blank=True)
     checked_by = models.ForeignKey(User,
@@ -553,8 +553,8 @@ class UserSpecificPhotos(models.Manager):
 
 class Photo(models.Model):
     created_at = models.DateTimeField("Started", null=True)
-    open = models.BooleanField("Open")
-    hidden = models.BooleanField("Hidden")
+    open = models.BooleanField("Open", default=False)
+    hidden = models.BooleanField("Hidden", default=False)
     filename = models.CharField("Filename", max_length=50)
     description = models.CharField("Description", blank=True, max_length=100)
     gallery = models.ForeignKey(Gallery,

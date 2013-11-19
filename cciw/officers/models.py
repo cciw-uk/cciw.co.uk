@@ -268,7 +268,7 @@ class ReferenceForm(models.Model):
     referee_name = models.CharField("name of referee", max_length=100)
     how_long_known = models.CharField("how long/since when have you known the applicant?", max_length=150)
     capacity_known = models.TextField("in what capacity do you know the applicant?")
-    known_offences = models.BooleanField("""The position for which the applicant is applying requires substantial contact with children and young people. To the best of your knowledge, does the applicant have any convictions/cautions/bindovers, for any criminal offences?""", blank=True)
+    known_offences = models.BooleanField("""The position for which the applicant is applying requires substantial contact with children and young people. To the best of your knowledge, does the applicant have any convictions/cautions/bindovers, for any criminal offences?""", blank=True, default=False)
     known_offences_details = models.TextField("If the answer is yes, please identify", blank=True)
     capability_children = models.TextField("Please comment on the applicant's capability of working with children and young people (ie. previous experience of similar work, sense of responsibility, sensitivity, ability to work with others, ability to communicate with children and young people, leadership skills)")
     character = models.TextField("Please comment on aspects of the applicants character (ie. Christian experience honesty, trustworthiness, reliability, disposition, faithful attendance at worship/prayer meetings.)")
