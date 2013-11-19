@@ -64,15 +64,8 @@ the same rules apply to both paper bookings and online bookings.</p>
     <p><a href="{{ MEDIA_URL }}{{ bookingform }}">Download the CCIW
         booking form for {{ thisyear }}</a> </p>
 
-    <p>Completed booking forms should be sent, with the deposit, to:</p>
-
-    <p>Booking Secretary,<br/>
-      Rebecca Hammond,<br/>
-      34 Nustead Road,<br/>
-      Erith,<br/>
-      Kent,<br/>
-      DA8 1 LT<br/>
-    </p>
+    <p>Completed booking forms should be sent, with the deposit, to the booking
+    secretary (address below).</p>
 
 {% else %}
 
@@ -90,5 +83,20 @@ have), please use the <a href="{% url 'cciwmain.misc.feedback' %}">feedback
 form</a> to request one. Please remember to include your address so that we
 can post one. If you are ordering a large number of booking forms, please
 include your telephone number so that we can verify the request.</p>
+
+<h2>Booking secretary</h2>
+
+<p>Contact:</p>
+<ul>
+  <li>Postal address:<br/><br/>
+
+
+{% htmlchunk booking_secretary_address %}
+  </li>
+
+  <li>Email: <a href="mailto:bookings@cciw.co.uk">bookings@cciw.co.uk</a><br/><br/></li>
+
+  <li><a href="{% url 'cciwmain.misc.feedback' %}?bookings">Contact form</a><br/><br/></li>
+</ul>
 
 {% endblock %}
