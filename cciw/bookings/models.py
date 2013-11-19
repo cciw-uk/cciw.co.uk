@@ -279,11 +279,12 @@ class BookingAccount(models.Model):
         confirmed_bookings = []
         while pot > 0 and i < len(candidate_bookings):
             b = candidate_bookings[i]
-            if b.amount_now_due() <= pot:
+            amount = b.amount_now_due()
+            if amount <= pot:
                 b.confirm()
                 b.save()
                 confirmed_bookings.append(b)
-                pot -= b.amount_due
+                pot -= amount
             i += 1
         if confirmed_bookings:
             places_confirmed.send(confirmed_bookings, payment_received=True)
