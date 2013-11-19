@@ -12,6 +12,7 @@ from cciw.utils.views import close_window_response
 
 from .widgets import AccountAutoCompleteWidget
 
+
 class PriceAdmin(admin.ModelAdmin):
     list_display = ['price_type', 'year', 'price']
     ordering = ['-year', 'price_type']
@@ -117,6 +118,70 @@ account_autocomplete_field = \
                              widget=AccountAutoCompleteWidget('account',
                                                               attrs={'size':'70'}))
 
+
+class BookingsManualPaymentInlineForm(forms.ModelForm):
+    def save(self, commit=True, account=None):
+        if self.instance.pk is not None:
+            # Don't allow changes
+            return None
+
+        if self.instance.amount is None:
+            # Nothing entered
+            return None
+
+        self.instance.account = account
+        return super(BookingsManualPaymentInlineForm, self).save(commit=commit)
+
+    def full_clean(self, *args, **kwargs):
+        retval = super(BookingsManualPaymentInlineForm, self).full_clean(*args, **kwargs)
+        self._errors.pop('account', None)
+        self._errors.pop('created', None)
+        return retval
+
+    class Meta:
+        model = ManualPayment
+
+
+# Inline for quickly adding ManualPayment when entering Booking.
+# This is a bit of a hack, but works.
+class BookingsManualPaymentInline(admin.TabularInline):
+    form = BookingsManualPaymentInlineForm
+    model = ManualPayment
+    can_delete = False
+    max_num = 1
+    extra = 1
+    verbose_name_plural = "Add a manual payment for account (optional)"
+
+    fieldsets = [(None,
+                  {'fields':
+                       ['amount', 'payment_type']})]
+
+    def get_formset(self, request, obj):
+        # Don't have a FK from ManualPayment to Booking (only BookingAccount),
+        # so can't use super.get_formset(). Need a normal ModelFormSet, with hacks.
+        from django.forms.models import modelformset_factory
+        FormSet = modelformset_factory(self.model, self.form,
+                                       max_num=self.max_num,
+                                       extra=self.extra)
+
+        class BookingsManualPaymentFormSet(FormSet):
+            def __init__(self, *args, **kwargs):
+                # Match up the signatures by removing instance
+                instance = kwargs.pop('instance', None)
+                save_as_new = kwargs.pop('save_as_new', False)
+                assert save_as_new == False
+                self.instance = instance
+                # Don't list or allow editing of existing ManualPayments
+                kwargs["queryset"] = self.model.objects.none()
+                super(BookingsManualPaymentFormSet, self).__init__(*args, **kwargs)
+
+            def save_new(self, form, commit=True):
+                # We override this in order to pass 'account' into BookingsManualPaymentInlineForm.save()
+                return form.save(commit=commit, account=self.instance.account)
+
+        return BookingsManualPaymentFormSet
+
+
 class BookingAdminForm(forms.ModelForm):
 
     account = account_autocomplete_field()
@@ -211,6 +276,8 @@ class BookingAdmin(admin.ModelAdmin):
                'created',
                'shelved']}),
         )
+
+    inlines = [BookingsManualPaymentInline]
 
     def save_model(self, request, obj, form, change):
         if obj.id is not None:
