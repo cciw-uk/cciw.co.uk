@@ -2,8 +2,9 @@ from autocomplete.fields import ModelChoiceField
 from django.contrib import admin
 from django.contrib import messages
 from django import forms
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.html import escape, escapejs
+from django.utils.http import is_safe_url
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
 from cciw.bookings.models import Price, BookingAccount, Booking, ManualPayment, RefundPayment, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, Payment
@@ -18,6 +19,23 @@ account_autocomplete_field = \
                              label='Account',
                              widget=AccountAutoCompleteWidget('account',
                                                               attrs={'size':'70'}))
+
+
+class ReturnToAdminMixin(object):
+    def conditional_redirect(self, request, main_response):
+        if 'return_to' in request.GET:
+            url = request.GET['return_to']
+            if is_safe_url(url=url, host=request.get_host()):
+                return HttpResponseRedirect(url)
+        return main_response
+
+    def response_post_save_add(self, request, obj):
+        return self.conditional_redirect(request,
+                                         super(ReturnToAdminMixin, self).response_post_save_add(request, obj))
+
+    def response_post_save_change(self, request, obj):
+        return self.conditional_redirect(request,
+                                         super(ReturnToAdminMixin, self).response_post_save_change(request, obj))
 
 
 class PriceAdmin(admin.ModelAdmin):
@@ -67,7 +85,6 @@ class BookingAccountPaymentInline(admin.TabularInline):
     can_delete = False
     extra = 0
     max_num = 0
-
 
 
 class BookingAccountAdmin(admin.ModelAdmin):
@@ -335,7 +352,7 @@ class RefundPaymentAdminForm(ManualPaymentAdminFormBase):
         model = RefundPayment
 
 
-class ManualPaymentAdminBase(admin.ModelAdmin):
+class ManualPaymentAdminBase(ReturnToAdminMixin, admin.ModelAdmin):
     list_display = ['account', 'amount', 'payment_type', 'created']
     search_fields = ['account__name']
     date_hierarchy = 'created'

@@ -1,0 +1,18 @@
+{% extends "admin/change_form.html" %}
+{% block after_related_objects %}
+
+{% if original %}
+
+<p>Manual payments:
+  <a href="{% url 'admin:bookings_manualpayment_changelist' %}?account__id__exact={{ original.id }}">View</a>
+  | <a href="{% url 'admin:bookings_manualpayment_add' %}?account={{ original.id }}&return_to={{ request.get_full_path|urlencode }}">Add</a>
+</p>
+
+<p>Refund payments:
+  <a href="{% url 'admin:bookings_refundpayment_changelist' %}?account__id__exact={{ original.id }}">View</a>
+  | <a href="{% url 'admin:bookings_refundpayment_add' %}?account={{ original.id }}&return_to={{ request.get_full_path|urlencode }}">Add</a>
+</p>
+
+{% endif %}
+
+{% endblock %}
