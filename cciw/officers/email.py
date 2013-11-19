@@ -72,6 +72,7 @@ def send_application_emails(request, application):
                                     application_difference(previous_app, application),
                                     "text/html")
 
+
         if len(leader_emails) > 0:
             send_leader_email(leader_emails, application, application_text, rtf_attachment,
                               application_diff)

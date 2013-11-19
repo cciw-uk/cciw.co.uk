@@ -68,7 +68,7 @@ def json_validation_request(request, form):
 
     if request.GET.get('format') == 'json':
         return HttpResponse(python_to_json(form.errors),
-                            mimetype='text/javascript')
+                            content_type='text/javascript')
     else:
         return None
 
@@ -84,7 +84,7 @@ class AjaxyFormMixin(object):
             form_class = self.get_form_class()
             form = self.get_form(form_class)
             return HttpResponse(python_to_json(form.errors),
-                                mimetype='text/javascript')
+                                content_type='text/javascript')
         else:
             return super(AjaxyFormMixin, self).post(request, *args, **kwargs)
 

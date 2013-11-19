@@ -5,12 +5,13 @@ Utility functions and classes.
 For CCIW specific utilities see cciw.cciwmain.common
 """
 from datetime import date, datetime
+import json
 import fcntl
 import operator
 import os
 
+from django.core.validators import validate_email, ValidationError
 from django.utils.safestring import mark_safe
-from django.utils import simplejson
 from django.utils.functional import Promise
 from django.utils.encoding import force_unicode
 
@@ -40,7 +41,7 @@ def unslugify(slug):
 # form.errors contains strings marked for translation,
 # even though USE_I18N==False.  We have to do this so
 # that we can serialize
-class LazyEncoder(simplejson.JSONEncoder):
+class LazyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Promise):
             return force_unicode(obj)
@@ -72,3 +73,10 @@ class Lock(object):
     def __del__(self):
         self.handle.close()
 
+def is_valid_email(email):
+    try:
+        validate_email(email)
+    except ValidationError:
+        return False
+    else:
+        return True

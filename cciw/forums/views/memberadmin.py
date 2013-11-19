@@ -4,7 +4,6 @@ from django.core import mail
 from django.contrib import messages
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.core.validators import email_re
 from django.forms import widgets
 from django.http import Http404, HttpResponseRedirect
 from django.utils.crypto import salted_hmac
@@ -17,6 +16,7 @@ from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain import common
 from cciw.cciwmain import imageutils
 from cciw.cciwmain.forms import CciwFormMixin
+from cciw.cciwmain.utils import is_valid_email
 import urllib
 import re
 import datetime
@@ -247,7 +247,7 @@ def signup(request):
         ######## 3. CHECK ADDRESS AND SEND EMAIL #########
         email = request.POST['email'].strip()
         c['email'] = email
-        if email_re.search(email):
+        if is_valid_email(email):
             if email_address_used(email):
                 c['stage'] = "email"
                 c['alreadyused'] = True
@@ -320,7 +320,7 @@ def help_logging_in(request):
         email = request.POST.get('email', '').strip()
         c['email'] = email
         cont = True
-        if not email_re.search(email):
+        if not is_valid_email(email):
             c['error_message'] = "The e-mail address is not valid.  Please check and try again."
             cont = False
 

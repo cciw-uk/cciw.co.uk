@@ -324,7 +324,7 @@ class BookingAccount(models.Model):
                 pot -= amount
             i += 1
         if confirmed_bookings:
-            places_confirmed.send(confirmed_bookings, payment_received=True)
+            places_confirmed.send(self, bookings=confirmed_bookings, payment_received=True)
 
 
 class BookingManager(models.Manager):

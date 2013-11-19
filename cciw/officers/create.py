@@ -3,10 +3,12 @@
 # Some of these are used from a script, and so print messages to the console if
 # 'verbose=True'.  A bit icky...
 from datetime import datetime
+
 from django.contrib.auth.models import User, Group
 from django.conf import settings
 from django.core.mail import send_mail
-from django.core.validators import email_re
+
+from cciw.cciwmain.utils import is_valid_email
 
 
 def make_username(first_name, last_name, guess_number=1):
@@ -55,7 +57,7 @@ def create_multiple_officers(csv_data, dryrun, verbose=False):
         if valid and len(email) == 0:
             valid = False
             msg = "no e-mail address provided"
-        if valid and not email_re.search(email):
+        if valid and not is_valid_email(email):
             valid = False
             msg = "invalid e-mail address"
 

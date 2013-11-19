@@ -1,14 +1,16 @@
 import email
 import imaplib
 import re
+
 from django.conf import settings
 from django.core.mail import get_connection, make_msgid
-from django.core.validators import email_re
+import xmlrpclib
+
 from cciw.cciwmain.decorators import email_errors_silently
+from cciw.cciwmain.utils import is_valid_email
 from cciw.officers.email_utils import formatted_email
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.webfaction import webfaction_session
-import xmlrpclib
 
 ### External utility functions ###
 
@@ -161,7 +163,7 @@ def handle_mail(data):
     to = mail['To']
     assert to is not None, "Message did not have 'To' field set, cannot send email"
 
-    if email_re.match(to):
+    if is_valid_email(to):
         addresses = [to]
     else:
         addresses = email_extract_re.findall(to)

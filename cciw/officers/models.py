@@ -190,8 +190,8 @@ class Reference(models.Model):
     # been named ReferenceMeta or something.
     application = models.ForeignKey(Application, limit_choices_to={'finished': True})
     referee_number = models.SmallIntegerField("Referee number", choices=((1,'1'), (2,'2')))
-    requested = models.BooleanField()
-    received = models.BooleanField()
+    requested = models.BooleanField(default=False)
+    received = models.BooleanField(default=False)
     comments = models.TextField(blank=True)
 
     objects = ReferenceManager()

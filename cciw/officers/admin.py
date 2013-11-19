@@ -61,6 +61,8 @@ class ApplicationAdminModelForm(forms.ModelForm):
 
         future_camps = Camp.objects.filter(start_date__gte=datetime.date.today())
 
+        self.editing_old = editing_old
+
         if not editing_old:
             if len(future_camps) == 0:
                 self._errors.setdefault('__all__', ErrorList()).append("You cannot submit an application form until the upcoming camps are decided on.")
@@ -85,6 +87,11 @@ class ApplicationAdminModelForm(forms.ModelForm):
                     if data is None or data == u"":
                         self._errors[name] = ErrorList(["This is a required field"])
         return self.cleaned_data
+
+    def save(self, **kwargs):
+        if not self.editing_old:
+            self.instance.date_submitted = datetime.date.today()
+        return super(ApplicationAdminModelForm, self).save(**kwargs)
 
 
 class ApplicationAdmin(admin.ModelAdmin):
@@ -226,11 +233,6 @@ class ApplicationAdmin(admin.ModelAdmin):
             return db_field.formfield(**defaults)
         return super(ApplicationAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
-    def _update_timestamp(self, request):
-        request.POST['date_submitted'] = datetime.datetime.today()
-        request.POST['date_submitted_0'] = datetime.date.today()
-        request.POST['date_submitted_1'] = datetime.datetime.now().strftime("%H:%M:%S")
-
     def _force_no_add_another(self, request):
         if request.POST.has_key('_addanother'):
             del request.POST['_addanother']
@@ -249,7 +251,6 @@ class ApplicationAdmin(admin.ModelAdmin):
         request.POST = request.POST.copy()
         self._force_no_add_another(request)
         self._force_user_val(request)
-        self._update_timestamp(request)
 
     def change_view(self, request, obj_id):
         if request.method == "POST":
@@ -289,8 +290,10 @@ class ApplicationAdmin(admin.ModelAdmin):
             # date_submitted is NULL, the form has never been saved, so its fine
             # to delete.
             old = obj.officer.application_set.filter(finished=False)
-            old = old.filter(date_submitted__isnull=True) | old.filter(date_submitted__lt=obj.date_submitted)
-            old.delete()
+            old2 = old.filter(date_submitted__isnull=True)
+            if obj.date_submitted is not None:
+                old2 = old2 | old.filter(date_submitted__lt=obj.date_submitted)
+            old2.delete()
         email.send_application_emails(request, obj)
 
 

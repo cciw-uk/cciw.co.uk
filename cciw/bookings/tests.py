@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta, date
 from decimal import Decimal
+import json
 import re
 
 from django.conf import settings
@@ -8,7 +9,6 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from django.utils import simplejson
 from twill import commands as tc
 import xlrd
 
@@ -1376,8 +1376,8 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         self.login()
         self.create_place()
         resp = self.client.get(reverse('cciw.bookings.views.places_json'))
-        json = simplejson.loads(resp.content)
-        self.assertEqual(json['places'][0]['first_name'], self.place_details['first_name'])
+        j = json.loads(resp.content)
+        self.assertEqual(j['places'][0]['first_name'], self.place_details['first_name'])
 
     def test_places_json_with_exclusion(self):
         self.login()
@@ -1385,14 +1385,14 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         acc = self.get_account()
         resp = self.client.get(reverse('cciw.bookings.views.places_json') +
                                ("?exclude=%d" % acc.bookings.all()[0].id))
-        json = simplejson.loads(resp.content)
-        self.assertEqual(json['places'], [])
+        j = json.loads(resp.content)
+        self.assertEqual(j['places'], [])
 
     def test_places_json_with_bad_exclusion(self):
         self.login()
         resp = self.client.get(reverse('cciw.bookings.views.places_json') +"?exclude=x")
-        json = simplejson.loads(resp.content)
-        self.assertEqual(json['places'], [])
+        j = json.loads(resp.content)
+        self.assertEqual(j['places'], [])
 
     def test_account_json(self):
         self.login()
@@ -1401,8 +1401,8 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         acc.save()
 
         resp = self.client.get(reverse('cciw.bookings.views.account_json'))
-        json = simplejson.loads(resp.content)
-        self.assertEqual(json['account']['address'], '123 Main Street')
+        j = json.loads(resp.content)
+        self.assertEqual(j['account']['address'], '123 Main Street')
 
     def test_all_account_json(self):
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
@@ -1421,8 +1421,8 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.get(reverse('cciw.bookings.views.all_account_json') + "?id=%d" % acc1.id)
         self.assertEqual(resp.status_code, 200)
 
-        json = simplejson.loads(resp.content)
-        self.assertEqual(json['account']['post_code'], 'ABC')
+        j = json.loads(resp.content)
+        self.assertEqual(j['account']['post_code'], 'ABC')
 
     def test_booking_problems(self):
         self.add_prices()
@@ -1435,8 +1435,8 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
 
 
         self.assertEqual(resp.status_code, 200)
-        json = simplejson.loads(resp.content)
-        self.assertEqual(json['valid'], False)
+        j = json.loads(resp.content)
+        self.assertEqual(j['valid'], False)
 
         data = self.place_details.copy()
         data['account'] = str(acc1.id)
@@ -1448,9 +1448,9 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
                                 data)
 
-        json = simplejson.loads(resp.content)
-        self.assertEqual(json['valid'], True)
-        problems = json['problems']
+        j = json.loads(resp.content)
+        self.assertEqual(j['valid'], True)
+        problems = j['problems']
         self.assertTrue(u"A custom discount needs to be arranged by the booking secretary" in
                         problems)
 
@@ -1474,8 +1474,8 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
                                 data)
 
-        json = simplejson.loads(resp.content)
-        problems = json['problems']
+        j = json.loads(resp.content)
+        problems = j['problems']
         p_full = Price.objects.get(price_type=PRICE_FULL, year=get_thisyear())
         self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £%s"
                                          % p_full.price)
@@ -1501,8 +1501,8 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
                                 data)
 
-        json = simplejson.loads(resp.content)
-        problems = json['problems']
+        j = json.loads(resp.content)
+        problems = j['problems']
         p_deposit = Price.objects.get(price_type=PRICE_DEPOSIT, year=get_thisyear())
         self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £%s"
                                          % p_deposit.price)
@@ -1515,8 +1515,8 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
                                 data)
 
-        json = simplejson.loads(resp.content)
-        problems = json['problems']
+        j = json.loads(resp.content)
+        problems = j['problems']
         self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £0.00")
                             for p in problems))
 

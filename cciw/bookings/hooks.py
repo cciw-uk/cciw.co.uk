@@ -66,7 +66,7 @@ def refund_payment_deleted(sender, **kwargs):
 ### Place confirmation ###
 
 def places_confirmed_handler(sender, **kwargs):
-    bookings = sender
+    bookings = kwargs.pop('bookings')
     send_places_confirmed_email(bookings, **kwargs)
 
 

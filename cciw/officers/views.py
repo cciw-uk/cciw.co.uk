@@ -12,7 +12,6 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.core.urlresolvers import reverse
-from django.core.validators import email_re
 from django.http import Http404, HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404
 from django.template import RequestContext
@@ -26,7 +25,7 @@ from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_s
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
-from cciw.cciwmain.utils import python_to_json
+from cciw.cciwmain.utils import python_to_json, is_valid_email
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename, thisyears_applications, applications_for_camp, camps_for_application
 from cciw.officers import create
@@ -203,12 +202,12 @@ def view_application(request):
 
     format = request.POST.get('format', '')
     if format == 'txt':
-        resp = HttpResponse(application_to_text(app), mimetype="text/plain")
+        resp = HttpResponse(application_to_text(app), content_type="text/plain")
         resp['Content-Disposition'] = 'attachment; filename=%s;' % \
                                       application_txt_filename(app)
         return resp
     elif format == 'rtf':
-        resp = HttpResponse(application_to_rtf(app), mimetype="text/rtf")
+        resp = HttpResponse(application_to_rtf(app), content_type="text/rtf")
         resp['Content-Disposition'] = 'attachment; filename=%s;' % \
                                       application_rtf_filename(app)
         return resp
@@ -476,7 +475,7 @@ def request_reference(request, year=None, number=None):
     if messageform is None:
         messageform = SendReferenceRequestForm(message_info=messageform_info)
 
-    if not email_re.match(ref.referee.email.strip()):
+    if not is_valid_email(ref.referee.email.strip()):
         c['bad_email'] = True
     c['is_popup'] = True
     c['already_requested'] = ref.requested
@@ -754,7 +753,7 @@ def officer_list(request, year=None, number=None):
         for section, tname in tnames:
             retval[section] = render_to_string(tname, context_instance=RequestContext(request, c))
         return HttpResponse(python_to_json(retval),
-                            mimetype="text/javascript")
+                            content_type="text/javascript")
     else:
         return render(request, "cciw/officers/officer_list.html", c)
 
@@ -922,7 +921,7 @@ def export_officer_data(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     formatter = get_spreadsheet_formatter(request)
     response = HttpResponse(officer_data_to_spreadsheet(camp, formatter),
-                            mimetype=formatter.mimetype)
+                            content_type=formatter.mimetype)
     response['Content-Disposition'] = ('attachment; filename=camp-%d-%d-officers.%s'
                                        % (camp.year, camp.number, formatter.file_ext))
     return response
@@ -934,7 +933,7 @@ def export_camper_data(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     formatter = get_spreadsheet_formatter(request)
     response = HttpResponse(camp_bookings_to_spreadsheet(camp, formatter),
-                            mimetype=formatter.mimetype)
+                            content_type=formatter.mimetype)
     response['Content-Disposition'] = ('attachment; filename=camp-%d-%d-campers.%s'
                                        % (camp.year, camp.number, formatter.file_ext))
     return response
@@ -946,7 +945,7 @@ def export_camper_data_for_year(request, year=None):
     year = int(year)
     formatter = get_spreadsheet_formatter(request)
     response = HttpResponse(year_bookings_to_spreadsheet(year, formatter),
-                            mimetype=formatter.mimetype)
+                            content_type=formatter.mimetype)
     response['Content-Disposition'] = ('attachment; filename=CCIW-bookings-%d.%s'
                                        % (year, formatter.file_ext))
     return response
@@ -1294,7 +1293,7 @@ def export_payment_data(request, date_start, date_end):
     date_end = datetime.strptime(date_end, EXPORT_PAYMENT_DATE_FORMAT)
     formatter = get_spreadsheet_formatter(request)
     response = HttpResponse(payments_to_spreadsheet(date_start, date_end, formatter),
-                            mimetype=formatter.mimetype)
+                            content_type=formatter.mimetype)
     response['Content-Disposition'] = ('attachment; filename=payments-%s-to-%s.%s'
                                        % (date_start.strftime('%Y-%m-%d'),
                                           date_end.strftime('%Y-%m-%d'),
@@ -1306,7 +1305,7 @@ def export_payment_data(request, date_start, date_end):
 def brochure_mailing_list(request, year):
     formatter = get_spreadsheet_formatter(request)
     response = HttpResponse(addresses_for_mailing_list(int(year), formatter),
-                            mimetype=formatter.mimetype)
+                            content_type=formatter.mimetype)
     response['Content-Disposition'] = ('attachment; filename=mailing-list-%s.%s'
                                        % (year, formatter.file_ext))
     return response
