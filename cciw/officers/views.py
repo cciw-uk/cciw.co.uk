@@ -1255,12 +1255,16 @@ def booking_secretary_reports(request, year=None):
     for b in bookings:
         counts[b.account_id] += 1
 
+    deposit_prices = Price.get_deposit_prices()
     outstanding = []
     for b in bookings:
         b.count_for_account = counts[b.account_id]
         if not hasattr(b.account, 'calculated_balance'):
-            b.account.calculated_balance = b.account.get_balance(confirmed_only=True, allow_deposits=False)
-            b.account.calculated_balance_due = b.account.get_balance(confirmed_only=True, allow_deposits=True)
+            b.account.calculated_balance = b.account.get_balance(confirmed_only=True,
+                                                                 allow_deposits=False)
+            b.account.calculated_balance_due = b.account.get_balance(confirmed_only=True,
+                                                                     allow_deposits=True,
+                                                                     deposit_price_dict=deposit_prices)
 
             if b.account.calculated_balance_due > 0 or b.account.calculated_balance < 0:
                 outstanding.append(b)

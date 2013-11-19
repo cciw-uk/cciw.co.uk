@@ -77,6 +77,15 @@ class Price(models.Model):
         return u"%s %s - %s" % (self.get_price_type_display(), self.year, self.price)
 
 
+    @classmethod
+    def get_deposit_prices(cls, years=None):
+        q = Price.objects.filter(price_type=PRICE_DEPOSIT)
+        if years is not None:
+            q = q.filter(year__in=set(years))
+        return {p.year: p.price for p in q}
+
+
+
 class BookingAccount(models.Model):
     # For online bookings, email is required, but not for paper. Initially for online
     # process only email is filled in, so to ensure we can edit all BookingAccounts
@@ -127,13 +136,15 @@ class BookingAccount(models.Model):
 
     # Business methods:
 
-    def get_balance(self, confirmed_only=False, allow_deposits=False):
+    def get_balance(self, confirmed_only=False, allow_deposits=False, deposit_price_dict=None):
         """
         Gets the balance to pay on the account.
         If confirmed_only=True, then only bookings that are confirmed
         (no expiration date) are included as 'received goods'.
         If allow_deposits=True, then bookings that only require deposits
         at this point in time will only count for the deposit amount.
+
+        As an optimisation, a dictionary {year:price in GBP} can be passed in deposit_price_dict.
         """
         today = date.today()
         # If allow_deposits, we only do the sum over bookings that require full
@@ -171,10 +182,10 @@ class BookingAccount(models.Model):
             else:
                 extra_bookings = list(self.bookings.only_deposit_required(confirmed_only, today=today))
             # Need to use the deposit price for each.
-            years = [b.camp.year for b in extra_bookings]
-            prices = {p.year: p.price for p in Price.objects.filter(year__in=years, price_type=PRICE_DEPOSIT)}
+            if deposit_price_dict is None:
+                deposit_price_dict = Price.get_deposit_prices([b.camp.year for b in extra_bookings])
             for b in extra_bookings:
-                p = prices[b.camp.year]
+                p = deposit_price_dict[b.camp.year]
                 if p < b.amount_due:
                     total += p
                 else:
