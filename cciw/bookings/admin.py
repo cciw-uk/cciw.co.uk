@@ -6,11 +6,18 @@ from django.http import HttpResponse
 from django.utils.html import escape, escapejs
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
-from cciw.bookings.models import Price, BookingAccount, Booking, ManualPayment, RefundPayment, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED
+from cciw.bookings.models import Price, BookingAccount, Booking, ManualPayment, RefundPayment, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, Payment
 from cciw.cciwmain.common import get_thisyear
 from cciw.utils.views import close_window_response
 
 from .widgets import AccountAutoCompleteWidget
+
+
+account_autocomplete_field = \
+    lambda: ModelChoiceField('account',
+                             label='Account',
+                             widget=AccountAutoCompleteWidget('account',
+                                                              attrs={'size':'70'}))
 
 
 class PriceAdmin(admin.ModelAdmin):
@@ -53,12 +60,24 @@ class BookingAccountForm(forms.ModelForm):
         return self.cleaned_data
 
 
+class BookingAccountPaymentInline(admin.TabularInline):
+    model = Payment
+    fields = ["amount", "payment_type", "created"]
+    readonly_fields = fields
+    can_delete = False
+    extra = 0
+    max_num = 0
+
+
+
 class BookingAccountAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'email', 'post_code', 'phone_number']
     ordering = ['email']
     search_fields = ['email', 'name']
     readonly_fields = ['first_login', 'last_login', 'total_received']
     form = BookingAccountForm
+
+    inlines = [BookingAccountPaymentInline]
 
     def get_fieldsets(self, request, obj=None):
         fieldsets = [
@@ -110,13 +129,6 @@ class YearFilter(admin.SimpleListFilter):
         if val is None:
             return queryset
         return queryset.filter(camp__year__exact=val)
-
-
-account_autocomplete_field = \
-    lambda: ModelChoiceField('account',
-                             label='Account',
-                             widget=AccountAutoCompleteWidget('account',
-                                                              attrs={'size':'70'}))
 
 
 class BookingsManualPaymentInlineForm(forms.ModelForm):

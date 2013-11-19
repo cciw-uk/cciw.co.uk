@@ -743,7 +743,13 @@ class Payment(models.Model):
     objects = PaymentManager()
 
     def __unicode__(self):
-        return u"Payment: %s to %s from %s" % (self.amount, self.account, self.origin)
+        return u"Payment: %s to %s from %s" % (self.amount, self.account.name, self.origin_type)
+
+    def payment_type(self):
+        if hasattr(self.origin, 'get_payment_type_display'):
+            return self.origin.get_payment_type_display()
+        else:
+            return "PayPal"
 
 
 class ManualPaymentManager(models.Manager):
