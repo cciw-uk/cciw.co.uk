@@ -17,9 +17,9 @@ class MemberAnonymizer(Anonymizer):
         ('comments', "similar_lorem"),
     ]
 
-    def get_query_set(self):
+    def get_queryset(self):
         # Don't alter developer logins.
-        return super(MemberAnonymizer, self).get_query_set().exclude(user_name='spookylukey')
+        return super(MemberAnonymizer, self).get_queryset().exclude(user_name='spookylukey')
 
 
 class PersonalAwardAnonymizer(Anonymizer):

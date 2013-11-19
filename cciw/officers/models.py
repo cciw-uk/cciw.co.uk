@@ -36,8 +36,8 @@ class Referee(object):
 
 class ApplicationManager(models.Manager):
     use_for_related_fields = True
-    def get_query_set(self):
-        return super(ApplicationManager, self).get_query_set().select_related('officer')
+    def get_queryset(self):
+        return super(ApplicationManager, self).get_queryset().select_related('officer')
 
 
 class Application(models.Model):
@@ -178,8 +178,8 @@ class Application(models.Model):
 class ReferenceManager(models.Manager):
     # manager to reduce number of SQL queries, especially in admin
     use_for_related_fields = True
-    def get_query_set(self):
-        return super(ReferenceManager, self).get_query_set().select_related('application__officer')
+    def get_queryset(self):
+        return super(ReferenceManager, self).get_queryset().select_related('application__officer')
 
 
 class Reference(models.Model):
@@ -260,8 +260,8 @@ class Reference(models.Model):
 class ReferenceFormManager(models.Manager):
     # manager to reduce number of SQL queries, especially in admin
     use_for_related_fields = True
-    def get_query_set(self):
-        return super(ReferenceFormManager, self).get_query_set().select_related('reference_info__application__officer')
+    def get_queryset(self):
+        return super(ReferenceFormManager, self).get_queryset().select_related('reference_info__application__officer')
 
 
 class ReferenceForm(models.Model):
@@ -304,8 +304,8 @@ class ReferenceForm(models.Model):
 
 class InvitationManager(models.Manager):
     use_for_related_fields = True
-    def get_query_set(self):
-        return super(InvitationManager, self).get_query_set().select_related('officer', 'camp', 'camp__chaplain')
+    def get_queryset(self):
+        return super(InvitationManager, self).get_queryset().select_related('officer', 'camp', 'camp__chaplain')
 
 
 class Invitation(models.Model):
@@ -327,8 +327,8 @@ class Invitation(models.Model):
 
 class CRBApplicationManager(models.Manager):
     use_for_related_fields = True
-    def get_query_set(self):
-        return super(CRBApplicationManager, self).get_query_set().select_related('officer')
+    def get_queryset(self):
+        return super(CRBApplicationManager, self).get_queryset().select_related('officer')
 
     def get_for_camp(self, camp):
         """
@@ -336,7 +336,7 @@ class CRBApplicationManager(models.Manager):
         officer list)
         """
         # This logic is duplicated in cciw.officers.views.stats
-        return self.get_query_set().filter(completed__gte=camp.start_date - timedelta(settings.CRB_VALID_FOR))
+        return self.get_queryset().filter(completed__gte=camp.start_date - timedelta(settings.CRB_VALID_FOR))
 
 
 class CRBApplication(models.Model):
@@ -358,8 +358,8 @@ class CRBApplication(models.Model):
 
 class CRBFormLogManager(models.Manager):
     use_for_related_fields = True
-    def get_query_set(self):
-        return super(CRBFormLogManager, self).get_query_set().select_related('officer')
+    def get_queryset(self):
+        return super(CRBFormLogManager, self).get_queryset().select_related('officer')
 
 
 class CRBFormLog(models.Model):

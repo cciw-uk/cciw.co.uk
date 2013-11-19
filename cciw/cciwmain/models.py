@@ -41,8 +41,8 @@ class Person(models.Model):
 
 class CampManager(models.Manager):
     use_for_related_fields = True
-    def get_query_set(self):
-        return super(CampManager, self).get_query_set().select_related('chaplain').prefetch_related('leaders')
+    def get_queryset(self):
+        return super(CampManager, self).get_queryset().select_related('chaplain').prefetch_related('leaders')
 
     def get_by_natural_key(self, year, number):
         return self.get(year=year, number=number)

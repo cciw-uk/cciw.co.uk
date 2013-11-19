@@ -46,7 +46,7 @@ from cciw.bookings.models import Payment
 # new (negative) Payment object is created.
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def process_one_payment(payment):
     payment.account.receive_payment(payment.amount)
     payment.processed = datetime.now()

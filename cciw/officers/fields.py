@@ -26,6 +26,11 @@ class ExplicitBooleanField(models.NullBooleanField):
         kwargs['default'] = None
         super(ExplicitBooleanField, self).__init__(*args, **kwargs)
 
+    def _has_changed(self, initial, data):
+        # Sometimes data or initial could be None or u'' which should be the
+        # same thing as False.
+        return bool(initial) != bool(data)
+
 
 def required_field(field_class, *args, **kwargs):
     """

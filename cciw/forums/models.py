@@ -33,14 +33,14 @@ class Permission(models.Model):
 
 class UserSpecificMembers(models.Manager):
 
-    def get_query_set(self):
+    def get_queryset(self):
         user = threadlocals.get_current_user()
         if threadlocals.is_web_request() and \
            (user is None or user.is_anonymous() or not user.is_staff or \
             not user.has_perm('cciwmain.change_member')):
-            return super(UserSpecificMembers, self).get_query_set().filter(hidden=False)
+            return super(UserSpecificMembers, self).get_queryset().filter(hidden=False)
         else:
-            return super(UserSpecificMembers, self).get_query_set()
+            return super(UserSpecificMembers, self).get_queryset()
 
     def get_by_natural_key(self, user_name):
         return self.get(user_name=user_name)
@@ -189,8 +189,8 @@ class Award(models.Model):
 
 class PersonalAwardManager(models.Manager):
 
-    def get_query_set(self, *args, **kwargs):
-        qs = super(PersonalAwardManager, self).get_query_set(*args, **kwargs)
+    def get_queryset(self, *args, **kwargs):
+        qs = super(PersonalAwardManager, self).get_queryset(*args, **kwargs)
         return qs.select_related('member')
 
 
@@ -446,8 +446,8 @@ class NewsItem(models.Model):
 
 
 class UserSpecificTopics(models.Manager):
-    def get_query_set(self):
-        queryset = super(UserSpecificTopics, self).get_query_set()
+    def get_queryset(self):
+        queryset = super(UserSpecificTopics, self).get_queryset()
         user = threadlocals.get_current_user()
         if threadlocals.is_web_request() and \
            (user is None or user.is_anonymous() or \
@@ -539,8 +539,8 @@ class Gallery(models.Model):
 
 
 class UserSpecificPhotos(models.Manager):
-    def get_query_set(self):
-        queryset = super(UserSpecificPhotos, self).get_query_set()
+    def get_queryset(self):
+        queryset = super(UserSpecificPhotos, self).get_queryset()
         user = threadlocals.get_current_user()
         if threadlocals.is_web_request() and \
             (user is None or user.is_anonymous() or \
@@ -602,10 +602,10 @@ class Photo(models.Model):
 
 
 class UserSpecificPosts(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         """Return a filtered version of the queryset,
         appropriate for the current member/user."""
-        queryset = super(UserSpecificPosts, self).get_query_set()
+        queryset = super(UserSpecificPosts, self).get_queryset()
         user = threadlocals.get_current_user()
         if threadlocals.is_web_request() and \
            (user is None or user.is_anonymous() or \

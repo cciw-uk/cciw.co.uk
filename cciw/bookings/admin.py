@@ -45,9 +45,6 @@ class PriceAdmin(admin.ModelAdmin):
 
 class BookingAccountForm(forms.ModelForm):
 
-    class Meta:
-        model = BookingAccount
-
     # We need to ensure that email/name/post_code that are blank get saved as
     # NULL, so that they can pass our uniqueness constraints if they are empty
     # (NULLs do not compare equal, but empty strings do)
@@ -167,9 +164,6 @@ class BookingsManualPaymentInlineForm(forms.ModelForm):
         self._errors.pop('created', None)
         return retval
 
-    class Meta:
-        model = ManualPayment
-
 
 # Inline for quickly adding ManualPayment when entering Booking.
 # This is a bit of a hack, but works.
@@ -220,6 +214,7 @@ class BookingAdminForm(forms.ModelForm):
 
     class Meta:
         model = Booking
+        fields = "__all__"
 
 
 class BookingAdmin(admin.ModelAdmin):
@@ -341,15 +336,11 @@ class ManualPaymentAdminFormBase(forms.ModelForm):
 
 
 class ManualPaymentAdminForm(ManualPaymentAdminFormBase):
-
-    class Meta:
-        model = ManualPayment
+    pass
 
 
 class RefundPaymentAdminForm(ManualPaymentAdminFormBase):
-
-    class Meta:
-        model = RefundPayment
+    pass
 
 
 class ManualPaymentAdminBase(ReturnToAdminMixin, admin.ModelAdmin):

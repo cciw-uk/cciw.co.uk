@@ -94,7 +94,7 @@ class BookingAccountManager(models.Manager):
         # To limit the size of queries, so do a SQL query for people who might
         # owe money.
         potentials = (
-            self.get_query_set()
+            self.get_queryset()
             .only('id','total_received')
             .annotate(total_amount_due=models.Sum('bookings__amount_due'))
             .exclude(total_amount_due=models.F('total_received'))
@@ -329,8 +329,8 @@ class BookingAccount(models.Model):
 
 class BookingManager(models.Manager):
     use_for_related_fields = True
-    def get_query_set(self):
-        return super(BookingManager, self).get_query_set().select_related('camp', 'account')
+    def get_queryset(self):
+        return super(BookingManager, self).get_queryset().select_related('camp', 'account')
 
     def basket(self, year):
         return self._ready_to_book(year, False)
@@ -339,18 +339,18 @@ class BookingManager(models.Manager):
         return self._ready_to_book(year, True)
 
     def _ready_to_book(self, year, shelved):
-        qs = self.get_query_set().filter(camp__year__exact=year, shelved=shelved)
+        qs = self.get_queryset().filter(camp__year__exact=year, shelved=shelved)
         return qs.filter(state=BOOKING_INFO_COMPLETE) | qs.filter(state=BOOKING_APPROVED)
 
     def booked(self):
-        return self.get_query_set().filter(state=BOOKING_BOOKED)
+        return self.get_queryset().filter(state=BOOKING_BOOKED)
 
     def confirmed(self):
-        return self.get_query_set().filter(state=BOOKING_BOOKED,
+        return self.get_queryset().filter(state=BOOKING_BOOKED,
                                            booking_expires__isnull=True)
 
     def unconfirmed(self):
-        return self.get_query_set().filter(state=BOOKING_BOOKED,
+        return self.get_queryset().filter(state=BOOKING_BOOKED,
                                            booking_expires__isnull=False)
 
     def payable(self, confirmed_only, full_amount_only, today=None, from_list=None):
@@ -383,7 +383,7 @@ class BookingManager(models.Manager):
             return retval
 
 
-        cancelled = self.get_query_set().filter(state__in=[BOOKING_CANCELLED,
+        cancelled = self.get_queryset().filter(state__in=[BOOKING_CANCELLED,
                                                            BOOKING_CANCELLED_HALF_REFUND])
         retval = cancelled | (self.confirmed() if confirmed_only else self.booked())
         if full_amount_only:
@@ -402,12 +402,12 @@ class BookingManager(models.Manager):
             return retval.filter(camp__start_date__gt=cutoff)
 
     def cancelled(self):
-        return self.get_query_set().filter(state__in=[BOOKING_CANCELLED,
+        return self.get_queryset().filter(state__in=[BOOKING_CANCELLED,
                                                       BOOKING_CANCELLED_HALF_REFUND,
                                                       BOOKING_CANCELLED_FULL_REFUND])
 
     def need_approving(self):
-        qs = self.get_query_set().filter(state=BOOKING_INFO_COMPLETE)
+        qs = self.get_queryset().filter(state=BOOKING_INFO_COMPLETE)
         qs = qs.filter(price_type=PRICE_CUSTOM) | qs.filter(serious_illness=True)
         return qs
 
@@ -753,8 +753,8 @@ def book_basket_now(bookings):
 class PaymentManager(models.Manager):
     use_for_related_fields = True
 
-    def get_query_set(self):
-        return super(PaymentManager, self).get_query_set().select_related('account')
+    def get_queryset(self):
+        return super(PaymentManager, self).get_queryset().select_related('account')
 
 
 class Payment(models.Model):
@@ -781,8 +781,8 @@ class Payment(models.Model):
 class ManualPaymentManager(models.Manager):
     use_for_related_fields = True
 
-    def get_query_set(self):
-        return super(ManualPaymentManager, self).get_query_set().select_related('account')
+    def get_queryset(self):
+        return super(ManualPaymentManager, self).get_queryset().select_related('account')
 
 
 class ManualPaymentBase(models.Model):

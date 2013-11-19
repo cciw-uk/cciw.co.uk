@@ -24,11 +24,6 @@ class ExplicitBooleanFieldSelect(admin.widgets.AdminRadioSelect):
         value = data.get(name, None)
         return {u'2': True, u'3': False, True: True, False: False}.get(value, None)
 
-    def _has_changed(self, initial, data):
-        # Sometimes data or initial could be None or u'' which should be the
-        # same thing as False.
-        return bool(initial) != bool(data)
-
 
 class JQueryAutoCompleteWidget(AutoCompleteWidget):
     AC_TEMPLATE = u'''

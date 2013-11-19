@@ -113,7 +113,9 @@ if DEVBOX:
             'USER': 'cciw',
             'PASSWORD': 'foo',
             'HOST': 'localhost',
-            'PORT': 5432
+            'PORT': 5432,
+            'CONN_MAX_AGE': 30,
+            'ATOMIC_REQUESTS': True,
             }
         }
 else:
@@ -166,15 +168,11 @@ if DEVBOX:
     EMAIL_HOST_PASSWORD = None
     EMAIL_PORT = 8025
 
-    SEND_BROKEN_LINK_EMAILS = True
-
 else:
     SERVER_EMAIL = "website@cciw.co.uk"
     DEFAULT_FROM_EMAIL = SERVER_EMAIL
     EMAIL_HOST = "smtp.webfaction.com"
     from cciw.settings_priv import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
-
-    SEND_BROKEN_LINK_EMAILS = False
 
 ##### MAILING LISTS ######
 
@@ -214,7 +212,6 @@ _MIDDLEWARE_CLASSES = (
     (True,       "django.contrib.auth.middleware.AuthenticationMiddleware"),
     (True,       "django.middleware.common.CommonMiddleware"),
     (True,       "cciw.middleware.auth.PrivateWiki"),
-    (True,       "django.middleware.transaction.TransactionMiddleware"),
     (True,       "cciw.middleware.threadlocals.ThreadLocals"),
 )
 DATABASE_ENGINE='postgresql'

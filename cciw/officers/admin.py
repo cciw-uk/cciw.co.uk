@@ -307,8 +307,8 @@ class InvitationAdmin(admin.ModelAdmin):
     list_filter = ['camp']
     search_fields = ['officer__first_name', 'officer__last_name', 'officer__username']
 
-    def queryset(self, *args, **kwargs):
-        return super(InvitationAdmin, self).queryset(*args, **kwargs).prefetch_related('camp__leaders')
+    def get_queryset(self, *args, **kwargs):
+        return super(InvitationAdmin, self).get_queryset(*args, **kwargs).prefetch_related('camp__leaders')
 
 
 class ReferenceFormAdmin(admin.ModelAdmin):
