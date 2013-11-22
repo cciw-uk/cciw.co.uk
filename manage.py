@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import warnings
-#warnings.simplefilter("error", PendingDeprecationWarning)
+warnings.simplefilter("always", PendingDeprecationWarning)
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
 from django.core import management
