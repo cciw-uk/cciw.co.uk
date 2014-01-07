@@ -1,9 +1,6 @@
 import re
 
-import autocomplete.fields
 from django import forms
-
-from cciw.officers.widgets import JQueryAutoCompleteWidget
 
 yyyy_mm_re = re.compile('^\d{4}/\d{2}$')
 
@@ -19,9 +16,3 @@ class YyyyMmField(forms.CharField):
         if not yyyy_mm_re.match(value):
             raise forms.ValidationError("This field must be in the form YYYY/MM.")
         return value
-
-
-class ModelChoiceField(autocomplete.fields.ModelChoiceField):
-
-    widget = JQueryAutoCompleteWidget
-

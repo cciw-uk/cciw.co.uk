@@ -3,7 +3,7 @@ $(document).ready(function() {
     "use strict";
 
     var getCurrentAccountId = function() {
-        var val = $('#id_hidden_account').val();
+        var val = $('#id_account').val()[0]; // autocomplete_light makes val() return an array
         val = parseInt(val, 10);
         // NaN madness
         if (val == val) {
@@ -13,10 +13,53 @@ $(document).ready(function() {
         }
     }
 
+    // For 'add another', we need slightly customised behaviour instead of showAddAnotherPopup
+    var showAddAnotherAccountPopup = function (ev) {
+        ev.preventDefault();
+        var name = 'id_account';
+        name = id_to_windowname(name);
+        var href = '/admin/bookings/bookingaccount/add/?_popup=1&name=' + encodeURIComponent($('#id_account-autocomplete').val());
+        var win = window.open(href, name, 'height=500,width=800,resizable=yes,scrollbars=yes');
+        win.focus();
+    }
+
+    var showEditAccountPopup = function (ev) {
+        ev.preventDefault();
+        var accountId = getCurrentAccountId();
+        if (accountId == null) {
+            alert("No account selected, cannot edit");
+            return;
+        }
+        var name = 'id_account';
+        name = id_to_windowname(name);
+        var href = '/admin/bookings/bookingaccount/' + getCurrentAccountId() + '/?_popup=1';
+        var win = window.open(href, name, 'height=500,width=800,resizable=yes,scrollbars=yes');
+        win.focus();
+    }
+
+    // // Hack: we need dismissAddAnotherPopup to do something different,
+    // // so we monkey patch it.
+
+    var originalDismissAddAnotherPopup = window.dismissAddAnotherPopup;
+    window.dismissAddAnotherPopup = function(win, newId, newRepr) {
+        var name = windowname_to_id(win.name);
+        var elem = document.getElementById(name);
+        if (name == 'id_account') {
+            // autocomplete_light seems to need the next line to avoid getting confused.
+            $('#id_account').append("<option value='tmpremove' selected='selected'>tmpremove</option>");
+            $('#id_account').append("<option value='" + newId + "' selected='selected'>" + newRepr + "</option>");
+            $("#id_account-wrapper").get(0).scrollIntoView(); // Fix a glitch with scrolling
+            win.close();
+        } else {
+            originalDismissAddAnotherPopup(win, newId, newRepr);
+        }
+    }
+
+
     var useAccountAddressForCamper = function(ev) {
         ev.preventDefault();
         var accId = getCurrentAccountId();
-        if (accId == undefined) return;
+        if (accId == null) return;
         $.ajax({
             type: "GET",
             url: cciw.allAccountJsonUrl + "?id=" + accId.toString(),
@@ -32,7 +75,7 @@ $(document).ready(function() {
     var useAccountAddressForContact = function(ev) {
         ev.preventDefault();
         var accId = getCurrentAccountId();
-        if (accId == undefined) return;
+        if (accId == null) return;
         $.ajax({
             type: "GET",
             url: cciw.allAccountJsonUrl + "?id=" + accId.toString(),
@@ -128,6 +171,12 @@ $(document).ready(function() {
     };
 
     // Page changes
+    $('div.field-account a.add-another').after(
+            '<a href="#" id="add_id_account"> New account </a> | ' +
+            '<a href="#" id="edit_id_account"> Edit </a>'
+    );
+    $("div.field-account a.add-another").remove();
+
     $('#id_address').parent().append('<input type="submit" value="Copy address details from account"' +
                                      'id="id_use_account_for_camper">');
     $('#id_contact_address').parent().append('<input type="submit" value="Copy contact details from account"' +
@@ -136,8 +185,9 @@ $(document).ready(function() {
     $('#id_amount_due').after('<input type="submit" id="id_amount_due_auto" value="">');
     $('#id_amount_due_auto').hide();
 
-
     // Wiring for event handlers
+    $('#add_id_account').click(showAddAnotherAccountPopup);
+    $('#edit_id_account').click(showEditAccountPopup);
 
     $('#id_use_account_for_camper').click(useAccountAddressForCamper);
     $('#id_use_account_for_contact').click(useAccountAddressForContact);

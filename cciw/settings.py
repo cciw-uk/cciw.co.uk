@@ -75,7 +75,7 @@ INSTALLED_APPS = (
     'cciw.bookings',
     'django.contrib.messages',
     'securedownload',
-    'autocomplete',
+    'autocomplete_light',
     'djiki',
     'paypal.standard.ipn',
 )

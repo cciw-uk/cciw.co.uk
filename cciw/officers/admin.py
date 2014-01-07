@@ -1,5 +1,6 @@
 import datetime
 
+import autocomplete_light
 from django.contrib import admin
 from django.core import urlresolvers
 from django import forms
@@ -8,15 +9,13 @@ from django.forms.util import ErrorList
 from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
 from cciw.officers.fields import ExplicitBooleanField
-from cciw.officers.formfields import ModelChoiceField
 from cciw.officers.models import Application, Reference, Invitation, ReferenceForm, CRBApplication, CRBFormLog
 from cciw.officers import widgets
 from cciw.utils.views import close_window_response
 
-officer_autocomplete_field = \
-    lambda: ModelChoiceField('user',
-                             widget=widgets.JQueryAutoCompleteWidget('user',
-                                                                     attrs={'size':'50'}))
+
+officer_autocomplete_field = lambda: autocomplete_light.ModelChoiceField('user')
+
 
 class ApplicationAdminModelForm(forms.ModelForm):
 

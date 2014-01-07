@@ -1,4 +1,5 @@
-from autocomplete.views import autocomplete
+import autocomplete_light
+
 from django.conf.urls import patterns, url, include
 from django.conf import settings
 from django.contrib import admin
@@ -10,25 +11,40 @@ from cciw.bookings.models import BookingAccount
 
 handler404 = 'cciw.cciwmain.views.handler404'
 
+
+class UserAutocomplete(autocomplete_light.AutocompleteModelBase):
+    search_fields = ['^first_name', '^last_name']
+
+    def choice_label(self, user):
+        return u"%s %s <%s>" % (user.first_name, user.last_name, user.email)
+
+    def choices_for_request(self):
+        request = self.request
+        self.choices = self.choices.order_by('first_name', 'last_name', 'email')
+        if request.user.is_authenticated() and cciw.auth.is_camp_admin(request.user):
+            return super(UserAutocomplete, self).choices_for_request()
+        else:
+            return []
+
+
+class BookingAccountAutocomplete(autocomplete_light.AutocompleteModelBase):
+    search_fields = ['name']
+
+    def choices_for_request(self):
+        request = self.request
+        self.choices = self.choices.order_by('name', 'post_code')
+        if request.user.is_authenticated and cciw.auth.is_booking_secretary(request.user):
+            return super(BookingAccountAutocomplete, self).choices_for_request()
+        else:
+            return []
+
+
+autocomplete_light.register(User, UserAutocomplete, name='user')
+autocomplete_light.register(BookingAccount, BookingAccountAutocomplete, name='account')
+
+autocomplete_light.autodiscover()
 admin.autodiscover()
 
-autocomplete.register(
-    id='user',
-    queryset=User.objects.all().order_by('first_name', 'last_name', 'email'),
-    fields=('first_name__istartswith', 'last_name__istartswith'),
-    limit=10,
-    label=lambda user: u"%s %s <%s>" % (user.first_name, user.last_name, user.email),
-    auth=lambda request: request.user.is_authenticated() and cciw.auth.is_camp_admin(request.user)
-    )
-
-autocomplete.register(
-    id='account',
-    queryset=BookingAccount.objects.all().order_by('name', 'post_code'),
-    fields=('name__icontains',),
-    limit=20,
-    label=lambda acc: unicode(acc),
-    auth=lambda request: request.user.is_authenticated and cciw.auth.is_booking_secretary(request.user)
-    )
 
 urlpatterns = patterns('',
     (r'^booking/', include('cciw.bookings.urls')),
@@ -40,7 +56,7 @@ urlpatterns = patterns('',
     # Normal views
     (r'^admin/', include(admin.site.urls)),
     (r'^officers/', include('cciw.officers.urls')),
-    url('^autocomplete/(\w+)/$', autocomplete, name='autocomplete'),
+    url('^autocomplete/', include('autocomplete_light.urls')),
     (r'^wiki/', include('djiki.urls')),
     (r'^paypal/ipn/', include('paypal.standard.ipn.urls')),
 )

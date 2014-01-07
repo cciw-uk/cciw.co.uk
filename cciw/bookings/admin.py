@@ -1,4 +1,5 @@
-from autocomplete.fields import ModelChoiceField
+import autocomplete_light
+
 from django.contrib import admin
 from django.contrib import messages
 from django import forms
@@ -11,14 +12,8 @@ from cciw.bookings.models import Price, BookingAccount, Booking, ManualPayment, 
 from cciw.cciwmain.common import get_thisyear
 from cciw.utils.views import close_window_response
 
-from .widgets import AccountAutoCompleteWidget
 
-
-account_autocomplete_field = \
-    lambda: ModelChoiceField('account',
-                             label='Account',
-                             widget=AccountAutoCompleteWidget('account',
-                                                              attrs={'size':'70'}))
+account_autocomplete_field = lambda: autocomplete_light.ModelChoiceField('account')
 
 
 class ReturnToAdminMixin(object):
@@ -205,12 +200,7 @@ class BookingsManualPaymentInline(admin.TabularInline):
         return BookingsManualPaymentFormSet
 
 
-class BookingAdminForm(forms.ModelForm):
-
-    account = account_autocomplete_field()
-
-    def __init__(self, *args, **kwargs):
-        super(BookingAdminForm, self).__init__(*args, **kwargs)
+class BookingAdminForm(autocomplete_light.ModelForm):
 
     class Meta:
         model = Booking

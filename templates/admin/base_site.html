@@ -5,6 +5,7 @@
 {% block extrastyle %}{{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% static "css/adminextra.css" %}" />
 <script type="text/javascript" src="{% static "admin/js/jquery.min.js" %}"></script>
+{% include 'autocomplete_light/static.html' %}
 <script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>
 <script type="text/javascript">
 (function($) {
