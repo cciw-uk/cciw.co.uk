@@ -9,8 +9,9 @@ xlrd==0.7.1
 creole>=1.2
 python-dateutil==2.0
 Django==1.6
--e git+https://github.com/spookylukey/django-paypal@27627681#egg=paypal
--e git://github.com/jtauber/django-mailer.git@840d25bb9d#egg=django-mailer
+django-paypal==0.1.3
+# Python 3 support:
+-e git://github.com/pinax/django-mailer.git@bd6d1a75f63a398631bcba010005cdb8bd803edd#egg=django-mailer
 django-autocomplete-light>=2.0.0a1
 -e git://github.com/spookylukey/djiki.git@a219b99#egg=djiki
 diff-match-patch
