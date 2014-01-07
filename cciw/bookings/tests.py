@@ -550,22 +550,21 @@ class TestEditPlaceAdmin(CreatePlaceMixin, WebTestBase):
         self.webtest_officer_login(BOOKING_SEC)
         response = self.get("admin:bookings_booking_change", b.id)
         self.code(response, 200)
-        form = response.forms['booking_form']
-        response = self.fill(form, {'state': BOOKING_APPROVED}).submit().follow()
+        response = self.fill(response.forms['booking_form'],
+                             {'state': BOOKING_APPROVED}
+                             ).submit().follow()
         self.assertContains(response, "An email has been sent")
         self.assertEqual(len(mail.outbox), 1)
 
     def test_create(self):
         self.webtest_officer_login(BOOKING_SEC)
         response = self.get("admin:bookings_bookingaccount_add")
-        response = self.fill(
-            response.forms['bookingaccount_form'],
-            {
-                'name': 'Joe',
-                'email': self.email,
-                'address': '123',
-                'post_code': 'XYZ',
-                }).submit().follow()
+        response = self.fill(response.forms['bookingaccount_form'],
+                             {'name': 'Joe',
+                              'email': self.email,
+                              'address': '123',
+                              'post_code': 'XYZ',
+                              }).submit().follow()
         self.code(response, 200)
         account = BookingAccount.objects.get(email=self.email)
 

@@ -4,20 +4,19 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from twill import commands as tc
 
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
 from cciw.officers.applications import application_difference
 from cciw.officers.tests.references import OFFICER, LEADER
-from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url
+from cciw.utils.tests.webtest import WebTestBase
 
-class ApplicationFormView(TwillMixin, TestCase):
+class ApplicationFormView(WebTestBase):
     fixtures = ['basic.json', 'officers_users.json']
 
     def _application_edit_url(self, app_id):
-        return make_django_url('admin:officers_application_change', app_id)
+        return reverse('admin:officers_application_change', args=[app_id])
 
     def setUp(self):
         # Make sure second camp has end date in future, otherwise we won't be able to
@@ -40,56 +39,58 @@ class ApplicationFormView(TwillMixin, TestCase):
         a.save()
         return a
 
-    def _finish_application_form(self):
+    def _finish_application_form(self, response):
         # A full set of values that pass validation.
-        tc.formvalue('1', 'full_name', 'x')
-        tc.formvalue('1', 'full_maiden_name', 'x')
-        tc.formvalue('1', 'birth_date', '2000-01-01')
-        tc.formvalue('1', 'birth_place', 'x')
-        tc.formvalue('1', 'address_firstline', 'x')
-        tc.formvalue('1', 'address_town', 'x')
-        tc.formvalue('1', 'address_county', 'x')
-        tc.formvalue('1', 'address_postcode', 'x')
-        tc.formvalue('1', 'address_country', 'x')
-        tc.formvalue('1', 'address_tel', 'x')
-        tc.formvalue('1', 'address_mobile', 'x')
-        tc.formvalue('1', 'address_since', '2008/01')
-        tc.formvalue('1', 'address_email', 'foo@foo.com')
-        tc.formvalue('1', 'christian_experience', 'x')
-        tc.formvalue('1', 'youth_experience', 'x')
-        tc.formvalue('1', 'youth_work_declined_details', 'x')
-        tc.formvalue('1', 'illness_details', 'x')
-        tc.formvalue('1', 'employer1_name', 'x')
-        tc.formvalue('1', 'employer1_from', '2008/01')
-        tc.formvalue('1', 'employer1_to', '2008/01')
-        tc.formvalue('1', 'employer1_job', 'x')
-        tc.formvalue('1', 'employer1_leaving', 'x')
-        tc.formvalue('1', 'employer2_name', 'x')
-        tc.formvalue('1', 'employer2_from', '2008/01')
-        tc.formvalue('1', 'employer2_to', '2008/01')
-        tc.formvalue('1', 'employer2_job', 'x')
-        tc.formvalue('1', 'employer2_leaving', 'x')
-        tc.formvalue('1', 'referee1_name', 'x')
-        tc.formvalue('1', 'referee1_address', 'x')
-        tc.formvalue('1', 'referee1_tel', 'x')
-        tc.formvalue('1', 'referee1_mobile', 'x')
-        tc.formvalue('1', 'referee1_email', 'foo1@foo1.com')
-        tc.formvalue('1', 'referee2_name', 'x')
-        tc.formvalue('1', 'referee2_address', 'x')
-        tc.formvalue('1', 'referee2_tel', 'x')
-        tc.formvalue('1', 'referee2_mobile', 'x')
-        tc.formvalue('1', 'referee2_email', 'foo2@foo2.com')
-        tc.formvalue('1', 'crime_details', 'x')
-        tc.formvalue('1', 'court_details', 'x')
-        tc.formvalue('1', 'concern_details', 'x')
-        tc.formvalue('1', 'youth_work_declined', '2')
-        tc.formvalue('1', 'relevant_illness', '2')
-        tc.formvalue('1', 'crime_declaration', '2')
-        tc.formvalue('1', 'court_declaration', '2')
-        tc.formvalue('1', 'concern_declaration', '2')
-        tc.formvalue('1', 'allegation_declaration', '2')
-        tc.formvalue('1', 'crb_check_consent', '2')
-        tc.formvalue('1', 'finished', 'on')
+        return self.fill(response.forms['application_form'],
+                         {'full_name': 'x',
+                          'full_maiden_name': 'x',
+                          'birth_date': '2000-01-01',
+                          'birth_place': 'x',
+                          'address_firstline': 'x',
+                          'address_town': 'x',
+                          'address_county': 'x',
+                          'address_postcode': 'x',
+                          'address_country': 'x',
+                          'address_tel': 'x',
+                          'address_mobile': 'x',
+                          'address_since': '2008/01',
+                          'address_email': 'foo@foo.com',
+                          'christian_experience': 'x',
+                          'youth_experience': 'x',
+                          'youth_work_declined_details': 'x',
+                          'illness_details': 'x',
+                          'employer1_name': 'x',
+                          'employer1_from': '2008/01',
+                          'employer1_to': '2008/01',
+                          'employer1_job': 'x',
+                          'employer1_leaving': 'x',
+                          'employer2_name': 'x',
+                          'employer2_from': '2008/01',
+                          'employer2_to': '2008/01',
+                          'employer2_job': 'x',
+                          'employer2_leaving': 'x',
+                          'referee1_name': 'x',
+                          'referee1_address': 'x',
+                          'referee1_tel': 'x',
+                          'referee1_mobile': 'x',
+                          'referee1_email': 'foo1@foo1.com',
+                          'referee2_name': 'x',
+                          'referee2_address': 'x',
+                          'referee2_tel': 'x',
+                          'referee2_mobile': 'x',
+                          'referee2_email': 'foo2@foo2.com',
+                          'crime_details': 'x',
+                          'court_details': 'x',
+                          'concern_details': 'x',
+                          'youth_work_declined': '2',
+                          'relevant_illness': '2',
+                          'crime_declaration': '2',
+                          'court_declaration': '2',
+                          'concern_declaration': '2',
+                          'allegation_declaration': '2',
+                          'crb_check_consent': '2',
+                          'finished': 'on',
+                          })
 
     def _get_application_form_emails(self):
         return [e for e in mail.outbox if "CCIW application form" in e.subject]
@@ -98,17 +99,16 @@ class ApplicationFormView(TwillMixin, TestCase):
         return [e for e in mail.outbox if "E-mail change" in e.subject]
 
     def test_change_application(self):
-        self._twill_login(OFFICER)
+        self.webtest_officer_login(OFFICER)
         a = self._add_application()
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 1)
-        tc.go(self._application_edit_url(a.id))
-        tc.code(200)
-        tc.find('Save and continue editing')
-        tc.notfind('Save and add another')
-        tc.formvalue('1', 'full_name', 'Test full name')
-        tc.submit('_save')
-        tc.url(reverse("cciw.officers.views.applications"))
+        response = self.get(self._application_edit_url(a.id))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Save and continue editing')
+        self.assertNotContains(response, 'Save and add another')
+        response = self.fill(response.forms['application_form'], {'full_name': 'Test full name'}).submit('_save').follow()
+        self.assertUrl(response, "cciw.officers.views.applications")
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
 
@@ -117,19 +117,19 @@ class ApplicationFormView(TwillMixin, TestCase):
         Ensure that a leader can change a finished application of an officer
         """
         self.test_finish_complete() # adds app for OFFICER
-        self._twill_logout()
+        self.webtest_officer_logout()
 
-        self._twill_login(LEADER)
+        self.webtest_officer_login(LEADER)
         # To catch a bug, give the leader an application form for the same camp
         self._add_application(officer=LEADER)
         u = User.objects.get(username=OFFICER[0])
         apps = u.application_set.all()
         self.assertEqual(len(apps), 1)
-        tc.go(self._application_edit_url(apps[0].id))
-        tc.code(200)
-        tc.formvalue('1', 'full_name', 'Changed full name')
-        tc.submit('_save')
-        tc.url(reverse("cciw.officers.views.applications"))
+        response = self.get(self._application_edit_url(apps[0].id))
+        self.assertEqual(response.status_code, 200)
+        response = self.fill(response.forms['application_form'],
+                             {'full_name': 'Changed full name'}).submit('_save').follow()
+        self.assertUrl(response, "cciw.officers.views.applications")
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Changed full name')
 
@@ -143,7 +143,7 @@ class ApplicationFormView(TwillMixin, TestCase):
 
         # setup
         self.assertEqual(len(mail.outbox), 0)
-        self._twill_login(OFFICER)
+        self.webtest_officer_login(OFFICER)
         u = User.objects.get(username=OFFICER[0])
         a = self._add_application()
         self.assertEqual(u.application_set.count(), 1)
@@ -154,14 +154,13 @@ class ApplicationFormView(TwillMixin, TestCase):
         self.assertNotEqual(orig_email, new_email)
 
         # visit page
-        tc.go(self._application_edit_url(a.id))
-        tc.code(200)
-        self._finish_application_form()
-        tc.formvalue('1', 'full_name', 'Test full name')
-        tc.formvalue('1', 'address_email', new_email)
-        tc.submit('_save')
-        tc.url(reverse("cciw.officers.views.applications"))
-
+        response = self.get(self._application_edit_url(a.id))
+        self.assertEqual(response.status_code, 200)
+        self._finish_application_form(response)
+        response = self.fill(response.forms['application_form'],
+                             {'full_name': 'Test full name',
+                              'address_email': new_email}).submit('_save').follow()
+        self.assertUrl(response, "cciw.officers.views.applications")
         self.assertEqual(u.application_set.count(), 1)
 
         # Check the e-mails have been sent
@@ -205,16 +204,16 @@ class ApplicationFormView(TwillMixin, TestCase):
         then no e-mail is sent out
         """
         self.assertEqual(len(mail.outbox), 0)
-        self._twill_login(OFFICER)
+        self.webtest_officer_login(OFFICER)
         u = User.objects.get(username=OFFICER[0])
         a = self._add_application()
         self.assertEqual(u.application_set.count(), 1)
 
-        tc.go(self._application_edit_url(a.id))
-        tc.code(200)
-        self._finish_application_form()
-        tc.formvalue('1', 'address_email', u.email.upper())
-        tc.submit('_save')
+        response = self.get(self._application_edit_url(a.id))
+        self.assertEqual(response.status_code, 200)
+        self._finish_application_form(response)
+        response = self.fill(response.forms['application_form'],
+                             {'address_email': u.email.upper()}).submit('_save').follow()
 
         # Check no e-mails have been sent
         emails = self._get_email_change_emails()
@@ -223,32 +222,29 @@ class ApplicationFormView(TwillMixin, TestCase):
     def test_finish_incomplete(self):
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 0)
-        self._twill_login(OFFICER)
+        self.webtest_officer_login(OFFICER)
         a = self._add_application()
-        tc.go(self._application_edit_url(a.id))
-        url = tc.browser.get_url()
-        tc.code(200)
-        tc.formvalue('1', 'finished', 'on')
-        tc.submit('_save')
-        tc.url(url)
-        tc.find("Please correct the errors below")
-        tc.find("form-row errors field-address")
+        response = self.get(self._application_edit_url(a.id))
+        url = response.request.url
+        self.assertEqual(response.status_code, 200)
+        response = self.fill(response.forms['application_form'], {'finished': 'on'}).submit('_save')
+        self.assertEqual(url, response.request.url) # Same page
+        self.assertContains(response, "Please correct the errors below")
+        self.assertContains(response, "form-row errors field-address")
         self.assertEqual(u.application_set.exclude(date_submitted__isnull=True).count(), 0) # shouldn't have been saved
 
     def test_finish_complete(self):
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
-        self._twill_login(OFFICER)
+        self.webtest_officer_login(OFFICER)
         # An old, unfinished application form
         self._add_application()
         a = self._add_application()
-        tc.go(self._application_edit_url(a.id))
-        tc.code(200)
-        self._finish_application_form()
-
-        tc.submit('_save')
-        tc.url(reverse("cciw.officers.views.applications"))
+        response = self.get(self._application_edit_url(a.id))
+        self.assertEqual(response.status_code, 200)
+        response = self._finish_application_form(response).submit('_save').follow()
+        self.assertUrl(response, "cciw.officers.views.applications")
 
         apps = list(u.application_set.all())
         # The old one should have been deleted.
@@ -265,19 +261,19 @@ class ApplicationFormView(TwillMixin, TestCase):
         Ensure that the user can't change an application after it has been
         'finished'
         """
-        self._twill_login(OFFICER)
+        self.webtest_officer_login(OFFICER)
         a = self._add_application()
         a.finished = True
         a.save()
 
-        tc.go(self._application_edit_url(a.id))
-        url = tc.browser.get_url()
-        tc.code(200)
-        tc.formvalue('1', 'full_name', 'A Changed Full Name')
-        tc.submit('_save')
+        response = self.get(self._application_edit_url(a.id))
+        url = response.request.url
+        self.assertEqual(response.status_code, 200)
+        response = self.fill(response.forms['application_form'],
+                             {'full_name': 'A Changed Full Name'}).submit('_save')
         # we should be on same page:
-        tc.url(url)
-        tc.find("You cannot change a submitted")
+        self.assertEqual(url, response.request.url)
+        self.assertContains(response, "You cannot change a submitted")
         # shouldn't have changed data:
         self.assertNotEqual(a.full_name, 'A Changed Full Name')
 
@@ -285,31 +281,31 @@ class ApplicationFormView(TwillMixin, TestCase):
         """
         Ensure that normal officers can't see the list of applications
         """
-        self._twill_login(OFFICER)
-        tc.go(make_django_url("admin:officers_application_changelist"))
-        tc.code(403)
+        self.webtest_officer_login(OFFICER)
+        response = self.app.get(reverse("admin:officers_application_changelist"),
+                                expect_errors=[403])
+        self.assertEqual(response.status_code, 403)
 
     def test_list_applications_leaders(self):
         """
         Ensure that leaders can see the list of applications
         """
-        self._twill_login(LEADER)
-        tc.go(make_django_url("admin:officers_application_changelist"))
-        tc.code(200)
+        self.webtest_officer_login(LEADER)
+        response = self.get("admin:officers_application_changelist")
+        self.assertEqual(response.status_code, 200)
 
     def test_add_application_duplicate(self):
         """
         Test that we can't add a new application twice in a year
         """
-        self._twill_login(OFFICER)
+        self.webtest_officer_login(OFFICER)
         a1 = self._add_application()
         a1.date_submitted = datetime.date.today()
         a1.save()
         a2 = self._add_application()
-        tc.go(self._application_edit_url(a2.id))
-        self._finish_application_form()
-        tc.submit('_save')
-        tc.find("You&#39;ve already submitted")
+        response = self.get(self._application_edit_url(a2.id))
+        response = self._finish_application_form(response).submit('_save')
+        self.assertContains(response, "You&#39;ve already submitted")
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.application_set.exclude(date_submitted__isnull=True).count(), 1)
 
@@ -334,12 +330,12 @@ class ApplicationFormView(TwillMixin, TestCase):
 
         # Create another application
         app1 = self._add_application()
-        tc.go(self._application_edit_url(app1.id))
-        self._finish_application_form()
+        response = self.get(self._application_edit_url(app1.id))
+        self._finish_application_form(response)
         # Now change some values
-        tc.formvalue('1', 'full_name', 'New Full Name')
-        tc.submit('_save')
-        tc.url(reverse("cciw.officers.views.applications"))
+        response = self.fill(response.forms['application_form'],
+                             {'full_name': 'New Full Name'}).submit('_save').follow()
+        self.assertUrl(response, "cciw.officers.views.applications")
 
         emails = self._get_application_form_emails()
         self.assertEqual(len(emails), 2)

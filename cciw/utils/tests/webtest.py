@@ -1,3 +1,5 @@
+import urlparse
+
 from django_webtest import WebTest
 from django.core.urlresolvers import reverse
 
@@ -15,6 +17,9 @@ class WebTestBase(WebTest):
         response = form.submit().follow()
         self.assertEqual(response.status_code, 200)
 
+    def webtest_officer_logout(self):
+        self.app.cookiejar.clear()
+
     def fill(self, form, data):
         for k,v in data.items():
             form[k] = unicode(v)
@@ -24,4 +29,14 @@ class WebTestBase(WebTest):
         self.assertEqual(response.status_code, status_code)
 
     def get(self, urlname, *args, **kwargs):
-        return self.app.get(reverse(urlname, args=args, kwargs=kwargs))
+        if '/' not in urlname:
+            url = reverse(urlname, args=args, kwargs=kwargs)
+        else:
+            url = urlname
+        return self.app.get(url)
+
+    def assertUrl(self, response, urlname):
+        url = reverse(urlname)
+        path = urlparse.urlparse(response.request.url).path
+        # response.url doesn't work in current version of django_webtest
+        self.assertEqual(path, url)
