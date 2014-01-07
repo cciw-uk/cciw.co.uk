@@ -3,11 +3,7 @@ import os
 import logging
 
 from django.core.management.base import BaseCommand
-from django.db import transaction
 import zc.lockfile
-
-from cciw.bookings.models import Payment
-
 
 # When processing payments, we need to alter the BookingAccount.total_received
 # field, and may need to deal with concurrency. One solution would be
@@ -46,12 +42,7 @@ from cciw.bookings.models import Payment
 # new (negative) Payment object is created.
 
 
-@transaction.atomic
-def process_one_payment(payment):
-    payment.account.receive_payment(payment.amount)
-    payment.processed = datetime.now()
-    payment.save()
-
+from cciw.bookings.models import process_all_payments
 
 class Command(BaseCommand):
 
@@ -74,21 +65,6 @@ class Command(BaseCommand):
             return
 
         try:
-            for payment in Payment.objects.filter(processed__isnull=True).order_by('created'):
-                try:
-                    process_one_payment(payment)
-                except Exception:
-                    # Send email, but carry on with next payment
-                    from cciw.cciwmain.common import exception_notify_admins
-                    try:
-                        exception_notify_admins('CCIW booking - payment processing error')
-                    except Exception:
-                        # Exception sending email - that's the most likely cause
-                        # of process_one_payment failing, since it can
-                        # indirectly cause email to be sent. In that case, the
-                        # admin notification is likely to fail too.
-                        continue
-
+            process_all_payments()
         finally:
             l.close()
-

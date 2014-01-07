@@ -35,12 +35,6 @@ def paypal_payment_received(sender, **kwargs):
         unrecognised_payment(ipn_obj)
 
 
-def cleanup_payments_related_to(obj):
-    ct = ContentType.objects.get_for_model(obj)
-    Payment.objects.filter(origin_id=obj.id,
-                           origin_type=ct).delete()
-
-
 def manual_payment_received(sender, **kwargs):
     instance = kwargs['instance']
     send_payment(instance.amount, instance.account, instance)
@@ -49,7 +43,6 @@ def manual_payment_received(sender, **kwargs):
 def manual_payment_deleted(sender, **kwargs):
     instance = kwargs['instance']
     send_payment(-instance.amount, instance.account, instance)
-    cleanup_payments_related_to(instance)
 
 
 def refund_payment_sent(sender, **kwargs):
@@ -60,7 +53,6 @@ def refund_payment_sent(sender, **kwargs):
 def refund_payment_deleted(sender, **kwargs):
     instance = kwargs['instance']
     send_payment(instance.amount, instance.account, instance)
-    cleanup_payments_related_to(instance)
 
 
 ### Place confirmation ###

@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.db import models
+from django.db import transaction
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.common import get_thisyear
@@ -769,7 +770,10 @@ class Payment(models.Model):
     objects = PaymentManager()
 
     def __unicode__(self):
-        return u"Payment: %s to %s from %s" % (self.amount, self.account.name, self.origin_type)
+        retval = u"Payment: %s to %s from %s" % (self.amount, self.account.name, self.origin_type)
+        if self.origin is None:
+            retval += " (deleted)"
+        return retval
 
     def payment_type(self):
         if hasattr(self.origin, 'get_payment_type_display'):
@@ -833,6 +837,31 @@ def send_payment(amount, to_account, from_obj):
                            created=datetime.now())
     trigger_payment_processing()
 
+
+# These are called normally from process_payments management command.
+
+@transaction.atomic
+def process_one_payment(payment):
+    payment.account.receive_payment(payment.amount)
+    payment.processed = datetime.now()
+    payment.save()
+
+
+def process_all_payments():
+    for payment in Payment.objects.filter(processed__isnull=True).order_by('created'):
+        try:
+            process_one_payment(payment)
+        except Exception:
+            # Send email, but carry on with next payment
+            from cciw.cciwmain.common import exception_notify_admins
+            try:
+                exception_notify_admins('CCIW booking - payment processing error')
+            except Exception:
+                # Exception sending email - that's the most likely cause
+                # of process_one_payment failing, since it can
+                # indirectly cause email to be sent. In that case, the
+                # admin notification is likely to fail too.
+                continue
 
 # Very important that the setup done in .hooks happens:
 from .hooks import *
