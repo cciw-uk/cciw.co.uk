@@ -2,12 +2,6 @@
 $(document).ready(function() {
     "use strict";
 
-    $('#id_address').parent().append('<input type="submit" value="Copy address details from account"' +
-                                     'id="id_use_account_for_camper">');
-    $('#id_contact_address').parent().append('<input type="submit" value="Copy contact details from account"' +
-                                     'id="id_use_account_for_contact">');
-
-
     var getCurrentAccountId = function() {
         var val = $('#id_hidden_account').val();
         val = parseInt(val, 10);
@@ -19,7 +13,7 @@ $(document).ready(function() {
         }
     }
 
-    $('#id_use_account_for_camper').click(function(ev) {
+    var useAccountAddressForCamper = function(ev) {
         ev.preventDefault();
         var accId = getCurrentAccountId();
         if (accId == undefined) return;
@@ -33,9 +27,9 @@ $(document).ready(function() {
                 $('#id_phone_number').val(json.account.phone_number);
             }
         })
-    });
+    };
 
-    $('#id_use_account_for_contact').click(function(ev) {
+    var useAccountAddressForContact = function(ev) {
         ev.preventDefault();
         var accId = getCurrentAccountId();
         if (accId == undefined) return;
@@ -49,7 +43,7 @@ $(document).ready(function() {
                 $('#id_contact_phone_number').val(json.account.phone_number);
             }
         })
-    });
+    };
 
     var getBookingId = function () {
         var bookingId = document.location.pathname.split("/").slice(-2,-1)[0];
@@ -90,9 +84,6 @@ $(document).ready(function() {
             }});
     }
 
-
-    $('div.field-camp').append('<div id="place-availability">');
-
     var getPlaceAvailability = function() {
         var campId = $('#id_camp').val();
         if (campId == undefined || campId == "") {
@@ -113,9 +104,6 @@ $(document).ready(function() {
             }
         })
     };
-
-    $('#id_amount_due').after('<input type="submit" id="id_amount_due_auto" value="">');
-    $('#id_amount_due_auto').hide();
 
     var getExpectedAmountDue = function() {
         $.ajax({
@@ -138,6 +126,21 @@ $(document).ready(function() {
             }
         });
     };
+
+    // Page changes
+    $('#id_address').parent().append('<input type="submit" value="Copy address details from account"' +
+                                     'id="id_use_account_for_camper">');
+    $('#id_contact_address').parent().append('<input type="submit" value="Copy contact details from account"' +
+                                     'id="id_use_account_for_contact">');
+    $('div.field-camp').append('<div id="place-availability">');
+    $('#id_amount_due').after('<input type="submit" id="id_amount_due_auto" value="">');
+    $('#id_amount_due_auto').hide();
+
+
+    // Wiring for event handlers
+
+    $('#id_use_account_for_camper').click(useAccountAddressForCamper);
+    $('#id_use_account_for_contact').click(useAccountAddressForContact);
 
     getBookingProblems();
     $('input,select,textarea').change(getBookingProblems);
