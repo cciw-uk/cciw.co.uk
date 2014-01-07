@@ -23,6 +23,7 @@ from cciw.officers.tests.references import OFFICER_USERNAME, OFFICER_PASSWORD, B
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url
+from cciw.utils.tests.webtest import WebTestBase
 
 
 DISABLED_BOOK_NOW_BTN = "id_book_now_btn\" disabled>"
@@ -539,7 +540,7 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
             self.assertNotEqual(acc.bookings.all()[0].first_name, "A New Name")
 
 
-class TestEditPlaceAdmin(CreatePlaceMixin, TwillMixin, TestCase):
+class TestEditPlaceAdmin(CreatePlaceMixin, WebTestBase):
 
     fixtures = ['basic.json', 'officers_users.json']
 
@@ -548,46 +549,43 @@ class TestEditPlaceAdmin(CreatePlaceMixin, TwillMixin, TestCase):
         acc = self.get_account()
         b = acc.bookings.all()[0]
 
-        self._twill_login(BOOKING_SEC)
-        tc.go(make_django_url("admin:bookings_booking_change", b.id))
-        tc.code(200)
-        tc.fv('booking_form', 'state', str(BOOKING_APPROVED))
-        tc.submit('save')
-        tc.find("An email has been sent")
+        self.webtest_officer_login(BOOKING_SEC)
+        response = self.get("admin:bookings_booking_change", b.id)
+        self.code(response, 200)
+        form = response.forms['booking_form']
+        response = self.fill(form, {'state': BOOKING_APPROVED}).submit().follow()
+        self.assertContains(response, "An email has been sent")
         self.assertEqual(len(mail.outbox), 1)
 
-    def fill(self, form_id, fields):
-        for k, v in fields.items():
-            tc.fv(form_id, k, unicode(v).encode('utf-8'))
-
     def test_create(self):
-        self._twill_login(BOOKING_SEC)
-        tc.go(make_django_url("admin:bookings_bookingaccount_add"))
-        self.fill('bookingaccount_form', {
+        self.webtest_officer_login(BOOKING_SEC)
+        response = self.get("admin:bookings_bookingaccount_add")
+        response = self.fill(
+            response.forms['bookingaccount_form'],
+            {
                 'name': 'Joe',
                 'email': self.email,
                 'address': '123',
                 'post_code': 'XYZ',
-                })
-        tc.submit()
-        tc.code(200)
+                }).submit().follow()
+        self.code(response, 200)
         account = BookingAccount.objects.get(email=self.email)
 
-        tc.go(make_django_url("admin:bookings_booking_add"))
-        tc.code(200)
+        response = self.get("admin:bookings_booking_add")
+        self.code(response, 200)
         fields = self.place_details.copy()
         fields.update({
                 'account': account.id,
                 'state': BOOKING_BOOKED,
                 'amount_due': '130.00',
                 })
-
-        # Ensure we can edit hidden 'account' field:
-        tc.browser.get_form('booking_form').set_all_readonly(False)
-        self.fill('booking_form', fields)
-        tc.submit('save')
-        tc.find('Select booking')
-        tc.find('A confirmation email has been sent')
+        form = response.forms['booking_form']
+        # Hack needed to cope with autocomplete_light widget
+        form.fields['account'][0].options.append((str(account.id), False))
+        response = self.fill(
+            form, fields).submit('save').follow()
+        self.assertContains(response, 'Select booking')
+        self.assertContains(response, 'A confirmation email has been sent')
 
 
 class TestListBookings(CreatePlaceMixin, TestCase):

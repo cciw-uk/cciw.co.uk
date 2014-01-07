@@ -19,3 +19,5 @@ pytz
 gunicorn
 psutil
 fabric==1.6.0
+webtest
+django-webtest
