@@ -9,7 +9,6 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from twill import commands as tc
 import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
@@ -22,7 +21,6 @@ from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.officers.tests.references import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD, BOOKING_SEC
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
-from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url
 from cciw.utils.tests.webtest import WebTestBase
 
 
