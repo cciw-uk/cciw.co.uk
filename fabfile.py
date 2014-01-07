@@ -149,7 +149,7 @@ def run_venv(command, **kwargs):
 
 @task
 def test():
-    local("./manage.py test cciw.cciwmain.tests cciw.officers.tests cciw.bookings.tests --settings=cciw.settings_tests", capture=False)
+    local("./manage.py test --settings=cciw.settings_tests cciw", capture=False)
 
 
 def install_dependencies():

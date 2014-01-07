@@ -10,13 +10,12 @@ from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from twill import commands as tc
 
 from cciw.forums.models import Member, Message
 from cciw.cciwmain.tests.client import CciwClient, RequestFactory
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
-from cciw.utils.tests.twillhelpers import TwillMixin, make_twill_url
+from cciw.utils.tests.webtest import WebTestBase
 
 
 # created by fixture
@@ -170,7 +169,7 @@ class MemberAdmin(TestCase):
         _remove_member_icons(TEST_MEMBER_USERNAME)
 
 
-class MemberSignup(TwillMixin, TestCase):
+class MemberSignup(WebTestBase):
     fixtures=['basic.json','test_members.json']
 
     def setUp(self):
@@ -214,62 +213,60 @@ class MemberSignup(TwillMixin, TestCase):
     def test_signup_complete_correct(self):
         self._test_signup_send_email_part1()
         url, path, querydata = self._read_signup_email(mail.outbox[0])
-        local_url = make_twill_url(url)
-        tc.go(local_url)
-        tc.notfind("Error")
-        tc.fv('1', 'user_name', NEW_MEMBER_USERNAME)
-        tc.fv('1', 'password1', NEW_MEMBER_PASSWORD)
-        tc.fv('1', 'password2', NEW_MEMBER_PASSWORD)
-        tc.submit()
-        self._twill_assert_finished()
+        response = self.get(url)
+        self.assertNotContains(response, "Error")
+        response = self.fill(response.forms[0],
+                             {'user_name': NEW_MEMBER_USERNAME,
+                              'password1': NEW_MEMBER_PASSWORD,
+                              'password2': NEW_MEMBER_PASSWORD}).submit()
+        self.assert_finished(response)
 
-    def _twill_assert_finished(self):
-        tc.find("Finished!")
-        tc.find("Your account has been created")
+    def assert_finished(self, response):
+        self.assertContains(response, "Finished!")
+        self.assertContains(response, "Your account has been created")
 
     def test_signup_complete_bad_password(self):
         self._test_signup_send_email_part1()
         url, path, querydata = self._read_signup_email(mail.outbox[0])
-        tc.go(make_twill_url(url))
-        tc.notfind("Error")
-        tc.fv('1', 'user_name', NEW_MEMBER_USERNAME)
-        tc.fv('1', 'password1', NEW_MEMBER_PASSWORD)
-        tc.fv('1', 'password2', NEW_MEMBER_PASSWORD + "x")
-        tc.submit()
-        tc.find("Error")
+        response = self.get(url)
+        self.assertNotContains(response, "Error")
+        response = self.fill(response.forms[0],
+                             {'user_name': NEW_MEMBER_USERNAME,
+                              'password1': NEW_MEMBER_PASSWORD,
+                              'password2': NEW_MEMBER_PASSWORD + "x"}).submit()
+        self.assertContains(response, "Error")
 
         # Correct it, without setting user_name
-        tc.fv('1', 'password1', NEW_MEMBER_PASSWORD)
-        tc.fv('1', 'password2', NEW_MEMBER_PASSWORD)
+        response = self.fill(response.forms[0],
+                             {'password1': NEW_MEMBER_PASSWORD,
+                              'password2': NEW_MEMBER_PASSWORD}).submit()
 
-        # try again
-        tc.submit()
-        self._twill_assert_finished()
+        self.assert_finished(response)
 
     def test_signup_complete_bad_username(self):
         self._test_signup_send_email_part1()
         url, path, querydata = self._read_signup_email(mail.outbox[0])
-        tc.go(make_twill_url(url))
-        tc.notfind("Error")
-        tc.fv('1', 'user_name', TEST_MEMBER_USERNAME)
-        tc.fv('1', 'password1', NEW_MEMBER_PASSWORD)
-        tc.fv('1', 'password2', NEW_MEMBER_PASSWORD)
-        tc.submit()
-        tc.find("Error")
+        response = self.get(url)
+        self.assertNotContains(response, "Error")
+        response = self.fill(response.forms[0],
+                             {'user_name': TEST_MEMBER_USERNAME,
+                              'password1': NEW_MEMBER_PASSWORD,
+                              'password2': NEW_MEMBER_PASSWORD}).submit()
+        self.assertContains(response, "Error")
 
     def test_signup_incorrect_hash(self):
         self._test_signup_send_email_part1()
         url, path, querydata = self._read_signup_email(mail.outbox[0])
         querydata['h'] = querydata['h'] + "x"
         response = self._follow_email_url(path, querydata)
-        self.assertTrue("Error" in response.content, "Error should be reported if the hash is incorrect")
+        self.assertIn("Error", response.content, "Error should be reported if the hash is incorrect")
 
     def test_signup_incorrect_email(self):
         self._test_signup_send_email_part1()
         url, path, querydata = self._read_signup_email(mail.outbox[0])
         querydata['email'] = querydata['email'] + "x"
         response = self._follow_email_url(path, querydata)
-        self.assertTrue("Error" in response.content, "Error should be reported if the email is incorrect")
+        self.assertIn("Error", response.content, "Error should be reported if the email is incorrect")
 
 
 class MemberLists(TestCase):

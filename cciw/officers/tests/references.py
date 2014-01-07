@@ -1,14 +1,12 @@
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from twill import commands as tc
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application
 from cciw.officers.views import get_previous_references
-from cciw.utils.tests.twillhelpers import TwillMixin, make_django_url, make_twill_url
-
+from cciw.utils.tests.webtest import WebTestBase
 
 OFFICER_USERNAME = 'mrofficer2'
 OFFICER_PASSWORD = 'test_normaluser_password'
@@ -31,34 +29,35 @@ BOOKING_SEC = (BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD)
 #
 
 
-class ReferencesPage(TwillMixin, TestCase):
+class ReferencesPage(WebTestBase):
 
     fixtures = ['basic.json', 'officers_users.json', 'references.json']
 
     def test_page_ok(self):
         # Value of this test lies in the test data.
-        self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.manage_references", year=2000, number=1))
-        tc.code(200)
-        tc.find('For camp 2000-1')
-        tc.notfind('referee1@email.co.uk') # Received
-        tc.find('referee2@email.co.uk')    # Not received
-        tc.find('referee3@email.co.uk')
-        tc.find('referee4@email.co.uk')
+        self.webtest_officer_login(LEADER)
+        response = self.get("cciw.officers.views.manage_references", year=2000, number=1)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'For camp 2000-1')
+        self.assertNotContains(response, 'referee1@email.co.uk') # Received
+        self.assertContains(response, 'referee2@email.co.uk')    # Not received
+        self.assertContains(response, 'referee3@email.co.uk')
+        self.assertContains(response, 'referee4@email.co.uk')
 
     def test_page_anonymous_denied(self):
-        tc.go(make_django_url("cciw.officers.views.manage_references", year=2000, number=1))
-        tc.code(200) # at a redirection page
-        tc.notfind('For camp 2000-1')
+        response = self.get("cciw.officers.views.manage_references", year=2000, number=1)
+        self.assertEqual(response.status_code, 200) # at a redirection page
+        self.assertNotContains(response, 'For camp 2000-1')
 
     def test_page_officers_denied(self):
-        self._twill_login(OFFICER)
-        tc.go(make_django_url("cciw.officers.views.manage_references", year=2000, number=1))
-        tc.code(403)
-        tc.notfind('For camp 2000-1')
+        self.webtest_officer_login(OFFICER)
+        response = self.app.get(reverse("cciw.officers.views.manage_references", kwargs=dict(year=2000, number=1)),
+                                expect_errors=[403])
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn(response.content, 'For camp 2000-1')
 
 
-class RequestReference(TwillMixin, TestCase):
+class RequestReference(WebTestBase):
     """
     Tests for page where reference is requested, and referee e-mail can be updated.
     """
@@ -73,13 +72,13 @@ class RequestReference(TwillMixin, TestCase):
         app = Application.objects.get(pk=3)
         self.assertTrue(app.referees[0].email != '')
         refinfo = app.references[0]
-        self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.request_reference", year=2000, number=1) + "?ref_id=%d" % refinfo.id)
-        tc.code(200)
-        tc.notfind("No e-mail address")
-        tc.find("The following e-mail")
-        tc.formvalue("2", "send", "send")
-        tc.submit()
+        self.webtest_officer_login(LEADER)
+        response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2000, number=1))
+                                + "?ref_id=%d" % refinfo.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "No e-mail address")
+        self.assertContains(response, "The following e-mail")
+        response = response.forms['id_request_reference'].submit("send")
         msgs = [e for e in mail.outbox if "Reference for" in e.subject]
         self.assertEqual(len(msgs), 1)
         self.assertEqual(msgs[0].extra_headers.get('Reply-To', ''), LEADER_EMAIL)
@@ -92,34 +91,36 @@ class RequestReference(TwillMixin, TestCase):
         app = Application.objects.get(pk=3)
         self.assertTrue(app.referees[1].email == '')
         refinfo = app.references[1]
-        self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.request_reference", year=2000, number=1) + "?ref_id=%d" % refinfo.id)
-        tc.code(200)
-        tc.find("No e-mail address")
-        tc.notfind("This field is required") # Don't want errors on first view
-        tc.notfind("The following e-mail")
+        self.webtest_officer_login(LEADER)
+        response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2000, number=1))
+                                + "?ref_id=%d" % refinfo.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No e-mail address")
+        self.assertNotContains(response, "This field is required") # Don't want errors on first view
+        self.assertNotContains(response, "The following e-mail")
+        return response
 
     def test_add_email(self):
         """
         Ensure we can add the e-mail address
         """
-        self.test_no_email()
-        tc.formvalue('1', 'email', 'addedemail@example.com')
-        tc.submit()
+        response = self.test_no_email()
+        response = self.fill(response.forms['id_set_email_form'],
+                             {'email': 'addedemail@example.com'}).submit('setemail')
         app = Application.objects.get(pk=3)
-        self.assertTrue(app.referees[1].email == 'addedemail@example.com')
-        tc.find("E-mail address updated.")
+        self.assertEqual(app.referees[1].email, 'addedemail@example.com')
+        self.assertContains(response, "E-mail address updated.")
 
     def test_cancel(self):
         # Application 3 has an e-mail address for first referee
         app = Application.objects.get(pk=3)
         self.assertTrue(app.referees[0].email != '')
         refinfo = app.references[0]
-        self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.request_reference", year=2000, number=1) + "?ref_id=%d" % refinfo.id)
-        tc.code(200)
-        tc.formvalue("2", "cancel", "cancel")
-        tc.submit()
+        self.webtest_officer_login(LEADER)
+        response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2000, number=1))
+                                + "?ref_id=%d" % refinfo.id)
+        self.assertEqual(response.status_code, 200)
+        response = response.forms['id_request_reference'].submit("cancel")
         self.assertEqual(len(mail.outbox), 0)
 
     def test_dont_remove_link(self):
@@ -128,14 +129,15 @@ class RequestReference(TwillMixin, TestCase):
         """
         app = Application.objects.get(pk=3)
         refinfo = app.references[0]
-        self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.request_reference", year=2000, number=1) + "?ref_id=%d" % refinfo.id)
-        tc.code(200)
-        tc.formvalue('2', 'message', 'I removed the link! Haha')
-        tc.submit()
+        self.webtest_officer_login(LEADER)
+        response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2000, number=1))
+                                + "?ref_id=%d" % refinfo.id)
+        self.assertEqual(response.status_code, 200)
+        response = self.fill(response.forms['id_request_reference'],
+                             {'message': 'I removed the link! Haha'}).submit('send')
         url = make_ref_form_url(refinfo.id, None)
-        tc.find(url)
-        tc.find("You removed the link")
+        self.assertContains(response, url)
+        self.assertContains(response, "You removed the link")
         self.assertEqual(len(mail.outbox), 0)
 
     def test_update_with_exact_match(self):
@@ -147,10 +149,11 @@ class RequestReference(TwillMixin, TestCase):
         refinfo = app.references[0]
         prev_refs, exact = get_previous_references(refinfo, camp)
         assert exact is not None
-        self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.request_reference", year=2001, number=1) + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, exact.id))
-        tc.code(200)
-        tc.find("Mr Referee1 Name has done a reference for Mr in the past.")
+        self.webtest_officer_login(LEADER)
+        response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2001, number=1))
+                                + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, exact.id))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Mr Referee1 Name has done a reference for Mr in the past.")
 
     def test_update_with_no_exact_match(self):
         """
@@ -165,13 +168,14 @@ class RequestReference(TwillMixin, TestCase):
         prev_refs, exact = get_previous_references(refinfo, camp)
         assert exact is None
         assert prev_refs[0].reference_form.referee_name == "Mr Referee1 Name"
-        self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.request_reference", year=2001, number=1) + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, prev_refs[0].id))
-        tc.code(200)
-        tc.notfind("Mr Referee1 Name has done a reference for Mr in the past.")
-        tc.find("""In the past, "Mr Referee1 Name &lt;referee1@email.co.uk&gt;" did""")
-        tc.find("If you have confirmed")
-        tc.find("""email address is now "Mr Referee1 Name &lt;a_new_email_for_ref1@example.com&gt;",""")
+        self.webtest_officer_login(LEADER)
+        response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2001, number=1))
+                                + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, prev_refs[0].id))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Mr Referee1 Name has done a reference for Mr in the past.")
+        self.assertContains(response, """In the past, "Mr Referee1 Name &lt;referee1@email.co.uk&gt;" did""")
+        self.assertContains(response, "If you have confirmed")
+        self.assertContains(response, """email address is now "Mr Referee1 Name &lt;a_new_email_for_ref1@example.com&gt;",""")
 
     def test_nag(self):
         """
@@ -179,17 +183,17 @@ class RequestReference(TwillMixin, TestCase):
         """
         app = Application.objects.get(pk=1)
         refinfo = app.references[0]
-        self._twill_login(LEADER)
-        tc.go(make_django_url("cciw.officers.views.nag_by_officer", year=2000, number=1) + "?ref_id=%d" % refinfo.id)
-        tc.code(200)
-        tc.find("to nag their referee")
-        tc.formvalue("1", "send", "send")
-        tc.submit()
+        self.webtest_officer_login(LEADER)
+        response = self.app.get(reverse("cciw.officers.views.nag_by_officer", kwargs=dict(year=2000, number=1))
+                                + "?ref_id=%d" % refinfo.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "to nag their referee")
+        response = response.forms[0].submit('send')
         msgs = [e for e in mail.outbox if "Need reference from" in e.subject]
         self.assertEqual(len(msgs), 1)
         self.assertEqual(msgs[0].extra_headers.get('Reply-To', ''), LEADER_EMAIL)
 
-class CreateReference(TwillMixin, TestCase):
+class CreateReference(WebTestBase):
     """
     Tests for page for referees submitting references
     """
@@ -202,8 +206,9 @@ class CreateReference(TwillMixin, TestCase):
         """
         app = Application.objects.get(pk=2)
         url = make_ref_form_url(app.references[0].id, None)
-        tc.go(make_twill_url(url))
-        tc.code(200)
+        response = self.get(url)
+        self.assertEqual(response.status_code, 200)
+        return response
 
     def test_page_submit(self):
         """
@@ -213,15 +218,15 @@ class CreateReference(TwillMixin, TestCase):
         app = Application.objects.get(pk=2)
         self.assertEqual(app.referees[0].name, "Mr Referee3 Name")
         self.assertTrue(app.references[0].reference_form is None)
-        self.test_page_ok()
-
-        tc.formvalue('1', 'referee_name', 'Referee3 Name')
-        tc.formvalue('1', 'how_long_known', 'Forever')
-        tc.formvalue('1', 'capacity_known', 'Minister')
-        tc.formvalue('1', 'capability_children', 'Fine')
-        tc.formvalue('1', 'character', 'Great')
-        tc.formvalue('1', 'concerns', 'No')
-        tc.submit()
+        response = self.test_page_ok()
+        response = self.fill(response.forms['id_create_reference'],
+                             {'referee_name': 'Referee3 Name',
+                              'how_long_known': 'Forever',
+                              'capacity_known': 'Minister',
+                              'capability_children': 'Fine',
+                              'character': 'Great',
+                              'concerns': 'No',
+                              }).submit().follow()
 
         # Check the data has been saved
         app = Application.objects.get(pk=2)
@@ -250,11 +255,11 @@ class CreateReference(TwillMixin, TestCase):
 
         # Go to the corresponding URL
         url = make_ref_form_url(app2.references[0].id, app1.references[0].id)
-        tc.go(make_twill_url(url))
-        tc.code(200)
+        response = self.get(url)
+        self.assertEqual(response.status_code, 200)
 
         # Check it is pre-filled as we expect
-        html = tc.show()
+        html = response.content
         self.assertInHTML("""<input id="id_referee_name" maxlength="100" name="referee_name" type="text" value="Mr Referee1 Name" />""", html)
         self.assertInHTML("""<input id="id_how_long_known" maxlength="150" name="how_long_known" type="text" value="A long time" />""", html)
 

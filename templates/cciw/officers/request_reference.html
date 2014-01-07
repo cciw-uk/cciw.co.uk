@@ -23,7 +23,8 @@
     address, enter it below and press 'Save' to continue:</p>
 
 
-  <form method="post" action="">{% csrf_token %}
+  <form id="id_set_email_form" method="post" action="">
+    {% csrf_token %}
     {{ emailform.as_p }}
     <div><input type="submit" name="setemail" value="Save" /></div>
   </form>
@@ -51,7 +52,8 @@
   <p>If you need to correct the e-mail address, please edit below and press
   'Save' before continuing:</p>
 
-  <form method="post" action="">{% csrf_token %}
+  <form id="id_set_email_form" method="post" action="">
+    {% csrf_token %}
     {{ emailform.as_p }}
     <p><input type="submit" name="setemail" value="Save" /></p>
   </form>
@@ -60,7 +62,8 @@
 
   <p>The following e-mail, which you can now modify, will be sent to them.
     Make sure you don't modify the link contained in the e-mail.</p>
-  <form action="" method="post">{% csrf_token %}
+  <form id="id_request_reference" action="" method="post">
+    {% csrf_token %}
     {{ messageform.as_p }}
     <p>
     <input type="submit" name="send" value="Send" />
