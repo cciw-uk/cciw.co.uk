@@ -1,7 +1,6 @@
 BeautifulSoup==3.2.0
 Pillow>=2.2.1
 psycopg2==2.2.2
-twill==0.9
 zc.lockfile==1.0.0
 south==0.7.2
 xlwt==0.7.2
