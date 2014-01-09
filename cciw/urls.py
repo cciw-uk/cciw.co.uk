@@ -5,6 +5,8 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.views.generic.base import RedirectView
+from django_notify.urls import get_pattern as get_notify_pattern
+from wiki.urls import get_pattern as get_wiki_pattern
 
 import cciw.auth
 from cciw.bookings.models import BookingAccount
@@ -57,7 +59,8 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
     (r'^officers/', include('cciw.officers.urls')),
     url('^autocomplete/', include('autocomplete_light.urls')),
-    (r'^wiki/', include('djiki.urls')),
+    (r'^notify/', get_notify_pattern()),
+    (r'^wiki/', get_wiki_pattern()),
     (r'^paypal/ipn/', include('paypal.standard.ipn.urls')),
 )
 

@@ -78,6 +78,16 @@ INSTALLED_APPS = (
     'autocomplete_light',
     'djiki',
     'paypal.standard.ipn',
+    'django.contrib.humanize',
+    'django_notify',
+    'mptt',
+    'sekizai',
+    'sorl.thumbnail',
+    'wiki',
+    'wiki.plugins.attachments',
+    'wiki.plugins.notifications',
+    'wiki.plugins.images',
+    'wiki.plugins.macros',
 )
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
@@ -139,12 +149,15 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = [
+    "django.core.context_processors.debug",
     "django.core.context_processors.media",
     "django.core.context_processors.static",
     "django.core.context_processors.request",
     "django.contrib.auth.context_processors.auth",
     "django.contrib.messages.context_processors.messages",
     "cciw.cciwmain.common.standard_processor",
+    "django.core.context_processors.tz",
+    "sekizai.context_processors.sekizai",
 ]
 
 if DEBUG:
