@@ -301,3 +301,8 @@ DEFAULT_CONTENT_TYPE = "text/html"
 BASE_DIR = basedir
 
 PAYPAL_IMAGE = "https://www.paypalobjects.com/en_US/GB/i/btn/btn_buynowCC_LG.gif"
+
+WIKI_ATTACHMENTS_EXTENSIONS = [
+    'pdf', 'doc', 'odt', 'docx', 'txt',
+    'svg', 'png', 'jpg', 'jpeg',
+]
