@@ -20,4 +20,4 @@ psutil
 fabric==1.6.0
 webtest
 django-webtest
-wiki==0.0.23
+-e git://github.com/benjaoming/django-wiki@844438366bebf40ad91b02a64dd3e7a518e4b8c8#egg=wiki
