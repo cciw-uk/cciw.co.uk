@@ -76,7 +76,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'securedownload',
     'autocomplete_light',
-    'djiki',
     'paypal.standard.ipn',
     'django.contrib.humanize',
     'django_notify',
@@ -247,11 +246,6 @@ MEDIA_URL = '/usermedia/'
 STATIC_URL = '/static/'
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
-
-#####  DJIKI  ######
-
-DJIKI_IMAGES_PATH = 'wiki/images/'
-DJIKI_ALLOW_ANONYMOUS_EDITS = False
 
 ####################
 
