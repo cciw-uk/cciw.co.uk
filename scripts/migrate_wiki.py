@@ -39,20 +39,31 @@ def main():
         last_rev = p.revisions.all().order_by('-created')[0]
         article = Article.objects.create(
             owner=first_rev.author,
-            created=first_rev.created,
-            modified=last_rev.created,
             )
+        previous_revision = None
         for revno, r in enumerate(p.revisions.all().order_by('created')):
             revision = ArticleRevision.objects.create(
                 article=article,
                 content=creole_to_markdown(r.content),
                 title=p.title,
                 revision_number=revno+1,
-                modified=r.created,
-                created=r.created,
+                previous_revision=previous_revision,
+                user=r.author,
                 )
+            revision.save()
+            # Must be after last save:
+            ArticleRevision.objects.filter(id=revision.id).update(
+                created=r.created,
+                modified=r.created,
+                )
+            previous_revision = revision
         article.current_revision = article.articlerevision_set.latest()
         article.save()
+        # Must be after last save:
+        Article.objects.filter(id=article.id).update(
+            created=first_rev.created,
+            modified=last_rev.created,
+            )
         urlpath = URLPath.objects.create(site_id=1,
                                          parent=root,
                                          slug=p.title,
