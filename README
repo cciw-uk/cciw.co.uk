@@ -20,7 +20,7 @@ Installation hints
 - You need to create a cciw/settings_priv.py with the various settings that I cannot
   release publicly (database, passwords, secret key).
 
-  This must in turn pull in from either settings_production.py or settings_staging.py
+  To be able to deploy, you need also need settings_production.py or settings_staging.py
   The fabfile depends on these files existing.
 
 - For creating the database, there is a complete set of South migration
@@ -69,4 +69,11 @@ as they are clutter that is no longer needed.
 Tests
 =====
 
-./manage.py test --settings=cciw.settings_tests cciw
+Tests can be run like so:
+
+$ fab test
+
+or
+
+$ ./manage.py test --settings=cciw.settings_tests cciw
+
