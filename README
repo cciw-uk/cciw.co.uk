@@ -75,5 +75,5 @@ $ fab test
 
 or
 
-$ ./manage.py test --settings=cciw.settings_tests cciw.bookings cciw.officers cciw.cciwmain
+$ ./manage.py test --settings=cciw.settings_tests cciw
 
