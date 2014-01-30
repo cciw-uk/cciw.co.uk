@@ -48,6 +48,44 @@ them, and places where they have not been separated.
   cciwmain.views uses forums.views.
 - test fixtures are re-used by different apps.
 
+
+Components
+----------
+
+The major components of the site are:
+
+1) Information about the camps that are run. This is all on publically
+   accessible parts of the site.
+
+2) Camp forums and photo galleries. Now largely unused. You have to log in
+   as a Member to post content.
+
+3) Booking - for campers (or their parents) to book places on camp and pay.
+
+4) Admin.
+
+   Used by a few people to add camp information, for example. Also used by
+   booking secretary to add/manage information about bookings, and various other
+   staff functions.
+
+
+5) Leaders and officers.
+
+   This contains utilities for leaders:
+
+   * to manage an officer list for their camp
+   * to view applications from officers
+   * to manage references for officers
+   * to download booking information about campers booked on the camp
+
+   ...and other things
+
+   It also contains utilities for officers to submit their application forms,
+   and helps for the booking secretary.
+
+   Where possible, the Django admin is used for some of these functions.
+
+
 Other notes
 -----------
 
@@ -56,6 +94,21 @@ depending on whether the move to CBVs was worth the effort. This means that
 there is sometimes some duplication between the function based way of doing
 something and the equivalent CBV way, and you need to be comfortable with both
 styles.
+
+Login
+=====
+
+There are 3 separate login systems:
+
+* The standard django.contrib.auth.User system, used by the Django admin and the
+  officers section.
+
+* A custom login system for the camp forums, based on the Member model,
+  (very similar to contrib.auth.User, with passwords etc.)
+
+* A custom login system for booking places on camp, which is passwordless, based
+  on BookingAccount.
+
 
 Tests
 =====
