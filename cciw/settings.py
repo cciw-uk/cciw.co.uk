@@ -14,13 +14,13 @@ LIVEBOX = not DEVBOX
 if LIVEBOX:
     from cciw.settings_priv import PRODUCTION, STAGING, GOOGLE_ANALYTICS_ACCOUNT
 
-from cciw.settings_priv import PAYPAL_TEST, PAYPAL_RECEIVER_EMAIL
+from cciw.settings_priv import PAYPAL_TEST # boolean indicating PayPal test mode
+from cciw.settings_priv import PAYPAL_RECEIVER_EMAIL # Email address of PayPal receiving account
+from cciw.settings_priv import SECRET_KEY
 
 WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
 
 ### MISC ###
-
-from cciw.settings_priv import SECRET_KEY
 
 if DEVBOX:
     DEBUG = True

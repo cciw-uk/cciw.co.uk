@@ -7,7 +7,7 @@ Utilities for manipulating images
 
 from django.conf import settings
 import os
-import ImageFile
+from PIL import ImageFile
 import tempfile
 
 def parse_image(filename):
