@@ -51,20 +51,11 @@ them, and places where they have not been separated.
 Other notes
 -----------
 
-A lot of this code is quite old. It has been continuously updated to work with
-latest Django, and fix deprecation warnings, but might be quite different if
-written from scratch. A lot of code in cciwmain, sitecontent and forums ought to
-be updated to use the {% url %} tag which was added after I wrote it.
-
 Views are done using a mixture of classic functions and Class Based Views,
 depending on whether the move to CBVs was worth the effort. This means that
 there is sometimes some duplication between the function based way of doing
 something and the equivalent CBV way, and you need to be comfortable with both
 styles.
-
-The system was initially migrated from a PHP system. The migration scripts can
-be found in the VCS history, but have been removed from the current tree
-as they are clutter that is no longer needed.
 
 Tests
 =====
