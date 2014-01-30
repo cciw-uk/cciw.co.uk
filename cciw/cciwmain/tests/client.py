@@ -10,8 +10,9 @@ LOGIN_URL = '/login/'
 class CciwClient(client.Client):
     """
     Subclass of the Django Test Client class that knows about
-    logging in as a CCIW 'Member' (as well as Django 'User's)
+    logging in as a CCIW 'Member'.
     """
+    # Use the superclass's login() method for officer login (contrib.auth.User)
 
     @staticmethod
     def get_member_login_data(membername, password):

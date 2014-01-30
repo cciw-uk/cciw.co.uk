@@ -1209,7 +1209,7 @@ officer_info = staff_member_required(OfficerInfo.as_view())
 
 @booking_secretary_required
 def booking_secretary_reports(request, year=None):
-    from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, BOOKING_BOOKED, BOOKING_CANCELLED, BookingAccount,\
+    from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, BOOKING_BOOKED, BOOKING_CANCELLED, \
         BOOKING_CANCELLED_HALF_REFUND, Price, PRICE_DEPOSIT
     from decimal import Decimal
     year = int(year)
