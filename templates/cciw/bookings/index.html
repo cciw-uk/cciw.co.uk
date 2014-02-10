@@ -28,6 +28,11 @@
     </table>
   </p>
 
+  {% if price_deposit %}
+  <p>A deposit of £{{ price_deposit }} must be paid with bookings. The full
+  amount is due 3 months before the start of the camp.</p>
+  {% endif %}
+
 {% else %}
   <p>Prices for {{ thisyear }} have not been finalised yet.</p>
 
@@ -49,9 +54,10 @@ pay a deposit {% if price_deposit %}of £{{ price_deposit }}{% endif %} with you
 providing you have a debit card, credit card, or PayPal account.</p>
 
 <p>If you book online, you can see how many places there are left in real time,
-and your place will be confirmed immediately. However, you will have to pay the
-<strong>full amount</strong> when booking, not just the deposit. For refunds,
-the same rules apply to both paper bookings and online bookings.</p>
+and your place will be confirmed immediately.</p>
+
+<p>Unlike in previous years, when you book online you can choose to pay either
+the full amount, or the just deposit, just like paper bookings.</p>
 
 <h2>Paper booking form</h2>
 
