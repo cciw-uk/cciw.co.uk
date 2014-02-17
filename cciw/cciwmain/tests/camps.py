@@ -9,6 +9,36 @@ from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
 from cciw.sitecontent.models import HtmlChunk
 
 
+class CampModel(TestCase):
+
+    def setUp(self):
+        l1 = Person.objects.create(name="John")
+        l2 = Person.objects.create(name="Mary")
+        l3 = Person.objects.create(name="Gregory")
+        site = Site.objects.create(short_name="farm",
+                                   slug_name="farm",
+                                   long_name="The Farm")
+
+        camp = Camp.objects.create(
+            year=2013,
+            number=1,
+            minimum_age=11,
+            maximum_age=17,
+            start_date=date(2013,6,1),
+            end_date=date(2013,6,9),
+            max_campers=70,
+            max_male_campers=40,
+            max_female_campers=40,
+            chaplain=l3,
+            site=site,
+            )
+        camp.leaders.add(l1, l2)
+        self.camp = camp
+
+    def test_display(self):
+        self.assertEqual(unicode(self.camp), u"2013-1 (John, Mary, Gregory)")
+
+
 class ThisyearPage(TestCase):
 
     fixtures = ['basic.json', 'htmlchunks.json']
