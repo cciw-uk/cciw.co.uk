@@ -19,10 +19,10 @@ class Site(models.Model):
     def get_absolute_url(self):
         return u"/sites/%s/" % self.slug_name
 
-    def save(self):
+    def save(self, **kwargs):
         from django.template.defaultfilters import slugify
         self.slug_name = slugify(self.short_name)
-        super(Site, self).save()
+        super(Site, self).save(**kwargs)
 
 
 class Person(models.Model):
