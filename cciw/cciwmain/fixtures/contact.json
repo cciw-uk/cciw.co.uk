@@ -6,7 +6,7 @@
             "page_title": ""
         }, 
         "model": "sitecontent.htmlchunk", 
-        "pk": "feedback_intro"
+        "pk": "contact_us_intro"
     }, 
     {
         "fields": {
@@ -15,6 +15,6 @@
             "page_title": ""
         }, 
         "model": "sitecontent.htmlchunk", 
-        "pk": "feedback_outro"
+        "pk": "contact_us_outro"
     }
 ]

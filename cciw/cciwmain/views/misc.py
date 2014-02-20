@@ -40,24 +40,24 @@ CONTACT_CHOICES = [
 ]
 
 CONTACT_CHOICE_DESTS = {
-    CONTACT_CHOICE_GENERAL: ['FEEDBACK_EMAIL'],
-    CONTACT_CHOICE_BOOKINGFORM: ['BOOKING_FORM_EMAIL', 'FEEDBACK_EMAIL'],
-    CONTACT_CHOICE_WEBSITE: ['WEBMASTER_EMAIL', 'FEEDBACK_EMAIL'],
-    CONTACT_CHOICE_BOOKINGS: ['BOOKING_SECRETARY_EMAIL', 'FEEDBACK_EMAIL'],
+    CONTACT_CHOICE_GENERAL: ['CONTACT_US_EMAIL'],
+    CONTACT_CHOICE_BOOKINGFORM: ['BOOKING_FORM_EMAIL', 'CONTACT_US_EMAIL'],
+    CONTACT_CHOICE_WEBSITE: ['WEBMASTER_EMAIL', 'CONTACT_US_EMAIL'],
+    CONTACT_CHOICE_BOOKINGS: ['BOOKING_SECRETARY_EMAIL', 'CONTACT_US_EMAIL'],
 }
 
-class FeedbackForm(CciwFormMixin, forms.Form):
+class ContactUsForm(CciwFormMixin, forms.Form):
     subject = forms.ChoiceField(label="Subject", choices=CONTACT_CHOICES)
     email = forms.EmailField(label="Email address", max_length=320)
     name = forms.CharField(label="Name", max_length=200, required=False)
     message = forms.CharField(label="Message", widget=forms.Textarea)
 
-class FeedbackBase(DefaultMetaData):
+class ContactUsBase(DefaultMetaData):
     metadata_title = u"Contact us"
 
-class FeedbackFormView(FeedbackBase, AjaxyFormView):
-    form_class = FeedbackForm
-    template_name = 'cciw/feedback.html'
+class ContactUsFormView(ContactUsBase, AjaxyFormView):
+    form_class = ContactUsForm
+    template_name = 'cciw/contact_us.html'
 
     def get_initial(self):
         initial = {}
@@ -67,7 +67,7 @@ class FeedbackFormView(FeedbackBase, AjaxyFormView):
         return initial
 
     def get_success_url(self):
-        return reverse('cciwmain.misc.feedback_done')
+        return reverse('cciwmain.misc.contact_us_done')
 
     def form_valid(self, form):
         to_emails = [getattr(settings, email) for email in CONTACT_CHOICE_DESTS[form.cleaned_data['subject']]]
@@ -75,11 +75,11 @@ class FeedbackFormView(FeedbackBase, AjaxyFormView):
                       form.cleaned_data['email'],
                       form.cleaned_data['name'],
                       form.cleaned_data['message'])
-        return super(FeedbackFormView, self).form_valid(form)
+        return super(ContactUsFormView, self).form_valid(form)
 
-class FeedbackDone(FeedbackBase, TemplateView):
-    template_name = 'cciw/feedback_done.html'
+class ContactUsDone(ContactUsBase, TemplateView):
+    template_name = 'cciw/contact_us_done.html'
 
-feedback = FeedbackFormView.as_view()
-feedback_done = FeedbackDone.as_view()
+contact_us = ContactUsFormView.as_view()
+contact_us_done = ContactUsDone.as_view()
 

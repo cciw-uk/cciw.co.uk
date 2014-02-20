@@ -31,9 +31,9 @@ patterns('cciw.cciwmain.views',
     # Services
     (r'^services/esv_passage/$', 'services.esv_passage'),
 
-    # Feedback form
-    url(r'^contact/$', 'misc.feedback', name="cciwmain.misc.feedback"),
-    url(r'^contact/done/$', 'misc.feedback_done', name="cciwmain.misc.feedback_done"),
+    # ContactUs form
+    url(r'^contact/$', 'misc.contact_us', name="cciwmain.misc.contact_us"),
+    url(r'^contact/done/$', 'misc.contact_us_done', name="cciwmain.misc.contact_us_done"),
 
 ) + patterns('cciw.forums.views',
 
