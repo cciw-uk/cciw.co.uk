@@ -5,7 +5,7 @@ import glob
 import os
 import re
 
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -439,7 +439,7 @@ class MessageLists(TestCase):
     def _msg_list_checkboxes(self, resp):
         b = BeautifulSoup(resp.content)
         checkboxes = [c for c in b.findAll(name='input', attrs={"type":"checkbox"})
-                      if c.attrMap['name'].startswith('msg_')]
+                      if c.attrs['name'].startswith('msg_')]
         return checkboxes
 
     def test_query_count(self):
@@ -468,7 +468,7 @@ class MessageLists(TestCase):
         # Archive
         resp2 = self.client.post(reverse("cciwmain.members.inbox",
                                          kwargs={'user_name': TEST_MEMBER_USERNAME}),
-                                 {checkboxes[0].attrMap['name']: '1',
+                                 {checkboxes[0].attrs['name']: '1',
                                   'archive':'1'})
         self.assertEqual(resp2.status_code, 200)
         self.assertEqual(self._inbox_count(), inbox_count - 1)
@@ -486,7 +486,7 @@ class MessageLists(TestCase):
         # Delete
         resp2 = self.client.post(reverse("cciwmain.members.inbox",
                                          kwargs={'user_name': TEST_MEMBER_USERNAME}),
-                                 {checkboxes[0].attrMap['name']: '1',
+                                 {checkboxes[0].attrs['name']: '1',
                                   'delete':'1'})
         self.assertEqual(resp2.status_code, 200)
         self.assertEqual(self._inbox_count(), inbox_count - 1)
@@ -512,7 +512,7 @@ class MessageLists(TestCase):
         # Move to inbox
         resp2 = self.client.post(reverse("cciwmain.members.archived_messages",
                                          kwargs={'user_name': TEST_MEMBER_USERNAME}),
-                                 {checkboxes[0].attrMap['name']: '1',
+                                 {checkboxes[0].attrs['name']: '1',
                                   'inbox':'1'})
         self.assertEqual(resp2.status_code, 200)
         self.assertEqual(self._inbox_count(), inbox_count + 1)
@@ -535,7 +535,7 @@ class MessageLists(TestCase):
         resp2 = self.client.post(reverse("cciwmain.members.inbox",
                                          kwargs={'user_name': TEST_MEMBER_USERNAME})
                                  + "?page=2",
-                                 {checkboxes[0].attrMap['name']: '1',
+                                 {checkboxes[0].attrs['name']: '1',
                                   'delete':'1'})
         self.assertEqual(resp2.status_code, 302)
         self.assertTrue("page=1" in resp2['Location'])

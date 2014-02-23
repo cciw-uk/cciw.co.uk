@@ -1,4 +1,4 @@
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 from cciw.cciwmain.tests.client import CciwClient
 from django.test import TestCase
 from django.conf import settings
