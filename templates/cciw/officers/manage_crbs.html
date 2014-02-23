@@ -120,12 +120,7 @@ $(document).ready(function() {
 
     function updateCheckBoxes(selectedCamps) {
         $('#id_campselector input[type=checkbox]').each(function(idx, elem) {
-            var input = $(elem);
-            if ($.inArray(input.val(), selectedCamps) != -1) {
-                input.attr('checked', 'checked');
-            } else {
-                input.removeAttr('checked');
-            }
+            elem.checked = ($.inArray(elem.value, selectedCamps) != -1);
         });
     }
 
