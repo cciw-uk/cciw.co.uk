@@ -1,21 +1,21 @@
 BeautifulSoup==3.2.0
-Pillow>=2.2.1
-psycopg2==2.2.2
-zc.lockfile==1.0.0
-south==0.7.2
-xlwt==0.7.2
-xlrd==0.7.1
-python-dateutil==2.0
-Django==1.6
-django-paypal==0.1.3
-# Python 3 support:
--e git://github.com/pinax/django-mailer.git@bd6d1a75f63a398631bcba010005cdb8bd803edd#egg=django-mailer
-django-autocomplete-light>=2.0.0a1
 diff-match-patch
-pytz
-gunicorn
-psutil
-fabric==1.6.0
-WebTest==2.0.11
+Django==1.6
+django-autocomplete-light>=2.0.0a1
+django-paypal==0.1.3
 django-webtest==1.7.5
 -e git://github.com/benjaoming/django-wiki@844438366bebf40ad91b02a64dd3e7a518e4b8c8#egg=wiki
+# Python 3 support:
+-e git://github.com/pinax/django-mailer.git@bd6d1a75f63a398631bcba010005cdb8bd803edd#egg=django-mailer
+fabric==1.6.0
+gunicorn
+Pillow>=2.2.1
+psutil
+psycopg2==2.2.2
+python-dateutil==2.0
+pytz
+south==0.7.2
+WebTest==2.0.11
+xlrd==0.7.1
+xlwt==0.7.2
+zc.lockfile==1.0.0
