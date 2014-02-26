@@ -62,7 +62,7 @@ def create_user(user_name, password1, password2):
 
         # Copy default member icon
         import shutil
-        shutil.copy("%s/%s" % (settings.STATIC_ROOT, settings.DEFAULT_MEMBER_ICON),
+        shutil.copy("%s/cciw/cciwmain/static/%s" % (settings.PROJECT_ROOT, settings.DEFAULT_MEMBER_ICON),
                     "%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, iconfilename))
         return m
 

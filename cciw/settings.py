@@ -8,6 +8,8 @@ hostname = socket.gethostname()
 basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # ../
 parentdir = os.path.dirname(basedir)
 
+PROJECT_ROOT = basedir
+
 DEVBOX = ('webfaction' not in hostname)
 LIVEBOX = not DEVBOX
 
