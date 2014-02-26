@@ -39,7 +39,7 @@ $ fab test
 
 or
 
-$ ./manage.py test --settings=cciw.settings_tests cciw
+$ ./manage.py test --settings=cciw.settings_tests cciw.cciwmain.tests cciw.bookings.tests cciw.officers.tests
 
 
 
