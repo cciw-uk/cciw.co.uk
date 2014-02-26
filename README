@@ -123,3 +123,30 @@ depending on whether the move to CBVs was worth the effort. This means that
 there is sometimes some duplication between the function based way of doing
 something and the equivalent CBV way, and you need to be comfortable with both
 styles.
+
+
+Crontab
+-------
+
+CCIW_PYTHON=/home/cciw/webapps/cciw_django/venv/bin/python2.7
+CCIW_MANAGE=/home/cciw/webapps/cciw_django/src/manage.py
+
+CCIW_STAGING_PYTHON=/home/cciw/webapps/cciw_staging_django/venv/bin/python2.7
+CCIW_STAGING_MANAGE=/home/cciw/webapps/cciw_staging_django/src/manage.py
+
+*       * * * * $CCIW_PYTHON $CCIW_MANAGE send_mail 2>> ~/.django-mailer-cron.log
+5,35    * * * * $CCIW_PYTHON $CCIW_MANAGE fix_mailing_lock
+0,20,40 * * * * $CCIW_PYTHON $CCIW_MANAGE retry_deferred 2>> ~/.django-mailer-deferred-cron.log
+15      1 * * * $CCIW_PYTHON $CCIW_MANAGE clear_securedownload_links
+*/10    * * * * $CCIW_PYTHON $CCIW_MANAGE process_payments
+0       2 * * * $CCIW_PYTHON $CCIW_MANAGE cleanup
+*       * * * * $CCIW_PYTHON $CCIW_MANAGE handle_mailing_lists 2>> ~/.cciw-mailings-cron.log
+
+# expire_bookings must be run only once an hour
+30      * * * * $CCIW_PYTHON $CCIW_MANAGE expire_bookings
+*/10    * * * * /home/cciw/webapps/cciw_django/venv/bin/fab -f /home/cciw/webapps/cciw_django/src/fabfile.py production local_webserver_start
+
+# expire_bookings must be run only once an hour
+30      * * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE expire_bookings
+18      1 * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE clear_securedownload_links
+3       2 * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE cleanup
