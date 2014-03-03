@@ -109,6 +109,7 @@ def index(request):
     user = request.user
     c = {}
     c['thisyear'] = common.get_thisyear()
+    c['lastyear'] = c['thisyear'] - 1
     if is_camp_admin(user):
         c['show_leader_links'] = True
         c['show_admin_link'] = True

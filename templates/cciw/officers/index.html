@@ -7,7 +7,8 @@
   {% if show_booking_secretary_links %}
   <li><a href="/admin/bookings/">Manage bookings</a></li>
   <li><a href="{% url 'cciw.officers.views.booking_secretary_reports' thisyear %}">Booking reports</a></li>
-  <li><a href="{% url 'cciw.officers.views.export_camper_data_for_year' thisyear %}?format=xls">Download bookings data (xls)</a></li>
+  <li><a href="{% url 'cciw.officers.views.export_camper_data_for_year' thisyear %}?format=xls">Download {{ thisyear }} bookings data (xls)</a></li>
+  <li><a href="{% url 'cciw.officers.views.export_camper_data_for_year' lastyear %}?format=xls">Download {{ lastyear }} bookings data (xls)</a></li>
   {% endif %}
   <li><a href="{% url 'cciw.officers.views.applications' %}">Submit/view applications</a></li>
   <li><a href="{% url 'cciw.officers.views.info' %}">Information about camp</a></li>
@@ -16,7 +17,7 @@
   {% endif %}
   {% if show_secretary_links %}
     <li><a href="{% url 'cciw.officers.views.manage_crbs' thisyear %}">Manage CRBs</a></li>
-    <li><a href="{% url 'cciw.officers.views.brochure_mailing_list' thisyear %}">Brochure mailing list ({{ thisyear }})</a></li>
+    <li><a href="{% url 'cciw.officers.views.brochure_mailing_list' thisyear %}?format=xls">Download {{ thisyear }} brochure mailing list (xls)</a> (from bookings for {{ lastyear }})</li>
   {% endif %}
   {% if show_admin_link %}
     <li><a href="/admin/">General admin interface</a> (manage camps, camp sites, officers etc)</li>
