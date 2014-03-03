@@ -157,7 +157,7 @@ def addresses_for_mailing_list(year, spreadsheet):
                 .select_related('account')
                 )
 
-    headers = ['Name', 'Address', 'Post code', '# bookings']
+    headers = ['Name', 'Address', 'Post code', 'Email', '# bookings']
     rows = []
     for account, acc_bookings in groupby(bookings, lambda b: b.account):
         acc_bookings = list(acc_bookings)
@@ -166,6 +166,7 @@ def addresses_for_mailing_list(year, spreadsheet):
             rows.append([account.name,
                          account.address,
                          account.post_code,
+                         account.email,
                          len(acc_bookings)])
         else:
             # Use bookings for address
@@ -178,12 +179,14 @@ def addresses_for_mailing_list(year, spreadsheet):
                 rows.append([account.name,
                              first_booking.address,
                              first_booking.post_code,
+                             account.email,
                              len(acc_bookings)])
             else:
                 for b in acc_bookings:
                     rows.append([b.name,
                                  b.address,
                                  b.post_code,
+                                 account.email,
                                  1])
     rows.sort() # first column (Name) alphabetical
 
