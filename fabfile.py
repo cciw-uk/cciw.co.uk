@@ -359,6 +359,11 @@ def no_db():
 
 
 @task
+def no_installs():
+    env.no_installs = True
+
+
+@task
 def quick():
     no_db()
     no_installs()
