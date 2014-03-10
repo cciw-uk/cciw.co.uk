@@ -422,6 +422,7 @@ address are not classified as junk mail.</p>
   <tr>
     <th>Officer</th>
     <th>Missing application forms</th>
+    <th>Missing references</th>
   </tr>
   {% for officer_data in officers_serious_slackers %}
   {% with officer=officer_data.officer %}
@@ -429,6 +430,11 @@ address are not classified as junk mail.</p>
     <td>{{ officer.first_name }} {{ officer.last_name }}</td>
     <td>
       {% for camp in officer_data.missing_application_forms %}
+      <a target="_blank" href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}">{{ camp.year }}-{{ camp.number }}</a><br/>
+      {% endfor %}
+    </td>
+    <td>
+      {% for camp in officer_data.missing_references %}
       <a target="_blank" href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}">{{ camp.year }}-{{ camp.number }}</a><br/>
       {% endfor %}
     </td>

@@ -89,11 +89,18 @@ class TestSlackers(TestCase):
         camp2.invitation_set.create(officer=officer1)
         camp2.invitation_set.create(officer=officer2)
 
-        # Officer 1 submitted an Application, but officer2 did not
-        officer1.application_set.create(
+        # Officer 1 submitted an Application, but officer 2 did not
+        app = officer1.application_set.create(
             date_submitted=camp1.start_date - timedelta(days=10),
             finished=True,
         )
+
+        # Officer 1 submitted references, but officer 2 did not
+        ref1, ref2 = app.references
+        ref1.received = True
+        ref1.save()
+        ref2.received = True
+        ref2.save()
 
         serious_slackers = camp_serious_slacker_list(camp2)
 
@@ -101,4 +108,5 @@ class TestSlackers(TestCase):
             serious_slackers,
             [{'officer':  officer2,
               'missing_application_forms': [camp1],
+              'missing_references': [camp1],
               }])

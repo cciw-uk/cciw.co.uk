@@ -58,27 +58,48 @@ def camp_serious_slacker_list(camp):
                             officer__in=officers,
                             date_submitted__lte=latest_camp.start_date))
 
+    all_received_refs = list(Reference.objects
+                             .filter(application__in=all_apps,
+                                     received=True,
+                                 ))
+
+    received_ref_dict = defaultdict(list)
+    for ref in all_received_refs:
+        received_ref_dict[ref.application_id].append(ref)
+
+
     # For each officer, we need to build a list of the years when they were on
     # camp but failed to submit an application form.
+
+    # If they failed to submit two references, we also need to show them.  (If
+    # they didn't submit, an application form then they will definitely have
+    # missing references).
+
 
     # Dictionaries containing officers as key, and a list of camps as values:
     officer_apps_missing = defaultdict(list)
     officer_apps_present = defaultdict(list)
+    officer_refs_missing = defaultdict(list)
+    officer_refs_present = defaultdict(list)
 
     for c in relevant_camps:
         camp_officers = set([i.officer
                              for i in all_invitations
                              if i.camp == c])
-        officers_with_applications = set([a.officer
-                                          for a in all_apps
-                                          if a.could_be_for_camp(c)
-                                          and a.officer in camp_officers])
+        camp_applications = [a for a in all_apps if a.could_be_for_camp(c)]
+        officers_with_applications = set([a.officer for a in camp_applications])
+        officers_with_two_references = set([a.officer for a in camp_applications
+                                            if len(received_ref_dict[a.id]) >= 2])
 
         for o in camp_officers:
             if o in officers_with_applications:
                 officer_apps_present[o].append(c)
             else:
                 officer_apps_missing[o].append(c)
+            if o in officers_with_two_references:
+                officer_refs_present[o].append(c)
+            else:
+                officer_refs_missing[o].append(c)
 
     # We only care about missing applications if they are not
     # followed by submitted applications i.e. an officer fixes
@@ -93,15 +114,48 @@ def camp_serious_slacker_list(camp):
                 c for c in missing_camps
                 if c.start_date > last_camp_with_app.start_date
             ]
-            new_missing_camps.sort(key=lambda camp:camp.start_date)
             officer_apps_missing[officer] = new_missing_camps
 
+    # Sort by date desc
+    for officer, camps in officer_apps_missing.items():
+        camps.sort(key=lambda camp: camp.start_date, reverse=True)
+
+
+    # Same for references
+    for officer, camps in officer_refs_present.items():
+        if camps:
+            camps.sort(key=lambda camp:camp.start_date)
+            last_camp_with_ref = camps[-1]
+            missing_camps = officer_refs_missing[officer]
+            new_missing_camps = [
+                c for c in missing_camps
+                if c.start_date > last_camp_with_ref.start_date
+            ]
+            officer_refs_missing[officer] = new_missing_camps
+
+    # Sort by date desc
+    for officer, camps in officer_refs_missing.items():
+        camps.sort(key=lambda camp: camp.start_date, reverse=True)
+
+
+    # Don't show missing applications/references from current year
     for officer, camps in officer_apps_missing.items():
         officer_apps_missing[officer] = [c for c in camps if c.year < camp.year]
 
+    for officer, camps in officer_refs_missing.items():
+        officer_refs_missing[officer] = [c for c in camps if c.year < camp.year]
+
+
+    l = [(o, officer_apps_missing[o], officer_refs_missing[o])
+          for o in set(officer_apps_missing.keys()) | set(officer_refs_missing.keys())]
+    # Remove empty items:
+    l = [(o, a, r) for (o, a, r) in l
+         if len(a) > 0 or len(r) > 0]
     return [{'officer': o,
-             'missing_application_forms': camps
-            } for o, camps in officer_apps_missing.items() if camps]
+             'missing_application_forms': a,
+             'missing_references': r,
+         } for o, a, r in l]
+
 
 
 def officer_data_to_spreadsheet(camp, spreadsheet):
