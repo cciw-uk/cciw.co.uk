@@ -183,7 +183,7 @@ if DEVBOX:
     EMAIL_PORT = 8025
 
 else:
-    SERVER_EMAIL = "website@cciw.co.uk"
+    SERVER_EMAIL = "CCIW website <website@cciw.co.uk>"
     DEFAULT_FROM_EMAIL = SERVER_EMAIL
     EMAIL_HOST = "smtp.webfaction.com"
     from cciw.settings_priv import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
