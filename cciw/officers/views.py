@@ -33,7 +33,7 @@ from cciw.officers.email_utils import send_mail_with_attachments, formatted_emai
 from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer, send_crb_consent_problem_email
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication, CRBFormLog
-from cciw.officers.utils import camp_slacker_list, officer_data_to_spreadsheet
+from cciw.officers.utils import camp_slacker_list, camp_serious_slacker_list, officer_data_to_spreadsheet
 from cciw.officers.references import reference_form_info
 from cciw.utils.views import close_window_response, user_passes_test_improved, get_spreadsheet_formatter
 from securedownload.views import access_folder_securely
@@ -728,6 +728,7 @@ def officer_list(request, year=None, number=None):
     c['officers_noapplicationform'] = camp_slacker_list(camp)
     c['address_all'] = address_for_camp_officers(camp)
     c['address_noapplicationform'] = address_for_camp_slackers(camp)
+    c['officers_serious_slackers'] = camp_serious_slacker_list(camp)
 
     # List for select
     available_officers = list(User.objects.filter(is_staff=True).order_by('first_name', 'last_name', 'email'))

@@ -174,6 +174,12 @@ class Application(models.Model):
     class Meta:
         ordering = ('-date_submitted', 'officer__first_name', 'officer__last_name',)
 
+    def could_be_for_camp(self, camp):
+        # An application is 'for' a camp if it is submitted in the year before
+        # the camp start date. Logic duplicated in applications_for_camp
+        return (self.date_submitted <= camp.start_date and
+                self.date_submitted > camp.start_date - timedelta(days=365))
+
 
 class ReferenceManager(models.Manager):
     # manager to reduce number of SQL queries, especially in admin

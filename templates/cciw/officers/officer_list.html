@@ -408,6 +408,38 @@ address are not classified as junk mail.</p>
 </div>
 
 
+{% if officers_serious_slackers %}
+
+<div id="id_seriousslackers">
+
+<h2>Application form/references track record</h2>
+
+<p>A number of officers need attention regarding their track record with
+  application forms or references. (If they didn't actually come on the camps
+  listed, it will help to remove them from the officer lists for those camps).
+  </p>
+<table>
+  <tr>
+    <th>Officer</th>
+    <th>Missing application forms</th>
+  </tr>
+  {% for officer_data in officers_serious_slackers %}
+  {% with officer=officer_data.officer %}
+  <tr>
+    <td>{{ officer.first_name }} {{ officer.last_name }}</td>
+    <td>
+      {% for camp in officer_data.missing_application_forms %}
+      <a target="_blank" href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}">{{ camp.year }}-{{ camp.number }}</a><br/>
+      {% endfor %}
+    </td>
+  </tr>
+  {% endwith %}
+  {% endfor %}
+</table>
+</div>
+{% endif %}
+
+
 <h2>Export officer data</h2>
 
 <p>The officer list above, along with address details from this year's

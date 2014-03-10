@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 import xlrd
@@ -5,7 +7,7 @@ import xlrd
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Invitation, Application
 from cciw.officers.tests.references import OFFICER, LEADER
-from cciw.officers.utils import officer_data_to_spreadsheet
+from cciw.officers.utils import officer_data_to_spreadsheet, camp_serious_slacker_list
 from cciw.utils.spreadsheet import ExcelFormatter
 
 
@@ -66,3 +68,37 @@ class TestExport(TestCase):
         # Check data from Application model
         self.assertEqual(wksh.cell(0, 4).value, "Address")
         self.assertTrue(app.address_firstline in wksh.col_values(4))
+
+
+class TestSlackers(TestCase):
+
+    fixtures = ['basic.json']
+
+    def test_serious_slackers(self):
+        camp1 = Camp.objects.get(year=2000)
+        camp2 = Camp.objects.get(year=2001)
+
+        officer1 = User.objects.create(username="joe",
+                                       email="joe@example.com")
+        officer2 = User.objects.create(username="mary",
+                                       email="mary@example.com")
+
+        camp1.invitation_set.create(officer=officer1)
+        camp1.invitation_set.create(officer=officer2)
+
+        camp2.invitation_set.create(officer=officer1)
+        camp2.invitation_set.create(officer=officer2)
+
+        # Officer 1 submitted an Application, but officer2 did not
+        officer1.application_set.create(
+            date_submitted=camp1.start_date - timedelta(days=10),
+            finished=True,
+        )
+
+        serious_slackers = camp_serious_slacker_list(camp2)
+
+        self.assertEqual(
+            serious_slackers,
+            [{'officer':  officer2,
+              'missing_application_forms': [camp1],
+              }])
