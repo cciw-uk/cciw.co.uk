@@ -141,7 +141,9 @@ def leaders_index(request):
 def applications(request):
     """Displays a list of tasks related to applications."""
     user = request.user
-    c = {}
+    c = {
+        'camps': [i.camp for i in user.invitation_set.filter(camp__year=common.get_thisyear())]
+    }
 
     finished_applications = user.application_set\
         .filter(finished=True)\

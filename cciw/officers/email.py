@@ -76,7 +76,8 @@ def send_application_emails(request, application):
         if len(leader_emails) > 0:
             send_leader_email(leader_emails, application, application_text, rtf_attachment,
                               application_diff)
-        messages.info(request, "The completed application form has been sent to the leaders via e-mail.")
+        messages.info(request, u"The completed application form has been sent to the leaders (%s) via e-mail." %
+                      camp.leaders_formatted)
 
     if len(leader_email_groups) == 0:
         application_text = """PLEASE NOTE: This has not been sent to any leaders,
