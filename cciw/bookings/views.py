@@ -625,7 +625,7 @@ def get_expected_amount_due(request):
         b = Booking(price_type=int(request.POST['price_type']),
                     south_wales_transport='south_wales_transport' in request.POST,
                     camp_id=int(request.POST['camp']))
-    except ValueError, KeyError: # not a valid price_type/camp, data missing
+    except (ValueError, KeyError): # not a valid price_type/camp, data missing
         return fail
     try:
         amount = b.expected_amount_due()

@@ -254,7 +254,7 @@ def signup(request):
             else:
                 try:
                     send_signup_mail(email)
-                except Exception, e:
+                except Exception as e:
                     c['error_message'] = \
                         """E-mail could not be sent for the following reason: %s
                         If the error persists, please contact the webmaster.""" % str(e)
@@ -292,7 +292,7 @@ def signup(request):
                 m = create_user(user_name,
                                 request.POST.get('password1', ''),
                                 request.POST.get('password2', ''))
-            except ValidationError, e:
+            except ValidationError as e:
                 c['stage'] = "user_name"
                 c['confemail'] = email
                 c['confhash'] = hash
@@ -355,7 +355,7 @@ def change_password(request):
         # New password from e-mail
         try:
             password = extract_new_password(hash, user_name)
-        except ValidationError, e:
+        except ValidationError as e:
             c['error_message'] = e.args[0]
         else:
             try:
@@ -459,7 +459,7 @@ class Preferences(DefaultMetaData, AjaxyFormView, ModelFormMixin):
         if self.request.FILES:
             try:
                 imageutils.fix_member_icon(current_member, self.request.FILES['icon'])
-            except imageutils.ValidationError, e:
+            except imageutils.ValidationError as e:
                 self.context['image_error'] = e.args[0]
                 return self.form_invalid(form)
 
