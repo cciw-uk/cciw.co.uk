@@ -159,6 +159,12 @@ def install_dependencies():
     with virtualenv(target.VENV_DIR):
         with cd(target.SRC_DIR):
             run_venv("pip install -r requirements.txt")
+            if PYTHON_BIN == "python2.7":
+                run_venv("pip install -r requirements-py2.txt")
+            elif PYTHON_BIN == "python3.3":
+                run_venv("pip install -r requirements-py3.txt")
+            else:
+                raise Exception("Unsupported Python version")
 
 
 def ensure_virtualenv():
