@@ -36,7 +36,7 @@ def main():
         try:
             u = User.objects.get(username=uname)
         except User.DoesNotExist:
-            print "Can't find user '%s'" % uname
+            print("Can't find user '%s'" % uname)
         users.append(u)
 
     for user in users:

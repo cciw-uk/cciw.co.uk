@@ -1,4 +1,11 @@
 """Administrative views for members (signup, password change etc)"""
+from six.moves.urllib_parse import quote
+import re
+import datetime
+import string
+import random
+import base64
+
 from django.shortcuts import render
 from django.core import mail
 from django.contrib import messages
@@ -9,6 +16,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.utils.crypto import salted_hmac
 from django.views.generic.edit import ModelFormMixin
 from django import forms
+
 from cciw.cciwmain.common import DefaultMetaData, AjaxyFormView, member_username_re
 from cciw.forums.models import Member
 from cciw.middleware.threadlocals import set_member_session, get_current_member
@@ -17,12 +25,6 @@ from cciw.cciwmain import common
 from cciw.cciwmain import imageutils
 from cciw.cciwmain.forms import CciwFormMixin
 from cciw.cciwmain.utils import is_valid_email
-import urllib
-import re
-import datetime
-import string
-import random
-import base64
 
 password_re = re.compile(r'^[A-Za-z0-9]{5,15}$')
 
@@ -78,7 +80,12 @@ def email_address_used(email):
 
 
 def random_password():
-    chars = list(string.lowercase)
+    try:
+        # Python 2
+        chars = list(string.lowercase)
+    except AttributeError:
+        chars = list(string.ascii_lowercase)
+
     random.shuffle(chars)
     return ''.join(chars[0:8])
 
@@ -127,7 +134,7 @@ the link into your web browser.
 If you did not attempt to sign up on the CCIW web-site, you can just
 ignore this e-mail.
 
-""" % {'domain': common.get_current_domain(), 'email': urllib.quote(email), 'hash': email_hash(email)},
+""" % {'domain': common.get_current_domain(), 'email': quote(email), 'hash': email_hash(email)},
                    settings.SERVER_EMAIL, [email])
 
 
@@ -178,7 +185,7 @@ be changed until you click the link, so you can safely ignore this e-mail.
 def create_new_password_hash(password, user_name):
     # Create string used to verify user_name and date.
     hash_str = u':'.join([datetime.date.today().isoformat(), user_name, password])
-    return base64.urlsafe_b64encode(hash_str.encode("utf-8"))
+    return base64.urlsafe_b64encode(hash_str.encode("utf-8")).decode('ascii')
 
 
 def extract_new_password(hash, user_name):
@@ -188,7 +195,7 @@ def extract_new_password(hash, user_name):
         "copied the entire URL from the e-mail"
 
     try:
-        hash_str = base64.urlsafe_b64decode(hash.encode("ascii"))
+        hash_str = base64.urlsafe_b64decode(hash.encode("ascii")).decode('utf-8')
     except TypeError:
         raise ValidationError(invalid_url_msg)
     try:
@@ -224,8 +231,8 @@ https://%(domain)s/memberadmin/change-email/?email=%(email)s&u=%(user_name)s&h=%
 If clicking on the link does not do anything, please copy and paste
 the entire link into your web browser.
 
-""" % {'domain': common.get_current_domain(), 'email': urllib.quote(new_email),
-       'user_name': urllib.quote(member.user_name),
+""" % {'domain': common.get_current_domain(), 'email': quote(new_email),
+       'user_name': quote(member.user_name),
        'hash': email_and_username_hash(new_email, member.user_name)},
     settings.SERVER_EMAIL, [new_email])
 
@@ -334,10 +341,10 @@ def help_logging_in(request):
                 cont = False
 
         if cont:
-            if request.POST.has_key('usernamereminder'):
+            if 'usernamereminder' in request.POST:
                 send_username_reminder(member)
                 c['success_message'] = "An e-mail has been sent with a reminder of your user name."
-            elif request.POST.has_key('newpassword'):
+            elif 'newpassword' in request.POST:
                 send_newpassword_email(member)
                 c['success_message'] = "An e-mail has been sent to you with a new password."
 

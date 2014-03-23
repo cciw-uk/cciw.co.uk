@@ -5,6 +5,7 @@ import re
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.fields import YyyyMmField, AddressField, ExplicitBooleanField, required_field
@@ -40,6 +41,7 @@ class ApplicationManager(models.Manager):
         return super(ApplicationManager, self).get_queryset().select_related('officer')
 
 
+@python_2_unicode_compatible
 class Application(models.Model):
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
     full_name = required_field(models.CharField, 'full name', max_length=60)
@@ -161,7 +163,7 @@ class Application(models.Model):
                                        self.address_postcode,
                                        self.address_country]))
 
-    def __unicode__(self):
+    def __str__(self):
         if self.date_submitted is not None:
             submitted = "submitted " + self.date_submitted.strftime("%Y-%m-%d")
         else:
@@ -188,6 +190,7 @@ class ReferenceManager(models.Manager):
         return super(ReferenceManager, self).get_queryset().select_related('application__officer')
 
 
+@python_2_unicode_compatible
 class Reference(models.Model):
     """
     Stores metadata about a reference for an officer.
@@ -202,7 +205,7 @@ class Reference(models.Model):
 
     objects = ReferenceManager()
 
-    def __unicode__(self):
+    def __str__(self):
         app = self.application
         # Due to this being called before object is saved to the
         # database in admin, self.referee_number can sometimes be a string
@@ -270,6 +273,7 @@ class ReferenceFormManager(models.Manager):
         return super(ReferenceFormManager, self).get_queryset().select_related('reference_info__application__officer')
 
 
+@python_2_unicode_compatible
 class ReferenceForm(models.Model):
     referee_name = models.CharField("name of referee", max_length=100)
     how_long_known = models.CharField("how long/since when have you known the applicant?", max_length=150)
@@ -291,7 +295,7 @@ class ReferenceForm(models.Model):
 
     applicant_name = property(_get_applicant_name)
 
-    def __unicode__(self):
+    def __str__(self):
         officer = self.reference_info.application.officer
         return u"Reference form for %s %s by %s" % (officer.first_name, officer.last_name, self.referee_name)
 
@@ -314,6 +318,7 @@ class InvitationManager(models.Manager):
         return super(InvitationManager, self).get_queryset().select_related('officer', 'camp', 'camp__chaplain')
 
 
+@python_2_unicode_compatible
 class Invitation(models.Model):
     officer = models.ForeignKey(User)
     camp = models.ForeignKey(Camp)
@@ -322,7 +327,7 @@ class Invitation(models.Model):
 
     objects = InvitationManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return u"%s %s — camp %s" % (self.officer.first_name, self.officer.last_name, self.camp)
 
 
@@ -345,6 +350,7 @@ class CRBApplicationManager(models.Manager):
         return self.get_queryset().filter(completed__gte=camp.start_date - timedelta(settings.CRB_VALID_FOR))
 
 
+@python_2_unicode_compatible
 class CRBApplication(models.Model):
     officer = models.ForeignKey(User)
     crb_number = models.CharField("Disclosure number", max_length=20)
@@ -352,7 +358,7 @@ class CRBApplication(models.Model):
 
     objects = CRBApplicationManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return "CRB application for %s %s, %s" % (self.officer.first_name,
                                                   self.officer.last_name,
                                                   self.completed.strftime("%Y-%m-%d"))
@@ -368,6 +374,7 @@ class CRBFormLogManager(models.Manager):
         return super(CRBFormLogManager, self).get_queryset().select_related('officer')
 
 
+@python_2_unicode_compatible
 class CRBFormLog(models.Model):
     """
     Represents a log of a  CRB form sent to an officer
@@ -377,7 +384,7 @@ class CRBFormLog(models.Model):
 
     objects = CRBFormLogManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return "Log of CRB form sent to %s %s on %s" % (self.officer.first_name,
                                                         self.officer.last_name,
                                                         self.sent.strftime("%Y-%m-%d"))

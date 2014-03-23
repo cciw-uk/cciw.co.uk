@@ -13,6 +13,7 @@ from cciw.officers.models import Application, Reference, Invitation, ReferenceFo
 from cciw.officers import widgets
 from cciw.utils.views import close_window_response
 
+from six import text_type
 
 officer_autocomplete_field = lambda: autocomplete_light.ModelChoiceField('user')
 
@@ -233,18 +234,18 @@ class ApplicationAdmin(admin.ModelAdmin):
         return super(ApplicationAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
     def _force_no_add_another(self, request):
-        if request.POST.has_key('_addanother'):
+        if '_addanother' in request.POST:
             del request.POST['_addanother']
 
     def _force_user_val(self, request):
         user = request.user
         if not user.has_perm('officers.change_application'):
-            request.POST['officer'] = unicode(request.user.id)
+            request.POST['officer'] = text_type(request.user.id)
         else:
             # The leader possibly forgot to set the 'user' box while submitting
             # their own application form.
             if request.POST['officer'] == '':
-                request.POST['officer'] = unicode(request.user.id)
+                request.POST['officer'] = text_type(request.user.id)
 
     def _force_post_vals(self, request):
         request.POST = request.POST.copy()
@@ -268,7 +269,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         return super(ApplicationAdmin, self).has_change_permission(request, obj)
 
     def _redirect(self, request, response):
-        if not request.POST.has_key('_continue') and response.has_header("Location"):
+        if not '_continue' in request.POST and response.has_header("Location"):
             location = request.GET.get('_redirect_to',
                                        urlresolvers.reverse('cciw.officers.views.applications'))
             response["Location"] = location
@@ -297,7 +298,7 @@ class ApplicationAdmin(admin.ModelAdmin):
 
 
 class ReferenceAdmin(admin.ModelAdmin):
-    list_display = ['__unicode__', 'requested', 'received']
+    list_display = ['__str__', 'requested', 'received']
     search_fields = ['application__officer__first_name', 'application__officer__last_name']
 
 

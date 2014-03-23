@@ -58,7 +58,8 @@
 ##    as some elements being context sensitive in the render phase
 
 import re
-import urllib
+from six.moves.urllib_parse import urlencode
+from six import string_types
 
 #### CCIW specific imports #####
 from cciw.cciwmain.utils import obfuscate_email
@@ -70,7 +71,7 @@ ESV_BROWSE_URL = settings.ESV_BROWSE_URL
 ##### UTILITY FUNCTIONS #####
 def escape(html):
     "Returns the given HTML with ampersands, quotes and waccas encoded"
-    if not isinstance(html, basestring):
+    if not isinstance(html, string_types):
         html = str(html)
     return html.replace('&', '&amp;').replace('<', '&lt;') \
         .replace('>', '&gt;').replace('"', '&quot;')
@@ -83,7 +84,7 @@ class MultiReplace:
         # "compile" replacement dictionary
 
         # string to string mapping; use a regular expression
-        keys = repl_dict.keys()
+        keys = list(repl_dict.keys())
         keys.sort() # lexical order
         keys.reverse() # use longest match first
         pattern = "|".join(map(re.escape, keys))
@@ -277,7 +278,7 @@ class BibleTag(BBTag):
     def render_node_xhtml(self, node):
         output = u''
         if node.parameter is not None:
-            url = ESV_BROWSE_URL + "?" + urllib.urlencode({'q':node.parameter})
+            url = ESV_BROWSE_URL + "?" + urlencode({'q':node.parameter})
             output += u'<div class="biblequote"><a href="%s" title="Browse %s in the ESV">%s:</a></div>' % \
                 (escape(url), escape(node.parameter), escape(node.parameter))
         output += u'<blockquote class="bible">%s</blockquote>' % node.render_children_xhtml()

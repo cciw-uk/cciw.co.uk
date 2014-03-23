@@ -32,7 +32,7 @@ class MemberList(DefaultMetaData, FeedHandler, ListView):
         if self.is_feed_request():
             return members
 
-        if self.request.GET.has_key('online'):
+        if 'online' in self.request.GET:
             members = members.filter(last_seen__gte=(datetime.now() - timedelta(minutes=3)))
         order_by = get_order_option(
             {'adj': ('date_joined',),
@@ -70,7 +70,7 @@ class MemberDetail(DefaultMetaData, TemplateView):
         return super(MemberDetail, self).get(request, user_name)
 
     def post(self, request, user_name):
-        if request.POST.has_key('logout'):
+        if 'logout' in request.POST:
             remove_member_session(request)
             return HttpResponseRedirect(request.path)
         else:
@@ -154,7 +154,7 @@ class SendMessage(DefaultMetaData, TemplateView):
 
                 # Always do a preview (for 'preview' and 'send')
                 preview = mark_safe(bbcode.bb2xhtml(message_text))
-                if len(errors) == 0 and request.POST.has_key('send'):
+                if len(errors) == 0 and 'send' in request.POST:
                     Message.send_message(to, current_member, message_text)
                     messages.info(request, "Message was sent")
                     return HttpResponseRedirect(request.path)
@@ -243,7 +243,7 @@ class MessageList(DefaultMetaData, ListView):
                     except Message.DoesNotExist:
                         pass
         message_count = member.messages_received.filter(box=self.box).count()
-        page = request.GET.get('page', 1)
+        page = int(request.GET.get('page', 1))
         last_page = int(math.ceil(float(message_count)/settings.MEMBERS_PAGINATE_MESSAGES_BY))
         last_page = max(last_page, 1)
         if page > last_page:

@@ -32,7 +32,7 @@ def main():
         if len(args) > 0:
             usage_and_exit()
         if options.is_leader:
-            print "'--leader' not valid with '--fromcsv'"
+            print("'--leader' not valid with '--fromcsv'")
             usage_and_exit()
         csv_data = parse_csv_data(sys.stdin)
         create_multiple_officers(csv_data, options.dryrun, verbose=True)
@@ -46,7 +46,7 @@ def main():
                 try:
                     person = Person.objects.get(name=personname)
                 except Person.DoesNotExist:
-                    print "Person called '%s' does not exist in the database" % personname
+                    print("Person called '%s' does not exist in the database" % personname)
                     sys.exit(1)
             else:
                 person = None

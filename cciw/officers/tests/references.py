@@ -54,7 +54,6 @@ class ReferencesPage(WebTestBase):
         response = self.app.get(reverse("cciw.officers.views.manage_references", kwargs=dict(year=2000, number=1)),
                                 expect_errors=[403])
         self.assertEqual(response.status_code, 403)
-        self.assertNotIn(response.content, 'For camp 2000-1')
 
 
 class RequestReference(WebTestBase):
@@ -260,8 +259,8 @@ class CreateReference(WebTestBase):
 
         # Check it is pre-filled as we expect
         html = response.content
-        self.assertInHTML("""<input id="id_referee_name" maxlength="100" name="referee_name" type="text" value="Mr Referee1 Name" />""", html)
-        self.assertInHTML("""<input id="id_how_long_known" maxlength="150" name="how_long_known" type="text" value="A long time" />""", html)
+        self.assertContains(response, """<input id="id_referee_name" maxlength="100" name="referee_name" type="text" value="Mr Referee1 Name" />""", html=True)
+        self.assertContains(response, """<input id="id_how_long_known" maxlength="150" name="how_long_known" type="text" value="A long time" />""", html=True)
 
 
 class EditReferenceFormManually(TestCase):

@@ -96,7 +96,7 @@ def topic_post_feed(topic):
 def photo_post_feed(photo):
     """Returns a Feed classs suitable for the posts in a specific photo."""
     class PhotoPostFeed(PostFeed):
-        title = u"CCIW - Posts on photo %s" % unicode(photo)
+        title = u"CCIW - Posts on photo %s" % photo
     return PhotoPostFeed
 
 class TopicFeed(CCIWFeed):

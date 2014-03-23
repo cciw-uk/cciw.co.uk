@@ -3,6 +3,7 @@ import re
 import sys
 import datetime
 from subprocess import Popen, PIPE
+from six import string_types
 
 # Questions, partly converted to regex format.
 questions = [
@@ -120,7 +121,7 @@ def shell(cmd):
     If cmd is a string, it will be interpreted through the shell.
     If is it a list [commandname, arg1, arg2...], then it won't be.
     """
-    return ''.join(Popen(cmd, shell=isinstance(cmd, basestring), stdout=PIPE, stderr=PIPE).stdout.readlines())
+    return ''.join(Popen(cmd, shell=isinstance(cmd, string_types), stdout=PIPE, stderr=PIPE).stdout.readlines())
 
 def convert_file(fname):
     ftype = shell(["file", "--brief", fname])
@@ -139,13 +140,13 @@ def scrape_file(fname):
 
     m = re.search(regex, data, flags=re.DOTALL)
     if m is None:
-        print "*** Could not match ***"
+        print("*** Could not match ***")
         for i in range(1, len(questions)+1):
             r = make_regex(questions[0:i])
             if re.search(r, data, flags=re.DOTALL) is not None:
                 pass
             else:
-                print "Failed on question " + questions[i-1][0]
+                print("Failed on question " + questions[i-1][0])
                 break
     else:
         return dict([(name, clean(name, val)) for name, val in m.groupdict().items()])
@@ -174,7 +175,7 @@ if __name__ == "__main__":
         if "*** FIXME" in repr(data):
             sys.stderr.write("%s: there were some errors parsing:\n" % fname)
             for (k,v) in data.items():
-                if isinstance(v, basestring) and "*** FIXME" in v:
+                if isinstance(v, string_types) and "*** FIXME" in v:
                     sys.stderr.write("  " + k + "\n")
         if footer_regex.search(repr(data)) is not None:
             sys.stderr.write("Footer text is found in one of the answers.")

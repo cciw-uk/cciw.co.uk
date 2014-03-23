@@ -46,7 +46,7 @@ def photo_breadcrumb(gallery, photo):
     except IndexError:
         prev_and_next += u'&raquo; '
 
-    return [u'<a href="%s">Photos</a>' % gallery.get_absolute_url(), unicode(photo.id), prev_and_next]
+    return [u'<a href="%s">Photos</a>' % gallery.get_absolute_url(), photo.id, prev_and_next]
 
 # Called directly as a view for /news/ and /website/forum/, and used by other views
 def topicindex(request, title=None, extra_context=None, forum=None,
@@ -132,7 +132,7 @@ def add_topic(request, breadcrumb_extra=None):
 
     errors = []
     # PROCESS POST
-    if forum.open and request.POST.has_key('post') or request.POST.has_key('preview'):
+    if forum.open and 'post' in request.POST or 'preview' in request.POST:
         subject = request.POST.get('subject', '').strip()
         msg_text = request.POST.get('message', '').strip()
 
@@ -145,7 +145,7 @@ def add_topic(request, breadcrumb_extra=None):
         context['message_text'] = bbcode.correct(msg_text)
         context['subject_text'] = subject
         if not errors:
-            if request.POST.has_key('post'):
+            if 'post' in request.POST:
                 topic = Topic.create_topic(cur_member, subject, forum)
                 Post.create_post(cur_member, msg_text, topic, None)
                 return HttpResponseRedirect('../%s/' % topic.id)
@@ -181,7 +181,7 @@ def add_news(request, breadcrumb_extra=None):
 
     errors = []
     # PROCESS POST
-    if forum.open and request.POST.has_key('post') or request.POST.has_key('preview'):
+    if forum.open and 'post' in request.POST or 'preview' in request.POST:
         subject = request.POST.get('subject', '').strip()
         msg_text = request.POST.get('message', '').strip()
 
@@ -194,7 +194,7 @@ def add_news(request, breadcrumb_extra=None):
         context['message_text'] = bbcode.correct(msg_text)
         context['subject_text'] = subject
         if not errors:
-            if request.POST.has_key('post'):
+            if 'post' in request.POST:
                 newsitem = NewsItem.create_item(cur_member, subject, msg_text)
                 topic = Topic.create_topic(cur_member, subject, forum, commit=False)
                 topic.news_item_id = newsitem.id
@@ -282,13 +282,14 @@ class PollOptionListField(forms.CharField):
         """Parses a string containing multiple lines of text,
         and returns a list of poll options or raises ValidationError"""
         value = super(PollOptionListField, self).clean(value)
-        l = filter(lambda opt: len(opt) > 0, map(string.strip, value.split("\n")))
+        l = [s.strip() for s in value.split("\n")]
+        l = [s for s in l if len(s) > 0]
 
         if len(l) == 0:
             raise forms.ValidationError(u"At least one option must be entered")
 
         max_length = PollOption._meta.get_field('text').max_length
-        if len(filter(lambda opt: len(opt) > max_length, l)) > 0:
+        if len(list(filter(lambda opt: len(opt) > max_length, l))) > 0:
             raise forms.ValidationError(u"Options may not be more than %s chars long" % max_length)
 
         return l
@@ -386,8 +387,8 @@ def process_post(request, topic, photo, context):
         # silently failing is OK, should never get here
         return
 
-    if not request.POST.has_key('post') and \
-       not request.POST.has_key('preview'):
+    if 'post' not in request.POST and \
+       'preview' not in request.POST:
         return # they didn't try to post
 
     errors = []
@@ -407,13 +408,13 @@ def process_post(request, topic, photo, context):
     context['errors'] = errors
 
     # Preview
-    if request.POST.has_key('preview'):
+    if 'preview' not in request.POST:
         context['message_text'] = bbcode.correct(msg_text)
         if not errors:
             context['preview'] = mark_safe(bbcode.bb2xhtml(msg_text))
 
     # Post
-    if not errors and request.POST.has_key('post'):
+    if not errors and 'post' in request.POST:
         post = Post.create_post(cur_member, msg_text, topic, photo)
         return HttpResponseRedirect(post.get_forum_url())
 

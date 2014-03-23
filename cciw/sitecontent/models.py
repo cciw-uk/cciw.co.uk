@@ -1,11 +1,13 @@
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.common import standard_subs
 import cciw.middleware.threadlocals as threadlocals
 
 
+@python_2_unicode_compatible
 class MenuLink(models.Model):
     title = models.CharField("title", max_length=50)
     url = models.CharField("URL", max_length=100)
@@ -16,7 +18,7 @@ class MenuLink(models.Model):
         verbose_name="Parent item (none = top level)",
         related_name="child_links")
 
-    def __unicode__(self):
+    def __str__(self):
         return  u"%s [%s]" % (self.url, standard_subs(self.title))
 
     def get_visible_children(self, request):
@@ -31,6 +33,7 @@ class MenuLink(models.Model):
         ordering = ('-parent_item__id', 'listorder')
 
 
+@python_2_unicode_compatible
 class HtmlChunk(models.Model):
     name = models.SlugField("name", primary_key=True, db_index=True)
     html = models.TextField("HTML")
@@ -39,7 +42,7 @@ class HtmlChunk(models.Model):
     page_title = models.CharField("page title (for chunks that are pages)", max_length=100,
         blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def render(self, request):

@@ -2,18 +2,20 @@ import datetime
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain import signals
 
 
+@python_2_unicode_compatible
 class Site(models.Model):
     short_name = models.CharField("Short name", max_length="25", blank=False, unique=True)
     slug_name = models.SlugField("Machine name", max_length="25", blank=True, unique=True)
     long_name = models.CharField("Long name", max_length="50", blank=False)
     info = models.TextField("Description (HTML)")
 
-    def __unicode__(self):
+    def __str__(self):
         return self.short_name
 
     def get_absolute_url(self):
@@ -25,13 +27,14 @@ class Site(models.Model):
         super(Site, self).save(**kwargs)
 
 
+@python_2_unicode_compatible
 class Person(models.Model):
     name = models.CharField("Name", max_length=40)
     info = models.TextField("Information (Plain text)",
                         blank=True)
     users = models.ManyToManyField(User, verbose_name="Associated admin users", blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -48,6 +51,7 @@ class CampManager(models.Manager):
         return self.get(year=year, number=number)
 
 
+@python_2_unicode_compatible
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")
     number = models.PositiveSmallIntegerField("number")
@@ -92,7 +96,7 @@ class Camp(models.Model):
     def natural_key(self):
         return (self.year, self.number)
 
-    def __unicode__(self):
+    def __str__(self):
         leaders = list(self.leaders.all())
         chaplain = None
         try:

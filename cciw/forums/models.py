@@ -8,7 +8,9 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.db import models
 from django.utils.html import escape
+from django.utils.encoding import python_2_unicode_compatible
 from django.utils.safestring import mark_safe
+from six import text_type
 
 from cciw.cciwmain import common
 from cciw.middleware import threadlocals
@@ -17,6 +19,7 @@ from cciw.middleware import threadlocals
 _camp_forum_re = re.compile('^' + settings.CAMP_FORUM_RE + '$')
 
 
+@python_2_unicode_compatible
 class Permission(models.Model):
     POLL_CREATOR = "Poll creator"
     NEWS_CREATOR = "News creator"
@@ -24,7 +27,7 @@ class Permission(models.Model):
     id = models.PositiveSmallIntegerField("ID", primary_key=True)
     description = models.CharField("Description", max_length=40)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.description
 
     class Meta:
@@ -46,6 +49,7 @@ class UserSpecificMembers(models.Manager):
         return self.get(user_name=user_name)
 
 
+@python_2_unicode_compatible
 class Member(models.Model):
     """Represents a user of the CCIW message boards."""
     MESSAGES_NONE = 0
@@ -94,7 +98,7 @@ class Member(models.Model):
     objects = UserSpecificMembers()
     all_objects = models.Manager()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.user_name
 
     def natural_key(self):
@@ -161,6 +165,7 @@ class Member(models.Model):
         ordering = ('user_name',)
 
 
+@python_2_unicode_compatible
 class Award(models.Model):
     name = models.CharField("Award name", max_length=50)
     value = models.SmallIntegerField("Value")
@@ -169,8 +174,8 @@ class Award(models.Model):
     image = models.ImageField("Award image",
         upload_to=settings.AWARD_UPLOAD_PATH)
 
-    def __unicode__(self):
-        return self.name + u" " + unicode(self.year)
+    def __str__(self):
+        return u"%s %s" % (self.name, self.year)
 
     def nice_name(self):
         return str(self)
@@ -181,7 +186,7 @@ class Award(models.Model):
     def get_absolute_url(self):
         from django.template.defaultfilters import slugify
         from django.core.urlresolvers import reverse
-        return reverse('cciw.forums.views.awards.index') + "#" + slugify(unicode(self))
+        return reverse('cciw.forums.views.awards.index') + "#" + slugify(text_type(self))
 
     class Meta:
         ordering = ('-year', 'name',)
@@ -194,6 +199,7 @@ class PersonalAwardManager(models.Manager):
         return qs.select_related('member')
 
 
+@python_2_unicode_compatible
 class PersonalAward(models.Model):
     reason = models.CharField("Reason for award", max_length=200)
     date_awarded = models.DateField("Date awarded", null=True, blank=True)
@@ -206,13 +212,14 @@ class PersonalAward(models.Model):
 
     objects = PersonalAwardManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s to %s" % (self.award.name, self.member.user_name)
 
     class Meta:
         ordering = ('date_awarded',)
 
 
+@python_2_unicode_compatible
 class Message(models.Model):
     MESSAGE_BOX_INBOX = 0
     MESSAGE_BOX_SAVED = 1
@@ -260,8 +267,8 @@ https://%(domain)s/members/%(from)s/messages/
         return msg
 
 
-    def __unicode__(self):
-        return u"[%s] to %s from %s" % (unicode(self.id), unicode(self.to_member), unicode(self.from_member))
+    def __str__(self):
+        return u"[%s] to %s from %s" % (self.id, self.to_member, self.from_member)
 
     class Meta:
         ordering = ('-time',)
@@ -273,6 +280,7 @@ VOTING_RULES = (
     (2, u"'X' votes per member per day")
 )
 
+@python_2_unicode_compatible
 class Poll(models.Model):
     UNLIMITED = 0
     X_VOTES_PER_USER = 1
@@ -292,7 +300,7 @@ class Poll(models.Model):
     created_by = models.ForeignKey(Member, verbose_name="created by",
         related_name="polls_created")
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def can_vote(self, member):
@@ -339,6 +347,7 @@ class Poll(models.Model):
     class Meta:
         ordering = ('title',)
 
+@python_2_unicode_compatible
 class PollOption(models.Model):
     text = models.CharField("Option text", max_length=200)
     total = models.PositiveSmallIntegerField("Number of votes")
@@ -346,7 +355,7 @@ class PollOption(models.Model):
         related_name="poll_options")
     listorder = models.PositiveSmallIntegerField("Order in list")
 
-    def __unicode__(self):
+    def __str__(self):
         return self.text
 
     def percentage(self):
@@ -374,6 +383,7 @@ class PollOption(models.Model):
     class Meta:
         ordering = ('poll', 'listorder',)
 
+@python_2_unicode_compatible
 class VoteInfo(models.Model):
     poll_option = models.ForeignKey(PollOption,
         related_name="votes")
@@ -393,6 +403,7 @@ class VoteInfo(models.Model):
         self.poll_option.save()
 
 
+@python_2_unicode_compatible
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
     location = models.CharField("Location/path", db_index=True, unique=True, max_length=50)
@@ -400,7 +411,7 @@ class Forum(models.Model):
     def get_absolute_url(self):
         return '/' + self.location
 
-    def __unicode__(self):
+    def __str__(self):
         return self.location
 
     def nice_name(self):
@@ -408,7 +419,7 @@ class Forum(models.Model):
         if m:
             captures = m.groupdict()
             number = captures['number']
-            assert type(number) is unicode
+            assert type(number) is text_type
             if number == u'all':
                 return u"forum for all camps, year %s" % captures['year']
             else:
@@ -417,6 +428,7 @@ class Forum(models.Model):
             return u"forum at %s" % self.location
 
 
+@python_2_unicode_compatible
 class NewsItem(models.Model):
     created_by = models.ForeignKey(Member, related_name="news_items_created")
     created_at = models.DateTimeField("Posted")
@@ -427,7 +439,7 @@ class NewsItem(models.Model):
     def has_full_item(self):
         return len(self.full_item) > 0
 
-    def __unicode__(self):
+    def __str__(self):
         return self.subject
 
     @staticmethod
@@ -463,6 +475,7 @@ class UserSpecificTopics(models.Manager):
             return queryset
 
 
+@python_2_unicode_compatible
 class Topic(models.Model):
     subject = models.CharField("Subject", max_length=240)
     started_by = models.ForeignKey(Member, related_name="topics_started",
@@ -493,7 +506,7 @@ class Topic(models.Model):
     objects = UserSpecificTopics()
     all_objects = models.Manager()
 
-    def __unicode__(self):
+    def __str__(self):
         return  u"Topic: " + self.subject
 
     def get_absolute_url(self):
@@ -523,11 +536,12 @@ class Topic(models.Model):
         ordering = ('-started_by',)
 
 
+@python_2_unicode_compatible
 class Gallery(models.Model):
     location = models.CharField("Location/URL", max_length=50)
     needs_approval = models.BooleanField("Photos need approval", default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.location
 
     def get_absolute_url(self):
@@ -551,6 +565,7 @@ class UserSpecificPhotos(models.Manager):
             return queryset
 
 
+@python_2_unicode_compatible
 class Photo(models.Model):
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open", default=False)
@@ -577,7 +592,7 @@ class Photo(models.Model):
     objects = UserSpecificPhotos()
     all_objects = models.Manager()
 
-    def __unicode__(self):
+    def __str__(self):
         return u"Photo: " + self.filename
 
     def get_absolute_url(self):
@@ -622,6 +637,7 @@ class UserSpecificPosts(models.Manager):
             return queryset
 
 
+@python_2_unicode_compatible
 class Post(models.Model):
     posted_by = models.ForeignKey(Member,
         related_name="posts")
@@ -644,7 +660,7 @@ class Post(models.Model):
     all_objects = models.Manager()
 
 
-    def __unicode__(self):
+    def __str__(self):
         return u"Post [%s]: %s" % (str(self.id), self.message[:30])
 
     def updateParent(self, parent):

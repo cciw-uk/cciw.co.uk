@@ -1,7 +1,9 @@
 from django.utils.html import escape
 from django.forms.forms import BoundField
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
+from six import text_type
+
 
 class CciwFormMixin(object):
     """Form mixin that provides the rendering methods used on the CCIW site"""
@@ -46,17 +48,17 @@ class CciwFormMixin(object):
         bf_errors = self.error_class([escape(error) for error in bf.errors]) # Escape and cache in local variable.
         if bf.is_hidden:
             if bf_errors:
-                top_errors.extend([u'(Hidden field %s) %s' % (name, force_unicode(e)) for e in bf_errors])
-            hidden_fields.append(unicode(bf))
+                top_errors.extend([u'(Hidden field %s) %s' % (name, force_text(e)) for e in bf_errors])
+            hidden_fields.append(text_type(bf))
         else:
             if bf_errors:
-                errors_html = self.errors_template % force_unicode(bf_errors)
+                errors_html = self.errors_template % force_text(bf_errors)
                 cssclass = self.div_error_class
             else:
                 errors_html = ''
                 cssclass = self.div_normal_class
             if label_text is None and bf.label:
-                label_text = escape(force_unicode(bf.label))
+                label_text = escape(force_text(bf.label))
             if label_text is not None:
                 # Only add the suffix if the label does not end in
                 # punctuation.
@@ -71,13 +73,13 @@ class CciwFormMixin(object):
             else:
                 label = ''
             if field.help_text:
-                help_text = self.help_text_html_template % force_unicode(field.help_text)
+                help_text = self.help_text_html_template % force_text(field.help_text)
             else:
                 help_text = u''
             output.append(self.normal_row_template % {
                     'errors_html': errors_html,
-                    'label': force_unicode(label),
-                    'field': unicode(bf),
+                    'label': force_text(label),
+                    'field': text_type(bf),
                     'help_text': help_text,
                     'class': cssclass,
                     'divid': "div_id_%s" % bf.name

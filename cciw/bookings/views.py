@@ -183,6 +183,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import TemplateView, TemplateResponseMixin
 from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView, BaseCreateView
 from paypal.standard.forms import PayPalPaymentsForm
+from six import text_type
+
 
 from cciw.auth import is_booking_secretary
 from cciw.cciwmain.common import get_thisyear, DefaultMetaData, AjaxyFormMixin, get_current_domain
@@ -641,7 +643,7 @@ def get_expected_amount_due(request):
 def make_state_token(bookings):
     # Hash some key data about booking, without which the booking isn't valid.
     bookings.sort(key=lambda b: b.id)
-    data = u'|'.join([u':'.join(map(unicode, [b.id, b.camp.id, b.amount_due, b.name, b.price_type, b.state]))
+    data = u'|'.join([u':'.join(map(text_type, [b.id, b.camp.id, b.amount_due, b.name, b.price_type, b.state]))
                      for b in bookings])
     return salted_hmac('cciw.bookings.state_token', data.encode('utf-8')).hexdigest()
 

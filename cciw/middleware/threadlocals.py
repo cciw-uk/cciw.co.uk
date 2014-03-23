@@ -6,8 +6,8 @@ import os
 _thread_locals = threading.local()
 
 def is_web_request():
-    return os.environ.has_key('SERVER_PROTOCOL') or \
-           os.environ.has_key('RUN_MAIN')
+    return 'SERVER_PROTOCOL' in os.environ or \
+           'RUN_MAIN' in os.environ
 
 def get_current_user():
     return getattr(_thread_locals, 'user', None)

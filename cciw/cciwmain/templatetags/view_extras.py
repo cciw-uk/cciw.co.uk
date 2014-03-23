@@ -1,6 +1,8 @@
 from django import template
 from django.utils import html
 from django.conf import settings
+from six import text_type
+
 from cciw.cciwmain.utils import *
 
 def page_link(request, page_number, fragment = ''):
@@ -8,7 +10,7 @@ def page_link(request, page_number, fragment = ''):
     Constructs a link to a specific page using the request.
     Returns HTML escaped value
     """
-    return html.escape(modified_query_string(request, {'page': unicode(page_number)}, fragment))
+    return html.escape(modified_query_string(request, {'page': text_type(page_number)}, fragment))
 
 class PagingControlNode(template.Node):
     def __init__(self, fragment = ''):
@@ -47,7 +49,7 @@ class PagingControlNode(template.Node):
             # Ensure that if we are using ellipses, we don't
             # get any adjacent numbers since that looks odd.
             interval = max(float(total_pages/8.0), 2)
-            for i in xrange(1, 9):
+            for i in range(1, 9):
                 p = int(i * interval)
                 if p <= total_pages:
                     pages.add(p)
@@ -60,11 +62,11 @@ class PagingControlNode(template.Node):
                     output.append(u"&hellip; ")
 
                 if i == cur_page:
-                    output.append(u'<span class="pagingLinkCurrent">%s</span>' % unicode(i))
+                    output.append(u'<span class="pagingLinkCurrent">%s</span>' % text_type(i))
                 else:
                     output.append(
                         u'<a title="%(title)s" class="pagingLink" href="%(href)s">%(pagenumber)d</a>' % \
-                        { 'title': u'Page ' + unicode(i),
+                        { 'title': u'Page ' + text_type(i),
                           'href': page_link(request, i, self.fragment),
                           'pagenumber': i })
                 last_page = i
@@ -183,7 +185,7 @@ def do_sorting_control(parser, token):
     """
     bits = token.contents.split('"')
     if len(bits) != 9:
-        raise template.TemplateSyntaxError, "sorting_control tag requires 4 quoted arguments"
+        raise template.TemplateSyntaxError("sorting_control tag requires 4 quoted arguments")
     return SortingControlNode(bits[1].strip('"'), bits[3].strip('"'),
                               bits[5].strip('"'), bits[7].strip('"'),)
 
@@ -209,8 +211,8 @@ def do_forward_query_param(parser, token):
     try:
         tag_name, param_name = token.contents.split(None, 1)
     except ValueError:
-        raise template.TemplateSyntaxError, \
-            "forward_query_param tag requires an argument"
+        raise template.TemplateSyntaxError(
+            "forward_query_param tag requires an argument")
     param_name = param_name.strip('"')
     return ForwardQueryParamNode(param_name)
 

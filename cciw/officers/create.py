@@ -75,7 +75,7 @@ def create_multiple_officers(csv_data, dryrun, verbose=False):
 
         else:
             if verbose:
-                print "Skipping row - %s:  %r" % (msg, officer_details)
+                print("Skipping row - %s:  %r" % (msg, officer_details))
 
 
 class EmailError(Exception):
@@ -96,14 +96,14 @@ def create_officer(username, first_name, last_name, email, update=False,
         username = make_username(first_name, last_name)
     if verbose:
         if update:
-            print "Updating officer %s" % username
+            print("Updating officer %s" % username)
         else:
-            print "Creating officer %s" % username
+            print("Creating officer %s" % username)
     officer = _create_officer(username, first_name, last_name, email, password,
                               update=update, is_leader=is_leader, person=person,
                               dryrun=dryrun, verbose=verbose)
     if verbose:
-        print "E-mailing officer %s" % username
+        print("E-mailing officer %s" % username)
     try:
         # We don't want to send an e-mail if the data wasn't actually saved
         # to the the database, so we do this second.  However, we don't really
@@ -156,8 +156,8 @@ def _create_officer(username, first_name, last_name, email, password, dryrun=Fal
                     # 'Joe Bloggs' and a Person 'Joe and Jane Bloggs', User
                     # joebloggs will be associated with both. But usually a
                     # warning will be helpful.
-                    print "Warning: %r now is now associated with more than one 'Person' object." % officer
-                    print "  Usually this is an error."
+                    print("Warning: %r now is now associated with more than one 'Person' object." % officer)
+                    print("  Usually this is an error.")
     return officer
 
 

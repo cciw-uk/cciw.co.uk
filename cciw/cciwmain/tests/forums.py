@@ -48,7 +48,7 @@ class TopicIndexPage(TestCase):
         # Make sure we have lots of topics
         num = 100
         assert num > settings.FORUM_PAGINATE_TOPICS_BY
-        for i in xrange(num):
+        for i in range(num):
             topic = Topic.create_topic(member, "Topic %s" % i, self.forum)
             Post.create_post(member, "Message %s" % i, topic, None)
 
@@ -101,7 +101,7 @@ class AllTopicsPage(TestCase):
         # Make sure we have lots of topics
         num = 100
         assert settings.FORUM_PAGINATE_TOPICS_BY < num
-        for i in xrange(num):
+        for i in range(num):
             topic = Topic.create_topic(member, "Topic %s" % i, self.forum)
             Post.create_post(member, "Message %s" % i, topic, None)
 
@@ -152,7 +152,7 @@ class TopicPage(TestCase):
         """
         member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         # Make sure we have lots of posts
-        for i in xrange(100):
+        for i in range(100):
             Post.create_post(member, "Message %s" % i, topic=self.topic)
 
         init_query_caches()
@@ -196,7 +196,7 @@ class PhotoIndexPage(TestCase):
         """
         member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         # Make sure we have lots of topics
-        for i in xrange(100):
+        for i in range(100):
             photo = Photo.create_default_photo("2000-1-myphoto-%s" % i, self.gallery)
             Post.create_post(member, "A message %s" % i, photo=photo)
 
@@ -244,7 +244,7 @@ class PhotoPage(TestCase):
         """
         member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         # Make sure we have lots of posts
-        for i in xrange(100):
+        for i in range(100):
             Post.create_post(member, "Message %s" % i, photo=self.photo)
 
         request = self.factory.get(self.photo.get_absolute_url())
@@ -293,7 +293,7 @@ class AllPostsPage(TestCase):
         # Make sure we have lots of topics
         num = 100
         assert settings.FORUM_PAGINATE_POSTS_BY < num
-        for i in xrange(num):
+        for i in range(num):
             topic = Topic.create_topic(member, "Topic %s" % i, self.forum)
             Post.create_post(member, "Message %s" % i, topic=topic)
 
@@ -317,7 +317,7 @@ class AllPostsPage(TestCase):
         # Make sure we have lots of topics
         num = 100
         assert settings.FORUM_PAGINATE_POSTS_BY < num
-        for i in xrange(num):
+        for i in range(num):
             photo = Photo.create_default_photo("2000-1-a-photo-%s" % i, self.gallery)
             Post.create_post(member, "Message %s" % i, photo=photo)
 
@@ -359,7 +359,7 @@ class CreatePollPage(TestCase):
     def test_cant_create_poll_if_anonymous(self):
         response = self.client.get(ADD_POLL_URL)
         # response should be a login form
-        self.assertTrue(decorators.LOGIN_FORM_KEY in response.content)
+        self.assertContains(response, decorators.LOGIN_FORM_KEY)
 
     def test_cant_create_poll_if_not_poll_creator(self):
         self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)

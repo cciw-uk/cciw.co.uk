@@ -951,6 +951,9 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(resp2.status_code, 302)
         self.assertTrue(resp2['Location'].endswith(reverse('cciw.bookings.views.edit_place', kwargs={'id':b.id})))
 
+    def _get_state_token(self, response):
+        return re.search(r'name="state_token" value="(.*)"', response.content.decode('utf-8')).groups()[0]
+
     def test_book_ok(self):
         """
         Test that we can book a place
@@ -958,8 +961,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.login()
         self.create_place()
         resp = self.client.get(self.url)
-        state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
-        resp2 = self.client.post(self.url, {'state_token': state_token,
+        resp2 = self.client.post(self.url, {'state_token': self._get_state_token(resp),
                                             'book_now': '1'})
         acc = self.get_account()
         b = acc.bookings.all()[0]
@@ -974,8 +976,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.login()
         self.create_place({'serious_illness': '1'})
         resp = self.client.get(self.url)
-        state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
-        resp2 = self.client.post(self.url, {'state_token': state_token,
+        resp2 = self.client.post(self.url, {'state_token': self._get_state_token(resp),
                                             'book_now': '1'})
         acc = self.get_account()
         b = acc.bookings.all()[0]
@@ -990,8 +991,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.create_place()
         self.create_place({'serious_illness': '1'})
         resp = self.client.get(self.url)
-        state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
-        resp2 = self.client.post(self.url, {'state_token': state_token,
+        resp2 = self.client.post(self.url, {'state_token': self._get_state_token(resp),
                                             'book_now': '1'})
         acc = self.get_account()
         for b in acc.bookings.all():
@@ -1060,7 +1060,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.login()
         self.create_place()
         resp = self.client.get(self.url)
-        state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
 
         # Now modify
         acc = self.get_account()
@@ -1069,7 +1068,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         b.auto_set_amount_due()
         b.save()
 
-        resp2 = self.client.post(self.url, {'state_token': state_token,
+        resp2 = self.client.post(self.url, {'state_token': self._get_state_token(resp),
                                             'book_now': '1'})
 
         # Should not be modified
@@ -1088,9 +1087,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
         # Book
         resp = self.client.get(self.url)
-        state_token = re.search(r'name="state_token" value="(.*)"', resp.content).groups()[0]
-
-        resp2 = self.client.post(self.url, {'state_token': state_token,
+        resp2 = self.client.post(self.url, {'state_token': self._get_state_token(resp),
                                             'book_now': '1'},
                                  follow=True)
 
@@ -1371,7 +1368,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         self.login()
         self.create_place()
         resp = self.client.get(reverse('cciw.bookings.views.places_json'))
-        j = json.loads(resp.content)
+        j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['places'][0]['first_name'], self.place_details['first_name'])
 
     def test_places_json_with_exclusion(self):
@@ -1380,13 +1377,13 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         acc = self.get_account()
         resp = self.client.get(reverse('cciw.bookings.views.places_json') +
                                ("?exclude=%d" % acc.bookings.all()[0].id))
-        j = json.loads(resp.content)
+        j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['places'], [])
 
     def test_places_json_with_bad_exclusion(self):
         self.login()
         resp = self.client.get(reverse('cciw.bookings.views.places_json') +"?exclude=x")
-        j = json.loads(resp.content)
+        j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['places'], [])
 
     def test_account_json(self):
@@ -1396,7 +1393,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         acc.save()
 
         resp = self.client.get(reverse('cciw.bookings.views.account_json'))
-        j = json.loads(resp.content)
+        j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['account']['address'], '123 Main Street')
 
     def test_all_account_json(self):
@@ -1416,7 +1413,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.get(reverse('cciw.bookings.views.all_account_json') + "?id=%d" % acc1.id)
         self.assertEqual(resp.status_code, 200)
 
-        j = json.loads(resp.content)
+        j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['account']['post_code'], 'ABC')
 
     def test_booking_problems(self):
@@ -1430,7 +1427,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
 
 
         self.assertEqual(resp.status_code, 200)
-        j = json.loads(resp.content)
+        j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['valid'], False)
 
         data = self.place_details.copy()
@@ -1443,7 +1440,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
                                 data)
 
-        j = json.loads(resp.content)
+        j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['valid'], True)
         problems = j['problems']
         self.assertTrue(u"A custom discount needs to be arranged by the booking secretary" in
@@ -1469,7 +1466,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
                                 data)
 
-        j = json.loads(resp.content)
+        j = json.loads(resp.content.decode('utf-8'))
         problems = j['problems']
         p_full = Price.objects.get(price_type=PRICE_FULL, year=get_thisyear())
         self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £%s"
@@ -1496,7 +1493,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
                                 data)
 
-        j = json.loads(resp.content)
+        j = json.loads(resp.content.decode('utf-8'))
         problems = j['problems']
         p_deposit = Price.objects.get(price_type=PRICE_DEPOSIT, year=get_thisyear())
         self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £%s"
@@ -1510,7 +1507,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
                                 data)
 
-        j = json.loads(resp.content)
+        j = json.loads(resp.content.decode('utf-8'))
         problems = j['problems']
         self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £0.00")
                             for p in problems))

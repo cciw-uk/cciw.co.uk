@@ -13,7 +13,7 @@ import os
 from django.core.validators import validate_email, ValidationError
 from django.utils.safestring import mark_safe
 from django.utils.functional import Promise
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_text
 
 def obfuscate_email(email):
     safe_email = email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ')
@@ -44,7 +44,7 @@ def unslugify(slug):
 class LazyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Promise):
-            return force_unicode(obj)
+            return force_text(obj)
         elif isinstance(obj, date):
             # The format we need for filling in date fields:
             return obj.strftime('%Y-%m-%d')

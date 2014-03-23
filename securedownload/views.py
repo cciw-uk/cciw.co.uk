@@ -2,7 +2,7 @@ import datetime
 import hmac
 import os
 import posixpath
-import urllib
+from six.moves.urllib_parse import unquote
 
 from django.conf import settings
 from django.contrib.auth.views import redirect_to_login
@@ -58,7 +58,7 @@ def access_folder_securely(folder, check_permission):
     """
     def view(request, filename):
         if check_permission(request):
-            filename = posixpath.normpath(urllib.unquote(filename))
+            filename = posixpath.normpath(unquote(filename))
             fname = sanitise_path(filename)
             if fname != filename:
                 raise Http404()

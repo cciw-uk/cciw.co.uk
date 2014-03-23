@@ -1,3 +1,8 @@
+from six.moves.urllib_parse import urlencode
+import datetime
+from functools import wraps
+import sys
+
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.core.mail import mail_admins
@@ -5,14 +10,9 @@ from django.core.mail import mail_admins
 from cciw.middleware.threadlocals import get_current_member, set_member_session
 from cciw.cciwmain.utils import python_to_json
 
-import urllib
-import datetime
-from functools import wraps
-import sys
-
 def login_redirect(path):
     """Returns a URL for logging in and then redirecting to the supplied path"""
-    qs = urllib.urlencode({'redirect': path})
+    qs = urlencode({'redirect': path})
     return '%s?%s' % ('/login/', qs)
 
 LOGIN_FORM_KEY = 'this_is_the_login_form'
@@ -42,7 +42,7 @@ def member_required_generic(except_methods):
                 return view_func(request, *args, **kwargs)
 
             # If this isn't already the login page, display it.
-            if not request.POST.has_key(LOGIN_FORM_KEY):
+            if LOGIN_FORM_KEY not in request.POST:
                 message = u"Please log in again, because your session has expired."
                 return _display_login_form(request, message)
 

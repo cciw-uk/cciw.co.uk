@@ -5,6 +5,7 @@ import xlwt
 
 from cciw.utils import xl
 
+
 class ExcelFormatter(object):
     mimetype = "application/vnd.ms-excel"
     file_ext = "xls"

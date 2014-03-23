@@ -3,6 +3,7 @@ from itertools import groupby
 
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
+from six import text_type
 
 from cciw.bookings.models import Booking, Payment
 
@@ -63,7 +64,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
     bday_columns = [('First name', lambda b: b.first_name),
                     ('Last name', lambda b: b.last_name),
                     ('Birthday', lambda b: get_birthday(b).strftime("%A %d %B")),
-                    ('Age', lambda b: unicode(relativedelta(get_birthday(b), b.date_of_birth).years)),
+                    ('Age', lambda b: text_type(relativedelta(get_birthday(b), b.date_of_birth).years)),
                     ('Date of birth', lambda b: b.date_of_birth)
                     ]
 

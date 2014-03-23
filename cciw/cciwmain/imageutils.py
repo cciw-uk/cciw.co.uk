@@ -39,7 +39,7 @@ def write_file(fp, filedata):
 
 def fix_member_icon(member, filedata):
     fd, filename = tempfile.mkstemp()
-    write_file(os.fdopen(fd, "w"), filedata)
+    write_file(os.fdopen(fd, "wb"), filedata)
 
     try:
         img = parse_image(filename)
@@ -71,6 +71,6 @@ def fix_member_icon(member, filedata):
         pass
     img.save(newfullpath, **opts)
 
-    os.chmod(newfullpath, 0777)
+    os.chmod(newfullpath, 0o0777)
     member.icon = newrelpath
     member.save()

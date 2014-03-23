@@ -1,4 +1,6 @@
-import urllib
+from six.moves.urllib_parse import urlencode
+from six.moves.urllib_request import urlopen
+
 from django.conf import settings
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
@@ -12,8 +14,8 @@ esv_base_url = 'http://www.gnpcb.org/esv/share/get/?key=%(key)s&action=doPassage
 
 def esv_passage(request):
     passage = request.GET.get('passage', '')
-    url = esv_base_url % urllib.urlencode({'passage':passage})
-    page = urllib.urlopen(url)
+    url = esv_base_url % urlencode({'passage':passage})
+    page = urlopen(url)
     c = {}
     c['title'] = "Bible passage lookup"
     c['passagetext'] = mark_safe(page.read())

@@ -1,5 +1,5 @@
 import datetime
-import urllib
+from six.moves.urllib_parse import quote
 
 from cciw.cciwmain import common
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference, camps_for_application
@@ -25,8 +25,8 @@ def admin_emails_for_camp(camp):
                for user in leader.users.all()] + \
                list(camp.admins.all())
 
-    return filter(lambda x: x is not None,
-                  map(formatted_email, leaders))
+    return list(filter(lambda x: x is not None,
+                    map(formatted_email, leaders)))
 
 
 def admin_emails_for_application(application):
@@ -145,7 +145,7 @@ def make_update_email_url(application):
     old_email = application.officer.email
     return 'https://%(domain)s%(path)s?email=%(email)s&hash=%(hash)s' % dict(domain=common.get_current_domain(),
                                                                            path=reverse('cciw.officers.views.update_email', kwargs={'username': application.officer.username}),
-                                                                           email=urllib.quote(email),
+                                                                           email=quote(email),
                                                                            hash=make_update_email_hash(old_email, email))
 
 

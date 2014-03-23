@@ -117,7 +117,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
             return HttpResponse(
                 '<!DOCTYPE html><html><head><title></title></head><body>'
                 '<script type="text/javascript">opener.dismissAddAnotherPopup(window, "%s", "%s");</script></body></html>' % \
-                # escape() calls force_unicode.
+                # escape() calls force_text.
                 (escape(obj._get_pk_val()), escapejs(obj)))
         else:
             return super(BookingAccountAdmin, self).response_change(request, obj)

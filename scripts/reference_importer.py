@@ -10,7 +10,7 @@ def import_reference(fname):
     if m is None:
         sys.stderr.write("Filename '%s' was not in expected format.\n" % fname)
         sys.exit(1)
-    print fname
+    print(fname)
     appid = int(m.groupdict()['appid'])
     refnum = int(m.groupdict()['refnum'])
     data = eval("".join(open(fname).readlines()))

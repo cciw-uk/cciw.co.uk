@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.db import models
 from django.db import transaction
+from django.utils.encoding import python_2_unicode_compatible
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.common import get_thisyear
@@ -66,6 +67,7 @@ MANUAL_PAYMENT_CHOICES = [
 ]
 
 
+@python_2_unicode_compatible
 class Price(models.Model):
     year = models.PositiveSmallIntegerField()
     price_type = models.PositiveSmallIntegerField(choices=VALUED_PRICE_TYPES)
@@ -74,7 +76,7 @@ class Price(models.Model):
     class Meta:
         unique_together = [('year', 'price_type')]
 
-    def __unicode__(self):
+    def __str__(self):
         return u"%s %s - %s" % (self.get_price_type_display(), self.year, self.price)
 
 
@@ -110,6 +112,7 @@ class BookingAccountManager(models.Manager):
         return retval
 
 
+@python_2_unicode_compatible
 class BookingAccount(models.Model):
     # For online bookings, email is required, but not for paper. Initially for online
     # process only email is filled in, so to ensure we can edit all BookingAccounts
@@ -133,7 +136,7 @@ class BookingAccount(models.Model):
     def has_account_details(self):
         return self.name != "" and self.address != "" and self.post_code != ""
 
-    def __unicode__(self):
+    def __str__(self):
         out = []
         if self.name:
             out.append(self.name)
@@ -413,6 +416,7 @@ class BookingManager(models.Manager):
         return qs
 
 
+@python_2_unicode_compatible
 class Booking(models.Model):
     account = models.ForeignKey(BookingAccount, related_name='bookings')
 
@@ -480,7 +484,7 @@ class Booking(models.Model):
 
     # Methods
 
-    def __unicode__(self):
+    def __str__(self):
         return u"%s, %s-%s, %s" % (self.name, self.camp.year, self.camp.number,
                                   self.account)
 
@@ -758,6 +762,7 @@ class PaymentManager(models.Manager):
         return super(PaymentManager, self).get_queryset().select_related('account')
 
 
+@python_2_unicode_compatible
 class Payment(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount)
@@ -769,7 +774,7 @@ class Payment(models.Model):
 
     objects = PaymentManager()
 
-    def __unicode__(self):
+    def __str__(self):
         retval = u"Payment: %s to %s from %s" % (self.amount, self.account.name, self.origin_type)
         if self.origin is None:
             retval += " (deleted)"
@@ -809,15 +814,17 @@ class ManualPaymentBase(models.Model):
         abstract = True
 
 
+@python_2_unicode_compatible
 class ManualPayment(ManualPaymentBase):
 
-    def __unicode__(self):
+    def __str__(self):
         return u"Manual payment of £%s from %s" % (self.amount, self.account)
 
 
+@python_2_unicode_compatible
 class RefundPayment(ManualPaymentBase):
 
-    def __unicode__(self):
+    def __str__(self):
         return u"Refund payment of £%s to %s" % (self.amount, self.account)
 
 

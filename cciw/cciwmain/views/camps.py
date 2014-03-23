@@ -59,7 +59,7 @@ def detail(request, year, number):
     c['title'] = camp.nice_name
 
     if camp.is_past():
-        c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(unicode(camp.year)) + [camp.nice_name])
+        c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(camp.year) + [camp.nice_name])
     else:
         c['breadcrumb'] = create_breadcrumb([standard_subs(u'<a href="/thisyear/">Camps {{thisyear}}</a>'), "Camp " + number])
     return render(request, 'cciw/camps/detail.html', c)

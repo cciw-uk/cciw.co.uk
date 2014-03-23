@@ -75,7 +75,7 @@ class MemberAdmin(TestCase):
     def _upload_icon(self, iconpath):
         # Upload the file
         post_data = self._standard_post_data()
-        f = open(iconpath)
+        f = open(iconpath, "rb")
         post_data['icon'] = f
         resp = self.client.post(MEMBER_ADMIN_URL, data=post_data, follow=True)
         f.close()
@@ -139,7 +139,7 @@ class MemberAdmin(TestCase):
         data = self._standard_post_data()
         data['email'] = "anewemailtoconfirm@email.com"
         resp = self.client.post(MEMBER_ADMIN_URL, data=data, follow=True)
-        self.assertTrue("an e-mail has been sent" in resp.content)
+        self.assertContains(resp, "an e-mail has been sent")
         self.assertEqual(len(mail.outbox), 1)
         url, path, querydata = self._read_email_change_email(mail.outbox[0])
         resp2 = self.client.get(path, querydata)
@@ -185,8 +185,7 @@ class MemberSignup(WebTestBase):
         response = self.client.post(MEMBER_SIGNUP, data=post_data)
         self.assertEqual(response.status_code, 200)
 
-        self.assertTrue("already used" in response.content,
-                     "Signing up should not allow an existing email to be reused")
+        self.assertContains(response, "already used")
         self.assertEqual(len(mail.outbox), 0)
 
     def _test_signup_send_email_part1(self):
@@ -194,8 +193,7 @@ class MemberSignup(WebTestBase):
         response = self.client.post(MEMBER_SIGNUP, data=post_data)
         self.assertEqual(response.status_code, 200)
 
-        self.assertTrue("an e-mail has been sent" in response.content,
-                     "An message saying that an email has been sent should be seen")
+        self.assertContains(response, "an e-mail has been sent")
         self.assertEqual(len(mail.outbox), 1, "An email should be sent")
 
     def _read_signup_email(self, email):
@@ -259,14 +257,14 @@ class MemberSignup(WebTestBase):
         url, path, querydata = self._read_signup_email(mail.outbox[0])
         querydata['h'] = querydata['h'] + "x"
         response = self._follow_email_url(path, querydata)
-        self.assertIn("Error", response.content, "Error should be reported if the hash is incorrect")
+        self.assertContains(response, "Error")
 
     def test_signup_incorrect_email(self):
         self._test_signup_send_email_part1()
         url, path, querydata = self._read_signup_email(mail.outbox[0])
         querydata['email'] = querydata['email'] + "x"
         response = self._follow_email_url(path, querydata)
-        self.assertIn("Error", response.content, "Error should be reported if the email is incorrect")
+        self.assertContains(response, "Error")
 
 
 class MemberLists(TestCase):
@@ -292,7 +290,7 @@ class MemberLists(TestCase):
         self.assertContains(resp, TEST_MEMBER_USERNAME)
 
     def test_query_count(self):
-        for i in xrange(100):
+        for i in range(100):
             Member.objects.create(user_name="NewMember%d" % i,
                                   date_joined=datetime.datetime.now())
 
@@ -443,14 +441,14 @@ class MessageLists(TestCase):
         return checkboxes
 
     def test_query_count(self):
-        for i in xrange(settings.MEMBERS_PAGINATE_MESSAGES_BY):
+        for i in range(settings.MEMBERS_PAGINATE_MESSAGES_BY):
             self._send_message("Message %s" % i)
 
         with self.assertNumQueries(FuzzyInt(1, 8)):
             resp = self._get_inbox()
             resp.render()
 
-        for i in xrange(settings.MEMBERS_PAGINATE_MESSAGES_BY):
+        for i in range(settings.MEMBERS_PAGINATE_MESSAGES_BY):
             self.assertContains(resp, "Message %s" % i)
 
     def test_archive_message_from_inbox(self):

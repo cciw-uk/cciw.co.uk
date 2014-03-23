@@ -4,7 +4,7 @@ import re
 
 from django.conf import settings
 from django.core.mail import get_connection, make_msgid
-import xmlrpclib
+from six.moves import xmlrpc_client
 
 from cciw.cciwmain.decorators import email_errors_silently
 from cciw.cciwmain.utils import is_valid_email
@@ -43,7 +43,7 @@ def create_mailboxes(camp):
                     address_for_camp_leaders_year(camp.year)]:
         try:
             s.create_email(address, settings.LIST_MAILBOX_NAME)
-        except xmlrpclib.Fault as e:
+        except xmlrpc_client.Fault as e:
             if e.faultString == 'username: Value already exists':
                 pass
             else:

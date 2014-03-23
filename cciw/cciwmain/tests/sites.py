@@ -13,6 +13,4 @@ class SitePage(TestCase):
         response = self.client.get(site.get_absolute_url())
         self.assertEqual(response.status_code, 200)
 
-        self.assertTrue("<address>Llys Andreas Camp Site" in response.content,
-                        "Site page not visible or content not escaped properly")
-
+        self.assertContains(response, "<address>Llys Andreas Camp Site")

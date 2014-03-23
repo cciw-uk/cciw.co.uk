@@ -14,7 +14,7 @@ camp_re = re.compile('^(?P<year>\d{4})-(?P<number>\d+)')
 
 def main():
     if len(sys.argv) == 1:
-        print usage()
+        print(usage())
         sys.exit(1)
 
     for photoname in sys.argv[1:]:
@@ -41,9 +41,9 @@ def main():
             p = None
         if p is None:
             p = Photo.create_default_photo(photoname, gallery)
-            print "Created photo %s." % photoname
+            print("Created photo %s." % photoname)
         else:
-            print "Warning: Photo %s already exists." % photoname
+            print("Warning: Photo %s already exists." % photoname)
 
 if __name__ == '__main__':
     main()

@@ -1,7 +1,9 @@
-import urlparse
+from six.moves.urllib_parse import urlparse
 
 from django_webtest import WebTest
 from django.core.urlresolvers import reverse
+
+from six import text_type
 
 class WebTestBase(WebTest):
     """
@@ -22,7 +24,7 @@ class WebTestBase(WebTest):
 
     def fill(self, form, data):
         for k,v in data.items():
-            form[k] = unicode(v)
+            form[k] = text_type(v)
         return form
 
     def code(self, response, status_code):
@@ -37,6 +39,6 @@ class WebTestBase(WebTest):
 
     def assertUrl(self, response, urlname):
         url = reverse(urlname)
-        path = urlparse.urlparse(response.request.url).path
+        path = urlparse(response.request.url).path
         # response.url doesn't work in current version of django_webtest
         self.assertEqual(path, url)

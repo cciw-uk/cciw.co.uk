@@ -19,7 +19,7 @@ class PhotoAdmin(admin.ModelAdmin):
     pass
 
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('__unicode__', 'posted_by', 'posted_at')
+    list_display = ('__str__', 'posted_by', 'posted_at')
     search_fields = ('message',)
     date_hierarchy = 'posted_at'
 

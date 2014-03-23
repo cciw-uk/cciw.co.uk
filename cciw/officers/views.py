@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, date, timedelta
 import operator
-import urlparse
+from six.moves.urllib_parse import urlparse
 
 from django import forms
 from django.db.models import F, Sum
@@ -19,6 +19,7 @@ from django.template.loader import render_to_string
 from django.template.defaultfilters import wordwrap
 from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
+from six import text_type
 
 from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet, payments_to_spreadsheet, addresses_for_mailing_list
@@ -100,7 +101,7 @@ def index(request):
     # Handle redirects, since this page is LOGIN_URL
     redirect_to = request.REQUEST.get(REDIRECT_FIELD_NAME, '')
     if redirect_to:
-        netloc = urlparse.urlparse(redirect_to)[1]
+        netloc = urlparse(redirect_to)[1]
         # Heavier security check -- don't allow redirection to a different
         # host.
         if netloc == '' or netloc == request.get_host():
@@ -162,14 +163,14 @@ def applications(request):
     c['has_thisyears_app'] = has_thisyears_app
     c['has_completed_app'] = has_completed_app
 
-    if not has_completed_app and unfinished_applications and request.POST.has_key('edit'):
+    if not has_completed_app and unfinished_applications and 'edit' in request.POST:
         # Edit existing application.
         # It should now only be possible for there to be one unfinished
         # application, so we just continue with the most recent.
         return HttpResponseRedirect(
             reverse("admin:officers_application_change",
                     args=(unfinished_applications[0].id,)))
-    elif not has_thisyears_app and request.POST.has_key('new'):
+    elif not has_thisyears_app and 'new' in request.POST:
         # Create new application based on old one
         if finished_applications:
             new_obj = _copy_application(finished_applications[0])
@@ -823,7 +824,7 @@ def update_email(request, username=''):
 class StripStringsMixin(object):
     def clean(self):
         for field,value in self.cleaned_data.items():
-            if isinstance(value, basestring):
+            if isinstance(value, text_type):
                 self.cleaned_data[field] = value.strip()
         return self.cleaned_data
 
