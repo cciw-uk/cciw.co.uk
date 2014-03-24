@@ -5,13 +5,14 @@ import re
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password, make_password
+
 from django.core import mail
 from django.db import models
 from django.utils.html import escape
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.safestring import mark_safe
 from six import text_type
-
 from cciw.cciwmain import common
 from cciw.middleware import threadlocals
 
@@ -77,7 +78,7 @@ class Member(models.Model):
     user_name   = models.CharField("User name", max_length=30, unique=True)
     real_name   = models.CharField("'Real' name", max_length=30, blank=True)
     email       = models.EmailField("Email address")
-    password    = models.CharField("Password", max_length=30)
+    password    = models.CharField("Password", max_length=255)
     date_joined = models.DateTimeField("Date joined", null=True)
     last_seen   = models.DateTimeField("Last on website", null=True)
     show_email  = models.BooleanField("Make email address visible", default=False)
@@ -124,11 +125,6 @@ class Member(models.Model):
             return mark_safe(u'<img src="%s%s/%s.png" class="userIcon" alt="icon" />'
                              % (settings.MEDIA_URL, settings.MEMBER_ICON_PATH, user_name))
 
-    def check_password(self, plaintextPass):
-        """Checks a password is correct"""
-        import crypt
-        return crypt.crypt(plaintextPass, self.password) == self.password
-
     def new_messages(self):
         return self.messages_received.filter(box=Message.MESSAGE_BOX_INBOX).count()
 
@@ -148,18 +144,18 @@ class Member(models.Model):
     def can_add_poll(self):
         return self.has_perm(Permission.POLL_CREATOR)
 
-    @staticmethod
-    def generate_salt():
-        rand64= "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-        random.seed(datetime.now().microsecond)
-        return rand64[int(random.random()*64)] + rand64[int(random.random()*64)]
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
 
-    @staticmethod
-    def encrypt_password(memberPass):
-        import crypt
-        """Encrypt a members password"""
-        # written to maintain compatibility with existing password file
-        return crypt.crypt(memberPass, Member.generate_salt())
+    def check_password(self, raw_password):
+        """
+        Returns a boolean of whether the raw_password was correct. Handles
+        hashing formats behind the scenes.
+        """
+        def setter(raw_password):
+            self.set_password(raw_password)
+            self.save(update_fields=["password"])
+        return check_password(raw_password, self.password, setter)
 
     # For the sake of django.contrib.auth.tokens.PasswordResetTokenGenerator
     @property

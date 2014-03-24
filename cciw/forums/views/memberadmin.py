@@ -59,8 +59,8 @@ def create_user(user_name, password1, password2):
         m = Member(user_name=user_name,
                    last_seen=datetime.datetime.now(),
                    date_joined=datetime.datetime.now(),
-                   password=Member.encrypt_password(password1),
                    icon="%s/%s" % (settings.MEMBER_ICON_PATH, iconfilename))
+        m.set_password(password1)
         m.save()
 
         # Copy default member icon
@@ -329,7 +329,7 @@ def change_password(request):
         elif new_password != new_password2:
             error_message = "The two passwords do not match."
         if not error_message:
-            current_member.password = Member.encrypt_password(new_password)
+            current_member.set_password(new_password)
             current_member.save()
             c['success_message'] = "Password changed."
         else:
