@@ -384,7 +384,7 @@ class PollOption(models.Model):
     class Meta:
         ordering = ('poll', 'listorder',)
 
-@python_2_unicode_compatible
+
 class VoteInfo(models.Model):
     poll_option = models.ForeignKey(PollOption,
         related_name="votes")
