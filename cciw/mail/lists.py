@@ -159,7 +159,7 @@ def handle_mail(data):
     Forwards an email to the correct list of people.
     data is RFC822 formatted data
     """
-    mail = email.message_from_string(data)
+    mail = email.message_from_string(data.decode('utf-8'))
     to = mail['To']
     assert to is not None, "Message did not have 'To' field set, cannot send email"
 
