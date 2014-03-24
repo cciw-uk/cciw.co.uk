@@ -1,5 +1,6 @@
 beautifulsoup4==4.3.2
 diff-match-patch==20110725.1
+contextlib2==0.4.0
 Django==1.6
 django-anonymizer==0.4
 django-autocomplete-light==2.0.0a15
@@ -12,11 +13,11 @@ django-webtest==1.7.5
 ecdsa==0.10
 -e git://github.com/spookylukey/django-wiki@08c2fd8e6453f9dce06c2f80b37b8aa8b1db5c8a#egg=wiki-dev
 -e git://github.com/pinax/django-mailer.git@bd6d1a75f63a398631bcba010005cdb8bd803edd#egg=django_mailer-dev
-Fabric==1.6.0
+-e git+https://github.com/pashinin/fabric@p33#egg=Fabric
 -e git://github.com/spookylukey/faker@d1f2896b5d59f3888d06689d442033fcc99ae4d2#egg=Faker
 gunicorn==18.0
 Markdown==2.3.1
-paramiko==1.12.1
+-e git+https://github.com/paramiko/paramiko/@python3#egg=paramiko
 Pillow==2.3.1
 psutil==1.2.1
 psycopg2==2.5.2
