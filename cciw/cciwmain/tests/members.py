@@ -149,7 +149,7 @@ class MemberAdmin(TestCase):
         self.assertEqual(m.email, data['email'])
 
     def _read_newpassword_email(self, email):
-        return read_email_url(email, "https://.*/change-password/.*")
+        return read_email_url(email, "https://.*/reset-password/.*")
 
     def test_send_new_password(self):
         resp = self.client.post(NEW_PASSWORD_URL, {'email': TEST_MEMBER_EMAIL,
@@ -157,13 +157,9 @@ class MemberAdmin(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(mail.outbox), 1)
         url, path, querydata = self._read_newpassword_email(mail.outbox[0])
-        newpassword_m = re.search(r"Your new password is:\s*(\S*)\s*", mail.outbox[0].body)
-        self.assertTrue(newpassword_m is not None)
-        newpassword = newpassword_m.groups()[0]
 
-        self.client.get(path, querydata)
-        m = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
-        self.assertTrue(m.check_password(newpassword))
+        response = self.client.get(path, querydata, follow=True)
+        self.assertContains(response, "Change password")
 
     def tearDown(self):
         _remove_member_icons(TEST_MEMBER_USERNAME)

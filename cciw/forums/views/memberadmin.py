@@ -9,6 +9,7 @@ import base64
 from django.shortcuts import render
 from django.core import mail
 from django.contrib import messages
+from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.forms import widgets
@@ -19,7 +20,7 @@ from django import forms
 
 from cciw.cciwmain.common import DefaultMetaData, AjaxyFormView, member_username_re
 from cciw.forums.models import Member
-from cciw.middleware.threadlocals import set_member_session, get_current_member
+from cciw.middleware.threadlocals import set_member_session, get_current_member, set_current_member
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain import common
 from cciw.cciwmain import imageutils
@@ -151,72 +152,30 @@ Thanks.
     settings.SERVER_EMAIL, [member.email])
 
 
-def send_newpassword_email(member):
-    # Create a new password
-    password = random_password()
-    hash = create_new_password_hash(password, member.user_name)
-
+def send_password_reset_email(member):
+    token = default_token_generator.make_token(member)
     mail.send_mail("CCIW - new password.",
 """You have requested a new password for your login on the CCIW website.
-Your new password is:
 
-    %(password)s
+Please click on the link below:
 
-In order to activate this new password, please click on the link below:
-
-https://%(domain)s/memberadmin/change-password/?u=%(user_name)s&h=%(hash)s
+https://%(domain)s%(url)s
 
 If clicking on the link does not do anything, please copy and paste the
 entire link into your web browser.
 
-After activating the password, it is suggested that you log in using the
-above password and then change your password to one more memorable.
+You will need to enter a new password.
 
-If you did not request a new password on the CCIW website, then do not click
-on the link:  this e-mail has been triggered by someone else entering your
-e-mail addess and asking for a new password.  The password will not actually
-be changed until you click the link, so you can safely ignore this e-mail.
+If you did not request a new password on the CCIW website, then do not
+click on the link: this e-mail has been triggered by someone else
+entering your e-mail addess and asking for a new password and you can
+safely ignore this e-mail.
 
-""" % {'domain': common.get_current_domain(), 'user_name': member.user_name,
-       'password': password, 'hash': hash},
+""" % {'domain': common.get_current_domain(),
+       'url': reverse("cciwmain.memberadmin.reset_password",
+                      kwargs={'uid': member.id, 'token': token}),
+      },
     settings.SERVER_EMAIL, [member.email])
-
-
-def create_new_password_hash(password, user_name):
-    # Create string used to verify user_name and date.
-    hash_str = u':'.join([datetime.date.today().isoformat(), user_name, password])
-    return base64.urlsafe_b64encode(hash_str.encode("utf-8")).decode('ascii')
-
-
-def extract_new_password(hash, user_name):
-    """Extracts the new password from the hash, throwing a ValidationError
-    containing an error message if it fails."""
-    invalid_url_msg = "The URL hash was invalid -- please check that you " + \
-        "copied the entire URL from the e-mail"
-
-    try:
-        hash_str = base64.urlsafe_b64decode(hash.encode("ascii")).decode('utf-8')
-    except TypeError:
-        raise ValidationError(invalid_url_msg)
-    try:
-        date_str, h_user_name, password = hash_str.split(':')
-    except ValueError:
-        raise ValidationError(invalid_url_msg)
-
-    try:
-        year, month, day = map(int, date_str.split('-'))
-        email_date = datetime.date(year, month, day)
-    except ValueError: # catches unpacking, int, and datetime.date
-        raise ValidationError(invalid_url_msg)
-
-    if (datetime.date.today() - email_date).days > NEW_PASSWORD_EXPIRY:
-        raise ValidationError("The new password has expired.  Please request a new password again.")
-
-    if (h_user_name != user_name):
-        # hack attempt?
-        raise ValidationError("This URL has been tampered with.  Password not changed.")
-
-    return password
 
 
 def send_newemail_email(member, new_email):
@@ -345,8 +304,8 @@ def help_logging_in(request):
                 send_username_reminder(member)
                 c['success_message'] = "An e-mail has been sent with a reminder of your user name."
             elif 'newpassword' in request.POST:
-                send_newpassword_email(member)
-                c['success_message'] = "An e-mail has been sent to you with a new password."
+                send_password_reset_email(member)
+                c['success_message'] = "An e-mail has been sent to you with instructions for setting a new password."
 
     return render(request, 'cciw/members/help_logging_in.html', c)
 
@@ -354,47 +313,45 @@ def help_logging_in(request):
 def change_password(request):
     """View that handles password changes, with a form and from
     'new password' emails."""
-    user_name = request.GET.get('u', '')
-    hash = request.GET.get('h', '')
 
-    c = dict(title="Change password")
-    if user_name:
-        # New password from e-mail
-        try:
-            password = extract_new_password(hash, user_name)
-        except ValidationError as e:
-            c['error_message'] = e.args[0]
-        else:
-            try:
-                member = Member.objects.get(user_name=user_name)
-            except Member.DoesNotExist:
-                # unlikely!
-                raise Http404
-            member.password = Member.encrypt_password(password)
-            member.save()
+    c = {'title': "Change password"}
+    # form for logged in member
+    current_member = get_current_member()
+    if current_member is None:
+        return HttpResponseRedirect("/login/?r=%s" % request.path)
+    c['show_form'] = True
+    if request.method == 'POST':
+        new_password = request.POST.get('new_password', '')
+        new_password2 = request.POST.get('new_password2', '')
+        error_message = ''
+        if not (20 >= len(new_password) >= 5):
+            error_message = "Your password must be between 5 and 20 characters."
+        elif new_password != new_password2:
+            error_message = "The two passwords do not match."
+        if not error_message:
+            current_member.password = Member.encrypt_password(new_password)
+            current_member.save()
             c['success_message'] = "Password changed."
-    else:
-        # form for logged in member
-        current_member = get_current_member()
-        if current_member is None:
-            return HttpResponseRedirect("/login/?r=%s" % request.path)
-        c['show_form'] = True
-        if request.method == 'POST':
-            new_password = request.POST.get('new_password', '')
-            new_password2 = request.POST.get('new_password2', '')
-            error_message = ''
-            if not (20 >= len(new_password) >= 5):
-                error_message = "Your password must be between 5 and 20 characters."
-            elif new_password != new_password2:
-                error_message = "The two passwords do not match."
-            if not error_message:
-                current_member.password = Member.encrypt_password(new_password)
-                current_member.save()
-                c['success_message'] = "Password changed."
-            else:
-                c['error_message'] = error_message
+        else:
+            c['error_message'] = error_message
 
     return render(request, 'cciw/members/change_password.html', c)
+
+
+def reset_password(request, uid=None, token=""):
+    try:
+        member = Member.objects.get(id=int(uid))
+    except Member.DoesNotExist:
+        member = None
+
+    if member is not None and default_token_generator.check_token(member, token):
+        # Grant temporary login, and prompt to change password
+        set_member_session(request, member)
+        member.last_seen = datetime.datetime.now()
+        member.save()
+        return HttpResponseRedirect(reverse('cciwmain.memberadmin.change_password'))
+    else:
+        return render(request, 'cciw/members/reset_password_failed.html', {'title': 'Reset password'})
 
 
 def change_email(request):

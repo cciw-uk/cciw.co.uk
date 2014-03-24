@@ -161,6 +161,11 @@ class Member(models.Model):
         # written to maintain compatibility with existing password file
         return crypt.crypt(memberPass, Member.generate_salt())
 
+    # For the sake of django.contrib.auth.tokens.PasswordResetTokenGenerator
+    @property
+    def last_login(self):
+        return self.last_seen if self.last_seen else datetime(1970,1,1)
+
     class Meta:
         ordering = ('user_name',)
 
