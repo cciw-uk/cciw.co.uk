@@ -65,7 +65,7 @@ SRC_SUBDIR = 'src'
 # Subdirectory of DJANGO_APP_ROOT in which virtualenv will be stored
 
 # Python version
-PYTHON_BIN = "python2.7"
+PYTHON_BIN = "python3.3"
 PYTHON_PREFIX = "" # e.g. /usr/local  Use "" for automatic
 PYTHON_FULL_PATH = "%s/bin/%s" % (PYTHON_PREFIX, PYTHON_BIN) if PYTHON_PREFIX else PYTHON_BIN
 

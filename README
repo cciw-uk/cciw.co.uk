@@ -128,10 +128,10 @@ styles.
 Crontab
 -------
 
-CCIW_PYTHON=/home/cciw/webapps/cciw_django/venv/bin/python2.7
+CCIW_PYTHON=/home/cciw/webapps/cciw_django/venv-py3/bin/python3.3
 CCIW_MANAGE=/home/cciw/webapps/cciw_django/src/manage.py
 
-CCIW_STAGING_PYTHON=/home/cciw/webapps/cciw_staging_django/venv/bin/python2.7
+CCIW_STAGING_PYTHON=/home/cciw/webapps/cciw_staging_django/venv-py3/bin/python3.3
 CCIW_STAGING_MANAGE=/home/cciw/webapps/cciw_staging_django/src/manage.py
 
 *       * * * * $CCIW_PYTHON $CCIW_MANAGE send_mail 2>> ~/.django-mailer-cron.log
