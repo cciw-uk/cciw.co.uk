@@ -144,7 +144,7 @@ CCIW_STAGING_MANAGE=/home/cciw/webapps/cciw_staging_django/src/manage.py
 
 # expire_bookings must be run only once an hour
 30      * * * * $CCIW_PYTHON $CCIW_MANAGE expire_bookings
-*/10    * * * * /home/cciw/webapps/cciw_django/venv/bin/fab -f /home/cciw/webapps/cciw_django/src/fabfile.py production local_webserver_start
+*/10    * * * * /home/cciw/webapps/cciw_django/venv-py3/bin/fab -f /home/cciw/webapps/cciw_django/src/fabfile.py production local_webserver_start
 
 # expire_bookings must be run only once an hour
 30      * * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE expire_bookings
