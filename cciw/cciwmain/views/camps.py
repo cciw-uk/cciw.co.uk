@@ -201,7 +201,7 @@ def oldcampgallery(request, year, galleryname):
 
     breadcrumb_extra = year_forum_breadcrumb(year) + [utils.unslugify(galleryname)]
 
-    ec = dict(title=utils.unslugify(year+", " + galleryname) + " - Photos")
+    ec = dict(title=utils.unslugify(str(year)+", " + galleryname) + " - Photos")
     return forums_views.photoindex(request, gallery, ec, breadcrumb_extra)
 
 def photo(request, year, number, photonumber):
@@ -235,7 +235,7 @@ def oldcampphoto(request, year, galleryname, photonumber):
         raise Http404
 
     ec = dict(title=u"%s, %s - Photos" %
-              (utils.unslugify(year), utils.unslugify(galleryname)))
+              (utils.unslugify(str(year)), utils.unslugify(galleryname)))
     return forums_views.photo(request, photo, ec, breadcrumb_extra)
 
 def camp_forum_breadcrumb(camp):
@@ -246,4 +246,4 @@ def camp_forum_breadcrumb(camp):
 def year_forum_breadcrumb(year):
     # NB: 'year' may be a string like 'Ancient'
     return [u'<a href="/camps/">Forums and photos</a>',
-            u'<a href="/camps/#year%s">%s</a>' % (year, utils.unslugify(year)) ]
+            u'<a href="/camps/#year%s">%s</a>' % (year, utils.unslugify(str(year))) ]
