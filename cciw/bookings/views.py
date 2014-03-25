@@ -416,8 +416,7 @@ class BookingNotLoggedIn(DefaultMetaData, TemplateView):
     template_name = "cciw/bookings/not_logged_in.html"
 
 
-class BookingAccountDetails(DefaultMetaData, AjaxyFormMixin, TemplateResponseMixin, BaseUpdateView):
-    __metaclass__ = AjaxMroFixer
+class BookingAccountDetails(DefaultMetaData, AjaxyFormMixin, TemplateResponseMixin, BaseUpdateView, metaclass=AjaxMroFixer):
     metadata_title = u"Booking - account details"
     form_class = AccountDetailsForm
     template_name = 'cciw/bookings/account_details.html'
@@ -458,14 +457,12 @@ class BookingEditAddBase(DefaultMetaData, TemplateResponseMixin, AjaxyFormMixin)
         return super(BookingEditAddBase, self).form_valid(form)
 
 
-class BookingAddPlace(BookingEditAddBase, BaseCreateView):
-    __metaclass__ = AjaxMroFixer
+class BookingAddPlace(BookingEditAddBase, BaseCreateView, metaclass=AjaxMroFixer):
     metadata_title = u"Booking - add new camper details"
     form_class = AddPlaceForm
 
 
-class BookingEditPlace(BookingEditAddBase, BaseUpdateView):
-    __metaclass__ = AjaxMroFixer
+class BookingEditPlace(BookingEditAddBase, BaseUpdateView, metaclass=AjaxMroFixer):
     metadata_title = u"Booking - edit camper details"
     form_class = AddPlaceForm
 
