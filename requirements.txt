@@ -12,7 +12,7 @@ django-sekizai==0.7
 django-webtest==1.7.5
 ecdsa==0.10
 -e git://github.com/spookylukey/django-wiki@08c2fd8e6453f9dce06c2f80b37b8aa8b1db5c8a#egg=wiki-dev
--e git://github.com/pinax/django-mailer.git@bd6d1a75f63a398631bcba010005cdb8bd803edd#egg=django_mailer-dev
+-e git://github.com/pinax/django-mailer.git@44641b814660a9deef907ad9049d571cb1709901#egg=django_mailer-dev
 -e git+https://github.com/pashinin/fabric@p33#egg=Fabric
 -e git://github.com/spookylukey/faker@d1f2896b5d59f3888d06689d442033fcc99ae4d2#egg=Faker
 gunicorn==18.0
