@@ -246,6 +246,8 @@ class ApplicationFormView(WebTestBase):
         response = self._finish_application_form(response).submit('_save').follow()
         self.assertUrl(response, "cciw.officers.views.applications")
 
+        self.assertContains(response, "The completed application form has been sent to the leaders (Dave &amp; Rebecca Stott) via e-mail")
+
         apps = list(u.application_set.all())
         # The old one should have been deleted.
         self.assertEqual(len(apps), 1)
