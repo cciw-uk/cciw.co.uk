@@ -4,10 +4,10 @@ from django import forms
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.http import HttpResponseRedirect
 from django.utils.text import wrap
-from django.views.generic.base import TemplateView
 
-from cciw.cciwmain.common import get_thisyear, AjaxyFormView, DefaultMetaData
+from cciw.cciwmain.common import get_thisyear, AjaxFormValidation, CciwBaseView
 from cciw.cciwmain.forms import CciwFormMixin
 
 def send_feedback(to_emails, from_email, name, message):
@@ -52,12 +52,30 @@ class ContactUsForm(CciwFormMixin, forms.Form):
     name = forms.CharField(label="Name", max_length=200, required=False)
     message = forms.CharField(label="Message", widget=forms.Textarea)
 
-class ContactUsBase(DefaultMetaData):
+
+class ContactUsBase(CciwBaseView):
     metadata_title = u"Contact us"
 
-class ContactUsFormView(ContactUsBase, AjaxyFormView):
+
+class ContactUsFormView(AjaxFormValidation, ContactUsBase):
     form_class = ContactUsForm
     template_name = 'cciw/contact_us.html'
+
+    def handle(self, request):
+        if request.method == "POST":
+            form = self.form_class(request.POST)
+            if form.is_valid():
+                to_emails = [getattr(settings, email) for email in CONTACT_CHOICE_DESTS[form.cleaned_data['subject']]]
+                send_feedback(
+                    to_emails,
+                    form.cleaned_data['email'],
+                    form.cleaned_data['name'],
+                    form.cleaned_data['message']
+                )
+                return HttpResponseRedirect(reverse('cciwmain.misc.contact_us_done'))
+        else:
+            form = self.form_class(initial=self.get_initial())
+        return self.render({'form': form})
 
     def get_initial(self):
         initial = {}
@@ -66,19 +84,10 @@ class ContactUsFormView(ContactUsBase, AjaxyFormView):
                 initial['subject'] = val
         return initial
 
-    def get_success_url(self):
-        return reverse('cciwmain.misc.contact_us_done')
 
-    def form_valid(self, form):
-        to_emails = [getattr(settings, email) for email in CONTACT_CHOICE_DESTS[form.cleaned_data['subject']]]
-        send_feedback(to_emails,
-                      form.cleaned_data['email'],
-                      form.cleaned_data['name'],
-                      form.cleaned_data['message'])
-        return super(ContactUsFormView, self).form_valid(form)
-
-class ContactUsDone(ContactUsBase, TemplateView):
+class ContactUsDone(ContactUsBase):
     template_name = 'cciw/contact_us_done.html'
+
 
 contact_us = ContactUsFormView.as_view()
 contact_us_done = ContactUsDone.as_view()

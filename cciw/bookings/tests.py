@@ -880,13 +880,14 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         acc = self.get_account()
         b = acc.bookings.all()[0]
         self.assertEqual(b.shelved, False)
-        resp = self.client.post(self.url)
+        resp = self.client.get(self.url)
 
         # Move to shelf button should be there
         self.assertContains(resp, "name=\"shelve_%s\"" % b.id)
 
         # Now click it
-        resp2 = self.client.post(self.url, {'shelve_%s' % b.id: '1'})
+        resp2 = self.client.post(self.url, {'shelve_%s' % b.id: '1'},
+                                 follow=True)
 
         # Should be changed
         b2 = acc.bookings.all()[0]
@@ -911,7 +912,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "name=\"unshelve_%s\"" % b.id)
 
         # Now click it
-        resp2 = self.client.post(self.url, {'unshelve_%s' % b.id: '1'})
+        resp2 = self.client.post(self.url, {'unshelve_%s' % b.id: '1'}, follow=True)
 
         # Should be changed
         b2 = acc.bookings.all()[0]
@@ -925,13 +926,14 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.create_place()
         acc = self.get_account()
         b = acc.bookings.all()[0]
-        resp = self.client.post(self.url)
+        resp = self.client.get(self.url)
 
         # Delete button should be there
         self.assertContains(resp, "name=\"delete_%s\"" % b.id)
 
         # Now click it
-        resp2 = self.client.post(self.url, {'delete_%s' % b.id: '1'})
+        resp2 = self.client.post(self.url, {'delete_%s' % b.id: '1'},
+                                 follow=True)
 
         # Should be gone
         self.assertEqual(0, acc.bookings.count())
@@ -941,7 +943,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.create_place()
         acc = self.get_account()
         b = acc.bookings.all()[0]
-        resp = self.client.post(self.url)
+        resp = self.client.get(self.url)
 
         # Delete button should be there
         self.assertContains(resp, "name=\"edit_%s\"" % b.id)
@@ -977,7 +979,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.create_place({'serious_illness': '1'})
         resp = self.client.get(self.url)
         resp2 = self.client.post(self.url, {'state_token': self._get_state_token(resp),
-                                            'book_now': '1'})
+                                            'book_now': '1'},
+                                 follow=True)
         acc = self.get_account()
         b = acc.bookings.all()[0]
         self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
@@ -992,7 +995,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.create_place({'serious_illness': '1'})
         resp = self.client.get(self.url)
         resp2 = self.client.post(self.url, {'state_token': self._get_state_token(resp),
-                                            'book_now': '1'})
+                                            'book_now': '1'},
+                                 follow=True)
         acc = self.get_account()
         for b in acc.bookings.all():
             self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
@@ -1069,7 +1073,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         b.save()
 
         resp2 = self.client.post(self.url, {'state_token': self._get_state_token(resp),
-                                            'book_now': '1'})
+                                            'book_now': '1'},
+                                 follow=True)
 
         # Should not be modified
         b = acc.bookings.all()[0]

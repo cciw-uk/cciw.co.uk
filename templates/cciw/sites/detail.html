@@ -1,13 +1,13 @@
 {% extends "cciw/standard.html" %}
 {% load standardpage %}
 {% block title %}
-{{ object.short_name }} | CCIW camp sites
+{{ site.short_name }} | CCIW camp sites
 {% endblock %}
 
 {% block pagetitle %}
-{{ object.short_name }}
+{{ site.short_name }}
 {% endblock %}
 
 {% block content %}
-  {{ object.info|safe|standard_subs }}
+  {{ site.info|safe|standard_subs }}
 {% endblock %}

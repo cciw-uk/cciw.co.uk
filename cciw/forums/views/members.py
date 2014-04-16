@@ -1,12 +1,10 @@
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
-from django.views.generic.list import ListView
-from django.views.generic.base import TemplateView
 from django.utils.safestring import mark_safe
 
 from cciw.forums.models import Member, Message
-from cciw.cciwmain.common import get_order_option, create_breadcrumb, DefaultMetaData, FeedHandler, get_member_link
+from cciw.cciwmain.common import get_order_option, create_breadcrumb, CciwBaseView, ListView, FeedHandler, get_member_link
 from cciw.middleware.threadlocals import get_current_member, remove_member_session
 from cciw.cciwmain.decorators import member_required, member_required_for_post, _display_login_form
 import cciw.cciwmain.templatetags.bbcode as bbcode
@@ -17,12 +15,13 @@ import re
 import math
 
 
-class MemberList(DefaultMetaData, FeedHandler, ListView):
+class MemberList(ListView, FeedHandler, CciwBaseView):
     metadata_title = u"Members"
     feed_class = feeds.MemberFeed
     template_name = "cciw/members/index.html"
+    list_name = 'members'
     paginate_by = 50
-    extra_context = {
+    magic_context = {
         'default_order': 'aun',
         'atom_feed_title': u"Atom feed for new members"
         }
@@ -55,26 +54,25 @@ class MemberList(DefaultMetaData, FeedHandler, ListView):
 index = MemberList.as_view()
 
 
-class MemberDetail(DefaultMetaData, TemplateView):
+class MemberDetail(CciwBaseView):
 
     template_name = 'cciw/members/detail.html'
 
-    def get(self, request, user_name):
+    def handle(self, request, user_name):
+        if 'logout' in request.POST:
+            remove_member_session(request)
+            return HttpResponseRedirect(request.path)
+
         try:
             member = Member.objects.get(user_name=user_name)
         except Member.DoesNotExist:
             raise Http404
-        self.context['member'] = member
-        self.context['awards'] = member.personal_awards.all()
+        context = {
+            'member': member,
+            'awards': member.personal_awards.all()
+        }
         self.metadata_title = u"Member: %s" % member.user_name
-        return super(MemberDetail, self).get(request, user_name)
-
-    def post(self, request, user_name):
-        if 'logout' in request.POST:
-            remove_member_session(request)
-            return HttpResponseRedirect(request.path)
-        else:
-            return self.get(request, user_name)
+        return self.render(context)
 
 detail = MemberDetail.as_view()
 
@@ -93,7 +91,7 @@ def login(request):
         return _display_login_form(request, login_page=True)
 
 
-class SendMessage(DefaultMetaData, TemplateView):
+class SendMessage(CciwBaseView):
     """
     View function that handles the 'send message' form
     """
@@ -105,17 +103,16 @@ class SendMessage(DefaultMetaData, TemplateView):
 
     template_name = 'cciw/members/messages/send.html'
 
-    def dispatch(self, request, user_name=None):
+    def handle(self, request, user_name=None):
         # General setup
-        self.request = request
         current_member = get_current_member()
 
         try:
             member = Member.objects.get(user_name=user_name)
         except Member.DoesNotExist:
-            raise Http404
+            raise Http404()
 
-        c = self.context
+        c = {}
 
         # Handle input:
         errors = []
@@ -184,7 +181,7 @@ class SendMessage(DefaultMetaData, TemplateView):
         c['message_text'] = message_text
         c['no_messages'] = no_messages
 
-        return self.get(request, user_name)
+        return self.render(c)
 
 send_message = member_required(SendMessage.as_view())
 
@@ -204,15 +201,16 @@ def _msg_del(msg):
 
 _id_vars_re = re.compile('msg_(\d+)')
 
-class MessageList(DefaultMetaData, ListView):
+class MessageList(ListView, CciwBaseView):
     """
     View to display inbox or archived messages.
     """
     template_name = 'cciw/members/messages/index.html'
     paginate_by = settings.MEMBERS_PAGINATE_MESSAGES_BY
+    list_name = 'member_messages'
     box = None # must be supplied at some point
 
-    def dispatch(self, request, user_name=None):
+    def handle(self, request, user_name=None):
         # Initial common setup
         try:
             member = Member.objects.get(user_name=user_name)
@@ -223,78 +221,87 @@ class MessageList(DefaultMetaData, ListView):
         if current_member is None or user_name != current_member.user_name:
             return HttpResponseForbidden(u'<h1>Access denied</h1>')
 
-        self.member = member
-        return super(MessageList, self).dispatch(request, user_name=user_name)
 
-    def post(self, request, user_name=None):
-        member = self.member
-        ids = [int(m.groups()[0]) for m in map(_id_vars_re.match, request.POST.keys()) if m is not None]
-        actions = {
-            'delete': _msg_del,
-            'inbox': _msg_move_inbox,
-            'archive': _msg_move_archive,
-        }
-        for (name, action) in actions.items():
-            if request.POST.get(name):
-                for id in ids:
-                    try:
-                        msg = member.messages_received.get(id=id)
-                        action(msg)
-                    except Message.DoesNotExist:
-                        pass
-        message_count = member.messages_received.filter(box=self.box).count()
-        page = int(request.GET.get('page', 1))
-        last_page = int(math.ceil(float(message_count)/settings.MEMBERS_PAGINATE_MESSAGES_BY))
-        last_page = max(last_page, 1)
-        if page > last_page:
-            # User may have deleted/moved everything on the last page,
-            # so need to redirect to avoid a 404
-            return HttpResponseRedirect(request.path + "?page=%s" % last_page)
-        else:
-            return self.get(request, user_name)
+        if request.method == "POST":
+            ids = [int(m.groups()[0]) for m in map(_id_vars_re.match, request.POST.keys()) if m is not None]
+            actions = {
+                'delete': _msg_del,
+                'inbox': _msg_move_inbox,
+                'archive': _msg_move_archive,
+            }
+            for (name, action) in actions.items():
+                if request.POST.get(name):
+                    for id in ids:
+                        try:
+                            msg = member.messages_received.get(id=id)
+                            action(msg)
+                        except Message.DoesNotExist:
+                            pass
+            message_count = member.messages_received.filter(box=self.box).count()
+            page = int(request.GET.get('page', 1))
+            last_page = int(math.ceil(float(message_count)/settings.MEMBERS_PAGINATE_MESSAGES_BY))
+            last_page = max(last_page, 1)
+            if page > last_page:
+                # User may have deleted/moved everything on the last page,
+                # so need to redirect to avoid a 404
+                return HttpResponseRedirect(request.path + "?page=%s" % last_page)
 
-    def get(self, request, user_name=None):
         # Context
         crumbs = [get_member_link(user_name)]
+        context = {}
         if self.box == Message.MESSAGE_BOX_INBOX:
-            self.context['title'] = u"%s: Inbox" % user_name
+            context['title'] = u"%s: Inbox" % user_name
             crumbs.append(u'Messages &lt; <a href="../">Send</a> | Inbox | <a href="../archived/">Archived</a> &gt;')
-            self.context['show_archive_button'] = True
+            context['show_archive_button'] = True
         else:
-            self.context['title'] = u"%s: Archived messages" % user_name
+            context['title'] = u"%s: Archived messages" % user_name
             crumbs.append(u'Messages &lt; <a href="../">Send</a> | <a href="../inbox/">Inbox</a> | Archived &gt;')
-            self.context['show_move_inbox_button'] = True
+            context['show_move_inbox_button'] = True
 
-        self.context['show_delete_button'] = True
-        self.context['breadcrumb'] = create_breadcrumb(crumbs)
+        context['show_delete_button'] = True
+        context['breadcrumb'] = create_breadcrumb(crumbs)
 
-        self.queryset = self.member.messages_received.filter(box=self.box).order_by('-time').select_related('from_member')
+        self.queryset = member.messages_received.filter(box=self.box).order_by('-time').select_related('from_member')
+        self.context = context
 
-        return super(MessageList, self).get(request, user_name=user_name)
+        # Display paginated list
+        return super(MessageList, self).handle(request)
 
 inbox = member_required(MessageList.as_view(box=Message.MESSAGE_BOX_INBOX))
 archived_messages = member_required(MessageList.as_view(box=Message.MESSAGE_BOX_SAVED))
 
 
-class MemberPosts(DefaultMetaData, FeedHandler, ListView):
+class MemberPosts(ListView, FeedHandler, CciwBaseView):
     template_name = 'cciw/members/posts.html'
     paginate_by = settings.FORUM_PAGINATE_POSTS_BY
+    list_name = 'posts'
 
-    def get(self, request, user_name=None):
+    def get_feed_class(self):
+        return feeds.member_post_feed(self.get_member())
+
+    def get_member(self):
         try:
-            member = Member.objects.get(user_name=user_name)
+            return Member.objects.get(user_name=self.kwargs['user_name'])
         except Member.DoesNotExist:
             raise Http404
 
+    def get_queryset(self, member=None):
+        if member is None:
+            member = self.get_member()
+        return member.posts.exclude(posted_at__isnull=True).order_by('-posted_at')
+
+    def handle(self, request, user_name=None):
+        member = self.get_member()
         self.metadata_title = u"Recent posts by %s" % member.user_name
-        self.feed_class = feeds.member_post_feed(member)
+        self.queryset = self.get_queryset(member=member)
+        context = {
+            'member': member,
+            'breadcrumb': create_breadcrumb([get_member_link(user_name),
+                                             u'Recent posts']),
+            'atom_feed_title': u"Atom feed for posts from %s" % member.user_name,
+        }
+        self.context = context
 
-        self.queryset = member.posts.exclude(posted_at__isnull=True).order_by('-posted_at')
-
-        self.context['member'] = member
-        self.context['breadcrumb'] = create_breadcrumb([get_member_link(user_name),
-                                                        u'Recent posts'])
-
-        return super(MemberPosts, self).get(request, user_name=user_name)
+        return super(MemberPosts, self).handle(request)
 
 posts = MemberPosts.as_view()

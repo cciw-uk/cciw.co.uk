@@ -180,14 +180,12 @@ from django.http import HttpResponseRedirect, Http404
 from django.utils.crypto import salted_hmac
 from django.utils.http import base36_to_int
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic.base import TemplateView, TemplateResponseMixin
-from django.views.generic.edit import ProcessFormView, FormMixin, ModelFormMixin, BaseUpdateView, BaseCreateView
 from paypal.standard.forms import PayPalPaymentsForm
 from six import text_type
 
 
 from cciw.auth import is_booking_secretary
-from cciw.cciwmain.common import get_thisyear, DefaultMetaData, AjaxyFormMixin, get_current_domain
+from cciw.cciwmain.common import get_thisyear, get_current_domain, CciwBaseView, AjaxFormValidation
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.utils.views import user_passes_test_improved
@@ -257,55 +255,41 @@ def account_details_required(view_func):
     return view
 
 
-booking_secretary_required = user_passes_test_improved(lambda user: user.is_superuser or is_booking_secretary(user))
+booking_secretary_required = user_passes_test_improved(lambda user: user.is_superuser
+                                                       or is_booking_secretary(user))
 
 
 def is_booking_open(year):
     """
     When passed a given year, returns True if booking is open.
     """
-    return Price.objects.filter(year=year).count() == len(VALUED_PRICE_TYPES) and Camp.objects.filter(year=year).exists()
+    return (Price.objects.filter(year=year).count() == len(VALUED_PRICE_TYPES)
+            and Camp.objects.filter(year=year).exists())
 
 is_booking_open_thisyear = lambda: is_booking_open(get_thisyear())
 
 
-# MRO problem for BookingAddPlace: we need BaseCreateView.post to come first in
-# MRO, to provide self.object = None, then AjaxyFormMixin must be called before
-# ProcessFormView, so that for AJAX right thing happens. So we need to hack the
-# MRO using a metaclass.
-
-class AjaxMroFixer(type):
-
-    def mro(cls):
-        classes = type.mro(cls)
-        # Move AjaxyFormMixin to one before last that has a 'post' defined.
-        new_list = [c for c in classes if c is not AjaxyFormMixin]
-        have_post = [c for c in new_list if 'post' in c.__dict__]
-        last = have_post[-1]
-        new_list.insert(new_list.index(last), AjaxyFormMixin)
-        return new_list
-
-
 # Views
 
-class BookingIndex(DefaultMetaData, TemplateView):
+class BookingIndex(CciwBaseView):
     metadata_title = u"Booking"
     template_name = "cciw/bookings/index.html"
 
-    def get(self, request):
+    def handle(self, request):
         year = get_thisyear()
         bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
+        context = {}
         if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath)):
-            self.context['bookingform'] = bookingform_relpath
+            context['bookingform'] = bookingform_relpath
         prices = list(Price.objects.filter(year=year))
         booking_open = is_booking_open(year)
-        self.context['booking_open'] = booking_open
+        context['booking_open'] = booking_open
         if booking_open:
-            self.context['price_full'] = [p for p in prices if p.price_type == PRICE_FULL][0].price
-            self.context['price_2nd_child'] = [p for p in prices if p.price_type == PRICE_2ND_CHILD][0].price
-            self.context['price_3rd_child'] = [p for p in prices if p.price_type == PRICE_3RD_CHILD][0].price
-            self.context['price_deposit'] = [p for p in prices if p.price_type == PRICE_DEPOSIT][0].price
-        return super(BookingIndex, self).get(request)
+            context['price_full'] = [p for p in prices if p.price_type == PRICE_FULL][0].price
+            context['price_2nd_child'] = [p for p in prices if p.price_type == PRICE_2ND_CHILD][0].price
+            context['price_3rd_child'] = [p for p in prices if p.price_type == PRICE_3RD_CHILD][0].price
+            context['price_deposit'] = [p for p in prices if p.price_type == PRICE_DEPOSIT][0].price
+        return self.render(context)
 
 
 def next_step(account):
@@ -318,38 +302,42 @@ def next_step(account):
         return HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
 
 
-class BookingStart(DefaultMetaData, FormMixin, TemplateResponseMixin, ProcessFormView):
+class BookingLogInBase(CciwBaseView):
     metadata_title = u"Booking - log in"
+    magic_context = {'stage': 'login'}
+
+
+class BookingStart(BookingLogInBase):
     form_class = EmailForm
     template_name = 'cciw/bookings/start.html'
-    success_url = reverse_lazy('cciw.bookings.views.email_sent')
-    extra_context = {'booking_open': is_booking_open_thisyear,
-                     'stage': 'login'}
+    magic_context = {'booking_open': is_booking_open_thisyear}
 
-    def dispatch(self, request, *args, **kwargs):
+    def handle(self, request, *args, **kwargs):
         account = get_booking_account_from_cookie(request)
         if account is not None:
             return next_step(account)
-        return super(BookingStart, self).dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        email = form.cleaned_data['email']
-        try:
-            account = BookingAccount.objects.filter(email__iexact=email)[0]
-        except IndexError:
-            # Ensure we use NULLs, not empty strings, or we will not be able to
-            # create more than one, as they will have same 'name and post_code'
-            account = BookingAccount.objects.create(email=email,
+        if request.method == "POST":
+            form = self.form_class(request.POST)
+            if form.is_valid():
+                email = form.cleaned_data['email']
+                try:
+                    account = BookingAccount.objects.filter(email__iexact=email)[0]
+                except IndexError:
+                    # Ensure we use NULLs, not empty strings, or we will not be able to
+                    # create more than one, as they will have same 'name and post_code'
+                    account = BookingAccount.objects.create(email=email,
                                                     name=None,
                                                     post_code=None)
-        send_verify_email(self.request, account)
-        return super(BookingStart, self).form_valid(form)
+                send_verify_email(self.request, account)
+                return HttpResponseRedirect(reverse_lazy('cciw.bookings.views.email_sent'))
+        else:
+            form = self.form_class()
+
+        return self.render({'form': form})
 
 
-class BookingEmailSent(DefaultMetaData, TemplateView):
-    metadata_title = u"Booking - log in"
+class BookingEmailSent(BookingLogInBase):
     template_name = "cciw/bookings/email_sent.html"
-    extra_context = {'stage': 'login'}
 
 
 def verify_email(request, account_id, token, action):
@@ -405,86 +393,91 @@ def verify_email_and_pay(request, account_id, token):
                         action)
 
 
-class BookingVerifyEmailFailed(DefaultMetaData, TemplateView):
+class BookingVerifyEmailFailed(BookingLogInBase):
     metadata_title = u"Booking - account email verification failed"
     template_name = "cciw/bookings/email_verification_failed.html"
-    extra_context = {'stage': 'login'}
 
 
-class BookingNotLoggedIn(DefaultMetaData, TemplateView):
+class BookingNotLoggedIn(CciwBaseView):
     metadata_title = u"Booking - not logged in"
     template_name = "cciw/bookings/not_logged_in.html"
 
 
-class BookingAccountDetails(DefaultMetaData, AjaxyFormMixin, TemplateResponseMixin, BaseUpdateView, metaclass=AjaxMroFixer):
+class BookingAccountDetails(CciwBaseView, AjaxFormValidation):
     metadata_title = u"Booking - account details"
     form_class = AccountDetailsForm
     template_name = 'cciw/bookings/account_details.html'
-    success_url = reverse_lazy('cciw.bookings.views.add_place')
-    extra_context = {'stage': 'account'}
+    magic_context = {'stage': 'account'}
 
-    def get_object(self):
-        return self.request.booking_account
+    def handle(self, request):
+        if request.method == "POST":
+            form = self.form_class(request.POST, instance=self.request.booking_account)
+            if form.is_valid():
+                form.save()
+                messages.info(self.request, u'Account details updated, thank you.')
+                return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
+        else:
+            form = self.form_class(instance=self.request.booking_account)
 
-    def form_valid(self, form):
-        messages.info(self.request, u'Account details updated, thank you.')
-        return super(BookingAccountDetails, self).form_valid(form)
+        return self.render({'form':form})
 
 
-class BookingEditAddBase(DefaultMetaData, TemplateResponseMixin, AjaxyFormMixin):
+class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
     template_name = 'cciw/bookings/add_place.html'
-    success_url = reverse_lazy('cciw.bookings.views.list_bookings')
-    extra_context = {'booking_open': is_booking_open_thisyear,
-                     'south_wales_surcharge': lambda: Price.objects.get(year=get_thisyear(),
-                                                                        price_type=PRICE_SOUTH_WALES_TRANSPORT).price,
-                     'south_wales_transport_exclude_camps': lambda: Camp.objects.filter(year=get_thisyear(), south_wales_transport_available=False),
+    form_class = AddPlaceForm
+    magic_context = {'booking_open': is_booking_open_thisyear,
+                     'south_wales_surcharge':
+                     lambda: Price.objects.get(year=get_thisyear(),
+                                               price_type=PRICE_SOUTH_WALES_TRANSPORT).price,
+                     'south_wales_transport_exclude_camps':
+                     lambda: Camp.objects.filter(year=get_thisyear(),
+                                                 south_wales_transport_available=False),
                      'stage': 'place'}
 
-
-    def post(self, request, *args, **kwargs):
-        if not is_booking_open_thisyear():
+    def handle(self, request, *args, **kwargs):
+        if request.method == "POST" and not is_booking_open_thisyear():
             # Redirect to same view, but GET
             return HttpResponseRedirect(request.get_full_path())
+
+        if 'id' in kwargs:
+            # Edit
+            try:
+                booking = self.request.booking_account.bookings.get(id=int(kwargs['id']))
+            except (ValueError, Booking.DoesNotExist):
+                raise Http404
+            if request.method == "POST" and not booking.is_user_editable():
+                # Redirect to same view, but GET
+                return HttpResponseRedirect(request.get_full_path())
         else:
-            return super(BookingEditAddBase, self).post(request, *args, **kwargs)
+            # Add
+            booking = None
 
-    def form_valid(self, form):
-        form.instance.account = self.request.booking_account
-        form.instance.agreement_date = datetime.now()
-        form.instance.auto_set_amount_due()
-        form.instance.state = BOOKING_INFO_COMPLETE
-        messages.info(self.request, u'Details for "%s" were saved successfully' % form.instance.name)
-        return super(BookingEditAddBase, self).form_valid(form)
+        if request.method == "POST":
+            form = self.form_class(request.POST, instance=booking)
+            if form.is_valid():
+                form.instance.account = self.request.booking_account
+                form.instance.agreement_date = datetime.now()
+                form.instance.auto_set_amount_due()
+                form.instance.state = BOOKING_INFO_COMPLETE
+                form.save()
 
-
-class BookingAddPlace(BookingEditAddBase, BaseCreateView, metaclass=AjaxMroFixer):
-    metadata_title = u"Booking - add new camper details"
-    form_class = AddPlaceForm
-
-
-class BookingEditPlace(BookingEditAddBase, BaseUpdateView, metaclass=AjaxMroFixer):
-    metadata_title = u"Booking - edit camper details"
-    form_class = AddPlaceForm
-
-    def post(self, request, *args, **kwargs):
-        if not self.get_object().is_user_editable():
-            # just do a redirect to same view, which will display
-            # the message about read only
-            return HttpResponseRedirect(request.get_full_path())
+                messages.info(self.request, u'Details for "%s" were saved successfully' % form.instance.name)
+                return HttpResponseRedirect(reverse('cciw.bookings.views.list_bookings'))
         else:
-            return super(BookingEditPlace, self).post(request, *args, **kwargs)
+            form = self.form_class(instance=booking)
 
-    def get_object(self):
-        try:
-            return self.request.booking_account.bookings.get(id=int(self.kwargs['id']))
-        except (ValueError, Booking.DoesNotExist):
-            raise Http404
-
-    def get_context_data(self, **kwargs):
-        c = super(BookingEditPlace, self).get_context_data(**kwargs)
-        if not self.object.is_user_editable():
+        c = {'form':form}
+        if booking is not None and not booking.is_user_editable():
             c['read_only'] = True
-        return c
+        return self.render(c)
+
+
+class BookingAddPlace(BookingEditAddBase):
+    metadata_title = u"Booking - add new camper details"
+
+
+class BookingEditPlace(BookingEditAddBase):
+    metadata_title = u"Booking - edit camper details"
 
 
 # Public attributes - i.e. that the account holder is allowed to see
@@ -645,17 +638,78 @@ def make_state_token(bookings):
     return salted_hmac('cciw.bookings.state_token', data.encode('utf-8')).hexdigest()
 
 
-class BookingListBookings(DefaultMetaData, TemplateView):
+class BookingListBookings(CciwBaseView):
     metadata_title = "Booking - checkout"
     template_name = "cciw/bookings/list_bookings.html"
-    extra_context = {'stage': 'list'}
+    magic_context = {'stage': 'list'}
 
-    def get_context_data(self, **kwargs):
-        c = super(BookingListBookings, self).get_context_data(**kwargs)
+    def handle(self, request):
         year = get_thisyear()
-        bookings = self.request.booking_account.bookings
+        bookings = request.booking_account.bookings
+        # NB - use lists here, not querysets, so that both state_token and book_now
+        # functionality apply against same set of bookings.
         basket_bookings = list(bookings.basket(year))
         shelf_bookings = list(bookings.shelf(year))
+
+        if request.method == "POST":
+            if 'add_another' in request.POST:
+                return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
+
+            places = basket_bookings + shelf_bookings
+
+            def shelve(place):
+                place.shelved = True
+                place.save()
+                messages.info(request, u'Place for "%s" moved to shelf' % place.name)
+
+            def unshelve(place):
+                place.shelved = False
+                place.save()
+                messages.info(request, u'Place for "%s" moved to basket' % place.name)
+
+            def delete(place):
+                messages.info(request, u'Place for "%s" deleted' % place.name)
+                place.delete()
+
+            def edit(place):
+                return HttpResponseRedirect(reverse('cciw.bookings.views.edit_place',
+                                                    kwargs={'id':str(place.id)}))
+
+            for k in request.POST.keys():
+                # handle shelve and unshelve buttons
+                for r, action in [(r'shelve_(\d+)', shelve),
+                                  (r'unshelve_(\d+)', unshelve),
+                                  (r'delete_(\d+)', delete),
+                                  (r'edit_(\d+)', edit),
+                                  ]:
+                    m = re.match(r, k)
+                    if m is not None:
+                        try:
+                            b_id = int(m.groups()[0])
+                            place = [p for p in places if p.id == b_id][0]
+                            retval = action(place)
+                            if retval is not None:
+                                return retval
+                        except (ValueError, # converting to string
+                                IndexError, # not in list
+                                ):
+                            pass
+
+            if 'book_now' in request.POST:
+                state_token = request.POST.get('state_token', '')
+                if make_state_token(basket_bookings) != state_token:
+                    messages.error(request, u"Places were not booked due to modifications made "
+                                   u"to the details. Please check the details and try again.")
+                else:
+                    if book_basket_now(basket_bookings):
+                        messages.info(request, u"Places booked!")
+                        return HttpResponseRedirect(reverse('cciw.bookings.views.pay'))
+                    else:
+                        messages.error(request, u"These places cannot be booked for the reasons "
+                                       u"given below.")
+            # Start over, because things may have changed.
+            return HttpResponseRedirect(request.path)
+
         # Now apply business rules and other custom processing
         total = Decimal('0.00')
         all_bookable = True
@@ -686,78 +740,15 @@ class BookingListBookings(DefaultMetaData, TemplateView):
                     else:
                         total = total + b.amount_due_normalised
 
-        c['basket_bookings'] = basket_bookings
-        c['shelf_bookings'] = shelf_bookings
-        c['all_bookable'] = all_bookable
-        c['all_unbookable'] = all_unbookable
-        c['state_token'] = make_state_token(basket_bookings)
-        c['total'] = total
-        return c
-
-    def post(self, request, *args, **kwargs):
-        if 'add_another' in request.POST:
-            return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
-
-        year = get_thisyear()
-        bookings = request.booking_account.bookings
-        # NB - use lists here, not querysets, so that both state_token and book_now
-        # functionality apply against same set of bookings.
-        basket_bookings = list(bookings.basket(year))
-        shelf_bookings = list(bookings.shelf(year))
-        places = basket_bookings + shelf_bookings
-
-        def shelve(place):
-            place.shelved = True
-            place.save()
-            messages.info(self.request, u'Place for "%s" moved to shelf' % place.name)
-
-        def unshelve(place):
-            place.shelved = False
-            place.save()
-            messages.info(self.request, u'Place for "%s" moved to basket' % place.name)
-
-        def delete(place):
-            messages.info(self.request, u'Place for "%s" deleted' % place.name)
-            place.delete()
-
-        def edit(place):
-            return HttpResponseRedirect(reverse('cciw.bookings.views.edit_place',
-                                                kwargs={'id':str(place.id)}))
-
-        for k in request.POST.keys():
-            # handle shelve and unshelve buttons
-            for r, action in [(r'shelve_(\d+)', shelve),
-                              (r'unshelve_(\d+)', unshelve),
-                              (r'delete_(\d+)', delete),
-                              (r'edit_(\d+)', edit),
-                              ]:
-                m = re.match(r, k)
-                if m is not None:
-                    try:
-                        b_id = int(m.groups()[0])
-                        place = [p for p in places if p.id == b_id][0]
-                        retval = action(place)
-                        if retval is not None:
-                            return retval
-                    except (ValueError, # converting to string
-                            IndexError, # not in list
-                            ):
-                        pass
-
-        if 'book_now' in request.POST:
-            state_token = request.POST.get('state_token', '')
-            if make_state_token(basket_bookings) != state_token:
-                messages.error(request, u"Places were not booked due to modifications made "
-                               u"to the details. Please check the details and try again.")
-            else:
-                if book_basket_now(basket_bookings):
-                    messages.info(request, u"Places booked!")
-                    return HttpResponseRedirect(reverse('cciw.bookings.views.pay'))
-                else:
-                    messages.error(request, u"These places cannot be booked for the reasons "
-                                   u"given below.")
-
-        return self.get(request, *args, **kwargs)
+        c = {
+            'basket_bookings': basket_bookings,
+            'shelf_bookings': shelf_bookings,
+            'all_bookable': all_bookable,
+            'all_unbookable': all_unbookable,
+            'state_token': make_state_token(basket_bookings),
+            'total': total,
+        }
+        return self.render(c)
 
 
 def mk_paypal_form(account, balance, protocol, domain):
@@ -778,20 +769,19 @@ def mk_paypal_form(account, balance, protocol, domain):
     return PayPalPaymentsForm(initial=paypal_dict)
 
 
-class BookingPay(DefaultMetaData, TemplateView):
+class BookingPayBase(CciwBaseView):
+    magic_context = {'stage': 'pay'}
+
+
+class BookingPay(BookingPayBase):
     metadata_title = "Booking - pay"
     template_name = "cciw/bookings/pay.html"
-    extra_context = {'stage': 'pay'}
 
-    def get(self, request):
+    def handle(self, request):
         acc = self.request.booking_account
         balance_due = acc.get_balance(allow_deposits=True)
         balance_full = acc.get_balance(allow_deposits=False)
 
-        self.context['unconfirmed_places'] = acc.bookings.unconfirmed()
-        self.context['balance_due'] = balance_due
-        self.context['balance_full'] = balance_full
-        self.context['account_id'] = acc.id
         # This view should be accessible even if prices for the current year are
         # not defined.
         price_deposit = list(Price.objects.filter(year=get_thisyear(), price_type=PRICE_DEPOSIT))
@@ -799,42 +789,38 @@ class BookingPay(DefaultMetaData, TemplateView):
             price_deposit = None
         else:
             price_deposit = price_deposit[0].price
-        self.context['price_deposit'] = price_deposit
 
         domain = get_current_domain()
         protocol = 'https' if self.request.is_secure() else 'http'
 
-        self.context['paypal_form'] = mk_paypal_form(acc, balance_due, protocol, domain)
-        self.context['paypal_form_full'] = mk_paypal_form(acc, balance_full, protocol, domain)
+        c = {
+            'unconfirmed_places': acc.bookings.unconfirmed(),
+            'balance_due': balance_due,
+            'balance_full': balance_full,
+            'account_id': acc.id,
+            'price_deposit': price_deposit,
+            'paypal_form': mk_paypal_form(acc, balance_due, protocol, domain),
+            'paypal_form_full': mk_paypal_form(acc, balance_full, protocol, domain),
+        }
+        return self.render(c)
 
-        return super(BookingPay, self).get(request)
 
-
-class BookingPayDone(DefaultMetaData, TemplateView):
+class BookingPayDone(BookingPayBase):
     metadata_title = u"Booking - payment complete"
     template_name = "cciw/bookings/pay_done.html"
-    extra_context = {'stage': 'pay'}
 
-    # Paypal wants to post to this view
-    def post(self, *args, **kwargs):
-        return self.get(*args, **kwargs)
 
-class BookingPayCancelled(DefaultMetaData, TemplateView):
+class BookingPayCancelled(BookingPayBase):
     metadata_title = u"Booking - payment cancelled"
     template_name = "cciw/bookings/pay_cancelled.html"
-    extra_context = {'stage': 'pay'}
-
-    def post(self, *args, **kwargs):
-        return self.get(*args, **kwargs)
 
 
-class BookingAccountOverview(DefaultMetaData, TemplateView):
+class BookingAccountOverview(CciwBaseView):
     metadata_title = u"Booking - account overview"
     template_name = 'cciw/bookings/account_overview.html'
-    extra_context = {'stage': ''}
 
-    def get_context_data(self, *args, **kwargs):
-        c = super(BookingAccountOverview, self).get_context_data(*args, **kwargs)
+    def handle(self, request):
+        c = {}
         acc = self.request.booking_account
         year = get_thisyear()
         c['confirmed_places'] = acc.bookings.confirmed().filter(camp__year__exact=year)
@@ -842,21 +828,21 @@ class BookingAccountOverview(DefaultMetaData, TemplateView):
         c['cancelled_places'] = acc.bookings.cancelled().filter(camp__year__exact=year)
         c['basket'] = acc.bookings.basket(year).exists()
         c['shelf'] = acc.bookings.shelf(year).exists()
-        return c
+        c['stage'] = ''
+        return self.render(c)
 
 
-class BookingLogOut(DefaultMetaData, TemplateView):
+class BookingLogOut(CciwBaseView):
     metadata_title = "Booking - log out"
     template_name = 'cciw/bookings/logout.html'
-    extra_context = {'stage': ''}
 
-    def post(self, request, *args, **kwargs):
+    def handle(self, request):
         if 'logout' in request.POST:
             response = HttpResponseRedirect(reverse('cciw.bookings.views.index'))
             unset_booking_account_cookie(response)
             return response
         else:
-            return self.get(request, *args, **kwargs)
+            return self.render({'stage': ''})
 
 
 index = BookingIndex.as_view()
@@ -869,7 +855,7 @@ add_place = booking_account_required(account_details_required(BookingAddPlace.as
 edit_place = booking_account_required(account_details_required(BookingEditPlace.as_view()))
 list_bookings = booking_account_required(BookingListBookings.as_view())
 pay = booking_account_required(BookingPay.as_view())
-pay_done = csrf_exempt(BookingPayDone.as_view())
-pay_cancelled = csrf_exempt(BookingPayCancelled.as_view())
+pay_done = csrf_exempt(BookingPayDone.as_view()) # PayPal will post to this, need csrf_exempt
+pay_cancelled = csrf_exempt(BookingPayCancelled.as_view()) # PayPal will post to this
 account_overview = booking_account_required(BookingAccountOverview.as_view())
 logout = booking_account_required(BookingLogOut.as_view())

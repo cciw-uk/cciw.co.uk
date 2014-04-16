@@ -1,7 +1,6 @@
 from datetime import datetime
 import string
 
-from django.views.generic.edit import ModelFormMixin
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render
 from django.conf import settings
@@ -11,7 +10,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 
 from cciw.forums.models import Forum, Topic, Photo, Post, VoteInfo, NewsItem, Permission, Poll, PollOption
-from cciw.cciwmain.common import create_breadcrumb, get_order_option, object_list, DefaultMetaData, AjaxyFormView
+from cciw.cciwmain.common import create_breadcrumb, get_order_option, object_list, CciwBaseView, AjaxFormValidation
 from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.decorators import login_redirect
 from cciw.cciwmain.templatetags import bbcode
@@ -96,7 +95,7 @@ def topicindex(request, title=None, extra_context=None, forum=None,
     if request.user.has_perm('cciwmain.edit_topic'):
         extra_context['moderator'] = True
 
-    return object_list(request, topics, extra_context=extra_context,
+    return object_list(request, queryset=topics, extra_context=extra_context,
                        template_name=template_name, paginate_by=paginate_by)
 
 def _get_forum_or_404(path, suffix):
@@ -318,59 +317,63 @@ class CreatePollForm(cciwforms.CciwFormMixin, forms.ModelForm):
 CreatePollForm.base_fields.keyOrder = ['title', 'intro_text', 'polloptions', 'outro_text', 'voting_starts', 'voting_ends', 'rules', 'rule_parameter']
 
 
-class EditPoll(DefaultMetaData, AjaxyFormView, ModelFormMixin):
+class EditPoll(CciwBaseView, AjaxFormValidation):
     form_class = CreatePollForm
     template_name = 'cciw/forums/edit_poll.html'
 
-    def dispatch(self, request, *args, **kwargs):
+    def handle(self, request, *args, **kwargs):
+        c = {}
         poll_id = kwargs.get('poll_id', None)
         if poll_id is None:
-            self.suffix = 'add_poll/'
+            suffix = 'add_poll/'
             self.metadata_title = u"Create poll"
-            self.object = None
+            poll = None
         else:
-            self.suffix = '/'.join(request.path.split('/')[-3:]) # 'edit_poll/xx/'
+            suffix = '/'.join(request.path.split('/')[-3:]) # 'edit_poll/xx/'
             self.metadata_title = u"Edit poll"
-
-            self.object = get_object_or_404(Poll.objects.filter(id=poll_id))
+            poll = get_object_or_404(Poll.objects.filter(id=poll_id))
 
         current_member = get_current_member()
         if not current_member.has_perm(Permission.POLL_CREATOR):
             return HttpResponseForbidden("Permission denied")
-        if self.object and self.object.created_by != current_member:
+        if poll is not None and poll.created_by != current_member:
             return HttpResponseForbidden("Access denied.")
 
-        self.current_member = current_member
-        self.forum = _get_forum_or_404(request.path, self.suffix)
-        self.context['breadcrumb'] = create_breadcrumb(kwargs.get('breadcrumb_extra',[]) +
-                                                       topic_breadcrumb(self.forum, None))
-        return super(EditPoll, self).dispatch(request, *args, **kwargs)
+        forum = _get_forum_or_404(request.path, suffix)
+        c['breadcrumb'] = create_breadcrumb(kwargs.get('breadcrumb_extra',[]) +
+                                            topic_breadcrumb(forum, None))
+
+        if request.method == "POST":
+            form = self.form_class(request.POST, instance=poll, initial=self.get_initial())
+            if form.is_valid():
+                new_poll = form.save(commit=False)
+                new_poll.created_by = current_member
+                new_poll.save()
+
+                if poll is None:
+                    # new poll, create a topic to go with it
+                    topic = Topic.create_topic(current_member, new_poll.title, forum,
+                                               commit=False)
+                    topic.poll_id = new_poll.id
+                    topic.save()
+                else:
+                    # It will already have a topic associated
+                    topic = new_poll.topics.all()[0]
+                    topic.subject = new_poll.title
+                    topic.save()
+
+                update_poll_options(new_poll, form.cleaned_data['polloptions'])
+                return HttpResponseRedirect(topic.get_absolute_url())
+        else:
+            form = self.form_class(instance=poll, initial=self.get_initial())
+        c['form'] = form
+
+        return self.render(c)
 
     def get_initial(self):
         today = datetime.today()
         today = datetime(today.year, today.month, today.day)
         return dict(voting_starts=today)
-
-    def form_valid(self, form):
-        new_poll = form.save(commit=False)
-        new_poll.created_by = self.current_member
-        new_poll.save()
-
-        if self.object is None:
-            # new poll, create a topic to go with it
-            topic = Topic.create_topic(self.current_member, new_poll.title, self.forum,
-                                       commit=False)
-            topic.poll_id = new_poll.id
-            topic.save()
-        else:
-            # It will already have a topic associated
-            topic = new_poll.topics.all()[0]
-            topic.subject = new_poll.title
-            topic.save()
-
-        update_poll_options(new_poll, form.cleaned_data['polloptions'])
-        # avoid ModelFormMixin.form_valid()
-        return HttpResponseRedirect(topic.get_absolute_url())
 
 edit_poll = member_required(EditPoll.as_view())
 
@@ -538,7 +541,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
     if request.user.has_perm('cciwmain.edit_post'):
         extra_context['moderator'] = True
 
-    return object_list(request, posts,
+    return object_list(request, queryset=posts,
         extra_context=extra_context, template_name=template_name,
         paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
 
@@ -568,7 +571,7 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
     extra_context['default_order'] = 'aca'
     photos = photos.order_by(*order_by)
 
-    return object_list(request, photos,
+    return object_list(request, queryset=photos,
         extra_context=extra_context, template_name='cciw/forums/photoindex.html',
         paginate_by=settings.FORUM_PAGINATE_PHOTOS_BY)
 
@@ -601,7 +604,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     if request.user.has_perm('cciwmain.edit_post'):
         extra_context['moderator'] = True
 
-    return object_list(request, posts,
+    return object_list(request, queryset=posts,
         extra_context=extra_context, template_name='cciw/forums/photo.html',
         paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
 
@@ -614,8 +617,11 @@ def all_posts(request):
 
     context['atom_feed_title'] = u"Atom feed for all posts on CCIW message boards."
 
-    return object_list(request, posts,
+    return object_list(
+        request,
+        queryset=posts,
         extra_context=context, template_name='cciw/forums/posts.html',
+        list_name='posts',
         paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
 
 def post(request, id):
@@ -638,7 +644,7 @@ def all_topics(request):
 
     context['atom_feed_title'] = u"Atom feed for all new topics."
 
-    return object_list(request, topics,
+    return object_list(request, queryset=topics,
         extra_context=context, template_name='cciw/forums/topics.html',
         paginate_by=settings.FORUM_PAGINATE_TOPICS_BY)
 

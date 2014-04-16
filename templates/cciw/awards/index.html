@@ -1,14 +1,10 @@
 {% extends "cciw/standard.html" %}
 {% load standardpage %}
-{% comment %}
-This template has a single variable 'object_list'
-which is a list of 'Award' objects
-{% endcomment %}
 {% block content %}
-  {% for award in object_list %}
-    <h2><a name="{{ award.nice_name|slugify }}">{{award.nice_name}}</a></h2>
+  {% for award in awards %}
+    <h2><a name="{{ award.nice_name|slugify }}">{{ award.nice_name }}</a></h2>
     <div class="awardDescription">
-    <img src="{{ award.imageurl }}" alt="{{ award.nice_name }} image" />  {{award.description}}
+    <img src="{{ award.imageurl }}" alt="{{ award.nice_name }} image" />  {{ award.description }}
     </div>
     <div class="awardList">
                 {% with award.personal_awards.all as pawards %}

@@ -4,8 +4,8 @@
 {% load forums %}
 
 {% block content %}
-{% if object_list %}
-{% for post in object_list %}
+{% if posts %}
+{% for post in posts %}
   <div class="individualPost">
     <div class="postHeader">
     {% ifchanged %}

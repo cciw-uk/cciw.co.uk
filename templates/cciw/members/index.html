@@ -15,7 +15,7 @@
     </p>
     {% forward_query_param "order" %}
   </form>
-  {% if object_list %}
+  {% if members %}
   <div class="paging">{% paging_control %}</div>
   <table class="topheaders">
     <tr>
@@ -27,7 +27,7 @@
       <th scope="col">Last seen&nbsp;{% sorting_control "als" "dls" "Sort by 'last seen' ascending" "Sort by 'last seen' descending" %}</th>
     </tr>
 
-    {% for member in object_list %}
+    {% for member in members %}
     <tr>
       <td>{{ member.get_icon }}</td>
       <td>{{ member.get_link }}{% if member.hidden %}<br/>HIDDEN{% endif %}{% if member.banned %}<br/>BANNED{% endif %}</td>

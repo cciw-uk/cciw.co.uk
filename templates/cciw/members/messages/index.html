@@ -3,7 +3,7 @@
 {% load standardpage %}
 {% load forums %}
 {% block content %}
-{% if object_list %}
+{% if member_messages %}
   <form action="" method="post" >{% csrf_token %}
   <div class="paging">{% paging_control %}</div>
   <table class="topheaders">
@@ -12,7 +12,7 @@
       <th scope="col">Message</th>
       <th scope="col">Select</th>
     </tr>
-    {% for message in object_list %}
+    {% for message in member_messages %}
     <tr>
       <td class="postFrom">
         <span class="postMemberIcon">{{ message.from_member.get_icon }}</span>

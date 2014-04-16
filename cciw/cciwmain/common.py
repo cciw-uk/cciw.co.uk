@@ -2,63 +2,174 @@
 Utility functions and base classes that are common to all views etc.
 """
 import datetime
+from functools import update_wrapper
 import re
 import sys
 import traceback
 
 from django.conf import settings
 from django.core.mail import mail_admins
+from django.core.paginator import Paginator, InvalidPage
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
+from django.template.response import TemplateResponse
 from django.utils.safestring import mark_safe
-from django.views.generic.edit import FormView
-from django.views.generic.list import ListView
+from django.utils.decorators import classonlymethod
 from six import text_type
 
 from cciw.cciwmain.utils import python_to_json
 import cciw.middleware.threadlocals as threadlocals
 
 
-# CBV baseclass functionality
-class DefaultMetaData(object):
+# Our own CBV base class. Only the stuff we really need.
+# Subclasses must implement 'handle'.
+
+class View(object):
+
+    def __init__(self, **kwargs):
+        """
+        Constructor. Called in the URLconf; can contain helpful extra
+        keyword arguments, and other things.
+        """
+        # Go through keyword arguments, and either save their values to our
+        # instance, or raise an error.
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    @classonlymethod
+    def as_view(cls, **initkwargs):
+        def view(request, *args, **kwargs):
+            self = cls(**initkwargs)
+            self.request = request
+            self.args = args
+            self.kwargs = kwargs
+            if hasattr(self, 'pre_handle'):
+                response = self.pre_handle(request, *args, **kwargs)
+                if response is not None:
+                    return response
+            return self.handle(request, *args, **kwargs)
+        # take name and docstring from class
+        update_wrapper(view, cls, updated=())
+
+        # and possible attributes set by decorators
+        # like csrf_exempt from 'handle'
+        update_wrapper(view, cls.handle, assigned=())
+        return view
+
+
+class TemplateView(View):
     """
-    Mixin that provides some default metadata and other standard variables to the
-    page context. Assumes the use of TemplateView.
-
-    Also provides a mechanism for other context data:
-
-     * 'extra_context' attribute can be stored on the class
-       and will be used as a starting point for context data
-
-     * After the instance has been initialised, 'context'
-       will be available on the instance as a place to store context data.
+    View that provides utilities to render to an HTML template,
+    with utilities for collecting context data.
     """
+    template_name = None
+    response_class = TemplateResponse
+    content_type = "text/html"
+
+    def get_magic_context(self, request):
+        """
+        Collects any 'magic_context' defined in classes or base classes, and
+        adds all to context data.
+
+        (It's 'magic'' because a subclass definition of 'magic_context' doesn't
+        override the superclass, but effectively adds to it, making it easy to
+        add extra data without explicit 'super' or dictionary merging.')
+
+        """
+        context = {}
+        for cls in reversed(self.__class__.mro()):
+            if hasattr(cls, 'magic_context'):
+                magic_context = cls.magic_context
+                if callable(magic_context):
+                    magic_context = magic_context(self)
+                context.update(magic_context)
+        return context
+
+    def get_context_data(self, request):
+        # Magic context from classes
+        c = self.get_magic_context(request)
+        # Add in 'context' from instance
+        c.update(getattr(self, 'context', {}))
+        return c
+
+    def render(self, view_context):
+        request = self.request
+        assert self.template_name is not None
+        context = self.get_context_data(request)
+        context.update(view_context)
+        response_kwargs = {}
+        response_kwargs.setdefault('content_type', self.content_type)
+        return self.response_class(
+            request=request,
+            template=[self.template_name],
+            context=context,
+        )
+
+    def handle(self, request):
+        return self.render({})
+
+
+class CciwBaseView(TemplateView):
     metadata_title = None
     metadata_description = None
     metadata_keywords = None
-    extra_context = None
 
-    def __init__(self, **kwargs):
-        # Provide place for arbitrary context to get stored.
-        self.context = {}
-        # Merge in statically defined context on the class, in a way that won't
-        # mean that the class atttribute will be mutated.
-        extra_context = self.extra_context
-        if extra_context is not None:
-            self.context.update(extra_context)
-
-        return super(DefaultMetaData, self).__init__(**kwargs)
-
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, request):
         d = dict(title=self.metadata_title,
                  description=self.metadata_description,
                  keywords=self.metadata_keywords)
-        # Allow context to overwrite
-        d.update(self.context)
-        c = super(DefaultMetaData, self).get_context_data(**kwargs)
-        c.update(d)
-        return c
+        c = super(CciwBaseView, self).get_context_data(request)
+        d.update(c)
+        return d
+
+
+class AjaxFormValidation(object):
+    """
+    A mixin that enables the returning of validation results by JSON
+    if accessed with ?format=json.
+    """
+    def pre_handle(self, request, *args, **kwargs):
+        if request.method == "POST":
+            if request.GET.get('format', None) == 'json':
+                form = self.form_class(request.POST)
+                return HttpResponse(
+                    python_to_json(form.errors),
+                    content_type='text/javascript',
+                )
+
+
+class DetailView(object):
+    def handle(self, request, slug=None):
+        assert hasattr(self, 'slug_field'), "DetailView class must define slug_field (model lookup name)"
+        assert hasattr(self, 'object_name'), "DetailView class must define object_name (name to be used in template)"
+        assert hasattr(self, 'queryset'), "DetailView class must define queryset"
+        kwargs = {self.slug_field + "__exact": slug}
+        model = self.queryset.model
+        try:
+            obj = self.queryset.get(**kwargs)
+        except model.DoesNotExist:
+            raise Http404
+        return self.render({self.object_name: obj})
+
+
+class ListView(object):
+    def get_queryset(self):
+        assert hasattr(self, 'queryset'), "ListView class must define queryset, or override get_queryset"
+        return self.queryset
+
+    def handle(self, request):
+        assert hasattr(self, 'list_name'), "ListView class must define list_name (name to be used in template)"
+        queryset = self.get_queryset()
+        paginate_by = getattr(self, 'paginate_by', None)
+        return object_list(
+            request,
+            template_name=self.template_name,
+            paginate_by=paginate_by,
+            queryset=queryset,
+            list_name=self.list_name,
+            extra_context=self.get_context_data(request),
+        )
 
 
 def json_validation_request(request, form):
@@ -72,26 +183,6 @@ def json_validation_request(request, form):
                             content_type='text/javascript')
     else:
         return None
-
-
-# CBV equivalent to json_validation_request
-class AjaxyFormMixin(object):
-    """
-    A FormView subclass that enables the returning of validation results by JSON
-    if accessed with ?format=json.
-    """
-    def post(self, request, *args, **kwargs):
-        if request.GET.get('format', None) == 'json':
-            form_class = self.get_form_class()
-            form = self.get_form(form_class)
-            return HttpResponse(python_to_json(form.errors),
-                                content_type='text/javascript')
-        else:
-            return super(AjaxyFormMixin, self).post(request, *args, **kwargs)
-
-
-class AjaxyFormView(AjaxyFormMixin, FormView):
-    pass
 
 
 # CBV wrapper for feeds.handle_feed_request
@@ -110,29 +201,56 @@ class FeedHandler(object):
     def is_feed_request(self):
         return self.request.GET.get('format', None) == 'atom'
 
-    def get(self, request, *args, **kwargs):
+    def pre_handle(self, request, *args, **kwargs):
         if self.is_feed_request():
             feed_class = self.get_feed_class()
             return feeds.handle_feed_request(self.request, feed_class, self.get_queryset())
-        else:
-            return super(FeedHandler, self).get(request, *args, **kwargs)
 
 
 def object_list(request, queryset, extra_context=None,
-                template_name='', paginate_by=None):
-    # list_detail.object_list replacement with all the things we need
-    class ObjectList(ListView):
-        def post(self, request, *args, **kwargs):
-            return self.get(request, *args, **kwargs)
+                template_name='', paginate_by=None,
+                list_name='object_list',
+                ):
+        page_size = paginate_by
+        if paginate_by:
+            paginator = Paginator(queryset, paginate_by, orphans=0,
+                                  allow_empty_first_page=True)
 
-        def get_context_data(self, **kwargs):
-            c = super(ObjectList, self).get_context_data(**kwargs)
-            c.update(extra_context)
-            return c
+            page = request.GET.get('page') or 1
+            try:
+                page_number = int(page)
+            except ValueError:
+                if page == 'last':
+                    page_number = paginator.num_pages
+                else:
+                    raise Http404("Page is not 'last', nor can it be converted to an int.")
 
-    return ObjectList.as_view(template_name=template_name,
-                              paginate_by=paginate_by,
-                              queryset=queryset)(request)
+            try:
+                page = paginator.page(page_number)
+            except InvalidPage as e:
+                raise Http404('Invalid page (%(page_number)s): %(message)s' % {
+                    'page_number': page_number,
+                    'message': str(e)
+                })
+            context = {
+                'paginator': paginator,
+                'page_obj': page,
+                'is_paginated': page.has_other_pages(),
+                list_name: page.object_list,
+            }
+        else:
+            context = {
+                'paginator': None,
+                'page_obj': None,
+                'is_paginated': False,
+                list_name: queryset,
+            }
+        context.update(extra_context)
+        return TemplateResponse(
+            request=request,
+            template=[template_name],
+            context=context,
+        )
 
 
 _thisyear = None

@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.safestring import mark_safe
@@ -19,7 +20,7 @@ class Site(models.Model):
         return self.short_name
 
     def get_absolute_url(self):
-        return u"/sites/%s/" % self.slug_name
+        return reverse('cciwmain.sites.detail', kwargs=dict(slug=self.slug_name))
 
     def save(self, **kwargs):
         from django.template.defaultfilters import slugify

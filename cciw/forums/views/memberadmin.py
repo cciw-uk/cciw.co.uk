@@ -15,10 +15,9 @@ from django.core.urlresolvers import reverse
 from django.forms import widgets
 from django.http import Http404, HttpResponseRedirect
 from django.utils.crypto import salted_hmac
-from django.views.generic.edit import ModelFormMixin
 from django import forms
 
-from cciw.cciwmain.common import DefaultMetaData, AjaxyFormView, member_username_re
+from cciw.cciwmain.common import CciwBaseView, AjaxFormValidation, member_username_re
 from cciw.forums.models import Member
 from cciw.middleware.threadlocals import set_member_session, get_current_member, set_current_member
 from cciw.cciwmain.decorators import member_required
@@ -396,50 +395,51 @@ class PreferencesForm(CciwFormMixin, forms.ModelForm):
 PreferencesForm.base_fields.keyOrder = preferences_fields
 
 
-class Preferences(DefaultMetaData, AjaxyFormView, ModelFormMixin):
+class Preferences(CciwBaseView, AjaxFormValidation):
     metadata_title = u"Preferences"
     form_class = PreferencesForm
     template_name = 'cciw/members/preferences.html'
 
-    def get_success_url(self):
-        return reverse("cciwmain.memberadmin.preferences")
-
-    def dispatch(self, request):
+    def handle(self, request):
         current_member = get_current_member()
-        self.orig_email = current_member.email # before update
-        self.object = current_member
-        self.context['member'] = current_member
-        return super(Preferences, self).dispatch(request)
+        c = {'member': current_member}
+        orig_email = current_member.email # before update
+        if request.method == "POST":
+            form = self.form_class(request.POST, instance=current_member)
+            c['form'] = form
+            if form.is_valid():
+                # E-mail changes require verification, so frig it here
+                current_member = form.save(commit=False)
+                new_email = current_member.email # from posted data
 
-    def form_valid(self, form):
-        # E-mail changes require verification, so frig it here
-        current_member = form.save(commit=False)
-        new_email = current_member.email # from posted data
+                # Save with original email
+                current_member.email = orig_email
+                current_member.save()
 
-        # Save with original email
-        current_member.email = self.orig_email
-        current_member.save()
+                # E-mail change:
+                if new_email != orig_email:
+                    # We check for duplicate e-mail address in change_email view,
+                    # so don't really need to do it here.
+                    send_newemail_email(current_member, new_email)
+                    messages.info(request,
+                                  "To confirm the change of e-mail address, an e-mail "
+                                  "has been sent to your new address with further instructions.")
+                else:
+                    messages.info(request, "Changes saved.")
 
-        if self.request.FILES:
-            try:
-                imageutils.fix_member_icon(current_member, self.request.FILES['icon'])
-            except imageutils.ValidationError as e:
-                self.context['image_error'] = e.args[0]
-                return self.form_invalid(form)
-
-        # E-mail change:
-        if new_email != self.orig_email:
-            # We check for duplicate e-mail address in change_email view,
-            # so don't really need to do it here.
-            send_newemail_email(current_member, new_email)
-            messages.info(self.request, "To confirm the change of e-mail address, an e-mail " + \
-               "has been sent to your new address with further instructions.")
+                if self.request.FILES:
+                    try:
+                        imageutils.fix_member_icon(current_member, request.FILES['icon'])
+                    except imageutils.ValidationError as e:
+                        c['image_error'] = e.args[0]
+                        return self.render(c)
+                return HttpResponseRedirect(reverse("cciwmain.memberadmin.preferences"))
         else:
-            messages.info(self.request, "Changes saved.")
+            form = self.form_class(instance=current_member)
+            c['form'] = form
 
-        # NB - AjaxyFormView not Preferences, because we want to skip the
-        # behaviour of ModelFormMixin here.
-        return super(AjaxyFormView, self).form_valid(form)
+        return self.render(c)
+
 
 preferences = member_required(Preferences.as_view())
 

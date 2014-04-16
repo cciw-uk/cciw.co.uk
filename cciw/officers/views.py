@@ -18,7 +18,6 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.template.defaultfilters import wordwrap
 from django.views.decorators.cache import never_cache
-from django.views.generic.base import TemplateView
 from six import text_type
 
 from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
@@ -1204,12 +1203,11 @@ def crb_consent_problem(request):
     return render(request, 'cciw/officers/crb_consent_problem.html', c)
 
 
-class OfficerInfo(TemplateView):
-    template_name='cciw/officers/info.html'
-    def get_context_data(self, *args, **kwargs):
-        return dict(show_wiki_link=is_wiki_user(self.request.user))
-
-officer_info = staff_member_required(OfficerInfo.as_view())
+@staff_member_required
+def officer_info(request):
+    return render(request, 'cciw/officers/info.html', {
+        'show_wiki_link': is_wiki_user(request.user),
+    })
 
 
 @booking_secretary_required
