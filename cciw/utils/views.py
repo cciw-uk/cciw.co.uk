@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.views import redirect_to_login
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, Http404
 
 from cciw.utils.spreadsheet import ExcelFormatter, OdsFormatter
 
@@ -48,5 +48,5 @@ formatters = {
 def get_spreadsheet_formatter(request):
     format = request.GET.get('format', 'xls')
     if format not in formatters:
-        raise Http404
+        raise Http404()
     return formatters[format]()
