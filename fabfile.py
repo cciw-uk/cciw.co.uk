@@ -69,10 +69,7 @@ PYTHON_BIN = "python3.3"
 PYTHON_PREFIX = "" # e.g. /usr/local  Use "" for automatic
 PYTHON_FULL_PATH = "%s/bin/%s" % (PYTHON_PREFIX, PYTHON_BIN) if PYTHON_PREFIX else PYTHON_BIN
 
-if PYTHON_BIN == "python2.7":
-    VENV_SUBDIR = 'venv'
-elif PYTHON_BIN == "python3.3":
-    VENV_SUBDIR = 'venv-py3'
+VENV_SUBDIR = 'venv'
 
 WSGI_MODULE = '%s.wsgi' % APP_NAME
 
@@ -163,12 +160,6 @@ def install_dependencies():
     with virtualenv(target.VENV_DIR):
         with cd(target.SRC_DIR):
             run_venv("pip install -r requirements.txt")
-            if PYTHON_BIN == "python2.7":
-                run_venv("pip install -r requirements-py2.txt")
-            elif PYTHON_BIN == "python3.3":
-                run_venv("pip install -r requirements-py3.txt")
-            else:
-                raise Exception("Unsupported Python version")
 
 
 def ensure_virtualenv():
