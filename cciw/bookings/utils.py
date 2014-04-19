@@ -125,6 +125,9 @@ def payments_to_spreadsheet(date_start, date_end, spreadsheet):
         if c is PayPalIPN:
             return 'PayPal'
         else:
+            if p.origin is None:
+                # Deleted
+                return "(deleted)"
             v = p.origin.get_payment_type_display()
             if c is ManualPayment:
                 return v
