@@ -6,9 +6,8 @@
 <ul>
   {% if show_booking_secretary_links %}
   <li><a href="/admin/bookings/">Manage bookings</a></li>
-  <li><a href="{% url 'cciw.officers.views.booking_secretary_reports' thisyear %}">Booking reports</a></li>
-  <li>Download {{ thisyear }} bookings data: <a href="{% url 'cciw.officers.views.export_camper_data_for_year' thisyear %}?format=xls">XLS</a> | <a href="{% url 'cciw.officers.views.export_camper_data_for_year' thisyear %}?format=ods">ODS</a></li>
-  <li>Download {{ lastyear }} bookings data: <a href="{% url 'cciw.officers.views.export_camper_data_for_year' lastyear %}?format=xls">XLS</a> | <a href="{% url 'cciw.officers.views.export_camper_data_for_year' lastyear %}?format=ods">ODS</a></li>
+  <li><a href="{% url 'cciw.officers.views.booking_secretary_reports' thisyear %}">Booking reports {{ thisyear }}</a></li>
+  <li><a href="{% url 'cciw.officers.views.booking_secretary_reports' lastyear %}">Booking reports {{ lastyear }}</a></li>
   {% endif %}
   <li><a href="{% url 'cciw.officers.views.applications' %}">Submit/view applications</a></li>
   <li><a href="{% url 'cciw.officers.views.info' %}">Information about camp</a></li>
