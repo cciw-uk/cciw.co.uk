@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.utils import unittest
-from six import text_type
 
 from cciw.cciwmain.common import get_member_link
 from cciw.cciwmain.templatetags import bbcode
@@ -104,7 +103,7 @@ for i, (bb, xhtml) in enumerate(tests):
     def test_xhtml(self, bb=bb, xhtml=xhtml):
         output = bbcode.bb2xhtml(bb)
         self.assertEqual(output, xhtml)
-        self.assertEqual(type(output), text_type)
+        self.assertEqual(type(output), str)
     name = 'test_xhtml_%d' % i
     test_xhtml.__name__ = name
     setattr(BBCode, name, test_xhtml)

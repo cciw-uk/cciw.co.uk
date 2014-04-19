@@ -2,7 +2,6 @@ from django.utils.html import escape
 from django.forms.forms import BoundField
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
-from six import text_type
 
 
 class CciwFormMixin(object):
@@ -49,7 +48,7 @@ class CciwFormMixin(object):
         if bf.is_hidden:
             if bf_errors:
                 top_errors.extend([u'(Hidden field %s) %s' % (name, force_text(e)) for e in bf_errors])
-            hidden_fields.append(text_type(bf))
+            hidden_fields.append(str(bf))
         else:
             if bf_errors:
                 errors_html = self.errors_template % force_text(bf_errors)
@@ -79,7 +78,7 @@ class CciwFormMixin(object):
             output.append(self.normal_row_template % {
                     'errors_html': errors_html,
                     'label': force_text(label),
-                    'field': text_type(bf),
+                    'field': str(bf),
                     'help_text': help_text,
                     'class': cssclass,
                     'divid': "div_id_%s" % bf.name

@@ -1,5 +1,5 @@
 import re
-from six.moves.urllib_parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs
 
 def url_to_path_and_query(url):
     scheme, netloc, path, params, query, fragment = urlparse(url)

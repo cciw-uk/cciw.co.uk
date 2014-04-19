@@ -16,7 +16,6 @@ from django.http import HttpResponse, Http404
 from django.template.response import TemplateResponse
 from django.utils.safestring import mark_safe
 from django.utils.decorators import classonlymethod
-from six import text_type
 
 from cciw.cciwmain.utils import python_to_json
 import cciw.middleware.threadlocals as threadlocals
@@ -302,7 +301,7 @@ def get_order_option(order_options, request, default_order_by):
 
 
 def create_breadcrumb(links):
-    return mark_safe(u" :: ".join(map(text_type, links)))
+    return mark_safe(u" :: ".join(map(str, links)))
 
 
 def standard_processor(request):
@@ -323,11 +322,11 @@ def standard_processor(request):
     from cciw.sitecontent.models import MenuLink
     thisyear = get_thisyear()
     context['thisyear'] = thisyear
-    assert type(request.path) is text_type
+    assert type(request.path) is str
     context['homepage'] = (request.path == u"/")
 
     # Ugly special casing for 'thisyear' camps
-    m = re.match(u'/camps/%s/(\d+)/' % text_type(thisyear),  request.path)
+    m = re.match(u'/camps/%s/(\d+)/' % str(thisyear),  request.path)
     if m is not None:
         request_path = u'/thisyear/%s/' % m.groups()[0]
     else:

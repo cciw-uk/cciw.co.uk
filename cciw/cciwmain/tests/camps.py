@@ -2,7 +2,6 @@ from datetime import date
 
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from six import text_type
 
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp, Site, Person
@@ -37,7 +36,7 @@ class CampModel(TestCase):
         self.camp = camp
 
     def test_display(self):
-        self.assertEqual(text_type(self.camp), u"2013-1 (John, Mary, Gregory)")
+        self.assertEqual(str(self.camp), u"2013-1 (John, Mary, Gregory)")
 
 
 class ThisyearPage(TestCase):

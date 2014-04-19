@@ -5,7 +5,6 @@ import re
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.fields import YyyyMmField, AddressField, ExplicitBooleanField, required_field
@@ -41,7 +40,6 @@ class ApplicationManager(models.Manager):
         return super(ApplicationManager, self).get_queryset().select_related('officer')
 
 
-@python_2_unicode_compatible
 class Application(models.Model):
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
     full_name = required_field(models.CharField, 'full name', max_length=60)
@@ -190,7 +188,6 @@ class ReferenceManager(models.Manager):
         return super(ReferenceManager, self).get_queryset().select_related('application__officer')
 
 
-@python_2_unicode_compatible
 class Reference(models.Model):
     """
     Stores metadata about a reference for an officer.
@@ -273,7 +270,6 @@ class ReferenceFormManager(models.Manager):
         return super(ReferenceFormManager, self).get_queryset().select_related('reference_info__application__officer')
 
 
-@python_2_unicode_compatible
 class ReferenceForm(models.Model):
     referee_name = models.CharField("name of referee", max_length=100)
     how_long_known = models.CharField("how long/since when have you known the applicant?", max_length=150)
@@ -318,7 +314,6 @@ class InvitationManager(models.Manager):
         return super(InvitationManager, self).get_queryset().select_related('officer', 'camp', 'camp__chaplain')
 
 
-@python_2_unicode_compatible
 class Invitation(models.Model):
     officer = models.ForeignKey(User)
     camp = models.ForeignKey(Camp)
@@ -350,7 +345,6 @@ class CRBApplicationManager(models.Manager):
         return self.get_queryset().filter(completed__gte=camp.start_date - timedelta(settings.CRB_VALID_FOR))
 
 
-@python_2_unicode_compatible
 class CRBApplication(models.Model):
     officer = models.ForeignKey(User)
     crb_number = models.CharField("Disclosure number", max_length=20)
@@ -374,7 +368,6 @@ class CRBFormLogManager(models.Manager):
         return super(CRBFormLogManager, self).get_queryset().select_related('officer')
 
 
-@python_2_unicode_compatible
 class CRBFormLog(models.Model):
     """
     Represents a log of a  CRB form sent to an officer

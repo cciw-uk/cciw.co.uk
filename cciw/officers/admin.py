@@ -13,7 +13,6 @@ from cciw.officers.models import Application, Reference, Invitation, ReferenceFo
 from cciw.officers import widgets
 from cciw.utils.views import close_window_response
 
-from six import text_type
 
 officer_autocomplete_field = lambda: autocomplete_light.ModelChoiceField('user')
 
@@ -240,12 +239,12 @@ class ApplicationAdmin(admin.ModelAdmin):
     def _force_user_val(self, request):
         user = request.user
         if not user.has_perm('officers.change_application'):
-            request.POST['officer'] = text_type(request.user.id)
+            request.POST['officer'] = str(request.user.id)
         else:
             # The leader possibly forgot to set the 'user' box while submitting
             # their own application form.
             if request.POST['officer'] == '':
-                request.POST['officer'] = text_type(request.user.id)
+                request.POST['officer'] = str(request.user.id)
 
     def _force_post_vals(self, request):
         request.POST = request.POST.copy()

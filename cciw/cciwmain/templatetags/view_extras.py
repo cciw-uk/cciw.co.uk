@@ -1,7 +1,6 @@
 from django import template
 from django.utils import html
 from django.conf import settings
-from six import text_type
 
 from cciw.cciwmain.utils import *
 
@@ -10,7 +9,7 @@ def page_link(request, page_number, fragment = ''):
     Constructs a link to a specific page using the request.
     Returns HTML escaped value
     """
-    return html.escape(modified_query_string(request, {'page': text_type(page_number)}, fragment))
+    return html.escape(modified_query_string(request, {'page': str(page_number)}, fragment))
 
 class PagingControlNode(template.Node):
     def __init__(self, fragment = ''):
@@ -62,11 +61,11 @@ class PagingControlNode(template.Node):
                     output.append(u"&hellip; ")
 
                 if i == cur_page:
-                    output.append(u'<span class="pagingLinkCurrent">%s</span>' % text_type(i))
+                    output.append(u'<span class="pagingLinkCurrent">%s</span>' % str(i))
                 else:
                     output.append(
                         u'<a title="%(title)s" class="pagingLink" href="%(href)s">%(pagenumber)d</a>' % \
-                        { 'title': u'Page ' + text_type(i),
+                        { 'title': u'Page ' + str(i),
                           'href': page_link(request, i, self.fragment),
                           'pagenumber': i })
                 last_page = i

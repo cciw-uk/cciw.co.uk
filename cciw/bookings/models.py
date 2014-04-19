@@ -9,7 +9,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.db import models
 from django.db import transaction
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.common import get_thisyear
@@ -67,7 +66,6 @@ MANUAL_PAYMENT_CHOICES = [
 ]
 
 
-@python_2_unicode_compatible
 class Price(models.Model):
     year = models.PositiveSmallIntegerField()
     price_type = models.PositiveSmallIntegerField(choices=VALUED_PRICE_TYPES)
@@ -112,7 +110,6 @@ class BookingAccountManager(models.Manager):
         return retval
 
 
-@python_2_unicode_compatible
 class BookingAccount(models.Model):
     # For online bookings, email is required, but not for paper. Initially for online
     # process only email is filled in, so to ensure we can edit all BookingAccounts
@@ -416,7 +413,6 @@ class BookingManager(models.Manager):
         return qs
 
 
-@python_2_unicode_compatible
 class Booking(models.Model):
     account = models.ForeignKey(BookingAccount, related_name='bookings')
 
@@ -762,7 +758,6 @@ class PaymentManager(models.Manager):
         return super(PaymentManager, self).get_queryset().select_related('account')
 
 
-@python_2_unicode_compatible
 class Payment(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount)
@@ -814,14 +809,12 @@ class ManualPaymentBase(models.Model):
         abstract = True
 
 
-@python_2_unicode_compatible
 class ManualPayment(ManualPaymentBase):
 
     def __str__(self):
         return u"Manual payment of £%s from %s" % (self.amount, self.account)
 
 
-@python_2_unicode_compatible
 class RefundPayment(ManualPaymentBase):
 
     def __str__(self):

@@ -3,7 +3,6 @@ import re
 import sys
 import datetime
 from subprocess import Popen, PIPE
-from six import string_types
 
 # Questions, partly converted to regex format.
 questions = [

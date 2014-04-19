@@ -1,5 +1,5 @@
 """Administrative views for members (signup, password change etc)"""
-from six.moves.urllib_parse import quote
+from urllib.parse import quote
 import re
 import datetime
 import string

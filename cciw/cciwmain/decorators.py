@@ -1,4 +1,4 @@
-from six.moves.urllib_parse import urlencode
+from urllib.parse import urlencode
 import datetime
 from functools import wraps
 import sys

@@ -3,13 +3,11 @@ import datetime
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain import signals
 
 
-@python_2_unicode_compatible
 class Site(models.Model):
     short_name = models.CharField("Short name", max_length="25", blank=False, unique=True)
     slug_name = models.SlugField("Machine name", max_length="25", blank=True, unique=True)
@@ -28,7 +26,6 @@ class Site(models.Model):
         super(Site, self).save(**kwargs)
 
 
-@python_2_unicode_compatible
 class Person(models.Model):
     name = models.CharField("Name", max_length=40)
     info = models.TextField("Information (Plain text)",
@@ -52,7 +49,6 @@ class CampManager(models.Manager):
         return self.get(year=year, number=number)
 
 
-@python_2_unicode_compatible
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")
     number = models.PositiveSmallIntegerField("number")

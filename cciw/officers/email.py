@@ -1,5 +1,5 @@
 import datetime
-from six.moves.urllib_parse import quote
+from urllib.parse import quote
 
 from cciw.cciwmain import common
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference, camps_for_application

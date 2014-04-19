@@ -1,5 +1,5 @@
-from six.moves.urllib_parse import urlencode
-from six.moves.urllib_request import urlopen
+from urllib.parse import urlencode
+from urllib.request import urlopen
 
 from django.conf import settings
 from django.shortcuts import render

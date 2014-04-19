@@ -1,5 +1,5 @@
 from functools import wraps
-from six.moves.urllib_parse import urlparse
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME

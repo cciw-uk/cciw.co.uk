@@ -10,9 +10,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.core import mail
 from django.db import models
 from django.utils.html import escape
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.safestring import mark_safe
-from six import text_type
 from cciw.cciwmain import common
 from cciw.middleware import threadlocals
 
@@ -20,7 +18,6 @@ from cciw.middleware import threadlocals
 _camp_forum_re = re.compile('^' + settings.CAMP_FORUM_RE + '$')
 
 
-@python_2_unicode_compatible
 class Permission(models.Model):
     POLL_CREATOR = "Poll creator"
     NEWS_CREATOR = "News creator"
@@ -50,7 +47,6 @@ class UserSpecificMembers(models.Manager):
         return self.get(user_name=user_name)
 
 
-@python_2_unicode_compatible
 class Member(models.Model):
     """Represents a user of the CCIW message boards."""
     MESSAGES_NONE = 0
@@ -166,7 +162,6 @@ class Member(models.Model):
         ordering = ('user_name',)
 
 
-@python_2_unicode_compatible
 class Award(models.Model):
     name = models.CharField("Award name", max_length=50)
     value = models.SmallIntegerField("Value")
@@ -187,7 +182,7 @@ class Award(models.Model):
     def get_absolute_url(self):
         from django.template.defaultfilters import slugify
         from django.core.urlresolvers import reverse
-        return reverse('cciw.forums.views.awards.index') + "#" + slugify(text_type(self))
+        return reverse('cciw.forums.views.awards.index') + "#" + slugify(str(self))
 
     class Meta:
         ordering = ('-year', 'name',)
@@ -200,7 +195,6 @@ class PersonalAwardManager(models.Manager):
         return qs.select_related('member')
 
 
-@python_2_unicode_compatible
 class PersonalAward(models.Model):
     reason = models.CharField("Reason for award", max_length=200)
     date_awarded = models.DateField("Date awarded", null=True, blank=True)
@@ -220,7 +214,6 @@ class PersonalAward(models.Model):
         ordering = ('date_awarded',)
 
 
-@python_2_unicode_compatible
 class Message(models.Model):
     MESSAGE_BOX_INBOX = 0
     MESSAGE_BOX_SAVED = 1
@@ -281,7 +274,7 @@ VOTING_RULES = (
     (2, u"'X' votes per member per day")
 )
 
-@python_2_unicode_compatible
+
 class Poll(models.Model):
     UNLIMITED = 0
     X_VOTES_PER_USER = 1
@@ -348,7 +341,7 @@ class Poll(models.Model):
     class Meta:
         ordering = ('title',)
 
-@python_2_unicode_compatible
+
 class PollOption(models.Model):
     text = models.CharField("Option text", max_length=200)
     total = models.PositiveSmallIntegerField("Number of votes")
@@ -404,7 +397,6 @@ class VoteInfo(models.Model):
         self.poll_option.save()
 
 
-@python_2_unicode_compatible
 class Forum(models.Model):
     open = models.BooleanField("Open", default=True)
     location = models.CharField("Location/path", db_index=True, unique=True, max_length=50)
@@ -420,7 +412,7 @@ class Forum(models.Model):
         if m:
             captures = m.groupdict()
             number = captures['number']
-            assert type(number) is text_type
+            assert type(number) is str
             if number == u'all':
                 return u"forum for all camps, year %s" % captures['year']
             else:
@@ -429,7 +421,6 @@ class Forum(models.Model):
             return u"forum at %s" % self.location
 
 
-@python_2_unicode_compatible
 class NewsItem(models.Model):
     created_by = models.ForeignKey(Member, related_name="news_items_created")
     created_at = models.DateTimeField("Posted")
@@ -476,7 +467,6 @@ class UserSpecificTopics(models.Manager):
             return queryset
 
 
-@python_2_unicode_compatible
 class Topic(models.Model):
     subject = models.CharField("Subject", max_length=240)
     started_by = models.ForeignKey(Member, related_name="topics_started",
@@ -537,7 +527,6 @@ class Topic(models.Model):
         ordering = ('-started_by',)
 
 
-@python_2_unicode_compatible
 class Gallery(models.Model):
     location = models.CharField("Location/URL", max_length=50)
     needs_approval = models.BooleanField("Photos need approval", default=False)
@@ -566,7 +555,6 @@ class UserSpecificPhotos(models.Manager):
             return queryset
 
 
-@python_2_unicode_compatible
 class Photo(models.Model):
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open", default=False)
@@ -638,7 +626,6 @@ class UserSpecificPosts(models.Manager):
             return queryset
 
 
-@python_2_unicode_compatible
 class Post(models.Model):
     posted_by = models.ForeignKey(Member,
         related_name="posts")

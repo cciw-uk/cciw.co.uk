@@ -58,8 +58,7 @@
 ##    as some elements being context sensitive in the render phase
 
 import re
-from six.moves.urllib_parse import urlencode
-from six import string_types
+from urllib.parse import urlencode
 
 #### CCIW specific imports #####
 from cciw.cciwmain.utils import obfuscate_email
@@ -71,7 +70,7 @@ ESV_BROWSE_URL = settings.ESV_BROWSE_URL
 ##### UTILITY FUNCTIONS #####
 def escape(html):
     "Returns the given HTML with ampersands, quotes and waccas encoded"
-    if not isinstance(html, string_types):
+    if not isinstance(html, str):
         html = str(html)
     return html.replace('&', '&amp;').replace('<', '&lt;') \
         .replace('>', '&gt;').replace('"', '&quot;')

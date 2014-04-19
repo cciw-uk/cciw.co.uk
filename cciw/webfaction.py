@@ -1,6 +1,7 @@
-from six.moves import xmlrpc_client
+import xmlrpc.client
 # See http://wf.davidsissitka.com/api/reference/
 from django.conf import settings
+
 
 class WebFactionSession(object):
     """
@@ -18,9 +19,10 @@ class WebFactionSession(object):
             return f(self.session_id, *args)
         return func
 
+
 def webfaction_session():
     if settings.WEBFACTION_USER is None:
         return None
-    server = xmlrpc_client.Server('https://api.webfaction.com/')
+    server = xmlrpc.client.ServerProxy('https://api.webfaction.com/', allow_none=True)
     session_id, account = server.login(settings.WEBFACTION_USER, settings.WEBFACTION_PASSWORD)
     return WebFactionSession(server, session_id)

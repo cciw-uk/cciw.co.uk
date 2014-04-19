@@ -2,7 +2,7 @@ import datetime
 import hmac
 import os
 import posixpath
-from six.moves.urllib_parse import unquote
+from urllib.parse import unquote
 
 from django.conf import settings
 from django.contrib.auth.views import redirect_to_login

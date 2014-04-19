@@ -1,9 +1,8 @@
-from six.moves.urllib_parse import urlparse
+from urllib.parse import urlparse
 
 from django_webtest import WebTest
 from django.core.urlresolvers import reverse
 
-from six import text_type
 
 class WebTestBase(WebTest):
     """
@@ -24,7 +23,7 @@ class WebTestBase(WebTest):
 
     def fill(self, form, data):
         for k,v in data.items():
-            form[k] = text_type(v)
+            form[k] = str(v)
         return form
 
     def code(self, response, status_code):

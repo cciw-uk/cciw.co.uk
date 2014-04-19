@@ -10,7 +10,6 @@ except ImportError:
     from io import BytesIO
 
 import xlwt
-from six import text_type
 
 def add_sheet_with_header_row(wkbk, name, headers, contents):
     """
@@ -46,14 +45,14 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
             if isinstance(val, str):
                 # normalise newlines to style expected by Excel
                 val = val.replace('\r\n', '\n')
-            elif isinstance(val, text_type):
+            elif isinstance(val, str):
                 val = val.replace(u'\r\n', u'\n')
 
             if isinstance(val, (datetime, date)):
                 style = date_style
             else:
                 style = normal_style
-                if isinstance(val, text_type) and u'\n' in val:
+                if isinstance(val, str) and u'\n' in val:
                     # This is needed or Excel displays box character for
                     # newlines.
                     style = wrapped_style

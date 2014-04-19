@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, date, timedelta
 import operator
-from six.moves.urllib_parse import urlparse
+from urllib.parse import urlparse
 
 from django import forms
 from django.db.models import F, Sum
@@ -18,7 +18,6 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.template.defaultfilters import wordwrap
 from django.views.decorators.cache import never_cache
-from six import text_type
 
 from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet, payments_to_spreadsheet, addresses_for_mailing_list
@@ -823,7 +822,7 @@ def update_email(request, username=''):
 class StripStringsMixin(object):
     def clean(self):
         for field,value in self.cleaned_data.items():
-            if isinstance(value, text_type):
+            if isinstance(value, str):
                 self.cleaned_data[field] = value.strip()
         return self.cleaned_data
 

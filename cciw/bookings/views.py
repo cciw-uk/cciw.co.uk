@@ -181,7 +181,6 @@ from django.utils.crypto import salted_hmac
 from django.utils.http import base36_to_int
 from django.views.decorators.csrf import csrf_exempt
 from paypal.standard.forms import PayPalPaymentsForm
-from six import text_type
 
 
 from cciw.auth import is_booking_secretary
@@ -633,7 +632,7 @@ def get_expected_amount_due(request):
 def make_state_token(bookings):
     # Hash some key data about booking, without which the booking isn't valid.
     bookings.sort(key=lambda b: b.id)
-    data = u'|'.join([u':'.join(map(text_type, [b.id, b.camp.id, b.amount_due, b.name, b.price_type, b.state]))
+    data = u'|'.join([u':'.join(map(str, [b.id, b.camp.id, b.amount_due, b.name, b.price_type, b.state]))
                      for b in bookings])
     return salted_hmac('cciw.bookings.state_token', data.encode('utf-8')).hexdigest()
 
