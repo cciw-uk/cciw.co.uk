@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from functools import reduce
 import operator
 import random
 import re

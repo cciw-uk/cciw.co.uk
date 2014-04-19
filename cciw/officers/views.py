@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, date, timedelta
+from functools import reduce
 import operator
 from urllib.parse import urlparse
 
