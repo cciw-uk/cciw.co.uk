@@ -1274,11 +1274,12 @@ def booking_secretary_reports(request, year=None):
 
     export_start = datetime(year-1, 11, 1) # November previous year
     export_end = datetime(year, 10, 31) # November this year
-    export_data_link = reverse('cciw.officers.views.export_payment_data',
-                               kwargs=dict(date_start=export_start.strftime(EXPORT_PAYMENT_DATE_FORMAT),
-                                           date_end=export_end.strftime(EXPORT_PAYMENT_DATE_FORMAT)))
-
-
+    export_data_link = (reverse('cciw.officers.views.export_payment_data') +
+                        "?start=%s&end=%s" % (
+                            export_start.strftime(EXPORT_PAYMENT_DATE_FORMAT),
+                            export_end.strftime(EXPORT_PAYMENT_DATE_FORMAT)
+                            )
+                        )
 
     return render(request, 'cciw/officers/booking_secretary_reports.html',
                   {'year': year, 'camps': camps,
@@ -1291,7 +1292,9 @@ def booking_secretary_reports(request, year=None):
 
 
 @booking_secretary_required
-def export_payment_data(request, date_start, date_end):
+def export_payment_data(request):
+    date_start = request.GET['start']
+    date_end = request.GET['end']
     date_start = datetime.strptime(date_start, EXPORT_PAYMENT_DATE_FORMAT)
     date_end = datetime.strptime(date_end, EXPORT_PAYMENT_DATE_FORMAT)
     formatter = get_spreadsheet_formatter(request)
