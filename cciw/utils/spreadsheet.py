@@ -2,6 +2,7 @@
 # spreadsheets, supporting .xls and .ods
 
 import xlwt
+import ezodf2
 
 from cciw.utils import xl
 
@@ -17,5 +18,26 @@ class ExcelFormatter(object):
     def add_sheet_with_header_row(self, name, headers, contents):
         xl.add_sheet_with_header_row(self.wkbk, name, headers, contents)
 
-    def to_string(self):
-        return xl.workbook_to_string(self.wkbk)
+    def to_bytes(self):
+        return xl.workbook_to_bytes(self.wkbk)
+
+
+class OdsFormatter(object):
+    mimetype = "application/vnd.oasis.opendocument.spreadsheet"
+    file_ext = "ods"
+
+    def __init__(self):
+        self.wkbk = ezodf2.newdoc("ods", "workbook")
+
+    def add_sheet_with_header_row(self, name, headers, contents):
+        sheet = ezodf2.Sheet(name, size=(len(contents) + 1, len(headers)))
+        self.wkbk.sheets += sheet
+        for c, header in enumerate(headers):
+            sheet[0, c].set_value(header)
+        for r, row in enumerate(contents):
+            for c, val in enumerate(row):
+                if val is not None:
+                    sheet[r + 1, c].set_value(val)
+
+    def to_bytes(self):
+        return self.wkbk.tobytes()

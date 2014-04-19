@@ -6,7 +6,7 @@ from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.views import redirect_to_login
 from django.http import HttpResponse, HttpResponseForbidden
 
-from cciw.utils.spreadsheet import ExcelFormatter
+from cciw.utils.spreadsheet import ExcelFormatter, OdsFormatter
 
 
 def close_window_response():
@@ -40,7 +40,10 @@ def user_passes_test_improved(test_func, login_url=None, redirect_field_name=RED
     return decorator
 
 
-formatters = {'xls': ExcelFormatter}
+formatters = {
+    'xls': ExcelFormatter,
+    'ods': OdsFormatter,
+}
 
 def get_spreadsheet_formatter(request):
     format = request.GET.get('format', 'xls')

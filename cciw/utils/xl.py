@@ -45,8 +45,6 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
             if isinstance(val, str):
                 # normalise newlines to style expected by Excel
                 val = val.replace('\r\n', '\n')
-            elif isinstance(val, str):
-                val = val.replace(u'\r\n', u'\n')
 
             if isinstance(val, (datetime, date)):
                 style = date_style
@@ -61,7 +59,7 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
             wksh.write(r + 1, c, val, style=style)
         wksh.rows[r + 1].height = row_height + 100 # fudge for margin, based on OpenOffice
 
-def workbook_to_string(wkbk):
+def workbook_to_bytes(wkbk):
     s = BytesIO()
     wkbk.save(s)
     s.seek(0)

@@ -195,4 +195,4 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
             yield row
 
     spreadsheet.add_sheet_with_header_row("Officers", header_row, data_rows())
-    return spreadsheet.to_string()
+    return spreadsheet.to_bytes()
