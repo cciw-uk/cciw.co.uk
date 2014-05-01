@@ -12,6 +12,7 @@ class FixPermissions(template.Node):
                 d['has_change_permission'] = True
                 # We don't want 'Save and add another' to appear
                 d['has_add_permission'] = False
+        return ''
 
 def fix_permissions(parser, token):
     return FixPermissions()
