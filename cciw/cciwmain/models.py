@@ -9,9 +9,9 @@ from cciw.cciwmain import signals
 
 
 class Site(models.Model):
-    short_name = models.CharField("Short name", max_length="25", blank=False, unique=True)
-    slug_name = models.SlugField("Machine name", max_length="25", blank=True, unique=True)
-    long_name = models.CharField("Long name", max_length="50", blank=False)
+    short_name = models.CharField("Short name", max_length=25, blank=False, unique=True)
+    slug_name = models.SlugField("Machine name", max_length=25, blank=True, unique=True)
+    long_name = models.CharField("Long name", max_length=50, blank=False)
     info = models.TextField("Description (HTML)")
 
     def __str__(self):
