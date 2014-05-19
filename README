@@ -141,6 +141,7 @@ CCIW_STAGING_MANAGE=/home/cciw/webapps/cciw_staging_django/src/manage.py
 */10    * * * * $CCIW_PYTHON $CCIW_MANAGE process_payments
 0       2 * * * $CCIW_PYTHON $CCIW_MANAGE cleanup
 *       * * * * $CCIW_PYTHON $CCIW_MANAGE handle_mailing_lists 2>> ~/.cciw-mailings-cron.log
+0       7 * * * $CCIW_PYTHON $CCIW_MANAGE payment_reminder_emails
 
 # expire_bookings must be run only once an hour
 30      * * * * $CCIW_PYTHON $CCIW_MANAGE expire_bookings
