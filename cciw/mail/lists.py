@@ -5,6 +5,7 @@ import xmlrpc.client
 
 from django.conf import settings
 from django.core.mail import get_connection, make_msgid
+from django.utils.encoding import force_bytes
 
 from cciw.cciwmain.decorators import email_errors_silently
 from cciw.cciwmain.utils import is_valid_email
@@ -150,7 +151,7 @@ def forward_email_to_list(mail, addresslist, original_to):
         # Need new message ID, or webfaction's mail server will only send one
         del mail['Message-ID']
         mail['Message-ID'] = make_msgid()
-        c.connection.sendmail(new_from_addr, [addr], mail.as_bytes())
+        c.connection.sendmail(new_from_addr, [addr], force_bytes(mail.as_string()))
     c.close()
 
 
