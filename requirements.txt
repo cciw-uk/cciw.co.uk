@@ -1,7 +1,7 @@
 beautifulsoup4==4.3.2
 diff-match-patch==20110725.1
 contextlib2==0.4.0
-Django==1.6
+Django==1.6.5
 django-anonymizer==0.4
 django-autocomplete-light==2.0.0a15
 django-classy-tags==0.4
