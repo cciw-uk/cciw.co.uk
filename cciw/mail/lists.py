@@ -150,7 +150,7 @@ def forward_email_to_list(mail, addresslist, original_to):
         # Need new message ID, or webfaction's mail server will only send one
         del mail['Message-ID']
         mail['Message-ID'] = make_msgid()
-        c.connection.sendmail(new_from_addr, [addr], mail.as_string())
+        c.connection.sendmail(new_from_addr, [addr], mail.as_bytes())
     c.close()
 
 
