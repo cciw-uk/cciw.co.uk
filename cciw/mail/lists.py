@@ -119,6 +119,7 @@ def list_for_address(address):
 
 def forward_email_to_list(mail, addresslist, original_to):
     orig_from_addr = mail['From']
+    del mail['From']
 
     new_from_addr = "CCIW lists <lists@cciw.co.uk>"
     mail['From'] = new_from_addr
