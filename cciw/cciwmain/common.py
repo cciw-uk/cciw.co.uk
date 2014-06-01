@@ -210,7 +210,6 @@ def object_list(request, queryset, extra_context=None,
                 template_name='', paginate_by=None,
                 list_name='object_list',
                 ):
-        page_size = paginate_by
         if paginate_by:
             paginator = Paginator(queryset, paginate_by, orphans=0,
                                   allow_empty_first_page=True)
