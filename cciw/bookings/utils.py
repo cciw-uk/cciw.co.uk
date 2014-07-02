@@ -6,6 +6,9 @@ from django.utils import timezone
 
 from cciw.bookings.models import Booking, Payment
 
+def format_address(*args):
+    return u'\n'.join(arg.strip() for arg in args)
+
 
 def camp_bookings_to_spreadsheet(camp, spreadsheet):
     bookings = list(camp.bookings.confirmed().order_by('first_name', 'last_name'))
@@ -15,8 +18,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                ('Sex', lambda b: b.get_sex_display()),
                ('Date of birth', lambda b: b.date_of_birth),
                ('Age on camp', lambda b: b.age_on_camp().years),
-               ('Address', lambda b: b.address),
-               ('Post code', lambda b: b.post_code),
+               ('Address', lambda b: format_address(b.address, b.post_code)),
                ('Email', lambda b: b.email),
                ('Church', lambda b: b.church),
                ('Dietary requirements', lambda b: b.dietary_requirements),
@@ -34,8 +36,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
          ('Date of birth', lambda b: b.date_of_birth),
          ('Parent/guardian', lambda b: b.account.name),
          ('Contact phone number', lambda b: b.contact_phone_number),
-         ('Contact address', lambda b: b.contact_address + ((u'\n' + b.contact_post_code) if
-                                                            b.contact_post_code else '')),
+         ('Contact address', lambda b: format_address(b.contact_address, b.contact_post_code)),
          ('GP', lambda b: b.gp_name),
          ('GP address', lambda b: b.gp_address),
          ('GP phone number', lambda b: b.gp_phone_number),
