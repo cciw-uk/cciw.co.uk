@@ -11,7 +11,6 @@ from django.db import models
 from django.db import transaction
 from django.utils.safestring import mark_safe
 
-from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import Lock
 

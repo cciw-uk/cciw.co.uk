@@ -2,13 +2,11 @@ import os
 import os.path
 import sys
 
-from collections import namedtuple
 from datetime import datetime
-from fabric.api import run, local, abort, env, put, get, task
+from fabric.api import run, local, env, get, task
 from fabric.contrib.files import exists
 from fabric.contrib import console
-from fabric.decorators import hosts, runs_once
-from fabric.context_managers import cd, lcd, settings, hide
+from fabric.context_managers import cd, lcd, settings
 import psutil
 
 join = os.path.join
@@ -267,7 +265,6 @@ def local_webserver_start():
     """
     if not _is_webserver_running():
         local(_webserver_command())
-
 
 
 def rsync_dir(local_dir, dest_dir):

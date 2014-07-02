@@ -64,7 +64,6 @@ def send_verify_email(request, booking_account):
     if not booking_account.email:
         return
     current_site = get_current_site(request)
-    site_name = current_site.name
     domain = current_site.domain
     token_generator = EmailVerifyTokenGenerator()
     c = {
