@@ -40,10 +40,12 @@ class ApplicationManager(models.Manager):
         return super(ApplicationManager, self).get_queryset().select_related('officer')
 
 
+NAME_LENGTH = 100
+
 class Application(models.Model):
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
-    full_name = required_field(models.CharField, 'full name', max_length=60)
-    full_maiden_name = models.CharField('full maiden name', max_length=60, blank=True)
+    full_name = required_field(models.CharField, 'full name', max_length=NAME_LENGTH)
+    full_maiden_name = models.CharField('full maiden name', max_length=NAME_LENGTH, blank=True)
     birth_date = required_field(models.DateField, 'date of birth', null=True, default=None)
     birth_place = required_field(models.CharField, 'place of birth', max_length=60)
     address_firstline = required_field(models.CharField, 'address', max_length=40)
@@ -74,25 +76,25 @@ class Application(models.Model):
             illness which may directly affect your work with children/young people?''')
     illness_details = models.TextField('illness details', blank=True)
 
-    employer1_name = models.CharField("1. Employer's name and address", max_length=100, blank=True)
+    employer1_name = models.CharField("1. Employer's name and address", max_length=NAME_LENGTH, blank=True)
     employer1_from = YyyyMmField("Employed from", blank=True)
     employer1_to = YyyyMmField("Employed until", blank=True)
     employer1_job = models.CharField("Job description", max_length=60, blank=True)
     employer1_leaving = models.CharField("Reason for leaving", max_length=150, blank=True)
 
-    employer2_name = models.CharField("2. Employer's name and address", max_length=100, blank=True)
+    employer2_name = models.CharField("2. Employer's name and address", max_length=NAME_LENGTH, blank=True)
     employer2_from = YyyyMmField("Employed from", blank=True)
     employer2_to = YyyyMmField("Employed until", blank=True)
     employer2_job = models.CharField("Job description", max_length=60, blank=True)
     employer2_leaving = models.CharField("Reason for leaving", max_length=150, blank=True)
 
-    referee1_name = required_field(models.CharField, "First referee's name", max_length=60)
+    referee1_name = required_field(models.CharField, "First referee's name", max_length=NAME_LENGTH)
     referee1_address = required_field(AddressField, 'address')
     referee1_tel = models.CharField('telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
     referee1_mobile = models.CharField('mobile', max_length=22, blank=True)
     referee1_email = models.EmailField('e-mail', blank=True)
 
-    referee2_name = required_field(models.CharField, "Second referee's name", max_length=60)
+    referee2_name = required_field(models.CharField, "Second referee's name", max_length=NAME_LENGTH)
     referee2_address = required_field(AddressField, 'address')
     referee2_tel = models.CharField('telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
     referee2_mobile = models.CharField('mobile', max_length=22, blank=True)
@@ -271,7 +273,7 @@ class ReferenceFormManager(models.Manager):
 
 
 class ReferenceForm(models.Model):
-    referee_name = models.CharField("name of referee", max_length=100)
+    referee_name = models.CharField("name of referee", max_length=NAME_LENGTH)
     how_long_known = models.CharField("how long/since when have you known the applicant?", max_length=150)
     capacity_known = models.TextField("in what capacity do you know the applicant?")
     known_offences = models.BooleanField("""The position for which the applicant is applying requires substantial contact with children and young people. To the best of your knowledge, does the applicant have any convictions/cautions/bindovers, for any criminal offences?""", blank=True, default=False)
