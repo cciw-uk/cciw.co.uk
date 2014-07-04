@@ -41,6 +41,7 @@ class ApplicationManager(models.Manager):
 
 
 NAME_LENGTH = 100
+REFEREE_NAME_HELP_TEXT = "Name only - please do not include job title or other information."
 
 class Application(models.Model):
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
@@ -88,13 +89,15 @@ class Application(models.Model):
     employer2_job = models.CharField("Job description", max_length=60, blank=True)
     employer2_leaving = models.CharField("Reason for leaving", max_length=150, blank=True)
 
-    referee1_name = required_field(models.CharField, "First referee's name", max_length=NAME_LENGTH)
+    referee1_name = required_field(models.CharField, "First referee's name", max_length=NAME_LENGTH,
+                                   help_text=REFEREE_NAME_HELP_TEXT)
     referee1_address = required_field(AddressField, 'address')
     referee1_tel = models.CharField('telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
     referee1_mobile = models.CharField('mobile', max_length=22, blank=True)
     referee1_email = models.EmailField('e-mail', blank=True)
 
-    referee2_name = required_field(models.CharField, "Second referee's name", max_length=NAME_LENGTH)
+    referee2_name = required_field(models.CharField, "Second referee's name", max_length=NAME_LENGTH,
+                                   help_text=REFEREE_NAME_HELP_TEXT)
     referee2_address = required_field(AddressField, 'address')
     referee2_tel = models.CharField('telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
     referee2_mobile = models.CharField('mobile', max_length=22, blank=True)
@@ -273,7 +276,8 @@ class ReferenceFormManager(models.Manager):
 
 
 class ReferenceForm(models.Model):
-    referee_name = models.CharField("name of referee", max_length=NAME_LENGTH)
+    referee_name = models.CharField("name of referee", max_length=NAME_LENGTH,
+                                    help_text=REFEREE_NAME_HELP_TEXT)
     how_long_known = models.CharField("how long/since when have you known the applicant?", max_length=150)
     capacity_known = models.TextField("in what capacity do you know the applicant?")
     known_offences = models.BooleanField("""The position for which the applicant is applying requires substantial contact with children and young people. To the best of your knowledge, does the applicant have any convictions/cautions/bindovers, for any criminal offences?""", blank=True, default=False)
