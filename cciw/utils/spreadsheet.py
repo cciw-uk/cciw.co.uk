@@ -30,6 +30,8 @@ class OdsFormatter(object):
         self.wkbk = ezodf2.newdoc("ods", "workbook")
 
     def add_sheet_with_header_row(self, name, headers, contents):
+        headers = list(headers)
+        contents = list(contents)
         sheet = ezodf2.Sheet(name, size=(len(contents) + 1, len(headers)))
         self.wkbk.sheets += sheet
         for c, header in enumerate(headers):

@@ -449,7 +449,10 @@ address are not classified as junk mail.</p>
   application forms, can be downloaded below:</p>
 
 <ul>
-<li><a href="{% url 'cciw.officers.views.export_officer_data' year=camp.year number=camp.number %}">Officer data, camp {{ camp.number }}, {{ camp.year }} - Excel spreadsheet</a></li>
+<li>Officer data, camp {{ camp.number }}, {{ camp.year }}:
+  <a href="{% url 'cciw.officers.views.export_officer_data' year=camp.year number=camp.number %}?format=xls">XLS</a> |
+  <a href="{% url 'cciw.officers.views.export_officer_data' year=camp.year number=camp.number %}?format=ods">ODS</a>
+</li>
 </ul>
 
 </div> {# id=content-main #}
