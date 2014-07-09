@@ -61,7 +61,6 @@ urlpatterns = patterns('',
     url('^autocomplete/', include('autocomplete_light.urls')),
     (r'^notify/', get_notify_pattern()),
     (r'^wiki/', get_wiki_pattern()),
-    (r'^mail/', include('cciw.mail.urls')),
     (r'^paypal/ipn/', include('paypal.standard.ipn.urls')),
 )
 

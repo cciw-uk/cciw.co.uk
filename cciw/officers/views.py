@@ -5,7 +5,6 @@ import operator
 from urllib.parse import urlparse
 
 from django import forms
-from django.db.models import F, Sum
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME
@@ -13,7 +12,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.core.urlresolvers import reverse
-from django.http import Http404, HttpResponseRedirect, HttpResponse, HttpResponseForbidden
+from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
