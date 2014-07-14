@@ -77,12 +77,13 @@ def camps_for_application(application):
     return camps
 
 
-def applications_for_camp(camp):
+def applications_for_camp(camp, officer_ids=None):
     """
     Returns the applications that are relevant for a camp.
     """
     # Use invitations to work out which officers we care about
-    officer_ids = camp.invitation_set.values_list('officer_id', flat=True)
+    if officer_ids is None:
+        officer_ids = camp.invitation_set.values_list('officer_id', flat=True)
     apps = Application.objects.filter(finished=True,
                                       officer__in=officer_ids)
 

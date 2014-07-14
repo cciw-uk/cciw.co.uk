@@ -312,12 +312,20 @@ def manage_references(request, year=None, number=None):
 
     # If ref_id is set, we just want to update part of the page.
     ref_id = request.GET.get('ref_id')
+    officer = None
+    officer_id = request.GET.get('officer_id')
+    if officer_id is not None:
+        try:
+            officer = User.objects.get(id=int(officer_id))
+        except (ValueError, User.DoesNotExist):
+            raise Http404
 
+    c['officer'] = officer
     camp = _get_camp_or_404(year, number)
     c['camp'] = camp
 
     if ref_id is None:
-        apps = applications_for_camp(camp)
+        apps = applications_for_camp(camp, officer_ids=[officer_id] if officer is not None else None)
         app_ids = [app.id for app in apps]
         # force creation of Reference objects.
         if Reference.objects.filter(application__in=app_ids).count() < len(apps) * 2:

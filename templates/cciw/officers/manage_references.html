@@ -88,6 +88,11 @@ function nagByOfficer(ref_id) {
 <h1>Manage references</h1>
 <h2>For camp {{ camp }}</h2>
 
+{% if officer %}
+<h3>For officer {{ officer.first_name }} {{ officer.last_name }} <a href=".">(view all)</a></h3>
+
+{% endif %}
+
 <p>This page allows you to request references for officers who have submitted
   application forms. References that have not been requested are at the top,
   those that have been requested are in the middle, and those that have been

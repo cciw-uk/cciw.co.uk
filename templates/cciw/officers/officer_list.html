@@ -183,7 +183,10 @@ address are not classified as junk mail.</p>
     </td>
     <td>
       {% for camp in officer_data.missing_references %}
-      <a target="_blank" href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}">{{ camp.year }}-{{ camp.number }}</a><br/>
+      {{ camp.year }}-{{ camp.number }}
+      (<a target="_blank" href="{% url 'cciw.officers.views.manage_references' year=camp.year number=camp.number %}?officer_id={{ officer.id }}">references</a>,
+      <a target="_blank" href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}">officer list)</a>
+      <br/>
       {% endfor %}
     </td>
     <td>
