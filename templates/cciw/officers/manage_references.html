@@ -125,6 +125,7 @@ function nagByOfficer(ref_id) {
 <div id="notrequestedend"></div>
 </div>
 
+{% if requested %}
 <h2 class="ok">References requested</h2>
 
 <div id="requestedrefs">
@@ -134,11 +135,10 @@ function nagByOfficer(ref_id) {
 {% include "cciw/officers/manage_reference.html" %}
 {% endwith %}
 
-{% empty %}
-<p>No references requested.</p>
 {% endfor %}
 <div id="requestedend"></div>
 </div>
+{% endif %}
 
 <h2 class="good">References received</h2>
 
