@@ -3,11 +3,7 @@ Simplified xlwt interface
 """
 from copy import deepcopy
 from datetime import datetime, date
-
-try:
-    from StringIO import StringIO as BytesIO
-except ImportError:
-    from io import BytesIO
+from io import BytesIO
 
 import xlwt
 
