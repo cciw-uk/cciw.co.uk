@@ -72,7 +72,7 @@ def camp_serious_slacker_list(camp):
     # camp but failed to submit an application form.
 
     # If they failed to submit two references, we also need to show them.  (If
-    # they didn't submit, an application form then they will definitely have
+    # they didn't submit an application form then they will definitely have
     # missing references).
 
 
@@ -81,6 +81,8 @@ def camp_serious_slacker_list(camp):
     officer_apps_present = defaultdict(list)
     officer_refs_missing = defaultdict(list)
     officer_refs_present = defaultdict(list)
+    officer_apps_last_good_year = {}
+    officer_refs_last_good_year = {}
 
     for c in relevant_camps:
         camp_officers = set([i.officer
@@ -115,6 +117,7 @@ def camp_serious_slacker_list(camp):
                 if c.start_date > last_camp_with_app.start_date
             ]
             officer_apps_missing[officer] = new_missing_camps
+            officer_apps_last_good_year[officer] = last_camp_with_app.year
 
     # Sort by date desc
     for officer, camps in officer_apps_missing.items():
@@ -132,6 +135,7 @@ def camp_serious_slacker_list(camp):
                 if c.start_date > last_camp_with_ref.start_date
             ]
             officer_refs_missing[officer] = new_missing_camps
+            officer_refs_last_good_year[officer] = last_camp_with_ref.year
 
     # Sort by date desc
     for officer, camps in officer_refs_missing.items():
@@ -154,6 +158,8 @@ def camp_serious_slacker_list(camp):
     return [{'officer': o,
              'missing_application_forms': a,
              'missing_references': r,
+             'last_good_apps_year': officer_apps_last_good_year.get(o, None),
+             'last_good_refs_year': officer_refs_last_good_year.get(o, None),
          } for o, a, r in l]
 
 

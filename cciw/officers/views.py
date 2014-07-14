@@ -722,7 +722,6 @@ def officer_list(request, year=None, number=None):
 
     c = {}
     c['camp'] = camp
-    # Make sure these queries come after the above data modification
     invitation_list = camp.invitation_set.all()
     officer_list_ids = set(i.officer_id for i in invitation_list)
     c['invitations'] = invitation_list
