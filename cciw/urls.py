@@ -4,7 +4,6 @@ from django.conf.urls import patterns, url, include
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.models import User
-from django.views.generic.base import RedirectView
 from django_notify.urls import get_pattern as get_notify_pattern
 from wiki.urls import get_pattern as get_wiki_pattern
 
