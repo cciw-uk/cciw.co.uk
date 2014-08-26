@@ -109,4 +109,6 @@ class TestSlackers(TestCase):
             [{'officer':  officer2,
               'missing_application_forms': [camp1],
               'missing_references': [camp1],
+              'last_good_apps_year': None,
+              'last_good_refs_year': None,
               }])
