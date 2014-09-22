@@ -243,7 +243,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         else:
             # The leader possibly forgot to set the 'user' box while submitting
             # their own application form.
-            if request.POST['officer'] == '':
+            if request.POST.get('officer', '') == '':
                 request.POST['officer'] = str(request.user.id)
 
     def _force_post_vals(self, request):
