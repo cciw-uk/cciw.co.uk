@@ -10,11 +10,9 @@ BOOKING_SECRETARY_GROUP_NAME = 'Booking secretaries'
 OFFICER_GROUPS = [OFFICER_GROUP_NAME, LEADER_GROUP_NAME]
 CAMP_ADMIN_GROUPS = [SECRETARY_GROUP_NAME, LEADER_GROUP_NAME]
 
-ALL_STAFF_GROUPS = [WIKI_USERS_GROUP_NAME,
-                    SECRETARY_GROUP_NAME,
-                    OFFICER_GROUP_NAME,
-                    LEADER_GROUP_NAME,
-                    BOOKING_SECRETARY_GROUP_NAME]
+WIKI_GROUPS = [WIKI_USERS_GROUP_NAME, LEADER_GROUP_NAME,
+               BOOKING_SECRETARY_GROUP_NAME, SECRETARY_GROUP_NAME]
+
 
 def active_staff(user):
     return user.is_staff and user.is_active
@@ -39,7 +37,7 @@ def is_camp_admin(user):
 
 def is_wiki_user(user):
     if not active_staff(user): return False
-    return user_in_groups(user, ALL_STAFF_GROUPS)
+    return user_in_groups(user, WIKI_GROUPS)
 
 
 def is_cciw_secretary(user):
