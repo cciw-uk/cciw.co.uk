@@ -9,24 +9,7 @@
     <a class="booknow" href="{% url 'cciw.bookings.views.start' %}">Book online now!</a>
   </div>
 
-  <p>
-    <table>
-      <tr>
-        <td>Full price:</td>
-        <td>£{{ price_full }}</td>
-      </tr>
-
-      <tr>
-        <td>2nd camper from the same family:</td>
-        <td>£{{ price_2nd_child }}</td>
-      </tr>
-
-      <tr>
-        <td>Subsequent children from the same family:</td>
-        <td>£{{ price_3rd_child }}</td>
-      </tr>
-    </table>
-  </p>
+  {% include "cciw/bookings/price_table.html" %}
 
   {% if price_deposit %}
   <p>A deposit of £{{ price_deposit }} must be paid with bookings. The full
@@ -34,7 +17,15 @@
   {% endif %}
 
 {% else %}
-  <p>Prices for {{ thisyear }} have not been finalised yet.</p>
+  <p><strong>Prices for {{ thisyear }} have not been finalised yet.</strong></p>
+
+  {% if price_full %}
+  <p>However, you can see last year's prices below for reference. This year's
+  prices will usually be the same or similar.</p>
+
+  {% include "cciw/bookings/price_table.html" %}
+
+  {% endif %}
 
 {% endif %}
 

@@ -280,10 +280,15 @@ class BookingIndex(CciwBaseView):
         context = {}
         if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath)):
             context['bookingform'] = bookingform_relpath
-        prices = list(Price.objects.filter(year=year))
         booking_open = is_booking_open(year)
-        context['booking_open'] = booking_open
         if booking_open:
+            prices = list(Price.objects.filter(year=year))
+        else:
+            # Show last year's prices
+            prices = list(Price.objects.filter(year=year - 1))
+
+        context['booking_open'] = booking_open
+        if len(prices) >= len(VALUED_PRICE_TYPES):
             context['price_full'] = [p for p in prices if p.price_type == PRICE_FULL][0].price
             context['price_2nd_child'] = [p for p in prices if p.price_type == PRICE_2ND_CHILD][0].price
             context['price_3rd_child'] = [p for p in prices if p.price_type == PRICE_3RD_CHILD][0].price
