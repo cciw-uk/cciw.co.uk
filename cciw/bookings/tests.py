@@ -198,22 +198,21 @@ class TestBookingStart(CreatePlaceMixin, TestCase):
                                 {'email': 'booker@bookers.com'})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(BookingAccount.objects.all().count(), 1)
-        b = BookingAccount.objects.get(email='booker@bookers.com')
         self.assertEqual(len(mail.outbox), 1)
 
     def test_complete_form_existing_email(self):
         BookingAccount.objects.create(email="booker@bookers.com")
         self.assertEqual(BookingAccount.objects.all().count(), 1)
-        resp = self.client.post(self.url,
-                                {'email': 'booker@bookers.com'})
+        self.client.post(self.url,
+                         {'email': 'booker@bookers.com'})
         self.assertEqual(BookingAccount.objects.all().count(), 1)
         self.assertEqual(len(mail.outbox), 1)
 
     def test_complete_form_existing_email_different_case(self):
         BookingAccount.objects.create(email="booker@bookers.com")
         self.assertEqual(BookingAccount.objects.all().count(), 1)
-        resp = self.client.post(self.url,
-                                {'email': 'BOOKER@bookers.com'})
+        self.client.post(self.url,
+                         {'email': 'BOOKER@bookers.com'})
         self.assertEqual(BookingAccount.objects.all().count(), 1)
         self.assertEqual(len(mail.outbox), 1)
 
@@ -906,8 +905,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "name=\"delete_%s\"" % b.id)
 
         # Now click it
-        resp2 = self.client.post(self.url, {'delete_%s' % b.id: '1'},
-                                 follow=True)
+        self.client.post(self.url, {'delete_%s' % b.id: '1'},
+                         follow=True)
 
         # Should be gone
         self.assertEqual(0, acc.bookings.count())
@@ -1065,9 +1064,9 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
         # Book
         resp = self.client.get(self.url)
-        resp2 = self.client.post(self.url, {'state_token': self._get_state_token(resp),
-                                            'book_now': '1'},
-                                 follow=True)
+        self.client.post(self.url, {'state_token': self._get_state_token(resp),
+                                    'book_now': '1'},
+                         follow=True)
 
         # Place should be booked AND should not expire
         b = acc.bookings.all()[0]
@@ -1250,7 +1249,6 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
 
     def test_receive_payment_handler(self):
         # Use the actual signal handler, check the good path.
-        from cciw.bookings.models import paypal_payment_received
         self.login()
         account = self.get_account()
         from paypal.standard.ipn.models import PayPalIPN
@@ -1378,9 +1376,6 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
                                              post_code="ABC",
                                              name="Mr Foo")
-        acc2 = BookingAccount.objects.create(email="goo@foo.com",
-                                             post_code="XYZ",
-                                             name="Mr Goo")
 
         self.client.login(username=OFFICER_USERNAME, password=OFFICER_PASSWORD)
         resp = self.client.get(reverse('cciw.bookings.views.all_account_json'))
