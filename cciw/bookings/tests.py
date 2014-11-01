@@ -13,7 +13,7 @@ import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.models import BookingAccount, Price, Booking, Payment, ManualPayment, RefundPayment, book_basket_now, process_all_payments
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_DEPOSIT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND, BOOKING_CANCELLED_HALF_REFUND
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_DEPOSIT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND
 from cciw.bookings.utils import camp_bookings_to_spreadsheet
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp, Person
@@ -1791,20 +1791,6 @@ class TestCancelFullRefund(CreatePlaceMixin, TestCase):
         self.assertEqual(acc.get_balance(), place.amount_due)
 
 
-class TestCancelHalfRefund(CreatePlaceMixin, TestCase):
-    """
-    Tests covering what happens when user cancel late - half refund.
-    """
-    fixtures = ['basic.json']
-
-    def test_amount_due(self):
-        self.create_place()
-        acc = self.get_account()
-        place = acc.bookings.all()[0]
-        place.state = BOOKING_CANCELLED_HALF_REFUND
-        self.assertEqual(place.expected_amount_due(), Decimal('50.00'))
-
-
 class TestExportPlaces(CreatePlaceMixin, TestCase):
 
     fixtures = ['basic.json', 'officers_users.json']
@@ -1822,7 +1808,6 @@ class TestExportPlaces(CreatePlaceMixin, TestCase):
         self.assertEqual(wksh_all.cell(1, 0).value, acc.bookings.all()[0].first_name)
 
     def test_birthdays(self):
-        camp = self.camp
         bday = self.camp.start_date + timedelta(1)
         dob = bday.replace(bday.year - 12)
         self.create_place({'date_of_birth': dob.isoformat()})

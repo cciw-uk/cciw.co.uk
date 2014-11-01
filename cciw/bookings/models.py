@@ -56,7 +56,7 @@ BOOKING_STATES = [
     (BOOKING_APPROVED, 'Manually approved'),
     (BOOKING_BOOKED, 'Booked'),
     (BOOKING_CANCELLED, 'Cancelled - deposit kept'),
-    (BOOKING_CANCELLED_HALF_REFUND, 'Cancelled - half refund'),
+    (BOOKING_CANCELLED_HALF_REFUND, 'Cancelled - half refund (pre 2015 only)'),
     (BOOKING_CANCELLED_FULL_REFUND, 'Cancelled - full refund'),
 ]
 
@@ -518,6 +518,9 @@ class Booking(models.Model):
             if self.south_wales_transport:
                 amount += Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT,
                                             year=self.camp.year).price
+            # For booking 2015 and later, there are no half refunds,
+            # but this is kept in in case we need to query the expected amount due for older
+            # bookings.
             if self.state == BOOKING_CANCELLED_HALF_REFUND:
                 return amount / 2
             else:
