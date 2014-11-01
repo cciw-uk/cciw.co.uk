@@ -5,8 +5,8 @@ from django.test import TestCase
 import xlrd
 
 from cciw.cciwmain.models import Camp
-from cciw.officers.models import Invitation, Application
-from cciw.officers.tests.references import OFFICER, LEADER
+from cciw.officers.models import Application
+from cciw.officers.tests.test_references import OFFICER, LEADER
 from cciw.officers.utils import officer_data_to_spreadsheet, camp_serious_slacker_list
 from cciw.utils.spreadsheet import ExcelFormatter
 

@@ -7,7 +7,7 @@ from django.test import TestCase
 from cciw.cciwmain.models import Camp, Site
 from cciw.officers import applications
 from cciw.officers.models import Application
-from cciw.officers.tests.references import OFFICER_USERNAME, OFFICER_PASSWORD
+from cciw.officers.tests.test_references import OFFICER_USERNAME, OFFICER_PASSWORD
 
 class ApplicationModel(TestCase):
     fixtures = ['basic.json', 'officers_users.json', 'references.json']

@@ -18,7 +18,7 @@ from cciw.bookings.utils import camp_bookings_to_spreadsheet
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp, Person
 from cciw.cciwmain.tests.mailhelpers import read_email_url
-from cciw.officers.tests.references import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD, BOOKING_SEC
+from cciw.officers.tests.test_references import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD, BOOKING_SEC
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.webtest import WebTestBase

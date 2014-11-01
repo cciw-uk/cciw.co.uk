@@ -1,6 +1,6 @@
 from __future__ import with_statement
 from cciw.cciwmain.tests.client import CciwClient, RequestFactory
-from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD, TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD
+from cciw.cciwmain.tests.test_members import TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD, TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD
 from django.conf import settings
 from django.test import TestCase
 from cciw.forums.models import Topic, Member, Poll, Forum, Post, Photo, Gallery

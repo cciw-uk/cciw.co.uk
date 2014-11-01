@@ -3,7 +3,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from cciw.forums.models import Topic, Member, NewsItem, Post, Forum
-from cciw.cciwmain.tests.members import TEST_MEMBER_USERNAME
+from cciw.cciwmain.tests.test_members import TEST_MEMBER_USERNAME
 from cciw.cciwmain.tests.client import CciwClient, RequestFactory
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
 from cciw.forums.views import forums as forums_views
