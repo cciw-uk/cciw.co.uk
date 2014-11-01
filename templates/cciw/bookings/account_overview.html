@@ -22,7 +22,7 @@
 <p>The following places are booked, but not yet confirmed:</p>
 <ul>
   {% for b in unconfirmed_places %}
-  <li>{{ b.name }}, on <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">camp {{ b.camp.number }}</a>, {{ b.get_price_type_display }}, £{{ b.amount_due }} {% if b.south_wales_transport %}(South Wales minibus){% endif %}</li>
+  <li>{{ b.name }}, on <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">camp {{ b.camp.number }}</a>, {{ b.get_price_type_display }}, £{{ b.amount_due }} </li>
   {% endfor %}
 </ul>
 <p>Please <a href="{% url 'cciw.bookings.views.pay' %}">remember to pay</a> for
@@ -36,7 +36,7 @@
 <p>You have the following confirmed places on camps this year:</p>
 <ul>
   {% for b in confirmed_places %}
-  <li>{{ b.name }}, on <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">camp {{ b.camp.number }}</a>, {{ b.get_price_type_display }}, £{{ b.amount_due }} {% if b.south_wales_transport %}(South Wales minibus){% endif %}</li>
+  <li>{{ b.name }}, on <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">camp {{ b.camp.number }}</a>, {{ b.get_price_type_display }}, £{{ b.amount_due }} </li>
   {% endfor %}
 </ul>
 

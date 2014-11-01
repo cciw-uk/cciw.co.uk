@@ -13,7 +13,7 @@ import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.models import BookingAccount, Price, Booking, Payment, ManualPayment, RefundPayment, book_basket_now, process_all_payments
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND, BOOKING_CANCELLED_HALF_REFUND
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_DEPOSIT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND, BOOKING_CANCELLED_HALF_REFUND
 from cciw.bookings.utils import camp_bookings_to_spreadsheet
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp, Person
@@ -81,9 +81,6 @@ class CreatePricesMixin(object):
         Price.objects.get_or_create(year=year,
                                     price_type=PRICE_3RD_CHILD,
                                     price=Decimal('50.00'))
-        Price.objects.get_or_create(year=year,
-                                    price_type=PRICE_SOUTH_WALES_TRANSPORT,
-                                    price=Decimal('20.00'))
         Price.objects.get_or_create(year=year,
                                     price_type=PRICE_DEPOSIT,
                                     price=Decimal('20.00'))
@@ -448,19 +445,6 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         self.assertEqual(b.bookings.all()[0].amount_due, Price.objects.get(price_type=PRICE_FULL,
                                                                            year=get_thisyear()).price)
 
-    def test_south_wales_surcharge(self):
-        self.login()
-        self.add_prices()
-        b = BookingAccount.objects.get(email=self.email)
-        self.assertEqual(b.bookings.count(), 0)
-
-        data = self.place_details.copy()
-        data['south_wales_transport'] = '1'
-        resp = self.client.post(self.url, data)
-        p = Price.objects.get(price_type=PRICE_FULL, year=get_thisyear()).price + \
-            Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT, year=get_thisyear()).price
-        self.assertEqual(b.bookings.all()[0].amount_due, p)
-
 
 class TestEditPlace(CreatePlaceMixin, TestCase):
 
@@ -791,16 +775,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "There are not enough places for girls left on this camp")
         self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
 
-    def test_no_transport_places_left(self):
-        self.login()
-        self.create_place({'south_wales_transport': '1'})
-        self.camp.south_wales_transport_available = False
-        self.camp.save()
-
-        resp = self.client.get(self.url)
-        self.assertContains(resp, "Transport from South Wales is not available")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
-
     def test_handle_two_problem_bookings(self):
         # Test the error we get for more than one problem booking
         self.login()
@@ -1068,8 +1042,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         # Now modify
         acc = self.get_account()
         b = acc.bookings.all()[0]
-        b.south_wales_transport = True
-        b.auto_set_amount_due()
+        b.amount_due = Decimal('35.01')
         b.save()
 
         resp2 = self.client.post(self.url, {'state_token': self._get_state_token(resp),

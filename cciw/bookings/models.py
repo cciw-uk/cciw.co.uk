@@ -41,9 +41,14 @@ PRICE_TYPES = [
 
 # Price types that are used by Price model
 VALUED_PRICE_TYPES = [(v,d) for (v,d) in PRICE_TYPES if v is not PRICE_CUSTOM] + \
-    [(PRICE_SOUTH_WALES_TRANSPORT, 'South wales transport surcharge'),
+    [(PRICE_SOUTH_WALES_TRANSPORT, 'South wales transport surcharge (pre 2015)'),
      (PRICE_DEPOSIT, 'Deposit'),
      ]
+
+# From 2015 onwards, we don't have South Wales transport. But we might
+# want to keep info about prices etc. for a few years.
+REQUIRED_PRICE_TYPES = [(v,d) for (v,d) in VALUED_PRICE_TYPES if v != PRICE_SOUTH_WALES_TRANSPORT]
+
 
 BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_HALF_REFUND, BOOKING_CANCELLED_FULL_REFUND, = range(0, 6)
 BOOKING_STATES = [
@@ -508,6 +513,8 @@ class Booking(models.Model):
         else:
             amount = Price.objects.get(year=self.camp.year,
                                        price_type=self.price_type).price
+            # For booking 2015 and later, this is not needed, but it kept in
+            # case we need to query the expected amount due for older bookings.
             if self.south_wales_transport:
                 amount += Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT,
                                             year=self.camp.year).price

@@ -193,7 +193,7 @@ from cciw.bookings.email import send_verify_email, check_email_verification_toke
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
 from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, \
-    BOOKING_INFO_COMPLETE, BOOKING_APPROVED, VALUED_PRICE_TYPES, PRICE_SOUTH_WALES_TRANSPORT, \
+    BOOKING_INFO_COMPLETE, BOOKING_APPROVED, REQUIRED_PRICE_TYPES, \
     PRICE_DEPOSIT
 
 
@@ -262,7 +262,8 @@ def is_booking_open(year):
     """
     When passed a given year, returns True if booking is open.
     """
-    return (Price.objects.filter(year=year).count() == len(VALUED_PRICE_TYPES)
+    return (Price.objects.filter(year=year, price_type__in=[v for v, d in REQUIRED_PRICE_TYPES]).count()
+            == len(REQUIRED_PRICE_TYPES)
             and Camp.objects.filter(year=year).exists())
 
 is_booking_open_thisyear = lambda: is_booking_open(get_thisyear())
@@ -282,13 +283,14 @@ class BookingIndex(CciwBaseView):
             context['bookingform'] = bookingform_relpath
         booking_open = is_booking_open(year)
         if booking_open:
-            prices = list(Price.objects.filter(year=year))
+            prices = Price.objects.filter(year=year)
         else:
             # Show last year's prices
-            prices = list(Price.objects.filter(year=year - 1))
+            prices = Price.objects.filter(year=year - 1)
 
+        prices = list(prices.filter(price_type__in=[v for v,d in REQUIRED_PRICE_TYPES]))
         context['booking_open'] = booking_open
-        if len(prices) >= len(VALUED_PRICE_TYPES):
+        if len(prices) >= len(REQUIRED_PRICE_TYPES):
             context['price_full'] = [p for p in prices if p.price_type == PRICE_FULL][0].price
             context['price_2nd_child'] = [p for p in prices if p.price_type == PRICE_2ND_CHILD][0].price
             context['price_3rd_child'] = [p for p in prices if p.price_type == PRICE_3RD_CHILD][0].price
@@ -430,12 +432,6 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
     template_name = 'cciw/bookings/add_place.html'
     form_class = AddPlaceForm
     magic_context = {'booking_open': is_booking_open_thisyear,
-                     'south_wales_surcharge':
-                     lambda: Price.objects.get(year=get_thisyear(),
-                                               price_type=PRICE_SOUTH_WALES_TRANSPORT).price,
-                     'south_wales_transport_exclude_camps':
-                     lambda: Camp.objects.filter(year=get_thisyear(),
-                                                 south_wales_transport_available=False),
                      'stage': 'place'}
 
     def handle(self, request, *args, **kwargs):
@@ -495,7 +491,6 @@ BOOKING_PLACE_PUBLIC_ATTRS = [
     'post_code',
     'phone_number',
     'church',
-    'south_wales_transport',
     'contact_address',
     'contact_post_code',
     'contact_phone_number',
@@ -619,7 +614,6 @@ def get_expected_amount_due(request):
         # Need to construct a partial object, that won't pass validation,
         # so do manual parsing of posted vars.
         b = Booking(price_type=int(request.POST['price_type']),
-                    south_wales_transport='south_wales_transport' in request.POST,
                     camp_id=int(request.POST['camp']))
     except (ValueError, KeyError): # not a valid price_type/camp, data missing
         return fail

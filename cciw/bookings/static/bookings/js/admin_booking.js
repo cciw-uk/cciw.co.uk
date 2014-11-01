@@ -199,7 +199,7 @@ $(document).ready(function() {
     $('#id_camp').change(getPlaceAvailability);
 
     getExpectedAmountDue();
-    $('#id_south_wales_transport,#id_price_type,#id_camp').change(getExpectedAmountDue);
+    $('#id_price_type,#id_camp').change(getExpectedAmountDue);
 
 });
 

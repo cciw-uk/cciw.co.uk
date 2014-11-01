@@ -91,7 +91,6 @@
                  'sex',
                  'date_of_birth',
                  'church',
-                 'south_wales_transport',
                  'dietary_requirements',
                  'medical_card_number',
                  'last_tetanus_injection',

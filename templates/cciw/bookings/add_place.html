@@ -77,25 +77,11 @@ discount'.</p>
 
 {% cciw_form_field form 'church' 'Name of church (if any)' %}
 
-
 <h2>Transport</h2>
 
-<p>If you require transport from South Wales on the CCIW minibus, please tick
-this box. The cost for this transport is an additional £{{ south_wales_surcharge }}.</p>
-
-{% cciw_form_field form 'south_wales_transport' 'South Wales transport required' %}
-<br/><br/>
-
-{% if south_wales_transport_exclude_camps %}
-<p><strong>NOTE:</strong> This is <strong>not available</strong> for new places on the following
-camps:</p>
-<ul>
-{% for c in south_wales_transport_exclude_camps %}
-<li>{{ c }}{% if not forloop.last %},{% endif %}</li>
-{% endfor %}
-</ul>
-{% endif %}
-
+<p>We used to offer some help with transport if you were coming from South
+Wales. This is no longer available - please make your own arrangements to get to
+camp.</p>
 
 <h2>Contact details</h2>
 

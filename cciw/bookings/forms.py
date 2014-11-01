@@ -79,7 +79,6 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
             'phone_number',
             'email',
             'church',
-            'south_wales_transport',
             'contact_address',
             'contact_post_code',
             'contact_phone_number',
