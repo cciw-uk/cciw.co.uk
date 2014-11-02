@@ -167,7 +167,7 @@
 # Leaders need to be presented with a list of bookings that they need to manually
 # approve. If they don't approve, need to send email to person booking.
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
 from functools import wraps
 import os
@@ -177,6 +177,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponseRedirect, Http404
+from django.utils import timezone
 from django.utils.crypto import salted_hmac
 from django.utils.http import base36_to_int
 from django.views.decorators.csrf import csrf_exempt
@@ -365,7 +366,7 @@ def verify_email(request, account_id, token, action):
 
 def verify_email_and_start(request, account_id, token):
     def action(account):
-        now = datetime.now()
+        now = timezone.now()
         last_login = account.last_login
 
         if account.first_login is None:
@@ -456,7 +457,6 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
             form = self.form_class(request.POST, instance=booking)
             if form.is_valid():
                 form.instance.account = self.request.booking_account
-                form.instance.agreement_date = datetime.now()
                 form.instance.auto_set_amount_due()
                 form.instance.state = BOOKING_INFO_COMPLETE
                 form.save()
@@ -755,7 +755,7 @@ def mk_paypal_form(account, balance, protocol, domain):
         "amount": str(balance),
         "item_name": u"Camp place booking",
         "invoice": "%s-%s-%s" % (account.id, balance,
-                                 datetime.now()), # We don't need this, but must be unique
+                                 timezone.now()), # We don't need this, but must be unique
         "notify_url":  "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
         "return_url": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_done')),
         "cancel_return": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_cancelled')),

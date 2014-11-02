@@ -1,15 +1,14 @@
 from __future__ import with_statement
 
-import datetime
 import glob
 import os
-import re
 
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.utils import timezone
 
 from cciw.forums.models import Member, Message
 from cciw.cciwmain.tests.client import CciwClient, RequestFactory
@@ -288,7 +287,7 @@ class MemberLists(TestCase):
     def test_query_count(self):
         for i in range(100):
             Member.objects.create(user_name="NewMember%d" % i,
-                                  date_joined=datetime.datetime.now())
+                                  date_joined=timezone.now())
 
         from cciw.forums.views.members import index
 

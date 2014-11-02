@@ -1,4 +1,4 @@
-import datetime
+from datetime import date
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -129,7 +129,7 @@ class Camp(models.Model):
         return u"/camps/%d/%d/" % (self.year, self.number)
 
     def is_past(self):
-        return self.end_date <= datetime.date.today()
+        return self.end_date <= date.today()
 
     @property
     def age(self):

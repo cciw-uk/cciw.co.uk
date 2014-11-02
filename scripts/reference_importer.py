@@ -2,8 +2,7 @@
 
 import sys
 import re
-import datetime
-from cciw.officers.models import Reference, ReferenceForm, Application
+from cciw.officers.models import ReferenceForm, Application
 
 def import_reference(fname):
     m = re.search("reference_data\.(?P<appid>\d+)\.(?P<refnum>[12])$", fname)

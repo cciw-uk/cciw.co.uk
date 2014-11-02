@@ -1,7 +1,8 @@
 # Utilities and middleware for thread local storage
 import threading
-import datetime
 import os
+
+from django.utils import timezone
 
 _thread_locals = threading.local()
 
@@ -45,8 +46,9 @@ class ThreadLocals(object):
         member = _get_member_from_request(request)
         if member is not None:
             # use opportunity to update last_seen data
-            if (member.last_seen is None) or (datetime.datetime.now() - member.last_seen).seconds > 60:
-                member.last_seen = datetime.datetime.now()
+            now = timezone.now()
+            if (member.last_seen is None) or (now - member.last_seen).seconds > 60:
+                member.last_seen = now
                 member.save()
         set_current_member(member)
 

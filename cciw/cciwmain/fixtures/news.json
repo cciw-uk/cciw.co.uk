@@ -11,7 +11,7 @@
         "pk": 1, 
         "model": "forums.newsitem", 
         "fields": {
-            "created_at": "2002-12-27 15:22:57", 
+            "created_at": "2002-12-27T15:22:57Z", 
             "subject": "Bits & Pieces", 
             "created_by": ["test_member_1"], 
             "full_item": "", 
@@ -22,7 +22,7 @@
         "pk": 2, 
         "model": "forums.newsitem", 
         "fields": {
-            "created_at": "2002-12-27 15:22:57", 
+            "created_at": "2002-12-27T15:22:57Z", 
             "subject": "Fish & Chips", 
             "created_by": ["test_member_1"], 
             "full_item": "<p>Full item with <i>html</i> and everything</p>", 
@@ -37,13 +37,13 @@
             "forum": 1, 
             "post_count": 1, 
             "needs_approval": false, 
-            "created_at": "2006-09-03 12:16:57", 
+            "created_at": "2006-09-03T12:16:57Z", 
             "subject": "Bits & Pieces", 
             "started_by": ["test_member_1"], 
             "last_post_by": ["test_member_1"], 
             "news_item": 1, 
             "hidden": false, 
-            "last_post_at": "2006-09-03 12:16:57", 
+            "last_post_at": "2006-09-03T12:16:57Z", 
             "open": true, 
             "approved": false, 
             "checked_by": null
@@ -57,13 +57,13 @@
             "forum": 1, 
             "post_count": 1, 
             "needs_approval": false, 
-            "created_at": "2006-09-03 12:16:57", 
+            "created_at": "2006-09-03T12:16:57Z", 
             "subject": "Fish & Chips", 
             "started_by": ["test_member_1"], 
             "last_post_by": ["test_member_1"], 
             "news_item": 2, 
             "hidden": false, 
-            "last_post_at": "2006-09-03 12:16:57", 
+            "last_post_at": "2006-09-03T12:16:57Z", 
             "open": true, 
             "approved": false, 
             "checked_by": null
@@ -81,7 +81,7 @@
             "checked_by": null, 
             "photo": null, 
             "message": "A [b]unique message[/b] with some bbcode & <stuff> to be escaped", 
-            "posted_at": "2006-09-03 12:16:57", 
+            "posted_at": "2006-09-03T12:16:57Z", 
             "subject": ""
         }
     }, 
@@ -97,7 +97,7 @@
             "checked_by": null, 
             "photo": null, 
             "message": "A [b]unique message[/b] with some bbcode & <stuff> to be escaped", 
-            "posted_at": "2006-09-03 12:16:57", 
+            "posted_at": "2006-09-03T12:16:57Z", 
             "subject": ""
         }
     }

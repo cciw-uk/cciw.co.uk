@@ -1,11 +1,9 @@
 from urllib.parse import urlencode
-import datetime
 from functools import wraps
-import sys
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.core.mail import mail_admins
+from django.utils import timezone
 
 from cciw.middleware.threadlocals import get_current_member, set_member_session
 from cciw.cciwmain.utils import python_to_json
@@ -56,7 +54,7 @@ def member_required_generic(except_methods):
             else:
                 # The member data is correct; log in the member in and continue.
                 if member.check_password(request.POST.get('password', '')):
-                    member.last_seen = datetime.datetime.now()
+                    member.last_seen = timezone.now()
                     member.save()
                     set_member_session(request, member)
 

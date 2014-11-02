@@ -4,11 +4,9 @@ Utility functions and classes.
 
 For CCIW specific utilities see cciw.cciwmain.common
 """
-from datetime import date, datetime
+from datetime import date
 import json
 import fcntl
-import operator
-import os
 
 from django.core.validators import validate_email, ValidationError
 from django.utils.safestring import mark_safe

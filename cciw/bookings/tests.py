@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta, date
+from datetime import timedelta, date
 from decimal import Decimal
 import json
 import re
@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.utils import timezone
 import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
@@ -303,7 +304,7 @@ class TestBookingVerify(TestCase):
         b.name = "Joe"
         b.address = "Home"
         b.post_code = "XY1 D45"
-        b.first_login = datetime.now() - timedelta(30*7)
+        b.first_login = timezone.now() - timedelta(30*7)
         b.last_login = b.first_login
         b.save()
 
@@ -1639,7 +1640,7 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
 
         acc = self.get_account()
         book_basket_now(acc.bookings.basket(get_thisyear()))
-        acc.bookings.update(booking_expires = datetime.now() - timedelta(1))
+        acc.bookings.update(booking_expires = timezone.now() - timedelta(1))
 
         mail.outbox = []
         ExpireBookingsCommand().handle()

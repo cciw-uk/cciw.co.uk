@@ -102,15 +102,9 @@ def year_bookings_to_spreadsheet(year, spreadsheet):
 
 
 def payments_to_spreadsheet(date_start, date_end, spreadsheet):
-    # Convert to datetime
-    date_start = datetime.combine(date_start, time())
-    date_end = datetime.combine(date_end, time())
     # Add one day to the date_end, since it is defined inclusively
     date_end = date_end + timedelta(days=1)
 
-    # Make timezone aware
-    date_start = timezone.make_aware(date_start, timezone.utc)
-    date_end = timezone.make_aware(date_end, timezone.utc)
     payments = (Payment.objects
                 .filter(created__gte=date_start,
                         created__lt=date_end)

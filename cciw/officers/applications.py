@@ -1,7 +1,8 @@
-import datetime
+from datetime import date, timedelta
 
 from django import template
 from django.template import loader
+from django.utils import timezone
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
@@ -26,7 +27,7 @@ def thisyears_applications(user):
     Returns a QuerySet containing the applications a user has that
     apply to 'this year', i.e. to camps still in the future.
     """
-    future_camps = Camp.objects.filter(start_date__gte=datetime.date.today())
+    future_camps = Camp.objects.filter(start_date__gte=date.today())
     apps = user.application_set.all()
     future_camp = None
     try:
@@ -35,7 +36,7 @@ def thisyears_applications(user):
         pass
 
     if future_camp is not None:
-        apps = apps.filter(date_submitted__gte=future_camp.start_date - datetime.timedelta(365))
+        apps = apps.filter(date_submitted__gte=future_camp.start_date - timedelta(365))
         past_camps = Camp.objects.filter(start_date__year=future_camp.year - 1)\
             .order_by('-end_date')
     else:
@@ -63,7 +64,7 @@ def camps_for_application(application):
         return []
     invites = application.officer.invitation_set.filter(camp__start_date__gte=application.date_submitted,
                                                         camp__start_date__lt=application.date_submitted +
-                                                        datetime.timedelta(365))
+                                                        timedelta(365))
     # In some cases, the above query can catch two years of camps.  We only want
     # to the first year. (This doesn't matter very much, as
     # camps_for_application is used for notifications, and they only happen when
@@ -88,7 +89,7 @@ def applications_for_camp(camp, officer_ids=None):
                                       officer__in=officer_ids)
 
     apps = apps.filter(date_submitted__lte=camp.start_date,
-                       date_submitted__gt=camp.start_date - datetime.timedelta(365))
+                       date_submitted__gt=camp.start_date - timedelta(365))
 
     previous_camps = Camp.objects.filter(year=camp.year - 1)\
         .order_by('-end_date')

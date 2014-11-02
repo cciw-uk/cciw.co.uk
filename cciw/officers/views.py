@@ -17,6 +17,7 @@ from django.shortcuts import render, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.template.defaultfilters import wordwrap
+from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
 from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
@@ -474,7 +475,7 @@ def request_reference(request, year=None, number=None):
             if messageform.is_valid():
                 send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), ref, request.user)
                 ref.requested = True
-                ref.log_request_made(request.user, datetime.now())
+                ref.log_request_made(request.user, timezone.now())
                 ref.save()
                 return close_window_and_update_ref(ref_id)
         elif 'cancel' in request.POST:
@@ -682,7 +683,7 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                     ref.received = True
                     ref.comments = ref.comments + \
                                    ("\nReference received via online system on %s\n" % \
-                                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                                    timezone.now().strftime("%Y-%m-%d %H:%M:%S"))
                     ref.save()
                     # Send e-mails
                     send_leaders_reference_email(obj)
@@ -1076,6 +1077,7 @@ def stats(request, year=None):
 @camp_admin_required
 def manage_crbs(request, year=None):
     year = int(year)
+    now = timezone.now()
     # We need a lot of information. Try to get it in a few up-front queries
     camps = list(Camp.objects.filter(year=year).order_by('number'))
     if len(camps) == 0:
@@ -1106,7 +1108,7 @@ def manage_crbs(request, year=None):
     # CRB forms sent: set cutoff to a year before now, on the basis that
     # anything more than that will have been lost, and we don't want to load
     # everything into membery.
-    crb_forms_sent = list(CRBFormLog.objects.filter(sent__gt=datetime.now() - timedelta(365)).order_by('sent'))
+    crb_forms_sent = list(CRBFormLog.objects.filter(sent__gt=now - timedelta(365)).order_by('sent'))
     # Work out, without doing any more queries:
     #   which camps each officer is on
     #   if they have an application form
@@ -1153,7 +1155,7 @@ def mark_crb_sent(request):
     officer_id = int(request.POST['officer_id'])
     officer = User.objects.get(id=officer_id)
     c = CRBFormLog.objects.create(officer=officer,
-                                  sent=datetime.now())
+                                  sent=timezone.now())
     return {'status':'success',
             'crbFormLogId': str(c.id)
             }
@@ -1301,8 +1303,8 @@ def booking_secretary_reports(request, year=None):
 def export_payment_data(request):
     date_start = request.GET['start']
     date_end = request.GET['end']
-    date_start = datetime.strptime(date_start, EXPORT_PAYMENT_DATE_FORMAT)
-    date_end = datetime.strptime(date_end, EXPORT_PAYMENT_DATE_FORMAT)
+    date_start = timezone.get_default_timezone().localize(datetime.strptime(date_start, EXPORT_PAYMENT_DATE_FORMAT))
+    date_end = timezone.get_default_timezone().localize(datetime.strptime(date_end, EXPORT_PAYMENT_DATE_FORMAT))
     formatter = get_spreadsheet_formatter(request)
     response = HttpResponse(payments_to_spreadsheet(date_start, date_end, formatter),
                             content_type=formatter.mimetype)

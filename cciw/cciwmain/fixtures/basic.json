@@ -84,14 +84,14 @@
             "is_active": true, 
             "is_superuser": false, 
             "is_staff": true, 
-            "last_login": "2008-04-23 19:06:39", 
+            "last_login": "2008-04-23T19:06:39Z", 
             "groups": [
                 2
             ], 
             "user_permissions": [], 
             "password": "sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba", 
             "email": "leader@somewhere.com", 
-            "date_joined": "2007-05-20 23:22:40"
+            "date_joined": "2007-05-20T23:22:40Z"
         }, 
         "model": "auth.user", 
         "pk": 1

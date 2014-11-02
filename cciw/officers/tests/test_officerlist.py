@@ -6,7 +6,6 @@ import xlrd
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
-from cciw.officers.tests.test_references import OFFICER, LEADER
 from cciw.officers.utils import officer_data_to_spreadsheet, camp_serious_slacker_list
 from cciw.utils.spreadsheet import ExcelFormatter
 
@@ -53,7 +52,6 @@ class TestExport(TestCase):
         we expect if there are application forms.
         """
         c = Camp.objects.get(pk=1)
-        officers = list(c.officers.all())
 
         # Data from fixtures
         u = User.objects.get(pk=2)

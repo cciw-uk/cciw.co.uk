@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from cciw.bookings.models import Booking
 from cciw.bookings.email import send_booking_expiry_mail
@@ -9,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        now = datetime.now()
+        now = timezone.now()
 
         # For the warning, we send out between 12 and 13 hours before booking
         # expires.  This relies on this job being run once an hour, and only

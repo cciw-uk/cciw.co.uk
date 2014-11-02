@@ -7,12 +7,12 @@
             "is_active": true, 
             "is_superuser": true, 
             "is_staff": true, 
-            "last_login": "2007-12-17 18:49:13", 
+            "last_login": "2007-12-17T18:49:13Z", 
             "groups": [], 
             "user_permissions": [], 
             "password": "sha1$3b8d0$b5f6730d7bd13886ac2f7e6b5062c037b81e267c", 
             "email": "someone@somewhere.com", 
-            "date_joined": "2007-12-17 18:49:13"
+            "date_joined": "2007-12-17T18:49:13Z"
         }, 
         "model": "auth.user", 
         "pk": 1
@@ -25,7 +25,7 @@
             "is_active": true, 
             "is_superuser": false, 
             "is_staff": true, 
-            "last_login": "2007-12-17 18:49:13", 
+            "last_login": "2007-12-17T18:49:13Z", 
             "groups": [], 
             "user_permissions": [
                 ["add_htmlchunk", "sitecontent", "htmlchunk"],
@@ -34,7 +34,7 @@
             ], 
             "password": "sha1$72713$4d655a356d9dfde29f74d04e8c40a6e412d26d0a", 
             "email": "editor@somewhere.com", 
-            "date_joined": "2007-12-17 18:49:13"
+            "date_joined": "2007-12-17T18:49:13Z"
         }, 
         "model": "auth.user", 
         "pk": 2
@@ -47,12 +47,12 @@
             "is_active": true, 
             "is_superuser": false, 
             "is_staff": false, 
-            "last_login": "2007-12-17 18:49:13", 
+            "last_login": "2007-12-17T18:49:13Z", 
             "groups": [], 
             "user_permissions": [], 
             "password": "sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba", 
             "email": "editor@somewhere.com", 
-            "date_joined": "2007-12-17 18:49:13"
+            "date_joined": "2007-12-17T18:49:13Z"
         }, 
         "model": "auth.user", 
         "pk": 3

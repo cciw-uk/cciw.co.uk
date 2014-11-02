@@ -1,5 +1,4 @@
 from datetime import datetime
-import string
 
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render
@@ -7,6 +6,7 @@ from django.conf import settings
 from django import forms
 from django.forms import widgets
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 from cciw.forums.models import Forum, Topic, Photo, Post, VoteInfo, NewsItem, Permission, Poll, PollOption
@@ -371,8 +371,7 @@ class EditPoll(CciwBaseView, AjaxFormValidation):
         return self.render(c)
 
     def get_initial(self):
-        today = datetime.today()
-        today = datetime(today.year, today.month, today.day)
+        today = timezone.now().replace(hour=0, minute=0, second=0)
         return dict(voting_starts=today)
 
 edit_poll = member_required(EditPoll.as_view())
@@ -462,7 +461,7 @@ def process_vote(request, topic, context):
     if not errors:
         voteinfo = VoteInfo(poll_option_id=polloption_id,
                             member=cur_member,
-                            date=datetime.now())
+                            date=timezone.now())
         voteinfo.save()
         context['voting_message'] = u'Vote registered, thank you.'
 

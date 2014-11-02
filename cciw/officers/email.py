@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from urllib.parse import quote
 
 from cciw.cciwmain import common
@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.core.mail import send_mail, EmailMessage
 from django.core.urlresolvers import reverse
 from django.utils.crypto import salted_hmac
+from django.utils import timezone
 
 
 
@@ -63,7 +64,7 @@ def send_application_emails(request, application):
             if previous_camp.invitation_set.filter(officer=officer).exists():
                 try:
                     previous_app = officer.application_set.filter(date_submitted__lte=previous_camp.start_date,
-                                                                  date_submitted__gte=previous_camp.start_date + datetime.timedelta(-365),
+                                                                  date_submitted__gte=previous_camp.start_date + timedelta(-365),
                                                                   finished=True)[0]
                 except IndexError:
                     pass

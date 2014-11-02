@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, timedelta
 
 from django.contrib.auth.models import User
 from django.core import mail
@@ -21,10 +21,10 @@ class ApplicationFormView(WebTestBase):
     def setUp(self):
         # Make sure second camp has end date in future, otherwise we won't be able to
         # save. Previous camp should be one year earlier
-        Camp.objects.filter(id=1).update(start_date=datetime.date.today() + datetime.timedelta(100-365),
-                                         end_date=datetime.date.today() + datetime.timedelta(107-365))
-        Camp.objects.filter(id=2).update(start_date=datetime.date.today() + datetime.timedelta(100),
-                                         end_date=datetime.date.today() + datetime.timedelta(107))
+        Camp.objects.filter(id=1).update(start_date=date.today() + timedelta(100-365),
+                                         end_date=date.today() + timedelta(107-365))
+        Camp.objects.filter(id=2).update(start_date=date.today() + timedelta(100),
+                                         end_date=date.today() + timedelta(107))
 
         # Add some invitations:
         u = User.objects.get(username=OFFICER[0])
@@ -302,7 +302,7 @@ class ApplicationFormView(WebTestBase):
         """
         self.webtest_officer_login(OFFICER)
         a1 = self._add_application()
-        a1.date_submitted = datetime.date.today()
+        a1.date_submitted = date.today()
         a1.save()
         a2 = self._add_application()
         response = self.get(self._application_edit_url(a2.id))
@@ -327,7 +327,7 @@ class ApplicationFormView(WebTestBase):
         # Change the date on the existing app, so that we can
         # create a new one
         app0 = u.application_set.all()[0]
-        app0.date_submitted = datetime.date.today() + datetime.timedelta(-365)
+        app0.date_submitted = date.today() + timedelta(-365)
         app0.save()
 
         # Create another application

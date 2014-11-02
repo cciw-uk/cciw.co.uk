@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.sites.models import get_current_site
 from django.core import mail
 from django.template import loader
+from django.utils import timezone
 from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.http import int_to_base36, base36_to_int
 
@@ -197,7 +198,7 @@ def send_payment_reminder_emails():
     accounts = BookingAccount.objects.payments_due()
 
     subject = "CCIW payments due"
-    now = datetime.now()
+    now = timezone.now()
     for account in accounts:
         if (account.last_payment_reminder is not None and
             (now - account.last_payment_reminder).days < settings.BOOKING_EMAIL_REMINDER_FREQUENCY_DAYS):

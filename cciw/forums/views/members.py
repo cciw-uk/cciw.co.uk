@@ -1,6 +1,11 @@
+from datetime import timedelta
+import re
+import math
+
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 from cciw.forums.models import Member, Message
@@ -9,10 +14,6 @@ from cciw.middleware.threadlocals import get_current_member, remove_member_sessi
 from cciw.cciwmain.decorators import member_required, member_required_for_post, _display_login_form
 import cciw.cciwmain.templatetags.bbcode as bbcode
 from cciw.cciwmain import feeds
-
-from datetime import datetime, timedelta
-import re
-import math
 
 
 class MemberList(ListView, FeedHandler, CciwBaseView):
@@ -32,7 +33,7 @@ class MemberList(ListView, FeedHandler, CciwBaseView):
             return members
 
         if 'online' in self.request.GET:
-            members = members.filter(last_seen__gte=(datetime.now() - timedelta(minutes=3)))
+            members = members.filter(last_seen__gte=(timezone.now() - timedelta(minutes=3)))
         order_by = get_order_option(
             {'adj': ('date_joined',),
              'ddj': ('-date_joined',),

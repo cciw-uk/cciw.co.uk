@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, timedelta
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -60,10 +60,10 @@ class PersonalApplicationList(TestCase):
         self.user.application_set.all().delete()
         # Set Camps so that one is in the future, and one in the past,
         # so that is possible to have an application for an old camp
-        Camp.objects.filter(id=1).update(start_date=datetime.date.today() + datetime.timedelta(100-365),
-                                         end_date=datetime.date.today() + datetime.timedelta(107-365))
-        Camp.objects.filter(id=2).update(start_date=datetime.date.today() + datetime.timedelta(100),
-                                         end_date=datetime.date.today() + datetime.timedelta(107))
+        Camp.objects.filter(id=1).update(start_date=date.today() + timedelta(100-365),
+                                         end_date=date.today() + timedelta(107-365))
+        Camp.objects.filter(id=2).update(start_date=date.today() + timedelta(100),
+                                         end_date=date.today() + timedelta(107))
 
 
     def test_get(self):
@@ -78,26 +78,26 @@ class PersonalApplicationList(TestCase):
 
     def test_finished_application(self):
         self.user.application_set.create(finished=True,
-                                         date_submitted=datetime.date.today()
-                                         - datetime.timedelta(365))
+                                         date_submitted=date.today()
+                                         - timedelta(365))
         resp = self.client.get(self.url)
         self.assertContains(resp, self._create_button)
 
     def test_finished_application_recent(self):
         self.user.application_set.create(finished=True,
-                                         date_submitted=datetime.date.today())
+                                         date_submitted=date.today())
         resp = self.client.get(self.url)
         self.assertNotContains(resp, self._create_button)
 
     def test_unfinished_application(self):
         self.user.application_set.create(finished=False,
-                                         date_submitted=datetime.date.today())
+                                         date_submitted=date.today())
         resp = self.client.get(self.url)
         self.assertContains(resp, self._edit_button)
 
     def test_create(self):
         self.user.application_set.create(finished=True,
-                                         date_submitted=datetime.date.today() - datetime.timedelta(365))
+                                         date_submitted=date.today() - timedelta(365))
         resp = self.client.post(self.url, {'new':'Create'})
         self.assertEqual(302, resp.status_code)
         self.assertEqual(len(self.user.application_set.all()), 2)
@@ -105,7 +105,7 @@ class PersonalApplicationList(TestCase):
     def test_create_when_already_done(self):
         # Should not create a new application if a recent one is submitted
         app = self.user.application_set.create(finished=True,
-                                               date_submitted=datetime.date.today())
+                                               date_submitted=date.today())
         resp = self.client.post(self.url, {'new':'Create'})
         self.assertEqual(200, resp.status_code)
         self.assertEqual(list(self.user.application_set.all()), [app])
@@ -128,18 +128,18 @@ class ApplicationUtils(TestCase):
         # We have to use datetime.today(), because this is used by
         # thisyears_applications.
 
-        future_camp_start = datetime.date(datetime.date.today().year + 1, 8, 1)
-        past_camp_start = future_camp_start - datetime.timedelta(30 * 11)
+        future_camp_start = date(date.today().year + 1, 8, 1)
+        past_camp_start = future_camp_start - timedelta(30 * 11)
 
         site = Site.objects.get(id=1)
         c1 = Camp.objects.create(year=past_camp_start.year, number=5,
                                  start_date=past_camp_start,
-                                 end_date=past_camp_start + datetime.timedelta(7),
+                                 end_date=past_camp_start + timedelta(7),
                                  minimum_age=11, maximum_age=17,
                                  site=site)
         c2 = Camp.objects.create(year=future_camp_start.year, number=1,
                                  start_date=future_camp_start,
-                                 end_date=future_camp_start + datetime.timedelta(7),
+                                 end_date=future_camp_start + timedelta(7),
                                  minimum_age=11, maximum_age=17,
                                  site=site)
 
@@ -149,7 +149,7 @@ class ApplicationUtils(TestCase):
 
         app1 = Application.objects.create(officer=u,
                                           finished=True,
-                                          date_submitted = past_camp_start - datetime.timedelta(1))
+                                          date_submitted = past_camp_start - timedelta(1))
 
         # First, check we don't have any apps that are counted as 'this years'
         self.assertFalse(applications.thisyears_applications(u).exists())
@@ -157,7 +157,7 @@ class ApplicationUtils(TestCase):
         # Create an application for this year
         app2 = Application.objects.create(officer=u,
                                           finished=True,
-                                          date_submitted = past_camp_start + datetime.timedelta(10))
+                                          date_submitted = past_camp_start + timedelta(10))
 
         # Now we should have one
         self.assertTrue(applications.thisyears_applications(u).exists())

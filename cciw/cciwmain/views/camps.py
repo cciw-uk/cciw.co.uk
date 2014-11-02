@@ -1,4 +1,4 @@
-import datetime
+from datetime import date
 
 from django.shortcuts import render
 from django.http import Http404
@@ -24,7 +24,7 @@ def index(request, year=None):
     """
     c = {}
     c['title'] = u"Camp forums and photos"
-    all_camps = Camp.objects.filter(end_date__lte=datetime.datetime.today())
+    all_camps = Camp.objects.filter(end_date__lte=date.today())
     if (year == None):
         camps = all_camps.order_by('-year', 'number')
         c['show_ancient'] = True
@@ -105,13 +105,13 @@ def _get_forum_for_path_and_year(location, year):
         # Self maintenance
         # If any camps from that year are finished, create it
         if Camp.objects.filter(year=year,
-                end_date__lte=datetime.date.today()).exists():
+                end_date__lte=date.today()).exists():
             forum = Forum(location='camps/%s/all/forum/' % year)
         else:
             raise Http404
         # If it's an old forum, close it
         if Camp.objects.filter(year=year + 1,
-                end_date__lte=datetime.date.today()).exists():
+                end_date__lte=date.today()).exists():
             forum.open = False
         else:
             forum.open = True

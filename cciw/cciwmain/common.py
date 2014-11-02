@@ -1,7 +1,6 @@
 """
 Utility functions and base classes that are common to all views etc.
 """
-import datetime
 from functools import update_wrapper
 import re
 import sys
@@ -14,8 +13,9 @@ from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404
 from django.template.response import TemplateResponse
-from django.utils.safestring import mark_safe
+from django.utils import timezone
 from django.utils.decorators import classonlymethod
+from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.utils import python_to_json
 import cciw.middleware.threadlocals as threadlocals
@@ -262,14 +262,14 @@ def get_thisyear():
     """
     global _thisyear, _thisyear_timestamp
     if _thisyear is None or _thisyear_timestamp is None \
-        or (datetime.datetime.now() - _thisyear_timestamp).seconds > 3600:
+        or (timezone.now() - _thisyear_timestamp).seconds > 3600:
         from cciw.cciwmain.models import Camp
         lastcamp = Camp.objects.prefetch_related(None).order_by('-end_date')[0]
         if lastcamp.is_past():
             _thisyear = lastcamp.year + 1
         else:
             _thisyear = lastcamp.year
-        _thisyear_timestamp = datetime.datetime.now()
+        _thisyear_timestamp = timezone.now()
     return _thisyear
 
 

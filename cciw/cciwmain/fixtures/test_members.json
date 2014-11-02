@@ -13,8 +13,8 @@
             "show_email": false, 
             "email": "test@test.com", 
             "moderated": 0, 
-            "date_joined": "2006-09-02 12:16:57", 
-            "last_seen": "2006-09-03 12:16:57", 
+            "date_joined": "2006-09-02T12:16:57Z", 
+            "last_seen": "2006-09-03T12:16:57Z", 
             "password": "cciwlegacy$247SSw8klbYoU", 
             "hidden": false, 
             "permissions": []
@@ -41,8 +41,8 @@
             "show_email": false, 
             "email": "test2@test.com", 
             "moderated": 0, 
-            "date_joined": "2006-09-02 12:16:57", 
-            "last_seen": "2006-09-03 12:16:57", 
+            "date_joined": "2006-09-02T12:16:57Z", 
+            "last_seen": "2006-09-03T12:16:57Z", 
             "password": "cciwlegacy$247SSw8klbYoU", 
             "hidden": false, 
             "permissions": [

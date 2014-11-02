@@ -2,7 +2,6 @@
 Utility functions for officers app.
 """
 from collections import defaultdict
-from datetime import datetime
 
 def camp_officer_list(camp):
     """

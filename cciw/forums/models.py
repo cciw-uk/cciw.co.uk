@@ -1,17 +1,17 @@
 from datetime import datetime, timedelta
 from functools import reduce
 import operator
-import random
 import re
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password, make_password
-
 from django.core import mail
 from django.db import models
+from django.utils import timezone
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
+
 from cciw.cciwmain import common
 from cciw.middleware import threadlocals
 
@@ -157,7 +157,7 @@ class Member(models.Model):
     # For the sake of django.contrib.auth.tokens.PasswordResetTokenGenerator
     @property
     def last_login(self):
-        return self.last_seen if self.last_seen else datetime(1970,1,1)
+        return self.last_seen if self.last_seen else timezone.get_default_timezone().localize(datetime(1970,1,1))
 
     class Meta:
         ordering = ('user_name',)
@@ -241,7 +241,7 @@ class Message(models.Model):
             return
         if to_member.message_option != Member.MESSAGES_EMAIL:
             msg = Message(to_member=to_member, from_member=from_member,
-                        text=text, time=datetime.now(),
+                        text=text, time=timezone.now(),
                         box=Message.MESSAGE_BOX_INBOX)
             msg.save()
         if to_member.message_option != Member.MESSAGES_WEBSITE:
@@ -314,7 +314,7 @@ class Poll(models.Model):
                 queries.append(po.votes.filter(member=member.pk))
             elif self.rules == Poll.X_VOTES_PER_USER_PER_DAY:
                 queries.append(po.votes.filter(member=member.pk,
-                                                date__gte=datetime.now() - timedelta(1)))
+                                                date__gte=timezone.now() - timedelta(1)))
         # combine them all and do an SQL count.
         if len(queries) == 0:
             return False # no options to vote on!
@@ -328,8 +328,9 @@ class Poll(models.Model):
         return self.poll_options.all().aggregate(models.Sum('total'))['total__sum']
 
     def can_anyone_vote(self):
-        return (self.voting_ends > datetime.now()) and \
-            (self.voting_starts < datetime.now())
+        now = timezone.now()
+        return (self.voting_ends > now) and \
+            (self.voting_starts < now)
 
     def verbose_rules(self):
         if self.rules == Poll.UNLIMITED:
@@ -441,7 +442,7 @@ class NewsItem(models.Model):
         Creates a news item with the correct defaults for a member.
         """
         return NewsItem.objects.create(created_by=member,
-                                       created_at=datetime.now(),
+                                       created_at=timezone.now(),
                                        summary=short_item,
                                        full_item="",
                                        subject=subject)
@@ -516,7 +517,7 @@ class Topic(models.Model):
         topic = Topic(started_by=member,
                       subject=subject,
                       forum=forum,
-                      created_at=datetime.now(),
+                      created_at=timezone.now(),
                       hidden=(member.moderated == Member.MODERATE_ALL),
                       needs_approval=(member.moderated == Member.MODERATE_ALL),
                       open=True)
@@ -594,7 +595,7 @@ class Photo(models.Model):
         Creates a (saved) photo with default attributes
         """
         return Photo.objects.create(
-            created_at=datetime.now(),
+            created_at=timezone.now(),
             open=True,
             hidden=False,
             filename=filename,
@@ -739,7 +740,7 @@ class Post(models.Model):
                                    photo=photo,
                                    hidden=(member.moderated == Member.MODERATE_ALL),
                                    needs_approval=(member.moderated == Member.MODERATE_ALL),
-                                   posted_at=datetime.now())
+                                   posted_at=timezone.now())
 
     class Meta:
         # Order by the autoincrement id, rather than  posted_at, because

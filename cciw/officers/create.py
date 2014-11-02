@@ -2,11 +2,10 @@
 
 # Some of these are used from a script, and so print messages to the console if
 # 'verbose=True'.  A bit icky...
-from datetime import datetime
-
 from django.contrib.auth.models import User, Group
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils import timezone
 
 from cciw.cciwmain.utils import is_valid_email
 
@@ -124,8 +123,8 @@ def _create_officer(username, first_name, last_name, email, password, dryrun=Fal
         officer = User.objects.get(username=username)
     else:
         officer = User(username=username)
-        officer.date_joined=datetime.now()
-        officer.last_login=datetime.now()
+        officer.date_joined=timezone.now()
+        officer.last_login=timezone.now()
 
     officer.first_name = first_name
     officer.last_name = last_name

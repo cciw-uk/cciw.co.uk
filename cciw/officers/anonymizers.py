@@ -1,9 +1,8 @@
-from datetime import datetime
-
 from anonymizer import Anonymizer
-from cciw.officers.models import Application, ReferenceForm
 from django.contrib.auth.models import User
+from django.utils import timezone
 
+from cciw.officers.models import Application, ReferenceForm
 
 class UserAnonymizer(Anonymizer):
 
@@ -19,7 +18,7 @@ class UserAnonymizer(Anonymizer):
         ('email',      'email'),
         ('date_joined', 'similar_datetime'),
         # Set to today:
-        ('last_login', lambda *args: datetime.now()),
+        ('last_login', lambda *args: timezone.now()),
         ('is_superuser', "SKIP"),
         ('password', "SKIP"),
         ('is_staff', "SKIP"),

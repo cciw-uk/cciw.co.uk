@@ -1,25 +1,24 @@
 """Administrative views for members (signup, password change etc)"""
 from urllib.parse import quote
 import re
-import datetime
 import string
 import random
-import base64
 
-from django.shortcuts import render
-from django.core import mail
+from django import forms
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.tokens import default_token_generator
-from django.conf import settings
+from django.core import mail
 from django.core.urlresolvers import reverse
 from django.forms import widgets
-from django.http import Http404, HttpResponseRedirect
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.utils import timezone
 from django.utils.crypto import salted_hmac
-from django import forms
 
 from cciw.cciwmain.common import CciwBaseView, AjaxFormValidation, member_username_re
 from cciw.forums.models import Member
-from cciw.middleware.threadlocals import set_member_session, get_current_member, set_current_member
+from cciw.middleware.threadlocals import set_member_session, get_current_member
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain import common
 from cciw.cciwmain import imageutils
@@ -55,9 +54,10 @@ def create_user(user_name, password1, password2):
         raise ValidationError("The passwords do not match")
     else:
         iconfilename = user_name + "." + settings.DEFAULT_MEMBER_ICON.split('.')[-1]
+        now = timezone.now()
         m = Member(user_name=user_name,
-                   last_seen=datetime.datetime.now(),
-                   date_joined=datetime.datetime.now(),
+                   last_seen=now,
+                   date_joined=now,
                    icon="%s/%s" % (settings.MEMBER_ICON_PATH, iconfilename))
         m.set_password(password1)
         m.save()
@@ -346,7 +346,7 @@ def reset_password(request, uid=None, token=""):
     if member is not None and default_token_generator.check_token(member, token):
         # Grant temporary login, and prompt to change password
         set_member_session(request, member)
-        member.last_seen = datetime.datetime.now()
+        member.last_seen = timezone.now()
         member.save()
         return HttpResponseRedirect(reverse('cciwmain.memberadmin.change_password'))
     else:

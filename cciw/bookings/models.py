@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 import os
 
@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.db import models
 from django.db import transaction
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Camp
@@ -476,7 +477,7 @@ class Booking(models.Model):
             u"<li>If there are queries before it can be booked, set to 'Information complete'</li>"
             u"</ul>"))
 
-    created = models.DateTimeField(default=datetime.now)
+    created = models.DateTimeField(default=timezone.now)
     booking_expires = models.DateTimeField(null=True, blank=True)
 
 
@@ -733,7 +734,7 @@ def book_basket_now(bookings):
         lock = Lock(os.path.join(os.environ['HOME'], '.cciw_booking_lock'))
         lock.acquire()
         bookings = list(bookings)
-        now = datetime.now()
+        now = timezone.now()
         for b in bookings:
             if len(b.get_booking_problems()[0]) > 0:
                 return False
@@ -801,7 +802,7 @@ class ManualPaymentManager(models.Manager):
 class ManualPaymentBase(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount)
-    created = models.DateTimeField(default=datetime.now)
+    created = models.DateTimeField(default=timezone.now)
     payment_type = models.PositiveSmallIntegerField(choices=MANUAL_PAYMENT_CHOICES,
                                                     default=MANUAL_PAYMENT_CHEQUE)
 
@@ -843,7 +844,7 @@ def send_payment(amount, to_account, from_obj):
                            account=to_account,
                            origin=from_obj,
                            processed=None,
-                           created=datetime.now())
+                           created=timezone.now())
     trigger_payment_processing()
 
 
@@ -852,7 +853,7 @@ def send_payment(amount, to_account, from_obj):
 @transaction.atomic
 def process_one_payment(payment):
     payment.account.receive_payment(payment.amount)
-    payment.processed = datetime.now()
+    payment.processed = timezone.now()
     payment.save()
 
 

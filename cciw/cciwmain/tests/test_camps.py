@@ -6,7 +6,6 @@ from django.test import TestCase
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp, Site, Person
 from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
-from cciw.sitecontent.models import HtmlChunk
 
 
 class CampModel(TestCase):

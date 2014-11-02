@@ -5,6 +5,7 @@ import re
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.fields import YyyyMmField, AddressField, ExplicitBooleanField, required_field
@@ -250,7 +251,7 @@ class Reference(models.Model):
         for l in self.comments.split("\n"):
             m = re.match("Reference requested by .* on (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", l)
             if m is not None:
-                dt = datetime.strptime(m.groups()[0], self.log_datetime_format)
+                dt = timezone.get_default_timezone().localize(datetime.strptime(m.groups()[0], self.log_datetime_format))
         return dt
 
     def log_request_made(self, user, dt):

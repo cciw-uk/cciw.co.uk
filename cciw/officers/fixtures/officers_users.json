@@ -222,14 +222,14 @@
             "is_active": true, 
             "is_superuser": false, 
             "is_staff": true, 
-            "last_login": "2008-04-23 14:49:25", 
+            "last_login": "2008-04-23T14:49:25Z", 
             "groups": [
                 1
             ], 
             "user_permissions": [], 
             "password": "sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba", 
             "email": "officer2@somewhere.com", 
-            "date_joined": "2008-03-21 16:48:46"
+            "date_joined": "2008-03-21T16:48:46Z"
         }, 
         "model": "auth.user", 
         "pk": 2
@@ -242,14 +242,14 @@
             "is_active": true, 
             "is_superuser": false, 
             "is_staff": true, 
-            "last_login": "2008-04-23 14:49:25", 
+            "last_login": "2008-04-23T14:49:25Z", 
             "groups": [
                 1
             ], 
             "user_permissions": [], 
             "password": "sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba", 
             "email": "officer3@somewhere.com", 
-            "date_joined": "2008-03-21 16:48:46"
+            "date_joined": "2008-03-21T16:48:46Z"
         }, 
         "model": "auth.user", 
         "pk": 3
@@ -262,14 +262,14 @@
             "is_active": true, 
             "is_superuser": false, 
             "is_staff": true, 
-            "last_login": "2008-04-23 14:49:25", 
+            "last_login": "2008-04-23T14:49:25Z", 
             "groups": [
                 1
             ], 
             "user_permissions": [], 
             "password": "sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba", 
             "email": "officer4@somewhere.com", 
-            "date_joined": "2008-03-21 16:48:46"
+            "date_joined": "2008-03-21T16:48:46Z"
         }, 
         "model": "auth.user", 
         "pk": 4
@@ -282,14 +282,14 @@
             "is_active": true, 
             "is_superuser": false, 
             "is_staff": true, 
-            "last_login": "2008-04-23 14:49:25", 
+            "last_login": "2008-04-23T14:49:25Z", 
             "groups": [
                 4
             ], 
             "user_permissions": [], 
             "password": "sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba", 
             "email": "booker@booker.com", 
-            "date_joined": "2008-03-21 16:48:46"
+            "date_joined": "2008-03-21T16:48:46Z"
         }, 
         "model": "auth.user", 
         "pk": 4

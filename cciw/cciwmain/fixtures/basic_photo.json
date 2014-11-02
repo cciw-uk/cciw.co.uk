@@ -11,7 +11,7 @@
         "pk": "1",
         "model": "forums.photo",
         "fields": {
-            "created_at": "2006-09-03 12:16:57",
+            "created_at": "2006-09-03T12:16:57Z",
             "open": true,
             "hidden": false,
             "filename": "2000-1-a-nice-photo.jpeg",
@@ -19,7 +19,7 @@
             "checked_by": null,
             "approved": false,
             "needs_approval": false,
-            "last_post_at": "2006-09-03 12:16:57",
+            "last_post_at": "2006-09-03T12:16:57Z",
             "last_post_by": ["test_member_1"],
             "post_count": 1
         }
@@ -36,7 +36,7 @@
             "checked_by": null,
             "photo": 1,
             "message": "A [b]photo message[/b] with <stuff> to be escaped",
-            "posted_at": "2006-09-03 12:16:57",
+            "posted_at": "2006-09-03T12:16:57Z",
             "subject": ""
         }
     }
