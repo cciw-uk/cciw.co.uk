@@ -9,7 +9,13 @@
     <a class="booknow" href="{% url 'cciw.bookings.views.start' %}">Book online now!</a>
   </div>
 
+  {% if early_bird_available %}
+  <p><b>Early bird discount of £{{ price_early_bird_discount }}
+      available if you book before {{ early_bird_date|date:"jS F" }}!</b></p>
+  {% endif %}
+
   {% include "cciw/bookings/price_table.html" %}
+
 
   {% if price_deposit %}
   <p>A deposit of £{{ price_deposit }} must be paid with bookings. The full

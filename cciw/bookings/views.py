@@ -192,10 +192,10 @@ from cciw.utils.views import user_passes_test_improved
 
 from cciw.bookings.email import send_verify_email, check_email_verification_token
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
-from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now
+from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now, get_early_bird_cutoff_date
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, \
     BOOKING_INFO_COMPLETE, BOOKING_APPROVED, REQUIRED_PRICE_TYPES, \
-    PRICE_DEPOSIT
+    PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT
 
 
 # decorators and utilities
@@ -285,6 +285,11 @@ class BookingIndex(CciwBaseView):
         booking_open = is_booking_open(year)
         if booking_open:
             prices = Price.objects.filter(year=year)
+            early_bird_date = get_early_bird_cutoff_date(year)
+            now = timezone.now()
+            if early_bird_date > now:
+                context['early_bird_available'] = True
+                context['early_bird_date'] = early_bird_date
         else:
             # Show last year's prices
             prices = Price.objects.filter(year=year - 1)
@@ -292,10 +297,17 @@ class BookingIndex(CciwBaseView):
         prices = list(prices.filter(price_type__in=[v for v,d in REQUIRED_PRICE_TYPES]))
         context['booking_open'] = booking_open
         if len(prices) >= len(REQUIRED_PRICE_TYPES):
-            context['price_full'] = [p for p in prices if p.price_type == PRICE_FULL][0].price
-            context['price_2nd_child'] = [p for p in prices if p.price_type == PRICE_2ND_CHILD][0].price
-            context['price_3rd_child'] = [p for p in prices if p.price_type == PRICE_3RD_CHILD][0].price
-            context['price_deposit'] = [p for p in prices if p.price_type == PRICE_DEPOSIT][0].price
+            getp = lambda v: [p for p in prices if p.price_type == v][0].price
+            context['price_full'] = getp(PRICE_FULL)
+            context['price_2nd_child'] = getp(PRICE_2ND_CHILD)
+            context['price_3rd_child'] = getp(PRICE_3RD_CHILD)
+            context['price_deposit'] = getp(PRICE_DEPOSIT)
+            context['price_early_bird_discount'] = getp(PRICE_EARLY_BIRD_DISCOUNT)
+            if context['early_bird_available']:
+                d = getp(PRICE_EARLY_BIRD_DISCOUNT)
+                context['price_full_discount'] = getp(PRICE_FULL) - d
+                context['price_2nd_child_discount'] = getp(PRICE_2ND_CHILD) - d
+                context['price_3rd_child_discount'] = getp(PRICE_3RD_CHILD) - d
         return self.render(context)
 
 

@@ -1,18 +1,35 @@
   <p>
-    <table>
+    <table class="prices">
+      {% if early_bird_available %}
+      <tr>
+        <td></td>
+        <td></td>
+        <td><b>Early bird discount</b></td>
+      </tr>
+      {% endif %}
+
       <tr>
         <td>Full price:</td>
         <td>£{{ price_full }}</td>
+        {% if early_bird_available %}
+        <td><b>£{{ price_full_discount }}</b></td>
+        {% endif %}
       </tr>
 
       <tr>
         <td>2nd camper from the same family:</td>
         <td>£{{ price_2nd_child }}</td>
+        {% if early_bird_available %}
+        <td><b>£{{ price_2nd_child_discount }}</b></td>
+        {% endif %}
       </tr>
 
       <tr>
         <td>Subsequent children from the same family:</td>
         <td>£{{ price_3rd_child }}</td>
+        {% if early_bird_available %}
+        <td><b>£{{ price_3rd_child_discount }}</b></td>
+        {% endif %}
       </tr>
     </table>
   </p>

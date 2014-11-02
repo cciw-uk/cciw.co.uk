@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 from decimal import Decimal
 import os
 
@@ -32,8 +32,8 @@ SEXES = [
 ]
 
 # Price types that can be selected for a booking
-PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT = range(0, 6)
-PRICE_TYPES = [
+PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT = range(0, 7)
+BOOKING_PLACE_PRICE_TYPES = [
     (PRICE_FULL,      'Full price'),
     (PRICE_2ND_CHILD, '2nd child discount'),
     (PRICE_3RD_CHILD, '3rd child discount'),
@@ -41,9 +41,10 @@ PRICE_TYPES = [
 ]
 
 # Price types that are used by Price model
-VALUED_PRICE_TYPES = [(v,d) for (v,d) in PRICE_TYPES if v is not PRICE_CUSTOM] + \
+VALUED_PRICE_TYPES = [(v,d) for (v,d) in BOOKING_PLACE_PRICE_TYPES if v is not PRICE_CUSTOM] + \
     [(PRICE_SOUTH_WALES_TRANSPORT, 'South wales transport surcharge (pre 2015)'),
      (PRICE_DEPOSIT, 'Deposit'),
+     (PRICE_EARLY_BIRD_DISCOUNT, 'Early bird discount'),
      ]
 
 # From 2015 onwards, we don't have South Wales transport. But we might
@@ -461,7 +462,7 @@ class Booking(models.Model):
     agreement = models.BooleanField(default=False)
 
     # Price - partly from user (must fit business rules)
-    price_type = models.PositiveSmallIntegerField(choices=PRICE_TYPES)
+    price_type = models.PositiveSmallIntegerField(choices=BOOKING_PLACE_PRICE_TYPES)
     amount_due = models.DecimalField(decimal_places=2, max_digits=10)
 
     # State - user driven
@@ -757,6 +758,11 @@ def book_basket_now(bookings):
         return True
     finally:
         lock.release()
+
+
+def get_early_bird_cutoff_date(year):
+    # 1st May
+    return timezone.get_default_timezone().localize(datetime(year, 5, 1))
 
 
 # See process_payments management command for explanation

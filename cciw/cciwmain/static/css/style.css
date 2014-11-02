@@ -1038,3 +1038,7 @@ a.booknow:active {
 span.toc {
     font-size: 80%;
 }
+
+table.prices td {
+    padding: 5px;
+}
