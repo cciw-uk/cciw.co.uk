@@ -11,7 +11,7 @@
 
   {% if early_bird_available %}
   <p><b>Early bird discount of £{{ price_early_bird_discount }}
-      available if you book before {{ early_bird_date|date:"jS F" }}!</b></p>
+      available if you book online before {{ early_bird_date|date:"jS F" }}!</b></p>
   {% endif %}
 
   {% include "cciw/bookings/price_table.html" %}
