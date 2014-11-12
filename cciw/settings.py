@@ -82,7 +82,6 @@ INSTALLED_APPS = (
     'autocomplete_light',
     'paypal.standard.ipn',
     'django.contrib.humanize',
-    'django_notify',
     'mptt',
     'sekizai',
     'sorl.thumbnail',
@@ -91,6 +90,7 @@ INSTALLED_APPS = (
     'wiki.plugins.notifications',
     'wiki.plugins.images',
     'wiki.plugins.macros',
+    'django_nyt',
 )
 
 if not (LIVEBOX and WEBSERVER_RUNNING):

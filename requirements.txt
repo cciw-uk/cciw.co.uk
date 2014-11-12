@@ -11,7 +11,7 @@ django-mptt==0.6.0
 django-sekizai==0.7
 django-webtest==1.7.5
 ecdsa==0.10
--e git://github.com/spookylukey/django-wiki@b8b19ef501a9fdfb45516ded627e84e9414ae34e#egg=wiki-dev
+-e git://github.com/django-wiki/django-wiki@0d10395fe9be2d107096d3f2efacb049aa9a2b49#egg=wiki-dev
 -e git://github.com/pinax/django-mailer.git@44641b814660a9deef907ad9049d571cb1709901#egg=django_mailer-dev
 -e git+https://github.com/pashinin/fabric@p33#egg=Fabric
 -e git://github.com/spookylukey/faker@d1f2896b5d59f3888d06689d442033fcc99ae4d2#egg=Faker
@@ -36,3 +36,4 @@ zc.lockfile==1.0.0
 xlwt-future
 ezodf2==0.2.10
 lxml==3.3.5
+django_nyt==0.9.4

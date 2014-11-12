@@ -397,7 +397,7 @@ def dump_db(target):
 def get_live_db():
     filename = dump_db(PRODUCTION)
     local("mkdir -p %s" % LOCAL_DB_BACKUPS)
-    get(filename, local_path=LOCAL_DB_BACKUPS + "/%(basename)s")
+    return list(get(filename, local_path=LOCAL_DB_BACKUPS + "/%(basename)s"))[0]
 
 
 def pg_restore_cmds(db, filename, clean=False):
@@ -446,3 +446,12 @@ def copy_production_db_to_staging():
     for cmd in pg_restore_cmds(STAGING.DB, filename, clean=True):
         run(cmd)
 
+
+
+@task
+def get_and_load_production_db():
+    """
+    Dump current production Django DB and load into dev environment
+    """
+    filename = get_live_db()
+    local_restore_from_dump(filename)
