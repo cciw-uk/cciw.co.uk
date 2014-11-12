@@ -463,6 +463,7 @@ class Booking(models.Model):
 
     # Price - partly from user (must fit business rules)
     price_type = models.PositiveSmallIntegerField(choices=BOOKING_PLACE_PRICE_TYPES)
+    early_bird_discount = models.BooleanField(default=False)
     amount_due = models.DecimalField(decimal_places=2, max_digits=10)
 
     # State - user driven
@@ -520,13 +521,18 @@ class Booking(models.Model):
             if self.south_wales_transport:
                 amount += Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT,
                                             year=self.camp.year).price
+
+            if self.early_bird_discount:
+                amount -= Price.objects.get(price_type=PRICE_EARLY_BIRD_DISCOUNT,
+                                            year=self.camp.year).price
+
             # For booking 2015 and later, there are no half refunds,
             # but this is kept in in case we need to query the expected amount due for older
             # bookings.
             if self.state == BOOKING_CANCELLED_HALF_REFUND:
-                return amount / 2
-            else:
-                return amount
+                amount = amount / 2
+
+            return amount
 
     def auto_set_amount_due(self):
         if self.price_type == PRICE_CUSTOM:

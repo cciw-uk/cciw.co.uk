@@ -14,9 +14,8 @@ import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.models import BookingAccount, Price, Booking, Payment, ManualPayment, RefundPayment, book_basket_now, process_all_payments
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_DEPOSIT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND
 from cciw.bookings.utils import camp_bookings_to_spreadsheet
-from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp, Person
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.officers.tests.test_references import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD, BOOKING_SEC
@@ -42,15 +41,19 @@ class CreateCampMixin(object):
     camp_maximum_age = 17
 
     def create_camp(self):
-        # Need to create a Camp that we can choose i.e. is in the future
-        # We also need it payments to be made when only the deposit is due
+        # Need to create a Camp that we can choose i.e. is in the future.
+        # We also need it so that payments can be  to be made when only the deposit is due
         delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE_DAYS
-        self.camp = Camp.objects.create(year=get_thisyear(), number=1,
+        start_date = date.today() + timedelta(delta_days)
+        self.camp = Camp.objects.create(year=start_date.year, number=1,
                                         minimum_age=self.camp_minimum_age,
                                         maximum_age=self.camp_maximum_age,
-                                        start_date=date.today() + timedelta(delta_days),
-                                        end_date=date.today() + timedelta(delta_days+7),
+                                        start_date=start_date,
+                                        end_date=start_date + timedelta(delta_days+7),
                                         site_id=1)
+        import cciw.cciwmain.common
+        cciw.cciwmain.common._thisyear = None
+        cciw.cciwmain.common._thisyear_timestamp = None
 
 
 class CreateLeadersMixin(object):
@@ -72,7 +75,7 @@ class CreateLeadersMixin(object):
 
 class CreatePricesMixin(object):
     def add_prices(self):
-        year = get_thisyear()
+        year = self.camp.year
         Price.objects.get_or_create(year=year,
                                     price_type=PRICE_FULL,
                                     price=Decimal('100.00'))
@@ -85,6 +88,9 @@ class CreatePricesMixin(object):
         Price.objects.get_or_create(year=year,
                                     price_type=PRICE_DEPOSIT,
                                     price=Decimal('20.00'))
+        Price.objects.get_or_create(year=year,
+                                    price_type=PRICE_EARLY_BIRD_DISCOUNT,
+                                    price=Decimal('10.00'))
 
 
 class LogInMixin(object):
@@ -117,7 +123,7 @@ class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
             'first_name': u'Frédéric',
             'last_name': u'Bloggs',
             'sex': 'm',
-            'date_of_birth': '%d-01-01' % (get_thisyear() - 14),
+            'date_of_birth': '%d-01-01' % (self.camp.year - 14),
             'address': 'x',
             'post_code': 'ABC 123',
             'contact_address': '98 Main Street',
@@ -169,13 +175,14 @@ class TestBookingIndex(CreatePricesMixin, CreateCampMixin, TestCase):
         HtmlChunk.objects.get_or_create(name="bookingform_post_to")
 
     def test_show_with_no_prices(self):
+        self.create_camp()
         resp = self.client.get(reverse('cciw.bookings.views.index'))
-        self.assertContains(resp, "Prices for %d have not been finalised yet" % get_thisyear())
+        self.assertContains(resp, "Prices for %d have not been finalised yet" % self.camp.year)
 
 
     def test_show_with_prices(self):
-        self.add_prices()
         self.create_camp() # need for booking to be open
+        self.add_prices()
         resp = self.client.get(reverse('cciw.bookings.views.index'))
         self.assertContains(resp, "£100")
         self.assertContains(resp, "£20") # Deposit price
@@ -443,7 +450,7 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
 
         # Check amount_due
         self.assertEqual(b.bookings.all()[0].amount_due, Price.objects.get(price_type=PRICE_FULL,
-                                                                           year=get_thisyear()).price)
+                                                                           year=self.camp.year).price)
 
 
 class TestEditPlace(CreatePlaceMixin, TestCase):
@@ -666,7 +673,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         # minimum_age == 11
         Booking.objects.all().delete()
         self.create_place({'date_of_birth': '%d-08-31' %
-                           (get_thisyear() - self.camp_minimum_age)})
+                           (self.camp.year - self.camp_minimum_age)})
         resp = self.client.get(self.url)
         self.assertNotContains(resp, "below the minimum age")
 
@@ -674,7 +681,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         # minimum_age == 11
         Booking.objects.all().delete()
         self.create_place({'date_of_birth': '%d-09-01' %
-                           (get_thisyear() - self.camp_minimum_age)})
+                           (self.camp.year - self.camp_minimum_age)})
         resp = self.client.get(self.url)
         self.assertContains(resp, "below the minimum age")
 
@@ -684,7 +691,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         # maximum_age == 17
         Booking.objects.all().delete()
         self.create_place({'date_of_birth': '%d-09-01' %
-                           (get_thisyear() - (self.camp_maximum_age + 1))})
+                           (self.camp.year - (self.camp_maximum_age + 1))})
         resp = self.client.get(self.url)
         self.assertNotContains(resp, "above the maximum age")
 
@@ -692,7 +699,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         # maximum_age == 17
         Booking.objects.all().delete()
         self.create_place({'date_of_birth': '%d-08-31' %
-                           (get_thisyear() - (self.camp_maximum_age + 1))})
+                           (self.camp.year - (self.camp_maximum_age + 1))})
         resp = self.client.get(self.url)
         self.assertContains(resp, "above the maximum age")
 
@@ -1111,7 +1118,7 @@ class TestPay(CreatePlaceMixin, TestCase):
         resp = self.client.get(reverse('cciw.bookings.views.pay'))
 
         # 2 deposits
-        expected_price = 2 * Price.objects.get(year=get_thisyear(),
+        expected_price = 2 * Price.objects.get(year=self.camp.year,
                                                price_type=PRICE_DEPOSIT).price
         self.assertContains(resp, '£%s' % expected_price)
 
@@ -1121,7 +1128,7 @@ class TestPay(CreatePlaceMixin, TestCase):
         resp = self.client.get(reverse('cciw.bookings.views.pay'))
 
         # 2 full price
-        expected_price = 2 * Price.objects.get(year=get_thisyear(),
+        expected_price = 2 * Price.objects.get(year=self.camp.year,
                                                price_type=PRICE_FULL).price
         self.assertContains(resp, '£%s' % expected_price)
 
@@ -1165,7 +1172,7 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
         self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
 
         mail.outbox = []
-        p = Price.objects.get(year=get_thisyear(), price_type=PRICE_FULL).price
+        p = Price.objects.get(year=self.camp.year, price_type=PRICE_FULL).price
         acc.receive_payment(p)
 
         acc = self.get_account()
@@ -1198,8 +1205,8 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
         book_basket_now(acc.bookings.basket(self.camp.year))
         self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
 
-        p1 = Price.objects.get(year=get_thisyear(), price_type=PRICE_FULL).price
-        p2 = Price.objects.get(year=get_thisyear(), price_type=PRICE_2ND_CHILD).price
+        p1 = Price.objects.get(year=self.camp.year, price_type=PRICE_FULL).price
+        p2 = Price.objects.get(year=self.camp.year, price_type=PRICE_2ND_CHILD).price
 
         # Between the two
         p = (p1 + p2) / 2
@@ -1442,7 +1449,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
 
         j = json.loads(resp.content.decode('utf-8'))
         problems = j['problems']
-        p_full = Price.objects.get(price_type=PRICE_FULL, year=get_thisyear())
+        p_full = Price.objects.get(price_type=PRICE_FULL, year=self.camp.year)
         self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £%s"
                                          % p_full.price)
                             for p in problems))
@@ -1469,7 +1476,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
 
         j = json.loads(resp.content.decode('utf-8'))
         problems = j['problems']
-        p_deposit = Price.objects.get(price_type=PRICE_DEPOSIT, year=get_thisyear())
+        p_deposit = Price.objects.get(price_type=PRICE_DEPOSIT, year=self.camp.year)
         self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £%s"
                                          % p_deposit.price)
                             for p in problems))
@@ -1575,7 +1582,7 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         self.create_place()
 
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(get_thisyear()))
+        book_basket_now(acc.bookings.basket(self.camp.year))
 
         mail.outbox = []
 
@@ -1590,7 +1597,7 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         self.create_place()
 
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(get_thisyear()))
+        book_basket_now(acc.bookings.basket(self.camp.year))
         b = acc.bookings.all()[0]
         b.booking_expires = b.booking_expires - timedelta(0.49)
         b.save()
@@ -1612,7 +1619,7 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         self.create_place()
 
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(get_thisyear()))
+        book_basket_now(acc.bookings.basket(self.camp.year))
         b = acc.bookings.all()[0]
         b.booking_expires = b.booking_expires - timedelta(1.01)
         b.save()
@@ -1639,7 +1646,7 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
                            'last_name': 'Two'})
 
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(get_thisyear()))
+        book_basket_now(acc.bookings.basket(self.camp.year))
         acc.bookings.update(booking_expires = timezone.now() - timedelta(1))
 
         mail.outbox = []
@@ -1785,6 +1792,23 @@ class TestCancelFullRefund(CreatePlaceMixin, TestCase):
 
         acc = self.get_account()
         self.assertEqual(acc.get_balance(), place.amount_due)
+
+
+class TestEarlyBird(CreatePlaceMixin, TestCase):
+
+    fixture = ['basic.json']
+    def test_early_bird(self):
+        self.create_place()
+        acc = self.get_account()
+        place = acc.bookings.all()[0]
+        full_price = Price.objects.get(year=place.camp.year,
+                                       price_type=PRICE_FULL).price
+        discount = Price.objects.get(year=place.camp.year,
+                                     price_type=PRICE_EARLY_BIRD_DISCOUNT).price
+        self.assertEqual(place.expected_amount_due(), full_price)
+
+        place.early_bird_discount = True
+        self.assertEqual(place.expected_amount_due(), full_price - discount)
 
 
 class TestExportPlaces(CreatePlaceMixin, TestCase):
