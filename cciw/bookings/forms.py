@@ -36,11 +36,13 @@ class FixPriceMixin(object):
     """
     def fix_price_choices(self):
         price_choices = self.fields['price_type'].choices
-        prices = dict((p.price_type, p.price) for p in Price.objects.filter(year=get_thisyear()))
+        year = get_thisyear()
+        prices = dict((p.price_type, p.price) for p in Price.objects.filter(year=year))
 
         for i, (price_type, label) in enumerate(price_choices):
             if price_type in prices:
-                price_choices[i] = (price_choices[i][0], price_choices[i][1] + " - £%s" % prices[price_type])
+                caption = price_choices[i][1] + " - £%s" % prices[price_type]
+                price_choices[i] = (price_choices[i][0], caption)
         self.fields['price_type'].choices = price_choices
 
 

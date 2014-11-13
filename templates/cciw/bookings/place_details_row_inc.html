@@ -7,7 +7,7 @@
       <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">Camp {{ b.camp.number }}, {{ b.camp.leaders_formatted }}</a>,
       {{ b.camp.start_date|date:"j M Y" }}
     </td>
-    <td>
+    <td class="price">
       {% if b.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ b.amount_due_normalised }}{% endif %}
     </td>
     <td rowspan="2" style="text-align:center;">

@@ -552,15 +552,25 @@ class Booking(models.Model):
                 return p
         return self.amount_due
 
-    def can_have_early_bird_discount(self):
+    def can_have_early_bird_discount(self, booked_at=None):
+        if booked_at is None:
+            booked_at = self.booked_at
         if self.price_type == PRICE_CUSTOM:
             return False
         else:
-            return self.booked_at < get_early_bird_cutoff_date(self.camp.year)
+            return early_bird_is_available(self.camp.year, booked_at)
 
     def age_on_camp(self):
         # Age is calculated based on school years, i.e. age on 31st August
         return relativedelta(date(self.camp.year, 8, 31), self.date_of_birth)
+
+    def get_available_discounts(self, now):
+        retval = []
+        if self.can_have_early_bird_discount(booked_at=now):
+            retval.append(("Early bird discount if booked now",
+                           Price.objects.get(year=self.camp.year,
+                                             price_type=PRICE_EARLY_BIRD_DISCOUNT).price))
+        return retval
 
     def get_booking_problems(self, booking_sec=False):
         """
@@ -784,6 +794,9 @@ def book_basket_now(bookings):
 def get_early_bird_cutoff_date(year):
     # 1st May
     return timezone.get_default_timezone().localize(datetime(year, 5, 1))
+
+def early_bird_is_available(year, booked_at_date):
+    return booked_at_date < get_early_bird_cutoff_date(year)
 
 
 # See process_payments management command for explanation

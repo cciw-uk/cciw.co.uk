@@ -29,9 +29,26 @@
 {% for b in basket_bookings %}
   {% include "cciw/bookings/place_details_row_inc.html" with b=b basket=1 %}
 {% endfor %}
+
+{% if discounts_available %}
+  {% for discount_caption, discount_amount in discounts_available %}
   <tr>
-    <td colspan="2" style="text-align:right; border: 0px;"><b>Total:</b></td>
-    <td>{% if total|default_if_none:"None" == "None" %}TBA{% else %}£{{ total }}{% endif %}</td>
+    <td colspan="2" class="discounts">{{ discount_caption }}</td>
+    <td class="price">-£{{ discount_amount }}</td>
+  </tr>
+  {% endfor %}
+{% endif %}
+
+  <tr>
+    <td colspan="2" class="total">Total:</td>
+    <td class="price">{% if total|default_if_none:"None" == "None" %}TBA{% else %}
+      {% if grand_total != total %}
+      <strike>£{{ total }}</strike> <b>£{{ grand_total }}</b>
+      {% else %}
+      £{{ total }}
+      {% endif %}
+      {% endif %}
+    </td>
   </tr>
 </table>
 

@@ -167,6 +167,7 @@
 # Leaders need to be presented with a list of bookings that they need to manually
 # approve. If they don't approve, need to send email to person booking.
 
+from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal
 from functools import wraps
@@ -192,7 +193,7 @@ from cciw.utils.views import user_passes_test_improved
 
 from cciw.bookings.email import send_verify_email, check_email_verification_token
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
-from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now, get_early_bird_cutoff_date
+from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now, get_early_bird_cutoff_date, early_bird_is_available
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, \
     BOOKING_INFO_COMPLETE, BOOKING_APPROVED, REQUIRED_PRICE_TYPES, \
     PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT
@@ -285,11 +286,11 @@ class BookingIndex(CciwBaseView):
         booking_open = is_booking_open(year)
         if booking_open:
             prices = Price.objects.filter(year=year)
-            early_bird_date = get_early_bird_cutoff_date(year)
             now = timezone.now()
-            if early_bird_date > now:
+            early_bird_available = early_bird_is_available(year, now)
+            if early_bird_available:
                 context['early_bird_available'] = True
-                context['early_bird_date'] = early_bird_date
+                context['early_bird_date'] = get_early_bird_cutoff_date(year)
         else:
             # Show last year's prices
             prices = Price.objects.filter(year=year - 1)
@@ -448,6 +449,9 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
                      'stage': 'place'}
 
     def handle(self, request, *args, **kwargs):
+        year = get_thisyear()
+        now = timezone.now()
+
         if request.method == "POST" and not is_booking_open_thisyear():
             # Redirect to same view, but GET
             return HttpResponseRedirect(request.get_full_path())
@@ -478,7 +482,11 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
         else:
             form = self.form_class(instance=booking)
 
-        c = {'form':form}
+        c = {'form':form,
+             'early_bird_available': early_bird_is_available(year, now),
+             'early_bird_date': get_early_bird_cutoff_date(year),
+             'price_early_bird_discount': Price.objects.get(year=year, price_type=PRICE_EARLY_BIRD_DISCOUNT).price,
+             }
         if booking is not None and not booking.is_user_editable():
             c['read_only'] = True
         return self.render(c)
@@ -623,10 +631,19 @@ def get_expected_amount_due(request):
     fail = {'status':'success',
             'amount': None}
     try:
-        # Need to construct a partial object, that won't pass validation,
-        # so do manual parsing of posted vars.
-        b = Booking(price_type=int(request.POST['price_type']),
-                    camp_id=int(request.POST['camp']))
+        # If we use a form to construct an object, we won't get pass
+        # validation. So we construct a partial object, doing manual parsing of
+        # posted vars.
+
+        if 'id' in request.POST:
+            # Start with saved data if it is available
+            b = Booking.objects.get(id=int(request.POST['id']))
+        else:
+            b = Booking()
+        b.price_type = int(request.POST['price_type'])
+        b.camp_id = int(request.POST['camp'])
+        b.early_bird_discount = 'early_bird_discount' in request.POST
+
     except (ValueError, KeyError): # not a valid price_type/camp, data missing
         return fail
     try:
@@ -655,6 +672,7 @@ class BookingListBookings(CciwBaseView):
 
     def handle(self, request):
         year = get_thisyear()
+        now = timezone.now()
         bookings = request.booking_account.bookings
         # NB - use lists here, not querysets, so that both state_token and book_now
         # functionality apply against same set of bookings.
@@ -750,6 +768,17 @@ class BookingListBookings(CciwBaseView):
                     else:
                         total = total + b.amount_due_normalised
 
+        discounts = defaultdict(lambda: Decimal('0.00'))
+        for b in basket_bookings:
+            for name, amount in b.get_available_discounts(now):
+                discounts[name] += amount
+
+        if total is not None:
+            total_discount = sum(discounts.values())
+            grand_total = total - total_discount
+        else:
+            grand_total = None
+
         c = {
             'basket_bookings': basket_bookings,
             'shelf_bookings': shelf_bookings,
@@ -757,6 +786,8 @@ class BookingListBookings(CciwBaseView):
             'all_unbookable': all_unbookable,
             'state_token': make_state_token(basket_bookings),
             'total': total,
+            'grand_total': grand_total,
+            'discounts_available': discounts.items(),
         }
         return self.render(c)
 

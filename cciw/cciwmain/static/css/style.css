@@ -1042,3 +1042,15 @@ span.toc {
 table.prices td {
     padding: 5px;
 }
+
+/* list bookings */
+
+table td.total, table td.discounts {
+    text-align: right;
+    font-weight: bold;
+    border: 0px;
+}
+
+table td.price {
+    text-align: right;
+}

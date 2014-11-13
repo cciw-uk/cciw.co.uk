@@ -1754,7 +1754,7 @@ class TestEarlyBird(CreatePlaceMixin, TestCase):
         acc = self.get_account()
 
         with mock.patch('cciw.bookings.models.get_early_bird_cutoff_date') as mock_f:
-            # Cut off date definitely in the past
+            # Cut off date definitely in the future
             mock_f.return_value = timezone.get_default_timezone().localize(datetime(self.camp.year + 10, 1, 1))
             book_basket_now(acc.bookings.basket(self.camp.year))
         self.assertTrue(acc.bookings.all()[0].early_bird_discount)
