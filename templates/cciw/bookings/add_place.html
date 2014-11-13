@@ -4,6 +4,7 @@
 {% block extraheader %}
 {{ block.super }}
 <script type="text/javascript" src="{% static "bookings/js/add_place.js" %}"></script>
+<link rel="stylesheet" href="{% static "bookings/css/add_place.css" %}" type="text/css" />
 {% endblock %}
 
 
@@ -16,10 +17,21 @@
 
 <form action="" method="POST" id="id_addplaceform" name="addplaceform" class="ajaxify">
 {% csrf_token %}
+
+<script type="text/javascript">
+var cciw = (function(pub) {
+    "use strict";
+    pub.placesJsonUrl = '{% url "cciw.bookings.views.places_json" %}';
+    pub.accountJsonUrl ='{% url "cciw.bookings.views.account_json" %}';
+    return pub;
+
+})(cciw || {});
+
+</script>
+
 <input id="readonly" type="hidden" value="{% if readonly %}1{% else %}0{% endif %}">
-<input id="placesJsonUrl" type="hidden" value='{% url "cciw.bookings.views.places_json" %}'>
-<input id="accountJsonUrl" type="hidden" value='{% url "cciw.bookings.views.account_json" %}'>
 <input id="formInstanceId" type="hidden" value='{{ form.instance.id }}'>
+
 
 {% if form.errors %}
 <div class="userError">The details could not be saved - please correct the
@@ -171,45 +183,8 @@ booking, you agree that this is acceptable.</p>
 
 </form>
 
-<div id="id_use_existing_data_popup" class="inlinepopup" style="display:none;">
-<div class="closebar">
-<a href="#" id="id_popup_close_btn">Close</a>
-</div>
-<div class="popupbody">
-<p>You can copy information previously entered to save time. Please check
- the data after using this to ensure it is all up to date.
- <b>NB: This will overwrite existing data on this form!</b>
-</p>
+{% include "cciw/bookings/use_previous_popup_inc.html" %}
 
-<table>
-<tr>
-<th>Select previous booking to copy from</th>
-<th>Choose which information to copy</th>
-</tr>
-<tr>
-<td>
-  <div style="max-height: 20em; overflow: auto;";>
-    <form name="select_place">
-    <div id="id_use_existing_radio_container">
-    </div>
-    </form>
-  </div>
-</td>
-<td style="vertical-align:top; text-align:center;">
-  <input type="submit" id="id_use_all_btn" value="Use all personal information" /> <br/>
-  <input type="submit" id="id_use_address_btn" value="Use address and contact information" /> <br/>
-  <input type="submit" id="id_use_gp_info_btn" value="Use GP information" />
-</td>
-
-</tr>
-</table>
-</div>
-</div>
-
-<div class="inlinepopup_background" id="id_popup_background"></div>
-
-<div style="display:nonex;">
-</div>
 
 {% endif %}
 {% endblock %}

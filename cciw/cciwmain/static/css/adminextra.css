@@ -158,6 +158,8 @@ tr.refrow td.nopadding
     top:0px;
     left:0px;
     z-index: 2;
+    background-color: white;
+    color: black;
 }
 
 .inlinepopup .closebar {

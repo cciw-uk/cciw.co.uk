@@ -1333,18 +1333,18 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
         j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['account']['address'], '123 Main Street')
 
-    def test_all_account_json(self):
+    def test_all_accounts_json(self):
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
                                              post_code="ABC",
                                              name="Mr Foo")
 
         self.client.login(username=OFFICER_USERNAME, password=OFFICER_PASSWORD)
-        resp = self.client.get(reverse('cciw.bookings.views.all_account_json'))
+        resp = self.client.get(reverse('cciw.bookings.views.all_accounts_json'))
         self.assertEqual(resp.status_code, 403)
 
         # Now as booking secretary
         self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
-        resp = self.client.get(reverse('cciw.bookings.views.all_account_json') + "?id=%d" % acc1.id)
+        resp = self.client.get(reverse('cciw.bookings.views.all_accounts_json') + "?id=%d" % acc1.id)
         self.assertEqual(resp.status_code, 200)
 
         j = json.loads(resp.content.decode('utf-8'))

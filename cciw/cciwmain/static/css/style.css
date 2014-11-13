@@ -888,14 +888,6 @@ div.bottomlinks img
     border-left: 1px solid black
 }
 
-/* Specific popups */
-#id_use_existing_data_popup {
-    max-width: 50em;
-
-}
-#id_use_existing_data_popup table {
-    width: 100%;
-}
 
 
 /* Internet Explorer message */

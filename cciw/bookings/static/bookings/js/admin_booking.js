@@ -182,6 +182,8 @@ $(document).ready(function() {
     );
     $("div.field-account a.add-another").remove();
 
+    $('#id_first_name').parent().append('<input type="submit" class="use_existing_btn" value="Use previous data" style="display:none;">');
+
     $('#id_address').parent().append('<input type="submit" value="Copy address details from account"' +
                                      'id="id_use_account_for_camper">');
     $('#id_contact_address').parent().append('<input type="submit" value="Copy contact details from account"' +

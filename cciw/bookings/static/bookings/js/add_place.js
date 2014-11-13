@@ -1,9 +1,9 @@
-(function($) {
+(function($, cciw) {
      $(document).ready(function() {
+         // Note: Some part of this code are used by both admin interface and
+         // user facing interface
+
          var readonly = ($('#readonly').val() == '1');
-         var placesJsonUrl = $('#placesJsonUrl').val();
-         var accountJsonUrl = $('#accountJsonUrl').val();
-         var formInstanceId = $('#formInstanceId').val();
 
          if (readonly) {
              $('input,select,textarea').attr('disabled', 'disabled');
@@ -13,6 +13,32 @@
              var escape = function(t) {
                  return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
              };
+
+             var getAccountId = function () {
+                 var elem = $('#id_account');
+                 if (elem.length) {
+                     // /admin/bookings/booking/.../
+                     return elem.val()[0];
+                 } else {
+                     // /bookings/add-camper-details
+                     return '';
+                 }
+             };
+
+             var getAddPlaceForm = function () {
+                 var elem = $('#booking_form');
+                 if (elem.length) {
+                     // /admin/bookings/booking/.../
+                     return elem[0];
+                 } else {
+                     // /bookings/add-camper-details
+                     return $('#id_addplaceform')[0];
+                 }
+             };
+
+             var getCurrentBookingId = function () {
+                 return $('#formInstanceId').val();
+             }
 
              var handleExistingPlacesData = function(json) {
                  var places = json['places'];
@@ -107,7 +133,7 @@
                      if (radios[i].checked) {
                          chosen = parseInt(radios[i].value, 10);
                          var place = userData['places'][chosen];
-                         var mainform = document.addplaceform;
+                         var mainform = getAddPlaceForm();
                          for (var j=0; j < attrs.length; j++) {
                              var attr = attrs[j];
                              if (mainform[attr].type == 'checkbox') {
@@ -194,7 +220,11 @@
              /* Load data about existing places */
              $.ajax({
                  type: "GET",
-                 url: placesJsonUrl + '?exclude=' + formInstanceId,
+                 data: {
+                     'exclude': getCurrentBookingId(),
+                     'id': getAccountId() // ignored by place_json, used by all_place_json
+                 },
+                 url: cciw.placesJsonUrl,
                  dataType: "json",
                  success: handleExistingPlacesData
              });
@@ -202,10 +232,13 @@
              /* Load account data */
              $.ajax({
                  type: "GET",
-                 url: accountJsonUrl,
+                 data: {
+                     'id': getAccountId() // ignored by account_json, used by all_account_json
+                 },
+                 url: cciw.accountJsonUrl,
                  dataType: "json",
                  success: handleAccountData
              });
          }
      });
-})(jQuery);
+})(jQuery, cciw);

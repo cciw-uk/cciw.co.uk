@@ -1,0 +1,36 @@
+<div id="id_use_existing_data_popup" class="inlinepopup" style="display:none;">
+<div class="closebar">
+<a href="#" id="id_popup_close_btn">Close</a>
+</div>
+<div class="popupbody">
+<p>You can copy information previously entered to save time. Please check
+ the data after using this to ensure it is all up to date.
+ <b>NB: This will overwrite existing data on this form!</b>
+</p>
+
+<table>
+<tr>
+<th>Select previous booking to copy from</th>
+<th>Choose which information to copy</th>
+</tr>
+<tr>
+<td>
+  <div style="max-height: 20em; overflow: auto;";>
+    <form name="select_place">
+    <div id="id_use_existing_radio_container">
+    </div>
+    </form>
+  </div>
+</td>
+<td style="vertical-align:top; text-align:center;">
+  <input type="submit" id="id_use_all_btn" value="Use all personal information" /> <br/>
+  <input type="submit" id="id_use_address_btn" value="Use address and contact information" /> <br/>
+  <input type="submit" id="id_use_gp_info_btn" value="Use GP information" />
+</td>
+
+</tr>
+</table>
+</div>
+</div>
+
+<div class="inlinepopup_background" id="id_popup_background"></div>

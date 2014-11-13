@@ -543,8 +543,19 @@ account_to_dict = lambda acc: dict((k, getattr(acc, k))
 @booking_account_required
 @json_response
 def places_json(request):
+    return _get_places_dict(request, request.booking_account)
+
+
+@booking_secretary_required
+@json_response
+def all_places_json(request):
+    acc = BookingAccount.objects.get(id=int(request.GET['id']))
+    return _get_places_dict(request, acc)
+
+
+def _get_places_dict(request, account):
     retval = {'status': 'success'}
-    qs = request.booking_account.bookings.all()
+    qs = account.bookings.all()
     if 'exclude' in request.GET:
         try:
             exclude_id = int(request.GET['exclude'])
@@ -558,17 +569,19 @@ def places_json(request):
 @booking_account_required
 @json_response
 def account_json(request):
-    retval = {'status': 'success'}
-    retval['account'] = account_to_dict(request.booking_account)
-    return retval
+    return _get_account_dict(request.booking_account)
 
 
 @booking_secretary_required
 @json_response
-def all_account_json(request):
+def all_accounts_json(request):
     acc = BookingAccount.objects.get(id=int(request.GET['id']))
+    return _get_account_dict(acc)
+
+
+def _get_account_dict(account):
     retval = {'status': 'success'}
-    retval['account'] = account_to_dict(acc)
+    retval['account'] = account_to_dict(account)
     return retval
 
 
