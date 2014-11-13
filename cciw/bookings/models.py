@@ -738,6 +738,9 @@ class Booking(models.Model):
     def expire(self):
         self.booking_expires = None
         self.state = BOOKING_INFO_COMPLETE
+        self.early_bird_discount = False
+        self.booked_at = None
+        self.auto_set_amount_due()
 
     def is_user_editable(self):
         return self.state == BOOKING_INFO_COMPLETE

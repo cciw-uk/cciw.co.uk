@@ -1770,6 +1770,18 @@ class TestEarlyBird(CreatePlaceMixin, TestCase):
         self.assertFalse(acc.bookings.all()[0].early_bird_discount)
         self.assertEqual(acc.bookings.all()[0].amount_due, self.price_full)
 
+    def test_expire(self):
+        self.test_book_basket_applies_discount()
+        acc = self.get_account()
+        place = acc.bookings.all()[0]
+        place.expire()
+
+        self.assertFalse(place.early_bird_discount)
+        # For the sake of 'list bookings' view, we need to display the
+        # un-discounted price.
+        self.assertEqual(place.amount_due, self.price_full)
+        self.assertEqual(place.booked_at, None)
+
 
 class TestExportPlaces(CreatePlaceMixin, TestCase):
 
