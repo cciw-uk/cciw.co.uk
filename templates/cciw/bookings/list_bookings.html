@@ -33,7 +33,7 @@
 {% if discounts_available %}
   {% for discount_caption, discount_amount in discounts_available %}
   <tr>
-    <td colspan="2" class="discounts">{{ discount_caption }}</td>
+    <td colspan="2" class="discounts">{{ discount_caption }}:</td>
     <td class="price">-£{{ discount_amount }}</td>
   </tr>
   {% endfor %}
