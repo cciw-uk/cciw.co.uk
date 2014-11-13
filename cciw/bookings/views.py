@@ -485,7 +485,7 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
         c = {'form':form,
              'early_bird_available': early_bird_is_available(year, now),
              'early_bird_date': get_early_bird_cutoff_date(year),
-             'price_early_bird_discount': Price.objects.get(year=year, price_type=PRICE_EARLY_BIRD_DISCOUNT).price,
+             'price_early_bird_discount': lambda: Price.objects.get(year=year, price_type=PRICE_EARLY_BIRD_DISCOUNT).price,
              }
         if booking is not None and not booking.is_user_editable():
             c['read_only'] = True
