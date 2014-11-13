@@ -5,6 +5,9 @@ from copy import deepcopy
 from datetime import datetime, date
 from io import BytesIO
 
+from django.utils import timezone
+from pytz import UTC
+
 import xlwt
 
 def add_sheet_with_header_row(wkbk, name, headers, contents):
@@ -44,6 +47,9 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
 
             if isinstance(val, (datetime, date)):
                 style = date_style
+                if isinstance(val, datetime):
+                    if timezone.is_aware(val):
+                        val = timezone.make_naive(val, UTC)
             else:
                 style = normal_style
                 if isinstance(val, str) and u'\n' in val:
