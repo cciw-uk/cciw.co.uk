@@ -31,6 +31,8 @@ def is_camp_admin(user):
     for editing camp/officer/reference/CRB information
     """
     if not active_staff(user): return False
+    if is_booking_secretary(user):
+        return True
     return user_in_groups(user, CAMP_ADMIN_GROUPS) or \
         user.camps_as_admin.exists() > 0
 

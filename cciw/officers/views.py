@@ -68,6 +68,9 @@ def _camps_as_admin_or_leader(user):
     """
     Returns all the camps for which the user is an admin or leader.
     """
+    if is_booking_secretary(user):
+        return Camp.objects.all()
+
     # If the user is am 'admin' for some camps:
     camps = user.camps_as_admin.all()
     # Find the 'Person' object that corresponds to this user
