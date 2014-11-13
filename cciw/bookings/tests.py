@@ -10,6 +10,7 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
+from django_dynamic_fixture import G
 import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
@@ -76,21 +77,21 @@ class CreateLeadersMixin(object):
 class CreatePricesMixin(object):
     def add_prices(self):
         year = self.camp.year
-        Price.objects.get_or_create(year=year,
-                                    price_type=PRICE_FULL,
-                                    price=Decimal('100.00'))
-        Price.objects.get_or_create(year=year,
-                                    price_type=PRICE_2ND_CHILD,
-                                    price=Decimal('75.00'))
-        Price.objects.get_or_create(year=year,
-                                    price_type=PRICE_3RD_CHILD,
-                                    price=Decimal('50.00'))
-        Price.objects.get_or_create(year=year,
-                                    price_type=PRICE_DEPOSIT,
-                                    price=Decimal('20.00'))
-        Price.objects.get_or_create(year=year,
-                                    price_type=PRICE_EARLY_BIRD_DISCOUNT,
-                                    price=Decimal('10.00'))
+        self.price_full = Price.objects.get_or_create(year=year,
+                                                      price_type=PRICE_FULL,
+                                                      price=Decimal('100'))[0].price
+        self.price_2nd_child = Price.objects.get_or_create(year=year,
+                                                           price_type=PRICE_2ND_CHILD,
+                                                           price=Decimal('75'))[0].price
+        self.price_3rd_child = Price.objects.get_or_create(year=year,
+                                                           price_type=PRICE_3RD_CHILD,
+                                                           price=Decimal('50'))[0].price
+        self.price_deposit = Price.objects.get_or_create(year=year,
+                                                         price_type=PRICE_DEPOSIT,
+                                                         price=Decimal('20'))[0].price
+        self.price_early_bird_discount = Price.objects.get_or_create(year=year,
+                                                                     price_type=PRICE_EARLY_BIRD_DISCOUNT,
+                                                                     price=Decimal('10'))[0].price
 
 
 class LogInMixin(object):
@@ -243,7 +244,6 @@ class TestBookingStart(CreatePlaceMixin, TestCase):
 
     def test_skip_if_has_place_details(self):
         # Check redirect to step 5 - checkout
-        self.login()
         self.create_place()
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)
@@ -449,8 +449,7 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         self.assertEqual(b.bookings.count(), 1)
 
         # Check amount_due
-        self.assertEqual(b.bookings.all()[0].amount_due, Price.objects.get(price_type=PRICE_FULL,
-                                                                           year=self.camp.year).price)
+        self.assertEqual(b.bookings.all()[0].amount_due, self.price_full)
 
 
 class TestEditPlace(CreatePlaceMixin, TestCase):
@@ -588,7 +587,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(302, resp.status_code)
 
     def test_show_bookings(self):
-        self.login()
         self.create_place()
         resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
@@ -600,7 +598,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
 
     def test_handle_custom_price(self):
-        self.login()
         self.create_place({'price_type': PRICE_CUSTOM})
         resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
@@ -613,7 +610,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "This place cannot be booked for the reasons described above")
 
     def test_2nd_child_discount_allowed(self):
-        self.login()
         self.create_place({'price_type': PRICE_2ND_CHILD})
 
         resp = self.client.get(self.url)
@@ -632,7 +628,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         Test that we can have 2nd child discount if full price
         place is already booked.
         """
-        self.login()
         self.create_place()
         acc = self.get_account()
         acc.bookings.update(state=BOOKING_BOOKED)
@@ -644,7 +639,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
 
     def test_3rd_child_discount_allowed(self):
-        self.login()
         self.create_place({'price_type': PRICE_FULL})
         self.create_place({'price_type': PRICE_3RD_CHILD})
 
@@ -660,7 +654,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
 
     def test_handle_serious_illness(self):
-        self.login()
         self.create_place({'serious_illness': '1'})
 
         resp = self.client.get(self.url)
@@ -668,7 +661,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
 
     def test_minimum_age(self):
-        self.login()
         # if born Aug 31st 2001, and thisyear == 2012, should be allowed on camp with
         # minimum_age == 11
         Booking.objects.all().delete()
@@ -686,7 +678,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "below the minimum age")
 
     def test_maximum_age(self):
-        self.login()
         # if born 1st Sept 2001, and thisyear == 2019, should be allowed on camp with
         # maximum_age == 17
         Booking.objects.all().delete()
@@ -704,10 +695,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "above the maximum age")
 
     def test_no_places_left(self):
-        self.login()
         for i in range(0, self.camp.max_campers):
-            self.create_place({'sex':'m'})
-        self.camp.bookings.update(state=BOOKING_BOOKED)
+            G(Booking, sex='m', camp=self.camp, state=BOOKING_BOOKED)
 
         self.create_place({'sex':'m'})
         resp = self.client.get(self.url)
@@ -718,10 +707,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertNotContains(resp, "There are no places left for boys")
 
     def test_no_male_places_left(self):
-        self.login()
         for i in range(0, self.camp.max_male_campers):
-            self.create_place({'sex': 'm'})
-        self.camp.bookings.update(state=BOOKING_BOOKED)
+            G(Booking, sex='m', camp=self.camp, state=BOOKING_BOOKED)
 
         self.create_place({'sex':'m'})
         resp = self.client.get(self.url)
@@ -736,10 +723,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
 
     def test_no_female_places_left(self):
-        self.login()
         for i in range(0, self.camp.max_female_campers):
-            self.create_place({'sex': 'f'})
-        self.camp.bookings.update(state=BOOKING_BOOKED)
+            G(Booking, sex='f', camp=self.camp, state=BOOKING_BOOKED)
 
         self.create_place({'sex':'f'})
         resp = self.client.get(self.url)
@@ -747,10 +732,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
 
     def test_not_enough_places_left(self):
-        self.login()
         for i in range(0, self.camp.max_campers - 1):
-            self.create_place({'sex':'m'})
-        self.camp.bookings.update(state=BOOKING_BOOKED)
+            G(Booking, sex='m', camp=self.camp, state=BOOKING_BOOKED)
 
         self.create_place({'sex':'f'})
         self.create_place({'sex':'f'})
@@ -759,9 +742,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
 
     def test_not_enough_male_places_left(self):
-        self.login()
         for i in range(0, self.camp.max_male_campers - 1):
-            self.create_place({'sex':'m'})
+            G(Booking, sex='m', camp=self.camp, state=BOOKING_BOOKED)
         self.camp.bookings.update(state=BOOKING_BOOKED)
 
         self.create_place({'sex':'m'})
@@ -771,9 +753,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
 
     def test_not_enough_female_places_left(self):
-        self.login()
         for i in range(0, self.camp.max_female_campers - 1):
-            self.create_place({'sex':'f'})
+            G(Booking, sex='f', camp=self.camp, state=BOOKING_BOOKED)
         self.camp.bookings.update(state=BOOKING_BOOKED)
 
         self.create_place({'sex':'f'})
@@ -784,7 +765,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
     def test_handle_two_problem_bookings(self):
         # Test the error we get for more than one problem booking
-        self.login()
         self.create_place({'price_type': PRICE_CUSTOM})
         self.create_place({'first_name': 'Another',
                            'last_name': 'Child',
@@ -801,7 +781,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
     def test_handle_mixed_problem_and_non_problem(self):
         # Test the message we get if one place is bookable and the other is not
-        self.login()
         self.create_place() # bookable
         self.create_place({'first_name': 'Another',
                            'last_name': 'Child',
@@ -813,7 +792,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "One or more of the places cannot be booked")
 
     def test_total(self):
-        self.login()
         self.create_place()
         self.create_place({'first_name': 'Another',
                            'last_name': 'Child'})
@@ -825,7 +803,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
 
     def test_manually_approved(self):
         # manually approved places should appear as OK to book
-        self.login()
         self.create_place() # bookable
         self.create_place({'first_name': 'Another',
                            'last_name': 'Child',
@@ -848,7 +825,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "£100.01")
 
     def test_add_another_btn(self):
-        self.login()
         self.create_place()
         resp = self.client.post(self.url, {'add_another': '1'})
         self.assertEqual(302, resp.status_code)
@@ -856,7 +832,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertTrue(resp['Location'].endswith(newpath))
 
     def test_move_to_shelf(self):
-        self.login()
         self.create_place()
         acc = self.get_account()
         b = acc.bookings.all()[0]
@@ -881,7 +856,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp2, "<h2>Shelf</h2>")
 
     def test_move_to_basket(self):
-        self.login()
         self.create_place()
         acc = self.get_account()
         b = acc.bookings.all()[0]
@@ -903,7 +877,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertNotContains(resp2, "<h2>Shelf</h2>")
 
     def test_delete_place(self):
-        self.login()
         self.create_place()
         acc = self.get_account()
         b = acc.bookings.all()[0]
@@ -920,7 +893,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(0, acc.bookings.count())
 
     def test_edit_place_btn(self):
-        self.login()
         self.create_place()
         acc = self.get_account()
         b = acc.bookings.all()[0]
@@ -941,7 +913,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         """
         Test that we can book a place
         """
-        self.login()
         self.create_place()
         resp = self.client.get(self.url)
         resp2 = self.client.post(self.url, {'state_token': self._get_state_token(resp),
@@ -956,7 +927,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         """
         Test that an unbookable place can't be booked
         """
-        self.login()
         self.create_place({'serious_illness': '1'})
         resp = self.client.get(self.url)
         resp2 = self.client.post(self.url, {'state_token': self._get_state_token(resp),
@@ -971,7 +941,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         """
         Test that if one places is unbookable, no place can be booked
         """
-        self.login()
         self.create_place()
         self.create_place({'serious_illness': '1'})
         resp = self.client.get(self.url)
@@ -984,7 +953,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp2, "These places cannot be booked")
 
     def test_same_name_same_camp(self):
-        self.login()
         self.create_place()
         self.create_place() # Identical
 
@@ -994,7 +962,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
 
     def test_warn_about_multiple_full_price(self):
-        self.login()
         self.create_place()
         self.create_place({'first_name': 'Mary',
                            'last_name': 'Bloggs'})
@@ -1012,7 +979,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp, "If Mary Bloggs, Peter Bloggs and Frédéric Bloggs")
 
     def test_warn_about_multiple_2nd_child(self):
-        self.login()
         self.create_place()
         self.create_place({'first_name': 'Mary',
                            'last_name': 'Bloggs',
@@ -1042,7 +1008,6 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         # the basket. We need a safeguard against this.
 
         # Must include at least id,price,camp choice for each booking
-        self.login()
         self.create_place()
         resp = self.client.get(self.url)
 
@@ -1062,12 +1027,11 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertContains(resp2, "Places were not booked due to modifications made")
 
     def test_book_with_money_in_account(self):
-        self.login()
         self.create_place()
 
         # Put some money in the account - just the deposit price will do.
         acc = self.get_account()
-        acc.receive_payment(Price.objects.get(price_type=PRICE_DEPOSIT).price)
+        acc.receive_payment(self.price_deposit)
         acc.save()
 
         # Book
@@ -1109,7 +1073,6 @@ class TestPay(CreatePlaceMixin, TestCase):
         self.assertContains(resp, '£0.00')
 
     def test_balance_after_booking(self):
-        self.login()
         self.create_place()
         self.create_place()
         acc = self.get_account()
@@ -1118,8 +1081,7 @@ class TestPay(CreatePlaceMixin, TestCase):
         resp = self.client.get(reverse('cciw.bookings.views.pay'))
 
         # 2 deposits
-        expected_price = 2 * Price.objects.get(year=self.camp.year,
-                                               price_type=PRICE_DEPOSIT).price
+        expected_price = 2 * self.price_deposit
         self.assertContains(resp, '£%s' % expected_price)
 
         # Move forward to after the time when just deposits are allowed:
@@ -1128,8 +1090,7 @@ class TestPay(CreatePlaceMixin, TestCase):
         resp = self.client.get(reverse('cciw.bookings.views.pay'))
 
         # 2 full price
-        expected_price = 2 * Price.objects.get(year=self.camp.year,
-                                               price_type=PRICE_FULL).price
+        expected_price = 2 * self.price_full
         self.assertContains(resp, '£%s' % expected_price)
 
 
@@ -1164,7 +1125,6 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
         # Late booking:
         Camp.objects.update(start_date=date.today() + timedelta(days=1))
 
-        self.login()
         self.create_place()
         self.create_leaders()
         acc = self.get_account()
@@ -1172,13 +1132,12 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
         self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
 
         mail.outbox = []
-        p = Price.objects.get(year=self.camp.year, price_type=PRICE_FULL).price
-        acc.receive_payment(p)
+        acc.receive_payment(self.price_full)
 
         acc = self.get_account()
 
         # Check we updated the account
-        self.assertEqual(acc.total_received, p)
+        self.assertEqual(acc.total_received, self.price_full)
 
         # Check we updated the bookings
         self.assertTrue(acc.bookings.all()[0].booking_expires is None)
@@ -1198,18 +1157,14 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
     def test_insufficient_receive_payment(self):
         # Need to move into region where deposits are not allowed.
         Camp.objects.update(start_date=date.today() + timedelta(days=20))
-        self.login()
         self.create_place()
         self.create_place({'price_type': PRICE_2ND_CHILD})
         acc = self.get_account()
         book_basket_now(acc.bookings.basket(self.camp.year))
         self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
 
-        p1 = Price.objects.get(year=self.camp.year, price_type=PRICE_FULL).price
-        p2 = Price.objects.get(year=self.camp.year, price_type=PRICE_2ND_CHILD).price
-
         # Between the two
-        p = (p1 + p2) / 2
+        p = (self.price_full + self.price_2nd_child) / 2
         acc.receive_payment(p)
 
         # Check we updated the account
@@ -1222,7 +1177,7 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
 
 
         # We can rectify it with a payment of the rest
-        acc.receive_payment((p1 + p2) - p)
+        acc.receive_payment((self.price_full + self.price_2nd_child) - p)
         self.assertTrue(acc.bookings.filter(price_type=PRICE_FULL)[0].booking_expires is None)
 
     def test_email_for_bad_payment_1(self):
@@ -1294,7 +1249,6 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
         # This email could be triggered by whenever BookingAccount.distribute_funds
         # is called, which can be from multiple routes. So we test it directly.
 
-        self.login()
         self.create_place()
         acc = self.get_account()
         book_basket_now(acc.bookings.basket(self.camp.year))
@@ -1309,7 +1263,6 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
         self.assertTrue("Thank you for your payment" in mail.outbox[0].body)
 
     def test_only_one_email_for_multiple_places(self):
-        self.login()
         self.create_place()
         self.create_place({'first_name': 'Another',
                            'last_name': 'Child'})
@@ -1349,14 +1302,12 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
     fixtures = ['basic.json', 'officers_users.json']
 
     def test_places_json(self):
-        self.login()
         self.create_place()
         resp = self.client.get(reverse('cciw.bookings.views.places_json'))
         j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['places'][0]['first_name'], self.place_details['first_name'])
 
     def test_places_json_with_exclusion(self):
-        self.login()
         self.create_place()
         acc = self.get_account()
         resp = self.client.get(reverse('cciw.bookings.views.places_json') +
@@ -1449,9 +1400,8 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
 
         j = json.loads(resp.content.decode('utf-8'))
         problems = j['problems']
-        p_full = Price.objects.get(price_type=PRICE_FULL, year=self.camp.year)
         self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £%s"
-                                         % p_full.price)
+                                         % self.price_full)
                             for p in problems))
 
 
@@ -1476,9 +1426,8 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
 
         j = json.loads(resp.content.decode('utf-8'))
         problems = j['problems']
-        p_deposit = Price.objects.get(price_type=PRICE_DEPOSIT, year=self.camp.year)
         self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £%s"
-                                         % p_deposit.price)
+                                         % self.price_deposit)
                             for p in problems))
 
         # Check 'full refund' cancellation.
@@ -1501,14 +1450,11 @@ class TestAccountOverview(CreatePlaceMixin, TestCase):
     url = reverse('cciw.bookings.views.account_overview')
 
     def test_show(self):
-        self.login()
-
-        acc = self.get_account()
-
         # Book a place and pay
         self.create_place()
+        acc = self.get_account()
         book_basket_now(acc.bookings.basket(self.camp.year))
-        acc.receive_payment(Price.objects.get(price_type=PRICE_DEPOSIT).price)
+        acc.receive_payment(self.price_deposit)
 
         # Book another
         self.create_place({'first_name': 'Another',
@@ -1578,7 +1524,6 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         """
         Test no mail if just created
         """
-        self.login()
         self.create_place()
 
         acc = self.get_account()
@@ -1593,7 +1538,6 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         """
         Test that we get a warning email after 12 hours
         """
-        self.login()
         self.create_place()
 
         acc = self.get_account()
@@ -1615,7 +1559,6 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         """
         Test that we get an expiry email after 24 hours
         """
-        self.login()
         self.create_place()
 
         acc = self.get_account()
@@ -1639,7 +1582,6 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         """
         Test the emails are grouped as we expect
         """
-        self.login()
         self.create_place({'first_name':'Child',
                            'last_name': 'One'})
         self.create_place({'first_name':'Child',
@@ -1754,7 +1696,7 @@ class TestCancel(CreatePlaceMixin, TestCase):
         acc = self.get_account()
         place = acc.bookings.all()[0]
         place.state = BOOKING_CANCELLED
-        self.assertEqual(place.expected_amount_due(), Price.objects.get(price_type=PRICE_DEPOSIT).price)
+        self.assertEqual(place.expected_amount_due(), self.price_deposit)
 
     def test_account_amount_due(self):
         self.create_place()
@@ -1797,18 +1739,14 @@ class TestCancelFullRefund(CreatePlaceMixin, TestCase):
 class TestEarlyBird(CreatePlaceMixin, TestCase):
 
     fixture = ['basic.json']
-    def test_early_bird(self):
+    def test_expected_amount_due(self):
         self.create_place()
         acc = self.get_account()
         place = acc.bookings.all()[0]
-        full_price = Price.objects.get(year=place.camp.year,
-                                       price_type=PRICE_FULL).price
-        discount = Price.objects.get(year=place.camp.year,
-                                     price_type=PRICE_EARLY_BIRD_DISCOUNT).price
-        self.assertEqual(place.expected_amount_due(), full_price)
+        self.assertEqual(place.expected_amount_due(), self.price_full)
 
         place.early_bird_discount = True
-        self.assertEqual(place.expected_amount_due(), full_price - discount)
+        self.assertEqual(place.expected_amount_due(), self.price_full - self.price_early_bird_discount)
 
 
 class TestExportPlaces(CreatePlaceMixin, TestCase):
