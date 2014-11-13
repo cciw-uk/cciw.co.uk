@@ -1027,7 +1027,8 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
         self.assertContains(resp2, "Places were not booked due to modifications made")
 
-    def test_book_with_money_in_account(self):
+    @mock.patch('cciw.bookings.models.early_bird_is_available', return_value=False)
+    def test_book_with_money_in_account(self, m):
         self.create_place()
 
         # Put some money in the account - just the deposit price will do.
@@ -1051,7 +1052,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
         self.assertEqual(acc.get_balance(allow_deposits=True), Decimal('0.00'))
         self.assertEqual(acc.get_balance(confirmed_only=True, allow_deposits=True), Decimal('0.00'))
 
-        # But for full amount, they still owe 80
+        # But for full amount, they still owe 80 (full price minus deposit)
         self.assertEqual(acc.get_balance(allow_deposits=False), Decimal('80.00'))
 
         # Test some model methods:
