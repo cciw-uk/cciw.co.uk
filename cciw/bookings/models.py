@@ -463,8 +463,8 @@ class Booking(models.Model):
 
     # Price - partly from user (must fit business rules)
     price_type = models.PositiveSmallIntegerField(choices=BOOKING_PLACE_PRICE_TYPES)
-    early_bird_discount = models.BooleanField(default=False)
-    booked_at = models.DateTimeField(null=True, blank=True)
+    early_bird_discount = models.BooleanField(default=False, help_text="Online bookings only")
+    booked_at = models.DateTimeField(null=True, blank=True, help_text="Online bookings only")
     amount_due = models.DecimalField(decimal_places=2, max_digits=10)
 
     # State - user driven

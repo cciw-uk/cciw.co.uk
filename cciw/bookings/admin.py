@@ -222,6 +222,7 @@ class BookingAdmin(admin.ModelAdmin):
     ordering = ['-camp__year', 'camp__number']
     date_hierarchy = 'created'
     list_filter = [YearFilter, 'sex', 'price_type', 'serious_illness', 'state']
+    readonly_fields = ['booked_at']
 
     form = BookingAdminForm
 

@@ -149,10 +149,15 @@ $(document).ready(function() {
     };
 
     var getExpectedAmountDue = function() {
+        var data = $('#booking_form').serialize();
+        var objId = parseInt(window.location.pathname.split('/').slice(-2, -1), 10);
+        if (objId > 0) { // not NaN
+            data = data + '&id=' + objId.toString()
+        }
         $.ajax({
             type: "POST",
-            url: cciw.getExpectedAmountDue,
-            data: $('#booking_form').serialize(),
+            url: cciw.getExpectedAmountDueUrl,
+            data: data,
             dataType: "json",
             success: function(json) {
                 if (json.status == 'success') {
@@ -199,7 +204,7 @@ $(document).ready(function() {
     $('#id_camp').change(getPlaceAvailability);
 
     getExpectedAmountDue();
-    $('#id_price_type,#id_camp').change(getExpectedAmountDue);
+    $('#id_price_type,#id_camp,#id_early_bird_discount').change(getExpectedAmountDue);
 
 });
 
