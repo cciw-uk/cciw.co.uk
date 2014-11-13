@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 from decimal import Decimal
 import json
 import re
@@ -11,6 +11,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
 from django_dynamic_fixture import G
+import mock
 import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
@@ -1747,6 +1748,27 @@ class TestEarlyBird(CreatePlaceMixin, TestCase):
 
         place.early_bird_discount = True
         self.assertEqual(place.expected_amount_due(), self.price_full - self.price_early_bird_discount)
+
+    def test_book_basket_applies_discount(self):
+        self.create_place()
+        acc = self.get_account()
+
+        with mock.patch('cciw.bookings.models.get_early_bird_cutoff_date') as mock_f:
+            # Cut off date definitely in the past
+            mock_f.return_value = timezone.get_default_timezone().localize(datetime(self.camp.year + 10, 1, 1))
+            book_basket_now(acc.bookings.basket(self.camp.year))
+        self.assertTrue(acc.bookings.all()[0].early_bird_discount)
+        self.assertEqual(acc.bookings.all()[0].amount_due, self.price_full - self.price_early_bird_discount)
+
+    def test_book_basket_doesnt_apply_discount(self):
+        self.create_place()
+        acc = self.get_account()
+        with mock.patch('cciw.bookings.models.get_early_bird_cutoff_date') as mock_f:
+            # Cut off date definitely in the past
+            mock_f.return_value = timezone.get_default_timezone().localize(datetime(self.camp.year - 10, 1, 1))
+            book_basket_now(acc.bookings.basket(self.camp.year))
+        self.assertFalse(acc.bookings.all()[0].early_bird_discount)
+        self.assertEqual(acc.bookings.all()[0].amount_due, self.price_full)
 
 
 class TestExportPlaces(CreatePlaceMixin, TestCase):

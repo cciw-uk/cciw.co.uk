@@ -38,3 +38,4 @@ ezodf2==0.2.10
 lxml==3.3.5
 django_nyt==0.9.4
 django-dynamic-fixture==1.8.0
+mock==1.0.1

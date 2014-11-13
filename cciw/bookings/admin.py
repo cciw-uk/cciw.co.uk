@@ -280,6 +280,8 @@ class BookingAdmin(admin.ModelAdmin):
          {'fields':
               ['price_type',
                'south_wales_transport',
+               'early_bird_discount',
+               'booked_at',
                'amount_due',
                ]}),
         ('Internal',
