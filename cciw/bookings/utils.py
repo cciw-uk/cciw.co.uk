@@ -19,7 +19,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                ('Date of birth', lambda b: b.date_of_birth),
                ('Age on camp', lambda b: b.age_on_camp().years),
                ('Address', lambda b: format_address(b.address, b.post_code)),
-               ('Email', lambda b: b.email),
+               ('Email', lambda b: b.get_contact_email()),
                ('Church', lambda b: b.church),
                ('Dietary requirements', lambda b: b.dietary_requirements),
                ]
@@ -89,6 +89,7 @@ def year_bookings_to_spreadsheet(year, spreadsheet):
         ('First name', lambda b: b.first_name),
         ('Last name', lambda b: b.last_name),
         ('Sex', lambda b: b.get_sex_display()),
+        ('Email', lambda b: b.get_contact_email()),
         ('State', lambda b: b.get_state_display()),
         ('Confirmed', lambda b: b.is_confirmed),
         ('Date created', lambda b: b.created),
@@ -185,7 +186,7 @@ def addresses_for_mailing_list(year, spreadsheet):
                     rows.append([b.name,
                                  b.address,
                                  b.post_code,
-                                 account.email,
+                                 b.get_contact_email(),
                                  1])
     rows.sort() # first column (Name) alphabetical
 

@@ -749,6 +749,12 @@ class Booking(models.Model):
     def is_custom_discount(self):
         return self.price_type == PRICE_CUSTOM
 
+    def get_contact_email(self):
+        if self.email:
+            return self.email
+        elif self.account_id is not None:
+            return self.account.email
+
     class Meta:
         ordering = ['-created']
 
