@@ -7,7 +7,7 @@ django-autocomplete-light==2.0.0a15
 django-classy-tags==0.4
 django-debug-toolbar==1.0.1
 django-mptt==0.6.0
--e git://github.com/spookylukey/django-paypal@afba95119d2aa430ce2fd9cf687bd3b261f21708#egg=django-paypal
+-e git://github.com/spookylukey/django-paypal@07d61a4e9a5ce78153bc4ff6fd99b8eed77983bc#egg=django-paypal
 django-sekizai==0.7
 django-webtest==1.7.5
 ecdsa==0.10
