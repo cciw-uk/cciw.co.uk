@@ -93,6 +93,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
             'allergies',
             'regular_medication_required',
             'illnesses',
+            'can_swim_25m',
             'learning_difficulties',
             'serious_illness',
             'agreement'
