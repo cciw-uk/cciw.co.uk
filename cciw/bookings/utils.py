@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta, time
+from datetime import timedelta
 from itertools import groupby
 
 from dateutil.relativedelta import relativedelta
-from django.utils import timezone
 
 from cciw.bookings.models import Booking, Payment
 
@@ -45,6 +44,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
          ('Allergies', lambda b: b.allergies),
          ('Medication', lambda b: b.regular_medication_required),
          ('Illnesses', lambda b: b.illnesses),
+         ('Can swim 25m', lambda b: b.can_swim_25m),
          ('Learning difficulties', lambda b: b.learning_difficulties),
          ]
 
