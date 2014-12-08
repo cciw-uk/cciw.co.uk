@@ -52,7 +52,7 @@
                              i.toString() + "'>" + escape(place.first_name + " " + place.last_name)
                              + " " + place.created.substr(0,4) + "<br/>" +
                              "&nbsp;&nbsp; Post code: " + escape(place.post_code) + "<br/>" +
-                             "&nbsp;&nbsp; GP: " + escape(place.gp_name) + "</label><br/>" );
+                             "&nbsp;&nbsp; GP: " + escape(place.gp_name) + "</label>" );
                          cont.append(html);
                      }
                      var btn = $('#id_use_existing_radio_container input');

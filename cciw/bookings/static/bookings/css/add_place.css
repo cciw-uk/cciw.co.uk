@@ -1,8 +1,13 @@
 /* Specific popups */
 #id_use_existing_data_popup {
     max-width: 50em;
-
 }
+
 #id_use_existing_data_popup table {
     width: 100%;
+}
+
+#id_use_existing_radio_container label {
+    display: block;
+    margin-bottom: 1.4em;
 }
