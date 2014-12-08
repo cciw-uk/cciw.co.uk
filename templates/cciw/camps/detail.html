@@ -44,17 +44,25 @@
   <tr>
     <th scope="row">Leaders:</th>
     <td>
-      <ul class="leaderlist">
-        {% for leader in camp.leaders.all %}
-          <li>{{ leader.name }}:<br/>
-          {{ leader.info|escape|linebreaksbr }}
-          </li>
-        {% endfor %}
-        {% if camp.chaplain %}
-          <li>{{ camp.chaplain.name }}:<br/>
-            {{ camp.chaplain.info|escape|linebreaksbr }}</li>
-        {% endif %}
-      </ul>
+      {% for leader in camp.leaders.all %}
+      <h3>{{ leader.name }}</h3>
+      <p>
+        {{ leader.info|escape|linebreaksbr }}
+      </p>
+      {% endfor %}
+    </td>
+  </tr>
+  <tr>
+    <th scope="row">Chaplain:</th>
+    <td>
+      {% if camp.chaplain %}
+      <h3>{{ camp.chaplain.name }}</h3>
+      <p>
+        {{ camp.chaplain.info|escape|linebreaksbr }}
+     </p>
+      {% else %}
+      TBA
+      {% endif %}
     </td>
   </tr>
   {% if camp.year == thisyear and camp.is_booking_open %}
