@@ -18,7 +18,19 @@
                  var elem = $('#id_account');
                  if (elem.length) {
                      // /admin/bookings/booking/.../
-                     return elem.val()[0];
+                     // See also getCurrentAccountId in admin_booking.js
+
+                     var val = $('#id_account').val();
+                     if (val !==null && val.length != undefined) {
+                         val = val[0]; // autocomplete_light makes val() return an array
+                     }
+                     val = parseInt(val, 10);
+                     // NaN madness
+                     if (val == val) {
+                         return val;
+                     } else {
+                         return undefined;
+                     }
                  } else {
                      // /bookings/add-camper-details
                      return '';
@@ -45,6 +57,7 @@
                  userData['places'] = places;
                  if (places.length > 0) {
                      var cont = $('#id_use_existing_radio_container');
+                     cont.empty();
                      $('.use_existing_btn').show();
                      for (var i=0; i < places.length; i++) {
                          var place = places[i];
@@ -59,6 +72,8 @@
                      if (btn.length == 1) {
                          btn.attr('checked', 'checked');
                      }
+                 } else {
+                     $('.use_existing_btn').hide();
                  }
              };
 
@@ -220,27 +235,31 @@
              });
 
              /* Load data about existing places */
-             $.ajax({
-                 type: "GET",
-                 data: {
-                     'exclude': getCurrentBookingId(),
-                     'id': getAccountId() // ignored by place_json, used by all_place_json
-                 },
-                 url: cciw.placesJsonUrl,
-                 dataType: "json",
-                 success: handleExistingPlacesData
-             });
+             var loadExistingPlacesData = function () {
+                 $.ajax({
+                     type: "GET",
+                     data: {
+                         'exclude': getCurrentBookingId(),
+                         'id': getAccountId() // ignored by place_json, used by all_place_json
+                     },
+                     url: cciw.placesJsonUrl,
+                     dataType: "json",
+                     success: handleExistingPlacesData
+                 });
 
-             /* Load account data */
-             $.ajax({
-                 type: "GET",
-                 data: {
-                     'id': getAccountId() // ignored by account_json, used by all_account_json
-                 },
-                 url: cciw.accountJsonUrl,
-                 dataType: "json",
-                 success: handleAccountData
-             });
+                 /* Load account data */
+                 $.ajax({
+                     type: "GET",
+                     data: {
+                         'id': getAccountId() // ignored by account_json, used by all_account_json
+                     },
+                     url: cciw.accountJsonUrl,
+                     dataType: "json",
+                     success: handleAccountData
+                 });
+             };
+             loadExistingPlacesData();
+             $('#booking_form').on('change', '#id_account', loadExistingPlacesData);
          }
      });
 })(jQuery, cciw);

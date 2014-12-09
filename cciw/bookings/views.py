@@ -549,7 +549,12 @@ def places_json(request):
 @booking_secretary_required
 @json_response
 def all_places_json(request):
-    acc = BookingAccount.objects.get(id=int(request.GET['id']))
+    try:
+        account_id = int(request.GET['id'])
+    except (KeyError, ValueError):
+        return {'status': 'success',
+                'places': []}
+    acc = BookingAccount.objects.get(id=account_id)
     return _get_places_dict(request, acc)
 
 
@@ -575,7 +580,11 @@ def account_json(request):
 @booking_secretary_required
 @json_response
 def all_accounts_json(request):
-    acc = BookingAccount.objects.get(id=int(request.GET['id']))
+    try:
+        account_id = int(request.GET['id'])
+    except (KeyError, ValueError):
+        return {'status': 'failure'}
+    acc = BookingAccount.objects.get(id=account_id)
     return _get_account_dict(acc)
 
 

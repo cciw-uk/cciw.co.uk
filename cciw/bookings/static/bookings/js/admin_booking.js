@@ -3,7 +3,11 @@ $(document).ready(function() {
     "use strict";
 
     var getCurrentAccountId = function() {
-        var val = $('#id_account').val()[0]; // autocomplete_light makes val() return an array
+        // See also getAccountId in add_place.js
+        var val = $('#id_account').val();
+        if (val !== null && val.length !== undefined) {
+            val = val[0]; // autocomplete_light makes val() return an array
+        }
         val = parseInt(val, 10);
         // NaN madness
         if (val == val) {
