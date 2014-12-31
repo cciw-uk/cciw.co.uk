@@ -10,7 +10,7 @@ class WebTestBase(WebTest):
     """
     # This uses django_webtest, with convenience wrappers.
     def webtest_officer_login(self, creds):
-        form = self.get("cciw.officers.views.index").form
+        form = self.get("cciw.officers.views.index").follow().form
         self.fill(form,
                   {'username': creds[0],
                    'password': creds[1],

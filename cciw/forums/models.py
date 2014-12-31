@@ -88,7 +88,7 @@ class Member(models.Model):
     banned      = models.BooleanField("Banned", default=False)
     permissions = models.ManyToManyField(Permission,
         verbose_name="permissions", related_name="member_with_permission",
-        blank=True, null=True)
+        blank=True)
     icon         = models.ImageField("Icon", upload_to=settings.MEMBER_ICON_UPLOAD_PATH, blank=True)
     dummy_member = models.BooleanField("Dummy member status", default=False) # supports ancient posts in message boards
 

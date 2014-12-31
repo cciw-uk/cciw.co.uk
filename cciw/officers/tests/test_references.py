@@ -46,8 +46,8 @@ class ReferencesPage(WebTestBase):
 
     def test_page_anonymous_denied(self):
         response = self.get("cciw.officers.views.manage_references", year=2000, number=1)
-        self.assertEqual(response.status_code, 200) # at a redirection page
-        self.assertNotContains(response, 'For camp 2000-1')
+        self.assertEqual(response.status_code, 302)
+        self.assertNotContains(response.follow(), 'For camp 2000-1')
 
     def test_page_officers_denied(self):
         self.webtest_officer_login(OFFICER)
@@ -205,6 +205,9 @@ class CreateReference(WebTestBase):
         """
         app = Application.objects.get(pk=2)
         url = make_ref_form_url(app.references[0].id, None)
+        if 'www.cciw.co.uk' in url:
+            url = url.replace('https://www.cciw.co.uk', '')
+        assert 'www.cciw.co.uk' not in url
         response = self.get(url)
         self.assertEqual(response.status_code, 200)
         return response
@@ -225,7 +228,7 @@ class CreateReference(WebTestBase):
                               'capability_children': 'Fine',
                               'character': 'Great',
                               'concerns': 'No',
-                              }).submit().follow()
+                              }).submit()
 
         # Check the data has been saved
         app = Application.objects.get(pk=2)
@@ -258,7 +261,6 @@ class CreateReference(WebTestBase):
         self.assertEqual(response.status_code, 200)
 
         # Check it is pre-filled as we expect
-        html = response.content
         self.assertContains(response, """<input id="id_referee_name" maxlength="100" name="referee_name" type="text" value="Mr Referee1 Name" />""", html=True)
         self.assertContains(response, """<input id="id_how_long_known" maxlength="150" name="how_long_known" type="text" value="A long time" />""", html=True)
 

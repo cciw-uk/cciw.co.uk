@@ -1,17 +1,16 @@
 beautifulsoup4==4.3.2
 diff-match-patch==20110725.1
 contextlib2==0.4.0
-Django==1.6.7
+Django==1.7.1
 django-anonymizer==0.4
-django-autocomplete-light==2.0.0a15
-django-classy-tags==0.4
+django-autocomplete-light==2.0.3
 django-debug-toolbar==1.0.1
 -e git://github.com/django-mptt/django-mptt/@60f624ef6fefd5ffefd9b77d0a8e7a9a5035253e#egg=django-mptt
--e git://github.com/spookylukey/django-paypal@07d61a4e9a5ce78153bc4ff6fd99b8eed77983bc#egg=django-paypal
+-e git://github.com/spookylukey/django-paypal@db9deb5fe6f4a7e1f815c7edfedf802c65830cad#egg=django-paypal
 django-sekizai==0.7
 django-webtest==1.7.5
 ecdsa==0.10
--e git://github.com/django-wiki/django-wiki@0d10395fe9be2d107096d3f2efacb049aa9a2b49#egg=wiki-dev
+-e git://github.com/spookylukey/django-wiki@fix_django_17#egg=wiki-dev
 -e git://github.com/pinax/django-mailer.git@44641b814660a9deef907ad9049d571cb1709901#egg=django_mailer-dev
 -e git+https://github.com/pashinin/fabric@p33#egg=Fabric
 -e git://github.com/spookylukey/faker@d1f2896b5d59f3888d06689d442033fcc99ae4d2#egg=Faker
@@ -36,6 +35,6 @@ zc.lockfile==1.0.0
 xlwt-future
 ezodf2==0.2.10
 lxml==3.3.5
-django_nyt==0.9.4
+django_nyt==0.9.5
 django-dynamic-fixture==1.8.0
 mock==1.0.1

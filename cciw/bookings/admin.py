@@ -10,7 +10,6 @@ from django.utils.http import is_safe_url
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
 from cciw.bookings.models import Price, BookingAccount, Booking, ManualPayment, RefundPayment, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, Payment
 from cciw.cciwmain.common import get_thisyear
-from cciw.utils.views import close_window_response
 
 
 account_autocomplete_field = lambda: autocomplete_light.ModelChoiceField('account')

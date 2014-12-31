@@ -8,7 +8,7 @@ from django.db import models
 from django.utils import timezone
 
 from cciw.cciwmain.models import Camp
-from cciw.officers.fields import YyyyMmField, AddressField, ExplicitBooleanField, required_field
+from cciw.officers.fields import YyyyMmField, AddressField, RequiredCharField, RequiredDateField, RequiredTextField, RequiredEmailField, RequiredYyyyMmField, RequiredAddressField, RequiredExplicitBooleanField
 
 
 class Referee(object):
@@ -46,19 +46,19 @@ REFEREE_NAME_HELP_TEXT = "Name only - please do not include job title or other i
 
 class Application(models.Model):
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
-    full_name = required_field(models.CharField, 'full name', max_length=NAME_LENGTH)
+    full_name = RequiredCharField('full name', max_length=NAME_LENGTH)
     full_maiden_name = models.CharField('full maiden name', max_length=NAME_LENGTH, blank=True)
-    birth_date = required_field(models.DateField, 'date of birth', null=True, default=None)
-    birth_place = required_field(models.CharField, 'place of birth', max_length=60)
-    address_firstline = required_field(models.CharField, 'address', max_length=40)
-    address_town = required_field(models.CharField, 'town/city', max_length=60) # 60 == len("Llanfairpwllgwyngyllgogerychwyrndrobwyll-llantysiliogogogoch")
-    address_county = required_field(models.CharField, 'county', max_length=30)
-    address_postcode = required_field(models.CharField, 'post code', max_length=10)
-    address_country = required_field(models.CharField, 'country', max_length=30)
-    address_tel = required_field(models.CharField, 'telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
+    birth_date = RequiredDateField('date of birth', null=True, default=None)
+    birth_place = RequiredCharField('place of birth', max_length=60)
+    address_firstline = RequiredCharField('address', max_length=40)
+    address_town = RequiredCharField('town/city', max_length=60) # 60 == len("Llanfairpwllgwyngyllgogerychwyrndrobwyll-llantysiliogogogoch")
+    address_county = RequiredCharField('county', max_length=30)
+    address_postcode = RequiredCharField('post code', max_length=10)
+    address_country = RequiredCharField('country', max_length=30)
+    address_tel = RequiredCharField('telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
     address_mobile = models.CharField('mobile', max_length=22, blank=True)
-    address_email = required_field(models.EmailField, 'e-mail')
-    address_since = required_field(YyyyMmField, 'resident at address since')
+    address_email = RequiredEmailField('e-mail')
+    address_since = RequiredYyyyMmField('resident at address since')
 
     address2_from = YyyyMmField('resident at address from', blank=True)
     address2_to = YyyyMmField('resident at address until', blank=True)
@@ -68,13 +68,13 @@ class Application(models.Model):
     address3_to = YyyyMmField('resident at address until', blank=True)
     address3_address = AddressField('address', blank=True)
 
-    christian_experience = required_field(models.TextField, 'christian experience')
-    youth_experience = required_field(models.TextField, 'youth work experience')
+    christian_experience = RequiredTextField('christian experience')
+    youth_experience = RequiredTextField('youth work experience')
 
-    youth_work_declined = required_field(ExplicitBooleanField, 'Have you ever had an offer to work with children/young people declined?')
+    youth_work_declined = RequiredExplicitBooleanField('Have you ever had an offer to work with children/young people declined?')
     youth_work_declined_details = models.TextField('details', blank=True)
 
-    relevant_illness = required_field(ExplicitBooleanField, '''Do you suffer or have you suffered from any
+    relevant_illness = RequiredExplicitBooleanField('''Do you suffer or have you suffered from any
             illness which may directly affect your work with children/young people?''')
     illness_details = models.TextField('illness details', blank=True)
 
@@ -90,44 +90,44 @@ class Application(models.Model):
     employer2_job = models.CharField("Job description", max_length=60, blank=True)
     employer2_leaving = models.CharField("Reason for leaving", max_length=150, blank=True)
 
-    referee1_name = required_field(models.CharField, "First referee's name", max_length=NAME_LENGTH,
+    referee1_name = RequiredCharField("First referee's name", max_length=NAME_LENGTH,
                                    help_text=REFEREE_NAME_HELP_TEXT)
-    referee1_address = required_field(AddressField, 'address')
+    referee1_address = RequiredAddressField('address')
     referee1_tel = models.CharField('telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
     referee1_mobile = models.CharField('mobile', max_length=22, blank=True)
     referee1_email = models.EmailField('e-mail', blank=True)
 
-    referee2_name = required_field(models.CharField, "Second referee's name", max_length=NAME_LENGTH,
+    referee2_name = RequiredCharField("Second referee's name", max_length=NAME_LENGTH,
                                    help_text=REFEREE_NAME_HELP_TEXT)
-    referee2_address = required_field(AddressField, 'address')
+    referee2_address = RequiredAddressField('address')
     referee2_tel = models.CharField('telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
     referee2_mobile = models.CharField('mobile', max_length=22, blank=True)
     referee2_email = models.EmailField('e-mail', blank=True)
 
-    crime_declaration = required_field(ExplicitBooleanField,
+    crime_declaration = RequiredExplicitBooleanField(
             """Have you ever been charged with or convicted
             of a criminal offence or are the subject of criminal
             proceedings?""")
     crime_details = models.TextField("If yes, give details", blank=True)
 
-    court_declaration = required_field(ExplicitBooleanField,
+    court_declaration = RequiredExplicitBooleanField(
         '''Have you ever been involved in Court
            proceedings concerning a child for whom you have
            parental responsibility?''')
     court_details = models.TextField("If yes, give details", blank=True)
 
-    concern_declaration = required_field(ExplicitBooleanField,
+    concern_declaration = RequiredExplicitBooleanField(
             """Has there ever been any cause for concern
                regarding your conduct with children/young people?""")
     concern_details = models.TextField("If yes, give details", blank=True)
 
-    allegation_declaration = required_field(ExplicitBooleanField,
+    allegation_declaration = RequiredExplicitBooleanField(
             """To your knowledge have you ever had any
             allegation made against you concerning children/young people
             which has been reported to and investigated by Social
             Services and /or the Police?""")
 
-    crb_check_consent = required_field(ExplicitBooleanField,
+    crb_check_consent = RequiredExplicitBooleanField(
             """Do you consent to the obtaining of a Criminal
             Records Bureau check on yourself? """)
 

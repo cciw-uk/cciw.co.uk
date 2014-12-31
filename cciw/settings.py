@@ -66,6 +66,7 @@ LOGIN_URL = "/officers/"
 ALLOWED_HOSTS = [".cciw.co.uk"]
 
 INSTALLED_APPS = (
+    'autocomplete_light',
     'django.contrib.auth',
     'django.contrib.admin',
     'django.contrib.contenttypes',
@@ -79,7 +80,6 @@ INSTALLED_APPS = (
     'cciw.bookings',
     'django.contrib.messages',
     'securedownload',
-    'autocomplete_light',
     'paypal.standard.ipn',
     'django.contrib.humanize',
     'mptt',
@@ -97,7 +97,6 @@ if not (LIVEBOX and WEBSERVER_RUNNING):
     # Don't want the memory overhead of these if we are serving requests
     INSTALLED_APPS += (
     'django.contrib.staticfiles',
-    'south',
     )
 
 if DEVBOX and DEBUG:
@@ -116,6 +115,10 @@ if LIVEBOX and PRODUCTION:
     'mailer',
 )
 
+
+SILENCED_SYSTEM_CHECKS = [
+    'admin.E202' # for BookingsManualPaymentInline
+    ]
 ######  DATABASE   ####
 
 if DEVBOX:
@@ -307,9 +310,6 @@ if DEVBOX:
     OUTPUT_VALIDATOR_IGNORE_PATHS = (
     )
 
-    FIXTURE_DIRS = [
-        basedir + r'/cciw/cciwmain/fixtures'
-    ]
 
 DEFAULT_CONTENT_TYPE = "text/html"
 

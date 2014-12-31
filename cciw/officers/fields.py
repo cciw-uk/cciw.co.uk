@@ -32,35 +32,34 @@ class ExplicitBooleanField(models.NullBooleanField):
         return bool(initial) != bool(data)
 
 
-def required_field(field_class, *args, **kwargs):
+def required_field(field_class):
     """
-    Returns a field with options set appropiately for "required fields" --
-    field.formfield() objects have '.required_field = True'.
+    Required fields - the admin must be able to save them when empty,
+    but need to mark as required if we are trying to finalise
+    the object (e.g. save Application with 'complete' flag)
+
+    So this returns a field class with options set appropiately --
+    blank=True, but field.formfield() objects have '.required_field = True'
+    which is checked later.
     """
-    kwargs['blank'] = True
     class NewDBField(field_class):
+        def __init__(self, *args, **kwargs):
+            kwargs['blank'] = True
+            super(NewDBField, self).__init__(*args, **kwargs)
+
         def formfield(self, *args, **kwargs):
             f = super(NewDBField, self).formfield(*args, **kwargs)
             f.required_field = True
             return f
 
-    if not threadlocals.is_web_request():
-        # Allow South to find it by giving it a unique name and putting it in
-        # this module.
-        import sys
-        NewDBField.__name__ = "Required" + field_class.__name__
-        sys.modules['cciw.officers.fields'].__dict__[NewDBField.__name__] = NewDBField
+    NewDBField.__name__ = "Required" + field_class.__name__
+    return NewDBField
 
-    return NewDBField(*args, **kwargs)
+RequiredCharField = required_field(models.CharField)
+RequiredDateField = required_field(models.DateField)
+RequiredEmailField = required_field(models.EmailField)
+RequiredYyyyMmField = required_field(YyyyMmField)
+RequiredTextField = required_field(models.TextField)
+RequiredExplicitBooleanField = required_field(ExplicitBooleanField)
+RequiredAddressField = required_field(AddressField)
 
-
-if not threadlocals.is_web_request():
-    # Allow South to introspect these - they are all based on builtin fields.
-    from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ["^cciw\.officers\.fields\.Required*"])
-    add_introspection_rules([], ["^cciw\.officers\.fields\.YyyyMmField"])
-    add_introspection_rules([], ["^cciw\.officers\.fields\.AddressField"])
-
-    # Could probably have done this using an introspection rule, but for
-    # compatiblity with how we started we must do it this way.
-    ExplicitBooleanField = models.NullBooleanField

@@ -4,7 +4,7 @@ import autocomplete_light
 from django.contrib import admin
 from django.core import urlresolvers
 from django import forms
-from django.forms.util import ErrorList
+from django.forms.utils import ErrorList
 
 from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
@@ -15,7 +15,6 @@ from cciw.utils.views import close_window_response
 
 
 officer_autocomplete_field = lambda: autocomplete_light.ModelChoiceField('user')
-
 
 class ApplicationAdminModelForm(forms.ModelForm):
 

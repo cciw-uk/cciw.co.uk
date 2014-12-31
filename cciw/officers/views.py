@@ -101,7 +101,7 @@ def index(request):
     """Displays a list of links/buttons for various actions."""
 
     # Handle redirects, since this page is LOGIN_URL
-    redirect_to = request.REQUEST.get(REDIRECT_FIELD_NAME, '')
+    redirect_to = request.GET.get(REDIRECT_FIELD_NAME, '')
     if redirect_to:
         netloc = urlparse(redirect_to)[1]
         # Heavier security check -- don't allow redirection to a different

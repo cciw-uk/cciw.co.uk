@@ -6,7 +6,7 @@ import os
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
 from django.db import transaction
 from django.utils import timezone
@@ -824,7 +824,7 @@ class Payment(models.Model):
     account = models.ForeignKey(BookingAccount)
     origin_id = models.PositiveIntegerField()
     origin_type = models.ForeignKey(ContentType)
-    origin = generic.GenericForeignKey('origin_type', 'origin_id')
+    origin = GenericForeignKey('origin_type', 'origin_id')
     processed = models.DateTimeField(null=True)
     created = models.DateTimeField()
 
