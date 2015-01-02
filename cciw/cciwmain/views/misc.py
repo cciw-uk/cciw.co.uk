@@ -1,4 +1,3 @@
-import os
 
 from django import forms
 from django.core import mail
@@ -7,7 +6,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.utils.text import wrap
 
-from cciw.cciwmain.common import get_thisyear, AjaxFormValidation, CciwBaseView
+from cciw.cciwmain.common import AjaxFormValidation, CciwBaseView
 from cciw.cciwmain.forms import CciwFormMixin
 
 def send_feedback(to_emails, from_email, name, message):
