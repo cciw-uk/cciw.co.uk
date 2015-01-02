@@ -26,7 +26,7 @@ future==0.14.3
 gunicorn==18.0
 lxml==3.3.5
 mock==1.0.1
--e git+https://github.com/paramiko/paramiko/@d99342d119fcf268c57d025fa9a9fd1124f39de0#egg=paramiko-origin/python3
+-e git+https://github.com/paramiko/paramiko/@d99342d119fcf268c57d025fa9a9fd1124f39de0#egg=paramiko
 psutil==1.2.1
 psycopg2==2.5.2
 pycrypto==2.6.1
