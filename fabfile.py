@@ -306,6 +306,9 @@ def update_database():
                 # Has multiple initial migrations we have already applied
                 run_venv("./manage.py migrate --fake --noinput django_nyt")
 
+                # Has multiple initial migrations we have already applied
+                run_venv("./manage.py migrate --fake --noinput ipn")
+
                 # Everything else
                 run_venv("./manage.py migrate --noinput")
 
