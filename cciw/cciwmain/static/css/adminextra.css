@@ -142,12 +142,18 @@ tr.refrow td.nopadding
 #user-tools 
 { 
     top: 1.4em;
+    right: 0;
     padding:0.2em 10px 1.2em 10px;
+    position: absolute;
 }
 
 .actionnote {
     background-color: #ff8;
     padding: 0.3em;
+}
+
+#branding {
+    float: none;
 }
 
 /* Popups */
