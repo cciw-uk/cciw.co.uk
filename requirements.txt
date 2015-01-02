@@ -1,23 +1,32 @@
-beautifulsoup4==4.3.2
-diff-match-patch==20110725.1
-contextlib2==0.4.0
 Django==1.7.1
+-e git+https://github.com/pashinin/fabric@p33#egg=Fabric
+-e git://github.com/spookylukey/faker@d1f2896b5d59f3888d06689d442033fcc99ae4d2#egg=Faker
+Markdown==2.3.1
+Pillow==2.3.1
+South==1.0.1
+WebOb==1.3.1
+WebTest==2.0.11
+beautifulsoup4==4.3.2
+contextlib2==0.4.0
+diff-match-patch==20110725.1
 django-anonymizer==0.4
 django-autocomplete-light==2.0.3
-django-debug-toolbar==1.0.1
+django-classy-tags==0.5.2
+django-debug-toolbar==1.2.2
+django-dynamic-fixture==1.8.0
+-e git://github.com/pinax/django-mailer.git@44641b814660a9deef907ad9049d571cb1709901#egg=django_mailer-dev
 -e git://github.com/django-mptt/django-mptt/@60f624ef6fefd5ffefd9b77d0a8e7a9a5035253e#egg=django-mptt
--e git://github.com/spookylukey/django-paypal@db9deb5fe6f4a7e1f815c7edfedf802c65830cad#egg=django-paypal
+django-nyt==0.9.5
+-e git://github.com/spookylukey/django-paypal@a5b0fdd16b49f5e9d63fe4b495fe5e4efdde267d#egg=django-paypal
 django-sekizai==0.7
 django-webtest==1.7.5
 ecdsa==0.10
--e git://github.com/spookylukey/django-wiki@fix_django_17#egg=wiki-dev
--e git://github.com/pinax/django-mailer.git@44641b814660a9deef907ad9049d571cb1709901#egg=django_mailer-dev
--e git+https://github.com/pashinin/fabric@p33#egg=Fabric
--e git://github.com/spookylukey/faker@d1f2896b5d59f3888d06689d442033fcc99ae4d2#egg=Faker
+ezodf2==0.2.10
+future==0.14.3
 gunicorn==18.0
-Markdown==2.3.1
--e git+https://github.com/paramiko/paramiko/@python3#egg=paramiko
-Pillow==2.3.1
+lxml==3.3.5
+mock==1.0.1
+-e git+https://github.com/paramiko/paramiko/@d99342d119fcf268c57d025fa9a9fd1124f39de0#egg=paramiko-origin/python3
 psutil==1.2.1
 psycopg2==2.5.2
 pycrypto==2.6.1
@@ -25,16 +34,9 @@ python-dateutil==2.2
 pytz==2014.7
 six==1.6.1
 -e git+https://github.com/mariocesar/sorl-thumbnail@007156ba3428ce02a92dcd9cce03a4803225ea66#egg=sorl.thumbnail
-South==1.0.1
 sqlparse==0.1.10
 waitress==0.8.8
-WebOb==1.3.1
-WebTest==2.0.11
+-e git://github.com/spookylukey/django-wiki@53660665bcd9aecea2a8b38f92bed9a75480141f#egg=wiki-dev
 xlrd==0.9.2
+xlwt-future==0.8.0
 zc.lockfile==1.0.0
-xlwt-future
-ezodf2==0.2.10
-lxml==3.3.5
-django_nyt==0.9.5
-django-dynamic-fixture==1.8.0
-mock==1.0.1
