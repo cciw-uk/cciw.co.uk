@@ -1223,9 +1223,8 @@ def officer_info(request):
 
 @booking_secretary_required
 def booking_secretary_reports(request, year=None):
-    from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, BOOKING_BOOKED, BOOKING_CANCELLED, \
-        BOOKING_CANCELLED_HALF_REFUND, Price, PRICE_DEPOSIT
-    from decimal import Decimal
+    from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, \
+        Price
     year = int(year)
 
     # 1. Camps and their booking levels.
