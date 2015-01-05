@@ -42,8 +42,6 @@ ADMINS = (
     ('Luke Plant', 'L.Plant.98@cantab.net'),
 )
 
-MANAGERS = ADMINS
-
 LANGUAGE_CODE = 'en-gb'
 
 SITE_ID = 1
@@ -158,11 +156,6 @@ PASSWORD_HASHERS = (
 
 TEMPLATE_DIRS = (
     basedir + r'/templates',
-)
-
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = [
