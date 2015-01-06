@@ -962,7 +962,10 @@ a.booknow {
 	padding:6px 24px;
 	text-decoration:none;
 	text-shadow:1px 1px 0px #528009;
+        margin-left: 5px;
+        margin-right: 5px;
 }
+
 a.booknow:hover {
 	background-color:#bacb97;
 	border-color:#f0fff0;
