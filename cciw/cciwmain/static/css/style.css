@@ -1,7 +1,7 @@
 /******************* COLOURS *******************/
 /*
-Primary Color:
-00B64F	22884F	007633	(37DA7E) BACB97
+  Primary Color:
+  00B64F	22884F	007633	(37DA7E) BACB97
 
 Secondary Color A:
 FF8900	BF7D30	A65900	FFA640	FFBE73
@@ -92,7 +92,7 @@ a:hover {
 }
 #menubar ul li {
     display: inline-block;
-    margin-top: 10px;	
+    margin-top: 10px;
 }
 #menubar ul li a {
     text-decoration: none;
@@ -940,39 +940,34 @@ ul.messagelist li.error{
 
 /* Booking */
 
-div.booknow {
-
-
-}
-
 a.booknow {
-	-moz-box-shadow:inset 0px 1px 0px 0px #729e48;
-	-webkit-box-shadow:inset 0px 1px 0px 0px #729e48;
-	box-shadow:inset 0px 1px 0px 0px #729e48;
-	background-color:#007633;
-	-moz-border-radius:6px;
-	-webkit-border-radius:6px;
-	border-radius:6px;
-	border:1px solid #005611;
-	display:inline-block;
-	color:#ffffff;
-	font-family:arial;
-	font-size:15px;
-	font-weight:bold;
-	padding:6px 24px;
-	text-decoration:none;
-	text-shadow:1px 1px 0px #528009;
-        margin-left: 5px;
-        margin-right: 5px;
+    -moz-box-shadow:inset 0px 1px 0px 0px #729e48;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #729e48;
+    box-shadow:inset 0px 1px 0px 0px #729e48;
+    background-color:#007633;
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    border-radius:6px;
+    border:1px solid #005611;
+    display:inline-block;
+    color:#ffffff;
+    font-family:arial;
+    font-size:15px;
+    font-weight:bold;
+    padding:6px 24px;
+    text-decoration:none;
+    text-shadow:1px 1px 0px #528009;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 a.booknow:hover {
-	background-color:#bacb97;
-	border-color:#f0fff0;
+    background-color:#bacb97;
+    border-color:#f0fff0;
 }
 a.booknow:active {
-	position:relative;
-	top:1px;
+    position:relative;
+    top:1px;
 }
 
 #bookingbar {
