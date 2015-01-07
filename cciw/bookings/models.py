@@ -837,7 +837,7 @@ class Payment(models.Model):
     objects = PaymentManager()
 
     def __str__(self):
-        retval = u"Payment: %s to %s from %s" % (self.amount, self.account.name, self.origin_type)
+        retval = u"Payment: %s %s %s via %s" % (abs(self.amount), 'from' if self.amount > 0 else 'to', self.account.name, self.origin_type)
         if self.origin is None:
             retval += " (deleted)"
         return retval
