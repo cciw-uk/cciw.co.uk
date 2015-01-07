@@ -23,7 +23,7 @@ Installation hints
   To be able to deploy, you need also need settings_production.py or settings_staging.py
   The fabfile depends on these files existing.
 
-- For creating the database, there is a complete set of South migration
+- For creating the database, there is a complete set of migration
   scripts. However, some of the data migration scripts may depend on certain
   data being present in the database. It is therefore better to get
   a dump of live DB and use that. Use the anonymize_data command to

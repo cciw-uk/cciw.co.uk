@@ -294,16 +294,6 @@ BOOKING_SESSION_TIMEOUT_SECONDS = 60*60*24*14 # 2 weeks
 BOOKING_FULL_PAYMENT_DUE_DAYS = 3 * 30 # 3 months
 BOOKING_EMAIL_REMINDER_FREQUENCY_DAYS = 3
 
-if DEVBOX:
-    OUTPUT_VALIDATOR_VALIDATORS = {
-        'text/html': '/home/luke/devel/myvalidate.sh',
-        'application/xml+xhtml': '/home/luke/devel/myvalidate.sh',
-    }
-
-    OUTPUT_VALIDATOR_IGNORE_PATHS = (
-    )
-
-
 DEFAULT_CONTENT_TYPE = "text/html"
 
 BASE_DIR = basedir

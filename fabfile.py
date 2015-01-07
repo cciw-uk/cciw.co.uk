@@ -285,7 +285,7 @@ def build_static():
 @task
 def first_deployment_mode():
     """
-    Use before first deployment to switch on fake south migrations.
+    Use before first deployment to switch on fake migrations.
     """
     env.initial_deploy = True
 

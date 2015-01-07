@@ -21,11 +21,10 @@ MIDDLEWARE_CLASSES = (
     "cciw.middleware.threadlocals.ThreadLocals",
 )
 
-INSTALLED_APPS = list(filter(lambda x: x != "south"
-                        and x != 'output_validator'
-                        and x != 'anonymizer'
-                        and x != 'debug_toolbar',
-                        INSTALLED_APPS))
+INSTALLED_APPS = list(filter(lambda x: x not in [
+    'anonymizer'
+    'debug_toolbar'
+    ], INSTALLED_APPS))
 
 SEND_BROKEN_LINK_EMAILS = False
 
