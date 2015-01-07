@@ -2,9 +2,10 @@ import autocomplete_light
 
 from django.contrib import admin
 from django.contrib import messages
+from django.core.urlresolvers import reverse
 from django import forms
 from django.http import HttpResponse, HttpResponseRedirect
-from django.utils.html import escape, escapejs
+from django.utils.html import escape, escapejs, format_html
 from django.utils.http import is_safe_url
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
@@ -69,9 +70,24 @@ class BookingAccountForm(forms.ModelForm):
         return self.cleaned_data
 
 
+# These inlines are used to display some info on BookingAccount admin
 class BookingAccountPaymentInline(admin.TabularInline):
     model = Payment
     fields = ["amount", "payment_type", "created"]
+    readonly_fields = fields
+    can_delete = False
+    extra = 0
+    max_num = 0
+
+
+class BookingAccountBookingInline(admin.TabularInline):
+    model = Booking
+    label = "Confirmed bookings"
+    def name(booking):
+        return format_html('<a href="{0}" target="_blank">{1}</a>',
+                           reverse("admin:bookings_booking_change", args=[booking.id]),
+                           booking.name)
+    fields = [name, "camp", "amount_due", "state", "is_confirmed"]
     readonly_fields = fields
     can_delete = False
     extra = 0
@@ -85,7 +101,9 @@ class BookingAccountAdmin(admin.ModelAdmin):
     readonly_fields = ['first_login', 'last_login', 'total_received']
     form = BookingAccountForm
 
-    inlines = [BookingAccountPaymentInline]
+    inlines = [BookingAccountPaymentInline,
+               BookingAccountBookingInline,
+              ]
 
     def get_fieldsets(self, request, obj=None):
         fieldsets = [
