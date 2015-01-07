@@ -489,6 +489,7 @@ class Booking(models.Model):
 
     created = models.DateTimeField(default=timezone.now)
     booking_expires = models.DateTimeField(null=True, blank=True)
+    created_online = models.BooleanField(blank=True, default=False)
 
 
     objects = BookingManager()

@@ -437,8 +437,8 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
     def test_complete(self):
         self.login()
         self.add_prices()
-        b = BookingAccount.objects.get(email=self.email)
-        self.assertEqual(b.bookings.count(), 0)
+        acc = BookingAccount.objects.get(email=self.email)
+        self.assertEqual(acc.bookings.count(), 0)
 
         data = self.place_details.copy()
         resp = self.client.post(self.url, data)
@@ -447,10 +447,13 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         self.assertTrue(resp['Location'].endswith(newpath))
 
         # Did we create it?
-        self.assertEqual(b.bookings.count(), 1)
+        self.assertEqual(acc.bookings.count(), 1)
 
-        # Check amount_due
-        self.assertEqual(b.bookings.all()[0].amount_due, self.price_full)
+        b = acc.bookings.get()
+
+        # Check attributes set correctly
+        self.assertEqual(b.amount_due, self.price_full)
+        self.assertEqual(b.created_online, True)
 
 
 class TestEditPlace(CreatePlaceMixin, TestCase):
@@ -577,6 +580,7 @@ class TestEditPlaceAdmin(CreatePlaceMixin, WebTestBase):
         self.assertContains(response, 'Select booking')
         self.assertContains(response, 'A confirmation email has been sent')
         booking = Booking.objects.get()
+        self.assertEqual(booking.created_online, False)
         self.assertEqual(booking.account.manualpayment_set.count(), 1)
         mp = booking.account.manualpayment_set.get()
         self.assertEqual(mp.payment_type, MANUAL_PAYMENT_CHEQUE)

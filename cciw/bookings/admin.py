@@ -185,7 +185,7 @@ class BookingAdmin(admin.ModelAdmin):
     ordering = ['-camp__year', 'camp__number']
     date_hierarchy = 'created'
     list_filter = [YearFilter, 'sex', 'price_type', 'serious_illness', 'state']
-    readonly_fields = ['booked_at']
+    readonly_fields = ['booked_at', 'created_online']
 
     form = BookingAdminForm
 
@@ -254,7 +254,8 @@ class BookingAdmin(admin.ModelAdmin):
               ['state',
                'booking_expires',
                'created',
-               'shelved']}),
+               'shelved',
+               'created_online']}),
         ('Add a payment for account (optional)',
          {'fields':
           ['manual_payment_amount',

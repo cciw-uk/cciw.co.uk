@@ -465,9 +465,11 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
             if request.method == "POST" and not booking.is_user_editable():
                 # Redirect to same view, but GET
                 return HttpResponseRedirect(request.get_full_path())
+            new_booking = False
         else:
             # Add
             booking = None
+            new_booking = True
 
         if request.method == "POST":
             form = self.form_class(request.POST, instance=booking)
@@ -475,6 +477,8 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
                 form.instance.account = self.request.booking_account
                 form.instance.auto_set_amount_due()
                 form.instance.state = BOOKING_INFO_COMPLETE
+                if new_booking:
+                    form.instance.created_online = True
                 form.save()
 
                 messages.info(self.request, u'Details for "%s" were saved successfully' % form.instance.name)
