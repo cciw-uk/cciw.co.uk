@@ -1,5 +1,4 @@
 import datetime
-import hmac
 import os
 import posixpath
 from urllib.parse import unquote
