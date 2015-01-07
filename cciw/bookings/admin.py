@@ -139,68 +139,13 @@ class YearFilter(admin.SimpleListFilter):
         return queryset.filter(camp__year__exact=val)
 
 
-class BookingsManualPaymentInlineForm(forms.ModelForm):
-    def save(self, commit=True, account=None):
-        if self.instance.pk is not None:
-            # Don't allow changes
-            return None
-
-        if self.instance.amount is None:
-            # Nothing entered
-            return None
-
-        self.instance.account = account
-        return super(BookingsManualPaymentInlineForm, self).save(commit=commit)
-
-    def full_clean(self, *args, **kwargs):
-        retval = super(BookingsManualPaymentInlineForm, self).full_clean(*args, **kwargs)
-        self._errors.pop('account', None)
-        self._errors.pop('created', None)
-        return retval
-
-
-# Inline for quickly adding ManualPayment when entering Booking.
-# This is a bit of a hack, but works.
-class BookingsManualPaymentInline(admin.TabularInline):
-    form = BookingsManualPaymentInlineForm
-    model = ManualPayment
-    can_delete = False
-    max_num = 1
-    extra = 1
-    verbose_name_plural = "Add a manual payment for account (optional)"
-
-    fieldsets = [(None,
-                  {'fields':
-                       ['amount', 'payment_type']})]
-
-    def get_formset(self, request, obj):
-        # Don't have a FK from ManualPayment to Booking (only BookingAccount),
-        # so can't use super.get_formset(). Need a normal ModelFormSet, with hacks.
-        from django.forms.models import modelformset_factory
-        FormSet = modelformset_factory(self.model, self.form,
-                                       max_num=self.max_num,
-                                       extra=self.extra)
-
-        class BookingsManualPaymentFormSet(FormSet):
-            def __init__(self, *args, **kwargs):
-                # Match up the signatures by removing instance
-                instance = kwargs.pop('instance', None)
-                save_as_new = kwargs.pop('save_as_new', False)
-                assert save_as_new == False
-                self.instance = instance
-                # Don't list or allow editing of existing ManualPayments
-                kwargs["queryset"] = self.model.objects.none()
-                super(BookingsManualPaymentFormSet, self).__init__(*args, **kwargs)
-
-            def save_new(self, form, commit=True):
-                # We override this in order to pass 'account' into BookingsManualPaymentInlineForm.save()
-                return form.save(commit=commit, account=self.instance.account)
-
-        return BookingsManualPaymentFormSet
-
-
 class BookingAdminForm(autocomplete_light.ModelForm):
-
+    manual_payment_amount = forms.DecimalField(label='Amount',
+                                               decimal_places=2, max_digits=10,
+                                               required=False)
+    manual_payment_payment_type = forms.ChoiceField(label='Type',
+                                                    choices=ManualPayment._meta.get_field('payment_type').choices,
+                                                    required=False)
     class Meta:
         model = Booking
         fields = "__all__"
@@ -291,9 +236,11 @@ class BookingAdmin(admin.ModelAdmin):
                'booking_expires',
                'created',
                'shelved']}),
+        ('Add a payment for account (optional)',
+         {'fields':
+          ['manual_payment_amount',
+           'manual_payment_payment_type']}),
         )
-
-    inlines = [BookingsManualPaymentInline]
 
     def save_model(self, request, obj, form, change):
         if obj.id is not None:
@@ -301,6 +248,16 @@ class BookingAdmin(admin.ModelAdmin):
         else:
             old_state = None
         retval = super(BookingAdmin, self).save_model(request, obj, form, change)
+
+        # NB: do this handling here, not in BookingAdminForm.save(),
+        # because we want to make sure it is only done when the model is actually
+        # saved.
+        manual_amount = form.cleaned_data.get('manual_payment_amount', None)
+        if manual_amount:
+            obj.account.manualpayment_set.create(
+                amount=manual_amount,
+                payment_type=int(form.cleaned_data['manual_payment_payment_type']))
+
         if old_state == BOOKING_INFO_COMPLETE and obj.state == BOOKING_APPROVED:
             email_sent = send_booking_approved_mail(obj)
             if email_sent:

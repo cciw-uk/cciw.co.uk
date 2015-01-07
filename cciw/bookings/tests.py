@@ -16,7 +16,7 @@ import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.models import BookingAccount, Price, Booking, Payment, ManualPayment, RefundPayment, book_basket_now, process_all_payments
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND
+from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND, MANUAL_PAYMENT_CHEQUE
 from cciw.bookings.utils import camp_bookings_to_spreadsheet
 from cciw.cciwmain.models import Camp, Person
 from cciw.cciwmain.tests.mailhelpers import read_email_url
@@ -566,6 +566,8 @@ class TestEditPlaceAdmin(CreatePlaceMixin, WebTestBase):
                 'account': account.id,
                 'state': BOOKING_BOOKED,
                 'amount_due': '130.00',
+                'manual_payment_amount': '100',
+                'manual_payment_payment_type': str(MANUAL_PAYMENT_CHEQUE),
                 })
         form = response.forms['booking_form']
         # Hack needed to cope with autocomplete_light widget
@@ -574,6 +576,11 @@ class TestEditPlaceAdmin(CreatePlaceMixin, WebTestBase):
             form, fields).submit('save').follow()
         self.assertContains(response, 'Select booking')
         self.assertContains(response, 'A confirmation email has been sent')
+        booking = Booking.objects.get()
+        self.assertEqual(booking.account.manualpayment_set.count(), 1)
+        mp = booking.account.manualpayment_set.get()
+        self.assertEqual(mp.payment_type, MANUAL_PAYMENT_CHEQUE)
+        self.assertEqual(mp.amount, Decimal('100'))
 
 
 class TestListBookings(CreatePlaceMixin, TestCase):

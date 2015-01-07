@@ -115,7 +115,6 @@ if LIVEBOX and PRODUCTION:
 
 
 SILENCED_SYSTEM_CHECKS = [
-    'admin.E202', # for BookingsManualPaymentInline
     '1_6.W001',
     ]
 ######  DATABASE   ####
