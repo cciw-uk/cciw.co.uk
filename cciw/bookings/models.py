@@ -226,6 +226,11 @@ class BookingAccount(models.Model):
 
         return total - self.total_received
 
+    def admin_balance(self):
+        return self.get_balance(confirmed_only=False, allow_deposits=False)
+    admin_balance.short_description = 'balance'
+    admin_balance = property(admin_balance)
+
     def receive_payment(self, amount):
         """
         Adds the amount to the account's total_received field.  This should only

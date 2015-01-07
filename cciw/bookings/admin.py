@@ -98,7 +98,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'email', 'post_code', 'phone_number']
     ordering = ['email']
     search_fields = ['email', 'name']
-    readonly_fields = ['first_login', 'last_login', 'total_received']
+    readonly_fields = ['first_login', 'last_login', 'total_received', 'admin_balance']
     form = BookingAccountForm
 
     inlines = [BookingAccountPaymentInline,
@@ -125,6 +125,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
                       ['first_login',
                        'last_login',
                        'total_received',
+                       'admin_balance',
                        ]}))
         return fieldsets
 
