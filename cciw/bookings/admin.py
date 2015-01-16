@@ -158,6 +158,20 @@ class YearFilter(admin.SimpleListFilter):
         return queryset.filter(camp__year__exact=val)
 
 
+class ConfirmedFilter(admin.SimpleListFilter):
+    title = "confirmed"
+    parameter_name = "confirmed"
+
+    def lookups(self, request, model_admin):
+        return [(True, "Confirmed only")]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.confirmed()
+        else:
+            return queryset
+
+
 class BookingAdminForm(autocomplete_light.ModelForm):
     manual_payment_amount = forms.DecimalField(label='Amount',
                                                decimal_places=2, max_digits=10,
@@ -184,7 +198,7 @@ class BookingAdmin(admin.ModelAdmin):
     search_fields = ['first_name', 'last_name']
     ordering = ['-camp__year', 'camp__number']
     date_hierarchy = 'created'
-    list_filter = [YearFilter, 'sex', 'price_type', 'serious_illness', 'state', 'created_online']
+    list_filter = [YearFilter, 'sex', 'price_type', 'serious_illness', 'state', 'created_online', ConfirmedFilter]
     readonly_fields = ['booked_at', 'created_online']
 
     form = BookingAdminForm
