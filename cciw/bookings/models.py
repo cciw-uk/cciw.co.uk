@@ -339,10 +339,7 @@ class BookingAccount(models.Model):
             places_confirmed.send(self, bookings=confirmed_bookings, payment_received=True)
 
 
-class BookingManager(models.Manager):
-    use_for_related_fields = True
-    def get_queryset(self):
-        return super(BookingManager, self).get_queryset().select_related('camp', 'account')
+class BookingQuerySet(models.QuerySet):
 
     def basket(self, year):
         return self._ready_to_book(year, False)
@@ -351,19 +348,19 @@ class BookingManager(models.Manager):
         return self._ready_to_book(year, True)
 
     def _ready_to_book(self, year, shelved):
-        qs = self.get_queryset().filter(camp__year__exact=year, shelved=shelved)
+        qs = self.filter(camp__year__exact=year, shelved=shelved)
         return qs.filter(state=BOOKING_INFO_COMPLETE) | qs.filter(state=BOOKING_APPROVED)
 
     def booked(self):
-        return self.get_queryset().filter(state=BOOKING_BOOKED)
+        return self.filter(state=BOOKING_BOOKED)
 
     def confirmed(self):
-        return self.get_queryset().filter(state=BOOKING_BOOKED,
-                                           booking_expires__isnull=True)
+        return self.filter(state=BOOKING_BOOKED,
+                           booking_expires__isnull=True)
 
     def unconfirmed(self):
-        return self.get_queryset().filter(state=BOOKING_BOOKED,
-                                           booking_expires__isnull=False)
+        return self.filter(state=BOOKING_BOOKED,
+                           booking_expires__isnull=False)
 
     def payable(self, confirmed_only, full_amount_only, today=None, from_list=None):
         """
@@ -395,8 +392,8 @@ class BookingManager(models.Manager):
             return retval
 
 
-        cancelled = self.get_queryset().filter(state__in=[BOOKING_CANCELLED,
-                                                           BOOKING_CANCELLED_HALF_REFUND])
+        cancelled = self.filter(state__in=[BOOKING_CANCELLED,
+                                           BOOKING_CANCELLED_HALF_REFUND])
         retval = cancelled | (self.confirmed() if confirmed_only else self.booked())
         if full_amount_only:
             retval = retval.exclude(camp__start_date__gt=cutoff)
@@ -414,14 +411,24 @@ class BookingManager(models.Manager):
             return retval.filter(camp__start_date__gt=cutoff)
 
     def cancelled(self):
-        return self.get_queryset().filter(state__in=[BOOKING_CANCELLED,
-                                                      BOOKING_CANCELLED_HALF_REFUND,
-                                                      BOOKING_CANCELLED_FULL_REFUND])
+        return self.filter(state__in=[BOOKING_CANCELLED,
+                                      BOOKING_CANCELLED_HALF_REFUND,
+                                      BOOKING_CANCELLED_FULL_REFUND])
 
     def need_approving(self):
-        qs = self.get_queryset().filter(state=BOOKING_INFO_COMPLETE)
+        qs = self.filter(state=BOOKING_INFO_COMPLETE)
         qs = qs.filter(price_type=PRICE_CUSTOM) | qs.filter(serious_illness=True)
         return qs
+
+
+class BookingManagerBase(models.Manager):
+    use_for_related_fields = True
+
+    def get_queryset(self):
+        return super(BookingManagerBase, self).get_queryset().select_related('camp', 'account')
+
+
+BookingManager = BookingManagerBase.from_queryset(BookingQuerySet)
 
 
 class Booking(models.Model):
