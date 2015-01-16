@@ -341,14 +341,17 @@ class BookingAccount(models.Model):
 
 class BookingQuerySet(models.QuerySet):
 
-    def basket(self, year):
-        return self._ready_to_book(year, False)
+    def for_year(self, year):
+        return self.filter(camp__year__exact=year)
 
-    def shelf(self, year):
-        return self._ready_to_book(year, True)
+    def in_basket(self):
+        return self._ready_to_book(False)
 
-    def _ready_to_book(self, year, shelved):
-        qs = self.filter(camp__year__exact=year, shelved=shelved)
+    def on_shelf(self):
+        return self._ready_to_book(True)
+
+    def _ready_to_book(self, shelved):
+        qs = self.filter(shelved=shelved)
         return qs.filter(state=BOOKING_INFO_COMPLETE) | qs.filter(state=BOOKING_APPROVED)
 
     def booked(self):
@@ -614,7 +617,7 @@ class Booking(models.Model):
 
         # 2nd/3rd child discounts
         if self.price_type == PRICE_2ND_CHILD:
-            qs = self.account.bookings.basket(self.camp.year)
+            qs = self.account.bookings.for_year(self.camp.year).in_basket()
             qs = qs | self.account.bookings.booked()
             if not qs.filter(price_type=PRICE_FULL).exists():
                 errors.append(u"You cannot use a 2nd child discount unless you have "
@@ -622,7 +625,7 @@ class Booking(models.Model):
                               u"and choose an appropriate price type.")
 
         if self.price_type == PRICE_3RD_CHILD:
-            qs = self.account.bookings.basket(self.camp.year)
+            qs = self.account.bookings.for_year(self.camp.year).in_basket()
             qs = qs | self.account.bookings.booked()
             qs = qs.filter(price_type=PRICE_FULL) | qs.filter(price_type=PRICE_2ND_CHILD)
             if qs.count() < 2:
@@ -671,7 +674,7 @@ class Booking(models.Model):
             # Complex - need to check the other places that are about to be booked.
             # (if there is one place left, and two campers for it, we can't say that
             # there are enough places)
-            same_camp_bookings = self.account.bookings.basket(self.camp.year).filter(camp=self.camp)
+            same_camp_bookings = self.account.bookings.filter(camp=self.camp).in_basket()
             places_to_be_booked = same_camp_bookings.count()
             places_to_be_booked_male = same_camp_bookings.filter(sex=SEX_MALE).count()
             places_to_be_booked_female = same_camp_bookings.filter(sex=SEX_FEMALE).count()
@@ -713,7 +716,7 @@ class Booking(models.Model):
 
 
         if self.price_type == PRICE_FULL:
-            full_pricers = self.account.bookings.basket(self.camp.year)\
+            full_pricers = self.account.bookings.for_year(self.camp.year).in_basket()\
                 .filter(price_type=PRICE_FULL).order_by('first_name', 'last_name')
             if len(full_pricers) > 1:
                 names = [b.name for b in full_pricers]
@@ -729,7 +732,7 @@ class Booking(models.Model):
                 warnings.append(warning)
 
         if self.price_type == PRICE_2ND_CHILD:
-            second_childers = self.account.bookings.basket(self.camp.year)\
+            second_childers = self.account.bookings.for_year(self.camp.year).in_basket()\
                 .filter(price_type=PRICE_2ND_CHILD).order_by('first_name', 'last_name')
             if len(second_childers) > 1:
                 names = [b.name for b in second_childers]

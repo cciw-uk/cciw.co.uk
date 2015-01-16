@@ -314,7 +314,7 @@ class BookingIndex(CciwBaseView):
 
 def next_step(account):
     if account.has_account_details():
-        if account.bookings.basket(get_thisyear()).exists():
+        if account.bookings.for_year(get_thisyear()).in_basket().exists():
             return HttpResponseRedirect(reverse('cciw.bookings.views.list_bookings'))
         else:
             return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
@@ -702,8 +702,8 @@ class BookingListBookings(CciwBaseView):
         bookings = request.booking_account.bookings
         # NB - use lists here, not querysets, so that both state_token and book_now
         # functionality apply against same set of bookings.
-        basket_bookings = list(bookings.basket(year))
-        shelf_bookings = list(bookings.shelf(year))
+        basket_bookings = list(bookings.for_year(year).in_basket())
+        shelf_bookings = list(bookings.for_year(year).on_shelf())
 
         if request.method == "POST":
             if 'add_another' in request.POST:
@@ -890,11 +890,12 @@ class BookingAccountOverview(CciwBaseView):
         c = {}
         acc = self.request.booking_account
         year = get_thisyear()
-        c['confirmed_places'] = acc.bookings.confirmed().filter(camp__year__exact=year)
-        c['unconfirmed_places'] = acc.bookings.unconfirmed().filter(camp__year__exact=year)
-        c['cancelled_places'] = acc.bookings.cancelled().filter(camp__year__exact=year)
-        c['basket'] = acc.bookings.basket(year).exists()
-        c['shelf'] = acc.bookings.shelf(year).exists()
+        bookings = acc.bookings.for_year(year)
+        c['confirmed_places'] = bookings.confirmed()
+        c['unconfirmed_places'] = bookings.unconfirmed()
+        c['cancelled_places'] = bookings.cancelled()
+        c['basket'] = bookings.in_basket()
+        c['shelf'] = bookings.on_shelf().exists()
         c['stage'] = ''
         return self.render(c)
 

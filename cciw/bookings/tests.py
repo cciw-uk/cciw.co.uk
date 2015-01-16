@@ -1141,7 +1141,7 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
         self.create_place()
         self.create_leaders()
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(self.camp.year))
+        book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
         self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
 
         mail.outbox = []
@@ -1173,7 +1173,7 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
         self.create_place()
         self.create_place({'price_type': PRICE_2ND_CHILD})
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(self.camp.year))
+        book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
         self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
 
         # Between the two
@@ -1264,7 +1264,7 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
 
         self.create_place()
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(self.camp.year))
+        book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
 
         mail.outbox = []
         acc.receive_payment(acc.bookings.all()[0].amount_due)
@@ -1281,7 +1281,7 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
                            'last_name': 'Child'})
 
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(self.camp.year))
+        book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
 
         mail.outbox = []
         acc.receive_payment(acc.get_balance())
@@ -1466,13 +1466,13 @@ class TestAccountOverview(CreatePlaceMixin, TestCase):
         # Book a place and pay
         self.create_place()
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(self.camp.year))
+        book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
         acc.receive_payment(self.price_deposit)
 
         # Book another
         self.create_place({'first_name': 'Another',
                            'last_name': 'Child'})
-        book_basket_now(acc.bookings.basket(self.camp.year))
+        book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
 
         # 3rd place, not booked at all
         self.create_place({'first_name': '3rd',
@@ -1540,7 +1540,7 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         self.create_place()
 
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(self.camp.year))
+        book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
 
         mail.outbox = []
 
@@ -1554,7 +1554,7 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         self.create_place()
 
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(self.camp.year))
+        book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
         b = acc.bookings.all()[0]
         b.booking_expires = b.booking_expires - timedelta(0.49)
         b.save()
@@ -1575,7 +1575,7 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
         self.create_place()
 
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(self.camp.year))
+        book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
         b = acc.bookings.all()[0]
         b.booking_expires = b.booking_expires - timedelta(1.01)
         b.save()
@@ -1601,7 +1601,7 @@ class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
                            'last_name': 'Two'})
 
         acc = self.get_account()
-        book_basket_now(acc.bookings.basket(self.camp.year))
+        book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
         acc.bookings.update(booking_expires = timezone.now() - timedelta(1))
 
         mail.outbox = []
@@ -1768,7 +1768,7 @@ class TestEarlyBird(CreatePlaceMixin, TestCase):
         with mock.patch('cciw.bookings.models.get_early_bird_cutoff_date') as mock_f:
             # Cut off date definitely in the future
             mock_f.return_value = timezone.get_default_timezone().localize(datetime(self.camp.year + 10, 1, 1))
-            book_basket_now(acc.bookings.basket(self.camp.year))
+            book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
         self.assertTrue(acc.bookings.all()[0].early_bird_discount)
         self.assertEqual(acc.bookings.all()[0].amount_due, self.price_full - self.price_early_bird_discount)
 
@@ -1778,7 +1778,7 @@ class TestEarlyBird(CreatePlaceMixin, TestCase):
         with mock.patch('cciw.bookings.models.get_early_bird_cutoff_date') as mock_f:
             # Cut off date definitely in the past
             mock_f.return_value = timezone.get_default_timezone().localize(datetime(self.camp.year - 10, 1, 1))
-            book_basket_now(acc.bookings.basket(self.camp.year))
+            book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
         self.assertFalse(acc.bookings.all()[0].early_bird_discount)
         self.assertEqual(acc.bookings.all()[0].amount_due, self.price_full)
 
