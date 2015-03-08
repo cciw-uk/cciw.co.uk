@@ -420,7 +420,18 @@ class BookingQuerySet(models.QuerySet):
 
     def need_approving(self):
         qs = self.filter(state=BOOKING_INFO_COMPLETE)
-        qs = qs.filter(price_type=PRICE_CUSTOM) | qs.filter(serious_illness=True)
+        qs_custom_price = qs.filter(price_type=PRICE_CUSTOM)
+        qs_serious_illness = qs.filter(serious_illness=True)
+        # See also age_on_camp()
+        qs_too_young = qs.extra(where=[
+            """ "bookings_booking"."date_of_birth" > """
+            """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."minimum_age") as text) || '-08-31')"""
+            ])
+        qs_too_old = qs.extra(where=[
+            """ "bookings_booking"."date_of_birth" <= """
+            """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."maximum_age" - 1) as text) || '-08-31')"""
+        ])
+        qs = qs_custom_price | qs_serious_illness | qs_too_old | qs_too_young
         return qs
 
 
@@ -580,6 +591,7 @@ class Booking(models.Model):
 
     def age_on_camp(self):
         # Age is calculated based on school years, i.e. age on 31st August
+        # See also BookingManager.need_approving()
         return relativedelta(date(self.camp.year, 8, 31), self.date_of_birth)
 
     def get_available_discounts(self, now):
