@@ -2,7 +2,7 @@
 A booking has been received for camp {{ camp }}
 
 Name: {{ booking.name }}
-Age: {{ booking.age_on_camp.years }} years
+Age: {{ booking.age_on_camp }} years
 Sex: {{ booking.get_sex_display }}
 
 Please see the spreadsheet for more information:

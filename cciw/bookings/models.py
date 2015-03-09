@@ -419,10 +419,11 @@ class BookingQuerySet(models.QuerySet):
                                       BOOKING_CANCELLED_FULL_REFUND])
 
     def need_approving(self):
-        qs = self.filter(state=BOOKING_INFO_COMPLETE)
+        # See also Booking.approval_reasons()
+        qs = self.filter(state=BOOKING_INFO_COMPLETE).select_related('camp')
         qs_custom_price = qs.filter(price_type=PRICE_CUSTOM)
         qs_serious_illness = qs.filter(serious_illness=True)
-        # See also age_on_camp()
+        # See also Booking.age_on_camp()
         qs_too_young = qs.extra(where=[
             """ "bookings_booking"."date_of_birth" > """
             """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."minimum_age") as text) || '-08-31')"""
@@ -592,7 +593,34 @@ class Booking(models.Model):
     def age_on_camp(self):
         # Age is calculated based on school years, i.e. age on 31st August
         # See also BookingManager.need_approving()
-        return relativedelta(date(self.camp.year, 8, 31), self.date_of_birth)
+        return relativedelta(self.age_base_date(), self.date_of_birth).years
+
+    def age_base_date(self):
+        return date(self.camp.year, 8, 31)
+
+    @property
+    def is_too_young(self):
+         return self.age_on_camp() < self.camp.minimum_age
+
+    @property
+    def is_too_old(self):
+        return self.age_on_camp() > self.camp.maximum_age
+
+    def approval_reasons(self):
+        """
+        Gets a list of human-readable reasons why the booking needs manual approval.
+        """
+        # See also BookingManager.need_approving()
+        reasons = []
+        if self.serious_illness:
+            reasons.append("Serious illness")
+        if self.is_custom_discount:
+            reasons.append("Custom discount")
+        if self.is_too_young:
+            reasons.append("Too young")
+        if self.is_too_old:
+            reasons.append("Too old")
+        return reasons
 
     def get_available_discounts(self, now):
         retval = []
@@ -651,13 +679,14 @@ class Booking(models.Model):
 
         # Check age.
         camper_age = self.age_on_camp()
-        if camper_age.years < self.camp.minimum_age:
-            errors.append(u"Camper will be %d which is below the minimum age (%d) on the 31st August %d"
-                          % (camper_age.years, self.camp.minimum_age, self.camp.year))
+        age_base = self.age_base_date().strftime("%e %B %Y")
+        if self.is_too_young:
+            errors.append(u"Camper will be %d which is below the minimum age (%d) on %s"
+                          % (camper_age, self.camp.minimum_age, age_base))
 
-        if camper_age.years > self.camp.maximum_age:
-            errors.append(u"Camper will be %d which is above the maximum age (%d) on the 31st August %d"
-                          % (camper_age.years, self.camp.maximum_age, self.camp.year))
+        if self.is_too_old:
+            errors.append(u"Camper will be %d which is above the maximum age (%d) on %s"
+                          % (camper_age, self.camp.maximum_age, age_base))
 
         # Check place availability
         places_left, places_left_male, places_left_female = self.camp.get_places_left()
