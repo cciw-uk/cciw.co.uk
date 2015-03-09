@@ -264,7 +264,10 @@ def get_thisyear():
     if _thisyear is None or _thisyear_timestamp is None \
         or (timezone.now() - _thisyear_timestamp).seconds > 3600:
         from cciw.cciwmain.models import Camp
-        lastcamp = Camp.objects.prefetch_related(None).order_by('-end_date')[0]
+        try:
+            lastcamp = Camp.objects.prefetch_related(None).order_by('-end_date')[0]
+        except IndexError:
+            return timezone.now().year
         if lastcamp.is_past():
             _thisyear = lastcamp.year + 1
         else:

@@ -8,25 +8,12 @@ from cciw.officers.models import Application
 from cciw.officers.views import get_previous_references
 from cciw.utils.tests.webtest import WebTestBase
 
-OFFICER_USERNAME = 'mrofficer2'
-OFFICER_PASSWORD = 'test_normaluser_password'
-OFFICER = (OFFICER_USERNAME, OFFICER_PASSWORD)
-
-
-LEADER_USERNAME = 'davestott'
-LEADER_PASSWORD = 'test_normaluser_password'
-LEADER_EMAIL = 'leader@somewhere.com'
-LEADER = (LEADER_USERNAME, LEADER_PASSWORD)
-
-
-BOOKING_SEC_USERNAME = 'booker'
-BOOKING_SEC_PASSWORD = 'test_normaluser_password'
-BOOKING_SEC = (BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD)
-
 # Data: Applications 1 to 3 are in year 2000, for camps in summer 2000
 # Application 4 is for 2001
 #
 #
+
+from .base import OFFICER, LEADER_USERNAME, LEADER_PASSWORD, LEADER_EMAIL, LEADER
 
 
 class ReferencesPage(WebTestBase):

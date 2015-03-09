@@ -20,7 +20,7 @@ from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, P
 from cciw.bookings.utils import camp_bookings_to_spreadsheet
 from cciw.cciwmain.models import Camp, Person
 from cciw.cciwmain.tests.mailhelpers import read_email_url
-from cciw.officers.tests.test_references import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD, BOOKING_SEC
+from cciw.officers.tests.base import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD, BOOKING_SEC, OfficersSetupMixin
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.webtest import WebTestBase
@@ -43,6 +43,8 @@ class CreateCampMixin(object):
     camp_maximum_age = 17
 
     def create_camp(self):
+        if hasattr(self, 'camp'):
+            return
         # Need to create a Camp that we can choose i.e. is in the future.
         # We also need it so that payments can be  to be made when only the deposit is due
         delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE_DAYS
@@ -93,6 +95,10 @@ class CreatePricesMixin(object):
         self.price_early_bird_discount = Price.objects.get_or_create(year=year,
                                                                      price_type=PRICE_EARLY_BIRD_DISCOUNT,
                                                                      price=Decimal('10'))[0].price
+
+    def setUp(self):
+        super(CreatePricesMixin, self).setUp()
+        self.create_camp()
 
 
 class LogInMixin(object):
@@ -165,34 +171,29 @@ class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
         self.create_camp()
 
 
+class BookingBaseMixin(object):
+    def setUp(self):
+        super(BookingBaseMixin, self).setUp()
+        G(HtmlChunk, name="bookingform_post_to")
+        G(HtmlChunk, name="booking_secretary_address")
+
 ### Test cases ###
 
 
-class TestBookingIndex(CreatePricesMixin, CreateCampMixin, TestCase):
-
-    fixtures = ['basic.json']
-
-    def setUp(self):
-        super(TestBookingIndex, self).setUp()
-        HtmlChunk.objects.get_or_create(name="bookingform_post_to")
+class TestBookingIndex(BookingBaseMixin, CreatePricesMixin, CreateCampMixin, TestCase):
 
     def test_show_with_no_prices(self):
-        self.create_camp()
         resp = self.client.get(reverse('cciw.bookings.views.index'))
         self.assertContains(resp, "Prices for %d have not been finalised yet" % self.camp.year)
 
-
     def test_show_with_prices(self):
-        self.create_camp() # need for booking to be open
-        self.add_prices()
+        self.add_prices() # need for booking to be open
         resp = self.client.get(reverse('cciw.bookings.views.index'))
         self.assertContains(resp, "£100")
         self.assertContains(resp, "£20") # Deposit price
 
 
-class TestBookingStart(CreatePlaceMixin, TestCase):
-
-    fixtures = ['basic.json']
+class TestBookingStart(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
     url = reverse('cciw.bookings.views.start')
 
@@ -250,9 +251,8 @@ class TestBookingStart(CreatePlaceMixin, TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(resp['Location'].endswith(reverse('cciw.bookings.views.list_bookings')))
 
-class TestBookingVerify(TestCase):
 
-    fixtures = ['basic.json']
+class TestBookingVerify(BookingBaseMixin, TestCase):
 
     def _read_email_verify_email(self, email):
         return read_email_url(email, "https?://.*/booking/v/.*")
@@ -277,7 +277,6 @@ class TestBookingVerify(TestCase):
                          resp.cookies['bookingaccount'].value.split(':')[0])
         self.assertTrue(acc.last_login is not None)
         self.assertTrue(acc.first_login is not None)
-
 
     def test_verify_correct_and_has_details(self):
         """
@@ -354,9 +353,7 @@ class TestBookingVerify(TestCase):
         self.assertTrue('bookingaccount' not in resp.cookies)
 
 
-class TestAccountDetails(LogInMixin, TestCase):
-
-    fixtures = ['basic.json']
+class TestAccountDetails(BookingBaseMixin, LogInMixin, TestCase):
 
     url = reverse('cciw.bookings.views.account_details')
 
@@ -390,9 +387,7 @@ class TestAccountDetails(LogInMixin, TestCase):
         self.assertEqual(b.name, 'Mr Booker')
 
 
-class TestAddPlace(CreatePlaceMixin, TestCase):
-
-    fixtures = ['basic.json']
+class TestAddPlace(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
     url = reverse('cciw.bookings.views.add_place')
 
@@ -456,9 +451,7 @@ class TestAddPlace(CreatePlaceMixin, TestCase):
         self.assertEqual(b.created_online, True)
 
 
-class TestEditPlace(CreatePlaceMixin, TestCase):
-
-    fixtures = ['basic.json']
+class TestEditPlace(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
     # Most functionality is shared with the 'add' form, so doesn't need testing separately.
 
@@ -532,9 +525,7 @@ class TestEditPlace(CreatePlaceMixin, TestCase):
             self.assertNotEqual(acc.bookings.all()[0].first_name, "A New Name")
 
 
-class TestEditPlaceAdmin(CreatePlaceMixin, WebTestBase):
-
-    fixtures = ['basic.json', 'officers_users.json']
+class TestEditPlaceAdmin(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, WebTestBase):
 
     def test_approve(self):
         self.create_place({'price_type': PRICE_CUSTOM})
@@ -587,10 +578,8 @@ class TestEditPlaceAdmin(CreatePlaceMixin, WebTestBase):
         self.assertEqual(mp.amount, Decimal('100'))
 
 
-class TestListBookings(CreatePlaceMixin, TestCase):
+class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
     # This includes tests for most of the business logic
-
-    fixtures = ['basic.json']
 
     url = reverse('cciw.bookings.views.list_bookings')
 
@@ -1073,9 +1062,7 @@ class TestListBookings(CreatePlaceMixin, TestCase):
                          0)
 
 
-class TestPay(CreatePlaceMixin, TestCase):
-
-    fixtures = ['basic.json']
+class TestPay(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
     url = reverse('cciw.bookings.views.list_bookings')
 
@@ -1107,9 +1094,7 @@ class TestPay(CreatePlaceMixin, TestCase):
         self.assertContains(resp, '£%s' % expected_price)
 
 
-class TestPayReturnPoints(LogInMixin, TestCase):
-
-    fixtures = ['basic.json']
+class TestPayReturnPoints(BookingBaseMixin, LogInMixin, TestCase):
 
     url = reverse('cciw.bookings.views.list_bookings')
 
@@ -1130,9 +1115,7 @@ class TestPayReturnPoints(LogInMixin, TestCase):
         self.assertEqual(resp.status_code, 200)
 
 
-class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
-
-    fixtures = ['basic.json']
+class TestPaymentReceived(BookingBaseMixin, CreatePlaceMixin, CreateLeadersMixin, TestCase):
 
     def test_receive_payment(self):
         # Late booking:
@@ -1165,7 +1148,6 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
                               if sorted(m.to) == sorted([self.leader_1_user.email,
                                                          self.leader_2_user.email])]),
                          1)
-
 
     def test_insufficient_receive_payment(self):
         # Need to move into region where deposits are not allowed.
@@ -1308,11 +1290,9 @@ class TestPaymentReceived(CreatePlaceMixin, CreateLeadersMixin, TestCase):
                          Decimal('100.00'))
 
 
-class TestAjaxViews(CreatePlaceMixin, TestCase):
+class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, TestCase):
     # Basic tests to ensure that the views that serve AJAX return something
     # sensible
-
-    fixtures = ['basic.json', 'officers_users.json']
 
     def test_places_json(self):
         self.create_place()
@@ -1456,9 +1436,7 @@ class TestAjaxViews(CreatePlaceMixin, TestCase):
                             for p in problems))
 
 
-class TestAccountOverview(CreatePlaceMixin, TestCase):
-
-    fixtures = ['basic.json']
+class TestAccountOverview(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
     url = reverse('cciw.bookings.views.account_overview')
 
@@ -1510,8 +1488,6 @@ class TestAccountOverview(CreatePlaceMixin, TestCase):
 
 class TestLogOut(LogInMixin, TestCase):
 
-    fixtures = ['basic']
-
     url = reverse('cciw.bookings.views.logout')
 
     def test_get(self):
@@ -1530,8 +1506,6 @@ class TestLogOut(LogInMixin, TestCase):
 
 
 class TestExpireBookingsCommand(CreatePlaceMixin, TestCase):
-
-    fixtures = ['basic']
 
     def test_just_created(self):
         """
@@ -1702,7 +1676,6 @@ class TestCancel(CreatePlaceMixin, TestCase):
     """
     Tests covering what happens when a user cancels.
     """
-    fixtures = ['basic.json']
 
     def test_amount_due(self):
         self.create_place()
@@ -1728,7 +1701,6 @@ class TestCancelFullRefund(CreatePlaceMixin, TestCase):
     Tests covering what happens when CCIW cancels a camp,
     using 'full refund'.
     """
-    fixtures = ['basic.json']
 
     def test_amount_due(self):
         self.create_place()
@@ -1751,7 +1723,6 @@ class TestCancelFullRefund(CreatePlaceMixin, TestCase):
 
 class TestEarlyBird(CreatePlaceMixin, TestCase):
 
-    fixture = ['basic.json']
     def test_expected_amount_due(self):
         self.create_place()
         acc = self.get_account()
@@ -1797,8 +1768,6 @@ class TestEarlyBird(CreatePlaceMixin, TestCase):
 
 class TestExportPlaces(CreatePlaceMixin, TestCase):
 
-    fixtures = ['basic.json', 'officers_users.json']
-
     def test_summary(self):
         self.create_place()
         acc = self.get_account()
@@ -1834,8 +1803,6 @@ class TestExportPlaces(CreatePlaceMixin, TestCase):
 
 
 class TestBookingModel(CreatePlaceMixin, TestCase):
-
-    fixtures = ['basic.json']
 
     def test_need_approving(self):
         self.create_place()

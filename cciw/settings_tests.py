@@ -13,6 +13,7 @@ DATABASES = {
     }
 }
 
+
 MIDDLEWARE_CLASSES = (
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
