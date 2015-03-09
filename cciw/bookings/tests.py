@@ -1831,3 +1831,21 @@ class TestExportPlaces(CreatePlaceMixin, TestCase):
 
         self.assertEqual(wksh_bdays.cell(0, 3).value, u"Age")
         self.assertEqual(wksh_bdays.cell(1, 3).value, "12")
+
+
+class TestBookingModel(CreatePlaceMixin, TestCase):
+
+    fixtures = ['basic.json']
+
+    def test_need_approving(self):
+        self.create_place()
+        self.assertEqual(len(Booking.objects.need_approving()), 0)
+
+        Booking.objects.update(serious_illness=True)
+        self.assertEqual(len(Booking.objects.need_approving()), 1)
+
+        Booking.objects.update(serious_illness=False)
+        Booking.objects.update(date_of_birth=date(1980, 1, 1))
+        self.assertEqual(len(Booking.objects.need_approving()), 1)
+
+        self.assertEqual(Booking.objects.get().approval_reasons(), ['Too old'])
