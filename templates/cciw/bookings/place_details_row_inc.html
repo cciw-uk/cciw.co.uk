@@ -1,53 +1,53 @@
 {% load static %}
-  <tr>
-    <td>
-      {{ b.name }}
-    </td>
-    <td>
-      <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">Camp {{ b.camp.number }}, {{ b.camp.leaders_formatted }}</a>,
-      {{ b.camp.start_date|date:"j M Y" }}
-    </td>
-    <td class="price">
-      {% if b.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ b.amount_due_normalised }}{% endif %}
-    </td>
-    <td rowspan="2" style="text-align:center;">
-      <input type="submit" name="edit_{{ b.id }}" value="View/edit"><br/>
-      {% if basket %}
-        <input type="submit" name="shelve_{{ b.id }}" value="Save for later"><br/>
-      {% endif %}
-      {% if shelf %}
-        <input type="submit" name="unshelve_{{ b.id }}" value="Move to basket"><br/>
-      {% endif %}
-        <input type="submit" name="delete_{{ b.id }}" value="Delete">
-    </td>
-  </tr>
-  <tr class="sectionbottom">
-    <td colspan="3">
-      {% if b.bookable %}
-        <img src="{% static "admin/img/icon-yes.gif" %}"> This place can be booked
-        {% if b.manually_approved %}<b> - MANUALLY APPROVED</b>{% endif %}
-      {% else %}
-        <img src="{% static "admin/img/icon-no.gif" %}"> This place cannot be booked:
-        <ul>
-          {% for p in b.booking_problems %}
-            <li>{{ p }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-      {% if b.booking_warnings %}
-        <div>
+<tr>
+  <td>
+    {{ b.name }}
+  </td>
+  <td>
+    <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">Camp {{ b.camp.number }}, {{ b.camp.leaders_formatted }}</a>,
+    {{ b.camp.start_date|date:"j M Y" }}
+  </td>
+  <td class="price">
+    {% if b.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ b.amount_due_normalised }}{% endif %}
+  </td>
+  <td rowspan="2" style="text-align:center;">
+    <input type="submit" name="edit_{{ b.id }}" value="View/edit"><br/>
+    {% if basket %}
+      <input type="submit" name="shelve_{{ b.id }}" value="Save for later"><br/>
+    {% endif %}
+    {% if shelf %}
+      <input type="submit" name="unshelve_{{ b.id }}" value="Move to basket"><br/>
+    {% endif %}
+    <input type="submit" name="delete_{{ b.id }}" value="Delete">
+  </td>
+</tr>
+<tr class="sectionbottom">
+  <td colspan="3">
+    {% if b.bookable %}
+      <img src="{% static "admin/img/icon-yes.gif" %}"> This place can be booked
+      {% if b.manually_approved %}<b> - MANUALLY APPROVED</b>{% endif %}
+    {% else %}
+      <img src="{% static "admin/img/icon-no.gif" %}"> This place cannot be booked:
+      <ul>
+        {% for p in b.booking_problems %}
+          <li>{{ p }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% if b.booking_warnings %}
+      <div>
         <img src="{% static "admin/img/icon_alert.gif" %}">Warning:
         <ul>
           {% for w in b.booking_warnings %}
-          <li>{{ w }}</li>
+            <li>{{ w }}</li>
           {% endfor %}
         </ul>
-        </div>
-      {% endif %}
-    </td>
-  </tr>
-  {% if not forloop.last %}
+      </div>
+    {% endif %}
+  </td>
+</tr>
+{% if not forloop.last %}
   <tr class="spacer">
     <td colspan="4"></td>
   </tr>
-  {% endif %}
+{% endif %}

@@ -9,16 +9,16 @@
   <div class="paging"><a name="comments"></a>{% paging_control #comments %}</div>
   <table class="topheaders">
     <tr>
-    {% if news_item or photo or poll %}
-      <th class="commentHeader" colspan="2">
-      Comments
-      </th>
-    {% else %}
-      {% if topic %}
-        <th class="topicSubject" colspan="2">
-        <h2>{{ topic.subject }}</h2></th>
+      {% if news_item or photo or poll %}
+        <th class="commentHeader" colspan="2">
+          Comments
+        </th>
+      {% else %}
+        {% if topic %}
+          <th class="topicSubject" colspan="2">
+            <h2>{{ topic.subject }}</h2></th>
+        {% endif %}
       {% endif %}
-    {% endif %}
     </tr>
     <tr>
       <th scope="col" class="postFromCol">From</th>
@@ -26,26 +26,26 @@
     </tr>
     {% if object_list %}
       {% for post in object_list %}
-      <tr>
-        <td class="postFrom">
-          <span class="postMemberIcon">{{ post.posted_by.get_icon }}</span>
-          {{ post.posted_by.get_link }}<br/>
-          <span class="postDate">{% if post.posted_at %}{{ post.posted_at|date:"d M y, H:i" }}{% endif %}</span>
-          {% if post.hidden %}
-            {% if moderator %}
-              <br/><span class="postHiddenMsg">HIDDEN</span>
-            {% else %}
-              <br/><span class="postHiddenMsg">HIDDEN</span> (awaiting moderator approval)
+        <tr>
+          <td class="postFrom">
+            <span class="postMemberIcon">{{ post.posted_by.get_icon }}</span>
+            {{ post.posted_by.get_link }}<br/>
+            <span class="postDate">{% if post.posted_at %}{{ post.posted_at|date:"d M y, H:i" }}{% endif %}</span>
+            {% if post.hidden %}
+              {% if moderator %}
+                <br/><span class="postHiddenMsg">HIDDEN</span>
+              {% else %}
+                <br/><span class="postHiddenMsg">HIDDEN</span> (awaiting moderator approval)
+              {% endif %}
             {% endif %}
-          {% endif %}
-          {% if moderator %}&nbsp;<span class="editPost"><a href="{% url 'admin:forums_post_change' post.id %}" title="Edit this post" ><img width="16" height="16" src="{% static "images/edit.png" %}" alt="Edit this post" /></a></span>
-          {% endif %}
-        </td>
-        <td class="postMessage" id="id{{ post.id }}">
-          {% if post.subject %}<div class="postSubject">{{ post.subject }}</div>{% endif %}
-          {{ post.message|bb2html }}
-        </td>
-      </tr>
+            {% if moderator %}&nbsp;<span class="editPost"><a href="{% url 'admin:forums_post_change' post.id %}" title="Edit this post" ><img width="16" height="16" src="{% static "images/edit.png" %}" alt="Edit this post" /></a></span>
+            {% endif %}
+          </td>
+          <td class="postMessage" id="id{{ post.id }}">
+            {% if post.subject %}<div class="postSubject">{{ post.subject }}</div>{% endif %}
+            {{ post.message|bb2html }}
+          </td>
+        </tr>
       {% endfor %}
     {% else %}
       <tr>
@@ -54,49 +54,49 @@
     {% endif %}
   </table>
   <div class="paging">{% paging_control #comments %}</div>
-<script type="text/javascript">
-<!--
-(function($) {
-    $(document).ready(function(ev) {
-        var bits = window.location.href.split('#');
-        if (bits.length == 2) {
-            $('#' + bits[1]).parent().addClass("selected");
-        }
+  <script type="text/javascript">
+   <!--
+   (function($) {
+       $(document).ready(function(ev) {
+           var bits = window.location.href.split('#');
+           if (bits.length == 2) {
+               $('#' + bits[1]).parent().addClass("selected");
+           }
 
-    });
-})(jQuery);
-//-->
-</script>
+       });
+   })(jQuery);
+   //-->
+  </script>
 
   {% if show_message_form %}
     {% if not has_next %}
       <form action="#messageform" method="post">{% csrf_token %}
-      <h2 id="messageform">Add message:</h2>
-      {% include "cciw/errors.html" %}
-      {% include "cciw/msgpreview.html" %}
-      {% if preview %}
-        <p>Make any changes below, and choose
-        'Preview' again or 'Post'.</p>
-      {% endif %}
-      <table class="simpleform">
-        <tr>
-          <th scope="row">Message:</th>
-          <td>
-            {% include "cciw/message.html" %}
-          </td>
-        </tr>
-      </table>
-      <div>
-      <br/><input type="submit" name="preview" value="Preview" id="preview" />&nbsp;
-      <input type="submit" name="post" value="Post" id="post" />
-      </div>
+        <h2 id="messageform">Add message:</h2>
+        {% include "cciw/errors.html" %}
+        {% include "cciw/msgpreview.html" %}
+        {% if preview %}
+          <p>Make any changes below, and choose
+            'Preview' again or 'Post'.</p>
+        {% endif %}
+        <table class="simpleform">
+          <tr>
+            <th scope="row">Message:</th>
+            <td>
+              {% include "cciw/message.html" %}
+            </td>
+          </tr>
+        </table>
+        <div>
+          <br/><input type="submit" name="preview" value="Preview" id="preview" />&nbsp;
+          <input type="submit" name="post" value="Post" id="post" />
+        </div>
       </form>
     {% endif %}
   {% else %}
     {% if not has_next %}
       {% if login_link %}
         <div><a href="{{ login_link }}">Login to post a
-message.</a></div>
+          message.</a></div>
       {% endif %}
     {% endif %}
   {% endif %}

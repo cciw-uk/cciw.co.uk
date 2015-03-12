@@ -4,27 +4,27 @@
 {% load forums %}
 
 {% block content %}
-{% if posts %}
-{% for post in posts %}
-  <div class="individualPost">
-    <div class="postHeader">
-    {% ifchanged %}
-      <h2>
-      {% if post.topic_id %}{% if post.is_parent_visible %}In topic <a href="{{ post.topic.get_absolute_url }}">{{ post.topic.subject }}</a>:{% else %}In a hidden topic:{% endif %}{% endif %}
-      {% if post.photo_id %}On photo <a href="{{ post.photo.get_absolute_url }}">{{ post.photo.id }}</a>:{% endif %}
-      </h2>
-    {% endifchanged %}
-    From {{ post.posted_by.get_link }}, at {{ post.posted_at|date:"d M y, H:i" }}{% if post.is_parent_visible %} &mdash; <span class="readmore"><a href="{{ post.get_absolute_url }}">view in context</a></span>{% endif %}:
-    </div>
-    <div class="postMessage">
-    {% if post.subject %}<div class="postSubject">{{ post.subject|bb2html }}</div>{% endif %}
-    {{ post.message|bb2html }}
-    </div>
+  {% if posts %}
+    {% for post in posts %}
+      <div class="individualPost">
+        <div class="postHeader">
+          {% ifchanged %}
+            <h2>
+              {% if post.topic_id %}{% if post.is_parent_visible %}In topic <a href="{{ post.topic.get_absolute_url }}">{{ post.topic.subject }}</a>:{% else %}In a hidden topic:{% endif %}{% endif %}
+              {% if post.photo_id %}On photo <a href="{{ post.photo.get_absolute_url }}">{{ post.photo.id }}</a>:{% endif %}
+            </h2>
+          {% endifchanged %}
+          From {{ post.posted_by.get_link }}, at {{ post.posted_at|date:"d M y, H:i" }}{% if post.is_parent_visible %} &mdash; <span class="readmore"><a href="{{ post.get_absolute_url }}">view in context</a></span>{% endif %}:
+        </div>
+        <div class="postMessage">
+          {% if post.subject %}<div class="postSubject">{{ post.subject|bb2html }}</div>{% endif %}
+          {{ post.message|bb2html }}
+        </div>
 
-  </div>
-{% endfor %}
-{% else %}
-  <p>No posts found.</p>
-{% endif %}
-<div class="paging">{% paging_control %}</div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No posts found.</p>
+  {% endif %}
+  <div class="paging">{% paging_control %}</div>
 {% endblock %}

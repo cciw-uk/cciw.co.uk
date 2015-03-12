@@ -1,15 +1,15 @@
 {% extends 'cciw/bookings/standard.html' %}
 {% block content %}
 
-<p>Please enter your name and address:</p>
+  <p>Please enter your name and address:</p>
 
-<form id='id_accountdetails' action="" method="POST" class="ajaxify">
-{% csrf_token %}
-{{ form.as_p }}
-<div class="formrow">
-<br/><br/>
-<input type="submit" name="submit" value="Save and continue" />
-</div>
-</form>
+  <form id='id_accountdetails' action="" method="POST" class="ajaxify">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="formrow">
+      <br/><br/>
+      <input type="submit" name="submit" value="Save and continue" />
+    </div>
+  </form>
 
 {% endblock %}

@@ -1,24 +1,24 @@
 {% extends 'cciw/bookings/standard.html' %}
 {% block content %}
-<h2>Confirm log out</h2>
+  <h2>Confirm log out</h2>
 
 
-<p><strong>In order to log back in again, you will need to verify your email address as
-  you did the first time.</strong></p>
+  <p><strong>In order to log back in again, you will need to verify your email address as
+    you did the first time.</strong></p>
 
-<p>By logging out, other users of this computer will not be able to access your
-  account details, which is important if you are using a public computer (for
-  example in an internet cafe).
+  <p>By logging out, other users of this computer will not be able to access your
+    account details, which is important if you are using a public computer (for
+    example in an internet cafe).
 
-<p>Press this button in order to go ahead and log out:</p>
+    <p>Press this button in order to go ahead and log out:</p>
 
-<form action="" method="POST">
-{% csrf_token %}
-<p style="text-align: center">
-<input type="submit" name="logout" value="Log out">
-</p>
-</form>
+    <form action="" method="POST">
+      {% csrf_token %}
+      <p style="text-align: center">
+        <input type="submit" name="logout" value="Log out">
+      </p>
+    </form>
 
-<p>Otherwise your session will expire two weeks after you last logged in.</p>
+    <p>Otherwise your session will expire two weeks after you last logged in.</p>
 
 {% endblock %}

@@ -20,7 +20,7 @@
 
 
         <li><div><form method="post" action="{{request.url}}">{% csrf_token %}
-        <p><input type="submit" name="logout" value="Log out" /></p>
+          <p><input type="submit" name="logout" value="Log out" /></p>
         </form></div></li>
       </ul>
     {% else %}
@@ -52,10 +52,10 @@
         <td>{{ member.get_icon }}</td>
       </tr>
       {% if member.show_email %}
-      <tr>
-        <th scope="row">Email</th>
-        <td>{{ member.email|obfuscate_email }}</td>
-      </tr>
+        <tr>
+          <th scope="row">Email</th>
+          <td>{{ member.email|obfuscate_email }}</td>
+        </tr>
       {% endif %}
       <tr>
         <th scope="row">Date joined</th>
@@ -66,16 +66,16 @@
         <td>{% if member.last_seen %}{{ member.last_seen|date:"d M Y H:i:s" }}{% endif %}</td>
       </tr>
       {% if member.comments %}
-      <tr>
-        <th scope="row">Comments</th>
-        <td>{{ member.comments|bb2html }}</td>
-      </tr>
+        <tr>
+          <th scope="row">Comments</th>
+          <td>{{ member.comments|bb2html }}</td>
+        </tr>
       {% endif %}
       {% if member.website %}
-      <tr>
-        <th scope="row">Website</th>
-        <td>{{ member.website }}</td>
-      </tr>
+        <tr>
+          <th scope="row">Website</th>
+          <td>{{ member.website }}</td>
+        </tr>
       {% endif %}
     </table>
     <br/>
@@ -84,17 +84,17 @@
       <h2>Awards</h2>
       <p><b>{{ member.user_name }}</b> has received the following awards:</p>
       {% for paward in awards %}
-      <div class="awardInfo">
-        <a href="{{paward.award.get_absolute_url}}" class="awardlink"><img class="award" alt="{{paward.award.nice_name}}" src="{{paward.award.imageurl}}" /></a><br/>
-        <span class="awardname">
-        {{ paward.award.nice_name }}</span>
-        {% if paward.date_awarded %}
-           on {{ paward.date_awarded|date:"d M Y" }}
-        {% endif %}
-        <br/>
-        Reason for award:
-        <p>{{ paward.reason }}</p>
-      </div>
+        <div class="awardInfo">
+          <a href="{{paward.award.get_absolute_url}}" class="awardlink"><img class="award" alt="{{paward.award.nice_name}}" src="{{paward.award.imageurl}}" /></a><br/>
+          <span class="awardname">
+            {{ paward.award.nice_name }}</span>
+          {% if paward.date_awarded %}
+            on {{ paward.date_awarded|date:"d M Y" }}
+          {% endif %}
+          <br/>
+          Reason for award:
+          <p>{{ paward.reason }}</p>
+        </div>
 
       {% endfor %}
 

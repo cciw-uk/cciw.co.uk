@@ -1,40 +1,40 @@
 {% extends "cciw/standard.html" %}
 {% block content %}
 
-<h2>Preferences</h2>
-<p>Edit your preferences below.  Changes to your e-mail address
-will require confirmation by an e-mail.</p>
+  <h2>Preferences</h2>
+  <p>Edit your preferences below.  Changes to your e-mail address
+    will require confirmation by an e-mail.</p>
 
-{% if form.error_dict %}
-<div class="userError">
-Please check your input below:
+  {% if form.error_dict %}
+    <div class="userError">
+      Please check your input below:
 
-{% if form.icon_file.errors %}
-<ul><li>{{ form.icon_file.errors|join:", " }}</li></ul>
-{% endif %}
+      {% if form.icon_file.errors %}
+        <ul><li>{{ form.icon_file.errors|join:", " }}</li></ul>
+      {% endif %}
 
-</div>
-{% endif %}
+    </div>
+  {% endif %}
 
-{% include "cciw/show_messages.html" %}
+  {% include "cciw/show_messages.html" %}
 
-{% if image_error %}
-<div class="userError">
-  Your icon has not been changed: {{ image_error }}
-</div>
-{% endif %}
+  {% if image_error %}
+    <div class="userError">
+      Your icon has not been changed: {{ image_error }}
+    </div>
+  {% endif %}
 
 
-<form method="post" action="" enctype="multipart/form-data" id="preferencesform" class="ajaxify">
-{% csrf_token %}
+  <form method="post" action="" enctype="multipart/form-data" id="preferencesform" class="ajaxify">
+    {% csrf_token %}
 
-{{ form.as_p }}
+    {{ form.as_p }}
 
-<div><input type="submit" name="submit" value="Save" /></div>
-</form>
+    <div><input type="submit" name="submit" value="Save" /></div>
+  </form>
 
-<h2>Related links</h2>
-<ul><li><a href="/memberadmin/change-password/">Change your password</a></li>
-<li><a href="{{ current_member.get_absolute_url }}">Your home page</a></li>
-</ul>
+  <h2>Related links</h2>
+  <ul><li><a href="/memberadmin/change-password/">Change your password</a></li>
+    <li><a href="{{ current_member.get_absolute_url }}">Your home page</a></li>
+  </ul>
 {% endblock %}

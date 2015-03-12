@@ -2,163 +2,163 @@
 {% load reference_utils %}
 {% block title %}Manage references {{ camp.year }}-{{ camp.number }} | CCIW Officers{% endblock %}
 {% block extrastyle %}{{ block.super }}
-<script type="text/javascript">
-//<![CDATA[
+  <script type="text/javascript">
+   //<![CDATA[
 
-function requestGeneric(query) {
-    window.open('{% url "cciw.officers.views.request_reference" year=camp.year number=camp.number %}?' + query,
-                '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
-}
+   function requestGeneric(query) {
+       window.open('{% url "cciw.officers.views.request_reference" year=camp.year number=camp.number %}?' + query,
+                   '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+   }
 
-function refreshReferenceSection(ref_id) {
-    jQuery.ajax({
-        type: "GET",
-        url: "?ref_id=" + ref_id.toString() + "&" + Math.random().toString(),
-        dataType: 'text',
-        success: function(data, textStatus, xhr) {
-                     // Replace existing div and move to correct place,
-                     // which might be under a different 'mode'
-                     var section = jQuery('#officerref' + ref_id.toString());
-                     var officerName = section.find("h3.referencestart").text();
-                     var refereeName = section.find(".refereename").text();
-                     var mode = jQuery(data).find('div.referencemode').text();
+   function refreshReferenceSection(ref_id) {
+       jQuery.ajax({
+           type: "GET",
+           url: "?ref_id=" + ref_id.toString() + "&" + Math.random().toString(),
+           dataType: 'text',
+           success: function(data, textStatus, xhr) {
+               // Replace existing div and move to correct place,
+               // which might be under a different 'mode'
+               var section = jQuery('#officerref' + ref_id.toString());
+               var officerName = section.find("h3.referencestart").text();
+               var refereeName = section.find(".refereename").text();
+               var mode = jQuery(data).find('div.referencemode').text();
 
-                     // Look through other officer names in same section
-                     var allOfficerRefs = jQuery('#' + mode + 'refs .referencesection');
-                     var dest = null;
-                     allOfficerRefs.each(function(i, elem) {
-                         var oName = jQuery(elem).find('.referencestart').text();
-                         var rName = jQuery(elem).find('.refereename').text();
-                         // references are sorted alphabetical by officer names
-                         // and then by referee name.
-                         if (officerName < oName ||
-                             (officerName == oName && refereeName < rName)) {
-                             dest = jQuery(elem);
-                             return false;
-                         };
-                     });
-                     if (!dest) {
-                         dest = jQuery('#' + mode + 'end');
-                     }
+               // Look through other officer names in same section
+               var allOfficerRefs = jQuery('#' + mode + 'refs .referencesection');
+               var dest = null;
+               allOfficerRefs.each(function(i, elem) {
+                   var oName = jQuery(elem).find('.referencestart').text();
+                   var rName = jQuery(elem).find('.refereename').text();
+                   // references are sorted alphabetical by officer names
+                   // and then by referee name.
+                   if (officerName < oName ||
+                       (officerName == oName && refereeName < rName)) {
+                           dest = jQuery(elem);
+                           return false;
+                   };
+               });
+               if (!dest) {
+                   dest = jQuery('#' + mode + 'end');
+               }
 
-                     section.fadeOut('slow', function() {
-                         section.insertBefore(dest);
-                         // Don't use 'replaceWith' so we can control animation.
-                         section.html(jQuery(data).html());
-                         section.fadeIn('slow');
-                    });
-                }
-    });
-}
+               section.fadeOut('slow', function() {
+                   section.insertBefore(dest);
+                   // Don't use 'replaceWith' so we can control animation.
+                   section.html(jQuery(data).html());
+                   section.fadeIn('slow');
+               });
+           }
+       });
+   }
 
-function requestReference(ref_id) {
-    requestGeneric('ref_id=' + ref_id.toString());
-}
+   function requestReference(ref_id) {
+       requestGeneric('ref_id=' + ref_id.toString());
+   }
 
-function requestUpdate(ref_id, prev_ref_id) {
-    requestGeneric('ref_id=' + ref_id.toString() + '&update=1&prev_ref_id=' + prev_ref_id.toString());
-}
+   function requestUpdate(ref_id, prev_ref_id) {
+       requestGeneric('ref_id=' + ref_id.toString() + '&update=1&prev_ref_id=' + prev_ref_id.toString());
+   }
 
-function requestUpdateCustom(ref_id) {
-    var s = document.getElementById('id_ref_opts_' + ref_id.toString());
-    if (s.selectedIndex == -1) {
-        alert("Please select an option");
-    } else {
-        var val = s.options[s.selectedIndex].value;
-        requestGeneric('ref_id=' + ref_id.toString() + '&update=1&prev_ref_id=' + val);
-    }
-}
+   function requestUpdateCustom(ref_id) {
+       var s = document.getElementById('id_ref_opts_' + ref_id.toString());
+       if (s.selectedIndex == -1) {
+           alert("Please select an option");
+       } else {
+           var val = s.options[s.selectedIndex].value;
+           requestGeneric('ref_id=' + ref_id.toString() + '&update=1&prev_ref_id=' + val);
+       }
+   }
 
-function manageReferenceManually(ref_id) {
-    requestGeneric('ref_id=' + ref_id.toString() + '&manual=1');
-}
+   function manageReferenceManually(ref_id) {
+       requestGeneric('ref_id=' + ref_id.toString() + '&manual=1');
+   }
 
-function nagByOfficer(ref_id) {
-    window.open('{% url "cciw.officers.views.nag_by_officer" year=camp.year number=camp.number %}?ref_id=' + ref_id.toString(),
-                '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
-}
+   function nagByOfficer(ref_id) {
+       window.open('{% url "cciw.officers.views.nag_by_officer" year=camp.year number=camp.number %}?ref_id=' + ref_id.toString(),
+                   '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+   }
 
 
-//]]>
-</script>
+   //]]>
+  </script>
 {% endblock %}
 
 {% block content %}<div id="content-main">
 
-<h1>Manage references</h1>
-<h2>For camp {{ camp }}</h2>
+  <h1>Manage references</h1>
+  <h2>For camp {{ camp }}</h2>
 
-{% if officer %}
-<h3>For officer {{ officer.first_name }} {{ officer.last_name }} <a href=".">(view all)</a></h3>
+  {% if officer %}
+    <h3>For officer {{ officer.first_name }} {{ officer.last_name }} <a href=".">(view all)</a></h3>
 
-{% endif %}
+  {% endif %}
 
-<p>This page allows you to request references for officers who have submitted
-  application forms. References that have not been requested are at the top,
-  those that have been requested are in the middle, and those that have been
-  received are at the bottom.  Within each section they are sorted
-  alphabetically by first name.
-</p>
+  <p>This page allows you to request references for officers who have submitted
+    application forms. References that have not been requested are at the top,
+    those that have been requested are in the middle, and those that have been
+    received are at the bottom.  Within each section they are sorted
+    alphabetically by first name.
+  </p>
 
-<p>For each reference that needs to be requested, choose from the options.  An
-  option only appears if it is possible, and the most likely option is listed
-  first.</p>
+  <p>For each reference that needs to be requested, choose from the options.  An
+    option only appears if it is possible, and the most likely option is listed
+    first.</p>
 
-<p>All of the 'request' action buttons open new windows in which you may need to
-  edit a default e-mail and confirm.</p>
+  <p>All of the 'request' action buttons open new windows in which you may need to
+    edit a default e-mail and confirm.</p>
 
-<p>If the referee does not respond quickly, you can request the reference again,
-  or ask the officer concerned to contact their referee and ask for the
-  reference.</p>
+  <p>If the referee does not respond quickly, you can request the reference again,
+    or ask the officer concerned to contact their referee and ask for the
+    reference.</p>
 
-{% if message %}
-<p><strong>{{ message }}</strong></p>
-{% endif %}
+  {% if message %}
+    <p><strong>{{ message }}</strong></p>
+  {% endif %}
 
-<h2>References to be requested</h2>
+  <h2>References to be requested</h2>
 
-<div id="notrequestedrefs">
-{% for ref in notrequested %}
+  <div id="notrequestedrefs">
+    {% for ref in notrequested %}
 
-{% with "notrequested" as mode %}
-{% include "cciw/officers/manage_reference.html" %}
-{% endwith %}
+      {% with "notrequested" as mode %}
+        {% include "cciw/officers/manage_reference.html" %}
+      {% endwith %}
 
-{% empty %}
-<p>No outstanding references to be requested.</p>
-{% endfor %}
-<div id="notrequestedend"></div>
-</div>
+    {% empty %}
+      <p>No outstanding references to be requested.</p>
+    {% endfor %}
+    <div id="notrequestedend"></div>
+  </div>
 
-{% if requested %}
-<h2 class="ok">References requested</h2>
+  {% if requested %}
+    <h2 class="ok">References requested</h2>
 
-<div id="requestedrefs">
-{% for ref in requested %}
+    <div id="requestedrefs">
+      {% for ref in requested %}
 
-{% with "requested" as mode %}
-{% include "cciw/officers/manage_reference.html" %}
-{% endwith %}
+        {% with "requested" as mode %}
+          {% include "cciw/officers/manage_reference.html" %}
+        {% endwith %}
 
-{% endfor %}
-<div id="requestedend"></div>
-</div>
-{% endif %}
+      {% endfor %}
+      <div id="requestedend"></div>
+    </div>
+  {% endif %}
 
-<h2 class="good">References received</h2>
+  <h2 class="good">References received</h2>
 
-<div id="receivedrefs">
-{% for ref in received %}
+  <div id="receivedrefs">
+    {% for ref in received %}
 
-{% with "received" as mode %}
-{% include "cciw/officers/manage_reference.html" %}
-{% endwith %}
+      {% with "received" as mode %}
+        {% include "cciw/officers/manage_reference.html" %}
+      {% endwith %}
 
-{% empty %}
-<p>No references received.</p>
-{% endfor %}
-<div id="receivedend"></div>
-</div>
+    {% empty %}
+      <p>No references received.</p>
+    {% endfor %}
+    <div id="receivedend"></div>
+  </div>
 
 </div>
 {% endblock %}

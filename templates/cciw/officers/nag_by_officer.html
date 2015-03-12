@@ -2,19 +2,19 @@
 {% block title %}Reference for {{ officer.first_name }} {{ officer.last_name }} | CCIW Officers {% endblock %}
 
 {% block content %}
-<div id="content-main">
+  <div id="content-main">
 
-<h2>Ask {{ officer.first_name }} to nag their referee</h2>
+    <h2>Ask {{ officer.first_name }} to nag their referee</h2>
 
 
-<p>The following e-mail, which you can now modify, will be sent to them.</p>
+    <p>The following e-mail, which you can now modify, will be sent to them.</p>
 
-<form action="" method="post">{% csrf_token %}
-  {{ messageform.as_p }}
-  <p>
-    <input type="submit" name="send" value="Send" />
-    <input type="submit" name="cancel" value="Cancel" />
-  </p>
-</form>
-</div>
+    <form action="" method="post">{% csrf_token %}
+      {{ messageform.as_p }}
+      <p>
+        <input type="submit" name="send" value="Send" />
+        <input type="submit" name="cancel" value="Cancel" />
+      </p>
+    </form>
+  </div>
 {% endblock %}

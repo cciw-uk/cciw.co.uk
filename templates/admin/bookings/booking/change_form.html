@@ -3,52 +3,52 @@
 {% load static %}
 
 {% block extrastyle %}{{ block.super }}
-<link rel="stylesheet" href="{% static "bookings/css/add_place.css" %}" type="text/css" />
+  <link rel="stylesheet" href="{% static "bookings/css/add_place.css" %}" type="text/css" />
 {% endblock %}
 
 
 {% block after_related_objects %}
-{# Some javascript enhancements  #}
-<div>
+  {# Some javascript enhancements  #}
+  <div>
 
-<h2>Problems and warnings:</h2>
-<p>Please check the following list of problems and warnings before saving. They
-include problems that normally will stop a booking from being automatically
-approved, like the camp being out of space, or a custom discount being applied
-for, and warnings due to likely errors, like booking the same place twice.</p>
+    <h2>Problems and warnings:</h2>
+    <p>Please check the following list of problems and warnings before saving. They
+      include problems that normally will stop a booking from being automatically
+      approved, like the camp being out of space, or a custom discount being applied
+      for, and warnings due to likely errors, like booking the same place twice.</p>
 
-<p>The booking secretary has the right to ignore these problems, after
- checking with the camp leader where necessary.</p>
+    <p>The booking secretary has the right to ignore these problems, after
+      checking with the camp leader where necessary.</p>
 
-<div class="bookingProblems" id="id_problems">
+    <div class="bookingProblems" id="id_problems">
 
-</div>
-</div>
-<script type="text/javascript">
-var cciw = (function(pub) {
-    "use strict";
-    pub.allAccountJsonUrl = '{% url "cciw.bookings.views.all_accounts_json" %}';
-    pub.bookingProblemsJsonUrl = '{% url "cciw.bookings.views.booking_problems_json" %}';
-    pub.placeAvailabilityJsonUrl = '{% url "cciw.bookings.views.place_availability_json" %}';
-    pub.getExpectedAmountDueUrl = '{% url "cciw.bookings.views.get_expected_amount_due" %}';
+    </div>
+  </div>
+  <script type="text/javascript">
+   var cciw = (function(pub) {
+       "use strict";
+       pub.allAccountJsonUrl = '{% url "cciw.bookings.views.all_accounts_json" %}';
+       pub.bookingProblemsJsonUrl = '{% url "cciw.bookings.views.booking_problems_json" %}';
+       pub.placeAvailabilityJsonUrl = '{% url "cciw.bookings.views.place_availability_json" %}';
+       pub.getExpectedAmountDueUrl = '{% url "cciw.bookings.views.get_expected_amount_due" %}';
 
-    // For 'use previous' functionality:
-    pub.placesJsonUrl = '{% url "cciw.bookings.views.all_places_json" %}';
-    pub.accountJsonUrl = '{% url "cciw.bookings.views.all_accounts_json" %}';
-    return pub;
+       // For 'use previous' functionality:
+       pub.placesJsonUrl = '{% url "cciw.bookings.views.all_places_json" %}';
+       pub.accountJsonUrl = '{% url "cciw.bookings.views.all_accounts_json" %}';
+       return pub;
 
-})(cciw || {});
+   })(cciw || {});
 
-</script>
+  </script>
 
 
-<script type="text/javascript" src="{{ STATIC_URL }}bookings/js/admin_booking.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}bookings/js/add_place.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}bookings/js/admin_booking.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}bookings/js/add_place.js"></script>
 
-<input id="readonly" type="hidden" value="0">
-<input id="formInstanceId" type="hidden" value="{{ object_id }}">
+  <input id="readonly" type="hidden" value="0">
+  <input id="formInstanceId" type="hidden" value="{{ object_id }}">
 
-{% include "cciw/bookings/use_previous_popup_inc.html" %}
+  {% include "cciw/bookings/use_previous_popup_inc.html" %}
 
 {% endblock %}
 

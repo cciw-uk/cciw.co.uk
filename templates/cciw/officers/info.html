@@ -1,16 +1,16 @@
 {% extends "cciw/officers/base.html" %}
 {% block title %}Information | CCIW Officers {% endblock %}
 {% block content %}<div id="content-main">
-<h1>Information for officers</h1>
+  <h1>Information for officers</h1>
 
-<p>The following information is available for officers:</p>
+  <p>The following information is available for officers:</p>
 
-<ul>
-<li><a href="{% url 'cciw.officers.views.officer_files' 'CCIW CPP.pdf' %}">The
-    camp manual and child protection policy</a></li>
-{% if show_wiki_link %}
-  <li><a href="/wiki/">CCIW wiki</a></li>
-{% endif %}
-</ul>
+  <ul>
+    <li><a href="{% url 'cciw.officers.views.officer_files' 'CCIW CPP.pdf' %}">The
+      camp manual and child protection policy</a></li>
+    {% if show_wiki_link %}
+      <li><a href="/wiki/">CCIW wiki</a></li>
+    {% endif %}
+  </ul>
 
 {% endblock %}

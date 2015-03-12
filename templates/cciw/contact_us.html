@@ -2,17 +2,17 @@
 {% load standardpage %}
 {% block content %}
 
-{% htmlchunk contact_us_intro %}
+  {% htmlchunk contact_us_intro %}
 
-{% if form.errors %}
-<div class="userError">Please check your input below:</div>
-{% endif %}
+  {% if form.errors %}
+    <div class="userError">Please check your input below:</div>
+  {% endif %}
 
-<form action="" method="post" id="contactform" class="ajaxify">{% csrf_token %}
-  {{ form.as_p }}
+  <form action="" method="post" id="contactform" class="ajaxify">{% csrf_token %}
+    {{ form.as_p }}
 
-  <p><input type="submit" name="submit" value="Send" /></p>
-</form>
-{% htmlchunk contact_us_outro %}
+    <p><input type="submit" name="submit" value="Send" /></p>
+  </form>
+  {% htmlchunk contact_us_outro %}
 
 {% endblock %}

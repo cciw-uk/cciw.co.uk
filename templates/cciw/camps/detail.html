@@ -2,88 +2,88 @@
 
 {% block content %}
   <br/>
-{% if camp.is_past %}
-  <h2>Links</h2>
-  <ul>
-    <li><a href="{{ camp.get_absolute_url }}forum/">Forum</a></li>
-    <li><a href="{{ camp.get_absolute_url }}photos/">Photos</a></li>
-  </ul>
-{% endif %}
-<h2>Information</h2>
-<table class="sideheaders">
-  <tr>
-    <th scope="row">Location:</th>
-    <td><a href="{{ camp.site.get_absolute_url }}">{{ camp.site.short_name }}</a></td>
-  </tr>
-  <tr>
-    <th scope="row">Date:</th>
-    <td>{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M Y" }}</td>
-  </tr>
-  <tr>
-    <th scope="row">Age:</th>
-    <td>{{ camp.age }}</td>
-  </tr>
-  {% if camp.next_camps.all %}
-  <tr>
-    <th scope="row">Following camp:</th>
-    <td>
-      {% for next_camp in camp.next_camps.all %}
-        {{ next_camp.get_link }}<br/>
-      {% endfor %}
-    </td>
-  </tr>
+  {% if camp.is_past %}
+    <h2>Links</h2>
+    <ul>
+      <li><a href="{{ camp.get_absolute_url }}forum/">Forum</a></li>
+      <li><a href="{{ camp.get_absolute_url }}photos/">Photos</a></li>
+    </ul>
   {% endif %}
-  {% if camp.previous_camp %}
-  <tr>
-    <th scope="row">Previous camp:</th>
-    <td>
-      {{ camp.previous_camp.get_link }}
-    </td>
-  </tr>
-  {% endif %}
-  <tr>
-    <th scope="row">Leaders:</th>
-    <td>
-      {% for leader in camp.leaders.all %}
-      <h3>{{ leader.name }}</h3>
-      <p>
-        {{ leader.info|escape|linebreaksbr }}
-      </p>
-      {% endfor %}
-    </td>
-  </tr>
-  <tr>
-    <th scope="row">Chaplain:</th>
-    <td>
-      {% if camp.chaplain %}
-      <h3>{{ camp.chaplain.name }}</h3>
-      <p>
-        {{ camp.chaplain.info|escape|linebreaksbr }}
-     </p>
-      {% else %}
-      TBA
-      {% endif %}
-    </td>
-  </tr>
-  {% if camp.year == thisyear and camp.is_booking_open %}
-  <tr>
-    <th scope="row">Places:</th>
-    <td>
-      {% with total=camp.get_places_left.0 %}
-      {% if total > 0 %}
-      {% if total < 5 %}
-      Very few places available!
-      {% else %}
-      Places still available!
-      {% endif %}
-      <br/><br/> <a class="booknow" href="{% url 'cciw.bookings.views.start' %}">Book online now!</a><br/><br/>
-      <a href="{% url 'cciw.bookings.views.index' %}">See other booking options and prices</a>
-      {% else %}
-      No more places available on this camp, sorry.
-      {% endif %}
-      {% endwith %}
-    </td>
-  </tr>
-  {% endif %}
-</table>
+  <h2>Information</h2>
+  <table class="sideheaders">
+    <tr>
+      <th scope="row">Location:</th>
+      <td><a href="{{ camp.site.get_absolute_url }}">{{ camp.site.short_name }}</a></td>
+    </tr>
+    <tr>
+      <th scope="row">Date:</th>
+      <td>{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M Y" }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Age:</th>
+      <td>{{ camp.age }}</td>
+    </tr>
+    {% if camp.next_camps.all %}
+      <tr>
+        <th scope="row">Following camp:</th>
+        <td>
+          {% for next_camp in camp.next_camps.all %}
+            {{ next_camp.get_link }}<br/>
+          {% endfor %}
+        </td>
+      </tr>
+    {% endif %}
+    {% if camp.previous_camp %}
+      <tr>
+        <th scope="row">Previous camp:</th>
+        <td>
+          {{ camp.previous_camp.get_link }}
+        </td>
+      </tr>
+    {% endif %}
+    <tr>
+      <th scope="row">Leaders:</th>
+      <td>
+        {% for leader in camp.leaders.all %}
+          <h3>{{ leader.name }}</h3>
+          <p>
+            {{ leader.info|escape|linebreaksbr }}
+          </p>
+        {% endfor %}
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Chaplain:</th>
+      <td>
+        {% if camp.chaplain %}
+          <h3>{{ camp.chaplain.name }}</h3>
+          <p>
+            {{ camp.chaplain.info|escape|linebreaksbr }}
+          </p>
+        {% else %}
+          TBA
+        {% endif %}
+      </td>
+    </tr>
+    {% if camp.year == thisyear and camp.is_booking_open %}
+      <tr>
+        <th scope="row">Places:</th>
+        <td>
+          {% with total=camp.get_places_left.0 %}
+            {% if total > 0 %}
+              {% if total < 5 %}
+                Very few places available!
+              {% else %}
+                Places still available!
+              {% endif %}
+              <br/><br/> <a class="booknow" href="{% url 'cciw.bookings.views.start' %}">Book online now!</a><br/><br/>
+              <a href="{% url 'cciw.bookings.views.index' %}">See other booking options and prices</a>
+            {% else %}
+              No more places available on this camp, sorry.
+            {% endif %}
+          {% endwith %}
+        </td>
+      </tr>
+    {% endif %}
+  </table>
 {% endblock %}

@@ -1,19 +1,19 @@
 {% if officers_noapplicationform %}
-<h2>No/incomplete application form</h2>
+  <h2>No/incomplete application form</h2>
 
-<p>The following officers are on your camp list (above), but have not
-  yet completed an application form.</p>
+  <p>The following officers are on your camp list (above), but have not
+    yet completed an application form.</p>
 
-<div style="margin-left:2em;">
-{% for officer in officers_noapplicationform %}
-{{ officer.first_name }} {{ officer.last_name }}
- <a href="mailto:{{ officer.email }}">&lt;{{ officer.email }}&gt;</a><br/>
-{% endfor %}
-</div>
+  <div style="margin-left:2em;">
+    {% for officer in officers_noapplicationform %}
+      {{ officer.first_name }} {{ officer.last_name }}
+      <a href="mailto:{{ officer.email }}">&lt;{{ officer.email }}&gt;</a><br/>
+    {% endfor %}
+  </div>
 
-<h3>List address:</h3>
-<p>The above list of officers can be emailed at:
-<strong><a href="mailto:{{ address_noapplicationform }}">{{ address_noapplicationform }}</a></strong></p>
+  <h3>List address:</h3>
+  <p>The above list of officers can be emailed at:
+    <strong><a href="mailto:{{ address_noapplicationform }}">{{ address_noapplicationform }}</a></strong></p>
 
-{% include "cciw/officers/email_list_note.html" %}
+  {% include "cciw/officers/email_list_note.html" %}
 {% endif %}

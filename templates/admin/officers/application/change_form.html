@@ -1,19 +1,19 @@
 {% extends "admin/change_form.html" %}
 {% load application_admin %}
 {% block after_related_objects %}
-{% fix_permissions %}
-<h2>Notes</h2>
-<p>
-Because of the nature of the work for which
-you are applying this position is exempt from the provision
-of section 4(ii) of the Rehabilitation of Offenders Act
-1974 (Exemptions Order 1975) and you are therefore not
-entitled to withhold information about convictions which
-for other purposes are `spent' under the provisions of
-the Act and in the event of an appointment any failure
-to disclose such convictions could result in the withdrawal
-of approval to work with children and/or young people
-within the organisation.
-</p>
+  {% fix_permissions %}
+  <h2>Notes</h2>
+  <p>
+    Because of the nature of the work for which
+    you are applying this position is exempt from the provision
+    of section 4(ii) of the Rehabilitation of Offenders Act
+    1974 (Exemptions Order 1975) and you are therefore not
+    entitled to withhold information about convictions which
+    for other purposes are `spent' under the provisions of
+    the Act and in the event of an appointment any failure
+    to disclose such convictions could result in the withdrawal
+    of approval to work with children and/or young people
+    within the organisation.
+  </p>
 {% endblock %}
 

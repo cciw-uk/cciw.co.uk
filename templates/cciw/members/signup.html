@@ -3,86 +3,86 @@
 
 {% block content %}
 
-<form action="/signup/" method="post">{% csrf_token %}
-{% if stage == "start" %}
-  <p>Before signing up, please read the terms of service below.</p>
+  <form action="/signup/" method="post">{% csrf_token %}
+    {% if stage == "start" %}
+      <p>Before signing up, please read the terms of service below.</p>
 
-  <h1>Terms of service</h1>
-  {% htmlchunk website_terms_of_service %}
+      <h1>Terms of service</h1>
+      {% htmlchunk website_terms_of_service %}
 
-  <h2>Continue</h2>
+      <h2>Continue</h2>
 
-  <p>If you agree to abide by the terms and rules above, press
-  'I agree' to continue.</p>
+      <p>If you agree to abide by the terms and rules above, press
+        'I agree' to continue.</p>
 
-  <div><input type="submit" name="agreeterms" value="I agree" /></div>
+      <div><input type="submit" name="agreeterms" value="I agree" /></div>
 
-{% else %}{% if stage == "email" %}
+    {% else %}{% if stage == "email" %}
 
-  <h2>E-mail address</h2>
+        <h2>E-mail address</h2>
 
-  {% if alreadyused %}
-    <div class="userError">The e-mail address <b>{{ email }}</b> is already used.
-    If you have forgotten your username you can <a href="/help/logging-in/?email={{ email|urlencode }}">get a reminder</a>.</div>
-  {% else %}
-    {% if error_message %}
-      <div class="userError">{{ error_messagex }}</div>
-    {% else %}
-      <p>Please enter your e-mail address to continue.</p>
-    {% endif %}
-  {% endif %}
-  <div><label for="idemail">E-mail address:</label>
-  <input type="text" name="email" id="idemail" value="{{ email }}" />
-  </div>
+        {% if alreadyused %}
+          <div class="userError">The e-mail address <b>{{ email }}</b> is already used.
+            If you have forgotten your username you can <a href="/help/logging-in/?email={{ email|urlencode }}">get a reminder</a>.</div>
+        {% else %}
+          {% if error_message %}
+            <div class="userError">{{ error_messagex }}</div>
+          {% else %}
+            <p>Please enter your e-mail address to continue.</p>
+          {% endif %}
+        {% endif %}
+        <div><label for="idemail">E-mail address:</label>
+          <input type="text" name="email" id="idemail" value="{{ email }}" />
+        </div>
 
-  <p>After clicking 'submit', you will be sent an e-mail
-  containing instructions on how to finish the signup process.</p>
+        <p>After clicking 'submit', you will be sent an e-mail
+          containing instructions on how to finish the signup process.</p>
 
-  <div><input type="submit" name="submit_email" value="Submit" /></div>
+        <div><input type="submit" name="submit_email" value="Submit" /></div>
 
-{% else %}{% if stage == "emailsubmitted" %}
+    {% else %}{% if stage == "emailsubmitted" %}
 
-  <h2>E-mail sent</h2>
-  <p>Thank you, an e-mail has been sent to {{ email }}.  Follow
-  the instructions it contains to complete the sign up process.</p>
+          <h2>E-mail sent</h2>
+          <p>Thank you, an e-mail has been sent to {{ email }}.  Follow
+            the instructions it contains to complete the sign up process.</p>
 
-{% else %}{% if stage == "user_name" %}
-  {% if error_message %}
-  <div class="userError">{{ error_message }}</div>
-  {% endif %}
-  <h2>Choose a username</h2>
-  <p>Please choose a user name and password to complete the sign-up process.</p>
-  <div class="formrow">
-    <label for="user_name">Username:</label>
-    <input type="text" name="user_name" id="user_name" value="{{ user_name }}" /> (3 - 15 characters. Letters, numbers and underscore only)
-  </div>
-  <div class="formrow">
-    <label for="password1">Password:</label>
-    <input type="password" name="password1" id="password1" /> (5 - 15 characters. Letters and numbers only)
-  </div>
+    {% else %}{% if stage == "user_name" %}
+            {% if error_message %}
+              <div class="userError">{{ error_message }}</div>
+            {% endif %}
+            <h2>Choose a username</h2>
+            <p>Please choose a user name and password to complete the sign-up process.</p>
+            <div class="formrow">
+              <label for="user_name">Username:</label>
+              <input type="text" name="user_name" id="user_name" value="{{ user_name }}" /> (3 - 15 characters. Letters, numbers and underscore only)
+            </div>
+            <div class="formrow">
+              <label for="password1">Password:</label>
+              <input type="password" name="password1" id="password1" /> (5 - 15 characters. Letters and numbers only)
+            </div>
 
-  <div class="formrow">
-    <label for="password2">Password (confirm):</label>
-    <input type="password" name="password2" id="password2" />
-  </div>
+            <div class="formrow">
+              <label for="password2">Password (confirm):</label>
+              <input type="password" name="password2" id="password2" />
+            </div>
 
-  <div><br/><input type="submit" name="submit_user_name" value="Submit" /></div>
+            <div><br/><input type="submit" name="submit_user_name" value="Submit" /></div>
 
-  <div>
-    <input type="hidden" name="confemail" value="{{ confemail }}" />
-    <input type="hidden" name="confhash" value="{{ confhash }}" />
-  </div>
+            <div>
+              <input type="hidden" name="confemail" value="{{ confemail }}" />
+              <input type="hidden" name="confhash" value="{{ confhash }}" />
+            </div>
 
-{% else %}{% if stage == "invalid" %}
-  <h2>Error</h2>
-  {% if error_message %}
-  <div class="userError">{{ error_message }}</div>
-  {% endif %}
-{% else %}{% if stage == "end" %}
-  <h2>Finished!</h2>
-  <p>Your account has been created.  You might want to edit your <a href="/memberadmin/preferences/">preferences</a>
-  which includes personal details that you want other people to see.</p>
+    {% else %}{% if stage == "invalid" %}
+              <h2>Error</h2>
+              {% if error_message %}
+                <div class="userError">{{ error_message }}</div>
+              {% endif %}
+    {% else %}{% if stage == "end" %}
+                <h2>Finished!</h2>
+                <p>Your account has been created.  You might want to edit your <a href="/memberadmin/preferences/">preferences</a>
+                  which includes personal details that you want other people to see.</p>
 
-{% endif %}{% endif %}{% endif %}{% endif %}{% endif %}{% endif %}
-</form>
+    {% endif %}{% endif %}{% endif %}{% endif %}{% endif %}{% endif %}
+  </form>
 {% endblock %}

@@ -2,190 +2,190 @@
 {% load cciwform static %}
 
 {% block extraheader %}
-{{ block.super }}
-<script type="text/javascript" src="{% static "bookings/js/add_place.js" %}"></script>
-<link rel="stylesheet" href="{% static "bookings/css/add_place.css" %}" type="text/css" />
+  {{ block.super }}
+  <script type="text/javascript" src="{% static "bookings/js/add_place.js" %}"></script>
+  <link rel="stylesheet" href="{% static "bookings/css/add_place.css" %}" type="text/css" />
 {% endblock %}
 
 
 {% block content %}
-{% if not booking_open %}
+  {% if not booking_open %}
 
-<p>Booking for {{ thisyear }} cannot continue because prices have not been set.</p>
-
-{% else %}
-
-<form action="" method="POST" id="id_addplaceform" name="addplaceform" class="ajaxify">
-{% csrf_token %}
-
-<script type="text/javascript">
-var cciw = (function(pub) {
-    "use strict";
-    pub.placesJsonUrl = '{% url "cciw.bookings.views.places_json" %}';
-    pub.accountJsonUrl ='{% url "cciw.bookings.views.account_json" %}';
-    return pub;
-
-})(cciw || {});
-
-</script>
-
-<input id="readonly" type="hidden" value="{% if readonly %}1{% else %}0{% endif %}">
-<input id="formInstanceId" type="hidden" value='{{ form.instance.id }}'>
-
-
-{% if form.errors %}
-<div class="userError">The details could not be saved - please correct the
-  errors flagged below:
-
-{{ form.non_field_errors }}
-</div>
-{% else %}
-
-  {% if read_only %}
-     <p>This place has been approved or booked, and information here
-       can only be changed by an admin.</p>
+    <p>Booking for {{ thisyear }} cannot continue because prices have not been set.</p>
 
   {% else %}
 
-     {% if form.instance.id %}
-     <p>Details for <b>{{ form.instance.name }}</b>:</p>
-     {% else %}
-     <p>Please enter the details needed to book a place on a camp. Required fields
-       are <b>in bold</b>.</p>
-     {% endif %}
+    <form action="" method="POST" id="id_addplaceform" name="addplaceform" class="ajaxify">
+      {% csrf_token %}
+
+      <script type="text/javascript">
+       var cciw = (function(pub) {
+           "use strict";
+           pub.placesJsonUrl = '{% url "cciw.bookings.views.places_json" %}';
+           pub.accountJsonUrl ='{% url "cciw.bookings.views.account_json" %}';
+           return pub;
+
+       })(cciw || {});
+
+      </script>
+
+      <input id="readonly" type="hidden" value="{% if readonly %}1{% else %}0{% endif %}">
+      <input id="formInstanceId" type="hidden" value='{{ form.instance.id }}'>
+
+
+      {% if form.errors %}
+        <div class="userError">The details could not be saved - please correct the
+          errors flagged below:
+
+          {{ form.non_field_errors }}
+        </div>
+      {% else %}
+
+        {% if read_only %}
+          <p>This place has been approved or booked, and information here
+            can only be changed by an admin.</p>
+
+        {% else %}
+
+          {% if form.instance.id %}
+            <p>Details for <b>{{ form.instance.name }}</b>:</p>
+          {% else %}
+            <p>Please enter the details needed to book a place on a camp. Required fields
+              are <b>in bold</b>.</p>
+          {% endif %}
+
+        {% endif %}
+
+
+      {% endif %}
+
+      <h2>Camp</h2>
+      {% cciw_form_field form 'camp' 'Choose camp:' %}
+
+      <h2>Price</h2>
+      <p>The 2nd child from the same family is eligible for '2nd child discount'.
+        Subsequent children from the same family are eligible for '3rd child
+        discount'.</p>
+
+      <p>If you will struggle to pay the full fee, you can also apply for a custom
+        discount. The exact price will have to be arranged by the booking secretary,
+        and you will only be able to complete the booking process online after this
+        has been done if you choose this option.</p>
+
+      {% if early_bird_available %}
+        <p><b>Please note — there is an early bird discount of £{{ price_early_bird_discount }}
+          off the listed prices if you book before {{ early_bird_date|date:"jS F" }}!</b></p>
+      {% endif %}
+
+      {% cciw_form_field form 'price_type' 'Price' %}
+
+      <h2>Camper details</h2>
+      <input type="submit" class="use_existing_btn" value="Use previous data" style="display:none; float: right;">
+      {% cciw_form_field form 'first_name' 'First name' %}
+      {% cciw_form_field form 'last_name' 'Surname' %}
+      {% cciw_form_field form 'sex' 'Sex' %}
+      {% cciw_form_field form 'date_of_birth' 'Date of birth' %}
+      {% cciw_form_field form 'address' 'Address' %} <input style="display:none;" type="submit" id="id_use_account_1_btn" value="Use account address">
+      {% cciw_form_field form 'post_code' 'Post code' %}
+      {% cciw_form_field form 'phone_number' 'Phone number' %}
+      {% cciw_form_field form 'email' 'Email' %}
+
+      <h2>Church</h2>
+
+      {% cciw_form_field form 'church' 'Name of church (if any)' %}
+
+      <h2>Transport</h2>
+
+      <p>We used to offer some help with transport if you were coming from South
+        Wales. This is no longer available - please make your own arrangements to get to
+        camp.</p>
+
+      <h2>Contact details</h2>
+
+      <p>Please enter a contact name and number that can be used <strong>during the week of camp</strong> in case of emergency.</p>
+
+      {% cciw_form_field form 'contact_address' 'Address' %} <input style="display:none;" type="submit" id="id_use_account_2_btn" value="Use account address">
+      {% cciw_form_field form 'contact_post_code' 'Post code' %}
+      {% cciw_form_field form 'contact_phone_number' 'Phone number' %}
+
+      <h2>Dietary requirements</h2>
+
+      <p>Please enter any special dietary requirements here (e.g. vegetarian).</p>
+      {% cciw_form_field form 'dietary_requirements' 'Dietary requirements' %}
+
+      <h2>GP details</h2>
+      <input type="submit" class="use_existing_btn" value="Use previous data" style="display:none; float: right;">
+
+      <p>Please enter the details of the camper's GP:</p>
+
+      {% cciw_form_field form 'gp_name' 'Name' %}
+      {% cciw_form_field form 'gp_address' 'Address' %}
+      {% cciw_form_field form 'gp_phone_number' 'Phone number' %}
+
+      <h2>Medical details</h2>
+
+      {% cciw_form_field form 'medical_card_number' 'Medical card number' %}
+      {% cciw_form_field form 'last_tetanus_injection' 'Last tetanus injection (if any)' %}
+      {% cciw_form_field form 'allergies' 'Allergies (including medication)' %}
+      {% cciw_form_field form 'regular_medication_required' 'Regular medication required' %}
+      {% cciw_form_field form 'illnesses' 'Illnesses (e.g. asthma, epilepsy)' %}
+      {% cciw_form_field form 'can_swim_25m' 'Can the camper swim 25m?' %}
+      {% cciw_form_field form 'learning_difficulties' 'Any learning/behavioural difficulties' %}
+
+      <p>If the illnesses, allergies or learning/behavioural difficulties above
+        include conditions that would affect the safety of camp or our ability to look
+        after the camper, please indicate below.</p>
+
+      <p>This includes, for example, significant deafness or blindness, unstabilised
+        diabetes or epilepsy, life-threatening allergies, or other conditions which
+        would normally require supervision in school life, such as autism. You do not
+        need to tick this box for conditions that are easily managed by medication,
+        where the camper can administer the medication themselves.</p>
+
+      <p>If the box is ticked, a camp leader will then have to manually approve this
+        place before booking and payment can proceed. This system is needed to avoid
+        disappointment in the case where we will not be able to cater for the camper's
+        condition on camp.</p>
+
+      {% cciw_form_field form 'serious_illness' 'Serious condition/illness' %}
+
+      <h2>Agreements</h2>
+
+      <h3>Camper agreement</h3>
+
+      <p>The camper must agree to observe the camp's <a href="/booking/code-of-conduct/" target="_new">code of conduct</a>. Failure to obey
+        camp rules can result in the camper being sent home, with no refund.</p>
+
+      <h3>Parent/guardian agreement</h3>
+
+      <p>In the event of any medical treatment becoming necessary during the camp,
+        every effort will be made to contact the parent/guardian. However, parents are
+        required to authorise the leadership team to act in their absence where urgent
+        treatment becomes necessary.</p>
+
+      <p>Pictures taken during camp may be used for camp publicity purposes. If you
+        have any objections to this, please contact the CCIW booking officer by post or
+        e-mail.</p>
+
+      <p>If both camper and parent/guardian agree to the above, tick the box to continue:</p>
+
+      {% cciw_form_field form 'agreement' 'Agree to above condtions' %}
+
+      {% if not read_only %}
+
+        <h2>Save</h2>
+
+        <p>All done! now just:
+
+
+          <input type="submit" name="submit" value="Save place details" id="id_save_btn" />
+
+      {% endif %}
+
+    </form>
+
+    {% include "cciw/bookings/use_previous_popup_inc.html" %}
+
 
   {% endif %}
-
-
-{% endif %}
-
-<h2>Camp</h2>
-{% cciw_form_field form 'camp' 'Choose camp:' %}
-
-<h2>Price</h2>
-<p>The 2nd child from the same family is eligible for '2nd child discount'.
-Subsequent children from the same family are eligible for '3rd child
-discount'.</p>
-
-<p>If you will struggle to pay the full fee, you can also apply for a custom
-  discount. The exact price will have to be arranged by the booking secretary,
-  and you will only be able to complete the booking process online after this
-  has been done if you choose this option.</p>
-
-{% if early_bird_available %}
-<p><b>Please note — there is an early bird discount of £{{ price_early_bird_discount }}
-    off the listed prices if you book before {{ early_bird_date|date:"jS F" }}!</b></p>
-{% endif %}
-
-{% cciw_form_field form 'price_type' 'Price' %}
-
-<h2>Camper details</h2>
- <input type="submit" class="use_existing_btn" value="Use previous data" style="display:none; float: right;">
-{% cciw_form_field form 'first_name' 'First name' %}
-{% cciw_form_field form 'last_name' 'Surname' %}
-{% cciw_form_field form 'sex' 'Sex' %}
-{% cciw_form_field form 'date_of_birth' 'Date of birth' %}
-{% cciw_form_field form 'address' 'Address' %} <input style="display:none;" type="submit" id="id_use_account_1_btn" value="Use account address">
-{% cciw_form_field form 'post_code' 'Post code' %}
-{% cciw_form_field form 'phone_number' 'Phone number' %}
-{% cciw_form_field form 'email' 'Email' %}
-
-<h2>Church</h2>
-
-{% cciw_form_field form 'church' 'Name of church (if any)' %}
-
-<h2>Transport</h2>
-
-<p>We used to offer some help with transport if you were coming from South
-Wales. This is no longer available - please make your own arrangements to get to
-camp.</p>
-
-<h2>Contact details</h2>
-
-<p>Please enter a contact name and number that can be used <strong>during the week of camp</strong> in case of emergency.</p>
-
-{% cciw_form_field form 'contact_address' 'Address' %} <input style="display:none;" type="submit" id="id_use_account_2_btn" value="Use account address">
-{% cciw_form_field form 'contact_post_code' 'Post code' %}
-{% cciw_form_field form 'contact_phone_number' 'Phone number' %}
-
-<h2>Dietary requirements</h2>
-
-<p>Please enter any special dietary requirements here (e.g. vegetarian).</p>
-{% cciw_form_field form 'dietary_requirements' 'Dietary requirements' %}
-
-<h2>GP details</h2>
- <input type="submit" class="use_existing_btn" value="Use previous data" style="display:none; float: right;">
-
-<p>Please enter the details of the camper's GP:</p>
-
-{% cciw_form_field form 'gp_name' 'Name' %}
-{% cciw_form_field form 'gp_address' 'Address' %}
-{% cciw_form_field form 'gp_phone_number' 'Phone number' %}
-
-<h2>Medical details</h2>
-
-{% cciw_form_field form 'medical_card_number' 'Medical card number' %}
-{% cciw_form_field form 'last_tetanus_injection' 'Last tetanus injection (if any)' %}
-{% cciw_form_field form 'allergies' 'Allergies (including medication)' %}
-{% cciw_form_field form 'regular_medication_required' 'Regular medication required' %}
-{% cciw_form_field form 'illnesses' 'Illnesses (e.g. asthma, epilepsy)' %}
-{% cciw_form_field form 'can_swim_25m' 'Can the camper swim 25m?' %}
-{% cciw_form_field form 'learning_difficulties' 'Any learning/behavioural difficulties' %}
-
-<p>If the illnesses, allergies or learning/behavioural difficulties above
-include conditions that would affect the safety of camp or our ability to look
-after the camper, please indicate below.</p>
-
-<p>This includes, for example, significant deafness or blindness, unstabilised
-diabetes or epilepsy, life-threatening allergies, or other conditions which
-would normally require supervision in school life, such as autism. You do not
-need to tick this box for conditions that are easily managed by medication,
-where the camper can administer the medication themselves.</p>
-
-<p>If the box is ticked, a camp leader will then have to manually approve this
-place before booking and payment can proceed. This system is needed to avoid
-disappointment in the case where we will not be able to cater for the camper's
-condition on camp.</p>
-
-{% cciw_form_field form 'serious_illness' 'Serious condition/illness' %}
-
-<h2>Agreements</h2>
-
-<h3>Camper agreement</h3>
-
-<p>The camper must agree to observe the camp's <a href="/booking/code-of-conduct/" target="_new">code of conduct</a>. Failure to obey
-camp rules can result in the camper being sent home, with no refund.</p>
-
-<h3>Parent/guardian agreement</h3>
-
-<p>In the event of any medical treatment becoming necessary during the camp,
-every effort will be made to contact the parent/guardian. However, parents are
-required to authorise the leadership team to act in their absence where urgent
-treatment becomes necessary.</p>
-
-<p>Pictures taken during camp may be used for camp publicity purposes. If you
-have any objections to this, please contact the CCIW booking officer by post or
-e-mail.</p>
-
-<p>If both camper and parent/guardian agree to the above, tick the box to continue:</p>
-
-{% cciw_form_field form 'agreement' 'Agree to above condtions' %}
-
-{% if not read_only %}
-
-<h2>Save</h2>
-
-<p>All done! now just:
-
-
-<input type="submit" name="submit" value="Save place details" id="id_save_btn" />
-
-{% endif %}
-
-</form>
-
-{% include "cciw/bookings/use_previous_popup_inc.html" %}
-
-
-{% endif %}
 {% endblock %}

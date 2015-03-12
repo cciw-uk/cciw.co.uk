@@ -1,9 +1,9 @@
 {% extends 'cciw/standard.html' %}
 {% block content %}
-<p>You are not logged in to the booking system — either you do not have an
- account or your session has expired. You will need to
- <a href="{% url 'cciw.bookings.views.start' %}">enter and verify your email
- address</a> to
- continue.</p>
+  <p>You are not logged in to the booking system — either you do not have an
+    account or your session has expired. You will need to
+    <a href="{% url 'cciw.bookings.views.start' %}">enter and verify your email
+      address</a> to
+    continue.</p>
 
 {% endblock %}

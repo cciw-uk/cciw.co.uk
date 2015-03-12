@@ -13,18 +13,18 @@
         <th scope="col">Posts {% sorting_control "apc" "dpc" "Sort by number of posts ascending" "Sort by number of posts descending"%}</th>
         <th scope="col" class="photoLastPostCol">Last comment {% sorting_control "alp" "dlp" "Click to sort by date of last post, oldest first" "Click to sort by date of last post, newest first" %}</th>
       </tr>
-    {% for photo in object_list %}
-      <tr>
-        <td>{% if photo.created_at %}{{ photo.created_at|date:"d M Y H:i" }}{% endif %}</td>
-        <td class="photoCol"><a href="{{ photo.get_absolute_url }}"><img class="photoThumbnail" src="{{ MEDIA_URL }}photos/thumbnails/{{ photo.filename }}" alt="Photo {{ photo.filename }}" /></a>
-        </td>
-        <td>{{ photo.description }}
-        </td>
-        <td>{{ photo.post_count }}</td>
-        <td>{% if photo.last_post_at %}{{ photo.last_post_at|date:"d M Y H:i" }}<br/>{% endif %}
+      {% for photo in object_list %}
+        <tr>
+          <td>{% if photo.created_at %}{{ photo.created_at|date:"d M Y H:i" }}{% endif %}</td>
+          <td class="photoCol"><a href="{{ photo.get_absolute_url }}"><img class="photoThumbnail" src="{{ MEDIA_URL }}photos/thumbnails/{{ photo.filename }}" alt="Photo {{ photo.filename }}" /></a>
+          </td>
+          <td>{{ photo.description }}
+          </td>
+          <td>{{ photo.post_count }}</td>
+          <td>{% if photo.last_post_at %}{{ photo.last_post_at|date:"d M Y H:i" }}<br/>{% endif %}
             {% if photo.last_post_by_id %}{{ photo.last_post_by.get_link }}{% endif %}</td>
-      </tr>
-    {% endfor %}
+        </tr>
+      {% endfor %}
     </table>
     <div class="paging">{% paging_control %}</div>
   {% else %}

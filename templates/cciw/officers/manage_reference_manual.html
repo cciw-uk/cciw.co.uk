@@ -1,64 +1,64 @@
 {% extends "cciw/officers/base.html" %}
 {% block extrastyle %}{{ block.super }}
-<script type="text/javascript">
-<!--
-function createReferenceFormManually() {
-   window.open('{% url "cciw.officers.views.edit_reference_form_manually" ref_id=ref.id %}',
-                '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+  <script type="text/javascript">
+   <!--
+   function createReferenceFormManually() {
+       window.open('{% url "cciw.officers.views.edit_reference_form_manually" ref_id=ref.id %}',
+                   '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
 
-}
-//-->
-</script>
+   }
+   //-->
+  </script>
 {% endblock %}
 
 {% block content %}
 
-<h1>Manage reference for {{ officer.first_name }} {{ officer.last_name }} from
-  {{ referee.name }}</h1>
-<h2>Referee details</h2>
-<p>Email: <a href="mailto:{{ referee.email }}">{{ referee.email }}</a></p>
-<p>Address:</p>
-<div>{{ referee.address|linebreaksbr }}</div>
-{% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
-{% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
+  <h1>Manage reference for {{ officer.first_name }} {{ officer.last_name }} from
+    {{ referee.name }}</h1>
+  <h2>Referee details</h2>
+  <p>Email: <a href="mailto:{{ referee.email }}">{{ referee.email }}</a></p>
+  <p>Address:</p>
+  <div>{{ referee.address|linebreaksbr }}</div>
+  {% if referee.tel %}<div>{{ referee.tel }}</div>{% endif %}
+  {% if referee.mobile %}<div>{{ referee.mobile }}</div>{% endif %}
 
-<h2>Using this page</h2>
-<p>If the referee is unable to use the online system to enter a reference, or
- you wish to update past records, this page can be used to edit the stored
- reference information.</p>
+  <h2>Using this page</h2>
+  <p>If the referee is unable to use the online system to enter a reference, or
+    you wish to update past records, this page can be used to edit the stored
+    reference information.</p>
 
-<p>You may want to send a paper reference form, send an electronic copy
-  (e.g. Microsoft Word Document) for them to fill in, or talk to them over the
-  telephone.</p>
+  <p>You may want to send a paper reference form, send an electronic copy
+    (e.g. Microsoft Word Document) for them to fill in, or talk to them over the
+    telephone.</p>
 
-<p>The 'requested' field should be used to indicate the fact that a request for
- the reference has been sent.  The 'received' field should be used to indicate
- that the reference has been received, by whatever means.  The comments field
- can be used for any other information e.g. the date of these actions, or where
- the paper copy is being stored. (These fields are normally updated
- automatically when the reference is requested and received).</p>
+  <p>The 'requested' field should be used to indicate the fact that a request for
+    the reference has been sent.  The 'received' field should be used to indicate
+    that the reference has been received, by whatever means.  The comments field
+    can be used for any other information e.g. the date of these actions, or where
+    the paper copy is being stored. (These fields are normally updated
+    automatically when the reference is requested and received).</p>
 
-<form action="" method="post">{% csrf_token %}
+  <form action="" method="post">{% csrf_token %}
 
-<table>
-{{ form }}
-</table>
+    <table>
+      {{ form }}
+    </table>
 
-<div>
-<input type="submit" name="save" value="Save" />
- <input type="submit" name="cancel" value="Cancel" />
-</div>
-</form>
+    <div>
+      <input type="submit" name="save" value="Save" />
+      <input type="submit" name="cancel" value="Cancel" />
+    </div>
+  </form>
 
-<h2>Full reference form</h2>
-<p>If you have old references that you want to copy into the online system, or
-  if you want to record information given in a telephone conversation, you can
-  create/edit the reference form manually:<br/>
+  <h2>Full reference form</h2>
+  <p>If you have old references that you want to copy into the online system, or
+    if you want to record information given in a telephone conversation, you can
+    create/edit the reference form manually:<br/>
 
-  <button onclick="createReferenceFormManually();">{% if ref.reference_form %}Edit{% else %}Create{% endif %} Reference Form</button>
-(opens in new window)<br />
-</p>
-<p>After creating the form, update the 'requested', 'received' and 'comments'
-  fields above as appropriate.</p>
+    <button onclick="createReferenceFormManually();">{% if ref.reference_form %}Edit{% else %}Create{% endif %} Reference Form</button>
+    (opens in new window)<br />
+  </p>
+  <p>After creating the form, update the 'requested', 'received' and 'comments'
+    fields above as appropriate.</p>
 
 {% endblock %}

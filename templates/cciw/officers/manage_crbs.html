@@ -2,245 +2,245 @@
 {% load static %}
 {% block title %}Manage CRBs {{ year }} | CCIW Officers{% endblock %}
 {% block content %}
-<script type="text/javascript">
-function CRBFormSent(officerId) {
-    jQuery.ajax({
-        type: "POST",
-        url: "{% url 'cciw.officers.views.mark_crb_sent' %}",
-        data: "officer_id=" + officerId.toString(),
-        dataType: 'json',
-        success: function(data) {
-            // We need undo information, and we need to update the 'CRB form
-            // sent' column. We store undo information in a stack, on the undo
-            // button itself.
-            var btn = jQuery('#id_undo_' + officerId.toString());
-            var lastSentCell = jQuery('#id_last_crb_form_sent_' + officerId.toString());
-            var highlightDiv = jQuery('#id_highlightdiv_' + officerId.toString());
-            if (btn.data('undoIdList') == null) {
-                btn.data('undoIdList', new Array);
-            }
-            if (btn.data('undoLastSentList') == null) {
-                btn.data('undoLastSentList', new Array);
-            }
-            var undoIdList = btn.data('undoIdList');
-            var undoLastSentList = btn.data('undoLastSentList');
-            undoIdList.push(data.crbFormLogId);
-            undoLastSentList.push(lastSentCell.html());
-            lastSentCell.html('Just now');
-            highlightDiv.removeClass("actionable");
+  <script type="text/javascript">
+   function CRBFormSent(officerId) {
+       jQuery.ajax({
+           type: "POST",
+           url: "{% url 'cciw.officers.views.mark_crb_sent' %}",
+           data: "officer_id=" + officerId.toString(),
+           dataType: 'json',
+           success: function(data) {
+               // We need undo information, and we need to update the 'CRB form
+               // sent' column. We store undo information in a stack, on the undo
+               // button itself.
+               var btn = jQuery('#id_undo_' + officerId.toString());
+               var lastSentCell = jQuery('#id_last_crb_form_sent_' + officerId.toString());
+               var highlightDiv = jQuery('#id_highlightdiv_' + officerId.toString());
+               if (btn.data('undoIdList') == null) {
+                   btn.data('undoIdList', new Array);
+               }
+               if (btn.data('undoLastSentList') == null) {
+                   btn.data('undoLastSentList', new Array);
+               }
+               var undoIdList = btn.data('undoIdList');
+               var undoLastSentList = btn.data('undoLastSentList');
+               undoIdList.push(data.crbFormLogId);
+               undoLastSentList.push(lastSentCell.html());
+               lastSentCell.html('Just now');
+               highlightDiv.removeClass("actionable");
 
-            // Add callback to undo button
-            btn.unbind();
-            btn.click(function() {
-                // Delete server side
-                jQuery.ajax({
-                    type: "POST",
-                    url: "{% url 'cciw.officers.views.undo_mark_crb_sent' %}",
-                    data: "crbformlog_id=" + undoIdList.pop().toString(),
-                    dataType: 'json'
-                });
-                // Fix up cell client side
-                var lastSentCellContents = undoLastSentList.pop();
-                lastSentCell.html(lastSentCellContents);
-                if (undoIdList.length == 0) {
-                    btn.hide();
-                }
-                if (lastSentCellContents.replace(/\n|\r| /g, '') == "") {
-                    highlightDiv.addClass("actionable");
-                }
+               // Add callback to undo button
+               btn.unbind();
+               btn.click(function() {
+                   // Delete server side
+                   jQuery.ajax({
+                       type: "POST",
+                       url: "{% url 'cciw.officers.views.undo_mark_crb_sent' %}",
+                       data: "crbformlog_id=" + undoIdList.pop().toString(),
+                       dataType: 'json'
+                   });
+                   // Fix up cell client side
+                   var lastSentCellContents = undoLastSentList.pop();
+                   lastSentCell.html(lastSentCellContents);
+                   if (undoIdList.length == 0) {
+                       btn.hide();
+                   }
+                   if (lastSentCellContents.replace(/\n|\r| /g, '') == "") {
+                       highlightDiv.addClass("actionable");
+                   }
 
-            });
-            btn.show();
-        }
-    });
-}
+               });
+               btn.show();
+           }
+       });
+   }
 
-function alertLeadersCrbConsentCheck(applicationId) {
-    window.open("{% url 'cciw.officers.views.crb_consent_problem' %}?application_id=" + applicationId.toString(),
-                '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+   function alertLeadersCrbConsentCheck(applicationId) {
+       window.open("{% url 'cciw.officers.views.crb_consent_problem' %}?application_id=" + applicationId.toString(),
+                   '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
 
-}
+   }
 
-$(document).ready(function() {
+   $(document).ready(function() {
 
-    // convert 'data-camps' into jQuery data
-    $('#id_officer_table tbody tr').each(function(idx, elem) {
-        $(elem).data('camps', $(elem).attr('data-camps').split(','));
-    });
+       // convert 'data-camps' into jQuery data
+       $('#id_officer_table tbody tr').each(function(idx, elem) {
+           $(elem).data('camps', $(elem).attr('data-camps').split(','));
+       });
 
-    function getSelectedCamps() {
-        var selectedCamps = []
-        $('#id_campselector input[type=checkbox]:checked').each(function(idx, elem) {
-            selectedCamps.push($(elem).val());
-        });
-        return selectedCamps;
-    }
+       function getSelectedCamps() {
+           var selectedCamps = []
+           $('#id_campselector input[type=checkbox]:checked').each(function(idx, elem) {
+               selectedCamps.push($(elem).val());
+           });
+           return selectedCamps;
+       }
 
-    var initalSelectedCamps = getSelectedCamps();
+       var initalSelectedCamps = getSelectedCamps();
 
-    // Handler for camp checkboxes
-    function selectedCampsChanged(ev) {
-        var selectedCamps = getSelectedCamps();
-        updateVisibleRows(selectedCamps);
-        if (Modernizr.history) {
-            var url = '';
-            if (selectedCamps.length == 0) {
-                // Special case - server side if there are no 'camp' query params,
-                // we treat this as if all camps are selected. To get behaviour to
-                // match, we specify an invalid camp number
-                url = '?camp=0';
-            } else {
-                url = "?" + $.map(selectedCamps,
-                                  function(c) { return ("camp=" + c); }).join("&");
-            }
-            history.pushState({selectedCamps:selectedCamps}, '', url);
-        } else {
-            $('#id_campselector input[type=submit]').removeAttr('disabled');
-        }
-    }
+       // Handler for camp checkboxes
+       function selectedCampsChanged(ev) {
+           var selectedCamps = getSelectedCamps();
+           updateVisibleRows(selectedCamps);
+           if (Modernizr.history) {
+               var url = '';
+               if (selectedCamps.length == 0) {
+                   // Special case - server side if there are no 'camp' query params,
+                   // we treat this as if all camps are selected. To get behaviour to
+                   // match, we specify an invalid camp number
+                   url = '?camp=0';
+               } else {
+                   url = "?" + $.map(selectedCamps,
+                                     function(c) { return ("camp=" + c); }).join("&");
+               }
+               history.pushState({selectedCamps:selectedCamps}, '', url);
+           } else {
+               $('#id_campselector input[type=submit]').removeAttr('disabled');
+           }
+       }
 
-    function updateVisibleRows(selectedCamps) {
-        // Now go through all rows
-        $('#id_officer_table tbody tr').each(function(idx, elem) {
-            var show = false;
-            var tr = $(elem);
-            $.each(tr.data('camps'), function(idx, val) {
-                if ($.inArray(val, selectedCamps) != -1) {
-                    show = true;
-                    return false;
-                }
-            });
-            if (show) {
-                tr.show();
-            } else {
-                tr.hide();
-            }
-        });
-    }
+       function updateVisibleRows(selectedCamps) {
+           // Now go through all rows
+           $('#id_officer_table tbody tr').each(function(idx, elem) {
+               var show = false;
+               var tr = $(elem);
+               $.each(tr.data('camps'), function(idx, val) {
+                   if ($.inArray(val, selectedCamps) != -1) {
+                       show = true;
+                       return false;
+                   }
+               });
+               if (show) {
+                   tr.show();
+               } else {
+                   tr.hide();
+               }
+           });
+       }
 
-    function updateCheckBoxes(selectedCamps) {
-        $('#id_campselector input[type=checkbox]').each(function(idx, elem) {
-            elem.checked = ($.inArray(elem.value, selectedCamps) != -1);
-        });
-    }
+       function updateCheckBoxes(selectedCamps) {
+           $('#id_campselector input[type=checkbox]').each(function(idx, elem) {
+               elem.checked = ($.inArray(elem.value, selectedCamps) != -1);
+           });
+       }
 
-    function handleHistoryPopState(ev) {
-        var state = ev.originalEvent.state;
-        var selectedCamps;
-        if (state == null) {
-            selectedCamps = initalSelectedCamps;
-        } else {
-            selectedCamps = state.selectedCamps;
-        }
-        updateCheckBoxes(selectedCamps);
-        updateVisibleRows(selectedCamps);
-    }
+       function handleHistoryPopState(ev) {
+           var state = ev.originalEvent.state;
+           var selectedCamps;
+           if (state == null) {
+               selectedCamps = initalSelectedCamps;
+           } else {
+               selectedCamps = state.selectedCamps;
+           }
+           updateCheckBoxes(selectedCamps);
+           updateVisibleRows(selectedCamps);
+       }
 
-    // Add event handler
-    $('#id_campselector input[type=checkbox]').bind('change', selectedCampsChanged);
+       // Add event handler
+       $('#id_campselector input[type=checkbox]').bind('change', selectedCampsChanged);
 
-    if (Modernizr.history) {
-        // Don't need the 'update' button at all, we can use history.pushState
-        // to update the URL.
-        $('#id_campselector input[type=submit]').hide();
-        $(window).bind('popstate', handleHistoryPopState);
-    } else {
-        // Change the caption on 'update' box, because with javascript enabled it is
-        // only useful for updating the URL, as other updates happen immediately.
-        $('#id_campselector input[type=submit]').attr('disabled', 'disabled').val('Update page address');
-    }
-});
-</script>
+       if (Modernizr.history) {
+           // Don't need the 'update' button at all, we can use history.pushState
+           // to update the URL.
+           $('#id_campselector input[type=submit]').hide();
+           $(window).bind('popstate', handleHistoryPopState);
+       } else {
+           // Change the caption on 'update' box, because with javascript enabled it is
+           // only useful for updating the URL, as other updates happen immediately.
+           $('#id_campselector input[type=submit]').attr('disabled', 'disabled').val('Update page address');
+       }
+   });
+  </script>
 
-<h1>Manage CRBs</h1>
+  <h1>Manage CRBs</h1>
 
-<p>This pages shows all officers on camps, year {{ year }}, and their status
-regarding needing CRB forms.</p>
+  <p>This pages shows all officers on camps, year {{ year }}, and their status
+    regarding needing CRB forms.</p>
 
-<p>For officers needing CRBs:</p>
+  <p>For officers needing CRBs:</p>
 
-<ul>
-  <li>Use 'Show address' to view the officer's address (from application form)</li>
-  <li>Use the buttons in the 'Manage' column to indicate you've physically sent them a CRB form to fill in.</li>
-  <li>Officers most likely to need attention are <span class="actionable">highlighted</span>.</li>
-</ul>
+  <ul>
+    <li>Use 'Show address' to view the officer's address (from application form)</li>
+    <li>Use the buttons in the 'Manage' column to indicate you've physically sent them a CRB form to fill in.</li>
+    <li>Officers most likely to need attention are <span class="actionable">highlighted</span>.</li>
+  </ul>
 
-<p>To enter information for CRBs that have been <em>completed</em>, use the
- <a href="{% url 'admin:officers_crbapplication_changelist' %}" rel="external">CRB Disclosures admin</a>.</p>
+  <p>To enter information for CRBs that have been <em>completed</em>, use the
+    <a href="{% url 'admin:officers_crbapplication_changelist' %}" rel="external">CRB Disclosures admin</a>.</p>
 
-<div id='id_campselector'>
-<form action="." method="GET">
-<p>Select camps: {% for camp in camps %}
-<label><input type="checkbox" name="camp" value="{{ camp.number }}"
-{% if camp.number in selected_camps %}checked{% endif %}> {{ camp.number }}</label>&nbsp;&nbsp;
-{% endfor %} <input type="submit" value="Update page">
-</p>
-</form>
-</div>
+  <div id='id_campselector'>
+    <form action="." method="GET">
+      <p>Select camps: {% for camp in camps %}
+        <label><input type="checkbox" name="camp" value="{{ camp.number }}"
+                      {% if camp.number in selected_camps %}checked{% endif %}> {{ camp.number }}</label>&nbsp;&nbsp;
+      {% endfor %} <input type="submit" value="Update page">
+      </p>
+    </form>
+  </div>
 
-<table id="id_officer_table">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Camps</th>
-      <th>Application form</th>
-      <th>CRB</th>
-      <th>CRB form sent</th>
-      <th>Address</th>
-      <th>Manage</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for officer in all_officers %}
-      <tr id="id_highlightdiv_{{ officer.id }}"
-          {% if not officer.temp.has_valid_crb and officer.temp.has_application_form and not officer.temp.last_crb_form_sent %}class="actionable"{% endif %}
-          data-camps="{% for camp in officer.temp.camps %}{{ camp.number }}{% if not forloop.last %},{% endif %}{% endfor %}"
-          {% if not officer.temp.selected %}style="display: none;"{% endif %}
->
-        <td>{{ officer.first_name }} {{ officer.last_name }}</td>
-        <td>{% for camp in officer.temp.camps %}
-              <a href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}" rel="external">{{ camp.number }}</a>{% if not forloop.last %}, {% endif %}
-            {% endfor %}
-        </td>
-        <td>{% if officer.temp.has_application_form %}<img src="{% static "admin/img/icon-yes.gif" %}">
-          <a href="{% url 'admin:officers_application_change' officer.temp.application_id %}" rel="external">View/edit</a>{% endif %}</td>
-        <td>{% if not officer.temp.has_crb %}<img src="{% static "admin/img/icon_error.gif" %}"> Never
-            {% else %}{% if officer.temp.has_valid_crb %}<img src="{% static "admin/img/icon_success.gif" %}"> Recent
-                     {% else %}<img src="{% static "admin/img/icon_alert.gif" %}"> Out of date
-                     {% endif %}
-            {% endif %}</td>
-        <td id="id_last_crb_form_sent_{{ officer.id }}">
-          {% if officer.temp.has_valid_crb %}
-            n/a
-          {% else %}
-            {% if officer.temp.last_crb_form_sent %}
-              {{ officer.temp.last_crb_form_sent|timesince }} ago
-            {% endif %}
-          {% endif %}
-        </td>
-        <td>
-          {% if not officer.temp.has_valid_crb %}
-            {% if officer.temp.has_application_form %}
-              {% if officer.temp.crb_check_consent %}
-                <a href="javascript:void(0)" onclick="$('#id_address_{{ officer.id }}').toggle();">Show address</a>
-                <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ officer.temp.address }}</span>
-              {% else %}
-                <b>Officer does not<br/> consent to CRB check.<br/></b>
-                <button onclick="alertLeadersCrbConsentCheck({{ officer.temp.application_id }})">Alert leaders</button>
-              {% endif %}
-            {% else %}
-              Needs application form
-            {% endif %}
-          {% endif %}
-        </td>
-        <td>
-          {% if not officer.temp.has_valid_crb and officer.temp.has_application_form and officer.temp.crb_check_consent %}
-            <button onclick="CRBFormSent({{ officer.id }});">Click when sent</button>
-            <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
-          {% endif %}
-        </td>
+  <table id="id_officer_table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Camps</th>
+        <th>Application form</th>
+        <th>CRB</th>
+        <th>CRB form sent</th>
+        <th>Address</th>
+        <th>Manage</th>
       </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {% for officer in all_officers %}
+        <tr id="id_highlightdiv_{{ officer.id }}"
+            {% if not officer.temp.has_valid_crb and officer.temp.has_application_form and not officer.temp.last_crb_form_sent %}class="actionable"{% endif %}
+            data-camps="{% for camp in officer.temp.camps %}{{ camp.number }}{% if not forloop.last %},{% endif %}{% endfor %}"
+            {% if not officer.temp.selected %}style="display: none;"{% endif %}
+            >
+          <td>{{ officer.first_name }} {{ officer.last_name }}</td>
+          <td>{% for camp in officer.temp.camps %}
+            <a href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}" rel="external">{{ camp.number }}</a>{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+          </td>
+          <td>{% if officer.temp.has_application_form %}<img src="{% static "admin/img/icon-yes.gif" %}">
+            <a href="{% url 'admin:officers_application_change' officer.temp.application_id %}" rel="external">View/edit</a>{% endif %}</td>
+          <td>{% if not officer.temp.has_crb %}<img src="{% static "admin/img/icon_error.gif" %}"> Never
+          {% else %}{% if officer.temp.has_valid_crb %}<img src="{% static "admin/img/icon_success.gif" %}"> Recent
+          {% else %}<img src="{% static "admin/img/icon_alert.gif" %}"> Out of date
+          {% endif %}
+          {% endif %}</td>
+          <td id="id_last_crb_form_sent_{{ officer.id }}">
+            {% if officer.temp.has_valid_crb %}
+              n/a
+            {% else %}
+              {% if officer.temp.last_crb_form_sent %}
+                {{ officer.temp.last_crb_form_sent|timesince }} ago
+              {% endif %}
+            {% endif %}
+          </td>
+          <td>
+            {% if not officer.temp.has_valid_crb %}
+              {% if officer.temp.has_application_form %}
+                {% if officer.temp.crb_check_consent %}
+                  <a href="javascript:void(0)" onclick="$('#id_address_{{ officer.id }}').toggle();">Show address</a>
+                  <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ officer.temp.address }}</span>
+                {% else %}
+                  <b>Officer does not<br/> consent to CRB check.<br/></b>
+                  <button onclick="alertLeadersCrbConsentCheck({{ officer.temp.application_id }})">Alert leaders</button>
+                {% endif %}
+              {% else %}
+                Needs application form
+              {% endif %}
+            {% endif %}
+          </td>
+          <td>
+            {% if not officer.temp.has_valid_crb and officer.temp.has_application_form and officer.temp.crb_check_consent %}
+              <button onclick="CRBFormSent({{ officer.id }});">Click when sent</button>
+              <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}

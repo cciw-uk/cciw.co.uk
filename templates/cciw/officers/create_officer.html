@@ -1,65 +1,65 @@
 {% extends "cciw/officers/base.html" %}
 {% block content %}
-<h1>Add officer to system</h1>
+  <h1>Add officer to system</h1>
 
-<p>This page can be used to add officers to this website so that they can log in
-  and submit application forms.
-</p>
+  <p>This page can be used to add officers to this website so that they can log in
+    and submit application forms.
+  </p>
 
-{% if message %}
-<div class="actionnote">
- {{ message }}
-</div>
-{% endif %}
-
-<h2>Enter details for officer</h2>
-<form action="" method="post">{% csrf_token %}
-<div>
-    <table>
-      {{ form.as_table }}
-    </table>
-</div>
-
-<p><input type="submit" name="add" value="Add officer" /></p>
-
-{% if duplicate_message %}
-<br/>
-  <p class="actionnote">{{ duplicate_message }}</p>
-
-  {% if allow_confirm %}
-
-    <p>Existing user(s):</p>
-    {% for u in existing_users %}
-    <table>
-      <tr>
-        <th scope="row">Username</th>
-        <td>{{ u.username }}</td>
-      </tr>
-      <tr>
-        <th scope="row">Name</th>
-        <td>{{ u.first_name }} {{ u.last_name }}</td>
-      </tr>
-      <tr>
-        <th scope="row">E-mail</th>
-        <td>{{ u.email }}</td>
-      </tr>
-    </table>
-    {% endfor %}
-    <br/>
-    <p>If you are sure that your officer is a different person
-      from the above, press 'Confirm' to add them to the system.
-     </p>
-
-    <p class="actionnote"><b>If the person has just changed their e-mail address, DO
-        NOT press confirm and add a new officer to the system.
-        Instead you should add the officer to your list, then edit
-        their e-mail address.</b></p>
-
-    <p><input type="submit" name="confirm" value="Confirm" /></p>
-
+  {% if message %}
+    <div class="actionnote">
+      {{ message }}
+    </div>
   {% endif %}
 
-{% endif %}
+  <h2>Enter details for officer</h2>
+  <form action="" method="post">{% csrf_token %}
+    <div>
+      <table>
+        {{ form.as_table }}
+      </table>
+    </div>
 
-</form>
+    <p><input type="submit" name="add" value="Add officer" /></p>
+
+    {% if duplicate_message %}
+      <br/>
+      <p class="actionnote">{{ duplicate_message }}</p>
+
+      {% if allow_confirm %}
+
+        <p>Existing user(s):</p>
+        {% for u in existing_users %}
+          <table>
+            <tr>
+              <th scope="row">Username</th>
+              <td>{{ u.username }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Name</th>
+              <td>{{ u.first_name }} {{ u.last_name }}</td>
+            </tr>
+            <tr>
+              <th scope="row">E-mail</th>
+              <td>{{ u.email }}</td>
+            </tr>
+          </table>
+        {% endfor %}
+        <br/>
+        <p>If you are sure that your officer is a different person
+          from the above, press 'Confirm' to add them to the system.
+        </p>
+
+        <p class="actionnote"><b>If the person has just changed their e-mail address, DO
+          NOT press confirm and add a new officer to the system.
+          Instead you should add the officer to your list, then edit
+          their e-mail address.</b></p>
+
+        <p><input type="submit" name="confirm" value="Confirm" /></p>
+
+      {% endif %}
+
+    {% endif %}
+
+  </form>
 {% endblock %}

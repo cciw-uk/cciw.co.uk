@@ -1,10 +1,10 @@
 {% extends "cciw/standard.html" %}
 {% block content %}
   {% if error_message %}
-  <div class="userError">{{ error_message }}</div>
+    <div class="userError">{{ error_message }}</div>
   {% else %}
     {% if isFromRedirect %}
-    <p>Log in to continue.</p>
+      <p>Log in to continue.</p>
     {% endif %}
   {% endif %}
   <p>Enter your user name and password below:</p>
@@ -18,13 +18,13 @@
       <input type='password' name='password' id='password' />
     </div>
     <div>
-    <input type="hidden" name="this_is_the_login_form" value="1" />
-    <input type="submit" name="login" value="Login" />
+      <input type="hidden" name="this_is_the_login_form" value="1" />
+      <input type="submit" name="login" value="Login" />
     </div>
   </form>
   <br/>
   <ul><li><small><a href="/help/logging-in/">Forgotten your username or password?</a></small></li>
-  <li><small><a href="/signup/">Sign up</a> if you haven't done so already</small></li>
-        <li><small>Need to log in to the <strong>officer</strong> section of the website?  <a href="{% url 'cciw.officers.views.index' %}">Go here</a></small></li>
+    <li><small><a href="/signup/">Sign up</a> if you haven't done so already</small></li>
+    <li><small>Need to log in to the <strong>officer</strong> section of the website?  <a href="{% url 'cciw.officers.views.index' %}">Go here</a></small></li>
   </ul>
 {% endblock %}

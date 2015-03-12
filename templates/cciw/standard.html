@@ -4,94 +4,94 @@
 
 {% block extraheader %}
   {% if meta_description %}
-  <meta name="description" content="{{ meta_description }}" />
-  {% else %}
-     {% if homepage %}
-        <meta name="description" content="Details of camps, message boards and photos for the UK charity Christian Camps in Wales" />
-     {% endif %}
-  {% endif %}
-  {% if meta_keywords %}
-  <meta name="keywords" content="{{ meta_keywords }}" />
+    <meta name="description" content="{{ meta_description }}" />
   {% else %}
     {% if homepage %}
-        <meta name="keywords" content="camp, camps, summer camp, Christian, Christian camp, charity" />
+      <meta name="description" content="Details of camps, message boards and photos for the UK charity Christian Camps in Wales" />
     {% endif %}
- {% endif %}
+  {% endif %}
+  {% if meta_keywords %}
+    <meta name="keywords" content="{{ meta_keywords }}" />
+  {% else %}
+    {% if homepage %}
+      <meta name="keywords" content="camp, camps, summer camp, Christian, Christian camp, charity" />
+    {% endif %}
+  {% endif %}
   {{ block.super }}
   {% block atomfeed %}
     {% atomfeedlink %}
   {% endblock %}
-        <script type="text/javascript" src="{% static "admin/js/jquery.min.js" %}"></script>
-        <script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>
-        <script type="text/javascript">
-<!--
-(function($) {
-   $(document).ready(cciw.externalLinks);
-})(jQuery);
+  <script type="text/javascript" src="{% static "admin/js/jquery.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>
+  <script type="text/javascript">
+   <!--
+   (function($) {
+       $(document).ready(cciw.externalLinks);
+   })(jQuery);
 
 
-//-->
-</script>
+   //-->
+  </script>
 {% endblock %}
 {% block bodystart %}
-<div id="skiptocontentdiv"><a href="#content" id="skiptocontent">Skip to content</a></div>
+  <div id="skiptocontentdiv"><a href="#content" id="skiptocontent">Skip to content</a></div>
 {% endblock %}
 {% block main %}
-<div id="mainstandard">
-  <div id="menubarOuter">
-    <div id="menubar">
-      <ul
-      >{% for menulink in menulinks %}<li
-          ><a href="{{ menulink.url }}"
-          {% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
-          {% if menulink.isCurrentPage %} class="active" {% endif %}
-          {% if menulink.isCurrentSection %} class="currentSection" {% endif %}
-          >{{ menulink.title }}</a></li
-      >{% endfor %}</ul
-      >
+  <div id="mainstandard">
+    <div id="menubarOuter">
+      <div id="menubar">
+        <ul
+              >{% for menulink in menulinks %}<li
+              ><a href="{{ menulink.url }}"
+                  {% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
+                  {% if menulink.isCurrentPage %} class="active" {% endif %}
+                  {% if menulink.isCurrentSection %} class="currentSection" {% endif %}
+                  >{{ menulink.title }}</a></li
+       >{% endfor %}</ul
+       >
+      </div>
+    </div>
+    <div id="contentOuter">
+      <div id="content">
+        <div id="pageTitle">
+          <h1>{% block pagetitle %}{{ title }}{% endblock %}</h1>
+        </div>
+        <div id="contentBody">
+          {% block contentTop %}
+            {% block messages %}
+              {% if messages %}
+                <ul class="messagelist">{% for message in messages %}
+                  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}</ul>
+              {% endif %}
+            {% endblock messages %}
+          {% endblock contentTop %}
+          <div id="contentInner">
+            {% block breadcrumb %}
+              {% if breadcrumb %}
+                <div class='breadcrumb'>{{ breadcrumb }}</div>
+              {% endif %}
+            {% endblock %}
+            {% block content %}
+              {{ contentBody }}
+            {% endblock %}
+          </div>
+        </div>
+        <div class="bottomlinks">{% atomfeedlinkvisible %} <a href="/website/help/" title="Get help or report problems with the site">Help</a> | <a href="/website/abuse/" title="How to report absue of the web site">Report abuse</a></div>
+      </div>
     </div>
   </div>
-  <div id="contentOuter">
-    <div id="content">
-      <div id="pageTitle">
-        <h1>{% block pagetitle %}{{ title }}{% endblock %}</h1>
-      </div>
-      <div id="contentBody">
-                          {% block contentTop %}
-                            {% block messages %}
-                            {% if messages %}
-                            <ul class="messagelist">{% for message in messages %}
-                              <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                              {% endfor %}</ul>
-                            {% endif %}
-                            {% endblock messages %}
-                          {% endblock contentTop %}
-                          <div id="contentInner">
-          {% block breadcrumb %}
-          {% if breadcrumb %}
-          <div class='breadcrumb'>{{ breadcrumb }}</div>
-          {% endif %}
-          {% endblock %}
-          {% block content %}
-          {{ contentBody }}
-          {% endblock %}
-                          </div>
-      </div>
-      <div class="bottomlinks">{% atomfeedlinkvisible %} <a href="/website/help/" title="Get help or report problems with the site">Help</a> | <a href="/website/abuse/" title="How to report absue of the web site">Report abuse</a></div>
-    </div>
-  </div>
-</div>
 {% endblock %}
 
 {% block headerattr %}class="mainstandard"{% endblock %}
 
 {% block extrapageheader %}
-<div id="quicklinks">
-  {% if current_member %}
-  <ul>
-    <li>Logged in as :  <a href="{{current_member.get_absolute_url}}">{{current_member.user_name}}</a></li>
-    <li><a href="{{current_member.get_absolute_url}}messages/inbox/">{{current_member.new_messages}} new message(s)</a></li>
-  </ul>
-  {% endif %}
-</div>
+  <div id="quicklinks">
+    {% if current_member %}
+      <ul>
+        <li>Logged in as :  <a href="{{current_member.get_absolute_url}}">{{current_member.user_name}}</a></li>
+        <li><a href="{{current_member.get_absolute_url}}messages/inbox/">{{current_member.new_messages}} new message(s)</a></li>
+      </ul>
+    {% endif %}
+  </div>
 {% endblock %}

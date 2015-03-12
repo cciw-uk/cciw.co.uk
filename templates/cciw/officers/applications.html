@@ -1,105 +1,105 @@
 {% extends "cciw/officers/base.html" %}
 {% block title %}Your applications | CCIW Officers {% endblock %}
 {% block content %}<div id="content-main">
-<h1>Your applications</h1>
+  <h1>Your applications</h1>
 
-<h2>Status:</h2>
+  <h2>Status:</h2>
 
-{% if camps %}
-<p>You are on the officer list for the following camps this year:</p>
-<ul>
-  {% for camp in camps %}
-  <li><a href="{{ camp.get_absolute_url }}">{{ camp }}</a></li>
-  {% endfor %}
-</ul>
-{% else %}
-<p>You are not yet on an officer list for any camps this year. If you submit an
-application form at this stage it won't reach any leaders.
-</p>
-{% endif %}
+  {% if camps %}
+    <p>You are on the officer list for the following camps this year:</p>
+    <ul>
+      {% for camp in camps %}
+        <li><a href="{{ camp.get_absolute_url }}">{{ camp }}</a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>You are not yet on an officer list for any camps this year. If you submit an
+      application form at this stage it won't reach any leaders.
+    </p>
+  {% endif %}
 
-{% if has_completed_app %}
-<p>You have filled in your application form for this year.  Thanks!</p>
-
-{% else %}
-<p>We haven't received your application form for this year yet.<p>
-
-<h2>Tasks:</h2>
-
-<p><strong>Please read the 'help' section below first.</strong></p>
-
-<form action="" method="post">{% csrf_token %}
-
-
-{% if unfinished_applications %}
-<p>Continue filling in an application:<br/>
-  <input type="submit" name="edit" value="Continue" />
-</p>
-
-{% endif %}
-
-{% if not has_thisyears_app %}
-  {% if finished_applications %}
-<p>Create new application based on your previous one:<br/>
-  <input type="submit" name="new" value="Create" />
-</p>
-
-<p>Once you have pressed 'Create', you will need to update any
-  information necessary, including your address, and re-check the
-  declarations.</p>
+  {% if has_completed_app %}
+    <p>You have filled in your application form for this year.  Thanks!</p>
 
   {% else %}
-<p>Start application form:<br/>
-  <input type="submit" name="new" value="Start" />
-</p>
+    <p>We haven't received your application form for this year yet.<p>
+
+      <h2>Tasks:</h2>
+
+      <p><strong>Please read the 'help' section below first.</strong></p>
+
+      <form action="" method="post">{% csrf_token %}
+
+
+        {% if unfinished_applications %}
+          <p>Continue filling in an application:<br/>
+            <input type="submit" name="edit" value="Continue" />
+          </p>
+
+        {% endif %}
+
+        {% if not has_thisyears_app %}
+          {% if finished_applications %}
+            <p>Create new application based on your previous one:<br/>
+              <input type="submit" name="new" value="Create" />
+            </p>
+
+            <p>Once you have pressed 'Create', you will need to update any
+              information necessary, including your address, and re-check the
+              declarations.</p>
+
+          {% else %}
+            <p>Start application form:<br/>
+              <input type="submit" name="new" value="Start" />
+            </p>
+          {% endif %}
+        {% endif %}
+
+
+        <h2>Help filling in the form</h2>
+        <p>You can save your work at any time (using the 'Save' button at the bottom)
+          and come back to it later if you want.  When you have finished and want
+          to submit the application form to the leaders, you need to check the
+          'Completed' checkbox at the bottom and press 'Save'.</p>
+
+        <p>Please note that if you have any validation errors (marked in red when you
+          try to save), your data won't have been saved.  You'll need to correct the
+          data before it is actually saved.</p>
+
+      </form>
+
   {% endif %}
-{% endif %}
 
+  {% if finished_applications %}
+    <h2>Download</h2>
+    <p>Download applications that you have already submitted.</p>
 
-<h2>Help filling in the form</h2>
-<p>You can save your work at any time (using the 'Save' button at the bottom)
- and come back to it later if you want.  When you have finished and want
- to submit the application form to the leaders, you need to check the
- 'Completed' checkbox at the bottom and press 'Save'.</p>
+    <form action="{% url 'cciw.officers.views.view_application' %}" method="post">{% csrf_token %}
+      <div class="aligned">
+        <div class="form-row">
+          <label for="application">Choose application</label>
+          <select name="application" id="application">
+            {% for app in finished_applications %}
+              <option value="{{ app.id }}">Submitted {{ app.date_submitted|date:"Y-m-d" }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="format">Format</label>
+          <select name="format" id="format">
+            <option value="txt">Plain text</option>
+            <option value="rtf">Rich Text Format</option>
+            <option value="send">Send me both in an email</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <input type="submit" name="view" value="Get it" />
+        </div>
+        <input type="hidden" name="to" value="{{ request.path }}" />
+      </div>
+    </form>
 
-<p>Please note that if you have any validation errors (marked in red when you
-  try to save), your data won't have been saved.  You'll need to correct the
-  data before it is actually saved.</p>
-
-</form>
-
-{% endif %}
-
-{% if finished_applications %}
-<h2>Download</h2>
-<p>Download applications that you have already submitted.</p>
-
-<form action="{% url 'cciw.officers.views.view_application' %}" method="post">{% csrf_token %}
-<div class="aligned">
-  <div class="form-row">
-  <label for="application">Choose application</label>
-  <select name="application" id="application">
-    {% for app in finished_applications %}
-    <option value="{{ app.id }}">Submitted {{ app.date_submitted|date:"Y-m-d" }}</option>
-    {% endfor %}
-  </select>
-  </div>
-  <div class="form-row">
-  <label for="format">Format</label>
-  <select name="format" id="format">
-    <option value="txt">Plain text</option>
-    <option value="rtf">Rich Text Format</option>
-    <option value="send">Send me both in an email</option>
-  </select>
-  </div>
-  <div class="form-row">
-    <input type="submit" name="view" value="Get it" />
-  </div>
-  <input type="hidden" name="to" value="{{ request.path }}" />
-</div>
-</form>
-
-{% endif %}
+  {% endif %}
 
 </div>
 {% endblock %}

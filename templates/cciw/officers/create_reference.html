@@ -1,34 +1,34 @@
 {% extends "cciw/officers/base.html" %}
 {% block title %}Submit reference | CCIW Officers{% endblock %}
 {% block content %}
-<h1>Submit reference for {{ officer.first_name }} {{ officer.last_name }}</h1>
-{% if incorrect_url %}
-<p>The address is not correct.  Please ensure you have used the complete URL
-  from the e-mail</p>
-{% else %}
-  {% if already_submitted %}
-  <p>The reference has already been submitted, thank you.</p>
+  <h1>Submit reference for {{ officer.first_name }} {{ officer.last_name }}</h1>
+  {% if incorrect_url %}
+    <p>The address is not correct.  Please ensure you have used the complete URL
+      from the e-mail</p>
   {% else %}
-    {% if update %}
-    <p>Please check and update the following information (that you submitted on {{ last_form_date }}),
-    and press 'Submit reference' at the bottom.  Thanks!</p>
+    {% if already_submitted %}
+      <p>The reference has already been submitted, thank you.</p>
     {% else %}
-    <p>Please fill out the reference form, amending your name if necessary.
-      At the bottom of the page press 'Submit reference'.</p>
-    {% endif %}
+      {% if update %}
+        <p>Please check and update the following information (that you submitted on {{ last_form_date }}),
+          and press 'Submit reference' at the bottom.  Thanks!</p>
+      {% else %}
+        <p>Please fill out the reference form, amending your name if necessary.
+          At the bottom of the page press 'Submit reference'.</p>
+      {% endif %}
 
-    {% if form.errors %}
-    <p class="errornote">
-      Please correct the error(s) below.
-    </p>
-    {% endif %}
+      {% if form.errors %}
+        <p class="errornote">
+          Please correct the error(s) below.
+        </p>
+      {% endif %}
 
-    <form id="id_create_reference" method="post" action="">{% csrf_token %}
-      <table>
-      {{ form }}
-      </table>
-      <div><input type="submit" name="save" value="Submit reference" /></div>
-    </form>
+      <form id="id_create_reference" method="post" action="">{% csrf_token %}
+        <table>
+          {{ form }}
+        </table>
+        <div><input type="submit" name="save" value="Submit reference" /></div>
+      </form>
+    {% endif %}
   {% endif %}
-{% endif %}
 {% endblock %}

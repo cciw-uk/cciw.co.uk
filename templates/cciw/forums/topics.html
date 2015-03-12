@@ -6,20 +6,20 @@
 {% block content %}
 
   {% if object_list %}
-  <ul>
-    {% for topic in object_list %}
-    <li>
-    <div class="individualTopic">
-      <h2><a href="{{ topic.get_absolute_url }}">{{ topic.subject }}</a></h2>
-      <div>(In <a href="{{ topic.forum.get_absolute_url }}">{{ topic.forum.nice_name }}</a>,
-  started by {{ topic.started_by.get_link }}, at {{ topic.created_at|date:"d M y, H:i" }})<br/><br/></div>
+    <ul>
+      {% for topic in object_list %}
+        <li>
+          <div class="individualTopic">
+            <h2><a href="{{ topic.get_absolute_url }}">{{ topic.subject }}</a></h2>
+            <div>(In <a href="{{ topic.forum.get_absolute_url }}">{{ topic.forum.nice_name }}</a>,
+              started by {{ topic.started_by.get_link }}, at {{ topic.created_at|date:"d M y, H:i" }})<br/><br/></div>
 
-    </div></li>
-    {% endfor %}
-  </ul>
-  <div class="paging">{% paging_control %}</div>
+          </div></li>
+      {% endfor %}
+    </ul>
+    <div class="paging">{% paging_control %}</div>
   {% else %}
-  <p>No topics.</p>
+    <p>No topics.</p>
   {% endif %}
 
 {% endblock %}

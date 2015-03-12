@@ -1,30 +1,30 @@
 {% extends "cciw/standard.html" %}
 {% block content %}
-{% if object %}
-<p>Edit the poll details below.  Please note, you can either:</p>
-<ul>
-  <li>Change the text on existing options (votes for that option will
-  be preserved)</li>
-  <li>Remove one or more option</li>
-  <li>Add one or more option</li>
-</ul>
-<p>But do not do more than one of the above at once!</p>
-{% else %}
-<p>Enter the poll details below.  A new topic will be
-created for this poll.</p>
-{% endif %}
+  {% if object %}
+    <p>Edit the poll details below.  Please note, you can either:</p>
+    <ul>
+      <li>Change the text on existing options (votes for that option will
+        be preserved)</li>
+      <li>Remove one or more option</li>
+      <li>Add one or more option</li>
+    </ul>
+    <p>But do not do more than one of the above at once!</p>
+  {% else %}
+    <p>Enter the poll details below.  A new topic will be
+      created for this poll.</p>
+  {% endif %}
 
-{% if form.errors %}
-  <div class="userError">
-    Please check your input:
-  </div>
-{% endif %}
+  {% if form.errors %}
+    <div class="userError">
+      Please check your input:
+    </div>
+  {% endif %}
 
-<form action="" method="post" id="editpollform" class="ajaxify">{% csrf_token %}
+  <form action="" method="post" id="editpollform" class="ajaxify">{% csrf_token %}
 
-{{ form.as_p }}
+    {{ form.as_p }}
 
-<div><input type="submit" name="submit" id="submit" value="Submit" /></div>
-</form>
+    <div><input type="submit" name="submit" id="submit" value="Submit" /></div>
+  </form>
 
 {% endblock %}

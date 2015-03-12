@@ -1,38 +1,38 @@
 {% load static %}
 <div  id="id_officer_list_table">
-<p>Total: {{ invitations|length }}</p>
-<table class="tablesorter">
- <thead>
-  <tr>
-    <th>First name</th>
-    <th>Last name</th>
-    <th>E-mail</th>
-    <th>Leader's notes</th>
-    <th>Edit</th>
-  </tr>
- </thead>
- <tbody>
-{% for invite in invitations %}
-  <tr id="id_officer_table_tr_{{ invite.officer.id }}">
-    <td>{{ invite.officer.first_name }}</td>
-    <td>{{ invite.officer.last_name }}</td>
-    <td><a href="mailto:{{ invite.officer.email }}">{{ invite.officer.email }}</a></td>
-    <td>{{ invite.notes }}</a></td>
-    <td>
-      <nobr>
-      <img class="editbtn" id="id_edit_{{ invite.officer.id }}" src="{% static "admin/img/icon_changelink.gif" %}" alt="Edit" title="Edit" style="margin-right: 4px;"/>
-      <img class="removebtn" id="id_remove_{{ invite.officer.id }}" src="{% static "images/officer-list-remove.gif" %}" alt="Remove" title="Remove" style="margin-right: 4px;"/>
-      <img class="emailbtn" id="id_email_{{ invite.officer.id }}" src="{% static "images/sendemail.gif" %}" alt="Re-send initial e-mail" title="Re-send initial e-mail" />
-      </nobr>
-   </td>
-  </tr>
-{% empty %}
-  <tr>
-    <td colspan="4">
-    No officers found
-    </td>
-  </tr>
-{% endfor %}
- </tbody>
-</table>
+  <p>Total: {{ invitations|length }}</p>
+  <table class="tablesorter">
+    <thead>
+      <tr>
+        <th>First name</th>
+        <th>Last name</th>
+        <th>E-mail</th>
+        <th>Leader's notes</th>
+        <th>Edit</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for invite in invitations %}
+        <tr id="id_officer_table_tr_{{ invite.officer.id }}">
+          <td>{{ invite.officer.first_name }}</td>
+          <td>{{ invite.officer.last_name }}</td>
+          <td><a href="mailto:{{ invite.officer.email }}">{{ invite.officer.email }}</a></td>
+          <td>{{ invite.notes }}</a></td>
+          <td>
+            <nobr>
+              <img class="editbtn" id="id_edit_{{ invite.officer.id }}" src="{% static "admin/img/icon_changelink.gif" %}" alt="Edit" title="Edit" style="margin-right: 4px;"/>
+              <img class="removebtn" id="id_remove_{{ invite.officer.id }}" src="{% static "images/officer-list-remove.gif" %}" alt="Remove" title="Remove" style="margin-right: 4px;"/>
+              <img class="emailbtn" id="id_email_{{ invite.officer.id }}" src="{% static "images/sendemail.gif" %}" alt="Re-send initial e-mail" title="Re-send initial e-mail" />
+            </nobr>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="4">
+            No officers found
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>

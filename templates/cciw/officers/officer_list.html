@@ -3,229 +3,229 @@
 {% block title %}Officer list {{ camp.year }}-{{ camp.number }} | CCIW Officers{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
-<script type="text/javascript" src="{% static "js/jquery.tablesorter.min.js" %}"></script>
-<script type="text/javascript" src="{% static "js/officer_list.js" %}"></script>
-<link rel="stylesheet" type="text/css" href="{% static "css/forms.css" %}" />
-<style type="text/css">
+  <script type="text/javascript" src="{% static "js/jquery.tablesorter.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/officer_list.js" %}"></script>
+  <link rel="stylesheet" type="text/css" href="{% static "css/forms.css" %}" />
+  <style type="text/css">
 
-.innerleft {
-    margin: 0px 10px 0px 0px;
-}
+   .innerleft {
+       margin: 0px 10px 0px 0px;
+   }
 
-.innerright {
-    margin: 0px 10px;
-}
+   .innerright {
+       margin: 0px 10px;
+   }
 
-.leftcolumnwrapper {
-    float: left;
-    width: 100%;
-}
+   .leftcolumnwrapper {
+       float: left;
+       width: 100%;
+   }
 
-.leftcolumn {
-    /* see javascript below for other instances of this width */
-    margin-right: 30em; /* Same as width of right column */
-}
+   .leftcolumn {
+       /* see javascript below for other instances of this width */
+       margin-right: 30em; /* Same as width of right column */
+   }
 
-.rightcolumn {
-    float: left;
-    width: 30em; /* Width of right column */
-    margin-left: -30em; /* Same as  -(width of right column) */
-    background-color: #f0f0f0;
-}
+   .rightcolumn {
+       float: left;
+       width: 30em; /* Width of right column */
+       margin-left: -30em; /* Same as  -(width of right column) */
+       background-color: #f0f0f0;
+   }
 
 
-table.tablesorter thead th {
-    background-color: #f0f0f0;
-    background-image: none;
-}
+   table.tablesorter thead th {
+       background-color: #f0f0f0;
+       background-image: none;
+   }
 
-table.tablesorter thead .header {
-    background-image: url({% static "images/ascdesc.gif" %});
-    background-repeat: no-repeat;
-    background-position: center right;
-    cursor: pointer;
-}
+   table.tablesorter thead .header {
+       background-image: url({% static "images/ascdesc.gif" %});
+       background-repeat: no-repeat;
+       background-position: center right;
+       cursor: pointer;
+   }
 
-table.tablesorter thead .header.headerSortDown {
-    background-image: url({% static "images/desc.gif" %});
-}
+   table.tablesorter thead .header.headerSortDown {
+       background-image: url({% static "images/desc.gif" %});
+   }
 
-table.tablesorter thead .header.headerSortUp {
-    background-image: url({% static "images/asc.gif" %});
-}
+   table.tablesorter thead .header.headerSortUp {
+       background-image: url({% static "images/asc.gif" %});
+   }
 
-#id_officer_list_div table thead th:nth-child(3),
-#id_officer_list_div table thead th:nth-child(4) {
-    min-width:25ex;
-}
-</style>
+   #id_officer_list_div table thead th:nth-child(3),
+   #id_officer_list_div table thead th:nth-child(4) {
+       min-width:25ex;
+   }
+  </style>
 {% endblock %}
 {% block bodyclass%}change-form{% endblock %}
 
 {% block content %}<div id="content-main">
-<h1>Officer list</h1>
-<h2>For camp {{ camp }}</h2>
+  <h1>Officer list</h1>
+  <h2>For camp {{ camp }}</h2>
 
-<p>This page can be used for viewing and managing the officers on your list,
- and for viewing those who have not yet filled in an application form.</p>
+  <p>This page can be used for viewing and managing the officers on your list,
+    and for viewing those who have not yet filled in an application form.</p>
 
-<div class="leftcolumnwrapper">
-<div class="leftcolumn" id="id_officer_list_div">
-<div class="innerleft">
-<h2>Current list</h2>
+  <div class="leftcolumnwrapper">
+    <div class="leftcolumn" id="id_officer_list_div">
+      <div class="innerleft">
+        <h2>Current list</h2>
 
-{% include "cciw/officers/officer_list_table_editable.html" %}
+        {% include "cciw/officers/officer_list_table_editable.html" %}
 
-<p><br/>(You can sort the list by clicking on the headers. Hold down shift while clicking to sort by multiple columns)</p>
-</div>
-</div>
-</div>
+        <p><br/>(You can sort the list by clicking on the headers. Hold down shift while clicking to sort by multiple columns)</p>
+      </div>
+    </div>
+  </div>
 
-<div class="rightcolumn" id="id_add_officer_div">
-<div style="text-align: right;"><small><a href="#" id="id_hide_add_officer_div">(hide)</a></small></div>
-<div class="innerright">
-<h2>Add to list</h2>
+  <div class="rightcolumn" id="id_add_officer_div">
+    <div style="text-align: right;"><small><a href="#" id="id_hide_add_officer_div">(hide)</a></small></div>
+    <div class="innerright">
+      <h2>Add to list</h2>
 
-<div class="selector-filter">
- <a href="#" id="id_add_officer_btn">Add  <img style="vertical-align: middle"
- alt="Add" src="{% static "images/officer-list-add.gif" %}" /></a>
- &nbsp;&nbsp;&nbsp;
- <input type="text" id="id_available_officers_filter" />
- <img style="vertical-align: middle" alt="search" src="{% static "admin/img/selector-search.gif" %}" />
-</div>
-<div>
-<select multiple="multiple" id="id_available_officers" style="min-width: 30em; height: 30em; max-width:100%;" name="officers">
-{% include "cciw/officers/officer_list_available.html" %}
-</select>
-</div>
+      <div class="selector-filter">
+        <a href="#" id="id_add_officer_btn">Add  <img style="vertical-align: middle"
+                                                      alt="Add" src="{% static "images/officer-list-add.gif" %}" /></a>
+        &nbsp;&nbsp;&nbsp;
+        <input type="text" id="id_available_officers_filter" />
+        <img style="vertical-align: middle" alt="search" src="{% static "admin/img/selector-search.gif" %}" />
+      </div>
+      <div>
+        <select multiple="multiple" id="id_available_officers" style="min-width: 30em; height: 30em; max-width:100%;" name="officers">
+          {% include "cciw/officers/officer_list_available.html" %}
+        </select>
+      </div>
 
-<h3>Help</h3>
-<ul>
-<li>Add an officer from above by double clicking on the entry,
- or by selecting and pressing 'Enter' or clicking the 'Add' button.</li>
-<li>Use Shift or Ctrl buttons to select multiple officers.</li>
-<li>Type in the search box to quickly find an officer.</li>
-<li>Officers from last year are at the start of the list and starred (if the information is available)</li>
-</ul>
+      <h3>Help</h3>
+      <ul>
+        <li>Add an officer from above by double clicking on the entry,
+          or by selecting and pressing 'Enter' or clicking the 'Add' button.</li>
+        <li>Use Shift or Ctrl buttons to select multiple officers.</li>
+        <li>Type in the search box to quickly find an officer.</li>
+        <li>Officers from last year are at the start of the list and starred (if the information is available)</li>
+      </ul>
 
-<h2>New officers</h2>
-<p>Got a new officer who isn't in the list above?</p>
-<ul>
-  <li><p><a class="button" id="id_new_officer_btn" href="#">Add new officer</a></p></li>
-  <li>If you have a list on a computer, you can
-    <a href="mailto:webmaster@cciw.co.uk">e-mail the webmaster</a>
-    to have them imported more quickly.</li>
-</ul>
-</div>
-</div>
+      <h2>New officers</h2>
+      <p>Got a new officer who isn't in the list above?</p>
+      <ul>
+        <li><p><a class="button" id="id_new_officer_btn" href="#">Add new officer</a></p></li>
+        <li>If you have a list on a computer, you can
+          <a href="mailto:webmaster@cciw.co.uk">e-mail the webmaster</a>
+          to have them imported more quickly.</li>
+      </ul>
+    </div>
+  </div>
 
-<br style="clear: left;" />
-<script type="text/javascript">
-<!--
-var cciw = (function(pub, $) {
-    // Add some things to cciw object that we will need. Rest of javascript in officer_list.js
-    pub.campId = {{ camp.id }};
-    pub.updateOfficerUrl = "{% url 'cciw.officers.views.update_officer' %}";
-    pub.removeOfficerUrl = "{% url 'cciw.officers.views.remove_officer' camp.year camp.number %}";
-    pub.resendEmailUrl = "{% url 'cciw.officers.views.resend_email' %}";
-    pub.addOfficersUrl =  "{% url 'cciw.officers.views.add_officers' camp.year camp.number %}";
-    pub.createOfficerUrl = "{% url 'cciw.officers.views.create_officer' %}";
+  <br style="clear: left;" />
+  <script type="text/javascript">
+   <!--
+   var cciw = (function(pub, $) {
+       // Add some things to cciw object that we will need. Rest of javascript in officer_list.js
+       pub.campId = {{ camp.id }};
+       pub.updateOfficerUrl = "{% url 'cciw.officers.views.update_officer' %}";
+       pub.removeOfficerUrl = "{% url 'cciw.officers.views.remove_officer' camp.year camp.number %}";
+       pub.resendEmailUrl = "{% url 'cciw.officers.views.resend_email' %}";
+       pub.addOfficersUrl =  "{% url 'cciw.officers.views.add_officers' camp.year camp.number %}";
+       pub.createOfficerUrl = "{% url 'cciw.officers.views.create_officer' %}";
 
-    return pub;
-})(cciw || {}, jQuery);
--->
-</script>
+       return pub;
+   })(cciw || {}, jQuery);
+   -->
+  </script>
 
-<h3>List address:</h3>
-<p>The above list of officers can be emailed at:
-<strong><a href="mailto:{{ address_all }}">{{ address_all }}</a></strong></p>
+  <h3>List address:</h3>
+  <p>The above list of officers can be emailed at:
+    <strong><a href="mailto:{{ address_all }}">{{ address_all }}</a></strong></p>
 
-{% include "cciw/officers/email_list_note.html" %}
+  {% include "cciw/officers/email_list_note.html" %}
 
-<p>You may need to email your officers (using the downloaded list) and tell them
-to add 'lists@cciw.co.uk' to their 'white list', to ensure that emails from this
-address are not classified as junk mail.</p>
+    <p>You may need to email your officers (using the downloaded list) and tell them
+      to add 'lists@cciw.co.uk' to their 'white list', to ensure that emails from this
+      address are not classified as junk mail.</p>
 
-<div id="id_noapplicationform">
-{% include "cciw/officers/officer_list_noapplicationform.html" %}
-</div>
-
-
-{% if officers_serious_slackers %}
-
-<div id="id_seriousslackers">
-
-<h2>Application form/references track record</h2>
-
-<p>A number of officers need attention regarding their track record with
-  application forms or references. (If they didn't actually come on the camps
-  listed, it will help to remove them from the officer lists for those camps).
-  </p>
-<table>
-  <tr>
-    <th>Officer</th>
-    <th>Missing application forms</th>
-    <th>Last good year</th>
-    <th>Missing references</th>
-    <th>Last good year</th>
-  </tr>
-  {% for officer_data in officers_serious_slackers %}
-  {% with officer=officer_data.officer %}
-  <tr>
-    <td>{{ officer.first_name }} {{ officer.last_name }}</td>
-    <td>
-      {% for camp in officer_data.missing_application_forms %}
-      <a target="_blank" href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}">{{ camp.year }}-{{ camp.number }}</a><br/>
-      {% endfor %}
-    </td>
-    <td>
-      {{ officer_data.last_good_apps_year|default:"Never" }}
-    </td>
-    <td>
-      {% for camp in officer_data.missing_references %}
-      {{ camp.year }}-{{ camp.number }}
-      (<a target="_blank" href="{% url 'cciw.officers.views.manage_references' year=camp.year number=camp.number %}?officer_id={{ officer.id }}">references</a>,
-      <a target="_blank" href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}">officer list)</a>
-      <br/>
-      {% endfor %}
-    </td>
-    <td>
-      {{ officer_data.last_good_refs_year|default:"Never" }}
-    </td>
-  </tr>
-  {% endwith %}
-  {% endfor %}
-</table>
-</div>
-{% endif %}
+    <div id="id_noapplicationform">
+      {% include "cciw/officers/officer_list_noapplicationform.html" %}
+    </div>
 
 
-<h2>Export officer data</h2>
+    {% if officers_serious_slackers %}
 
-<p>The officer list above, along with address details from this year's
-  application forms, can be downloaded below:</p>
+      <div id="id_seriousslackers">
 
-<ul>
-<li>Officer data, camp {{ camp.number }}, {{ camp.year }}:
-  <a href="{% url 'cciw.officers.views.export_officer_data' year=camp.year number=camp.number %}?format=xls">XLS</a> |
-  <a href="{% url 'cciw.officers.views.export_officer_data' year=camp.year number=camp.number %}?format=ods">ODS</a>
-</li>
-</ul>
+        <h2>Application form/references track record</h2>
+
+        <p>A number of officers need attention regarding their track record with
+          application forms or references. (If they didn't actually come on the camps
+          listed, it will help to remove them from the officer lists for those camps).
+        </p>
+        <table>
+          <tr>
+            <th>Officer</th>
+            <th>Missing application forms</th>
+            <th>Last good year</th>
+            <th>Missing references</th>
+            <th>Last good year</th>
+          </tr>
+          {% for officer_data in officers_serious_slackers %}
+            {% with officer=officer_data.officer %}
+              <tr>
+                <td>{{ officer.first_name }} {{ officer.last_name }}</td>
+                <td>
+                  {% for camp in officer_data.missing_application_forms %}
+                    <a target="_blank" href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}">{{ camp.year }}-{{ camp.number }}</a><br/>
+                  {% endfor %}
+                </td>
+                <td>
+                  {{ officer_data.last_good_apps_year|default:"Never" }}
+                </td>
+                <td>
+                  {% for camp in officer_data.missing_references %}
+                    {{ camp.year }}-{{ camp.number }}
+                    (<a target="_blank" href="{% url 'cciw.officers.views.manage_references' year=camp.year number=camp.number %}?officer_id={{ officer.id }}">references</a>,
+                    <a target="_blank" href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}">officer list)</a>
+                    <br/>
+                  {% endfor %}
+                </td>
+                <td>
+                  {{ officer_data.last_good_refs_year|default:"Never" }}
+                </td>
+              </tr>
+            {% endwith %}
+          {% endfor %}
+        </table>
+      </div>
+    {% endif %}
+
+
+    <h2>Export officer data</h2>
+
+    <p>The officer list above, along with address details from this year's
+      application forms, can be downloaded below:</p>
+
+    <ul>
+      <li>Officer data, camp {{ camp.number }}, {{ camp.year }}:
+        <a href="{% url 'cciw.officers.views.export_officer_data' year=camp.year number=camp.number %}?format=xls">XLS</a> |
+        <a href="{% url 'cciw.officers.views.export_officer_data' year=camp.year number=camp.number %}?format=ods">ODS</a>
+      </li>
+    </ul>
 
 </div> {# id=content-main #}
 
 <div id="id_add_officer_popup" class="inlinepopup">
-<div class="closebar">
-<a href="#" id="id_popup_close_btn">Close</a>
-</div>
-<div class="iframe_container">
-</div>
+  <div class="closebar">
+    <a href="#" id="id_popup_close_btn">Close</a>
+  </div>
+  <div class="iframe_container">
+  </div>
 </div>
 
 <div class="inlinepopup_background" id="id_popup_background"></div>
 
 <div id="loading" style="text-align: center; background-color: white; border: 1px solid #888; position: fixed; bottom: 0px; right: 0px; width: 224px; height: 40px; display: none;">
-<img src="{% static "images/loading.gif" %}" alt="" />
-<br/>Loading...
+  <img src="{% static "images/loading.gif" %}" alt="" />
+  <br/>Loading...
 </div>
 {% endblock %}

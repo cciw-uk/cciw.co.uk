@@ -1,27 +1,27 @@
 {% extends "cciw/officers/base.html" %}
 {% block content %}<div id="content-main">
-<h1>Officer's home page</h1>
+  <h1>Officer's home page</h1>
 
-<h2>Menu:</h2>
-<ul>
-  {% if show_booking_secretary_links %}
-  <li><a href="/admin/bookings/">Manage bookings</a></li>
-  <li><a href="{% url 'cciw.officers.views.booking_secretary_reports' thisyear %}">Booking reports {{ thisyear }}</a></li>
-  <li><a href="{% url 'cciw.officers.views.booking_secretary_reports' lastyear %}">Booking reports {{ lastyear }}</a></li>
-  {% endif %}
-  <li><a href="{% url 'cciw.officers.views.applications' %}">Submit/view applications</a></li>
-  <li><a href="{% url 'cciw.officers.views.info' %}">Information about camp</a></li>
-  {% if show_leader_links %}
-    <li><a href="{% url 'cciw.officers.views.leaders_index' %}">Tools for leaders</a></li>
-  {% endif %}
-  {% if show_secretary_links %}
-    <li><a href="{% url 'cciw.officers.views.manage_crbs' thisyear %}">Manage CRBs</a></li>
-    <li>Download {{ thisyear }} brochure mailing list: <a href="{% url 'cciw.officers.views.brochure_mailing_list' thisyear %}?format=xls">XLS</a> | <a href="{% url 'cciw.officers.views.brochure_mailing_list' thisyear %}?format=ods">ODS</a> (from bookings for {{ lastyear }})</li>
-  {% endif %}
-  {% if show_admin_link %}
-    <li><a href="/admin/">General admin interface</a> (manage camps, camp sites, officers etc)</li>
-  {% endif %}
-</ul>
+  <h2>Menu:</h2>
+  <ul>
+    {% if show_booking_secretary_links %}
+      <li><a href="/admin/bookings/">Manage bookings</a></li>
+      <li><a href="{% url 'cciw.officers.views.booking_secretary_reports' thisyear %}">Booking reports {{ thisyear }}</a></li>
+      <li><a href="{% url 'cciw.officers.views.booking_secretary_reports' lastyear %}">Booking reports {{ lastyear }}</a></li>
+    {% endif %}
+    <li><a href="{% url 'cciw.officers.views.applications' %}">Submit/view applications</a></li>
+    <li><a href="{% url 'cciw.officers.views.info' %}">Information about camp</a></li>
+    {% if show_leader_links %}
+      <li><a href="{% url 'cciw.officers.views.leaders_index' %}">Tools for leaders</a></li>
+    {% endif %}
+    {% if show_secretary_links %}
+      <li><a href="{% url 'cciw.officers.views.manage_crbs' thisyear %}">Manage CRBs</a></li>
+      <li>Download {{ thisyear }} brochure mailing list: <a href="{% url 'cciw.officers.views.brochure_mailing_list' thisyear %}?format=xls">XLS</a> | <a href="{% url 'cciw.officers.views.brochure_mailing_list' thisyear %}?format=ods">ODS</a> (from bookings for {{ lastyear }})</li>
+    {% endif %}
+    {% if show_admin_link %}
+      <li><a href="/admin/">General admin interface</a> (manage camps, camp sites, officers etc)</li>
+    {% endif %}
+  </ul>
 
 </div>
 {% endblock %}

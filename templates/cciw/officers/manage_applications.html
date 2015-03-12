@@ -1,53 +1,53 @@
 {% extends "cciw/officers/base.html" %}
 {% block title %}Manage applications {{ camp.year }}-{{ camp.number }} | CCIW Officers{% endblock %}
 {% block content %}<div id="content-main">
-<h1>Manage applications</h1>
-<h2>For camp {{ camp }}</h2>
+  <h1>Manage applications</h1>
+  <h2>For camp {{ camp }}</h2>
 
-<p>This page allows you to view/download submitted applications in
-  different formats. Normally the leaders of the camps (and any
-  'admins' defined for the camp) will be automatically emailed
-  with any submitted application forms and you will not need this page.
-</p>
+  <p>This page allows you to view/download submitted applications in
+    different formats. Normally the leaders of the camps (and any
+    'admins' defined for the camp) will be automatically emailed
+    with any submitted application forms and you will not need this page.
+  </p>
 
 
-<h2>View/edit</h2>
-<p>If you need to view/edit applications to make corrections, use the
-<a href="/admin/officers/application/">admin interface for applications</a>.</p>
+  <h2>View/edit</h2>
+  <p>If you need to view/edit applications to make corrections, use the
+    <a href="/admin/officers/application/">admin interface for applications</a>.</p>
 
-<h2>Download</h2>
+  <h2>Download</h2>
 
-{% if finished_applications %}
+  {% if finished_applications %}
 
-<form action="{% url 'cciw.officers.views.view_application' %}" method="post">{% csrf_token %}
-<div class="aligned">
-  <div class="form-row">
-  <label for="application">Choose application</label>
-  <select name="application" id="application">
-    {% for app in finished_applications %}
-    <option value="{{ app.id }}">{{ app.officer.get_full_name }}, submitted {{ app.date_submitted|date:"Y-m-d" }}</option>
-    {% endfor %}
-  </select>
-  </div>
-  <div class="form-row">
-  <label for="format">Format</label>
-  <select name="format" id="format">
-    <option value="txt">Plain text</option>
-    <option value="rtf">Rich Text Format</option>
-    <option value="send">Send me both in an email</option>
-  </select>
-  </div>
-  <div class="form-row">
-    <input type="submit" name="view" value="Get it" />
-  </div>
-  <input type="hidden" name="to" value="{{ request.path }}" />
-</div>
-</form>
+    <form action="{% url 'cciw.officers.views.view_application' %}" method="post">{% csrf_token %}
+      <div class="aligned">
+        <div class="form-row">
+          <label for="application">Choose application</label>
+          <select name="application" id="application">
+            {% for app in finished_applications %}
+              <option value="{{ app.id }}">{{ app.officer.get_full_name }}, submitted {{ app.date_submitted|date:"Y-m-d" }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="format">Format</label>
+          <select name="format" id="format">
+            <option value="txt">Plain text</option>
+            <option value="rtf">Rich Text Format</option>
+            <option value="send">Send me both in an email</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <input type="submit" name="view" value="Get it" />
+        </div>
+        <input type="hidden" name="to" value="{{ request.path }}" />
+      </div>
+    </form>
 
-{% else %}
+  {% else %}
 
-<p>No applications for your camps have been completed yet.</p>
+    <p>No applications for your camps have been completed yet.</p>
 
-{% endif %}
+  {% endif %}
 </div>
 {% endblock %}

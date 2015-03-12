@@ -3,45 +3,45 @@
 {% load static %}
 {% block title %}{{ title }} | CCIW site admin{% endblock %}
 {% block extrastyle %}{{ block.super }}
-<link rel="stylesheet" type="text/css" href="{% static "css/adminextra.css" %}" />
-<script type="text/javascript" src="{% static "admin/js/jquery.min.js" %}"></script>
-{% include 'autocomplete_light/static.html' %}
-<script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>
-<script type="text/javascript">
-(function($) {
-   $(document).ready(cciw.externalLinks);
-})(jQuery);
-</script>
-{% if GOOGLE_ANALYTICS_ACCOUNT %}
-<script type="text/javascript">
+  <link rel="stylesheet" type="text/css" href="{% static "css/adminextra.css" %}" />
+  <script type="text/javascript" src="{% static "admin/js/jquery.min.js" %}"></script>
+  {% include 'autocomplete_light/static.html' %}
+  <script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>
+  <script type="text/javascript">
+   (function($) {
+       $(document).ready(cciw.externalLinks);
+   })(jQuery);
+  </script>
+  {% if GOOGLE_ANALYTICS_ACCOUNT %}
+    <script type="text/javascript">
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', '{{ GOOGLE_ANALYTICS_ACCOUNT }}']);
-  _gaq.push(['_trackPageview']);
+     var _gaq = _gaq || [];
+     _gaq.push(['_setAccount', '{{ GOOGLE_ANALYTICS_ACCOUNT }}']);
+     _gaq.push(['_trackPageview']);
 
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
+     (function() {
+         var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+         ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+     })();
 
-</script>
-{% endif %}
+    </script>
+  {% endif %}
 {% endblock %}
 {% block branding %}
-<div id="header2">
-  <div id="headerlogo">
-    <div id="helplink"><a href="mailto:webmaster@cciw.co.uk">Help</a></div>
+  <div id="header2">
+    <div id="headerlogo">
+      <div id="helplink"><a href="mailto:webmaster@cciw.co.uk">Help</a></div>
+    </div>
   </div>
-</div>
 {% endblock %}
 {% block userlinks %}<a href="/officers/">Officer homepage</a> / <a href="/admin/password_change/">Change password</a> / <a href="/admin/logout/">Log out</a>{% endblock %}
 
 {% block nav-global %}{% endblock %}
 
 {% block footer %}
-{{ block.super }}
-<!--[if lte IE 6]>
+  {{ block.super }}
+  <!--[if lte IE 6]>
 <div id="ie-message">
   Your browser is obsolete, and probably doesn't display this site
   correctly. Please upgrade to <a href="http://abetterbrowser.org/">a better

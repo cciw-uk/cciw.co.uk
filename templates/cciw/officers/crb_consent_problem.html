@@ -2,18 +2,18 @@
 {% block title %}CRB consent problem for {{ officer.first_name }} {{ officer.last_name }} | CCIW Officers {% endblock %}
 
 {% block content %}
-<div id="content-main">
+  <div id="content-main">
 
-<h2>Report CRB problem to leaders</h2>
+    <h2>Report CRB problem to leaders</h2>
 
-<p>The following e-mail, which you can now modify, will be sent to the leaders of the relevant camp(s).</p>
+    <p>The following e-mail, which you can now modify, will be sent to the leaders of the relevant camp(s).</p>
 
-<form action="" method="post">{% csrf_token %}
-  {{ messageform.as_p }}
-  <p>
-    <input type="submit" name="send" value="Send" />
-    <input type="submit" name="cancel" value="Cancel" />
-  </p>
-</form>
-</div>
+    <form action="" method="post">{% csrf_token %}
+      {{ messageform.as_p }}
+      <p>
+        <input type="submit" name="send" value="Send" />
+        <input type="submit" name="cancel" value="Cancel" />
+      </p>
+    </form>
+  </div>
 {% endblock %}

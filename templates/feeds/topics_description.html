@@ -10,9 +10,9 @@
   {% if obj.poll_id %}
     {{ obj.poll.intro_text|bb2html }}
     <ul>
-    {% for polloption in obj.poll.poll_options.all %}
-      <li>{{ polloption.text|bb2html }}</li>
-    {% endfor %}
+      {% for polloption in obj.poll.poll_options.all %}
+        <li>{{ polloption.text|bb2html }}</li>
+      {% endfor %}
     </ul>
     {{ obj.poll.outro_text|bb2html }}
   {% else %}

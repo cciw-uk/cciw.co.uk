@@ -3,13 +3,13 @@
 {% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}
 {% block breadcrumbs %}{% endblock %}
 {% block title %}
-CCIW Officers
+  CCIW Officers
 {% endblock %}
 {% block extrastyle %}{{ block.super }}
-<script type="text/javascript" src="/admin/jsi18n/"></script>
-<script type="text/javascript" src="{% static "admin/js/core.js" %}"></script>
-<script type="text/javascript" src="{% static "js/modernizr.custom.08138.js" %}"></script>
-{% if form %}
-  {{ form.media }}
-{% endif %}
+  <script type="text/javascript" src="/admin/jsi18n/"></script>
+  <script type="text/javascript" src="{% static "admin/js/core.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/modernizr.custom.08138.js" %}"></script>
+  {% if form %}
+    {{ form.media }}
+  {% endif %}
 {% endblock %}

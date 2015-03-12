@@ -2,104 +2,104 @@
 {% load standardpage %}
 {% block content %}
 
-<h2>Prices {{ thisyear }}</h2>
+  <h2>Prices {{ thisyear }}</h2>
 
-{% if booking_open %}
-  <div style="float: right;">
-    <a class="booknow" href="{% url 'cciw.bookings.views.start' %}">Book online now!</a>
-  </div>
+  {% if booking_open %}
+    <div style="float: right;">
+      <a class="booknow" href="{% url 'cciw.bookings.views.start' %}">Book online now!</a>
+    </div>
 
-  {% if early_bird_available %}
-  <p><b>Early bird discount of £{{ price_early_bird_discount }}
-      available if you book online before {{ early_bird_date|date:"jS F" }}!</b></p>
+    {% if early_bird_available %}
+      <p><b>Early bird discount of £{{ price_early_bird_discount }}
+        available if you book online before {{ early_bird_date|date:"jS F" }}!</b></p>
+    {% endif %}
+
+    {% include "cciw/bookings/price_table.html" %}
+
+
+    {% if price_deposit %}
+      <p>A deposit of £{{ price_deposit }} must be paid with bookings. The full
+        amount is due 3 months before the start of the camp.</p>
+    {% endif %}
+
+  {% else %}
+    <p><strong>Prices for {{ thisyear }} have not been finalised yet.</strong></p>
+
+    {% if price_full %}
+      <p>However, you can see last year's prices below for reference. This year's
+        prices will usually be the same or similar.</p>
+
+      {% include "cciw/bookings/price_table.html" %}
+
+    {% endif %}
+
   {% endif %}
 
-  {% include "cciw/bookings/price_table.html" %}
+  <h2>Booking</h2>
 
+  <p>There are two ways to book for camp:</p>
 
-  {% if price_deposit %}
-  <p>A deposit of £{{ price_deposit }} must be paid with bookings. The full
-  amount is due 3 months before the start of the camp.</p>
-  {% endif %}
+  <h3>Paper booking</h3>
 
-{% else %}
-  <p><strong>Prices for {{ thisyear }} have not been finalised yet.</strong></p>
+  <p>You will need the booking form which comes with our camp brochure, which we
+    can post to you, or you can download below. You will need to include a cheque to
+    pay a deposit {% if price_deposit %}of £{{ price_deposit }}{% endif %} with your booking.</p>
 
-  {% if price_full %}
-  <p>However, you can see last year's prices below for reference. This year's
-  prices will usually be the same or similar.</p>
+  <h3>Online booking</h3>
 
-  {% include "cciw/bookings/price_table.html" %}
+  <p>You can <a href="{% url 'cciw.bookings.views.start' %}">book and pay online</a>,
+    providing you have a debit card, credit card, or PayPal account.</p>
 
-  {% endif %}
+  <p>If you book online, you can see how many places there are left in real time,
+    and your place will be confirmed immediately.</p>
 
-{% endif %}
+  <p>Unlike in previous years, when you book online you can choose to pay either
+    the full amount, or the just deposit, just like paper bookings.</p>
 
-<h2>Booking</h2>
+  <h2>Paper booking form</h2>
 
-<p>There are two ways to book for camp:</p>
-
-<h3>Paper booking</h3>
-
-<p>You will need the booking form which comes with our camp brochure, which we
-can post to you, or you can download below. You will need to include a cheque to
-pay a deposit {% if price_deposit %}of £{{ price_deposit }}{% endif %} with your booking.</p>
-
-<h3>Online booking</h3>
-
-<p>You can <a href="{% url 'cciw.bookings.views.start' %}">book and pay online</a>,
-providing you have a debit card, credit card, or PayPal account.</p>
-
-<p>If you book online, you can see how many places there are left in real time,
-and your place will be confirmed immediately.</p>
-
-<p>Unlike in previous years, when you book online you can choose to pay either
-the full amount, or the just deposit, just like paper bookings.</p>
-
-<h2>Paper booking form</h2>
-
-{% if bookingform %}
+  {% if bookingform %}
     <p>If you have a printer you can download and print a booking form for
-    {{ thisyear }}.  Please fill in the form and follow the instructions on it.
-    You will need a PDF reader to view or print the form.</p>
+      {{ thisyear }}.  Please fill in the form and follow the instructions on it.
+      You will need a PDF reader to view or print the form.</p>
 
 
     <p><a href="{{ MEDIA_URL }}{{ bookingform }}">Download the CCIW
-        booking form for {{ thisyear }}</a> </p>
+      booking form for {{ thisyear }}</a> </p>
 
     <p>Completed booking forms should be sent, with the deposit, to the booking
-    secretary (address below).</p>
+      secretary (address below).</p>
 
-{% else %}
+  {% else %}
 
     <p>There is no booking form for {{ thisyear }} available yet online. Booking
-    forms are normally printed in January, and are distributed to all
-    individuals who came on camp the previous year (sometimes via churches). We
-    try to make the booking form available online as a PDF file at about the
-    same time, so that you can print your own.</p>
+      forms are normally printed in January, and are distributed to all
+      individuals who came on camp the previous year (sometimes via churches). We
+      try to make the booking form available online as a PDF file at about the
+      same time, so that you can print your own.</p>
 
-{% endif %}
+  {% endif %}
 
-<p>If you would like a booking form sent in the post and are not on our
-distribution list (or have not received a booking form and think you should
-have), please use the <a href="{% url 'cciwmain.misc.contact_us' %}">contact
-form</a> to request one. Please remember to include your address so that we
-can post one. If you are ordering a large number of booking forms, please
-include your telephone number so that we can verify the request.</p>
+  <p>If you would like a booking form sent in the post and are not on our
+    distribution list (or have not received a booking form and think you should
+    have), please use the <a href="{% url 'cciwmain.misc.contact_us' %}">contact
+    form</a> to request one. Please remember to include your address so that we
+    can post one. If you are ordering a large number of booking forms, please
+    include your telephone number so that we can verify the request.</p>
 
-<h2>Booking secretary</h2>
+  <h2>Booking secretary</h2>
 
-<p>Contact:</p>
-<ul>
-  <li>Postal address:<br/><br/>
+  <p>Contact:</p>
+  <ul>
+    <li>Postal address:<br/><br/>
 
 
-{% htmlchunk booking_secretary_address %}
-  </li>
+      {% htmlchunk booking_secretary_address %}
+    </li>
 
-  <li>Email: <a href="mailto:bookings@cciw.co.uk">bookings@cciw.co.uk</a><br/><br/></li>
+    <li>Email: <a href="mailto:bookings@cciw.co.uk">bookings@cciw.co.uk</a><br/><br/></li>
 
-  <li><a href="{% url 'cciwmain.misc.contact_us' %}?bookings">Contact form</a><br/><br/></li>
-</ul>
+    <li><a href="{% url 'cciwmain.misc.contact_us' %}?bookings">Contact form</a><br/><br/></li>
+  </ul>
 
 {% endblock %}
