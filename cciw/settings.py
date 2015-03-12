@@ -51,7 +51,7 @@ ROOT_URLCONF = 'cciw.urls'
 
 CACHES = {
     'default': {
-        'BACKEND': 'caching.backends.memcached.MemcachedCache',
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': 'unix:%s/memcached.sock' % HOME_DIR,
         'KEY_PREFIX': 'cciw.co.uk' if PRODUCTION else 'staging.cciw.co.uk'
     }
