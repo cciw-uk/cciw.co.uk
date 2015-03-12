@@ -6,3 +6,4 @@ syntax:glob
 settings*priv*.py
 settings_production.py
 settings_staging.py
+TODO.org
