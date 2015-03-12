@@ -1,49 +1,50 @@
 {% load static %}<!DOCTYPE html>
 <html lang="en-gb">
-<head>
-<title>{% block title %}{{ title }} | CCIW{% endblock %}</title>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<meta name="viewport" content="initial-scale=1.0" />
-<link href="https://fonts.googleapis.com/css?family=Amaranth" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" href="{% static "css/style.css" %}" type="text/css" />
-{% block extraheader %}{% endblock %}
-{% if GOOGLE_ANALYTICS_ACCOUNT %}
-<script type="text/javascript">
+  <head>
+    <title>{% block title %}{{ title }} | CCIW{% endblock %}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css?family=Amaranth" rel="stylesheet" type="text/css" />
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', '{{ GOOGLE_ANALYTICS_ACCOUNT }}']);
-  _gaq.push(['_trackPageview']);
+    <link rel="stylesheet" href="{% static "css/style.css" %}" type="text/css" />
+    {% block extraheader %}{% endblock %}
+    {% if GOOGLE_ANALYTICS_ACCOUNT %}
+      <script type="text/javascript">
 
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
+       var _gaq = _gaq || [];
+       _gaq.push(['_setAccount', '{{ GOOGLE_ANALYTICS_ACCOUNT }}']);
+       _gaq.push(['_trackPageview']);
 
-</script>
-{% endif %}
-</head>
-<body>
-{% block bodystart %}
-{% endblock %}
-<div id="header" {% block headerattr %}{% endblock %}>
-  <div id="headerlogo">
-    {% block extrapageheader %}
+       (function() {
+           var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+           ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+           var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+       })();
+
+      </script>
+    {% endif %}
+  </head>
+  <body>
+    {% block bodystart %}
     {% endblock %}
-    <a href="/" title="Home page" style="height: 66px; width: 200px; display: block;"></a>
-  </div>
-</div>
-{% block main %}
-  <div id="mainbase">
-    <div id="pageTitle">
-      <h1>{{ title }}</h1>
+    <div id="header" {% block headerattr %}{% endblock %}>
+      <div id="headerlogo">
+        {% block extrapageheader %}
+        {% endblock %}
+        <a href="/" title="Home page" style="height: 66px; width: 200px; display: block;"></a>
+      </div>
     </div>
-    <div id="contentBody">
-      {% block content %}
-      {% endblock %}
-    </div>
-  </div>
-{% endblock %}
+    {% block main %}
+      <div id="mainbase">
+        <div id="pageTitle">
+          <h1>{{ title }}</h1>
+        </div>
+        <div id="contentBody">
+          {% block content %}
+          {% endblock %}
+        </div>
+      </div>
+    {% endblock %}
 
     <!--[if lte IE 6]>
     <div id="ie-message">
@@ -67,5 +68,5 @@
     </script>
     <![endif]-->
 
-</body>
+  </body>
 </html>
