@@ -1,0 +1,24 @@
+<div id="bookingbar">
+  <div id="bookingbartop">
+    {% if not logged_in %}
+      Not logged in
+    {% else %}
+      Booking account: {{ request.booking_account.email }}
+      | <a href="{% url 'cciw.bookings.views.account_overview' %}">Account overview</a>
+      | <a href="{% url 'cciw.bookings.views.logout' %}">Log out</a>
+    {% endif %}
+  </div>
+  <ul>
+    {% for name, caption, is_link, url, msg in stages %}
+      <li>
+        {% if is_link and name != current_stage %}
+          <a href="{{ url }}">{{ caption }}</a>
+        {% elif name == current_stage %}
+          <span class="active">{{ caption }}</span>
+        {% else %}
+          <span title="{{ msg }}">{{ caption }}</span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
