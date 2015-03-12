@@ -33,24 +33,33 @@
    //-->
   </script>
 {% endblock %}
+
 {% block bodystart %}
   <div id="skiptocontentdiv"><a href="#content" id="skiptocontent">Skip to content</a></div>
 {% endblock %}
+
+{% block topbar %}
+  <div id="menubarOuter">
+    <div id="menubar">
+      {% spaceless %}
+        <ul>
+          {% for menulink in menulinks %}
+            <li>
+              <a href="{{ menulink.url }}"
+                 {% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
+                 {% if menulink.isCurrentPage %} class="active" {% endif %}
+                 {% if menulink.isCurrentSection %} class="currentSection" {% endif %}
+                 >{{ menulink.title }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endspaceless %}
+    </div>
+  </div>
+{% endblock %}
+
 {% block main %}
   <div id="mainstandard">
-    <div id="menubarOuter">
-      <div id="menubar">
-        <ul
-              >{% for menulink in menulinks %}<li
-              ><a href="{{ menulink.url }}"
-                  {% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
-                  {% if menulink.isCurrentPage %} class="active" {% endif %}
-                  {% if menulink.isCurrentSection %} class="currentSection" {% endif %}
-                  >{{ menulink.title }}</a></li
-       >{% endfor %}</ul
-       >
-      </div>
-    </div>
     <div id="contentOuter">
       <div id="content">
         <div id="pageTitle">

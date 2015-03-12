@@ -10,11 +10,13 @@ FF8900	BF7D30	A65900	FFA640	FFBE73
 
 /* Include all borders here too */
 
+@lineHeight: 24px;
+
 body {
-    background-color: #f8f8f8;
+    background-color: #f0f0f0;
     color: black;
     font-size: 15px;
-    line-height: 24px;
+    line-height: @lineHeight;
 }
 
 a img, a {
@@ -40,27 +42,36 @@ a:hover {
 
 /* Header */
 
+
+/* Header and positioning */
+#skiptocontentdiv
+{
+    display: none;
+}
+
+@headerHeight: 72px;
+
 #header
 {
-    background-image: url('/static/images/header.png');
+    height: @headerHeight;
+    background-repeat: repeat-x;
+    color: white;
+    background-color: #444;
 }
 
 #headerlogo
 {
     background-image: url('/static/images/headerlogo.png');
+    background-repeat: no-repeat;
+    margin-left: 0px;
+    height: 72px;
+    float: left;
 }
 
-#header a:link {
-    color: #ff8900;
-    font-weight: normal;
-}
-
-#header a:visited {
-    color: #ff8900;
-}
-#header a:hover {
-    color: #ffa640;
-    text-decoration: underline;
+#headerlogo, #headerlogo a {
+    height: 66px;
+    width: 200px;
+    display: block;
 }
 
 /* Main body */
@@ -69,7 +80,6 @@ a:hover {
 {
     background-color: white;
     border-bottom: 2px solid #007633;
-    border-top: 2px solid #007633;
     margin-top: 0px;
 }
 
@@ -82,8 +92,16 @@ a:hover {
 
 /* menubar */
 
+@menubarLineHeight: @lineHeight;
+
+@menubarPaddingHeight: 3px;
+@menubarBorderHeight: 1px;
+
 #menubar {
+    float: right;
+
     font-weight: bold;
+    padding-top: @headerHeight - (@menubarLineHeight + 2 * @menubarPaddingHeight + @menubarBorderHeight);
 
     ul {
         margin: 0;
@@ -93,15 +111,16 @@ a:hover {
 
         li {
             display: inline-block;
-            margin-top: 10px;
 
             a {
+                line-height: @menubarLineHeight;
                 text-decoration: none;
-                padding: 3px 10px;
+                padding: @menubarPaddingHeight 10px;
                 color: #000;
                 background-color: #ddd;
-                margin: 0px 1px 0px 0px;
+                margin: 0px 0px 0px 2px;
                 display: inline-block;
+                border-bottom: @menubarBorderHeight solid #444;
 
                 &:hover,
                 &.currentSection:hover {
@@ -111,9 +130,11 @@ a:hover {
 
                 &.active,
                 &.active:hover,
-                &.currentSection {
-                    color:#fff;
-                    background:#007633;
+                &.currentSection,
+                &.currentSection:hover {
+                    color: #007633;
+                    background: white;
+                    border-color: white;
                 }
             }
         }
@@ -366,25 +387,6 @@ p
     margin-bottom: 1em;
 }
 
-/* Header and positioning */
-#skiptocontentdiv
-{
-    display: none;
-}
-#header
-{
-    height: 72px;
-    background-repeat: repeat-x;
-    color: white;
-}
-
-#headerlogo
-{
-    background-repeat: no-repeat;
-    margin-left: 0px;
-    height: 72px;
-}
-
 /* base template only */
 #mainbase h1
 {
@@ -401,7 +403,7 @@ p
 
 /* standard template */
 
-#mainstandard, #header.mainstandard #headerlogo
+#mainstandard, #header.mainstandard .headerinner
 {
     max-width: 50em;
     margin: auto;
@@ -422,7 +424,7 @@ p
 
 #mainstandard #contentBody
 {
-    margin-top: 1em;
+    margin-top: 0em;
     margin-bottom: 1em;
 }
 

@@ -32,8 +32,12 @@
     {% block bodystart %}
     {% endblock %}
     <div id="header" {% block headerattr %}{% endblock %}>
-      <div id="headerlogo">
-        <a href="/" title="Home page" style="height: 66px; width: 200px; display: block;"></a>
+      <div class="headerinner">
+        <div id="headerlogo">
+          <a href="/" title="Home page"></a>
+        </div>
+        {% block topbar %}
+        {% endblock %}
       </div>
     </div>
     {% block main %}
