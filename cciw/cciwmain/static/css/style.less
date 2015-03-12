@@ -426,9 +426,11 @@ p
     margin-bottom: 1em;
 }
 
+@contentPadding: 12px;
+
 #mainstandard #contentBody #contentInner
 {
-    padding: 0.5em 0.8em 32px 0.8em;
+    padding: 10px @contentPadding 32px @contentPadding;
 }
 
 #mainstandard #editfooter
@@ -436,26 +438,15 @@ p
     padding: 0 5px;
 }
 
-/* Quicklinks */
-#quicklinks
+#memberlinks
 {
+    border-top: 2px solid #007633;
+    margin: 20px -@contentPadding 16px -@contentPadding;
+    padding: 0px 5px;
     text-align: right;
-    width: 400px;
-    float: right;
-    margin: 4px 8px 4px 8px;
-    height: 64px;
+    font-size: small;
 }
 
-#quicklinks li {
-    font-size: 0.8em;
-}
-
-#quicklinks ul, #quicklinks li
-{
-    padding: 0px;
-    margin: 0px;
-    list-style-type: none;
-}
 
 
 /* Content styles */

@@ -75,6 +75,12 @@
             {% block content %}
               {{ contentBody }}
             {% endblock %}
+            {% if current_member %}
+              <div id="memberlinks">
+                Logged in as :  <a href="{{current_member.get_absolute_url}}">{{current_member.user_name}}</a>
+                | <a href="{{current_member.get_absolute_url}}messages/inbox/">{{current_member.new_messages}} new message(s)</a>
+              </div>
+            {% endif %}
           </div>
         </div>
         <div class="bottomlinks">{% atomfeedlinkvisible %} <a href="/website/help/" title="Get help or report problems with the site">Help</a> | <a href="/website/abuse/" title="How to report absue of the web site">Report abuse</a></div>
@@ -84,14 +90,3 @@
 {% endblock %}
 
 {% block headerattr %}class="mainstandard"{% endblock %}
-
-{% block extrapageheader %}
-  <div id="quicklinks">
-    {% if current_member %}
-      <ul>
-        <li>Logged in as :  <a href="{{current_member.get_absolute_url}}">{{current_member.user_name}}</a></li>
-        <li><a href="{{current_member.get_absolute_url}}messages/inbox/">{{current_member.new_messages}} new message(s)</a></li>
-      </ul>
-    {% endif %}
-  </div>
-{% endblock %}
