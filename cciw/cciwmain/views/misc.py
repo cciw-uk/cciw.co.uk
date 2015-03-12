@@ -33,7 +33,7 @@ CONTACT_CHOICE_BOOKINGFORM = 'bookingform'
 
 CONTACT_CHOICES = [
     (CONTACT_CHOICE_WEBSITE, 'Web site problems'),
-    (CONTACT_CHOICE_BOOKINGFORM, 'Booking form request'),
+    (CONTACT_CHOICE_BOOKINGFORM, 'Paper booking form request'),
     (CONTACT_CHOICE_BOOKINGS, 'Bookings'),
     (CONTACT_CHOICE_GENERAL, 'Other'),
 ]
