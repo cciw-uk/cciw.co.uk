@@ -13,7 +13,8 @@ FF8900	BF7D30	A65900	FFA640	FFBE73
 body {
     background-color: #f8f8f8;
     color: black;
-    font-size: small;
+    font-size: 15px;
+    line-height: 24px;
 }
 
 a img, a {
@@ -82,37 +83,41 @@ a:hover {
 
 #menubar {
     font-weight: bold;
-    padding: 3px 0 3px 0; /* equals padding on #menubar a */
-}
-#menubar ul {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-    text-align: center;
-}
-#menubar ul li {
-    display: inline-block;
-    margin-top: 10px;
-}
-#menubar ul li a {
-    text-decoration: none;
-    padding: 3px 10px;
-    color: #000;
-    background-color: #ddd;
-    margin: 0px 1px 0px 0px;
-}
-#menubar ul li a:hover,
-#menubar ul li a.currentSection:hover {
-    color:#fff;
-    background-color:#bacb97;
-}
-#menubar ul li a.active,
-#menubar ul li a.active:hover,
-#menubar ul li a.currentSection {
-    color:#fff;
-    background:#007633;
-}
 
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+        text-align: center;
+
+        li {
+            display: inline-block;
+            margin-top: 10px;
+
+            a {
+                text-decoration: none;
+                padding: 3px 10px;
+                color: #000;
+                background-color: #ddd;
+                margin: 0px 1px 0px 0px;
+                display: inline-block;
+
+                &:hover,
+                &.currentSection:hover {
+                    color:#fff;
+                    background-color:#bacb97;
+                }
+
+                &.active,
+                &.active:hover,
+                &.currentSection {
+                    color:#fff;
+                    background:#007633;
+                }
+            }
+        }
+    }
+}
 
 /* Content styles */
 
@@ -330,6 +335,7 @@ h1, h2, h3, h4, h5, h6
 h1
 {
     font-size: 1.5em;
+    line-height: 1.5em;
 }
 
 h2
@@ -396,7 +402,7 @@ p
 
 #mainstandard, #header.mainstandard #headerlogo
 {
-    max-width: 60em;
+    max-width: 50em;
     margin: auto;
 }
 
@@ -921,7 +927,6 @@ ul.messagelist {
 }
 
 ul.messagelist li {
-    font-size: 12px;
     display: block;
     padding: 4px 5px 4px 25px;
     margin: 0 0 3px 0;
@@ -974,7 +979,6 @@ a.booknow:active {
     margin-top: -2px; /* cover green border at top */
     background-color: #406080;
     color: white;
-    padding: 1px 0 3px 0; /* equals padding on #bookingbar a */
     text-align: center;
 }
 
@@ -985,40 +989,42 @@ a.booknow:active {
     text-align: right;
 }
 
-#bookingbar ul {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
+#bookingbar {
+     a {
+         color: white;
+     }
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+
+        li {
+            display: inline-block;
+
+            a, span {
+                display: inline-block;
+                text-decoration: none;
+                padding: 3px 10px;
+                color: white;
+                margin: 0px;
+                font-weight: bold;
+
+                &:hover {
+                    background-color: #668099;
+                }
+            }
+
+            a.active,
+            span.active,
+            a.active:hover {
+                color: black;
+                background:white;
+            }
+        }
+    }
 }
 
-#bookingbar ul li {
-    display: inline;
-}
-
-#bookingbar ul li a,
-#bookingbar ul li span {
-    text-decoration: none;
-    padding: 3px 10px;
-    color: white;
-    margin: 0px;
-    font-weight: bold;
-}
-
-#bookingbar ul li a:hover,
-#bookingbar ul li span:hover {
-    background-color: #668099;
-}
-
-#bookingbar ul li a.active,
-#bookingbar ul li span.active,
-#bookingbar ul li a.active:hover {
-    color: black;
-    background:white;
-}
-
-#bookingbar a {
-    color: white;
-}
 
 .paybox {
     float: left;
@@ -1043,4 +1049,11 @@ table td.total, table td.discounts {
 
 table td.price {
     text-align: right;
+}
+
+@media screen and (max-width: 600px) {
+    body {
+        font-size: 14px;
+        line-height: 21px;
+    }
 }
