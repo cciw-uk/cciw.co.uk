@@ -41,3 +41,4 @@ xlwt-future==0.8.0
 zc.lockfile==1.0.0
 django-compressor==1.4
 django_appconf==1.0.1
+python-memcached==1.48
