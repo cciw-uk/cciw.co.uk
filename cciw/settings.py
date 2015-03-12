@@ -11,6 +11,7 @@ basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # ../
 parentdir = os.path.dirname(basedir)
 
 PROJECT_ROOT = basedir
+HOME_DIR = os.environ['HOME']
 
 DEVBOX = ('webfaction' not in hostname)
 LIVEBOX = not DEVBOX
@@ -50,9 +51,16 @@ ROOT_URLCONF = 'cciw.urls'
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        }
+        'BACKEND': 'caching.backends.memcached.MemcachedCache',
+        'LOCATION': 'unix:%s/memcached.sock' % HOME_DIR,
+        'KEY_PREFIX': 'cciw.co.uk' if PRODUCTION else 'staging.cciw.co.uk'
     }
+} if LIVEBOX else {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
 
 TIME_ZONE = "Europe/London"
 
@@ -63,7 +71,7 @@ LOGIN_URL = "/officers/"
 
 ALLOWED_HOSTS = [".cciw.co.uk"]
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'autocomplete_light',
     'django.contrib.auth',
     'django.contrib.admin',
@@ -89,34 +97,36 @@ INSTALLED_APPS = (
     'wiki.plugins.images',
     'wiki.plugins.macros',
     'django_nyt',
-)
+    'compressor',
+]
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
     # Don't want the memory overhead of these if we are serving requests
-    INSTALLED_APPS += (
-    'django.contrib.staticfiles',
-    )
+    INSTALLED_APPS += [
+        'django.contrib.staticfiles',
+    ]
 
 if DEVBOX and DEBUG:
-    INSTALLED_APPS += (
+    INSTALLED_APPS += [
         'django.contrib.admindocs',
         'debug_toolbar',
-    )
+    ]
 
 if DEVBOX:
-    INSTALLED_APPS += (
+    INSTALLED_APPS += [
         'anonymizer',
-)
+    ]
 
 if LIVEBOX and PRODUCTION:
-    INSTALLED_APPS += (
-    'mailer',
-)
+    INSTALLED_APPS += [
+        'mailer',
+    ]
 
 
 SILENCED_SYSTEM_CHECKS = [
     '1_6.W001',
-    ]
+]
+
 ######  DATABASE   ####
 
 if DEVBOX:
@@ -256,7 +266,17 @@ else:
 MEDIA_URL = '/usermedia/'
 STATIC_URL = '/static/'
 
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
+]
+
 FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
+
+COMPRESS_PRECOMPILERS = [
+    ('text/less', 'lessc {infile} {outfile}'),
+]
 
 ####################
 

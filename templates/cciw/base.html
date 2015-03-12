@@ -1,12 +1,16 @@
-{% load static %}<!DOCTYPE html>
+{% load static %}
+{% load compress %}
+<!DOCTYPE html>
 <html lang="en-gb">
   <head>
     <title>{% block title %}{{ title }} | CCIW{% endblock %}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="initial-scale=1.0" />
     <link href="https://fonts.googleapis.com/css?family=Amaranth" rel="stylesheet" type="text/css" />
+    {% compress css %}
+      <link rel="stylesheet" href="{% static "css/style.less" %}" type="text/less" />
+    {% endcompress %}
 
-    <link rel="stylesheet" href="{% static "css/style.css" %}" type="text/css" />
     {% block extraheader %}{% endblock %}
     {% if GOOGLE_ANALYTICS_ACCOUNT %}
       <script type="text/javascript">
