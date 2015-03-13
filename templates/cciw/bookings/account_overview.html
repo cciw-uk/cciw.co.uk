@@ -1,6 +1,35 @@
 {% extends 'cciw/bookings/standard.html' %}
 {% block content %}
 
+  <h1>Your details</h1>
+
+  {% with account=request.booking_account %}
+    <table class="sideheaders">
+      <tr>
+        <th>Name</th>
+        <td>{{ account.name }}</td>
+      </tr>
+      <tr>
+        <th>Email</th>
+        <td>{{ account.email }}</td>
+      </tr>
+      <tr>
+        <th>Address</th>
+        <td>{{ account.address|linebreaksbr }}</td>
+      </tr>
+      <tr>
+        <th>Post code</th>
+        <td>{{ account.post_code }}</td>
+      </tr>
+    </table>
+
+    <p>Please <a href="{% url 'cciw.bookings.views.account_details' %}">update your details</a> if any of the above is wrong.
+      If you need to change your email address, please <a href="{% url 'cciwmain.misc.contact_us' %}?bookings">contact us</a>.
+    </p>
+  {% endwith %}
+
+  <h1>Your places</h1>
+
   <h2>Basket</h2>
 
   {% if basket or shelf %}
@@ -41,7 +70,7 @@
     </ul>
 
   {% else %}
-    <p>You have no confirmed places yet.</p>
+    <p>You have no confirmed places yet this year.</p>
   {% endif %}
 
   {% if cancelled_places %}
@@ -53,6 +82,27 @@
       {% endfor %}
     </ul>
   {% endif %}
+
+
+  <h1>Logging out</h1>
+
+  <p><strong>In order to log back in again, you will need to verify your email address as
+    you did the first time.</strong></p>
+
+  <p>By logging out, other users of this computer will not be able to access your
+    account details, which is important if you are using a public computer (for
+    example in an internet cafe).</p>
+
+  <p>Press this button in order to go ahead and log out:</p>
+
+  <form action="" method="POST">
+    {% csrf_token %}
+    <p style="text-align: center">
+      <input type="submit" name="logout" value="Log out">
+    </p>
+  </form>
+
+  <p>Otherwise your session will expire two weeks after you last logged in.</p>
 
   {% include 'cciw/bookings/help.html' %}
 

@@ -1,9 +1,8 @@
 <div id="bookingbar">
   <div id="bookingbartop">
     {% if logged_in %}
-      Booking account: <b>{{ request.booking_account.email }}</b>
-      &nbsp;~&nbsp; <a href="{% url 'cciw.bookings.views.account_overview' %}">Account overview</a>
-      &nbsp;~&nbsp; <a href="{% url 'cciw.bookings.views.logout' %}">Log out</a>
+      <b>{{ request.booking_account.email }}</b>
+      <a class="manageaccount buttonlink" href="{% url 'cciw.bookings.views.account_overview' %}">View account</a>
     {% endif %}
   </div>
   <ul>

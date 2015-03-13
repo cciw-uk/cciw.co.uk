@@ -219,6 +219,11 @@ a:hover {
 
 /* Content styles */
 
+#contentInner h1
+{
+    border-bottom: 2px solid @primaryColor;
+}
+
 h2
 {
     border-bottom: 2px solid #a65900;
@@ -974,7 +979,6 @@ a.booknow {
     border:1px solid #005611;
     display:inline-block;
     color:#ffffff;
-    font-family:arial;
     font-size:15px;
     font-weight:bold;
     padding:6px 24px;
@@ -1008,6 +1012,24 @@ a.booknow:active {
     margin: 0px 0px 3px 0px;
     text-align: left;
     min-height: @lineHeight;
+    text-align: right;
+    a.manageaccount {
+        box-shadow: inset 0px 1px 0px 0px #aaa;
+        background-color: #ddd;
+        background-image: linear-gradient(180deg, #ddd 0%, #bbb 100%);
+        border-radius: 6px;
+        border: 1px solid #005611;
+        display: inline-block;
+        color: black;
+        padding: 3px 12px;
+        text-decoration: none;
+        margin-left: 5px;
+        margin-top: 3px;
+        &:hover {
+            background-color: #eee;
+            background-image: linear-gradient(180deg, #eee 0%, #ccc 100%);
+        }
+    }
 }
 
 #bookingbar {
@@ -1045,7 +1067,6 @@ a.booknow:active {
         }
     }
 }
-
 
 .paybox {
     float: left;

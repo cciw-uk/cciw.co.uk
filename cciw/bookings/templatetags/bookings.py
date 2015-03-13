@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 from django import template
 from django.core.urlresolvers import reverse
-from django.utils.html import escape
 
 from cciw.bookings.views import ensure_booking_acount_attr
 
@@ -25,7 +24,7 @@ def bookingbar(context):
     stages = [
         ('login', 'Log in', False,
          '',
-         'Use the "log out" link if you need to log in as someone else'),
+         'Go to "View account" and use the "log out" link if you need to log in as someone else'),
 
         ('account', 'Account details', logged_in,
          reverse('cciw.bookings.views.account_details'),

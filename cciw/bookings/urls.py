@@ -24,5 +24,4 @@ urlpatterns = \
              (r'^pay/done/$', 'pay_done'),
              (r'^pay/cancelled/$', 'pay_cancelled'),
              (r'^overview/$', 'account_overview'),
-             (r'^logout/$', 'logout'),
              )

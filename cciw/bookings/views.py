@@ -887,6 +887,11 @@ class BookingAccountOverview(CciwBaseView):
     template_name = 'cciw/bookings/account_overview.html'
 
     def handle(self, request):
+        if 'logout' in request.POST:
+            response = HttpResponseRedirect(reverse('cciw.bookings.views.index'))
+            unset_booking_account_cookie(response)
+            return response
+
         c = {}
         acc = self.request.booking_account
         year = get_thisyear()
@@ -898,19 +903,6 @@ class BookingAccountOverview(CciwBaseView):
         c['shelf'] = bookings.on_shelf().exists()
         c['stage'] = ''
         return self.render(c)
-
-
-class BookingLogOut(CciwBaseView):
-    metadata_title = "Booking - log out"
-    template_name = 'cciw/bookings/logout.html'
-
-    def handle(self, request):
-        if 'logout' in request.POST:
-            response = HttpResponseRedirect(reverse('cciw.bookings.views.index'))
-            unset_booking_account_cookie(response)
-            return response
-        else:
-            return self.render({'stage': ''})
 
 
 index = BookingIndex.as_view()
@@ -926,4 +918,3 @@ pay = booking_account_required(BookingPay.as_view())
 pay_done = csrf_exempt(BookingPayDone.as_view()) # PayPal will post to this, need csrf_exempt
 pay_cancelled = csrf_exempt(BookingPayCancelled.as_view()) # PayPal will post to this
 account_overview = booking_account_required(BookingAccountOverview.as_view())
-logout = booking_account_required(BookingLogOut.as_view())

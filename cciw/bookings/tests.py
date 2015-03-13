@@ -1473,7 +1473,6 @@ class TestAccountOverview(BookingBaseMixin, CreatePlaceMixin, TestCase):
         # Confirmed place
         self.assertContains(resp, self.place_details['first_name'])
 
-
         # Booked place
         self.assertContains(resp, 'Another Child')
         self.assertContains(resp, 'remember to pay')
@@ -1488,7 +1487,7 @@ class TestAccountOverview(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
 class TestLogOut(LogInMixin, TestCase):
 
-    url = reverse('cciw.bookings.views.logout')
+    url = reverse('cciw.bookings.views.account_overview')
 
     def test_get(self):
         self.login()
