@@ -77,9 +77,8 @@ patterns('cciw.cciwmain.views',
     (r'^topics/$', 'forums.all_topics'),
 
 ) + patterns('cciw.sitecontent.views',
-
-    # Fallback -- allows any other URL to be defined as arbitary pages.
-    # htmlchunk.find will throw a 404 for any URL not defined.
-    (r'^(?:.*)/$|^$', 'find'),
+             url(r'^$', 'home'),
+             # Fallback -- allows any other URL to be defined as arbitary pages.
+             # htmlchunk.find will throw a 404 for any URL not defined.
+             (r'^(?:.*)/$|^$', 'find'),
 )
-
