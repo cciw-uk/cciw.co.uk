@@ -27,7 +27,7 @@ a img, a {
 }
 
 a:link {
-    color: #007633;
+    color: @primaryColor;
     font-weight: bold;
     text-decoration: none;
 }
@@ -42,6 +42,17 @@ a:hover {
     text-decoration: underline;
 }
 
+//
+
+// Colour defs
+
+@primaryColor: #007633;
+@primaryColorLighter: #BACB97;
+
+@headerColor: #444;
+
+@pageTitleColor: @primaryColor;
+
 
 // Page elements
 
@@ -51,8 +62,6 @@ a:hover {
     margin: auto;
 }
 
-@headerColor: #444;
-
 #pagewrapper {
     background-color: @headerColor;
     box-shadow: 2px 0px 6px #000, -2px 0px 6px #888;
@@ -60,7 +69,9 @@ a:hover {
 
 #pageTitle
 {
-    border-bottom: 2px solid #007633;
+    color: white;
+    background-color: @pageTitleColor;
+    border-bottom: 2px solid darken(@pageTitleColor, 5%);
     h1 {
         margin: 0;
         padding: 0.6em 0 0.3em 0;
@@ -123,7 +134,7 @@ a:hover {
 #content
 {
     background-color: white;
-    border-bottom: 2px solid #007633;
+    border-bottom: 2px solid @primaryColor;
     // Additional shadow to pagewrapper, as this bit is 'higher'.
     // Make sure it doesn't go up over header though.
     box-shadow: 2px 3px 4px #888, -1px 3px 4px #888;
@@ -146,8 +157,9 @@ a:hover {
 #menubarSpacer {
     height: @headerHeight - (@menubarLineHeight + 2 * @menubarPaddingHeight + @menubarBorderHeight);
     width: 100px;
-
 }
+
+@menubarUnselectedColor: #90ab70;
 
 #menubar {
     float: right;
@@ -162,33 +174,41 @@ a:hover {
 
         li {
             display: inline-block;
+            z-index: 0;
+
+            box-shadow: 0px -2px 2px #222;
+
+            &.active,
+            &.currentSection {
+                box-shadow: 2px -3px 3px -1px #222, -2px -3px 3px -1px #222;
+                z-index: 10;
+                position: relative; // make it stack in front of other tabs
+            }
 
             a {
                 line-height: @menubarLineHeight;
                 text-decoration: none;
                 padding: @menubarPaddingHeight 10px;
-                color: #000;
-                background-color: #ddd;
-                margin: 0px 0px 0px 2px;
+                color: white;
+                background-color: @menubarUnselectedColor;
+                margin: 0px 1px 0px 1px;
                 display: inline-block;
                 border-bottom: @menubarBorderHeight solid #444;
 
-                box-shadow: inset 0px -3px 8px -3px #888;
+                //box-shadow: inset 0px -3px 8px -3px #444;
+                background-image: linear-gradient(180deg, @menubarUnselectedColor 80%, darken(@menubarUnselectedColor, 15%));
 
-                &:hover,
-                &.currentSection:hover {
-                    color:#fff;
-                    background-color:#bacb97;
+                &:hover {
+                    background-color: lighten(@menubarUnselectedColor, 20%);
+                    background-image: linear-gradient(180deg, lighten(@menubarUnselectedColor, 10%) 80%, lighten(darken(@menubarUnselectedColor, 15%), 10%));
                 }
 
                 &.active,
                 &.active:hover,
                 &.currentSection,
                 &.currentSection:hover {
-                    box-shadow: none;
-                    color: #007633;
-                    background: white;
-                    border-color: white;
+                    background: @pageTitleColor;
+                    border-color: @pageTitleColor;
                 }
             }
         }
@@ -210,7 +230,7 @@ table.sideheaders th,
 table.simpleform th,
 table.topheaders th
 {
-    background-color: #bacb97;
+    background-color: @primaryColorLighter;
 }
 
 table.sideheaders th,
@@ -278,8 +298,8 @@ input.placeholder {
 
 .successMessage
 {
-    border: 1px solid #007633;
-    background-color: #bacb97;
+    border: 1px solid @primaryColor;
+    background-color: @primaryColorLighter;
 }
 
 div.awardInfo
@@ -294,12 +314,12 @@ div.awardDescription
 
 div.breadcrumb
 {
-    border-bottom: 1px solid #007633;
+    border-bottom: 1px solid @primaryColor;
 }
 
 div.bottombreadcrumb
 {
-    border-top: 1px solid #007633;
+    border-top: 1px solid @primaryColor;
 }
 
 table.topheaders th.topicSubject
@@ -317,12 +337,12 @@ div.newsItem h2
 {
     border: 0px;
     color: white;
-    background-color: #007633;
+    background-color: @primaryColor;
 }
 
 .newsItemDetails
 {
-    border-bottom: 1px solid #007633;
+    border-bottom: 1px solid @primaryColor;
     margin-bottom: 4px;
 }
 
@@ -330,7 +350,7 @@ div.newsItem h2
 .postMessage blockquote
 {
     border-left: 2px solid #00b64f;
-    background-color: #bacb97;
+    background-color: @primaryColorLighter;
 }
 .postMessage .memberquote
 {
@@ -444,7 +464,7 @@ p
 
 #memberlinks
 {
-    border-top: 2px solid #007633;
+    border-top: 2px solid @primaryColor;
     margin: 20px -@contentPadding 16px -@contentPadding;
     padding: 0px 5px;
     text-align: right;
@@ -945,7 +965,7 @@ a.booknow {
     -moz-box-shadow:inset 0px 1px 0px 0px #729e48;
     -webkit-box-shadow:inset 0px 1px 0px 0px #729e48;
     box-shadow:inset 0px 1px 0px 0px #729e48;
-    background-color:#007633;
+    background-color: @primaryColor;
     -moz-border-radius:6px;
     -webkit-border-radius:6px;
     border-radius:6px;
@@ -963,7 +983,7 @@ a.booknow {
 }
 
 a.booknow:hover {
-    background-color:#bacb97;
+    background-color: @primaryColorLighter;
     border-color:#f0fff0;
 }
 a.booknow:active {

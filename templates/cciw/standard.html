@@ -45,7 +45,9 @@
       {% spaceless %}
         <ul>
           {% for menulink in menulinks %}
-            <li>
+            <li {% if menulink.isCurrentPage %} class="active" {% endif %}
+                {% if menulink.isCurrentSection %} class="currentSection" {% endif %}
+                 >
               <a href="{{ menulink.url }}"
                  {% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
                  {% if menulink.isCurrentPage %} class="active" {% endif %}
