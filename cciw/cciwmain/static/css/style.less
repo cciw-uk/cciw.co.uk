@@ -51,8 +51,10 @@ a:hover {
     margin: auto;
 }
 
+@headerColor: #444;
+
 #pagewrapper {
-    background-color: #444;
+    background-color: @headerColor;
     box-shadow: 2px 0px 6px #000, -2px 0px 6px #888;
 }
 
@@ -87,9 +89,19 @@ a:hover {
 #header
 {
     color: white;
-    height: @headerHeight;
     box-shadow: inset 0px -3px 8px -3px #000,
                 0px 2px 4px -2px #888;
+
+    // Include floats:
+    &:after {
+          clear: both;
+          display: block;
+          height: 0;
+          overflow: hidden;
+          visibility: hidden;
+          content: ".";
+          font-size: 0;
+    }
 }
 
 #headerlogo
@@ -101,7 +113,7 @@ a:hover {
 }
 
 #headerlogo, #headerlogo a {
-    height: 66px;
+    height: @headerHeight;
     width: 200px;
     display: block;
 }
@@ -131,11 +143,16 @@ a:hover {
 @menubarPaddingHeight: 3px;
 @menubarBorderHeight: 1px;
 
+#menubarSpacer {
+    height: @headerHeight - (@menubarLineHeight + 2 * @menubarPaddingHeight + @menubarBorderHeight);
+    width: 100px;
+
+}
+
 #menubar {
     float: right;
 
     font-weight: bold;
-    padding-top: @headerHeight - (@menubarLineHeight + 2 * @menubarPaddingHeight + @menubarBorderHeight);
 
     ul {
         margin: 0;
