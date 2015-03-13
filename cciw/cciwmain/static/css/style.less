@@ -10,6 +10,9 @@ FF8900	BF7D30	A65900	FFA640	FFBE73
 
 /* Include all borders here too */
 
+
+@import "elements.less";
+
 @lineHeight: 24px;
 
 body {
@@ -40,23 +43,53 @@ a:hover {
 }
 
 
-/* Header */
+// Page elements
+
+#pagewrapper, .bottomlinks
+{
+    max-width: 750px;
+    margin: auto;
+}
+
+#pagewrapper {
+    background-color: #444;
+    box-shadow: 2px 0px 6px #000, -2px 0px 6px #888;
+}
+
+#pageTitle
+{
+    border-bottom: 2px solid #007633;
+    h1 {
+        margin: 0;
+        padding: 0.6em 0 0.3em 0;
+        text-align: center;
+    }
+}
+
+@contentPadding: 16px;
+
+#contentBody #contentInner
+{
+    padding: 10px @contentPadding 32px @contentPadding;
+}
 
 
-/* Header and positioning */
 #skiptocontentdiv
 {
     display: none;
 }
 
+
+/* Header */
+
 @headerHeight: 72px;
 
 #header
 {
-    height: @headerHeight;
-    background-repeat: repeat-x;
     color: white;
-    background-color: #444;
+    height: @headerHeight;
+    box-shadow: inset 0px -3px 8px -3px #000,
+                0px 2px 4px -2px #888;
 }
 
 #headerlogo
@@ -64,7 +97,6 @@ a:hover {
     background-image: url('/static/images/headerlogo.png');
     background-repeat: no-repeat;
     margin-left: 0px;
-    height: 72px;
     float: left;
 }
 
@@ -76,14 +108,16 @@ a:hover {
 
 /* Main body */
 
-#mainstandard #contentBody, #mainstandard #pageTitle
+#content
 {
     background-color: white;
     border-bottom: 2px solid #007633;
-    margin-top: 0px;
+    // Additional shadow to pagewrapper, as this bit is 'higher'.
+    // Make sure it doesn't go up over header though.
+    box-shadow: 2px 3px 4px #888, -1px 3px 4px #888;
 }
 
-#mainstandard #contentBody
+#contentBody
 {
     background-image: url('/static/images/contentbg.png');
     background-repeat: no-repeat;
@@ -122,6 +156,8 @@ a:hover {
                 display: inline-block;
                 border-bottom: @menubarBorderHeight solid #444;
 
+                box-shadow: inset 0px -3px 8px -3px #888;
+
                 &:hover,
                 &.currentSection:hover {
                     color:#fff;
@@ -132,6 +168,7 @@ a:hover {
                 &.active:hover,
                 &.currentSection,
                 &.currentSection:hover {
+                    box-shadow: none;
                     color: #007633;
                     background: white;
                     border-color: white;
@@ -387,58 +424,6 @@ p
     margin-bottom: 1em;
 }
 
-/* base template only */
-#mainbase h1
-{
-    margin: 0;
-    padding: 0;
-
-}
-
-#mainbase #contentBody
-{
-    padding: 0px 10px;
-    margin: 0px;
-}
-
-/* standard template */
-
-#mainstandard, #header.mainstandard .headerinner
-{
-    max-width: 50em;
-    margin: auto;
-}
-
-
-#mainstandard #pageTitle
-{
-    margin-top: 0px;
-    margin-bottom: 0px;
-}
-#mainstandard #pageTitle h1
-{
-    margin: 0;
-    padding: 0.3em 0 0.3em 0;
-    text-align: center;
-}
-
-#mainstandard #contentBody
-{
-    margin-top: 0em;
-    margin-bottom: 1em;
-}
-
-@contentPadding: 12px;
-
-#mainstandard #contentBody #contentInner
-{
-    padding: 10px @contentPadding 32px @contentPadding;
-}
-
-#mainstandard #editfooter
-{
-    padding: 0 5px;
-}
 
 #memberlinks
 {
@@ -974,6 +959,8 @@ a.booknow:active {
     background-color: #406080;
     color: white;
     text-align: center;
+    box-shadow: inset 0 -3px 5px -3px #222;
+    padding: 0 4px;
 }
 
 #bookingbartop {

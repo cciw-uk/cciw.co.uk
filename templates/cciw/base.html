@@ -1,5 +1,6 @@
 {% load static %}
 {% load compress %}
+{% load standardpage %}
 <!DOCTYPE html>
 <html lang="en-gb">
   <head>
@@ -31,28 +32,31 @@
   <body>
     {% block bodystart %}
     {% endblock %}
-    <div id="header" {% block headerattr %}{% endblock %}>
-      <div class="headerinner">
-        <div id="headerlogo">
-          <a href="/" title="Home page"></a>
-        </div>
-        {% block topbar %}
-        {% endblock %}
-      </div>
-    </div>
-    {% block main %}
-      <div id="mainbase">
-        <div id="pageTitle">
-          <h1>{{ title }}</h1>
-        </div>
-        <div id="contentBody">
-          {% block content %}
+    <div id="pagewrapper">
+      <div id="header" {% block headerattr %}{% endblock %}>
+        <div class="headerinner">
+          <div id="headerlogo">
+            <a href="/" title="Home page"></a>
+          </div>
+          {% block topbar %}
           {% endblock %}
         </div>
       </div>
-    {% endblock %}
+      <div id="main">
+        {% block main %}
+          <div id="content">
+            <div id="pageTitle">
+              <h1>{{ title }}</h1>
+            </div>
+            <div id="contentBody">
+              {% block content %}
+              {% endblock %}
+            </div>
+          </div>
+        {% endblock %}
+      </div>
 
-    <!--[if lte IE 6]>
+      <!--[if lte IE 6]>
     <div id="ie-message">
       Your browser is obsolete, and probably doesn't display this site
       correctly. Please upgrade to <a href="http://abetterbrowser.org/">a better
@@ -73,6 +77,11 @@
       }
     </script>
     <![endif]-->
-
+    </div>
+    <div class="bottomlinks">
+      {% atomfeedlinkvisible %}
+      <a href="/website/help/" title="Get help or report problems with the site">Help</a> |
+      <a href="/website/abuse/" title="How to report absue of the web site">Report abuse</a>
+    </div>
   </body>
 </html>
