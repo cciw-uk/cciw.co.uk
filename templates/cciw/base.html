@@ -45,12 +45,22 @@
       <div id="main">
         {% block main %}
           <div id="content">
-            <div id="pageTitle">
-              <h1>{{ title }}</h1>
-            </div>
+            {% block pagetitlediv %}
+              <div id="pageTitle">
+                <h1>{% block pagetitle %}{{ title }}{% endblock %}</h1>
+              </div>
+            {% endblock %}
             <div id="contentBody">
-              {% block content %}
+              {% block contentTop %} {# outside padding #}
               {% endblock %}
+              <div id="contentInner"> {# has padding #}
+                {% block precontent %}
+                {% endblock %}
+                {% block content %}
+                {% endblock %}
+                {% block postcontent %}
+                {% endblock %}
+              </div>
             </div>
           </div>
         {% endblock %}

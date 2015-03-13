@@ -15,5 +15,5 @@ def find(request):
         raise Http404()
 
     c = dict(title=chunk.page_title)
-    c['contentBody'] = chunk.render(request)
-    return render(request, 'cciw/standard.html', c)
+    c['chunk_html'] = chunk.render(request)
+    return render(request, 'cciw/chunk_page.html', c)

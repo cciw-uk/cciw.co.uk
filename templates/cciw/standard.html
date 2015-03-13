@@ -58,38 +58,30 @@
   </div>
 {% endblock %}
 
-{% block main %}
-  <div id="content">
-    <div id="pageTitle">
-      <h1>{% block pagetitle %}{{ title }}{% endblock %}</h1>
+{% block contentTop %}
+  {% block messages %}
+    {% if messages %}
+      <ul class="messagelist">{% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}</ul>
+    {% endif %}
+  {% endblock messages %}
+{% endblock contentTop %}
+
+{% block precontent %}
+  {% block breadcrumb %}
+    {% if breadcrumb %}
+      <div class='breadcrumb'>{{ breadcrumb }}</div>
+    {% endif %}
+  {% endblock %}
+{% endblock %}
+
+{% block postcontent %}
+  {% if current_member %}
+    <div id="memberlinks">
+      Logged in as :  <a href="{{current_member.get_absolute_url}}">{{current_member.user_name}}</a>
+      | <a href="{{current_member.get_absolute_url}}messages/inbox/">{{current_member.new_messages}} new message(s)</a>
     </div>
-    <div id="contentBody">
-      {% block contentTop %}
-        {% block messages %}
-          {% if messages %}
-            <ul class="messagelist">{% for message in messages %}
-              <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}</ul>
-          {% endif %}
-        {% endblock messages %}
-      {% endblock contentTop %}
-      <div id="contentInner">
-        {% block breadcrumb %}
-          {% if breadcrumb %}
-            <div class='breadcrumb'>{{ breadcrumb }}</div>
-          {% endif %}
-        {% endblock %}
-        {% block content %}
-          {{ contentBody }}
-        {% endblock %}
-        {% if current_member %}
-          <div id="memberlinks">
-            Logged in as :  <a href="{{current_member.get_absolute_url}}">{{current_member.user_name}}</a>
-            | <a href="{{current_member.get_absolute_url}}messages/inbox/">{{current_member.new_messages}} new message(s)</a>
-          </div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
+  {% endif %}
 {% endblock %}
 
