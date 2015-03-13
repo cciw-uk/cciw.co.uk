@@ -25,18 +25,19 @@ def index(request, year=None):
     c = {}
     c['title'] = u"Camp forums and photos"
     all_camps = Camp.objects.filter(end_date__lte=date.today())
-    if (year == None):
+    if (year is None):
         camps = all_camps.order_by('-year', 'number')
         c['show_ancient'] = True
     else:
         year = int(year)  # year is result of regex match
         camps = all_camps.filter(year=year)\
-                                .order_by('-year', 'number')
+                         .order_by('-year', 'number')
         if len(camps) == 0:
             raise Http404
     c['camps'] = camps
 
     return render(request, 'cciw/camps/index.html', c)
+
 
 def detail(request, year, number):
     """
@@ -60,14 +61,14 @@ def detail(request, year, number):
 
     if camp.is_past():
         c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(camp.year) + [camp.nice_name])
-    else:
-        c['breadcrumb'] = create_breadcrumb([standard_subs(u'<a href="/thisyear/">Camps {{thisyear}}</a>'), "Camp " + number])
     return render(request, 'cciw/camps/detail.html', c)
+
 
 def thisyear(request):
     c = dict(title=u"Camps %d" % get_thisyear())
     c['camps'] = Camp.objects.filter(year=get_thisyear()).order_by('number')
     return render(request, 'cciw/camps/thisyear.html', c)
+
 
 def get_forum_for_camp(camp):
     location = camp.get_absolute_url()[1:] + 'forum/'
@@ -77,7 +78,7 @@ def get_forum_for_camp(camp):
         forum = Forum.objects.get(location=location)
     except Forum.DoesNotExist:
         # Self maintenance
-        if not camp.end_date is None and camp.is_past():
+        if camp.end_date is not None and camp.is_past():
             # If the forum doesn't exist, but should, we should create it
             forum = Forum(location=location, open=True)
             forum.save()
