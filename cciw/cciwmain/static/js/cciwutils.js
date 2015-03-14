@@ -265,6 +265,10 @@ var cciw = (function(pub, $) {
             cciw.standardformAddOnchangeHandlers($(this));
         });
 
+        $('#menutoggle a').on('click', function (ev) {
+            $('#menubar ul li').toggleClass('expanded');
+        })
+
         // placeholder fallback for older browsers:
         var i = document.createElement('input');
         if (!('placeholder' in i)) {

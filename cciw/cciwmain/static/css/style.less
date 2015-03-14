@@ -178,15 +178,6 @@ a:hover {
             display: inline-block;
             z-index: 0;
 
-            box-shadow: 0px -2px 2px #222;
-
-            &.active,
-            &.currentSection {
-                box-shadow: 2px -3px 3px -1px #222, -2px -3px 3px -1px #222;
-                z-index: 10;
-                position: relative; // make it stack in front of other tabs
-            }
-
             a {
                 line-height: @menubarLineHeight;
                 text-decoration: none;
@@ -197,12 +188,9 @@ a:hover {
                 display: inline-block;
                 border-bottom: @menubarBorderHeight solid #444;
 
-                //box-shadow: inset 0px -3px 8px -3px #444;
-                background-image: linear-gradient(180deg, @menubarUnselectedColor 80%, darken(@menubarUnselectedColor, 15%));
 
                 &:hover {
                     background-color: lighten(@menubarUnselectedColor, 20%);
-                    background-image: linear-gradient(180deg, lighten(@menubarUnselectedColor, 10%) 80%, lighten(darken(@menubarUnselectedColor, 15%), 10%));
                 }
 
                 &.active,
@@ -210,7 +198,6 @@ a:hover {
                 &.currentSection,
                 &.currentSection:hover {
                     background: @pageTitleColor;
-                    border-color: @pageTitleColor;
                 }
             }
         }
@@ -1108,5 +1095,98 @@ table td.price {
     img {
         max-width: 100%;
         height: auto;
+    }
+
+}
+
+// Navigation bar differences
+@mobileMenuWidth: 600px;
+
+// Need shadows for tab effect for the desktop nav bar, but not on mobile nav
+// menu
+
+
+@media screen and (min-width: (@mobileMenuWidth + 1px)) {
+
+
+    #menubar {
+        ul {
+            li {
+                box-shadow: 0px -2px 2px #222;
+
+                &.active,
+                &.currentSection {
+                    box-shadow: 2px -3px 3px -1px #222, -2px -3px 3px -1px #222;
+                    z-index: 10;
+                    position: relative; // make it stack in front of other tabs
+                }
+
+                a {
+                    background-image: linear-gradient(180deg, @menubarUnselectedColor 80%, darken(@menubarUnselectedColor, 15%));
+
+                    &:hover {
+                        background-image: linear-gradient(180deg, lighten(@menubarUnselectedColor, 10%) 80%, lighten(darken(@menubarUnselectedColor, 15%), 10%));
+                    }
+
+                    &.active,
+                    &.active:hover,
+                    &.currentSection,
+                    &.currentSection:hover {
+                        border-color: @pageTitleColor; // make it look like tab, not button
+                    }
+                }
+
+                &#menutoggle {
+                    display: none;
+                }
+            }
+
+        }
+    }
+}
+
+@media screen and (max-width: @mobileMenuWidth) {
+
+    #menubarSpacer {
+        display: none;
+    }
+
+    #menubar {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        ul {
+            text-align: left;
+            li {
+                display: none; // See cciwutils.js
+                &.expanded {
+                    display: block;
+                }
+                a {
+                    display: block;
+                    border-left: 1px solid @headerColor;
+                    border-right: 1px solid @headerColor;
+                }
+
+                &#menutoggle {
+                    display: block;
+                    a {
+                        background-color: lighten(@headerColor, 10%);
+                        &:hover {
+                            background-color: lighten(@headerColor, 20%);
+                        }
+                    }
+
+                    a:after {
+                        content: " ↓";
+                        font-size: 120%;
+                        font-weight: bold;
+                    }
+                    &.expanded a:after {
+                        content: " ↑";
+                    }
+                }
+            }
+        }
     }
 }

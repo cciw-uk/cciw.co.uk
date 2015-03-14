@@ -1,6 +1,7 @@
 {% extends "cciw/base.html" %}
 {% load static %}
 {% load standardpage %}
+{% load compress %}
 
 {% block extraheader %}
   {% if meta_description %}
@@ -21,8 +22,10 @@
   {% block atomfeed %}
     {% atomfeedlink %}
   {% endblock %}
+  {% compress js %}
   <script type="text/javascript" src="{% static "admin/js/jquery.min.js" %}"></script>
   <script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>
+  {% endcompress %}
   <script type="text/javascript">
    <!--
    (function($) {
@@ -44,6 +47,9 @@
     <div id="menubar">
       {% spaceless %}
         <ul>
+          <li id="menutoggle">
+            <a href="#">Menu</a>
+          </li>
           {% for menulink in menulinks %}
             <li {% if menulink.isCurrentPage %} class="active" {% endif %}
                 {% if menulink.isCurrentSection %} class="currentSection" {% endif %}
