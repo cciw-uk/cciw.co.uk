@@ -410,7 +410,7 @@ def process_post(request, topic, photo, context):
     context['errors'] = errors
 
     # Preview
-    if 'preview' not in request.POST:
+    if 'preview' in request.POST:
         context['message_text'] = bbcode.correct(msg_text)
         if not errors:
             context['preview'] = mark_safe(bbcode.bb2xhtml(msg_text))
