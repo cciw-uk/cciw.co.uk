@@ -438,8 +438,7 @@ class BookingAccountDetails(CciwBaseView, AjaxFormValidation):
                 return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
         else:
             form = self.form_class(instance=self.request.booking_account)
-
-        return self.render({'form':form})
+        return self.render({'form': form})
 
 
 class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
