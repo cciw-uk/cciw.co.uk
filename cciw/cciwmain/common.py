@@ -67,7 +67,7 @@ class TemplateView(View):
     response_class = TemplateResponse
     content_type = "text/html"
 
-    def get_magic_context(self, request):
+    def get_magic_context(self):
         """
         Collects any 'magic_context' defined in classes or base classes, and
         adds all to context data.
@@ -88,7 +88,7 @@ class TemplateView(View):
 
     def get_context_data(self, request):
         # Magic context from classes
-        c = self.get_magic_context(request)
+        c = self.get_magic_context()
         # Add in 'context' from instance
         c.update(getattr(self, 'context', {}))
         return c
