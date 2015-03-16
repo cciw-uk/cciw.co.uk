@@ -43,6 +43,7 @@ class View(object):
             self.request = request
             self.args = args
             self.kwargs = kwargs
+            self.context = {}
             if hasattr(self, 'pre_handle'):
                 response = self.pre_handle(request, *args, **kwargs)
                 if response is not None:

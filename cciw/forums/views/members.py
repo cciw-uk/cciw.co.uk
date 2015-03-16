@@ -263,7 +263,7 @@ class MessageList(ListView, CciwBaseView):
         context['breadcrumb'] = create_breadcrumb(crumbs)
 
         self.queryset = member.messages_received.filter(box=self.box).order_by('-time').select_related('from_member')
-        self.context = context
+        self.context.update(context)
 
         # Display paginated list
         return super(MessageList, self).handle(request)
@@ -301,7 +301,7 @@ class MemberPosts(ListView, FeedHandler, CciwBaseView):
                                              u'Recent posts']),
             'atom_feed_title': u"Atom feed for posts from %s" % member.user_name,
         }
-        self.context = context
+        self.context.update(context)
 
         return super(MemberPosts, self).handle(request)
 
