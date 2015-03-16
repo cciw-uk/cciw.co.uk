@@ -208,7 +208,12 @@ a:hover {
 
 #contentInner h1
 {
-    border-bottom: 2px solid @primaryColor;
+    margin-left: -@contentPadding; // to make bg go to edge
+    margin-right: -@contentPadding;
+    padding-left: @contentPadding;
+    padding-right: @contentPadding;
+    background: linear-gradient(white 0%, white 52%, #007633 53%, #007633 58%, white 59%);
+    text-shadow: 2px 2px 2px white, 2px -2px 2px white, -2px 2px 2px white, -2px -2px 2px white;
 }
 
 h2
