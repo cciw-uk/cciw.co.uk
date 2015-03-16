@@ -95,8 +95,10 @@
                  var popup = $('#id_use_existing_data_popup');
                  popup.css({
                      "position": "fixed",
-                     "top": ($(window).height()/2 - popup.height()/2).toString() + "px",
-                     "left": ($(window).width()/2 - popup.width()/2).toString() + "px"
+                     "top": Math.max($(window).height()/2 - popup.height()/2, 0).toString() + "px",
+                     "left": Math.max($(window).width()/2 - popup.width()/2, 0).toString() + "px",
+                     "max-height": ($(window).height()).toString() + "px",
+                     "overflow": "auto"
                   });
                   popup.fadeIn("fast");
                   $('#id_popup_background').fadeIn('fast');
