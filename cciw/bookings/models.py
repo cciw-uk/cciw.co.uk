@@ -506,11 +506,11 @@ class Booking(models.Model):
     # State - internal
     state = models.IntegerField(choices=BOOKING_STATES,
                                 help_text=mark_safe(
-            u"<ul>"
-            u"<li>To book, set to 'Booked' <b>and</b> ensure 'Booking expires' is empty</li>"
-            u"<li>For people paying online who have been stopped (e.g. due to having a custom discount or serious illness or child too young etc.), set to 'Manually approved' to allow them to book and pay</li>"
-            u"<li>If there are queries before it can be booked, set to 'Information complete'</li>"
-            u"</ul>"))
+                                    "<ul>"
+                                    "<li>To book, set to 'Booked' <b>and</b> ensure 'Booking expires' is empty</li>"
+                                    "<li>For people paying online who have been stopped (e.g. due to having a custom discount or serious illness or child too young etc.), set to 'Manually approved' to allow them to book and pay</li>"
+                                    "<li>If there are queries before it can be booked, set to 'Information complete'</li>"
+                                    "</ul>"))
 
     created = models.DateTimeField(default=timezone.now)
     booking_expires = models.DateTimeField(null=True, blank=True)

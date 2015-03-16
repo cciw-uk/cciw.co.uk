@@ -2,6 +2,7 @@ from datetime import date
 
 from django.shortcuts import render
 from django.http import Http404
+from django.utils.html import format_html, mark_safe
 
 from cciw.cciwmain.models import Camp
 from cciw.forums.models import Forum, Gallery, Photo
@@ -240,11 +241,11 @@ def oldcampphoto(request, year, galleryname, photonumber):
     return forums_views.photo(request, photo, ec, breadcrumb_extra)
 
 def camp_forum_breadcrumb(camp):
-    return [u'<a href="/camps/">Forums and photos</a>',
-            u'<a href="/camps/#year%d">%d</a>' % (camp.year, camp.year),
+    return [mark_safe('<a href="/camps/">Forums and photos</a>'),
+            format_html('<a href="/camps/#year{0}">{1}</a>', camp.year, camp.year),
             camp.get_link()]
 
 def year_forum_breadcrumb(year):
     # NB: 'year' may be a string like 'Ancient'
-    return [u'<a href="/camps/">Forums and photos</a>',
-            u'<a href="/camps/#year%s">%s</a>' % (year, utils.unslugify(str(year))) ]
+    return [mark_safe('<a href="/camps/">Forums and photos</a>'),
+            format_html('<a href="/camps/#year{0}">{1}</a>', year, utils.unslugify(str(year)))]

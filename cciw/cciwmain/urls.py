@@ -1,9 +1,12 @@
 from django.conf.urls import patterns, url
 from django.conf import settings
+from django.utils.html import mark_safe
 
 # Forums and news items are tightly integrated (read: tangled) into the main
 # site, and always have been, so URLs and some view code for forums are part of
 # the 'cciwmain' app rather than the 'forums' app.
+
+about_website_link = mark_safe('<a href="/website/">About website</a>')
 
 urlpatterns = \
 patterns('cciw.cciwmain.views',
@@ -60,13 +63,13 @@ patterns('cciw.cciwmain.views',
 
     # Misc website stuff
     (r'^website/forum/$', 'forums.topicindex', {'title': 'Website forum',
-        'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/add/$', 'forums.add_topic', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/add_news/$', 'forums.add_news', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/add_poll/$', 'forums.edit_poll', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
-    (r'^website/forum/edit_poll/(?P<poll_id>\d+)/$', 'forums.edit_poll', {'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+        'breadcrumb_extra': [about_website_link]}),
+    (r'^website/forum/add/$', 'forums.add_topic', {'breadcrumb_extra': [about_website_link]}),
+    (r'^website/forum/add_news/$', 'forums.add_news', {'breadcrumb_extra': [about_website_link]}),
+    (r'^website/forum/add_poll/$', 'forums.edit_poll', {'breadcrumb_extra': [about_website_link]}),
+    (r'^website/forum/edit_poll/(?P<poll_id>\d+)/$', 'forums.edit_poll', {'breadcrumb_extra': [about_website_link]}),
     (r'^website/forum/(?P<topicid>\d+)/$', 'forums.topic', {'title_start': 'Website forum',
-        'breadcrumb_extra': ['<a href="/website/">About website</a>']}),
+        'breadcrumb_extra': [about_website_link]}),
 
     # Awards
     url(r'^awards/$', 'awards.index'),

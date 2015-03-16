@@ -234,7 +234,7 @@ class MemberTag(BBTag):
         if len(node.children) == 0:
             return u''
         else:
-            member_name = escape(node.children[0].text.strip().replace(u" ", u""))
+            member_name = node.children[0].text.strip().replace(u" ", u"")
             if len(member_name) == 0:
                 return u''
             else:

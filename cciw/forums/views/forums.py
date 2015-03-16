@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render
 from django.conf import settings
@@ -8,6 +6,7 @@ from django.forms import widgets
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.safestring import mark_safe
+from django.utils.html import format_html, format_html_join
 
 from cciw.forums.models import Forum, Topic, Photo, Post, VoteInfo, NewsItem, Permission, Poll, PollOption
 from cciw.cciwmain.common import create_breadcrumb, get_order_option, object_list, CciwBaseView, AjaxFormValidation
@@ -21,31 +20,39 @@ from cciw.cciwmain import forms as cciwforms
 
 # Utility functions for breadcrumbs
 def topicindex_breadcrumb(forum):
-    return [u"Topics"]
+    return ["Topics"]
+
 
 def photoindex_breadcrumb(gallery):
-    return [u"Photos"]
+    return ["Photos"]
+
 
 def topic_breadcrumb(forum, topic):
-    return [u'<a href="%s">Topics</a>' % forum.get_absolute_url()]
+    return [format_html('<a href="{0}">Topics</a>', forum.get_absolute_url())]
+
 
 def photo_breadcrumb(gallery, photo):
-    prev_and_next = u''
+    prev_and_next = []
     try:
-        previous_photo = Photo.objects.filter(id__lt=photo.id, \
-            gallery__id__exact = photo.gallery_id).order_by('-id')[0]
-        prev_and_next += u'<a href="%s" title="Previous photo">&laquo;</a> ' % previous_photo.get_absolute_url()
+        previous_photo = Photo.objects.filter(id__lt=photo.id,
+                                              gallery__id__exact=photo.gallery_id).order_by('-id')[0]
+        prev_and_next.append(format_html('<a href="{0}" title="Previous photo">&laquo;</a> ',
+                                         previous_photo.get_absolute_url()))
     except IndexError:
-        prev_and_next += u'&laquo; '
+        prev_and_next.append(mark_safe('&laquo; '))
 
     try:
-        next_photo = Photo.objects.filter(id__gt=photo.id, \
-            gallery__id__exact = photo.gallery_id).order_by('id')[0]
-        prev_and_next += u'<a href="%s" title="Next photo">&raquo;</a> ' % next_photo.get_absolute_url()
+        next_photo = Photo.objects.filter(id__gt=photo.id,
+                                          gallery__id__exact=photo.gallery_id).order_by('id')[0]
+        prev_and_next.append(format_html('<a href="{0}" title="Next photo">&raquo;</a> ',
+                                         next_photo.get_absolute_url()))
     except IndexError:
-        prev_and_next += u'&raquo; '
+        prev_and_next.append(mark_safe('&raquo; '))
 
-    return [u'<a href="%s">Photos</a>' % gallery.get_absolute_url(), photo.id, prev_and_next]
+    return [format_html('<a href="{0}">Photos</a>', gallery.get_absolute_url()),
+            photo.id,
+            format_html_join('', '{0}', ((i,) for i in prev_and_next))]
+
 
 # Called directly as a view for /news/ and /website/forum/, and used by other views
 def topicindex(request, title=None, extra_context=None, forum=None,

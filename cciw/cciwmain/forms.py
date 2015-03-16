@@ -1,7 +1,6 @@
-from django.utils.html import escape
+from django.utils.html import escape, mark_safe
 from django.forms.forms import BoundField
 from django.utils.encoding import force_text
-from django.utils.safestring import mark_safe
 
 
 class CciwFormMixin(object):
@@ -10,41 +9,39 @@ class CciwFormMixin(object):
     normal_row_template = \
         '<div id="%(divid)s" class="%(class)s">%(errors_html)s' + \
         '<div class="field">%(label)s %(field)s%(help_text)s</div></div>'
-    error_row_template = u'<div class="userError">%s</div>'
-    errors_template = u'<div class="fieldMessages">%s</div>'
+    error_row_template = '<div class="userError">%s</div>'
+    errors_template = '<div class="fieldMessages">%s</div>'
 
+    help_text_html_template = ' %s'
 
-    help_text_html_template = u' %s'
+    div_normal_class = 'formrow'
+    div_error_class = 'formrow validationErrors'
 
-    div_normal_class = u'formrow'
-    div_error_class = u'formrow validationErrors'
-
-    start_template = u'<div class="form">'
-    end_template = u'</div>'
+    start_template = '<div class="form">'
+    end_template = '</div>'
 
     def as_p(self):
         "Returns this form rendered as HTML <p>s."
 
-        ## Remember to change cciwutils.js standardform_ functions if the
-        ## HTML here is changed
-        top_errors = self.non_field_errors() # Errors that should be displayed above all fields.
+        # Remember to change cciwutils.js standardform_ functions if the HTML
+        # here is changed
+        top_errors = self.non_field_errors()  # Errors that should be displayed above all fields.
         output, hidden_fields = [], []
         output.append(self.start_template)
         for name, field in self.fields.items():
             output.append(self.render_field(name, field, top_errors, hidden_fields))
         if top_errors:
             output.insert(0, self.error_row_template % top_errors)
-        if hidden_fields: # Insert any hidden fields in the last row.
+        if hidden_fields:  # Insert any hidden fields in the last row.
             str_hidden = u''.join(hidden_fields)
             output.append(str_hidden)
         output.append(self.end_template)
-        return mark_safe(u'\n'.join(output))
-
+        return mark_safe('\n'.join(output))
 
     def render_field(self, name, field, top_errors, hidden_fields, label_text=None):
         output = []
         bf = BoundField(self, field, name)
-        bf_errors = self.error_class([escape(error) for error in bf.errors]) # Escape and cache in local variable.
+        bf_errors = self.error_class([escape(error) for error in bf.errors])  # Escape and cache in local variable.
         if bf.is_hidden:
             if bf_errors:
                 top_errors.extend([u'(Hidden field %s) %s' % (name, force_text(e)) for e in bf_errors])
@@ -65,7 +62,7 @@ class CciwFormMixin(object):
                     if label_text[-1] not in ':?.!':
                         label_text += self.label_suffix
                 if field.required:
-                    label_attrs = {'class':'required'}
+                    label_attrs = {'class': 'required'}
                 else:
                     label_attrs = {}
                 label = bf.label_tag(label_text, attrs=label_attrs) or ''

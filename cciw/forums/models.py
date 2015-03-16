@@ -9,8 +9,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.core import mail
 from django.db import models
 from django.utils import timezone
-from django.utils.html import escape
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 
 from cciw.cciwmain import common
 from cciw.middleware import threadlocals
@@ -116,11 +115,11 @@ class Member(models.Model):
 
     def get_icon(self):
         user_name = self.user_name.strip()
-        if user_name.startswith(u"'"): # dummy user
-            return u''
+        if user_name.startswith("'"):  # dummy user
+            return ''
         else:
-            return mark_safe(u'<img src="%s%s/%s.png" class="userIcon" alt="icon" />'
-                             % (settings.MEDIA_URL, settings.MEMBER_ICON_PATH, user_name))
+            return format_html('<img src="{0}{1}/{2}.png" class="userIcon" alt="icon" />',
+                               settings.MEDIA_URL, settings.MEMBER_ICON_PATH, user_name)
 
     def new_messages(self):
         return self.messages_received.filter(box=Message.MESSAGE_BOX_INBOX).count()
@@ -500,13 +499,13 @@ class Topic(models.Model):
     all_objects = models.Manager()
 
     def __str__(self):
-        return  u"Topic: " + self.subject
+        return "Topic: " + self.subject
 
     def get_absolute_url(self):
         return self.forum.get_absolute_url() + str(self.id) + '/'
 
     def get_link(self):
-        return mark_safe(u'<a href="%s">%s</a>' % (self.get_absolute_url(), escape(self.subject)))
+        return format_html('<a href="{0}">{1}</a>', self.get_absolute_url(), self.subject)
 
     @staticmethod
     def create_topic(member, subject, forum, commit=True):

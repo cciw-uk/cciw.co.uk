@@ -15,7 +15,7 @@ from django.http import HttpResponse, Http404
 from django.template.response import TemplateResponse
 from django.utils import timezone
 from django.utils.decorators import classonlymethod
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html, format_html_join
 from frozendict import frozendict
 
 from cciw.cciwmain.utils import python_to_json
@@ -318,7 +318,7 @@ def get_order_option(order_options, request, default_order_by):
 
 
 def create_breadcrumb(links):
-    return mark_safe(u" :: ".join(map(str, links)))
+    return format_html_join(" :: ", "{0}", ((l,) for l in links))
 
 
 def standard_processor(request):
@@ -387,7 +387,7 @@ def get_member_href(user_name):
         # will make it die.
         return u''
     else:
-        return reverse('cciwmain.members.detail', kwargs={'user_name':user_name})
+        return reverse('cciwmain.members.detail', kwargs={'user_name': user_name})
 
 
 def get_member_link(user_name):
@@ -395,8 +395,8 @@ def get_member_link(user_name):
     if user_name.startswith(u"'"):
         return user_name
     else:
-        return mark_safe(u'<a title="Information about user \'%s\'" href="%s">%s</a>' % \
-               (user_name, get_member_href(user_name), user_name))
+        return format_html('<a title="Information about user \'{0}\'" href="{1}">{2}</a>',
+                           user_name, get_member_href(user_name), user_name)
 
 
 def get_current_domain():

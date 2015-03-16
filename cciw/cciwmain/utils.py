@@ -7,15 +7,28 @@ For CCIW specific utilities see cciw.cciwmain.common
 from datetime import date
 import json
 import fcntl
+import re
 
 from django.core.validators import validate_email, ValidationError
 from django.utils.safestring import mark_safe
 from django.utils.functional import Promise
-from django.utils.encoding import force_text
+from django.utils.html import format_html, mark_safe, format_html_join
+
 
 def obfuscate_email(email):
-    safe_email = email.replace('@', ' <b>at</b> ').replace('.', ' <b>dot</b> ')
-    return mark_safe("<span style='text-decoration: underline;'>%s</span>" % safe_email)
+    parts = re.split("([@|\.])", email)
+    output_parts = []
+    for p in parts:
+        if p == "@":
+            output_parts.append(mark_safe(' <b>at</b> '))
+        elif p == '.':
+            output_parts.append(mark_safe(' <b>dot</b> '))
+        else:
+            output_parts.append(p)
+
+    safe_email = format_html_join('', '{0}', ((p,) for p in output_parts))
+    return format_html("<span style='text-decoration: underline;'>{0}</span>", safe_email)
+
 
 def modified_query_string(request, dict, fragment=''):
     """Returns the query string represented by request, with key-value pairs

@@ -298,7 +298,7 @@ class MemberPosts(ListView, FeedHandler, CciwBaseView):
         context = {
             'member': member,
             'breadcrumb': create_breadcrumb([get_member_link(user_name),
-                                             u'Recent posts']),
+                                             'Recent posts']),
             'atom_feed_title': u"Atom feed for posts from %s" % member.user_name,
         }
         self.context.update(context)

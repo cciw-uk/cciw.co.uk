@@ -3,7 +3,7 @@ from datetime import date
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 
 from cciw.cciwmain import signals
 
@@ -123,10 +123,10 @@ class Camp(models.Model):
         return u"Camp %d, year %d" % (self.number, self.year)
 
     def get_link(self):
-        return mark_safe(u"<a href='%s'>%s</a>" % (self.get_absolute_url(), self.nice_name))
+        return format_html(u"<a href='{0}'>{1}</a>", self.get_absolute_url(), self.nice_name)
 
     def get_absolute_url(self):
-        return u"/camps/%d/%d/" % (self.year, self.number)
+        return "/camps/{0}/{1}/".format(self.year, self.number)
 
     def is_past(self):
         return self.end_date <= date.today()

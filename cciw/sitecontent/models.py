@@ -1,5 +1,6 @@
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.common import standard_subs
@@ -45,15 +46,16 @@ class HtmlChunk(models.Model):
     def render(self, request):
         """Render the HTML chunk as HTML, with replacements
         made and any member specific adjustments."""
-        html = standard_subs(self.html)
+        html = mark_safe(standard_subs(self.html))
         user = threadlocals.get_current_user()
         if user and not user.is_anonymous() and user.is_staff \
             and user.has_perm('sitecontent.change_htmlchunk'):
-            html += (u"""<div class="editChunkLink">&laquo;
-                        <a href="%s">Edit %s</a> &raquo;
-                        </div>""" % (reverse("admin:sitecontent_htmlchunk_change", args=[self.name]),
-                                     self.name))
-        return mark_safe(html)
+            html += format_html("""<div class="editChunkLink">&laquo;
+                                <a href="{0}">Edit {1}</a> &raquo;
+                                </div>""",
+                                reverse("admin:sitecontent_htmlchunk_change", args=[self.name]),
+                                self.name)
+        return html
 
     class Meta:
         verbose_name = "HTML chunk"
