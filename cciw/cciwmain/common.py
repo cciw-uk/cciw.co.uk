@@ -16,6 +16,7 @@ from django.template.response import TemplateResponse
 from django.utils import timezone
 from django.utils.decorators import classonlymethod
 from django.utils.safestring import mark_safe
+from frozendict import frozendict
 
 from cciw.cciwmain.utils import python_to_json
 import cciw.middleware.threadlocals as threadlocals
@@ -43,7 +44,6 @@ class View(object):
             self.request = request
             self.args = args
             self.kwargs = kwargs
-            self.context = {}
             if hasattr(self, 'pre_handle'):
                 response = self.pre_handle(request, *args, **kwargs)
                 if response is not None:
@@ -58,7 +58,17 @@ class View(object):
         return view
 
 
-class TemplateView(View):
+class TemplateMeta(type):
+    def __new__(cls, name, bases, namespace):
+        m_c = namespace.get('magic_context', None)
+        if m_c is not None and not callable(m_c):
+            # Make sure it is immutable, to prevent accidental changes by
+            # methods.
+            namespace['magic_context'] = frozendict(m_c)
+        return type.__new__(cls, name, bases, namespace)
+
+
+class TemplateView(View, metaclass=TemplateMeta):
     """
     View that provides utilities to render to an HTML template,
     with utilities for collecting context data.
@@ -66,6 +76,10 @@ class TemplateView(View):
     template_name = None
     response_class = TemplateResponse
     content_type = "text/html"
+
+    def __init__(self, **kwargs):
+        super(TemplateView, self).__init__(**kwargs)
+        self.context = {}
 
     def get_magic_context(self):
         """
