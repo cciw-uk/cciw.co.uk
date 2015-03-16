@@ -1,10 +1,11 @@
 /******************* COLOURS *******************/
 /*
   Primary Color:
-  00B64F	22884F	007633	(37DA7E) BACB97
+  007633 22884F		(37DA7E) BACB97
+
 
 Secondary Color A:
-FF8900	BF7D30	A65900	FFA640	FFBE73
+A65900
 
 */
 
@@ -37,8 +38,6 @@ a:visited {
     font-weight: bold;
 }
 a:hover {
-    font-weight: bold;
-    color: #00b64f;
     text-decoration: underline;
 }
 
@@ -48,6 +47,9 @@ a:hover {
 
 @primaryColor: #007633;
 @primaryColorLighter: #BACB97;
+
+@secondaryColor: #A65900;
+
 
 @headerColor: #444;
 
@@ -218,7 +220,7 @@ a:hover {
 
 h2
 {
-    border-bottom: 2px solid #a65900;
+    border-bottom: 2px solid @secondaryColor;
 }
 
 
@@ -348,7 +350,7 @@ div.newsItem h2
 /* Posts */
 .postMessage blockquote
 {
-    border-left: 2px solid #00b64f;
+    border-left: 2px solid @primaryColor;
     background-color: @primaryColorLighter;
 }
 .postMessage .memberquote
@@ -363,13 +365,13 @@ table.topheaders tr.selected td
 
 .messagePreview
 {
-    border: 1px solid #00b64f;
+    border: 1px solid @primaryColor;
     background-color: #f8fff8;
 }
 
 .individualPost .postMessage
 {
-    border: 1px solid #00b64f;
+    border: 1px solid @primaryColor;
     padding: 4px;
     background-color: #f8fff8;
 }
