@@ -6,18 +6,20 @@
     {% endif %}
   </div>
   <nav>
-    <ul>
-      {% for name, caption, is_link, url, msg in stages %}
-        <li>
-          {% if is_link and name != current_stage %}
-            <a href="{{ url }}">{{ caption }}</a>
-          {% elif name == current_stage %}
-            <span class="active">{{ caption }}</span>
-          {% else %}
-            <span title="{{ msg }}">{{ caption }}</span>
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
+    {% spaceless %}
+      <ul>
+        {% for name, caption, is_link, url, msg in stages %}
+          <li>
+            {% if is_link and name != current_stage %}
+              <a href="{{ url }}">{{ caption }}</a>
+            {% elif name == current_stage %}
+              <span class="active">{{ caption }}</span>
+            {% else %}
+              <span title="{{ msg }}">{{ caption }}</span>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endspaceless %}
   </nav>
 </div>
