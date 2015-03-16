@@ -225,45 +225,45 @@ def object_list(request, queryset, extra_context=None,
                 template_name='', paginate_by=None,
                 list_name='object_list',
                 ):
-        if paginate_by:
-            paginator = Paginator(queryset, paginate_by, orphans=0,
-                                  allow_empty_first_page=True)
+    if paginate_by:
+        paginator = Paginator(queryset, paginate_by, orphans=0,
+                              allow_empty_first_page=True)
 
-            page = request.GET.get('page') or 1
-            try:
-                page_number = int(page)
-            except ValueError:
-                if page == 'last':
-                    page_number = paginator.num_pages
-                else:
-                    raise Http404("Page is not 'last', nor can it be converted to an int.")
+        page = request.GET.get('page') or 1
+        try:
+            page_number = int(page)
+        except ValueError:
+            if page == 'last':
+                page_number = paginator.num_pages
+            else:
+                raise Http404("Page is not 'last', nor can it be converted to an int.")
 
-            try:
-                page = paginator.page(page_number)
-            except InvalidPage as e:
-                raise Http404('Invalid page (%(page_number)s): %(message)s' % {
-                    'page_number': page_number,
-                    'message': str(e)
-                })
-            context = {
-                'paginator': paginator,
-                'page_obj': page,
-                'is_paginated': page.has_other_pages(),
-                list_name: page.object_list,
-            }
-        else:
-            context = {
-                'paginator': None,
-                'page_obj': None,
-                'is_paginated': False,
-                list_name: queryset,
-            }
-        context.update(extra_context)
-        return TemplateResponse(
-            request=request,
-            template=[template_name],
-            context=context,
-        )
+        try:
+            page = paginator.page(page_number)
+        except InvalidPage as e:
+            raise Http404('Invalid page (%(page_number)s): %(message)s' % {
+                'page_number': page_number,
+                'message': str(e)
+            })
+        context = {
+            'paginator': paginator,
+            'page_obj': page,
+            'is_paginated': page.has_other_pages(),
+            list_name: page.object_list,
+        }
+    else:
+        context = {
+            'paginator': None,
+            'page_obj': None,
+            'is_paginated': False,
+            list_name: queryset,
+        }
+    context.update(extra_context)
+    return TemplateResponse(
+        request=request,
+        template=[template_name],
+        context=context,
+    )
 
 
 _thisyear = None
