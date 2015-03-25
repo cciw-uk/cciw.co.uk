@@ -203,6 +203,7 @@ from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, P
 
 BOOKING_COOKIE_SALT = 'cciw.bookings.BookingAccount cookie'
 
+
 def set_booking_account_cookie(response, account):
     response.set_signed_cookie('bookingaccount', account.id,
                                salt=BOOKING_COOKIE_SALT,
@@ -295,7 +296,7 @@ class BookingIndex(CciwBaseView):
             # Show last year's prices
             prices = Price.objects.filter(year=year - 1)
 
-        prices = list(prices.filter(price_type__in=[v for v,d in REQUIRED_PRICE_TYPES]))
+        prices = list(prices.filter(price_type__in=[v for v, d in REQUIRED_PRICE_TYPES]))
         context['booking_open'] = booking_open
         if len(prices) >= len(REQUIRED_PRICE_TYPES):
             getp = lambda v: [p for p in prices if p.price_type == v][0].price
@@ -346,8 +347,8 @@ class BookingStart(BookingLogInBase):
                     # Ensure we use NULLs, not empty strings, or we will not be able to
                     # create more than one, as they will have same 'name and post_code'
                     account = BookingAccount.objects.create(email=email,
-                                                    name=None,
-                                                    post_code=None)
+                                                            name=None,
+                                                            post_code=None)
                 send_verify_email(self.request, account)
                 return HttpResponseRedirect(reverse_lazy('cciw.bookings.views.email_sent'))
         else:
@@ -387,8 +388,8 @@ def verify_email_and_start(request, account_id, token):
         account.last_login = now
         account.save()
 
-        if last_login is not None and (now - last_login) > \
-                timedelta(30*6): # six months
+        if last_login is not None and (
+                (now - last_login) > timedelta(30 * 6)):  # six months
             resp = HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
             set_booking_account_cookie(resp, account)
             messages.info(request, "Welcome back! Please check and update your account details")
@@ -485,7 +486,7 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
         else:
             form = self.form_class(instance=booking)
 
-        c = {'form':form,
+        c = {'form': form,
              'early_bird_available': early_bird_is_available(year, now),
              'early_bird_date': get_early_bird_cutoff_date(year),
              'price_early_bird_discount': lambda: Price.objects.get(year=year, price_type=PRICE_EARLY_BIRD_DISCOUNT).price,
@@ -614,7 +615,6 @@ def booking_problems_json(request):
     except KeyError:
         pass
 
-
     if 'booking_id' in data:
         booking_obj = Booking.objects.get(id=int(data['booking_id']))
         form = BookingAdminForm(data, instance=booking_obj)
@@ -653,7 +653,7 @@ def place_availability_json(request):
 @csrf_exempt
 @json_response
 def get_expected_amount_due(request):
-    fail = {'status':'success',
+    fail = {'status': 'success',
             'amount': None}
     try:
         # If we use a form to construct an object, we won't get pass
@@ -669,7 +669,7 @@ def get_expected_amount_due(request):
         b.camp_id = int(request.POST['camp'])
         b.early_bird_discount = 'early_bird_discount' in request.POST
 
-    except (ValueError, KeyError): # not a valid price_type/camp, data missing
+    except (ValueError, KeyError):  # not a valid price_type/camp, data missing
         return fail
     try:
         amount = b.expected_amount_due()
@@ -677,7 +677,7 @@ def get_expected_amount_due(request):
         return fail
 
     if amount is not None:
-        amount = str(amount) # convert decimal
+        amount = str(amount)  # convert decimal
     return {'status': 'success',
             'amount': amount}
 
@@ -726,7 +726,7 @@ class BookingListBookings(CciwBaseView):
 
             def edit(place):
                 return HttpResponseRedirect(reverse('cciw.bookings.views.edit_place',
-                                                    kwargs={'id':str(place.id)}))
+                                                    kwargs={'id': str(place.id)}))
 
             for k in request.POST.keys():
                 # handle shelve and unshelve buttons
@@ -743,8 +743,8 @@ class BookingListBookings(CciwBaseView):
                             retval = action(place)
                             if retval is not None:
                                 return retval
-                        except (ValueError, # converting to string
-                                IndexError, # not in list
+                        except (ValueError,  # converting to string
+                                IndexError,  # not in list
                                 ):
                             pass
 
@@ -823,15 +823,15 @@ def mk_paypal_form(account, balance, protocol, domain):
         "amount": str(balance),
         "item_name": u"Camp place booking",
         "invoice": "%s-%s-%s" % (account.id, balance,
-                                 timezone.now()), # We don't need this, but must be unique
-        "notify_url":  "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
+                                 timezone.now()),  # We don't need this, but must be unique
+        "notify_url": "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
         "return_url": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_done')),
         "cancel_return": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_cancelled')),
         "custom": "account:%s;" % str(account.id),
         "currency_code": "GBP",
         "no_note": "1",
         "no_shipping": "1",
-        }
+    }
     return PayPalPaymentsForm(initial=paypal_dict)
 
 
@@ -914,6 +914,6 @@ add_place = booking_account_required(account_details_required(BookingAddPlace.as
 edit_place = booking_account_required(account_details_required(BookingEditPlace.as_view()))
 list_bookings = booking_account_required(BookingListBookings.as_view())
 pay = booking_account_required(BookingPay.as_view())
-pay_done = csrf_exempt(BookingPayDone.as_view()) # PayPal will post to this, need csrf_exempt
-pay_cancelled = csrf_exempt(BookingPayCancelled.as_view()) # PayPal will post to this
+pay_done = csrf_exempt(BookingPayDone.as_view())  # PayPal will post to this, need csrf_exempt
+pay_cancelled = csrf_exempt(BookingPayCancelled.as_view())  # PayPal will post to this
 account_overview = booking_account_required(BookingAccountOverview.as_view())

@@ -5,6 +5,7 @@ from dateutil.relativedelta import relativedelta
 
 from cciw.bookings.models import Booking, Payment
 
+
 def format_address(*args):
     return u'\n'.join(arg.strip() for arg in args)
 
@@ -69,7 +70,6 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                     ('Date of birth', lambda b: b.date_of_birth)
                     ]
 
-
     spreadsheet.add_sheet_with_header_row("Birthdays on camp",
                                           [n for n, f in bday_columns],
                                           [[f(b) for n, f in bday_columns]
@@ -93,7 +93,7 @@ def year_bookings_to_spreadsheet(year, spreadsheet):
         ('State', lambda b: b.get_state_display()),
         ('Confirmed', lambda b: b.is_confirmed),
         ('Date created', lambda b: b.created),
-        ]
+    ]
 
     spreadsheet.add_sheet_with_header_row("All bookings",
                                           [n for n, f in columns],
@@ -139,7 +139,7 @@ def payments_to_spreadsheet(date_start, date_end, spreadsheet):
         ('Amount', lambda p: p.amount),
         ('Date', lambda p: p.created),
         ('Type', get_payment_type),
-        ]
+    ]
 
     spreadsheet.add_sheet_with_header_row("Payments",
                                           [n for n, f in columns],
@@ -153,7 +153,7 @@ def addresses_for_mailing_list(year, spreadsheet):
     # to generate the mailing list for the given year.
     bookings = (Booking.objects
                 .filter(camp__year=year - 1)
-                .order_by('account') # for easy duplicate elimination
+                .order_by('account')  # for easy duplicate elimination
                 .select_related('account')
                 )
 
@@ -188,7 +188,7 @@ def addresses_for_mailing_list(year, spreadsheet):
                                  b.post_code,
                                  b.get_contact_email(),
                                  1])
-    rows.sort() # first column (Name) alphabetical
+    rows.sort()  # first column (Name) alphabetical
 
     spreadsheet.add_sheet_with_header_row("Addresses",
                                           headers,
