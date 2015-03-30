@@ -35,7 +35,7 @@ six==1.6.1
 -e git+https://github.com/mariocesar/sorl-thumbnail@007156ba3428ce02a92dcd9cce03a4803225ea66#egg=sorl.thumbnail
 sqlparse==0.1.10
 waitress==0.8.8
--e git://github.com/spookylukey/django-wiki@53660665bcd9aecea2a8b38f92bed9a75480141f#egg=wiki-dev
+-e git://github.com/spookylukey/django-wiki@f2594c7ad2ef3596222ae38a91af148db4139631#egg=wiki-dev
 xlrd==0.9.2
 xlwt-future==0.8.0
 zc.lockfile==1.0.0
