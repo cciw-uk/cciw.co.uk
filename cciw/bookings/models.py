@@ -41,7 +41,7 @@ BOOKING_PLACE_PRICE_TYPES = [
 ]
 
 # Price types that are used by Price model
-VALUED_PRICE_TYPES = [(v,d) for (v,d) in BOOKING_PLACE_PRICE_TYPES if v is not PRICE_CUSTOM] + \
+VALUED_PRICE_TYPES = [(v, d) for (v, d) in BOOKING_PLACE_PRICE_TYPES if v is not PRICE_CUSTOM] + \
     [(PRICE_SOUTH_WALES_TRANSPORT, 'South wales transport surcharge (pre 2015)'),
      (PRICE_DEPOSIT, 'Deposit'),
      (PRICE_EARLY_BIRD_DISCOUNT, 'Early bird discount'),
@@ -49,7 +49,7 @@ VALUED_PRICE_TYPES = [(v,d) for (v,d) in BOOKING_PLACE_PRICE_TYPES if v is not P
 
 # From 2015 onwards, we don't have South Wales transport. But we might
 # want to keep info about prices etc. for a few years.
-REQUIRED_PRICE_TYPES = [(v,d) for (v,d) in VALUED_PRICE_TYPES if v != PRICE_SOUTH_WALES_TRANSPORT]
+REQUIRED_PRICE_TYPES = [(v, d) for (v, d) in VALUED_PRICE_TYPES if v != PRICE_SOUTH_WALES_TRANSPORT]
 
 
 BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_HALF_REFUND, BOOKING_CANCELLED_FULL_REFUND, = range(0, 6)
@@ -83,7 +83,6 @@ class Price(models.Model):
     def __str__(self):
         return u"%s %s - %s" % (self.get_price_type_display(), self.year, self.price)
 
-
     @classmethod
     def get_deposit_prices(cls, years=None):
         q = Price.objects.filter(price_type=PRICE_DEPOSIT)
@@ -102,10 +101,10 @@ class BookingAccountManager(models.Manager):
         # owe money.
         potentials = (
             self.get_queryset()
-            .only('id','total_received')
+            .only('id', 'total_received')
             .annotate(total_amount_due=models.Sum('bookings__amount_due'))
             .exclude(total_amount_due=models.F('total_received'))
-            )
+        )
         retval = []
         for account in potentials:
             balance_due = account.get_balance(confirmed_only=True,
@@ -397,7 +396,6 @@ class BookingQuerySet(models.QuerySet):
 
             return retval
 
-
         cancelled = self.filter(state__in=[BOOKING_CANCELLED,
                                            BOOKING_CANCELLED_HALF_REFUND])
         retval = cancelled | (self.confirmed() if confirmed_only else self.booked())
@@ -430,7 +428,7 @@ class BookingQuerySet(models.QuerySet):
         qs_too_young = qs.extra(where=[
             """ "bookings_booking"."date_of_birth" > """
             """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."minimum_age") as text) || '-08-31')"""
-            ])
+        ])
         qs_too_old = qs.extra(where=[
             """ "bookings_booking"."date_of_birth" <= """
             """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."maximum_age" - 1) as text) || '-08-31')"""
@@ -480,7 +478,7 @@ class Booking(models.Model):
     gp_phone_number = models.CharField("GP phone number", max_length=22)
 
     # Medical details - from user
-    medical_card_number = models.CharField(max_length=100) # no idea how long it should be
+    medical_card_number = models.CharField(max_length=100)  # no idea how long it should be
     last_tetanus_injection = models.DateField(null=True, blank=True)
     allergies = models.TextField(blank=True)
     regular_medication_required = models.TextField(blank=True)
@@ -500,8 +498,8 @@ class Booking(models.Model):
     amount_due = models.DecimalField(decimal_places=2, max_digits=10)
 
     # State - user driven
-    shelved = models.BooleanField(default=False, help_text=
-                                  u"Used by user to put on 'shelf'")
+    shelved = models.BooleanField(default=False,
+                                  help_text="Used by user to put on 'shelf'")
 
     # State - internal
     state = models.IntegerField(choices=BOOKING_STATES,
@@ -516,21 +514,19 @@ class Booking(models.Model):
     booking_expires = models.DateTimeField(null=True, blank=True)
     created_online = models.BooleanField(blank=True, default=False)
 
-
     objects = BookingManager()
 
     # Methods
 
     def __str__(self):
         return u"%s, %s-%s, %s" % (self.name, self.camp.year, self.camp.number,
-                                  self.account)
-
+                                   self.account)
 
     @property
     def name(self):
         return u"%s %s" % (self.first_name, self.last_name)
 
-    ### Main business rules here ###
+    # Main business rules here
     @property
     def is_booked(self):
         return self.state == BOOKING_BOOKED
@@ -756,7 +752,6 @@ class Booking(models.Model):
                             u"called '%s' on camp %d. Please ensure you don't book multiple "
                             u"places for the same camper!" % (self.name, self.camp.number))
 
-
         if self.price_type == PRICE_FULL:
             full_pricers = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()\
                 .filter(price_type=PRICE_FULL).order_by('first_name', 'last_name')
@@ -786,7 +781,7 @@ class Booking(models.Model):
                 else:
                     warning += (u"If %s are from the same family, %d are eligible "
                                 u"for the 3rd child discount." % (pretty_names,
-                                                                 len(names) - 1))
+                                                                  len(names) - 1))
 
                 warnings.append(warning)
 
@@ -842,7 +837,7 @@ def book_basket_now(bookings):
             b.early_bird_discount = b.can_have_early_bird_discount()
             b.auto_set_amount_due()
             b.state = BOOKING_BOOKED
-            b.booking_expires = now + timedelta(1) # 24 hours
+            b.booking_expires = now + timedelta(1)  # 24 hours
             b.save()
 
         # In some cases we may have enough money to pay for places from money in
@@ -863,6 +858,7 @@ def book_basket_now(bookings):
 def get_early_bird_cutoff_date(year):
     # 1st May
     return timezone.get_default_timezone().localize(datetime(year, 5, 1))
+
 
 def early_bird_is_available(year, booked_at_date):
     return booked_at_date < get_early_bird_cutoff_date(year)
