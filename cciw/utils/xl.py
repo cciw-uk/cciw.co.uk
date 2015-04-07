@@ -52,12 +52,12 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
                         val = timezone.make_naive(val, UTC)
             else:
                 style = normal_style
-                if isinstance(val, str) and u'\n' in val:
+                if isinstance(val, str) and '\n' in val:
                     # This is needed or Excel displays box character for
                     # newlines.
                     style = wrapped_style
                     # Set height to be able to see all lines
-                    row_height = max(row_height, normal_style.font.height * (val.count(u'\n') + 1))
+                    row_height = max(row_height, normal_style.font.height * (val.count('\n') + 1))
             wksh.write(r + 1, c, val, style=style)
         wksh.rows[r + 1].height = row_height + 100 # fudge for margin, based on OpenOffice
 

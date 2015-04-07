@@ -7,7 +7,7 @@ class UserAutocomplete(autocomplete_light.AutocompleteModelBase):
     search_fields = ['^first_name', '^last_name']
 
     def choice_label(self, user):
-        return u"%s %s <%s>" % (user.first_name, user.last_name, user.email)
+        return "%s %s <%s>" % (user.first_name, user.last_name, user.email)
 
     def choices_for_request(self):
         request = self.request

@@ -21,8 +21,8 @@ tests = (
         '<ul>\n<li>Newlines not discarded, or converted when brs would be illegal</li></ul>'),
     ('[quote]\nNewlines not discarded at beginning of quote',
         '<blockquote>\n<div>Newlines not discarded at beginning of quote</div></blockquote>'),
-    (u'[list]Text in root of list tag is moved outside[*]and put in a div é[/list]',
-        u'<div>Text in root of list tag is moved outside<ul><li>and put in a div é</li></ul></div>'),
+    ('[list]Text in root of list tag is moved outside[*]and put in a div é[/list]',
+        '<div>Text in root of list tag is moved outside<ul><li>and put in a div é</li></ul></div>'),
     (':-) :bosh:',
         '<div><img src="' + bbcode.EMOTICONS_ROOT + 'smile.gif" alt=":-)" /> <img src="' + bbcode.EMOTICONS_ROOT + 'mallet1.gif" alt=":bosh:" /></div>' ),
     ('0:-)',
@@ -54,15 +54,15 @@ tests = (
     ('[emoticon]hello[/emoticon]',
         '<div></div>'),
     # escaping:
-    (u'[[b]] [[/b]] [[quote=fooé]] [[[b]]]',
-        u'<div>[b] [/b] [quote=fooé] [[b]]</div>'),
+    ('[[b]] [[/b]] [[quote=fooé]] [[[b]]]',
+        '<div>[b] [/b] [quote=fooé] [[b]]</div>'),
     # text that is accidentally similar to escaping:
     ('[[b]Just some bold text in square brackets[/b]]',
         '<div>[<b>Just some bold text in square brackets</b>]</div>'),
 
     # non-existant tags come through as literals
-    (u'[nonéxistanttag]',
-        u'<div>[nonéxistanttag]</div>'),
+    ('[nonéxistanttag]',
+        '<div>[nonéxistanttag]</div>'),
     # empty string should return nothing
     ('',
         ''),

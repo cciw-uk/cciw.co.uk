@@ -106,13 +106,13 @@ class Camp(models.Model):
             leaders.append(chaplain)
 
         leadertext = self._format_leaders(leaders)
-        return u"%s-%s (%s)" % (self.year, self.number, leadertext)
+        return "%s-%s (%s)" % (self.year, self.number, leadertext)
 
     def _format_leaders(self, ls):
         if len(ls) > 0:
-            return u", ".join(str(l) for l in ls)
+            return ", ".join(str(l) for l in ls)
         else:
-            return u""
+            return ""
 
     @property
     def leaders_formatted(self):
@@ -120,10 +120,10 @@ class Camp(models.Model):
 
     @property
     def nice_name(self):
-        return u"Camp %d, year %d" % (self.number, self.year)
+        return "Camp %d, year %d" % (self.number, self.year)
 
     def get_link(self):
-        return format_html(u"<a href='{0}'>{1}</a>", self.get_absolute_url(), self.nice_name)
+        return format_html("<a href='{0}'>{1}</a>", self.get_absolute_url(), self.nice_name)
 
     def get_absolute_url(self):
         return "/camps/{0}/{1}/".format(self.year, self.number)

@@ -172,7 +172,7 @@ class Application(models.Model):
             submitted = "submitted " + self.date_submitted.strftime("%Y-%m-%d")
         else:
             submitted = "incomplete"
-        return u"Application from %s (%s)" % (self.full_name, submitted)
+        return "Application from %s (%s)" % (self.full_name, submitted)
 
     def _ref(self, num):
         return self.reference_set.get_or_create(referee_number=num)[0]
@@ -215,9 +215,9 @@ class Reference(models.Model):
         refnum = int(self.referee_number)
 
         if refnum not in (1,2):
-            return u"<Reference improperly created>"
+            return "<Reference improperly created>"
         referee_name = app.referees[refnum - 1].name
-        return u"For %s %s | From %s | %s" % (app.officer.first_name,
+        return "For %s %s | From %s | %s" % (app.officer.first_name,
                                               app.officer.last_name,
                                               referee_name,
                                               app.date_submitted.strftime('%Y-%m-%d'))
@@ -294,13 +294,13 @@ class ReferenceForm(models.Model):
 
     def _get_applicant_name(self):
         o = self.reference_info.application.officer
-        return u"%s %s" % (o.first_name, o.last_name)
+        return "%s %s" % (o.first_name, o.last_name)
 
     applicant_name = property(_get_applicant_name)
 
     def __str__(self):
         officer = self.reference_info.application.officer
-        return u"Reference form for %s %s by %s" % (officer.first_name, officer.last_name, self.referee_name)
+        return "Reference form for %s %s by %s" % (officer.first_name, officer.last_name, self.referee_name)
 
     def save(self, *args, **kwargs):
         retval = super(ReferenceForm, self).save(*args, **kwargs)
@@ -330,7 +330,7 @@ class Invitation(models.Model):
     objects = InvitationManager()
 
     def __str__(self):
-        return u"%s %s — camp %s" % (self.officer.first_name, self.officer.last_name, self.camp)
+        return "%s %s — camp %s" % (self.officer.first_name, self.officer.last_name, self.camp)
 
 
     class Meta:

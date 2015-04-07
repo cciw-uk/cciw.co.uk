@@ -275,7 +275,7 @@ is_booking_open_thisyear = lambda: is_booking_open(get_thisyear())
 # Views
 
 class BookingIndex(CciwBaseView):
-    metadata_title = u"Booking"
+    metadata_title = "Booking"
     template_name = "cciw/bookings/index.html"
 
     def handle(self, request):
@@ -324,7 +324,7 @@ def next_step(account):
 
 
 class BookingLogInBase(CciwBaseView):
-    metadata_title = u"Booking - log in"
+    metadata_title = "Booking - log in"
     magic_context = {'stage': 'login'}
 
 
@@ -397,7 +397,7 @@ def verify_email_and_start(request, account_id, token):
 
         resp = next_step(account)
         set_booking_account_cookie(resp, account)
-        messages.info(request, u"Logged in!")
+        messages.info(request, "Logged in!")
         return resp
 
     return verify_email(request, account_id, token,
@@ -415,17 +415,17 @@ def verify_email_and_pay(request, account_id, token):
 
 
 class BookingVerifyEmailFailed(BookingLogInBase):
-    metadata_title = u"Booking - account email verification failed"
+    metadata_title = "Booking - account email verification failed"
     template_name = "cciw/bookings/email_verification_failed.html"
 
 
 class BookingNotLoggedIn(CciwBaseView):
-    metadata_title = u"Booking - not logged in"
+    metadata_title = "Booking - not logged in"
     template_name = "cciw/bookings/not_logged_in.html"
 
 
 class BookingAccountDetails(CciwBaseView, AjaxFormValidation):
-    metadata_title = u"Booking - account details"
+    metadata_title = "Booking - account details"
     form_class = AccountDetailsForm
     template_name = 'cciw/bookings/account_details.html'
     magic_context = {'stage': 'account'}
@@ -435,7 +435,7 @@ class BookingAccountDetails(CciwBaseView, AjaxFormValidation):
             form = self.form_class(request.POST, instance=self.request.booking_account)
             if form.is_valid():
                 form.save()
-                messages.info(self.request, u'Account details updated, thank you.')
+                messages.info(self.request, 'Account details updated, thank you.')
                 return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
         else:
             form = self.form_class(instance=self.request.booking_account)
@@ -481,7 +481,7 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
                     form.instance.created_online = True
                 form.save()
 
-                messages.info(self.request, u'Details for "%s" were saved successfully' % form.instance.name)
+                messages.info(self.request, 'Details for "%s" were saved successfully' % form.instance.name)
                 return HttpResponseRedirect(reverse('cciw.bookings.views.list_bookings'))
         else:
             form = self.form_class(instance=booking)
@@ -497,11 +497,11 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
 
 
 class BookingAddPlace(BookingEditAddBase):
-    metadata_title = u"Booking - add new camper details"
+    metadata_title = "Booking - add new camper details"
 
 
 class BookingEditPlace(BookingEditAddBase):
-    metadata_title = u"Booking - edit camper details"
+    metadata_title = "Booking - edit camper details"
 
 
 # Public attributes - i.e. that the account holder is allowed to see
@@ -685,7 +685,7 @@ def get_expected_amount_due(request):
 def make_state_token(bookings):
     # Hash some key data about booking, without which the booking isn't valid.
     bookings.sort(key=lambda b: b.id)
-    data = u'|'.join([u':'.join(map(str, [b.id, b.camp.id, b.amount_due, b.name, b.price_type, b.state]))
+    data = '|'.join([':'.join(map(str, [b.id, b.camp.id, b.amount_due, b.name, b.price_type, b.state]))
                      for b in bookings])
     return salted_hmac('cciw.bookings.state_token', data.encode('utf-8')).hexdigest()
 
@@ -713,15 +713,15 @@ class BookingListBookings(CciwBaseView):
             def shelve(place):
                 place.shelved = True
                 place.save()
-                messages.info(request, u'Place for "%s" moved to shelf' % place.name)
+                messages.info(request, 'Place for "%s" moved to shelf' % place.name)
 
             def unshelve(place):
                 place.shelved = False
                 place.save()
-                messages.info(request, u'Place for "%s" moved to basket' % place.name)
+                messages.info(request, 'Place for "%s" moved to basket' % place.name)
 
             def delete(place):
-                messages.info(request, u'Place for "%s" deleted' % place.name)
+                messages.info(request, 'Place for "%s" deleted' % place.name)
                 place.delete()
 
             def edit(place):
@@ -751,15 +751,15 @@ class BookingListBookings(CciwBaseView):
             if 'book_now' in request.POST:
                 state_token = request.POST.get('state_token', '')
                 if make_state_token(basket_bookings) != state_token:
-                    messages.error(request, u"Places were not booked due to modifications made "
-                                   u"to the details. Please check the details and try again.")
+                    messages.error(request, "Places were not booked due to modifications made "
+                                   "to the details. Please check the details and try again.")
                 else:
                     if book_basket_now(basket_bookings):
-                        messages.info(request, u"Places booked!")
+                        messages.info(request, "Places booked!")
                         return HttpResponseRedirect(reverse('cciw.bookings.views.pay'))
                     else:
-                        messages.error(request, u"These places cannot be booked for the reasons "
-                                       u"given below.")
+                        messages.error(request, "These places cannot be booked for the reasons "
+                                       "given below.")
             # Start over, because things may have changed.
             return HttpResponseRedirect(request.path)
 
@@ -821,7 +821,7 @@ def mk_paypal_form(account, balance, protocol, domain):
     paypal_dict = {
         "business": settings.PAYPAL_RECEIVER_EMAIL,
         "amount": str(balance),
-        "item_name": u"Camp place booking",
+        "item_name": "Camp place booking",
         "invoice": "%s-%s-%s" % (account.id, balance,
                                  timezone.now()),  # We don't need this, but must be unique
         "notify_url": "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
@@ -872,17 +872,17 @@ class BookingPay(BookingPayBase):
 
 
 class BookingPayDone(BookingPayBase):
-    metadata_title = u"Booking - payment complete"
+    metadata_title = "Booking - payment complete"
     template_name = "cciw/bookings/pay_done.html"
 
 
 class BookingPayCancelled(BookingPayBase):
-    metadata_title = u"Booking - payment cancelled"
+    metadata_title = "Booking - payment cancelled"
     template_name = "cciw/bookings/pay_cancelled.html"
 
 
 class BookingAccountOverview(CciwBaseView):
-    metadata_title = u"Booking - account overview"
+    metadata_title = "Booking - account overview"
     template_name = 'cciw/bookings/account_overview.html'
 
     def handle(self, request):

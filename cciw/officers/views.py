@@ -179,7 +179,7 @@ def applications(request):
             new_obj.save()
         else:
             new_obj = Application.objects.create(officer=user,
-                                                 full_name=u"%s %s" % (user.first_name, user.last_name))
+                                                 full_name="%s %s" % (user.first_name, user.last_name))
 
         return HttpResponseRedirect('/admin/officers/application/%s/' %
                                     new_obj.id)
@@ -224,7 +224,7 @@ def view_application(request):
                           application_rtf, 'text/rtf')
 
         msg = \
-u"""Dear %s,
+"""Dear %s,
 
 Please find attached a copy of the application you requested
  -- in plain text below and an RTF version attached.

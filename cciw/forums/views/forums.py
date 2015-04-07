@@ -77,7 +77,7 @@ def topicindex(request, title=None, extra_context=None, forum=None,
         extra_context['title'] = title
 
     extra_context['forum'] = forum
-    extra_context['atom_feed_title'] = u"Atom feed for new topics on this board."
+    extra_context['atom_feed_title'] = "Atom feed for new topics on this board."
 
     ### BREADCRUMB ###
     if breadcrumb_extra is None:
@@ -131,7 +131,7 @@ def add_topic(request, breadcrumb_extra=None):
     context = dict(title='Add topic')
 
     if not forum.open:
-        context['message'] = u'This forum is closed - new topics cannot be added.'
+        context['message'] = 'This forum is closed - new topics cannot be added.'
     else:
         context['forum'] = forum
         context['show_form'] = True
@@ -143,10 +143,10 @@ def add_topic(request, breadcrumb_extra=None):
         msg_text = request.POST.get('message', '').strip()
 
         if subject == '':
-            errors.append(u'You must enter a subject')
+            errors.append('You must enter a subject')
 
         if msg_text == '':
-            errors.append(u'You must enter a message.')
+            errors.append('You must enter a message.')
 
         context['message_text'] = bbcode.correct(msg_text)
         context['subject_text'] = subject
@@ -191,11 +191,11 @@ def add_news(request, breadcrumb_extra=None):
         subject = request.POST.get('subject', '').strip()
         msg_text = request.POST.get('message', '').strip()
 
-        if subject == u'':
-            errors.append(u'You must enter a subject.')
+        if subject == '':
+            errors.append('You must enter a subject.')
 
-        if msg_text == u'':
-            errors.append(u'You must enter the short news item.')
+        if msg_text == '':
+            errors.append('You must enter the short news item.')
 
         context['message_text'] = bbcode.correct(msg_text)
         context['subject_text'] = subject
@@ -292,11 +292,11 @@ class PollOptionListField(forms.CharField):
         l = [s for s in l if len(s) > 0]
 
         if len(l) == 0:
-            raise forms.ValidationError(u"At least one option must be entered")
+            raise forms.ValidationError("At least one option must be entered")
 
         max_length = PollOption._meta.get_field('text').max_length
         if len(list(filter(lambda opt: len(opt) > max_length, l))) > 0:
-            raise forms.ValidationError(u"Options may not be more than %s chars long" % max_length)
+            raise forms.ValidationError("Options may not be more than %s chars long" % max_length)
 
         return l
 
@@ -333,11 +333,11 @@ class EditPoll(CciwBaseView, AjaxFormValidation):
         poll_id = kwargs.get('poll_id', None)
         if poll_id is None:
             suffix = 'add_poll/'
-            self.metadata_title = u"Create poll"
+            self.metadata_title = "Create poll"
             poll = None
         else:
             suffix = '/'.join(request.path.split('/')[-3:]) # 'edit_poll/xx/'
-            self.metadata_title = u"Edit poll"
+            self.metadata_title = "Edit poll"
             poll = get_object_or_404(Poll.objects.filter(id=poll_id))
 
         current_member = get_current_member()
@@ -453,16 +453,16 @@ def process_vote(request, topic, context):
     if not poll.can_anyone_vote():
         # Only get here if the poll was closed
         # while they were voting
-        errors.append(u'This poll is closed for voting, sorry.')
+        errors.append('This poll is closed for voting, sorry.')
         context['voting_errors'] = errors
         return
 
     if not poll.can_vote(cur_member):
-        errors.append(u'You cannot vote on this poll.  Please check the voting rules.')
+        errors.append('You cannot vote on this poll.  Please check the voting rules.')
         context['voting_errors'] = errors
 
     if not polloption_id in (po.id for po in poll.poll_options.all()):
-        errors.append(u'Invalid option chosen')
+        errors.append('Invalid option chosen')
         context['voting_errors'] = errors
 
     if not errors:
@@ -470,7 +470,7 @@ def process_vote(request, topic, context):
                             member=cur_member,
                             date=timezone.now())
         voteinfo.save()
-        context['voting_message'] = u'Vote registered, thank you.'
+        context['voting_message'] = 'Vote registered, thank you.'
 
 @member_required_for_post
 def topic(request, title_start=None, template_name='cciw/forums/topic.html', topicid=0,
@@ -498,7 +498,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
     # Add additional title
     title = topic.subject[0:40]
     if len(title_start) > 0:
-        title = title_start + u": " + title
+        title = title_start + ": " + title
     extra_context = dict(title=title)
 
     if breadcrumb_extra is None:
@@ -508,7 +508,7 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
     if introtext:
         extra_context['introtext'] = introtext
 
-    extra_context['atom_feed_title'] = u"Atom feed for posts in this topic."
+    extra_context['atom_feed_title'] = "Atom feed for posts in this topic."
 
     ### PROCESSING ###
     # Process any message that they added.
@@ -559,10 +559,10 @@ def photoindex(request, gallery, extra_context, breadcrumb_extra):
 
     ### FEED ###
     resp = feeds.handle_feed_request(request,
-        feeds.gallery_photo_feed(u"CCIW - %s" % extra_context['title']), query_set=photos)
+        feeds.gallery_photo_feed("CCIW - %s" % extra_context['title']), query_set=photos)
     if resp is not None: return resp
 
-    extra_context['atom_feed_title'] = u"Atom feed for photos in this gallery."
+    extra_context['atom_feed_title'] = "Atom feed for photos in this gallery."
     extra_context['gallery'] = gallery
     extra_context['breadcrumb'] =   create_breadcrumb(breadcrumb_extra + photoindex_breadcrumb(gallery))
 
@@ -592,7 +592,7 @@ def photo(request, photo, extra_context, breadcrumb_extra):
     resp = feeds.handle_feed_request(request, feeds.photo_post_feed(photo), query_set=posts)
     if resp: return resp
 
-    extra_context['atom_feed_title'] = u"Atom feed for posts on this photo."
+    extra_context['atom_feed_title'] = "Atom feed for posts on this photo."
 
     extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + photo_breadcrumb(photo.gallery, photo))
     extra_context['photo'] = photo
@@ -615,13 +615,13 @@ def photo(request, photo, extra_context, breadcrumb_extra):
         paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
 
 def all_posts(request):
-    context = dict(title=u"Recent posts")
+    context = dict(title="Recent posts")
     posts = Post.objects.exclude(posted_at__isnull=True).order_by('-posted_at').select_related('topic__forum', 'photo__gallery', 'posted_by')
 
     resp = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
     if resp: return resp
 
-    context['atom_feed_title'] = u"Atom feed for all posts on CCIW message boards."
+    context['atom_feed_title'] = "Atom feed for all posts on CCIW message boards."
 
     return object_list(
         request,
@@ -642,13 +642,13 @@ def post(request, id):
     return HttpResponseRedirect(url)
 
 def all_topics(request):
-    context = dict(title=u"Recent new topics")
+    context = dict(title="Recent new topics")
     topics = Topic.objects.exclude(created_at__isnull=True).order_by('-created_at').select_related('forum', 'started_by')
 
     resp = feeds.handle_feed_request(request, feeds.TopicFeed, query_set=topics)
     if resp: return resp
 
-    context['atom_feed_title'] = u"Atom feed for all new topics."
+    context['atom_feed_title'] = "Atom feed for all new topics."
 
     return object_list(request, queryset=topics,
         extra_context=context, template_name='cciw/forums/topics.html',

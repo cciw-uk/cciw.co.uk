@@ -60,10 +60,10 @@ class AtomFeedLink(template.Node):
     def render(self, context):
         title = context.get('atom_feed_title', None)
         if title:
-            return u'<link rel="alternate" type="application/atom+xml" href="%(url)s?format=atom" title="%(title)s" />' \
+            return '<link rel="alternate" type="application/atom+xml" href="%(url)s?format=atom" title="%(title)s" />' \
             % {'url': context['request'].path, 'title': title }
         else:
-            return u''
+            return ''
 
 class AtomFeedLinkVisible(template.Node):
     def __init__(self, parser, token):
@@ -72,8 +72,8 @@ class AtomFeedLinkVisible(template.Node):
         title = context.get('atom_feed_title', None)
         if title:
             thisurl = context['request'].path
-            return (u'<a class="atomlink" href="%(atomurl)s" rel="external" title="%(atomtitle)s" >' +
-                    u' <img src="%(atomimgurl)s" alt="Feed icon" /></a> |') \
+            return ('<a class="atomlink" href="%(atomurl)s" rel="external" title="%(atomtitle)s" >' +
+                    ' <img src="%(atomimgurl)s" alt="Feed icon" /></a> |') \
             % dict(atomurl="%s?format=atom" % thisurl,
                    atomtitle=title,
                    atomimgurl="%simages/feed.gif" % settings.STATIC_URL,

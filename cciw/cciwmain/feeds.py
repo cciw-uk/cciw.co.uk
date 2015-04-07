@@ -17,7 +17,7 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
     """If the request has 'format=atom' in the query string,
     create a feed and return it, otherwise return None."""
 
-    if request.GET.get('format', None) != u'atom':
+    if request.GET.get('format', None) != 'atom':
         return None
 
     feed_inst = feed_class()
@@ -57,15 +57,15 @@ class CCIWFeed(feed_views.Feed):
 
 class MemberFeed(CCIWFeed):
     template_name = 'members'
-    title = u"New CCIW Members"
-    description = u"New members of the Christian Camps in Wales message boards."
+    title = "New CCIW Members"
+    description = "New members of the Christian Camps in Wales message boards."
 
     def modify_query(self, query_set):
         return  query_set.order_by('-date_joined')[:MEMBER_FEED_MAX_ITEMS]
 
 class PostFeed(CCIWFeed):
     template_name = 'posts'
-    title = u"CCIW message boards posts"
+    title = "CCIW message boards posts"
 
     def modify_query(self, query_set):
         return query_set.select_related('topic', 'photo', 'posted_by').order_by('-posted_at')[:POST_FEED_MAX_ITEMS]
@@ -83,25 +83,25 @@ def member_post_feed(member):
     """Returns a Feed class suitable for the posts
     of a specific member."""
     class MemberPostFeed(PostFeed):
-        title = u"CCIW - Posts by %s" % member.user_name
+        title = "CCIW - Posts by %s" % member.user_name
     return MemberPostFeed
 
 def topic_post_feed(topic):
     """Returns a Feed class suitable for the posts
     in a specific topic."""
     class TopicPostFeed(PostFeed):
-        title = u"CCIW - Posts on topic \"%s\"" % topic.subject
+        title = "CCIW - Posts on topic \"%s\"" % topic.subject
     return TopicPostFeed
 
 def photo_post_feed(photo):
     """Returns a Feed classs suitable for the posts in a specific photo."""
     class PhotoPostFeed(PostFeed):
-        title = u"CCIW - Posts on photo %s" % photo
+        title = "CCIW - Posts on photo %s" % photo
     return PhotoPostFeed
 
 class TopicFeed(CCIWFeed):
     template_name = 'topics'
-    title = u"CCIW - message board topics"
+    title = "CCIW - message board topics"
 
     def modify_query(self, query_set):
         return query_set.order_by('-created_at')[:TOPIC_FEED_MAX_ITEMS]
@@ -118,12 +118,12 @@ class TopicFeed(CCIWFeed):
 def forum_topic_feed(forum):
     """Returns a Feed class suitable for topics of a specific forum."""
     class ForumTopicFeed(TopicFeed):
-        title = u"CCIW - new topics in %s" % forum.nice_name()
+        title = "CCIW - new topics in %s" % forum.nice_name()
     return ForumTopicFeed
 
 class PhotoFeed(CCIWFeed):
     template_name = 'photos'
-    title = u'CCIW photos'
+    title = 'CCIW photos'
 
     def modify_query(self, query_set):
         return query_set.order_by('-created_at')[:PHOTO_FEED_MAX_ITEMS]

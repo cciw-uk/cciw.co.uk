@@ -82,7 +82,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
             for name, field in self.fields.items():
                 if getattr(field, 'required_field', False):
                     data = self.cleaned_data.get(name)
-                    if data is None or data == u"":
+                    if data is None or data == "":
                         self._errors[name] = ErrorList(["This is a required field"])
         return self.cleaned_data
 

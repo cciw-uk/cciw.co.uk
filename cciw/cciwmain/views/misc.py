@@ -53,7 +53,7 @@ class ContactUsForm(CciwFormMixin, forms.Form):
 
 
 class ContactUsBase(CciwBaseView):
-    metadata_title = u"Contact us"
+    metadata_title = "Contact us"
 
 
 class ContactUsFormView(AjaxFormValidation, ContactUsBase):

@@ -48,7 +48,7 @@ class EmailVerifyTokenGenerator(object):
         ts_b36 = int_to_base36(timestamp)
 
         key_salt = "cciw.bookings.EmailVerifyTokenGenerator"
-        value = u"%s:%s:%s" % (account.id, account.email, timestamp)
+        value = "%s:%s:%s" % (account.id, account.email, timestamp)
         # We limit the hash to 20 chars to keep URL short
         hash = salted_hmac(key_salt, value).hexdigest()[::2]
         return "%s-%s" % (ts_b36, hash)
@@ -75,7 +75,7 @@ def send_verify_email(request, booking_account):
         }
 
     body = loader.render_to_string("cciw/bookings/verification_email.txt", c)
-    subject = u"CCIW booking account"
+    subject = "CCIW booking account"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [booking_account.email])
 
 
@@ -99,7 +99,7 @@ def send_unrecognised_payment_email(ipn_obj):
         }
 
     body = loader.render_to_string("cciw/bookings/unrecognised_payment_email.txt", c)
-    subject = u"CCIW booking - unrecognised payment"
+    subject = "CCIW booking - unrecognised payment"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [settings.WEBMASTER_EMAIL])
 
 
@@ -117,7 +117,7 @@ def send_places_confirmed_email(bookings, **kwargs):
         'payment_received': 'payment_received' in kwargs,
         }
     body = loader.render_to_string('cciw/bookings/place_confirmed_email.txt', c)
-    subject = u"CCIW booking - place confirmed"
+    subject = "CCIW booking - place confirmed"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
     # Email leaders. Bookings could be for different camps, so send different
@@ -137,7 +137,7 @@ def send_places_confirmed_email(bookings, **kwargs):
                 'url_start': site_address_url_start(),
                 }
             body = loader.render_to_string('cciw/bookings/late_place_confirmed_email.txt', c)
-            subject = u"CCIW late booking: %s" % booking.name
+            subject = "CCIW late booking: %s" % booking.name
 
             mail.send_mail(subject, body, settings.SERVER_EMAIL,
                            admin_emails_for_camp(booking.camp))
@@ -155,9 +155,9 @@ def send_booking_expiry_mail(account, bookings, expired):
         }
     body = loader.render_to_string('cciw/bookings/place_expired_mail.txt', c)
     if expired:
-        subject = u"CCIW booking - booking expired"
+        subject = "CCIW booking - booking expired"
     else:
-        subject = u"CCIW booking - booking expiry warning"
+        subject = "CCIW booking - booking expiry warning"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
 
@@ -172,7 +172,7 @@ def send_booking_approved_mail(booking):
         'booking': booking,
         }
     body = loader.render_to_string('cciw/bookings/place_approved_email.txt', c)
-    subject = u"CCIW booking - approved"
+    subject = "CCIW booking - approved"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
     return True
@@ -187,7 +187,7 @@ def send_booking_confirmed_mail(booking):
         'booking': booking,
         }
     body = loader.render_to_string('cciw/bookings/place_booked_email.txt', c)
-    subject = u"CCIW booking - confirmed"
+    subject = "CCIW booking - confirmed"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
     return True

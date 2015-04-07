@@ -342,7 +342,7 @@ class ApplicationFormView(WebTestBase):
         emails = self._get_application_form_emails()
         self.assertEqual(len(emails), 2)
         leader_email = [e for e in emails
-                        if e.subject == u'CCIW application form from New Full Name'][0]
+                        if e.subject == 'CCIW application form from New Full Name'][0]
         msg = leader_email.message()
 
         # E-mail will have 3 parts - text, RTF, and differences from last year

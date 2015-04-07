@@ -396,7 +396,7 @@ PreferencesForm.base_fields.keyOrder = preferences_fields
 
 
 class Preferences(CciwBaseView, AjaxFormValidation):
-    metadata_title = u"Preferences"
+    metadata_title = "Preferences"
     form_class = PreferencesForm
     template_name = 'cciw/members/preferences.html'
 

@@ -340,12 +340,12 @@ def standard_processor(request):
     thisyear = get_thisyear()
     context['thisyear'] = thisyear
     assert type(request.path) is str
-    context['homepage'] = (request.path == u"/")
+    context['homepage'] = (request.path == "/")
 
     # Ugly special casing for 'thisyear' camps
-    m = re.match(u'/camps/%s/(\d+)/' % str(thisyear),  request.path)
+    m = re.match('/camps/%s/(\d+)/' % str(thisyear),  request.path)
     if m is not None:
-        request_path = u'/thisyear/%s/' % m.groups()[0]
+        request_path = '/thisyear/%s/' % m.groups()[0]
     else:
         request_path = request.path
 
@@ -363,7 +363,7 @@ def standard_processor(request):
                 l.isCurrentSection = False
                 if l.url == request_path:
                     l.isCurrentPage = True
-                elif request_path.startswith(l.url) and l.url != u'/':
+                elif request_path.startswith(l.url) and l.url != '/':
                     l.isCurrentSection = True
                 links_cache.append(l)
             return links_cache
@@ -385,14 +385,14 @@ def get_member_href(user_name):
         # Also, this can be called via bbcode, so we need to ensure
         # that we don't pass anything to urlresolvers.reverse that
         # will make it die.
-        return u''
+        return ''
     else:
         return reverse('cciwmain.members.detail', kwargs={'user_name': user_name})
 
 
 def get_member_link(user_name):
     user_name = user_name.strip()
-    if user_name.startswith(u"'"):
+    if user_name.startswith("'"):
         return user_name
     else:
         return format_html('<a title="Information about user \'{0}\'" href="{1}">{2}</a>',

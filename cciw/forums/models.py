@@ -59,16 +59,16 @@ class Member(models.Model):
     MODERATE_ALL = 2
 
     MESSAGE_OPTIONS = (
-        (MESSAGES_NONE,     u"Don't allow messages"),
-        (MESSAGES_WEBSITE,  u"Store messages on the website"),
-        (MESSAGES_EMAIL,    u"Send messages via email"),
-        (MESSAGES_EMAIL_AND_WEBSITE, u"Store messages and send via email")
+        (MESSAGES_NONE,     "Don't allow messages"),
+        (MESSAGES_WEBSITE,  "Store messages on the website"),
+        (MESSAGES_EMAIL,    "Send messages via email"),
+        (MESSAGES_EMAIL_AND_WEBSITE, "Store messages and send via email")
     )
 
     MODERATE_OPTIONS = (
-        (MODERATE_OFF,      u"Off"),
-        (MODERATE_NOTIFY,   u"Unmoderated, but notify"),
-        (MODERATE_ALL,      u"Fully moderated")
+        (MODERATE_OFF,      "Off"),
+        (MODERATE_NOTIFY,   "Unmoderated, but notify"),
+        (MODERATE_ALL,      "Fully moderated")
     )
 
     user_name   = models.CharField("User name", max_length=30, unique=True)
@@ -171,7 +171,7 @@ class Award(models.Model):
         upload_to=settings.AWARD_UPLOAD_PATH)
 
     def __str__(self):
-        return u"%s %s" % (self.name, self.year)
+        return "%s %s" % (self.name, self.year)
 
     def nice_name(self):
         return str(self)
@@ -262,16 +262,16 @@ https://%(domain)s/members/%(from)s/messages/
 
 
     def __str__(self):
-        return u"[%s] to %s from %s" % (self.id, self.to_member, self.from_member)
+        return "[%s] to %s from %s" % (self.id, self.to_member, self.from_member)
 
     class Meta:
         ordering = ('-time',)
 
 
 VOTING_RULES = (
-    (0, u"Unlimited"),
-    (1, u"'X' votes per member"),
-    (2, u"'X' votes per member per day")
+    (0, "Unlimited"),
+    (1, "'X' votes per member"),
+    (2, "'X' votes per member per day")
 )
 
 
@@ -333,11 +333,11 @@ class Poll(models.Model):
 
     def verbose_rules(self):
         if self.rules == Poll.UNLIMITED:
-            return u"Unlimited number of votes."
+            return "Unlimited number of votes."
         elif self.rules == Poll.X_VOTES_PER_USER:
-            return u"%s vote(s) per user." % self.rule_parameter
+            return "%s vote(s) per user." % self.rule_parameter
         elif self.rules == Poll.X_VOTES_PER_USER_PER_DAY:
-            return u"%s vote(s) per user per day." % self.rule_parameter
+            return "%s vote(s) per user per day." % self.rule_parameter
 
     class Meta:
         ordering = ('title',)
@@ -414,12 +414,12 @@ class Forum(models.Model):
             captures = m.groupdict()
             number = captures['number']
             assert type(number) is str
-            if number == u'all':
-                return u"forum for all camps, year %s" % captures['year']
+            if number == 'all':
+                return "forum for all camps, year %s" % captures['year']
             else:
-                return u"forum for camp %s, year %s" % (number, captures['year'])
+                return "forum for camp %s, year %s" % (number, captures['year'])
         else:
-            return u"forum at %s" % self.location
+            return "forum at %s" % self.location
 
 
 class NewsItem(models.Model):
@@ -583,7 +583,7 @@ class Photo(models.Model):
     all_objects = models.Manager()
 
     def __str__(self):
-        return u"Photo: " + self.filename
+        return "Photo: " + self.filename
 
     def get_absolute_url(self):
         return self.gallery.get_absolute_url() + str(self.id) + '/'
@@ -650,7 +650,7 @@ class Post(models.Model):
 
 
     def __str__(self):
-        return u"Post [%s]: %s" % (str(self.id), self.message[:30])
+        return "Post [%s]: %s" % (str(self.id), self.message[:30])
 
     def updateParent(self, parent):
         "Update the cached info in the parent topic/photo"

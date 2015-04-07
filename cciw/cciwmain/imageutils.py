@@ -45,17 +45,17 @@ def fix_member_icon(member, filedata):
         img = parse_image(filename)
     except IOError:
         safe_del(filename)
-        raise ValidationError(u"The image format was not recognised.")
+        raise ValidationError("The image format was not recognised.")
 
     if img.size is None:
         safe_del(filename)
-        raise ValidationError(u"The image format was not recognised.")
+        raise ValidationError("The image format was not recognised.")
 
     if img.size[0] > settings.MEMBER_ICON_MAX_SIZE or \
        img.size[1] > settings.MEMBER_ICON_MAX_SIZE:
         # For now, just complain
         safe_del(filename)
-        raise ValidationError(u"The image was bigger than %s by %s." % \
+        raise ValidationError("The image was bigger than %s by %s." % \
             (settings.MEMBER_ICON_MAX_SIZE, settings.MEMBER_ICON_MAX_SIZE))
         # Ideally would have scale to fit
 

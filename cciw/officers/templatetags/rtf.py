@@ -27,7 +27,7 @@ def unicode_to_rtf(u):
             try:
                 encoded = encoder(char)
             except UnicodeEncodeError:
-                encoded = encoder(u'?')
+                encoded = encoder('?')
             val = ord(encoded[0])
             if val < 256:
                 # use \' method:

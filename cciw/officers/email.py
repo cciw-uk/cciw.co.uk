@@ -77,7 +77,7 @@ def send_application_emails(request, application):
         if len(leader_emails) > 0:
             send_leader_email(leader_emails, application, application_text, rtf_attachment,
                               application_diff)
-        messages.info(request, u"The completed application form has been sent to the leaders (%s) via e-mail." %
+        messages.info(request, "The completed application form has been sent to the leaders (%s) via e-mail." %
                       camp.leaders_formatted)
 
     if len(leader_email_groups) == 0:
@@ -103,7 +103,7 @@ def send_officer_email(officer, application, application_text, rtf_attachment):
     # Email to the officer
     user_email = formatted_email(application.officer)
     user_msg = (
-u"""%s,
+"""%s,
 
 For your records, here is a copy of the application you have submitted
 to CCIW. It is also attached to this e-mail as an RTF file.
@@ -119,13 +119,13 @@ def send_leader_email(leader_emails, application, application_text, rtf_attachme
                       application_diff):
     subject = "CCIW application form from %s" % application.full_name
     body = \
-u"""The following application form has been submitted via the
+"""The following application form has been submitted via the
 CCIW website.  It is also attached to this e-mail as an RTF file.
 
 """
     if application_diff is not None:
         body += \
-u"""The second attachment shows the differences between this year's
+"""The second attachment shows the differences between this year's
 application form and last year's - pink indicates information that has
 been removed, green indicates new information.
 
@@ -154,7 +154,7 @@ def send_email_change_emails(officer, application):
     subject = "E-mail change on CCIW"
     user_email = formatted_email(officer)
     user_msg = (
-u"""%(name)s,
+"""%(name)s,
 
 In your most recently submitted application form, you entered your
 e-mail address as %(new)s.  The e-mail address stored against your
@@ -216,7 +216,7 @@ def send_leaders_reference_email(refform):
     refform_text = reference_form_to_text(refform)
     subject = "CCIW reference form for %s %s from %s" % (officer.first_name, officer.last_name, ref.referee.name)
     body = \
-u"""The following reference form has been submitted via the
+"""The following reference form has been submitted via the
 CCIW website for officer %s %s.
 
 %s

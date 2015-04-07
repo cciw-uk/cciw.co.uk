@@ -46,19 +46,19 @@ class BookingAccountForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data['email']
-        if email == u'':
+        if email == '':
             email = None
         return email
 
     def clean_name(self):
         name = self.cleaned_data['name']
-        if name == u'':
+        if name == '':
             name = None
         return name
 
     def clean_post_code(self):
         post_code = self.cleaned_data['post_code']
-        if post_code == u'':
+        if post_code == '':
             post_code = None
         return post_code
 

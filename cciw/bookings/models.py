@@ -81,7 +81,7 @@ class Price(models.Model):
         unique_together = [('year', 'price_type')]
 
     def __str__(self):
-        return u"%s %s - %s" % (self.get_price_type_display(), self.year, self.price)
+        return "%s %s - %s" % (self.get_price_type_display(), self.year, self.price)
 
     @classmethod
     def get_deposit_prices(cls, years=None):
@@ -145,10 +145,10 @@ class BookingAccount(models.Model):
         if self.post_code:
             out.append(self.post_code)
         if self.email:
-            out.append(u"<" + self.email + u">")
+            out.append("<" + self.email + ">")
         if not out:
-            out.append(u"(empty)")
-        return u", ".join(out)
+            out.append("(empty)")
+        return ", ".join(out)
 
     class Meta:
         unique_together = [('name', 'post_code'),
@@ -519,12 +519,12 @@ class Booking(models.Model):
     # Methods
 
     def __str__(self):
-        return u"%s, %s-%s, %s" % (self.name, self.camp.year, self.camp.number,
+        return "%s, %s-%s, %s" % (self.name, self.camp.year, self.camp.number,
                                    self.account)
 
     @property
     def name(self):
-        return u"%s %s" % (self.first_name, self.last_name)
+        return "%s %s" % (self.first_name, self.last_name)
 
     # Main business rules here
     @property
@@ -652,37 +652,37 @@ class Booking(models.Model):
 
         # Custom price - not auto bookable
         if self.price_type == PRICE_CUSTOM:
-            errors.append(u"A custom discount needs to be arranged by the booking secretary")
+            errors.append("A custom discount needs to be arranged by the booking secretary")
 
         # 2nd/3rd child discounts
         if self.price_type == PRICE_2ND_CHILD:
             qs = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
             if not qs.filter(price_type=PRICE_FULL).exists():
-                errors.append(u"You cannot use a 2nd child discount unless you have "
-                              u"a child at full price. Please edit the place details "
-                              u"and choose an appropriate price type.")
+                errors.append("You cannot use a 2nd child discount unless you have "
+                              "a child at full price. Please edit the place details "
+                              "and choose an appropriate price type.")
 
         if self.price_type == PRICE_3RD_CHILD:
             qs = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
             qs = qs.filter(price_type=PRICE_FULL) | qs.filter(price_type=PRICE_2ND_CHILD)
             if qs.count() < 2:
-                errors.append(u"You cannot use a 3rd child discount unless you have "
-                              u"two other places without this discount. Please edit the "
-                              u"place details and choose an appropriate price type.")
+                errors.append("You cannot use a 3rd child discount unless you have "
+                              "two other places without this discount. Please edit the "
+                              "place details and choose an appropriate price type.")
 
         # serious illness
         if self.serious_illness:
-            errors.append(u"Must be approved by leader due to serious illness/condition")
+            errors.append("Must be approved by leader due to serious illness/condition")
 
         # Check age.
         camper_age = self.age_on_camp()
         age_base = self.age_base_date().strftime("%e %B %Y")
         if self.is_too_young:
-            errors.append(u"Camper will be %d which is below the minimum age (%d) on %s"
+            errors.append("Camper will be %d which is below the minimum age (%d) on %s"
                           % (camper_age, self.camp.minimum_age, age_base))
 
         if self.is_too_old:
-            errors.append(u"Camper will be %d which is above the maximum age (%d) on %s"
+            errors.append("Camper will be %d which is above the maximum age (%d) on %s"
                           % (camper_age, self.camp.maximum_age, age_base))
 
         # Check place availability
@@ -695,17 +695,17 @@ class Booking(models.Model):
 
         # Simple - no places left
         if places_left <= 0:
-            errors.append(u"There are no places left on this camp.")
+            errors.append("There are no places left on this camp.")
             places_available = False
 
         if places_available and self.sex == SEX_MALE:
             if places_left_male <= 0:
-                errors.append(u"There are no places left for boys on this camp.")
+                errors.append("There are no places left for boys on this camp.")
                 places_available = False
 
         if places_available and self.sex == SEX_FEMALE:
             if places_left_female <= 0:
-                errors.append(u"There are no places left for girls on this camp.")
+                errors.append("There are no places left for girls on this camp.")
                 places_available = False
 
         if places_available:
@@ -718,29 +718,29 @@ class Booking(models.Model):
             places_to_be_booked_female = same_camp_bookings.filter(sex=SEX_FEMALE).count()
 
             if places_left < places_to_be_booked:
-                errors.append(u"There are not enough places left on this camp "
-                              u"for the campers in this set of bookings.")
+                errors.append("There are not enough places left on this camp "
+                              "for the campers in this set of bookings.")
                 places_available = False
 
             if places_available and self.sex == SEX_MALE:
                 if places_left_male < places_to_be_booked_male:
-                    errors.append(u"There are not enough places for boys left on this camp "
-                                  u"for the campers in this set of bookings.")
+                    errors.append("There are not enough places for boys left on this camp "
+                                  "for the campers in this set of bookings.")
                     places_available = False
 
             if places_available and self.sex == SEX_FEMALE:
                 if places_left_female < places_to_be_booked_female:
-                    errors.append(u"There are not enough places for girls left on this camp "
-                                  u"for the campers in this set of bookings.")
+                    errors.append("There are not enough places for girls left on this camp "
+                                  "for the campers in this set of bookings.")
                     places_available = False
 
         if self.south_wales_transport and not self.camp.south_wales_transport_available:
-            errors.append(u"Transport from South Wales is not available for this camp, or all places have been taken already.")
+            errors.append("Transport from South Wales is not available for this camp, or all places have been taken already.")
 
         if booking_sec and self.price_type != PRICE_CUSTOM:
             expected_amount = self.expected_amount_due()
             if self.amount_due != expected_amount:
-                errors.append(u"The 'amount due' is not the expected value of £%s." % expected_amount)
+                errors.append("The 'amount due' is not the expected value of £%s." % expected_amount)
 
         return errors
 
@@ -748,23 +748,23 @@ class Booking(models.Model):
         warnings = []
 
         if self.account.bookings.filter(first_name=self.first_name, last_name=self.last_name, camp=self.camp).exclude(id=self.id):
-            warnings.append(u"You have entered another set of place details for a camper "
-                            u"called '%s' on camp %d. Please ensure you don't book multiple "
-                            u"places for the same camper!" % (self.name, self.camp.number))
+            warnings.append("You have entered another set of place details for a camper "
+                            "called '%s' on camp %d. Please ensure you don't book multiple "
+                            "places for the same camper!" % (self.name, self.camp.number))
 
         if self.price_type == PRICE_FULL:
             full_pricers = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()\
                 .filter(price_type=PRICE_FULL).order_by('first_name', 'last_name')
             if len(full_pricers) > 1:
                 names = [b.name for b in full_pricers]
-                pretty_names = u', '.join(names[1:]) + u" and " + names[0]
-                warning = u"You have multiple places at 'Full price'. "
+                pretty_names = ', '.join(names[1:]) + " and " + names[0]
+                warning = "You have multiple places at 'Full price'. "
                 if len(names) == 2:
-                    warning += (u"If %s are from the same family, one is eligible "
-                                u"for the 2nd child discount." % pretty_names)
+                    warning += ("If %s are from the same family, one is eligible "
+                                "for the 2nd child discount." % pretty_names)
                 else:
-                    warning += (u"If %s are from the same family, one or more is eligible "
-                                u"for the 2nd or 3rd child discounts." % pretty_names)
+                    warning += ("If %s are from the same family, one or more is eligible "
+                                "for the 2nd or 3rd child discounts." % pretty_names)
 
                 warnings.append(warning)
 
@@ -773,14 +773,14 @@ class Booking(models.Model):
                 .filter(price_type=PRICE_2ND_CHILD).order_by('first_name', 'last_name')
             if len(second_childers) > 1:
                 names = [b.name for b in second_childers]
-                pretty_names = u', '.join(names[1:]) + u" and " + names[0]
-                warning = u"You have multiple places at '2nd child discount'. "
+                pretty_names = ', '.join(names[1:]) + " and " + names[0]
+                warning = "You have multiple places at '2nd child discount'. "
                 if len(names) == 2:
-                    warning += (u"If %s are from the same family, one is eligible "
-                                u"for the 3rd child discount." % pretty_names)
+                    warning += ("If %s are from the same family, one is eligible "
+                                "for the 3rd child discount." % pretty_names)
                 else:
-                    warning += (u"If %s are from the same family, %d are eligible "
-                                u"for the 3rd child discount." % (pretty_names,
+                    warning += ("If %s are from the same family, %d are eligible "
+                                "for the 3rd child discount." % (pretty_names,
                                                                   len(names) - 1))
 
                 warnings.append(warning)
@@ -885,7 +885,7 @@ class Payment(models.Model):
     objects = PaymentManager()
 
     def __str__(self):
-        retval = u"Payment: %s %s %s via %s" % (abs(self.amount), 'from' if self.amount > 0 else 'to', self.account.name, self.origin_type)
+        retval = "Payment: %s %s %s via %s" % (abs(self.amount), 'from' if self.amount > 0 else 'to', self.account.name, self.origin_type)
         if self.origin is None:
             retval += " (deleted)"
         return retval
@@ -927,13 +927,13 @@ class ManualPaymentBase(models.Model):
 class ManualPayment(ManualPaymentBase):
 
     def __str__(self):
-        return u"Manual payment of £%s from %s" % (self.amount, self.account)
+        return "Manual payment of £%s from %s" % (self.amount, self.account)
 
 
 class RefundPayment(ManualPaymentBase):
 
     def __str__(self):
-        return u"Refund payment of £%s to %s" % (self.amount, self.account)
+        return "Refund payment of £%s to %s" % (self.amount, self.account)
 
 
 def trigger_payment_processing():

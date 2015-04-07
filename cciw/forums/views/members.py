@@ -17,14 +17,14 @@ from cciw.cciwmain import feeds
 
 
 class MemberList(ListView, FeedHandler, CciwBaseView):
-    metadata_title = u"Members"
+    metadata_title = "Members"
     feed_class = feeds.MemberFeed
     template_name = "cciw/members/index.html"
     list_name = 'members'
     paginate_by = 50
     magic_context = {
         'default_order': 'aun',
-        'atom_feed_title': u"Atom feed for new members"
+        'atom_feed_title': "Atom feed for new members"
         }
 
     def get_queryset(self):
@@ -72,7 +72,7 @@ class MemberDetail(CciwBaseView):
             'member': member,
             'awards': member.personal_awards.all()
         }
-        self.metadata_title = u"Member: %s" % member.user_name
+        self.metadata_title = "Member: %s" % member.user_name
         return self.render(context)
 
 detail = MemberDetail.as_view()
@@ -122,7 +122,7 @@ class SendMessage(CciwBaseView):
         message_text = None
 
         no_messages = False
-        to_name = u''
+        to_name = ''
 
         to = None
         if current_member.user_name != member.user_name:
@@ -133,22 +133,22 @@ class SendMessage(CciwBaseView):
         if request.method == 'POST':
             # Recipient
             if to is None:
-                to_name = request.POST.get('to', u'').strip()
-                if to_name == u'':
+                to_name = request.POST.get('to', '').strip()
+                if to_name == '':
                     errors.append('No user name given.')
                 else:
                     try:
                         to = Member.objects.get(user_name=to_name)
                     except Member.DoesNotExist:
-                        errors.append(u'The user %s could not be found' % to_name)
+                        errors.append('The user %s could not be found' % to_name)
 
             if to is not None and to.message_option == Member.MESSAGES_NONE:
-                errors.append(u'This user has chosen not to receive any messages.')
+                errors.append('This user has chosen not to receive any messages.')
             else:
                 # Message
-                message_text = request.POST.get('message', u'').strip()
-                if message_text == u'':
-                    errors.append(u'No message entered.')
+                message_text = request.POST.get('message', '').strip()
+                if message_text == '':
+                    errors.append('No message entered.')
 
                 # Always do a preview (for 'preview' and 'send')
                 preview = mark_safe(bbcode.bb2xhtml(message_text))
@@ -164,13 +164,13 @@ class SendMessage(CciwBaseView):
         crumbs = [get_member_link(user_name)]
         if current_member.user_name == member.user_name:
             c['mode'] = 'send'
-            self.metadata_title = u"Send a message"
-            crumbs.append(u'Messages &lt; Send | <a href="inbox/">Inbox</a> | <a href="archived/">Archived</a> &gt;')
+            self.metadata_title = "Send a message"
+            crumbs.append('Messages &lt; Send | <a href="inbox/">Inbox</a> | <a href="archived/">Archived</a> &gt;')
             # to_name = to_name (from POST)
         else:
             c['mode'] = 'leave'
-            self.metadata_title = u"Leave a message for %s" % member.user_name
-            crumbs.append(u'Send message')
+            self.metadata_title = "Leave a message for %s" % member.user_name
+            crumbs.append('Send message')
             to_name = user_name
 
         c['breadcrumb'] = create_breadcrumb(crumbs)
@@ -220,7 +220,7 @@ class MessageList(ListView, CciwBaseView):
 
         current_member = get_current_member()
         if current_member is None or user_name != current_member.user_name:
-            return HttpResponseForbidden(u'<h1>Access denied</h1>')
+            return HttpResponseForbidden('<h1>Access denied</h1>')
 
 
         if request.method == "POST":
@@ -251,12 +251,12 @@ class MessageList(ListView, CciwBaseView):
         crumbs = [get_member_link(user_name)]
         context = {}
         if self.box == Message.MESSAGE_BOX_INBOX:
-            context['title'] = u"%s: Inbox" % user_name
-            crumbs.append(u'Messages &lt; <a href="../">Send</a> | Inbox | <a href="../archived/">Archived</a> &gt;')
+            context['title'] = "%s: Inbox" % user_name
+            crumbs.append('Messages &lt; <a href="../">Send</a> | Inbox | <a href="../archived/">Archived</a> &gt;')
             context['show_archive_button'] = True
         else:
-            context['title'] = u"%s: Archived messages" % user_name
-            crumbs.append(u'Messages &lt; <a href="../">Send</a> | <a href="../inbox/">Inbox</a> | Archived &gt;')
+            context['title'] = "%s: Archived messages" % user_name
+            crumbs.append('Messages &lt; <a href="../">Send</a> | <a href="../inbox/">Inbox</a> | Archived &gt;')
             context['show_move_inbox_button'] = True
 
         context['show_delete_button'] = True
@@ -293,13 +293,13 @@ class MemberPosts(ListView, FeedHandler, CciwBaseView):
 
     def handle(self, request, user_name=None):
         member = self.get_member()
-        self.metadata_title = u"Recent posts by %s" % member.user_name
+        self.metadata_title = "Recent posts by %s" % member.user_name
         self.queryset = self.get_queryset(member=member)
         context = {
             'member': member,
             'breadcrumb': create_breadcrumb([get_member_link(user_name),
                                              'Recent posts']),
-            'atom_feed_title': u"Atom feed for posts from %s" % member.user_name,
+            'atom_feed_title': "Atom feed for posts from %s" % member.user_name,
         }
         self.context.update(context)
 

@@ -126,8 +126,8 @@ class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
     def place_details(self):
         return {
             'camp': self.camp.id,
-            'first_name': u'Frédéric',
-            'last_name': u'Bloggs',
+            'first_name': 'Frédéric',
+            'last_name': 'Bloggs',
             'sex': 'm',
             'date_of_birth': '%d-01-01' % (self.camp.year - 14),
             'address': 'x',
@@ -1360,7 +1360,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
         j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['valid'], True)
         problems = j['problems']
-        self.assertTrue(u"A custom discount needs to be arranged by the booking secretary" in
+        self.assertTrue("A custom discount needs to be arranged by the booking secretary" in
                         problems)
 
     def test_booking_problems_price_check(self):
@@ -1384,7 +1384,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
 
         j = json.loads(resp.content.decode('utf-8'))
         problems = j['problems']
-        self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £%s"
+        self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £%s"
                                          % self.price_full)
                             for p in problems))
 
@@ -1409,7 +1409,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
 
         j = json.loads(resp.content.decode('utf-8'))
         problems = j['problems']
-        self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £%s"
+        self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £%s"
                                          % self.price_deposit)
                             for p in problems))
 
@@ -1422,7 +1422,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
 
         j = json.loads(resp.content.decode('utf-8'))
         problems = j['problems']
-        self.assertTrue(any(p.startswith(u"The 'amount due' is not the expected value of £0.00")
+        self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £0.00")
                             for p in problems))
 
 
@@ -1471,8 +1471,8 @@ class TestAccountOverview(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.assertContains(resp, 'items in your basket')
 
         # Deposit for cancellation
-        self.assertContains(resp, u"Cancelled")
-        self.assertContains(resp, u"(£20 deposit)")
+        self.assertContains(resp, "Cancelled")
+        self.assertContains(resp, "(£20 deposit)")
 
 
 class TestLogOut(LogInMixin, TestCase):
@@ -1765,7 +1765,7 @@ class TestExportPlaces(CreatePlaceMixin, TestCase):
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh_all = wkbk.sheet_by_index(0)
 
-        self.assertEqual(wksh_all.cell(0, 0).value, u"First name")
+        self.assertEqual(wksh_all.cell(0, 0).value, "First name")
         self.assertEqual(wksh_all.cell(1, 0).value, acc.bookings.all()[0].first_name)
 
     def test_birthdays(self):
@@ -1780,13 +1780,13 @@ class TestExportPlaces(CreatePlaceMixin, TestCase):
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh_bdays = wkbk.sheet_by_index(2)
 
-        self.assertEqual(wksh_bdays.cell(0, 0).value, u"First name")
+        self.assertEqual(wksh_bdays.cell(0, 0).value, "First name")
         self.assertEqual(wksh_bdays.cell(1, 0).value, acc.bookings.all()[0].first_name)
 
-        self.assertEqual(wksh_bdays.cell(0, 2).value, u"Birthday")
+        self.assertEqual(wksh_bdays.cell(0, 2).value, "Birthday")
         self.assertEqual(wksh_bdays.cell(1, 2).value, bday.strftime("%A %d %B"))
 
-        self.assertEqual(wksh_bdays.cell(0, 3).value, u"Age")
+        self.assertEqual(wksh_bdays.cell(0, 3).value, "Age")
         self.assertEqual(wksh_bdays.cell(1, 3).value, "12")
 
 

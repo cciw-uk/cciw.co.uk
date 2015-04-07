@@ -6,7 +6,7 @@ from cciw.officers import formfields
 class YyyyMmField(models.CharField):
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 7
-        kwargs['help_text'] = u'Enter the date in YYYY/MM format.'
+        kwargs['help_text'] = 'Enter the date in YYYY/MM format.'
         return super(YyyyMmField, self).__init__(*args, **kwargs)
 
     def formfield(self, *args, **kwargs):
@@ -17,7 +17,7 @@ class YyyyMmField(models.CharField):
 
 class AddressField(models.TextField):
     def __init__(self, *args, **kwargs):
-        kwargs['help_text'] = u'Full address, including post code and country'
+        kwargs['help_text'] = 'Full address, including post code and country'
         return  super(AddressField, self).__init__(*args, **kwargs)
 
 
@@ -27,7 +27,7 @@ class ExplicitBooleanField(models.NullBooleanField):
         super(ExplicitBooleanField, self).__init__(*args, **kwargs)
 
     def _has_changed(self, initial, data):
-        # Sometimes data or initial could be None or u'' which should be the
+        # Sometimes data or initial could be None or '' which should be the
         # same thing as False.
         return bool(initial) != bool(data)
 

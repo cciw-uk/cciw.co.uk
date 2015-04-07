@@ -105,6 +105,6 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
 
 AddPlaceForm.base_fields['agreement'].required = True
 AddPlaceForm.base_fields['date_of_birth'].widget.attrs['placeholder'] = 'YYYY-MM-DD'
-AddPlaceForm.base_fields['date_of_birth'].help_text = u'(YYYY-MM-DD)'
+AddPlaceForm.base_fields['date_of_birth'].help_text = '(YYYY-MM-DD)'
 AddPlaceForm.base_fields['last_tetanus_injection'].widget.attrs['placeholder'] = 'YYYY-MM-DD'
-AddPlaceForm.base_fields['last_tetanus_injection'].help_text = u'(YYYY-MM-DD)'
+AddPlaceForm.base_fields['last_tetanus_injection'].help_text = '(YYYY-MM-DD)'

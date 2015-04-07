@@ -35,7 +35,7 @@ class CampModel(TestCase):
         self.camp = camp
 
     def test_display(self):
-        self.assertEqual(str(self.camp), u"2013-1 (John, Mary, Gregory)")
+        self.assertEqual(str(self.camp), "2013-1 (John, Mary, Gregory)")
 
 
 class ThisyearPage(TestCase):

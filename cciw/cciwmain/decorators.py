@@ -14,7 +14,7 @@ def login_redirect(path):
     return '%s?%s' % ('/login/', qs)
 
 LOGIN_FORM_KEY = 'this_is_the_login_form'
-ERROR_MESSAGE = u"Please enter a correct username and password. Note that both fields are case-sensitive."
+ERROR_MESSAGE = "Please enter a correct username and password. Note that both fields are case-sensitive."
 
 def _display_login_form(request, error_message='', login_page=False):
     return render(request, 'cciw/members/login.html', {'app_path': request.get_full_path(),
@@ -41,7 +41,7 @@ def member_required_generic(except_methods):
 
             # If this isn't already the login page, display it.
             if LOGIN_FORM_KEY not in request.POST:
-                message = u"Please log in again, because your session has expired."
+                message = "Please log in again, because your session has expired."
                 return _display_login_form(request, message)
 
             # Check the password.

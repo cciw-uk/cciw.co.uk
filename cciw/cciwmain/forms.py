@@ -33,7 +33,7 @@ class CciwFormMixin(object):
         if top_errors:
             output.insert(0, self.error_row_template % top_errors)
         if hidden_fields:  # Insert any hidden fields in the last row.
-            str_hidden = u''.join(hidden_fields)
+            str_hidden = ''.join(hidden_fields)
             output.append(str_hidden)
         output.append(self.end_template)
         return mark_safe('\n'.join(output))
@@ -44,7 +44,7 @@ class CciwFormMixin(object):
         bf_errors = self.error_class([escape(error) for error in bf.errors])  # Escape and cache in local variable.
         if bf.is_hidden:
             if bf_errors:
-                top_errors.extend([u'(Hidden field %s) %s' % (name, force_text(e)) for e in bf_errors])
+                top_errors.extend(['(Hidden field %s) %s' % (name, force_text(e)) for e in bf_errors])
             hidden_fields.append(str(bf))
         else:
             if bf_errors:
@@ -71,7 +71,7 @@ class CciwFormMixin(object):
             if field.help_text:
                 help_text = self.help_text_html_template % force_text(field.help_text)
             else:
-                help_text = u''
+                help_text = ''
             output.append(self.normal_row_template % {
                     'errors_html': errors_html,
                     'label': force_text(label),

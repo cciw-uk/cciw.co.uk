@@ -7,7 +7,7 @@ from cciw.bookings.models import Booking, Payment
 
 
 def format_address(*args):
-    return u'\n'.join(arg.strip() for arg in args)
+    return '\n'.join(arg.strip() for arg in args)
 
 
 def camp_bookings_to_spreadsheet(camp, spreadsheet):

@@ -29,7 +29,7 @@ class PagingControlNode(template.Node):
 
         output = []
         if (total_pages > 1):
-            output.append(u"&mdash; Page %d  of %d &mdash;&nbsp;&nbsp; " %
+            output.append("&mdash; Page %d  of %d &mdash;&nbsp;&nbsp; " %
                 (cur_page, total_pages))
 
             # Constraints:
@@ -56,34 +56,34 @@ class PagingControlNode(template.Node):
             last_page = 0
             for i in sorted(pages):
                 if (i > 0):
-                    output.append(u" ")
+                    output.append(" ")
                 if i > last_page + 1:
-                    output.append(u"&hellip; ")
+                    output.append("&hellip; ")
 
                 if i == cur_page:
-                    output.append(u'<span class="pagingLinkCurrent">%s</span>' % str(i))
+                    output.append('<span class="pagingLinkCurrent">%s</span>' % str(i))
                 else:
                     output.append(
-                        u'<a title="%(title)s" class="pagingLink" href="%(href)s">%(pagenumber)d</a>' % \
-                        { 'title': u'Page ' + str(i),
+                        '<a title="%(title)s" class="pagingLink" href="%(href)s">%(pagenumber)d</a>' % \
+                        { 'title': 'Page ' + str(i),
                           'href': page_link(request, i, self.fragment),
                           'pagenumber': i })
                 last_page = i
             output.append(" | ")
             if cur_page > 1:
                 output.append(
-                    u'<a class="pagingLink" title="Previous page" href="%s">&laquo;</a>' % \
+                    '<a class="pagingLink" title="Previous page" href="%s">&laquo;</a>' % \
                     page_link(request, cur_page - 1, self.fragment))
             else:
-                output.append(u'<span class="pagingLinkCurrent">&laquo;</span>')
-            output.append(u"&nbsp;")
+                output.append('<span class="pagingLinkCurrent">&laquo;</span>')
+            output.append("&nbsp;")
             if cur_page < total_pages:
                 output.append(
-                    u'<a class="pagingLink" title="Next page" href="%s">&raquo;</a>' % \
+                    '<a class="pagingLink" title="Next page" href="%s">&raquo;</a>' % \
                     page_link(request, cur_page + 1, self.fragment))
             else:
-                output.append(u'<span class="pagingLinkCurrent">&raquo;</span>')
-        return u''.join(output)
+                output.append('<span class="pagingLinkCurrent">&raquo;</span>')
+        return ''.join(output)
 
 
 
@@ -111,17 +111,17 @@ class EarlierLaterNode(template.Node):
         cur_page = int(context['page'])
         total_pages = int(context['pages'])
         request = context['request']
-        output = [u'<span class="earlierlater">']
+        output = ['<span class="earlierlater">']
         if cur_page < total_pages:
-            output.append(u'<a href="%s">&laquo; earlier</a>' % page_link(request, cur_page + 1))
+            output.append('<a href="%s">&laquo; earlier</a>' % page_link(request, cur_page + 1))
         else:
-            output.append(u'&laquo; earlier')
+            output.append('&laquo; earlier')
         output.append(' | ')
         if cur_page > 1:
-            output.append(u'<a href="%s">later &raquo;</a>' % page_link(request, cur_page - 1))
+            output.append('<a href="%s">later &raquo;</a>' % page_link(request, cur_page - 1))
         else:
-            output.append(u'later &raquo;')
-        output.append(u'</span>')
+            output.append('later &raquo;')
+        output.append('</span>')
         return ''.join(output)
 
 def do_ealier_later(parser, token):
@@ -137,26 +137,26 @@ class SortingControlNode(template.Node):
 
     def render(self, context):
         request = context['request']
-        output = u'<span class="sortingControl">'
+        output = '<span class="sortingControl">'
         current_order = request.GET.get('order','')
-        if current_order == u'':
+        if current_order == '':
             try:
                 current_order = context['default_order']
             except KeyError:
-                current_order = u''
+                current_order = ''
 
         if current_order == self.ascending_param:
-            output += u'<a title="%s" href="%s">' % (self.descending_title, html.escape(modified_query_string(request, {'order': self.descending_param}))) + \
-                u'<img class="sortAscActive" src="%simages/arrow-up.gif" alt="Sorted ascending" /></a>' % settings.STATIC_URL
+            output += '<a title="%s" href="%s">' % (self.descending_title, html.escape(modified_query_string(request, {'order': self.descending_param}))) + \
+                '<img class="sortAscActive" src="%simages/arrow-up.gif" alt="Sorted ascending" /></a>' % settings.STATIC_URL
         elif current_order == self.descending_param:
-            output += u'<a title="%s" href="%s">' % (self.ascending_title, html.escape(modified_query_string(request, {'order': self.ascending_param}))) + \
-                u'<img class="sortDescActive" src="%simages/arrow-down.gif" alt="Sorted descending" /></a>' % settings.STATIC_URL
+            output += '<a title="%s" href="%s">' % (self.ascending_title, html.escape(modified_query_string(request, {'order': self.ascending_param}))) + \
+                '<img class="sortDescActive" src="%simages/arrow-down.gif" alt="Sorted descending" /></a>' % settings.STATIC_URL
         else:
             # query string resets page to zero if we use a new type of sorting
-            output += u'<a title="%s" href="%s">' % (self.ascending_title, html.escape(modified_query_string(request, {'order': self.ascending_param, 'page': 1}))) + \
-                u'<img class="sortAsc" src="%simages/arrow-up.gif" alt="Sort ascending" /></a>' % settings.STATIC_URL
+            output += '<a title="%s" href="%s">' % (self.ascending_title, html.escape(modified_query_string(request, {'order': self.ascending_param, 'page': 1}))) + \
+                '<img class="sortAsc" src="%simages/arrow-up.gif" alt="Sort ascending" /></a>' % settings.STATIC_URL
 
-        output += u'</span>'
+        output += '</span>'
         return output
 
 
@@ -194,7 +194,7 @@ class ForwardQueryParamNode(template.Node):
 
     def render(self, context):
         request = context['request']
-        return u'<div><input type="hidden" name="%s" value="%s" /></div>' % \
+        return '<div><input type="hidden" name="%s" value="%s" /></div>' % \
                (self.param_name, html.escape(request.GET.get(self.param_name, '')))
 
 
