@@ -139,7 +139,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='bookingaccount',
-            unique_together=set([('name', 'post_code'), ('name', 'email')]),
+            unique_together=set([('post_code', 'name'), ('name', 'email')]),
         ),
         migrations.AddField(
             model_name='booking',

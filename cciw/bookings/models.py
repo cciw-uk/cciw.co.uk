@@ -151,8 +151,9 @@ class BookingAccount(models.Model):
         return ", ".join(out)
 
     class Meta:
-        unique_together = [('name', 'post_code'),
-                           ('name', 'email')]
+        unique_together = [
+            ('name', 'email')
+        ]
 
     def save(self, **kwargs):
         # We have to ensure that only receive_payment touches the total_received
