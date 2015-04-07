@@ -397,7 +397,7 @@ def verify_email_and_start(request, account_id, token):
 
         resp = next_step(account)
         set_booking_account_cookie(resp, account)
-        messages.info(request, "Logged in!")
+        messages.info(request, "Logged in! You will stay logged in for two weeks. Remember to log out if you are using a public computer.")
         return resp
 
     return verify_email(request, account_id, token,
