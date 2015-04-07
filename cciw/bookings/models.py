@@ -150,11 +150,6 @@ class BookingAccount(models.Model):
             out.append("(empty)")
         return ", ".join(out)
 
-    class Meta:
-        unique_together = [
-            ('name', 'email')
-        ]
-
     def save(self, **kwargs):
         # We have to ensure that only receive_payment touches the total_received
         # field when doing updates
