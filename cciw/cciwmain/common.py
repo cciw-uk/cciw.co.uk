@@ -265,6 +265,7 @@ def object_list(request, queryset, extra_context=None,
 _thisyear = None
 _thisyear_timestamp = None
 
+
 def get_thisyear():
     """
     Get the year the website is currently on.  The website year is
@@ -272,8 +273,9 @@ def get_thisyear():
     afterwards if that camp is in the past.
     """
     global _thisyear, _thisyear_timestamp
-    if _thisyear is None or _thisyear_timestamp is None \
-        or (timezone.now() - _thisyear_timestamp).seconds > 3600:
+    if (_thisyear is None
+        or _thisyear_timestamp is None
+        or (timezone.now() - _thisyear_timestamp).seconds > 3600):
         from cciw.cciwmain.models import Camp
         try:
             lastcamp = Camp.objects.prefetch_related(None).order_by('-end_date')[0]
@@ -292,7 +294,7 @@ def standard_subs(value):
     return value.replace('{{thisyear}}', str(get_thisyear()))\
                 .replace('{{media}}', settings.MEDIA_URL)\
                 .replace('{{static}}', settings.STATIC_URL)
-standard_subs.is_safe = True # provided our substitutions don't introduce anything that must be escaped
+standard_subs.is_safe = True  # provided our substitutions don't introduce anything that must be escaped
 
 
 def get_order_option(order_options, request, default_order_by):
@@ -339,7 +341,7 @@ def standard_processor(request):
     context['homepage'] = (request.path == "/")
 
     # Ugly special casing for 'thisyear' camps
-    m = re.match('/camps/%s/(\d+)/' % str(thisyear),  request.path)
+    m = re.match('/camps/%s/(\d+)/' % str(thisyear), request.path)
     if m is not None:
         request_path = '/thisyear/%s/' % m.groups()[0]
     else:
@@ -349,6 +351,7 @@ def standard_processor(request):
     # renderer *when needed*, so we avoid queries. We memoize in links_cache to
     # avoid double queries
     links_cache = []
+
     def get_links():
         if len(links_cache) > 0:
             return links_cache
@@ -372,6 +375,7 @@ def standard_processor(request):
 
 
 member_username_re = re.compile(r'^[A-Za-z0-9_]{3,15}$')
+
 
 def get_member_href(user_name):
     if not member_username_re.match(user_name):
