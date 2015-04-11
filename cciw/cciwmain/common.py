@@ -129,13 +129,9 @@ class CciwBaseView(TemplateView):
     metadata_description = None
     metadata_keywords = None
 
-    def get_context_data(self, request):
-        d = dict(title=self.metadata_title,
-                 description=self.metadata_description,
-                 keywords=self.metadata_keywords)
-        c = super(CciwBaseView, self).get_context_data(request)
-        d.update(c)
-        return d
+    magic_context = lambda self: dict(title=self.metadata_title,
+                                      description=self.metadata_description,
+                                      keywords=self.metadata_keywords)
 
 
 class AjaxFormValidation(object):
