@@ -585,6 +585,15 @@ class Booking(models.Model):
         else:
             return early_bird_is_available(self.camp.year, booked_at)
 
+    def early_bird_discount_missed(self):
+        """
+        Returns the discount that was missed due to failing to book early.
+        """
+        if self.early_bird_discount or self.price_type == PRICE_CUSTOM:
+            return Decimal(0)  # Got the discount, or it wasn't available.
+        return Price.objects.get(price_type=PRICE_EARLY_BIRD_DISCOUNT,
+                                 year=self.camp.year).price
+
     def age_on_camp(self):
         # Age is calculated based on school years, i.e. age on 31st August
         # See also BookingManager.need_approving()
@@ -595,7 +604,7 @@ class Booking(models.Model):
 
     @property
     def is_too_young(self):
-         return self.age_on_camp() < self.camp.minimum_age
+        return self.age_on_camp() < self.camp.minimum_age
 
     @property
     def is_too_old(self):

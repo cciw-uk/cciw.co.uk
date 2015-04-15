@@ -11,6 +11,14 @@ Name: {{ b.name }}
 Camp: {{ b.camp }}
 Dates: {{ b.camp.start_date|date:"d F" }} to {{ b.camp.end_date|date:"d F Y" }}
 {% endfor %}
+{% if early_bird_discount_missed %}
+------------------------------------------------------------
+PLEASE NOTE: You missed out!
+
+If you had booked earlier, you would have saved £{{ early_bird_discount_missed }}
+with our "early bird discount". Remember to check the web
+site and book earlier next year.
+------------------------------------------------------------{% endif %}
 
 The camp leaders will be in contact with more details in due time.
 

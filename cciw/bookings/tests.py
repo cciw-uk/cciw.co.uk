@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from datetime import timedelta, date, datetime
 from decimal import Decimal
 import json
@@ -1752,6 +1754,20 @@ class TestEarlyBird(CreatePlaceMixin, TestCase):
         # un-discounted price.
         self.assertEqual(place.amount_due, self.price_full)
         self.assertEqual(place.booked_at, None)
+
+    def test_non_early_bird_booking_warning(self):
+        self.create_place()
+        mail.outbox = []
+        acc = self.get_account()
+        with mock.patch('cciw.bookings.models.get_early_bird_cutoff_date') as mock_f:
+            mock_f.return_value = timezone.now() - timedelta(days=10)
+            book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
+            acc.receive_payment(self.price_full)
+        acc = self.get_account()
+        mails = [m for m in mail.outbox if m.to == [self.email]]
+        assert len(mails) == 1
+        self.assertIn("If you had booked earlier", mails[0].body)
+        self.assertIn("£10", mails[0].body)
 
 
 class TestExportPlaces(CreatePlaceMixin, TestCase):

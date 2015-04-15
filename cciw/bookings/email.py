@@ -116,6 +116,7 @@ def send_places_confirmed_email(bookings, **kwargs):
         'account': account,
         'bookings': bookings,
         'payment_received': 'payment_received' in kwargs,
+        'early_bird_discount_missed': sum(b.early_bird_discount_missed() for b in bookings)
     }
     body = loader.render_to_string('cciw/bookings/place_confirmed_email.txt', c)
     subject = "CCIW booking - place confirmed"
