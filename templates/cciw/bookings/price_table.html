@@ -1,12 +1,13 @@
 <p>
   <table class="prices">
-    {% if price_full_discount or price_2nd_child_discount or price_3rd_child_discount %}
+    {% if price_early_bird_discount %}
       <tr>
         <td></td>
         <td></td>
         <td>
           {% if booking_open and not early_bird_available %}
             <s>Early bird discount</s>
+            <br>(too late, sorry!)
           {% else %}
             <b>Early bird discount</b>
           {% endif %}
@@ -14,46 +15,20 @@
       </tr>
     {% endif %}
 
-    <tr>
-      <td>Full price:</td>
-      <td>£{{ price_full }}</td>
-      {% if price_full_discount %}
-        <td>
-          {% if booking_open and not early_bird_available %}
-            <s>£{{ price_full_discount }}</s>
-          {% else %}
-            <b>£{{ price_full_discount }}</b>
-          {% endif %}
-        </td>
-      {% endif %}
-    </tr>
-
-    <tr>
-      <td>2nd camper from the same family:</td>
-      <td>£{{ price_2nd_child }}</td>
-      {% if price_2nd_child_discount %}
-        <td>
-          {% if booking_open and not early_bird_available %}
-            <s>£{{ price_2nd_child_discount }}</s>
-          {% else %}
-            <b>£{{ price_2nd_child_discount }}</b>
-          {% endif %}
-        </td>
-      {% endif %}
-    </tr>
-
-    <tr>
-      <td>Subsequent children from the same family:</td>
-      <td>£{{ price_3rd_child }}</td>
-      {% if price_3rd_child_discount %}
-        <td>
-          {% if booking_open and not early_bird_available %}
-            <s>£{{ price_3rd_child_discount }}</s>
-          {% else %}
-            <b>£{{ price_3rd_child_discount }}</b>
-          {% endif %}
-        </td>
-      {% endif %}
-    </tr>
+    {% for caption, price, discounted_price in price_list %}
+      <tr>
+        <td>{{ caption }}</td>
+        <td>£{{ price }}</td>
+        {% if discounted_price %}
+          <td>
+            {% if booking_open and not early_bird_available %}
+              <s>£{{ discounted_price }}</s>
+            {% else %}
+              <b>£{{ discounted_price }}</b>
+            {% endif %}
+          </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
   </table>
 </p>

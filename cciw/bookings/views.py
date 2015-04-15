@@ -298,22 +298,28 @@ class BookingIndex(CciwBaseView):
             early_bird_available = False
 
         prices = list(prices.filter(price_type__in=[v for v, d in REQUIRED_PRICE_TYPES]))
-        context['booking_open'] = booking_open
         def getp(v):
             try:
                 return [p for p in prices if p.price_type == v][0].price
             except IndexError:
                 return None
-        context['price_full'] = getp(PRICE_FULL)
-        context['price_2nd_child'] = getp(PRICE_2ND_CHILD)
-        context['price_3rd_child'] = getp(PRICE_3RD_CHILD)
-        context['price_deposit'] = getp(PRICE_DEPOSIT)
-        context['price_early_bird_discount'] = getp(PRICE_EARLY_BIRD_DISCOUNT)
-        d = getp(PRICE_EARLY_BIRD_DISCOUNT)
-        if d:
-            context['price_full_discount'] = getp(PRICE_FULL) - d
-            context['price_2nd_child_discount'] = getp(PRICE_2ND_CHILD) - d
-            context['price_3rd_child_discount'] = getp(PRICE_3RD_CHILD) - d
+
+        early_bird_discount = getp(PRICE_EARLY_BIRD_DISCOUNT)
+        price_list = [
+            ('Full price', getp(PRICE_FULL)),
+            ('2nd camper from the same family', getp(PRICE_2ND_CHILD)),
+            ('Subsequent children from the same family', getp(PRICE_3RD_CHILD))
+        ]
+        # Add discounts:
+        price_list = [(caption, p, p - early_bird_discount if early_bird_discount is not None else None)
+                      for caption, p in price_list]
+
+        context.update({
+            'price_list': price_list,
+            'price_deposit': getp(PRICE_DEPOSIT),
+            'price_early_bird_discount': early_bird_discount,
+            'booking_open': booking_open,
+        })
         return self.render(context)
 
 
