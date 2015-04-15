@@ -10,7 +10,8 @@ from django.utils.http import int_to_base36, base36_to_int
 
 from cciw.officers.email import admin_emails_for_camp
 
-LATE_BOOKING_THRESHOLD = 30 # days
+LATE_BOOKING_THRESHOLD = 30  # days
+
 
 class EmailVerifyTokenGenerator(object):
     """
@@ -54,7 +55,7 @@ class EmailVerifyTokenGenerator(object):
         return "%s-%s" % (ts_b36, hash)
 
     def _num_days(self, dt):
-        return (dt - date(2011,1,1)).days
+        return (dt - date(2011, 1, 1)).days
 
     def _today(self):
         # Used for mocking in tests
@@ -72,7 +73,7 @@ def send_verify_email(request, booking_account):
         'account_id': int_to_base36(booking_account.id),
         'token': token_generator.make_token(booking_account),
         'protocol': 'https' if request.is_secure() else 'http',
-        }
+    }
 
     body = loader.render_to_string("cciw/bookings/verification_email.txt", c)
     subject = "CCIW booking account"
@@ -88,7 +89,7 @@ def site_address_url_start():
     Returns start of URL (protocol and domain) for this site
     (a guess)
     """
-    protocol = 'https' if settings.SESSION_COOKIE_SECURE else 'http' # best guess
+    protocol = 'https' if settings.SESSION_COOKIE_SECURE else 'http'  # best guess
     return protocol + '://' + get_current_site(None).domain
 
 
@@ -96,7 +97,7 @@ def send_unrecognised_payment_email(ipn_obj):
     c = {
         'url_start': site_address_url_start(),
         'ipn_obj': ipn_obj,
-        }
+    }
 
     body = loader.render_to_string("cciw/bookings/unrecognised_payment_email.txt", c)
     subject = "CCIW booking - unrecognised payment"
@@ -115,7 +116,7 @@ def send_places_confirmed_email(bookings, **kwargs):
         'account': account,
         'bookings': bookings,
         'payment_received': 'payment_received' in kwargs,
-        }
+    }
     body = loader.render_to_string('cciw/bookings/place_confirmed_email.txt', c)
     subject = "CCIW booking - place confirmed"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
@@ -135,7 +136,7 @@ def send_places_confirmed_email(bookings, **kwargs):
                 'booking': booking,
                 'camp': booking.camp,
                 'url_start': site_address_url_start(),
-                }
+            }
             body = loader.render_to_string('cciw/bookings/late_place_confirmed_email.txt', c)
             subject = "CCIW late booking: %s" % booking.name
 
@@ -152,7 +153,7 @@ def send_booking_expiry_mail(account, bookings, expired):
         'account': account,
         'bookings': bookings,
         'expired': expired,
-        }
+    }
     body = loader.render_to_string('cciw/bookings/place_expired_mail.txt', c)
     if expired:
         subject = "CCIW booking - booking expired"
@@ -170,12 +171,13 @@ def send_booking_approved_mail(booking):
         'url_start': site_address_url_start(),
         'account': account,
         'booking': booking,
-        }
+    }
     body = loader.render_to_string('cciw/bookings/place_approved_email.txt', c)
     subject = "CCIW booking - approved"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
     return True
+
 
 def send_booking_confirmed_mail(booking):
     account = booking.account
@@ -185,7 +187,7 @@ def send_booking_confirmed_mail(booking):
     c = {
         'account': account,
         'booking': booking,
-        }
+    }
     body = loader.render_to_string('cciw/bookings/place_booked_email.txt', c)
     subject = "CCIW booking - confirmed"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
@@ -214,6 +216,6 @@ def send_payment_reminder_emails():
             'account': account,
             'account_id': int_to_base36(account.id),
             'token': EmailVerifyTokenGenerator().make_token(account),
-            }
+        }
         body = loader.render_to_string('cciw/bookings/payments_due_email.txt', c)
         mail.send_mail(subject, body, settings.BOOKING_SECRETARY_EMAIL, [account.email])
