@@ -151,3 +151,44 @@ CCIW_STAGING_MANAGE=/home/cciw/webapps/cciw_staging_django/src/manage.py
 30      * * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE expire_bookings
 18      1 * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE clear_securedownload_links
 3       2 * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE cleanup
+
+
+PayPal
+======
+
+
+PayPal is integrated using IPN.
+
+To test in development, you will need to use "fab run_ngrok".
+
+Accounts
+--------
+
+The most confusing thing about PayPal is all the accounts.
+
+The main account for receiving money: paypal@cciw.co.uk
+
+In addition, there are sandbox accounts for testing.
+
+Sandbox
+~~~~~~~
+
+This is managed from:
+
+Site: https://developer.paypal.com
+Login: paypal@cciw.co.uk
+
+From this site, you can create/manage various sandbox accounts which play the
+role of buyer/seller:
+
+https://developer.paypal.com/webapps/developer/applications/accounts
+
+'Buyer' account:
+Email: paypal-buyer@cciw.co.uk
+Password: asdfghjk
+
+'Seller' account - this is the one you need to test PayPal interactions in development
+Email: paypal-facilitator@cciw.co.uk
+Password: qwertyui
+
+These accounts can be used to log in on www.sandbox.paypal.com/
