@@ -214,7 +214,7 @@ def unset_booking_account_cookie(response):
     response.delete_cookie('bookingaccount')
 
 
-def get_booking_account_from_cookie(request):
+def get_booking_account_from_request(request):
     cookie = request.get_signed_cookie('bookingaccount',
                                        salt=BOOKING_COOKIE_SALT,
                                        default=None,
@@ -229,7 +229,7 @@ def get_booking_account_from_cookie(request):
 
 def ensure_booking_acount_attr(request):
     if not hasattr(request, 'booking_account'):
-        request.booking_account = get_booking_account_from_cookie(request)
+        request.booking_account = get_booking_account_from_request(request)
 
 
 def booking_account_required(view_func):
@@ -344,7 +344,7 @@ class BookingStart(BookingLogInBase):
     magic_context = {'booking_open': is_booking_open_thisyear}
 
     def handle(self, request, *args, **kwargs):
-        account = get_booking_account_from_cookie(request)
+        account = get_booking_account_from_request(request)
         if account is not None:
             return next_step(account)
         if request.method == "POST":
