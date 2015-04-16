@@ -230,7 +230,7 @@
              // Typing enter on text boxes shouldn't activate the 'Use existing
              // data' button
              $('#id_addplaceform input[type=text]').keypress(function(ev) {
-                 var code = (ev.keyCode || e.which);
+                 var code = (ev.keyCode || ev.which);
                  if (code == 13) {
                      ev.preventDefault();
                  }
