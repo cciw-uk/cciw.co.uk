@@ -8,6 +8,10 @@ from fabric.contrib.files import exists
 from fabric.contrib import console
 from fabric.context_managers import cd, lcd, settings
 import psutil
+import re
+import subprocess
+import tempfile
+import time
 
 join = os.path.join
 
@@ -474,3 +478,61 @@ def get_and_load_production_db():
     """
     filename = get_live_db()
     local_restore_from_dump(filename)
+
+
+@task
+def run_ngrok(port=8000):
+    """
+    Launch ngrok, and update Site record to match the URL.
+    """
+    # We don't want to interfere with ngrok input/output/screen use, so we fork
+    # using exec. However, we do need to know what is going on in order know the
+    # URL, so we spawn another fab task that monitors a log file
+
+    # Check that this works first:
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
+    import django
+    django.setup()
+
+    # Need a logfile
+    log_fd, log_filename = tempfile.mkstemp()
+    os.close(log_fd)
+
+    # launch fab in separate process in background.
+    os.spawnv(os.P_NOWAIT,
+              "/bin/sh", ["sh", "-c", "fab ngrok_helper:{0} > /dev/null".format(log_filename)])
+
+    # Now launch ngrok, replacing current process
+    ngrokpath = _get_path("ngrok")
+    os.execv(ngrokpath, ["ngrok", "--log=%s" % log_filename, str(port)])
+
+
+@task
+def ngrok_helper(log_filename):
+    f = open(log_filename, "r")
+    while True:
+        line = f.readline()
+        if line:
+            m = re.search("\[client\] Tunnel established at ([^ ]*)", line.strip())
+            if m:
+                set_site(m.groups()[0])
+            if re.search("\[controller\] Shutting down", line):
+                break
+        else:
+            time.sleep(0.5)
+    os.unlink(log_filename)
+
+
+def _get_path(program_name):
+    return subprocess.check_output(["which", program_name]).strip()
+
+
+@task
+def set_site(url):
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
+    import django
+    django.setup()
+    from django.contrib.sites.models import Site
+    from urllib.parse import urlparse
+    parts = urlparse(url)
+    Site.objects.all().update(domain=parts.netloc)
