@@ -2,6 +2,11 @@
 {% load standardpage %}
 {% block content %}
 
+  {% if request.booking_account %}
+    <h2>Your account</h2>
+    You are logged in as <b>{{ request.booking_account.name }}</b>. <a href="{% url 'cciw.bookings.views.account_overview' %}">View your account details</a>.
+  {% endif %}
+
   <h2>Prices {{ thisyear }}</h2>
 
   {% if booking_open %}

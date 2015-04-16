@@ -968,7 +968,7 @@ ul.messagelist li.error{
 
 /* Booking */
 
-a.booknow {
+.bigaction() {
     -moz-box-shadow:inset 0px 1px 0px 0px #729e48;
     -webkit-box-shadow:inset 0px 1px 0px 0px #729e48;
     box-shadow:inset 0px 1px 0px 0px #729e48;
@@ -986,15 +986,23 @@ a.booknow {
     text-shadow:1px 1px 0px #528009;
     margin-left: 5px;
     margin-right: 5px;
+
+    &:hover {
+        background-color: @primaryColorLighter;
+        border-color:#f0fff0;
+    }
+    &:active {
+        position:relative;
+        top:1px;
+    }
 }
 
-a.booknow:hover {
-    background-color: @primaryColorLighter;
-    border-color:#f0fff0;
+a.booknow {
+    .bigaction();
 }
-a.booknow:active {
-    position:relative;
-    top:1px;
+
+a.paybalance {
+    .bigaction();
 }
 
 @bookingbarColor: @pageTitleColor;

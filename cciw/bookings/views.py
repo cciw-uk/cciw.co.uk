@@ -279,6 +279,7 @@ class BookingIndex(CciwBaseView):
     template_name = "cciw/bookings/index.html"
 
     def handle(self, request):
+        ensure_booking_acount_attr(request)
         year = get_thisyear()
         bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
         context = {}
@@ -298,6 +299,7 @@ class BookingIndex(CciwBaseView):
             early_bird_available = False
 
         prices = list(prices.filter(price_type__in=[v for v, d in REQUIRED_PRICE_TYPES]))
+
         def getp(v):
             try:
                 return [p for p in prices if p.price_type == v][0].price
@@ -910,6 +912,8 @@ class BookingAccountOverview(CciwBaseView):
         c['cancelled_places'] = bookings.cancelled()
         c['basket'] = bookings.in_basket()
         c['shelf'] = bookings.on_shelf().exists()
+        c['balance_due'] = acc.get_balance(allow_deposits=True)
+        c['balance_full'] = acc.get_balance(allow_deposits=False)
         c['stage'] = ''
         return self.render(c)
 

@@ -83,6 +83,17 @@
     </ul>
   {% endif %}
 
+  <h1>Balance</h1>
+
+  {% if balance_full <= 0 %}
+    <p>You have nothing to pay.</p>
+  {% else %}
+    <div style="float: right"><a class="paybalance" href="{% url 'cciw.bookings.views.pay' %}">Pay now</a></div>
+    <p>Your total balance is: £{{ balance_full }}</p>
+    {% if balance_due != balance_full %}
+      <p>Balance currently due: £{{ balance_due }}</p>
+    {% endif %}
+  {% endif %}
 
   <h1>Logging out</h1>
 
