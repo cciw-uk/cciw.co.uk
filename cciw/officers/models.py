@@ -37,12 +37,14 @@ class Referee(object):
 
 class ApplicationManager(models.Manager):
     use_for_related_fields = True
+
     def get_queryset(self):
         return super(ApplicationManager, self).get_queryset().select_related('officer')
 
 
 NAME_LENGTH = 100
 REFEREE_NAME_HELP_TEXT = "Name only - please do not include job title or other information."
+
 
 class Application(models.Model):
     officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
@@ -251,7 +253,7 @@ class Reference(models.Model):
         for l in self.comments.split("\n"):
             m = re.match("Reference requested by .* on (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", l)
             if m is not None:
-                dt = timezone.get_default_timezone().localize(datetime.strptime(m.groups()[0], self.log_datetime_format))
+                dt = timezone.utc.localize(datetime.strptime(m.groups()[0], self.log_datetime_format))
         return dt
 
     def log_request_made(self, user, dt):
