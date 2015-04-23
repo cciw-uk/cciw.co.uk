@@ -258,6 +258,7 @@ class Reference(models.Model):
         self.comments = (self.comments +
                          ("\nReference received via online system on %s\n" %
                           dt.strftime("%Y-%m-%d %H:%M:%S")))
+        self.save()
         self.actions.create(action_type=ReferenceAction.REFERENCE_RECEIVED,
                             created=dt)
 
@@ -265,7 +266,17 @@ class Reference(models.Model):
         self.comments = (self.comments +
                          ("\nReference requested by user %s via online system on %s\n" %
                           (user.username, dt.strftime(self.log_datetime_format))))
+        self.save()
         self.actions.create(action_type=ReferenceAction.REFERENCE_REQUESTED,
+                            created=dt,
+                            user=user)
+
+    def log_nag_made(self, user, dt):
+        self.comments = (self.comments +
+                         ("\nNagged applicant by user %s via online system on %s\n" %
+                          (user.username, dt.strftime(self.log_datetime_format))))
+        self.save()
+        self.actions.create(action_type=ReferenceAction.REFERENCE_NAG,
                             created=dt,
                             user=user)
 

@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.email import make_ref_form_url
-from cciw.officers.models import Application
+from cciw.officers.models import Application, ReferenceAction
 from cciw.officers.views import get_previous_references
 from cciw.utils.tests.webtest import WebTestBase
 
@@ -178,6 +178,7 @@ class RequestReference(WebTestBase):
         msgs = [e for e in mail.outbox if "Need reference from" in e.subject]
         self.assertEqual(len(msgs), 1)
         self.assertEqual(msgs[0].extra_headers.get('Reply-To', ''), LEADER_EMAIL)
+        self.assertEqual(refinfo.actions.filter(action_type=ReferenceAction.REFERENCE_NAG).count(), 1)
 
 
 class CreateReference(WebTestBase):

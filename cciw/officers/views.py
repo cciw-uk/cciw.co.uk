@@ -531,6 +531,7 @@ def nag_by_officer(request, year=None, number=None):
             messageform.is_valid()
             send_nag_by_officer(wordwrap(messageform.cleaned_data['message'], 70),
                                 officer, ref, request.user)
+            ref.log_nag_made(request.user, timezone.now())
             return close_window_response()
         else:
             # cancel
