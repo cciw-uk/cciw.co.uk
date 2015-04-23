@@ -107,6 +107,7 @@ tr.refrow td.nopadding
     border-top: 1px solid #888;
     padding-left: 1em;
     padding-right: 1em;
+    clear: both;
 }
 
 
@@ -135,6 +136,12 @@ tr.refrow td.nopadding
 .referencebutton
 {
     padding: 0.5em;
+}
+
+.referenceactions {
+    float: right;
+    width: 40em;
+    max-width: 40%;
 }
 
 /* Admin overrides */

@@ -1,5 +1,22 @@
 <div id="officerref{{ ref.id }}" class="referencesection">
   <h3 class="referencestart">{{ ref.application.officer.first_name }} {{ ref.application.officer.last_name }}</h3>
+  <div class="referenceactions">
+    {% with actions=ref.actions.all %}
+      {% if actions %}
+        <h4>History</h4>
+        <table>
+          {% for action in ref.actions.all %}
+            <tr>
+              <td>{{ action.created|date:"Y-m-d H:i" }}</td>
+              <td>{{ action.created|timesince }} ago</td>
+              <td>{{ action.get_action_type_display }}</td>
+              <td>{% if action.user %}by {{ action.user.username }}{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </table>
+      {% endif %}
+    {% endwith %}
+  </div>
   <h4 class="refereename">From: {{ ref.referee.name }}</h4>
 
   <div class="referencemode" style="display:none;">{{ mode }}</div>

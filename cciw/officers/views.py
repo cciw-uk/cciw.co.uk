@@ -335,11 +335,13 @@ def manage_references(request, year=None, number=None):
         if Reference.objects.filter(application__in=app_ids).count() < len(apps) * 2:
             [a.references for a in apps]
 
-        refinfo = Reference.objects\
-            .filter(application__in=app_ids)\
-            .order_by('application__officer__first_name', 'application__officer__last_name',
-                      'referee_number')
-
+        refinfo = (Reference.objects
+                   .filter(application__in=app_ids)
+                   .prefetch_related('actions')
+                   .order_by('application__officer__first_name',
+                             'application__officer__last_name',
+                             'referee_number')
+                   )
     else:
         refinfo = Reference.objects.filter(pk=ref_id).order_by()
 
