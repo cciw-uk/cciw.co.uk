@@ -276,6 +276,22 @@ class Reference(models.Model):
         unique_together = (("application", "referee_number"),)
 
 
+class ReferenceAction(models.Model):
+    REFERENCE_REQUESTED = "request"
+    REFERENCE_RECEIVED = "received"
+    REFERENCE_NAG = "nag"
+
+    ACTION_CHOICES = [
+        (REFERENCE_REQUESTED, "Reference requested"),
+        (REFERENCE_RECEIVED, "Reference receieved"),
+        (REFERENCE_NAG, "Applicant nagged"),
+    ]
+    reference = models.ForeignKey(Reference, related_name="actions")
+    created = models.DateTimeField(default=timezone.now)
+    action_type = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    user = models.ForeignKey(User, null=True)
+
+
 class ReferenceFormManager(models.Manager):
     # manager to reduce number of SQL queries, especially in admin
     use_for_related_fields = True
