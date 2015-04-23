@@ -3,7 +3,7 @@ from itertools import groupby
 
 from dateutil.relativedelta import relativedelta
 
-from cciw.bookings.models import Booking, Payment
+from cciw.bookings.models import Booking, Payment, BookingAccount
 
 
 def format_address(*args):
@@ -76,6 +76,24 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                                            for b in bookings if
                                            camp.start_date <= get_birthday(b) <= camp.end_date])
 
+    return spreadsheet.to_bytes()
+
+
+def camp_sharable_transport_details_to_spreadsheet(camp, spreadsheet):
+    accounts = (BookingAccount.objects
+                .filter(share_phone_number=True)
+                .filter(bookings__in=camp.bookings.confirmed())
+                .distinct()
+                )
+    columns = [('Name', lambda a: a.name),
+               ('Post code', lambda a: a.post_code),
+               ('Phone number', lambda a: a.phone_number),
+               ]
+
+    spreadsheet.add_sheet_with_header_row("Transport possibilities",
+                                          [n for n, f in columns],
+                                          [[f(b) for n, f in columns]
+                                           for b in accounts])
     return spreadsheet.to_bytes()
 
 
