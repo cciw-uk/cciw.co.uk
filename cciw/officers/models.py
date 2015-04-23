@@ -248,23 +248,26 @@ class Reference(models.Model):
         Returns the last date the reference was requested,
         or None if it is not known.
         """
-        # Parse the comments field:
-        dt = None
-        for l in self.comments.split("\n"):
-            m = re.match("Reference requested by .* on (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", l)
-            if m is not None:
-                dt = timezone.utc.localize(datetime.strptime(m.groups()[0], self.log_datetime_format))
-        return dt
+        last = self.actions.filter(action_type=ReferenceAction.REFERENCE_REQUESTED).order_by('created').last()
+        if last:
+            return last.created
+        else:
+            return None
 
     def log_reference_received(self, dt):
         self.comments = (self.comments +
                          ("\nReference received via online system on %s\n" %
                           dt.strftime("%Y-%m-%d %H:%M:%S")))
+        self.actions.create(action_type=ReferenceAction.REFERENCE_RECEIVED,
+                            created=dt)
 
     def log_request_made(self, user, dt):
         self.comments = (self.comments +
                          ("\nReference requested by user %s via online system on %s\n" %
                           (user.username, dt.strftime(self.log_datetime_format))))
+        self.actions.create(action_type=ReferenceAction.REFERENCE_REQUESTED,
+                            created=dt,
+                            user=user)
 
     class Meta:
         verbose_name = "Reference Metadata"
@@ -277,7 +280,7 @@ class Reference(models.Model):
 
 
 class ReferenceAction(models.Model):
-    REFERENCE_REQUESTED = "request"
+    REFERENCE_REQUESTED = "requested"
     REFERENCE_RECEIVED = "received"
     REFERENCE_NAG = "nag"
 
@@ -291,10 +294,17 @@ class ReferenceAction(models.Model):
     action_type = models.CharField(max_length=20, choices=ACTION_CHOICES)
     user = models.ForeignKey(User, null=True)
 
+    class Meta:
+        ordering = [('created')]
+
+    def __repr__(self):
+        return "<ReferenceAction {0} {1} | {2}>".format(self.action_type, self.created, self.reference)
+
 
 class ReferenceFormManager(models.Manager):
     # manager to reduce number of SQL queries, especially in admin
     use_for_related_fields = True
+
     def get_queryset(self):
         return super(ReferenceFormManager, self).get_queryset().select_related('reference_info__application__officer')
 
