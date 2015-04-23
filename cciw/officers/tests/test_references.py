@@ -179,6 +179,7 @@ class RequestReference(WebTestBase):
         self.assertEqual(len(msgs), 1)
         self.assertEqual(msgs[0].extra_headers.get('Reply-To', ''), LEADER_EMAIL)
 
+
 class CreateReference(WebTestBase):
     """
     Tests for page for referees submitting references

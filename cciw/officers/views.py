@@ -684,9 +684,7 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                     obj.date_created = date.today()
                     obj.save()
                     ref.received = True
-                    ref.comments = ref.comments + \
-                                   ("\nReference received via online system on %s\n" % \
-                                    timezone.now().strftime("%Y-%m-%d %H:%M:%S"))
+                    ref.log_reference_received(timezone.now())
                     ref.save()
                     # Send e-mails
                     send_leaders_reference_email(obj)

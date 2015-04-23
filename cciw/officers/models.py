@@ -256,10 +256,15 @@ class Reference(models.Model):
                 dt = timezone.utc.localize(datetime.strptime(m.groups()[0], self.log_datetime_format))
         return dt
 
+    def log_reference_received(self, dt):
+        self.comments = (self.comments +
+                         ("\nReference received via online system on %s\n" %
+                          dt.strftime("%Y-%m-%d %H:%M:%S")))
+
     def log_request_made(self, user, dt):
-        self.comments = self.comments + \
-            ("\nReference requested by user %s via online system on %s\n" % \
-                 (user.username, dt.strftime(self.log_datetime_format)))
+        self.comments = (self.comments +
+                         ("\nReference requested by user %s via online system on %s\n" %
+                          (user.username, dt.strftime(self.log_datetime_format))))
 
     class Meta:
         verbose_name = "Reference Metadata"
