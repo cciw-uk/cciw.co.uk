@@ -259,6 +259,42 @@ td div.postSubject
     border-bottom: 1px solid #336633;
 }
 
+@media screen and (max-width: 480px) {
+
+    table.responsive {
+        thead {
+            display: none;
+        }
+        tr {
+            display: block;
+            margin-bottom: 1em;
+            box-shadow: 0 2px 2px rgba(0,0,0,0.5);
+        }
+        td {
+            display: block;
+            text-align: right;
+            border-bottom-width: 1px;
+            border-top-width: 0px;
+            &:first-child {
+                border-top-width: 1px;
+            }
+            &:before {
+                content: attr(data-label);
+                float: left;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
+        }
+        th {
+            display: block;
+            &.full-width {
+                width: 100%;
+                padding: 0px;
+            }
+        }
+    }
+}
+
 /* Sorting control */
 span.sortingControl img
 {

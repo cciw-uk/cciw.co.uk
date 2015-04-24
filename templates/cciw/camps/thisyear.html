@@ -5,7 +5,7 @@
     {% htmlchunk camp_dates_intro_text %}
     <h2>Dates</h2>
     <div>
-      <table class="topheaders" summary="Details of all camps running in {{ thisyear }}">
+      <table class="topheaders responsive" summary="Details of all camps running in {{ thisyear }}">
         <thead>
           <tr>
             <th scope="col" abbr="Num">#</th>
@@ -19,7 +19,7 @@
           {% regroup camps by site_id as campgroups %}
           {% for campgroup in campgroups %}
             <tr>
-              <th scope="rowgroup" colspan="5" class="siteDivision">
+              <th scope="rowgroup" colspan="5" class="site-division full-width">
                 <a href="{{ campgroup.list.0.site.get_absolute_url }}">{{ campgroup.list.0.site }}</a>
               </th>
             </tr>
@@ -27,12 +27,13 @@
 
             {% for camp in campgroup.list %}
               <tr>
-                <td><a href="{{ camp.get_absolute_url }}"
-                       title="{{ camp.nice_name }}">{{ camp.number }}</a></td>
-                <td>{{ camp.age  }}</td>
-                <td>{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M" }}</td>
-                <td><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">{{ camp.leaders.all|join:", " }}</a></td>
-                <td>{% if camp.chaplain %}{{ camp.chaplain }}{% else %}TBA{% endif %}</td>
+                <td data-label="Number">
+                  <a href="{{ camp.get_absolute_url }}"
+                     title="{{ camp.nice_name }}">{{ camp.number }}</a></td>
+                <td data-label="Age">{{ camp.age  }}</td>
+                <td data-label="Dates">{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M" }}</td>
+                <td data-label="Leaders"><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">{{ camp.leaders.all|join:", " }}</a></td>
+                <td data-label="Chaplain">{% if camp.chaplain %}{{ camp.chaplain }}{% else %}TBA{% endif %}</td>
               </tr>
             {% endfor %}
           {% endfor %}
