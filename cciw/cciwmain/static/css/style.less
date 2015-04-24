@@ -231,21 +231,17 @@ h2
 /* Tables */
 
 
-table.sideheaders th,
-table.simpleform th,
-table.topheaders th
+table.sideheaders,
+table.simpleform,
+table.topheaders
 {
-    background-color: @primaryColorLighter;
-}
+    th {
+        background-color: @primaryColorLighter;
+    }
 
-table.sideheaders th,
-table.sideheaders td,
-table.simpleform th,
-table.simpleform td,
-table.topheaders th,
-table.topheaders td
-{
-    border: solid 1px #336633;
+    th, td {
+        border: solid 1px #336633;
+    }
 }
 
 table tr.spacer td
