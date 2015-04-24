@@ -137,9 +137,11 @@ footer {
 
 /* Main body */
 
+@contentBackgroundColor: white;
+
 #content
 {
-    background-color: white;
+    background-color: @contentBackgroundColor;
     border-bottom: 2px solid @primaryColor;
     // Additional shadow to pagewrapper, as this bit is 'higher'.
     // Make sure it doesn't go up over header though.
@@ -242,6 +244,10 @@ table.topheaders
     th, td {
         border: solid 1px #336633;
     }
+    td {
+        background-color: @contentBackgroundColor;
+    }
+    box-shadow: 0px 2px 4px #888;
 }
 
 table tr.spacer td
@@ -258,6 +264,8 @@ td div.postSubject
 @media screen and (max-width: 480px) {
 
     table.responsive {
+        box-shadow: none;
+
         thead {
             display: none;
         }
