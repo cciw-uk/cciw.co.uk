@@ -22,6 +22,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                ('Email', lambda b: b.get_contact_email()),
                ('Church', lambda b: b.church),
                ('Dietary requirements', lambda b: b.dietary_requirements),
+               ('Booking date', lambda b: b.booked_at),
                ]
 
     spreadsheet.add_sheet_with_header_row("Summary",
@@ -29,14 +30,16 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                                           [[f(b) for n, f in columns]
                                            for b in bookings])
 
-    medical_columns = \
+    everything_columns = \
         [('First name', lambda b: b.first_name),
          ('Last name', lambda b: b.last_name),
          ('Sex', lambda b: b.get_sex_display()),
          ('Date of birth', lambda b: b.date_of_birth),
+         ('Age on camp', lambda b: b.age_on_camp()),
          ('Parent/guardian', lambda b: b.account.name),
          ('Contact phone number', lambda b: b.contact_phone_number),
          ('Contact address', lambda b: format_address(b.contact_address, b.contact_post_code)),
+         ('Church', lambda b: b.church),
          ('GP', lambda b: b.gp_name),
          ('GP address', lambda b: b.gp_address),
          ('GP phone number', lambda b: b.gp_phone_number),
@@ -47,11 +50,12 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
          ('Illnesses', lambda b: b.illnesses),
          ('Can swim 25m', lambda b: b.can_swim_25m),
          ('Learning difficulties', lambda b: b.learning_difficulties),
+         ('Dietary requirements', lambda b: b.dietary_requirements),
          ]
 
-    spreadsheet.add_sheet_with_header_row("Medical",
-                                          [n for n, f in medical_columns],
-                                          [[f(b) for n, f in medical_columns]
+    spreadsheet.add_sheet_with_header_row("Everything",
+                                          [n for n, f in everything_columns],
+                                          [[f(b) for n, f in everything_columns]
                                            for b in bookings])
 
     def get_birthday(b):
