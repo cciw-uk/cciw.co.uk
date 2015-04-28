@@ -133,14 +133,7 @@ class ApplicationFormView(WebTestBase):
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Changed full name')
 
-    def test_change_email_address(self):
-        # When submitted email address is different from the one stored against
-        # the user, an e-mail should be sent with a link to update the stored
-        # e-mail address
-
-        # This is a 'story' test, really, not a unit test, because we want to
-        # check several different conclusions.
-
+    def _change_email_setup(self):
         # setup
         self.assertEqual(len(mail.outbox), 0)
         self.webtest_officer_login(OFFICER)
@@ -166,6 +159,17 @@ class ApplicationFormView(WebTestBase):
         # Check the e-mails have been sent
         emails = self._get_email_change_emails()
         self.assertEqual(len(emails), 1)
+        return orig_email, new_email, emails
+
+    def test_change_email_address(self):
+        # When submitted email address is different from the one stored against
+        # the user, an e-mail should be sent with a link to update the stored
+        # e-mail address
+
+        # This is a 'story' test, really, not a unit test, because we want to
+        # check several different conclusions.
+
+        orig_email, new_email, emails = self._change_email_setup()
 
         # Read the e-mail
         url, path, querydata = read_email_url(emails[0], 'https?://.*/update-email/.*')
