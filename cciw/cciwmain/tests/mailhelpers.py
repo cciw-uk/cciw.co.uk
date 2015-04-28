@@ -14,7 +14,7 @@ def read_email_url(email, regex):
     Reads and parses a URL from an email
     """
     urlmatch = re.search(regex, email.body)
-    assert urlmatch is not None, "No URL found in sent email"
+    assert urlmatch is not None, "No URL matching {0} found in sent email".format(regex)
     url = urlmatch.group()
     path, querydata = url_to_path_and_query(url)
     return url, path, querydata

@@ -143,13 +143,21 @@ been removed, green indicates new information.
 
 
 def make_update_email_url(application):
-    email = application.address_email
     return 'https://%(domain)s%(path)s?t=%(token)s' % dict(
         domain=common.get_current_domain(),
         path=reverse('cciw.officers.views.correct_email'),
         token=signing.dumps([application.officer.username,
-                             email],
+                             application.address_email],
                             salt="cciw.officers.views.correct_email"))
+
+
+def make_update_application_url(application, email):
+    return 'https://%(domain)s%(path)s?t=%(token)s' % dict(
+        domain=common.get_current_domain(),
+        path=reverse('cciw.officers.views.correct_application'),
+        token=signing.dumps([application.id,
+                             email],
+                            salt="cciw.officers.views.correct_application"))
 
 
 def send_email_change_emails(officer, application):
@@ -163,10 +171,13 @@ e-mail address as %(new)s.  The e-mail address stored against your
 account is %(old)s.  If you would like this to be updated to '%(new)s'
 then click the link below:
 
- %(url)s
+ %(correct_email_url)s
 
 If the e-mail address you entered on your application form (%(new)s)
-is, in fact, incorrect, then please reply to this e-mail to say so.
+is, in fact, incorrect, then click the link below to correct
+your application form to %(old)s:
+
+ %(correct_application_url)s
 
 NB. This e-mail has been sent to both the old and new e-mail
 addresses, you only need to respond to one e-mail.
@@ -178,8 +189,11 @@ This was an automated response by the CCIW website.
 
 
 """ % dict(name=officer.first_name, old=officer.email,
-           new=application.address_email, url=make_update_email_url(application))
-        )
+           new=application.address_email,
+           correct_email_url=make_update_email_url(application),
+           correct_application_url=make_update_application_url(application, officer.email),
+       )
+    )
 
     send_mail(subject, user_msg, settings.SERVER_EMAIL,
               [user_email, application.address_email] , fail_silently=True)

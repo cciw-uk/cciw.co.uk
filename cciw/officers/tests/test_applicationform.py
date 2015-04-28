@@ -195,6 +195,39 @@ class ApplicationFormView(WebTestBase):
         # check e-mail address has changed
         self.assertEqual(User.objects.get(username=OFFICER[0]).email, new_email)
 
+    def test_change_email_address_mistakenly(self):
+        # Same as above, but this time we click the link to correct the
+        # application form which has a wrong email address
+
+        user_email, application_email, emails = self._change_email_setup()
+        user = User.objects.get(username=OFFICER[0])
+
+        # Read the e-mail
+        url, path, querydata = read_email_url(emails[0], 'https?://.*/correct-application/.*')
+
+        # Check that nothing has changed yet
+        self.assertEqual(user.email, user_email)
+        self.assertEqual(user.application_set.all()[0].address_email,
+                         application_email)
+
+        # follow link - deliberately wrong first time
+        response = self.client.get(path, {'token': 'foo'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Update failed")
+
+        # Check that nothing has changed yet
+        self.assertEqual(user.application_set.all()[0].address_email,
+                         application_email)
+
+        # follow link, right this time
+        response = self.client.get(path, querydata)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Update successful")
+
+        # check e-mail address has changed
+        self.assertEqual(user.application_set.all()[0].address_email,
+                         user_email)
+
     def test_unchanged_email_address(self):
         """
         Check that if the e-mail address is not changed (or is just different case)

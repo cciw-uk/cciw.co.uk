@@ -851,6 +851,25 @@ def correct_email(request):
     return render(request, 'cciw/officers/email_update.html', c)
 
 
+def correct_application(request):
+    c = {}
+    try:
+        application_id, email = signing.loads(request.GET.get('t', ''),
+                                              salt="cciw.officers.views.correct_application",
+                                              max_age=60 * 60 * 24 * 10)  # 10 days
+    except signing.BadSignature:
+        c['message'] = ("The URL was invalid. Please ensure you copied the URL from the e-mail correctly, "
+                        "or contact the webmaster if you are having difficulties.")
+    else:
+        application = get_object_or_404(Application.objects.filter(id=application_id))
+        application.address_email = email
+        application.save()
+        c['message'] = "Your application form email address has been updated, thanks."
+        c['success'] = True
+
+    return render(request, 'cciw/officers/email_update.html', c)
+
+
 class StripStringsMixin(object):
     def clean(self):
         for field,value in self.cleaned_data.items():

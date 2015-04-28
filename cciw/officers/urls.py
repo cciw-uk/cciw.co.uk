@@ -6,6 +6,7 @@ urlpatterns = patterns('cciw.officers.views',
     (r'^view-application/$', 'view_application'),
     (r'^update-email/(?P<username>.*)/$', 'update_email'),  # deprecated
     (r'^correct-email/$', 'correct_email'),
+    (r'^correct-application/$', 'correct_application'),
     (r'^leaders/$', 'leaders_index'),
     (r'^leaders/applications/(?P<year>\d{4})/(?P<number>\d+)/$', 'manage_applications'),
     (r'^leaders/references/(?P<year>\d{4})/(?P<number>\d+)/$', 'manage_references'),
