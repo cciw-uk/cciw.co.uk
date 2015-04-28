@@ -7,6 +7,7 @@ from cciw.officers.email_utils import send_mail_with_attachments, formatted_emai
 from cciw.officers.references import reference_form_to_text
 from django.conf import settings
 from django.contrib import messages
+from django.core import signing
 from django.core.mail import send_mail, EmailMessage
 from django.core.urlresolvers import reverse
 from django.utils.crypto import salted_hmac
@@ -143,11 +144,12 @@ been removed, green indicates new information.
 
 def make_update_email_url(application):
     email = application.address_email
-    old_email = application.officer.email
-    return 'https://%(domain)s%(path)s?email=%(email)s&hash=%(hash)s' % dict(domain=common.get_current_domain(),
-                                                                           path=reverse('cciw.officers.views.update_email', kwargs={'username': application.officer.username}),
-                                                                           email=quote(email),
-                                                                           hash=make_update_email_hash(old_email, email))
+    return 'https://%(domain)s%(path)s?t=%(token)s' % dict(
+        domain=common.get_current_domain(),
+        path=reverse('cciw.officers.views.correct_email'),
+        token=signing.dumps([application.officer.username,
+                             email],
+                            salt="cciw.officers.views.correct_email"))
 
 
 def send_email_change_emails(officer, application):

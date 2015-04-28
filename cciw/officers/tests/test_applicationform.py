@@ -172,14 +172,14 @@ class ApplicationFormView(WebTestBase):
         orig_email, new_email, emails = self._change_email_setup()
 
         # Read the e-mail
-        url, path, querydata = read_email_url(emails[0], 'https?://.*/update-email/.*')
+        url, path, querydata = read_email_url(emails[0], 'https?://.*/correct-email/.*')
 
         # Check that nothing has changed yet
         self.assertEqual(User.objects.get(username=OFFICER[0]).email,
                          orig_email)
 
         # follow link - deliberately wrong first time
-        response = self.client.get(path, {'email': new_email, 'hash': 'foo'})
+        response = self.client.get(path, {'token': 'foo'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Update failed")
 
@@ -193,13 +193,6 @@ class ApplicationFormView(WebTestBase):
         self.assertContains(response, "Update successful")
 
         # check e-mail address has changed
-        self.assertEqual(User.objects.get(username=OFFICER[0]).email, new_email)
-
-        # follow link again -- shouldn't update
-        response = self.client.get(path, querydata)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Update failed")
-
         self.assertEqual(User.objects.get(username=OFFICER[0]).email, new_email)
 
     def test_unchanged_email_address(self):

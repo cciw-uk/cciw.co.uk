@@ -10,6 +10,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.core import signing
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect, HttpResponse
@@ -827,6 +828,25 @@ def update_email(request, username=''):
             c['success'] = True
             u.email = email
             u.save()
+
+    return render(request, 'cciw/officers/email_update.html', c)
+
+
+def correct_email(request):
+    c = {}
+    try:
+        username, new_email = signing.loads(request.GET.get('t', ''),
+                                            salt="cciw.officers.views.correct_email",
+                                            max_age=60 * 60 * 24 * 10)  # 10 days
+    except signing.BadSignature:
+        c['message'] = ("The URL was invalid. Please ensure you copied the URL from the e-mail correctly, "
+                        "or contact the webmaster if you are having difficulties")
+    else:
+        u = get_object_or_404(User.objects.filter(username=username))
+        u.email = new_email
+        u.save()
+        c['message'] = "Your e-mail address has been updated, thanks."
+        c['success'] = True
 
     return render(request, 'cciw/officers/email_update.html', c)
 
