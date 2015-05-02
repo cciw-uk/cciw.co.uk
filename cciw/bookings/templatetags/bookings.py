@@ -24,7 +24,7 @@ def bookingbar(context):
     stages = [
         ('login', 'Log in', False,
          '',
-         'Go to "Account overview" and use the "log out" link if you need to log in as someone else'),
+         'Go to "Overview" and use the "log out" link if you need to log in as someone else'),
 
         ('account', 'Account details', logged_in,
          reverse('cciw.bookings.views.account_details'),
