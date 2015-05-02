@@ -31,7 +31,12 @@
 
 # Step 3 /booking/account/
 #  - enter account name and address
-#  - on POST, verify/save and redirect to step 4
+#  - on POST, verify/save and redirect to step 3.1
+
+# Step 3.1
+#  - if they have already entered place details,
+#    stop the user from getting confused by showing a menu-like page
+#    with the various options. Otherwise skip to step 4.
 
 # Step 4 /booking/add-place/
 #  - enter camper details, including medical details.
@@ -326,9 +331,13 @@ class BookingIndex(CciwBaseView):
 
 
 def next_step(account):
+    """
+    Returns a redirect to the next obvious step for this account.
+    """
     if account.has_account_details():
-        if account.bookings.for_year(get_thisyear()).in_basket().exists():
-            return HttpResponseRedirect(reverse('cciw.bookings.views.list_bookings'))
+        bookings = account.bookings.for_year(get_thisyear())
+        if (bookings.in_basket() | bookings.on_shelf() | bookings.booked()).exists():
+            return HttpResponseRedirect(reverse('cciw.bookings.views.account_overview'))
         else:
             return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
     else:
@@ -448,7 +457,7 @@ class BookingAccountDetails(CciwBaseView, AjaxFormValidation):
             if form.is_valid():
                 form.save()
                 messages.info(self.request, 'Account details updated, thank you.')
-                return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
+                return next_step(request.booking_account)
         else:
             form = self.form_class(instance=self.request.booking_account)
         return self.render({'form': form})
@@ -896,6 +905,7 @@ class BookingPayCancelled(BookingPayBase):
 class BookingAccountOverview(CciwBaseView):
     metadata_title = "Booking - account overview"
     template_name = 'cciw/bookings/account_overview.html'
+    magic_context = {'stage': 'overview'}
 
     def handle(self, request):
         if 'logout' in request.POST:
@@ -910,11 +920,9 @@ class BookingAccountOverview(CciwBaseView):
         c['confirmed_places'] = bookings.confirmed()
         c['unconfirmed_places'] = bookings.unconfirmed()
         c['cancelled_places'] = bookings.cancelled()
-        c['basket'] = bookings.in_basket()
-        c['shelf'] = bookings.on_shelf().exists()
+        c['basket_or_shelf'] = (bookings.in_basket() | bookings.on_shelf())
         c['balance_due'] = acc.get_balance(allow_deposits=True)
         c['balance_full'] = acc.get_balance(allow_deposits=False)
-        c['stage'] = ''
         return self.render(c)
 
 

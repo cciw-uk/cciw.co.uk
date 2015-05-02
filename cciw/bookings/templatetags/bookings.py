@@ -24,11 +24,15 @@ def bookingbar(context):
     stages = [
         ('login', 'Log in', False,
          '',
-         'Go to "View account" and use the "log out" link if you need to log in as someone else'),
+         'Go to "Account overview" and use the "log out" link if you need to log in as someone else'),
 
         ('account', 'Account details', logged_in,
          reverse('cciw.bookings.views.account_details'),
          msg_need_login),
+
+        ('overview', 'Overview', logged_in and has_account_details,
+         reverse('cciw.bookings.views.account_overview'),
+         msg_need_account_details),
 
         ('place', 'Camper details', logged_in and has_account_details,
          reverse('cciw.bookings.views.add_place'),

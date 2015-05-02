@@ -1,0 +1,18 @@
+<table class="topheaders responsive">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Camp</th>
+      <th>Dates</th>
+      <th>Cost</th>
+    </tr>
+  </thead>
+  {% for booking in bookings %}
+    <tr>
+      <td data-label="Name">{{ booking.name }}</td>
+      <td data-label="Camp">{{ booking.camp }}</td>
+      <td data-label="Dates">{{ booking.camp.nice_dates }}
+      <td data-label="Cost"">£{{ booking.amount_due }}</td>
+    </tr>
+  {% endfor %}
+</table>

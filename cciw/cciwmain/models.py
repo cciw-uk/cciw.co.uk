@@ -122,6 +122,16 @@ class Camp(models.Model):
     def nice_name(self):
         return "Camp %d, year %d" % (self.number, self.year)
 
+    @property
+    def nice_dates(self):
+        if self.start_date.month == self.end_date.month:
+            return "{0} - {1} {2}".format(self.start_date.strftime('%e').strip(),
+                                          self.end_date.strftime('%e').strip(),
+                                          self.start_date.strftime('%B'))
+        else:
+            return "{0} - {1}".format(self.start_date.strftime('%e %B').strip(),
+                                      self.end_date.strftime('%e %B').strip())
+
     def get_link(self):
         return format_html("<a href='{0}'>{1}</a>", self.get_absolute_url(), self.nice_name)
 

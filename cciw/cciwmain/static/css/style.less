@@ -248,6 +248,7 @@ table.topheaders
         background-color: @contentBackgroundColor;
     }
     box-shadow: 0px 2px 4px #888;
+    margin-bottom: 8px;
 }
 
 table tr.spacer td
@@ -261,43 +262,6 @@ td div.postSubject
     border-bottom: 1px solid #336633;
 }
 
-@media screen and (max-width: 480px) {
-
-    table.responsive {
-        box-shadow: none;
-
-        thead {
-            display: none;
-        }
-        tr {
-            display: block;
-            margin-bottom: 1em;
-            box-shadow: 0 2px 2px rgba(0,0,0,0.5);
-        }
-        td {
-            display: block;
-            text-align: right;
-            border-bottom-width: 1px;
-            border-top-width: 0px;
-            &:first-child {
-                border-top-width: 1px;
-            }
-            &:before {
-                content: attr(data-label);
-                float: left;
-                text-transform: uppercase;
-                font-weight: bold;
-            }
-        }
-        th {
-            display: block;
-            &.full-width {
-                width: 100%;
-                padding: 0px;
-            }
-        }
-    }
-}
 
 /* Sorting control */
 span.sortingControl img
@@ -1025,7 +989,7 @@ ul.messagelist li.error{
     text-decoration:none;
     text-shadow:1px 1px 0px #528009;
     margin-left: 5px;
-    margin-right: 5px;
+    cursor: pointer;
 
     &:hover {
         background-color: @primaryColorLighter;
@@ -1041,8 +1005,23 @@ a.booknow {
     .bigaction();
 }
 
-a.paybalance {
+a.bigaction, input.bigaction {
     .bigaction();
+}
+
+.actiongroup {
+    .actionbutton {
+        margin-top: 8px;
+        text-align: right;
+    }
+}
+
+.actionsplit {
+    .actionbutton {
+        display: inline;
+        float: right;
+    }
+    clear: both;
 }
 
 @bookingbarColor: @pageTitleColor;
@@ -1250,4 +1229,51 @@ table td.price {
             }
         }
     }
+}
+
+@media screen and (max-width: 480px) {
+
+    table.responsive {
+        box-shadow: none;
+        margin-bottom: 2px;
+
+        thead {
+            display: none;
+        }
+        tr {
+            display: block;
+            margin-top: 0.8em;
+            margin-bottom: 0.5em;
+            box-shadow: 0 2px 2px rgba(0,0,0,0.5);
+        }
+        td {
+            display: block;
+            text-align: right;
+            border-bottom-width: 1px;
+            border-top-width: 0px;
+            &:first-child {
+                border-top-width: 1px;
+            }
+            &:before {
+                content: attr(data-label);
+                float: left;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
+        }
+        th {
+            display: block;
+            &.full-width {
+                width: 100%;
+                padding: 0px;
+            }
+        }
+    }
+
+    .actiongroup {
+        .actionbutton {
+            margin-top: 2px;
+        }
+    }
+
 }

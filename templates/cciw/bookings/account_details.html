@@ -7,9 +7,11 @@
     {% csrf_token %}
     {{ form.as_p }}
     <div class="formrow">
-      <br/><br/>
+      <br/>
       <input type="submit" name="submit" value="Save and continue" />
     </div>
   </form>
+
+  <p><br/><br/>If you need to change the email address on your account, please <a href="{% url 'cciwmain.misc.contact_us' %}?bookings">contact us</a>.
 
 {% endblock %}

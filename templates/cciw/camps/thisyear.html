@@ -31,7 +31,7 @@
                   <a href="{{ camp.get_absolute_url }}"
                      title="{{ camp.nice_name }}">{{ camp.number }}</a></td>
                 <td data-label="Age">{{ camp.age  }}</td>
-                <td data-label="Dates">{{ camp.start_date|date:"d M"}} - {{ camp.end_date|date:"d M" }}</td>
+                <td data-label="Dates">{{ camp.nice_dates }}</td>
                 <td data-label="Leaders"><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">{{ camp.leaders.all|join:", " }}</a></td>
                 <td data-label="Chaplain">{% if camp.chaplain %}{{ camp.chaplain }}{% else %}TBA{% endif %}</td>
               </tr>

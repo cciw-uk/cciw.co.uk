@@ -3,96 +3,116 @@
 
   <h1>Your details</h1>
 
-  {% with account=request.booking_account %}
-    <table class="sideheaders">
-      <tr>
-        <th>Name</th>
-        <td>{{ account.name }}</td>
-      </tr>
-      <tr>
-        <th>Email</th>
-        <td>{{ account.email }}</td>
-      </tr>
-      <tr>
-        <th>Address</th>
-        <td>{{ account.address|linebreaksbr }}</td>
-      </tr>
-      <tr>
-        <th>Post code</th>
-        <td>{{ account.post_code }}</td>
-      </tr>
-    </table>
+  <div class="actiongroup">
+    <div class="actioninfo">
+      {% with account=request.booking_account %}
+        <table class="sideheaders">
+          <tr>
+            <th>Name</th>
+            <td>{{ account.name }}</td>
+          </tr>
+          <tr>
+            <th>Email</th>
+            <td>{{ account.email }}</td>
+          </tr>
+          <tr>
+            <th>Address</th>
+            <td>{{ account.address|linebreaksbr }}</td>
+          </tr>
+          <tr>
+            <th>Post code</th>
+            <td>{{ account.post_code }}</td>
+          </tr>
+        </table>
+      {% endwith %}
+    </div>
+    <div class="actionbutton">
+      <a href="{% url 'cciw.bookings.views.account_details' %}" class="bigaction">Update details</a>
+    </div>
+  </div>
 
-    <p>Please <a href="{% url 'cciw.bookings.views.account_details' %}">update your details</a> if any of the above is wrong.
-      If you need to change your email address, please <a href="{% url 'cciwmain.misc.contact_us' %}?bookings">contact us</a>.
-    </p>
-  {% endwith %}
+  <h1>Your places {{ thisyear }}</h1>
 
-  <h1>Your places</h1>
+  {% if confirmed_places %}
+    <h2>Confirmed places</h2>
+    <p>You have the following confirmed places on camps this year:</p>
 
-  <h2>Basket</h2>
-
-  {% if basket or shelf %}
-
-    <p>You have items in your basket or shelf - please remember to
-      <a href="{% url 'cciw.bookings.views.list_bookings' %}">book and pay for
-        them</a>.</p>
-
-  {% else %}
-
-      <p>You have nothing in your basket.</p>
-
+    {% with bookings=confirmed_places %}
+      {% include "cciw/bookings/place_table.html" %}
+    {% endwith %}
   {% endif %}
 
+  <p>Information about what to bring on camp will be sent in an email or letter
+    before camp.</p>
   {% if unconfirmed_places %}
-
     <h2>Booked places</h2>
 
-    <p>The following places are booked, but not yet confirmed:</p>
-    <ul>
-      {% for b in unconfirmed_places %}
-        <li>{{ b.name }}, on <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">camp {{ b.camp.number }}</a>, {{ b.get_price_type_display }}, £{{ b.amount_due }} </li>
-      {% endfor %}
-    </ul>
-    <p>Please <a href="{% url 'cciw.bookings.views.pay' %}">remember to pay</a> for
-      these places, otherwise they will expire, allowing someone else to take the
-      place.</p>
+    <p>The following places are booked, but will expire soon unless you pay:</p>
 
+    <div class="actiongroup">
+      <div class="actioninfo">
+        {% with bookings=unconfirmed_places %}
+          {% include "cciw/bookings/place_table.html" %}
+        {% endwith %}
+      </div>
+      <div class="actionbutton">
+        <a href="{% url 'cciw.bookings.views.list_bookings' %}" class="bigaction">Pay</a>
+      </div>
+    </div>
   {% endif %}
 
-  <h2>Confirmed places</h2>
-  {% if confirmed_places %}
-    <p>You have the following confirmed places on camps this year:</p>
-    <ul>
-      {% for b in confirmed_places %}
-        <li>{{ b.name }}, on <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">camp {{ b.camp.number }}</a>, {{ b.get_price_type_display }}, £{{ b.amount_due }} </li>
-      {% endfor %}
-    </ul>
+  {% if basket_or_shelf %}
+    <h2>Basket / shelf</h2>
 
-  {% else %}
-    <p>You have no confirmed places yet this year.</p>
+    <p>These places are <b>not booked</b>:</p>
+
+    <div class="actiongroup">
+      <div class="actioninfo">
+        {% with bookings=basket_or_shelf %}
+          {% include "cciw/bookings/place_table.html" %}
+        {% endwith %}
+      </div>
+      <div class="actionbutton">
+        <a href="{% url 'cciw.bookings.views.list_bookings' %}" class="bigaction">Book and pay</a>
+      </div>
+    </div>
   {% endif %}
 
   {% if cancelled_places %}
     <h2>Cancelled places</h2>
 
-    <ul>
-      {% for b in cancelled_places %}
-        <li>{{ b.name }}, on <a href="{% url 'cciw.cciwmain.views.camps.detail' year=b.camp.year number=b.camp.number %}">camp {{ b.camp.number }}</a> (£{{ b.amount_due }} deposit)</li>
-      {% endfor %}
-    </ul>
+    {% with bookings=cancelled_places %}
+      {% include "cciw/bookings/place_table.html" %}
+    {% endwith %}
   {% endif %}
+
+  <h2>More places</h2>
+
+  <div class="actionsplit">
+    <div class="actionbutton">
+      <a href="{% url 'cciw.bookings.views.add_place' %}" class="bigaction">Enter details</a>
+    </div>
+    <div class="actioninfo">
+      <p>Need to book another place?</p>
+    </div>
+  </div>
 
   <h1>Balance</h1>
 
   {% if balance_full <= 0 %}
     <p>You have nothing to pay.</p>
   {% else %}
-    <div style="float: right"><a class="paybalance" href="{% url 'cciw.bookings.views.pay' %}">Pay now</a></div>
-    <p>Your total balance is: £{{ balance_full }}</p>
-    {% if balance_due != balance_full %}
-      <p>Balance currently due: £{{ balance_due }}</p>
-    {% endif %}
+    <div class="actionsplit">
+      <div class="actionbutton">
+        <a class="bigaction" href="{% url 'cciw.bookings.views.pay' %}">Pay</a>
+      </div>
+      <div class="actioninfo">
+        <p>Your total balance is: £{{ balance_full }}</p>
+        {% if balance_due != balance_full %}
+          <p>Balance currently due: £{{ balance_due }}</p>
+        {% endif %}
+      </div>
+    </div>
   {% endif %}
 
   <h1>Logging out</h1>
@@ -109,7 +129,7 @@
   <form action="" method="POST">
     {% csrf_token %}
     <p style="text-align: center">
-      <input type="submit" name="logout" value="Log out">
+      <input type="submit" name="logout" value="Log out" class="bigaction">
     </p>
   </form>
 

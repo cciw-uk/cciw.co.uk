@@ -244,11 +244,11 @@ class TestBookingStart(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.assertTrue(resp['Location'].endswith(newpath))
 
     def test_skip_if_has_place_details(self):
-        # Check redirect to step 5 - checkout
+        # Check redirect to overview
         self.create_place()
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)
-        self.assertTrue(resp['Location'].endswith(reverse('cciw.bookings.views.list_bookings')))
+        self.assertTrue(resp['Location'].endswith(reverse('cciw.bookings.views.account_overview')))
 
 
 class TestBookingVerify(BookingBaseMixin, TestCase):
@@ -1467,14 +1467,14 @@ class TestAccountOverview(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
         # Booked place
         self.assertContains(resp, 'Another Child')
-        self.assertContains(resp, 'remember to pay')
+        self.assertContains(resp, 'will expire soon')
 
         # Basket/Shelf
-        self.assertContains(resp, 'items in your basket')
+        self.assertContains(resp, 'Basket / shelf')
 
         # Deposit for cancellation
-        self.assertContains(resp, "Cancelled")
-        self.assertContains(resp, "(£20 deposit)")
+        self.assertContains(resp, "Cancelled places")
+        self.assertContains(resp, "£20")
 
 
 class TestLogOut(LogInMixin, TestCase):
