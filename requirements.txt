@@ -43,3 +43,5 @@ django-compressor==1.4
 django_appconf==1.0.1
 python3-memcached==1.51
 frozendict==0.4
+pyquery==1.2.9
+cssselect==0.9.1

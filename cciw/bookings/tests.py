@@ -14,6 +14,7 @@ from django.test import TestCase
 from django.utils import timezone
 from django_dynamic_fixture import G
 import mock
+import pyquery
 import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
@@ -26,10 +27,6 @@ from cciw.officers.tests.base import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.webtest import WebTestBase
-
-
-DISABLED_BOOK_NOW_BTN = "id_book_now_btn\" disabled>"
-ENABLED_BOOK_NOW_BUTTON = "id_book_now_btn\">"
 
 
 class IpnMock(object):
@@ -582,6 +579,16 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
     url = reverse('cciw.bookings.views.list_bookings')
 
+    def assert_book_button_enabled(self, response):
+        pq = pyquery.PyQuery(response.content)
+        btn = pq.find('#id_book_now_btn')[0]
+        self.assertNotIn('disabled', btn.attrib)
+
+    def assert_book_button_disabled(self, response):
+        pq = pyquery.PyQuery(response.content)
+        btn = pq.find('#id_book_now_btn')[0]
+        self.assertIn('disabled', btn.attrib)
+
     def test_redirect_if_not_logged_in(self):
         resp = self.client.get(self.url)
         self.assertEqual(302, resp.status_code)
@@ -595,7 +602,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.assertContains(resp, "Frédéric Bloggs")
         self.assertContains(resp, "£100")
         self.assertContains(resp, "This place can be booked")
-        self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
+        self.assert_book_button_enabled(resp)
 
     def test_handle_custom_price(self):
         self.create_place({'price_type': PRICE_CUSTOM})
@@ -606,7 +613,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.assertContains(resp, "Frédéric Bloggs")
         self.assertContains(resp, "TBA")
         self.assertContains(resp, "A custom discount needs to be arranged by the booking secretary")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
         self.assertContains(resp, "This place cannot be booked for the reasons described above")
 
     def test_2nd_child_discount_allowed(self):
@@ -614,14 +621,14 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
         resp = self.client.get(self.url)
         self.assertContains(resp, "You cannot use a 2nd child discount")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
 
         # 2 places, both at 2nd child discount, is not allowed.
         self.create_place({'price_type': PRICE_2ND_CHILD})
 
         resp = self.client.get(self.url)
         self.assertContains(resp, "You cannot use a 2nd child discount")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
 
     def test_2nd_child_discount_allowed_if_booked(self):
         """
@@ -636,7 +643,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
                            'first_name': 'Mary'})
 
         resp = self.client.get(self.url)
-        self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
+        self.assert_book_button_enabled(resp)
 
     def test_3rd_child_discount_allowed(self):
         self.create_place({'price_type': PRICE_FULL})
@@ -644,21 +651,21 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
         resp = self.client.get(self.url)
         self.assertContains(resp, "You cannot use a 3rd child discount")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
 
         # 3 places, with 2 at 3rd child discount, is not allowed.
         self.create_place({'price_type': PRICE_3RD_CHILD})
 
         resp = self.client.get(self.url)
         self.assertContains(resp, "You cannot use a 3rd child discount")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
 
     def test_handle_serious_illness(self):
         self.create_place({'serious_illness': '1'})
 
         resp = self.client.get(self.url)
         self.assertContains(resp, "Must be approved by leader due to serious illness/condition")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
 
     def test_minimum_age(self):
         # if born Aug 31st 2001, and thisyear == 2012, should be allowed on camp with
@@ -701,7 +708,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.create_place({'sex': 'm'})
         resp = self.client.get(self.url)
         self.assertContains(resp, "There are no places left on this camp")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
 
         # Don't want a redundant message
         self.assertNotContains(resp, "There are no places left for boys")
@@ -713,14 +720,14 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.create_place({'sex': 'm'})
         resp = self.client.get(self.url)
         self.assertContains(resp, "There are no places left for boys")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
 
         # Check that we can still book female places
         Booking.objects.filter(state=BOOKING_INFO_COMPLETE).delete()
         self.create_place({'sex': 'f'})
         resp = self.client.get(self.url)
         self.assertNotContains(resp, "There are no places left")
-        self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
+        self.assert_book_button_enabled(resp)
 
     def test_no_female_places_left(self):
         for i in range(0, self.camp.max_female_campers):
@@ -729,7 +736,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.create_place({'sex': 'f'})
         resp = self.client.get(self.url)
         self.assertContains(resp, "There are no places left for girls")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
 
     def test_not_enough_places_left(self):
         for i in range(0, self.camp.max_campers - 1):
@@ -739,7 +746,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.create_place({'sex': 'f'})
         resp = self.client.get(self.url)
         self.assertContains(resp, "There are not enough places left on this camp")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
 
     def test_not_enough_male_places_left(self):
         for i in range(0, self.camp.max_male_campers - 1):
@@ -750,7 +757,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.create_place({'sex': 'm'})
         resp = self.client.get(self.url)
         self.assertContains(resp, "There are not enough places for boys left on this camp")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
 
     def test_not_enough_female_places_left(self):
         for i in range(0, self.camp.max_female_campers - 1):
@@ -761,7 +768,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.create_place({'sex': 'f'})
         resp = self.client.get(self.url)
         self.assertContains(resp, "There are not enough places for girls left on this camp")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
 
     def test_handle_two_problem_bookings(self):
         # Test the error we get for more than one problem booking
@@ -776,7 +783,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.assertContains(resp, "Frédéric Bloggs")
         self.assertContains(resp, "TBA")
         self.assertContains(resp, "A custom discount needs to be arranged by the booking secretary")
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
         self.assertContains(resp, "These places cannot be booked for the reasons described above")
 
     def test_handle_mixed_problem_and_non_problem(self):
@@ -788,7 +795,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
 
-        self.assertContains(resp, DISABLED_BOOK_NOW_BTN)
+        self.assert_book_button_disabled(resp)
         self.assertContains(resp, "One or more of the places cannot be booked")
 
     def test_total(self):
@@ -820,7 +827,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.assertContains(resp, "Another Child")
         self.assertContains(resp, "£0.01")
 
-        self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
+        self.assert_book_button_enabled(resp)
         # Total:
         self.assertContains(resp, "£100.01")
 
@@ -959,7 +966,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         resp = self.client.get(self.url)
         self.assertContains(resp, "You have entered another set of place details for a camper called")
         # This is only a warning:
-        self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
+        self.assert_book_button_enabled(resp)
 
     def test_warn_about_multiple_full_price(self):
         self.create_place()
@@ -970,7 +977,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.assertContains(resp, "You have multiple places at &#39;Full price")
         self.assertContains(resp, "If Mary Bloggs and Frédéric Bloggs")
         # This is only a warning:
-        self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
+        self.assert_book_button_enabled(resp)
 
         # Check for more than 2
         self.create_place({'first_name': 'Peter',
@@ -992,7 +999,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.assertContains(resp, "If Peter Bloggs and Mary Bloggs")
         self.assertContains(resp, "one is eligible")
         # This is only a warning:
-        self.assertContains(resp, ENABLED_BOOK_NOW_BUTTON)
+        self.assert_book_button_enabled(resp)
 
         self.create_place({'first_name': 'Zac',
                            'last_name': 'Bloggs',
