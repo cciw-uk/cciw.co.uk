@@ -11,12 +11,6 @@
     <h2>Basket</h2>
 
     {% if basket_bookings %}
-      <ul>
-        <li>Review and press 'Book now' to book the places and pay for
-          them online.</li>
-        <li>Choose 'Add another place' if you have more places to add before booking
-          and paying.</li>
-      </ul>
 
       <table class="topheaders noshadow">
         <tr>
@@ -53,11 +47,15 @@
       </table>
 
 
-      <p style="text-align: right; margin-top: 1em;">
-        <input type="submit" name="add_another" value="Add another place">&nbsp;
-        <input type="submit" name="book_now" value="Book now" id="id_book_now_btn"{% if not all_bookable %} disabled{% endif %}>
+      <div class="actionsplit">
+        <div class="actionbutton">
+          <input type="submit" name="add_another" value="Add another place" class="bigaction">
+          <input type="submit" name="book_now" value="Book now" id="id_book_now_btn"
+                 class="bigaction"
+                 {% if not all_bookable %} disabled{% endif %}>
+        </div>
+      </div>
 
-      </p>
       {% if not all_bookable %}
         {% if all_unbookable %}
           {% if basket_bookings|length > 1 %}

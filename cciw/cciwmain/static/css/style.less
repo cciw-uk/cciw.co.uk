@@ -13,6 +13,8 @@ A65900
 
 
 @import "elements.less";
+@import "mixins.less";
+
 
 @lineHeight: 24px;
 
@@ -1026,7 +1028,7 @@ a.bigaction, input.bigaction {
         display: inline;
         float: right;
     }
-    clear: both;
+    .clearfix();
 }
 
 @bookingbarColor: @pageTitleColor;
