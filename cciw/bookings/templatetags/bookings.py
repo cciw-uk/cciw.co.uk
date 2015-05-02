@@ -34,7 +34,10 @@ def bookingbar(context):
          reverse('cciw.bookings.views.account_overview'),
          msg_need_account_details),
 
-        ('place', 'Camper details', logged_in and has_account_details,
+        ('place',
+         'Edit camper details' if current_stage == 'place' and 'edit_mode' in context
+         else 'Add new booking',
+         logged_in and has_account_details,
          reverse('cciw.bookings.views.add_place'),
          msg_need_account_details),
 

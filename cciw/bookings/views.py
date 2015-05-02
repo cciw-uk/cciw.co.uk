@@ -525,6 +525,7 @@ class BookingAddPlace(BookingEditAddBase):
 
 class BookingEditPlace(BookingEditAddBase):
     metadata_title = "Booking - edit camper details"
+    magic_context = {'edit_mode': True}
 
 
 # Public attributes - i.e. that the account holder is allowed to see
