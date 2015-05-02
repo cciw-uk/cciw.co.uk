@@ -1,3 +1,4 @@
+from django.contrib.admin.utils import quote
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.html import format_html
@@ -53,7 +54,7 @@ class HtmlChunk(models.Model):
             html += format_html("""<div class="editChunkLink">&laquo;
                                 <a href="{0}">Edit {1}</a> &raquo;
                                 </div>""",
-                                reverse("admin:sitecontent_htmlchunk_change", args=[self.name]),
+                                reverse("admin:sitecontent_htmlchunk_change", args=(quote(self.name),)),
                                 self.name)
         return html
 
