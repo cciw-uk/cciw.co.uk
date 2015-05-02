@@ -1013,6 +1013,16 @@ ul.messagelist li.error{
         position:relative;
         top:1px;
     }
+
+    &[disabled] {
+        cursor: not-allowed;
+        background-color: #aaa;
+        border-color: #aaa;
+        box-shadow: none;
+        &:active {
+            top: 0px;
+        }
+    }
 }
 
 a.booknow {
