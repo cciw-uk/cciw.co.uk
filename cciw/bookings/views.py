@@ -689,7 +689,7 @@ def get_expected_amount_due(request):
         b.price_type = int(request.POST['price_type'])
         b.camp_id = int(request.POST['camp'])
         b.early_bird_discount = 'early_bird_discount' in request.POST
-
+        b.state = int(request.POST['state'])
     except (ValueError, KeyError):  # not a valid price_type/camp, data missing
         return fail
     try:

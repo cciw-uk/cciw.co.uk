@@ -210,7 +210,7 @@ $(document).ready(function() {
     $('#id_camp').change(getPlaceAvailability);
 
     getExpectedAmountDue();
-    $('#id_price_type,#id_camp,#id_early_bird_discount').change(getExpectedAmountDue);
+    $('#id_price_type, #id_camp, #id_early_bird_discount, #id_state').change(getExpectedAmountDue);
 
 });
 
