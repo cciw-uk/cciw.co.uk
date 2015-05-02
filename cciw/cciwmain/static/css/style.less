@@ -1102,10 +1102,23 @@ a.bigaction, input.bigaction {
     }
 }
 
+.payboxes {
+    .clearfix();
+}
+
+
 .paybox {
     float: left;
-    margin-right: 50px;
+    margin-right: 20px;
+    border: 1px solid #888;
+    padding: 15px 20px;
+    border-radius: 5px;
+
+    &:last-child {
+        margin-right: 0px;
+    }
 }
+
 
 span.toc {
     font-size: 80%;
