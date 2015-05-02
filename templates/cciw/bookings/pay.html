@@ -69,6 +69,17 @@
         {{ paypal_form_full.render }}
       </div>
 
+      {# Custom #}
+      {% if balance_due < balance_full %}
+        <div class="paybox">
+          <h3>Pay other amount</h3>
+          {{ paypal_form_custom.render }}
+
+        </div>
+
+      {% endif %}
+
+
     </div>
 
     <h2>Notes</h2>

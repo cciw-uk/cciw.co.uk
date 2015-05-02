@@ -179,6 +179,7 @@ from functools import wraps
 import os
 import re
 
+from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse, reverse_lazy
@@ -839,7 +840,12 @@ class BookingListBookings(CciwBaseView):
         return self.render(c)
 
 
-def mk_paypal_form(account, balance, protocol, domain):
+class CustomAmountPayPalForm(PayPalPaymentsForm):
+
+    amount = forms.IntegerField(widget=forms.widgets.NumberInput)
+
+
+def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amount=None):
     paypal_dict = {
         "business": settings.PAYPAL_RECEIVER_EMAIL,
         "amount": str(balance),
@@ -854,7 +860,21 @@ def mk_paypal_form(account, balance, protocol, domain):
         "no_note": "1",
         "no_shipping": "1",
     }
-    return PayPalPaymentsForm(initial=paypal_dict)
+    if min_amount is not None or max_amount is not None:
+        cls = CustomAmountPayPalForm
+    else:
+        cls = PayPalPaymentsForm
+
+    form = cls(initial=paypal_dict)
+    if min_amount is not None:
+        form.fields['amount'].widget.attrs.update(
+            {'min': str(min_amount),
+             'value': str(min_amount)})
+
+    if max_amount is not None:
+        form.fields['amount'].widget.attrs['max'] = str(max_amount)
+
+    return form
 
 
 class BookingPayBase(CciwBaseView):
@@ -889,6 +909,9 @@ class BookingPay(BookingPayBase):
             'price_deposit': price_deposit,
             'paypal_form': mk_paypal_form(acc, balance_due, protocol, domain),
             'paypal_form_full': mk_paypal_form(acc, balance_full, protocol, domain),
+            'paypal_form_custom': mk_paypal_form(acc, balance_due, protocol, domain,
+                                                 min_amount=balance_due,
+                                                 max_amount=balance_full)
         }
         return self.render(c)
 
