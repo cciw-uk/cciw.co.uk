@@ -40,10 +40,12 @@
     {% with bookings=confirmed_places %}
       {% include "cciw/bookings/place_table.html" %}
     {% endwith %}
+
+    <p>Information about what to bring on camp will be sent in an email or letter
+      before camp.</p>
+
   {% endif %}
 
-  <p>Information about what to bring on camp will be sent in an email or letter
-    before camp.</p>
   {% if unconfirmed_places %}
     <h2>Booked places</h2>
 
@@ -86,16 +88,27 @@
     {% endwith %}
   {% endif %}
 
-  <h2>More places</h2>
+  {% if not confirmed_places and not unconfirmed_places and not cancelled_places and not basket_or_shelf %}
+    <div class="actionsplit">
+      <div class="actionbutton">
+        <a href="{% url 'cciw.bookings.views.add_place' %}" class="bigaction">Add new booking</a>
+      </div>
+      <div class="actioninfo">
+        <p>You do not have any bookings entered for this year. Press the button to begin.</p>
+      </div>
+    </div>
+  {% else %}
+    <h2>More places</h2>
 
-  <div class="actionsplit">
-    <div class="actionbutton">
-      <a href="{% url 'cciw.bookings.views.add_place' %}" class="bigaction">Enter details</a>
+    <div class="actionsplit">
+      <div class="actionbutton">
+        <a href="{% url 'cciw.bookings.views.add_place' %}" class="bigaction">Add new booking</a>
+      </div>
+      <div class="actioninfo">
+        <p>Press the button and enter camper details to book another place on camp.</p>
+      </div>
     </div>
-    <div class="actioninfo">
-      <p>Need to book another place?</p>
-    </div>
-  </div>
+  {% endif %}
 
   <h1>Balance</h1>
 
