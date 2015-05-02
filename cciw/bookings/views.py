@@ -496,6 +496,7 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
             form = self.form_class(request.POST, instance=booking)
             if form.is_valid():
                 form.instance.account = self.request.booking_account
+                form.instance.early_bird_discount = False  # We only allow this to be True when booking
                 form.instance.auto_set_amount_due()
                 form.instance.state = BOOKING_INFO_COMPLETE
                 if new_booking:
