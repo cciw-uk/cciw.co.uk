@@ -1,9 +1,9 @@
 #!/usr/bin/env python2.5
 from optparse import OptionParser
 import sys
-from django.contrib.auth.models import User
 from cciw.cciwmain.models import Person
 from cciw.officers.create import create_officer, create_multiple_officers
+
 
 parser = OptionParser(usage=
 """
@@ -21,9 +21,11 @@ parser.add_option("", "--leader", dest="is_leader", action="store_true", default
 parser.add_option("", "--dryrun", dest="dryrun", action="store_true", default=False, help="Don't touch the database or actually send emails")
 parser.add_option("", "--fromcsv", dest="fromcsv", action="store_true", default=False, help="Read data in from CSV file")
 
+
 def usage_and_exit():
     parser.print_usage()
     sys.exit(1)
+
 
 def main():
     options, args = parser.parse_args()
@@ -60,6 +62,7 @@ def main():
             username, first_name, last_name, email = args
             create_officer(username, first_name, last_name, email,
                            update=options.update, verbose=True)
+
 
 def parse_csv_data(iterable):
     import csv

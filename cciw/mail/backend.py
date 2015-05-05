@@ -15,7 +15,7 @@ class StagingBackend(BaseEmailBackend):
                 email.connection = connection
                 email.send()
             else:
-                pass # drop it
-            num_sent += 1 # pretend we send them all
+                pass  # drop it
+            num_sent += 1  # pretend we send them all
 
         return num_sent

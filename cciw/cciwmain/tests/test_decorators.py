@@ -38,4 +38,3 @@ class MemberRequiredPage(TestCase):
         r = self.client.post(ADD_POLL_URL, data=data)
         # should be back at orignal page.
         self.assertEqual(r.status_code, 302)
-

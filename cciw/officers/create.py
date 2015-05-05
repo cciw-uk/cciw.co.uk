@@ -1,4 +1,4 @@
-# Utilities for creation of officers in the database
+# Utilities for creation of officers in the database# Utilities for creation of officers in the database
 
 # Some of these are used from a script, and so print messages to the console if
 # 'verbose=True'.  A bit icky...
@@ -15,8 +15,7 @@ def make_username(first_name, last_name, guess_number=1):
     Makes a username for an officer, based on 'first_name' and 'last_name',
     checking in the DB for existing usernames.
     """
-    first_name = first_name.replace(" ","").lower()
-    last_name = last_name.replace(" ","").lower()
+    first_name = first_name.replace(" ", "").lower()
     if guess_number == 1:
         guess = "%s%s" % (first_name, last_name)
     else:
@@ -123,8 +122,8 @@ def _create_officer(username, first_name, last_name, email, password, dryrun=Fal
         officer = User.objects.get(username=username)
     else:
         officer = User(username=username)
-        officer.date_joined=timezone.now()
-        officer.last_login=timezone.now()
+        officer.date_joined = timezone.now()
+        officer.last_login = timezone.now()
 
     officer.first_name = first_name
     officer.last_name = last_name
@@ -257,12 +256,12 @@ The CCIW webmaster.
 
 def email_officer(username, first_name, email, password, is_leader=False, dryrun=False, update=False):
     if update:
-        repeat_message = \
+        repeat_message = (
 """
 This is a repeat e-mail sent either because the first e-mail never
 arrived or the password was forgotten.  Your username has not been
 changed, but a new random password has been given to you, see below.
-"""
+""")
     else:
         repeat_message = ""
 

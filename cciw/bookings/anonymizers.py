@@ -1,5 +1,6 @@
-from cciw.bookings.models import Price, BookingAccount, Booking, Payment, ManualPayment, RefundPayment
+from cciw.bookings.models import BookingAccount, Booking
 from anonymizer import Anonymizer
+
 
 class BookingAccountAnonymizer(Anonymizer):
 
@@ -60,4 +61,3 @@ class BookingAnonymizer(Anonymizer):
         ('created', "SKIP"),
         ('booking_expires', "SKIP"),
     ]
-

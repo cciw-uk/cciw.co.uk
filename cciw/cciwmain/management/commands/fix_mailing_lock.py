@@ -16,6 +16,5 @@ class Command(BaseCommand):
         c_time = time.time()
 
         # If it's more than an hour, it's probably got stuck.
-        if c_time - f_time > 60*60:
+        if c_time - f_time > 60 * 60:
             os.unlink(lock_file)
-

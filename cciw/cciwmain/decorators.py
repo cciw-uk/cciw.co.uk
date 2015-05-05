@@ -8,6 +8,7 @@ from django.utils import timezone
 from cciw.middleware.threadlocals import get_current_member, set_member_session
 from cciw.cciwmain.utils import python_to_json
 
+
 def login_redirect(path):
     """Returns a URL for logging in and then redirecting to the supplied path"""
     qs = urlencode({'redirect': path})
@@ -16,10 +17,12 @@ def login_redirect(path):
 LOGIN_FORM_KEY = 'this_is_the_login_form'
 ERROR_MESSAGE = "Please enter a correct username and password. Note that both fields are case-sensitive."
 
+
 def _display_login_form(request, error_message='', login_page=False):
     return render(request, 'cciw/members/login.html', {'app_path': request.get_full_path(),
                                                        'error_message': error_message,
                                                        'title': "Login"})
+
 
 def member_required_generic(except_methods):
     """Returns a decorator that forces a member to be logged in to access the view.
@@ -34,6 +37,7 @@ def member_required_generic(except_methods):
         """
 
         from cciw.forums.models import Member
+
         def _checklogin(request, *args, **kwargs):
 
             if request.method in except_methods or get_current_member() is not None:
@@ -69,6 +73,7 @@ def member_required_generic(except_methods):
 
 member_required_for_post = member_required_generic(['GET'])
 member_required = member_required_generic([])
+
 
 def email_errors_silently(func):
     """

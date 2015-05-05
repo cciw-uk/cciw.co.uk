@@ -25,7 +25,7 @@ class MemberList(ListView, FeedHandler, CciwBaseView):
     magic_context = {
         'default_order': 'aun',
         'atom_feed_title': "Atom feed for new members"
-        }
+    }
 
     def get_queryset(self):
         members = Member.objects.filter(dummy_member=False)
@@ -192,15 +192,18 @@ def _msg_move_inbox(msg):
     msg.box = Message.MESSAGE_BOX_INBOX
     msg.save()
 
+
 def _msg_move_archive(msg):
     msg.box = Message.MESSAGE_BOX_SAVED
     msg.save()
+
 
 def _msg_del(msg):
     msg.delete()
 
 
 _id_vars_re = re.compile('msg_(\d+)')
+
 
 class MessageList(ListView, CciwBaseView):
     """
@@ -209,7 +212,7 @@ class MessageList(ListView, CciwBaseView):
     template_name = 'cciw/members/messages/index.html'
     paginate_by = settings.MEMBERS_PAGINATE_MESSAGES_BY
     list_name = 'member_messages'
-    box = None # must be supplied at some point
+    box = None  # must be supplied at some point
 
     def handle(self, request, user_name=None):
         # Initial common setup
@@ -221,7 +224,6 @@ class MessageList(ListView, CciwBaseView):
         current_member = get_current_member()
         if current_member is None or user_name != current_member.user_name:
             return HttpResponseForbidden('<h1>Access denied</h1>')
-
 
         if request.method == "POST":
             ids = [int(m.groups()[0]) for m in map(_id_vars_re.match, request.POST.keys()) if m is not None]
@@ -240,7 +242,7 @@ class MessageList(ListView, CciwBaseView):
                             pass
             message_count = member.messages_received.filter(box=self.box).count()
             page = int(request.GET.get('page', 1))
-            last_page = int(math.ceil(float(message_count)/settings.MEMBERS_PAGINATE_MESSAGES_BY))
+            last_page = int(math.ceil(float(message_count) / settings.MEMBERS_PAGINATE_MESSAGES_BY))
             last_page = max(last_page, 1)
             if page > last_page:
                 # User may have deleted/moved everything on the last page,

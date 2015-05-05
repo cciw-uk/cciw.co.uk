@@ -6,22 +6,28 @@ from django.utils import timezone
 
 _thread_locals = threading.local()
 
+
 def is_web_request():
     return 'SERVER_PROTOCOL' in os.environ or \
            'RUN_MAIN' in os.environ
 
+
 def get_current_user():
     return getattr(_thread_locals, 'user', None)
 
+
 def set_current_user(user):
     _thread_locals.user = user
+
 
 def get_current_member():
     """Returns the currently logged in member, or None"""
     return getattr(_thread_locals, 'member', None)
 
+
 def set_current_member(member):
     _thread_locals.member = member
+
 
 def _get_member_from_request(request):
     from cciw.forums.models import Member
@@ -30,13 +36,16 @@ def _get_member_from_request(request):
     except (KeyError, Member.DoesNotExist):
         return None
 
+
 def set_member_session(request, member):
     request.session['member_id'] = member.user_name
     set_current_member(member)
 
+
 def remove_member_session(request):
     del request.session['member_id']
     del _thread_locals.member
+
 
 class ThreadLocals(object):
     """Adds various objects to thread local storage from the request object."""
@@ -51,4 +60,3 @@ class ThreadLocals(object):
                 member.last_seen = now
                 member.save()
         set_current_member(member)
-

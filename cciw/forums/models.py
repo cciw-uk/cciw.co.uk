@@ -37,8 +37,8 @@ class UserSpecificMembers(models.Manager):
     def get_queryset(self):
         user = threadlocals.get_current_user()
         if threadlocals.is_web_request() and \
-           (user is None or user.is_anonymous() or not user.is_staff or \
-            not user.has_perm('cciwmain.change_member')):
+           (user is None or user.is_anonymous() or not user.is_staff or
+                not user.has_perm('cciwmain.change_member')):
             return super(UserSpecificMembers, self).get_queryset().filter(hidden=False)
         else:
             return super(UserSpecificMembers, self).get_queryset()
@@ -59,37 +59,37 @@ class Member(models.Model):
     MODERATE_ALL = 2
 
     MESSAGE_OPTIONS = (
-        (MESSAGES_NONE,     "Don't allow messages"),
-        (MESSAGES_WEBSITE,  "Store messages on the website"),
-        (MESSAGES_EMAIL,    "Send messages via email"),
+        (MESSAGES_NONE, "Don't allow messages"),
+        (MESSAGES_WEBSITE, "Store messages on the website"),
+        (MESSAGES_EMAIL, "Send messages via email"),
         (MESSAGES_EMAIL_AND_WEBSITE, "Store messages and send via email")
     )
 
     MODERATE_OPTIONS = (
-        (MODERATE_OFF,      "Off"),
-        (MODERATE_NOTIFY,   "Unmoderated, but notify"),
-        (MODERATE_ALL,      "Fully moderated")
+        (MODERATE_OFF, "Off"),
+        (MODERATE_NOTIFY, "Unmoderated, but notify"),
+        (MODERATE_ALL, "Fully moderated")
     )
 
-    user_name   = models.CharField("User name", max_length=30, unique=True)
-    real_name   = models.CharField("'Real' name", max_length=30, blank=True)
-    email       = models.EmailField("Email address")
-    password    = models.CharField("Password", max_length=255)
+    user_name = models.CharField("User name", max_length=30, unique=True)
+    real_name = models.CharField("'Real' name", max_length=30, blank=True)
+    email = models.EmailField("Email address")
+    password = models.CharField("Password", max_length=255)
     date_joined = models.DateTimeField("Date joined", null=True)
-    last_seen   = models.DateTimeField("Last on website", null=True)
-    show_email  = models.BooleanField("Make email address visible", default=False)
+    last_seen = models.DateTimeField("Last on website", null=True)
+    show_email = models.BooleanField("Make email address visible", default=False)
     message_option = models.PositiveSmallIntegerField("Message storing",
-        choices=MESSAGE_OPTIONS, default=1)
-    comments    = models.TextField("Comments", blank=True)
-    moderated   = models.PositiveSmallIntegerField("Moderated", default=0,
-        choices=MODERATE_OPTIONS)
-    hidden      = models.BooleanField("Hidden", default=False)
-    banned      = models.BooleanField("Banned", default=False)
+                                                      choices=MESSAGE_OPTIONS, default=1)
+    comments = models.TextField("Comments", blank=True)
+    moderated = models.PositiveSmallIntegerField("Moderated", default=0,
+                                                 choices=MODERATE_OPTIONS)
+    hidden = models.BooleanField("Hidden", default=False)
+    banned = models.BooleanField("Banned", default=False)
     permissions = models.ManyToManyField(Permission,
-        verbose_name="permissions", related_name="member_with_permission",
-        blank=True)
-    icon         = models.ImageField("Icon", upload_to=settings.MEMBER_ICON_UPLOAD_PATH, blank=True)
-    dummy_member = models.BooleanField("Dummy member status", default=False) # supports ancient posts in message boards
+                                         verbose_name="permissions", related_name="member_with_permission",
+                                         blank=True)
+    icon = models.ImageField("Icon", upload_to=settings.MEMBER_ICON_UPLOAD_PATH, blank=True)
+    dummy_member = models.BooleanField("Dummy member status", default=False)  # supports ancient posts in message boards
 
     # Managers
     objects = UserSpecificMembers()
@@ -156,7 +156,8 @@ class Member(models.Model):
     # For the sake of django.contrib.auth.tokens.PasswordResetTokenGenerator
     @property
     def last_login(self):
-        return self.last_seen if self.last_seen else timezone.get_default_timezone().localize(datetime(1970,1,1))
+        return (self.last_seen if self.last_seen
+                else timezone.get_default_timezone().localize(datetime(1970, 1, 1)))
 
     class Meta:
         ordering = ('user_name',)
@@ -168,7 +169,7 @@ class Award(models.Model):
     year = models.PositiveSmallIntegerField("Year")
     description = models.CharField("Description", max_length=200)
     image = models.ImageField("Award image",
-        upload_to=settings.AWARD_UPLOAD_PATH)
+                              upload_to=settings.AWARD_UPLOAD_PATH)
 
     def __str__(self):
         return "%s %s" % (self.name, self.year)
@@ -198,12 +199,8 @@ class PersonalAwardManager(models.Manager):
 class PersonalAward(models.Model):
     reason = models.CharField("Reason for award", max_length=200)
     date_awarded = models.DateField("Date awarded", null=True, blank=True)
-    award = models.ForeignKey(Award,
-        verbose_name="award",
-        related_name="personal_awards")
-    member = models.ForeignKey(Member,
-        verbose_name="member",
-        related_name="personal_awards")
+    award = models.ForeignKey(Award, verbose_name="award", related_name="personal_awards")
+    member = models.ForeignKey(Member, verbose_name="member", related_name="personal_awards")
 
     objects = PersonalAwardManager()
 
@@ -222,17 +219,11 @@ class Message(models.Model):
         (MESSAGE_BOX_INBOX, "Inbox"),
         (MESSAGE_BOX_SAVED, "Saved")
     )
-    from_member = models.ForeignKey(Member,
-        verbose_name="from member",
-        related_name="messages_sent"
-    )
-    to_member = models.ForeignKey(Member,
-        verbose_name="to member",
-        related_name="messages_received")
+    from_member = models.ForeignKey(Member, verbose_name="from member", related_name="messages_sent")
+    to_member = models.ForeignKey(Member, verbose_name="to member", related_name="messages_received")
     time = models.DateTimeField("At")
     text = models.TextField("Message")
-    box = models.PositiveSmallIntegerField("Message box",
-        choices=MESSAGE_BOXES)
+    box = models.PositiveSmallIntegerField("Message box", choices=MESSAGE_BOXES)
 
     @staticmethod
     def send_message(to_member, from_member, text):
@@ -240,8 +231,8 @@ class Message(models.Model):
             return
         if to_member.message_option != Member.MESSAGES_EMAIL:
             msg = Message(to_member=to_member, from_member=from_member,
-                        text=text, time=timezone.now(),
-                        box=Message.MESSAGE_BOX_INBOX)
+                          text=text, time=timezone.now(),
+                          box=Message.MESSAGE_BOX_INBOX)
             msg.save()
         if to_member.message_option != Member.MESSAGES_WEBSITE:
             mail.send_mail("Message on cciw.co.uk",
@@ -257,9 +248,8 @@ https://%(domain)s/members/%(from)s/messages/
 
 """ % {'from': from_member.user_name, 'to': to_member.user_name,
         'domain': common.get_current_domain(), 'message': text},
-        settings.SERVER_EMAIL, [to_member.email])
+                           settings.SERVER_EMAIL, [to_member.email])
         return msg
-
 
     def __str__(self):
         return "[%s] to %s from %s" % (self.id, self.to_member, self.from_member)
@@ -286,13 +276,13 @@ class Poll(models.Model):
     voting_starts = models.DateTimeField("Voting starts")
     voting_ends = models.DateTimeField("Voting ends")
     rules = models.PositiveSmallIntegerField("Rules",
-        choices=VOTING_RULES)
+                                             choices=VOTING_RULES)
     rule_parameter = models.PositiveSmallIntegerField("Parameter for rule",
-        default=1)
+                                                      default=1)
     have_vote_info = models.BooleanField("Full vote information available",
-        default=True)
+                                         default=True)
     created_by = models.ForeignKey(Member, verbose_name="created by",
-        related_name="polls_created")
+                                   related_name="polls_created")
 
     def __str__(self):
         return self.title
@@ -307,16 +297,16 @@ class Poll(models.Model):
             return True
         if self.rules == Poll.UNLIMITED:
             return True
-        queries = [] # queries representing users relevant votes
+        queries = []  # queries representing users relevant votes
         for po in self.poll_options.all():
             if self.rules == Poll.X_VOTES_PER_USER:
                 queries.append(po.votes.filter(member=member.pk))
             elif self.rules == Poll.X_VOTES_PER_USER_PER_DAY:
                 queries.append(po.votes.filter(member=member.pk,
-                                                date__gte=timezone.now() - timedelta(1)))
+                                               date__gte=timezone.now() - timedelta(1)))
         # combine them all and do an SQL count.
         if len(queries) == 0:
-            return False # no options to vote on!
+            return False  # no options to vote on!
         count = reduce(operator.or_, queries).count()
         if count >= self.rule_parameter:
             return False
@@ -347,7 +337,7 @@ class PollOption(models.Model):
     text = models.CharField("Option text", max_length=200)
     total = models.PositiveSmallIntegerField("Number of votes")
     poll = models.ForeignKey(Poll, verbose_name="Associated poll",
-        related_name="poll_options")
+                             related_name="poll_options")
     listorder = models.PositiveSmallIntegerField("Order in list")
 
     def __str__(self):
@@ -366,25 +356,23 @@ class PollOption(models.Model):
             if self.total == 0:
                 return '0%'
             else:
-                return '%.1f' % (float(self.total)/sum*100) + '%'
+                return '%.1f' % (float(self.total) / sum * 100) + '%'
 
     def bar_width(self):
         sum = self.poll.total_votes()
         if sum == 0:
             return 0
         else:
-            return int(float(self.total)/sum*300)
+            return int(float(self.total) / sum * 300)
 
     class Meta:
         ordering = ('poll', 'listorder',)
 
 
 class VoteInfo(models.Model):
-    poll_option = models.ForeignKey(PollOption,
-        related_name="votes")
-    member = models.ForeignKey(Member,
-        verbose_name="member",
-        related_name="poll_votes")
+    poll_option = models.ForeignKey(PollOption, related_name="votes")
+    member = models.ForeignKey(Member, verbose_name="member",
+                               related_name="poll_votes")
     date = models.DateTimeField("Date")
 
     def save(self):
@@ -454,9 +442,9 @@ class UserSpecificTopics(models.Manager):
     def get_queryset(self):
         queryset = super(UserSpecificTopics, self).get_queryset()
         user = threadlocals.get_current_user()
-        if threadlocals.is_web_request() and \
-           (user is None or user.is_anonymous() or \
-            not user.has_perm('cciwmain.edit_topic')):
+        if (threadlocals.is_web_request() and
+            (user is None or user.is_anonymous() or
+                not user.has_perm('cciwmain.edit_topic'))):
             # Non-moderator user
             member = threadlocals.get_current_member()
             if member is not None:
@@ -471,26 +459,25 @@ class UserSpecificTopics(models.Manager):
 class Topic(models.Model):
     subject = models.CharField("Subject", max_length=240)
     started_by = models.ForeignKey(Member, related_name="topics_started",
-        verbose_name="started by")
+                                   verbose_name="started by")
     created_at = models.DateTimeField("Started", null=True)
     open = models.BooleanField("Open", default=False)
     hidden = models.BooleanField("Hidden", default=False)
     approved = models.NullBooleanField("Approved", blank=True)
     checked_by = models.ForeignKey(User,
-        null=True, blank=True, related_name="topics_checked",
-        verbose_name="checked by")
+                                   null=True, blank=True, related_name="topics_checked",
+                                   verbose_name="checked by")
     needs_approval = models.BooleanField("Needs approval", default=False)
     news_item = models.ForeignKey(NewsItem, null=True, blank=True,
-        related_name="topics") # optional news item
+                                  related_name="topics")  # optional news item
     poll = models.ForeignKey(Poll, null=True, blank=True,
-        related_name="topics") # optional topic
+                             related_name="topics")  # optional topic
     forum = models.ForeignKey(Forum, related_name="topics")
 
     # De-normalised fields needed for performance and simplicity in templates:
-    last_post_at = models.DateTimeField("Last post at",
-        null=True, blank=True)
+    last_post_at = models.DateTimeField("Last post at", null=True, blank=True)
     last_post_by = models.ForeignKey(Member, verbose_name="Last post by",
-        null=True, blank=True, related_name='topics_with_last_post')
+                                     null=True, blank=True, related_name='topics_with_last_post')
     # since we need 'last_post_by', may as well have this too:
     post_count = models.PositiveSmallIntegerField("Number of posts", default=0)
 
@@ -547,9 +534,9 @@ class UserSpecificPhotos(models.Manager):
     def get_queryset(self):
         queryset = super(UserSpecificPhotos, self).get_queryset()
         user = threadlocals.get_current_user()
-        if threadlocals.is_web_request() and \
-            (user is None or user.is_anonymous() or \
-             not user.has_perm('cciwmain.edit_topic')):
+        if (threadlocals.is_web_request() and
+            (user is None or user.is_anonymous() or
+                not user.has_perm('cciwmain.edit_topic'))):
             # Non-moderator user
             return queryset.filter(hidden=False)
         else:
@@ -562,19 +549,15 @@ class Photo(models.Model):
     hidden = models.BooleanField("Hidden", default=False)
     filename = models.CharField("Filename", max_length=50)
     description = models.CharField("Description", blank=True, max_length=100)
-    gallery = models.ForeignKey(Gallery,
-        verbose_name="gallery",
-        related_name="photos")
-    checked_by = models.ForeignKey(User,
-        null=True, blank=True, related_name="photos_checked")
+    gallery = models.ForeignKey(Gallery, verbose_name="gallery", related_name="photos")
+    checked_by = models.ForeignKey(User, null=True, blank=True, related_name="photos_checked")
     approved = models.NullBooleanField("Approved", blank=True)
     needs_approval = models.BooleanField("Needs approval", default=False)
 
     # De-normalised fields needed for performance and simplicity in templates:
-    last_post_at = models.DateTimeField("Last post at",
-        null=True, blank=True)
+    last_post_at = models.DateTimeField("Last post at", null=True, blank=True)
     last_post_by = models.ForeignKey(Member, verbose_name="Last post by",
-        null=True, blank=True, related_name='photos_with_last_post')
+                                     null=True, blank=True, related_name='photos_with_last_post')
     # since we need 'last_post_by', may as well have this too:
     post_count = models.PositiveSmallIntegerField("Number of posts", default=0)
 
@@ -612,9 +595,9 @@ class UserSpecificPosts(models.Manager):
         appropriate for the current member/user."""
         queryset = super(UserSpecificPosts, self).get_queryset()
         user = threadlocals.get_current_user()
-        if threadlocals.is_web_request() and \
-           (user is None or user.is_anonymous() or \
-            not user.has_perm('cciwmain.edit_post')):
+        if (threadlocals.is_web_request() and
+            (user is None or user.is_anonymous() or
+                not user.has_perm('cciwmain.edit_post'))):
             # Non-moderator user
 
             member = threadlocals.get_current_member()
@@ -628,26 +611,21 @@ class UserSpecificPosts(models.Manager):
 
 
 class Post(models.Model):
-    posted_by = models.ForeignKey(Member,
-        related_name="posts")
-    subject = models.CharField("Subject", max_length=240, blank=True) # deprecated, supports legacy boards
+    posted_by = models.ForeignKey(Member, related_name="posts")
+    subject = models.CharField("Subject", max_length=240, blank=True)  # deprecated, supports legacy boards
     message = models.TextField("Message")
     posted_at = models.DateTimeField("Posted at", null=True)
     hidden = models.BooleanField("Hidden", default=False)
     approved = models.NullBooleanField("Approved")
-    checked_by = models.ForeignKey(User,
-        verbose_name="checked by",
-        null=True, blank=True, related_name="checked_post")
+    checked_by = models.ForeignKey(User, verbose_name="checked by",
+                                   null=True, blank=True, related_name="checked_post")
     needs_approval = models.BooleanField("Needs approval", default=False)
-    photo = models.ForeignKey(Photo, related_name="posts",
-        null=True, blank=True)
-    topic = models.ForeignKey(Topic, related_name="posts",
-        null=True, blank=True)
+    photo = models.ForeignKey(Photo, related_name="posts", null=True, blank=True)
+    topic = models.ForeignKey(Topic, related_name="posts", null=True, blank=True)
 
     # Managers
     objects = UserSpecificPosts()
     all_objects = models.Manager()
-
 
     def __str__(self):
         return "Post [%s]: %s" % (str(self.id), self.message[:30])
@@ -659,13 +637,13 @@ class Post(models.Model):
         # interface for this bit.
         post_count = parent.posts.count()
         changed = False
-        if (parent.last_post_at is None and not self.posted_at is None) or \
-            (not parent.last_post_at is None and not self.posted_at is None \
-            and self.posted_at > parent.last_post_at):
+        if ((parent.last_post_at is None and self.posted_at is not None) or
+            (parent.last_post_at is not None and self.posted_at is not None
+                and self.posted_at > parent.last_post_at)):
             parent.last_post_at = self.posted_at
             changed = True
-        if parent.last_post_by_id is None or \
-            parent.last_post_by_id != self.posted_by_id:
+        if (parent.last_post_by_id is None or
+                parent.last_post_by_id != self.posted_by_id):
             parent.last_post_by_id = self.posted_by_id
             changed = True
         if post_count > parent.post_count:
@@ -709,7 +687,7 @@ class Post(models.Model):
         # built in.
         posts = thread.posts.filter(id__lt=self.id)
         previous_posts = posts.count()
-        page = int(previous_posts/settings.FORUM_PAGINATE_POSTS_BY) + 1
+        page = int(previous_posts / settings.FORUM_PAGINATE_POSTS_BY) + 1
         return "%s?page=%s#id%s" % (thread.get_absolute_url(), page, self.id)
 
     def is_parent_visible(self):

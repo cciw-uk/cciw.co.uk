@@ -9,6 +9,7 @@ from django.utils.text import wrap
 from cciw.cciwmain.common import AjaxFormValidation, CciwBaseView
 from cciw.cciwmain.forms import CciwFormMixin
 
+
 def send_feedback(to_emails, from_email, name, message):
     message = wrap(message, 70)
     email = mail.EmailMessage(subject="CCIW website feedback",
@@ -44,6 +45,7 @@ CONTACT_CHOICE_DESTS = {
     CONTACT_CHOICE_WEBSITE: ['WEBMASTER_EMAIL', 'CONTACT_US_EMAIL'],
     CONTACT_CHOICE_BOOKINGS: ['BOOKING_SECRETARY_EMAIL', 'CONTACT_US_EMAIL'],
 }
+
 
 class ContactUsForm(CciwFormMixin, forms.Form):
     subject = forms.ChoiceField(label="Subject", choices=CONTACT_CHOICES)
@@ -90,4 +92,3 @@ class ContactUsDone(ContactUsBase):
 
 contact_us = ContactUsFormView.as_view()
 contact_us_done = ContactUsDone.as_view()
-

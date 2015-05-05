@@ -23,7 +23,7 @@ communicate with children and young people, leadership skills\)"""),
 Please comment on aspects of the applicant'?s character \(i\.?e\. Christian
 experience honesty, trustworthiness, reliability, disposition, faithful
 attendance at worship/prayer meetings\.\)"""),
-    ('concerns',  r"""
+    ('concerns', r"""
 Have you ever had concerns about either this applicant's ability or
 suitability to work with children and young people\? If you would prefer
 to discuss your concerns on the telephone and in confidence, please
@@ -34,14 +34,17 @@ contact either: Colin Davies on 029 20 617391 or Shirley Evans on 020
     ('date_created', r"Date"),
 ]
 
+
 # Replace any literal whitespace with optional whitespace matcher.
 # We use this to make the questions above more readable.
 def soften_whitespace(s):
     return re.sub(r"\s", r"\s+", s)
 
+
 # Create the actual regex for extracting answers.
 def make_regex(qs):
-    return "".join([soften_whitespace(regex) + ("(?P<%s>.*)" % name) for name,regex in qs])
+    return "".join([soften_whitespace(regex) + ("(?P<%s>.*)" % name) for name, regex in qs])
+
 
 def parse_date(s):
     formats = [
@@ -50,7 +53,7 @@ def parse_date(s):
         r"(?P<d>\d{1,2})\.(?P<m>\d{1,2})\.(?P<y>\d{2,4})",
         r"(?P<y>\d{4})-(?P<m>\d{1,2})-(?P<d>\d{1,2})",
         r"(?P<y>\d{4})/(?P<m>\d{1,2})/(?P<d>\d{2,4})",
-        ]
+    ]
     day, month, year = None, None, None
     for f in formats:
         m = re.match(f, s)
@@ -68,18 +71,18 @@ def parse_date(s):
         if len(gs['y']) == 2:
             year = year + 2000
         # find month:
-        months = {'Jan':1,
-                  'Feb':2,
-                  'Mar':3,
-                  'Apr':4,
-                  'May':5,
-                  'Jun':6,
-                  'Jul':7,
-                  'Aug':8,
-                  'Sep':9,
-                  'Oct':10,
-                  'Nov':11,
-                  'Dec':12,
+        months = {'Jan': 1,
+                  'Feb': 2,
+                  'Mar': 3,
+                  'Apr': 4,
+                  'May': 5,
+                  'Jun': 6,
+                  'Jul': 7,
+                  'Aug': 8,
+                  'Sep': 9,
+                  'Oct': 10,
+                  'Nov': 11,
+                  'Dec': 12,
                   }
         for name, month in months.items():
             if monthname.lower().startswith(name.lower()):
@@ -91,6 +94,7 @@ def parse_date(s):
     return "*** FIXME *** Can't parse " + s
 
 footer_regex = re.compile("CCIW limited.*Rees", flags=re.DOTALL)
+
 
 def clean(n, g):
     if n == 'how_long_known' or n == 'capacity_known':
@@ -114,24 +118,27 @@ def clean(n, g):
     else:
         return g.strip()
 
+
 def shell(cmd):
     """
     Execute shell command and return stdout.
     If cmd is a string, it will be interpreted through the shell.
     If is it a list [commandname, arg1, arg2...], then it won't be.
     """
-    return ''.join(Popen(cmd, shell=isinstance(cmd, string_types), stdout=PIPE, stderr=PIPE).stdout.readlines())
+    return ''.join(Popen(cmd, shell=isinstance(cmd, str), stdout=PIPE, stderr=PIPE).stdout.readlines())
+
 
 def convert_file(fname):
     ftype = shell(["file", "--brief", fname])
     if "Microsoft Office Document" in ftype:
-        return shell(["antiword", fname]).replace("|"," ")
+        return shell(["antiword", fname]).replace("|", " ")
     elif "Rich Text Format" in ftype:
         return shell(["unrtf", "-t", "text", fname])
     elif "ASCII English text" in ftype or "UTF-8 Unicode English" in ftype:
         return shell(["cat", fname])
     else:
         raise Exception("Unknown file type %s" % ftype)
+
 
 def scrape_file(fname):
     data = convert_file(fname)
@@ -140,17 +147,15 @@ def scrape_file(fname):
     m = re.search(regex, data, flags=re.DOTALL)
     if m is None:
         print("*** Could not match ***")
-        for i in range(1, len(questions)+1):
+        for i in range(1, len(questions) + 1):
             r = make_regex(questions[0:i])
             if re.search(r, data, flags=re.DOTALL) is not None:
                 pass
             else:
-                print("Failed on question " + questions[i-1][0])
+                print("Failed on question " + questions[i - 1][0])
                 break
     else:
         return dict([(name, clean(name, val)) for name, val in m.groupdict().items()])
-
-
 
 
 usage = """Usage:
@@ -173,8 +178,8 @@ if __name__ == "__main__":
         fd.close()
         if "*** FIXME" in repr(data):
             sys.stderr.write("%s: there were some errors parsing:\n" % fname)
-            for (k,v) in data.items():
-                if isinstance(v, string_types) and "*** FIXME" in v:
+            for (k, v) in data.items():
+                if isinstance(v, str) and "*** FIXME" in v:
                     sys.stderr.write("  " + k + "\n")
         if footer_regex.search(repr(data)) is not None:
             sys.stderr.write("Footer text is found in one of the answers.")

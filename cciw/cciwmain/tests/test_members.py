@@ -25,9 +25,9 @@ TEST_MEMBER_EMAIL = 'test@test.com'
 TEST_POLL_CREATOR_USERNAME = 'test_poll_creator_1'
 TEST_POLL_CREATOR_PASSWORD = 'password'
 
-NEW_MEMBER_EMAIL='new_member@test.com'
-NEW_MEMBER_USERNAME='new_member'
-NEW_MEMBER_PASSWORD='mypassword'
+NEW_MEMBER_EMAIL = 'new_member@test.com'
+NEW_MEMBER_USERNAME = 'new_member'
+NEW_MEMBER_PASSWORD = 'mypassword'
 
 MEMBER_ADMIN_URL = reverse("cciwmain.memberadmin.preferences")
 MEMBER_SIGNUP = reverse("cciwmain.memberadmin.signup")
@@ -38,13 +38,15 @@ NEW_PASSWORD_URL = reverse("cciwmain.memberadmin.help_logging_in")
 def _get_file_size(path):
     return os.stat(path)[os.path.stat.ST_SIZE]
 
+
 def _remove_member_icons(user_name):
     for f in glob.glob("%s/%s/%s" % (settings.MEDIA_ROOT, settings.MEMBER_ICON_PATH, user_name + ".*")):
         os.unlink(f)
 
 
 class MemberAdmin(TestCase):
-    fixtures=['basic.json','test_members.json']
+    fixtures = ['basic.json', 'test_members.json']
+
     def setUp(self):
         self.client = CciwClient()
         self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)
@@ -55,7 +57,7 @@ class MemberAdmin(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Check we are on the right page
-        self.assertEqual(response.templates[0].name,'cciw/members/preferences.html')
+        self.assertEqual(response.templates[0].name, 'cciw/members/preferences.html')
 
         # Check context has been populated
         member = response.context[0].get('member')
@@ -63,7 +65,7 @@ class MemberAdmin(TestCase):
         self.assertTrue(member == self.member)
 
     def _standard_post_data(self):
-        return  {
+        return {
             'real_name': self.member.real_name,
             'email': self.member.email,
             'show_email': self.member.show_email,
@@ -81,7 +83,7 @@ class MemberAdmin(TestCase):
         return resp
 
     def test_upload_png_icon(self):
-       self._test_upload_icon('png')
+        self._test_upload_icon('png')
 
     def test_upload_gif_icon(self):
         self._test_upload_icon('gif')
@@ -165,7 +167,7 @@ class MemberAdmin(TestCase):
 
 
 class MemberSignup(WebTestBase):
-    fixtures=['basic.json','test_members.json']
+    fixtures = ['basic.json', 'test_members.json']
 
     def setUp(self):
         self.client = CciwClient()
@@ -264,7 +266,7 @@ class MemberSignup(WebTestBase):
 
 class MemberLists(TestCase):
 
-    fixtures = ['basic.json','test_members.json']
+    fixtures = ['basic.json', 'test_members.json']
 
     def setUp(self):
         super(MemberLists, self).setUp()
@@ -279,7 +281,7 @@ class MemberLists(TestCase):
 
     def test_atom(self):
         # Just test for no error
-        resp = self.client.get(reverse('cciwmain.members.index'), {'format':'atom'})
+        resp = self.client.get(reverse('cciwmain.members.index'), {'format': 'atom'})
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp['Content-Type'].startswith('application/atom+xml'))
         self.assertContains(resp, TEST_MEMBER_USERNAME)
@@ -295,14 +297,14 @@ class MemberLists(TestCase):
         with self.assertNumQueries(FuzzyInt(1, 4)):
             index(request).render()
 
-        request = self.factory.get(reverse('cciwmain.members.index'), {'format':'atom'})
+        request = self.factory.get(reverse('cciwmain.members.index'), {'format': 'atom'})
         with self.assertNumQueries(1):
             index(request)
 
 
 class SendMessage(TestCase):
 
-    fixtures = ['basic.json','test_members.json']
+    fixtures = ['basic.json', 'test_members.json']
 
     def setUp(self):
         self.client = CciwClient()
@@ -384,7 +386,7 @@ class SendMessage(TestCase):
 
 class MessageLists(TestCase):
 
-    fixtures = ['basic.json','test_members.json']
+    fixtures = ['basic.json', 'test_members.json']
 
     def setUp(self):
         self.client = CciwClient()
@@ -398,12 +400,12 @@ class MessageLists(TestCase):
         else:
             qs = {}
         return self.client.get(reverse("cciwmain.members.inbox",
-                                       kwargs={'user_name':TEST_MEMBER_USERNAME}),
+                                       kwargs={'user_name': TEST_MEMBER_USERNAME}),
                                qs)
 
     def _get_archived(self):
         return self.client.get(reverse("cciwmain.members.archived_messages",
-                                       kwargs={'user_name':TEST_MEMBER_USERNAME}))
+                                       kwargs={'user_name': TEST_MEMBER_USERNAME}))
 
     def test_empty_inbox(self):
         # Sanity check:
@@ -431,7 +433,7 @@ class MessageLists(TestCase):
 
     def _msg_list_checkboxes(self, resp):
         b = BeautifulSoup(resp.content)
-        checkboxes = [c for c in b.findAll(name='input', attrs={"type":"checkbox"})
+        checkboxes = [c for c in b.findAll(name='input', attrs={"type": "checkbox"})
                       if c.attrs['name'].startswith('msg_')]
         return checkboxes
 
@@ -462,7 +464,7 @@ class MessageLists(TestCase):
         resp2 = self.client.post(reverse("cciwmain.members.inbox",
                                          kwargs={'user_name': TEST_MEMBER_USERNAME}),
                                  {checkboxes[0].attrs['name']: '1',
-                                  'archive':'1'})
+                                  'archive': '1'})
         self.assertEqual(resp2.status_code, 200)
         self.assertEqual(self._inbox_count(), inbox_count - 1)
         self.assertEqual(self._archived_count(), archived_count + 1)
@@ -480,7 +482,7 @@ class MessageLists(TestCase):
         resp2 = self.client.post(reverse("cciwmain.members.inbox",
                                          kwargs={'user_name': TEST_MEMBER_USERNAME}),
                                  {checkboxes[0].attrs['name']: '1',
-                                  'delete':'1'})
+                                  'delete': '1'})
         self.assertEqual(resp2.status_code, 200)
         self.assertEqual(self._inbox_count(), inbox_count - 1)
 
@@ -506,7 +508,7 @@ class MessageLists(TestCase):
         resp2 = self.client.post(reverse("cciwmain.members.archived_messages",
                                          kwargs={'user_name': TEST_MEMBER_USERNAME}),
                                  {checkboxes[0].attrs['name']: '1',
-                                  'inbox':'1'})
+                                  'inbox': '1'})
         self.assertEqual(resp2.status_code, 200)
         self.assertEqual(self._inbox_count(), inbox_count + 1)
         self.assertEqual(self._archived_count(), archived_count - 1)
@@ -529,18 +531,18 @@ class MessageLists(TestCase):
                                          kwargs={'user_name': TEST_MEMBER_USERNAME})
                                  + "?page=2",
                                  {checkboxes[0].attrs['name']: '1',
-                                  'delete':'1'})
+                                  'delete': '1'})
         self.assertEqual(resp2.status_code, 302)
         self.assertTrue("page=1" in resp2['Location'])
 
 
 class MemberPosts(TestCase):
 
-    fixtures = ['basic.json','test_members.json', 'basic_topic.json']
+    fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
 
     def test_index(self):
         resp = self.client.get(reverse('cciwmain.members.posts',
-                                       kwargs={'user_name':TEST_MEMBER_USERNAME}))
+                                       kwargs={'user_name': TEST_MEMBER_USERNAME}))
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp['Content-Type'].startswith('text/html'))
         self.assertContains(resp, TEST_MEMBER_USERNAME)
@@ -549,8 +551,8 @@ class MemberPosts(TestCase):
     def test_atom(self):
         # Just test for no error
         resp = self.client.get(reverse('cciwmain.members.posts',
-                                       kwargs={'user_name':TEST_MEMBER_USERNAME}),
-                               {'format':'atom'})
+                                       kwargs={'user_name': TEST_MEMBER_USERNAME}),
+                               {'format': 'atom'})
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp['Content-Type'].startswith('application/atom+xml'))
         self.assertContains(resp, TEST_MEMBER_USERNAME)

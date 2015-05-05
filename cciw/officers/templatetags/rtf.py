@@ -4,6 +4,7 @@ import encodings
 
 register = template.Library()
 
+
 @stringfilter
 def rtflinebreaks(value):
     "Converts newlines into RTF \lines"
@@ -12,6 +13,7 @@ def rtflinebreaks(value):
 register.filter(rtflinebreaks)
 
 encoder = encodings.codecs.getencoder('1252')
+
 
 def unicode_to_rtf(u):
     """Replaces all high characters with \\u escape sequences,
@@ -42,10 +44,11 @@ def unicode_to_rtf(u):
         output.append(converted)
     return ''.join(output)
 
+
 @stringfilter
 def rtfescape(value):
     "Escapes RTF control characters"
 
-    return unicode_to_rtf(value.replace('\\', '\\\\').replace('{','\\{').replace('}', '\\}'))
+    return unicode_to_rtf(value.replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}'))
 
 register.filter(rtfescape)

@@ -2,17 +2,19 @@ from django import template
 from django.utils import html
 from django.conf import settings
 
-from cciw.cciwmain.utils import *
+from cciw.cciwmain.utils import modified_query_string
 
-def page_link(request, page_number, fragment = ''):
+
+def page_link(request, page_number, fragment=''):
     """
     Constructs a link to a specific page using the request.
     Returns HTML escaped value
     """
     return html.escape(modified_query_string(request, {'page': str(page_number)}, fragment))
 
+
 class PagingControlNode(template.Node):
-    def __init__(self, fragment = ''):
+    def __init__(self, fragment=''):
         self.fragment = fragment
 
     def render(self, context):
@@ -30,7 +32,7 @@ class PagingControlNode(template.Node):
         output = []
         if (total_pages > 1):
             output.append("&mdash; Page %d  of %d &mdash;&nbsp;&nbsp; " %
-                (cur_page, total_pages))
+                          (cur_page, total_pages))
 
             # Constraints:
             # - Always have: first page, last page, next page, previous page
@@ -40,14 +42,14 @@ class PagingControlNode(template.Node):
 
             # Initial set
             pages = set(p for p in range(cur_page - 2, cur_page + 3)
-                            if p >= 1 and p <= total_pages)
+                        if p >= 1 and p <= total_pages)
             pages.add(1)
             pages.add(total_pages)
 
             # Add some more at intervals
             # Ensure that if we are using ellipses, we don't
             # get any adjacent numbers since that looks odd.
-            interval = max(float(total_pages/8.0), 2)
+            interval = max(float(total_pages / 8.0), 2)
             for i in range(1, 9):
                 p = int(i * interval)
                 if p <= total_pages:
@@ -64,27 +66,26 @@ class PagingControlNode(template.Node):
                     output.append('<span class="pagingLinkCurrent">%s</span>' % str(i))
                 else:
                     output.append(
-                        '<a title="%(title)s" class="pagingLink" href="%(href)s">%(pagenumber)d</a>' % \
-                        { 'title': 'Page ' + str(i),
-                          'href': page_link(request, i, self.fragment),
-                          'pagenumber': i })
+                        '<a title="%(title)s" class="pagingLink" href="%(href)s">%(pagenumber)d</a>' %
+                        {'title': 'Page ' + str(i),
+                         'href': page_link(request, i, self.fragment),
+                         'pagenumber': i})
                 last_page = i
             output.append(" | ")
             if cur_page > 1:
                 output.append(
-                    '<a class="pagingLink" title="Previous page" href="%s">&laquo;</a>' % \
+                    '<a class="pagingLink" title="Previous page" href="%s">&laquo;</a>' %
                     page_link(request, cur_page - 1, self.fragment))
             else:
                 output.append('<span class="pagingLinkCurrent">&laquo;</span>')
             output.append("&nbsp;")
             if cur_page < total_pages:
                 output.append(
-                    '<a class="pagingLink" title="Next page" href="%s">&raquo;</a>' % \
+                    '<a class="pagingLink" title="Next page" href="%s">&raquo;</a>' %
                     page_link(request, cur_page + 1, self.fragment))
             else:
                 output.append('<span class="pagingLinkCurrent">&raquo;</span>')
         return ''.join(output)
-
 
 
 def do_paging_control(parser, token):
@@ -106,6 +107,7 @@ def do_paging_control(parser, token):
     else:
         return PagingControlNode()
 
+
 class EarlierLaterNode(template.Node):
     def render(self, context):
         cur_page = int(context['page'])
@@ -124,8 +126,10 @@ class EarlierLaterNode(template.Node):
         output.append('</span>')
         return ''.join(output)
 
+
 def do_ealier_later(parser, token):
     return EarlierLaterNode()
+
 
 class SortingControlNode(template.Node):
     def __init__(self, ascending_param, descending_param,
@@ -138,7 +142,7 @@ class SortingControlNode(template.Node):
     def render(self, context):
         request = context['request']
         output = '<span class="sortingControl">'
-        current_order = request.GET.get('order','')
+        current_order = request.GET.get('order', '')
         if current_order == '':
             try:
                 current_order = context['default_order']
@@ -187,6 +191,7 @@ def do_sorting_control(parser, token):
         raise template.TemplateSyntaxError("sorting_control tag requires 4 quoted arguments")
     return SortingControlNode(bits[1].strip('"'), bits[3].strip('"'),
                               bits[5].strip('"'), bits[7].strip('"'),)
+
 
 class ForwardQueryParamNode(template.Node):
     def __init__(self, param_name):

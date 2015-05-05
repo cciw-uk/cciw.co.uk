@@ -21,9 +21,9 @@ class CciwLegacyPasswordHasher(BasePasswordHasher):
         return self.encode(password, salt) == encoded
 
     def salt(self):
-        rand64= "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+        rand64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
         random.seed(datetime.now().microsecond)
-        return rand64[int(random.random()*64)] + rand64[int(random.random()*64)]
+        return rand64[int(random.random() * 64)] + rand64[int(random.random() * 64)]
 
     def safe_summary(self, encoded):
         algo, the_rest = encoded.split('$', 2)

@@ -204,7 +204,7 @@ def send_payment_reminder_emails():
     now = timezone.now()
     for account in accounts:
         if (account.last_payment_reminder is not None and
-            (now - account.last_payment_reminder).days < settings.BOOKING_EMAIL_REMINDER_FREQUENCY_DAYS):
+                (now - account.last_payment_reminder).days < settings.BOOKING_EMAIL_REMINDER_FREQUENCY_DAYS):
             continue
 
         if account.email is None:

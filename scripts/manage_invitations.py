@@ -1,12 +1,11 @@
 #!/usr/bin/env python2.5
 import sys
-import os
-import socket
 from optparse import OptionParser
 
 from django.contrib.auth.models import User
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Invitation
+
 
 parser = OptionParser(usage=
 """
@@ -18,9 +17,11 @@ parser = OptionParser(usage=
 
 parser.add_option("-r", "--remove", dest="remove", action="store_true", default=False, help="Remove users instead of adding")
 
+
 def usage_and_exit():
     parser.print_usage()
     sys.exit(1)
+
 
 def main():
     options, args = parser.parse_args()

@@ -26,7 +26,7 @@ class ReferencesPage(WebTestBase):
         response = self.get("cciw.officers.views.manage_references", year=2000, number=1)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'For camp 2000-1')
-        self.assertNotContains(response, 'referee1@email.co.uk') # Received
+        self.assertNotContains(response, 'referee1@email.co.uk')  # Received
         self.assertContains(response, 'referee2@email.co.uk')    # Not received
         self.assertContains(response, 'referee3@email.co.uk')
         self.assertContains(response, 'referee4@email.co.uk')
@@ -82,7 +82,7 @@ class RequestReference(WebTestBase):
                                 + "?ref_id=%d" % refinfo.id)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No e-mail address")
-        self.assertNotContains(response, "This field is required") # Don't want errors on first view
+        self.assertNotContains(response, "This field is required")  # Don't want errors on first view
         self.assertNotContains(response, "The following e-mail")
         return response
 

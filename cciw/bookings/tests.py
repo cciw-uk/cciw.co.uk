@@ -33,7 +33,7 @@ class IpnMock(object):
     payment_status = 'Completed'
 
 
-### Mixins to reduce duplication ###
+# == Mixins to reduce duplication ==
 class CreateCampMixin(object):
 
     camp_minimum_age = 11
@@ -175,7 +175,7 @@ class BookingBaseMixin(object):
         G(HtmlChunk, name="booking_secretary_address")
 
 
-### Test cases ###
+# == Test cases ==
 class TestBookingIndex(BookingBaseMixin, CreatePricesMixin, CreateCampMixin, TestCase):
 
     def test_show_with_no_prices(self):

@@ -1,8 +1,9 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.conf import settings
 import datetime
 import os
 import shutil
+
 
 class Command(BaseCommand):
     help = 'Removes links created for serving secure files if they have expired'

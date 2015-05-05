@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from cciw.officers.models import Application, ReferenceForm
 
+
 class UserAnonymizer(Anonymizer):
 
     order = 1
@@ -12,10 +13,10 @@ class UserAnonymizer(Anonymizer):
 
     attributes = [
         ('id', "SKIP"),
-        ('username',   'username'),
+        ('username', 'username'),
         ('first_name', 'first_name'),
-        ('last_name',  'last_name'),
-        ('email',      'email'),
+        ('last_name', 'last_name'),
+        ('email', 'email'),
         ('date_joined', 'similar_datetime'),
         # Set to today:
         ('last_login', lambda *args: timezone.now()),
@@ -27,7 +28,7 @@ class UserAnonymizer(Anonymizer):
 
     def alter_object(self, obj):
         if obj.is_superuser:
-            return False # don't change, so we can still log in.
+            return False  # don't change, so we can still log in.
         super(UserAnonymizer, self).alter_object(obj)
         # Destroy all passwords for everyone else
         obj.set_unusable_password()
@@ -43,7 +44,7 @@ class ApplicationAnonymizer(Anonymizer):
     attributes = [
         ('id', "SKIP"),
         ('officer_id', "SKIP"),
-        ('full_name', "SKIP"), # see below
+        ('full_name', "SKIP"),  # see below
         ('full_maiden_name', "SKIP"),
         ('birth_date', "date"),
         ('birth_place', "city"),

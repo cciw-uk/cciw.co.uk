@@ -8,8 +8,8 @@ class ExplicitBooleanFieldSelect(admin.widgets.AdminRadioSelect):
     def __init__(self, attrs=None):
         if attrs is None:
             attrs = {}
-        attrs.update({'class':'radiolist inline'})
-        choices = (('2', 'Yes'), ('3', 'No'))
+        attrs.update({'class': 'radiolist inline'})
+        choices = [('2', 'Yes'), ('3', 'No')]
         super(ExplicitBooleanFieldSelect, self).__init__(attrs, choices)
 
     def render(self, name, value, attrs=None, choices=()):

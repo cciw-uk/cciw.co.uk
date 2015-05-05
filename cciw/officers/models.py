@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta, date
-import re
+from datetime import timedelta, date
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -47,17 +46,17 @@ REFEREE_NAME_HELP_TEXT = "Name only - please do not include job title or other i
 
 
 class Application(models.Model):
-    officer = models.ForeignKey(User, blank=True) # blank=True to get the admin to work
+    officer = models.ForeignKey(User, blank=True)  # blank=True to get the admin to work
     full_name = RequiredCharField('full name', max_length=NAME_LENGTH)
     full_maiden_name = models.CharField('full maiden name', max_length=NAME_LENGTH, blank=True)
     birth_date = RequiredDateField('date of birth', null=True, default=None)
     birth_place = RequiredCharField('place of birth', max_length=60)
     address_firstline = RequiredCharField('address', max_length=40)
-    address_town = RequiredCharField('town/city', max_length=60) # 60 == len("Llanfairpwllgwyngyllgogerychwyrndrobwyll-llantysiliogogogoch")
+    address_town = RequiredCharField('town/city', max_length=60)  # 60 == len("Llanfairpwllgwyngyllgogerychwyrndrobwyll-llantysiliogogogoch")
     address_county = RequiredCharField('county', max_length=30)
     address_postcode = RequiredCharField('post code', max_length=10)
     address_country = RequiredCharField('country', max_length=30)
-    address_tel = RequiredCharField('telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
+    address_tel = RequiredCharField('telephone', max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
     address_mobile = models.CharField('mobile', max_length=22, blank=True)
     address_email = RequiredEmailField('e-mail')
     address_since = RequiredYyyyMmField('resident at address since')
@@ -93,23 +92,23 @@ class Application(models.Model):
     employer2_leaving = models.CharField("Reason for leaving", max_length=150, blank=True)
 
     referee1_name = RequiredCharField("First referee's name", max_length=NAME_LENGTH,
-                                   help_text=REFEREE_NAME_HELP_TEXT)
+                                      help_text=REFEREE_NAME_HELP_TEXT)
     referee1_address = RequiredAddressField('address')
-    referee1_tel = models.CharField('telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
+    referee1_tel = models.CharField('telephone', max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
     referee1_mobile = models.CharField('mobile', max_length=22, blank=True)
     referee1_email = models.EmailField('e-mail', blank=True)
 
     referee2_name = RequiredCharField("Second referee's name", max_length=NAME_LENGTH,
-                                   help_text=REFEREE_NAME_HELP_TEXT)
+                                      help_text=REFEREE_NAME_HELP_TEXT)
     referee2_address = RequiredAddressField('address')
-    referee2_tel = models.CharField('telephone', max_length=22, blank=True) # +44-(0)1224-XXXX-XXXX
+    referee2_tel = models.CharField('telephone', max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
     referee2_mobile = models.CharField('mobile', max_length=22, blank=True)
     referee2_email = models.EmailField('e-mail', blank=True)
 
     crime_declaration = RequiredExplicitBooleanField(
-            """Have you ever been charged with or convicted
-            of a criminal offence or are the subject of criminal
-            proceedings?""")
+        """Have you ever been charged with or convicted """
+        """of a criminal offence or are the subject of criminal """
+        """proceedings?""")
     crime_details = models.TextField("If yes, give details", blank=True)
 
     court_declaration = RequiredExplicitBooleanField(
@@ -119,19 +118,19 @@ class Application(models.Model):
     court_details = models.TextField("If yes, give details", blank=True)
 
     concern_declaration = RequiredExplicitBooleanField(
-            """Has there ever been any cause for concern
-               regarding your conduct with children/young people?""")
+        """Has there ever been any cause for concern """
+        """regarding your conduct with children/young people?""")
     concern_details = models.TextField("If yes, give details", blank=True)
 
     allegation_declaration = RequiredExplicitBooleanField(
-            """To your knowledge have you ever had any
-            allegation made against you concerning children/young people
-            which has been reported to and investigated by Social
-            Services and /or the Police?""")
+        """To your knowledge have you ever had any """
+        """allegation made against you concerning children/young people """
+        """which has been reported to and investigated by Social """
+        """Services and /or the Police?""")
 
     crb_check_consent = RequiredExplicitBooleanField(
-            """Do you consent to the obtaining of a Criminal
-            Records Bureau check on yourself? """)
+        """Do you consent to the obtaining of a Criminal """
+        """Records Bureau check on yourself? """)
 
     finished = models.BooleanField("is the above information complete?", default=False)
 
@@ -146,7 +145,7 @@ class Application(models.Model):
             return self._referees_cache
         except AttributeError:
             # Use tuple since we don't want assignment or mutation to the list
-            retval = tuple(Referee(self, refnum) for refnum in (1,2))
+            retval = tuple(Referee(self, refnum) for refnum in (1, 2))
             self._referees_cache = retval
             return retval
 
@@ -192,6 +191,7 @@ class Application(models.Model):
 class ReferenceManager(models.Manager):
     # manager to reduce number of SQL queries, especially in admin
     use_for_related_fields = True
+
     def get_queryset(self):
         return super(ReferenceManager, self).get_queryset().select_related('application__officer')
 
@@ -203,7 +203,7 @@ class Reference(models.Model):
     # The actual reference is stored in ReferenceForm model.  This should have
     # been named ReferenceMeta or something.
     application = models.ForeignKey(Application, limit_choices_to={'finished': True})
-    referee_number = models.SmallIntegerField("Referee number", choices=((1,'1'), (2,'2')))
+    referee_number = models.SmallIntegerField("Referee number", choices=[(1, '1'), (2, '2')])
     requested = models.BooleanField(default=False)
     received = models.BooleanField(default=False)
     comments = models.TextField(blank=True)
@@ -216,13 +216,13 @@ class Reference(models.Model):
         # database in admin, self.referee_number can sometimes be a string
         refnum = int(self.referee_number)
 
-        if refnum not in (1,2):
+        if refnum not in (1, 2):
             return "<Reference improperly created>"
         referee_name = app.referees[refnum - 1].name
         return "For %s %s | From %s | %s" % (app.officer.first_name,
-                                              app.officer.last_name,
-                                              referee_name,
-                                              app.date_submitted.strftime('%Y-%m-%d'))
+                                             app.officer.last_name,
+                                             referee_name,
+                                             app.date_submitted.strftime('%Y-%m-%d'))
 
     @property
     def referee(self):
@@ -361,6 +361,7 @@ class ReferenceForm(models.Model):
 
 class InvitationManager(models.Manager):
     use_for_related_fields = True
+
     def get_queryset(self):
         return super(InvitationManager, self).get_queryset().select_related('officer', 'camp', 'camp__chaplain')
 
@@ -376,7 +377,6 @@ class Invitation(models.Model):
     def __str__(self):
         return "%s %s — camp %s" % (self.officer.first_name, self.officer.last_name, self.camp)
 
-
     class Meta:
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name')
         unique_together = (('officer', 'camp'),)
@@ -384,6 +384,7 @@ class Invitation(models.Model):
 
 class CRBApplicationManager(models.Manager):
     use_for_related_fields = True
+
     def get_queryset(self):
         return super(CRBApplicationManager, self).get_queryset().select_related('officer')
 
@@ -415,6 +416,7 @@ class CRBApplication(models.Model):
 
 class CRBFormLogManager(models.Manager):
     use_for_related_fields = True
+
     def get_queryset(self):
         return super(CRBFormLogManager, self).get_queryset().select_related('officer')
 
@@ -436,4 +438,3 @@ class CRBFormLog(models.Model):
     class Meta:
         verbose_name = "CRB form log"
         verbose_name_plural = "CRB form logs"
-

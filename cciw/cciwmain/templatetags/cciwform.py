@@ -7,7 +7,7 @@ def cciw_form_field(form, field_name, label):
     """
     # Assumes form has CciwFormMixin as a base
 
-    top_errors, hidden_fields = [], [] # these will be discarded.
+    top_errors, hidden_fields = [], []  # these will be discarded.
     return (form.start_template +
             form.render_field(field_name, form.fields[field_name],
                               top_errors, hidden_fields, label_text=label) +

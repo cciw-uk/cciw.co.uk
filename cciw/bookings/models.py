@@ -34,10 +34,10 @@ SEXES = [
 # Price types that can be selected for a booking
 PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT = range(0, 7)
 BOOKING_PLACE_PRICE_TYPES = [
-    (PRICE_FULL,      'Full price'),
+    (PRICE_FULL, 'Full price'),
     (PRICE_2ND_CHILD, '2nd child discount'),
     (PRICE_3RD_CHILD, '3rd child discount'),
-    (PRICE_CUSTOM,    'Custom discount'),
+    (PRICE_CUSTOM, 'Custom discount'),
 ]
 
 # Price types that are used by Price model
@@ -516,7 +516,7 @@ class Booking(models.Model):
 
     def __str__(self):
         return "%s, %s-%s, %s" % (self.name, self.camp.year, self.camp.number,
-                                   self.account)
+                                  self.account)
 
     @property
     def name(self):
@@ -786,7 +786,7 @@ class Booking(models.Model):
                 else:
                     warning += ("If %s are from the same family, %d are eligible "
                                 "for the 3rd child discount." % (pretty_names,
-                                                                  len(names) - 1))
+                                                                 len(names) - 1))
 
                 warnings.append(warning)
 
@@ -984,4 +984,4 @@ def process_all_payments():
                 continue
 
 # Very important that the setup done in .hooks happens:
-from .hooks import *
+from .hooks import *  # NOQA

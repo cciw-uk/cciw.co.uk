@@ -15,11 +15,11 @@ class MenuLink(models.Model):
     listorder = models.SmallIntegerField("order in list")
     visible = models.BooleanField("Visible", default=True)
     parent_item = models.ForeignKey("self", null=True, blank=True,
-        verbose_name="Parent item (none = top level)",
-        related_name="child_links")
+                                    verbose_name="Parent item (none = top level)",
+                                    related_name="child_links")
 
     def __str__(self):
-        return  "%s [%s]" % (self.url, standard_subs(self.title))
+        return "%s [%s]" % (self.url, standard_subs(self.title))
 
     def get_visible_children(self, request):
         """Gets a list of child menu links that should be visible given the current url"""
@@ -37,9 +37,9 @@ class HtmlChunk(models.Model):
     name = models.SlugField("name", primary_key=True, db_index=True)
     html = models.TextField("HTML")
     menu_link = models.ForeignKey(MenuLink, verbose_name="Associated URL",
-        null=True, blank=True)
+                                  null=True, blank=True)
     page_title = models.CharField("page title (for chunks that are pages)", max_length=100,
-        blank=True)
+                                  blank=True)
 
     def __str__(self):
         return self.name
@@ -49,8 +49,8 @@ class HtmlChunk(models.Model):
         made and any member specific adjustments."""
         html = mark_safe(standard_subs(self.html))
         user = threadlocals.get_current_user()
-        if user and not user.is_anonymous() and user.is_staff \
-            and user.has_perm('sitecontent.change_htmlchunk'):
+        if (user and not user.is_anonymous() and user.is_staff
+                and user.has_perm('sitecontent.change_htmlchunk')):
             html += format_html("""<div class="editChunkLink">&laquo;
                                 <a href="{0}">Edit {1}</a> &raquo;
                                 </div>""",

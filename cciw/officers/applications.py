@@ -2,7 +2,6 @@ from datetime import date, timedelta
 
 from django import template
 from django.template import loader
-from django.utils import timezone
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
@@ -21,6 +20,7 @@ from cciw.officers.models import Application
 #
 # i.e. we assume all camps happen in a cluster, and application forms are
 # submitted in the period leading up to that cluster.
+
 
 def thisyears_applications(user):
     """
@@ -52,6 +52,7 @@ def thisyears_applications(user):
         apps = apps.filter(date_submitted__gt=past_camp.end_date)
 
     return apps
+
 
 def camps_for_application(application):
     """
@@ -105,18 +106,22 @@ def applications_for_camp(camp, officer_ids=None):
 
 
 def application_to_text(app):
-    t = loader.get_template('cciw/officers/application_email.txt');
+    t = loader.get_template('cciw/officers/application_email.txt')
     return t.render(template.Context({'app': app}))
 
+
 def application_to_rtf(app):
-    t = loader.get_template('cciw/officers/application.rtf');
+    t = loader.get_template('cciw/officers/application.rtf')
     return t.render(template.Context({'app': app}))
+
 
 def application_rtf_filename(app):
     return _application_filename_stem(app) + ".rtf"
 
+
 def application_txt_filename(app):
     return _application_filename_stem(app) + ".txt"
+
 
 def _application_filename_stem(app):
     if app.date_submitted is None:
@@ -124,6 +129,7 @@ def _application_filename_stem(app):
     else:
         submitted = '_' + app.date_submitted.strftime('%Y-%m-%d')
     return 'Application_%s%s' % (app.officer.username, submitted)
+
 
 def application_difference(app1, app2):
     from diff_match_patch import diff_match_patch

@@ -104,7 +104,7 @@ class TestSlackers(TestCase):
 
         self.assertEqual(
             serious_slackers,
-            [{'officer':  officer2,
+            [{'officer': officer2,
               'missing_application_forms': [camp1],
               'missing_references': [camp1],
               'last_good_apps_year': None,

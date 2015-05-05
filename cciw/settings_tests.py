@@ -1,7 +1,7 @@
 # Settings file for testing on development box
 from __future__ import unicode_literals
 
-from cciw.settings import *
+from cciw.settings import *  # NOQA
 
 DEBUG = False
 TEMPLATE_DEBUG = False
@@ -25,7 +25,7 @@ MIDDLEWARE_CLASSES = (
 INSTALLED_APPS = list(filter(lambda x: x not in [
     'anonymizer'
     'debug_toolbar'
-    ], INSTALLED_APPS))
+], INSTALLED_APPS))
 
 SEND_BROKEN_LINK_EMAILS = False
 

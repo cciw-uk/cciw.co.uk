@@ -9,6 +9,7 @@ from cciw.officers import applications
 from cciw.officers.models import Application
 from cciw.officers.tests.base import OFFICER_USERNAME, OFFICER_PASSWORD
 
+
 class ApplicationModel(TestCase):
     fixtures = ['basic.json', 'officers_users.json', 'references.json']
 
@@ -40,7 +41,7 @@ class ApplicationModel(TestCase):
         self.assertEqual(app.referees[0].some_extra_attr, "Hello")
 
     def test_references(self):
-        for appid in [1,2,3]:
+        for appid in [1, 2, 3]:
             app = Application.objects.get(id=appid)
             self.assertEqual(app.references[0], app.reference_set.get(referee_number=1))
             self.assertEqual(app.references[1], app.reference_set.get(referee_number=2))
@@ -60,11 +61,10 @@ class PersonalApplicationList(TestCase):
         self.user.application_set.all().delete()
         # Set Camps so that one is in the future, and one in the past,
         # so that is possible to have an application for an old camp
-        Camp.objects.filter(id=1).update(start_date=date.today() + timedelta(100-365),
-                                         end_date=date.today() + timedelta(107-365))
+        Camp.objects.filter(id=1).update(start_date=date.today() + timedelta(100 - 365),
+                                         end_date=date.today() + timedelta(107 - 365))
         Camp.objects.filter(id=2).update(start_date=date.today() + timedelta(100),
                                          end_date=date.today() + timedelta(107))
-
 
     def test_get(self):
         resp = self.client.get(self.url)
@@ -98,7 +98,7 @@ class PersonalApplicationList(TestCase):
     def test_create(self):
         self.user.application_set.create(finished=True,
                                          date_submitted=date.today() - timedelta(365))
-        resp = self.client.post(self.url, {'new':'Create'})
+        resp = self.client.post(self.url, {'new': 'Create'})
         self.assertEqual(302, resp.status_code)
         self.assertEqual(len(self.user.application_set.all()), 2)
 
@@ -106,7 +106,7 @@ class PersonalApplicationList(TestCase):
         # Should not create a new application if a recent one is submitted
         app = self.user.application_set.create(finished=True,
                                                date_submitted=date.today())
-        resp = self.client.post(self.url, {'new':'Create'})
+        resp = self.client.post(self.url, {'new': 'Create'})
         self.assertEqual(200, resp.status_code)
         self.assertEqual(list(self.user.application_set.all()), [app])
 
@@ -149,7 +149,7 @@ class ApplicationUtils(TestCase):
 
         app1 = Application.objects.create(officer=u,
                                           finished=True,
-                                          date_submitted = past_camp_start - timedelta(1))
+                                          date_submitted=past_camp_start - timedelta(1))
 
         # First, check we don't have any apps that are counted as 'this years'
         self.assertFalse(applications.thisyears_applications(u).exists())
@@ -157,7 +157,7 @@ class ApplicationUtils(TestCase):
         # Create an application for this year
         app2 = Application.objects.create(officer=u,
                                           finished=True,
-                                          date_submitted = past_camp_start + timedelta(10))
+                                          date_submitted=past_camp_start + timedelta(10))
 
         # Now we should have one
         self.assertTrue(applications.thisyears_applications(u).exists())

@@ -68,7 +68,7 @@ SRC_SUBDIR = 'src'
 
 # Python version
 PYTHON_BIN = "python3.3"
-PYTHON_PREFIX = "" # e.g. /usr/local  Use "" for automatic
+PYTHON_PREFIX = ""  # e.g. /usr/local  Use "" for automatic
 PYTHON_FULL_PATH = "%s/bin/%s" % (PYTHON_PREFIX, PYTHON_BIN) if PYTHON_PREFIX else PYTHON_BIN
 
 VENV_SUBDIR = 'venv'
@@ -112,17 +112,17 @@ class Target(object):
 
 
 PRODUCTION = Target(
-    NAME = "PRODUCTION",
-    APP_BASE_NAME = APP_NAME,
-    APP_PORT = 21182,
-    GUNICORN_WORKERS = 3,
+    NAME="PRODUCTION",
+    APP_BASE_NAME=APP_NAME,
+    APP_PORT=21182,
+    GUNICORN_WORKERS=3,
 )
 
 STAGING = Target(
-    NAME = "STAGING",
-    APP_BASE_NAME = "%s_staging" % APP_NAME,
-    APP_PORT = 30079,
-    GUNICORN_WORKERS = 1,
+    NAME="STAGING",
+    APP_BASE_NAME="%s_staging" % APP_NAME,
+    APP_PORT=30079,
+    GUNICORN_WORKERS=1,
 )
 
 target = None
@@ -132,6 +132,7 @@ target = None
 def production():
     global target
     target = PRODUCTION
+
 
 @task
 def staging():
@@ -257,7 +258,7 @@ def _is_webserver_running():
     for ps in psutil.process_iter():
         if (ps.pid == pid and
             any('gunicorn' in c for c in ps.cmdline)
-            and ps.username == USER):
+                and ps.username == USER):
             return True
     return False
 
@@ -298,6 +299,7 @@ def first_deployment_mode():
 def first_django_17_deploy():
     env.first_django_17_deploy = True
 
+
 def update_database():
     with virtualenv(target.VENV_DIR):
         with cd(target.SRC_DIR):
@@ -322,7 +324,6 @@ def update_database():
             else:
                 run_venv("./manage.py syncdb --noinput")
                 run_venv("./manage.py migrate --noinput")
-
 
 
 def _push_non_vcs_sources():

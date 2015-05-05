@@ -4,6 +4,7 @@ import sys
 import re
 from cciw.officers.models import ReferenceForm, Application
 
+
 def import_reference(fname):
     m = re.search("reference_data\.(?P<appid>\d+)\.(?P<refnum>[12])$", fname)
     if m is None:
@@ -15,7 +16,7 @@ def import_reference(fname):
     data = eval("".join(open(fname).readlines()))
     data['referee_name'] = data['referee_name'].replace("\n", " ")
     app = Application.objects.get(id=appid)
-    ref = app.references[refnum-1]
+    ref = app.references[refnum - 1]
     refform = ReferenceForm(**data)
     refform.reference_info = ref
     refform.save()
@@ -33,4 +34,3 @@ if __name__ == '__main__':
         sys.exit(1)
     else:
         import_reference(sys.argv[1])
-

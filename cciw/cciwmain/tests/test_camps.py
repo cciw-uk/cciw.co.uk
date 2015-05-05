@@ -23,14 +23,14 @@ class CampModel(TestCase):
             number=1,
             minimum_age=11,
             maximum_age=17,
-            start_date=date(2013,6,1),
-            end_date=date(2013,6,9),
+            start_date=date(2013, 6, 1),
+            end_date=date(2013, 6, 9),
             max_campers=70,
             max_male_campers=40,
             max_female_campers=40,
             chaplain=l3,
             site=site,
-            )
+        )
         camp.leaders.add(l1, l2)
         self.camp = camp
 

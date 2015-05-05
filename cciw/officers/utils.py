@@ -3,6 +3,7 @@ Utility functions for officers app.
 """
 from collections import defaultdict
 
+
 def camp_officer_list(camp):
     """
     Returns complete list of officers for a camp
@@ -31,7 +32,6 @@ def camp_serious_slacker_list(camp):
     # this is meant as a warning system it doesn't matter that it doesn't match
     # the logic exactly.
 
-
     from cciw.cciwmain.models import Camp
     from cciw.officers.models import Invitation, Application, Reference
 
@@ -59,13 +59,12 @@ def camp_serious_slacker_list(camp):
 
     all_received_refs = list(Reference.objects
                              .filter(application__in=all_apps,
-                                     received=True,
-                                 ))
+                                     received=True)
+                             )
 
     received_ref_dict = defaultdict(list)
     for ref in all_received_refs:
         received_ref_dict[ref.application_id].append(ref)
-
 
     # For each officer, we need to build a list of the years when they were on
     # camp but failed to submit an application form.
@@ -73,7 +72,6 @@ def camp_serious_slacker_list(camp):
     # If they failed to submit two references, we also need to show them.  (If
     # they didn't submit an application form then they will definitely have
     # missing references).
-
 
     # Dictionaries containing officers as key, and a list of camps as values:
     officer_apps_missing = defaultdict(list)
@@ -108,7 +106,7 @@ def camp_serious_slacker_list(camp):
 
     for officer, camps in officer_apps_present.items():
         if camps:
-            camps.sort(key=lambda camp:camp.start_date)
+            camps.sort(key=lambda camp: camp.start_date)
             last_camp_with_app = camps[-1]
             missing_camps = officer_apps_missing[officer]
             new_missing_camps = [
@@ -122,11 +120,10 @@ def camp_serious_slacker_list(camp):
     for officer, camps in officer_apps_missing.items():
         camps.sort(key=lambda camp: camp.start_date, reverse=True)
 
-
     # Same for references
     for officer, camps in officer_refs_present.items():
         if camps:
-            camps.sort(key=lambda camp:camp.start_date)
+            camps.sort(key=lambda camp: camp.start_date)
             last_camp_with_ref = camps[-1]
             missing_camps = officer_refs_missing[officer]
             new_missing_camps = [
@@ -140,7 +137,6 @@ def camp_serious_slacker_list(camp):
     for officer, camps in officer_refs_missing.items():
         camps.sort(key=lambda camp: camp.start_date, reverse=True)
 
-
     # Don't show missing applications/references from current year
     for officer, camps in officer_apps_missing.items():
         officer_apps_missing[officer] = [c for c in camps if c.year < camp.year]
@@ -148,9 +144,8 @@ def camp_serious_slacker_list(camp):
     for officer, camps in officer_refs_missing.items():
         officer_refs_missing[officer] = [c for c in camps if c.year < camp.year]
 
-
     l = [(o, officer_apps_missing[o], officer_refs_missing[o])
-          for o in set(officer_apps_missing.keys()) | set(officer_refs_missing.keys())]
+         for o in set(officer_apps_missing.keys()) | set(officer_refs_missing.keys())]
     # Remove empty items:
     l = [(o, a, r) for (o, a, r) in l
          if len(a) > 0 or len(r) > 0]
@@ -159,8 +154,7 @@ def camp_serious_slacker_list(camp):
              'missing_references': r,
              'last_good_apps_year': officer_apps_last_good_year.get(o, None),
              'last_good_refs_year': officer_refs_last_good_year.get(o, None),
-         } for o, a, r in l]
-
+             } for o, a, r in l]
 
 
 def officer_data_to_spreadsheet(camp, spreadsheet):
@@ -189,7 +183,8 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
                ('Birth date', app_attr_getter('birth_date')),
                ]
 
-    header_row = [h for h,f in columns]
+    header_row = [h for h, f in columns]
+
     def data_rows():
         for inv in invites:
             user = inv.officer

@@ -5,6 +5,7 @@ from django.conf import settings
 
 from cciw.auth import is_wiki_user
 
+
 class PrivateWiki(object):
     # Make the wiki restricted to logged in users only.  Djiki does not provide
     # this feature yet.
@@ -18,4 +19,3 @@ class PrivateWiki(object):
             if not is_wiki_user(request.user):
                 return HttpResponseForbidden("<h1>Forbidden</h1>"
                                              "<p>You do not have permission to access the wiki.</p>")
-

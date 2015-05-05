@@ -22,7 +22,7 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
             'phone_number',
             'share_phone_number',
             'email_communication',
-            ]
+        ]
 
 # Need to override these to fix various details for use by user
 AccountDetailsForm.base_fields['name'].required = True
@@ -53,6 +53,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(AddPlaceForm, self).__init__(*args, **kwargs)
+
         def render_camp(c):
             return format_html("Camp {0}, {1}, {2}"
                                '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
@@ -65,7 +66,6 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
         self.fields['camp'].choices = [(c.id, render_camp(c))
                                        for c in Camp.objects.filter(year=get_thisyear())]
         self.fix_price_choices()
-
 
     class Meta:
         model = Booking
@@ -97,7 +97,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
             'learning_difficulties',
             'serious_illness',
             'agreement'
-            ]
+        ]
 
     def clean_camp(self):
         camp_id = self.cleaned_data['camp']

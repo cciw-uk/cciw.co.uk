@@ -1,5 +1,4 @@
 from datetime import timedelta
-from urllib.parse import quote
 
 from cciw.cciwmain import common
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference, camps_for_application
@@ -11,8 +10,6 @@ from django.core import signing
 from django.core.mail import send_mail, EmailMessage
 from django.core.urlresolvers import reverse
 from django.utils.crypto import salted_hmac
-from django.utils import timezone
-
 
 
 def make_update_email_hash(oldemail, newemail):
@@ -23,12 +20,12 @@ def make_update_email_hash(oldemail, newemail):
 
 
 def admin_emails_for_camp(camp):
-    leaders = [user for leader in camp.leaders.all()
-               for user in leader.users.all()] + \
-               list(camp.admins.all())
+    leaders = ([user for leader in camp.leaders.all()
+                for user in leader.users.all()] +
+               list(camp.admins.all()))
 
     return list(filter(lambda x: x is not None,
-                    map(formatted_email, leaders)))
+                       map(formatted_email, leaders)))
 
 
 def admin_emails_for_application(application):
@@ -74,7 +71,6 @@ def send_application_emails(request, application):
                                     application_difference(previous_app, application),
                                     "text/html")
 
-
         if len(leader_emails) > 0:
             send_leader_email(leader_emails, application, application_text, rtf_attachment,
                               application_diff)
@@ -119,18 +115,18 @@ to CCIW. It is also attached to this e-mail as an RTF file.
 def send_leader_email(leader_emails, application, application_text, rtf_attachment,
                       application_diff):
     subject = "CCIW application form from %s" % application.full_name
-    body = \
+    body = (
 """The following application form has been submitted via the
 CCIW website.  It is also attached to this e-mail as an RTF file.
 
-"""
+""")
     if application_diff is not None:
-        body += \
+        body += (
 """The second attachment shows the differences between this year's
 application form and last year's - pink indicates information that has
 been removed, green indicates new information.
 
-"""
+""")
 
     body += application_text
 
@@ -192,11 +188,11 @@ This was an automated response by the CCIW website.
            new=application.address_email,
            correct_email_url=make_update_email_url(application),
            correct_application_url=make_update_application_url(application, officer.email),
-       )
+           )
     )
 
     send_mail(subject, user_msg, settings.SERVER_EMAIL,
-              [user_email, application.address_email] , fail_silently=True)
+              [user_email, application.address_email], fail_silently=True)
 
 
 def make_ref_form_url_hash(ref_id, prev_ref_id):
@@ -204,12 +200,13 @@ def make_ref_form_url_hash(ref_id, prev_ref_id):
 
 
 def make_ref_form_url(ref_id, prev_ref_id):
-    if prev_ref_id is None: prev_ref_id = ""
-    return  "https://%s%s" % (common.get_current_domain(),
-                               reverse('cciw.officers.views.create_reference_form',
-                                       kwargs=dict(ref_id=ref_id,
-                                                   prev_ref_id=prev_ref_id,
-                                                   hash=make_ref_form_url_hash(ref_id, prev_ref_id))))
+    if prev_ref_id is None:
+        prev_ref_id = ""
+    return "https://%s%s" % (common.get_current_domain(),
+                             reverse('cciw.officers.views.create_reference_form',
+                                     kwargs=dict(ref_id=ref_id,
+                                                 prev_ref_id=prev_ref_id,
+                                                 hash=make_ref_form_url_hash(ref_id, prev_ref_id))))
 
 
 def send_reference_request_email(message, ref, sending_officer):
@@ -219,6 +216,7 @@ def send_reference_request_email(message, ref, sending_officer):
                  from_email=settings.DEFAULT_FROM_EMAIL,
                  to=[ref.referee.email],
                  headers={'Reply-To': sending_officer.email}).send()
+
 
 def send_leaders_reference_email(refform):
     """
@@ -231,13 +229,13 @@ def send_leaders_reference_email(refform):
 
     refform_text = reference_form_to_text(refform)
     subject = "CCIW reference form for %s %s from %s" % (officer.first_name, officer.last_name, ref.referee.name)
-    body = \
+    body = (
 """The following reference form has been submitted via the
 CCIW website for officer %s %s.
 
 %s
 """ % (officer.first_name, officer.last_name, refform_text)
-
+    )
 
     leader_email_groups = admin_emails_for_application(app)
     for camp, leader_emails in leader_email_groups:

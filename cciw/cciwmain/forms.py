@@ -73,11 +73,12 @@ class CciwFormMixin(object):
             else:
                 help_text = ''
             output.append(self.normal_row_template % {
-                    'errors_html': errors_html,
-                    'label': force_text(label),
-                    'field': str(bf),
-                    'help_text': help_text,
-                    'class': cssclass,
-                    'divid': "div_id_%s" % bf.name
-                    })
+                'errors_html': errors_html,
+                'label': force_text(label),
+                'field': str(bf),
+                'help_text': help_text,
+                'class': cssclass,
+                'divid': "div_id_%s" % bf.name
+            })
+
             return ''.join(output)

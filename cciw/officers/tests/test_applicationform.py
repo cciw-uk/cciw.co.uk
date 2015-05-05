@@ -3,7 +3,6 @@ from datetime import date, timedelta
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.models import Camp
@@ -11,6 +10,7 @@ from cciw.officers.models import Application
 from cciw.officers.applications import application_difference
 from cciw.officers.tests.test_references import OFFICER, LEADER
 from cciw.utils.tests.webtest import WebTestBase
+
 
 class ApplicationFormView(WebTestBase):
     fixtures = ['basic.json', 'officers_users.json']
@@ -21,14 +21,14 @@ class ApplicationFormView(WebTestBase):
     def setUp(self):
         # Make sure second camp has end date in future, otherwise we won't be able to
         # save. Previous camp should be one year earlier
-        Camp.objects.filter(id=1).update(start_date=date.today() + timedelta(100-365),
-                                         end_date=date.today() + timedelta(107-365))
+        Camp.objects.filter(id=1).update(start_date=date.today() + timedelta(100 - 365),
+                                         end_date=date.today() + timedelta(107 - 365))
         Camp.objects.filter(id=2).update(start_date=date.today() + timedelta(100),
                                          end_date=date.today() + timedelta(107))
 
         # Add some invitations:
         u = User.objects.get(username=OFFICER[0])
-        for pk in [1,2]:
+        for pk in [1, 2]:
             u.invitation_set.create(camp=Camp.objects.get(id=pk))
 
         super(ApplicationFormView, self).setUp()
@@ -116,7 +116,7 @@ class ApplicationFormView(WebTestBase):
         """
         Ensure that a leader can change a finished application of an officer
         """
-        self.test_finish_complete() # adds app for OFFICER
+        self.test_finish_complete()  # adds app for OFFICER
         self.webtest_officer_logout()
 
         self.webtest_officer_login(LEADER)
@@ -258,10 +258,10 @@ class ApplicationFormView(WebTestBase):
         url = response.request.url
         self.assertEqual(response.status_code, 200)
         response = self.fill(response.forms['application_form'], {'finished': 'on'}).submit('_save')
-        self.assertEqual(url, response.request.url) # Same page
+        self.assertEqual(url, response.request.url)  # Same page
         self.assertContains(response, "Please correct the errors below")
         self.assertContains(response, "form-row errors field-address")
-        self.assertEqual(u.application_set.exclude(date_submitted__isnull=True).count(), 0) # shouldn't have been saved
+        self.assertEqual(u.application_set.exclude(date_submitted__isnull=True).count(), 0)  # shouldn't have been saved
 
     def test_finish_complete(self):
         u = User.objects.get(username=OFFICER[0])

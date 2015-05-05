@@ -12,6 +12,7 @@ TAG_FEED_MAX_ITEMS = 20
 #  - items() uses self.query_set
 #  - feed class stores the template name for convenience
 
+
 # Part of this is borrowed from django.contrib.syndication.views
 def handle_feed_request(request, feed_class, query_set=None, param=None):
     """If the request has 'format=atom' in the query string,
@@ -36,9 +37,11 @@ def handle_feed_request(request, feed_class, query_set=None, param=None):
 
     return feed_inst(request)
 
+
 def add_domain(url):
     """Adds the domain onto the beginning of a URL"""
     return feed_views.add_domain(get_current_domain(), url, secure=True)
+
 
 class CCIWFeed(feed_views.Feed):
 
@@ -55,13 +58,15 @@ class CCIWFeed(feed_views.Feed):
     def description_template(self):
         return 'feeds/%s_description.html' % self.template_name
 
+
 class MemberFeed(CCIWFeed):
     template_name = 'members'
     title = "New CCIW Members"
     description = "New members of the Christian Camps in Wales message boards."
 
     def modify_query(self, query_set):
-        return  query_set.order_by('-date_joined')[:MEMBER_FEED_MAX_ITEMS]
+        return query_set.order_by('-date_joined')[:MEMBER_FEED_MAX_ITEMS]
+
 
 class PostFeed(CCIWFeed):
     template_name = 'posts'
@@ -79,12 +84,14 @@ class PostFeed(CCIWFeed):
     def item_pubdate(self, post):
         return post.posted_at
 
+
 def member_post_feed(member):
     """Returns a Feed class suitable for the posts
     of a specific member."""
     class MemberPostFeed(PostFeed):
         title = "CCIW - Posts by %s" % member.user_name
     return MemberPostFeed
+
 
 def topic_post_feed(topic):
     """Returns a Feed class suitable for the posts
@@ -93,11 +100,13 @@ def topic_post_feed(topic):
         title = "CCIW - Posts on topic \"%s\"" % topic.subject
     return TopicPostFeed
 
+
 def photo_post_feed(photo):
     """Returns a Feed classs suitable for the posts in a specific photo."""
     class PhotoPostFeed(PostFeed):
         title = "CCIW - Posts on photo %s" % photo
     return PhotoPostFeed
+
 
 class TopicFeed(CCIWFeed):
     template_name = 'topics'
@@ -115,11 +124,13 @@ class TopicFeed(CCIWFeed):
     def item_pubdate(self, topic):
         return topic.created_at
 
+
 def forum_topic_feed(forum):
     """Returns a Feed class suitable for topics of a specific forum."""
     class ForumTopicFeed(TopicFeed):
         title = "CCIW - new topics in %s" % forum.nice_name()
     return ForumTopicFeed
+
 
 class PhotoFeed(CCIWFeed):
     template_name = 'photos'
@@ -130,6 +141,7 @@ class PhotoFeed(CCIWFeed):
 
     def item_pubdate(self, photo):
         return photo.created_at
+
 
 def gallery_photo_feed(gallery_name):
     class GalleryPhotoFeed(PhotoFeed):

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 import cciw.auth
 
+
 class UserAutocomplete(autocomplete_light.AutocompleteModelBase):
     search_fields = ['^first_name', '^last_name']
 

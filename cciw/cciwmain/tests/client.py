@@ -31,10 +31,9 @@ class CciwClient(client.Client):
         Does a member login, setting the cookies that are needed.
         """
         response = self.post(LOGIN_URL, data=self.get_member_login_data(membername, password))
-        if response.status_code != 302: # Expect a redirect on successful login
+        if response.status_code != 302:  # Expect a redirect on successful login
             raise Exception("Failed to log in")
         return response
-
 
     def member_logout(self):
         self.cookies.clear()

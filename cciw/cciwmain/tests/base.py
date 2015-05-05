@@ -4,6 +4,7 @@ from django_dynamic_fixture import G
 from cciw.cciwmain.models import Site, Camp, Person
 from cciw.sitecontent.models import MenuLink, HtmlChunk
 
+
 class BasicSetupMixin(object):
     def setUp(self):
         super(BasicSetupMixin, self).setUp()
@@ -12,7 +13,7 @@ class BasicSetupMixin(object):
           domain="www.cciw.co.uk",
           name="www.cciw.co.uk",
           id=1,
-        )
+          )
 
         G(MenuLink,
           visible=True,
@@ -61,6 +62,3 @@ class BasicSetupMixin(object):
                                 start_date="2001-07-01",
                                 leaders=[self.default_leader],
                                 chaplain=None)
-
-
-

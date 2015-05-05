@@ -10,6 +10,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
 from djiki.models import Page
 from wiki.models import Article, ArticleRevision, URLPath, ArticleForObject
 
+
 def creole_to_markdown(creole):
     from creole import Parser
     from creole.html_emitter import HtmlEmitter
@@ -19,6 +20,7 @@ def creole_to_markdown(creole):
     md = p.communicate(html)[0]
     md = re.sub(r"\[([A-Za-z0-9]+)\]\(\1\)", r"[\1](/wiki/\1/)", md)
     return md
+
 
 def main():
     ArticleForObject.objects.all().delete()
@@ -39,23 +41,23 @@ def main():
         last_rev = p.revisions.all().order_by('-created')[0]
         article = Article.objects.create(
             owner=first_rev.author,
-            )
+        )
         previous_revision = None
         for revno, r in enumerate(p.revisions.all().order_by('created')):
             revision = ArticleRevision.objects.create(
                 article=article,
                 content=creole_to_markdown(r.content),
                 title=p.title,
-                revision_number=revno+1,
+                revision_number=revno + 1,
                 previous_revision=previous_revision,
                 user=r.author,
-                )
+            )
             revision.save()
             # Must be after last save:
             ArticleRevision.objects.filter(id=revision.id).update(
                 created=r.created,
                 modified=r.created,
-                )
+            )
             previous_revision = revision
         article.current_revision = article.articlerevision_set.latest()
         article.save()
@@ -63,7 +65,7 @@ def main():
         Article.objects.filter(id=article.id).update(
             created=first_rev.created,
             modified=last_rev.created,
-            )
+        )
         urlpath = URLPath.objects.create(site_id=1,
                                          parent=root,
                                          slug=p.title,

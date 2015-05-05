@@ -568,6 +568,7 @@ booking_to_dict = lambda b: dict((k, getattr(b, k)) for k in BOOKING_PLACE_PUBLI
 account_to_dict = lambda acc: dict((k, getattr(acc, k))
                                    for k in ACCOUNT_PUBLIC_ATTRS)
 
+
 @booking_account_required
 @json_response
 def places_json(request):

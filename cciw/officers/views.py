@@ -87,6 +87,7 @@ def _camps_as_admin_or_leader(user):
 
     return camps.distinct()
 
+
 def close_window_and_update_ref(ref_id):
     """
     HttpResponse that closes the current window, and updates the reference
@@ -224,13 +225,13 @@ def view_application(request):
         rtf_attachment = (application_rtf_filename(app),
                           application_rtf, 'text/rtf')
 
-        msg = \
+        msg = (
 """Dear %s,
 
 Please find attached a copy of the application you requested
  -- in plain text below and an RTF version attached.
 
-""" % request.user.first_name
+""" % request.user.first_name)
         msg = msg + application_text
 
         send_mail_with_attachments("Copy of CCIW application - %s" % app.full_name,
@@ -268,6 +269,7 @@ def manage_applications(request, year=None, number=None):
 
     return render(request, 'cciw/officers/manage_applications.html', c)
 
+
 def _get_camp_or_404(year, number):
     try:
         return Camp.objects.get(year=int(year), number=int(number))
@@ -284,22 +286,22 @@ def get_previous_references(ref, camp):
     # Look for ReferenceForms for same officer, within the previous five
     # years.  Don't look for references from this year's
     # application (which will be the other referee).
-    cutoffdate = camp.start_date - timedelta(365*5)
-    prev = list(ReferenceForm.objects\
+    cutoffdate = camp.start_date - timedelta(365 * 5)
+    prev = list(ReferenceForm.objects
                 .filter(reference_info__application__officer=ref.application.officer,
                         reference_info__application__finished=True,
                         reference_info__received=True,
-                        date_created__gte=cutoffdate)\
-                .exclude(reference_info__application=ref.application)\
+                        date_created__gte=cutoffdate)
+                .exclude(reference_info__application=ref.application)
                 .order_by('-reference_info__application__date_submitted'))
 
     # Sort by relevance
     def relevance_key(refform):
         # Matching name or e-mail address is better, so has lower value,
         # so it comes first.
-        return -(int(refform.reference_info.referee.email==ref.referee.email) +
-                 int(refform.reference_info.referee.name ==ref.referee.name))
-    prev.sort(key=relevance_key) # sort is stable, so previous sort by date should be kept
+        return -(int(refform.reference_info.referee.email == ref.referee.email) +
+                 int(refform.reference_info.referee.name == ref.referee.name))
+    prev.sort(key=relevance_key)  # sort is stable, so previous sort by date should be kept
 
     exact = None
     for refform in prev:
@@ -310,7 +312,7 @@ def get_previous_references(ref, camp):
 
 
 @staff_member_required
-@camp_admin_required # we don't care which camp they are admin for.
+@camp_admin_required  # we don't care which camp they are admin for.
 @never_cache
 def manage_references(request, year=None, number=None):
     c = {}
@@ -380,11 +382,11 @@ def manage_references(request, year=None, number=None):
 
 
 class SetEmailForm(forms.Form):
-    email = forms.EmailField(widget=forms.TextInput(attrs={'size':'50'}))
+    email = forms.EmailField(widget=forms.TextInput(attrs={'size': '50'}))
 
 
 class SendMessageForm(forms.Form):
-    message = forms.CharField(widget=forms.Textarea(attrs={'cols':80, 'rows':20}))
+    message = forms.CharField(widget=forms.Textarea(attrs={'cols': 80, 'rows': 20}))
 
     def __init__(self, *args, **kwargs):
         message_info = kwargs.pop('message_info', {})
@@ -419,7 +421,7 @@ class SendReferenceRequestForm(SendMessageForm):
 
 
 @staff_member_required
-@camp_admin_required # we don't care which camp they are admin for.
+@camp_admin_required  # we don't care which camp they are admin for.
 def request_reference(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     try:
@@ -439,7 +441,7 @@ def request_reference(request, year=None, number=None):
     if request.method == "POST" and 'setemail' in request.POST:
         emailform = SetEmailForm(request.POST)
         if emailform.is_valid():
-            app.referees[ref.referee_number-1].email = emailform.cleaned_data['email']
+            app.referees[ref.referee_number - 1].email = emailform.cleaned_data['email']
             app.save()
             messages.info(request, "E-mail address updated.")
 
@@ -510,7 +512,7 @@ class SendNagByOfficerForm(SendMessageForm):
 
 
 @staff_member_required
-@camp_admin_required # we don't care which camp they are admin for.
+@camp_admin_required  # we don't care which camp they are admin for.
 def nag_by_officer(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     try:
@@ -564,8 +566,8 @@ class ReferenceFormForm(forms.ModelForm):
                   'comments')
 
 
-normal_textarea = forms.Textarea(attrs={'cols':80, 'rows':10})
-small_textarea = forms.Textarea(attrs={'cols':80, 'rows':5})
+normal_textarea = forms.Textarea(attrs={'cols': 80, 'rows': 10})
+small_textarea = forms.Textarea(attrs={'cols': 80, 'rows': 5})
 ReferenceFormForm.base_fields['capacity_known'].widget = small_textarea
 ReferenceFormForm.base_fields['known_offences'].widget = ExplicitBooleanFieldSelect()
 ReferenceFormForm.base_fields['known_offences_details'].widget = normal_textarea
@@ -607,7 +609,7 @@ def manage_reference_manually(request, ref):
 
 
 @staff_member_required
-@camp_admin_required # we don't care which camp they are admin for.
+@camp_admin_required  # we don't care which camp they are admin for.
 def edit_reference_form_manually(request, ref_id=None):
     """
     Create ReferenceForm if necessary, then launch normal admin popup for
@@ -621,7 +623,7 @@ def edit_reference_form_manually(request, ref_id=None):
                                      date_created=date.today(),
                                      known_offences=False)
     return HttpResponseRedirect(reverse("admin:officers_referenceform_change",
-                                        args=(ref.reference_form.id,)) + \
+                                        args=(ref.reference_form.id,)) +
                                 "?_popup=1")
 
 
@@ -630,7 +632,7 @@ def initial_reference_form_data(ref, prev_ref_form):
     Return the initial data to be used for ReferenceFormForm, given the current
     Reference objects and the ReferenceForm object with data to be copied.
     """
-    retval =  {}
+    retval = {}
     if prev_ref_form is not None:
         # Copy data over
         for f in ReferenceFormForm._meta.fields:
@@ -781,7 +783,7 @@ def remove_officer(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     officer_id = request.POST['officer_id']
     Invitation.objects.filter(camp=camp.id, officer=int(officer_id)).delete()
-    return {'status':'success'}
+    return {'status': 'success'}
 
 
 @staff_member_required
@@ -796,7 +798,7 @@ def add_officers(request, year=None, number=None):
             Invitation.objects.create(camp=camp,
                                       officer=User.objects.get(id=int(officer_id)),
                                       date_added=date.today())
-    return {'status':'success'}
+    return {'status': 'success'}
 
 
 @staff_member_required
@@ -809,7 +811,7 @@ def update_officer(request):
                                                                    )
     Invitation.objects.filter(camp=int(request.POST['camp_id']),
                               officer=int(request.POST['officer_id'])).update(notes=request.POST['notes'].strip().replace('\n', ' ').replace('\r', ' ')[0:255])
-    return {'status':'success'}
+    return {'status': 'success'}
 
 
 def update_email(request, username=''):
@@ -872,7 +874,7 @@ def correct_application(request):
 
 class StripStringsMixin(object):
     def clean(self):
-        for field,value in self.cleaned_data.items():
+        for field, value in self.cleaned_data.items():
             if isinstance(value, str):
                 self.cleaned_data[field] = value.strip()
         return self.cleaned_data
@@ -919,7 +921,7 @@ def create_officer(request):
                                             "already exists:"
                     else:
                         duplicate_message = ("%d users with that first name and last name " +
-                                            "already exist:") % len(existing_users)
+                                             "already exist:") % len(existing_users)
                 elif len(same_email_users):
                     existing_users = same_email_users
                     if len(existing_users) == 1:
@@ -966,7 +968,7 @@ def resend_email(request):
     u.set_password(password)
     u.save()
     create.email_officer(u.username, u.first_name, u.email, password, is_leader=False, update=True)
-    return {'status':'success'}
+    return {'status': 'success'}
 
 
 @staff_member_required
@@ -1025,7 +1027,7 @@ def date_to_js_ts(d):
     """
     Converts a date object to the timestamp required by the flot library
     """
-    return int(d.strftime('%s'))*1000
+    return int(d.strftime('%s')) * 1000
 
 
 @staff_member_required
@@ -1060,13 +1062,13 @@ def stats(request, year=None):
         # as above.
         graph_start_date = camp.start_date - timedelta(365)
         graph_end_date = min(camp.start_date, date.today())
-        a = 0 # applications
-        r = 0 # references
-        o = 0 # officers
-        v_idx = 0 # valid CRBs - index into valid_crb_info
-        c_idx = 0 # CRBs       - index into all_crb_info
-        v_tot = 0 #            - total for valid CRBs
-        c_tot = 0 #            - total for all CRBs
+        a = 0  # applications
+        r = 0  # references
+        o = 0  # officers
+        v_idx = 0  # valid CRBs - index into valid_crb_info
+        c_idx = 0  # CRBs       - index into all_crb_info
+        v_tot = 0  #            - total for valid CRBs
+        c_tot = 0  #            - total for all CRBs
         app_dates_data = []
         ref_dates_data = []
         officer_dates_data = []
@@ -1106,7 +1108,7 @@ def stats(request, year=None):
             # Formats are those needed by 'flot' library
             ts = date_to_js_ts(d)
             app_dates_data.append([ts, a])
-            ref_dates_data.append([ts, r/2.0])
+            ref_dates_data.append([ts, r / 2.0])
             officer_dates_data.append([ts, o])
             all_crb_dates_data.append([ts, c_tot])
             valid_crb_dates_data.append([ts, v_tot])
@@ -1120,7 +1122,6 @@ def stats(request, year=None):
         officer_dates_data.append([date_to_js_ts(camp.start_date), len(officer_ids)])
         stat['officer_list_data'] = officer_dates_data
         stats.append(stat)
-
 
     d = {}
     d['stats'] = stats
@@ -1146,7 +1147,7 @@ def manage_crbs(request, year=None):
             selected_camp_numbers = set(map(int, request.GET.getlist('camp')))
         except ValueError:
             pass
-    if not selected_camp_numbers: # empty or None
+    if not selected_camp_numbers:  # empty or None
         # Assume all, because having none is never useful
         selected_camp_numbers = set([c.number for c in camps])
 
@@ -1199,7 +1200,7 @@ def manage_crbs(request, year=None):
     c = {'all_officers': all_officers,
          'camps': camps,
          'selected_camps': selected_camp_numbers,
-         'year':year}
+         'year': year}
     return render(request, 'cciw/officers/manage_crbs.html', c)
 
 
@@ -1211,7 +1212,7 @@ def mark_crb_sent(request):
     officer = User.objects.get(id=officer_id)
     c = CRBFormLog.objects.create(officer=officer,
                                   sent=timezone.now())
-    return {'status':'success',
+    return {'status': 'success',
             'crbFormLogId': str(c.id)
             }
 
@@ -1222,7 +1223,7 @@ def mark_crb_sent(request):
 def undo_mark_crb_sent(request):
     crbformlog_id = int(request.POST['crbformlog_id'])
     CRBFormLog.objects.filter(id=crbformlog_id).delete()
-    return {'status':'success'}
+    return {'status': 'success'}
 
 
 class CrbConsentProblemForm(SendMessageForm):
@@ -1289,7 +1290,6 @@ def booking_secretary_reports(request, year=None):
         c.confirmed_bookings_boys = [b for b in c.confirmed_bookings if b.sex == SEX_MALE]
         c.confirmed_bookings_girls = [b for b in c.confirmed_bookings if b.sex == SEX_FEMALE]
 
-
     # 2. Online bookings needing attention
     to_approve = Booking.objects.need_approving().filter(camp__year__exact=year)
 
@@ -1308,7 +1308,7 @@ def booking_secretary_reports(request, year=None):
     #
     # People in group 2b) possibly need to be chased. They are not highlighted here - TODO
 
-    bookings = bookings.order_by('account__name','first_name','last_name')
+    bookings = bookings.order_by('account__name', 'first_name', 'last_name')
     bookings = list(bookings.prefetch_related('camp',
                                               'account',
                                               'account__bookings',
@@ -1333,14 +1333,13 @@ def booking_secretary_reports(request, year=None):
             if b.account.calculated_balance_due > 0 or b.account.calculated_balance < 0:
                 outstanding.append(b)
 
-
-    export_start = datetime(year-1, 11, 1) # November previous year
-    export_end = datetime(year, 10, 31) # November this year
+    export_start = datetime(year - 1, 11, 1)  # November previous year
+    export_end = datetime(year, 10, 31)  # November this year
     export_data_link = (reverse('cciw.officers.views.export_payment_data') +
                         "?start=%s&end=%s" % (
                             export_start.strftime(EXPORT_PAYMENT_DATE_FORMAT),
                             export_end.strftime(EXPORT_PAYMENT_DATE_FORMAT)
-                            )
+                        )
                         )
 
     return render(request, 'cciw/officers/booking_secretary_reports.html',

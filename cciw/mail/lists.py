@@ -13,7 +13,8 @@ from cciw.officers.email_utils import formatted_email
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.webfaction import webfaction_session
 
-### External utility functions ###
+# External utility functions #
+
 
 # See also below for changes to format
 def address_for_camp_officers(camp):
@@ -32,11 +33,11 @@ def address_for_camp_leaders_year(year):
     return "camps-%d-leaders@cciw.co.uk" % year
 
 
-### Creation of mailboxes ###
+# Creation of mailboxes
 @email_errors_silently
 def create_mailboxes(camp):
     s = webfaction_session()
-    if s is None: # WEBFACTION_USER not set
+    if s is None:  # WEBFACTION_USER not set
         return
     for address in [address_for_camp_officers(camp),
                     address_for_camp_slackers(camp),
@@ -50,7 +51,7 @@ def create_mailboxes(camp):
             else:
                 raise
 
-### Reading mailboxes ###
+# Reading mailboxes
 email_extract_re = re.compile(r"([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)")
 
 
@@ -59,7 +60,7 @@ def _camp_officers(year=None, number=None):
     try:
         c = Camp.objects.get(year=year, number=number)
     except Camp.DoesNotExist:
-        return None # address is invalid
+        return None  # address is invalid
 
     return map(formatted_email, camp_officer_list(c))
 
@@ -69,7 +70,7 @@ def _camp_slackers(year=None, number=None):
     try:
         c = Camp.objects.get(year=year, number=number)
     except Camp.DoesNotExist:
-        return None # address is invalid
+        return None  # address is invalid
 
     return map(formatted_email, camp_slacker_list(c))
 
@@ -106,7 +107,7 @@ email_lists = {
                re.IGNORECASE): _camp_leaders,
     re.compile(r"^camp-debug@cciw.co.uk$"):
         lambda: settings.LIST_MAIL_DEBUG_ADDRESSES,
-    }
+}
 
 
 def list_for_address(address):
@@ -137,7 +138,7 @@ def forward_email_to_list(mail, addresslist, original_to):
         'content-disposition',
         'date',
         'reply-to',
-        ]
+    ]
     mail._headers = [(name, val) for name, val in mail._headers
                      if name.lower() in good_headers]
 

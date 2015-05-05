@@ -1,4 +1,3 @@
-import os
 import zc.lockfile
 
 from django.core.management.base import BaseCommand

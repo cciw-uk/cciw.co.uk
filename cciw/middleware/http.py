@@ -38,6 +38,7 @@ class ActAsProxy(object):
     privoxy and a redirect.
     """
     URLS = ["http://www.cciw.co.uk"]
+
     def process_request(self, request):
         for u in self.URLS:
             if request.path.startswith(u):

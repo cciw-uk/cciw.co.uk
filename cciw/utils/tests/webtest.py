@@ -22,7 +22,7 @@ class WebTestBase(WebTest):
         self.app.cookiejar.clear()
 
     def fill(self, form, data):
-        for k,v in data.items():
+        for k, v in data.items():
             form[k] = str(v)
         return form
 

@@ -3,6 +3,7 @@ import autocomplete_light
 import cciw.auth
 from cciw.bookings.models import BookingAccount
 
+
 class BookingAccountAutocomplete(autocomplete_light.AutocompleteModelBase):
     search_fields = ['name']
 

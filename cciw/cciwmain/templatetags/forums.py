@@ -4,12 +4,14 @@ from cciw.cciwmain.decorators import login_redirect
 from cciw.middleware.threadlocals import get_current_member
 from cciw.cciwmain.templatetags import bbcode
 
+
 def bb2html(value):
     """Converts message board 'BB code'-like formatting into HTML"""
     return bbcode.bb2xhtml(value, True)
 
 register = template.Library()
 register.filter('bb2html', lambda s: mark_safe(bb2html(s)))
+
 
 @register.inclusion_tag('cciw/forums/poll_vote_box.html')
 def poll_vote_box(request, topic, poll, heading_level):

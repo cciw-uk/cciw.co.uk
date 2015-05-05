@@ -1,6 +1,7 @@
 from cciw.cciwmain.common import CciwBaseView, DetailView, ListView
 from cciw.cciwmain.models import Site
 
+
 class SiteList(ListView, CciwBaseView):
     metadata_title = "Camp sites"
     template_name = 'cciw/sites/index.html'

@@ -64,8 +64,8 @@ class BookingAccountForm(forms.ModelForm):
 
     def clean(self):
         super(BookingAccountForm, self).clean()
-        if (self.cleaned_data['name'] == None and
-            self.cleaned_data['email'] == None):
+        if (self.cleaned_data['name'] is None and
+                self.cleaned_data['email'] is None):
             raise forms.ValidationError("Either name or email must be defined")
         return self.cleaned_data
 
@@ -83,6 +83,7 @@ class BookingAccountPaymentInline(admin.TabularInline):
 class BookingAccountBookingInline(admin.TabularInline):
     model = Booking
     label = "Confirmed bookings"
+
     def name(booking):
         return format_html('<a href="{0}" target="_blank">{1}</a>',
                            reverse("admin:bookings_booking_change", args=[booking.id]),
@@ -103,30 +104,28 @@ class BookingAccountAdmin(admin.ModelAdmin):
 
     inlines = [BookingAccountPaymentInline,
                BookingAccountBookingInline,
-              ]
+               ]
 
     def get_fieldsets(self, request, obj=None):
         fieldsets = [
             (None,
-             {'fields':
-                  ['name',
-                   'email',
-                   'address',
-                   'post_code',
-                   'phone_number',
-                   'share_phone_number',
-                   'email_communication',
-                   ]})
-            ]
+             {'fields': ['name',
+                         'email',
+                         'address',
+                         'post_code',
+                         'phone_number',
+                         'share_phone_number',
+                         'email_communication',
+                         ]})
+        ]
         if '_popup' not in request.GET:
             fieldsets.append(
                 ('Automatically managed',
-                 {'fields':
-                      ['first_login',
-                       'last_login',
-                       'total_received',
-                       'admin_balance',
-                       ]}))
+                 {'fields': ['first_login',
+                             'last_login',
+                             'total_received',
+                             'admin_balance',
+                             ]}))
         return fieldsets
 
     def response_change(self, request, obj):
@@ -134,7 +133,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
         if '_popup' in request.POST:
             return HttpResponse(
                 '<!DOCTYPE html><html><head><title></title></head><body>'
-                '<script type="text/javascript">opener.dismissAddAnotherPopup(window, "%s", "%s");</script></body></html>' % \
+                '<script type="text/javascript">opener.dismissAddAnotherPopup(window, "%s", "%s");</script></body></html>' %
                 # escape() calls force_text.
                 (escape(obj._get_pk_val()), escapejs(obj)))
         else:
@@ -149,7 +148,7 @@ class YearFilter(admin.SimpleListFilter):
         # No easy way to create efficient query with Django's ORM,
         # so hard code first year we did bookings online:
         vals = range(2012, get_thisyear() + 1)
-        return [(str(v),str(v)) for v in vals]
+        return [(str(v), str(v)) for v in vals]
 
     def queryset(self, request, queryset):
         val = self.value()
@@ -179,6 +178,7 @@ class BookingAdminForm(autocomplete_light.ModelForm):
     manual_payment_payment_type = forms.ChoiceField(label='Type',
                                                     choices=ManualPayment._meta.get_field('payment_type').choices,
                                                     required=False)
+
     class Meta:
         model = Booking
         fields = "__all__"
@@ -203,78 +203,76 @@ class BookingAdmin(admin.ModelAdmin):
 
     form = BookingAdminForm
 
-
     fieldsets = (
         ('Account',
          {'fields':
-              ['account',
-               ],
-          'description': "Enter the account name, then choose from the suggestions, or choose 'New account' if there is no match. Use 'edit' to change the details of a selected account." }),
+          ['account'],
+          'description': "Enter the account name, then choose from the suggestions, or choose 'New account' if there is no match. Use 'edit' to change the details of a selected account."}),
         ('Camp',
          {'fields':
-              ['camp']}),
+          ['camp']}),
         ('Camper details',
          {'fields':
-              ['first_name',
-               'last_name',
-               'sex',
-               'date_of_birth',
-               'address',
-              'post_code',
-               'phone_number',
-               'email',
-               ]}),
+          ['first_name',
+           'last_name',
+           'sex',
+           'date_of_birth',
+           'address',
+           'post_code',
+           'phone_number',
+           'email',
+           ]}),
         ('Church',
          {'fields': ['church']}),
         ('Contact details',
          {'fields':
-              ['contact_address',
-               'contact_post_code',
-               'contact_phone_number',
-               ]}),
+          ['contact_address',
+           'contact_post_code',
+           'contact_phone_number',
+           ]}),
         ('Diet',
          {'fields':
-              ['dietary_requirements']}),
+          ['dietary_requirements']}),
         ('GP details',
          {'fields':
-              ['gp_name',
-               'gp_address',
-               'gp_phone_number',
-               ]}),
+          ['gp_name',
+           'gp_address',
+           'gp_phone_number',
+           ]}),
         ('Medical details',
          {'fields':
-              ['medical_card_number',
-               'last_tetanus_injection',
-               'allergies',
-               'regular_medication_required',
-               'illnesses',
-               'can_swim_25m',
-               'learning_difficulties',
-               'serious_illness',
-               ]}),
+          ['medical_card_number',
+           'last_tetanus_injection',
+           'allergies',
+           'regular_medication_required',
+           'illnesses',
+           'can_swim_25m',
+           'learning_difficulties',
+           'serious_illness',
+           ]}),
         ('Camper/parent agree to terms',
          {'fields':
-              ['agreement']}),
+          ['agreement']}),
         ('Price',
          {'fields':
-              ['price_type',
-               'south_wales_transport',
-               'early_bird_discount',
-               'booked_at',
-               'amount_due',
-               ]}),
+          ['price_type',
+           'south_wales_transport',
+           'early_bird_discount',
+           'booked_at',
+           'amount_due',
+           ]}),
         ('Internal',
          {'fields':
-              ['state',
-               'booking_expires',
-               'created',
-               'shelved',
-               'created_online']}),
+          ['state',
+           'booking_expires',
+           'created',
+           'shelved',
+           'created_online']}),
         ('Add a payment for account (optional)',
          {'fields':
           ['manual_payment_amount',
            'manual_payment_payment_type']}),
-        )
+    )
 
     def save_model(self, request, obj, form, change):
         if obj.id is not None:
@@ -332,7 +330,7 @@ class ManualPaymentAdminBase(ReturnToAdminMixin, admin.ModelAdmin):
     date_hierarchy = 'created'
     fieldsets = [(None,
                   {'fields':
-                       ['account', 'amount', 'created', 'payment_type']})]
+                   ['account', 'amount', 'created', 'payment_type']})]
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:

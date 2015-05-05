@@ -16,7 +16,6 @@ class NewsPage(TestCase):
     def setUp(self):
         self.client = CciwClient()
 
-
     # Short news items contain BBCode
     def test_shortews_html(self):
         topic = Topic.objects.get(id=1)
@@ -29,7 +28,7 @@ class NewsPage(TestCase):
 
     def test_shortnews_atom(self):
         topic = Topic.objects.get(id=1)
-        response = self.client.get(topic.forum.get_absolute_url(), {'format':'atom'})
+        response = self.client.get(topic.forum.get_absolute_url(), {'format': 'atom'})
         self.assertEqual(response.status_code, 200)
 
         self.assertContains(response, "Bits &amp; Pieces")
@@ -46,11 +45,12 @@ class NewsPage(TestCase):
 
     def test_longnews_atom(self):
         topic = Topic.objects.get(id=2)
-        response = self.client.get(topic.forum.get_absolute_url(), {'format':'atom'})
+        response = self.client.get(topic.forum.get_absolute_url(), {'format': 'atom'})
         self.assertEqual(response.status_code, 200)
 
         self.assertContains(response, "Fish &amp; Chips")
         self.assertContains(response, "&lt;p&gt;Full item with &lt;i&gt;html")
+
 
 class AllNewsPage(TestCase):
 
@@ -85,7 +85,7 @@ class AllNewsPage(TestCase):
             self.assertContains(resp, "<a title=\"Information about",
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
-        request = factory.get(path, {'format':'atom'})
+        request = factory.get(path, {'format': 'atom'})
         with self.assertNumQueries(2):
             response = forums_views.news(request)
             resp.render()

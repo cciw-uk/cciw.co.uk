@@ -7,9 +7,10 @@ from .signals import places_confirmed
 from .email import send_unrecognised_payment_email, send_places_confirmed_email
 from .models import BookingAccount, ManualPayment, RefundPayment, send_payment
 
-#### Handlers #####
+# == Handlers ==
 
-### Payments ####
+# == Payments ==
+
 
 def unrecognised_payment(sender=None, **kwargs):
     send_unrecognised_payment_email(sender)
@@ -54,14 +55,14 @@ def refund_payment_deleted(sender, **kwargs):
     send_payment(instance.amount, instance.account, instance)
 
 
-### Place confirmation ###
+# == Place confirmation ==
 
 def places_confirmed_handler(sender, **kwargs):
     bookings = kwargs.pop('bookings')
     send_places_confirmed_email(bookings, **kwargs)
 
 
-#### Wiring ####
+# == Wiring ==
 
 valid_ipn_received.connect(paypal_payment_received)
 invalid_ipn_received.connect(unrecognised_payment)

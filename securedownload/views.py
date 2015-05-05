@@ -8,6 +8,7 @@ from django.contrib.auth.views import redirect_to_login
 from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
 from django.utils.crypto import salted_hmac
 
+
 def serve_secure_file(filename):
     """
     Returns an HTTP redirect to serve the specified file.
@@ -33,6 +34,7 @@ def serve_secure_file(filename):
     os.symlink(src, os.path.join(settings.SECUREDOWNLOAD_SERVE_ROOT, dest))
     return HttpResponseRedirect(os.path.join(settings.SECUREDOWNLOAD_SERVE_URL, dest))
 
+
 def sanitise_path(path):
     newpath = ''
     for part in path.split('/'):
@@ -46,6 +48,7 @@ def sanitise_path(path):
             continue
         newpath = os.path.join(newpath, part).replace('\\', '/')
     return newpath
+
 
 def access_folder_securely(folder, check_permission):
     """

@@ -2,12 +2,13 @@ from cciw.forums.models import Member, PersonalAward, Message, Poll, PollOption,
 from anonymizer import Anonymizer
 from mailer import models as mailer_models
 
+
 class MemberAnonymizer(Anonymizer):
 
     model = Member
 
     attributes = [
-         # Skipping field id
+        # Skipping field id
         ('user_name', "username"),
         ('real_name', "name"),
         ('email', "email"),
@@ -38,6 +39,7 @@ class MessageAnonymizer(Anonymizer):
     attributes = [
         ('text', "similar_lorem"),
     ]
+
 
 class PollAnonymizer(Anonymizer):
 
@@ -103,10 +105,10 @@ class MessageAnonymizer(Anonymizer):
     model = mailer_models.Message
 
     attributes = [
-         # Skipping field id
+        # Skipping field id
         ('message_data', "similar_lorem"),
-        #('when_added', "datetime"),
-        #('priority', "choice"),
+        # ('when_added', "datetime"),
+        # ('priority', "choice"),
     ]
 
 
@@ -115,7 +117,7 @@ class DontSendEntryAnonymizer(Anonymizer):
     model = mailer_models.DontSendEntry
 
     attributes = [
-         # Skipping field id
+        # Skipping field id
         ('to_address', "email"),
-        #('when_added', "datetime"),
+        # ('when_added', "datetime"),
     ]

@@ -1,13 +1,15 @@
+from functools import wraps
+
 from cciw.cciwmain.models import Site, Person, Camp
 from django.contrib import admin
 
 
-from functools import wraps
 def rename_app_list(func):
     m = {'Cciwmain': 'Camp info',
          'Sitecontent': 'Site content',
          'Sites': 'Web sites'
          }
+
     @wraps(func)
     def _wrapper(*args, **kwargs):
         response = func(*args, **kwargs)
@@ -33,10 +35,12 @@ class SiteAdmin(admin.ModelAdmin):
         (None, {'fields': ('short_name', 'long_name', 'info')}),
     )
 
+
 class PersonAdmin(admin.ModelAdmin):
     filter_horizontal = ('users',)
     search_fields = ['name']
     list_display = ['name', 'info']
+
 
 class CampAdmin(admin.ModelAdmin):
     fieldsets = (
@@ -44,7 +48,7 @@ class CampAdmin(admin.ModelAdmin):
          {'fields': ('year', 'number', 'minimum_age', 'maximum_age', 'start_date', 'end_date',
                      'leaders', 'chaplain', 'site', 'previous_camp')
           }
-        ),
+         ),
         ('Booking constraints',
          {'fields': ('max_campers', 'max_male_campers', 'max_female_campers',
                      'south_wales_transport_available')
@@ -56,9 +60,11 @@ class CampAdmin(admin.ModelAdmin):
           }
          ),
     )
-    ordering = ('-year','number')
+    ordering = ('-year', 'number')
+
     def leaders(camp):
         return camp.leaders_formatted
+
     def chaplain(camp):
         return camp.chaplain
     chaplain.admin_order_field = 'chaplain__name'

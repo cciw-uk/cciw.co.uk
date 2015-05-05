@@ -1,8 +1,9 @@
 #!/usr/bin/env python2.5
-from cciw.cciwmain.models import Photo, Gallery, Camp
+from cciw.cciwmain.models import Photo, Camp
 from cciw.cciwmain.views.camps import get_gallery_for_camp
 import sys
 import re
+
 
 def usage():
     return """
@@ -11,6 +12,7 @@ Usage: add_photos.py photo1.jpeg [photo2.jpeg...]
 
 
 camp_re = re.compile('^(?P<year>\d{4})-(?P<number>\d+)')
+
 
 def main():
     if len(sys.argv) == 1:

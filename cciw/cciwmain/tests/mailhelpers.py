@@ -1,6 +1,7 @@
 import re
 from urllib.parse import urlparse, parse_qs
 
+
 def url_to_path_and_query(url):
     scheme, netloc, path, params, query, fragment = urlparse(url)
     querydata_t = parse_qs(query)
@@ -8,6 +9,7 @@ def url_to_path_and_query(url):
     for key, val in querydata_t.items():
         querydata[key] = val[-1]
     return (path, querydata)
+
 
 def read_email_url(email, regex):
     """

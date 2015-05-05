@@ -3,7 +3,7 @@ from django.contrib import admin
 
 
 class MenuLinkAdmin(admin.ModelAdmin):
-    list_display = ('title', 'url', 'listorder','visible','parent_item')
+    list_display = ('title', 'url', 'listorder', 'visible', 'parent_item')
 
     def get_queryset(self, *args):
         return super(MenuLinkAdmin, self).get_queryset(*args).select_related('parent_item')

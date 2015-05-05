@@ -7,7 +7,7 @@ import sys
 
 hostname = socket.gethostname()
 
-basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # ../
+basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # ../
 parentdir = os.path.dirname(basedir)
 
 PROJECT_ROOT = basedir
@@ -19,13 +19,13 @@ LIVEBOX = not DEVBOX
 if LIVEBOX:
     from cciw.settings_priv import PRODUCTION, STAGING, GOOGLE_ANALYTICS_ACCOUNT
 
-from cciw.settings_priv import PAYPAL_TEST # boolean indicating PayPal test mode
-from cciw.settings_priv import PAYPAL_RECEIVER_EMAIL # Email address of PayPal receiving account
+from cciw.settings_priv import PAYPAL_TEST  # boolean indicating PayPal test mode
+from cciw.settings_priv import PAYPAL_RECEIVER_EMAIL  # Email address of PayPal receiving account
 from cciw.settings_priv import SECRET_KEY
 
 WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
 
-### MISC ###
+# == MISC ==
 
 if DEVBOX:
     DEBUG = True
@@ -127,7 +127,7 @@ SILENCED_SYSTEM_CHECKS = [
     '1_6.W001',
 ]
 
-######  DATABASE   ####
+# == DATABASE ==
 
 if DEVBOX:
     DATABASES = {
@@ -140,12 +140,12 @@ if DEVBOX:
             'PORT': 5432,
             'CONN_MAX_AGE': 30,
             'ATOMIC_REQUESTS': True,
-            }
         }
+    }
 else:
     from cciw.settings_priv import DATABASES
 
-###### SESSIONS ########
+# == SESSIONS ==
 
 if LIVEBOX and PRODUCTION:
     SESSION_COOKIE_SECURE = True
@@ -159,7 +159,7 @@ PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.SHA1PasswordHasher',
     'django.contrib.auth.hashers.MD5PasswordHasher',
     'django.contrib.auth.hashers.CryptPasswordHasher',
-    'cciw.forums.hashers.CciwLegacyPasswordHasher', # for Member login only
+    'cciw.forums.hashers.CciwLegacyPasswordHasher',  # for Member login only
 )
 
 ######  TEMPLATES  ###########
@@ -183,7 +183,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
 if DEBUG:
     TEMPLATE_CONTEXT_PROCESSORS.append("django.core.context_processors.debug")
 
-#####  EMAIL  #######
+# == EMAIL ==
 
 if LIVEBOX:
     if PRODUCTION:
@@ -207,19 +207,19 @@ else:
     EMAIL_HOST = "smtp.webfaction.com"
     from cciw.settings_priv import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
 
-##### MAILING LISTS ######
+# == MAILING LISTS ==
 
 if LIVEBOX:
     from cciw.settings_priv import MAILBOX_PASSWORD, IMAP_MAIL_SERVER
 
-##### WEBFACTION #####
+# == WEBFACTION ==
 
 if LIVEBOX:
     from cciw.settings_priv import WEBFACTION_PASSWORD, WEBFACTION_USER
 else:
     WEBFACTION_USER, WEBFACTION_PASSWORD = None, None
 
-##### SECUREDOWNLOAD #####
+# == SECUREDOWNLOAD ==
 
 SECUREDOWNLOAD_SERVE_URL = "/file/"
 SECUREDOWNLOAD_TIMEOUT = 3600
@@ -230,9 +230,9 @@ if DEVBOX:
 else:
     from cciw.settings_priv import SECUREDOWNLOAD_SOURCE, SECUREDOWNLOAD_SERVE_ROOT
 
-### MIDDLEWARE_CLASSES ####
+# == MIDDLEWARE_CLASSES ==
 
-_MIDDLEWARE_CLASSES = (
+_MIDDLEWARE_CLASSES = [
     (DEVBOX,     "cciw.middleware.http.ActAsProxy"),
     (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
@@ -246,16 +246,17 @@ _MIDDLEWARE_CLASSES = (
     (True,       "django.middleware.common.CommonMiddleware"),
     (True,       "cciw.middleware.auth.PrivateWiki"),
     (True,       "cciw.middleware.threadlocals.ThreadLocals"),
-)
-DATABASE_ENGINE='postgresql'
+]
+
+DATABASE_ENGINE = 'postgresql'
 
 MIDDLEWARE_CLASSES = tuple([val for (test, val) in _MIDDLEWARE_CLASSES if test])
 
-####### MESSAGES ##########
+# == MESSAGES ==
 
 MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"
 
-####### MEDIA #############
+# == MEDIA ==
 
 if DEVBOX:
     MEDIA_ROOT = os.path.join(parentdir, 'usermedia')
@@ -280,7 +281,7 @@ COMPRESS_PRECOMPILERS = [
 
 ####################
 
-## CCIW SPECIFIC SETTINGS AND CONSTANTS
+# CCIW SPECIFIC SETTINGS AND CONSTANTS
 AWARD_UPLOAD_PATH = 'images/awards'
 MEMBER_ICON_UPLOAD_PATH = 'images/members/temp'
 MEMBER_ICON_PATH = 'images/members'
@@ -306,12 +307,12 @@ LIST_MAIL_DEBUG_ADDRESSES = [
 ]
 REFERENCE_CONCERNS_CONTACT_DETAILS = "Shirley Evans on 020 8569 0669."
 ESV_KEY = 'IP'
-CRB_VALID_FOR = 365 * 3 # We consider a CRB valid for 3 years
+CRB_VALID_FOR = 365 * 3  # We consider a CRB valid for 3 years
 
-## Bookings ##
+# == Bookings ==
 BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS = 3
-BOOKING_SESSION_TIMEOUT_SECONDS = 60*60*24*14 # 2 weeks
-BOOKING_FULL_PAYMENT_DUE_DAYS = 3 * 30 # 3 months
+BOOKING_SESSION_TIMEOUT_SECONDS = 60 * 60 * 24 * 14  # 2 weeks
+BOOKING_FULL_PAYMENT_DUE_DAYS = 3 * 30  # 3 months
 BOOKING_EMAIL_REMINDER_FREQUENCY_DAYS = 3
 
 DEFAULT_CONTENT_TYPE = "text/html"

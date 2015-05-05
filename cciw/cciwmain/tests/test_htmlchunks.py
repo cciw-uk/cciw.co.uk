@@ -1,6 +1,7 @@
 from cciw.cciwmain.tests.client import CciwClient
 from django.test import TestCase
 
+
 class HtmlChunkPage(TestCase):
 
     fixtures = ['basic.json', 'users.json', 'htmlchunks.json']
@@ -22,7 +23,6 @@ class HtmlChunkPage(TestCase):
     def test_page_admin(self):
         self.assertTrue(self.client.login(username='admin', password='test_admin_password'))
         self._test_page(True)
-
 
     def _test_page(self, should_see_edit_link):
         response = self.client.get('/')

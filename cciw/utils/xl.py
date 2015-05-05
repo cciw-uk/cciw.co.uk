@@ -10,6 +10,7 @@ from pytz import UTC
 
 import xlwt
 
+
 def add_sheet_with_header_row(wkbk, name, headers, contents):
     """
     sheet_header is an iterable of strings
@@ -59,7 +60,8 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
                     # Set height to be able to see all lines
                     row_height = max(row_height, normal_style.font.height * (val.count('\n') + 1))
             wksh.write(r + 1, c, val, style=style)
-        wksh.rows[r + 1].height = row_height + 100 # fudge for margin, based on OpenOffice
+        wksh.rows[r + 1].height = row_height + 100  # fudge for margin, based on OpenOffice
+
 
 def workbook_to_bytes(wkbk):
     s = BytesIO()

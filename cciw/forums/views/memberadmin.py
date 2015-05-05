@@ -50,7 +50,7 @@ def create_user(user_name, password1, password2):
         raise ValidationError("The user name is already used.  Please choose another.")
     elif password_re.match(password1) is None:
         raise ValidationError("The password entered does not match the requirements, please try again.")
-    elif password2 !=  password1:
+    elif password2 != password1:
         raise ValidationError("The passwords do not match")
     else:
         iconfilename = user_name + "." + settings.DEFAULT_MEMBER_ICON.split('.')[-1]
@@ -108,6 +108,7 @@ def email_and_username_hash(email, user_name):
     # Use every other character to make it shorter and friendlier
     return salted_hmac("cciw.cciwmain.memberadmin.changeemail", email + ":" + user_name).hexdigest()[::2]
 
+
 def validate_email_username_and_hash(email, user_name, hash):
     if email_address_used(email):
         return (False, """The e-mail address is already in use.""")
@@ -134,7 +135,9 @@ the link into your web browser.
 If you did not attempt to sign up on the CCIW web-site, you can just
 ignore this e-mail.
 
-""" % {'domain': common.get_current_domain(), 'email': quote(email), 'hash': email_hash(email)},
+""" % {'domain': common.get_current_domain(),
+       'email': quote(email),
+       'hash': email_hash(email)},
                    settings.SERVER_EMAIL, [email])
 
 
@@ -147,8 +150,9 @@ You can log in at:
 https://%(domain)s/login/
 
 Thanks.
-""" % {'domain': common.get_current_domain(), 'user_name': member.user_name },
-    settings.SERVER_EMAIL, [member.email])
+""" % {'domain': common.get_current_domain(),
+       'user_name': member.user_name},
+                   settings.SERVER_EMAIL, [member.email])
 
 
 def send_password_reset_email(member):
@@ -173,8 +177,8 @@ safely ignore this e-mail.
 """ % {'domain': common.get_current_domain(),
        'url': reverse("cciwmain.memberadmin.reset_password",
                       kwargs={'uid': member.id, 'token': token}),
-      },
-    settings.SERVER_EMAIL, [member.email])
+       },
+                   settings.SERVER_EMAIL, [member.email])
 
 
 def send_newemail_email(member, new_email):
@@ -192,24 +196,24 @@ the entire link into your web browser.
 """ % {'domain': common.get_current_domain(), 'email': quote(new_email),
        'user_name': quote(member.user_name),
        'hash': email_and_username_hash(new_email, member.user_name)},
-    settings.SERVER_EMAIL, [new_email])
+                   settings.SERVER_EMAIL, [new_email])
 
 
-#################  VIEW FUNCTIONS #####################
+# == VIEW FUNCTIONS ==
 
 def signup(request):
     c = dict(title="Sign up")
 
     if not request.POST and not request.GET:
-        ######## 1. START #########
+        # == 1. START ==
         c['stage'] = "start"
 
     if "agreeterms" in request.POST:
-        ######## 2. ENTER EMAIL #########
+        # == 2. ENTER EMAIL ==
         c['stage'] = "email"
 
     elif "email" in request.POST or "submit_email" in request.POST:
-        ######## 3. CHECK ADDRESS AND SEND EMAIL #########
+        # == 3. CHECK ADDRESS AND SEND EMAIL ==
         email = request.POST['email'].strip()
         c['email'] = email
         if is_valid_email(email):
@@ -231,7 +235,7 @@ def signup(request):
             c['error_message'] = "Please enter a valid e-mail address"
 
     elif "email" in request.GET:
-        ######## 4. USERNAME AND PASSWORD #########
+        # == 4. USERNAME AND PASSWORD ==
         email = request.GET['email']
         hash = request.GET.get('h', '')
         valid, msg = validate_email_and_hash(email, hash)
@@ -244,7 +248,7 @@ def signup(request):
             c['error_message'] = msg
 
     elif "user_name" in request.POST or "submit_user_name" in request.POST:
-        ######## 5. CREATE ACCOUNT #########
+        # == 5. CREATE ACCOUNT ==
         # First, re-check email and hash in case of
         # tampering with hidden form values
         email = request.POST.get('confemail', '')
@@ -377,11 +381,14 @@ def change_email(request):
 
 
 preferences_fields = ["real_name", "email", "show_email", "comments", "message_option", "icon"]
+
+
 class PreferencesForm(CciwFormMixin, forms.ModelForm):
-    real_name = forms.CharField(widget=forms.TextInput(attrs={'size':str(Member._meta.get_field('real_name').max_length)}),
+    real_name = forms.CharField(widget=forms.TextInput(attrs={'size':
+                                                              str(Member._meta.get_field('real_name').max_length)}),
                                 label="Real name", required=False,
                                 max_length=Member._meta.get_field('real_name').max_length)
-    email = forms.EmailField(widget=forms.TextInput(attrs={'size':'40'}))
+    email = forms.EmailField(widget=forms.TextInput(attrs={'size': '40'}))
     message_option = forms.ChoiceField(choices=Member.MESSAGE_OPTIONS,
                                        widget=forms.RadioSelect,
                                        label="Message storing")
@@ -403,14 +410,14 @@ class Preferences(CciwBaseView, AjaxFormValidation):
     def handle(self, request):
         current_member = get_current_member()
         c = {'member': current_member}
-        orig_email = current_member.email # before update
+        orig_email = current_member.email  # before update
         if request.method == "POST":
             form = self.form_class(request.POST, instance=current_member)
             c['form'] = form
             if form.is_valid():
                 # E-mail changes require verification, so frig it here
                 current_member = form.save(commit=False)
-                new_email = current_member.email # from posted data
+                new_email = current_member.email  # from posted data
 
                 # Save with original email
                 current_member.email = orig_email
@@ -442,4 +449,3 @@ class Preferences(CciwBaseView, AjaxFormValidation):
 
 
 preferences = member_required(Preferences.as_view())
-

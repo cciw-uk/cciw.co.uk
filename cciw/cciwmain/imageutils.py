@@ -10,6 +10,7 @@ import os
 from PIL import ImageFile
 import tempfile
 
+
 def parse_image(filename):
     fp = open(filename, "rb")
     p = ImageFile.Parser()
@@ -23,19 +24,23 @@ def parse_image(filename):
     im = p.close()
     return im
 
+
 class ValidationError(Exception):
     pass
+
 
 def safe_del(filename):
     try:
         os.unlink(filename)
     except OSError:
-        pass # don't care if we couldn't delete for some reason
+        pass  # don't care if we couldn't delete for some reason
+
 
 def write_file(fp, filedata):
     for chunk in filedata.chunks():
         fp.write(chunk)
     fp.close()
+
 
 def fix_member_icon(member, filedata):
     fd, filename = tempfile.mkstemp()
@@ -55,8 +60,9 @@ def fix_member_icon(member, filedata):
        img.size[1] > settings.MEMBER_ICON_MAX_SIZE:
         # For now, just complain
         safe_del(filename)
-        raise ValidationError("The image was bigger than %s by %s." % \
-            (settings.MEMBER_ICON_MAX_SIZE, settings.MEMBER_ICON_MAX_SIZE))
+        raise ValidationError("The image was bigger than %s by %s." %
+                              (settings.MEMBER_ICON_MAX_SIZE,
+                               settings.MEMBER_ICON_MAX_SIZE))
         # Ideally would have scale to fit
 
     # Convert to destination format

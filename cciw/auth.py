@@ -30,7 +30,8 @@ def is_camp_admin(user):
     Returns True if the user is an admin for any camp, or has rights
     for editing camp/officer/reference/CRB information
     """
-    if not active_staff(user): return False
+    if not active_staff(user):
+        return False
     if is_booking_secretary(user):
         return True
     return user_in_groups(user, CAMP_ADMIN_GROUPS) or \
@@ -38,20 +39,24 @@ def is_camp_admin(user):
 
 
 def is_wiki_user(user):
-    if not active_staff(user): return False
+    if not active_staff(user):
+        return False
     return user_in_groups(user, WIKI_GROUPS)
 
 
 def is_cciw_secretary(user):
-    if not active_staff(user): return False
+    if not active_staff(user):
+        return False
     return user_in_groups(user, [SECRETARY_GROUP_NAME])
 
 
 def is_camp_officer(user):
-    if not active_staff(user): return False
+    if not active_staff(user):
+        return False
     return user_in_groups(user, OFFICER_GROUPS)
 
 
 def is_booking_secretary(user):
-    if not active_staff(user): return False
+    if not active_staff(user):
+        return False
     return user_in_groups(user, [BOOKING_SECRETARY_GROUP_NAME])

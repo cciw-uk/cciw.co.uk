@@ -22,6 +22,7 @@ BOOKING_SEC_USERNAME = 'booker'
 BOOKING_SEC_PASSWORD = 'test_normaluser_password'
 BOOKING_SEC = (BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD)
 
+
 def perm(codename, app_label, model):
     ct = ContentType.objects.get_by_natural_key(app_label, model)
     try:
@@ -139,4 +140,3 @@ class OfficersSetupMixin(BasicSetupMixin):
                                    groups=[self.booking_secretary_group])
         self.booking_secretary.set_password(BOOKING_SEC_PASSWORD)
         self.booking_secretary.save()
-

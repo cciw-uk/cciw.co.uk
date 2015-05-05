@@ -10,9 +10,9 @@ import fcntl
 import re
 
 from django.core.validators import validate_email, ValidationError
-from django.utils.safestring import mark_safe
 from django.utils.functional import Promise
 from django.utils.html import format_html, mark_safe, format_html_join
+from django.utils.encoding import force_text
 
 
 def obfuscate_email(email):
@@ -35,14 +35,16 @@ def modified_query_string(request, dict, fragment=''):
     in dict added or modified.  """
     qs = request.GET.copy()
     # NB can't use qs.update(dict) here
-    for k,v in dict.items():
+    for k, v in dict.items():
         qs[k] = v
     return request.path + '?' + qs.urlencode() + fragment
 
+
 def strip_control_chars(text):
-    for i in range(0,32):
+    for i in range(0, 32):
         text = text.replace(chr(i), '')
     return text
+
 
 def unslugify(slug):
     "Turns dashes and underscores into spaces and applies title casing"
@@ -62,6 +64,7 @@ class LazyEncoder(json.JSONEncoder):
         return obj
 
 json_encoder = LazyEncoder(ensure_ascii=False)
+
 
 def python_to_json(obj):
     return json_encoder.encode(obj)
@@ -83,6 +86,7 @@ class Lock(object):
 
     def __del__(self):
         self.handle.close()
+
 
 def is_valid_email(email):
     try:

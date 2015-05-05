@@ -16,6 +16,7 @@ from cciw.utils.views import close_window_response
 
 officer_autocomplete_field = lambda: autocomplete_light.ModelChoiceField('user')
 
+
 class ApplicationAdminModelForm(forms.ModelForm):
 
     officer = officer_autocomplete_field()
@@ -94,100 +95,99 @@ class ApplicationAdminModelForm(forms.ModelForm):
 
 class ApplicationAdmin(admin.ModelAdmin):
     save_as = False
+
     def officer_username(self, obj):
         return obj.officer.username
     officer_username.admin_order_field = 'officer__username'
     officer_username.short_description = 'username'
-    list_display = ('full_name', 'officer_username', 'finished', 'date_submitted')
-    list_filter = ('finished','date_submitted')
-    ordering = ('full_name',)
-    search_fields = ('full_name',)
-    date_hierarchy = 'date_submitted'
+    list_display = ['full_name', 'officer_username', 'finished', 'date_submitted']
+    list_filter = ['finished', 'date_submitted']
+    ordering = ['full_name']
+    search_fields = ['full_name']
     form = ApplicationAdminModelForm
 
-    camp_officer_application_fieldsets = (
+    camp_officer_application_fieldsets = [
         ('Personal info',
-            {'fields': ('full_name', 'full_maiden_name', 'birth_date', 'birth_place'),
-             'classes': ('applicationpersonal', 'wide')}
-        ),
+            {'fields': ['full_name', 'full_maiden_name', 'birth_date', 'birth_place'],
+             'classes': ['applicationpersonal', 'wide']}
+         ),
         ('Address',
-            {'fields': ('address_firstline', 'address_town', 'address_county',
+            {'fields': ['address_firstline', 'address_town', 'address_county',
                         'address_postcode', 'address_country', 'address_tel',
-                        'address_mobile', 'address_since', 'address_email'),
-             'classes': ('wide',),}
-        ),
+                        'address_mobile', 'address_since', 'address_email'],
+             'classes': ['wide']}
+         ),
         ('Experience',
-            {'fields': ('christian_experience',),
-             'classes': ('wide',),
-             'description': '''Please tells us about your Christian experience
-                (i.e. how you became a Christian and how long you have been a Christian,
-                which Churches you have attended and dates, names of minister/leader)'''}
-
-        ),
+            {'fields': ['christian_experience'],
+             'classes': ['wide'],
+             'description': '''Please tells us about your Christian experience '''
+             '''(i.e. how you became a Christian and how long you have been a Christian, '''
+             '''which Churches you have attended and dates, names of minister/leader)'''}
+         ),
         (None,
-            {'fields': ('youth_experience',),
-             'classes': ('wide',),
-             'description': '''Please give details of previous experience of
-                looking after or working with children/young people -
-                include any qualifications or training you have. '''}
-        ),
+            {'fields': ['youth_experience'],
+             'classes': ['wide'],
+             'description': '''Please give details of previous experience of '''
+             '''looking after or working with children/young people - '''
+             '''include any qualifications or training you have. '''}
+         ),
         (None,
-            {'fields': ('youth_work_declined', 'youth_work_declined_details'),
-             'classes': ('wide',),
+            {'fields': ['youth_work_declined', 'youth_work_declined_details'],
+             'classes': ['wide'],
              'description': 'If you have ever had an offer to work with children/young people declined, you must declare it below and give details.'}
-        ),
+         ),
         ('Illnesses',
-            {'fields': ('relevant_illness', 'illness_details'),
-             'classes': ('wide',) }
-        ),
+            {'fields': ['relevant_illness', 'illness_details'],
+             'classes': ['wide']}
+         ),
         ('Employment history',
-            {'fields': ('employer1_name', 'employer1_from', 'employer1_to',
+            {'fields': ['employer1_name', 'employer1_from', 'employer1_to',
                         'employer1_job', 'employer1_leaving', 'employer2_name',
                         'employer2_from', 'employer2_to', 'employer2_job',
-                        'employer2_leaving',),
-             'classes': ('wide',),
-              'description': 'Please tell us about your past and current employers below (if applicable)'}
-        ),
+                        'employer2_leaving'],
+             'classes': ['wide'],
+             'description': 'Please tell us about your past and current employers below (if applicable)'}
+         ),
         ('References',
-            {'fields': ('referee1_name', 'referee1_address', 'referee1_tel', 'referee1_mobile', 'referee1_email',
-                        'referee2_name', 'referee2_address', 'referee2_tel', 'referee2_mobile', 'referee2_email',),
-             'classes': ('wide',),
+            {'fields': ['referee1_name', 'referee1_address', 'referee1_tel', 'referee1_mobile', 'referee1_email',
+                        'referee2_name', 'referee2_address', 'referee2_tel', 'referee2_mobile', 'referee2_email'],
+             'classes': ['wide'],
              'description': '''Please give the names and addresses,
-                telephones numbers and e-mail addresses and role or
-                relationship of <strong>two</strong> people who know you
-                well and who would be able to give a personal character reference.
-                In addition we reserve the right to take up additional character
-                references from any other individuals deemed necessary. <strong>One
-                reference must be from a Church leader. The other reference should
-                be from someone who has known you for more than 5 years.</strong>'''}
-        ),
+             telephones numbers and e-mail addresses and role or
+             relationship of <strong>two</strong> people who know you
+             well and who would be able to give a personal character reference.
+             In addition we reserve the right to take up additional character
+             references from any other individuals deemed necessary. <strong>One
+             reference must be from a Church leader. The other reference should
+             be from someone who has known you for more than 5 years.</strong>'''}
+         ),
         ('Declarations (see note below)',
-            {'fields': ('crime_declaration', 'crime_details'),
-             'classes': ('wide',),
+            {'fields': ['crime_declaration', 'crime_details'],
+             'classes': ['wide'],
              'description': '''Note: The disclosure of an offence may not
                 prohibit your appointment'''},
-        ),
+         ),
         (None,
-            {'fields': ('court_declaration', 'court_details'),
-             'classes': ('wide',), }
-        ),
+            {'fields': ['court_declaration', 'court_details'],
+             'classes': ['wide']}
+         ),
         (None,
-            {'fields': ('concern_declaration', 'concern_details'),
-             'classes': ('wide',) }
-        ),
+            {'fields': ['concern_declaration', 'concern_details'],
+             'classes': ['wide']}
+         ),
         (None,
-            {'fields': ('allegation_declaration',),
-             'classes': ('wide',),
+            {'fields': ['allegation_declaration'],
+             'classes': ['wide'],
              'description': '''If you answer yes to the following question
-                we will need to discuss this with you''' }
-        ),
+                we will need to discuss this with you'''}
+         ),
         (None,
-            {'fields': ('crb_check_consent',),
-             'classes': ('wide',),
+            {'fields': ['crb_check_consent'],
+             'classes': ['wide'],
              'description': '''If you answer NO  to
                 the following question we regret that we
-                cannot proceed with your application. ''' }
-        ),
+                cannot proceed with your application. '''}
+         ),
         ("Confirmation",
             {'fields': ('finished',),
              'classes': ('wide',),
@@ -203,14 +203,14 @@ class ApplicationAdmin(admin.ModelAdmin):
              <div>Your information will then be sent to the camp leader.  By leaving this
              box un-ticked, you can save what you have done so far and edit it later.</div>"""
              }
-        ),
-    )
+         ),
+    ]
 
-    camp_leader_application_fieldsets = (
+    camp_leader_application_fieldsets = [
         (None,
-            {'fields': ('officer',),
-              'classes': ('wide',),}
-        ),) + camp_officer_application_fieldsets
+            {'fields': ['officer'],
+             'classes': ['wide']}
+         )] + camp_officer_application_fieldsets
 
     def get_fieldsets(self, request, obj=None):
         user = request.user
@@ -262,12 +262,12 @@ class ApplicationAdmin(admin.ModelAdmin):
         # adding a new object (which we have to fix elsewhere), and for the case
         # of listing all objects (which is what we want)
         if (obj is not None
-            and (obj.officer_id is not None and obj.officer_id == request.user.id)):
+                and (obj.officer_id is not None and obj.officer_id == request.user.id)):
             return True
         return super(ApplicationAdmin, self).has_change_permission(request, obj)
 
     def _redirect(self, request, response):
-        if not '_continue' in request.POST and response.has_header("Location"):
+        if '_continue' not in request.POST and response.has_header("Location"):
             location = request.GET.get('_redirect_to',
                                        urlresolvers.reverse('cciw.officers.views.applications'))
             response["Location"] = location
@@ -311,14 +311,15 @@ class InvitationAdmin(admin.ModelAdmin):
 
 class ReferenceFormAdmin(admin.ModelAdmin):
     save_as = False
-    list_display = ('referee_name', 'applicant_name', 'date_created')
-    ordering = ('referee_name', )
-    search_fields = ('referee_name','reference_info__application__officer__last_name', 'reference_info__application__officer__first_name')
+    list_display = ['referee_name', 'applicant_name', 'date_created']
+    ordering = ['referee_name']
+    search_fields = ['referee_name', 'reference_info__application__officer__last_name',
+                     'reference_info__application__officer__first_name']
     date_hierarchy = 'date_created'
 
-    fieldsets = (
+    fieldsets = [
         (None,
-            {'fields': ('referee_name',
+            {'fields': ['referee_name',
                         'how_long_known',
                         'capacity_known',
                         'known_offences',
@@ -329,10 +330,11 @@ class ReferenceFormAdmin(admin.ModelAdmin):
                         'comments',
                         'date_created',
                         'reference_info',
-                        ),
-              'classes': ('wide',),}
-        ),
-     )
+                        ],
+             'classes': ['wide']}
+         ),
+    ]
+
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name == 'known_offences':
             defaults = {'widget': widgets.ExplicitBooleanFieldSelect}

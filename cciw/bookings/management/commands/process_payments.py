@@ -43,6 +43,7 @@ import zc.lockfile
 
 from cciw.bookings.models import process_all_payments
 
+
 class Command(BaseCommand):
 
     def handle(self, *args, **options):

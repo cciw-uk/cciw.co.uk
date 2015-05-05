@@ -3,6 +3,7 @@ from django.http import Http404
 
 from cciw.sitecontent.models import MenuLink
 
+
 def find(request, template_name='cciw/chunk_page.html'):
     try:
         link = MenuLink.objects.get(url=request.path)

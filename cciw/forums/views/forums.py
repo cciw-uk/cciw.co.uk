@@ -56,19 +56,21 @@ def photo_breadcrumb(gallery, photo):
 
 # Called directly as a view for /news/ and /website/forum/, and used by other views
 def topicindex(request, title=None, extra_context=None, forum=None,
-    template_name='cciw/forums/topicindex.html', breadcrumb_extra=None,
-    paginate_by=settings.FORUM_PAGINATE_TOPICS_BY, default_order=('-last_post_at',)):
+               template_name='cciw/forums/topicindex.html', breadcrumb_extra=None,
+               paginate_by=settings.FORUM_PAGINATE_TOPICS_BY,
+               default_order=('-last_post_at',)):
     "Displays an index of topics in a forum"
 
-    ### FORUM ###
+    # == FORUM ==
     forum = _get_forum_or_404(request.path, '')
 
-    ### TOPICS ###
+    # == TOPICS ==
     topics = forum.topics.all().select_related('forum', 'news_item', 'started_by', 'last_post_by', 'news_item__created_by')
 
-    ### FEED ###
+    # == FEED ==
     resp = feeds.handle_feed_request(request, feeds.forum_topic_feed(forum), query_set=topics)
-    if resp: return resp
+    if resp:
+        return resp
 
     # Title could be either in extra_context or in title
     if extra_context is None:
@@ -79,37 +81,38 @@ def topicindex(request, title=None, extra_context=None, forum=None,
     extra_context['forum'] = forum
     extra_context['atom_feed_title'] = "Atom feed for new topics on this board."
 
-    ### BREADCRUMB ###
+    # == BREADCRUMB ==
     if breadcrumb_extra is None:
         breadcrumb_extra = []
     extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topicindex_breadcrumb(forum))
 
-    ### ORDERING ###
+    # == ORDERING ==
     order_by = get_order_option(
         {'aca': ('created_at', 'id'),
-        'dca': ('-created_at', '-id'),
-        'apc': ('post_count',),
-        'dpc': ('-post_count',),
-        'alp': ('last_post_at',),
-        'dlp': ('-last_post_at',),
-        },
+         'dca': ('-created_at', '-id'),
+         'apc': ('post_count',),
+         'dpc': ('-post_count',),
+         'alp': ('last_post_at',),
+         'dlp': ('-last_post_at',),
+         },
         request, default_order)
 
-    extra_context['default_order'] = 'dlp' # corresponds = '-last_post_at'
+    extra_context['default_order'] = 'dlp'  # corresponds = '-last_post_at'
     topics = topics.order_by(*order_by)
 
-    ### PERMISSIONS ###
+    # == PERMISSIONS ==
     if request.user.has_perm('cciwmain.edit_topic'):
         extra_context['moderator'] = True
 
     return object_list(request, queryset=topics, extra_context=extra_context,
                        template_name=template_name, paginate_by=paginate_by)
 
+
 def _get_forum_or_404(path, suffix):
     """Returns a forum from the supplied path (minus the suffix)
     or throws a 404 if it can't be found."""
     if suffix:
-        location = path[1:-len(suffix)] # strip 'add/' or 'add_news/' bit
+        location = path[1:-len(suffix)]  # strip 'add/' or 'add_news/' bit
     else:
         location = path[1:]
     try:
@@ -164,6 +167,7 @@ def add_topic(request, breadcrumb_extra=None):
     context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(forum, None))
     return render(request, 'cciw/forums/add_topic.html', context)
 
+
 # Called directly as a view for /website/forum/, and used by other views
 @member_required
 def add_news(request, breadcrumb_extra=None):
@@ -215,6 +219,7 @@ def add_news(request, breadcrumb_extra=None):
     context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + topic_breadcrumb(forum, None))
     return render(request, 'cciw/forums/add_news.html', context)
 
+
 def update_poll_options(poll, new_option_list):
     """Takes a Poll object and a list of strings,
     and updates the PollOptions related to the Poll."""
@@ -245,7 +250,7 @@ def update_poll_options(poll, new_option_list):
                 new_list.insert(0, existing_options.pop())
                 # throw away what we've dealt with
                 new_option_list.pop()
-            else: # ex_option is None or the text values are different
+            else:  # ex_option is None or the text values are different
                 # This is an addition
                 text = new_option_list.pop()
                 new_option = PollOption(text=text, poll=poll, total=0)
@@ -256,7 +261,7 @@ def update_poll_options(poll, new_option_list):
             po.save()
 
     elif len(existing_options) > len(new_option_list):
-         # Removal
+        # Removal
         new_list = []
         ex_option, new_option_t = None, None
 
@@ -273,7 +278,7 @@ def update_poll_options(poll, new_option_list):
                 new_list.insert(0, existing_options.pop())
                 # throw away what we've dealt with
                 new_option_list.pop()
-            else: # new_option_t is None or the text values are different
+            else:  # new_option_t is None or the text values are different
                 # This is a removal
                 old_option = existing_options.pop()
                 old_option.delete()
@@ -282,8 +287,10 @@ def update_poll_options(poll, new_option_list):
             po.listorder = i
             po.save()
 
+
 class PollOptionListField(forms.CharField):
     widget = widgets.Textarea
+
     def clean(self, value):
         """Parses a string containing multiple lines of text,
         and returns a list of poll options or raises ValidationError"""
@@ -299,6 +306,7 @@ class PollOptionListField(forms.CharField):
             raise forms.ValidationError("Options may not be more than %s chars long" % max_length)
 
         return l
+
 
 class CreatePollForm(cciwforms.CciwFormMixin, forms.ModelForm):
     voting_starts = forms.SplitDateTimeField(widget=widgets.SplitDateTimeWidget,
@@ -336,7 +344,7 @@ class EditPoll(CciwBaseView, AjaxFormValidation):
             self.metadata_title = "Create poll"
             poll = None
         else:
-            suffix = '/'.join(request.path.split('/')[-3:]) # 'edit_poll/xx/'
+            suffix = '/'.join(request.path.split('/')[-3:])  # 'edit_poll/xx/'
             self.metadata_title = "Edit poll"
             poll = get_object_or_404(Poll.objects.filter(id=poll_id))
 
@@ -347,7 +355,7 @@ class EditPoll(CciwBaseView, AjaxFormValidation):
             return HttpResponseForbidden("Access denied.")
 
         forum = _get_forum_or_404(request.path, suffix)
-        c['breadcrumb'] = create_breadcrumb(kwargs.get('breadcrumb_extra',[]) +
+        c['breadcrumb'] = create_breadcrumb(kwargs.get('breadcrumb_extra', []) +
                                             topic_breadcrumb(forum, None))
 
         if request.method == "POST":
@@ -398,11 +406,11 @@ def process_post(request, topic, photo, context):
 
     if 'post' not in request.POST and \
        'preview' not in request.POST:
-        return # they didn't try to post
+        return  # they didn't try to post
 
     errors = []
     if (topic and not topic.open) or \
-        (photo and not photo.open):
+            (photo and not photo.open):
         # Only get here if the topic was closed
         # while they were adding a message
         errors.append('This thread is closed, sorry.')
@@ -427,6 +435,7 @@ def process_post(request, topic, photo, context):
         post = Post.create_post(cur_member, msg_text, topic, photo)
         return HttpResponseRedirect(post.get_forum_url())
 
+
 def process_vote(request, topic, context):
     """Processes any votes posted on the topic.
     topic is the topic that might have a poll.
@@ -447,7 +456,7 @@ def process_vote(request, topic, context):
     try:
         polloption_id = int(request.POST['polloption'])
     except (ValueError, KeyError):
-        return # they didn't try to vote, or invalid input
+        return  # they didn't try to vote, or invalid input
 
     errors = []
     if not poll.can_anyone_vote():
@@ -461,7 +470,7 @@ def process_vote(request, topic, context):
         errors.append('You cannot vote on this poll.  Please check the voting rules.')
         context['voting_errors'] = errors
 
-    if not polloption_id in (po.id for po in poll.poll_options.all()):
+    if polloption_id not in (po.id for po in poll.poll_options.all()):
         errors.append('Invalid option chosen')
         context['voting_errors'] = errors
 
@@ -472,14 +481,15 @@ def process_vote(request, topic, context):
         voteinfo.save()
         context['voting_message'] = 'Vote registered, thank you.'
 
+
 @member_required_for_post
 def topic(request, title_start=None, template_name='cciw/forums/topic.html', topicid=0,
-        introtext=None, breadcrumb_extra=None):
+          introtext=None, breadcrumb_extra=None):
     """Displays a topic"""
     if title_start is None:
         raise Exception("No title provided for page")
 
-    ### TOPIC AND POSTS ###
+    # == TOPIC AND POSTS ==
     try:
         topic = Topic.objects.get(id=int(topicid))
     except Topic.DoesNotExist:
@@ -487,12 +497,13 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
 
     posts = topic.posts.all().select_related('posted_by')
 
-    ### Feed: ###
+    # == Feed ==
     # Requires 'topic' and 'posts'
     resp = feeds.handle_feed_request(request, feeds.topic_post_feed(topic), query_set=posts)
-    if resp: return resp
+    if resp:
+        return resp
 
-    ### GENERAL CONTEXT ###
+    # == GENERAL CONTEXT ==
     cur_member = get_current_member()
 
     # Add additional title
@@ -510,14 +521,14 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
 
     extra_context['atom_feed_title'] = "Atom feed for posts in this topic."
 
-    ### PROCESSING ###
+    # == PROCESSING ==
     # Process any message that they added.
     resp = process_post(request, topic, None, extra_context)
     if resp is not None:
         return resp
     process_vote(request, topic, extra_context)
 
-    ### TOPIC ###
+    # == TOPIC ==
     extra_context['topic'] = topic
     if topic.open:
         if get_current_member() is not None:
@@ -525,11 +536,11 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
         else:
             extra_context['login_link'] = login_redirect(request.get_full_path() + '#messageform')
 
-    ### NEWS ITEM ###
-    if not topic.news_item_id is None:
+    # == ITEM ==
+    if topic.news_item_id is not None:
         extra_context['news_item'] = topic.news_item
 
-    ### POLL ###
+    # == POLL ==
     if topic.poll_id is not None:
         poll = topic.poll
         extra_context['poll'] = poll
@@ -543,54 +554,59 @@ def topic(request, title_start=None, template_name='cciw/forums/topic.html', top
             (cur_member is None and poll.can_anyone_vote()) or \
             (cur_member is not None and poll.can_vote(cur_member))
 
-    ### PERMISSIONS ###
+    # == PERMISSIONS ==
     if request.user.has_perm('cciwmain.edit_post'):
         extra_context['moderator'] = True
 
     return object_list(request, queryset=posts,
-        extra_context=extra_context, template_name=template_name,
-        paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
+                       extra_context=extra_context, template_name=template_name,
+                       paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
+
 
 def photoindex(request, gallery, extra_context, breadcrumb_extra):
     "Displays an a gallery of photos"
 
-    ### PHOTOS ###
+    # == PHOTOS ==
     photos = gallery.photos.all().select_related('gallery', 'last_post_by')
 
-    ### FEED ###
+    # == FEED ==
     resp = feeds.handle_feed_request(request,
-        feeds.gallery_photo_feed("CCIW - %s" % extra_context['title']), query_set=photos)
-    if resp is not None: return resp
+                                     feeds.gallery_photo_feed("CCIW - %s" % extra_context['title']),
+                                     query_set=photos)
+    if resp is not None:
+        return resp
 
     extra_context['atom_feed_title'] = "Atom feed for photos in this gallery."
     extra_context['gallery'] = gallery
-    extra_context['breadcrumb'] =   create_breadcrumb(breadcrumb_extra + photoindex_breadcrumb(gallery))
+    extra_context['breadcrumb'] = create_breadcrumb(breadcrumb_extra + photoindex_breadcrumb(gallery))
 
     order_by = get_order_option(
-        {'aca': ('created_at','id'),
-        'dca': ('-created_at','-id'),
-        'apc': ('post_count',),
-        'dpc': ('-post_count',),
-        'alp': ('last_post_at',),
-        'dlp': ('-last_post_at',)},
+        {'aca': ('created_at', 'id'),
+         'dca': ('-created_at', '-id'),
+         'apc': ('post_count',),
+         'dpc': ('-post_count',),
+         'alp': ('last_post_at',),
+         'dlp': ('-last_post_at',)},
         request, ('created_at', 'id'))
     extra_context['default_order'] = 'aca'
     photos = photos.order_by(*order_by)
 
     return object_list(request, queryset=photos,
-        extra_context=extra_context, template_name='cciw/forums/photoindex.html',
-        paginate_by=settings.FORUM_PAGINATE_PHOTOS_BY)
+                       extra_context=extra_context, template_name='cciw/forums/photoindex.html',
+                       paginate_by=settings.FORUM_PAGINATE_PHOTOS_BY)
+
 
 @member_required_for_post
 def photo(request, photo, extra_context, breadcrumb_extra):
     "Displays a photo"
 
-    ## POSTS ###
+    # == POSTS ==
     posts = photo.posts.all().select_related('posted_by')
 
-    ### Feed: ###
+    # == Feed ==
     resp = feeds.handle_feed_request(request, feeds.photo_post_feed(photo), query_set=posts)
-    if resp: return resp
+    if resp:
+        return resp
 
     extra_context['atom_feed_title'] = "Atom feed for posts on this photo."
 
@@ -603,23 +619,25 @@ def photo(request, photo, extra_context, breadcrumb_extra):
         else:
             extra_context['login_link'] = login_redirect(request.get_full_path() + '#messageform')
 
-    ### PROCESSING ###
+    # == PROCESSING ==
     process_post(request, None, photo, extra_context)
 
-    ### PERMISSIONS ###
+    # == PERMISSIONS ==
     if request.user.has_perm('cciwmain.edit_post'):
         extra_context['moderator'] = True
 
     return object_list(request, queryset=posts,
-        extra_context=extra_context, template_name='cciw/forums/photo.html',
-        paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
+                       extra_context=extra_context, template_name='cciw/forums/photo.html',
+                       paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
+
 
 def all_posts(request):
     context = dict(title="Recent posts")
     posts = Post.objects.exclude(posted_at__isnull=True).order_by('-posted_at').select_related('topic__forum', 'photo__gallery', 'posted_by')
 
     resp = feeds.handle_feed_request(request, feeds.PostFeed, query_set=posts)
-    if resp: return resp
+    if resp:
+        return resp
 
     context['atom_feed_title'] = "Atom feed for all posts on CCIW message boards."
 
@@ -629,6 +647,7 @@ def all_posts(request):
         extra_context=context, template_name='cciw/forums/posts.html',
         list_name='posts',
         paginate_by=settings.FORUM_PAGINATE_POSTS_BY)
+
 
 def post(request, id):
     try:
@@ -641,23 +660,26 @@ def post(request, id):
         return HttpResponseForbidden("<h1>Access denied</h1><p>Topic is hidden.</p>")
     return HttpResponseRedirect(url)
 
+
 def all_topics(request):
     context = dict(title="Recent new topics")
     topics = Topic.objects.exclude(created_at__isnull=True).order_by('-created_at').select_related('forum', 'started_by')
 
     resp = feeds.handle_feed_request(request, feeds.TopicFeed, query_set=topics)
-    if resp: return resp
+    if resp:
+        return resp
 
     context['atom_feed_title'] = "Atom feed for all new topics."
 
     return object_list(request, queryset=topics,
-        extra_context=context, template_name='cciw/forums/topics.html',
-        paginate_by=settings.FORUM_PAGINATE_TOPICS_BY)
+                       extra_context=context, template_name='cciw/forums/topics.html',
+                       paginate_by=settings.FORUM_PAGINATE_TOPICS_BY)
+
 
 def news(request):
     return topicindex(request,
                       title='News',
                       template_name='cciw/forums/newsindex.html',
                       paginate_by=settings.FORUM_PAGINATE_NEWS_BY,
-                      default_order= ('-created_at',)
+                      default_order=('-created_at',)
                       )

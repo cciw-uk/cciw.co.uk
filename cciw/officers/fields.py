@@ -1,5 +1,4 @@
 from django.db import models
-import cciw.middleware.threadlocals as threadlocals
 from cciw.officers import formfields
 
 
@@ -18,7 +17,7 @@ class YyyyMmField(models.CharField):
 class AddressField(models.TextField):
     def __init__(self, *args, **kwargs):
         kwargs['help_text'] = 'Full address, including post code and country'
-        return  super(AddressField, self).__init__(*args, **kwargs)
+        return super(AddressField, self).__init__(*args, **kwargs)
 
 
 class ExplicitBooleanField(models.NullBooleanField):
@@ -62,4 +61,3 @@ RequiredYyyyMmField = required_field(YyyyMmField)
 RequiredTextField = required_field(models.TextField)
 RequiredExplicitBooleanField = required_field(ExplicitBooleanField)
 RequiredAddressField = required_field(AddressField)
-

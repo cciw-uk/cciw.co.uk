@@ -11,8 +11,8 @@ from cciw.cciwmain import decorators
 
 FORUM_1_YEAR = 2000
 FORUM_1_CAMP_NUMBER = 1
-ADD_POLL_URL =  reverse("cciwmain.camps.add_poll",
-                        kwargs=dict(year=FORUM_1_YEAR, number=FORUM_1_CAMP_NUMBER))
+ADD_POLL_URL = reverse("cciwmain.camps.add_poll",
+                       kwargs=dict(year=FORUM_1_YEAR, number=FORUM_1_CAMP_NUMBER))
 
 
 class TopicIndexPage(TestCase):
@@ -35,7 +35,7 @@ class TopicIndexPage(TestCase):
         self.assertContains(response, "Jill &amp; Jane")
 
     def test_atom(self):
-        response = self.client.get(self.forum.get_absolute_url(), {'format':'atom'})
+        response = self.client.get(self.forum.get_absolute_url(), {'format': 'atom'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Jill &amp; Jane")
         self.assertTrue(response['Content-Type'].startswith('application/atom+xml'))
@@ -60,7 +60,7 @@ class TopicIndexPage(TestCase):
             self.assertContains(resp, "<a title=\"Information about",
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
-        request = self.factory.get(self.forum.get_absolute_url(), {'format':'atom'})
+        request = self.factory.get(self.forum.get_absolute_url(), {'format': 'atom'})
         with self.assertNumQueries(FuzzyInt(1, 3)):
             forums_views.topicindex(request, title="Title", forum=self.forum)
 
@@ -88,7 +88,7 @@ class AllTopicsPage(TestCase):
         self.assertContains(response, "Jill &amp; Jane")
 
     def test_atom(self):
-        response = self.client.get(self.path(), {'format':'atom'})
+        response = self.client.get(self.path(), {'format': 'atom'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Jill &amp; Jane")
         self.assertTrue(response['Content-Type'].startswith('application/atom+xml'))
@@ -113,7 +113,7 @@ class AllTopicsPage(TestCase):
             self.assertContains(resp, "<a title=\"Information about user",
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
-        request = self.factory.get(self.path(), {'format':'atom'})
+        request = self.factory.get(self.path(), {'format': 'atom'})
         with self.assertNumQueries(FuzzyInt(1, 2)):
             forums_views.all_topics(request)
 
@@ -140,7 +140,7 @@ class TopicPage(TestCase):
         self.assertContains(response, '<a href="/camps/">Forums and photos</a>')
 
     def test_topic_atom(self):
-        response = self.client.get(self.path(), {'format':'atom'})
+        response = self.client.get(self.path(), {'format': 'atom'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '<title>CCIW - Posts on topic "&lt;Jill &amp; Jane&gt;"</title>')
         self.assertContains(response, 'A &lt;b&gt;unique message&lt;/b&gt; with some bbcode &amp;amp; &amp;lt;stuff&amp;gt; to be escaped')
@@ -161,7 +161,7 @@ class TopicPage(TestCase):
         with self.assertNumQueries(FuzzyInt(1, 6)):
             forums_views.topic(request, title_start="Title", topicid=self.topic.id).render()
 
-        request = self.factory.get(self.topic.get_absolute_url(), {'format':'atom'})
+        request = self.factory.get(self.topic.get_absolute_url(), {'format': 'atom'})
         with self.assertNumQueries(FuzzyInt(1, 2)):
             forums_views.topic(request, title_start="Title", topicid=self.topic.id)
 
@@ -186,7 +186,7 @@ class PhotoIndexPage(TestCase):
         self.assertTrue(response['Content-Type'].startswith('text/html'))
 
     def test_atom(self):
-        response = self.client.get(self.gallery.get_absolute_url(), {'format':'atom'})
+        response = self.client.get(self.gallery.get_absolute_url(), {'format': 'atom'})
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response['Content-Type'].startswith('application/atom+xml'))
 
@@ -202,11 +202,11 @@ class PhotoIndexPage(TestCase):
 
         request = self.factory.get(self.gallery.get_absolute_url())
         with self.assertNumQueries(3):
-            forums_views.photoindex(request, self.gallery, {'title':'test'}, ['']).render()
+            forums_views.photoindex(request, self.gallery, {'title': 'test'}, ['']).render()
 
-        request = self.factory.get(self.gallery.get_absolute_url(), {'format':'atom'})
+        request = self.factory.get(self.gallery.get_absolute_url(), {'format': 'atom'})
         with self.assertNumQueries(1):
-            forums_views.photoindex(request, self.gallery, {'title':'test'}, [''])
+            forums_views.photoindex(request, self.gallery, {'title': 'test'}, [''])
 
 
 class PhotoPage(TestCase):
@@ -231,7 +231,7 @@ class PhotoPage(TestCase):
         self.assertContains(response, '<a href="/camps/">Forums and photos</a>')
 
     def test_photo_atom(self):
-        response = self.client.get(self.path(), {'format':'atom'})
+        response = self.client.get(self.path(), {'format': 'atom'})
         self.assertEqual(response.status_code, 200)
 
         self.assertContains(response, '<title>CCIW - Posts on photo Photo: 2000-1-a-nice-photo.jpeg</title>')
@@ -251,7 +251,7 @@ class PhotoPage(TestCase):
         with self.assertNumQueries(5):
             forums_views.photo(request, self.photo, {}, ['']).render()
 
-        request = self.factory.get(self.photo.get_absolute_url(), {'format':'atom'})
+        request = self.factory.get(self.photo.get_absolute_url(), {'format': 'atom'})
         with self.assertNumQueries(1):
             forums_views.photo(request, self.photo, {}, [''])
 
@@ -280,7 +280,7 @@ class AllPostsPage(TestCase):
         self.assertContains(response, "Jill &amp; Jane")
 
     def test_atom(self):
-        response = self.client.get(self.path(), {'format':'atom'})
+        response = self.client.get(self.path(), {'format': 'atom'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Jill &amp;amp; Jane")
         self.assertTrue(response['Content-Type'].startswith('application/atom+xml'))
@@ -305,7 +305,7 @@ class AllPostsPage(TestCase):
             self.assertContains(resp, "<a title=\"Information about user",
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
-        request = self.factory.get(self.path(), {'format':'atom'})
+        request = self.factory.get(self.path(), {'format': 'atom'})
         with self.assertNumQueries(FuzzyInt(1, 2)):
             forums_views.all_posts(request)
 
@@ -329,7 +329,7 @@ class AllPostsPage(TestCase):
             self.assertContains(resp, "<a title=\"Information about user",
                                 count=FuzzyInt(expected_count, expected_count + 2))
 
-        request = self.factory.get(self.path(), {'format':'atom'})
+        request = self.factory.get(self.path(), {'format': 'atom'})
         with self.assertNumQueries(FuzzyInt(1, 2)):
             forums_views.all_posts(request)
 
@@ -354,7 +354,7 @@ class CreatePollPage(TestCase):
             voting_ends_1="00:00",
             rules="0",
             rule_parameter="1",
-            )
+        )
 
     def test_cant_create_poll_if_anonymous(self):
         response = self.client.get(ADD_POLL_URL)
@@ -406,7 +406,6 @@ class CreatePollPage(TestCase):
                                   poll_id=p.id))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-
 
     def test_cant_edit_someone_elses_poll(self):
         self.test_create_poll()

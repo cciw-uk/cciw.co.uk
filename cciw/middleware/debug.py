@@ -19,4 +19,3 @@ class DebugMiddleware(object):
             request.session['_auth_user_backend'] = 'django.contrib.auth.backends.ModelBackend'
             request.user = user
             request.session.save()
-

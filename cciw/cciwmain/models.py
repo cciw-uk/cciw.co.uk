@@ -29,7 +29,7 @@ class Site(models.Model):
 class Person(models.Model):
     name = models.CharField("Name", max_length=40)
     info = models.TextField("Information (Plain text)",
-                        blank=True)
+                            blank=True)
     users = models.ManyToManyField(User, verbose_name="Associated admin users", blank=True)
 
     def __str__(self):
@@ -42,6 +42,7 @@ class Person(models.Model):
 
 class CampManager(models.Manager):
     use_for_related_fields = True
+
     def get_queryset(self):
         return super(CampManager, self).get_queryset().select_related('chaplain').prefetch_related('leaders')
 
@@ -62,22 +63,22 @@ class Camp(models.Model):
     south_wales_transport_available = models.BooleanField("South Wales transport available (pre 2015 only)", default=False)
 
     previous_camp = models.ForeignKey("self",
-        related_name="next_camps",
-        verbose_name="previous camp",
-        null=True, blank=True)
+                                      related_name="next_camps",
+                                      verbose_name="previous camp",
+                                      null=True, blank=True)
     chaplain = models.ForeignKey(Person,
-        related_name="camps_as_chaplain",
-        verbose_name="chaplain",
-        null=True, blank=True)
+                                 related_name="camps_as_chaplain",
+                                 verbose_name="chaplain",
+                                 null=True, blank=True)
     leaders = models.ManyToManyField(Person,
-        related_name="camps_as_leader",
-        verbose_name="leaders",
-        blank=True)
+                                     related_name="camps_as_leader",
+                                     verbose_name="leaders",
+                                     blank=True)
     admins = models.ManyToManyField(User,
-        related_name="camps_as_admin",
-        verbose_name="admins",
-        help_text="These users can manage references/applications for the camp. Not for normal officers.",
-        blank=True)
+                                    related_name="camps_as_admin",
+                                    verbose_name="admins",
+                                    help_text="These users can manage references/applications for the camp. Not for normal officers.",
+                                    blank=True)
     site = models.ForeignKey(Site)
     online_applications = models.BooleanField("Accepts online applications from officers.", default=True)
     officers = models.ManyToManyField(User, through='officers.Invitation')
@@ -170,8 +171,8 @@ class Camp(models.Model):
         return is_booking_open(self.year)
 
     class Meta:
-        ordering = ['-year','number']
+        ordering = ['-year', 'number']
         unique_together = (('year', 'number'),)
 
 
-import cciw.cciwmain.hooks
+import cciw.cciwmain.hooks  # NOQA

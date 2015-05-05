@@ -6,6 +6,7 @@ from django.utils import timezone
 from cciw.bookings.models import Booking
 from cciw.bookings.email import send_booking_expiry_mail
 
+
 class Command(BaseCommand):
 
     def handle(self, *args, **options):

@@ -5,6 +5,7 @@ from cciw.cciwmain.tests.client import CciwClient
 from cciw.cciwmain.models import Site
 from cciw.sitecontent.models import HtmlChunk
 
+
 class SitePage(TestCase):
     fixtures = ['basic.json', 'sites.json']
 
