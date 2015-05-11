@@ -8,6 +8,5 @@ In most e-mail programs, you should be able to click on the link above.  If not,
 
 PLEASE NOTE: If you are using Windows XP and Internet Explorer, you will see a warning about the SSL certificate of the site. This is due to the obsolete operating system (Windows XP) which doesn't recognise the more recent technology we are using on the site. You can safely ignore the warning, or preferably use a better web browser, like Mozilla Firefox, Google Chrome or Opera (all are free downloads).
 
-Many thanks for your support of CCIW.
-
-On behalf of the leaders of camp {{ camp.number }}, {{ camp.year }} - {{ camp.leaders_formatted }}.{% endautoescape %}
+{% include "cciw/officers/request_reference_footer.txt" %}
+{% endautoescape %}

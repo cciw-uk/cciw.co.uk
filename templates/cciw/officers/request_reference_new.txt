@@ -10,8 +10,5 @@ PLEASE NOTE: If you are using Windows XP and Internet Explorer, you will see a w
 
 For those who don't enjoy writing references, please be assured that in the future you will simply be asked to confirm or update what you wrote this year.
 
-Many thanks for your support of CCIW.
-
-{{ sender.first_name }} {{ sender.last_name }}
-
-For CCIW camp {{ camp.number }}, {{ camp.year }} - {{ camp.leaders_formatted }}.{% endautoescape %}
+{% include "cciw/officers/request_reference_footer.txt" %}
+{% endautoescape %}
