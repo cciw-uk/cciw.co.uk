@@ -6,8 +6,6 @@
 
 In most e-mail programs, you should be able to click on the link above.  If not, open up your web browser and copy and paste the whole link into the address bar at the top of the web browser.
 
-PLEASE NOTE: If you are using Windows XP and Internet Explorer, you will see a warning about the SSL certificate of the site. This is due to the obsolete operating system (Windows XP) which doesn't recognise the more recent technology we are using on the site. You can safely ignore the warning, or preferably use a better web browser, like Mozilla Firefox, Google Chrome or Opera (all are free downloads).
-
 For those who don't enjoy writing references, please be assured that in the future you will simply be asked to confirm or update what you wrote this year.
 
 {% include "cciw/officers/request_reference_footer.txt" %}
