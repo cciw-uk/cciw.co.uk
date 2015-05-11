@@ -1,6 +1,11 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
+from email.mime.base import MIMEBase
+import email.parser
+import email.utils
+import logging
 
 from cciw.cciwmain import common
+from cciw.cciwmain.models import Camp
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference, camps_for_application
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
 from cciw.officers.references import reference_form_to_text
@@ -9,7 +14,12 @@ from django.contrib import messages
 from django.core import signing
 from django.core.mail import send_mail, EmailMessage
 from django.core.urlresolvers import reverse
+from django.utils import timezone
 from django.utils.crypto import salted_hmac
+from django.utils.http import urlquote
+
+
+logger = logging.getLogger(__name__)
 
 
 def make_update_email_hash(oldemail, newemail):
@@ -209,13 +219,17 @@ def make_ref_form_url(ref_id, prev_ref_id):
                                                  hash=make_ref_form_url_hash(ref_id, prev_ref_id))))
 
 
-def send_reference_request_email(message, ref, sending_officer):
+def send_reference_request_email(message, ref, sending_officer, camp):
     officer = ref.application.officer
     EmailMessage(subject="Reference for %s %s" % (officer.first_name, officer.last_name),
                  body=message,
-                 from_email=settings.DEFAULT_FROM_EMAIL,
+                 from_email=settings.REFERENCES_EMAIL,
                  to=[ref.referee.email],
-                 headers={'Reply-To': sending_officer.email}).send()
+                 headers={
+                     'Reply-To': sending_officer.email,
+                     'X-CCIW-Camp': '{0}-{1}'.format(camp.year, camp.number),
+                     'X-CCIW-Action': 'ReferenceRequest',
+                 }).send()
 
 
 def send_leaders_reference_email(refform):
@@ -263,3 +277,83 @@ def send_crb_consent_problem_email(message, officer, camps):
               settings.DEFAULT_FROM_EMAIL,
               emails,
               fail_silently=False)
+
+
+def handle_reference_bounce(email_file):
+    p = email.parser.Parser()
+    msg = p.parse(email_file)
+
+    admin_emails = [e for name, e in settings.ADMINS]
+    if msg.get_content_type() != 'multipart/report':
+        logger.warn("Unrecognised content type '%s' in bounce email", msg.get_content_type())
+        forward_with_text(admin_emails, "Unrecognised message", "Unrecognised message:\n\n", msg)
+        return
+
+    bounced_email = None
+    bounced_email_address = None
+    if len(msg.get_payload()) > 1:
+        status = msg.get_payload(1)
+        if status.get_content_type() == 'message/delivery-status':
+            for dsn in status.get_payload():
+                if dsn.get('action', '').lower() == 'failed':
+                    address_type, email_address = dsn['Final-Recipient'].split(';')
+                    email_address = email_address.strip()
+                    if address_type.lower() == 'rfc822':
+                        bounced_email_address = email_address
+
+    if bounced_email_address is not None:
+        reply_to = admin_emails
+        camp = None
+        if len(msg.get_payload()) > 2:
+            bounced_email = msg.get_payload(2)
+            payload = bounced_email.get_payload()
+            if len(payload) > 0:
+                reply_to = payload[0].get('Reply-To', reply_to)
+                camp_s = payload[0].get('X-CCIW-Camp', camp)
+                if camp_s is not None:
+                    try:
+                        camp_year, camp_number = camp_s.split("-")
+                        camp = Camp.objects.get(year=int(camp_year),
+                                                number=int(camp_number))
+                    except (ValueError, Camp.DoesNotExist):
+                        pass
+
+        forward_bounce_to([reply_to], bounced_email_address, msg, camp)
+    else:
+        forward_with_text(admin_emails, "Unrecognised DSN message", "Unrecognised DSN message:\n\n", msg)
+
+
+def forward_with_text(email_addresses, subject, text, original_message):
+    rfcmessage = MIMEBase("message", "rfc822")
+    rfcmessage.attach(original_message)
+
+    forward = EmailMessage(subject=subject,
+                           body=text,
+                           from_email=settings.DEFAULT_FROM_EMAIL,
+                           to=email_addresses,
+                           attachments=[rfcmessage])
+    forward.send()
+
+
+def forward_bounce_to(email_addresses, bounced_email_address, original_message, camp):
+    forward_body = """
+The message below to {email} was not received.
+
+If this message was asking for a reference, you will need
+to find a correct email address for this referee.
+""".format(email=bounced_email_address)
+
+    if camp is not None:
+        forward_body += """
+Use the following link to manage this reference:
+
+{link}
+""".format(link="https://www.cciw.co.uk"
+           + reverse('cciw.officers.views.manage_references',
+                     kwargs=dict(year=camp.year, number=camp.number))
+           + "?ref_email=" + urlquote(bounced_email_address))
+
+    forward_with_text(email_addresses,
+                      "Reference request to {0} bounced.".format(bounced_email_address),
+                      forward_body,
+                      original_message)

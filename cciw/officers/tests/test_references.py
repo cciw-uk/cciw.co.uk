@@ -131,9 +131,8 @@ class RequestReference(WebTestBase):
         Test the case where we ask for an update, and there is an exact match
         """
         app = Application.objects.get(pk=4)
-        camp = Camp.objects.get(year=2001)
         refinfo = app.references[0]
-        prev_refs, exact = get_previous_references(refinfo, camp)
+        prev_refs, exact = get_previous_references(refinfo)
         assert exact is not None
         self.webtest_officer_login(LEADER)
         response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2001, number=1))
@@ -146,12 +145,11 @@ class RequestReference(WebTestBase):
         Test the case where we ask for an update, and there is no exact match
         """
         app = Application.objects.get(pk=4)
-        camp = Camp.objects.get(year=2001)
         # We make a change, so we don't get exact match
         app.referees[0].email = "a_new_email_for_ref1@example.com"
         app.save()
         refinfo = app.references[0]
-        prev_refs, exact = get_previous_references(refinfo, camp)
+        prev_refs, exact = get_previous_references(refinfo)
         assert exact is None
         assert prev_refs[0].reference_form.referee_name == "Mr Referee1 Name"
         self.webtest_officer_login(LEADER)
@@ -234,14 +232,13 @@ class CreateReference(WebTestBase):
         Check that if we are updating a reference that previous data appears
         """
         app1 = Application.objects.get(pk=1)
-        camp = Camp.objects.get(year=2000)
         # app1 already has a reference done
         assert app1.references[0].reference_form is not None
         app2 = Application.objects.get(pk=4)
         assert app1.officer == app2.officer
 
         # We should be able to find an exact match for references
-        prev_refs, exact = get_previous_references(app2.references[0], camp)
+        prev_refs, exact = get_previous_references(app2.references[0])
         self.assertEqual(exact, app1.references[0])
 
         # Go to the corresponding URL

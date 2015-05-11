@@ -277,7 +277,7 @@ def _get_camp_or_404(year, number):
         raise Http404
 
 
-def get_previous_references(ref, camp):
+def get_previous_references(ref):
     """
     Returns a tuple of:
      (possible previous References ordered by relevance,
@@ -286,7 +286,7 @@ def get_previous_references(ref, camp):
     # Look for ReferenceForms for same officer, within the previous five
     # years.  Don't look for references from this year's
     # application (which will be the other referee).
-    cutoffdate = camp.start_date - timedelta(365 * 5)
+    cutoffdate = ref.application.date_submitted - timedelta(365 * 5)
     prev = list(ReferenceForm.objects
                 .filter(reference_info__application__officer=ref.application.officer,
                         reference_info__application__finished=True,
@@ -348,14 +348,24 @@ def manage_references(request, year=None, number=None):
     else:
         refinfo = Reference.objects.filter(pk=ref_id).order_by()
 
-    received = refinfo.filter(received=True)
-    requested = refinfo.filter(received=False, requested=True)
-    notrequested = refinfo.filter(received=False, requested=False)
+    all_ref = list(refinfo)
+    received = [r for r in all_ref if r.received]
+    requested = [r for r in all_ref if not r.received and r.requested]
+    notrequested = [r for r in all_ref if not r.received and not r.requested]
+
+    if 'ref_email' in request.GET:
+        ref_email = request.GET['ref_email']
+        c['ref_email_search'] = ref_email
+    else:
+        ref_email = None
 
     for l in (received, requested, notrequested):
+        if ref_email is not None:
+            l[:] = [r for r in l if r.referee.email == ref_email]
+
         # decorate each Reference with suggested previous ReferenceForms.
         for curref in l:
-            (prev, exact) = get_previous_references(curref, camp)
+            (prev, exact) = get_previous_references(curref)
             if exact is not None:
                 curref.previous_reference = exact
             else:
@@ -449,7 +459,7 @@ def request_reference(request, year=None, number=None):
     # message.
     update = 'update' in request.GET
     if update:
-        (possible, exact) = get_previous_references(ref, camp)
+        (possible, exact) = get_previous_references(ref)
         prev_ref_id = int(request.GET['prev_ref_id'])
         if exact is not None:
             # the prev_ref_id must be the same as exact.id by the logic of the
@@ -481,7 +491,7 @@ def request_reference(request, year=None, number=None):
         if 'send' in request.POST:
             messageform = SendReferenceRequestForm(request.POST, message_info=messageform_info)
             if messageform.is_valid():
-                send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), ref, request.user)
+                send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), ref, request.user, camp)
                 ref.requested = True
                 ref.log_request_made(request.user, timezone.now())
                 ref.save()

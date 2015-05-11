@@ -93,6 +93,11 @@
 
   {% endif %}
 
+  {% if ref_email_search %}
+    <h3>Filtering for referee email address = “{{ ref_email_search }}”</h3>
+    <p><a href=".">(clear filter)</a></p> {# should use spurl to manipulate URLs but it doesn't support Python 3 yet #}
+  {% endif %}
+
   <p>This page allows you to request references for officers who have submitted
     application forms. References that have not been requested are at the top,
     those that have been requested are in the middle, and those that have been
