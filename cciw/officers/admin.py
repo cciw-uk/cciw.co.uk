@@ -287,7 +287,7 @@ class ApplicationAdmin(admin.ModelAdmin):
             # still unfinished. So we filter on date_submitted.  If
             # date_submitted is NULL, the form has never been saved, so its fine
             # to delete.
-            old = obj.officer.application_set.filter(finished=False)
+            old = obj.officer.applications.filter(finished=False)
             old2 = old.filter(date_submitted__isnull=True)
             if obj.date_submitted is not None:
                 old2 = old2 | old.filter(date_submitted__lt=obj.date_submitted)

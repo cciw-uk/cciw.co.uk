@@ -90,7 +90,7 @@ class TestSlackers(TestCase):
         camp2.invitation_set.create(officer=officer2)
 
         # Officer 1 submitted an Application, but officer 2 did not
-        app = officer1.application_set.create(
+        app = officer1.applications.create(
             date_submitted=camp1.start_date - timedelta(days=10),
             finished=True,
         )

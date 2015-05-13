@@ -59,7 +59,7 @@ class PersonalApplicationList(TestCase):
         self.client.login(username=OFFICER_USERNAME, password=OFFICER_PASSWORD)
         self.url = reverse('cciw-officers-applications')
         self.user = User.objects.get(username=OFFICER_USERNAME)
-        self.user.application_set.all().delete()
+        self.user.applications.all().delete()
         # Set Camps so that one is in the future, and one in the past,
         # so that is possible to have an application for an old camp
         Camp.objects.filter(id=1).update(start_date=date.today() + timedelta(100 - 365),
@@ -78,38 +78,37 @@ class PersonalApplicationList(TestCase):
         self.assertNotContains(resp, self._edit_button)
 
     def test_finished_application(self):
-        self.user.application_set.create(finished=True,
-                                         date_submitted=date.today()
-                                         - timedelta(365))
+        self.user.applications.create(finished=True,
+                                      date_submitted=date.today() - timedelta(365))
         resp = self.client.get(self.url)
         self.assertContains(resp, self._create_button)
 
     def test_finished_application_recent(self):
-        self.user.application_set.create(finished=True,
-                                         date_submitted=date.today())
+        self.user.applications.create(finished=True,
+                                      date_submitted=date.today())
         resp = self.client.get(self.url)
         self.assertNotContains(resp, self._create_button)
 
     def test_unfinished_application(self):
-        self.user.application_set.create(finished=False,
-                                         date_submitted=date.today())
+        self.user.applications.create(finished=False,
+                                      date_submitted=date.today())
         resp = self.client.get(self.url)
         self.assertContains(resp, self._edit_button)
 
     def test_create(self):
-        self.user.application_set.create(finished=True,
-                                         date_submitted=date.today() - timedelta(365))
+        self.user.applications.create(finished=True,
+                                      date_submitted=date.today() - timedelta(365))
         resp = self.client.post(self.url, {'new': 'Create'})
         self.assertEqual(302, resp.status_code)
-        self.assertEqual(len(self.user.application_set.all()), 2)
+        self.assertEqual(len(self.user.applications.all()), 2)
 
     def test_create_when_already_done(self):
         # Should not create a new application if a recent one is submitted
-        app = self.user.application_set.create(finished=True,
-                                               date_submitted=date.today())
+        app = self.user.applications.create(finished=True,
+                                            date_submitted=date.today())
         resp = self.client.post(self.url, {'new': 'Create'})
         self.assertEqual(200, resp.status_code)
-        self.assertEqual(list(self.user.application_set.all()), [app])
+        self.assertEqual(list(self.user.applications.all()), [app])
 
 
 class ApplicationUtils(TestCase):

@@ -45,7 +45,7 @@ REFEREE_NAME_HELP_TEXT = "Name only - please do not include job title or other i
 
 
 class Application(models.Model):
-    officer = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True)  # blank=True to get the admin to work
+    officer = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, related_name='applications')  # blank=True to get the admin to work
     full_name = RequiredCharField('full name', max_length=NAME_LENGTH)
     full_maiden_name = models.CharField('full maiden name', max_length=NAME_LENGTH, blank=True)
     birth_date = RequiredDateField('date of birth', null=True, default=None)

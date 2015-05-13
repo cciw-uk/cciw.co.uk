@@ -104,15 +104,15 @@ class ApplicationFormView(WebTestBase):
         self.webtest_officer_login(OFFICER)
         a = self._add_application()
         u = User.objects.get(username=OFFICER[0])
-        self.assertEqual(u.application_set.count(), 1)
+        self.assertEqual(u.applications.count(), 1)
         response = self.get(self._application_edit_url(a.id))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Save and continue editing')
         self.assertNotContains(response, 'Save and add another')
         response = self.fill(response.forms['application_form'], {'full_name': 'Test full name'}).submit('_save').follow()
         self.assertUrl(response, "cciw-officers-applications")
-        self.assertEqual(u.application_set.count(), 1)
-        self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
+        self.assertEqual(u.applications.count(), 1)
+        self.assertEqual(u.applications.all()[0].full_name, 'Test full name')
 
     def test_change_finished_application(self):
         """
@@ -125,15 +125,15 @@ class ApplicationFormView(WebTestBase):
         # To catch a bug, give the leader an application form for the same camp
         self._add_application(officer=LEADER)
         u = User.objects.get(username=OFFICER[0])
-        apps = u.application_set.all()
+        apps = u.applications.all()
         self.assertEqual(len(apps), 1)
         response = self.get(self._application_edit_url(apps[0].id))
         self.assertEqual(response.status_code, 200)
         response = self.fill(response.forms['application_form'],
                              {'full_name': 'Changed full name'}).submit('_save').follow()
         self.assertUrl(response, "cciw-officers-applications")
-        self.assertEqual(u.application_set.count(), 1)
-        self.assertEqual(u.application_set.all()[0].full_name, 'Changed full name')
+        self.assertEqual(u.applications.count(), 1)
+        self.assertEqual(u.applications.all()[0].full_name, 'Changed full name')
 
     def _change_email_setup(self):
         # setup
@@ -141,7 +141,7 @@ class ApplicationFormView(WebTestBase):
         self.webtest_officer_login(OFFICER)
         u = User.objects.get(username=OFFICER[0])
         a = self._add_application()
-        self.assertEqual(u.application_set.count(), 1)
+        self.assertEqual(u.applications.count(), 1)
 
         # email asserts
         orig_email = u.email
@@ -156,7 +156,7 @@ class ApplicationFormView(WebTestBase):
                              {'full_name': 'Test full name',
                               'address_email': new_email}).submit('_save').follow()
         self.assertUrl(response, "cciw-officers-applications")
-        self.assertEqual(u.application_set.count(), 1)
+        self.assertEqual(u.applications.count(), 1)
 
         # Check the e-mails have been sent
         emails = self._get_email_change_emails()
@@ -209,7 +209,7 @@ class ApplicationFormView(WebTestBase):
 
         # Check that nothing has changed yet
         self.assertEqual(user.email, user_email)
-        self.assertEqual(user.application_set.all()[0].address_email,
+        self.assertEqual(user.applications.all()[0].address_email,
                          application_email)
 
         # follow link - deliberately wrong first time
@@ -218,7 +218,7 @@ class ApplicationFormView(WebTestBase):
         self.assertContains(response, "Update failed")
 
         # Check that nothing has changed yet
-        self.assertEqual(user.application_set.all()[0].address_email,
+        self.assertEqual(user.applications.all()[0].address_email,
                          application_email)
 
         # follow link, right this time
@@ -227,7 +227,7 @@ class ApplicationFormView(WebTestBase):
         self.assertContains(response, "Update successful")
 
         # check e-mail address has changed
-        self.assertEqual(user.application_set.all()[0].address_email,
+        self.assertEqual(user.applications.all()[0].address_email,
                          user_email)
 
     def test_unchanged_email_address(self):
@@ -239,7 +239,7 @@ class ApplicationFormView(WebTestBase):
         self.webtest_officer_login(OFFICER)
         u = User.objects.get(username=OFFICER[0])
         a = self._add_application()
-        self.assertEqual(u.application_set.count(), 1)
+        self.assertEqual(u.applications.count(), 1)
 
         response = self.get(self._application_edit_url(a.id))
         self.assertEqual(response.status_code, 200)
@@ -253,7 +253,7 @@ class ApplicationFormView(WebTestBase):
 
     def test_finish_incomplete(self):
         u = User.objects.get(username=OFFICER[0])
-        self.assertEqual(u.application_set.count(), 0)
+        self.assertEqual(u.applications.count(), 0)
         self.webtest_officer_login(OFFICER)
         a = self._add_application()
         response = self.get(self._application_edit_url(a.id))
@@ -263,11 +263,11 @@ class ApplicationFormView(WebTestBase):
         self.assertEqual(url, response.request.url)  # Same page
         self.assertContains(response, "Please correct the errors below")
         self.assertContains(response, "form-row errors field-address")
-        self.assertEqual(u.application_set.exclude(date_submitted__isnull=True).count(), 0)  # shouldn't have been saved
+        self.assertEqual(u.applications.exclude(date_submitted__isnull=True).count(), 0)  # shouldn't have been saved
 
     def test_finish_complete(self):
         u = User.objects.get(username=OFFICER[0])
-        self.assertEqual(u.application_set.count(), 0)
+        self.assertEqual(u.applications.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
         self.webtest_officer_login(OFFICER)
         # An old, unfinished application form
@@ -280,7 +280,7 @@ class ApplicationFormView(WebTestBase):
 
         self.assertContains(response, "The completed application form has been sent to the leaders (Dave &amp; Rebecca Stott) via e-mail")
 
-        apps = list(u.application_set.all())
+        apps = list(u.applications.all())
         # The old one should have been deleted.
         self.assertEqual(len(apps), 1)
         self.assertEqual(a.id, apps[0].id)
@@ -341,7 +341,7 @@ class ApplicationFormView(WebTestBase):
         response = self._finish_application_form(response).submit('_save')
         self.assertContains(response, "You&#39;ve already submitted")
         u = User.objects.get(username=OFFICER[0])
-        self.assertEqual(u.application_set.exclude(date_submitted__isnull=True).count(), 1)
+        self.assertEqual(u.applications.exclude(date_submitted__isnull=True).count(), 1)
 
     def test_application_differences_email(self):
         """
@@ -358,7 +358,7 @@ class ApplicationFormView(WebTestBase):
 
         # Change the date on the existing app, so that we can
         # create a new one
-        app0 = u.application_set.all()[0]
+        app0 = u.applications.all()[0]
         app0.date_submitted = date.today() + timedelta(-365)
         app0.save()
 
@@ -385,7 +385,7 @@ class ApplicationFormView(WebTestBase):
         # Testing the actual content is hard from this point, due to e-mail
         # formatting, so we do it manually:
 
-        apps = u.application_set.order_by('date_submitted')
+        apps = u.applications.order_by('date_submitted')
         assert len(apps) == 2
 
         application_diff = application_difference(apps[0], apps[1])

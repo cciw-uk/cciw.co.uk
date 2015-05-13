@@ -151,15 +151,15 @@ def applications(request):
         'camps': [i.camp for i in user.invitation_set.filter(camp__year=common.get_thisyear())]
     }
 
-    finished_applications = user.application_set\
-        .filter(finished=True)\
-        .order_by('-date_submitted')
+    finished_applications = (user.applications
+                             .filter(finished=True)
+                             .order_by('-date_submitted'))
     # A NULL date_submitted means they never pressed save, so there is no point
     # re-editing, so we ignore them.
-    unfinished_applications = user.application_set\
-        .filter(finished=False)\
-        .exclude(date_submitted__isnull=True)\
-        .order_by('-date_submitted')
+    unfinished_applications = (user.applications
+                               .filter(finished=False)
+                               .exclude(date_submitted__isnull=True)
+                               .order_by('-date_submitted'))
     has_thisyears_app = thisyears_applications(user).exists()
     has_completed_app = thisyears_applications(user).filter(finished=True).exists()
 

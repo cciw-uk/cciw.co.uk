@@ -28,7 +28,7 @@ def thisyears_applications(user):
     apply to 'this year', i.e. to camps still in the future.
     """
     future_camps = Camp.objects.filter(start_date__gte=date.today())
-    apps = user.application_set.all()
+    apps = user.applications.all()
     future_camp = None
     try:
         future_camp = future_camps[0]

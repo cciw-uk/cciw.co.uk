@@ -71,9 +71,9 @@ def send_application_emails(request, application):
             previous_app = None
             if previous_camp.invitation_set.filter(officer=officer).exists():
                 try:
-                    previous_app = officer.application_set.filter(date_submitted__lte=previous_camp.start_date,
-                                                                  date_submitted__gte=previous_camp.start_date + timedelta(-365),
-                                                                  finished=True)[0]
+                    previous_app = officer.applications.filter(date_submitted__lte=previous_camp.start_date,
+                                                               date_submitted__gte=previous_camp.start_date + timedelta(-365),
+                                                               finished=True)[0]
                 except IndexError:
                     pass
             if previous_app is not None:
