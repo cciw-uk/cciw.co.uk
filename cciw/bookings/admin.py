@@ -286,7 +286,7 @@ class BookingAdmin(admin.ModelAdmin):
         # saved.
         manual_amount = form.cleaned_data.get('manual_payment_amount', None)
         if manual_amount:
-            obj.account.manualpayment_set.create(
+            obj.account.manual_payments.create(
                 amount=manual_amount,
                 payment_type=int(form.cleaned_data['manual_payment_payment_type']))
 

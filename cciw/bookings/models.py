@@ -911,7 +911,6 @@ class ManualPaymentManager(models.Manager):
 
 class ManualPaymentBase(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
-    account = models.ForeignKey(BookingAccount)
     created = models.DateTimeField(default=timezone.now)
     payment_type = models.PositiveSmallIntegerField(choices=MANUAL_PAYMENT_CHOICES,
                                                     default=MANUAL_PAYMENT_CHEQUE)
@@ -930,12 +929,14 @@ class ManualPaymentBase(models.Model):
 
 
 class ManualPayment(ManualPaymentBase):
+    account = models.ForeignKey(BookingAccount, related_name='manual_payments')
 
     def __str__(self):
         return "Manual payment of £%s from %s" % (self.amount, self.account)
 
 
 class RefundPayment(ManualPaymentBase):
+    account = models.ForeignKey(BookingAccount, related_name='refund_payments')
 
     def __str__(self):
         return "Refund payment of £%s to %s" % (self.amount, self.account)

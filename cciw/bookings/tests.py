@@ -570,8 +570,8 @@ class TestEditPlaceAdmin(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin,
         self.assertContains(response, 'A confirmation email has been sent')
         booking = Booking.objects.get()
         self.assertEqual(booking.created_online, False)
-        self.assertEqual(booking.account.manualpayment_set.count(), 1)
-        mp = booking.account.manualpayment_set.get()
+        self.assertEqual(booking.account.manual_payments.count(), 1)
+        mp = booking.account.manual_payments.get()
         self.assertEqual(mp.payment_type, MANUAL_PAYMENT_CHEQUE)
         self.assertEqual(mp.amount, Decimal('100'))
 
