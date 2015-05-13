@@ -42,7 +42,7 @@
             {% endif %}
           </td>
           <td class="postMessage" id="id{{ post.id }}">
-            {% if post.subject %}<div class="postSubject">{{ post.subject }}</div>{% endif %}
+            {% if post.subject and post.subject != topic.subject %}<div class="postSubject">{{ post.subject }}</div>{% endif %}
             {{ post.message|bb2html }}
           </td>
         </tr>
