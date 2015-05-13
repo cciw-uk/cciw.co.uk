@@ -42,8 +42,6 @@ or
 $ ./manage.py test --settings=cciw.settings_tests cciw.cciwmain.tests cciw.bookings.tests cciw.officers.tests
 
 
-
-
 Components
 ----------
 
@@ -62,7 +60,6 @@ The major components of the site are:
    Used by a few people to add camp information, for example. Also used by
    booking secretary to add/manage information about bookings, and various other
    staff functions.
-
 
 5) Leaders and officers.
 
@@ -96,23 +93,19 @@ Because of the above components, there are 3 separate login systems:
   on BookingAccount.
 
 
-Project history
----------------
+Layout
+------
 
-The first evolution of the project had a large models.py (cciw.cciwmain.models)
-that was split into sub modules. This has now been re-organised into
-cciw.cciwmain (camp and camp site information, and other core website
-functionality), cciw.forums and cciw.sitecontent. cciw.officers and
-cciw.bookings are newer and were written as separate apps from the start.
+The project uses an old style layout, with all the apps inside the 'cciw'
+module.
 
-Although the apps have been mainly separated, there are dependencies between
-them, and places where they have not been separated.
+Some of the apps do not have their own views, especially the forums, because of
+the connections between different models. So a lot of view functions are in
+cciw.cciwmain.views.
 
-- almost all apps use cciw.cciwmain.models.Camp, and other common functionality
-  found in cciwmain
-- tests for forums and sitecontent remain in cciwmain. This is partly because
-  cciwmain.views uses forums.views.
-- test fixtures are re-used by different apps.
+The 'officers' and 'bookings' apps are structured in a more obvious way and are
+more separated than the other apps, although there are still strong dependencies
+between apps.
 
 
 Other notes
