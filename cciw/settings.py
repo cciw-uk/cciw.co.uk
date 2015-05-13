@@ -164,6 +164,18 @@ PASSWORD_HASHERS = (
 
 # == TEMPLATES ==
 
+TEMPLATE_CONTEXT_PROCESSORS = [  # backwards compat for django-wiki
+    'django.core.context_processors.request',  # for django-wiki
+    'django.contrib.auth.context_processors.auth',
+    'django.template.context_processors.media',
+    'django.template.context_processors.static',
+    'django.template.context_processors.request',
+    'django.template.context_processors.tz',
+    "django.contrib.messages.context_processors.messages",
+    'cciw.cciwmain.common.standard_processor',
+    'sekizai.context_processors.sekizai',
+] + ([] if DEBUG else ['django.core.context_processors.debug'])
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -172,16 +184,7 @@ TEMPLATES = [
         ],
         'APP_DIRS': True,
         'OPTIONS': {
-            'context_processors': [
-                'django.contrib.auth.context_processors.auth',
-                'django.template.context_processors.media',
-                'django.template.context_processors.static',
-                'django.template.context_processors.request',
-                'django.template.context_processors.tz',
-                "django.contrib.messages.context_processors.messages",
-                'cciw.cciwmain.common.standard_processor',
-                'sekizai.context_processors.sekizai',
-            ] + ([] if DEBUG else ['django.core.context_processors.debug']),
+            'context_processors': TEMPLATE_CONTEXT_PROCESSORS
         },
     },
 ]
