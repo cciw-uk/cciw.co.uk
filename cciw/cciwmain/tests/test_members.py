@@ -29,10 +29,10 @@ NEW_MEMBER_EMAIL = 'new_member@test.com'
 NEW_MEMBER_USERNAME = 'new_member'
 NEW_MEMBER_PASSWORD = 'mypassword'
 
-MEMBER_ADMIN_URL = reverse("cciwmain.memberadmin.preferences")
-MEMBER_SIGNUP = reverse("cciwmain.memberadmin.signup")
+MEMBER_ADMIN_URL = reverse("cciw-cciwmain-members_preferences")
+MEMBER_SIGNUP = reverse("cciw-cciwmain-members_signup")
 
-NEW_PASSWORD_URL = reverse("cciwmain.memberadmin.help_logging_in")
+NEW_PASSWORD_URL = reverse("cciw-cciwmain-members_help_logging_in")
 
 
 def _get_file_size(path):
@@ -274,14 +274,14 @@ class MemberLists(TestCase):
         init_query_caches()
 
     def test_index(self):
-        resp = self.client.get(reverse('cciwmain.members.index'))
+        resp = self.client.get(reverse('cciw-cciwmain-members_index'))
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp['Content-Type'].startswith('text/html'))
         self.assertContains(resp, TEST_MEMBER_USERNAME)
 
     def test_atom(self):
         # Just test for no error
-        resp = self.client.get(reverse('cciwmain.members.index'), {'format': 'atom'})
+        resp = self.client.get(reverse('cciw-cciwmain-members_index'), {'format': 'atom'})
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp['Content-Type'].startswith('application/atom+xml'))
         self.assertContains(resp, TEST_MEMBER_USERNAME)
@@ -293,11 +293,11 @@ class MemberLists(TestCase):
 
         from cciw.forums.views.members import index
 
-        request = self.factory.get(reverse('cciwmain.members.index'))
+        request = self.factory.get(reverse('cciw-cciwmain-members_index'))
         with self.assertNumQueries(FuzzyInt(1, 4)):
             index(request).render()
 
-        request = self.factory.get(reverse('cciwmain.members.index'), {'format': 'atom'})
+        request = self.factory.get(reverse('cciw-cciwmain-members_index'), {'format': 'atom'})
         with self.assertNumQueries(1):
             index(request)
 
@@ -315,11 +315,11 @@ class SendMessage(TestCase):
         self.other_member.messages_received.all().delete()
 
     def _send_msg_page(self):
-        return reverse("cciwmain.members.send_message",
+        return reverse("cciw-cciwmain-members_send_message",
                        kwargs={'user_name': self.member.user_name})
 
     def _leave_msg_page(self):
-        return reverse("cciwmain.members.send_message",
+        return reverse("cciw-cciwmain-members_send_message",
                        kwargs={'user_name': self.other_member.user_name})
 
     def test_send_page_get(self):
@@ -399,12 +399,12 @@ class MessageLists(TestCase):
             qs = {'page': str(page)}
         else:
             qs = {}
-        return self.client.get(reverse("cciwmain.members.inbox",
+        return self.client.get(reverse("cciw-cciwmain-members_inbox",
                                        kwargs={'user_name': TEST_MEMBER_USERNAME}),
                                qs)
 
     def _get_archived(self):
-        return self.client.get(reverse("cciwmain.members.archived_messages",
+        return self.client.get(reverse("cciw-cciwmain-members_archived_messages",
                                        kwargs={'user_name': TEST_MEMBER_USERNAME}))
 
     def test_empty_inbox(self):
@@ -461,7 +461,7 @@ class MessageLists(TestCase):
         self.assertTrue(len(checkboxes) == inbox_count)
 
         # Archive
-        resp2 = self.client.post(reverse("cciwmain.members.inbox",
+        resp2 = self.client.post(reverse("cciw-cciwmain-members_inbox",
                                          kwargs={'user_name': TEST_MEMBER_USERNAME}),
                                  {checkboxes[0].attrs['name']: '1',
                                   'archive': '1'})
@@ -479,7 +479,7 @@ class MessageLists(TestCase):
         self.assertTrue(len(checkboxes) == inbox_count)
 
         # Delete
-        resp2 = self.client.post(reverse("cciwmain.members.inbox",
+        resp2 = self.client.post(reverse("cciw-cciwmain-members_inbox",
                                          kwargs={'user_name': TEST_MEMBER_USERNAME}),
                                  {checkboxes[0].attrs['name']: '1',
                                   'delete': '1'})
@@ -505,7 +505,7 @@ class MessageLists(TestCase):
         self.assertTrue(len(checkboxes) == archived_count)
 
         # Move to inbox
-        resp2 = self.client.post(reverse("cciwmain.members.archived_messages",
+        resp2 = self.client.post(reverse("cciw-cciwmain-members_archived_messages",
                                          kwargs={'user_name': TEST_MEMBER_USERNAME}),
                                  {checkboxes[0].attrs['name']: '1',
                                   'inbox': '1'})
@@ -527,7 +527,7 @@ class MessageLists(TestCase):
         self.assertTrue(len(checkboxes) == 1)
 
         # Delete
-        resp2 = self.client.post(reverse("cciwmain.members.inbox",
+        resp2 = self.client.post(reverse("cciw-cciwmain-members_inbox",
                                          kwargs={'user_name': TEST_MEMBER_USERNAME})
                                  + "?page=2",
                                  {checkboxes[0].attrs['name']: '1',
@@ -541,7 +541,7 @@ class MemberPosts(TestCase):
     fixtures = ['basic.json', 'test_members.json', 'basic_topic.json']
 
     def test_index(self):
-        resp = self.client.get(reverse('cciwmain.members.posts',
+        resp = self.client.get(reverse('cciw-cciwmain-members_posts',
                                        kwargs={'user_name': TEST_MEMBER_USERNAME}))
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp['Content-Type'].startswith('text/html'))
@@ -550,7 +550,7 @@ class MemberPosts(TestCase):
 
     def test_atom(self):
         # Just test for no error
-        resp = self.client.get(reverse('cciwmain.members.posts',
+        resp = self.client.get(reverse('cciw-cciwmain-members_posts',
                                        kwargs={'user_name': TEST_MEMBER_USERNAME}),
                                {'format': 'atom'})
         self.assertEqual(resp.status_code, 200)

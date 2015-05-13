@@ -73,7 +73,7 @@ class ContactUsFormView(AjaxFormValidation, ContactUsBase):
                     form.cleaned_data['name'],
                     form.cleaned_data['message']
                 )
-                return HttpResponseRedirect(reverse('cciwmain.misc.contact_us_done'))
+                return HttpResponseRedirect(reverse('cciw-cciwmain-contact_us_done'))
         else:
             form = self.form_class(initial=self.get_initial())
         return self.render({'form': form})

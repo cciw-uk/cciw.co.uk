@@ -716,7 +716,7 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
                     ref.save()
                     # Send e-mails
                     send_leaders_reference_email(obj)
-                    return HttpResponseRedirect(reverse('cciw.officers.views.create_reference_thanks'))
+                    return HttpResponseRedirect(reverse('cciw-officers-create_reference_thanks'))
             else:
                 initial_data = initial_reference_form_data(ref, prev_ref_form)
                 if instance is not None:
@@ -860,7 +860,7 @@ def correct_email(request):
     c = {}
     try:
         username, new_email = signing.loads(request.GET.get('t', ''),
-                                            salt="cciw.officers.views.correct_email",
+                                            salt="cciw-officers-correct_email",
                                             max_age=60 * 60 * 24 * 10)  # 10 days
     except signing.BadSignature:
         c['message'] = ("The URL was invalid. Please ensure you copied the URL from the e-mail correctly, "
@@ -879,7 +879,7 @@ def correct_application(request):
     c = {}
     try:
         application_id, email = signing.loads(request.GET.get('t', ''),
-                                              salt="cciw.officers.views.correct_application",
+                                              salt="cciw-officers-correct_application",
                                               max_age=60 * 60 * 24 * 10)  # 10 days
     except signing.BadSignature:
         c['message'] = ("The URL was invalid. Please ensure you copied the URL from the e-mail correctly, "
@@ -1357,7 +1357,7 @@ def booking_secretary_reports(request, year=None):
 
     export_start = datetime(year - 1, 11, 1)  # November previous year
     export_end = datetime(year, 10, 31)  # November this year
-    export_data_link = (reverse('cciw.officers.views.export_payment_data') +
+    export_data_link = (reverse('cciw-officers-export_payment_data') +
                         "?start=%s&end=%s" % (
                             export_start.strftime(EXPORT_PAYMENT_DATE_FORMAT),
                             export_end.strftime(EXPORT_PAYMENT_DATE_FORMAT)

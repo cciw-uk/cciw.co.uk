@@ -387,7 +387,7 @@ def get_member_href(user_name):
         # will make it die.
         return ''
     else:
-        return reverse('cciwmain.members.detail', kwargs={'user_name': user_name})
+        return reverse('cciw-cciwmain-members_detail', kwargs={'user_name': user_name})
 
 
 def get_member_link(user_name):

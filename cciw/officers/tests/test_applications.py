@@ -57,7 +57,7 @@ class PersonalApplicationList(TestCase):
 
     def setUp(self):
         self.client.login(username=OFFICER_USERNAME, password=OFFICER_PASSWORD)
-        self.url = reverse('cciw.officers.views.applications')
+        self.url = reverse('cciw-officers-applications')
         self.user = User.objects.get(username=OFFICER_USERNAME)
         self.user.application_set.all().delete()
         # Set Camps so that one is in the future, and one in the past,

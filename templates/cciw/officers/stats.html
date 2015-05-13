@@ -32,15 +32,15 @@
              var officer_list_data = {{ stat.officer_list_data|jsonify }};
              $.plot(placeholder_id,
                     [
-                        {label: "<a href='{% url "cciw.officers.views.officer_list" year=stat.camp.year number=stat.camp.number %}' target='_blank'>Officer list</a>",
+                        {label: "<a href='{% url "cciw-officers-officer_list" year=stat.camp.year number=stat.camp.number %}' target='_blank'>Officer list</a>",
                          data: officer_list_data},
-                        {label: "<a href='{% url "cciw.officers.views.manage_crbs" year=year %}?camp={{ stat.camp.number }}' target='_blank'>Any CRBs</a>",
+                        {label: "<a href='{% url "cciw-officers-manage_crbs" year=year %}?camp={{ stat.camp.number }}' target='_blank'>Any CRBs</a>",
                          data: all_crb_dates_data},
                         {label: "Up-to-date CRBs",
                          data: valid_crb_dates_data},
-                        {label: "<a href='{% url "cciw.officers.views.manage_applications" year=stat.camp.year number=stat.camp.number %}' target='_blank'>Applications</a>",
+                        {label: "<a href='{% url "cciw-officers-manage_applications" year=stat.camp.year number=stat.camp.number %}' target='_blank'>Applications</a>",
                          data: app_dates_data},
-                        {label: "<a href='{% url "cciw.officers.views.manage_references" year=stat.camp.year number=stat.camp.number %}' target='_blank'>References</a> \u00F7 2",
+                        {label: "<a href='{% url "cciw-officers-manage_references" year=stat.camp.year number=stat.camp.number %}' target='_blank'>References</a> \u00F7 2",
                          data: ref_dates_data}
                     ],
                     { xaxis: { mode: "time",

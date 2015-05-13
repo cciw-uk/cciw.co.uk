@@ -5,7 +5,7 @@ to use the online booking system at {{ domain }}.
 Please go to the following page to confirm that your email address
 is valid and to continue the booking process.
 
-{{ protocol }}://{{ domain }}{% url 'cciw.bookings.views.verify_email_and_start' account_id=account_id token=token %}
+{{ protocol }}://{{ domain }}{% url 'cciw-bookings-verify_email_and_start' account_id=account_id token=token %}
 
 If you have any problems, please email the webmaster at webmaster@cciw.co.uk
 

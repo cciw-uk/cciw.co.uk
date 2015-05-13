@@ -269,7 +269,7 @@ class ApplicationAdmin(admin.ModelAdmin):
     def _redirect(self, request, response):
         if '_continue' not in request.POST and response.has_header("Location"):
             location = request.GET.get('_redirect_to',
-                                       urlresolvers.reverse('cciw.officers.views.applications'))
+                                       urlresolvers.reverse('cciw-officers-applications'))
             response["Location"] = location
         return response
 

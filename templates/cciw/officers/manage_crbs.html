@@ -6,7 +6,7 @@
    function CRBFormSent(officerId) {
        jQuery.ajax({
            type: "POST",
-           url: "{% url 'cciw.officers.views.mark_crb_sent' %}",
+           url: "{% url 'cciw-officers-mark_crb_sent' %}",
            data: "officer_id=" + officerId.toString(),
            dataType: 'json',
            success: function(data) {
@@ -35,7 +35,7 @@
                    // Delete server side
                    jQuery.ajax({
                        type: "POST",
-                       url: "{% url 'cciw.officers.views.undo_mark_crb_sent' %}",
+                       url: "{% url 'cciw-officers-undo_mark_crb_sent' %}",
                        data: "crbformlog_id=" + undoIdList.pop().toString(),
                        dataType: 'json'
                    });
@@ -56,7 +56,7 @@
    }
 
    function alertLeadersCrbConsentCheck(applicationId) {
-       window.open("{% url 'cciw.officers.views.crb_consent_problem' %}?application_id=" + applicationId.toString(),
+       window.open("{% url 'cciw-officers-crb_consent_problem' %}?application_id=" + applicationId.toString(),
                    '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
 
    }
@@ -199,7 +199,7 @@
             >
           <td>{{ officer.first_name }} {{ officer.last_name }}</td>
           <td>{% for camp in officer.temp.camps %}
-            <a href="{% url 'cciw.officers.views.officer_list' year=camp.year number=camp.number %}" rel="external">{{ camp.number }}</a>{% if not forloop.last %}, {% endif %}
+            <a href="{% url 'cciw-officers-officer_list' year=camp.year number=camp.number %}" rel="external">{{ camp.number }}</a>{% if not forloop.last %}, {% endif %}
           {% endfor %}
           </td>
           <td>{% if officer.temp.has_application_form %}<img src="{% static "admin/img/icon-yes.gif" %}">

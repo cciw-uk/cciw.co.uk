@@ -27,7 +27,7 @@
       {% endwith %}
     </div>
     <div class="actionbutton">
-      <a href="{% url 'cciw.bookings.views.account_details' %}" class="bigaction">Update details</a>
+      <a href="{% url 'cciw-bookings-account_details' %}" class="bigaction">Update details</a>
     </div>
   </div>
 
@@ -58,7 +58,7 @@
         {% endwith %}
       </div>
       <div class="actionbutton">
-        <a href="{% url 'cciw.bookings.views.list_bookings' %}" class="bigaction">Pay</a>
+        <a href="{% url 'cciw-bookings-list_bookings' %}" class="bigaction">Pay</a>
       </div>
     </div>
   {% endif %}
@@ -75,7 +75,7 @@
         {% endwith %}
       </div>
       <div class="actionbutton">
-        <a href="{% url 'cciw.bookings.views.list_bookings' %}" class="bigaction">Review and book</a>
+        <a href="{% url 'cciw-bookings-list_bookings' %}" class="bigaction">Review and book</a>
       </div>
     </div>
   {% endif %}
@@ -91,7 +91,7 @@
   {% if not confirmed_places and not unconfirmed_places and not cancelled_places and not basket_or_shelf %}
     <div class="actionsplit">
       <div class="actionbutton">
-        <a href="{% url 'cciw.bookings.views.add_place' %}" class="bigaction">Add new booking</a>
+        <a href="{% url 'cciw-bookings-add_place' %}" class="bigaction">Add new booking</a>
       </div>
       <div class="actioninfo">
         <p>You do not have any bookings entered for this year. Press the button to begin.</p>
@@ -102,7 +102,7 @@
 
     <div class="actionsplit">
       <div class="actionbutton">
-        <a href="{% url 'cciw.bookings.views.add_place' %}" class="bigaction">Add new booking</a>
+        <a href="{% url 'cciw-bookings-add_place' %}" class="bigaction">Add new booking</a>
       </div>
       <div class="actioninfo">
         <p>Press the button and enter camper details to book another place on camp.</p>
@@ -117,7 +117,7 @@
   {% else %}
     <div class="actionsplit">
       <div class="actionbutton">
-        <a class="bigaction" href="{% url 'cciw.bookings.views.pay' %}">Pay</a>
+        <a class="bigaction" href="{% url 'cciw-bookings-pay' %}">Pay</a>
       </div>
       <div class="actioninfo">
         <p>Your total balance is: £{{ balance_full }}</p>

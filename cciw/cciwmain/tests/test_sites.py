@@ -21,6 +21,6 @@ class SitePage(TestCase):
 
     def test_site_index_page(self):
         HtmlChunk.objects.get_or_create(name="sites_general")
-        response = self.client.get(reverse('cciwmain.sites.index'))
+        response = self.client.get(reverse('cciw-cciwmain-sites_index'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Llys Andreas, Barmouth")

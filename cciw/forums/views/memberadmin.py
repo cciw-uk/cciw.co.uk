@@ -72,7 +72,7 @@ def create_user(user_name, password1, password2):
 def email_hash(email):
     """Gets a hash of an email address, to be used in the signup process"""
     # Use every other character to make it shorter and friendlier
-    return salted_hmac("cciw.cciwmain.memberadmin.signupemail", email).hexdigest()[::2]
+    return salted_hmac("cciw.cciw-cciwmain-members_signupemail", email).hexdigest()[::2]
 
 
 def email_address_used(email):
@@ -106,7 +106,7 @@ def validate_email_and_hash(email, hash):
 def email_and_username_hash(email, user_name):
     """Gets a hash of an email address + user_name"""
     # Use every other character to make it shorter and friendlier
-    return salted_hmac("cciw.cciwmain.memberadmin.changeemail", email + ":" + user_name).hexdigest()[::2]
+    return salted_hmac("cciw.cciw-cciwmain-members_changeemail", email + ":" + user_name).hexdigest()[::2]
 
 
 def validate_email_username_and_hash(email, user_name, hash):
@@ -175,7 +175,7 @@ entering your e-mail addess and asking for a new password and you can
 safely ignore this e-mail.
 
 """ % {'domain': common.get_current_domain(),
-       'url': reverse("cciwmain.memberadmin.reset_password",
+       'url': reverse("cciw-cciwmain-members_reset_password",
                       kwargs={'uid': member.id, 'token': token}),
        },
                    settings.SERVER_EMAIL, [member.email])
@@ -352,7 +352,7 @@ def reset_password(request, uid=None, token=""):
         set_member_session(request, member)
         member.last_seen = timezone.now()
         member.save()
-        return HttpResponseRedirect(reverse('cciwmain.memberadmin.change_password'))
+        return HttpResponseRedirect(reverse('cciw-cciwmain-members_change_password'))
     else:
         return render(request, 'cciw/members/reset_password_failed.html', {'title': 'Reset password'})
 
@@ -440,7 +440,7 @@ class Preferences(CciwBaseView, AjaxFormValidation):
                     except imageutils.ValidationError as e:
                         c['image_error'] = e.args[0]
                         return self.render(c)
-                return HttpResponseRedirect(reverse("cciwmain.memberadmin.preferences"))
+                return HttpResponseRedirect(reverse("cciw-cciwmain-members_preferences"))
         else:
             form = self.form_class(instance=current_member)
             c['form'] = form

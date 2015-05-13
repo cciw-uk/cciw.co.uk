@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core import mail
 
-CONTACT_US_URL = reverse("cciwmain.misc.contact_us")
+CONTACT_US_URL = reverse("cciw-cciwmain-contact_us")
 
 
 class ContactUsPage(TestCase):

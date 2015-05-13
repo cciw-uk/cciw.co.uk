@@ -60,7 +60,7 @@ class AllNewsPage(TestCase):
         """
         Test the number of queries (HTML and Atom)
         """
-        path = reverse('cciwmain.site-news-index')
+        path = reverse('cciw-cciwmain-site_news_index')
         member = Member.objects.get(user_name=TEST_MEMBER_USERNAME)
         forum = Forum.objects.get(location='news/')
         factory = RequestFactory()

@@ -248,7 +248,7 @@ def booking_account_required(view_func):
     def view(request, *args, **kwargs):
         ensure_booking_acount_attr(request)
         if request.booking_account is None:
-            return HttpResponseRedirect(reverse('cciw.bookings.views.not_logged_in'))
+            return HttpResponseRedirect(reverse('cciw-bookings-not_logged_in'))
         return view_func(request, *args, **kwargs)
     return view
 
@@ -338,11 +338,11 @@ def next_step(account):
     if account.has_account_details():
         bookings = account.bookings.for_year(get_thisyear())
         if (bookings.in_basket() | bookings.on_shelf() | bookings.booked()).exists():
-            return HttpResponseRedirect(reverse('cciw.bookings.views.account_overview'))
+            return HttpResponseRedirect(reverse('cciw-bookings-account_overview'))
         else:
-            return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
+            return HttpResponseRedirect(reverse('cciw-bookings-add_place'))
     else:
-        return HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
+        return HttpResponseRedirect(reverse('cciw-bookings-account_details'))
 
 
 class BookingLogInBase(CciwBaseView):
@@ -372,7 +372,7 @@ class BookingStart(BookingLogInBase):
                                                             name=None,
                                                             post_code=None)
                 send_verify_email(self.request, account)
-                return HttpResponseRedirect(reverse_lazy('cciw.bookings.views.email_sent'))
+                return HttpResponseRedirect(reverse_lazy('cciw-bookings-email_sent'))
         else:
             form = self.form_class()
 
@@ -384,7 +384,7 @@ class BookingEmailSent(BookingLogInBase):
 
 
 def verify_email(request, account_id, token, action):
-    fail = lambda: HttpResponseRedirect(reverse('cciw.bookings.views.verify_email_failed'))
+    fail = lambda: HttpResponseRedirect(reverse('cciw-bookings-verify_email_failed'))
     try:
         account_id = base36_to_int(account_id)
     except ValueError:
@@ -412,7 +412,7 @@ def verify_email_and_start(request, account_id, token):
 
         if last_login is not None and (
                 (now - last_login) > timedelta(30 * 6)):  # six months
-            resp = HttpResponseRedirect(reverse('cciw.bookings.views.account_details'))
+            resp = HttpResponseRedirect(reverse('cciw-bookings-account_details'))
             set_booking_account_cookie(resp, account)
             messages.info(request, "Welcome back! Please check and update your account details")
             return resp
@@ -428,7 +428,7 @@ def verify_email_and_start(request, account_id, token):
 
 def verify_email_and_pay(request, account_id, token):
     def action(account):
-        resp = HttpResponseRedirect(reverse('cciw.bookings.views.pay'))
+        resp = HttpResponseRedirect(reverse('cciw-bookings-pay'))
         set_booking_account_cookie(resp, account)
         return resp
 
@@ -505,7 +505,7 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
                 form.save()
 
                 messages.info(self.request, 'Details for "%s" were saved successfully' % form.instance.name)
-                return HttpResponseRedirect(reverse('cciw.bookings.views.list_bookings'))
+                return HttpResponseRedirect(reverse('cciw-bookings-list_bookings'))
         else:
             form = self.form_class(instance=booking)
 
@@ -731,7 +731,7 @@ class BookingListBookings(CciwBaseView):
 
         if request.method == "POST":
             if 'add_another' in request.POST:
-                return HttpResponseRedirect(reverse('cciw.bookings.views.add_place'))
+                return HttpResponseRedirect(reverse('cciw-bookings-add_place'))
 
             places = basket_bookings + shelf_bookings
 
@@ -750,7 +750,7 @@ class BookingListBookings(CciwBaseView):
                 place.delete()
 
             def edit(place):
-                return HttpResponseRedirect(reverse('cciw.bookings.views.edit_place',
+                return HttpResponseRedirect(reverse('cciw-bookings-edit_place',
                                                     kwargs={'id': str(place.id)}))
 
             for k in request.POST.keys():
@@ -781,7 +781,7 @@ class BookingListBookings(CciwBaseView):
                 else:
                     if book_basket_now(basket_bookings):
                         messages.info(request, "Places booked!")
-                        return HttpResponseRedirect(reverse('cciw.bookings.views.pay'))
+                        return HttpResponseRedirect(reverse('cciw-bookings-pay'))
                     else:
                         messages.error(request, "These places cannot be booked for the reasons "
                                        "given below.")
@@ -855,8 +855,8 @@ def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amou
         "invoice": "%s-%s-%s" % (account.id, balance,
                                  timezone.now()),  # We don't need this, but must be unique
         "notify_url": "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
-        "return_url": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_done')),
-        "cancel_return": "%s://%s%s" % (protocol, domain, reverse('cciw.bookings.views.pay_cancelled')),
+        "return_url": "%s://%s%s" % (protocol, domain, reverse('cciw-bookings-pay_done')),
+        "cancel_return": "%s://%s%s" % (protocol, domain, reverse('cciw-bookings-pay_cancelled')),
         "custom": "account:%s;" % str(account.id),
         "currency_code": "GBP",
         "no_note": "1",
@@ -935,7 +935,7 @@ class BookingAccountOverview(CciwBaseView):
 
     def handle(self, request):
         if 'logout' in request.POST:
-            response = HttpResponseRedirect(reverse('cciw.bookings.views.index'))
+            response = HttpResponseRedirect(reverse('cciw-bookings-index'))
             unset_booking_account_cookie(response)
             return response
 

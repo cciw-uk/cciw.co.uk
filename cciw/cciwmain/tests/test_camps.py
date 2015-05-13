@@ -57,7 +57,7 @@ class ThisyearPage(TestCase):
             c.leaders.add(p)
 
         with self.assertNumQueries(FuzzyInt(1, 6)):
-            resp = self.client.get(reverse('cciw.cciwmain.views.camps.thisyear'))
+            resp = self.client.get(reverse('cciw-cciwmain-thisyear'))
 
         for c in Camp.objects.filter(year=y):
             self.assertContains(resp, c.get_absolute_url())

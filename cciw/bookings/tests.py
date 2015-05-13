@@ -107,7 +107,7 @@ class LogInMixin(object):
         if hasattr(self, '_logged_in'):
             return
         # Easiest way is to simulate what the user actually has to do
-        self.client.post(reverse('cciw.bookings.views.start'),
+        self.client.post(reverse('cciw-bookings-start'),
                          {'email': self.email})
         url, path, querydata = read_email_url(mail.outbox[-1], "https?://.*/booking/v/.*")
         mail.outbox.pop()
@@ -158,11 +158,11 @@ class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
             data.update(extra)
 
         # Sanity check:
-        resp0 = self.client.get(reverse('cciw.bookings.views.add_place'))
+        resp0 = self.client.get(reverse('cciw-bookings-add_place'))
         self.assertEqual(resp0.status_code, 200)
-        resp = self.client.post(reverse('cciw.bookings.views.add_place'), data)
+        resp = self.client.post(reverse('cciw-bookings-add_place'), data)
         self.assertEqual(resp.status_code, 302)
-        newpath = reverse('cciw.bookings.views.list_bookings')
+        newpath = reverse('cciw-bookings-list_bookings')
         self.assertTrue(resp['Location'].endswith(newpath))
 
     def setUp(self):
@@ -181,19 +181,19 @@ class BookingBaseMixin(object):
 class TestBookingIndex(BookingBaseMixin, CreatePricesMixin, CreateCampMixin, TestCase):
 
     def test_show_with_no_prices(self):
-        resp = self.client.get(reverse('cciw.bookings.views.index'))
+        resp = self.client.get(reverse('cciw-bookings-index'))
         self.assertContains(resp, "Prices for %d have not been finalised yet" % self.camp.year)
 
     def test_show_with_prices(self):
         self.add_prices()  # need for booking to be open
-        resp = self.client.get(reverse('cciw.bookings.views.index'))
+        resp = self.client.get(reverse('cciw-bookings-index'))
         self.assertContains(resp, "£100")
         self.assertContains(resp, "£20")  # Deposit price
 
 
 class TestBookingStart(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
-    url = reverse('cciw.bookings.views.start')
+    url = reverse('cciw-bookings-start')
 
     def test_show_form(self):
         resp = self.client.get(self.url)
@@ -231,7 +231,7 @@ class TestBookingStart(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.login(add_account_details=False)
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)
-        newpath = reverse('cciw.bookings.views.account_details')
+        newpath = reverse('cciw-bookings-account_details')
         self.assertTrue(resp['Location'].endswith(newpath))
 
     def test_skip_if_account_details(self):
@@ -239,7 +239,7 @@ class TestBookingStart(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.login()
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)
-        newpath = reverse('cciw.bookings.views.add_place')
+        newpath = reverse('cciw-bookings-add_place')
         self.assertTrue(resp['Location'].endswith(newpath))
 
     def test_skip_if_has_place_details(self):
@@ -247,7 +247,7 @@ class TestBookingStart(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.create_place()
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)
-        self.assertTrue(resp['Location'].endswith(reverse('cciw.bookings.views.account_overview')))
+        self.assertTrue(resp['Location'].endswith(reverse('cciw-bookings-account_overview')))
 
 
 class TestBookingVerify(BookingBaseMixin, TestCase):
@@ -260,7 +260,7 @@ class TestBookingVerify(BookingBaseMixin, TestCase):
         Test the email verification stage when the URL is correct
         """
         # Assumes booking_start works:
-        self.client.post(reverse('cciw.bookings.views.start'),
+        self.client.post(reverse('cciw-bookings-start'),
                          {'email': 'booker@bookers.com'})
         acc = BookingAccount.objects.get(email='booker@bookers.com')
         self.assertTrue(acc.last_login is None)
@@ -268,7 +268,7 @@ class TestBookingVerify(BookingBaseMixin, TestCase):
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         resp = self.client.get(path, querydata)
         self.assertEqual(resp.status_code, 302)
-        newpath = reverse('cciw.bookings.views.account_details')
+        newpath = reverse('cciw-bookings-account_details')
         self.assertTrue(resp['Location'].endswith(newpath))
         acc = BookingAccount.objects.get(email='booker@bookers.com')
         self.assertEqual(str(acc.id),
@@ -282,7 +282,7 @@ class TestBookingVerify(BookingBaseMixin, TestCase):
         account already has name and address
         """
         # Assumes booking_start works:
-        self.client.post(reverse('cciw.bookings.views.start'),
+        self.client.post(reverse('cciw-bookings-start'),
                          {'email': 'booker@bookers.com'})
         b = BookingAccount.objects.get(email='booker@bookers.com')
         b.name = "Joe"
@@ -293,7 +293,7 @@ class TestBookingVerify(BookingBaseMixin, TestCase):
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         resp = self.client.get(path, querydata)
         self.assertEqual(resp.status_code, 302)
-        newpath = reverse('cciw.bookings.views.add_place')
+        newpath = reverse('cciw-bookings-add_place')
         self.assertTrue(resp['Location'].endswith(newpath))
 
     def test_verify_correct_and_has_old_details(self):
@@ -303,7 +303,7 @@ class TestBookingVerify(BookingBaseMixin, TestCase):
         for 'a while'.
         """
         # Assumes booking_start works:
-        self.client.post(reverse('cciw.bookings.views.start'),
+        self.client.post(reverse('cciw-bookings-start'),
                          {'email': 'booker@bookers.com'})
         b = BookingAccount.objects.get(email='booker@bookers.com')
         b.name = "Joe"
@@ -316,7 +316,7 @@ class TestBookingVerify(BookingBaseMixin, TestCase):
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         resp = self.client.get(path, querydata)
         self.assertEqual(resp.status_code, 302)
-        newpath = reverse('cciw.bookings.views.account_details')
+        newpath = reverse('cciw-bookings-account_details')
         self.assertTrue(resp['Location'].endswith(newpath))
         resp2 = self.client.get(path, querydata, follow=True)
         self.assertContains(resp2, "Welcome back")
@@ -327,7 +327,7 @@ class TestBookingVerify(BookingBaseMixin, TestCase):
         Test the email verification stage when the URL is incorrect
         """
         # Assumes booking_start works:
-        self.client.post(reverse('cciw.bookings.views.start'),
+        self.client.post(reverse('cciw-bookings-start'),
                          {'email': 'booker@bookers.com'})
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         badpath = path.replace('-', '-1')
@@ -341,7 +341,7 @@ class TestBookingVerify(BookingBaseMixin, TestCase):
         BookingAccount id
         """
         # Assumes booking_start works:
-        self.client.post(reverse('cciw.bookings.views.start'),
+        self.client.post(reverse('cciw-bookings-start'),
                          {'email': 'booker@bookers.com'})
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         b = BookingAccount.objects.get(email='booker@bookers.com')
@@ -353,7 +353,7 @@ class TestBookingVerify(BookingBaseMixin, TestCase):
 
 class TestAccountDetails(BookingBaseMixin, LogInMixin, TestCase):
 
-    url = reverse('cciw.bookings.views.account_details')
+    url = reverse('cciw-bookings-account_details')
 
     def test_redirect_if_not_logged_in(self):
         resp = self.client.get(self.url)
@@ -387,7 +387,7 @@ class TestAccountDetails(BookingBaseMixin, LogInMixin, TestCase):
 
 class TestAddPlace(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
-    url = reverse('cciw.bookings.views.add_place')
+    url = reverse('cciw-bookings-add_place')
 
     def test_redirect_if_not_logged_in(self):
         resp = self.client.get(self.url)
@@ -436,7 +436,7 @@ class TestAddPlace(BookingBaseMixin, CreatePlaceMixin, TestCase):
         data = self.place_details.copy()
         resp = self.client.post(self.url, data)
         self.assertEqual(resp.status_code, 302)
-        newpath = reverse('cciw.bookings.views.list_bookings')
+        newpath = reverse('cciw-bookings-list_bookings')
         self.assertTrue(resp['Location'].endswith(newpath))
 
         # Did we create it?
@@ -454,14 +454,14 @@ class TestEditPlace(BookingBaseMixin, CreatePlaceMixin, TestCase):
     # Most functionality is shared with the 'add' form, so doesn't need testing separately.
 
     def test_redirect_if_not_logged_in(self):
-        resp = self.client.get(reverse('cciw.bookings.views.edit_place', kwargs={'id': '1'}))
+        resp = self.client.get(reverse('cciw-bookings-edit_place', kwargs={'id': '1'}))
         self.assertEqual(resp.status_code, 302)
 
     def test_show_if_owner(self):
         self.create_place()
         acc = self.get_account()
         b = acc.bookings.all()[0]
-        resp = self.client.get(reverse('cciw.bookings.views.edit_place', kwargs={'id': str(b.id)}))
+        resp = self.client.get(reverse('cciw-bookings-edit_place', kwargs={'id': str(b.id)}))
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "id_save_btn")
 
@@ -470,14 +470,14 @@ class TestEditPlace(BookingBaseMixin, CreatePlaceMixin, TestCase):
         other_account = BookingAccount.objects.create(email='other@mail.com')
         Booking.objects.all().update(account=other_account)
         b = Booking.objects.all()[0]
-        resp = self.client.get(reverse('cciw.bookings.views.edit_place', kwargs={'id': str(b.id)}))
+        resp = self.client.get(reverse('cciw-bookings-edit_place', kwargs={'id': str(b.id)}))
         self.assertEqual(resp.status_code, 404)
 
     def test_incomplete(self):
         self.create_place()
         acc = self.get_account()
         b = acc.bookings.all()[0]
-        resp = self.client.post(reverse('cciw.bookings.views.edit_place', kwargs={'id': str(b.id)}), {})
+        resp = self.client.post(reverse('cciw-bookings-edit_place', kwargs={'id': str(b.id)}), {})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "This field is required")
 
@@ -488,9 +488,9 @@ class TestEditPlace(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
         data = self.place_details.copy()
         data['first_name'] = "A New Name"
-        resp = self.client.post(reverse('cciw.bookings.views.edit_place', kwargs={'id': str(b.id)}), data)
+        resp = self.client.post(reverse('cciw-bookings-edit_place', kwargs={'id': str(b.id)}), data)
         self.assertEqual(resp.status_code, 302)
-        newpath = reverse('cciw.bookings.views.list_bookings')
+        newpath = reverse('cciw-bookings-list_bookings')
         self.assertTrue(resp['Location'].endswith(newpath))
 
         # Did we alter it?
@@ -510,7 +510,7 @@ class TestEditPlace(BookingBaseMixin, CreatePlaceMixin, TestCase):
             b.save()
 
             # Check there is no save button
-            resp = self.client.get(reverse('cciw.bookings.views.edit_place', kwargs={'id': str(b.id)}))
+            resp = self.client.get(reverse('cciw-bookings-edit_place', kwargs={'id': str(b.id)}))
             self.assertNotContains(resp, "id_save_btn")
             # Check for message
             self.assertContains(resp, "can only be changed by an admin.")
@@ -518,7 +518,7 @@ class TestEditPlace(BookingBaseMixin, CreatePlaceMixin, TestCase):
             # Attempt a post
             data = self.place_details.copy()
             data['first_name'] = "A New Name"
-            resp = self.client.post(reverse('cciw.bookings.views.edit_place', kwargs={'id': str(b.id)}), data)
+            resp = self.client.post(reverse('cciw-bookings-edit_place', kwargs={'id': str(b.id)}), data)
             # Check we didn't alter it
             self.assertNotEqual(acc.bookings.all()[0].first_name, "A New Name")
 
@@ -579,7 +579,7 @@ class TestEditPlaceAdmin(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin,
 class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
     # This includes tests for most of the business logic
 
-    url = reverse('cciw.bookings.views.list_bookings')
+    url = reverse('cciw-bookings-list_bookings')
 
     def assert_book_button_enabled(self, response):
         pq = pyquery.PyQuery(response.content)
@@ -837,7 +837,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.create_place()
         resp = self.client.post(self.url, {'add_another': '1'})
         self.assertEqual(302, resp.status_code)
-        newpath = reverse('cciw.bookings.views.add_place')
+        newpath = reverse('cciw-bookings-add_place')
         self.assertTrue(resp['Location'].endswith(newpath))
 
     def test_move_to_shelf(self):
@@ -913,7 +913,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         # Now click it
         resp2 = self.client.post(self.url, {'edit_%s' % b.id: '1'})
         self.assertEqual(resp2.status_code, 302)
-        self.assertTrue(resp2['Location'].endswith(reverse('cciw.bookings.views.edit_place', kwargs={'id': b.id})))
+        self.assertTrue(resp2['Location'].endswith(reverse('cciw-bookings-edit_place', kwargs={'id': b.id})))
 
     def _get_state_token(self, response):
         return re.search(r'name="state_token" value="(.*)"', response.content.decode('utf-8')).groups()[0]
@@ -930,7 +930,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         b = acc.bookings.all()[0]
         self.assertEqual(b.state, BOOKING_BOOKED)
         self.assertEqual(resp2.status_code, 302)
-        self.assertTrue(resp2['Location'].endswith(reverse('cciw.bookings.views.pay')))
+        self.assertTrue(resp2['Location'].endswith(reverse('cciw-bookings-pay')))
 
     def test_book_unbookable(self):
         """
@@ -1070,12 +1070,12 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
 class TestPay(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
-    url = reverse('cciw.bookings.views.list_bookings')
+    url = reverse('cciw-bookings-list_bookings')
 
     def test_balance_empty(self):
         self.login()
         self.add_prices()
-        resp = self.client.get(reverse('cciw.bookings.views.pay'))
+        resp = self.client.get(reverse('cciw-bookings-pay'))
         self.assertContains(resp, '£0.00')
 
     def test_balance_after_booking(self):
@@ -1084,7 +1084,7 @@ class TestPay(BookingBaseMixin, CreatePlaceMixin, TestCase):
         acc = self.get_account()
         acc.bookings.all().update(state=BOOKING_BOOKED)
 
-        resp = self.client.get(reverse('cciw.bookings.views.pay'))
+        resp = self.client.get(reverse('cciw-bookings-pay'))
 
         # 2 deposits
         expected_price = 2 * self.price_deposit
@@ -1093,7 +1093,7 @@ class TestPay(BookingBaseMixin, CreatePlaceMixin, TestCase):
         # Move forward to after the time when just deposits are allowed:
         Camp.objects.update(start_date=date.today() + timedelta(10))
 
-        resp = self.client.get(reverse('cciw.bookings.views.pay'))
+        resp = self.client.get(reverse('cciw-bookings-pay'))
 
         # 2 full price
         expected_price = 2 * self.price_full
@@ -1102,22 +1102,22 @@ class TestPay(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
 class TestPayReturnPoints(BookingBaseMixin, LogInMixin, TestCase):
 
-    url = reverse('cciw.bookings.views.list_bookings')
+    url = reverse('cciw-bookings-list_bookings')
 
     def test_pay_done(self):
         self.login()
-        resp = self.client.get(reverse('cciw.bookings.views.pay_done'))
+        resp = self.client.get(reverse('cciw-bookings-pay_done'))
         self.assertEqual(resp.status_code, 200)
         # Paypal posts to these, check we support that
-        resp = self.client.post(reverse('cciw.bookings.views.pay_done'), {})
+        resp = self.client.post(reverse('cciw-bookings-pay_done'), {})
         self.assertEqual(resp.status_code, 200)
 
     def test_pay_cancelled(self):
         self.login()
-        resp = self.client.get(reverse('cciw.bookings.views.pay_cancelled'))
+        resp = self.client.get(reverse('cciw-bookings-pay_cancelled'))
         self.assertEqual(resp.status_code, 200)
         # Paypal posts to these, check we support that
-        resp = self.client.post(reverse('cciw.bookings.views.pay_cancelled'), {})
+        resp = self.client.post(reverse('cciw-bookings-pay_cancelled'), {})
         self.assertEqual(resp.status_code, 200)
 
 
@@ -1300,21 +1300,21 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
 
     def test_places_json(self):
         self.create_place()
-        resp = self.client.get(reverse('cciw.bookings.views.places_json'))
+        resp = self.client.get(reverse('cciw-bookings-places_json'))
         j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['places'][0]['first_name'], self.place_details['first_name'])
 
     def test_places_json_with_exclusion(self):
         self.create_place()
         acc = self.get_account()
-        resp = self.client.get(reverse('cciw.bookings.views.places_json') +
+        resp = self.client.get(reverse('cciw-bookings-places_json') +
                                ("?exclude=%d" % acc.bookings.all()[0].id))
         j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['places'], [])
 
     def test_places_json_with_bad_exclusion(self):
         self.login()
-        resp = self.client.get(reverse('cciw.bookings.views.places_json') + "?exclude=x")
+        resp = self.client.get(reverse('cciw-bookings-places_json') + "?exclude=x")
         j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['places'], [])
 
@@ -1324,7 +1324,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
         acc.address = '123 Main Street'
         acc.save()
 
-        resp = self.client.get(reverse('cciw.bookings.views.account_json'))
+        resp = self.client.get(reverse('cciw-bookings-account_json'))
         j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['account']['address'], '123 Main Street')
 
@@ -1334,12 +1334,12 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
                                              name="Mr Foo")
 
         self.client.login(username=OFFICER_USERNAME, password=OFFICER_PASSWORD)
-        resp = self.client.get(reverse('cciw.bookings.views.all_accounts_json'))
+        resp = self.client.get(reverse('cciw-bookings-all_accounts_json'))
         self.assertEqual(resp.status_code, 403)
 
         # Now as booking secretary
         self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
-        resp = self.client.get(reverse('cciw.bookings.views.all_accounts_json') + "?id=%d" % acc1.id)
+        resp = self.client.get(reverse('cciw-bookings-all_accounts_json') + "?id=%d" % acc1.id)
         self.assertEqual(resp.status_code, 200)
 
         j = json.loads(resp.content.decode('utf-8'))
@@ -1351,7 +1351,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
                                              post_code="ABC",
                                              name="Mr Foo")
         self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
-        resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
+        resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
                                 {'account': str(acc1.id)})
 
         self.assertEqual(resp.status_code, 200)
@@ -1365,7 +1365,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
         data['state'] = BOOKING_APPROVED
         data['amount_due'] = '100.00'
         data['price_type'] = PRICE_CUSTOM
-        resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
+        resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
                                 data)
 
         j = json.loads(resp.content.decode('utf-8'))
@@ -1390,7 +1390,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
         data['state'] = BOOKING_BOOKED
         data['amount_due'] = '0.00'
         data['price_type'] = PRICE_FULL
-        resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
+        resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
                                 data)
 
         j = json.loads(resp.content.decode('utf-8'))
@@ -1415,7 +1415,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
         data['state'] = BOOKING_CANCELLED
         data['amount_due'] = '0.00'
         data['price_type'] = PRICE_FULL
-        resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
+        resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
                                 data)
 
         j = json.loads(resp.content.decode('utf-8'))
@@ -1428,7 +1428,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
         data['state'] = BOOKING_CANCELLED_FULL_REFUND
         data['amount_due'] = '20.00'
         data['price_type'] = PRICE_FULL
-        resp = self.client.post(reverse('cciw.bookings.views.booking_problems_json'),
+        resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
                                 data)
 
         j = json.loads(resp.content.decode('utf-8'))
@@ -1439,7 +1439,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
 
 class TestAccountOverview(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
-    url = reverse('cciw.bookings.views.account_overview')
+    url = reverse('cciw-bookings-account_overview')
 
     def test_show(self):
         # Book a place and pay
@@ -1488,7 +1488,7 @@ class TestAccountOverview(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
 class TestLogOut(LogInMixin, TestCase):
 
-    url = reverse('cciw.bookings.views.account_overview')
+    url = reverse('cciw-bookings-account_overview')
 
     def test_get(self):
         self.login()
@@ -1501,7 +1501,7 @@ class TestLogOut(LogInMixin, TestCase):
         self.assertEqual(resp.status_code, 302)
 
         # Try accessing a page which is restricted
-        resp2 = self.client.get(reverse('cciw.bookings.views.account_overview'))
+        resp2 = self.client.get(reverse('cciw-bookings-account_overview'))
         self.assertEqual(resp2.status_code, 302)
 
 

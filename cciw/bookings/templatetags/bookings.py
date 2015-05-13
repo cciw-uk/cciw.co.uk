@@ -27,26 +27,26 @@ def bookingbar(context):
          'Go to "Overview" and use the "log out" link if you need to log in as someone else'),
 
         ('account', 'Account details', logged_in,
-         reverse('cciw.bookings.views.account_details'),
+         reverse('cciw-bookings-account_details'),
          msg_need_login),
 
         ('overview', 'Overview', logged_in and has_account_details,
-         reverse('cciw.bookings.views.account_overview'),
+         reverse('cciw-bookings-account_overview'),
          msg_need_account_details),
 
         ('place',
          'Edit camper details' if current_stage == 'place' and 'edit_mode' in context
          else 'Add new booking',
          logged_in and has_account_details,
-         reverse('cciw.bookings.views.add_place'),
+         reverse('cciw-bookings-add_place'),
          msg_need_account_details),
 
         ('list', 'Checkout', logged_in and has_account_details,
-         reverse('cciw.bookings.views.list_bookings'),
+         reverse('cciw-bookings-list_bookings'),
          msg_need_account_details),
 
         ('pay', 'Pay', logged_in and has_account_details,
-         reverse('cciw.bookings.views.pay'),
+         reverse('cciw-bookings-pay'),
          msg_need_account_details),
 
     ]

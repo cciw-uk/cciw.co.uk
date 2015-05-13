@@ -21,7 +21,7 @@ class Site(models.Model):
         return self.short_name
 
     def get_absolute_url(self):
-        return reverse('cciwmain.sites.detail', kwargs=dict(slug=self.slug_name))
+        return reverse('cciw-cciwmain-sites_detail', kwargs=dict(slug=self.slug_name))
 
     def save(self, **kwargs):
         from django.template.defaultfilters import slugify

@@ -151,19 +151,19 @@ been removed, green indicates new information.
 def make_update_email_url(application):
     return 'https://%(domain)s%(path)s?t=%(token)s' % dict(
         domain=common.get_current_domain(),
-        path=reverse('cciw.officers.views.correct_email'),
+        path=reverse('cciw-officers-correct_email'),
         token=signing.dumps([application.officer.username,
                              application.address_email],
-                            salt="cciw.officers.views.correct_email"))
+                            salt="cciw-officers-correct_email"))
 
 
 def make_update_application_url(application, email):
     return 'https://%(domain)s%(path)s?t=%(token)s' % dict(
         domain=common.get_current_domain(),
-        path=reverse('cciw.officers.views.correct_application'),
+        path=reverse('cciw-officers-correct_application'),
         token=signing.dumps([application.id,
                              email],
-                            salt="cciw.officers.views.correct_application"))
+                            salt="cciw-officers-correct_application"))
 
 
 def send_email_change_emails(officer, application):
@@ -213,7 +213,7 @@ def make_ref_form_url(ref_id, prev_ref_id):
     if prev_ref_id is None:
         prev_ref_id = ""
     return "https://%s%s" % (common.get_current_domain(),
-                             reverse('cciw.officers.views.create_reference_form',
+                             reverse('cciw-officers-create_reference_form',
                                      kwargs=dict(ref_id=ref_id,
                                                  prev_ref_id=prev_ref_id,
                                                  hash=make_ref_form_url_hash(ref_id, prev_ref_id))))
@@ -349,7 +349,7 @@ Use the following link to manage this reference:
 
 {link}
 """.format(link="https://www.cciw.co.uk"
-           + reverse('cciw.officers.views.manage_references',
+           + reverse('cciw-officers-manage_references',
                      kwargs=dict(year=camp.year, number=camp.number))
            + "?ref_email=" + urlquote(bounced_email_address))
 

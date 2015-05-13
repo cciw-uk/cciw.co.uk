@@ -27,7 +27,7 @@
     references:</p>
   <ul>
     {% for year in statsyears %}
-      <li><a href="{% url 'cciw.officers.views.stats' year=year %}">Stats {{ year }}</a></li>
+      <li><a href="{% url 'cciw-officers-stats' year=year %}">Stats {{ year }}</a></li>
     {% endfor %}
   </ul>
 

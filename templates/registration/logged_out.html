@@ -1,10 +1,10 @@
 {% extends "admin/base_site.html" %}
-{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'cciw.officers.views.index' %}">Home</a></div>{% endblock %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'cciw-officers-index' %}">Home</a></div>{% endblock %}
 
 {% block content %}
 
   <p>Thanks for spending some quality time with the site today</p>
 
-  <p><a href="{% url 'cciw.officers.views.index' %}">Log in again</a></p>
+  <p><a href="{% url 'cciw-officers-index' %}">Log in again</a></p>
 
 {% endblock %}

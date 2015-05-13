@@ -11,7 +11,7 @@ from cciw.cciwmain import decorators
 
 FORUM_1_YEAR = 2000
 FORUM_1_CAMP_NUMBER = 1
-ADD_POLL_URL = reverse("cciwmain.camps.add_poll",
+ADD_POLL_URL = reverse("cciw-cciwmain-camp_add_poll",
                        kwargs=dict(year=FORUM_1_YEAR, number=FORUM_1_CAMP_NUMBER))
 
 
@@ -80,7 +80,7 @@ class AllTopicsPage(TestCase):
         init_query_caches()
 
     def path(self):
-        return reverse("cciw.forums.views.forums.all_topics")
+        return reverse("cciw-cciwmain-forums_all_topics")
 
     def test_get(self):
         response = self.client.get(self.path())
@@ -272,7 +272,7 @@ class AllPostsPage(TestCase):
         init_query_caches()
 
     def path(self):
-        return reverse("cciw.forums.views.forums.all_posts")
+        return reverse("cciw-cciwmain-forums_all_posts")
 
     def test_get(self):
         response = self.client.get(self.path())
@@ -400,7 +400,7 @@ class CreatePollPage(TestCase):
         p = Poll.objects.get(created_by__user_name=TEST_POLL_CREATOR_USERNAME)
 
         self.client.member_login(TEST_POLL_CREATOR_USERNAME, TEST_POLL_CREATOR_PASSWORD)
-        url = reverse("cciwmain.camps.edit_poll",
+        url = reverse("cciw-cciwmain-camp_edit_poll",
                       kwargs=dict(year=FORUM_1_YEAR,
                                   number=FORUM_1_CAMP_NUMBER,
                                   poll_id=p.id))
@@ -415,7 +415,7 @@ class CreatePollPage(TestCase):
         p = Poll.objects.get(created_by__user_name=TEST_POLL_CREATOR_USERNAME)
 
         self.client.member_login(TEST_MEMBER_USERNAME, TEST_MEMBER_PASSWORD)
-        url = reverse("cciwmain.camps.edit_poll",
+        url = reverse("cciw-cciwmain-camp_edit_poll",
                       kwargs=dict(year=FORUM_1_YEAR,
                                   number=FORUM_1_CAMP_NUMBER,
                                   poll_id=p.id))

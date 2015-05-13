@@ -110,7 +110,7 @@ class ApplicationFormView(WebTestBase):
         self.assertContains(response, 'Save and continue editing')
         self.assertNotContains(response, 'Save and add another')
         response = self.fill(response.forms['application_form'], {'full_name': 'Test full name'}).submit('_save').follow()
-        self.assertUrl(response, "cciw.officers.views.applications")
+        self.assertUrl(response, "cciw-officers-applications")
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Test full name')
 
@@ -131,7 +131,7 @@ class ApplicationFormView(WebTestBase):
         self.assertEqual(response.status_code, 200)
         response = self.fill(response.forms['application_form'],
                              {'full_name': 'Changed full name'}).submit('_save').follow()
-        self.assertUrl(response, "cciw.officers.views.applications")
+        self.assertUrl(response, "cciw-officers-applications")
         self.assertEqual(u.application_set.count(), 1)
         self.assertEqual(u.application_set.all()[0].full_name, 'Changed full name')
 
@@ -155,7 +155,7 @@ class ApplicationFormView(WebTestBase):
         response = self.fill(response.forms['application_form'],
                              {'full_name': 'Test full name',
                               'address_email': new_email}).submit('_save').follow()
-        self.assertUrl(response, "cciw.officers.views.applications")
+        self.assertUrl(response, "cciw-officers-applications")
         self.assertEqual(u.application_set.count(), 1)
 
         # Check the e-mails have been sent
@@ -276,7 +276,7 @@ class ApplicationFormView(WebTestBase):
         response = self.get(self._application_edit_url(a.id))
         self.assertEqual(response.status_code, 200)
         response = self._finish_application_form(response).submit('_save').follow()
-        self.assertUrl(response, "cciw.officers.views.applications")
+        self.assertUrl(response, "cciw-officers-applications")
 
         self.assertContains(response, "The completed application form has been sent to the leaders (Dave &amp; Rebecca Stott) via e-mail")
 
@@ -369,7 +369,7 @@ class ApplicationFormView(WebTestBase):
         # Now change some values
         response = self.fill(response.forms['application_form'],
                              {'full_name': 'New Full Name'}).submit('_save').follow()
-        self.assertUrl(response, "cciw.officers.views.applications")
+        self.assertUrl(response, "cciw-officers-applications")
 
         emails = self._get_application_form_emails()
         self.assertEqual(len(emails), 2)

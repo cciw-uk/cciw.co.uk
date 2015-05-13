@@ -21,8 +21,8 @@
       <script type="text/javascript">
        var cciw = (function(pub) {
            "use strict";
-           pub.placesJsonUrl = '{% url "cciw.bookings.views.places_json" %}';
-           pub.accountJsonUrl ='{% url "cciw.bookings.views.account_json" %}';
+           pub.placesJsonUrl = '{% url "cciw-bookings-places_json" %}';
+           pub.accountJsonUrl ='{% url "cciw-bookings-account_json" %}';
            return pub;
 
        })(cciw || {});

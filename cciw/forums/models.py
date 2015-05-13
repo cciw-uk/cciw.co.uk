@@ -182,7 +182,7 @@ class Award(models.Model):
     def get_absolute_url(self):
         from django.template.defaultfilters import slugify
         from django.core.urlresolvers import reverse
-        return reverse('cciw.forums.views.awards.index') + "#" + slugify(str(self))
+        return reverse('cciw-cciwmain-awards_index') + "#" + slugify(str(self))
 
     class Meta:
         ordering = ('-year', 'name',)

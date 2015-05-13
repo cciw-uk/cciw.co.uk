@@ -107,12 +107,12 @@ def applications_for_camp(camp, officer_ids=None):
 
 def application_to_text(app):
     t = loader.get_template('cciw/officers/application_email.txt')
-    return t.render(template.Context({'app': app}))
+    return t.render({'app': app})
 
 
 def application_to_rtf(app):
     t = loader.get_template('cciw/officers/application.rtf')
-    return t.render(template.Context({'app': app}))
+    return t.render({'app': app})
 
 
 def application_rtf_filename(app):

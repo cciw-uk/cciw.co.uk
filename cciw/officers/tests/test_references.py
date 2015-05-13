@@ -20,7 +20,7 @@ class ReferencesPage(WebTestBase):
     def test_page_ok(self):
         # Value of this test lies in the test data.
         self.webtest_officer_login(LEADER)
-        response = self.get("cciw.officers.views.manage_references", year=2000, number=1)
+        response = self.get("cciw-officers-manage_references", year=2000, number=1)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'For camp 2000-1')
         self.assertNotContains(response, 'referee1@email.co.uk')  # Received
@@ -29,13 +29,13 @@ class ReferencesPage(WebTestBase):
         self.assertContains(response, 'referee4@email.co.uk')
 
     def test_page_anonymous_denied(self):
-        response = self.get("cciw.officers.views.manage_references", year=2000, number=1)
+        response = self.get("cciw-officers-manage_references", year=2000, number=1)
         self.assertEqual(response.status_code, 302)
         self.assertNotContains(response.follow(), 'For camp 2000-1')
 
     def test_page_officers_denied(self):
         self.webtest_officer_login(OFFICER)
-        response = self.app.get(reverse("cciw.officers.views.manage_references", kwargs=dict(year=2000, number=1)),
+        response = self.app.get(reverse("cciw-officers-manage_references", kwargs=dict(year=2000, number=1)),
                                 expect_errors=[403])
         self.assertEqual(response.status_code, 403)
 
@@ -56,7 +56,7 @@ class RequestReference(WebTestBase):
         self.assertTrue(app.referees[0].email != '')
         refinfo = app.references[0]
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2000, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, number=1))
                                 + "?ref_id=%d" % refinfo.id)
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "No e-mail address")
@@ -75,7 +75,7 @@ class RequestReference(WebTestBase):
         self.assertTrue(app.referees[1].email == '')
         refinfo = app.references[1]
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2000, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, number=1))
                                 + "?ref_id=%d" % refinfo.id)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No e-mail address")
@@ -100,7 +100,7 @@ class RequestReference(WebTestBase):
         self.assertTrue(app.referees[0].email != '')
         refinfo = app.references[0]
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2000, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, number=1))
                                 + "?ref_id=%d" % refinfo.id)
         self.assertEqual(response.status_code, 200)
         response = response.forms['id_request_reference'].submit("cancel")
@@ -113,7 +113,7 @@ class RequestReference(WebTestBase):
         app = Application.objects.get(pk=3)
         refinfo = app.references[0]
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2000, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, number=1))
                                 + "?ref_id=%d" % refinfo.id)
         self.assertEqual(response.status_code, 200)
         response = self.fill(response.forms['id_request_reference'],
@@ -132,7 +132,7 @@ class RequestReference(WebTestBase):
         prev_refs, exact = get_previous_references(refinfo)
         assert exact is not None
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2001, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2001, number=1))
                                 + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, exact.id))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Mr Referee1 Name has done a reference for Mr in the past.")
@@ -150,7 +150,7 @@ class RequestReference(WebTestBase):
         assert exact is None
         assert prev_refs[0].reference_form.referee_name == "Mr Referee1 Name"
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw.officers.views.request_reference", kwargs=dict(year=2001, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2001, number=1))
                                 + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, prev_refs[0].id))
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Mr Referee1 Name has done a reference for Mr in the past.")
@@ -165,7 +165,7 @@ class RequestReference(WebTestBase):
         app = Application.objects.get(pk=1)
         refinfo = app.references[0]
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw.officers.views.nag_by_officer", kwargs=dict(year=2000, number=1))
+        response = self.app.get(reverse("cciw-officers-nag_by_officer", kwargs=dict(year=2000, number=1))
                                 + "?ref_id=%d" % refinfo.id)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "to nag their referee")
@@ -261,7 +261,7 @@ class EditReferenceFormManually(TestCase):
         ref = app.references[0]
         assert ref.reference_form is None
         self.client.login(username=LEADER_USERNAME, password=LEADER_PASSWORD)
-        resp = self.client.get(reverse('cciw.officers.views.edit_reference_form_manually',
+        resp = self.client.get(reverse('cciw-officers-edit_reference_form_manually',
                                        kwargs={'ref_id': ref.id}))
 
         # Expect a redirect to admin page
