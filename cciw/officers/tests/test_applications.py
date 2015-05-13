@@ -144,8 +144,8 @@ class ApplicationUtils(TestCase):
                                  site=site)
 
         u = User.objects.create(username='test')
-        u.invitation_set.create(camp=c1)
-        u.invitation_set.create(camp=c2)
+        u.invitations.create(camp=c1)
+        u.invitations.create(camp=c2)
 
         app1 = Application.objects.create(officer=u,
                                           finished=True,

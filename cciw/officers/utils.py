@@ -35,7 +35,7 @@ def camp_serious_slacker_list(camp):
     from cciw.cciwmain.models import Camp
     from cciw.officers.models import Invitation, Application, Reference
 
-    officers = [i.officer for i in camp.invitation_set.all()]
+    officers = [i.officer for i in camp.invitations.all()]
     # We need to allow applications/references for the current year to 'fix' a
     # track record. However, when displaying past problems, don't include the
     # current year.
@@ -162,8 +162,8 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
     from cciw.officers.applications import applications_for_camp
 
     # All the data we need:
-    invites = camp.invitation_set.all().select_related('officer').order_by('officer__first_name',
-                                                                           'officer__last_name')
+    invites = camp.invitations.all().select_related('officer').order_by('officer__first_name',
+                                                                        'officer__last_name')
     apps = applications_for_camp(camp)
     app_dict = dict((app.officer.id, app) for app in apps)
 

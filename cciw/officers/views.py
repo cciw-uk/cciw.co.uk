@@ -148,7 +148,7 @@ def applications(request):
     """Displays a list of tasks related to applications."""
     user = request.user
     c = {
-        'camps': [i.camp for i in user.invitation_set.filter(camp__year=common.get_thisyear())]
+        'camps': [i.camp for i in user.invitations.filter(camp__year=common.get_thisyear())]
     }
 
     finished_applications = (user.applications
@@ -760,7 +760,7 @@ def officer_list(request, year=None, number=None):
 
     c = {}
     c['camp'] = camp
-    invitation_list = camp.invitation_set.all()
+    invitation_list = camp.invitations.all()
     officer_list_ids = set(i.officer_id for i in invitation_list)
     c['invitations'] = invitation_list
     c['officers_noapplicationform'] = camp_slacker_list(camp)
@@ -1066,7 +1066,7 @@ def stats(request, year=None):
         # done in Python.
         stat['camp'] = camp
 
-        invited_officers = list(camp.invitation_set.all().order_by('date_added').values_list('officer_id', 'date_added'))
+        invited_officers = list(camp.invitations.all().order_by('date_added').values_list('officer_id', 'date_added'))
         application_forms = list(applications_for_camp(camp).order_by('date_submitted').values_list('id', 'date_submitted'))
 
         officer_ids = [o[0] for o in invited_officers]
@@ -1177,7 +1177,7 @@ def manage_crbs(request, year=None):
     # to. Even if we have only selected one camp, it might be nice to know if
     # they are on other camps. So we get data for all camps, and filter later.
     # We also want to be able to filtering by javascript in the frontend.
-    camps_officers = [[i.officer for i in c.invitation_set.all()] for c in camps]
+    camps_officers = [[i.officer for i in c.invitations.all()] for c in camps]
     all_officers = reduce(operator.or_, map(set, camps_officers))
     all_officers = sorted(all_officers, key=lambda o: (o.first_name, o.last_name))
     apps = list(reduce(operator.or_, map(applications_for_camp, camps)))

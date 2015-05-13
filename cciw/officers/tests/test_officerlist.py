@@ -29,7 +29,7 @@ class TestExport(TestCase):
         # happens with no application.
         Application.objects.all().delete()
 
-        for i, inv in enumerate(c.invitation_set.all()):
+        for i, inv in enumerate(c.invitations.all()):
             inv.notes = "Some notes %s" % i
             inv.save()
 
@@ -83,11 +83,11 @@ class TestSlackers(TestCase):
         officer2 = User.objects.create(username="mary",
                                        email="mary@example.com")
 
-        camp1.invitation_set.create(officer=officer1)
-        camp1.invitation_set.create(officer=officer2)
+        camp1.invitations.create(officer=officer1)
+        camp1.invitations.create(officer=officer2)
 
-        camp2.invitation_set.create(officer=officer1)
-        camp2.invitation_set.create(officer=officer2)
+        camp2.invitations.create(officer=officer1)
+        camp2.invitations.create(officer=officer2)
 
         # Officer 1 submitted an Application, but officer 2 did not
         app = officer1.applications.create(

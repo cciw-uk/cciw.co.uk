@@ -366,8 +366,8 @@ class InvitationManager(models.Manager):
 
 
 class Invitation(models.Model):
-    officer = models.ForeignKey(settings.AUTH_USER_MODEL)
-    camp = models.ForeignKey(Camp)
+    officer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='invitations')
+    camp = models.ForeignKey(Camp, related_name='invitations')
     date_added = models.DateField(default=date.today)
     notes = models.CharField(max_length=255, blank=True)
 

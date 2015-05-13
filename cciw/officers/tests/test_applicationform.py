@@ -31,7 +31,7 @@ class ApplicationFormView(WebTestBase):
         # Add some invitations:
         u = User.objects.get(username=OFFICER[0])
         for pk in [1, 2]:
-            u.invitation_set.create(camp=Camp.objects.get(id=pk))
+            u.invitations.create(camp=Camp.objects.get(id=pk))
 
         super(ApplicationFormView, self).setUp()
 

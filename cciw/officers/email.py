@@ -69,7 +69,7 @@ def send_application_emails(request, application):
         if previous_camp is not None:
             officer = application.officer
             previous_app = None
-            if previous_camp.invitation_set.filter(officer=officer).exists():
+            if previous_camp.invitations.filter(officer=officer).exists():
                 try:
                     previous_app = officer.applications.filter(date_submitted__lte=previous_camp.start_date,
                                                                date_submitted__gte=previous_camp.start_date + timedelta(-365),

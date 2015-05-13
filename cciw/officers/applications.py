@@ -63,9 +63,9 @@ def camps_for_application(application):
     # submitted date.
     if application.date_submitted is None:
         return []
-    invites = application.officer.invitation_set.filter(camp__start_date__gte=application.date_submitted,
-                                                        camp__start_date__lt=application.date_submitted +
-                                                        timedelta(365))
+    invites = application.officer.invitations.filter(camp__start_date__gte=application.date_submitted,
+                                                     camp__start_date__lt=application.date_submitted +
+                                                     timedelta(365))
     # In some cases, the above query can catch two years of camps.  We only want
     # to the first year. (This doesn't matter very much, as
     # camps_for_application is used for notifications, and they only happen when
@@ -85,7 +85,7 @@ def applications_for_camp(camp, officer_ids=None):
     """
     # Use invitations to work out which officers we care about
     if officer_ids is None:
-        officer_ids = camp.invitation_set.values_list('officer_id', flat=True)
+        officer_ids = camp.invitations.values_list('officer_id', flat=True)
     apps = Application.objects.filter(finished=True,
                                       officer__in=officer_ids)
 
