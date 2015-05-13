@@ -25,7 +25,7 @@ from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_of
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet, payments_to_spreadsheet, addresses_for_mailing_list, camp_sharable_transport_details_to_spreadsheet
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
-from cciw.cciwmain.models import Camp
+from cciw.cciwmain.models import Camp, get_reference_contact_people
 from cciw.cciwmain.utils import python_to_json, is_valid_email
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename, thisyears_applications, applications_for_camp, camps_for_application
@@ -574,6 +574,17 @@ class ReferenceFormForm(forms.ModelForm):
                   'character',
                   'concerns',
                   'comments')
+
+    def __init__(self, *args, **kwargs):
+        super(ReferenceFormForm, self).__init__(*args, **kwargs)
+        reference_contact_people = get_reference_contact_people()
+        if reference_contact_people:
+            contact_message = (" If you would prefer to discuss your concerns on the telephone "
+                               "and in confidence, please contact: " +
+                               " or ".join("{0} on {1}".format(person.name,
+                                                               person.phone_number)
+                                           for person in reference_contact_people))
+            self.fields['concerns'].label += contact_message
 
 
 normal_textarea = forms.Textarea(attrs={'cols': 80, 'rows': 10})

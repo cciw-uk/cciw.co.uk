@@ -8,6 +8,9 @@ from django.utils.html import format_html
 from cciw.cciwmain import signals
 
 
+REFERENCE_CONTACT_ROLE_NAME = "Safeguarding co-ordinator"
+
+
 class Site(models.Model):
     short_name = models.CharField("Short name", max_length=25, blank=False, unique=True)
     slug_name = models.SlugField("Machine name", max_length=25, blank=True, unique=True)
@@ -187,6 +190,10 @@ class Camp(models.Model):
     class Meta:
         ordering = ['-year', 'number']
         unique_together = (('year', 'number'),)
+
+
+def get_reference_contact_people():
+    return list(Person.objects.filter(roles__name=REFERENCE_CONTACT_ROLE_NAME))
 
 
 import cciw.cciwmain.hooks  # NOQA

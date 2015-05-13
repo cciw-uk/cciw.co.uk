@@ -2,18 +2,15 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from cciw.cciwmain.models import Camp
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application, ReferenceAction
 from cciw.officers.views import get_previous_references
 from cciw.utils.tests.webtest import WebTestBase
 
+from .base import OFFICER, LEADER_USERNAME, LEADER_PASSWORD, LEADER_EMAIL, LEADER
+
 # Data: Applications 1 to 3 are in year 2000, for camps in summer 2000
 # Application 4 is for 2001
-#
-#
-
-from .base import OFFICER, LEADER_USERNAME, LEADER_PASSWORD, LEADER_EMAIL, LEADER
 
 
 class ReferencesPage(WebTestBase):
