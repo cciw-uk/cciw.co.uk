@@ -548,7 +548,7 @@ def nag_by_officer(request, year=None, number=None):
             send_nag_by_officer(wordwrap(messageform.cleaned_data['message'], 70),
                                 officer, ref, request.user)
             ref.log_nag_made(request.user, timezone.now())
-            return close_window_response()
+            return close_window_and_update_ref(ref_id)
         else:
             # cancel
             return close_window_response()
