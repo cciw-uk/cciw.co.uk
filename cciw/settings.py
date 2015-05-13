@@ -164,24 +164,27 @@ PASSWORD_HASHERS = (
 
 # == TEMPLATES ==
 
-TEMPLATE_DIRS = (
-    basedir + r'/templates',
-)
-
-TEMPLATE_CONTEXT_PROCESSORS = [
-    "django.core.context_processors.debug",
-    "django.core.context_processors.media",
-    "django.core.context_processors.static",
-    "django.core.context_processors.request",
-    "django.contrib.auth.context_processors.auth",
-    "django.contrib.messages.context_processors.messages",
-    "cciw.cciwmain.common.standard_processor",
-    "django.core.context_processors.tz",
-    "sekizai.context_processors.sekizai",
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            basedir + r'/templates',
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.request',
+                'django.template.context_processors.tz',
+                "django.contrib.messages.context_processors.messages",
+                'cciw.cciwmain.common.standard_processor',
+                'sekizai.context_processors.sekizai',
+            ] + ([] if DEBUG else ['django.core.context_processors.debug']),
+        },
+    },
 ]
-
-if DEBUG:
-    TEMPLATE_CONTEXT_PROCESSORS.append("django.core.context_processors.debug")
 
 # == EMAIL ==
 
@@ -239,13 +242,14 @@ _MIDDLEWARE_CLASSES = [
     (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
     (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
-    (True,       'django.middleware.csrf.CsrfViewMiddleware'),
-    (True,       'django.middleware.clickjacking.XFrameOptionsMiddleware'),
     (True,       "django.contrib.sessions.middleware.SessionMiddleware"),
-    (DEVBOX and DEBUG, "cciw.middleware.debug.DebugMiddleware"),
-    (True,       "django.contrib.messages.middleware.MessageMiddleware"),
-    (True,       "django.contrib.auth.middleware.AuthenticationMiddleware"),
     (True,       "django.middleware.common.CommonMiddleware"),
+    (True,       'django.middleware.csrf.CsrfViewMiddleware'),
+    (DEVBOX and DEBUG, "cciw.middleware.debug.DebugMiddleware"),
+    (True,       "django.contrib.auth.middleware.AuthenticationMiddleware"),
+    (True,       "django.contrib.auth.middleware.SessionAuthenticationMiddleware"),
+    (True,       "django.contrib.messages.middleware.MessageMiddleware"),
+    (True,       'django.middleware.clickjacking.XFrameOptionsMiddleware'),
     (True,       "cciw.middleware.auth.PrivateWiki"),
     (True,       "cciw.middleware.threadlocals.ThreadLocals"),
 ]
