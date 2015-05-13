@@ -26,11 +26,25 @@ class Site(models.Model):
         super(Site, self).save(**kwargs)
 
 
+class Role(models.Model):
+    name = models.CharField("Name", max_length=255,
+                            help_text="Internal name of role, should remain fixed once created")
+    description = models.CharField("Title", max_length=255,
+                                   help_text="Public name/title of role")
+
+    def __str__(self):
+        return self.description
+
+
 class Person(models.Model):
     name = models.CharField("Name", max_length=40)
     info = models.TextField("Information (Plain text)",
                             blank=True)
     users = models.ManyToManyField(User, verbose_name="Associated admin users", blank=True)
+    phone_number = models.CharField("Phone number", max_length=40,
+                                    blank=True,
+                                    help_text="Required only for staff like CPO who need to be contacted.")
+    roles = models.ManyToManyField(Role, blank=True)
 
     def __str__(self):
         return self.name

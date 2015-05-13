@@ -1,6 +1,6 @@
 from functools import wraps
 
-from cciw.cciwmain.models import Site, Person, Camp
+from cciw.cciwmain.models import Site, Person, Camp, Role
 from django.contrib import admin
 
 
@@ -81,3 +81,4 @@ class CampAdmin(admin.ModelAdmin):
 admin.site.register(Site, SiteAdmin)
 admin.site.register(Person, PersonAdmin)
 admin.site.register(Camp, CampAdmin)
+admin.site.register(Role)
