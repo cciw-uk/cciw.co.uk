@@ -1,7 +1,9 @@
 import autocomplete_light
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 import cciw.auth
+
+User = get_user_model()
 
 
 class UserAutocomplete(autocomplete_light.AutocompleteModelBase):

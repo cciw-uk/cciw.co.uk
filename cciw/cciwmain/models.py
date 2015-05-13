@@ -1,6 +1,6 @@
 from datetime import date
 
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.html import format_html
@@ -43,7 +43,7 @@ class Person(models.Model):
     name = models.CharField("Name", max_length=40)
     info = models.TextField("Information (Plain text)",
                             blank=True)
-    users = models.ManyToManyField(User, verbose_name="Associated admin users", blank=True)
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name="Associated admin users", blank=True)
     phone_number = models.CharField("Phone number", max_length=40,
                                     blank=True,
                                     help_text="Required only for staff like CPO who need to be contacted.")
@@ -91,14 +91,14 @@ class Camp(models.Model):
                                      related_name="camps_as_leader",
                                      verbose_name="leaders",
                                      blank=True)
-    admins = models.ManyToManyField(User,
+    admins = models.ManyToManyField(settings.AUTH_USER_MODEL,
                                     related_name="camps_as_admin",
                                     verbose_name="admins",
                                     help_text="These users can manage references/applications for the camp. Not for normal officers.",
                                     blank=True)
     site = models.ForeignKey(Site)
     online_applications = models.BooleanField("Accepts online applications from officers.", default=True)
-    officers = models.ManyToManyField(User, through='officers.Invitation')
+    officers = models.ManyToManyField(settings.AUTH_USER_MODEL, through='officers.Invitation')
 
     objects = CampManager()
 

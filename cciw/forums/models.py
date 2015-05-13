@@ -4,7 +4,6 @@ import operator
 import re
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password, make_password
 from django.core import mail
 from django.db import models
@@ -464,7 +463,7 @@ class Topic(models.Model):
     open = models.BooleanField("Open", default=False)
     hidden = models.BooleanField("Hidden", default=False)
     approved = models.NullBooleanField("Approved", blank=True)
-    checked_by = models.ForeignKey(User,
+    checked_by = models.ForeignKey(settings.AUTH_USER_MODEL,
                                    null=True, blank=True, related_name="topics_checked",
                                    verbose_name="checked by")
     needs_approval = models.BooleanField("Needs approval", default=False)
@@ -550,7 +549,7 @@ class Photo(models.Model):
     filename = models.CharField("Filename", max_length=50)
     description = models.CharField("Description", blank=True, max_length=100)
     gallery = models.ForeignKey(Gallery, verbose_name="gallery", related_name="photos")
-    checked_by = models.ForeignKey(User, null=True, blank=True, related_name="photos_checked")
+    checked_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, related_name="photos_checked")
     approved = models.NullBooleanField("Approved", blank=True)
     needs_approval = models.BooleanField("Needs approval", default=False)
 
@@ -617,7 +616,7 @@ class Post(models.Model):
     posted_at = models.DateTimeField("Posted at", null=True)
     hidden = models.BooleanField("Hidden", default=False)
     approved = models.NullBooleanField("Approved")
-    checked_by = models.ForeignKey(User, verbose_name="checked by",
+    checked_by = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="checked by",
                                    null=True, blank=True, related_name="checked_post")
     needs_approval = models.BooleanField("Needs approval", default=False)
     photo = models.ForeignKey(Photo, related_name="posts", null=True, blank=True)

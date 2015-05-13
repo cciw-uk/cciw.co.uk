@@ -2,12 +2,15 @@
 
 # Some of these are used from a script, and so print messages to the console if
 # 'verbose=True'.  A bit icky...
-from django.contrib.auth.models import User, Group
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 
 from cciw.cciwmain.utils import is_valid_email
+
+User = get_user_model()
 
 
 def make_username(first_name, last_name, guess_number=1):

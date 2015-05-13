@@ -2,9 +2,11 @@
 import sys
 from optparse import OptionParser
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Invitation
+
+User = get_user_model()
 
 
 parser = OptionParser(usage=

@@ -1,4 +1,5 @@
-from django.contrib.auth.models import User, Group, Permission
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
 from django_dynamic_fixture import G
@@ -6,6 +7,7 @@ from django_dynamic_fixture import G
 from cciw.auth import BOOKING_SECRETARY_GROUP_NAME, LEADER_GROUP_NAME, OFFICER_GROUP_NAME
 from cciw.cciwmain.tests.base import BasicSetupMixin
 
+User = get_user_model()
 
 OFFICER_USERNAME = 'mrofficer2'
 OFFICER_PASSWORD = 'test_normaluser_password'

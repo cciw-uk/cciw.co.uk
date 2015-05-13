@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 import xlrd
 
@@ -8,6 +8,8 @@ from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
 from cciw.officers.utils import officer_data_to_spreadsheet, camp_serious_slacker_list
 from cciw.utils.spreadsheet import ExcelFormatter
+
+User = get_user_model()
 
 
 class TestExport(TestCase):

@@ -1,5 +1,5 @@
 from anonymizer import Anonymizer
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from cciw.officers.models import Application, ReferenceForm
@@ -9,7 +9,7 @@ class UserAnonymizer(Anonymizer):
 
     order = 1
 
-    model = User
+    model = get_user_model()
 
     attributes = [
         ('id', "SKIP"),

@@ -7,8 +7,7 @@ from urllib.parse import urlparse
 from django import forms
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.contrib.auth.models import User
+from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
 from django.contrib import messages
 from django.core import signing
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
@@ -39,6 +38,8 @@ from cciw.officers.references import reference_form_info
 from cciw.utils.views import close_window_response, user_passes_test_improved, get_spreadsheet_formatter
 from securedownload.views import access_folder_securely
 
+
+User = get_user_model()
 
 EXPORT_PAYMENT_DATE_FORMAT = '%Y-%m-%d'
 

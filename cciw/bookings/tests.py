@@ -7,7 +7,7 @@ import json
 import re
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -27,6 +27,8 @@ from cciw.officers.tests.base import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.webtest import WebTestBase
+
+User = get_user_model()
 
 
 class IpnMock(object):

@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core.urlresolvers import reverse
 
@@ -10,6 +10,8 @@ from cciw.officers.models import Application
 from cciw.officers.applications import application_difference
 from cciw.officers.tests.test_references import OFFICER, LEADER
 from cciw.utils.tests.webtest import WebTestBase
+
+User = get_user_model()
 
 
 class ApplicationFormView(WebTestBase):

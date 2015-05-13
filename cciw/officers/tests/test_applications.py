@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
@@ -9,6 +9,7 @@ from cciw.officers import applications
 from cciw.officers.models import Application
 from cciw.officers.tests.base import OFFICER_USERNAME, OFFICER_PASSWORD
 
+User = get_user_model()
 
 class ApplicationModel(TestCase):
     fixtures = ['basic.json', 'officers_users.json', 'references.json']

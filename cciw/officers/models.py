@@ -2,7 +2,6 @@
 from datetime import timedelta, date
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
@@ -46,7 +45,7 @@ REFEREE_NAME_HELP_TEXT = "Name only - please do not include job title or other i
 
 
 class Application(models.Model):
-    officer = models.ForeignKey(User, blank=True)  # blank=True to get the admin to work
+    officer = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True)  # blank=True to get the admin to work
     full_name = RequiredCharField('full name', max_length=NAME_LENGTH)
     full_maiden_name = models.CharField('full maiden name', max_length=NAME_LENGTH, blank=True)
     birth_date = RequiredDateField('date of birth', null=True, default=None)
@@ -303,7 +302,7 @@ class ReferenceAction(models.Model):
     reference = models.ForeignKey(Reference, related_name="actions")
     created = models.DateTimeField(default=timezone.now)
     action_type = models.CharField(max_length=20, choices=ACTION_CHOICES)
-    user = models.ForeignKey(User, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True)
 
     class Meta:
         ordering = [('created')]
@@ -367,7 +366,7 @@ class InvitationManager(models.Manager):
 
 
 class Invitation(models.Model):
-    officer = models.ForeignKey(User)
+    officer = models.ForeignKey(settings.AUTH_USER_MODEL)
     camp = models.ForeignKey(Camp)
     date_added = models.DateField(default=date.today)
     notes = models.CharField(max_length=255, blank=True)
@@ -398,7 +397,7 @@ class CRBApplicationManager(models.Manager):
 
 
 class CRBApplication(models.Model):
-    officer = models.ForeignKey(User)
+    officer = models.ForeignKey(settings.AUTH_USER_MODEL)
     crb_number = models.CharField("Disclosure number", max_length=20)
     completed = models.DateField("Date of issue")
 
@@ -425,7 +424,7 @@ class CRBFormLog(models.Model):
     """
     Represents a log of a  CRB form sent to an officer
     """
-    officer = models.ForeignKey(User)
+    officer = models.ForeignKey(settings.AUTH_USER_MODEL)
     sent = models.DateTimeField("Date sent")
 
     objects = CRBFormLogManager()
