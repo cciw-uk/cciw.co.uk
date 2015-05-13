@@ -43,7 +43,9 @@ class Person(models.Model):
     name = models.CharField("Name", max_length=40)
     info = models.TextField("Information (Plain text)",
                             blank=True)
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name="Associated admin users", blank=True)
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name="Associated admin users",
+                                   related_name='people',
+                                   blank=True)
     phone_number = models.CharField("Phone number", max_length=40,
                                     blank=True,
                                     help_text="Required only for staff like CPO who need to be contacted.")

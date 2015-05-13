@@ -150,9 +150,9 @@ def _create_officer(username, first_name, last_name, email, password, dryrun=Fal
 
         if is_leader and person is not None:
             # Make association between person and officer
-            officer.person_set.add(person)
+            officer.people.add(person)
             if verbose:
-                if officer.person_set.count() > 1:
+                if officer.people.count() > 1:
                     # This can occasionally be valid e.g. if you have Person
                     # 'Joe Bloggs' and a Person 'Joe and Jane Bloggs', User
                     # joebloggs will be associated with both. But usually a
