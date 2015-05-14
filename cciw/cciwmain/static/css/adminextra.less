@@ -89,6 +89,17 @@ tr.refrow td.nopadding
     margin: 0px;
 }
 
+
+a[target=_blank] {
+    &::after {
+        content: " ";
+        display: inline-block;
+        width: 14px;
+        height: 12px;
+        margin-left: 3px;
+        background: url('/static/images/newwindow.png') no-repeat;
+    }
+}
 /* References */
 
 .refcount 

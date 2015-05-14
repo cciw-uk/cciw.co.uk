@@ -1,5 +1,10 @@
 <div id="officerref{{ ref.id }}" class="referencesection">
-  <h3 class="referencestart">{{ ref.application.officer.first_name }} {{ ref.application.officer.last_name }}</h3>
+  <h3 class="referencestart">
+    {{ ref.application.officer.first_name }} {{ ref.application.officer.last_name }}
+    &nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_history' officer_id=ref.application.officer.id %}"
+        target="_blank"
+       >full history</a>
+  </h3>
   <div class="referenceactions">
     {% with actions=ref.actions.all %}
       {% if actions %}
@@ -35,7 +40,7 @@
     {% endif %}
 
     {% if mode == "received" %}
-      <p><a href="{% url 'cciw-officers-view_reference' ref_id=ref.id %}" target="_blank">View reference from {{ ref.referee.name }}</a> (in new window)
+      <p><a href="{% url 'cciw-officers-view_reference' ref_id=ref.id %}" target="_blank">View reference from {{ ref.referee.name }}</a>
         <br/><span class="referencebutton"><button
     onclick="manageReferenceManually({{ ref.id }});">Manage reference manually</button></span>
       </p>
@@ -94,5 +99,5 @@
     {% endif %}
 
   </div>
-  <p>If you need to amend details of the referee, <a href="/admin/officers/application/{{ ref.application_id }}/" target="_blank">view/edit officer's application form (in new window)</a></p>
+  <p>If you need to amend details of the referee, <a href="/admin/officers/application/{{ ref.application_id }}/" target="_blank">view/edit officer's application form</a></p>
 </div>

@@ -168,6 +168,7 @@
             <th>Last good year</th>
             <th>Missing references</th>
             <th>Last good year</th>
+            <th>History</th>
           </tr>
           {% for officer_data in officers_serious_slackers %}
             {% with officer=officer_data.officer %}
@@ -185,12 +186,15 @@
                   {% for camp in officer_data.missing_references %}
                     {{ camp.year }}-{{ camp.number }}
                     (<a target="_blank" href="{% url 'cciw-officers-manage_references' year=camp.year number=camp.number %}?officer_id={{ officer.id }}">references</a>,
-                    <a target="_blank" href="{% url 'cciw-officers-officer_list' year=camp.year number=camp.number %}">officer list)</a>
+                    <a target="_blank" href="{% url 'cciw-officers-officer_list' year=camp.year number=camp.number %}">officer list</a>)
                     <br/>
                   {% endfor %}
                 </td>
                 <td>
                   {{ officer_data.last_good_refs_year|default:"Never" }}
+                </td>
+                <td>
+                  <a target="_blank" href="{% url 'cciw-officers-officer_history' officer_id=officer.id %}">View history</a>
                 </td>
               </tr>
             {% endwith %}
