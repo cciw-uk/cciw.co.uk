@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^leaders/applications/(?P<year>\d{4})/(?P<number>\d+)/$', views.manage_applications, name="cciw-officers-manage_applications"),
     url(r'^leaders/references/(?P<year>\d{4})/(?P<number>\d+)/$', views.manage_references, name="cciw-officers-manage_references"),
     url(r'^leaders/officer-list/(?P<year>\d{4})/(?P<number>\d+)/$', views.officer_list, name="cciw-officers-officer_list"),
+    url(r'^leaders/officer/(?P<officer_id>\d+)/$', views.officer_history, name="cciw-officers-officer_history"),
     url(r'^leaders/export-officer-data/(?P<year>\d{4})/(?P<number>\d+)/$', views.export_officer_data, name="cciw-officers-export_officer_data"),
     url(r'^leaders/export-camper-data/(?P<year>\d{4})/(?P<number>\d+)/$', views.export_camper_data, name="cciw-officers-export_camper_data"),
     url(r'^leaders/export-camper-data/(?P<year>\d{4})/$', views.export_camper_data_for_year, name="cciw-officers-export_camper_data_for_year"),

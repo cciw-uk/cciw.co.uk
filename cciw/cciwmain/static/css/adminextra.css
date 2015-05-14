@@ -144,6 +144,14 @@ tr.refrow td.nopadding
     max-width: 40%;
 }
 
+.reference-field-name {
+    font-weight: bold;
+}
+
+.reference-field-value {
+    margin-left: 1em;
+}
+
 /* Admin overrides */
 
 #user-tools 

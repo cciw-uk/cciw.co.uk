@@ -1,0 +1,20 @@
+{% if ref.reference_form %}
+  {% for name, val in ref.reference_form_fields %}
+    <p class="reference-field-name">{{ name }}</p>
+    <p class="reference-field-value">{{ val }}</p>
+  {% endfor %}
+{% else %}
+  <p class="reference-field-name">Name of referee</p>
+  <p class="reference-field-value"> {{ ref.referee.name }}</p>
+  {% if ref.received %}
+    <p>No reference form could be found. The reference is marked as 'received', which
+      means it must have been received by email or paper, rather than using the online
+      system.</p>
+    {% if ref.comments %}
+      <p>Further comments are below:</p>
+      <pre style="border: 1px solid black;">{{ ref.comments }}</pre>
+    {% endif %}
+  {% else %}
+    <p>This reference has not been received.</p>
+  {% endif %}
+{% endif %}

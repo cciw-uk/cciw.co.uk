@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.fields import YyyyMmField, AddressField, RequiredCharField, RequiredDateField, RequiredTextField, RequiredEmailField, RequiredYyyyMmField, RequiredAddressField, RequiredExplicitBooleanField
+from cciw.officers.references import reference_form_info
 
 
 class Referee(object):
@@ -238,6 +239,12 @@ class Reference(models.Model):
             return self._reference_form
         except ReferenceForm.DoesNotExist:
             return None
+
+    @property
+    def reference_form_fields(self):
+        if self.reference_form is None:
+            return None
+        return reference_form_info(self.reference_form)
 
     log_datetime_format = "%Y-%m-%d %H:%M:%S"
 

@@ -392,6 +392,23 @@ def manage_references(request, year=None, number=None):
     return render(request, template_name, c)
 
 
+@staff_member_required
+@camp_admin_required  # we don't care which camp they are admin for.
+def officer_history(request, officer_id=None):
+    officer = get_object_or_404(User.objects.filter(id=int(officer_id)))
+    reference_pairs = [app.references
+                       for app in (officer.applications.all()
+                                   .prefetch_related('reference_set',
+                                                     'reference_set___reference_form')
+                                   .order_by('-date_submitted'))
+                      ]
+
+    return render(request, "cciw/officers/officer_history.html",
+                  {'officer': officer,
+                   'reference_pairs': reference_pairs,
+                  })
+
+
 class SetEmailForm(forms.Form):
     email = forms.EmailField(widget=forms.TextInput(attrs={'size': '50'}))
 
@@ -740,11 +757,7 @@ def create_reference_thanks(request):
 @camp_admin_required
 def view_reference(request, ref_id=None):
     ref = get_object_or_404(Reference.objects.filter(id=ref_id))
-    ref_form = ref.reference_form
     c = {}
-    if ref_form is not None:
-        c['refform'] = ref_form
-        c['info'] = reference_form_info(ref_form)
     c['ref'] = ref
     c['officer'] = ref.application.officer
     c['referee'] = ref.referee

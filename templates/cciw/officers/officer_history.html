@@ -1,0 +1,29 @@
+{% extends "cciw/officers/base.html" %}
+
+{% block title %}{{ officer.first_name }} {{ officer.last_name }} | CCIW Officers{% endblock %}
+
+{% block content %}
+  <h1>{{ officer.first_name }} {{ officer.last_name }}</h1>
+
+  <h2>References</h2>
+
+  {% if reference_pairs %}
+    <table>
+      {% for refs in reference_pairs %}
+        <tr>
+          <td colspan="2"><h3>For application on {{ refs.0.application.date_submitted }}</h3></td>
+        </tr>
+        <tr>
+          {% for ref in refs %}
+            <td style="width: 50%;" >
+              {% include "cciw/officers/officer_ref_inc.html" %}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>No references found</p>
+  {% endif %}
+
+{% endblock %}
