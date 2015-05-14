@@ -1,7 +1,7 @@
 {% if ref.reference_form %}
   {% for name, val in ref.reference_form_fields %}
     <p class="reference-field-name">{{ name }}</p>
-    <p class="reference-field-value">{{ val }}</p>
+    <p class="reference-field-value">{{ val|linebreaksbr }}</p>
   {% endfor %}
 {% else %}
   <p class="reference-field-name">Name of referee</p>
@@ -12,7 +12,7 @@
       system.</p>
     {% if ref.comments %}
       <p>Further comments are below:</p>
-      <pre style="border: 1px solid black;">{{ ref.comments }}</pre>
+      <p class="reference-field-value">{{ ref.comments|linebreaksbr }}</p>
     {% endif %}
   {% else %}
     <p>This reference has not been received.</p>
