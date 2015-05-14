@@ -148,11 +148,17 @@ tr.refrow td.nopadding
 }
 
 .reference-field-name {
+    font-style: italic;
     font-weight: bold;
+    color: #555;
 }
 
-.reference-field-value {
+p.reference-field-value {
     margin-left: 1em;
+    border: 1px solid #888;
+    padding: 5px 10px;
+    border-radius: 5px;
+    box-shadow: 1px 1px 1px #888;
 }
 
 /* Admin overrides */
