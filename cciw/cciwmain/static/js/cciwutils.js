@@ -244,14 +244,6 @@ var cciw = (function(pub, $) {
         });
     };
 
-    // To keep XHTML validation, we have to avoid
-    // 'target', so use this hack instead.
-    pub.externalLinks = function() {
-        $("a[href][rel=external]").each(function(i, elem) {
-                                            elem.target = "_blank";
-                                        });
-    };
-
     pub.standardformClearError = standardformClearError;
 
     return pub;

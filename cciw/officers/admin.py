@@ -196,7 +196,7 @@ class ApplicationAdmin(admin.ModelAdmin):
              <ol>
              <li>the information you have submitted is <strong>correct and complete</strong>,</li>
              <li>you have <strong>read and understood</strong> the relevant sections of the
-             <a rel="external" href="/officers/files/CCIW%20CPP.doc">camp manual</a>.</li>
+             <a target="_blank" href="/officers/files/CCIW%20CPP.doc">camp manual</a>.</li>
              <li>you permit CCIW to store this information and the references that we will collect
              for as long as necessary.</li>
              </ol>

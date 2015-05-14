@@ -166,7 +166,7 @@
   </ul>
 
   <p>To enter information for CRBs that have been <em>completed</em>, use the
-    <a href="{% url 'admin:officers_crbapplication_changelist' %}" rel="external">CRB Disclosures admin</a>.</p>
+    <a href="{% url 'admin:officers_crbapplication_changelist' %}" target="_blank">CRB Disclosures admin</a>.</p>
 
   <div id='id_campselector'>
     <form action="." method="GET">
@@ -199,11 +199,11 @@
             >
           <td>{{ officer.first_name }} {{ officer.last_name }}</td>
           <td>{% for camp in officer.temp.camps %}
-            <a href="{% url 'cciw-officers-officer_list' year=camp.year number=camp.number %}" rel="external">{{ camp.number }}</a>{% if not forloop.last %}, {% endif %}
+            <a href="{% url 'cciw-officers-officer_list' year=camp.year number=camp.number %}" target="_blank">{{ camp.number }}</a>{% if not forloop.last %}, {% endif %}
           {% endfor %}
           </td>
           <td>{% if officer.temp.has_application_form %}<img src="{% static "admin/img/icon-yes.gif" %}">
-            <a href="{% url 'admin:officers_application_change' officer.temp.application_id %}" rel="external">View/edit</a>{% endif %}</td>
+            <a href="{% url 'admin:officers_application_change' officer.temp.application_id %}" target="_blank">View/edit</a>{% endif %}</td>
           <td>{% if not officer.temp.has_crb %}<img src="{% static "admin/img/icon_error.gif" %}"> Never
           {% else %}{% if officer.temp.has_valid_crb %}<img src="{% static "admin/img/icon_success.gif" %}"> Recent
           {% else %}<img src="{% static "admin/img/icon_alert.gif" %}"> Out of date

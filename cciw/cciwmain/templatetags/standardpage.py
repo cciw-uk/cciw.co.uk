@@ -79,7 +79,7 @@ class AtomFeedLinkVisible(template.Node):
         title = context.get('atom_feed_title', None)
         if title:
             thisurl = context['request'].path
-            return ('<a class="atomlink" href="%(atomurl)s" rel="external" title="%(atomtitle)s" >'
+            return ('<a class="atomlink" href="%(atomurl)s" target="_blank" title="%(atomtitle)s" >'
                     ' <img src="%(atomimgurl)s" alt="Feed icon" /></a> |'
                     % dict(atomurl="%s?format=atom" % thisurl,
                            atomtitle=title,

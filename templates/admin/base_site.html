@@ -12,11 +12,6 @@
   <script type="text/javascript" src="{% static "admin/js/jquery.min.js" %}"></script>
   {% include 'autocomplete_light/static.html' %}
   <script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>
-  <script type="text/javascript">
-   (function($) {
-       $(document).ready(cciw.externalLinks);
-   })(jQuery);
-  </script>
   {% if GOOGLE_ANALYTICS_ACCOUNT %}
     <script type="text/javascript">
 
