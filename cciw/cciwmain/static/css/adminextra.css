@@ -1,3 +1,6 @@
+
+/* Additional */
+
 #header2
 {
 	background-image: url('/static/images/header.png');
@@ -154,8 +157,25 @@ tr.refrow td.nopadding
 
 /* Admin overrides */
 
-#user-tools 
-{ 
+body, ul, li, td, th {
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.mini {
+    font-size: 10px;
+    line-height: 12px;
+}
+
+.help, p.help {
+    font-size: 12px !important;
+}
+
+input, textarea, select, .form-row p, form .button {
+    font-size: 13px;
+}
+
+#user-tools {
     top: 1.4em;
     right: 0;
     padding:0.2em 10px 1.2em 10px;
