@@ -176,6 +176,12 @@ class Application(models.Model):
         return "Application from %s (%s)" % (self.full_name, submitted)
 
     def _ref(self, num):
+        if hasattr(self, '_prefetched_objects_cache'):
+            if 'reference' in self._prefetched_objects_cache:
+                vals = [v for v in self._prefetched_objects_cache['reference']
+                        if v.referee_number == num]
+                if len(vals) == 1:
+                    return vals[0]
         return self.reference_set.get_or_create(referee_number=num)[0]
 
     class Meta:
