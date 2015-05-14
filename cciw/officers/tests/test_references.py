@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application, ReferenceAction
-from cciw.officers.views import get_previous_references
+from cciw.officers.views import add_previous_references
 from cciw.utils.tests.webtest import WebTestBase
 
 from .base import OFFICER, LEADER_USERNAME, LEADER_PASSWORD, LEADER_EMAIL, LEADER
@@ -129,11 +129,11 @@ class RequestReference(WebTestBase):
         """
         app = Application.objects.get(pk=4)
         refinfo = app.references[0]
-        prev_refs, exact = get_previous_references(refinfo)
-        assert exact is not None
+        add_previous_references(refinfo)
+        assert refinfo.previous_reference is not None
         self.webtest_officer_login(LEADER)
         response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2001, number=1))
-                                + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, exact.id))
+                                + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, refinfo.previous_reference.id))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Mr Referee1 Name has done a reference for Mr in the past.")
 
@@ -146,12 +146,12 @@ class RequestReference(WebTestBase):
         app.referees[0].email = "a_new_email_for_ref1@example.com"
         app.save()
         refinfo = app.references[0]
-        prev_refs, exact = get_previous_references(refinfo)
-        assert exact is None
-        assert prev_refs[0].reference_form.referee_name == "Mr Referee1 Name"
+        add_previous_references(refinfo)
+        assert refinfo.previous_reference is None
+        assert refinfo.possible_previous_references[0].reference_form.referee_name == "Mr Referee1 Name"
         self.webtest_officer_login(LEADER)
         response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2001, number=1))
-                                + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, prev_refs[0].id))
+                                + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, refinfo.possible_previous_references[0].id))
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Mr Referee1 Name has done a reference for Mr in the past.")
         self.assertContains(response, """In the past, "Mr Referee1 Name &lt;referee1@email.co.uk&gt;" did""")
@@ -235,8 +235,8 @@ class CreateReference(WebTestBase):
         assert app1.officer == app2.officer
 
         # We should be able to find an exact match for references
-        prev_refs, exact = get_previous_references(app2.references[0])
-        self.assertEqual(exact, app1.references[0])
+        add_previous_references(app2.references[0])
+        self.assertEqual(app2.references[0].previous_reference, app1.references[0])
 
         # Go to the corresponding URL
         url = make_ref_form_url(app2.references[0].id, app1.references[0].id)

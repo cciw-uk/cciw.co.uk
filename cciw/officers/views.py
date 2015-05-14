@@ -278,11 +278,11 @@ def _get_camp_or_404(year, number):
         raise Http404
 
 
-def get_previous_references(ref):
+def add_previous_references(ref):
     """
-    Returns a tuple of:
-     (possible previous References ordered by relevance,
-      exact match for previous Reference or None if it doesn't exist)
+    Adds the attributes:
+    - 'previous_reference' (which is None if no exact match
+    - 'possible_previous_references' (list ordered by relevance)
     """
     # Look for ReferenceForms for same officer, within the previous five
     # years.  Don't look for references from this year's
@@ -309,7 +309,8 @@ def get_previous_references(ref):
         if refform.reference_info.referee == ref.referee:
             exact = refform.reference_info
             break
-    return ([rf.reference_info for rf in prev], exact)
+    ref.previous_reference = exact
+    ref.possible_previous_references = [] if exact else [rf.reference_info for rf in prev]
 
 
 @staff_member_required
@@ -365,11 +366,7 @@ def manage_references(request, year=None, number=None):
         if ref.received:
             continue  # Don't need the following
         # decorate each Reference with suggested previous ReferenceForms.
-        (prev, exact) = get_previous_references(ref)
-        if exact is not None:
-            ref.previous_reference = exact
-        else:
-            ref.possible_previous_references = prev
+        add_previous_references(ref)
 
     if ref_id is None:
         c['notrequested'] = notrequested
@@ -476,19 +473,19 @@ def request_reference(request, year=None, number=None):
     # message.
     update = 'update' in request.GET
     if update:
-        (possible, exact) = get_previous_references(ref)
+        add_previous_references(ref)
         prev_ref_id = int(request.GET['prev_ref_id'])
-        if exact is not None:
+        if ref.previous_reference is not None:
             # the prev_ref_id must be the same as exact.id by the logic of the
             # buttons available on the manage_references page. If not true, we
             # close the page and update the parent page, in case the parent is
             # out of date.
-            if exact.id != prev_ref_id:
+            if ref.previous_reference.id != prev_ref_id:
                 return close_window_and_update_ref(ref_id)
             c['known_email_address'] = True
         else:
             # Get old referee data
-            refs = [r for r in possible if r.id == prev_ref_id]
+            refs = [r for r in ref.possible_previous_references if r.id == prev_ref_id]
             assert len(refs) == 1
             c['old_referee'] = refs[0].referee
         url = make_ref_form_url(ref.id, prev_ref_id)
