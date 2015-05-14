@@ -342,13 +342,16 @@ def manage_references(request, year=None, number=None):
 
         refinfo = (Reference.objects
                    .filter(application__in=app_ids)
-                   .prefetch_related('actions')
                    .order_by('application__officer__first_name',
                              'application__officer__last_name',
                              'referee_number')
                    )
     else:
         refinfo = Reference.objects.filter(pk=ref_id).order_by()
+
+    refinfo = (refinfo
+               .prefetch_related('actions')
+               .select_related('application', 'application__officer'))
 
     all_ref = list(refinfo)
     if 'ref_email' in request.GET:
