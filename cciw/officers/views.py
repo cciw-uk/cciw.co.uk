@@ -350,27 +350,26 @@ def manage_references(request, year=None, number=None):
         refinfo = Reference.objects.filter(pk=ref_id).order_by()
 
     all_ref = list(refinfo)
+    if 'ref_email' in request.GET:
+        ref_email = request.GET['ref_email']
+        c['ref_email_search'] = ref_email
+        all_ref = [r for r in all_ref if r.referee.email == ref_email]
+    else:
+        ref_email = None
+
     received = [r for r in all_ref if r.received]
     requested = [r for r in all_ref if not r.received and r.requested]
     notrequested = [r for r in all_ref if not r.received and not r.requested]
 
-    if 'ref_email' in request.GET:
-        ref_email = request.GET['ref_email']
-        c['ref_email_search'] = ref_email
-    else:
-        ref_email = None
-
-    for l in (received, requested, notrequested):
-        if ref_email is not None:
-            l[:] = [r for r in l if r.referee.email == ref_email]
-
+    for ref in all_ref:
+        if ref.received:
+            continue  # Don't need the following
         # decorate each Reference with suggested previous ReferenceForms.
-        for curref in l:
-            (prev, exact) = get_previous_references(curref)
-            if exact is not None:
-                curref.previous_reference = exact
-            else:
-                curref.possible_previous_references = prev
+        (prev, exact) = get_previous_references(ref)
+        if exact is not None:
+            ref.previous_reference = exact
+        else:
+            ref.possible_previous_references = prev
 
     if ref_id is None:
         c['notrequested'] = notrequested
