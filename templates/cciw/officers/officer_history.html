@@ -10,12 +10,12 @@
   {% if reference_pairs %}
     <table>
       {% for refs in reference_pairs %}
-        <tr>
+        <tr class="reference-header">
           <td colspan="2"><h3>For application on {{ refs.0.application.date_submitted }}</h3></td>
         </tr>
-        <tr>
+        <tr class="reference-list">
           {% for ref in refs %}
-            <td style="width: 50%;" >
+            <td>
               {% include "cciw/officers/officer_ref_inc.html" %}
             </td>
           {% endfor %}
