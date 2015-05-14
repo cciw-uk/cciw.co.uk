@@ -35,7 +35,29 @@
     </div>
   </div>
 {% endblock %}
-{% block userlinks %}<a href="/officers/">Officer homepage</a> / <a href="/admin/password_change/">Change password</a> / <a href="/admin/logout/">Log out</a>{% endblock %}
+
+{# We override the whole block since we don't want to pass 'has_permission' #}
+{# into every officer template #}
+{% block usertools %}
+  <div id="user-tools">
+    {% block welcome-msg %}
+      Welcome,
+      <strong>{% firstof user.get_short_name user.get_username %}</strong>.
+    {% endblock %}
+
+    {% if has_permission %}
+      <a href="{% url 'admin:index' %}">Admin</a> /
+    {% endif %}
+
+    <a href="{% url 'cciw-officers-index' %}">Officer homepage</a> /
+
+    {% if user.has_usable_password %}
+      <a href="{% url 'admin:password_change' %}">Change password</a> /
+    {% endif %}
+    <a href="{% url 'admin:logout' %}">Log out</a>
+  </div>
+{% endblock %}
+
 
 {% block nav-global %}{% endblock %}
 
