@@ -22,13 +22,6 @@ from django.utils.http import urlquote
 logger = logging.getLogger(__name__)
 
 
-def make_update_email_hash(oldemail, newemail):
-    """
-    Returns a hash for use in confirmation of e-mail change.
-    """
-    return salted_hmac("cciw.officers.emailupdate", oldemail + ':' + newemail).hexdigest()[::2]
-
-
 def admin_emails_for_camp(camp):
     leaders = ([user for leader in camp.leaders.all()
                 for user in leader.users.all()] +

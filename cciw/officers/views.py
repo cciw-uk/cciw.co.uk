@@ -30,7 +30,7 @@ from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename, thisyears_applications, applications_for_camp, camps_for_application
 from cciw.officers import create
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
-from cciw.officers.email import make_update_email_hash, send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer, send_crb_consent_problem_email
+from cciw.officers.email import send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer, send_crb_consent_problem_email
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication, CRBFormLog
 from cciw.officers.utils import camp_slacker_list, camp_serious_slacker_list, officer_data_to_spreadsheet
@@ -846,26 +846,6 @@ def update_officer(request):
     Invitation.objects.filter(camp=int(request.POST['camp_id']),
                               officer=int(request.POST['officer_id'])).update(notes=request.POST['notes'].strip().replace('\n', ' ').replace('\r', ' ')[0:255])
     return {'status': 'success'}
-
-
-def update_email(request, username=''):
-    c = {}
-    u = get_object_or_404(User.objects.filter(username=username))
-    email = request.GET.get('email', '')
-    hash = request.GET.get('hash', '')
-
-    if email == u.email:
-        c['message'] = "The e-mail address has already been updated, thanks."
-    else:
-        if make_update_email_hash(u.email, email) != hash:
-            c['message'] = "The URL was invalid. Please ensure you copied the URL from the e-mail correctly"
-        else:
-            c['message'] = "Your e-mail address has been updated, thanks."
-            c['success'] = True
-            u.email = email
-            u.save()
-
-    return render(request, 'cciw/officers/email_update.html', c)
 
 
 def correct_email(request):

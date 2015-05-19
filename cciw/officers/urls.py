@@ -6,7 +6,6 @@ urlpatterns = [
     url(r'^$', views.index, name="cciw-officers-index"),
     url(r'^applications/$', views.applications, name="cciw-officers-applications"),
     url(r'^view-application/$', views.view_application, name="cciw-officers-view_application"),
-    url(r'^update-email/(?P<username>.*)/$', views.update_email, name="cciw-officers-update_email"),  # deprecated
     url(r'^correct-email/$', views.correct_email, name="cciw-officers-correct_email"),
     url(r'^correct-application/$', views.correct_application, name="cciw-officers-correct_application"),
     url(r'^leaders/$', views.leaders_index, name="cciw-officers-leaders_index"),
