@@ -410,9 +410,21 @@ class CRBApplicationManager(models.Manager):
 
 
 class CRBApplication(models.Model):
+    REQUESTED_BY_CCIW = 'CCIW'
+    REQUESTED_BY_OTHER = 'other'
+    REQUESTED_BY_UKNOWN = 'unknown'
+    REQUESTED_BY_CHOICES = [
+        (REQUESTED_BY_CCIW, 'CCIW'),
+        (REQUESTED_BY_OTHER, 'Other organisation'),
+        (REQUESTED_BY_UKNOWN, 'Unknown'),
+    ]
+
     officer = models.ForeignKey(settings.AUTH_USER_MODEL)
     crb_number = models.CharField("Disclosure number", max_length=20)
     completed = models.DateField("Date of issue")
+    requested_by = models.CharField(max_length=20, choices=REQUESTED_BY_CHOICES, default=REQUESTED_BY_UKNOWN)
+    other_organisation = models.CharField(max_length=255, blank=True)
+    registered_with_dbs_update = models.NullBooleanField("registered with DBS update service")
 
     objects = CRBApplicationManager()
 

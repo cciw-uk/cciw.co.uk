@@ -361,8 +361,10 @@ class CRBApplicationAdmin(admin.ModelAdmin):
     form = CRBApplicationModelForm
 
     search_fields = ('officer__first_name', 'officer__last_name')
-    list_display = ('first_name', 'last_name', 'crb_number', 'completed')
+    list_display = ['first_name', 'last_name', 'crb_number', 'completed',
+                    'requested_by', 'registered_with_dbs_update']
     list_display_links = ('first_name', 'last_name', 'crb_number')
+    list_filter = ['requested_by', 'registered_with_dbs_update']
     ordering = ('-completed',)
     date_hierarchy = 'completed'
 
