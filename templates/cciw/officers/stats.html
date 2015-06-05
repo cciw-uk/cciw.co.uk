@@ -34,9 +34,9 @@
                     [
                         {label: "<a href='{% url "cciw-officers-officer_list" year=stat.camp.year number=stat.camp.number %}' target='_blank'>Officer list</a>",
                          data: officer_list_data},
-                        {label: "<a href='{% url "cciw-officers-manage_crbs" year=year %}?camp={{ stat.camp.number }}' target='_blank'>Any CRBs</a>",
+                        {label: "<a href='{% url "cciw-officers-manage_crbs" year=year %}?camp={{ stat.camp.number }}' target='_blank'>Any DBSs</a>",
                          data: all_crb_dates_data},
-                        {label: "Up-to-date CRBs",
+                        {label: "Up-to-date DBSs",
                          data: valid_crb_dates_data},
                         {label: "<a href='{% url "cciw-officers-manage_applications" year=stat.camp.year number=stat.camp.number %}' target='_blank'>Applications</a>",
                          data: app_dates_data},

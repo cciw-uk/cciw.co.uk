@@ -129,8 +129,8 @@ class Application(models.Model):
         """Services and /or the Police?""")
 
     crb_check_consent = RequiredExplicitBooleanField(
-        """Do you consent to the obtaining of a Criminal """
-        """Records Bureau check on yourself? """)
+        """Do you consent to the obtaining of a Disclosure and Barring """
+        """Service check on yourself? """)
 
     finished = models.BooleanField("is the above information complete?", default=False)
 
@@ -422,8 +422,8 @@ class CRBApplication(models.Model):
                                                   self.completed.strftime("%Y-%m-%d"))
 
     class Meta:
-        verbose_name = "CRB Disclosure"
-        verbose_name_plural = "CRB Disclosures"
+        verbose_name = "CRB/DBS Disclosure"
+        verbose_name_plural = "CRB/DBS Disclosures"
 
 
 class CRBFormLogManager(models.Manager):
@@ -443,10 +443,10 @@ class CRBFormLog(models.Model):
     objects = CRBFormLogManager()
 
     def __str__(self):
-        return "Log of CRB form sent to %s %s on %s" % (self.officer.first_name,
-                                                        self.officer.last_name,
-                                                        self.sent.strftime("%Y-%m-%d"))
+        return "Log of CRB/DBS form sent to %s %s on %s" % (self.officer.first_name,
+                                                            self.officer.last_name,
+                                                            self.sent.strftime("%Y-%m-%d"))
 
     class Meta:
-        verbose_name = "CRB form log"
-        verbose_name_plural = "CRB form logs"
+        verbose_name = "CRB/DBS form log"
+        verbose_name_plural = "CRB/DBS form logs"

@@ -1,6 +1,6 @@
 {% autoescape off %}Dear camp leaders,
 
-On their application form, {{ officer.first_name }} {{ officer.last_name }} indicated that they do NOT consent to having a CRB check done. It is possible that this was simply a mistake. In this case, after contacting them you can edit and correct their application form:
+On their application form, {{ officer.first_name }} {{ officer.last_name }} indicated that they do NOT consent to having a DBS check done. It is possible that this was simply a mistake. In this case, after contacting them you can edit and correct their application form:
 
 Contact details:
 
@@ -12,7 +12,7 @@ Edit application form:
 
 https://www.cciw.co.uk{% url 'admin:officers_application_change' application.id %}
 
-If it is correct that they do not consent to having a CRB check done, they cannot come on camp, and need to be removed from the camp officer list:
+If it is correct that they do not consent to having a DBS check done, they cannot come on camp, and need to be removed from the camp officer list:
 
 {% for camp in camps %}https://www.cciw.co.uk{% url 'cciw-officers-officer_list' year=camp.year number=camp.number %}
 {% endfor %}
