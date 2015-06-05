@@ -1,3 +1,6 @@
+from django.contrib.auth import login
+
+
 class DebugMiddleware(object):
     def process_response(self, request, response):
         from cciw.bookings.models import BookingAccount
@@ -12,10 +15,7 @@ class DebugMiddleware(object):
 
         if 'as' in request.GET:
             from django.contrib.auth import get_user_model
-
             User = get_user_model()
             user = User.objects.get(username=request.GET['as'])
-            request.session['_auth_user_id'] = user.id
-            request.session['_auth_user_backend'] = 'django.contrib.auth.backends.ModelBackend'
-            request.user = user
-            request.session.save()
+            user.backend = 'django.contrib.auth.backends.ModelBackend'  # fake a call to authenticate
+            login(request, user)
