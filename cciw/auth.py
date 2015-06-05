@@ -60,3 +60,11 @@ def is_booking_secretary(user):
     if not active_staff(user):
         return False
     return user_in_groups(user, [BOOKING_SECRETARY_GROUP_NAME])
+
+
+def can_manage_application_forms(user):
+    if user.has_perm('officers.change_application'):
+        return True
+    if is_camp_admin(user):
+        return True
+    return False

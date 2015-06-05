@@ -6,6 +6,7 @@ from django.core import urlresolvers
 from django import forms
 from django.forms.utils import ErrorList
 
+from cciw.auth import can_manage_application_forms
 from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
 from cciw.officers.fields import ExplicitBooleanField
@@ -52,7 +53,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
         officer = self.cleaned_data.get('officer', None)
 
         editing_old = self.instance.pk is not None and self.instance.finished
-        if editing_old and not user.has_perm('officers.change_application'):
+        if editing_old and not can_manage_application_forms(user):
             # Once an Application has been marked 'finished' we don't allow any
             # value to be changed, to stop the possibility of tampering with saved
             # data.
@@ -218,7 +219,7 @@ class ApplicationAdmin(admin.ModelAdmin):
             # never get here normally
             return ()
         else:
-            if user.has_perm('officers.change_application'):
+            if can_manage_application_forms(user):
                 return self.camp_leader_application_fieldsets
             else:
                 return self.camp_officer_application_fieldsets
@@ -237,7 +238,7 @@ class ApplicationAdmin(admin.ModelAdmin):
 
     def _force_user_val(self, request):
         user = request.user
-        if not user.has_perm('officers.change_application'):
+        if not can_manage_application_forms(user):
             request.POST['officer'] = str(request.user.id)
         else:
             # The leader possibly forgot to set the 'user' box while submitting
@@ -263,6 +264,8 @@ class ApplicationAdmin(admin.ModelAdmin):
         # of listing all objects (which is what we want)
         if (obj is not None
                 and (obj.officer_id is not None and obj.officer_id == request.user.id)):
+            return True
+        if can_manage_application_forms(request.user):
             return True
         return super(ApplicationAdmin, self).has_change_permission(request, obj)
 
