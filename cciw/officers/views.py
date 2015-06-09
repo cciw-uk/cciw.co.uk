@@ -409,7 +409,12 @@ def officer_history(request, officer_id=None):
 
 
 class SetEmailForm(forms.Form):
+    name = forms.CharField(widget=forms.TextInput(attrs={'size': '50'}))
     email = forms.EmailField(widget=forms.TextInput(attrs={'size': '50'}))
+
+    def save(self, referee):
+        referee.name = self.cleaned_data['name']
+        referee.email = self.cleaned_data['email']
 
 
 class SendMessageForm(forms.Form):
@@ -457,20 +462,23 @@ def request_reference(request, year=None, number=None):
         raise Http404
     ref = get_object_or_404(Reference.objects.filter(id=ref_id))
     app = ref.application
+    referee = ref.referee
 
     if 'manual' in request.GET:
         return manage_reference_manually(request, ref)
 
     c = {}
 
+    emailform = None
+
     # Need to handle any changes to the referees first, for correctness of what
     # follows
     if request.method == "POST" and 'setemail' in request.POST:
         emailform = SetEmailForm(request.POST)
         if emailform.is_valid():
-            app.referees[ref.referee_number - 1].email = emailform.cleaned_data['email']
+            emailform.save(referee)
             app.save()
-            messages.info(request, "E-mail address updated.")
+            messages.info(request, "Name/e-mail address updated.")
 
     # Work out 'old_referee' or 'known_email_address', and the URL to use in the
     # message.
@@ -501,7 +509,6 @@ def request_reference(request, year=None, number=None):
                             url=url,
                             sender=request.user,
                             update=update)
-    emailform = None
     messageform = None
 
     if request.method == 'POST':
@@ -517,7 +524,9 @@ def request_reference(request, year=None, number=None):
             return close_window_response()
 
     if emailform is None:
-        emailform = SetEmailForm(initial={'email': ref.referee.email})
+        emailform = SetEmailForm(initial={'email': ref.referee.email,
+                                          'name': ref.referee.name,
+                                          })
     if messageform is None:
         messageform = SendReferenceRequestForm(message_info=messageform_info)
 

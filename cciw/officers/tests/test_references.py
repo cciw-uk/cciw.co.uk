@@ -89,10 +89,12 @@ class RequestReference(WebTestBase):
         """
         response = self.test_no_email()
         response = self.fill(response.forms['id_set_email_form'],
-                             {'email': 'addedemail@example.com'}).submit('setemail')
+                             {'email': 'addedemail@example.com',
+                              'name': 'Added Name'}).submit('setemail')
         app = Application.objects.get(pk=3)
         self.assertEqual(app.referees[1].email, 'addedemail@example.com')
-        self.assertContains(response, "E-mail address updated.")
+        self.assertEqual(app.referees[1].name, 'Added Name')
+        self.assertContains(response, "Name/e-mail address updated.")
 
     def test_cancel(self):
         # Application 3 has an e-mail address for first referee

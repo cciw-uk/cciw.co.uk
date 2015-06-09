@@ -51,9 +51,14 @@
           you can ask them to update their reference.</p>
       {% endif %}
 
-      <p>If you need to correct the e-mail address, please edit below and press
+      <p>If you need to correct the name/e-mail address, please edit below and press
         'Save' before continuing:</p>
 
+      {% if emailform.errors %}
+        <p class="errornote">
+          Please correct the error(s) below.
+        </p>
+      {% endif %}
       <form id="id_set_email_form" method="post" action="">
         {% csrf_token %}
         {{ emailform.as_p }}
