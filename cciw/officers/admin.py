@@ -221,6 +221,9 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
              'classes': ['wide']}
          )] + camp_officer_application_fieldsets
 
+    class Media:
+        js = ['js/application_form.js']
+
     def get_fieldsets(self, request, obj=None):
         user = request.user
         if user is None or user.is_anonymous():
