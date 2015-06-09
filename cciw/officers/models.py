@@ -31,7 +31,7 @@ class Referee(object):
             setattr(self._appobj, attname, val)
 
     def __eq__(self, other):
-        return self.name == other.name and self.email == other.email
+        return self.name.lower() == other.name.lower() and self.email.lower() == other.email.lower()
 
 
 class ApplicationManager(models.Manager):

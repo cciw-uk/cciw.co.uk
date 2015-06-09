@@ -300,8 +300,8 @@ def add_previous_references(ref):
     def relevance_key(refform):
         # Matching name or e-mail address is better, so has lower value,
         # so it comes first.
-        return -(int(refform.reference_info.referee.email == ref.referee.email) +
-                 int(refform.reference_info.referee.name == ref.referee.name))
+        return -(int(refform.reference_info.referee.email.lower() == ref.referee.email.lower()) +
+                 int(refform.reference_info.referee.name.lower() == ref.referee.name.lower()))
     prev.sort(key=relevance_key)  # sort is stable, so previous sort by date should be kept
 
     exact = None
