@@ -18,6 +18,7 @@ MIDDLEWARE_CLASSES = (
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
     "django.middleware.common.CommonMiddleware",
     "cciw.middleware.threadlocals.ThreadLocals",
 )
