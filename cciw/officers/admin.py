@@ -94,7 +94,15 @@ class ApplicationAdminModelForm(forms.ModelForm):
         return super(ApplicationAdminModelForm, self).save(**kwargs)
 
 
-class ApplicationAdmin(admin.ModelAdmin):
+class CampAdminPermissionMixin(object):
+
+    def has_change_permission(self, request, obj=None):
+        if can_manage_application_forms(request.user):
+            return True
+        return super(CampAdminPermissionMixin, self).has_change_permission(request, obj)
+
+
+class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     save_as = False
 
     def officer_username(self, obj):
@@ -265,8 +273,6 @@ class ApplicationAdmin(admin.ModelAdmin):
         if (obj is not None
                 and (obj.officer_id is not None and obj.officer_id == request.user.id)):
             return True
-        if can_manage_application_forms(request.user):
-            return True
         return super(ApplicationAdmin, self).has_change_permission(request, obj)
 
     def _redirect(self, request, response):
@@ -298,7 +304,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         email.send_application_emails(request, obj)
 
 
-class ReferenceAdmin(admin.ModelAdmin):
+class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     list_display = ['__str__', 'requested', 'received']
     search_fields = ['application__officer__first_name', 'application__officer__last_name']
 
@@ -312,7 +318,7 @@ class InvitationAdmin(admin.ModelAdmin):
         return super(InvitationAdmin, self).get_queryset(*args, **kwargs).prefetch_related('camp__leaders')
 
 
-class ReferenceFormAdmin(admin.ModelAdmin):
+class ReferenceFormAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     save_as = False
     list_display = ['referee_name', 'applicant_name', 'date_created']
     ordering = ['referee_name']
