@@ -16,7 +16,7 @@ django-dynamic-fixture==1.8.0
 -e git://github.com/pinax/django-mailer.git@44641b814660a9deef907ad9049d571cb1709901#egg=django_mailer-dev
 django-mptt==0.7.3
 django-nyt==0.9.5
--e git://github.com/spookylukey/django-paypal@a5b0fdd16b49f5e9d63fe4b495fe5e4efdde267d#egg=django-paypal
+django-paypal==0.2.4
 -e git://github.com/ojii/django-sekizai@ed986d2eb3963bcfae2f26a4ae38b8391d9bdcab#egg=django-sekizai
 django-webtest==1.7.5
 ecdsa==0.10
