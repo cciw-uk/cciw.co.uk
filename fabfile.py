@@ -463,6 +463,20 @@ def get_and_load_production_db():
     local_restore_from_dump(filename)
 
 
+# ---- ngrok -----
+
+NGROK_1 = "1"
+NGROK_2 = "2"
+
+
+def get_ngrok_version():
+    ngrok_version = subprocess.check_output(["ngrok", "version"]).decode('utf-8')
+    if ngrok_version.startswith("1."):
+        return NGROK_1
+    else:
+        return NGROK_2  # Assume anything more recent is compatible with version 2
+
+
 @task
 def run_ngrok(port=8000):
     """
@@ -472,7 +486,7 @@ def run_ngrok(port=8000):
     # using exec. However, we do need to know what is going on in order know the
     # URL, so we spawn another fab task that monitors a log file
 
-    # Check that this works first:
+    # Check that this works first, so that set_site_from_url doesn't fail silently
     os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
     import django
     django.setup()
@@ -483,23 +497,41 @@ def run_ngrok(port=8000):
 
     # launch fab in separate process in background.
     os.spawnv(os.P_NOWAIT,
-              "/bin/sh", ["sh", "-c", "fab ngrok_helper:{0} > /dev/null".format(log_filename)])
+              "/bin/sh", ["sh", "-c", "fab ngrok_helper:{0} > /dev/null 2> /dev/null".format(log_filename)])
 
     # Now launch ngrok, replacing current process
     ngrokpath = _get_path("ngrok")
-    os.execv(ngrokpath, ["ngrok", "--log=%s" % log_filename, str(port)])
+
+    if get_ngrok_version() == NGROK_1:
+        os.execv(ngrokpath, ["ngrok", "--log=%s" % log_filename, str(port)])
+    else:
+        os.execv(ngrokpath, ["ngrok", "http", str(port), "--log-level", "debug", "--log", log_filename])
+
+
+NGROK_LOG_MATCHERS = {
+    NGROK_1: {
+        'url': "\[client\] Tunnel established at ([^ ]*)",
+        'shutdown': "\[controller\] Shutting down",
+    },
+    NGROK_2: {
+        'url': 'msg="decoded response".* URL:([^ ]*)',
+        'shutdown': 'msg="all component stopped"',
+    }
+}
 
 
 @task
 def ngrok_helper(log_filename):
+    matchers = NGROK_LOG_MATCHERS[get_ngrok_version()]
+
     f = open(log_filename, "r")
     while True:
         line = f.readline()
         if line:
-            m = re.search("\[client\] Tunnel established at ([^ ]*)", line.strip())
+            m = re.search(matchers['url'], line.strip())
             if m:
-                set_site(m.groups()[0])
-            if re.search("\[controller\] Shutting down", line):
+                set_site_from_url(m.groups()[0])
+            if re.search(matchers['shutdown'], line):
                 break
         else:
             time.sleep(0.5)
@@ -511,7 +543,7 @@ def _get_path(program_name):
 
 
 @task
-def set_site(url):
+def set_site_from_url(url):
     os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
     import django
     django.setup()
