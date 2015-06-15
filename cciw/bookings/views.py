@@ -642,6 +642,9 @@ def booking_problems_json(request):
 
     if 'booking_id' in data:
         booking_obj = Booking.objects.get(id=int(data['booking_id']))
+        if 'created_online' not in data:
+            # readonly field, data not included in form
+            data['created_online'] = booking_obj.created_online
         form = BookingAdminForm(data, instance=booking_obj)
     else:
         form = BookingAdminForm(data)

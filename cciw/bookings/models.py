@@ -747,6 +747,10 @@ class Booking(models.Model):
             if self.amount_due != expected_amount:
                 errors.append("The 'amount due' is not the expected value of £%s." % expected_amount)
 
+        if booking_sec and not self.created_online:
+            if self.early_bird_discount:
+                errors.append("The early bird discount is only allowed for bookings created online.")
+
         return errors
 
     def get_booking_warnings(self, booking_sec=False):

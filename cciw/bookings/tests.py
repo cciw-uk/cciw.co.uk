@@ -1425,6 +1425,21 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
         self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £0.00")
                             for p in j['problems']))
 
+    def test_booking_problems_early_bird_check(self):
+        self.add_prices()
+        acc1 = BookingAccount.objects.create(email="foo@foo.com",
+                                             post_code="ABC",
+                                             name="Mr Foo")
+        self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
+        data = self._initial_place_details()
+        data['early_bird_discount'] = '1'
+        data['account'] = str(acc1.id)
+        data['state'] = BOOKING_BOOKED
+        data['amount_due'] = '90.00'
+        j = self._booking_problems_json(data)
+        self.assertIn("The early bird discount is only allowed for bookings created online.",
+                      j['problems'])
+
 
 class TestAccountOverview(BookingBaseMixin, CreatePlaceMixin, TestCase):
 
