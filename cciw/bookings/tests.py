@@ -1345,6 +1345,17 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
         j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['account']['post_code'], 'ABC')
 
+    def _booking_problems_json(self, place_details):
+        resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
+                                place_details)
+        return json.loads(resp.content.decode('utf-8'))
+
+    def _initial_place_details(self):
+        data = self.place_details.copy()
+        data['created_0'] = '1970-01-01'  # Simulate form, which doesn't supply created
+        data['created_1'] = '00:00:00'
+        return data
+
     def test_booking_problems(self):
         self.add_prices()
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
@@ -1358,21 +1369,15 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
         j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['valid'], False)
 
-        data = self.place_details.copy()
+        data = self._initial_place_details()
         data['account'] = str(acc1.id)
-        data['created_0'] = '1970-01-01'  # Simulate form, which doesn't supply created
-        data['created_1'] = '00:00:00'
         data['state'] = BOOKING_APPROVED
         data['amount_due'] = '100.00'
         data['price_type'] = PRICE_CUSTOM
-        resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
-                                data)
-
-        j = json.loads(resp.content.decode('utf-8'))
+        j = self._booking_problems_json(data)
         self.assertEqual(j['valid'], True)
-        problems = j['problems']
         self.assertTrue("A custom discount needs to be arranged by the booking secretary" in
-                        problems)
+                        j['problems'])
 
     def test_booking_problems_price_check(self):
         # Test that the price is checked.
@@ -1383,21 +1388,15 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
                                              name="Mr Foo")
         self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
 
-        data = self.place_details.copy()
+        data = self._initial_place_details()
         data['account'] = str(acc1.id)
-        data['created_0'] = '1970-01-01'
-        data['created_1'] = '00:00:00'
         data['state'] = BOOKING_BOOKED
         data['amount_due'] = '0.00'
         data['price_type'] = PRICE_FULL
-        resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
-                                data)
-
-        j = json.loads(resp.content.decode('utf-8'))
-        problems = j['problems']
+        j = self._booking_problems_json(data)
         self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £%s"
                                          % self.price_full)
-                            for p in problems))
+                            for p in j['problems']))
 
     def test_booking_problems_deposit_check(self):
         # Test that the price is checked.
@@ -1408,33 +1407,23 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, Test
                                              name="Mr Foo")
         self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
 
-        data = self.place_details.copy()
+        data = self._initial_place_details()
         data['account'] = str(acc1.id)
-        data['created_0'] = '1970-01-01'
-        data['created_1'] = '00:00:00'
         data['state'] = BOOKING_CANCELLED
         data['amount_due'] = '0.00'
         data['price_type'] = PRICE_FULL
-        resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
-                                data)
-
-        j = json.loads(resp.content.decode('utf-8'))
-        problems = j['problems']
+        j = self._booking_problems_json(data)
         self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £%s"
                                          % self.price_deposit)
-                            for p in problems))
+                            for p in j['problems']))
 
         # Check 'full refund' cancellation.
         data['state'] = BOOKING_CANCELLED_FULL_REFUND
         data['amount_due'] = '20.00'
         data['price_type'] = PRICE_FULL
-        resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
-                                data)
-
-        j = json.loads(resp.content.decode('utf-8'))
-        problems = j['problems']
+        j = self._booking_problems_json(data)
         self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £0.00")
-                            for p in problems))
+                            for p in j['problems']))
 
 
 class TestAccountOverview(BookingBaseMixin, CreatePlaceMixin, TestCase):
