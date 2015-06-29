@@ -25,7 +25,8 @@ class Site(models.Model):
 
     def save(self, **kwargs):
         from django.template.defaultfilters import slugify
-        self.slug_name = slugify(self.short_name)
+        if self.slug_name == "":
+            self.slug_name = slugify(self.short_name)
         super(Site, self).save(**kwargs)
 
 
