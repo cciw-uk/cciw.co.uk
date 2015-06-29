@@ -45,3 +45,4 @@ python3-memcached==1.51
 frozendict==0.4
 pyquery==1.2.9
 cssselect==0.9.1
+IPython

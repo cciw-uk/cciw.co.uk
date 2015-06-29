@@ -9,12 +9,6 @@ Installation hints
 
 - pip install -r requirements.txt
 
-  For development/deployment, you also need:
-
-  - Fabric
-  - django-debug-toolbar
-  - django-anonymizer
-
 - The fabfile contains info about how to develop and deploy
 
 - You need to create a cciw/settings_priv.py with the various settings that I cannot
