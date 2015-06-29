@@ -167,6 +167,7 @@ def install_dependencies():
             # pycrypto has error installing on WebFaction due to this:
             # https://bugs.launchpad.net/pycrypto/+bug/1294670
             # So we need custom TMPDIR
+            run_venv("mkdir ~/tmp || true")
             run_venv("TMPDIR=~/tmp pip install -q -r requirements.txt")
 
 
