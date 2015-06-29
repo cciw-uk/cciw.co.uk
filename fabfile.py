@@ -439,8 +439,8 @@ def db_restore_commands(db, filename):
 
 @task
 def local_restore_from_dump(filename):
-    db = PRODUCTION.DB.copy()
-    db['PASSWORD'] = 'foo'
+    from cciw.settings_dev import DATABASES
+    db = DATABASES['default']
     for cmd in db_restore_commands(db, filename):
         local(cmd)
 

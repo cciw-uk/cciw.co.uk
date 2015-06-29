@@ -130,18 +130,7 @@ SILENCED_SYSTEM_CHECKS = [
 # == DATABASE ==
 
 if DEVBOX:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'cciw',
-            'USER': 'cciw',
-            'PASSWORD': 'foo',
-            'HOST': 'localhost',
-            'PORT': 5432,
-            'CONN_MAX_AGE': 30,
-            'ATOMIC_REQUESTS': True,
-        }
-    }
+    from cciw.settings_dev import DATABASES
 else:
     from cciw.settings_priv import DATABASES
 
