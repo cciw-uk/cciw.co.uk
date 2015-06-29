@@ -345,7 +345,8 @@ def deploy():
 
         with lcd(THIS_DIR):
             if local("hg st", capture=True).strip() != "":
-                if not console.confirm("Project dir is not clean, merge to live will fail. Continue anyway?", default=False):
+                x = input("Project dir is not clean, merge to live will fail. Continue anyway? [y/n] ")
+                if x != "y":
                     sys.exit()
 
     push_sources()
