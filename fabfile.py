@@ -162,7 +162,12 @@ def install_dependencies():
     ensure_virtualenv()
     with virtualenv(target.VENV_DIR):
         with cd(target.SRC_DIR):
-            run_venv("pip install -r requirements.txt")
+            # Use -q (quiet) to stop errors in fabric/io.py
+            run_venv("pip install --upgrade -q pip")
+            # pycrypto has error installing on WebFaction due to this:
+            # https://bugs.launchpad.net/pycrypto/+bug/1294670
+            # So we need custom TMPDIR
+            run_venv("TMPDIR=~/tmp pip install -q -r requirements.txt")
 
 
 def ensure_virtualenv():
