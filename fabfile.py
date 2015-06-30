@@ -332,14 +332,22 @@ def update_database():
                 run_venv("./manage.py migrate --noinput")
 
 
+NON_VCS_SOURCES = [
+    "cciw/settings_priv.py",
+    "cciw/settings_priv_common.py",
+    "cciw/settings_production.py",
+    "cciw/settings_staging.py",
+]
+
+
 def _push_non_vcs_sources():
-    # Non-VCS sources:
-    for s in ["cciw/settings_priv.py",
-              "cciw/settings_priv_common.py",
-              "cciw/settings_production.py",
-              "cciw/settings_staging.py"]:
+    for s in NON_VCS_SOURCES:
         local("rsync %s cciw@cciw.co.uk:%s/%s" % (s, target.SRC_DIR, s))
 
+
+def _get_non_vcs_sources():
+    for s in NON_VCS_SOURCES:
+        local("rsync cciw@cciw.co.uk:%s/%s %s" % (target.SRC_DIR, s, s))
 
 @task
 def deploy():
@@ -558,3 +566,10 @@ def set_site_from_url(url):
     from urllib.parse import urlparse
     parts = urlparse(url)
     Site.objects.all().update(domain=parts.netloc)
+
+
+@task
+def initial_dev_setup():
+    get_and_load_production_db()
+    production()
+    _get_non_vcs_sources()

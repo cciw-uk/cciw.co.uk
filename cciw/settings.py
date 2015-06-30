@@ -28,10 +28,16 @@ WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
 # == MISC ==
 
 if DEVBOX:
+    def show_toolbar(request):
+        if request.is_ajax():
+            return False
+        return True
+
     DEBUG = True
     TEMPLATE_DEBUG = True
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
+        'SHOW_TOOLBAR_CALLBACK': 'cciw.settings.show_toolbar',
     }
 else:
     DEBUG = False
