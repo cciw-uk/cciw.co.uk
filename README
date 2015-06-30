@@ -1,6 +1,9 @@
 CCIW source code
 ================
 
+The CCIW site is fairly standard Django site. It is currently hosted on
+WebFaction shared hosting and makes use of some of its API and email features.
+
 Development setup
 -----------------
 
@@ -41,12 +44,8 @@ supports the above dependencies. Once you have installed them:
 
     $ vagrant ssh
 
-    # Now you are in the VM
-
-    $ cd /vagrant/src
-
-    # Activate the virtualenv
-    $ . ../cciw-venv/bin/activate
+    # Now you are in the VM, with the right current directory
+    # and the virtualenv already activated.
 
     # Some initial dev setup tasks:
     $ fab initial_dev_setup
@@ -63,6 +62,13 @@ Alternatively, you can use a virtualenv on the host machine, and look in the
 Vagrantfile and associated scripts for information about the things you will
 need installed.
 
+Version control
+---------------
+
+Mercurial is used for VCS. Features and fixes should be developed off the
+'default' named branch, using bookmarks if necessary. These are merged to the
+'live' named branch as part of the deployment process.
+
 Tests
 -----
 
@@ -73,6 +79,16 @@ $ fab test
 or
 
 $ ./manage.py test --settings=cciw.settings_tests cciw.cciwmain.tests cciw.bookings.tests cciw.officers.tests
+
+Deployment
+----------
+
+Deployment is done using the tool Fabric. Once everything is committed to source
+control, and "hg status" shows nothing, deploying is as simple as::
+
+  $ fab production deploy
+
+The fabfile contains various other utilities - see ``fab -l``
 
 
 Components
@@ -148,11 +164,16 @@ Views are done using a mixture of classic functions and Class Based Views,
 depending on whether the move to CBVs was worth the effort. This means that
 there is sometimes some duplication between the function based way of doing
 something and the equivalent CBV way, and you need to be comfortable with both
-styles.
+styles. Note that we use our own, simplified CBV base class.
 
 
 Crontab
 -------
+
+This is not automatically deployed, because the WebFaction account that we
+deploy to hosts multiple projects and merging the crontabs for them would get
+tricky. Changes to this should be recorded here and then manually installed by
+doing 'crontab -e' on the WebFaction server.
 
 CCIW_PYTHON=/home/cciw/webapps/cciw_django/venv_py34/bin/python3.4
 CCIW_MANAGE=/home/cciw/webapps/cciw_django/src/manage.py
@@ -181,7 +202,6 @@ CCIW_STAGING_MANAGE=/home/cciw/webapps/cciw_staging_django/src/manage.py
 
 PayPal
 ======
-
 
 PayPal is integrated using IPN.
 
