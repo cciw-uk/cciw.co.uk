@@ -306,7 +306,7 @@ def update_database():
     with virtualenv(target.VENV_DIR):
         with cd(target.SRC_DIR):
             if getattr(env, 'fake_migrations', False):
-                run_venv("./manage.py syncdb --all")
+                run_venv("./manage.py syncdb --noinput")
                 run_venv("./manage.py migrate --fake --noinput")
             else:
                 run_venv("./manage.py syncdb --noinput")
