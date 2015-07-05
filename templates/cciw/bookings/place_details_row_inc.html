@@ -10,7 +10,7 @@
   <td class="price">
     {% if b.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ b.amount_due_normalised }}{% endif %}
   </td>
-  <td rowspan="2" style="text-align:center;">
+  <td rowspan="2" class="bookinglistaction">
     <input type="submit" name="edit_{{ b.id }}" value="View/edit"><br/>
     {% if basket %}
       <input type="submit" name="shelve_{{ b.id }}" value="Save for later"><br/>
@@ -46,8 +46,3 @@
     {% endif %}
   </td>
 </tr>
-{% if not forloop.last %}
-  <tr class="spacer">
-    <td colspan="4"></td>
-  </tr>
-{% endif %}
