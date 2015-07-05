@@ -231,6 +231,28 @@ h2
     border-bottom: 2px solid @secondaryColor;
 }
 
+section.grouped {
+    padding: 16px;
+    border-radius: 5px;
+    box-shadow: 0px 2px 4px #888;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    border: 1px solid rgb(0, 118, 51);
+
+    h1:first-child {
+        margin-top: -34px;
+    }
+}
+
+// Counteract #contentInner h1 styles
+#contentInner section.grouped h1:first-child {
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    background: transparent;
+    // Still want the text shadow
+}
 
 /* Tables */
 
