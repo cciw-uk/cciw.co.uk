@@ -622,34 +622,41 @@ div.formrow
     padding: 0px 6px 2px 6px;
 }
 
-/* LHS of form */
-div.formrow .field label
-{
-    display: block;
-    float: left;
-    width: 16em;
-    margin-bottom: 0.8em;
-}
+@labelWidth: 16em;
 
-/* RHS of form */
-div.formrow .field ul,
-div.formrow .field ul li
-{
-    list-style-type: none;
-    margin-left: 0px;
-    padding-left: 0px;
-}
+div.formrow {
 
-div.formrow .field ul
-{
-    margin-left: 16em;
-}
+    /* LHS of form */
+    .field label {
+        display: block;
+        float: left;
+        width: @labelWidth;
+        margin-bottom: 0.8em;
+    }
 
-div.formrow .field ul label
-{
-    /* Override what we set before under div.formrow label */
-    float: none;
-    width: auto;
+    /* RHS of form */
+    .field ul, .field ul li
+    {
+        list-style-type: none;
+        margin-left: 0px;
+        padding-left: 0px;
+    }
+
+    .field ul {
+        margin-left: @labelWidth;
+    }
+
+    .field ul label {
+        /* Override what we set before under div.formrow label */
+        float: none;
+        width: auto;
+    }
+
+    .emptywarning {
+        color: blue;
+        font-weight: bold;
+        font-style: italic;
+    }
 }
 
 div.userError
@@ -671,6 +678,7 @@ ul.errorlist
 div.formrow textarea {
     max-width: 100%;
 }
+
 
 
 /* Awards */

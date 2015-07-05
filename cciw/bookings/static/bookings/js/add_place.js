@@ -145,6 +145,15 @@
                  'serious_illness'
              ]);
 
+             var leave_empty_fields = [
+                 'dietary_requirements',
+                 'church',
+                 'allergies',
+                 'regular_medication_required',
+                 'illnesses',
+                 'learning_difficulties'
+             ];
+
              var useData = function(attrs) {
                  var radios = $('input[name=use_which_booking]');
                  var chosen = null;
@@ -234,6 +243,43 @@
                  if (code == 13) {
                      ev.preventDefault();
                  }
+             });
+
+             var BAD_EMPTY_VALS = [
+                 "n/a",
+                 "not applicable",
+                 "none",
+                 "no",
+                 "no diet",
+                 "na",
+                 "nil",
+                 "no allergies",
+                 "n0",
+                 "none known",
+                 "no known allergies",
+                 "non",
+                 "none that i know of",
+                 "no medication",
+                 "no known difficulties"
+             ]
+
+             var emptyFieldWarning = function ($elem) {
+                 var $label = $elem.closest('div.field').find('label');
+                 var val = $elem.val();
+                 var normVal = $.trim(val).replace(/[\/\\\.\-]*$/, "").toLowerCase();
+                 $label.find('.emptywarning').remove();
+                 if (BAD_EMPTY_VALS.indexOf(normVal) != -1 ||
+                     (normVal == "" && val != "")) {
+                     $label.append('<span class="emptywarning"><br>Please leave empty if not applicable.</span>');
+                 }
+             };
+
+             $.each(leave_empty_fields, function (idx, name) {
+                 var $elem = $('#id_' + name);
+                 emptyFieldWarning($elem);
+                 $elem.bind('change', function (ev) {
+                     emptyFieldWarning($(this));
+                 });
              });
 
              /* Load data about existing places */
