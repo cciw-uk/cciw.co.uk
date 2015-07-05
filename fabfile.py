@@ -294,37 +294,18 @@ def build_static():
 
 
 @task
-def first_deployment_mode():
+def fake_migrations_mode():
     """
     Use before first deployment to switch on fake migrations.
     """
-    env.initial_deploy = True
+    env.fake_migrations = True
 
-
-@task
-def first_django_17_deploy():
-    env.first_django_17_deploy = True
 
 
 def update_database():
     with virtualenv(target.VENV_DIR):
         with cd(target.SRC_DIR):
-            if getattr(env, 'first_django_17_deploy', False):
-                # We have to to do '--fake' because for cciwmain, dependencies
-                # meant that two migrations got created, so auto-detecting of
-                # initial migration won't cover us.
-                run_venv("./manage.py migrate --fake --noinput cciwmain")
-
-                # Has multiple initial migrations we have already applied
-                run_venv("./manage.py migrate --fake --noinput django_nyt")
-
-                # Has multiple initial migrations we have already applied
-                run_venv("./manage.py migrate --fake --noinput ipn")
-
-                # Everything else
-                run_venv("./manage.py migrate --noinput")
-
-            elif getattr(env, 'initial_deploy', False):
+            if getattr(env, 'fake_migrations', False):
                 run_venv("./manage.py syncdb --all")
                 run_venv("./manage.py migrate --fake --noinput")
             else:
