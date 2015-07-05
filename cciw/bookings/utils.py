@@ -4,6 +4,7 @@ from itertools import groupby
 from dateutil.relativedelta import relativedelta
 
 from cciw.bookings.models import Booking, Payment, BookingAccount
+from cciw.officers.applications import applications_for_camp
 
 
 def format_address(*args):
@@ -58,9 +59,8 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                                           [[f(b) for n, f in everything_columns]
                                            for b in bookings])
 
-    def get_birthday(b):
+    def get_birthday(born):
         start = camp.start_date
-        born = b.date_of_birth
         try:
             return born.replace(year=start.year)
         except ValueError:
@@ -69,16 +69,27 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
 
     bday_columns = [('First name', lambda b: b.first_name),
                     ('Last name', lambda b: b.last_name),
-                    ('Birthday', lambda b: get_birthday(b).strftime("%A %d %B")),
-                    ('Age', lambda b: str(relativedelta(get_birthday(b), b.date_of_birth).years)),
+                    ('Birthday', lambda b: get_birthday(b.date_of_birth).strftime("%A %d %B")),
+                    ('Age', lambda b: str(relativedelta(get_birthday(b.date_of_birth), b.date_of_birth).years)),
                     ('Date of birth', lambda b: b.date_of_birth)
                     ]
+
+    bday_officer_columns = [lambda app: app.officer.first_name,
+                            lambda app: app.officer.last_name,
+                            lambda app: get_birthday(app.birth_date).strftime("%A %d %B"),
+                            lambda app: str(relativedelta(get_birthday(app.birth_date), app.birth_date).years),
+                            lambda app: app.birth_date,
+                           ]
+
 
     spreadsheet.add_sheet_with_header_row("Birthdays on camp",
                                           [n for n, f in bday_columns],
                                           [[f(b) for n, f in bday_columns]
                                            for b in bookings if
-                                           camp.start_date <= get_birthday(b) <= camp.end_date])
+                                           camp.start_date <= get_birthday(b.date_of_birth) <= camp.end_date] +
+                                          [[f(app) for f in bday_officer_columns]
+                                           for app in applications_for_camp(camp) if
+                                           camp.start_date <= get_birthday(app.birth_date) <= camp.end_date])
 
     return spreadsheet.to_bytes()
 
