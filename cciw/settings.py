@@ -104,6 +104,7 @@ INSTALLED_APPS = [
     'wiki.plugins.macros',
     'django_nyt',
     'compressor',
+    'mailer',
 ]
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
@@ -121,11 +122,6 @@ if DEVBOX and DEBUG:
 if DEVBOX:
     INSTALLED_APPS += [
         'anonymizer',
-    ]
-
-if LIVEBOX and PRODUCTION:
-    INSTALLED_APPS += [
-        'mailer',
     ]
 
 
@@ -196,11 +192,9 @@ if LIVEBOX:
     elif STAGING:
         EMAIL_BACKEND = "cciw.mail.backend.StagingBackend"
 
+
 if DEVBOX:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    # For more advanced e-mail testing which requires the exact email dumped to
-    # a file, disable the above line and run:
-    #  fakemail.py --path=/home/luke/devel/cciw.co.uk/tests/mail --background
     EMAIL_HOST = 'localhost'
     EMAIL_HOST_USER = None
     EMAIL_HOST_PASSWORD = None
