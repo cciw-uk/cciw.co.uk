@@ -92,7 +92,7 @@
             lastNameCell.html('<input size=8 id="id_officer_last_name" type="text" value="' +  escape(officer.lastName) + '" />');
             emailCell.html('<input size=25 id="id_officer_email" type="text" value="' + escape(officer.email) + '" />');
             notesCell.html('<input size=25 id="id_officer_notes" type="text" value="' + escape(officer.notes) + '" />');
-            editCell.find('img').hide();
+            editCell.find('button').hide();
             editCell.append(
                      '<span><a href="#" id="id_officer_save">Save</a> / ' +
                      '<a href="#" id="id_officer_cancel">Cancel</a><span>');
@@ -109,7 +109,7 @@
                 lastNameCell.html(escape(officer.lastName));
                 emailCell.html('<a href="mailto:' + escape(officer.email) + '">' + escape(officer.email) + '</a>')
                 notesCell.html(escape(officer.notes));
-                editCell.find('img').show();
+                editCell.find('button').show();
                 editCell.find('span').remove();
                 restoreAddBlockState();
                 editOfficerMode = false;

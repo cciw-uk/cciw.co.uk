@@ -8,7 +8,7 @@
         <th>Last name</th>
         <th>E-mail</th>
         <th>Leader's notes</th>
-        <th>Edit</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -19,11 +19,18 @@
           <td><a href="mailto:{{ invite.officer.email }}">{{ invite.officer.email }}</a></td>
           <td>{{ invite.notes }}</a></td>
           <td>
-            <nobr>
-              <img class="editbtn" id="id_edit_{{ invite.officer.id }}" src="{% static "admin/img/icon_changelink.gif" %}" alt="Edit" title="Edit" style="margin-right: 4px;"/>
-              <img class="removebtn" id="id_remove_{{ invite.officer.id }}" src="{% static "images/officer-list-remove.gif" %}" alt="Remove" title="Remove" style="margin-right: 4px;"/>
-              <img class="emailbtn" id="id_email_{{ invite.officer.id }}" src="{% static "images/sendemail.gif" %}" alt="Re-send initial e-mail" title="Re-send initial e-mail" />
-            </nobr>
+            <button class="editbtn" id="id_edit_{{ invite.officer.id }}">
+              <img src="{% static "admin/img/icon_changelink.gif" %}" alt="Edit" title="Edit" />
+              Edit
+            </button>
+            <button class="removebtn" id="id_remove_{{ invite.officer.id }}">
+              <img src="{% static "images/officer-list-remove.gif" %}" alt="Remove" title="Remove">
+              Remove
+            </button>
+            <button class="emailbtn" id="id_email_{{ invite.officer.id }}">
+              <img src="{% static "images/sendemail.gif" %}" alt="Re-send initial e-mail" title="Re-send initial e-mail" />
+              Resend email
+            </button>
           </td>
         </tr>
       {% empty %}
