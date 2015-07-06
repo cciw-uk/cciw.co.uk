@@ -1,64 +1,17 @@
 {% extends "cciw/officers/base.html" %}
 {% load static %}
+{% load compress %}
 {% block title %}Officer list {{ camp.year }}-{{ camp.number }} | CCIW Officers{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
-  <script type="text/javascript" src="{% static "js/jquery.tablesorter.min.js" %}"></script>
-  <script type="text/javascript" src="{% static "js/officer_list.js" %}"></script>
-  <link rel="stylesheet" type="text/css" href="{% static "css/forms.css" %}" />
-  <style type="text/css">
+  {% compress js %}
+    <script type="text/javascript" src="{% static "js/jquery.tablesorter.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/officer_list.js" %}"></script>
+  {% endcompress %}
 
-   .innerleft {
-       margin: 0px 10px 0px 0px;
-   }
-
-   .innerright {
-       margin: 0px 10px;
-   }
-
-   .leftcolumnwrapper {
-       float: left;
-       width: 100%;
-   }
-
-   .leftcolumn {
-       /* see javascript below for other instances of this width */
-       margin-right: 30em; /* Same as width of right column */
-   }
-
-   .rightcolumn {
-       float: left;
-       width: 30em; /* Width of right column */
-       margin-left: -30em; /* Same as  -(width of right column) */
-       background-color: #f0f0f0;
-   }
-
-
-   table.tablesorter thead th {
-       background-color: #f0f0f0;
-       background-image: none;
-   }
-
-   table.tablesorter thead .header {
-       background-image: url({% static "images/ascdesc.gif" %});
-       background-repeat: no-repeat;
-       background-position: center right;
-       cursor: pointer;
-   }
-
-   table.tablesorter thead .header.headerSortDown {
-       background-image: url({% static "images/desc.gif" %});
-   }
-
-   table.tablesorter thead .header.headerSortUp {
-       background-image: url({% static "images/asc.gif" %});
-   }
-
-   #id_officer_list_div table thead th:nth-child(3),
-   #id_officer_list_div table thead th:nth-child(4) {
-       min-width:25ex;
-   }
-  </style>
+  {% compress css %}
+    <link rel="stylesheet" type="text/less" href="{% static "css/officer_list.less" %}" />
+  {% endcompress %}
 {% endblock %}
 {% block bodyclass%}change-form{% endblock %}
 

@@ -1,6 +1,7 @@
 {% extends "admin/change_form.html" %}
 
 {% load static %}
+{% load compress %}
 
 {% block extrastyle %}{{ block.super }}
   <link rel="stylesheet" href="{% static "bookings/css/add_place.css" %}" type="text/css" />
@@ -41,9 +42,10 @@
 
   </script>
 
-
-  <script type="text/javascript" src="{{ STATIC_URL }}bookings/js/admin_booking.js"></script>
-  <script type="text/javascript" src="{{ STATIC_URL }}bookings/js/add_place.js"></script>
+  {% compress js %}
+    <script type="text/javascript" src="{{ STATIC_URL }}bookings/js/admin_booking.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}bookings/js/add_place.js"></script>
+  {% endcompress %}
 
   <input id="readonly" type="hidden" value="0">
   <input id="formInstanceId" type="hidden" value="{{ object_id }}">

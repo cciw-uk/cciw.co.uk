@@ -9,9 +9,11 @@
   {% compress css %}
     <link rel="stylesheet" type="text/less" href="{% static "css/adminextra.less" %}" />
   {% endcompress %}
-  <script type="text/javascript" src="{% static "admin/js/jquery.min.js" %}"></script>
+  {% compress js %}
+    <script type="text/javascript" src="{% static "admin/js/jquery.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>
+  {% endcompress %}
   {% include 'autocomplete_light/static.html' %}
-  <script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>
   {% if GOOGLE_ANALYTICS_ACCOUNT %}
     <script type="text/javascript">
 
