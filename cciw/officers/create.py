@@ -60,7 +60,7 @@ def create_officer(first_name, last_name, email):
 def _create_officer(username, first_name, last_name, email, password):
     officer = User(username=username)
     officer.date_joined = timezone.now()
-    officer.last_login = timezone.now()
+    officer.last_login = None
 
     officer.first_name = first_name
     officer.last_name = last_name
@@ -75,7 +75,10 @@ def _create_officer(username, first_name, last_name, email, password):
 
     groupname = OFFICER_GROUP_NAME
 
-    officer.groups.add(Group.objects.filter(name=groupname)[0])
+    try:
+        officer.groups.add(Group.objects.filter(name=groupname)[0])
+    except IndexError:
+        pass  # group doesn't exist
     return officer
 
 

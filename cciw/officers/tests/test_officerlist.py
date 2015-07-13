@@ -1,15 +1,28 @@
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.test import TestCase
 import xlrd
 
 from cciw.cciwmain.models import Camp
+from cciw.officers.create import create_officer
 from cciw.officers.models import Application
 from cciw.officers.utils import officer_data_to_spreadsheet, camp_serious_slacker_list
 from cciw.utils.spreadsheet import ExcelFormatter
 
 User = get_user_model()
+
+
+class TestCreate(TestCase):
+
+    def test_create(self):
+        user = create_officer("Joe", "Bloggs", "joebloggs@gmail.com")
+
+        user = User.objects.get(id=user.id)
+        self.assertTrue(user.is_staff)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(user.last_login, None)
 
 
 class TestExport(TestCase):
