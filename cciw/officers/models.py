@@ -5,7 +5,6 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
-from cciw.auth import is_booking_secretary
 from cciw.cciwmain.models import Camp
 from cciw.officers.fields import YyyyMmField, AddressField, RequiredCharField, RequiredDateField, RequiredTextField, RequiredEmailField, RequiredYyyyMmField, RequiredAddressField, RequiredExplicitBooleanField
 from cciw.officers.references import reference_form_info
@@ -482,9 +481,6 @@ def camps_as_admin_or_leader(user):
     """
     Returns all the camps for which the user is an admin or leader.
     """
-    if is_booking_secretary(user):
-        return Camp.objects.all()
-
     # If the user is am 'admin' for some camps:
     camps = user.camps_as_admin.all()
     # Find the 'Person' objects that correspond to this user

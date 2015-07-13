@@ -18,7 +18,13 @@
   {% endif %}
 
   {% if not current_camps and not old_camps %}
-    <p>No camps found.</p>
+    <p>There are no camps found that you are a leader or admin for.</p>
+  {% endif %}
+
+  {% if show_all %}
+    <p><a href="?">Show only my camps</a>.</p>
+  {% else %}
+    <p><a href="?show_all=1">Show all camps</a>.</p>
   {% endif %}
 
   <h2>Stats</h2>

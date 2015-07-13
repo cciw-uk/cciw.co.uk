@@ -113,11 +113,18 @@ def leaders_index(request):
     user = request.user
     c = {}
     thisyear = common.get_thisyear()
-    c['current_camps'] = [c for c in user.camps_as_admin_or_leader
+
+    show_all = 'show_all' in request.GET
+    if show_all:
+        camps = list(Camp.objects.all())
+    else:
+        camps = user.camps_as_admin_or_leader
+    c['current_camps'] = [c for c in camps
                           if c.year == thisyear]
-    c['old_camps'] = [c for c in user.camps_as_admin_or_leader
+    c['old_camps'] = [c for c in camps
                       if c.year < thisyear]
     c['statsyears'] = [thisyear, thisyear - 1, thisyear - 2]
+    c['show_all'] = show_all
 
     return render(request, 'cciw/officers/leaders_index.html', c)
 
