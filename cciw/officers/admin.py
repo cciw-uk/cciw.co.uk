@@ -427,8 +427,15 @@ from django.contrib.auth.models import Group, User
 
 Membership = Group.user_set.related.through
 
+
+class MembershipAdminForm(forms.ModelForm):
+
+    user = officer_autocomplete_field()
+
+
 class MembershipInline(admin.TabularInline):
     model = Membership
-    extra = 1
+    form = MembershipAdminForm
+    extra = 3
 
 GroupAdmin.inlines = list(GroupAdmin.inlines) + [MembershipInline]
