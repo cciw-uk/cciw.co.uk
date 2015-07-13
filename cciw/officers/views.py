@@ -66,28 +66,6 @@ booking_secretary_required = user_passes_test_improved(is_booking_secretary)
 cciw_secretary_required = user_passes_test_improved(is_cciw_secretary)
 
 
-def _camps_as_admin_or_leader(user):
-    """
-    Returns all the camps for which the user is an admin or leader.
-    """
-    if is_booking_secretary(user):
-        return Camp.objects.all()
-
-    # If the user is am 'admin' for some camps:
-    camps = user.camps_as_admin.all()
-    # Find the 'Person' object that corresponds to this user
-    leaders = list(user.people.all())
-    # Find the camps for this leader
-    # (We could do:
-    #    Person.objects.get(user=user.id).camps_as_leader.all(),
-    #  but we also must we handle the possibility that two Person
-    #  objects have the same User objects, which could happen in the
-    #  case where a leader leads by themselves and as part of a couple)
-    for leader in leaders:
-        camps = camps | leader.camps_as_leader.all()
-
-    return camps.distinct()
-
 
 def close_window_and_update_ref(ref_id):
     """
@@ -135,8 +113,10 @@ def leaders_index(request):
     user = request.user
     c = {}
     thisyear = common.get_thisyear()
-    c['current_camps'] = _camps_as_admin_or_leader(user).filter(year=thisyear)
-    c['old_camps'] = _camps_as_admin_or_leader(user).filter(year__lt=thisyear)
+    c['current_camps'] = [c for c in user.camps_as_admin_or_leader
+                          if c.year == thisyear]
+    c['old_camps'] = [c for c in user.camps_as_admin_or_leader
+                      if c.year < thisyear]
     c['statsyears'] = [thisyear, thisyear - 1, thisyear - 2]
 
     return render(request, 'cciw/officers/leaders_index.html', c)

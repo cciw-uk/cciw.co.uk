@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from cciw.auth import is_booking_secretary
 from cciw.cciwmain.models import Camp
 from cciw.officers.fields import YyyyMmField, AddressField, RequiredCharField, RequiredDateField, RequiredTextField, RequiredEmailField, RequiredYyyyMmField, RequiredAddressField, RequiredExplicitBooleanField
 from cciw.officers.references import reference_form_info
@@ -473,3 +474,28 @@ class CRBFormLog(models.Model):
     class Meta:
         verbose_name = "CRB/DBS form log"
         verbose_name_plural = "CRB/DBS form logs"
+
+
+# This is monkey patched on User in apps.py as a cached property, so it is best
+# used as user.camps_as_admin_or_leader.
+def camps_as_admin_or_leader(user):
+    """
+    Returns all the camps for which the user is an admin or leader.
+    """
+    if is_booking_secretary(user):
+        return Camp.objects.all()
+
+    # If the user is am 'admin' for some camps:
+    camps = user.camps_as_admin.all()
+    # Find the 'Person' objects that correspond to this user
+    leaders = list(user.people.all())
+    # Find the camps for this leader
+    # (We could do:
+    #    Person.objects.get(user=user.id).camps_as_leader.all(),
+    #  but we also must we handle the possibility that two Person
+    #  objects have the same User objects, which could happen in the
+    #  case where a leader leads by themselves and as part of a couple)
+    for leader in leaders:
+        camps = camps | leader.camps_as_leader.all()
+
+    return camps.distinct()
