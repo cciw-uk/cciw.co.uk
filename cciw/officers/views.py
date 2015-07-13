@@ -1075,11 +1075,13 @@ def stats(request, year=None):
         app_ids = [a[0] for a in application_forms]
         app_dates = [a[1] for a in application_forms]
         ref_dates = list(ReferenceForm.objects.filter(reference_info__application__in=app_ids).order_by('date_created').values_list('date_created', flat=True))
-        all_crb_info = list(CRBApplication.objects.filter(officer__in=officer_ids).order_by('completed').values_list('officer_id', 'completed'))
+        all_crb_info = list(CRBApplication.objects.filter(officer__in=officer_ids,
+                                                          completed__lte=camp.start_date
+                                                         ).order_by('completed').values_list('officer_id', 'completed'))
         # We duplicate logic from CRBApplication.get_for_camp here to avoid
         # duplicating queries
         valid_crb_info = [(off_id, d) for off_id, d in all_crb_info
-                          if d >= camp.start_date - timedelta(settings.CRB_VALID_FOR)]
+                          if d >= camp.start_date - timedelta(days=settings.CRB_VALID_FOR)]
         # Make a plot by going through each day in the year before the camp and
         # incrementing a counter. This requires the data to be sorted already,
         # as above.
@@ -1182,7 +1184,10 @@ def manage_crbs(request, year=None):
     all_officers = reduce(operator.or_, map(set, camps_officers))
     all_officers = sorted(all_officers, key=lambda o: (o.first_name, o.last_name))
     apps = list(reduce(operator.or_, map(applications_for_camp, camps)))
-    valid_crb_officer_ids = set(reduce(operator.or_, map(CRBApplication.objects.get_for_camp, camps)).values_list('officer_id', flat=True))
+    valid_crb_officer_ids = set(reduce(operator.or_,
+                                       [CRBApplication.objects.get_for_camp(c, include_late=True)
+                                        for c in camps])
+                                .values_list('officer_id', flat=True))
     all_crb_officer_ids = set(CRBApplication.objects.values_list('officer_id', flat=True))
     # CRB forms sent: set cutoff to a year before now, on the basis that
     # anything more than that will have been lost, and we don't want to load

@@ -400,13 +400,20 @@ class CRBApplicationManager(models.Manager):
     def get_queryset(self):
         return super(CRBApplicationManager, self).get_queryset().select_related('officer')
 
-    def get_for_camp(self, camp):
+    def get_for_camp(self, camp, include_late=False):
         """
         Returns the CRBs that might be valid for a camp (ignoring the camp
         officer list)
         """
-        # This logic is duplicated in cciw.officers.views.stats
-        return self.get_queryset().filter(completed__gte=camp.start_date - timedelta(settings.CRB_VALID_FOR))
+        # This logic is duplicated in cciw.officers.views.stats.
+
+        # We include CRB applications that are after the camp date, for the sake
+        # of the 'manage_crbs' function which might be used even after the camp
+        # has run.
+        qs = self.get_queryset().filter(completed__gte=camp.start_date - timedelta(settings.CRB_VALID_FOR))
+        if not include_late:
+            qs = qs.filter(completed__lte=camp.start_date)
+        return qs
 
 
 class CRBApplication(models.Model):
