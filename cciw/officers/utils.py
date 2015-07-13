@@ -104,45 +104,38 @@ def camp_serious_slacker_list(camp):
     # followed by submitted applications i.e. an officer fixes
     # their past record by submitting one application.
 
-    for officer, camps in officer_apps_present.items():
-        if camps:
-            camps.sort(key=lambda camp: camp.start_date)
-            last_camp_with_app = camps[-1]
-            missing_camps = officer_apps_missing[officer]
-            new_missing_camps = [
-                c for c in missing_camps
-                if c.start_date > last_camp_with_app.start_date
-            ]
-            officer_apps_missing[officer] = new_missing_camps
-            officer_apps_last_good_year[officer] = last_camp_with_app.year
+    def sort_camps(camps):
+        camps.sort(key=lambda camp: camp.start_date)
 
-    # Sort by date desc
-    for officer, camps in officer_apps_missing.items():
+    def sort_camps_reverse(camps):
         camps.sort(key=lambda camp: camp.start_date, reverse=True)
 
-    # Same for references
-    for officer, camps in officer_refs_present.items():
-        if camps:
-            camps.sort(key=lambda camp: camp.start_date)
-            last_camp_with_ref = camps[-1]
-            missing_camps = officer_refs_missing[officer]
-            new_missing_camps = [
-                c for c in missing_camps
-                if c.start_date > last_camp_with_ref.start_date
-            ]
-            officer_refs_missing[officer] = new_missing_camps
-            officer_refs_last_good_year[officer] = last_camp_with_ref.year
+    def get_missing_and_present_lists(present_dict, missing_dict, last_good_year_dict):
+        for officer, camps in present_dict.items():
+            if camps:
+                sort_camps(camps)
+                last_camp_with_item = camps[-1]
+                missing_camps =  missing_dict[officer]
+                new_missing_camps = [
+                    c for c in missing_camps
+                    if c.start_date > last_camp_with_item.start_date
+                ]
+                missing_dict[officer] = new_missing_camps
+                last_good_year_dict[officer] = last_camp_with_item.year
 
-    # Sort by date desc
-    for officer, camps in officer_refs_missing.items():
-        camps.sort(key=lambda camp: camp.start_date, reverse=True)
+        for officer, camps in missing_dict.items():
+            sort_camps_reverse(camps)
 
-    # Don't show missing applications/references from current year
-    for officer, camps in officer_apps_missing.items():
-        officer_apps_missing[officer] = [c for c in camps if c.year < camp.year]
+        # Don't show missing applications/references from current year
+        for officer, camps in missing_dict.items():
+            missing_dict[officer] = [c for c in camps if c.year < camp.year]
 
-    for officer, camps in officer_refs_missing.items():
-        officer_refs_missing[officer] = [c for c in camps if c.year < camp.year]
+    get_missing_and_present_lists(officer_apps_present,
+                                  officer_apps_missing,
+                                  officer_apps_last_good_year)
+    get_missing_and_present_lists(officer_refs_present,
+                                  officer_refs_missing,
+                                  officer_refs_last_good_year)
 
     l = [(o, officer_apps_missing[o], officer_refs_missing[o])
          for o in set(officer_apps_missing.keys()) | set(officer_refs_missing.keys())]
