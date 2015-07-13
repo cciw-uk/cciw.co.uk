@@ -308,9 +308,16 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
 
 
 class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
-    list_display = ['__str__', 'requested', 'received']
+    def application_date(obj):
+        return obj.application.date_submitted
+    application_date.admin_order_field = 'application__date_submitted'
+
+    list_display = ['__str__', 'requested', 'received', application_date]
+    list_filter = ['requested', 'received']
     search_fields = ['application__officer__first_name', 'application__officer__last_name']
 
+    def get_queryset(self, *args, **kwargs):
+        return super(ReferenceAdmin, self).get_queryset(*args, **kwargs).select_related('application')
 
 class InvitationAdmin(admin.ModelAdmin):
     list_display = ['officer', 'camp', 'notes', 'date_added']
