@@ -5,10 +5,11 @@ WIKI_USERS_GROUP_NAME = 'Wiki users'
 SECRETARY_GROUP_NAME = 'Secretaries'
 OFFICER_GROUP_NAME = 'Officers'
 LEADER_GROUP_NAME = 'Leaders'
+COMMITTEE_GROUP_NAME = 'Committee'
 BOOKING_SECRETARY_GROUP_NAME = 'Booking secretaries'
 
 OFFICER_GROUPS = [OFFICER_GROUP_NAME, LEADER_GROUP_NAME]
-CAMP_ADMIN_GROUPS = [SECRETARY_GROUP_NAME, LEADER_GROUP_NAME]
+CAMP_ADMIN_GROUPS = [SECRETARY_GROUP_NAME, LEADER_GROUP_NAME, COMMITTEE_GROUP_NAME, BOOKING_SECRETARY_GROUP_NAME]
 
 WIKI_GROUPS = [WIKI_USERS_GROUP_NAME, LEADER_GROUP_NAME,
                BOOKING_SECRETARY_GROUP_NAME, SECRETARY_GROUP_NAME]
@@ -32,8 +33,6 @@ def is_camp_admin(user):
     """
     if not active_staff(user):
         return False
-    if is_booking_secretary(user):
-        return True
     return user_in_groups(user, CAMP_ADMIN_GROUPS) or \
         user.camps_as_admin.exists() > 0
 
