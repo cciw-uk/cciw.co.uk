@@ -32,7 +32,7 @@ def is_camp_admin(user):
     if not active_staff(user):
         return False
     return user_in_groups(user, CAMP_ADMIN_GROUPS) or \
-        len(user.camps_as_admin_or_leader) > 0
+        len(user.current_camps_as_admin_or_leader) > 0
 
 
 def is_wiki_user(user):
