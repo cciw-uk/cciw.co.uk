@@ -893,7 +893,7 @@ class CreateOfficerForm(BaseForm):
     email = forms.EmailField()
 
     def save(self):
-        return create.create_officer(None, self.cleaned_data['first_name'],
+        return create.create_officer(self.cleaned_data['first_name'],
                                      self.cleaned_data['last_name'],
                                      self.cleaned_data['email'])
 
@@ -970,7 +970,7 @@ def resend_email(request):
     password = User.objects.make_random_password()
     u.set_password(password)
     u.save()
-    create.email_officer(u.username, u.first_name, u.email, password, is_leader=False, update=True)
+    create.email_officer(u.username, u.first_name, u.email, password, update=True)
     return {'status': 'success'}
 
 
