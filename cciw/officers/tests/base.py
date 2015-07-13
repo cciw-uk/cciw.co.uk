@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from django_dynamic_fixture import G
 
-from cciw.auth import BOOKING_SECRETARY_GROUP_NAME, LEADER_GROUP_NAME, OFFICER_GROUP_NAME
+from cciw.auth import BOOKING_SECRETARY_GROUP_NAME, LEADER_GROUP_NAME
 from cciw.cciwmain.tests.base import BasicSetupMixin
 
 User = get_user_model()
@@ -38,16 +38,11 @@ def perm(codename, app_label, model):
 class OfficersSetupMixin(BasicSetupMixin):
     def setUp(self):
         super(OfficersSetupMixin, self).setUp()
-        self.officers_group = G(Group,
-                                name=OFFICER_GROUP_NAME,
-                                permissions=[])
-
         self.officer_user = G(User,
                               username=OFFICER_USERNAME,
                               is_active=True,
                               is_superuser=False,
                               is_staff=True,
-                              groups=[self.officers_group],
                               permissions=[])
         self.officer_user.set_password(OFFICER_PASSWORD)
         self.officer_user.save()

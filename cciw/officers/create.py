@@ -8,7 +8,6 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 
-from cciw.auth import OFFICER_GROUP_NAME
 from cciw.cciwmain.utils import is_valid_email
 
 User = get_user_model()
@@ -73,12 +72,6 @@ def _create_officer(username, first_name, last_name, email, password):
     officer.set_password(password)
     officer.save()
 
-    groupname = OFFICER_GROUP_NAME
-
-    try:
-        officer.groups.add(Group.objects.filter(name=groupname)[0])
-    except IndexError:
-        pass  # group doesn't exist
     return officer
 
 
