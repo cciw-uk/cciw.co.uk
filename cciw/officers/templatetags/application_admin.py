@@ -1,5 +1,7 @@
 from django import template
 
+from cciw.auth import is_camp_admin
+
 register = template.Library()
 
 
@@ -7,12 +9,16 @@ register = template.Library()
 # UGLY HACK!
 class FixPermissions(template.Node):
     def render(self, context):
+        user = context['request'].user
         for d in context.dicts:
             if 'has_change_permission' in d:
                 # We want 'Save and continue editing' to appear
                 d['has_change_permission'] = True
                 # We don't want 'Save and add another' to appear
                 d['has_add_permission'] = False
+                if is_camp_admin(user) or user.is_superuser:
+                    d['save_as'] = True
+
         return ''
 
 
