@@ -222,7 +222,7 @@ def webserver_stop():
     Stop the webserver that is running the Django instance
     """
     run("kill $(cat %s)" % target.GUNICORN_PIDFILE)
-    run("rm %s" % target.GUNICORN_PIDFILE)
+    run("test -f {0} && rm {0} || true".format(target.GUNICORN_PIDFILE))
 
 
 def _webserver_command():
