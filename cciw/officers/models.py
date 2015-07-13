@@ -426,7 +426,7 @@ class CRBApplication(models.Model):
         (REQUESTED_BY_UKNOWN, 'Unknown'),
     ]
 
-    officer = models.ForeignKey(settings.AUTH_USER_MODEL)
+    officer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='crb_applications')
     crb_number = models.CharField("Disclosure number", max_length=20)
     completed = models.DateField("Date of issue")
     requested_by = models.CharField(max_length=20, choices=REQUESTED_BY_CHOICES, default=REQUESTED_BY_UKNOWN)
@@ -443,6 +443,10 @@ class CRBApplication(models.Model):
     class Meta:
         verbose_name = "CRB/DBS Disclosure"
         verbose_name_plural = "CRB/DBS Disclosures"
+
+    def could_be_for_camp(self, camp):
+        return (self.completed >= camp.start_date - timedelta(days=settings.CRB_VALID_FOR)
+                and self.completed <= camp.start_date)
 
 
 class CRBFormLogManager(models.Manager):

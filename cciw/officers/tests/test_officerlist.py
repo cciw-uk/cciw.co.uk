@@ -102,6 +102,12 @@ class TestSlackers(TestCase):
         ref2.received = True
         ref2.save()
 
+        # Officer 1 got a CRB done, but officer 2 did not
+        officer1.crb_applications.create(
+            crb_number="123456",
+            completed=camp1.start_date - timedelta(days=5),
+        )
+
         serious_slackers = camp_serious_slacker_list(camp2)
 
         self.assertEqual(
@@ -109,6 +115,8 @@ class TestSlackers(TestCase):
             [{'officer': officer2,
               'missing_application_forms': [camp1],
               'missing_references': [camp1],
+              'missing_crbs': [camp1],
               'last_good_apps_year': None,
               'last_good_refs_year': None,
+              'last_good_crbs_year': None,
               }])

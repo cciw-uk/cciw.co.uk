@@ -33,7 +33,7 @@ def camp_serious_slacker_list(camp):
     # the logic exactly.
 
     from cciw.cciwmain.models import Camp
-    from cciw.officers.models import Invitation, Application, Reference
+    from cciw.officers.models import Invitation, Application, Reference, CRBApplication
 
     officers = [i.officer for i in camp.invitations.all()]
     # We need to allow applications/references for the current year to 'fix' a
@@ -62,6 +62,8 @@ def camp_serious_slacker_list(camp):
                                      received=True)
                              )
 
+    all_crbs = list(CRBApplication.objects.filter(officer__in=officers))
+
     received_ref_dict = defaultdict(list)
     for ref in all_received_refs:
         received_ref_dict[ref.application_id].append(ref)
@@ -78,8 +80,11 @@ def camp_serious_slacker_list(camp):
     officer_apps_present = defaultdict(list)
     officer_refs_missing = defaultdict(list)
     officer_refs_present = defaultdict(list)
+    officer_crbs_missing = defaultdict(list)
+    officer_crbs_present = defaultdict(list)
     officer_apps_last_good_year = {}
     officer_refs_last_good_year = {}
+    officer_crbs_last_good_year = {}
 
     for c in relevant_camps:
         camp_officers = set([i.officer
@@ -89,6 +94,7 @@ def camp_serious_slacker_list(camp):
         officers_with_applications = set([a.officer for a in camp_applications])
         officers_with_two_references = set([a.officer for a in camp_applications
                                             if len(received_ref_dict[a.id]) >= 2])
+        officers_with_crbs = set([crb.officer for crb in all_crbs if crb.could_be_for_camp(c)])
 
         for o in camp_officers:
             if o in officers_with_applications:
@@ -99,6 +105,10 @@ def camp_serious_slacker_list(camp):
                 officer_refs_present[o].append(c)
             else:
                 officer_refs_missing[o].append(c)
+            if o in officers_with_crbs:
+                officer_crbs_present[o].append(c)
+            else:
+                officer_crbs_missing[o].append(c)
 
     # We only care about missing applications if they are not
     # followed by submitted applications i.e. an officer fixes
@@ -136,18 +146,26 @@ def camp_serious_slacker_list(camp):
     get_missing_and_present_lists(officer_refs_present,
                                   officer_refs_missing,
                                   officer_refs_last_good_year)
+    get_missing_and_present_lists(officer_crbs_present,
+                                  officer_crbs_missing,
+                                  officer_crbs_last_good_year)
 
-    l = [(o, officer_apps_missing[o], officer_refs_missing[o])
-         for o in set(officer_apps_missing.keys()) | set(officer_refs_missing.keys())]
+    l = [(o, officer_apps_missing[o], officer_refs_missing[o], officer_crbs_missing[o])
+         for o in (set(officer_apps_missing.keys()) |
+                   set(officer_refs_missing.keys()) |
+                   set(officer_crbs_missing.keys()))
+         ]
     # Remove empty items:
-    l = [(o, a, r) for (o, a, r) in l
-         if len(a) > 0 or len(r) > 0]
+    l = [(o, a, r, c) for (o, a, r, c) in l
+         if len(a) > 0 or len(r) > 0 or len(c) > 0]
     return [{'officer': o,
              'missing_application_forms': a,
              'missing_references': r,
+             'missing_crbs': c,
              'last_good_apps_year': officer_apps_last_good_year.get(o, None),
              'last_good_refs_year': officer_refs_last_good_year.get(o, None),
-             } for o, a, r in l]
+             'last_good_crbs_year': officer_crbs_last_good_year.get(o, None),
+             } for o, a, r, c in l]
 
 
 def officer_data_to_spreadsheet(camp, spreadsheet):
