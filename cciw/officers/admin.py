@@ -419,3 +419,16 @@ admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(ReferenceForm, ReferenceFormAdmin)
 admin.site.register(CRBApplication, CRBApplicationAdmin)
 admin.site.register(CRBFormLog, CRBFormLogAdmin)
+
+
+# Hack the Group admin so that we can edit users belonging to a group
+from django.contrib.auth.admin import GroupAdmin
+from django.contrib.auth.models import Group, User
+
+Membership = Group.user_set.related.through
+
+class MembershipInline(admin.TabularInline):
+    model = Membership
+    extra = 1
+
+GroupAdmin.inlines = list(GroupAdmin.inlines) + [MembershipInline]
