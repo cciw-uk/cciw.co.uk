@@ -6,8 +6,10 @@ from django.test import TestCase
 import xlrd
 
 from cciw.cciwmain.models import Camp
+from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers.create import create_officer
 from cciw.officers.models import Application
+from cciw.officers.tests.base import ApplicationSetupMixin
 from cciw.officers.utils import officer_data_to_spreadsheet, camp_serious_slacker_list
 from cciw.utils.spreadsheet import ExcelFormatter
 
@@ -25,16 +27,14 @@ class TestCreate(TestCase):
         self.assertEqual(user.last_login, None)
 
 
-class TestExport(TestCase):
-
-    fixtures = ['basic.json', 'officers_users.json', 'references.json']
+class TestExport(ApplicationSetupMixin, TestCase):
 
     def test_export_no_application(self):
         """
         Test that the export data view generates an Excel file with all the data
         we expect if there is no application form.
         """
-        c = Camp.objects.get(pk=1)
+        c = Camp.objects.get(year=2000, number=1)
         officers = list(c.officers.all())
         first_names = [o.first_name for o in officers]
 
@@ -66,14 +66,14 @@ class TestExport(TestCase):
         Test that the export data view generates an Excel file with all the data
         we expect if there are application forms.
         """
-        c = Camp.objects.get(pk=1)
+        camp = self.default_camp_1
 
-        # Data from fixtures
-        u = User.objects.get(pk=2)
-        app = Application.objects.get(pk=1)
+        # Data from setup
+        u = self.officer1
+        app = self.application1
         assert app.officer == u
 
-        workbook = officer_data_to_spreadsheet(c, ExcelFormatter())
+        workbook = officer_data_to_spreadsheet(camp, ExcelFormatter())
 
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh = wkbk.sheet_by_index(0)
@@ -83,13 +83,11 @@ class TestExport(TestCase):
         self.assertTrue(app.address_firstline in wksh.col_values(4))
 
 
-class TestSlackers(TestCase):
-
-    fixtures = ['basic.json']
+class TestSlackers(BasicSetupMixin, TestCase):
 
     def test_serious_slackers(self):
-        camp1 = Camp.objects.get(year=2000)
-        camp2 = Camp.objects.get(year=2001)
+        camp1 = self.default_camp_1
+        camp2 = self.default_camp_2
 
         officer1 = User.objects.create(username="joe",
                                        email="joe@example.com")

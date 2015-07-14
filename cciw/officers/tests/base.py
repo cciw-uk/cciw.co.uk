@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
@@ -206,7 +206,7 @@ class ApplicationSetupMixin(OfficersSetupMixin):
                               crb_check_consent=True,
                               crime_declaration=False,
                               crime_details="",
-                              date_submitted="2000-03-01",
+                              date_submitted=datetime(2000, 3, 1),
                               employer1_from="2003/09",
                               employer1_job="Pilot",
                               employer1_leaving="",
@@ -264,7 +264,7 @@ class ApplicationSetupMixin(OfficersSetupMixin):
                               crb_check_consent=True,
                               crime_declaration=False,
                               crime_details="",
-                              date_submitted="2000-03-01",
+                              date_submitted=datetime(2000, 3, 1),
                               employer1_from="2003/09",
                               employer1_job="Pilot",
                               employer1_leaving="",
@@ -323,7 +323,7 @@ class ApplicationSetupMixin(OfficersSetupMixin):
                               crb_check_consent=True,
                               crime_declaration=False,
                               crime_details="",
-                              date_submitted="2000-03-01",
+                              date_submitted=datetime(2000, 3, 1),
                               employer1_from="2003/09",
                               employer1_job="Pilot",
                               employer1_leaving="",
@@ -359,7 +359,7 @@ class ApplicationSetupMixin(OfficersSetupMixin):
         self.application4.date_submitted += timedelta(days=365)
         self.application4.save()
 
-        camp = Camp.objects.get(year=2000, number=1)
+        camp = self.default_camp_1
 
         camp.invitations.create(
             officer=self.officer1,
@@ -392,7 +392,7 @@ class ReferenceSetupMixin(ApplicationSetupMixin):
                                    character="Almost sinless",
                                    concerns="Perhaps too good for camp",
                                    comments="",
-                                   date_created="2000-02-20",
+                                   date_created=datetime(2000, 2, 20),
                                    )
         self.reference1_2 = self.application1.reference_set.create(
             referee_number=2,

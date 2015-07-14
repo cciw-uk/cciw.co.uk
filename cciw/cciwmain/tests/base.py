@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.sites.models import Site as DjangoSite
 from django_dynamic_fixture import G
 
@@ -40,25 +42,25 @@ class BasicSetupMixin(object):
                                 name="Dave & Rebecca Stott")
 
         self.default_camp_1 = G(Camp,
-                                end_date="2000-07-08",
+                                end_date=datetime(2000, 7, 8),
                                 online_applications=True,
                                 number=1,
                                 site=self.default_site,
                                 minimum_age=11,
                                 maximum_age=17,
                                 year=2000,
-                                start_date="2000-07-01",
+                                start_date=datetime(2000, 7, 1),
                                 leaders=[self.default_leader],
                                 chaplain=None)
 
         self.default_camp_2 = G(Camp,
-                                end_date="2001-07-08",
+                                end_date=datetime(2001, 7, 8),
                                 online_applications=True,
                                 number=1,
                                 site=self.default_site,
                                 minimum_age=11,
                                 maximum_age=17,
                                 year=2001,
-                                start_date="2001-07-01",
+                                start_date=datetime(2001, 7, 1),
                                 leaders=[self.default_leader],
                                 chaplain=None)
