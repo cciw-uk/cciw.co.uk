@@ -8,7 +8,7 @@ from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
 from cciw.officers.applications import application_difference
-from cciw.officers.tests.test_references import OFFICER, LEADER
+from cciw.officers.tests.base import OFFICER, LEADER, OfficersSetupMixin
 from cciw.utils.tests.webtest import WebTestBase
 
 User = get_user_model()

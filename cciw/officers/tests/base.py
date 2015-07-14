@@ -12,7 +12,7 @@ from cciw.officers.models import Application, ReferenceForm
 
 User = get_user_model()
 
-OFFICER_USERNAME = 'mrofficer2'
+OFFICER_USERNAME = 'joebloggs'
 OFFICER_PASSWORD = 'test_normaluser_password'
 OFFICER = (OFFICER_USERNAME, OFFICER_PASSWORD)
 
@@ -144,13 +144,10 @@ class OfficersSetupMixin(BasicSetupMixin):
         self.booking_secretary.save()
 
 
-class ApplicationSetupMixin(OfficersSetupMixin):
+class ExtraOfficersSetupMixin(OfficersSetupMixin):
 
     def setUp(self):
-        super(ApplicationSetupMixin, self).setUp()
-
-        # Data: Applications 1 to 3 are in year 2000, for camps in summer 2000
-        # Application 4 is for 2001
+        super(ExtraOfficersSetupMixin, self).setUp()
 
         self.officer1 = self.officer_user
         self.officer2 = G(User,
@@ -177,6 +174,19 @@ class ApplicationSetupMixin(OfficersSetupMixin):
                           email="fredjones@somewhere.com",
                           date_joined="2008-03-21T16:48:46Z"
                           )
+
+        self.default_camp_1.invitations.create(officer=self.officer1)
+        self.default_camp_1.invitations.create(officer=self.officer2)
+        self.default_camp_1.invitations.create(officer=self.officer3)
+
+
+class ApplicationSetupMixin(ExtraOfficersSetupMixin):
+
+    def setUp(self):
+        super(ApplicationSetupMixin, self).setUp()
+
+        # Data: Applications 1 to 3 are in year 2000, for camps in summer 2000
+        # Application 4 is for 2001
 
         self.application1 = G(Application,
                               officer=self.officer1,
@@ -358,18 +368,6 @@ class ApplicationSetupMixin(OfficersSetupMixin):
         self.application4.id = None  # force save as new
         self.application4.date_submitted += timedelta(days=365)
         self.application4.save()
-
-        camp = self.default_camp_1
-
-        camp.invitations.create(
-            officer=self.officer1,
-        )
-        camp.invitations.create(
-            officer=self.officer2,
-        )
-        camp.invitations.create(
-            officer=self.officer3,
-        )
 
 
 class ReferenceSetupMixin(ApplicationSetupMixin):
