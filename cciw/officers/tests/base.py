@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
@@ -404,3 +404,16 @@ class ReferenceSetupMixin(ApplicationSetupMixin):
             received=False,
             requested=True,
         )
+
+
+class CurrentCampsMixin(object):
+    def setUp(self):
+        super(CurrentCampsMixin, self).setUp()
+        # Make sure second camp has end date in future, otherwise we won't be able to
+        # save. Previous camp should be one year earlier i.e in the past
+        self.default_camp_1.start_date = date.today() + timedelta(100 - 365)
+        self.default_camp_1.end_date = date.today() + timedelta(107 - 365)
+        self.default_camp_1.save()
+        self.default_camp_2.start_date=date.today() + timedelta(100)
+        self.default_camp_2.end_date=date.today() + timedelta(107)
+        self.default_camp_2.save()

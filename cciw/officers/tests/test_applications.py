@@ -8,7 +8,7 @@ from cciw.cciwmain.models import Camp, Site
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers import applications
 from cciw.officers.models import Application
-from cciw.officers.tests.base import OFFICER_USERNAME, OFFICER_PASSWORD, ApplicationSetupMixin, OfficersSetupMixin
+from cciw.officers.tests.base import OFFICER_USERNAME, OFFICER_PASSWORD, ApplicationSetupMixin, OfficersSetupMixin, CurrentCampsMixin
 
 User = get_user_model()
 
@@ -48,7 +48,7 @@ class ApplicationModel(ApplicationSetupMixin, TestCase):
             self.assertEqual(app.references[1], app.reference_set.get(referee_number=2))
 
 
-class PersonalApplicationList(OfficersSetupMixin, TestCase):
+class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, TestCase):
 
     _create_button = """<input type="submit" name="new" value="Create" """
     _edit_button = """<input type="submit" name="edit" value="Continue" """
@@ -59,12 +59,6 @@ class PersonalApplicationList(OfficersSetupMixin, TestCase):
         self.url = reverse('cciw-officers-applications')
         self.user = User.objects.get(username=OFFICER_USERNAME)
         self.user.applications.all().delete()
-        # Set Camps so that one is in the future, and one in the past,
-        # so that is possible to have an application for an old camp
-        Camp.objects.filter(id=1).update(start_date=date.today() + timedelta(100 - 365),
-                                         end_date=date.today() + timedelta(107 - 365))
-        Camp.objects.filter(id=2).update(start_date=date.today() + timedelta(100),
-                                         end_date=date.today() + timedelta(107))
 
     def test_get(self):
         resp = self.client.get(self.url)

@@ -8,27 +8,19 @@ from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
 from cciw.officers.applications import application_difference
-from cciw.officers.tests.base import OFFICER, LEADER, OfficersSetupMixin
+from cciw.officers.tests.base import OFFICER, LEADER, OfficersSetupMixin, CurrentCampsMixin
 from cciw.utils.tests.webtest import WebTestBase
 
 User = get_user_model()
 
 
-class ApplicationFormView(OfficersSetupMixin, WebTestBase):
+class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
 
     def _application_edit_url(self, app_id):
         return reverse('admin:officers_application_change', args=[app_id])
 
     def setUp(self):
         super(ApplicationFormView, self).setUp()
-        # Make sure second camp has end date in future, otherwise we won't be able to
-        # save. Previous camp should be one year earlier
-        self.default_camp_1.start_date = date.today() + timedelta(100 - 365)
-        self.default_camp_1.end_date = date.today() + timedelta(107 - 365)
-        self.default_camp_1.save()
-        self.default_camp_2.start_date=date.today() + timedelta(100)
-        self.default_camp_2.end_date=date.today() + timedelta(107)
-        self.default_camp_2.save()
 
         # Add some invitations:
         u = User.objects.get(username=OFFICER[0])
