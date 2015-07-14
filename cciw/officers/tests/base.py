@@ -40,6 +40,8 @@ class OfficersSetupMixin(BasicSetupMixin):
         super(OfficersSetupMixin, self).setUp()
         self.officer_user = G(User,
                               username=OFFICER_USERNAME,
+                              first_name="Joe",
+                              last_name="Bloggs",
                               is_active=True,
                               is_superuser=False,
                               is_staff=True,
