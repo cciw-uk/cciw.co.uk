@@ -14,26 +14,26 @@ from cciw.utils.tests.webtest import WebTestBase
 User = get_user_model()
 
 
-class ApplicationFormView(WebTestBase):
-    fixtures = ['basic.json', 'officers_users.json']
+class ApplicationFormView(OfficersSetupMixin, WebTestBase):
 
     def _application_edit_url(self, app_id):
         return reverse('admin:officers_application_change', args=[app_id])
 
     def setUp(self):
+        super(ApplicationFormView, self).setUp()
         # Make sure second camp has end date in future, otherwise we won't be able to
         # save. Previous camp should be one year earlier
-        Camp.objects.filter(id=1).update(start_date=date.today() + timedelta(100 - 365),
-                                         end_date=date.today() + timedelta(107 - 365))
-        Camp.objects.filter(id=2).update(start_date=date.today() + timedelta(100),
-                                         end_date=date.today() + timedelta(107))
+        self.default_camp_1.start_date = date.today() + timedelta(100 - 365)
+        self.default_camp_1.end_date = date.today() + timedelta(107 - 365)
+        self.default_camp_1.save()
+        self.default_camp_2.start_date=date.today() + timedelta(100)
+        self.default_camp_2.end_date=date.today() + timedelta(107)
+        self.default_camp_2.save()
 
         # Add some invitations:
         u = User.objects.get(username=OFFICER[0])
-        for pk in [1, 2]:
-            u.invitations.create(camp=Camp.objects.get(id=pk))
-
-        super(ApplicationFormView, self).setUp()
+        for camp in Camp.objects.all():
+            u.invitations.create(camp=camp)
 
     def _add_application(self, officer=OFFICER):
         u = User.objects.get(username=officer[0])
