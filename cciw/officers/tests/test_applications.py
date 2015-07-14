@@ -5,14 +5,14 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from cciw.cciwmain.models import Camp, Site
+from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers import applications
 from cciw.officers.models import Application
-from cciw.officers.tests.base import OFFICER_USERNAME, OFFICER_PASSWORD
+from cciw.officers.tests.base import OFFICER_USERNAME, OFFICER_PASSWORD, ApplicationSetupMixin, OfficersSetupMixin
 
 User = get_user_model()
 
-class ApplicationModel(TestCase):
-    fixtures = ['basic.json', 'officers_users.json', 'references.json']
+class ApplicationModel(ApplicationSetupMixin, TestCase):
 
     def test_referees_get(self):
         """Tests the Application.referees getter utility"""
@@ -48,14 +48,13 @@ class ApplicationModel(TestCase):
             self.assertEqual(app.references[1], app.reference_set.get(referee_number=2))
 
 
-class PersonalApplicationList(TestCase):
-
-    fixtures = ['basic.json', 'officers_users.json']
+class PersonalApplicationList(OfficersSetupMixin, TestCase):
 
     _create_button = """<input type="submit" name="new" value="Create" """
     _edit_button = """<input type="submit" name="edit" value="Continue" """
 
     def setUp(self):
+        super(PersonalApplicationList, self).setUp()
         self.client.login(username=OFFICER_USERNAME, password=OFFICER_PASSWORD)
         self.url = reverse('cciw-officers-applications')
         self.user = User.objects.get(username=OFFICER_USERNAME)
@@ -111,9 +110,7 @@ class PersonalApplicationList(TestCase):
         self.assertEqual(list(self.user.applications.all()), [app])
 
 
-class ApplicationUtils(TestCase):
-
-    fixtures = ['basic.json']
+class ApplicationUtils(BasicSetupMixin, TestCase):
 
     def test_date_submitted_logic(self):
 
