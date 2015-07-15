@@ -473,9 +473,6 @@ def request_reference(request, year=None, number=None):
     app = ref.application
     referee = ref.referee
 
-    if 'manual' in request.GET:
-        return manage_reference_manually(request, ref)
-
     c = {}
 
     emailform = None
@@ -680,48 +677,6 @@ def fix_ref_form(form_class):
 
 fix_ref_form(ReferenceFormForm)
 fix_ref_form(AdminReferenceFormForm)
-
-
-def manage_reference_manually(request, ref):
-    """
-    Returns page for manually editing Reference and ReferenceForm details.
-    """
-    c = {}
-    c['ref'] = ref
-    c['referee'] = ref.referee
-    c['officer'] = ref.application.officer
-    if request.method == 'POST':
-        if 'save' in request.POST:
-            form = ReferenceEditForm(request.POST, instance=ref)
-            if form.is_valid():
-                form.save()
-                return close_window_and_update_ref(ref.id)
-        else:
-            return close_window_response()
-    else:
-        form = ReferenceEditForm(instance=ref)
-    c['form'] = form
-    c['is_popup'] = True
-    return render(request, "cciw/officers/manage_reference_manual.html", c)
-
-
-@staff_member_required
-@camp_admin_required  # we don't care which camp they are admin for.
-def edit_reference_form_manually(request, ref_id=None):
-    """
-    Create ReferenceForm if necessary, then launch normal admin popup for
-    editing it.
-    """
-    ref = get_object_or_404(Reference.objects.filter(id=int(ref_id)))
-    if ref.reference_form is None:
-        # Create it
-        ReferenceForm.objects.create(reference_info=ref,
-                                     referee_name=ref.referee.name,
-                                     date_created=date.today(),
-                                     known_offences=False)
-    return HttpResponseRedirect(reverse("admin:officers_referenceform_change",
-                                        args=(ref.reference_form.id,)) +
-                                "?_popup=1")
 
 
 def initial_reference_form_data(ref, prev_ref_form):

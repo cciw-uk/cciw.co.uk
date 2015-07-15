@@ -274,26 +274,3 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
         # Check it is pre-filled as we expect
         self.assertContains(response, """<input id="id_referee_name" maxlength="100" name="referee_name" type="text" value="Referee1 Name" />""", html=True)
         self.assertContains(response, """<input id="id_how_long_known" maxlength="150" name="how_long_known" type="text" value="A long time" />""", html=True)
-
-
-class EditReferenceFormManually(ReferenceSetupMixin, TestCase):
-
-    def test_creates_referenceform(self):
-        """
-        Ensure that 'edit_reference_form_manually' creates a ReferenceForm if
-        one doesn't exist initially
-        """
-        app = self.application2
-        ref = app.references[0]
-        assert ref.reference_form is None
-        self.client.login(username=LEADER_USERNAME, password=LEADER_PASSWORD)
-        resp = self.client.get(reverse('cciw-officers-edit_reference_form_manually',
-                                       kwargs={'ref_id': ref.id}))
-
-        # Expect a redirect to admin page
-        self.assertEqual(302, resp.status_code)
-        self.assertTrue("admin/officers/referenceform" in resp['Location'])
-
-        # Object should be created now.
-        ref = ref.__class__.objects.get(id=ref.id)
-        self.assertTrue(ref.reference_form is not None)

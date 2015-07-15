@@ -24,7 +24,6 @@ urlpatterns = [
     url(r'^leaders/request-reference/(?P<year>\d{4})/(?P<number>\d+)/$', views.request_reference, name="cciw-officers-request_reference"),
     url(r'^leaders/nag-by-officer/(?P<year>\d{4})/(?P<number>\d+)/$', views.nag_by_officer, name="cciw-officers-nag_by_officer"),
     url(r'^leaders/reference/(?P<ref_id>\d+)/$', views.view_reference, name="cciw-officers-view_reference"),
-    url(r'^leaders/edit-reference/(?P<ref_id>\d+)/$', views.edit_reference_form_manually, name="cciw-officers-edit_reference_form_manually"),
     url(r'^leaders/crbs/(?P<year>\d{4})/', views.manage_crbs, name="cciw-officers-manage_crbs"),
     url(r'^leaders/mark-crb-sent/', views.mark_crb_sent, name="cciw-officers-mark_crb_sent"),
     url(r'^leaders/undo-mark-crb-sent/', views.undo_mark_crb_sent, name="cciw-officers-undo_mark_crb_sent"),
