@@ -202,6 +202,17 @@ class ReferenceManager(models.Manager):
         return super(ReferenceManager, self).get_queryset().select_related('application__officer')
 
 
+# =========================== #
+# Reference and ReferenceForm #
+# =========================== #
+#
+# Reference stores minimal info - whether a reference has been requested/received or not.
+# ReferenceForm is what would normally be called the reference.
+#
+# In code, instances of Reference are called things like 'ref' or 'reference_info'
+# Instance of ReferenceForm are called things like 'ref_form'
+
+
 class Reference(models.Model):
     """
     Stores metadata about a reference for an officer.
@@ -274,6 +285,16 @@ class Reference(models.Model):
         self.actions.create(action_type=ReferenceAction.REFERENCE_RECEIVED,
                             created=dt)
 
+    def log_reference_filled_in(self, user, dt):
+        self.comments = (self.comments +
+                         ("\nReference filled in by %s on %s\n" %
+                          (user.username,
+                          dt.strftime("%Y-%m-%d %H:%M:%S"))))
+        self.save()
+        self.actions.create(action_type=ReferenceAction.REFERENCE_FILLED_IN,
+                            created=dt,
+                            user=user)
+
     def log_request_made(self, user, dt):
         self.comments = (self.comments +
                          ("\nReference requested by user %s via online system on %s\n" %
@@ -305,11 +326,13 @@ class Reference(models.Model):
 class ReferenceAction(models.Model):
     REFERENCE_REQUESTED = "requested"
     REFERENCE_RECEIVED = "received"
+    REFERENCE_FILLED_IN = "filledin"
     REFERENCE_NAG = "nag"
 
     ACTION_CHOICES = [
         (REFERENCE_REQUESTED, "Reference requested"),
-        (REFERENCE_RECEIVED, "Reference receieved"),
+        (REFERENCE_RECEIVED, "Reference received"),
+        (REFERENCE_FILLED_IN, "Reference filled in manually"),
         (REFERENCE_NAG, "Applicant nagged"),
     ]
     reference = models.ForeignKey(Reference, related_name="actions")

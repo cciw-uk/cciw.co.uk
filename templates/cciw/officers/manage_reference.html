@@ -41,8 +41,6 @@
 
     {% if mode == "received" %}
       <p><a href="{% url 'cciw-officers-view_reference' ref_id=ref.id %}" target="_blank">View reference from {{ ref.referee.name }}</a>
-        <br/><span class="referencebutton"><button
-    onclick="manageReferenceManually({{ ref.id }});">Manage reference manually</button></span>
       </p>
     {% else %}
       <p>Ask for reference{% if mode == "requested" %} again{% endif %} - choose from the options:</p>
@@ -90,11 +88,6 @@
     onclick="requestReference({{ ref.id }});">Request reference{% if mode == "requested" %} (again){% endif %}</button></span>
           </li>
         {% endif %}
-
-        <li>{{ ref.referee.name }} can't do references using the online system, so:
-          <span class="referencebutton"><button
-    onclick="manageReferenceManually({{ ref.id }});">Manage reference manually</button></span>
-        </li>
       </ul>
 
     {% endif %}

@@ -377,7 +377,7 @@ def manage_references(request, year=None, number=None):
     for ref in all_ref:
         if ref.received:
             continue  # Don't need the following
-        # decorate each Reference with suggested previous ReferenceForms.
+        # decorate each Reference with suggested previous References.
         add_previous_references(ref)
 
     if ref_id is None:
@@ -503,14 +503,18 @@ def request_reference(request, year=None, number=None):
             if ref.previous_reference.id != prev_ref_id:
                 return close_window_and_update_ref(ref_id)
             c['known_email_address'] = True
+            prev_ref_form = ref.previous_reference.reference_form
         else:
             # Get old referee data
-            refs = [r for r in ref.possible_previous_references if r.id == prev_ref_id]
-            assert len(refs) == 1
-            c['old_referee'] = refs[0].referee
+            prev_refs = [r for r in ref.possible_previous_references if r.id == prev_ref_id]
+            assert len(prev_refs) == 1
+            prev_ref = prev_refs[0]
+            c['old_referee'] = prev_ref.referee
+            prev_ref_form = prev_ref.reference_form
         url = make_ref_form_url(ref.id, prev_ref_id)
     else:
         url = make_ref_form_url(ref.id, None)
+        prev_ref_form = None
 
     messageform_info = dict(referee=ref.referee,
                             applicant=app.officer,
@@ -520,14 +524,23 @@ def request_reference(request, year=None, number=None):
                             update=update)
     messageform = None
 
+    editreferenceform = None
+
     if request.method == 'POST':
         if 'send' in request.POST:
+            c['show_messageform'] = True
             messageform = SendReferenceRequestForm(request.POST, message_info=messageform_info)
             if messageform.is_valid():
                 send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), ref, request.user, camp)
                 ref.requested = True
                 ref.log_request_made(request.user, timezone.now())
                 ref.save()
+                return close_window_and_update_ref(ref_id)
+        elif 'save' in request.POST:
+            c['show_editreferenceform'] = True
+            editreferenceform = AdminReferenceFormForm(request.POST, instance=ref.reference_form)
+            if editreferenceform.is_valid():
+                editreferenceform.save(ref, user=request.user)
                 return close_window_and_update_ref(ref_id)
         elif 'cancel' in request.POST:
             return close_window_response()
@@ -539,6 +552,11 @@ def request_reference(request, year=None, number=None):
     if messageform is None:
         messageform = SendReferenceRequestForm(message_info=messageform_info)
 
+    if editreferenceform is None:
+        editreferenceform = get_initial_reference_form_form(ref.reference_form,
+                                                            ref, prev_ref_form,
+                                                            AdminReferenceFormForm)
+
     if not is_valid_email(ref.referee.email.strip()):
         c['bad_email'] = True
     c['is_popup'] = True
@@ -548,6 +566,8 @@ def request_reference(request, year=None, number=None):
     c['is_update'] = update
     c['emailform'] = emailform
     c['messageform'] = messageform
+    c['editreferenceform'] = editreferenceform
+
     return render(request, 'cciw/officers/request_reference.html', c)
 
 
@@ -621,24 +641,45 @@ class ReferenceFormForm(forms.ModelForm):
                                            for person in reference_contact_people))
             self.fields['concerns'].label += contact_message
 
+    def save(self, ref, user=None):
+        obj = super(ReferenceFormForm, self).save(commit=False)
+        obj.reference_info = ref
+        obj.date_created = date.today()
+        obj.save()
+        self.log_reference_received(ref, user=user)
+        self.send_emails(obj)
+
+    def log_reference_received(self, ref, user=None):
+        ref.received = True
+        ref.log_reference_received(timezone.now())
+        ref.save()
+
+    def send_emails(self, reference_form):
+        send_leaders_reference_email(reference_form)
+
+
+class AdminReferenceFormForm(ReferenceFormForm):
+    def log_reference_received(self, ref, user=None):
+        ref.received = True
+        ref.log_reference_filled_in(user, timezone.now())
+        ref.save()
+
 
 normal_textarea = forms.Textarea(attrs={'cols': 80, 'rows': 10})
 small_textarea = forms.Textarea(attrs={'cols': 80, 'rows': 5})
-ReferenceFormForm.base_fields['capacity_known'].widget = small_textarea
-ReferenceFormForm.base_fields['known_offences'].widget = ExplicitBooleanFieldSelect()
-ReferenceFormForm.base_fields['known_offences_details'].widget = normal_textarea
-ReferenceFormForm.base_fields['capability_children'].widget = normal_textarea
-ReferenceFormForm.base_fields['character'].widget = normal_textarea
-ReferenceFormForm.base_fields['concerns'].widget = normal_textarea
-ReferenceFormForm.base_fields['comments'].widget = normal_textarea
+def fix_ref_form(form_class):
+    form_class.base_fields['capacity_known'].widget = small_textarea
+    form_class.base_fields['known_offences'].widget = ExplicitBooleanFieldSelect()
+    form_class.base_fields['known_offences_details'].widget = normal_textarea
+    form_class.base_fields['capability_children'].widget = normal_textarea
+    form_class.base_fields['character'].widget = normal_textarea
+    form_class.base_fields['concerns'].widget = normal_textarea
+    form_class.base_fields['comments'].widget = normal_textarea
 
 
-# I have models called Reference and ReferenceForm.  What do I call a Form
-# for model Reference? I'm a loser...
-class ReferenceEditForm(forms.ModelForm):
-    class Meta:
-        model = Reference
-        fields = ('requested', 'received', 'comments')
+
+fix_ref_form(ReferenceFormForm)
+fix_ref_form(AdminReferenceFormForm)
 
 
 def manage_reference_manually(request, ref):
@@ -723,12 +764,6 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
             prev_ref_form = None
 
         ref_form = ref.reference_form
-        if ref_form is not None:
-            # For the case where a ReferenceForm has been created (accidentally)
-            # by an admin, we need to re-use it, rather than create another.
-            instance = ref_form
-        else:
-            instance = None
 
         if ref_form is not None and ref.received and not empty_reference(ref_form):
             # It's possible, if an admin has done 'Manage reference manually'
@@ -739,31 +774,30 @@ def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
             c['already_submitted'] = True
         else:
             if request.method == 'POST':
-                form = ReferenceFormForm(request.POST, instance=instance)
+                form = ReferenceFormForm(request.POST, instance=ref_form)
                 if form.is_valid():
-                    obj = form.save(commit=False)
-                    obj.reference_info = ref
-                    obj.date_created = date.today()
-                    obj.save()
-                    ref.received = True
-                    ref.log_reference_received(timezone.now())
-                    ref.save()
-                    # Send e-mails
-                    send_leaders_reference_email(obj)
+                    form.save(ref)
                     return HttpResponseRedirect(reverse('cciw-officers-create_reference_thanks'))
             else:
-                initial_data = initial_reference_form_data(ref, prev_ref_form)
-                if instance is not None:
-                    if empty_reference(instance):
-                        # Need to fill data
-                        for k, v in initial_data.items():
-                            setattr(instance, k, v)
-                    form = ReferenceFormForm(instance=instance)
-                else:
-                    form = ReferenceFormForm(initial=initial_data)
+                form = get_initial_reference_form_form(ref_form, ref, prev_ref_form, ReferenceFormForm)
             c['form'] = form
         c['officer'] = ref.application.officer
     return render(request, 'cciw/officers/create_reference.html', c)
+
+
+def get_initial_reference_form_form(ref_form, reference_info, prev_ref_form, form_class):
+    initial_data = initial_reference_form_data(reference_info, prev_ref_form)
+    if ref_form is not None:
+        # For the case where a ReferenceForm has been created (accidentally)
+        # by an admin, we need to re-use it, rather than create another.
+        if empty_reference(ref_form):
+            # Need to fill data
+            for k, v in initial_data.items():
+                setattr(ref_form, k, v)
+        form = form_class(instance=ref_form)
+    else:
+        form = form_class(initial=initial_data)
+    return form
 
 
 def create_reference_thanks(request):

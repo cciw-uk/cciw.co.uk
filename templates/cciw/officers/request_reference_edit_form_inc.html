@@ -1,0 +1,22 @@
+{% if editreferenceform.errors %}
+  <p class="actionnote">Please check the errors below</p>
+{% endif %}
+
+<p>If the referee cannot use the online system for some reason, you can
+  phone/email them and enter their responses manually below.</p>
+
+{% if is_update %}
+  <p>The form below has been pre-filled from last year's reference.</p>
+{% endif %}
+
+<form id="id_request_reference_manual" action="" method="post">
+  {% csrf_token %}
+  <table>
+    {{ editreferenceform }}
+  </table>
+  <div>
+    <input type="submit" name="save" value="Save" />
+    <input type="submit" name="cancel" value="Cancel" />
+  </div>
+</form>
+

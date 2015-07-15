@@ -57,7 +57,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "No e-mail address")
         self.assertContains(response, "The following e-mail")
-        response = response.forms['id_request_reference'].submit("send")
+        response = response.forms['id_request_reference_send'].submit("send")
         msgs = [e for e in mail.outbox if "Reference for" in e.subject]
         self.assertEqual(len(msgs), 1)
         self.assertEqual(msgs[0].extra_headers.get('Reply-To', ''), LEADER_EMAIL)
@@ -101,7 +101,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, number=1))
                                 + "?ref_id=%d" % refinfo.id)
         self.assertEqual(response.status_code, 200)
-        response = response.forms['id_request_reference'].submit("cancel")
+        response = response.forms['id_request_reference_send'].submit("cancel")
         self.assertEqual(len(mail.outbox), 0)
 
     def test_dont_remove_link(self):
@@ -114,7 +114,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, number=1))
                                 + "?ref_id=%d" % refinfo.id)
         self.assertEqual(response.status_code, 200)
-        response = self.fill(response.forms['id_request_reference'],
+        response = self.fill(response.forms['id_request_reference_send'],
                              {'message': 'I removed the link! Haha'}).submit('send')
         url = make_ref_form_url(refinfo.id, None)
         self.assertContains(response, url)
@@ -168,6 +168,25 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.assertContains(response, """In the past, "Referee1 Name &lt;referee1@email.co.uk&gt;" did""")
         self.assertContains(response, "If you have confirmed")
         self.assertContains(response, """email address is now "Referee1 Name &lt;a_new_email_for_ref1@example.com&gt;",""")
+
+    def test_fill_in_manually(self):
+        app = self.application3
+        refinfo = app.references[0]
+        self.webtest_officer_login(LEADER)
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, number=1))
+                                + "?ref_id=%d" % refinfo.id)
+        self.assertEqual(response.status_code, 200)
+        form = response.forms['id_request_reference_manual']
+        form.set('how_long_known', "10 years")
+        form.set('capacity_known', "Pastor")
+        form.set('character', "Great")
+        form.set('capability_children', "Great.")
+        form.set('concerns', "No.")
+        response = form.submit("save")
+        msgs = [e for e in mail.outbox if "CCIW reference form for" in e.subject]
+        self.assertTrue(len(msgs) >= 0)
+        refinfo = refinfo.__class__.objects.get(id=refinfo.id)
+        self.assertTrue(refinfo.received)
 
     def test_nag(self):
         """

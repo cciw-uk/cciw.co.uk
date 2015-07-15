@@ -1,5 +1,12 @@
 {% extends "cciw/officers/base.html" %}
 
+{% load static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <script type="text/javascript" src="{% static "js/tabber.js" %}"></script>
+{% endblock %}
+
 {% block title %}Request reference for {{ app.officer.first_name }} {{ app.officer.last_name }} | CCIW Officers {% endblock %}
 
 {% block content %}
@@ -27,7 +34,9 @@
 
       <form id="id_set_email_form" method="post" action="">
         {% csrf_token %}
-        {{ emailform.as_p }}
+        <table>
+          {{ emailform }}
+        </table>
         <div><input type="submit" name="setemail" value="Save" /></div>
       </form>
 
@@ -62,22 +71,22 @@
       {% endif %}
       <form id="id_set_email_form" method="post" action="">
         {% csrf_token %}
-        {{ emailform.as_p }}
+        <table>
+          {{ emailform }}
+        </table>
         <p><input type="submit" name="setemail" value="Save" /></p>
       </form>
 
       <hr/>
 
-      <p>The following e-mail, which you can now modify, will be sent to them.
-        Make sure you don't modify the link contained in the e-mail.</p>
-      <form id="id_request_reference" action="" method="post">
-        {% csrf_token %}
-        {{ messageform.as_p }}
-        <p>
-          <input type="submit" name="send" value="Send" />
-          <input type="submit" name="cancel" value="Cancel" />
-        </p>
-      </form>
+      <div class="tabber">
+        <div class="tabbertab {% if show_messageform %}tabbertabdefault{% endif %}" title="Send email">
+          {% include "cciw/officers/request_reference_by_email_inc.html" %}
+        </div>
+        <div class="tabbertab {% if show_editreferenceform %}tabbertabdefault{% endif %}" title="Fill in manually">
+          {% include "cciw/officers/request_reference_edit_form_inc.html" %}
+        </div>
+      </div>
 
     {% endif %}
 

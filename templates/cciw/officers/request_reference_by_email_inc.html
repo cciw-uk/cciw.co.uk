@@ -1,0 +1,17 @@
+{% if messageform.errors %}
+  <p class="actionnote">Please check the errors below</p>
+{% endif %}
+
+
+<p>The following e-mail, which you can now modify, will be sent to them.
+  Make sure you don't modify the link contained in the e-mail.</p>
+<form id="id_request_reference_send" action="" method="post">
+  {% csrf_token %}
+  <table>
+    {{ messageform }}
+  </table>
+  <div>
+    <input type="submit" name="send" value="Send" />
+    <input type="submit" name="cancel" value="Cancel" />
+  </div>
+</form>
