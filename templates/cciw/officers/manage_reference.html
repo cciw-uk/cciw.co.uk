@@ -53,8 +53,8 @@
               <button onclick="nagByOfficer({{ ref.id }});">Get {{ ref.application.officer.first_name }} to do the nagging</button>
             </span>
           </li>
-
         {% endif %}
+
         {% if ref.previous_reference %}
           <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
             has done a reference for {{ ref.application.officer.first_name}} before, so:
@@ -62,19 +62,12 @@
               <button onclick="requestUpdate({{ ref.id }}, {{ ref.previous_reference.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button>
             </span>
           </li>
-        {% else %}
-          <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
-            has not done an online reference for {{ ref.application.officer.first_name}} before, so:
-            <span class="referencebutton"><button
-    onclick="requestReference({{ ref.id }});">Request reference{% if mode == "requested" %} (again){% endif %}</button></span>
-          </li>
         {% endif %}
 
         {% if ref.possible_previous_references %}
-          <li>{{ ref.referee.name }}
-            <strong>has</strong> done a reference for {{ ref.application.officer.first_name }} before.<br />
-            There are no exact matches for "{{ ref.referee.name }}
-            &lt;{{ ref.referee.email }}&gt;", but if one of the previous references
+          <li>
+            There are no exact matches for <b>{{ ref.referee.name }} &lt;{{ ref.referee.email }}&gt;</b><br/>
+            but if one of the previous references
             submitted for this officer is actually by the same person, please select:<br />
             <select  name="ref_opts_{{ ref.id }}" id="id_ref_opts_{{ ref.id }}">
               {% for opt in ref.possible_previous_references %}
@@ -87,6 +80,14 @@
             </select>
             <span class="referencebutton"><button
     onclick="requestUpdateCustom({{ ref.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button></span>
+          </li>
+        {% endif %}
+
+        {% if not ref.previous_reference %}
+          <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
+            has not done an online reference for {{ ref.application.officer.first_name}} before, so:
+            <span class="referencebutton"><button
+    onclick="requestReference({{ ref.id }});">Request reference{% if mode == "requested" %} (again){% endif %}</button></span>
           </li>
         {% endif %}
 
