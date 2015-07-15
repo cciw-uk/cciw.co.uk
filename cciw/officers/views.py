@@ -265,6 +265,28 @@ def _get_camp_or_404(year, number):
         raise Http404
 
 
+TITLES = ["dr", "rev", "reverend", "pastor", "mr", "ms", "mrs", "prof"]
+
+
+def normalized_name(name):
+    # See also application_form.js
+    first_word = name.strip().split(' ')[0].lower().replace('.', '')
+    if first_word in TITLES:
+        name = name[len(first_word):].strip('.').strip()
+    return name
+
+
+def close_enough_referee_match(referee1, referee2):
+    if referee1 == referee2:
+        return True
+
+    if (normalized_name(referee1.name).lower() == normalized_name(referee2.name).lower() and
+        referee1.email.lower() == referee2.email.lower()):
+        return True
+
+    return False
+
+
 def add_previous_references(ref):
     """
     Adds the attributes:
@@ -293,7 +315,7 @@ def add_previous_references(ref):
 
     exact = None
     for refform in prev:
-        if refform.reference_info.referee == ref.referee:
+        if close_enough_referee_match(refform.reference_info.referee, ref.referee):
             exact = refform.reference_info
             break
     ref.previous_reference = exact

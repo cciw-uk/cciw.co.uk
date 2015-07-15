@@ -59,7 +59,7 @@ $(document).ready(function () {
     var REFEREE_NAME_FIELDS = '#id_referee1_name, #id_referee2_name';
     var CHECK_TITLE_FIELDS = REFEREE_NAME_FIELDS;
 
-    var TITLES = ["dr", "rev", "reverend", "pastor", "mr", "ms", "mrs", "prof"];
+    var TITLES = ["dr", "rev", "reverend", "pastor", "mr", "ms", "mrs", "prof"];  // See also close_enough_referee_match
     addValidator(CHECK_TITLE_FIELDS, function ($field, val) {
         if (val.trim().length > 0) {
             var firstWord = val.trim().split(/ /)[0].toLowerCase().replace(".", "");

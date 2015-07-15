@@ -234,7 +234,7 @@ class ApplicationSetupMixin(ExtraOfficersSetupMixin):
                               referee1_address="Referee 1 Address\r\nLine 2",
                               referee1_email="referee1@email.co.uk",
                               referee1_mobile="",
-                              referee1_name="Mr Referee1 Name",
+                              referee1_name="Referee1 Name",
                               referee1_tel="01222 666666",
                               referee2_address="1267a Somewhere Road\r\nThereyougo",
                               referee2_email="referee2@email.co.uk",
@@ -382,7 +382,7 @@ class ReferenceSetupMixin(ApplicationSetupMixin):
         )
         self.referenceform_1_1 = G(ReferenceForm,
                                    reference_info=self.reference1_1,
-                                   referee_name="Mr Referee1 Name",
+                                   referee_name="Referee1 Name",
                                    how_long_known="A long time",
                                    capacity_known="Pastor",
                                    known_offences=False,

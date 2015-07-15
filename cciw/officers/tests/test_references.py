@@ -7,7 +7,7 @@ from django_dynamic_fixture import G
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application, ReferenceAction, Reference
 from cciw.officers.tests.base import ReferenceSetupMixin
-from cciw.officers.views import add_previous_references
+from cciw.officers.views import add_previous_references, close_enough_referee_match
 from cciw.utils.tests.webtest import WebTestBase
 
 from .base import OFFICER, LEADER_USERNAME, LEADER_PASSWORD, LEADER_EMAIL, LEADER
@@ -133,7 +133,20 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2001, number=1))
                                 + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, refinfo.previous_reference.id))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Mr Referee1 Name has done a reference for Joe in the past.")
+        self.assertContains(response, "Referee1 Name has done a reference for Joe in the past.")
+
+    def test_exact_match_with_title(self):
+        app1 = self.application4
+        app2 = Application.objects.get(id=app1.id)
+
+        # Modify to add "Rev."
+        app2.referee1_name = "Rev. " + app2.referee1_name
+        self.assertTrue(close_enough_referee_match(app1.referees[0],
+                                                   app2.referees[0]))
+
+        app2.referee1_name = "Someone else entirely"
+        self.assertFalse(close_enough_referee_match(app1.referees[0],
+                                                    app2.referees[0]))
 
     def test_update_with_no_exact_match(self):
         """
@@ -146,15 +159,15 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         refinfo = app.references[0]
         add_previous_references(refinfo)
         assert refinfo.previous_reference is None
-        assert refinfo.possible_previous_references[0].reference_form.referee_name == "Mr Referee1 Name"
+        assert refinfo.possible_previous_references[0].reference_form.referee_name == "Referee1 Name"
         self.webtest_officer_login(LEADER)
         response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2001, number=1))
                                 + "?ref_id=%d&update=1&prev_ref_id=%d" % (refinfo.id, refinfo.possible_previous_references[0].id))
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "Mr Referee1 Name has done a reference for Joe in the past.")
-        self.assertContains(response, """In the past, "Mr Referee1 Name &lt;referee1@email.co.uk&gt;" did""")
+        self.assertNotContains(response, "Referee1 Name has done a reference for Joe in the past.")
+        self.assertContains(response, """In the past, "Referee1 Name &lt;referee1@email.co.uk&gt;" did""")
         self.assertContains(response, "If you have confirmed")
-        self.assertContains(response, """email address is now "Mr Referee1 Name &lt;a_new_email_for_ref1@example.com&gt;",""")
+        self.assertContains(response, """email address is now "Referee1 Name &lt;a_new_email_for_ref1@example.com&gt;",""")
 
     def test_nag(self):
         """
@@ -240,7 +253,7 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
         self.assertEqual(response.status_code, 200)
 
         # Check it is pre-filled as we expect
-        self.assertContains(response, """<input id="id_referee_name" maxlength="100" name="referee_name" type="text" value="Mr Referee1 Name" />""", html=True)
+        self.assertContains(response, """<input id="id_referee_name" maxlength="100" name="referee_name" type="text" value="Referee1 Name" />""", html=True)
         self.assertContains(response, """<input id="id_how_long_known" maxlength="150" name="how_long_known" type="text" value="A long time" />""", html=True)
 
 
