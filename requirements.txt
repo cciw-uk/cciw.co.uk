@@ -1,4 +1,4 @@
-Django==1.8.2
+Django==1.8.3
 -e git+https://github.com/pashinin/fabric@p33#egg=Fabric
 -e git://github.com/spookylukey/faker@d1f2896b5d59f3888d06689d442033fcc99ae4d2#egg=Faker
 Markdown==2.3.1
