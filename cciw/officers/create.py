@@ -18,11 +18,11 @@ def make_username(first_name, last_name, guess_number=1):
     Makes a username for an officer, based on 'first_name' and 'last_name',
     checking in the DB for existing usernames.
     """
-    first_name = first_name.replace(" ", "").lower()
+    name = (first_name + last_name).replace(" ", "").replace("'", "").lower()
     if guess_number == 1:
-        guess = "%s%s" % (first_name, last_name)
+        guess = name
     else:
-        guess = "%s%s%d" % (first_name, last_name, guess_number)
+        guess = "%s%d" % (name, guess_number)
     if User.objects.filter(username=guess).exists():
         return make_username(first_name, last_name, guess_number + 1)
     else:
