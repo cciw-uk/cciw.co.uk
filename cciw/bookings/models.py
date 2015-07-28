@@ -873,6 +873,12 @@ def early_bird_is_available(year, booked_at_date):
     return booked_at_date < get_early_bird_cutoff_date(year)
 
 
+def total_places_available(year):
+    camps = Camp.objects.filter(year=year)
+    return sum([p for p in [c.get_places_left()[0] for c in camps]
+                if p > 0])
+
+
 # See process_payments management command for explanation
 
 class PaymentManager(models.Manager):

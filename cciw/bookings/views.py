@@ -199,7 +199,7 @@ from cciw.utils.views import user_passes_test_improved
 
 from cciw.bookings.email import send_verify_email, check_email_verification_token
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
-from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now, get_early_bird_cutoff_date, early_bird_is_available
+from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now, get_early_bird_cutoff_date, early_bird_is_available, total_places_available
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, \
     BOOKING_INFO_COMPLETE, BOOKING_APPROVED, REQUIRED_PRICE_TYPES, \
     PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT
@@ -376,7 +376,9 @@ class BookingStart(BookingLogInBase):
         else:
             form = self.form_class()
 
-        return self.render({'form': form})
+        return self.render({'form': form,
+                            'no_places_available': total_places_available(get_thisyear()) == 0,
+                            })
 
 
 class BookingEmailSent(BookingLogInBase):
