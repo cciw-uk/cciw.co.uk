@@ -80,6 +80,7 @@ class Camp(models.Model):
     max_campers = models.PositiveSmallIntegerField("maximum campers", default=80)
     max_male_campers = models.PositiveSmallIntegerField("maximum male campers", default=60)
     max_female_campers = models.PositiveSmallIntegerField("maximum female campers", default=60)
+    last_booking_date = models.DateField(null=True, blank=True, help_text="Camp start date will be used if left empty.")
     south_wales_transport_available = models.BooleanField("South Wales transport available (pre 2015 only)", default=False)
 
     previous_camp = models.ForeignKey("self",
