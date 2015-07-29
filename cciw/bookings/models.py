@@ -752,6 +752,19 @@ class Booking(models.Model):
             if self.early_bird_discount:
                 errors.append("The early bird discount is only allowed for bookings created online.")
 
+        # Don't want warnings for booking sec when a booked place is edited
+        # after the cutoff date, so we allow self.booked_at to be used here:
+        on_date = self.booked_at if self.is_booked and self.booked_at is not None else date.today()
+
+        if not self.camp.open_for_bookings(on_date):
+            if on_date >= self.camp.end_date:
+                msg = "This camp has already finished."
+            elif on_date >= self.camp.start_date:
+                msg = "This camp is closed for bookings because it has already started."
+            else:
+                msg = "This camp is closed for bookings."
+            errors.append(msg)
+
         return errors
 
     def get_booking_warnings(self, booking_sec=False):

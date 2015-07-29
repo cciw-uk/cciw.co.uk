@@ -65,6 +65,7 @@ def detail(request, year, number):
         c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(camp.year) + [camp.nice_name])
 
     c['is_booking_open'] = is_booking_open(camp.year)
+    c['today'] = date.today()
 
     return render(request, 'cciw/camps/detail.html', c)
 

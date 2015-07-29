@@ -44,15 +44,16 @@ class CreateCampMixin(object):
     def create_camp(self):
         if hasattr(self, 'camp'):
             return
+        self.today = date.today()
         # Need to create a Camp that we can choose i.e. is in the future.
-        # We also need it so that payments can be  to be made when only the deposit is due
+        # We also need it so that payments can be made when only the deposit is due
         delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE_DAYS
-        start_date = date.today() + timedelta(delta_days)
+        start_date = self.today + timedelta(delta_days)
         self.camp = Camp.objects.create(year=start_date.year, number=1,
                                         minimum_age=self.camp_minimum_age,
                                         maximum_age=self.camp_maximum_age,
                                         start_date=start_date,
-                                        end_date=start_date + timedelta(delta_days + 7),
+                                        end_date=start_date + timedelta(days=7),
                                         site_id=1)
         import cciw.cciwmain.common
         cciw.cciwmain.common._thisyear = None
@@ -178,6 +179,30 @@ class BookingBaseMixin(object):
 
 
 # == Test cases ==
+
+# Most tests are against views, instead of model-based tests.
+# Booking.get_booking_problems(), for instance, is tested especially in
+# TestListBookings. In theory this could be tested using model-based tests
+# instead, but the way that multiple bookings and the basket/shelf interact mean
+# we need to test the view code as well. It would probably be good to rewrite
+# using a class like "CheckoutPage", which combines shelf and basket bookings,
+# and some of the logic in BookingListBookings. There is also the advantage that
+# using self.create_place() (which uses a view) ensures Booking instances are
+# created the same way a user would.
+
+
+class TestBookingModels(CreatePricesMixin, CreateCampMixin, TestCase):
+
+    def test_camp_open_for_bookings(self):
+        self.assertTrue(self.camp.open_for_bookings(self.today))
+        self.assertTrue(self.camp.open_for_bookings(self.camp.start_date))
+        self.assertFalse(self.camp.open_for_bookings(self.camp.start_date + timedelta(days=1)))
+
+        self.camp.last_booking_date = self.today
+        self.assertTrue(self.camp.open_for_bookings(self.today))
+        self.assertFalse(self.camp.open_for_bookings(self.today + timedelta(days=1)))
+
+
 class TestBookingIndex(BookingBaseMixin, CreatePricesMixin, CreateCampMixin, TestCase):
 
     def test_show_with_no_prices(self):
@@ -770,6 +795,15 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.create_place({'sex': 'f'})
         resp = self.client.get(self.url)
         self.assertContains(resp, "There are not enough places for girls left on this camp")
+        self.assert_book_button_disabled(resp)
+
+    def test_booking_after_closing_date(self):
+        self.camp.last_booking_date = self.today - timedelta(days=1)
+        self.camp.save()
+
+        self.create_place()
+        resp = self.client.get(self.url)
+        self.assertContains(resp, "This camp is closed for bookings")
         self.assert_book_button_disabled(resp)
 
     def test_handle_two_problem_bookings(self):

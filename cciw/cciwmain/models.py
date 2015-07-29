@@ -186,6 +186,17 @@ class Camp(models.Model):
                 max(self.max_male_campers - males_booked, 0),
                 max(self.max_female_campers - females_booked, 0))
 
+    @property
+    def closes_for_bookings_on(self):
+        return self.last_booking_date if self.last_booking_date is not None else self.start_date
+
+    def open_for_bookings(self, on_date):
+        return on_date <= self.closes_for_bookings_on
+
+    @property
+    def is_open_for_bookings(self):
+        return self.open_for_bookings(date.today())
+
     class Meta:
         ordering = ['-year', 'number']
         unique_together = (('year', 'number'),)

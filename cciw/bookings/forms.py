@@ -55,13 +55,17 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
         super(AddPlaceForm, self).__init__(*args, **kwargs)
 
         def render_camp(c):
+            availability_msg = (("Places available"
+                                 if c.get_places_left()[0] > 0
+                                 else "No places available!")
+                                if c.is_open_for_bookings else "Closed for bookings")
             return format_html("Camp {0}, {1}, {2}"
                                '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
                                '<span class="placeAvailability">{3}</span>',
                                c.number,
                                c.leaders_formatted,
                                c.start_date.strftime("%e %b %Y"),
-                               "Places available" if c.get_places_left()[0] > 0 else "No places available!",
+                               availability_msg,
                                )
         self.fields['camp'].choices = [(c.id, render_camp(c))
                                        for c in Camp.objects.filter(year=get_thisyear())]
