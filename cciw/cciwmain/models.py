@@ -100,7 +100,6 @@ class Camp(models.Model):
                                     help_text="These users can manage references/applications for the camp. Not for normal officers.",
                                     blank=True)
     site = models.ForeignKey(Site)
-    online_applications = models.BooleanField("Accepts online applications from officers.", default=True)
     officers = models.ManyToManyField(settings.AUTH_USER_MODEL, through='officers.Invitation')
 
     objects = CampManager()

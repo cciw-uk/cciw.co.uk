@@ -43,7 +43,6 @@ class BasicSetupMixin(object):
 
         self.default_camp_1 = G(Camp,
                                 end_date=datetime(2000, 7, 8),
-                                online_applications=True,
                                 number=1,
                                 site=self.default_site,
                                 minimum_age=11,
@@ -55,7 +54,6 @@ class BasicSetupMixin(object):
 
         self.default_camp_2 = G(Camp,
                                 end_date=datetime(2001, 7, 8),
-                                online_applications=True,
                                 number=1,
                                 site=self.default_site,
                                 minimum_age=11,

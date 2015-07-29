@@ -16,7 +16,6 @@
                 1
             ], 
             "end_date": "2000-07-08", 
-            "online_applications": true, 
             "number": 1, 
             "site": 1, 
             "minimum_age": 11, 
@@ -35,7 +34,6 @@
                 1
             ], 
             "end_date": "2001-07-08", 
-            "online_applications": true, 
             "number": 1, 
             "site": 1, 
             "minimum_age": 11, 

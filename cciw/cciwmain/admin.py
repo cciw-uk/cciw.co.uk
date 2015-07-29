@@ -55,7 +55,7 @@ class CampAdmin(admin.ModelAdmin):
           }
          ),
         ('Applications and references',
-         {'fields': ('online_applications', 'admins'),
+         {'fields': ['admins'],
           'description': '<div>Options for managing applications. Officer lists are managed <a href="/officers/leaders/">elsewhere</a>, not here.</div>',
           }
          ),

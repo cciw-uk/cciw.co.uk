@@ -240,8 +240,7 @@ Please find attached a copy of the application you requested
 def _thisyears_camp_for_leader(user):
     leaders = list(user.people.all())
     try:
-        return leaders[0].camps_as_leader.get(year=common.get_thisyear(),
-                                              online_applications=True)
+        return leaders[0].camps_as_leader.get(year=common.get_thisyear())
     except (ObjectDoesNotExist, IndexError):
         return None
 
