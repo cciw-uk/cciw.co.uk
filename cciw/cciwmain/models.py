@@ -186,10 +186,6 @@ class Camp(models.Model):
                 max(self.max_male_campers - males_booked, 0),
                 max(self.max_female_campers - females_booked, 0))
 
-    def is_booking_open(self):
-        from cciw.bookings.views import is_booking_open
-        return is_booking_open(self.year)
-
     class Meta:
         ordering = ['-year', 'number']
         unique_together = (('year', 'number'),)

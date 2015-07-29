@@ -12,6 +12,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
+from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import Lock
 
@@ -877,6 +878,17 @@ def total_places_available(year):
     camps = Camp.objects.filter(year=year)
     return sum([p for p in [c.get_places_left()[0] for c in camps]
                 if p > 0])
+
+
+def is_booking_open(year):
+    """
+    When passed a given year, returns True if booking is open.
+    """
+    return (Price.objects.filter(year=year, price_type__in=[v for v, d in REQUIRED_PRICE_TYPES]).count()
+            == len(REQUIRED_PRICE_TYPES)
+            and Camp.objects.filter(year=year).exists())
+
+is_booking_open_thisyear = lambda: is_booking_open(get_thisyear())
 
 
 # See process_payments management command for explanation

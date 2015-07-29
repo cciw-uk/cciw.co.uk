@@ -50,6 +50,7 @@ def detail(request, year, number):
         camp_is_past
             True if this camp is now finished.
     """
+    from cciw.bookings.models import is_booking_open
 
     try:
         camp = Camp.objects.get(year=int(year), number=int(number))
@@ -62,6 +63,9 @@ def detail(request, year, number):
 
     if camp.is_past():
         c['breadcrumb'] = create_breadcrumb(year_forum_breadcrumb(camp.year) + [camp.nice_name])
+
+    c['is_booking_open'] = is_booking_open(camp.year)
+
     return render(request, 'cciw/camps/detail.html', c)
 
 

@@ -199,7 +199,7 @@ from cciw.utils.views import user_passes_test_improved
 
 from cciw.bookings.email import send_verify_email, check_email_verification_token
 from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
-from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now, get_early_bird_cutoff_date, early_bird_is_available, total_places_available
+from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now, get_early_bird_cutoff_date, early_bird_is_available, total_places_available, is_booking_open, is_booking_open_thisyear
 from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, \
     BOOKING_INFO_COMPLETE, BOOKING_APPROVED, REQUIRED_PRICE_TYPES, \
     PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT
@@ -265,17 +265,6 @@ def account_details_required(view_func):
 
 booking_secretary_required = user_passes_test_improved(lambda user: user.is_superuser
                                                        or is_booking_secretary(user))
-
-
-def is_booking_open(year):
-    """
-    When passed a given year, returns True if booking is open.
-    """
-    return (Price.objects.filter(year=year, price_type__in=[v for v, d in REQUIRED_PRICE_TYPES]).count()
-            == len(REQUIRED_PRICE_TYPES)
-            and Camp.objects.filter(year=year).exists())
-
-is_booking_open_thisyear = lambda: is_booking_open(get_thisyear())
 
 
 # Views
