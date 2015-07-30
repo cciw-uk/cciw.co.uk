@@ -122,8 +122,9 @@ def forward_email_to_list(mail, addresslist, original_to):
     orig_from_addr = mail['From']
     del mail['From']
 
-    new_from_addr = "CCIW lists <lists@cciw.co.uk>"
-    mail['From'] = new_from_addr
+    sender_addr = "CCIW lists <lists@cciw.co.uk>"
+    mail['Sender'] = sender_addr
+    mail['Return-Path'] = "website@cciw.co.uk"
     mail['Reply-To'] = orig_from_addr
 
     # Various headers seem to cause problems. We whitelist the ones
