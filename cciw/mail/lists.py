@@ -3,6 +3,7 @@ import imaplib
 import re
 import xmlrpc.client
 
+from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.mail import get_connection, make_msgid
 from django.utils.encoding import force_bytes
@@ -55,36 +56,40 @@ def create_mailboxes(camp):
 email_extract_re = re.compile(r"([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)")
 
 
-def _camp_officers(year=None, number=None):
-    from cciw.cciwmain.models import Camp
-    try:
-        c = Camp.objects.get(year=year, number=number)
-    except Camp.DoesNotExist:
-        return None  # address is invalid
+class NoSuchList(ValueError):
+    pass
 
-    return map(formatted_email, camp_officer_list(c))
+
+def _get_camps(year=None, number=None):
+    from cciw.cciwmain.models import Camp
+    camps = Camp.objects.filter(year=int(year))
+    if number is not None:
+        camps = camps.filter(number=number)
+    return camps
+
+
+def _get_camp(year=None, number=None):
+    try:
+        return _get_camps(year=year, number=int(number)).get()
+    except Camp.DoesNotExist:
+        raise NoSuchList("year=%r camp=%r" % (year, number))
+
+
+def _camp_officers(year=None, number=None):
+    return camp_officer_list(_get_camp(year=year, number=number))
 
 
 def _camp_slackers(year=None, number=None):
-    from cciw.cciwmain.models import Camp
-    try:
-        c = Camp.objects.get(year=year, number=number)
-    except Camp.DoesNotExist:
-        return None  # address is invalid
-
-    return map(formatted_email, camp_slacker_list(c))
+    return camp_slacker_list(_get_camp(year=year, number=number))
 
 
 def _camp_leaders(year=None, number=None):
-    from cciw.cciwmain.models import Camp
-    camps = Camp.objects.filter(year=year)
-    if number is not None:
-        camps = camps.filter(number=number)
+    camps = _get_camps(year=year, number=number)
     s = set()
     for c in camps:
         s.update(_get_leaders_for_camp(c))
 
-    return map(formatted_email, s)
+    return list(s)
 
 
 def _get_leaders_for_camp(camp):
@@ -95,30 +100,52 @@ def _get_leaders_for_camp(camp):
     return retval
 
 
+def _is_camp_leader_or_admin(email, year=None, number=None):
+    camps = _get_camps(year=year, number=number)
+    all_users = set()
+    for c in camps:
+        all_users.update(_get_leaders_for_camp(c))
+        all_users.update(list(c.admins.all()))
+
+    return any(user.email.lower() == email.lower() for user in all_users)
+
+
+def _is_camp_leader_or_webmaster(email, year=None, number=None):
+    if _is_camp_leader_or_admin(email, year=year, number=number):
+        return True
+
+    if User.objects.filter(email=email, superuser=True).exists():
+        return True
+
+    return False
+
+
 # See also cciw.officers.utils
 email_lists = {
-    re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-officers@cciw.co.uk$",
-               re.IGNORECASE): _camp_officers,
-    re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-slackers@cciw.co.uk$",
-               re.IGNORECASE): _camp_slackers,
-    re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-leaders@cciw.co.uk$",
-               re.IGNORECASE): _camp_leaders,
-    re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw.co.uk$",
-               re.IGNORECASE): _camp_leaders,
+    re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-officers@cciw.co.uk$", re.IGNORECASE):
+    (_camp_officers, _is_camp_leader_or_admin),
+    re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-slackers@cciw.co.uk$", re.IGNORECASE):
+    (_camp_slackers, _is_camp_leader_or_admin),
+    re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-leaders@cciw.co.uk$", re.IGNORECASE):
+    (_camp_leaders, _is_camp_leader_or_webmaster),
+    re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw.co.uk$", re.IGNORECASE):
+    (_camp_leaders, _is_camp_leader_or_webmaster),
     re.compile(r"^camp-debug@cciw.co.uk$"):
-        lambda: settings.LIST_MAIL_DEBUG_ADDRESSES,
+    (lambda: settings.LIST_MAIL_DEBUG_ADDRESSES, lambda email: True)
 }
 
 
-def list_for_address(address):
-    for pat, func in email_lists.items():
+def users_for_address(address, from_addr):
+    for pat, (func, perm_func) in email_lists.items():
         m = pat.match(address)
         if m is not None:
+            if not perm_func(from_addr, **m.groupdict()):
+                raise NoSuchList()
             return func(**m.groupdict())
-    return None
+    raise NoSuchList()
 
 
-def forward_email_to_list(mail, addresslist, original_to):
+def forward_email_to_list(mail, user_list, original_to):
     orig_from_addr = mail['From']
     del mail['From']
 
@@ -139,6 +166,7 @@ def forward_email_to_list(mail, addresslist, original_to):
         'content-disposition',
         'date',
         'reply-to',
+        'sender',
     ]
     mail._headers = [(name, val) for name, val in mail._headers
                      if name.lower() in good_headers]
@@ -148,13 +176,14 @@ def forward_email_to_list(mail, addresslist, original_to):
     c = get_connection("django.core.mail.backends.smtp.EmailBackend")
     c.open()
     # send individual emails
-    for addr in addresslist:
+    for user in user_list:
+        addr = formatted_email(user)
         del mail['To']
         mail['To'] = addr
         # Need new message ID, or webfaction's mail server will only send one
         del mail['Message-ID']
         mail['Message-ID'] = make_msgid()
-        c.connection.sendmail(new_from_addr, [addr], force_bytes(mail.as_string()))
+        c.connection.sendmail(orig_from_addr, [addr], force_bytes(mail.as_string()))
     c.close()
 
 
@@ -172,14 +201,19 @@ def handle_mail(data):
     else:
         addresses = set([a.lower() for a in email_extract_re.findall(to)])
 
+    from_email = email_extract_re.search(mail['From']).groups()[0]
+
     for address in addresses:
-        l = list_for_address(address)
-        # addresses can contain anything else on the 'to' line, which
-        # can even included valid @cciw.co.uk that we don't know about
-        # (e.g. other mailboxes).  So if we don't recognise the
-        # address, just ignore
-        if l is not None:
+
+        try:
+            l = users_for_address(address, from_email)
             forward_email_to_list(mail, l, address)
+        except NoSuchList:
+            # addresses can contain anything else on the 'to' line, which
+            # can even included valid @cciw.co.uk that we don't know about
+            # (e.g. other mailboxes).  So if we don't recognise the
+            # address, just ignore
+            pass
 
 
 def handle_all_mail():
