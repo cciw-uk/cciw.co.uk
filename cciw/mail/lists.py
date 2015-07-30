@@ -151,7 +151,6 @@ def users_for_address(address, from_addr):
 
 def forward_email_to_list(mail, user_list, original_to):
     orig_from_addr = mail['From']
-    del mail['From']
 
     sender_addr = "CCIW lists <lists@cciw.co.uk>"
     mail['Sender'] = sender_addr

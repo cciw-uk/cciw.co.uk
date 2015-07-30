@@ -66,3 +66,4 @@ class MailTests(ExtraOfficersSetupMixin, TestCase):
         self.assertTrue(all(f == 'Dave Stott <leader@somewhere.com>' for f, t, m in connection.sent))
         self.assertEqual(connection.sent[0][1][0], '"Fred Jones" <fredjones@somewhere.com>')
         self.assertIn("Sender: CCIW lists".encode('utf-8'), connection.sent[0][2])
+        self.assertIn("From: Dave Stott <leader@somewhere.com>".encode('utf-8'), connection.sent[0][2])
