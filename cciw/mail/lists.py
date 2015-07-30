@@ -114,10 +114,14 @@ def _is_camp_leader_or_webmaster(email, year=None, number=None):
     if _is_camp_leader_or_admin(email, year=year, number=number):
         return True
 
-    if User.objects.filter(email=email, superuser=True).exists():
+    if User.objects.filter(email=email, is_superuser=True).exists():
         return True
 
     return False
+
+
+def _mail_debug_users():
+    return User.objects.filter(is_superuser=True)
 
 
 # See also cciw.officers.utils
@@ -131,7 +135,7 @@ email_lists = {
     re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw.co.uk$", re.IGNORECASE):
     (_camp_leaders, _is_camp_leader_or_webmaster),
     re.compile(r"^camp-debug@cciw.co.uk$"):
-    (lambda: settings.LIST_MAIL_DEBUG_ADDRESSES, lambda email: True)
+    (_mail_debug_users, lambda email: True)
 }
 
 

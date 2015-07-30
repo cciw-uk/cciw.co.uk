@@ -300,9 +300,6 @@ BOOKINGFORMDIR = "downloads"
 MEMBERS_PAGINATE_MESSAGES_BY = 20
 WEBMASTER_EMAIL = "webmaster@cciw.co.uk"
 LIST_MAILBOX_NAME = "camplists"
-LIST_MAIL_DEBUG_ADDRESSES = [
-    WEBMASTER_EMAIL
-]
 ESV_KEY = 'IP'
 CRB_VALID_FOR = 365 * 3  # We consider a CRB valid for 3 years
 
