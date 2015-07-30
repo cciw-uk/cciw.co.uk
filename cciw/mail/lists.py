@@ -170,7 +170,7 @@ def handle_mail(data):
     if is_valid_email(to):
         addresses = [to]
     else:
-        addresses = email_extract_re.findall(to)
+        addresses = set([a.lower() for a in email_extract_re.findall(to)])
 
     for address in addresses:
         l = list_for_address(address)
