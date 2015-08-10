@@ -5,7 +5,7 @@ import xmlrpc.client
 
 from django.contrib.auth.models import User
 from django.conf import settings
-from django.core.mail import get_connection, make_msgid
+from django.core.mail import get_connection, make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
 from cciw.cciwmain.decorators import email_errors_silently
@@ -57,6 +57,10 @@ email_extract_re = re.compile(r"([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*
 
 
 class NoSuchList(ValueError):
+    pass
+
+
+class MailAccessDenied(ValueError):
     pass
 
 
@@ -144,7 +148,7 @@ def users_for_address(address, from_addr):
         m = pat.match(address)
         if m is not None:
             if not perm_func(from_addr, **m.groupdict()):
-                raise NoSuchList()
+                raise MailAccessDenied()
             return func(**m.groupdict())
     raise NoSuchList()
 
@@ -211,6 +215,17 @@ def handle_mail(data):
         try:
             l = users_for_address(address, from_email)
             forward_email_to_list(mail, l, address)
+        except MailAccessDenied:
+            send_mail("Access to mailing list {0} denied".format(address),
+                      "You attempted to email the list {0}\n"
+                      "with an email titled \"{1}\".\n"
+                      "\n"
+                      "However, you do not have permission to email this list, sorry.".format(
+                          address,
+                          mail['Subject'],
+                      ),
+                      settings.DEFAULT_FROM_EMAIL,
+                      [from_email])
         except NoSuchList:
             # addresses can contain anything else on the 'to' line, which
             # can even included valid @cciw.co.uk that we don't know about

@@ -7,7 +7,7 @@ from cciw.cciwmain.models import Camp
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
 
-from cciw.mail.lists import users_for_address, NoSuchList, handle_mail
+from cciw.mail.lists import users_for_address, NoSuchList, MailAccessDenied, handle_mail
 import cciw.mail.lists
 
 
@@ -45,8 +45,20 @@ class DummyBackend(object):
 
 class MailTests(ExtraOfficersSetupMixin, TestCase):
 
-    def test_officer_list(self):
+    def setUp(self):
+        super(MailTests, self).setUp()
+        connection = DummyConnection()
+        backend = DummyBackend(connection)
+        get_connection = lambda name: backend
+        cciw.mail.lists.get_connection = get_connection
+        self.connection = connection
+
+    def test_invalid_list(self):
         self.assertRaises(NoSuchList,
+                          lambda: users_for_address('committee@cciw.co.uk', 'joe@random.com'))
+
+    def test_officer_list(self):
+        self.assertRaises(MailAccessDenied,
                           lambda: users_for_address('camp-2000-1-officers@cciw.co.uk', 'joe@random.com'))
 
         l1 = users_for_address('camp-2000-1-officers@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
@@ -59,7 +71,7 @@ class MailTests(ExtraOfficersSetupMixin, TestCase):
 
         # non-priviliged user:
         u = User.objects.create(username="joerandom", email="joe@random.com", is_superuser=False)
-        self.assertRaises(NoSuchList,
+        self.assertRaises(MailAccessDenied,
                           lambda: users_for_address('camp-2000-1-leaders@cciw.co.uk', 'joe@random.com'))
 
         # superuser:
@@ -77,11 +89,7 @@ class MailTests(ExtraOfficersSetupMixin, TestCase):
         self.assertEqual(l1, l2)
 
     def test_handle(self):
-        connection = DummyConnection()
-        backend = DummyBackend(connection)
-        get_connection = lambda name: backend
-        cciw.mail.lists.get_connection = get_connection
-
+        connection = self.connection
         self.assertEqual(connection.sent, [])
         handle_mail(TEST_MAIL)
         self.assertEqual(len(connection.sent), 3)
@@ -90,3 +98,10 @@ class MailTests(ExtraOfficersSetupMixin, TestCase):
         self.assertEqual(connection.sent[0][1][0], '"Fred Jones" <fredjones@somewhere.com>')
         self.assertIn("Sender: CCIW lists".encode('utf-8'), connection.sent[0][2])
         self.assertIn("From: Dave Stott <leader@somewhere.com>".encode('utf-8'), connection.sent[0][2])
+
+    def test_handle_bounce(self):
+        bad_mail = TEST_MAIL.replace(b"leader@somewhere.com", b"notleader@somewhere.com")
+        handle_mail(bad_mail)
+        self.assertEqual(self.connection.sent, [])
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, "Access to mailing list camp-2000-1-officers@cciw.co.uk denied")
