@@ -114,7 +114,7 @@ def _is_camp_leader_or_webmaster(email, year=None, number=None):
     if _is_camp_leader_or_admin(email, year=year, number=number):
         return True
 
-    if User.objects.filter(email=email, is_superuser=True).exists():
+    if User.objects.filter(email__iexact=email, is_superuser=True).exists():
         return True
 
     return False

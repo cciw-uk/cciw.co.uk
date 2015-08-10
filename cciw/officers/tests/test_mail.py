@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TestCase
 
@@ -44,14 +45,36 @@ class DummyBackend(object):
 
 class MailTests(ExtraOfficersSetupMixin, TestCase):
 
-    def test_perms(self):
+    def test_officer_list(self):
         self.assertRaises(NoSuchList,
                           lambda: users_for_address('camp-2000-1-officers@cciw.co.uk', 'joe@random.com'))
 
-        l1 = users_for_address('camp-2000-1-officers@cciw.co.uk', 'leader@somewhere.com')
+        l1 = users_for_address('camp-2000-1-officers@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
 
         self.assertEqual([u.username for u in l1],
                          ["fredjones", "joebloggs", "petersmith"])
+
+    def test_leader_list(self):
+        # Check perms:
+
+        # non-priviliged user:
+        u = User.objects.create(username="joerandom", email="joe@random.com", is_superuser=False)
+        self.assertRaises(NoSuchList,
+                          lambda: users_for_address('camp-2000-1-leaders@cciw.co.uk', 'joe@random.com'))
+
+        # superuser:
+        u.is_superuser = True
+        u.save()
+        l1 = users_for_address('camp-2000-1-leaders@cciw.co.uk', 'JOE@RANDOM.COM')
+
+        # leader:
+        l2 = users_for_address('camp-2000-1-leaders@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
+
+        # Check contents
+        self.assertEqual([u.username for u in l1],
+                         ["davestott"])
+
+        self.assertEqual(l1, l2)
 
     def test_handle(self):
         connection = DummyConnection()
