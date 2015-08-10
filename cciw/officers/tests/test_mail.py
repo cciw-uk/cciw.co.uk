@@ -13,7 +13,7 @@ import cciw.mail.lists
 
 TEST_MAIL = """MIME-Version: 1.0
 Date: Thu, 30 Jul 2015 10:39:10 +0100
-To: camp-2000-1-officers@cciw.co.uk
+To: "Camp 1 officers" <camp-2000-1-officers@cciw.co.uk>
 Subject: Minibus Drivers
 Content-Type: text/plain; charset="us-ascii"
 From: Dave Stott <leader@somewhere.com>
@@ -56,6 +56,8 @@ class MailTests(ExtraOfficersSetupMixin, TestCase):
     def test_invalid_list(self):
         self.assertRaises(NoSuchList,
                           lambda: users_for_address('committee@cciw.co.uk', 'joe@random.com'))
+        self.assertRaises(NoSuchList,
+                          lambda: users_for_address('x-camp-2000-1-officers@cciw.co.uk', 'joe@random.com'))
 
     def test_officer_list(self):
         self.assertRaises(MailAccessDenied,
