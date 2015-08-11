@@ -93,6 +93,8 @@ def _camp_leaders(year=None, number=None):
     for c in camps:
         s.update(_get_leaders_for_camp(c))
 
+    s.update(_mail_debug_users())
+
     return list(s)
 
 
