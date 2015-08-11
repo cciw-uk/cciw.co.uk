@@ -7,7 +7,7 @@ from cciw.cciwmain.models import Camp
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
 
-from cciw.mail.lists import users_for_address, NoSuchList, MailAccessDenied, handle_mail
+from cciw.mail.lists import users_for_address, NoSuchList, MailAccessDenied, handle_mail, extract_email_addresses
 import cciw.mail.lists
 
 
@@ -107,3 +107,7 @@ class MailTests(ExtraOfficersSetupMixin, TestCase):
         self.assertEqual(self.connection.sent, [])
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, "Access to mailing list camp-2000-1-officers@cciw.co.uk denied")
+
+    def test_extract(self):
+        self.assertEqual(extract_email_addresses('Some Guy <A.Body@example.com>'),
+                         ['A.Body@example.com'])
