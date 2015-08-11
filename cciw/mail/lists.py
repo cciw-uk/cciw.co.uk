@@ -200,6 +200,10 @@ def forward_email_to_list(mail, user_list, original_to):
     c.close()
 
 
+def extract_email_addresses(email_line):
+    return email_extract_re.findall(email_line)
+
+
 def handle_mail(data):
     """
     Forwards an email to the correct list of people.
@@ -212,9 +216,9 @@ def handle_mail(data):
     if is_valid_email(to):
         addresses = [to]
     else:
-        addresses = set([a.lower() for a in email_extract_re.findall(to)])
+        addresses = set([a.lower() for a in extract_email_addresses(to)])
 
-    from_email = email_extract_re.search(mail['From']).groups()[0]
+    from_email = extract_email_addresses(mail['From'])[0]
 
     for address in addresses:
 
