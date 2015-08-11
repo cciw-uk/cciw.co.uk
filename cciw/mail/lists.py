@@ -194,9 +194,6 @@ def forward_email_to_list(mail, user_list, original_to):
         mail['Message-ID'] = make_msgid()
         mail_as_bytes = force_bytes(mail.as_string())
         c.connection.sendmail(orig_from_addr, [addr], mail_as_bytes)
-        # Temporary debugging logging
-        with open(".mailing_list_log", "ab") as f:
-            f.write(mail_as_bytes)
     c.close()
 
 
