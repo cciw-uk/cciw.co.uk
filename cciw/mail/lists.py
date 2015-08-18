@@ -153,7 +153,7 @@ def users_for_address(address, from_addr):
     raise NoSuchList()
 
 
-def forward_email_to_list(mail, user_list, original_to):
+def forward_email_to_list(mail, user_list, original_to, debug=False):
     orig_from_addr = mail['From']
 
     # We ought to be able to leave 'From' and add 'Sender: lists@cciw.co.uk' but
@@ -194,6 +194,10 @@ def forward_email_to_list(mail, user_list, original_to):
         del mail['Message-ID']
         mail['Message-ID'] = make_msgid()
         mail_as_bytes = force_bytes(mail.as_string())
+        if debug:
+            with open(".mailing_list_log", "ab") as f:
+                f.write(mail_as_bytes)
+
         c.connection.sendmail(orig_from_addr, [addr], mail_as_bytes)
     c.close()
 
@@ -202,7 +206,7 @@ def extract_email_addresses(email_line):
     return email_extract_re.findall(email_line)
 
 
-def handle_mail(data):
+def handle_mail(data, debug=False):
     """
     Forwards an email to the correct list of people.
     data is RFC822 formatted data
@@ -222,7 +226,7 @@ def handle_mail(data):
 
         try:
             l = users_for_address(address, from_email)
-            forward_email_to_list(mail, l, address)
+            forward_email_to_list(mail, l, address, debug=debug)
         except MailAccessDenied:
             send_mail("Access to mailing list {0} denied".format(address),
                       "You attempted to email the list {0}\n"
@@ -242,7 +246,7 @@ def handle_mail(data):
             pass
 
 
-def handle_all_mail():
+def handle_all_mail(debug=False):
     # We do error handling just using asserts here and catching all errors in
     # calling routine
     im = imaplib.IMAP4_SSL(settings.IMAP_MAIL_SERVER)
@@ -262,7 +266,7 @@ def handle_all_mail():
             num = data[0].split()[0]
             typ, data = im.fetch(num, '(RFC822)')
             assert typ == 'OK'
-            handle_mail(data[0][1])
+            handle_mail(data[0][1], debug=debug)
             typ, data = im.store(num, '+FLAGS', '\\Deleted')
             assert typ == 'OK'
             typ, data = im.close()
