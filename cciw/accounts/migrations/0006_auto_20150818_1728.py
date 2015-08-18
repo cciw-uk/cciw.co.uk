@@ -5,6 +5,12 @@ from django.db import models, migrations
 
 
 def forwards(apps, schema_editor):
+    # Really old tables still kicking around:
+    schema_editor.execute("DROP TABLE auth_message CASCADE;")
+    schema_editor.execute("DROP TABLE notify_subscription CASCADE;")
+    schema_editor.execute("DROP TABLE notify_settings CASCADE;")
+    schema_editor.execute("DROP TABLE wiki_attachmentrevision CASCADE;")
+
     empty_table(apps, schema_editor,
                 "auth", "User_user_permissions")
     empty_table(apps, schema_editor,
