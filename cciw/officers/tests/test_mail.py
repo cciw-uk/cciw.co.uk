@@ -98,8 +98,8 @@ class MailTests(ExtraOfficersSetupMixin, TestCase):
 
         self.assertTrue(all(b'From: Dave Stott <leader@somewhere.com>' in m for f, t, m in connection.sent))
         self.assertEqual(connection.sent[0][1][0], '"Fred Jones" <fredjones@somewhere.com>')
-        self.assertIn("Sender: CCIW lists".encode('utf-8'), connection.sent[0][2])
-        self.assertIn("From: Dave Stott <leader@somewhere.com>".encode('utf-8'), connection.sent[0][2])
+        self.assertIn(b"Sender: CCIW lists", connection.sent[0][2])
+        self.assertIn(b"From: Dave Stott <leader@somewhere.com>", connection.sent[0][2])
 
     def test_handle_bounce(self):
         bad_mail = TEST_MAIL.replace(b"leader@somewhere.com", b"notleader@somewhere.com")
