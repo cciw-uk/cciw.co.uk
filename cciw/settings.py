@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'cciw.accounts',
     'cciw.cciwmain',
     'cciw.sitecontent',
     'cciw.forums',
@@ -105,6 +106,7 @@ INSTALLED_APPS = [
     'django_nyt',
     'compressor',
     'mailer',
+    "django_custom_user_migration",
 ]
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
@@ -128,6 +130,8 @@ if DEVBOX:
 SILENCED_SYSTEM_CHECKS = [
     '1_6.W001',
 ]
+
+AUTH_USER_MODEL = "accounts.User"
 
 # == DATABASE ==
 
