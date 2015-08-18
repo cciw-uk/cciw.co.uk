@@ -156,12 +156,8 @@ def users_for_address(address, from_addr):
 def forward_email_to_list(mail, user_list, original_to, debug=False):
     orig_from_addr = mail['From']
 
-    # We ought to be able to leave 'From' and add 'Sender: lists@cciw.co.uk' but
-    # WebFaction's SMTP servers reject this when the From is @hotmail.com.
-    # So we change 'From' and add 'Reply-To' instead.
-
     sender_addr = "CCIW lists <lists@cciw.co.uk>"
-    mail['From'] = sender_addr
+    mail['Sender'] = sender_addr
     mail['Return-Path'] = "website@cciw.co.uk"
     mail['Reply-To'] = orig_from_addr
 
@@ -177,6 +173,7 @@ def forward_email_to_list(mail, user_list, original_to, debug=False):
         'content-disposition',
         'date',
         'reply-to',
+        'sender',
     ]
     mail._headers = [(name, val) for name, val in mail._headers
                      if name.lower() in good_headers]
@@ -198,7 +195,7 @@ def forward_email_to_list(mail, user_list, original_to, debug=False):
             with open(".mailing_list_log", "ab") as f:
                 f.write(mail_as_bytes)
 
-        c.connection.sendmail(orig_from_addr, [addr], mail_as_bytes)
+        c.connection.sendmail(sender_addr, [addr], mail_as_bytes)
     c.close()
 
 
