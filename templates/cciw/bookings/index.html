@@ -7,9 +7,17 @@
     You are logged in as <b>{{ request.booking_account.name }}</b>. <a href="{% url 'cciw-bookings-account_overview' %}">View your account details</a>.
   {% endif %}
 
+
+  {% if booking_open and not any_bookings_possible %}
+    <div class="bignotice">No more camp places are available for {{ thisyear }}, sorry!</div>
+  {% endif %}
+
+
+
   <h2>Prices {{ thisyear }}</h2>
 
   {% if booking_open %}
+
     <div style="float: right;">
       <a class="booknow" href="{% url 'cciw-bookings-start' %}">Book online now!</a>
     </div>

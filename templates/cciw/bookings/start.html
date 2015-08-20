@@ -6,9 +6,9 @@
       able to complete the booking process at this stage.</strong></p>
   {% endif %}
 
-  {% if booking_open and no_places_available %}
-    <p><strong>No places are available on any camps! You may continue,
-      but you will only be complete the booking process for a new place on a
+  {% if booking_open and not any_bookings_possible %}
+    <p><strong>No places are available on any camps! You may continue, but you
+      will only be able to complete the booking process for a new place on a
       camp if you can arrange an exception with the camp leaders.</strong></p>
   {% endif %}
 
