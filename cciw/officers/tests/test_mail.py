@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core import mail
 from django.test import TestCase
 
@@ -10,6 +10,8 @@ from cciw.officers.tests.base import ExtraOfficersSetupMixin
 from cciw.mail.lists import users_for_address, NoSuchList, MailAccessDenied, handle_mail, extract_email_addresses
 import cciw.mail.lists
 
+
+User = get_user_model()
 
 TEST_MAIL = """MIME-Version: 1.0
 Date: Thu, 30 Jul 2015 10:39:10 +0100

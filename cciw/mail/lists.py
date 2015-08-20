@@ -3,7 +3,7 @@ import imaplib
 import re
 import xmlrpc.client
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.mail import get_connection, make_msgid, send_mail
 from django.utils.encoding import force_bytes
@@ -13,6 +13,7 @@ from cciw.cciwmain.utils import is_valid_email
 from cciw.officers.email_utils import formatted_email
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.webfaction import webfaction_session
+
 
 # External utility functions #
 
@@ -118,6 +119,7 @@ def _is_camp_leader_or_webmaster(email, year=None, number=None):
     if _is_camp_leader_or_admin(email, year=year, number=number):
         return True
 
+    User = get_user_model()
     if User.objects.filter(email__iexact=email, is_superuser=True).exists():
         return True
 
@@ -125,6 +127,7 @@ def _is_camp_leader_or_webmaster(email, year=None, number=None):
 
 
 def _mail_debug_users():
+    User = get_user_model()
     return User.objects.filter(is_superuser=True)
 
 

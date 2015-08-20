@@ -430,7 +430,7 @@ admin.site.register(CRBFormLog, CRBFormLogAdmin)
 
 # Hack the Group admin so that we can edit users belonging to a group
 from django.contrib.auth.admin import GroupAdmin
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group
 
 Membership = Group.user_set.related.through
 
