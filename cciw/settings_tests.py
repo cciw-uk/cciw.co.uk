@@ -31,3 +31,13 @@ INSTALLED_APPS = list(filter(lambda x: x not in [
 SEND_BROKEN_LINK_EMAILS = False
 
 TEST_DIR = basedir + r'/cciw/cciwmain/tests'
+
+class DisableMigrations(object):
+
+    def __contains__(self, item):
+        return True
+
+    def __getitem__(self, item):
+        return "notmigrations"
+
+MIGRATION_MODULES = DisableMigrations()
