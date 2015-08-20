@@ -106,7 +106,6 @@ INSTALLED_APPS = [
     'django_nyt',
     'compressor',
     'mailer',
-    "django_custom_user_migration",
 ]
 
 if not (LIVEBOX and WEBSERVER_RUNNING):

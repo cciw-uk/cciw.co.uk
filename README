@@ -132,8 +132,8 @@ Login
 
 Because of the above components, there are 3 separate login systems:
 
-* The standard django.contrib.auth.User system, used by the Django admin and the
-  officers section (staff members).
+* The standard django.contrib.auth system, with a custom AUTH_USER_MODEL,
+  used by the Django admin and the officers section (staff members).
 
 * A custom login system for the camp forums, based on the Member model,
   (very similar to contrib.auth.User, with passwords etc.)
