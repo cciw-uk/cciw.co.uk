@@ -34,9 +34,7 @@ def populate_table(apps, schema_editor, from_app, from_model, to_app, to_model):
     from_table_name = make_table_name(apps, from_app, from_model)
     to_table_name = make_table_name(apps, to_app, to_model)
 
-    max_id = fetch_with_column_names(schema_editor, "SELECT MAX(id) FROM {0};".format(from_table_name), [])[0][0][0]
-    if max_id is None:
-        max_id = 1
+    max_id = get_max_id(schema_editor, from_table_name)
 
     # Use batches to avoid loading entire table into memory
     BATCH_SIZE = 100
@@ -69,12 +67,27 @@ def populate_table(apps, schema_editor, from_app, from_model, to_app, to_model):
             # could collect and do 'executemany', but sqlite doesn't let us
             # execute more than one statement at once it seems.
             schema_editor.execute(sql, row)
+    reset_sequence(apps, schema_editor, to_app, to_model)
 
 
 def empty_table(apps, schema_editor, from_app, from_model):
     from_table_name = make_table_name(apps, from_app, from_model)
     ops = schema_editor.connection.ops
     schema_editor.execute("DELETE FROM {0};".format(ops.quote_name(from_table_name)))
+
+
+def get_max_id(schema_editor, table_name):
+    max_id = fetch_with_column_names(schema_editor, "SELECT MAX(id) FROM {0};".format(table_name), [])[0][0][0]
+    if max_id is None:
+        max_id = 0
+    return max_id
+
+
+def reset_sequence(apps, schema_editor, app, model):
+    if schema_editor.connection.vendor == 'postgresql':
+        table_name = make_table_name(apps, app, model)
+        sequence_name = "{0}_id_seq".format(table_name)
+        schema_editor.execute("SELECT setval(%s, %s, false);", [sequence_name, get_max_id(schema_editor, table_name) + 1])
 
 
 def make_table_name(apps, app, model):
