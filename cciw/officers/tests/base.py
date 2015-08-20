@@ -86,13 +86,13 @@ class OfficersSetupMixin(BasicSetupMixin):
                                         "officers",
                                         "reference"),
                                    perm("add_user",
-                                        "auth",
+                                        "accounts",
                                         "user"),
                                    perm("change_user",
-                                        "auth",
+                                        "accounts",
                                         "user"),
                                    perm("delete_user",
-                                        "auth",
+                                        "accounts",
                                         "user")
                                ],
                                )

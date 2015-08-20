@@ -91,7 +91,7 @@
             "email": "leader@somewhere.com", 
             "date_joined": "2007-05-20T23:22:40Z"
         }, 
-        "model": "auth.user", 
+        "model": "accounts.user", 
         "pk": 1
     }, 
     {

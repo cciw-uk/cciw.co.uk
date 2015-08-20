@@ -14,7 +14,7 @@
             "email": "someone@somewhere.com", 
             "date_joined": "2007-12-17T18:49:13Z"
         }, 
-        "model": "auth.user", 
+        "model": "accounts.user", 
         "pk": 1
     }, 
     {
@@ -36,7 +36,7 @@
             "email": "editor@somewhere.com", 
             "date_joined": "2007-12-17T18:49:13Z"
         }, 
-        "model": "auth.user", 
+        "model": "accounts.user", 
         "pk": 2
     }, 
     {
@@ -54,7 +54,7 @@
             "email": "editor@somewhere.com", 
             "date_joined": "2007-12-17T18:49:13Z"
         }, 
-        "model": "auth.user", 
+        "model": "accounts.user", 
         "pk": 3
     }
 ]
