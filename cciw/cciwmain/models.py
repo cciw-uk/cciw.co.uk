@@ -114,6 +114,10 @@ class Camp(models.Model):
     def natural_key(self):
         return (self.year, self.number)
 
+    @property
+    def short_name(self):
+        return "%s-%s" % (self.year, self.number)
+
     def __str__(self):
         leaders = list(self.leaders.all())
         chaplain = None

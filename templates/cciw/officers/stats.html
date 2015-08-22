@@ -15,41 +15,79 @@
     <p>Charts span the year leading up to the start date of the camp.</p>
     <p>Exact numbers can be seen by hovering your mouse over the charts.</p>
 
-    {% for stat in stats %}
+    {% for camp in camps %}
       <div style="float:left; margin-right: 20px;">
-        <h2>{{ stat.camp.number }} - {{ stat.camp.leaders_formatted }}</h2>
+        <h2>{{ camp.number }} - {{ camp.leaders_formatted }}</h2>
 
-        <div id="camp-graph-{{ stat.camp.number }}" style="width:600px;height:200px;">
+        <div id="camp-graph-{{ camp.number }}" style="width:600px;height:200px;">
         </div>
         <script type="text/javascript">
          $(function() {
-             var placeholder_id = "#camp-graph-{{ stat.camp.number }}";
-             var app_dates_data = {{ stat.application_dates_data|jsonify }};
-             var ref_dates_data = {{ stat.reference_dates_data|jsonify }};
-             var all_crb_dates_data = {{ stat.all_crb_dates_data|jsonify }};
-             var valid_crb_dates_data = {{ stat.valid_crb_dates_data|jsonify }};
-             var officer_list_data = {{ stat.officer_list_data|jsonify }};
-             $.plot(placeholder_id,
-                    [
-                        {label: "<a href='{% url "cciw-officers-officer_list" year=stat.camp.year number=stat.camp.number %}' target='_blank'>Officer list</a>",
-                         data: officer_list_data},
-                        {label: "<a href='{% url "cciw-officers-manage_crbs" year=year %}?camp={{ stat.camp.number }}' target='_blank'>Any DBSs</a>",
-                         data: all_crb_dates_data},
-                        {label: "Up-to-date DBSs",
-                         data: valid_crb_dates_data},
-                        {label: "<a href='{% url "cciw-officers-manage_applications" year=stat.camp.year number=stat.camp.number %}' target='_blank'>Applications</a>",
-                         data: app_dates_data},
-                        {label: "<a href='{% url "cciw-officers-manage_references" year=stat.camp.year number=stat.camp.number %}' target='_blank'>References</a> \u00F7 2",
-                         data: ref_dates_data}
-                    ],
-                    { xaxis: { mode: "time",
-                               ticks: 12 },
-                      yaxis: { min: 0 },
-                      legend: { position: "nw" },
-                      grid: { hoverable: true }
-                    });
+             var placeholder_id = "#camp-graph-{{ camp.number }}";
 
-             function showTooltip(x, y, contents) {
+             var objToArray = function (obj) {
+                 var a = $.map(obj, function(value, index) { return [[parseInt(index, 10), value]]; });
+                 a.sort();
+                 return a;
+             };
+
+             var dataArrived = function (stat) {
+                 var app_dates_data = objToArray(stat.application_dates_data);
+                 // Halve the references number to make it match the others.
+                 var ref_dates_data = $.map(objToArray(stat.ref_dates_data),
+                                            function (val, index) {
+                                                return [[val[0], val[1]/2]];
+                                            });
+                 var all_crb_dates_data = objToArray(stat.all_crb_dates_data);
+                 var valid_crb_dates_data = objToArray(stat.valid_crb_dates_data);
+                 var officer_list_data = objToArray(stat.officer_list_data);
+                 $.plot(placeholder_id,
+                        [
+                            {label: "<a href='{% url "cciw-officers-officer_list" year=camp.year number=camp.number %}' target='_blank'>Officer list</a>",
+                             data: officer_list_data},
+                            {label: "<a href='{% url "cciw-officers-manage_crbs" year=year %}?camp={{ camp.number }}' target='_blank'>Any DBSs</a>",
+                             data: all_crb_dates_data},
+                            {label: "Up-to-date DBSs",
+                             data: valid_crb_dates_data},
+                            {label: "<a href='{% url "cciw-officers-manage_applications" year=camp.year number=camp.number %}' target='_blank'>Applications</a>",
+                             data: app_dates_data},
+                            {label: "<a href='{% url "cciw-officers-manage_references" year=camp.year number=camp.number %}' target='_blank'>References</a> \u00F7 2",
+                             data: ref_dates_data}
+                        ],
+                        { xaxis: { mode: "time",
+                                   ticks: 12 },
+                          yaxis: { min: 0 },
+                          legend: { position: "nw" },
+                          grid: { hoverable: true }
+                        });
+                 var previousPoint = null;
+                 $(placeholder_id).bind("plothover", function (event, pos, item) {
+                     if (item) {
+                         if (previousPoint == null || (previousPoint.dataIndex != item.dataIndex || previousPoint.series != item.series)) {
+                             previousPoint = item;
+
+                             $("#tooltip").remove();
+                             var d = new Date(item.datapoint[0]);
+                             var num = item.datapoint[1];
+                             var label = $('<div>' + item.series.label + '</div>').text();
+                             var stat = num.toFixed(0);
+                             if (item.series.label.match(/References/)) {
+                                 label = "References";
+                                 stat = (num * 2).toFixed(0);
+                             }
+                             showTooltip(item.pageX, item.pageY,
+                                         label + ": <b>" + stat + "</b>" +
+                                         "<br/><i>" + d.toLocaleDateString() + "</i>");
+                         }
+                     } else {
+                         $("#tooltip").remove();
+                         previousPoint = null;
+                     }
+                 });
+
+             }
+
+             var showTooltip = function (x, y, contents) {
                  $('<div id="tooltip">' + contents + '</div>').css( {
                      position: 'absolute',
                      display: 'none',
@@ -62,35 +100,17 @@
                  }).appendTo("body").fadeIn(200);
              }
 
-             var previousPoint = null;
-             $(placeholder_id).bind("plothover", function (event, pos, item) {
-                 if (item) {
-                     if (previousPoint == null ||
-                                          (previousPoint.dataIndex != item.dataIndex ||
-                                                                      previousPoint.series != item.series)) {
-                                                                          previousPoint = item;
 
-                                                                          $("#tooltip").remove();
-                                                                          var d = new Date(item.datapoint[0]);
-                                                                          var num = item.datapoint[1];
-                                                                          var label = $('<div>' + item.series.label + '</div>').text();
-                                                                          var stat = num.toFixed(0);
-                                                                          if (item.series.label.match(/References/)) {
-                                                                              label = "References";
-                                                                              stat = (num * 2).toFixed(0);
-                                                                          }
-                                                                          showTooltip(item.pageX, item.pageY,
-                                                                                      label + ": <b>" + stat + "</b>" +
-                                                                                      "<br/><i>" + d.toLocaleDateString() + "</i>");
-                     }
-                 }
-                 else {
-                     $("#tooltip").remove();
-                     previousPoint = null;
-                 }
+             $.ajax({
+                 type: "GET",
+                 url: "{% url 'cciw-officers-officer_stats_json' year=camp.year number=camp.number %}",
+                 dataType: 'json',
+                 success: dataArrived
              });
 
+
          });
+
         </script>
       </div>
     {% endfor %}

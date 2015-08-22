@@ -1049,10 +1049,23 @@ def stats(request, year=None):
     camps = list(Camp.objects.filter(year=year).order_by('number'))
     if len(camps) == 0:
         raise Http404
-    ctx = {}
-    ctx['stats'] = get_camp_officer_stats(camps)
-    ctx['year'] = year
+
+    ctx = {
+        'camps': camps,
+        'year': year,
+    }
     return render(request, 'cciw/officers/stats.html', ctx)
+
+
+@staff_member_required
+@camp_admin_required
+@json_response
+def officer_stats_json(request, year, number):
+    year = int(year)
+    number = int(number)
+    camp = Camp.objects.get(year=year, number=number)
+    stats = get_camp_officer_stats(camp)
+    return stats.to_json()
 
 
 @staff_member_required
