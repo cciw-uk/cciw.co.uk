@@ -1052,6 +1052,14 @@ def date_to_js_ts(d):
 @camp_admin_required
 def stats(request, year=None):
     year = int(year)
+
+    ctx = {}
+    ctx['stats'] = get_camp_officer_stats(year)
+    ctx['year'] = year
+    return render(request, 'cciw/officers/stats.html', ctx)
+
+
+def get_camp_officer_stats(year):
     stats = []
     camps = list(Camp.objects.filter(year=year).order_by('number'))
     if len(camps) == 0:
@@ -1143,10 +1151,7 @@ def stats(request, year=None):
         stat['officer_list_data'] = officer_dates_data
         stats.append(stat)
 
-    d = {}
-    d['stats'] = stats
-    d['year'] = year
-    return render(request, 'cciw/officers/stats.html', d)
+    return stats
 
 
 @staff_member_required
