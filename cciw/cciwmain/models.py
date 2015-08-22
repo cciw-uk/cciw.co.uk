@@ -131,7 +131,7 @@ class Camp(models.Model):
             leaders.append(chaplain)
 
         leadertext = self._format_leaders(leaders)
-        return "%s-%s (%s)" % (self.year, self.number, leadertext)
+        return "%s (%s)" % (self.short_name, leadertext)
 
     def _format_leaders(self, ls):
         if len(ls) > 0:
