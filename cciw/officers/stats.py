@@ -26,14 +26,15 @@ def get_camp_officer_stats(camp):
     app_ids = [a[0] for a in application_forms]
     app_dates = [a[1] for a in application_forms]
     ref_dates = list(ReferenceForm.objects
-                     .filter(
-                         reference_info__application__in=app_ids,
-                         date_created__lte=camp.start_date)
+                     .filter(reference_info__application__in=app_ids,
+                             date_created__lte=camp.start_date)
                      .order_by('date_created')
                      .values_list('date_created', flat=True))
-    all_crb_info = list(CRBApplication.objects.filter(officer__in=officer_ids,
-                                                      completed__lte=camp.start_date
-                                                      ).order_by('completed').values_list('completed', 'officer_id'))
+    all_crb_info = list(CRBApplication.objects
+                        .filter(officer__in=officer_ids,
+                                completed__lte=camp.start_date)
+                        .order_by('completed')
+                        .values_list('completed', 'officer_id'))
     # There can be multiple CRBs for each officer. For 'all CRBs' and 'valid
     # CRBs', we only care about the first.
     all_crb_dates = get_first(all_crb_info)
