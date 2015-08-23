@@ -1060,6 +1060,19 @@ def officer_stats_json(request, year, number):
 
 @staff_member_required
 @camp_admin_required
+def officer_stats_download(request, year):
+    year = int(year)
+    camps = list(Camp.objects.filter(year=year).order_by('number'))
+    formatter = get_spreadsheet_formatter(request)
+    for camp in camps:
+        formatter.add_sheet_from_dataframe(camp.short_name,
+                                           get_camp_officer_stats(camp))
+    return spreadsheet_response(formatter,
+                                "officer-stats-%d" % year)
+
+
+@staff_member_required
+@camp_admin_required
 def manage_crbs(request, year=None):
     year = int(year)
     now = timezone.now()
