@@ -12,6 +12,7 @@ from cciw.officers.tests.base import OFFICER_USERNAME, OFFICER_PASSWORD, Applica
 
 User = get_user_model()
 
+
 class ApplicationModel(ApplicationSetupMixin, TestCase):
 
     def test_referees_get(self):

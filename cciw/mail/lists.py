@@ -9,6 +9,7 @@ from django.core.mail import get_connection, make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
 from cciw.cciwmain.decorators import email_errors_silently
+from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
 from cciw.officers.email_utils import formatted_email
 from cciw.officers.utils import camp_officer_list, camp_slacker_list

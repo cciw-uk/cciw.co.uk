@@ -31,4 +31,3 @@ INSTALLED_APPS = list(filter(lambda x: x not in [
 SEND_BROKEN_LINK_EMAILS = False
 
 TEST_DIR = basedir + r'/cciw/cciwmain/tests'
-

@@ -1,7 +1,5 @@
 from django.test import TestCase
-from django.utils import timezone
 
-from cciw.cciwmain.models import Camp
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
 

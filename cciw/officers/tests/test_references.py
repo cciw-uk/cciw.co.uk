@@ -1,16 +1,13 @@
-from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.test import TestCase
-from django_dynamic_fixture import G
 
 from cciw.officers.email import make_ref_form_url
-from cciw.officers.models import Application, ReferenceAction, Reference
+from cciw.officers.models import Application, ReferenceAction
 from cciw.officers.tests.base import ReferenceSetupMixin
 from cciw.officers.views import add_previous_references, close_enough_referee_match
 from cciw.utils.tests.webtest import WebTestBase
 
-from .base import OFFICER, LEADER_USERNAME, LEADER_PASSWORD, LEADER_EMAIL, LEADER
+from .base import OFFICER, LEADER_EMAIL, LEADER
 
 
 class ReferencesPage(ReferenceSetupMixin, WebTestBase):

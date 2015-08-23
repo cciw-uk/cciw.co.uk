@@ -289,7 +289,7 @@ class Reference(models.Model):
         self.comments = (self.comments +
                          ("\nReference filled in by %s on %s\n" %
                           (user.username,
-                          dt.strftime("%Y-%m-%d %H:%M:%S"))))
+                           dt.strftime("%Y-%m-%d %H:%M:%S"))))
         self.save()
         self.actions.create(action_type=ReferenceAction.REFERENCE_FILLED_IN,
                             created=dt,

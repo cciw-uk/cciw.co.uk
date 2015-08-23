@@ -1,6 +1,5 @@
 from datetime import date, timedelta
 
-from django import template
 from django.template import loader
 
 from cciw.cciwmain.models import Camp

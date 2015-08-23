@@ -3,12 +3,10 @@
 # Some of these are used from a script, and so print messages to the console if
 # 'verbose=True'.  A bit icky...
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 
-from cciw.cciwmain.utils import is_valid_email
 
 User = get_user_model()
 
@@ -128,8 +126,7 @@ The CCIW webmaster.
 
 def email_officer(username, first_name, email, password, update=False):
     if update:
-        repeat_message = (
-"""
+        repeat_message = ("""
 This is a repeat e-mail sent either because the first e-mail never
 arrived or the password was forgotten.  Your username has not been
 changed, but a new random password has been given to you, see below.

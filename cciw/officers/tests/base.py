@@ -6,7 +6,6 @@ from django.contrib.contenttypes.models import ContentType
 from django_dynamic_fixture import G
 
 from cciw.auth import BOOKING_SECRETARY_GROUP_NAME, LEADER_GROUP_NAME
-from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers.models import Application, ReferenceForm
 
@@ -303,7 +302,7 @@ class ApplicationSetupMixin(ExtraOfficersSetupMixin):
                               youth_experience="Lots",
                               youth_work_declined=False,
                               youth_work_declined_details="",
-                          )
+                              )
 
         self.application3 = G(Application,
                               officer=self.officer3,
@@ -414,6 +413,6 @@ class CurrentCampsMixin(object):
         self.default_camp_1.start_date = date.today() + timedelta(100 - 365)
         self.default_camp_1.end_date = date.today() + timedelta(107 - 365)
         self.default_camp_1.save()
-        self.default_camp_2.start_date=date.today() + timedelta(100)
-        self.default_camp_2.end_date=date.today() + timedelta(107)
+        self.default_camp_2.start_date = date.today() + timedelta(100)
+        self.default_camp_2.end_date = date.today() + timedelta(107)
         self.default_camp_2.save()

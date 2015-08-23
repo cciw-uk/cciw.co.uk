@@ -79,8 +79,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                             lambda app: get_birthday(app.birth_date).strftime("%A %d %B"),
                             lambda app: str(relativedelta(get_birthday(app.birth_date), app.birth_date).years),
                             lambda app: app.birth_date,
-                           ]
-
+                            ]
 
     spreadsheet.add_sheet_with_header_row("Birthdays on camp",
                                           [n for n, f in bday_columns],

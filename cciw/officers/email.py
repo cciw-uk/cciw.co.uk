@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 from email.mime.base import MIMEBase
 import email.parser
 import email.utils
@@ -14,7 +14,6 @@ from django.contrib import messages
 from django.core import signing
 from django.core.mail import send_mail, EmailMessage
 from django.core.urlresolvers import reverse
-from django.utils import timezone
 from django.utils.crypto import salted_hmac
 from django.utils.http import urlquote
 
@@ -102,8 +101,7 @@ def send_officer_email(officer, application, application_text, rtf_attachment):
 
     # Email to the officer
     user_email = formatted_email(application.officer)
-    user_msg = (
-"""%s,
+    user_msg = ("""%s,
 
 For your records, here is a copy of the application you have submitted
 to CCIW. It is also attached to this e-mail as an RTF file.
@@ -118,14 +116,12 @@ to CCIW. It is also attached to this e-mail as an RTF file.
 def send_leader_email(leader_emails, application, application_text, rtf_attachment,
                       application_diff):
     subject = "CCIW application form from %s" % application.full_name
-    body = (
-"""The following application form has been submitted via the
+    body = ("""The following application form has been submitted via the
 CCIW website.  It is also attached to this e-mail as an RTF file.
 
 """)
     if application_diff is not None:
-        body += (
-"""The second attachment shows the differences between this year's
+        body += ("""The second attachment shows the differences between this year's
 application form and last year's - pink indicates information that has
 been removed, green indicates new information.
 
@@ -162,8 +158,7 @@ def make_update_application_url(application, email):
 def send_email_change_emails(officer, application):
     subject = "E-mail change on CCIW"
     user_email = formatted_email(officer)
-    user_msg = (
-"""%(name)s,
+    user_msg = ("""%(name)s,
 
 In your most recently submitted application form, you entered your
 e-mail address as %(new)s.  The e-mail address stored against your
@@ -236,8 +231,7 @@ def send_leaders_reference_email(refform):
 
     refform_text = reference_form_to_text(refform)
     subject = "CCIW reference form for %s %s from %s" % (officer.first_name, officer.last_name, ref.referee.name)
-    body = (
-"""The following reference form has been submitted via the
+    body = ("""The following reference form has been submitted via the
 CCIW website for officer %s %s.
 
 %s

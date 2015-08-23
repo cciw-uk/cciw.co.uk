@@ -100,7 +100,7 @@ class PostAnonymizer(Anonymizer):
     ]
 
 
-class MessageAnonymizer(Anonymizer):
+class MailerMessageAnonymizer(Anonymizer):
 
     model = mailer_models.Message
 

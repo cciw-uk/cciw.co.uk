@@ -319,6 +319,7 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     def get_queryset(self, *args, **kwargs):
         return super(ReferenceAdmin, self).get_queryset(*args, **kwargs).select_related('application')
 
+
 class InvitationAdmin(admin.ModelAdmin):
     list_display = ['officer', 'camp', 'notes', 'date_added']
     list_filter = ['camp']

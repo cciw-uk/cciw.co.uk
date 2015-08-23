@@ -125,7 +125,7 @@ def camp_serious_slacker_list(camp):
             if camps:
                 sort_camps(camps)
                 last_camp_with_item = camps[-1]
-                missing_camps =  missing_dict[officer]
+                missing_camps = missing_dict[officer]
                 new_missing_camps = [
                     c for c in missing_camps
                     if c.start_date > last_camp_with_item.start_date

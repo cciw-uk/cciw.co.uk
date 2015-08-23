@@ -34,7 +34,6 @@ from cciw.officers.email import send_reference_request_email, make_ref_form_url,
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication, CRBFormLog
 from cciw.officers.utils import camp_slacker_list, camp_serious_slacker_list, officer_data_to_spreadsheet
-from cciw.officers.references import reference_form_info
 from cciw.utils.views import close_window_response, user_passes_test_improved, get_spreadsheet_formatter
 from securedownload.views import access_folder_securely
 
@@ -64,7 +63,6 @@ def _copy_application(application):
 camp_admin_required = user_passes_test_improved(is_camp_admin)
 booking_secretary_required = user_passes_test_improved(is_booking_secretary)
 cciw_secretary_required = user_passes_test_improved(is_cciw_secretary)
-
 
 
 def close_window_and_update_ref(ref_id):
@@ -111,7 +109,7 @@ def index(request):
 def leaders_index(request):
     """Displays a list of links for actions for leaders"""
     user = request.user
-    c = {}
+    ctx = {}
     thisyear = common.get_thisyear()
 
     show_all = 'show_all' in request.GET
@@ -119,14 +117,14 @@ def leaders_index(request):
         camps = list(Camp.objects.all())
     else:
         camps = user.camps_as_admin_or_leader
-    c['current_camps'] = [c for c in camps
-                          if c.year == thisyear]
-    c['old_camps'] = [c for c in camps
-                      if c.year < thisyear]
-    c['statsyears'] = [thisyear, thisyear - 1, thisyear - 2]
-    c['show_all'] = show_all
+    ctx['current_camps'] = [c for c in camps
+                            if c.year == thisyear]
+    ctx['old_camps'] = [c for c in camps
+                        if c.year < thisyear]
+    ctx['statsyears'] = [thisyear, thisyear - 1, thisyear - 2]
+    ctx['show_all'] = show_all
 
-    return render(request, 'cciw/officers/leaders_index.html', c)
+    return render(request, 'cciw/officers/leaders_index.html', ctx)
 
 
 @staff_member_required
@@ -213,8 +211,7 @@ def view_application(request):
         rtf_attachment = (application_rtf_filename(app),
                           application_rtf, 'text/rtf')
 
-        msg = (
-"""Dear %s,
+        msg = ("""Dear %s,
 
 Please find attached a copy of the application you requested
  -- in plain text below and an RTF version attached.
@@ -408,12 +405,12 @@ def officer_history(request, officer_id=None):
                                    .prefetch_related('reference_set',
                                                      'reference_set___reference_form')
                                    .order_by('-date_submitted'))
-                      ]
+                       ]
 
     return render(request, "cciw/officers/officer_history.html",
                   {'officer': officer,
                    'reference_pairs': reference_pairs,
-                  })
+                   })
 
 
 class SetEmailForm(forms.Form):
@@ -663,6 +660,8 @@ class AdminReferenceFormForm(ReferenceFormForm):
 
 normal_textarea = forms.Textarea(attrs={'cols': 80, 'rows': 10})
 small_textarea = forms.Textarea(attrs={'cols': 80, 'rows': 5})
+
+
 def fix_ref_form(form_class):
     form_class.base_fields['capacity_known'].widget = small_textarea
     form_class.base_fields['known_offences'].widget = ExplicitBooleanFieldSelect()
@@ -671,7 +670,6 @@ def fix_ref_form(form_class):
     form_class.base_fields['character'].widget = normal_textarea
     form_class.base_fields['concerns'].widget = normal_textarea
     form_class.base_fields['comments'].widget = normal_textarea
-
 
 
 fix_ref_form(ReferenceFormForm)
@@ -1074,7 +1072,7 @@ def stats(request, year=None):
         ref_dates = list(ReferenceForm.objects.filter(reference_info__application__in=app_ids).order_by('date_created').values_list('date_created', flat=True))
         all_crb_info = list(CRBApplication.objects.filter(officer__in=officer_ids,
                                                           completed__lte=camp.start_date
-                                                         ).order_by('completed').values_list('officer_id', 'completed'))
+                                                          ).order_by('completed').values_list('officer_id', 'completed'))
         # We duplicate logic from CRBApplication.get_for_camp here to avoid
         # duplicating queries
         valid_crb_info = [(off_id, d) for off_id, d in all_crb_info

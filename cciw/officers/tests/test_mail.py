@@ -2,9 +2,6 @@ from django.contrib.auth import get_user_model
 from django.core import mail
 from django.test import TestCase
 
-
-from cciw.cciwmain.models import Camp
-from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
 
 from cciw.mail.lists import users_for_address, NoSuchList, MailAccessDenied, handle_mail, extract_email_addresses
@@ -74,13 +71,13 @@ class MailTests(ExtraOfficersSetupMixin, TestCase):
         # Check perms:
 
         # non-priviliged user:
-        u = User.objects.create(username="joerandom", email="joe@random.com", is_superuser=False)
+        user = User.objects.create(username="joerandom", email="joe@random.com", is_superuser=False)
         self.assertRaises(MailAccessDenied,
                           lambda: users_for_address('camp-2000-1-leaders@cciw.co.uk', 'joe@random.com'))
 
         # superuser:
-        u.is_superuser = True
-        u.save()
+        user.is_superuser = True
+        user.save()
         l1 = users_for_address('camp-2000-1-leaders@cciw.co.uk', 'JOE@RANDOM.COM')
 
         # leader:
