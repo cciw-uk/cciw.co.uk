@@ -90,7 +90,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                                            for app in applications_for_camp(camp) if
                                            camp.start_date <= get_birthday(app.birth_date) <= camp.end_date])
 
-    return spreadsheet.to_bytes()
+    return spreadsheet
 
 
 def camp_sharable_transport_details_to_spreadsheet(camp, spreadsheet):
@@ -108,7 +108,7 @@ def camp_sharable_transport_details_to_spreadsheet(camp, spreadsheet):
                                           [n for n, f in columns],
                                           [[f(b) for n, f in columns]
                                            for b in accounts])
-    return spreadsheet.to_bytes()
+    return spreadsheet
 
 
 # Spreadsheet needed by booking secretary
@@ -131,7 +131,7 @@ def year_bookings_to_spreadsheet(year, spreadsheet):
                                           [n for n, f in columns],
                                           [[f(b) for n, f in columns]
                                            for b in bookings])
-    return spreadsheet.to_bytes()
+    return spreadsheet
 
 
 def payments_to_spreadsheet(date_start, date_end, spreadsheet):
@@ -177,7 +177,7 @@ def payments_to_spreadsheet(date_start, date_end, spreadsheet):
                                           [n for n, f in columns],
                                           [[f(p) for n, f in columns]
                                            for p in payments])
-    return spreadsheet.to_bytes()
+    return spreadsheet
 
 
 def addresses_for_mailing_list(year, spreadsheet):
@@ -225,4 +225,4 @@ def addresses_for_mailing_list(year, spreadsheet):
     spreadsheet.add_sheet_with_header_row("Addresses",
                                           headers,
                                           rows)
-    return spreadsheet.to_bytes()
+    return spreadsheet

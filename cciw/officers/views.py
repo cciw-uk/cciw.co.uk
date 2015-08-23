@@ -995,11 +995,9 @@ def resend_email(request):
 def export_officer_data(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     formatter = get_spreadsheet_formatter(request)
-    response = HttpResponse(officer_data_to_spreadsheet(camp, formatter),
-                            content_type=formatter.mimetype)
-    response['Content-Disposition'] = ('attachment; filename=camp-%d-%d-officers.%s'
-                                       % (camp.year, camp.number, formatter.file_ext))
-    return response
+    return spreadsheet_response(officer_data_to_spreadsheet(camp, formatter),
+                                "camp-%d-%d-officers"
+                                % (camp.year, camp.number))
 
 
 @staff_member_required
@@ -1007,11 +1005,9 @@ def export_officer_data(request, year=None, number=None):
 def export_camper_data(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     formatter = get_spreadsheet_formatter(request)
-    response = HttpResponse(camp_bookings_to_spreadsheet(camp, formatter),
-                            content_type=formatter.mimetype)
-    response['Content-Disposition'] = ('attachment; filename=camp-%d-%d-campers.%s'
-                                       % (camp.year, camp.number, formatter.file_ext))
-    return response
+    return spreadsheet_response(camp_bookings_to_spreadsheet(camp, formatter),
+                                "camp-%d-%d-campers"
+                                % (camp.year, camp.number))
 
 
 @staff_member_required
@@ -1019,11 +1015,8 @@ def export_camper_data(request, year=None, number=None):
 def export_camper_data_for_year(request, year=None):
     year = int(year)
     formatter = get_spreadsheet_formatter(request)
-    response = HttpResponse(year_bookings_to_spreadsheet(year, formatter),
-                            content_type=formatter.mimetype)
-    response['Content-Disposition'] = ('attachment; filename=CCIW-bookings-%d.%s'
-                                       % (year, formatter.file_ext))
-    return response
+    return spreadsheet_response(year_bookings_to_spreadsheet(year, formatter),
+                                "CCIW-bookings-%d" % year)
 
 
 @staff_member_required
@@ -1031,11 +1024,8 @@ def export_camper_data_for_year(request, year=None):
 def export_sharable_transport_details(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     formatter = get_spreadsheet_formatter(request)
-    response = HttpResponse(camp_sharable_transport_details_to_spreadsheet(camp, formatter),
-                            content_type=formatter.mimetype)
-    response['Content-Disposition'] = ('attachment; filename=camp-%d-%d-transport-details.%s'
-                                       % (camp.year, camp.number, formatter.file_ext))
-    return response
+    return spreadsheet_response(camp_sharable_transport_details_to_spreadsheet(camp, formatter),
+                                "camp-%d-%d-transport-details" % (camp.year, camp.number))
 
 
 officer_files = access_folder_securely("officers",
@@ -1304,20 +1294,20 @@ def export_payment_data(request):
     date_start = timezone.get_default_timezone().localize(datetime.strptime(date_start, EXPORT_PAYMENT_DATE_FORMAT))
     date_end = timezone.get_default_timezone().localize(datetime.strptime(date_end, EXPORT_PAYMENT_DATE_FORMAT))
     formatter = get_spreadsheet_formatter(request)
-    response = HttpResponse(payments_to_spreadsheet(date_start, date_end, formatter),
-                            content_type=formatter.mimetype)
-    response['Content-Disposition'] = ('attachment; filename=payments-%s-to-%s.%s'
-                                       % (date_start.strftime('%Y-%m-%d'),
-                                          date_end.strftime('%Y-%m-%d'),
-                                          formatter.file_ext))
-    return response
+    return spreadsheet_response(payments_to_spreadsheet(date_start, date_end, formatter),
+                                "payments-%s-to-%s" % (date_start.strftime('%Y-%m-%d'),
+                                                       date_end.strftime('%Y-%m-%d')))
 
 
 @cciw_secretary_required
 def brochure_mailing_list(request, year):
     formatter = get_spreadsheet_formatter(request)
-    response = HttpResponse(addresses_for_mailing_list(int(year), formatter),
+    return spreadsheet_response(addresses_for_mailing_list(int(year), formatter),
+                                "mailing-list-%s" % year)
+
+
+def spreadsheet_response(formatter, filename):
+    response = HttpResponse(formatter.to_bytes(),
                             content_type=formatter.mimetype)
-    response['Content-Disposition'] = ('attachment; filename=mailing-list-%s.%s'
-                                       % (year, formatter.file_ext))
+    response['Content-Disposition'] = "attachment; filename={0}.{1}".format(filename, formatter.file_ext)
     return response

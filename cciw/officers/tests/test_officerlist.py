@@ -46,7 +46,7 @@ class TestExport(ApplicationSetupMixin, TestCase):
             inv.notes = "Some notes %s" % i
             inv.save()
 
-        workbook = officer_data_to_spreadsheet(c, ExcelFormatter())
+        workbook = officer_data_to_spreadsheet(c, ExcelFormatter()).to_bytes()
 
         self.assertTrue(workbook is not None)
         wkbk = xlrd.open_workbook(file_contents=workbook)
@@ -73,7 +73,7 @@ class TestExport(ApplicationSetupMixin, TestCase):
         app = self.application1
         assert app.officer == u
 
-        workbook = officer_data_to_spreadsheet(camp, ExcelFormatter())
+        workbook = officer_data_to_spreadsheet(camp, ExcelFormatter()).to_bytes()
 
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh = wkbk.sheet_by_index(0)

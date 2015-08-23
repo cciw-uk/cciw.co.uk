@@ -1824,7 +1824,7 @@ class TestExportPlaces(CreatePlaceMixin, TestCase):
         acc = self.get_account()
         acc.bookings.update(state=BOOKING_BOOKED)
 
-        workbook = camp_bookings_to_spreadsheet(self.camp, ExcelFormatter())
+        workbook = camp_bookings_to_spreadsheet(self.camp, ExcelFormatter()).to_bytes()
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh_all = wkbk.sheet_by_index(0)
 
@@ -1839,7 +1839,7 @@ class TestExportPlaces(CreatePlaceMixin, TestCase):
         acc = self.get_account()
         acc.bookings.update(state=BOOKING_BOOKED)
 
-        workbook = camp_bookings_to_spreadsheet(self.camp, ExcelFormatter())
+        workbook = camp_bookings_to_spreadsheet(self.camp, ExcelFormatter()).to_bytes()
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh_bdays = wkbk.sheet_by_index(2)
 
