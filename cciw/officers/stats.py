@@ -37,7 +37,7 @@ def get_camp_officer_stats(camp):
                         .values_list('completed', 'officer_id'))
     # There can be multiple CRBs for each officer. For 'all CRBs' and 'valid
     # CRBs', we only care about the first.
-    all_crb_dates = get_first(all_crb_info)
+    any_crb_dates = get_first(all_crb_info)
     valid_crb_dates = get_first([(d, o) for (d, o) in all_crb_info
                                  if d >= camp.start_date - timedelta(days=settings.CRB_VALID_FOR)])
 
@@ -54,11 +54,11 @@ def get_camp_officer_stats(camp):
     df = pd.DataFrame(
         index=dr,
         data={
-            'officer_list_data': accumulate(trim(officer_dates)),
-            'application_dates_data': accumulate(app_dates),
-            'ref_dates_data': accumulate(ref_dates),
-            'all_crb_dates_data': accumulate(trim(all_crb_dates)),
-            'valid_crb_dates_data': accumulate(trim(valid_crb_dates)),
+            'Officer list count': accumulate(trim(officer_dates)),
+            'Application count': accumulate(app_dates),
+            'Reference count': accumulate(ref_dates),
+            'Any DBS count': accumulate(trim(any_crb_dates)),
+            'Valid DBS count': accumulate(trim(valid_crb_dates)),
         }
         # Fill forward so that accumulated
         # values get propagated to all rows,
