@@ -1,7 +1,7 @@
 {% extends "cciw/officers/base.html" %}
 {% load static %}
 {% load json_filters %}
-{% block title %}Officer stats | CCIW Officers{% endblock %}
+{% block title %}Officer stats {{ year }} | CCIW Officers{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
   <script type="text/javascript" src="{% static "js/jquery.flot.min.js" %}"></script>
