@@ -5,8 +5,9 @@
 
 {% block extrastyle %}{{ block.super }}
   <script type="text/javascript" src="{% static "js/jquery.flot.min.js" %}"></script>
-
+  <script type="text/javascript" src="{% static "js/officer_stats.js" %}"></script>
 {% endblock %}
+
 {% block bodyclass%}change-form{% endblock %}
 
 {% block content %}
@@ -18,99 +19,18 @@
     {% for camp in camps %}
       <div style="float:left; margin-right: 20px;">
         <h2>{{ camp.number }} - {{ camp.leaders_formatted }}</h2>
-
-        <div id="camp-graph-{{ camp.number }}" style="width:600px;height:200px;">
+        <div id="camp-graph-{{ camp.number }}"
+             style="width:600px;height:200px;"
+             data-url-officer-list="{% url "cciw-officers-officer_list" year=camp.year number=camp.number %}"
+             data-url-manage-crbs="{% url "cciw-officers-manage_crbs" year=year %}?camp={{ camp.number }}"
+             data-url-manage-applications="{% url "cciw-officers-manage_applications" year=camp.year number=camp.number %}"
+             data-url-manage-references="{% url "cciw-officers-manage_references" year=camp.year number=camp.number %}"
+             data-url-officer-stats-json="{% url 'cciw-officers-officer_stats_json' year=camp.year number=camp.number %}"
+             data-officer-stats-chart-placeholder="true"
+             >
         </div>
-        <script type="text/javascript">
-         $(function() {
-             var placeholder_id = "#camp-graph-{{ camp.number }}";
-
-             var objToArray = function (obj) {
-                 var a = $.map(obj, function(value, index) { return [[parseInt(index, 10), value]]; });
-                 a.sort();
-                 return a;
-             };
-
-             var dataArrived = function (stat) {
-                 // Halve the references number to make it match the others.
-                 var ref_dates_data = $.map(objToArray(stat['Reference count']),
-                                            function (val, index) {
-                                                return [[val[0], val[1]/2]];
-                                            });
-                 $.plot(placeholder_id,
-                        [
-                            {label: "<a href='{% url "cciw-officers-officer_list" year=camp.year number=camp.number %}' target='_blank'>Officer list</a>",
-                             data: objToArray(stat['Officer list count'])},
-                            {label: "<a href='{% url "cciw-officers-manage_crbs" year=year %}?camp={{ camp.number }}' target='_blank'>Any DBSs</a>",
-                             data: objToArray(stat['Any DBS count'])},
-                            {label: "Up-to-date DBSs",
-                             data: objToArray(stat['Valid DBS count'])},
-                            {label: "<a href='{% url "cciw-officers-manage_applications" year=camp.year number=camp.number %}' target='_blank'>Applications</a>",
-                             data: objToArray(stat['Application count'])},
-                            {label: "<a href='{% url "cciw-officers-manage_references" year=camp.year number=camp.number %}' target='_blank'>References</a> \u00F7 2",
-                             data: ref_dates_data}
-                        ],
-                        { xaxis: { mode: "time",
-                                   ticks: 12 },
-                          yaxis: { min: 0 },
-                          legend: { position: "nw" },
-                          grid: { hoverable: true }
-                        });
-                 var previousPoint = null;
-                 $(placeholder_id).bind("plothover", function (event, pos, item) {
-                     if (item) {
-                         if (previousPoint == null || (previousPoint.dataIndex != item.dataIndex || previousPoint.series != item.series)) {
-                             previousPoint = item;
-
-                             $("#tooltip").remove();
-                             var d = new Date(item.datapoint[0]);
-                             var num = item.datapoint[1];
-                             var label = $('<div>' + item.series.label + '</div>').text();
-                             var stat = num.toFixed(0);
-                             if (item.series.label.match(/References/)) {
-                                 label = "References";
-                                 stat = (num * 2).toFixed(0);
-                             }
-                             showTooltip(item.pageX, item.pageY,
-                                         label + ": <b>" + stat + "</b>" +
-                                         "<br/><i>" + d.toLocaleDateString() + "</i>");
-                         }
-                     } else {
-                         $("#tooltip").remove();
-                         previousPoint = null;
-                     }
-                 });
-
-             }
-
-             var showTooltip = function (x, y, contents) {
-                 $('<div id="tooltip">' + contents + '</div>').css( {
-                     position: 'absolute',
-                     display: 'none',
-                     top: y + 5,
-                     left: x + 18,
-                     border: '1px solid #ddd',
-                     padding: '2px',
-                     'background-color': '#eee',
-                     opacity: 0.90
-                 }).appendTo("body").fadeIn(200);
-             }
-
-
-             $.ajax({
-                 type: "GET",
-                 url: "{% url 'cciw-officers-officer_stats_json' year=camp.year number=camp.number %}",
-                 dataType: 'json',
-                 success: dataArrived
-             });
-
-
-         });
-
-        </script>
       </div>
     {% endfor %}
-
 
     <div style="clear: both;">
       <canvas height="50">
