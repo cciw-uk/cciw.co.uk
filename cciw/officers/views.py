@@ -1034,7 +1034,7 @@ officer_files = access_folder_securely("officers",
 
 @staff_member_required
 @camp_admin_required
-def stats(request, year=None):
+def officer_stats(request, year=None):
     year = int(year)
     camps = list(Camp.objects.filter(year=year).order_by('number'))
     if len(camps) == 0:
