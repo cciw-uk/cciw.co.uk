@@ -9,13 +9,11 @@ from cciw.officers.models import Invitation
 User = get_user_model()
 
 
-parser = OptionParser(usage=
-"""
+parser = OptionParser(usage="""
 
        manage_invitations.py <year> <number> <username1> [<username2> ...]
        manage_invitations.py --remove <year> <number> <username1> [<username2> ...]
-"""
-)
+""")
 
 parser.add_option("-r", "--remove", dest="remove", action="store_true", default=False, help="Remove users instead of adding")
 

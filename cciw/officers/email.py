@@ -213,11 +213,10 @@ def send_reference_request_email(message, ref, sending_officer, camp):
                  body=message,
                  from_email=settings.REFERENCES_EMAIL,
                  to=[ref.referee.email],
-                 headers={
-                     'Reply-To': sending_officer.email,
-                     'X-CCIW-Camp': '{0}-{1}'.format(camp.year, camp.number),
-                     'X-CCIW-Action': 'ReferenceRequest',
-                 }).send()
+                 headers={'Reply-To': sending_officer.email,
+                          'X-CCIW-Camp': '{0}-{1}'.format(camp.year, camp.number),
+                          'X-CCIW-Action': 'ReferenceRequest',
+                          }).send()
 
 
 def send_leaders_reference_email(refform):

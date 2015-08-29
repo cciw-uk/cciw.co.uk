@@ -120,7 +120,7 @@ def validate_email_username_and_hash(email, user_name, hash):
 
 
 def send_signup_mail(email):
-    mail.send_mail("CCIW - Sign-up instructions",
+    body = ( # noqa
 """Thank you for beginning the sign-up process on the CCIW website
 
 To confirm the e-mail address you used is genuine and continue the
@@ -137,12 +137,13 @@ ignore this e-mail.
 
 """ % {'domain': common.get_current_domain(),
        'email': quote(email),
-       'hash': email_hash(email)},
+       'hash': email_hash(email)})
+    mail.send_mail("CCIW - Sign-up instructions", body,
                    settings.SERVER_EMAIL, [email])
 
 
 def send_username_reminder(member):
-    mail.send_mail("CCIW - user name reminder",
+    body = ( # noqa
 """You requested a user name reminder on the CCIW website.
 Your user name is: %(user_name)s
 
@@ -151,13 +152,14 @@ https://%(domain)s/login/
 
 Thanks.
 """ % {'domain': common.get_current_domain(),
-       'user_name': member.user_name},
+       'user_name': member.user_name})
+    mail.send_mail("CCIW - user name reminder", body,
                    settings.SERVER_EMAIL, [member.email])
 
 
 def send_password_reset_email(member):
     token = default_token_generator.make_token(member)
-    mail.send_mail("CCIW - new password.",
+    body = ( # noqa
 """You have requested a new password for your login on the CCIW website.
 
 Please click on the link below:
@@ -177,12 +179,13 @@ safely ignore this e-mail.
 """ % {'domain': common.get_current_domain(),
        'url': reverse("cciw-cciwmain-members_reset_password",
                       kwargs={'uid': member.id, 'token': token}),
-       },
+       })
+    mail.send_mail("CCIW - new password.", body,
                    settings.SERVER_EMAIL, [member.email])
 
 
 def send_newemail_email(member, new_email):
-    mail.send_mail("CCIW - E-mail change",
+    body = ( # noqa
 """You have changed your e-mail address on the CCIW website.
 
 To confirm that your new e-mail address is genuine and update our records,
@@ -193,9 +196,11 @@ https://%(domain)s/memberadmin/change-email/?email=%(email)s&u=%(user_name)s&h=%
 If clicking on the link does not do anything, please copy and paste
 the entire link into your web browser.
 
-""" % {'domain': common.get_current_domain(), 'email': quote(new_email),
+""" % {'domain': common.get_current_domain(),
+       'email': quote(new_email),
        'user_name': quote(member.user_name),
-       'hash': email_and_username_hash(new_email, member.user_name)},
+       'hash': email_and_username_hash(new_email, member.user_name)})
+    mail.send_mail("CCIW - E-mail change", body,
                    settings.SERVER_EMAIL, [new_email])
 
 

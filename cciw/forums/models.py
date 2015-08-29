@@ -234,7 +234,7 @@ class Message(models.Model):
                           box=Message.MESSAGE_BOX_INBOX)
             msg.save()
         if to_member.message_option != Member.MESSAGES_WEBSITE:
-            mail.send_mail("Message on cciw.co.uk",
+            body = ( # noqa
 """You have received a message on cciw.co.uk from user %(from)s:
 
 %(message)s
@@ -245,8 +245,11 @@ https://%(domain)s/members/%(to)s/messages/inbox/
 You can reply here:
 https://%(domain)s/members/%(from)s/messages/
 
-""" % {'from': from_member.user_name, 'to': to_member.user_name,
-        'domain': common.get_current_domain(), 'message': text},
+""" % {'from': from_member.user_name,
+       'to': to_member.user_name,
+       'domain': common.get_current_domain(),
+       'message': text})
+            mail.send_mail("Message on cciw.co.uk", body,
                            settings.SERVER_EMAIL, [to_member.email])
         return msg
 

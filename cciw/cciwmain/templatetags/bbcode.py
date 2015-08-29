@@ -325,66 +325,66 @@ _ANCHOR_TAGS = ('member', 'email', 'url')
 _TAGS = (
     #           name          allowed_children   implicit_tag
     # <br/>
-    HtmlEquivTag('br',         (),             'div',
-        self_closing=True, discardable=True, html_equiv='br'),
+    HtmlEquivTag('br',         (),             'div',                 # noqa
+        self_closing=True, discardable=True, html_equiv='br'),        # noqa
 
     # <br/>, but can adapt during render
-    SoftBrTag   ('softbr',     (),             'div',
+    SoftBrTag   ('softbr',     (),             'div',                 # noqa
         self_closing=True, discardable=True),
 
     # <img/>,  but can adapt
-    Emoticon    ('emoticon',   ('text',),      'div'),
+    Emoticon    ('emoticon',   ('text',),      'div'),                # noqa
 
     # <b>
-    HtmlEquivTag('b',          _INLINE_TAGS,   'div',
+    HtmlEquivTag('b',          _INLINE_TAGS,   'div',                 # noqa
         html_equiv='b'),
 
     # <i>
-    HtmlEquivTag('i',          _INLINE_TAGS,   'div',
+    HtmlEquivTag('i',          _INLINE_TAGS,   'div',                 # noqa
         html_equiv='i'),
 
     # <span>
-    ColorTag    ('color',      _INLINE_TAGS,   'div'),
+    ColorTag    ('color',      _INLINE_TAGS,   'div'),                # noqa
 
     # <a>
-    MemberTag   ('member',     ('text',),      'div' ),
+    MemberTag   ('member',     ('text',),      'div'),                # noqa
 
     # <a>
-    EmailTag    ('email',      ('text',),      'div'),
+    EmailTag    ('email',      ('text',),      'div'),                # noqa
 
     # <a>
-    UrlTag      ('url',        ('text',),      'div'),
+    UrlTag      ('url',        ('text',),      'div'),                # noqa
 
     # <p>
-    HtmlEquivTag('p',          _INLINE_TAGS,   None,
+    HtmlEquivTag('p',          _INLINE_TAGS,   None,                  # noqa
         html_equiv='p'),
 
     # <div>
-    HtmlEquivTag('div',        _FLOW_TAGS,     None,
+    HtmlEquivTag('div',        _FLOW_TAGS,     None,                  # noqa
         html_equiv='div'),
 
     # <blockquote>
-    QuoteTag    ('quote',      _BLOCK_LEVEL_TAGS + ('softbr',), 'div'),
+    QuoteTag    ('quote',      _BLOCK_LEVEL_TAGS + ('softbr',), 'div'),                 # noqa
 
     # <blockquote>
-    BibleTag    ('bible',      _BLOCK_LEVEL_TAGS + ('softbr',), 'div'),
+    BibleTag    ('bible',      _BLOCK_LEVEL_TAGS + ('softbr',), 'div'),                 # noqa
 
     # <ul>
-    HtmlEquivTag('list',       ('*', 'softbr'),None,
+    HtmlEquivTag('list',       ('*', 'softbr'),None,                  # noqa
         html_equiv='ul'),
 
     # <pre> (only img currently needed out of the prohibited elements)
-    HtmlEquivTag('pre',        _INLINE_TAGS,   None,
+    HtmlEquivTag('pre',        _INLINE_TAGS,   None,                  # noqa
         prohibited_elements=('img', 'big', 'small', 'sub', 'sup'),
         html_equiv='pre'),
 
     # <pre class="code">
-    HtmlEquivTag('code',       _INLINE_TAGS,   None,
-        prohibited_elements = ('img', 'big', 'small', 'sub', 'sup'),
-        html_equiv='pre', attributes={'class':'code'}),
+    HtmlEquivTag('code',       _INLINE_TAGS,   None,                  # noqa
+        prohibited_elements=('img', 'big', 'small', 'sub', 'sup'),
+        html_equiv='pre', attributes={'class': 'code'}),
 
     # <li>
-    LiTag('*',                 _FLOW_TAGS,     'list',)
+    LiTag('*',                 _FLOW_TAGS,     'list',)               # noqa
 )
 
 # Make a dictionary

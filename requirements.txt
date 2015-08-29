@@ -50,4 +50,5 @@ pandas==0.16.2
 numpy==1.9.2
 # Nice-to-have dev tools:
 IPython
-flake8
+flake8==2.4.1
+flake8-respect-noqa==0.2

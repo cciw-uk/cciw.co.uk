@@ -278,7 +278,7 @@ def close_enough_referee_match(referee1, referee2):
         return True
 
     if (normalized_name(referee1.name).lower() == normalized_name(referee2.name).lower() and
-        referee1.email.lower() == referee2.email.lower()):
+            referee1.email.lower() == referee2.email.lower()):
         return True
 
     return False
@@ -1284,10 +1284,9 @@ def booking_secretary_reports(request, year=None):
     export_start = datetime(year - 1, 11, 1)  # November previous year
     export_end = datetime(year, 10, 31)  # November this year
     export_data_link = (reverse('cciw-officers-export_payment_data') +
-                        "?start=%s&end=%s" % (
-                            export_start.strftime(EXPORT_PAYMENT_DATE_FORMAT),
-                            export_end.strftime(EXPORT_PAYMENT_DATE_FORMAT)
-                        )
+                        "?start=%s&end=%s" % (export_start.strftime(EXPORT_PAYMENT_DATE_FORMAT),
+                                              export_end.strftime(EXPORT_PAYMENT_DATE_FORMAT)
+                                              )
                         )
 
     return render(request, 'cciw/officers/booking_secretary_reports.html',

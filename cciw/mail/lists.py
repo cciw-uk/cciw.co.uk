@@ -233,10 +233,8 @@ def handle_mail(data, debug=False):
                       "You attempted to email the list {0}\n"
                       "with an email titled \"{1}\".\n"
                       "\n"
-                      "However, you do not have permission to email this list, sorry.".format(
-                          address,
-                          mail['Subject'],
-                      ),
+                      "However, you do not have permission to email this list, sorry.".format(address,
+                                                                                              mail['Subject']),
                       settings.DEFAULT_FROM_EMAIL,
                       [from_email])
         except NoSuchList:

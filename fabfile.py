@@ -5,7 +5,6 @@ import sys
 from datetime import datetime
 from fabric.api import run, local, env, get, task
 from fabric.contrib.files import exists
-from fabric.contrib import console
 from fabric.context_managers import cd, lcd, settings
 import psutil
 import re
@@ -301,7 +300,6 @@ def fake_migrations_mode():
     env.fake_migrations = True
 
 
-
 def update_database():
     with virtualenv(target.VENV_DIR):
         with cd(target.SRC_DIR):
@@ -327,6 +325,7 @@ def _push_non_vcs_sources():
 def _get_non_vcs_sources():
     for s in NON_VCS_SOURCES:
         local("rsync cciw@cciw.co.uk:%s/%s %s" % (target.SRC_DIR, s, s))
+
 
 @task
 def deploy():
