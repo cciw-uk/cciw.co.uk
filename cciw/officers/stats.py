@@ -3,6 +3,7 @@ from datetime import date, timedelta
 import pandas as pd
 from django.conf import settings
 
+from cciw.cciwmain.models import Camp
 from cciw.officers.applications import applications_for_camp
 from cciw.officers.models import ReferenceForm, CRBApplication
 
@@ -64,6 +65,59 @@ def get_camp_officer_stats(camp):
         # values get propagated to all rows,
         # and then backwards with zeros.
     ).fillna(method='ffill').fillna(value=0)
+    return df
+
+
+def get_camp_officer_stats_summary(start_year, end_year):
+    years = list(range(start_year, end_year + 1))
+    officer_counts = []
+    application_counts = []
+    reference_in_time_counts = []
+    crb_in_time_counts = []
+    for year in years:
+        camps = Camp.objects.filter(year=year)
+        # It's hard to make use of SQL efficiently here, because the
+        # applications_for_camp logic and the CRB application logic can't be
+        # captured in SQL efficiently, due to there being no direct link to
+        # camps.
+        officer_count = 0
+        application_count = 0
+        reference_in_time_count = 0
+        crb_in_time_count = 0
+
+        # There are some slight 'bugs' here when officers go on mutliple camps.
+        # Correct behaviour is tricky to define - for example, if an officer
+        # goes on two camps, and for one of them has a valid CRB and the other
+        # he/she doesn't, due to dates.
+        for camp in camps:
+            officer_ids = list(camp.invitations.values_list('officer_id', flat=True))
+            officer_count += len(officer_ids)
+            application_form_ids = list(applications_for_camp(camp).values_list('id', flat=True))
+            application_count += len(application_form_ids)
+            reference_in_time_count += ReferenceForm.objects.filter(
+                reference_info__application__in=application_form_ids,
+                date_created__lte=camp.start_date
+            ).count()
+            crb_in_time_count += CRBApplication.objects.filter(
+                officer__in=officer_ids,
+                completed__isnull=False,
+                completed__lte=camp.start_date,
+                completed__gte=camp.start_date - timedelta(days=settings.CRB_VALID_FOR)
+            ).count()  # ignores the possibility that an officer can have more than one
+        officer_counts.append(officer_count)
+        application_counts.append(application_count)
+        reference_in_time_counts.append(reference_in_time_count)
+        crb_in_time_counts.append(crb_in_time_count)
+    df = pd.DataFrame(index=years,
+                      data={'Officer count': officer_counts,
+                            'Application count': application_counts,
+                            'References received in time': reference_in_time_counts,
+                            'Valid DBS received in time': crb_in_time_counts,
+                            })
+    df['Application fraction'] = df['Application count'] / df['Officer count']
+    df['References fraction'] = df['References received in time'] / (df['Officer count'] * 2)
+    df['DBS fraction'] = df['Valid DBS received in time'] / df['Officer count']
+
     return df
 
 
