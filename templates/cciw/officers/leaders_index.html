@@ -33,8 +33,10 @@
     references:</p>
   <ul>
     {% for year in statsyears %}
-      <li><a href="{% url 'cciw-officers-stats' year=year %}">Stats {{ year }}</a></li>
+      <li><a href="{% url 'cciw-officers-officer_stats' year=year %}">Stats {{ year }}</a></li>
     {% endfor %}
+    <li><a href="{% url 'cciw-officers-officer_stats_trend' start_year=stats_start_year end_year=stats_end_year %}">
+      Trend {{ stats_start_year }}-{{ stats_end_year }}</a></li>
   </ul>
 
   <h2>General</h2>

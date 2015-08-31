@@ -1,0 +1,28 @@
+{% extends "cciw/officers/base.html" %}
+{% load static %}
+{% block title %}Officer stats {{ start_year }}-{{ end_year }} | CCIW Officers{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+  <script type="text/javascript" src="{% static "js/highcharts/highcharts.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/officer_stats.js" %}"></script>
+{% endblock %}
+
+{% block bodyclass%}change-form{% endblock %}
+
+{% block content %}
+  <div id="content-main">
+    <h1>Stats {{ start_year }}-{{ end_year }}</h1>
+
+    <div style="width:1000px;height:500px;"
+         data-chart="{{ chart_data }}"
+         data-officer-stats-trend-chart-placeholder="true"
+         >
+    </div>
+
+    <h2>Data</h2>
+
+    <p>Download raw data: <a href="{% url 'cciw-officers-officer_stats_trend_download' start_year=start_year end_year=end_year %}?format=xls">XLS</a></p>
+
+
+  </div>
+{% endblock %}

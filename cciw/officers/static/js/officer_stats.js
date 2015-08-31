@@ -25,4 +25,18 @@ $(document).ready(function () {
         };
         $elem.highcharts(data);
     });
+
+    $('[data-officer-stats-trend-chart-placeholder]').each(function (index, elem) {
+        var $elem = $(elem);
+        var data = JSON.parse($elem.attr('data-chart'));
+        data.title = null;
+        data.yAxis = [{
+            min: 0,
+            title: {
+                enabled: false
+            }
+        }];
+        $elem.highcharts(data);
+
+    })
 });

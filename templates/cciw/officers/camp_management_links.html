@@ -4,7 +4,7 @@
       <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_list' year=c.year number=c.number %}">Officer list</a>
       <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-manage_applications' year=c.year number=c.number %}">Applications</a>
       <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-manage_references' year=c.year number=c.number %}">References</a>
-      <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-stats' year=c.year %}">Stats {{ c.year }}</a>
+      <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_stats' year=c.year %}">Stats {{ c.year }}</a>
       <br />&nbsp;&nbsp;&nbsp;Campers: <a href="{% url 'cciw-officers-export_camper_data' year=c.year number=c.number %}?format=xls">XLS</a> | <a href="{% url 'cciw-officers-export_camper_data' year=c.year number=c.number %}?format=ods">ODS</a>
       <br />&nbsp;&nbsp;&nbsp;Sharable transport details: <a href="{% url 'cciw-officers-export_sharable_transport_details' year=c.year number=c.number %}?format=xls">XLS</a> | <a href="{% url 'cciw-officers-export_sharable_transport_details' year=c.year number=c.number %}?format=ods">ODS</a>
     </li>

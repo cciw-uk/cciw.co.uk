@@ -68,7 +68,7 @@ def get_camp_officer_stats(camp):
     return df
 
 
-def get_camp_officer_stats_summary(start_year, end_year):
+def get_camp_officer_stats_trend(start_year, end_year):
     years = list(range(start_year, end_year + 1))
     officer_counts = []
     application_counts = []
@@ -116,7 +116,7 @@ def get_camp_officer_stats_summary(start_year, end_year):
                             })
     df['Application fraction'] = df['Application count'] / df['Officer count']
     df['References fraction'] = df['References received in time'] / (df['Officer count'] * 2)
-    df['DBS fraction'] = df['Valid DBS received in time'] / df['Officer count']
+    df['Valid DBS fraction'] = df['Valid DBS received in time'] / df['Officer count']
 
     return df
 

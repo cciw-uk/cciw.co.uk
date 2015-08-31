@@ -36,7 +36,7 @@ from cciw.officers.email_utils import send_mail_with_attachments, formatted_emai
 from cciw.officers.email import send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer, send_crb_consent_problem_email
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication, CRBFormLog
-from cciw.officers.stats import get_camp_officer_stats
+from cciw.officers.stats import get_camp_officer_stats, get_camp_officer_stats_trend
 from cciw.officers.utils import camp_slacker_list, camp_serious_slacker_list, officer_data_to_spreadsheet
 from cciw.utils.views import close_window_response, user_passes_test_improved, get_spreadsheet_formatter
 from securedownload.views import access_folder_securely
@@ -127,6 +127,8 @@ def leaders_index(request):
                         if c.year < thisyear]
     last_existing_year = Camp.objects.order_by('-year')[0].year
     ctx['statsyears'] =  list(range(last_existing_year, last_existing_year - 3, -1))
+    ctx['stats_end_year'] = last_existing_year
+    ctx['stats_start_year'] = 2006  # first year this feature existed
     ctx['show_all'] = show_all
 
     return render(request, 'cciw/officers/leaders_index.html', ctx)
@@ -1062,6 +1064,25 @@ def officer_stats(request, year=None):
 
 @staff_member_required
 @camp_admin_required
+def officer_stats_trend(request, start_year=None, end_year=None):
+    start_year = int(start_year)
+    end_year = int(end_year)
+    data = get_camp_officer_stats_trend(start_year, end_year)
+    for c in data.columns:
+        if 'fraction' not in c:
+            data.pop(c)
+
+    ctx = {
+        'start_year': start_year,
+        'end_year': end_year,
+        'chart_data': pandas_highcharts.core.serialize(data,
+                                                       output_type='json')
+    }
+    return render(request, 'cciw/officers/stats_trend.html', ctx)
+
+
+@staff_member_required
+@camp_admin_required
 def officer_stats_download(request, year):
     year = int(year)
     camps = list(Camp.objects.filter(year=year).order_by('number'))
@@ -1071,6 +1092,18 @@ def officer_stats_download(request, year):
                                            get_camp_officer_stats(camp))
     return spreadsheet_response(formatter,
                                 "officer-stats-%d" % year)
+
+
+@staff_member_required
+@camp_admin_required
+def officer_stats_trend_download(request, start_year, end_year):
+    start_year = int(start_year)
+    end_year = int(end_year)
+    formatter = get_spreadsheet_formatter(request)
+    formatter.add_sheet_from_dataframe("Officer stats trend",
+                                       get_camp_officer_stats_trend(start_year, end_year))
+    return spreadsheet_response(formatter,
+                                "officer-stats-trend-{0}-{1}".format(start_year, end_year))
 
 
 @staff_member_required
