@@ -122,7 +122,8 @@ def leaders_index(request):
                             if c.year == thisyear]
     ctx['old_camps'] = [c for c in camps
                         if c.year < thisyear]
-    ctx['statsyears'] = [thisyear, thisyear - 1, thisyear - 2]
+    last_existing_year = Camp.objects.order_by('-year')[0].year
+    ctx['statsyears'] =  list(range(last_existing_year, last_existing_year - 3, -1))
     ctx['show_all'] = show_all
 
     return render(request, 'cciw/officers/leaders_index.html', ctx)
