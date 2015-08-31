@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
+
 from collections import defaultdict
 from datetime import datetime, date, timedelta
 from functools import reduce
 import operator
 from urllib.parse import urlparse
 
+import pandas_highcharts.core
 from django import forms
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
@@ -1045,18 +1048,16 @@ def officer_stats(request, year=None):
         'camps': camps,
         'year': year,
     }
+    charts = []
+    for camp in camps:
+        df = get_camp_officer_stats(camp)
+        df['References ÷ 2'] = df['References'] / 2  # Make it match the height of others
+        df.pop('References')
+        charts.append((camp,
+                       pandas_highcharts.core.serialize(df,
+                                                        output_type='json')))
+    ctx['charts'] = charts
     return render(request, 'cciw/officers/stats.html', ctx)
-
-
-@staff_member_required
-@camp_admin_required
-@json_response
-def officer_stats_json(request, year, number):
-    year = int(year)
-    number = int(number)
-    camp = Camp.objects.get(year=year, number=number)
-    stats = get_camp_officer_stats(camp)
-    return stats.to_json()
 
 
 @staff_member_required

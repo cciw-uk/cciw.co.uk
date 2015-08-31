@@ -55,11 +55,11 @@ def get_camp_officer_stats(camp):
     df = pd.DataFrame(
         index=dr,
         data={
-            'Officer list count': accumulate(trim(officer_dates)),
-            'Application count': accumulate(app_dates),
-            'Reference count': accumulate(ref_dates),
-            'Any DBS count': accumulate(trim(any_crb_dates)),
-            'Valid DBS count': accumulate(trim(valid_crb_dates)),
+            'Officers': accumulate(trim(officer_dates)),
+            'Applications': accumulate(app_dates),
+            'References': accumulate(ref_dates),
+            'Any DBS': accumulate(trim(any_crb_dates)),
+            'Valid DBS': accumulate(trim(valid_crb_dates)),
         }
         # Fill forward so that accumulated
         # values get propagated to all rows,

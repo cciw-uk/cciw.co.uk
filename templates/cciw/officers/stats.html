@@ -4,7 +4,7 @@
 {% block title %}Officer stats {{ year }} | CCIW Officers{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
-  <script type="text/javascript" src="{% static "js/jquery.flot.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/highcharts/highcharts.js" %}"></script>
   <script type="text/javascript" src="{% static "js/officer_stats.js" %}"></script>
 {% endblock %}
 
@@ -16,16 +16,16 @@
     <p>Charts span the year leading up to the start date of the camp.</p>
     <p>Exact numbers can be seen by hovering your mouse over the charts.</p>
 
-    {% for camp in camps %}
+    {% for camp, chart in charts %}
       <div style="float:left; margin-right: 20px;">
         <h2>{{ camp.number }} - {{ camp.leaders_formatted }}</h2>
         <div id="camp-graph-{{ camp.number }}"
              style="width:600px;height:200px;"
+             data-chart="{{ chart }}"
              data-url-officer-list="{% url "cciw-officers-officer_list" year=camp.year number=camp.number %}"
              data-url-manage-crbs="{% url "cciw-officers-manage_crbs" year=year %}?camp={{ camp.number }}"
              data-url-manage-applications="{% url "cciw-officers-manage_applications" year=camp.year number=camp.number %}"
              data-url-manage-references="{% url "cciw-officers-manage_references" year=camp.year number=camp.number %}"
-             data-url-officer-stats-json="{% url 'cciw-officers-officer_stats_json' year=camp.year number=camp.number %}"
              data-officer-stats-chart-placeholder="true"
              >
         </div>

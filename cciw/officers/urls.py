@@ -29,7 +29,6 @@ urlpatterns = [
     url(r'^leaders/undo-mark-crb-sent/', views.undo_mark_crb_sent, name="cciw-officers-undo_mark_crb_sent"),
     url(r'^leaders/crb-consent-problem/', views.crb_consent_problem, name="cciw-officers-crb_consent_problem"),
     url(r'^leaders/officer-stats/(?P<year>\d{4})/$', views.officer_stats, name="cciw-officers-stats"),
-    url(r'^leaders/officer-stats-json/(?P<year>\d{4})/(?P<number>\d+)/$', views.officer_stats_json, name="cciw-officers-officer_stats_json"),
     url(r'^leaders/officer-stats-download/(?P<year>\d{4})/$', views.officer_stats_download, name="cciw-officers-officer_stats_download"),
     url(r'^ref/(?P<ref_id>\d+)-(?P<prev_ref_id>\d*)-(?P<hash>.*)/$', views.create_reference_form, name="cciw-officers-create_reference_form"),
     url(r'^ref/thanks/$', views.create_reference_thanks, name="cciw-officers-create_reference_thanks"),

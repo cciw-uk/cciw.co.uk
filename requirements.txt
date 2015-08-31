@@ -48,6 +48,7 @@ cssselect==0.9.1
 lockfile==0.10.2
 pandas==0.16.2
 numpy==1.9.2
+-e git://github.com/spookylukey/pandas-highcharts@ada6ba5f7654914ea0a804f1fba91f3940bb8ff9#egg=pandas-highcharts
 # Nice-to-have dev tools:
 IPython
 flake8==2.4.1
