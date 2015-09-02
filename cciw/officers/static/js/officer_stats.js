@@ -32,6 +32,7 @@ $(document).ready(function () {
         data.title = null;
         data.yAxis = [{
             min: 0,
+            max: 100,
             title: {
                 enabled: false
             }

@@ -1072,6 +1072,8 @@ def officer_stats_trend(request, start_year=None, end_year=None):
         if 'fraction' not in c:
             data.pop(c)
 
+    fraction_to_percent(data)
+
     ctx = {
         'start_year': start_year,
         'end_year': end_year,
@@ -1079,6 +1081,15 @@ def officer_stats_trend(request, start_year=None, end_year=None):
                                                        output_type='json')
     }
     return render(request, 'cciw/officers/stats_trend.html', ctx)
+
+
+def fraction_to_percent(data):
+    for col_name in list(data.columns):
+        parts = col_name.split(" ")
+        new_name = " ".join("%" if p.lower() == "fraction" else p for p in parts)
+        if new_name != col_name:
+            data[new_name] = data[col_name] * 100
+            data.pop(col_name)
 
 
 @staff_member_required
