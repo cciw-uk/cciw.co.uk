@@ -1,14 +1,6 @@
-{% extends "cciw/officers/base.html" %}
-{% load static %}
-{% load json_filters %}
+{% extends "cciw/officers/stats_base.html" %}
+
 {% block title %}Officer stats {{ year }} | CCIW Officers{% endblock %}
-
-{% block extrastyle %}{{ block.super }}
-  <script type="text/javascript" src="{% static "js/highcharts/highcharts.js" %}"></script>
-  <script type="text/javascript" src="{% static "js/officer_stats.js" %}"></script>
-{% endblock %}
-
-{% block bodyclass%}change-form{% endblock %}
 
 {% block content %}
   <div id="content-main">
