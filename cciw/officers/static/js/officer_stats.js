@@ -1,5 +1,11 @@
 $(document).ready(function () {
 
+    Highcharts.setOptions({
+        exporting: {
+            fallbackToExportServer: false
+        }
+    });
+
     $("[data-officer-stats-chart-placeholder]").each(function (index, elem) {
         var $elem = $(elem);
         var data = JSON.parse($elem.attr('data-chart'));
