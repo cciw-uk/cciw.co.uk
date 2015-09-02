@@ -13,7 +13,7 @@ $(document).ready(function () {
             align: "left",
             verticalAlign: "top",
             layout: "vertical",
-            backgroundColor: "#F0F0F0",
+            backgroundColor: "#F8F8F8",
             borderColor: "#E0E0E0",
             borderWidth: 1,
             floating: true
