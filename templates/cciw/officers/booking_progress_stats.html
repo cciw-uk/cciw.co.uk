@@ -1,9 +1,9 @@
 {% extends "cciw/officers/stats_base.html" %}
-{% block title %}Booking progress stats {{ start_year }}-{{ end_year }} | CCIW Officers{% endblock %}
+{% block title %}Booking progress stats {% if start_year %}{{ start_year }}-{{ end_year }}{% endif %} | CCIW Officers{% endblock %}
 
 {% block content %}
   <div id="content-main">
-    <h1>Booking progress {{ start_year }}-{{ end_year }}</h1>
+    <h1>Booking progress {% if start_year %}{{ start_year }}-{{ end_year }}{% endif %}</h1>
 
     <div style="width:800px;height:400px;"
          data-chart="{{ dates_chart_data }}"
@@ -19,7 +19,11 @@
 
     <h2>Data</h2>
 
-    <p>Download raw data: <a href="{% url 'cciw-officers-booking_progress_stats_download' start_year=start_year end_year=end_year %}?format=xls">XLS</a></p>
-
+    <p>Download raw data:
+      {% if camps_param %}
+        <a href="{% url 'cciw-officers-booking_progress_stats_custom_download' camps=camps_param %}?format=xls">XLS</a></p>
+      {% else %}
+        <a href="{% url 'cciw-officers-booking_progress_stats_download' start_year=start_year end_year=end_year %}?format=xls">XLS</a></p>
+      {% endif %}
   </div>
 {% endblock %}

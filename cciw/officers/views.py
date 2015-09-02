@@ -1376,16 +1376,37 @@ def export_payment_data(request):
                                                        date_end.strftime('%Y-%m-%d')))
 
 
+def _get_booking_progress_stats_from_params(start_year, end_year, camps, **kwargs):
+    if camps is not None:
+        camp_ids = camps.split(',')
+        try:
+            camp_objs = [Camp.objects.get(year=int(camp.split('-')[0]),
+                                          number=int(camp.split('-')[1]))
+                         for camp in camp_ids]
+        except Camp.DoesNotExist:
+            raise Http404()
+        data_dates, data_rel_days = get_booking_progress_stats(camps=camp_objs, **kwargs)
+    else:
+        start_year = int(start_year)
+        end_year = int(end_year)
+        data_dates, data_rel_days = get_booking_progress_stats(start_year=start_year, end_year=end_year, overlay_years=True)
+        camp_objs = None
+
+    return start_year, end_year, camp_objs, data_dates, data_rel_days
+
+
 @staff_member_required
 @secretary_or_committee_required
-def booking_progress_stats(request, start_year, end_year):
-    start_year = int(start_year)
-    end_year = int(end_year)
-    data_dates, data_rel_days = get_booking_progress_stats(start_year, end_year, overlay_years=True)
+def booking_progress_stats(request, start_year=None, end_year=None, camps=None):
+    start_year, end_year, camp_objs, data_dates, data_rel_days = (
+        _get_booking_progress_stats_from_params(start_year, end_year, camps, overlay_years=True)
+    )
 
     ctx = {
         'start_year': start_year,
         'end_year': end_year,
+        'camps': camp_objs,
+        'camps_param': camps,
         'dates_chart_data': pandas_highcharts.core.serialize(data_dates,
                                                              title="Bookings by date",
                                                              output_type='json'),
@@ -1398,15 +1419,18 @@ def booking_progress_stats(request, start_year, end_year):
 
 @staff_member_required
 @secretary_or_committee_required
-def booking_progress_stats_download(request, start_year, end_year):
-    start_year = int(start_year)
-    end_year = int(end_year)
-    data_dates, data_rel_days = get_booking_progress_stats(start_year, end_year)
+def booking_progress_stats_download(request, start_year=None, end_year=None, camps=None):
+    start_year, end_year, camp_objs, data_dates, data_rel_days = (
+        _get_booking_progress_stats_from_params(start_year, end_year, camps, overlay_years=False)
+    )
     formatter = get_spreadsheet_formatter(request)
     formatter.add_sheet_from_dataframe("Bookings against date", data_dates)
     formatter.add_sheet_from_dataframe("Days relative to start of camp", data_rel_days)
-    return spreadsheet_response(formatter,
-                                "booking-progress-stats-{0}-{1}".format(start_year, end_year))
+    if camps is not None:
+        filename = "booking-progress-stats-{0}".format(camps.replace(",", "_"))
+    else:
+        filename = "booking-progress-stats-{0}-{1}".format(start_year, end_year)
+    return spreadsheet_response(formatter, filename)
 
 
 @staff_member_required
