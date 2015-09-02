@@ -9,10 +9,9 @@
     <p>Exact numbers can be seen by hovering your mouse over the charts.</p>
 
     {% for camp, chart in charts %}
-      <div style="float:left; margin-right: 20px;">
-        <h2>{{ camp.number }} - {{ camp.leaders_formatted }}</h2>
+      <div style="float:left; margin: 30px 20px 30px 0;">
         <div id="camp-graph-{{ camp.number }}"
-             style="width:600px;height:200px;"
+             style="width:600px;height:300px;"
              data-chart="{{ chart }}"
              data-url-officer-list="{% url "cciw-officers-officer_list" year=camp.year number=camp.number %}"
              data-url-manage-crbs="{% url "cciw-officers-manage_crbs" year=year %}?camp={{ camp.number }}"

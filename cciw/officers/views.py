@@ -1062,6 +1062,7 @@ def officer_stats(request, year=None):
         df.pop('References')
         charts.append((camp,
                        pandas_highcharts.core.serialize(df,
+                                                        title="{0} - {1}".format(camp.number, camp.leaders_formatted),
                                                         output_type='json')))
     ctx['charts'] = charts
     return render(request, 'cciw/officers/stats.html', ctx)
@@ -1083,6 +1084,7 @@ def officer_stats_trend(request, start_year=None, end_year=None):
         'start_year': start_year,
         'end_year': end_year,
         'chart_data': pandas_highcharts.core.serialize(data,
+                                                       title="Officer stats {0} - {1}".format(start_year, end_year),
                                                        output_type='json')
     }
     return render(request, 'cciw/officers/stats_trend.html', ctx)
@@ -1372,8 +1374,12 @@ def booking_progress_stats(request, start_year, end_year):
     ctx = {
         'start_year': start_year,
         'end_year': end_year,
-        'dates_chart_data': pandas_highcharts.core.serialize(data_dates, output_type='json'),
-        'rel_days_chart_data': pandas_highcharts.core.serialize(data_rel_days, output_type='json'),
+        'dates_chart_data': pandas_highcharts.core.serialize(data_dates,
+                                                             title="Bookings by date",
+                                                             output_type='json'),
+        'rel_days_chart_data': pandas_highcharts.core.serialize(data_rel_days,
+                                                                title="Bookings by days relative to start of camp",
+                                                                output_type='json'),
     }
     return render(request, 'cciw/officers/booking_progress_stats.html', ctx)
 
