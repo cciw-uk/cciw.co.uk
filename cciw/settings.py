@@ -33,6 +33,9 @@ if DEVBOX:
     def show_toolbar(request):
         if request.is_ajax():
             return False
+        if '-stats' in request.get_full_path():
+            # debug toolbar slows down the stats pages for some reason
+            return False
         return True
 
     DEBUG = True
