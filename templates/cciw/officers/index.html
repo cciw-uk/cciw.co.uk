@@ -10,8 +10,10 @@
       <li><a href="{% url 'cciw-officers-booking_secretary_reports' lastyear %}">Booking reports {{ lastyear }}</a></li>
     {% endif %}
     {% if show_secretary_and_committee_links %}
-      <li><a href="{% url 'cciw-officers-booking_summary_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">Booking summary stats {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a></li>
-      <li><a href="{% url 'cciw-officers-booking_progress_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">Booking progress stats {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a></li>
+      {% if booking_stats_start_year and booking_stats_end_year %}
+        <li><a href="{% url 'cciw-officers-booking_summary_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">Booking summary stats {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a></li>
+        <li><a href="{% url 'cciw-officers-booking_progress_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">Booking progress stats {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a></li>
+      {% endif %}
     {% endif %}
     <li><a href="{% url 'cciw-officers-applications' %}">Submit/view applications</a></li>
     <li><a href="{% url 'cciw-officers-info' %}">Information about camp</a></li>

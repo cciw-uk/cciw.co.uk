@@ -117,9 +117,10 @@ def index(request):
         c['show_booking_secretary_links'] = True
     if is_committee_member(user) or is_booking_secretary(user):
         c['show_secretary_and_committee_links'] = True
-        most_recent_booking_year = Booking.objects.booked().order_by('-camp__year').select_related('camp')[0].camp.year
-        c['booking_stats_end_year'] = most_recent_booking_year
-        c['booking_stats_start_year'] = most_recent_booking_year - 3
+        most_recent_booking_year = Booking.objects.most_recent_booking_year()
+        if most_recent_booking_year is not None:
+            c['booking_stats_end_year'] = most_recent_booking_year
+            c['booking_stats_start_year'] = most_recent_booking_year - 3
 
     return render(request, 'cciw/officers/index.html', c)
 
