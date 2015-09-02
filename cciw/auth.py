@@ -63,3 +63,9 @@ def can_manage_application_forms(user):
     if is_camp_admin(user):
         return True
     return False
+
+
+def is_committee_member(user):
+    if not active_staff(user):
+        return False
+    return user_in_groups(user, [COMMITTEE_GROUP_NAME])

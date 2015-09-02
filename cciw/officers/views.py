@@ -23,7 +23,7 @@ from django.template.defaultfilters import wordwrap
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
-from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
+from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary, is_committee_member
 from cciw.bookings.models import Booking
 from cciw.bookings.stats import get_booking_progress_stats, get_booking_summary_stats
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet, payments_to_spreadsheet, addresses_for_mailing_list, camp_sharable_transport_details_to_spreadsheet
@@ -66,9 +66,18 @@ def _copy_application(application):
     return new_obj
 
 
+def any_passes(*funcs):
+    def func(*args, **kwargs):
+        for f in funcs:
+             if f(*args, **kwargs):
+                 return True
+        return False
+    return func
+
 camp_admin_required = user_passes_test_improved(is_camp_admin)
 booking_secretary_required = user_passes_test_improved(is_booking_secretary)
 cciw_secretary_required = user_passes_test_improved(is_cciw_secretary)
+secretary_or_committee_required = user_passes_test_improved(any_passes(is_booking_secretary, is_cciw_secretary, is_committee_member))
 
 
 def close_window_and_update_ref(ref_id):
@@ -106,9 +115,11 @@ def index(request):
         c['show_admin_link'] = True
     if is_booking_secretary(user):
         c['show_booking_secretary_links'] = True
+    if is_committee_member(user) or is_booking_secretary(user):
+        c['show_secretary_and_committee_links'] = True
         most_recent_booking_year = Booking.objects.booked().order_by('-camp__year').select_related('camp')[0].camp.year
         c['booking_stats_end_year'] = most_recent_booking_year
-        c['booking_stats_start_year'] = most_recent_booking_year - 4
+        c['booking_stats_start_year'] = most_recent_booking_year - 3
 
     return render(request, 'cciw/officers/index.html', c)
 
@@ -1365,7 +1376,7 @@ def export_payment_data(request):
 
 
 @staff_member_required
-@booking_secretary_required
+@secretary_or_committee_required
 def booking_progress_stats(request, start_year, end_year):
     start_year = int(start_year)
     end_year = int(end_year)
@@ -1385,7 +1396,7 @@ def booking_progress_stats(request, start_year, end_year):
 
 
 @staff_member_required
-@booking_secretary_required
+@secretary_or_committee_required
 def booking_progress_stats_download(request, start_year, end_year):
     start_year = int(start_year)
     end_year = int(end_year)
@@ -1398,7 +1409,7 @@ def booking_progress_stats_download(request, start_year, end_year):
 
 
 @staff_member_required
-@booking_secretary_required
+@secretary_or_committee_required
 def booking_summary_stats(request, start_year, end_year):
     start_year = int(start_year)
     end_year = int(end_year)
@@ -1413,7 +1424,7 @@ def booking_summary_stats(request, start_year, end_year):
 
 
 @staff_member_required
-@booking_secretary_required
+@secretary_or_committee_required
 def booking_summary_stats_download(request, start_year, end_year):
     start_year = int(start_year)
     end_year = int(end_year)
