@@ -69,8 +69,8 @@ def _copy_application(application):
 def any_passes(*funcs):
     def func(*args, **kwargs):
         for f in funcs:
-             if f(*args, **kwargs):
-                 return True
+            if f(*args, **kwargs):
+                return True
         return False
     return func
 
