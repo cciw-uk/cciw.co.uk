@@ -39,5 +39,18 @@ $(document).ready(function () {
         }];
         $elem.highcharts(data);
 
-    })
+    });
+
+    $('[data-booking-progress-stats-chart-placeholder]').each(function (index, elem) {
+        var $elem = $(elem);
+        var data = JSON.parse($elem.attr('data-chart'));
+        data.title = null;
+        data.yAxis = [{
+            min: 0,
+            title: {
+                text: "Number of bookings"
+            }
+        }]
+        $elem.highcharts(data);
+    });
 });

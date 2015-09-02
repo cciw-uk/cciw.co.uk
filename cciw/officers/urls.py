@@ -39,5 +39,7 @@ urlpatterns = [
     url(r'^info/$', views.officer_info, name="cciw-officers-info"),
     url(r'^bookings/reports/(?P<year>\d{4})/$', views.booking_secretary_reports, name="cciw-officers-booking_secretary_reports"),
     url(r'^bookings/export/$', views.export_payment_data, name="cciw-officers-export_payment_data"),
+    url(r'^bookings/booking-progress-stats/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.booking_progress_stats, name="cciw-officers-booking_progress_stats"),
+    url(r'^bookings/booking-progress-stats-download/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.booking_progress_stats_download, name="cciw-officers-booking_progress_stats_download"),
     url(r'^bookings/brochure-mailing-list/(?P<year>\d{4})/$', views.brochure_mailing_list, name="cciw-officers-brochure_mailing_list"),
 ]

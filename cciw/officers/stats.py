@@ -6,6 +6,7 @@ from django.conf import settings
 from cciw.cciwmain.models import Camp
 from cciw.officers.applications import applications_for_camp
 from cciw.officers.models import ReferenceForm, CRBApplication
+from cciw.utils.stats import accumulate_dates
 
 
 def get_camp_officer_stats(camp):
@@ -55,11 +56,11 @@ def get_camp_officer_stats(camp):
     df = pd.DataFrame(
         index=dr,
         data={
-            'Officers': accumulate(trim(officer_dates)),
-            'Applications': accumulate(app_dates),
-            'References': accumulate(ref_dates),
-            'Any DBS': accumulate(trim(any_crb_dates)),
-            'Valid DBS': accumulate(trim(valid_crb_dates)),
+            'Officers': accumulate_dates(trim(officer_dates)),
+            'Applications': accumulate_dates(app_dates),
+            'References': accumulate_dates(ref_dates),
+            'Any DBS': accumulate_dates(trim(any_crb_dates)),
+            'Valid DBS': accumulate_dates(trim(valid_crb_dates)),
         }
         # Fill forward so that accumulated
         # values get propagated to all rows,
@@ -133,7 +134,3 @@ def get_first(date_officer_list):
         if off_id not in d:
             d[off_id] = completed
     return sorted(d.values())
-
-
-def accumulate(date_list):
-    return pd.DatetimeIndex(date_list).value_counts().sort_index().cumsum()

@@ -24,6 +24,8 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
 from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
+from cciw.bookings.models import Booking
+from cciw.bookings.stats import get_booking_progress_stats
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet, payments_to_spreadsheet, addresses_for_mailing_list, camp_sharable_transport_details_to_spreadsheet
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
@@ -104,6 +106,9 @@ def index(request):
         c['show_admin_link'] = True
     if is_booking_secretary(user):
         c['show_booking_secretary_links'] = True
+        most_recent_booking_year = Booking.objects.booked().order_by('-camp__year').select_related('camp')[0].camp.year
+        c['booking_stats_end_year'] = most_recent_booking_year
+        c['booking_stats_start_year'] = most_recent_booking_year - 4
 
     return render(request, 'cciw/officers/index.html', c)
 
@@ -126,7 +131,7 @@ def leaders_index(request):
     ctx['old_camps'] = [c for c in camps
                         if c.year < thisyear]
     last_existing_year = Camp.objects.order_by('-year')[0].year
-    ctx['statsyears'] =  list(range(last_existing_year, last_existing_year - 3, -1))
+    ctx['statsyears'] = list(range(last_existing_year, last_existing_year - 3, -1))
     ctx['stats_end_year'] = last_existing_year
     ctx['stats_start_year'] = 2006  # first year this feature existed
     ctx['show_all'] = show_all
@@ -1355,6 +1360,35 @@ def export_payment_data(request):
     return spreadsheet_response(payments_to_spreadsheet(date_start, date_end, formatter),
                                 "payments-%s-to-%s" % (date_start.strftime('%Y-%m-%d'),
                                                        date_end.strftime('%Y-%m-%d')))
+
+
+@staff_member_required
+@booking_secretary_required
+def booking_progress_stats(request, start_year, end_year):
+    start_year = int(start_year)
+    end_year = int(end_year)
+    data_dates, data_rel_days = get_booking_progress_stats(start_year, end_year, overlay_years=True)
+
+    ctx = {
+        'start_year': start_year,
+        'end_year': end_year,
+        'dates_chart_data': pandas_highcharts.core.serialize(data_dates, output_type='json'),
+        'rel_days_chart_data': pandas_highcharts.core.serialize(data_rel_days, output_type='json'),
+    }
+    return render(request, 'cciw/officers/booking_progress_stats.html', ctx)
+
+
+@staff_member_required
+@booking_secretary_required
+def booking_progress_stats_download(request, start_year, end_year):
+    start_year = int(start_year)
+    end_year = int(end_year)
+    data_dates, data_rel_days = get_booking_progress_stats(start_year, end_year)
+    formatter = get_spreadsheet_formatter(request)
+    formatter.add_sheet_from_dataframe("Bookings against date", data_dates)
+    formatter.add_sheet_from_dataframe("Days relative to start of camp", data_rel_days)
+    return spreadsheet_response(formatter,
+                                "booking-progress-stats-{0}-{1}".format(start_year, end_year))
 
 
 @cciw_secretary_required
