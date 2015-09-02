@@ -8,6 +8,7 @@
       <li><a href="/admin/bookings/">Manage bookings</a></li>
       <li><a href="{% url 'cciw-officers-booking_secretary_reports' thisyear %}">Booking reports {{ thisyear }}</a></li>
       <li><a href="{% url 'cciw-officers-booking_secretary_reports' lastyear %}">Booking reports {{ lastyear }}</a></li>
+      <li><a href="{% url 'cciw-officers-booking_summary_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">Booking summary stats {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a></li>
       <li><a href="{% url 'cciw-officers-booking_progress_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">Booking progress stats {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a></li>
     {% endif %}
     <li><a href="{% url 'cciw-officers-applications' %}">Submit/view applications</a></li>

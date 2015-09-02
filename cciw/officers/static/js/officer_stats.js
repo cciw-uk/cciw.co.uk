@@ -38,7 +38,6 @@ $(document).ready(function () {
             }
         }];
         $elem.highcharts(data);
-
     });
 
     $('[data-booking-progress-stats-chart-placeholder]').each(function (index, elem) {
@@ -50,7 +49,43 @@ $(document).ready(function () {
             title: {
                 text: "Number of bookings"
             }
-        }]
+        }];
+        $elem.highcharts(data);
+    });
+
+    $('[data-booking-summary-stats-chart-placeholder]').each(function (index, elem) {
+        var $elem = $(elem);
+        var data = JSON.parse($elem.attr('data-chart'));
+        $.extend(data, {
+            title: null,
+            chart: {
+                type: 'column'
+            },
+            tooltip: {
+                headerFormat: '<b>{point.x}</b><br/>',
+                pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal',
+                    dataLabels: {
+                        enabled: true,
+                    }
+                }
+            },
+            yAxis: [{
+                min: 0,
+                title: {
+                    text: "Places"
+                },
+                stackLabels: {
+                    enabled: true,
+                    style: {
+                        fontWeight: 'bold',
+                    }
+                }
+            }]
+        });
         $elem.highcharts(data);
     });
 });

@@ -25,7 +25,7 @@ from django.views.decorators.cache import never_cache
 
 from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary
 from cciw.bookings.models import Booking
-from cciw.bookings.stats import get_booking_progress_stats
+from cciw.bookings.stats import get_booking_progress_stats, get_booking_summary_stats
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet, payments_to_spreadsheet, addresses_for_mailing_list, camp_sharable_transport_details_to_spreadsheet
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
@@ -1389,6 +1389,33 @@ def booking_progress_stats_download(request, start_year, end_year):
     formatter.add_sheet_from_dataframe("Days relative to start of camp", data_rel_days)
     return spreadsheet_response(formatter,
                                 "booking-progress-stats-{0}-{1}".format(start_year, end_year))
+
+
+@staff_member_required
+@booking_secretary_required
+def booking_summary_stats(request, start_year, end_year):
+    start_year = int(start_year)
+    end_year = int(end_year)
+    chart_data = get_booking_summary_stats(start_year, end_year)
+    chart_data.pop('Total')
+    ctx = {
+        'start_year': start_year,
+        'end_year': end_year,
+        'chart_data': pandas_highcharts.core.serialize(chart_data, output_type='json')
+    }
+    return render(request, 'cciw/officers/booking_summary_stats.html', ctx)
+
+
+@staff_member_required
+@booking_secretary_required
+def booking_summary_stats_download(request, start_year, end_year):
+    start_year = int(start_year)
+    end_year = int(end_year)
+    data = get_booking_summary_stats(start_year, end_year)
+    formatter = get_spreadsheet_formatter(request)
+    formatter.add_sheet_from_dataframe("Bookings", data)
+    return spreadsheet_response(formatter,
+                                "booking-summary-stats-{0}-{1}".format(start_year, end_year))
 
 
 @cciw_secretary_required
