@@ -1396,7 +1396,7 @@ def _get_booking_progress_stats_from_params(start_year, end_year, camps, **kwarg
 
 
 @staff_member_required
-@secretary_or_committee_required
+@camp_admin_required
 def booking_progress_stats(request, start_year=None, end_year=None, camps=None):
     start_year, end_year, camp_objs, data_dates, data_rel_days = (
         _get_booking_progress_stats_from_params(start_year, end_year, camps, overlay_years=True)
@@ -1418,7 +1418,7 @@ def booking_progress_stats(request, start_year=None, end_year=None, camps=None):
 
 
 @staff_member_required
-@secretary_or_committee_required
+@camp_admin_required
 def booking_progress_stats_download(request, start_year=None, end_year=None, camps=None):
     start_year, end_year, camp_objs, data_dates, data_rel_days = (
         _get_booking_progress_stats_from_params(start_year, end_year, camps, overlay_years=False)
