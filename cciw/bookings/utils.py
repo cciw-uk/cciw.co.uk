@@ -121,6 +121,8 @@ def year_bookings_to_spreadsheet(year, spreadsheet):
         ('First name', lambda b: b.first_name),
         ('Last name', lambda b: b.last_name),
         ('Sex', lambda b: b.get_sex_display()),
+        ('DOB', lambda b: b.date_of_birth),
+        ('Age', lambda b: b.age_on_camp()),
         ('Email', lambda b: b.get_contact_email()),
         ('State', lambda b: b.get_state_display()),
         ('Confirmed', lambda b: b.is_confirmed),
