@@ -113,7 +113,7 @@ def camp_sharable_transport_details_to_spreadsheet(camp, spreadsheet):
 
 # Spreadsheet needed by booking secretary
 def year_bookings_to_spreadsheet(year, spreadsheet):
-    bookings = Booking.objects.filter(camp__year=year).order_by('camp__number', 'account__name', 'first_name', 'last_name').select_related('camp', 'account')
+    bookings = Booking.objects.filter(camp__year=year).confirmed().order_by('camp__number', 'account__name', 'first_name', 'last_name').select_related('camp', 'account')
 
     columns = [
         ('Camp', lambda b: b.camp.number),
@@ -124,8 +124,6 @@ def year_bookings_to_spreadsheet(year, spreadsheet):
         ('DOB', lambda b: b.date_of_birth),
         ('Age', lambda b: b.age_on_camp()),
         ('Email', lambda b: b.get_contact_email()),
-        ('State', lambda b: b.get_state_display()),
-        ('Confirmed', lambda b: b.is_confirmed),
         ('Date created', lambda b: b.created),
     ]
 
