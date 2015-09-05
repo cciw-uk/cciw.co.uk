@@ -88,4 +88,49 @@ $(document).ready(function () {
         });
         $elem.highcharts(data);
     });
+
+    $('[data-booking-ages-stats-chart-placeholder]').each(function (index, elem) {
+        var $elem = $(elem);
+        var data = JSON.parse($elem.attr('data-chart'));
+        var stack = $elem.attr('data-stack-columns') == 'true';
+        $.extend(data, {
+            chart: {
+                type: 'column'
+            },
+            plotOptions: {
+                column: {
+                    stacking: stack ? 'normal' : null,
+                    dataLabels: {
+                        enabled: true,
+                    }
+                }
+            },
+            yAxis: [{
+                min: 0,
+                title: {
+                    text: "Number of campers"
+                },
+                stackLabels: {
+                    enabled: true,
+                    style: {
+                        fontWeight: 'bold',
+                    }
+                }
+            }],
+            xAxis: {
+                tickInterval: 1
+            }
+        });
+        if (stack) {
+            $.extend(data, {
+                tooltip: {
+                    headerFormat: '<b>{point.x}</b><br/>',
+                    pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+                }
+            });
+        }
+        $elem.highcharts(data);
+    });
+
+
 });

@@ -1,0 +1,22 @@
+{% extends "cciw/officers/stats_base.html" %}
+{% block title %}Camper ages stats {% if start_year %}{{ start_year }}-{{ end_year }}{% endif %} | CCIW Officers{% endblock %}
+
+{% block content %}
+  <div id="content-main">
+    <div style="width:800px;height:400px;"
+         data-chart="{{ chart_data }}"
+         data-booking-ages-stats-chart-placeholder="true"
+         data-stack-columns="{{ stack_columns|yesno:"true,false" }}"
+         >
+    </div>
+
+    <h2>Data</h2>
+
+    <p>Download raw data:
+      {% if camps_param %}
+        <a href="{% url 'cciw-officers-booking_ages_stats_custom_download' camps=camps_param %}?format=xls">XLS</a></p>
+      {% else %}
+        <a href="{% url 'cciw-officers-booking_ages_stats_download' start_year=start_year end_year=end_year %}?format=xls">XLS</a></p>
+      {% endif %}
+  </div>
+{% endblock %}

@@ -39,11 +39,22 @@ urlpatterns = [
     url(r'^info/$', views.officer_info, name="cciw-officers-info"),
     url(r'^bookings/reports/(?P<year>\d{4})/$', views.booking_secretary_reports, name="cciw-officers-booking_secretary_reports"),
     url(r'^bookings/export/$', views.export_payment_data, name="cciw-officers-export_payment_data"),
+
+    # Bookings progress
     url(r'^bookings/booking-progress-stats/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.booking_progress_stats, name="cciw-officers-booking_progress_stats"),
     url(r'^bookings/booking-progress-stats/(?P<camps>\d{4}-\d{1,3}(,\d{4}-\d{1,3})*)/$', views.booking_progress_stats, name="cciw-officers-booking_progress_stats_custom"),
     url(r'^bookings/booking-progress-stats-download/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.booking_progress_stats_download, name="cciw-officers-booking_progress_stats_download"),
     url(r'^bookings/booking-progress-stats-download/(?P<camps>\d{4}-\d{1,3}(,\d{4}-\d{1,3})*)/$', views.booking_progress_stats_download, name="cciw-officers-booking_progress_stats_custom_download"),
+
+    # Bookings summary
     url(r'^bookings/booking-summary-stats/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.booking_summary_stats, name="cciw-officers-booking_summary_stats"),
     url(r'^bookings/booking-summary-stats-download/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.booking_summary_stats_download, name="cciw-officers-booking_summary_stats_download"),
     url(r'^bookings/brochure-mailing-list/(?P<year>\d{4})/$', views.brochure_mailing_list, name="cciw-officers-brochure_mailing_list"),
+
+    # Bookings ages
+    url(r'^bookings/booking-ages-stats/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.booking_ages_stats, name="cciw-officers-booking_ages_stats"),
+    url(r'^bookings/booking-ages-stats/(?P<camps>\d{4}-\d{1,3}(,\d{4}-\d{1,3})*)/$', views.booking_ages_stats, name="cciw-officers-booking_ages_stats_custom"),
+    url(r'^bookings/booking-ages-stats-download/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.booking_ages_stats_download, name="cciw-officers-booking_ages_stats_download"),
+    url(r'^bookings/booking-ages-stats-download/(?P<camps>\d{4}-\d{1,3}(,\d{4}-\d{1,3})*)/$', views.booking_ages_stats_download, name="cciw-officers-booking_ages_stats_custom_download"),
+
 ]

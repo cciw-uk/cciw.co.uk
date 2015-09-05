@@ -25,7 +25,7 @@ from django.views.decorators.cache import never_cache
 
 from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary, is_committee_member
 from cciw.bookings.models import Booking
-from cciw.bookings.stats import get_booking_progress_stats, get_booking_summary_stats
+from cciw.bookings.stats import get_booking_progress_stats, get_booking_summary_stats, get_booking_ages_stats
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet, payments_to_spreadsheet, addresses_for_mailing_list, camp_sharable_transport_details_to_spreadsheet
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
@@ -121,6 +121,7 @@ def index(request):
         if most_recent_booking_year is not None:
             c['booking_stats_end_year'] = most_recent_booking_year
             c['booking_stats_start_year'] = most_recent_booking_year - 3
+            c['booking_stats_end_year_camps'] = Camp.objects.filter(year=most_recent_booking_year)
 
     return render(request, 'cciw/officers/index.html', c)
 
@@ -1376,7 +1377,7 @@ def export_payment_data(request):
                                                        date_end.strftime('%Y-%m-%d')))
 
 
-def _get_booking_progress_stats_from_params(start_year, end_year, camps, **kwargs):
+def _parse_year_or_camp_params(start_year, end_year, camps):
     if camps is not None:
         camp_ids = camps.split(',')
         try:
@@ -1385,14 +1386,20 @@ def _get_booking_progress_stats_from_params(start_year, end_year, camps, **kwarg
                          for camp in camp_ids]
         except Camp.DoesNotExist:
             raise Http404()
-        data_dates, data_rel_days = get_booking_progress_stats(camps=camp_objs, **kwargs)
+        return None, None, camp_objs
     else:
-        start_year = int(start_year)
-        end_year = int(end_year)
-        data_dates, data_rel_days = get_booking_progress_stats(start_year=start_year, end_year=end_year, overlay_years=True)
-        camp_objs = None
+        return int(start_year), int(end_year), None
 
-    return start_year, end_year, camp_objs, data_dates, data_rel_days
+
+def _get_booking_progress_stats_from_params(start_year, end_year, camps, **kwargs):
+    start_year, end_year, camps = _parse_year_or_camp_params(start_year, end_year, camps)
+    if camps is not None:
+        data_dates, data_rel_days = get_booking_progress_stats(camps=camps, **kwargs)
+    else:
+        data_dates, data_rel_days = get_booking_progress_stats(start_year=start_year,
+                                                               end_year=end_year, **kwargs)
+
+    return start_year, end_year, camps, data_dates, data_rel_days
 
 
 @staff_member_required
@@ -1458,6 +1465,59 @@ def booking_summary_stats_download(request, start_year, end_year):
     formatter.add_sheet_from_dataframe("Bookings", data)
     return spreadsheet_response(formatter,
                                 "booking-summary-stats-{0}-{1}".format(start_year, end_year))
+
+
+def _get_booking_ages_stats_from_params(start_year, end_year, camps, **kwargs):
+    start_year, end_year, camps = _parse_year_or_camp_params(start_year, end_year, camps)
+    if camps is not None:
+        data = get_booking_ages_stats(camps=camps, **kwargs)
+    else:
+        data = get_booking_ages_stats(start_year=start_year,
+                                      end_year=end_year, **kwargs)
+    return start_year, end_year, camps, data
+
+
+@staff_member_required
+@camp_admin_required
+def booking_ages_stats(request, start_year=None, end_year=None, camps=None):
+    start_year, end_year, camp_objs, data = (
+        _get_booking_ages_stats_from_params(start_year, end_year, camps)
+    )
+
+    data.pop('Total')
+    if camp_objs:
+        if all(c.year == camp_objs[0].year for c in camp_objs):
+            stack_columns = True
+        else:
+            stack_columns = False
+    else:
+        stack_columns = False
+    ctx = {
+        'start_year': start_year,
+        'end_year': end_year,
+        'camps': camp_objs,
+        'camps_param': camps,
+        'chart_data': pandas_highcharts.core.serialize(data,
+                                                       title="Age of campers",
+                                                       output_type='json'),
+        'stack_columns': stack_columns,
+    }
+    return render(request, 'cciw/officers/booking_ages_stats.html', ctx)
+
+
+@staff_member_required
+@camp_admin_required
+def booking_ages_stats_download(request, start_year=None, end_year=None, camps=None):
+    start_year, end_year, camp_objs, data = (
+        _get_booking_ages_stats_from_params(start_year, end_year, camps)
+    )
+    formatter = get_spreadsheet_formatter(request)
+    formatter.add_sheet_from_dataframe("Age of campers", data)
+    if camps is not None:
+        filename = "booking-ages-stats-{0}".format(camps.replace(",", "_"))
+    else:
+        filename = "booking-ages-stats-{0}-{1}".format(start_year, end_year)
+    return spreadsheet_response(formatter, filename)
 
 
 @cciw_secretary_required

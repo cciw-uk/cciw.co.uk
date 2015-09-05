@@ -7,3 +7,7 @@ def accumulate(value_list, index_class=pd.Index):
 
 def accumulate_dates(date_list):
     return accumulate(date_list, index_class=pd.DatetimeIndex)
+
+
+def counts(value_list):
+    return pd.Index(value_list).value_counts().sort_index()

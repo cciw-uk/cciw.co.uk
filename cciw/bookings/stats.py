@@ -1,8 +1,7 @@
 import pandas as pd
-from django.db import connection
 from django.db import models
 
-from cciw.utils.stats import accumulate, accumulate_dates
+from cciw.utils.stats import accumulate, accumulate_dates, counts
 
 from .models import Booking
 
@@ -52,4 +51,27 @@ def get_booking_summary_stats(start_year, end_year):
     df = pd.DataFrame(index=years,
                       data=data)
     df['Total'] = df['Male'] + df['Female']
+    return df
+
+
+def get_booking_ages_stats(start_year=None, end_year=None, camps=None):
+    if camps:
+        items = camps
+        query_filter = lambda qs, camp: qs.filter(camp=camp)
+        labeller = lambda camp: camp.short_name
+    else:
+        items = range(start_year, end_year + 1)
+        query_filter = lambda qs, year: qs.filter(camp__year=year)
+        labeller = str
+
+    data = {}
+    for item in items:
+        qs = (Booking.objects.confirmed()
+              .select_related(None).select_related('camp')
+              .only('date_of_birth', 'camp'))
+        objs = query_filter(qs, item)
+        vals = [b.age_on_camp() for b in objs]
+        data[labeller(item)] = counts(vals)
+    df = pd.DataFrame(data=data).fillna(0)
+    df['Total'] = sum(df[col] for col in data)
     return df
