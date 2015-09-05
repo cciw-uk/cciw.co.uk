@@ -1,5 +1,6 @@
 import pandas as pd
 from django.db import connection
+from django.db import models
 
 from cciw.utils.stats import accumulate, accumulate_dates
 
@@ -21,7 +22,7 @@ def get_booking_progress_stats(start_year=None, end_year=None, camps=None, overl
         last_year = end_year
 
     for item in items:
-        qs = Booking.objects.booked()
+        qs = Booking.objects.confirmed()
         rows = query_filter(qs, item).select_related('camp').values_list('booked_at', 'created', 'camp__start_date')
         rows2 = [[r[0] if r[0] else r[1], r[2]] for r in rows]  # prefer 'booked_at' to 'created'
         if rows2:
@@ -39,17 +40,11 @@ def get_booking_progress_stats(start_year=None, end_year=None, camps=None, overl
 
 
 def get_booking_summary_stats(start_year, end_year):
-    c = connection.cursor()
-    c.execute("""
-    SELECT year, sex, count(sex)
-    FROM bookings_booking AS booking
-       INNER JOIN cciwmain_camp AS camp
-       ON booking.camp_id = camp.id
-    WHERE camp.year >= %s AND camp.year <= %s
-    GROUP BY camp.year, booking.sex
-    ORDER BY year, sex;
-    """, [start_year, end_year])
-    rows = c.fetchall()
+    rows = (Booking.objects.confirmed().select_related('camp')
+            .filter(camp__year__gte=start_year, camp__year__lte=end_year)
+            .values_list('camp__year', 'sex')
+            .order_by('camp__year', 'sex')
+            .annotate(count=models.Count('sex')))
     data = {s1: [c for y, s, c in rows
                  if s == s1[0].lower()]
             for s1 in ['Male', 'Female']}
