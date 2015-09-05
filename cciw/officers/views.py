@@ -1467,13 +1467,13 @@ def booking_summary_stats_download(request, start_year, end_year):
                                 "booking-summary-stats-{0}-{1}".format(start_year, end_year))
 
 
-def _get_booking_ages_stats_from_params(start_year, end_year, camps, **kwargs):
+def _get_booking_ages_stats_from_params(start_year, end_year, camps):
     start_year, end_year, camps = _parse_year_or_camp_params(start_year, end_year, camps)
     if camps is not None:
-        data = get_booking_ages_stats(camps=camps, **kwargs)
+        data = get_booking_ages_stats(camps=camps, include_total=True)
     else:
         data = get_booking_ages_stats(start_year=start_year,
-                                      end_year=end_year, **kwargs)
+                                      end_year=end_year, include_total=False)
     return start_year, end_year, camps, data
 
 
@@ -1483,8 +1483,8 @@ def booking_ages_stats(request, start_year=None, end_year=None, camps=None):
     start_year, end_year, camp_objs, data = (
         _get_booking_ages_stats_from_params(start_year, end_year, camps)
     )
-
-    data.pop('Total')
+    if 'Total' in data:
+        data.pop('Total')
     if camp_objs:
         if all(c.year == camp_objs[0].year for c in camp_objs):
             stack_columns = True

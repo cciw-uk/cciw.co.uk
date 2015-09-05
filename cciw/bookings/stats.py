@@ -54,7 +54,7 @@ def get_booking_summary_stats(start_year, end_year):
     return df
 
 
-def get_booking_ages_stats(start_year=None, end_year=None, camps=None):
+def get_booking_ages_stats(start_year=None, end_year=None, camps=None, include_total=True):
     if camps:
         items = camps
         query_filter = lambda qs, camp: qs.filter(camp=camp)
@@ -73,5 +73,6 @@ def get_booking_ages_stats(start_year=None, end_year=None, camps=None):
         vals = [b.age_on_camp() for b in objs]
         data[labeller(item)] = counts(vals)
     df = pd.DataFrame(data=data).fillna(0)
-    df['Total'] = sum(df[col] for col in data)
+    if include_total:
+        df['Total'] = sum(df[col] for col in data)
     return df
