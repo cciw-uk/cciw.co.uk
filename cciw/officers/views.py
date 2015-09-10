@@ -1356,7 +1356,9 @@ def booking_secretary_reports(request, year=None):
                         )
 
     return render(request, 'cciw/officers/booking_secretary_reports.html',
-                  {'year': year, 'camps': camps,
+                  {'year': year,
+                   'stats_start_year': year - 4,
+                   'camps': camps,
                    'bookings': outstanding,
                    'to_approve': to_approve,
                    'export_start': export_start,
