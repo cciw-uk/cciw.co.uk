@@ -1,6 +1,10 @@
 import operator
 from functools import reduce
 
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+
+
 WIKI_USERS_GROUP_NAME = 'Wiki users'
 SECRETARY_GROUP_NAME = 'Secretaries'
 LEADER_GROUP_NAME = 'Leaders'
@@ -12,6 +16,12 @@ CAMP_ADMIN_GROUPS = [SECRETARY_GROUP_NAME, LEADER_GROUP_NAME, COMMITTEE_GROUP_NA
 WIKI_GROUPS = [WIKI_USERS_GROUP_NAME, LEADER_GROUP_NAME, COMMITTEE_GROUP_NAME,
                BOOKING_SECRETARY_GROUP_NAME, SECRETARY_GROUP_NAME]
 
+
+# TODO:
+# We need better terminology to distinguish:
+# 1) users designated as 'admin' for a camp
+# 2) users with admin rights for a camp (includes 1. above and leaders)
+# 3) users with general admin rights (includes committee, secretaries)
 
 def active_staff(user):
     return user.is_staff and user.is_active
@@ -33,6 +43,14 @@ def is_camp_admin(user):
         return False
     return user_in_groups(user, CAMP_ADMIN_GROUPS) or \
         len(user.current_camps_as_admin_or_leader) > 0
+
+
+def get_camp_admin_group_users():
+    """
+    Returns all users who are in the 'camp admin' groups.
+    """
+    User = get_user_model()
+    return User.objects.filter(groups__in=Group.objects.filter(name__in=CAMP_ADMIN_GROUPS))
 
 
 def is_wiki_user(user):

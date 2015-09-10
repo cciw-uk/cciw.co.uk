@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.mail import get_connection, make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
+from cciw.auth import get_camp_admin_group_users
 from cciw.cciwmain.decorators import email_errors_silently
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
@@ -106,6 +107,10 @@ def _get_leaders_for_camp(camp):
     return retval
 
 
+def _email_match(email, users):
+    return any(user.email.lower() == email.lower() for user in users)
+
+
 def _is_camp_leader_or_admin(email, year=None, number=None):
     camps = _get_camps(year=year, number=number)
     all_users = set()
@@ -113,11 +118,14 @@ def _is_camp_leader_or_admin(email, year=None, number=None):
         all_users.update(_get_leaders_for_camp(c))
         all_users.update(list(c.admins.all()))
 
-    return any(user.email.lower() == email.lower() for user in all_users)
+    return _email_match(email, all_users)
 
 
-def _is_camp_leader_or_webmaster(email, year=None, number=None):
+def _is_camp_leader_or_admin_or_site_admin(email, year=None, number=None):
     if _is_camp_leader_or_admin(email, year=year, number=number):
+        return True
+
+    if _email_match(email, get_camp_admin_group_users()):
         return True
 
     User = get_user_model()
@@ -139,9 +147,9 @@ email_lists = {
     re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-slackers@cciw.co.uk$", re.IGNORECASE):
     (_camp_slackers, _is_camp_leader_or_admin),
     re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-leaders@cciw.co.uk$", re.IGNORECASE):
-    (_camp_leaders, _is_camp_leader_or_webmaster),
+    (_camp_leaders, _is_camp_leader_or_admin_or_site_admin),
     re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw.co.uk$", re.IGNORECASE):
-    (_camp_leaders, _is_camp_leader_or_webmaster),
+    (_camp_leaders, _is_camp_leader_or_admin_or_site_admin),
     re.compile(r"^camp-debug@cciw.co.uk$"):
     (_mail_debug_users, lambda email: True)
 }
