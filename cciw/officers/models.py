@@ -340,6 +340,11 @@ class ReferenceAction(models.Model):
     action_type = models.CharField(max_length=20, choices=ACTION_CHOICES)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True)
 
+    # This is set to True only for some records which had to be partially
+    # invented in a database migration due to missing data. Any stats on this
+    # table should exclude these records.
+    inaccurate = models.BooleanField(default=False)
+
     class Meta:
         ordering = [('created')]
 
@@ -368,6 +373,11 @@ class ReferenceForm(models.Model):
     comments = models.TextField("Any other comments you wish to make", blank=True)
     date_created = models.DateField("date created")
     reference_info = models.OneToOneField(Reference, related_name='_reference_form')
+
+    # This is set to True only for some records which had to be partially
+    # invented in a database migration due to missing data. Any stats on this
+    # table should exclude these records.
+    inaccurate = models.BooleanField(default=False)
 
     objects = ReferenceFormManager()
 
