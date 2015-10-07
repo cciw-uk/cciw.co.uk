@@ -10,30 +10,6 @@ from cciw.officers.fields import YyyyMmField, AddressField, RequiredCharField, R
 from cciw.officers.references import reference_form_info
 
 
-class Referee(object):
-    """
-    Helper class for more convenient access to referee* attributes
-    of 'Application' model and referee details from 'Reference' model
-    """
-    def __init__(self, appobj, refnum):
-        self._appobj = appobj
-        self._refnum = refnum
-
-    def __getattr__(self, name):
-        attname = "referee%d_%s" % (self._refnum, name)
-        return getattr(self._appobj, attname)
-
-    def __setattr__(self, name, val):
-        if name.startswith('_'):
-            self.__dict__[name] = val
-        else:
-            attname = "referee%d_%s" % (self._refnum, name)
-            setattr(self._appobj, attname, val)
-
-    def __eq__(self, other):
-        return self.name.lower() == other.name.lower() and self.email.lower() == other.email.lower()
-
-
 class ApplicationManager(models.Manager):
     use_for_related_fields = True
 
@@ -138,17 +114,6 @@ class Application(models.Model):
 
     objects = ApplicationManager()
 
-    # Convenience wrapper around 'referee?_*' fields:
-    @property
-    def referees(self):
-        try:
-            return self._referees_cache
-        except AttributeError:
-            # Use tuple since we don't want assignment or mutation to the list
-            retval = tuple(Referee(self, refnum) for refnum in (1, 2))
-            self._referees_cache = retval
-            return retval
-
     @property
     def references(self):
         """A cached version of 2 items that can exist in 'references_set', which
@@ -202,6 +167,23 @@ class ReferenceManager(models.Manager):
         return super(ReferenceManager, self).get_queryset().select_related('application__officer')
 
 
+class Referee(models.Model):
+    # Referee applies to one Application only, and has to be soft-matched to
+    # subsequent Applications by the same officer, even if the referee is the
+    # same, because the officer could put different things in for their name.
+    application = models.ForeignKey(Application, limit_choices_to={'finished': True})
+    referee_number = models.SmallIntegerField("Referee number", choices=[(1, '1'), (2, '2')])
+
+    name = RequiredCharField("First referee's name", max_length=NAME_LENGTH,
+                             help_text=REFEREE_NAME_HELP_TEXT)
+    address = RequiredAddressField('address')
+    tel = models.CharField('telephone', max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
+    mobile = models.CharField('mobile', max_length=22, blank=True)
+    email = models.EmailField('e-mail', blank=True)
+
+    def __str__(self):
+        return "{0} for {1}".format(self.name, self.application.officer.username)
+
 # =========================== #
 # Reference and ReferenceForm #
 # =========================== #
@@ -240,10 +222,6 @@ class Reference(models.Model):
                                              app.officer.last_name,
                                              referee_name,
                                              app.date_submitted.strftime('%Y-%m-%d'))
-
-    @property
-    def referee(self):
-        return Referee(self.application, self.referee_number)
 
     @property
     def reference_form(self):
@@ -335,7 +313,7 @@ class ReferenceAction(models.Model):
         (REFERENCE_FILLED_IN, "Reference filled in manually"),
         (REFERENCE_NAG, "Applicant nagged"),
     ]
-    reference = models.ForeignKey(Reference, related_name="actions")
+    referee = models.ForeignKey(Referee, related_name="actions")
     created = models.DateTimeField(default=timezone.now)
     action_type = models.CharField(max_length=20, choices=ACTION_CHOICES)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True)
@@ -372,7 +350,7 @@ class ReferenceForm(models.Model):
     concerns = models.TextField("Have you ever had concerns about either this applicant's ability or suitability to work with children and young people?")
     comments = models.TextField("Any other comments you wish to make", blank=True)
     date_created = models.DateField("date created")
-    reference_info = models.OneToOneField(Reference, related_name='_reference_form')
+    referee = models.OneToOneField(Referee)
 
     # This is set to True only for some records which had to be partially
     # invented in a database migration due to missing data. Any stats on this
