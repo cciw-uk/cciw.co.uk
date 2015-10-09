@@ -31,6 +31,9 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         u = User.objects.get(username=officer[0])
         a = Application(officer=u, address_email=u.email)
         a.save()
+        ref, _ = a.referee_set.get_or_create(referee_number=1)
+        ref.name = "My Initial Referee 1"
+        ref.save()
         return a
 
     def _finish_application_form(self, response):
@@ -63,12 +66,12 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
                           'employer2_to': '2008/01',
                           'employer2_job': 'x',
                           'employer2_leaving': 'x',
-                          'referee1_name': 'x',
+                          'referee1_name': 'My Referee 1',
                           'referee1_address': 'x',
                           'referee1_tel': 'x',
                           'referee1_mobile': 'x',
                           'referee1_email': 'foo1@foo1.com',
-                          'referee2_name': 'x',
+                          'referee2_name': 'My Referee 2',
                           'referee2_address': 'x',
                           'referee2_tel': 'x',
                           'referee2_mobile': 'x',
@@ -100,11 +103,21 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         response = self.get(self._application_edit_url(a.id))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Save and continue editing')
+        # Check that Referee initial values are set from model:
+        self.assertContains(response, 'My Initial Referee 1')
         self.assertNotContains(response, 'Save and add another')
-        response = self.fill(response.forms['application_form'], {'full_name': 'Test full name'}).submit('_save').follow()
+        response = (self.fill(response.forms['application_form'],
+                              {'full_name': 'Test full name'})
+                    .submit('_save')
+                    .follow())
         self.assertUrl(response, "cciw-officers-applications")
         self.assertEqual(u.applications.count(), 1)
-        self.assertEqual(u.applications.all()[0].full_name, 'Test full name')
+        app = u.applications.all()[0]
+        self.assertEqual(app.full_name, 'Test full name')
+
+        # Check that Referee was propagated properly
+        self.assertEqual(app.referee_set.get(referee_number=1).name,
+                         'My Initial Referee 1')
 
     def test_change_finished_application(self):
         """
@@ -276,6 +289,11 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         # The old one should have been deleted.
         self.assertEqual(len(apps), 1)
         self.assertEqual(a.id, apps[0].id)
+
+        self.assertEqual(apps[0].referee_set.get(referee_number=1).name,
+                         'My Referee 1')
+        self.assertEqual(apps[0].referee_set.get(referee_number=2).name,
+                         'My Referee 2')
 
         # There should be two emails in outbox, one to officer, one to
         # leader.  This assumes that there is a leader for the camp,

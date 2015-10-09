@@ -2,7 +2,7 @@ from anonymizer import Anonymizer
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from cciw.officers.models import Application, ReferenceForm
+from cciw.officers.models import Application, Reference
 
 
 class UserAnonymizer(Anonymizer):
@@ -109,13 +109,12 @@ class ApplicationAnonymizer(Anonymizer):
         obj.full_maiden_name = obj.full_name
 
 
-class ReferenceFormAnonymizer(Anonymizer):
+class ReferenceAnonymizer(Anonymizer):
 
-    model = ReferenceForm
+    model = Reference
 
     attributes = [
         ('id', "SKIP"),
-        ('reference_info_id', "SKIP"),
         ('referee_name', "name"),
         ('how_long_known', "varchar"),
         ('capacity_known', "similar_lorem"),

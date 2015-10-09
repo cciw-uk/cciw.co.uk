@@ -54,6 +54,9 @@ def required_field(field_class):
     NewDBField.__name__ = "Required" + field_class.__name__
     return NewDBField
 
+
+# Need to be to import these classes, as they become part of model definition
+# which is stored in migrations.
 RequiredCharField = required_field(models.CharField)
 RequiredDateField = required_field(models.DateField)
 RequiredEmailField = required_field(models.EmailField)

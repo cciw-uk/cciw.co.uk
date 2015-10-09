@@ -10,8 +10,17 @@
       <p>The reference has already been submitted, thank you.</p>
     {% else %}
       {% if update %}
-        <p>Please check and update the following information (that you submitted on {{ last_form_date }}),
-          and press 'Submit reference' at the bottom.  Thanks!</p>
+        <p>Please check and update the following information.
+          {% if last_form_date %}
+            (You submitted this information on {{ last_form_date }}).
+          {% endif %}
+          {% if last_empty %}
+            It seems that your reference has not been stored properly in our
+            database in the past, so we do not have past data to start from. In
+            the future, the information you put in this year will be used as a
+            starting point.
+          {% endif %}
+          Then press 'Submit reference' at the bottom.  Thanks!</p>
       {% else %}
         <p>Please fill out the reference form, amending your name if necessary.
           At the bottom of the page press 'Submit reference'.</p>

@@ -1,35 +1,43 @@
 import datetime
 
 import autocomplete_light
-from django.contrib import admin
-from django.core import urlresolvers
 from django import forms
+from django.contrib import admin
+from django.contrib.auth.admin import GroupAdmin
+from django.contrib.auth.models import Group
+from django.core import urlresolvers
 from django.forms.utils import ErrorList
 
 from cciw.auth import can_manage_application_forms
 from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
-from cciw.officers.fields import ExplicitBooleanField
-from cciw.officers.models import Application, Reference, Invitation, ReferenceForm, CRBApplication, CRBFormLog
 from cciw.officers import widgets
+from cciw.officers.fields import ExplicitBooleanField
+from cciw.officers.models import (REFEREE_DATA_FIELDS, REFEREE_NUMBERS, Application, CRBApplication, CRBFormLog, Invitation, Referee,
+                                  Reference)
 from cciw.utils.views import close_window_response
 
-
 officer_autocomplete_field = lambda: autocomplete_light.ModelChoiceField('user')
+
+
+referee_field = lambda n, f: 'referee{0}_{1}'.format(n, f)
 
 
 class ApplicationAdminModelForm(forms.ModelForm):
 
     officer = officer_autocomplete_field()
 
+    # Also added dynamically below
+
     def __init__(self, *args, **kwargs):
+        try:
+            initial = kwargs['initial']
+        except KeyError:
+            initial = {}
+            kwargs['initial'] = initial
+
         if 'instance' not in kwargs:
             # Set some initial values for new form
-            try:
-                initial = kwargs['initial']
-            except KeyError:
-                initial = {}
-                kwargs['initial'] = initial
 
             # Set officer
             user = threadlocals.get_current_user()
@@ -41,6 +49,12 @@ class ApplicationAdminModelForm(forms.ModelForm):
                 # Fill out officer name
                 initial['full_name'] = "%s %s" % (user.first_name, user.last_name)
                 initial['address_email'] = user.email
+
+        else:
+            instance = kwargs['instance']
+            for n in REFEREE_NUMBERS:
+                for f in REFEREE_DATA_FIELDS:
+                    initial[referee_field(n, f)] = getattr(instance.referees[n - 1], f)
 
         super(ApplicationAdminModelForm, self).__init__(*args, **kwargs)
 
@@ -91,7 +105,22 @@ class ApplicationAdminModelForm(forms.ModelForm):
     def save(self, **kwargs):
         if not self.editing_old:
             self.instance.date_submitted = datetime.date.today()
-        return super(ApplicationAdminModelForm, self).save(**kwargs)
+        retval = super(ApplicationAdminModelForm, self).save(**kwargs)
+        for n in REFEREE_NUMBERS:
+            ref = self.instance.referees[n - 1]
+            for f in REFEREE_DATA_FIELDS:
+                setattr(ref, f, self.cleaned_data[referee_field(n, f)])
+            ref.save()
+
+        return retval
+
+
+for f in REFEREE_DATA_FIELDS:
+    for n in REFEREE_NUMBERS:
+        field = Referee._meta.get_field(f).formfield()
+        if f == 'name':
+            field.label = "Referee {0} name".format(n)
+        ApplicationAdminModelForm.base_fields[referee_field(n, f)] = field
 
 
 class CampAdminPermissionMixin(object):
@@ -307,19 +336,6 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
         email.send_application_emails(request, obj)
 
 
-class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
-    def application_date(obj):
-        return obj.application.date_submitted
-    application_date.admin_order_field = 'application__date_submitted'
-
-    list_display = ['__str__', 'requested', 'received', application_date]
-    list_filter = ['requested', 'received']
-    search_fields = ['application__officer__first_name', 'application__officer__last_name']
-
-    def get_queryset(self, *args, **kwargs):
-        return super(ReferenceAdmin, self).get_queryset(*args, **kwargs).select_related('application')
-
-
 class InvitationAdmin(admin.ModelAdmin):
     list_display = ['officer', 'camp', 'notes', 'date_added']
     list_filter = ['camp']
@@ -329,13 +345,14 @@ class InvitationAdmin(admin.ModelAdmin):
         return super(InvitationAdmin, self).get_queryset(*args, **kwargs).prefetch_related('camp__leaders')
 
 
-class ReferenceFormAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
+class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     save_as = False
     list_display = ['referee_name', 'applicant_name', 'date_created']
     ordering = ['referee_name']
-    search_fields = ['referee_name', 'reference_info__application__officer__last_name',
-                     'reference_info__application__officer__first_name']
+    search_fields = ['referee_name', 'referee__application__officer__last_name',
+                     'referee__application__officer__first_name']
     date_hierarchy = 'date_created'
+    raw_id_fields = ['referee']
 
     fieldsets = [
         (None,
@@ -349,7 +366,7 @@ class ReferenceFormAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
                         'concerns',
                         'comments',
                         'date_created',
-                        'reference_info',
+                        'referee',
                         ],
              'classes': ['wide']}
          ),
@@ -361,14 +378,14 @@ class ReferenceFormAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
             defaults.update(kwargs)
             defaults.pop("request")
             return db_field.formfield(**defaults)
-        return super(ReferenceFormAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        return super(ReferenceAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
     def response_change(self, request, obj):
-        # Little hack to allow popups for changing ReferenceForms
+        # Little hack to allow popups for changing References
         if '_popup' in request.POST:
             return close_window_response()
         else:
-            return super(ReferenceFormAdmin, self).response_change(request, obj)
+            return super(ReferenceAdmin, self).response_change(request, obj)
 
 
 class CRBApplicationModelForm(forms.ModelForm):
@@ -422,17 +439,13 @@ class CRBFormLogAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Application, ApplicationAdmin)
-admin.site.register(Reference, ReferenceAdmin)
 admin.site.register(Invitation, InvitationAdmin)
-admin.site.register(ReferenceForm, ReferenceFormAdmin)
+admin.site.register(Reference, ReferenceAdmin)
 admin.site.register(CRBApplication, CRBApplicationAdmin)
 admin.site.register(CRBFormLog, CRBFormLogAdmin)
 
 
 # Hack the Group admin so that we can edit users belonging to a group
-from django.contrib.auth.admin import GroupAdmin
-from django.contrib.auth.models import Group
-
 Membership = Group.user_set.related.through
 
 

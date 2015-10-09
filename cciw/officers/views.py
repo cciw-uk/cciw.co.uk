@@ -1,48 +1,55 @@
 # -*- coding: utf-8 -*-
 
-from collections import defaultdict
-from datetime import datetime, date, timedelta
-from functools import reduce
 import operator
+from collections import defaultdict
+from datetime import date, datetime, timedelta
+from functools import reduce
 from urllib.parse import urlparse
 
-import pandas_highcharts.core
 from django import forms
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
-from django.contrib import messages
 from django.core import signing
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.urlresolvers import reverse
-from django.http import Http404, HttpResponseRedirect, HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.db.models import Prefetch
+from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.template import RequestContext
-from django.template.loader import render_to_string
 from django.template.defaultfilters import wordwrap
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
-from cciw.auth import is_camp_admin, is_wiki_user, is_cciw_secretary, is_camp_officer, is_booking_secretary, is_committee_member
+import pandas_highcharts.core
+from cciw.auth import (is_booking_secretary, is_camp_admin, is_camp_officer, is_cciw_secretary, is_committee_member,
+                       is_wiki_user)
 from cciw.bookings.models import Booking
-from cciw.bookings.stats import get_booking_progress_stats, get_booking_summary_stats, get_booking_ages_stats
-from cciw.bookings.utils import camp_bookings_to_spreadsheet, year_bookings_to_spreadsheet, payments_to_spreadsheet, addresses_for_mailing_list, camp_sharable_transport_details_to_spreadsheet
+from cciw.bookings.stats import get_booking_ages_stats, get_booking_progress_stats, get_booking_summary_stats
+from cciw.bookings.utils import (addresses_for_mailing_list, camp_bookings_to_spreadsheet,
+                                 camp_sharable_transport_details_to_spreadsheet, payments_to_spreadsheet,
+                                 year_bookings_to_spreadsheet)
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp, get_reference_contact_people
-from cciw.cciwmain.utils import python_to_json, is_valid_email
+from cciw.cciwmain.utils import is_valid_email, python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
-from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_txt_filename, thisyears_applications, applications_for_camp, camps_for_application
 from cciw.officers import create
-from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
-from cciw.officers.email import send_reference_request_email, make_ref_form_url, make_ref_form_url_hash, send_leaders_reference_email, send_nag_by_officer, send_crb_consent_problem_email
-from cciw.officers.widgets import ExplicitBooleanFieldSelect
-from cciw.officers.models import Application, Reference, ReferenceForm, Invitation, CRBApplication, CRBFormLog
+from cciw.officers.applications import (application_rtf_filename, application_to_rtf, application_to_text,
+                                        application_txt_filename, applications_for_camp, camps_for_application,
+                                        thisyears_applications)
+from cciw.officers.email import (make_ref_form_url, make_ref_form_url_hash, send_crb_consent_problem_email,
+                                 send_leaders_reference_email, send_nag_by_officer, send_reference_request_email)
+from cciw.officers.email_utils import formatted_email, send_mail_with_attachments
+from cciw.officers.models import (Application, CRBApplication, CRBFormLog, Invitation, Referee, Reference,
+                                  ReferenceAction, empty_reference)
 from cciw.officers.stats import get_camp_officer_stats, get_camp_officer_stats_trend
-from cciw.officers.utils import camp_slacker_list, camp_serious_slacker_list, officer_data_to_spreadsheet
-from cciw.utils.views import close_window_response, user_passes_test_improved, get_spreadsheet_formatter
+from cciw.officers.utils import camp_serious_slacker_list, camp_slacker_list, officer_data_to_spreadsheet
+from cciw.officers.widgets import ExplicitBooleanFieldSelect
+from cciw.utils.views import close_window_response, get_spreadsheet_formatter, user_passes_test_improved
 from securedownload.views import access_folder_securely
-
 
 User = get_user_model()
 
@@ -63,6 +70,13 @@ def _copy_application(application):
     new_obj.crb_check_consent = None
     new_obj.finished = False
     new_obj.date_submitted = None
+    new_obj.save()
+
+    for old_ref, new_ref in zip(application.referees, new_obj.referees):
+        for f in ['name', 'address', 'tel', 'mobile', 'email']:
+            setattr(new_ref, f, getattr(old_ref, f))
+        new_ref.save()
+
     return new_obj
 
 
@@ -80,7 +94,7 @@ cciw_secretary_required = user_passes_test_improved(is_cciw_secretary)
 secretary_or_committee_required = user_passes_test_improved(any_passes(is_booking_secretary, is_cciw_secretary, is_committee_member))
 
 
-def close_window_and_update_ref(ref_id):
+def close_window_and_update_referee(ref_id):
     """
     HttpResponse that closes the current window, and updates the reference
     in the parent window. Applies to popup from manage_references view.
@@ -189,7 +203,6 @@ def applications(request):
         # Create new application based on old one
         if finished_applications:
             new_obj = _copy_application(finished_applications[0])
-            new_obj.save()
         else:
             new_obj = Application.objects.create(officer=user,
                                                  full_name="%s %s" % (user.first_name, user.last_name))
@@ -298,9 +311,6 @@ def normalized_name(name):
 
 
 def close_enough_referee_match(referee1, referee2):
-    if referee1 == referee2:
-        return True
-
     if (normalized_name(referee1.name).lower() == normalized_name(referee2.name).lower() and
             referee1.email.lower() == referee2.email.lower()):
         return True
@@ -308,39 +318,39 @@ def close_enough_referee_match(referee1, referee2):
     return False
 
 
-def add_previous_references(ref):
+def add_previous_references(referee):
     """
     Adds the attributes:
     - 'previous_reference' (which is None if no exact match
     - 'possible_previous_references' (list ordered by relevance)
     """
-    # Look for ReferenceForms for same officer, within the previous five
+    # Look for References for same officer, within the previous five
     # years.  Don't look for references from this year's
     # application (which will be the other referee).
-    cutoffdate = ref.application.date_submitted - timedelta(365 * 5)
-    prev = list(ReferenceForm.objects
-                .filter(reference_info__application__officer=ref.application.officer,
-                        reference_info__application__finished=True,
-                        reference_info__received=True,
+    cutoffdate = referee.application.date_submitted - timedelta(365 * 5)
+    prev = list(Reference.objects
+                .filter(referee__application__officer=referee.application.officer,
+                        referee__application__finished=True,
                         date_created__gte=cutoffdate)
-                .exclude(reference_info__application=ref.application)
-                .order_by('-reference_info__application__date_submitted'))
+                .select_related('referee__application')
+                .exclude(referee__application=referee.application)
+                .order_by('-referee__application__date_submitted'))
 
     # Sort by relevance
-    def relevance_key(refform):
+    def relevance_key(reference):
         # Matching name or e-mail address is better, so has lower value,
         # so it comes first.
-        return -(int(refform.reference_info.referee.email.lower() == ref.referee.email.lower()) +
-                 int(refform.reference_info.referee.name.lower() == ref.referee.name.lower()))
+        return -(int(reference.referee.email.lower() == referee.email.lower()) +
+                 int(reference.referee.name.lower() == referee.name.lower()))
     prev.sort(key=relevance_key)  # sort is stable, so previous sort by date should be kept
 
     exact = None
-    for refform in prev:
-        if close_enough_referee_match(refform.reference_info.referee, ref.referee):
-            exact = refform.reference_info
+    for reference in prev:
+        if close_enough_referee_match(reference.referee, referee):
+            exact = reference
             break
-    ref.previous_reference = exact
-    ref.possible_previous_references = [] if exact else [rf.reference_info for rf in prev]
+    referee.previous_reference = exact
+    referee.possible_previous_references = [] if exact else prev
 
 
 @staff_member_required
@@ -349,8 +359,8 @@ def add_previous_references(ref):
 def manage_references(request, year=None, number=None):
     c = {}
 
-    # If ref_id is set, we just want to update part of the page.
-    ref_id = request.GET.get('ref_id')
+    # If referee_id is set, we just want to update part of the page.
+    referee_id = request.GET.get('referee_id')
     officer = None
     officer_id = request.GET.get('officer_id')
     if officer_id is not None:
@@ -363,45 +373,45 @@ def manage_references(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     c['camp'] = camp
 
-    if ref_id is None:
+    if referee_id is None:
         apps = applications_for_camp(camp, officer_ids=[officer_id] if officer is not None else None)
         app_ids = [app.id for app in apps]
-        # force creation of Reference objects.
-        if Reference.objects.filter(application__in=app_ids).count() < len(apps) * 2:
-            [a.references for a in apps]
-
-        refinfo = (Reference.objects
-                   .filter(application__in=app_ids)
-                   .order_by('application__officer__first_name',
-                             'application__officer__last_name',
-                             'referee_number')
-                   )
+        referees = (Referee.objects
+                    .filter(application__in=app_ids)
+                    .order_by('application__officer__first_name',
+                              'application__officer__last_name',
+                              'referee_number')
+                    )
     else:
-        refinfo = Reference.objects.filter(pk=ref_id).order_by()
+        referees = Referee.objects.filter(pk=referee_id).order_by()
 
-    refinfo = (refinfo
-               .prefetch_related('actions')
-               .select_related('application', 'application__officer'))
+    referees = (referees
+                .prefetch_related(
+                    Prefetch('actions',
+                             queryset=ReferenceAction.objects.select_related('user')))
+                .select_related('reference',
+                                'application',
+                                'application__officer'))
 
-    all_ref = list(refinfo)
+    all_referees = list(referees)
     if 'ref_email' in request.GET:
         ref_email = request.GET['ref_email']
         c['ref_email_search'] = ref_email
-        all_ref = [r for r in all_ref if r.referee.email == ref_email]
+        all_referees = [r for r in all_referees if r.email.lower() == ref_email.lower()]
     else:
         ref_email = None
 
-    received = [r for r in all_ref if r.received]
-    requested = [r for r in all_ref if not r.received and r.requested]
-    notrequested = [r for r in all_ref if not r.received and not r.requested]
+    received = [r for r in all_referees if r.reference_is_received()]
+    requested = [r for r in all_referees if not r.reference_is_received() and r.reference_was_requested()]
+    notrequested = [r for r in all_referees if not r.reference_is_received() and not r.reference_was_requested()]
 
-    for ref in all_ref:
-        if ref.received:
+    for referee in all_referees:
+        if referee.reference_is_received():
             continue  # Don't need the following
         # decorate each Reference with suggested previous References.
-        add_previous_references(ref)
+        add_previous_references(referee)
 
-    if ref_id is None:
+    if referee_id is None:
         c['notrequested'] = notrequested
         c['requested'] = requested
         c['received'] = received
@@ -409,13 +419,13 @@ def manage_references(request, year=None, number=None):
     else:
         if received:
             c['mode'] = 'received'
-            c['ref'] = received[0]
+            c['referee'] = received[0]
         elif requested:
             c['mode'] = 'requested'
-            c['ref'] = requested[0]
+            c['referee'] = requested[0]
         else:
             c['mode'] = 'notrequested'
-            c['ref'] = notrequested[0]
+            c['referee'] = notrequested[0]
         template_name = 'cciw/officers/manage_reference.html'
 
     return render(request, template_name, c)
@@ -425,16 +435,16 @@ def manage_references(request, year=None, number=None):
 @camp_admin_required  # we don't care which camp they are admin for.
 def officer_history(request, officer_id=None):
     officer = get_object_or_404(User.objects.filter(id=int(officer_id)))
-    reference_pairs = [app.references
-                       for app in (officer.applications.all()
-                                   .prefetch_related('reference_set',
-                                                     'reference_set___reference_form')
-                                   .order_by('-date_submitted'))
-                       ]
+    referee_pairs = [app.referees
+                     for app in (officer.applications.all()
+                                 .prefetch_related('referee_set',
+                                                   'referee_set__reference')
+                                 .order_by('-date_submitted'))
+                     ]
 
     return render(request, "cciw/officers/officer_history.html",
                   {'officer': officer,
-                   'reference_pairs': reference_pairs,
+                   'referee_pairs': referee_pairs,
                    })
 
 
@@ -445,6 +455,7 @@ class SetEmailForm(forms.Form):
     def save(self, referee):
         referee.name = self.cleaned_data['name']
         referee.email = self.cleaned_data['email']
+        referee.save()
 
 
 class SendMessageForm(forms.Form):
@@ -487,12 +498,11 @@ class SendReferenceRequestForm(SendMessageForm):
 def request_reference(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     try:
-        ref_id = int(request.GET.get('ref_id'))
+        referee_id = int(request.GET.get('referee_id'))
     except (ValueError, TypeError):
         raise Http404
-    ref = get_object_or_404(Reference.objects.filter(id=ref_id))
-    app = ref.application
-    referee = ref.referee
+    referee = get_object_or_404(Referee.objects.filter(id=referee_id))
+    app = referee.application
 
     c = {}
 
@@ -504,37 +514,35 @@ def request_reference(request, year=None, number=None):
         emailform = SetEmailForm(request.POST)
         if emailform.is_valid():
             emailform.save(referee)
-            app.save()
             messages.info(request, "Name/e-mail address updated.")
 
     # Work out 'old_referee' or 'known_email_address', and the URL to use in the
     # message.
     update = 'update' in request.GET
     if update:
-        add_previous_references(ref)
+        add_previous_references(referee)
         prev_ref_id = int(request.GET['prev_ref_id'])
-        if ref.previous_reference is not None:
-            # the prev_ref_id must be the same as exact.id by the logic of the
-            # buttons available on the manage_references page. If not true, we
-            # close the page and update the parent page, in case the parent is
-            # out of date.
-            if ref.previous_reference.id != prev_ref_id:
-                return close_window_and_update_ref(ref_id)
+        if referee.previous_reference is not None:
+            if referee.previous_reference.id != prev_ref_id:
+                # the prev_ref_id must be the same as exact.id by the logic of
+                # the buttons available on the manage_references page. If not
+                # true, we close the page and update the parent page, in case
+                # the parent is out of date.
+                return close_window_and_update_referee(referee_id)
             c['known_email_address'] = True
-            prev_ref_form = ref.previous_reference.reference_form
+            prev_reference = referee.previous_reference
         else:
             # Get old referee data
-            prev_refs = [r for r in ref.possible_previous_references if r.id == prev_ref_id]
-            assert len(prev_refs) == 1
-            prev_ref = prev_refs[0]
-            c['old_referee'] = prev_ref.referee
-            prev_ref_form = prev_ref.reference_form
-        url = make_ref_form_url(ref.id, prev_ref_id)
+            prev_references = [r for r in referee.possible_previous_references if r.id == prev_ref_id]
+            assert len(prev_references) == 1
+            prev_reference = prev_references[0]
+            c['old_referee'] = prev_reference.referee
+        url = make_ref_form_url(referee.id, prev_ref_id)
     else:
-        url = make_ref_form_url(ref.id, None)
-        prev_ref_form = None
+        url = make_ref_form_url(referee.id, None)
+        prev_reference = None
 
-    messageform_info = dict(referee=ref.referee,
+    messageform_info = dict(referee=referee,
                             applicant=app.officer,
                             camp=camp,
                             url=url,
@@ -549,37 +557,37 @@ def request_reference(request, year=None, number=None):
             c['show_messageform'] = True
             messageform = SendReferenceRequestForm(request.POST, message_info=messageform_info)
             if messageform.is_valid():
-                send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), ref, request.user, camp)
-                ref.requested = True
-                ref.log_request_made(request.user, timezone.now())
-                ref.save()
-                return close_window_and_update_ref(ref_id)
+                send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), referee, request.user, camp)
+                referee.log_request_made(request.user, timezone.now())
+                return close_window_and_update_referee(referee_id)
         elif 'save' in request.POST:
             c['show_editreferenceform'] = True
-            editreferenceform = AdminReferenceFormForm(request.POST, instance=ref.reference_form)
+            reference = referee.reference if hasattr(referee, 'reference') else None
+            editreferenceform = AdminReferenceForm(request.POST, instance=reference)
             if editreferenceform.is_valid():
-                editreferenceform.save(ref, user=request.user)
-                return close_window_and_update_ref(ref_id)
+                editreferenceform.save(referee, user=request.user)
+                return close_window_and_update_referee(referee_id)
         elif 'cancel' in request.POST:
             return close_window_response()
 
     if emailform is None:
-        emailform = SetEmailForm(initial={'email': ref.referee.email,
-                                          'name': ref.referee.name,
+        emailform = SetEmailForm(initial={'email': referee.email,
+                                          'name': referee.name,
                                           })
     if messageform is None:
         messageform = SendReferenceRequestForm(message_info=messageform_info)
 
     if editreferenceform is None:
-        editreferenceform = get_initial_reference_form_form(ref.reference_form,
-                                                            ref, prev_ref_form,
-                                                            AdminReferenceFormForm)
+        reference = referee.reference if hasattr(referee, 'reference') else None
+        editreferenceform = get_initial_reference_form(reference,
+                                                       referee, prev_reference,
+                                                       AdminReferenceForm)
 
-    if not is_valid_email(ref.referee.email.strip()):
+    if not is_valid_email(referee.email.strip()):
         c['bad_email'] = True
     c['is_popup'] = True
-    c['already_requested'] = ref.requested
-    c['referee'] = ref.referee
+    c['already_requested'] = referee.reference_was_requested()
+    c['referee'] = referee
     c['app'] = app
     c['is_update'] = update
     c['emailform'] = emailform
@@ -599,15 +607,15 @@ class SendNagByOfficerForm(SendMessageForm):
 def nag_by_officer(request, year=None, number=None):
     camp = _get_camp_or_404(year, number)
     try:
-        ref_id = int(request.GET.get('ref_id'))
+        referee_id = int(request.GET.get('referee_id'))
     except (ValueError, TypeError):
         raise Http404
-    ref = get_object_or_404(Reference.objects.filter(id=ref_id))
-    app = ref.application
+    referee = get_object_or_404(Referee.objects.filter(id=referee_id))
+    app = referee.application
     officer = app.officer
 
     c = {}
-    messageform_info = dict(referee=ref.referee,
+    messageform_info = dict(referee=referee,
                             officer=officer,
                             sender=request.user,
                             camp=camp)
@@ -618,16 +626,16 @@ def nag_by_officer(request, year=None, number=None):
             # It's impossible for the form to be invalid, so assume valid
             messageform.is_valid()
             send_nag_by_officer(wordwrap(messageform.cleaned_data['message'], 70),
-                                officer, ref, request.user)
-            ref.log_nag_made(request.user, timezone.now())
-            return close_window_and_update_ref(ref_id)
+                                officer, referee, request.user)
+            referee.log_nag_made(request.user, timezone.now())
+            return close_window_and_update_referee(referee_id)
         else:
             # cancel
             return close_window_response()
 
     messageform = SendNagByOfficerForm(message_info=messageform_info)
 
-    c['referee'] = ref.referee
+    c['referee'] = referee
     c['app'] = app
     c['officer'] = officer
     c['messageform'] = messageform
@@ -635,9 +643,9 @@ def nag_by_officer(request, year=None, number=None):
     return render(request, 'cciw/officers/nag_by_officer.html', c)
 
 
-class ReferenceFormForm(forms.ModelForm):
+class ReferenceForm(forms.ModelForm):
     class Meta:
-        model = ReferenceForm
+        model = Reference
         fields = ('referee_name',
                   'how_long_known',
                   'capacity_known',
@@ -649,7 +657,7 @@ class ReferenceFormForm(forms.ModelForm):
                   'comments')
 
     def __init__(self, *args, **kwargs):
-        super(ReferenceFormForm, self).__init__(*args, **kwargs)
+        super(ReferenceForm, self).__init__(*args, **kwargs)
         reference_contact_people = get_reference_contact_people()
         if reference_contact_people:
             contact_message = (" If you would prefer to discuss your concerns on the telephone "
@@ -659,28 +667,24 @@ class ReferenceFormForm(forms.ModelForm):
                                            for person in reference_contact_people))
             self.fields['concerns'].label += contact_message
 
-    def save(self, ref, user=None):
-        obj = super(ReferenceFormForm, self).save(commit=False)
-        obj.reference_info = ref
+    def save(self, referee, user=None):
+        obj = super(ReferenceForm, self).save(commit=False)
+        obj.referee = referee
         obj.date_created = date.today()
         obj.save()
-        self.log_reference_received(ref, user=user)
+        self.log_reference_received(referee, user=user)
         self.send_emails(obj)
 
-    def log_reference_received(self, ref, user=None):
-        ref.received = True
-        ref.log_reference_received(timezone.now())
-        ref.save()
+    def log_reference_received(self, referee, user=None):
+        referee.log_reference_received(timezone.now())
 
-    def send_emails(self, reference_form):
-        send_leaders_reference_email(reference_form)
+    def send_emails(self, reference):
+        send_leaders_reference_email(reference)
 
 
-class AdminReferenceFormForm(ReferenceFormForm):
-    def log_reference_received(self, ref, user=None):
-        ref.received = True
-        ref.log_reference_filled_in(user, timezone.now())
-        ref.save()
+class AdminReferenceForm(ReferenceForm):
+    def log_reference_received(self, referee, user=None):
+        referee.log_reference_filled_in(user, timezone.now())
 
 
 normal_textarea = forms.Textarea(attrs={'cols': 80, 'rows': 10})
@@ -697,81 +701,73 @@ def fix_ref_form(form_class):
     form_class.base_fields['comments'].widget = normal_textarea
 
 
-fix_ref_form(ReferenceFormForm)
-fix_ref_form(AdminReferenceFormForm)
+fix_ref_form(ReferenceForm)
+fix_ref_form(AdminReferenceForm)
 
 
-def initial_reference_form_data(ref, prev_ref_form):
+def initial_reference_form_data(referee, prev_reference):
     """
-    Return the initial data to be used for ReferenceFormForm, given the current
-    Reference objects and the ReferenceForm object with data to be copied.
+    Return the initial data to be used for Reference, given the current
+    Referee object and the Reference object with data to be copied.
     """
     retval = {}
-    if prev_ref_form is not None:
+    if prev_reference is not None:
         # Copy data over
-        for f in ReferenceFormForm._meta.fields:
-            retval[f] = getattr(prev_ref_form, f)
-    retval['referee_name'] = ref.referee.name
-    retval.pop('date_created', None)
+        for f in Reference._meta.fields:
+            fname = f.attname
+            if fname not in ['id', 'date_created']:
+                retval[fname] = getattr(prev_reference, fname)
+    retval['referee_name'] = referee.name
     return retval
 
 
-def empty_reference(ref_form):
-    return ref_form.how_long_known.strip() == ""
-
-
-def create_reference_form(request, ref_id="", prev_ref_id="", hash=""):
+def create_reference_form(request, referee_id="", prev_ref_id="", hash=""):
     """
-    View for allowing referee to submit reference (create the ReferenceForm object)
+    View for allowing referee to submit reference (create the Reference object)
     """
     c = {}
-    if hash != make_ref_form_url_hash(ref_id, prev_ref_id):
+    if hash != make_ref_form_url_hash(referee_id, prev_ref_id):
         c['incorrect_url'] = True
     else:
-        ref = get_object_or_404(Reference.objects.filter(id=int(ref_id)))
-        prev_ref = None
+        referee = get_object_or_404(Referee.objects.filter(id=int(referee_id)))
+        prev_reference = None
         if prev_ref_id != "":
-            prev_ref = get_object_or_404(Reference.objects.filter(id=int(prev_ref_id)))
+            prev_reference = get_object_or_404(Reference.objects.filter(id=int(prev_ref_id)))
 
-        if prev_ref is not None:
-            prev_ref_form = prev_ref.reference_form
+        if prev_reference is not None:
             c['update'] = True
-            c['last_form_date'] = prev_ref_form.date_created
-        else:
-            prev_ref_form = None
+            c['last_form_date'] = prev_reference.date_created if not prev_reference.inaccurate else None
+            c['last_empty'] = empty_reference(prev_reference)
 
-        ref_form = ref.reference_form
+        reference = referee.reference if hasattr(referee, 'reference') else None
 
-        if ref_form is not None and ref.received and not empty_reference(ref_form):
-            # It's possible, if an admin has done 'Manage reference manually'
-            # and clicked "Create/edit reference form" but then cancelled, that
-            # the ReferenceForm will exist but be empty.  So we check both that
-            # it exists and that the 'ref.received' is True, otherwise a referee
-            # will be unable to fill out the form.
+        if reference is not None and not empty_reference(reference):
+            # It's possible that empty references have been created in the past,
+            # so ensure that these don't stop people filling out form.
             c['already_submitted'] = True
         else:
             if request.method == 'POST':
-                form = ReferenceFormForm(request.POST, instance=ref_form)
+                form = ReferenceForm(request.POST, instance=reference)
                 if form.is_valid():
-                    form.save(ref)
+                    form.save(referee)
                     return HttpResponseRedirect(reverse('cciw-officers-create_reference_thanks'))
             else:
-                form = get_initial_reference_form_form(ref_form, ref, prev_ref_form, ReferenceFormForm)
+                form = get_initial_reference_form(reference, referee, prev_reference, ReferenceForm)
             c['form'] = form
-        c['officer'] = ref.application.officer
+        c['officer'] = referee.application.officer
     return render(request, 'cciw/officers/create_reference.html', c)
 
 
-def get_initial_reference_form_form(ref_form, reference_info, prev_ref_form, form_class):
-    initial_data = initial_reference_form_data(reference_info, prev_ref_form)
-    if ref_form is not None:
-        # For the case where a ReferenceForm has been created (accidentally)
+def get_initial_reference_form(reference, referee, prev_reference, form_class):
+    initial_data = initial_reference_form_data(referee, prev_reference)
+    if reference is not None:
+        # For the case where a Reference has been created (accidentally)
         # by an admin, we need to re-use it, rather than create another.
-        if empty_reference(ref_form):
+        if empty_reference(reference):
             # Need to fill data
             for k, v in initial_data.items():
-                setattr(ref_form, k, v)
-        form = form_class(instance=ref_form)
+                setattr(reference, k, v)
+        form = form_class(instance=reference)
     else:
         form = form_class(initial=initial_data)
     return form
@@ -783,12 +779,12 @@ def create_reference_thanks(request):
 
 @staff_member_required
 @camp_admin_required
-def view_reference(request, ref_id=None):
-    ref = get_object_or_404(Reference.objects.filter(id=ref_id))
+def view_reference(request, reference_id=None):
+    reference = get_object_or_404(Reference.objects.filter(id=reference_id))
     c = {}
-    c['ref'] = ref
-    c['officer'] = ref.application.officer
-    c['referee'] = ref.referee
+    c['reference'] = reference
+    c['officer'] = reference.referee.application.officer
+    c['referee'] = reference.referee
     c['is_popup'] = True
 
     return render(request, "cciw/officers/view_reference_form.html", c)

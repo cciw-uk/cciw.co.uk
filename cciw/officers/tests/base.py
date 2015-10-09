@@ -4,10 +4,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django_dynamic_fixture import G
+from django.utils import timezone
 
 from cciw.auth import BOOKING_SECRETARY_GROUP_NAME, LEADER_GROUP_NAME
 from cciw.cciwmain.tests.base import BasicSetupMixin
-from cciw.officers.models import Application, ReferenceForm
+from cciw.officers.models import Application, Reference
 
 User = get_user_model()
 
@@ -230,21 +231,28 @@ class ApplicationSetupMixin(ExtraOfficersSetupMixin):
                               full_maiden_name="",
                               full_name="Joe Winston Bloggs",
                               illness_details="",
-                              referee1_address="Referee 1 Address\r\nLine 2",
-                              referee1_email="referee1@email.co.uk",
-                              referee1_mobile="",
-                              referee1_name="Referee1 Name",
-                              referee1_tel="01222 666666",
-                              referee2_address="1267a Somewhere Road\r\nThereyougo",
-                              referee2_email="referee2@email.co.uk",
-                              referee2_mobile="",
-                              referee2_name="Mr Referee2 Name",
-                              referee2_tel="01234 567890",
                               relevant_illness=False,
                               youth_experience="Lots",
                               youth_work_declined=False,
                               youth_work_declined_details="",
                               )
+        self.application1.referee_set.create(
+            referee_number=1,
+            address="Referee 1 Address\r\nLine 2",
+            email="referee1@email.co.uk",
+            mobile="",
+            name="Referee1 Name",
+            tel="01222 666666",
+        )
+        self.application1.referee_set.create(
+            referee_number=2,
+            address="1267a Somewhere Road\r\nThereyougo",
+            email="referee2@email.co.uk",
+            mobile="",
+            name="Mr Referee2 Name",
+            tel="01234 567890",
+        )
+
         self.application2 = G(Application,
                               officer=self.officer2,
                               address2_address="123 abc",
@@ -288,21 +296,28 @@ class ApplicationSetupMixin(ExtraOfficersSetupMixin):
                               full_maiden_name="",
                               full_name="Peter Smith",
                               illness_details="",
-                              referee1_address="Referee 3 Address\r\nLine 2",
-                              referee1_email="referee3@email.co.uk",
-                              referee1_mobile="",
-                              referee1_name="Mr Referee3 Name",
-                              referee1_tel="01222 666666",
-                              referee2_address="Referee 4 adddress",
-                              referee2_email="referee4@email.co.uk",
-                              referee2_mobile="",
-                              referee2_name="Mr Referee4 Name",
-                              referee2_tel="01234 567890",
                               relevant_illness=False,
                               youth_experience="Lots",
                               youth_work_declined=False,
                               youth_work_declined_details="",
                               )
+
+        self.application2.referee_set.create(
+            referee_number=1,
+            address="Referee 3 Address\r\nLine 2",
+            email="referee3@email.co.uk",
+            mobile="",
+            name="Mr Referee3 Name",
+            tel="01222 666666",
+        )
+        self.application2.referee_set.create(
+            referee_number=2,
+            address="Referee 4 adddress",
+            email="referee4@email.co.uk",
+            mobile="",
+            name="Mr Referee4 Name",
+            tel="01234 567890",
+        )
 
         self.application3 = G(Application,
                               officer=self.officer3,
@@ -347,62 +362,68 @@ class ApplicationSetupMixin(ExtraOfficersSetupMixin):
                               full_maiden_name="",
                               full_name="Fred Jones",
                               illness_details="",
-                              referee1_address="Referee 5 Address\r\nLine 2",
-                              referee1_email="referee5@email.co.uk",
-                              referee1_mobile="",
-                              referee1_name="Mr Refere5 Name",
-                              referee1_tel="01222 666666",
-                              referee2_address="Referee 6 adddress",
-                              referee2_email="",
-                              referee2_mobile="",
-                              referee2_name="Mr Referee6 Name",
-                              referee2_tel="01234 567890",
                               relevant_illness=False,
                               youth_experience="Lots",
                               youth_work_declined=False,
                               youth_work_declined_details="",
                               )
 
+        self.application3.referee_set.create(
+            referee_number=1,
+            address="Referee 5 Address\r\nLine 2",
+            email="referee5@email.co.uk",
+            mobile="",
+            name="Mr Refere5 Name",
+            tel="01222 666666",
+        ),
+        self.application3.referee_set.create(
+            referee_number=2,
+            address="Referee 6 adddress",
+            email="",
+            mobile="",
+            name="Mr Referee6 Name",
+            tel="01234 567890",
+        )
+
+        # Application 4 is like 1 but a year later
+
         self.application4 = Application.objects.get(id=self.application1.id)
         self.application4.id = None  # force save as new
         self.application4.date_submitted += timedelta(days=365)
         self.application4.save()
 
+        # Dupe referee info:
+        for r in self.application1.referees:
+            self.application4.referee_set.create(
+                referee_number=r.referee_number,
+                name=r.name,
+                email=r.email)
 
-class ReferenceSetupMixin(ApplicationSetupMixin):
+
+class ReferenceHelperMixin(object):
+
+    def create_complete_reference(self, referee):
+        return G(Reference,
+                 referee=referee,
+                 referee_name="Referee1 Name",
+                 how_long_known="A long time",
+                 capacity_known="Pastor",
+                 known_offences=False,
+                 capability_children="Wonderful",
+                 character="Almost sinless",
+                 concerns="Perhaps too good for camp",
+                 comments="",
+                 date_created=datetime(2000, 2, 20),
+                 )
+
+
+class ReferenceSetupMixin(ReferenceHelperMixin, ApplicationSetupMixin):
 
     def setUp(self):
         super(ReferenceSetupMixin, self).setUp()
-
-        self.reference1_1 = self.application1.reference_set.create(
-            referee_number=1,
-            received=True,
-            requested=True
-        )
-        self.referenceform_1_1 = G(ReferenceForm,
-                                   reference_info=self.reference1_1,
-                                   referee_name="Referee1 Name",
-                                   how_long_known="A long time",
-                                   capacity_known="Pastor",
-                                   known_offences=False,
-                                   capability_children="Wonderful",
-                                   character="Almost sinless",
-                                   concerns="Perhaps too good for camp",
-                                   comments="",
-                                   date_created=datetime(2000, 2, 20),
-                                   )
-        self.reference1_2 = self.application1.reference_set.create(
-            referee_number=2,
-            received=False,
-            requested=True,
-            comments="Left message on phone",
-        )
-
-        self.reference2_2 = self.application2.reference_set.create(
-            referee_number=2,
-            received=False,
-            requested=True,
-        )
+        self.reference1_1 = self.create_complete_reference(self.application1.referees[0])
+        self.application1.referees[1].log_request_made(None, timezone.now())
+        self.application2.referees[1].log_request_made(None, timezone.now())
 
 
 class CurrentCampsMixin(object):

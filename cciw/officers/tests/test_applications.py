@@ -15,38 +15,11 @@ User = get_user_model()
 
 class ApplicationModel(ApplicationSetupMixin, TestCase):
 
-    def test_referees_get(self):
-        """Tests the Application.referees getter utility"""
-        app = Application.objects.filter(officer__username=OFFICER_USERNAME)[0]
-        self.assertEqual(app.referees[0].name, app.referee1_name)
-        self.assertEqual(app.referees[1].name, app.referee2_name)
-        self.assertEqual(app.referees[0].address, app.referee1_address)
-        self.assertEqual(app.referees[0].tel, app.referee1_tel)
-        self.assertEqual(app.referees[0].mobile, app.referee1_mobile)
-        self.assertEqual(app.referees[0].email, app.referee1_email)
-
-    def test_referees_get_badattr(self):
-        app = Application.objects.filter(officer__username=OFFICER_USERNAME)[0]
-        self.assertRaises(AttributeError, lambda: app.references[0].badattr)
-
-    def test_referees_set(self):
-        app = Application.objects.filter(officer__username=OFFICER_USERNAME)[0]
-        app.referees[0].name = "A new name"
-        self.assertEqual(app.referee1_name, "A new name")
-
-    def test_referees_set_extra_attrs(self):
-        """Tests that we can set and retrieve additional attributes,
-        not just ones defined as part of Application model"""
-
-        app = Application.objects.filter(officer__username=OFFICER_USERNAME)[0]
-        app.referees[0].some_extra_attr = "Hello"
-        self.assertEqual(app.referees[0].some_extra_attr, "Hello")
-
-    def test_references(self):
+    def test_referees(self):
         for appid in [1, 2, 3]:
             app = Application.objects.get(id=appid)
-            self.assertEqual(app.references[0], app.reference_set.get(referee_number=1))
-            self.assertEqual(app.references[1], app.reference_set.get(referee_number=2))
+            self.assertEqual(app.referees[0], app.referee_set.get(referee_number=1))
+            self.assertEqual(app.referees[1], app.referee_set.get(referee_number=2))
 
 
 class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, TestCase):
@@ -90,11 +63,20 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, TestCase):
         self.assertContains(resp, self._edit_button)
 
     def test_create(self):
-        self.user.applications.create(finished=True,
-                                      date_submitted=date.today() - timedelta(365))
+        app = self.user.applications.create(finished=True,
+                                            full_name="My Full Name",
+                                            date_submitted=date.today() - timedelta(365))
+        ref, _ = app.referee_set.get_or_create(referee_number=1)
+        ref.name = "Last Years Referee"
+        ref.save()
         resp = self.client.post(self.url, {'new': 'Create'})
         self.assertEqual(302, resp.status_code)
         self.assertEqual(len(self.user.applications.all()), 2)
+        # New should be a copy of old:
+        for a in self.user.applications.all():
+            self.assertEqual(a.full_name, app.full_name)
+            self.assertEqual(a.referee_set.get(referee_number=1).name,
+                             app.referee_set.get(referee_number=1).name)
 
     def test_create_when_already_done(self):
         # Should not create a new application if a recent one is submitted
@@ -124,6 +106,7 @@ class ApplicationUtils(BasicSetupMixin, TestCase):
         past_camp_start = future_camp_start - timedelta(30 * 11)
 
         site = Site.objects.get(id=1)
+        Camp.objects.all().delete()
         c1 = Camp.objects.create(year=past_camp_start.year, number=5,
                                  start_date=past_camp_start,
                                  end_date=past_camp_start + timedelta(7),

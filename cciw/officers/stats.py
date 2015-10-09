@@ -5,7 +5,7 @@ from django.conf import settings
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.applications import applications_for_camp
-from cciw.officers.models import ReferenceForm, CRBApplication
+from cciw.officers.models import Reference, CRBApplication
 from cciw.utils.stats import accumulate_dates
 
 
@@ -27,8 +27,8 @@ def get_camp_officer_stats(camp):
     officer_dates = [o[1] for o in invited_officers]
     app_ids = [a[0] for a in application_forms]
     app_dates = [a[1] for a in application_forms]
-    ref_dates = list(ReferenceForm.objects
-                     .filter(reference_info__application__in=app_ids,
+    ref_dates = list(Reference.objects
+                     .filter(referee__application__in=app_ids,
                              date_created__lte=camp.start_date)
                      .order_by('date_created')
                      .values_list('date_created', flat=True))
@@ -95,8 +95,8 @@ def get_camp_officer_stats_trend(start_year, end_year):
             officer_count += len(officer_ids)
             application_form_ids = list(applications_for_camp(camp).values_list('id', flat=True))
             application_count += len(application_form_ids)
-            reference_in_time_count += ReferenceForm.objects.filter(
-                reference_info__application__in=application_form_ids,
+            reference_in_time_count += Reference.objects.filter(
+                referee_info__application__in=application_form_ids,
                 date_created__lte=camp.start_date
             ).count()
             crb_in_time_count += CRBApplication.objects.filter(

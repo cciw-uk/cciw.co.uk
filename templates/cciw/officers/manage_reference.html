@@ -1,16 +1,16 @@
-<div id="officerref{{ ref.id }}" class="referencesection">
+<div id="officerref{{ referee.id }}" class="referencesection">
   <h3 class="referencestart">
-    {{ ref.application.officer.first_name }} {{ ref.application.officer.last_name }}
-    &nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_history' officer_id=ref.application.officer.id %}"
+    {{ referee.application.officer.first_name }} {{ referee.application.officer.last_name }}
+    &nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_history' officer_id=referee.application.officer.id %}"
         target="_blank"
        >full history</a>
   </h3>
   <div class="referenceactions">
-    {% with actions=ref.actions.all %}
+    {% with actions=referee.actions.all %}
       {% if actions %}
         <h4>History</h4>
         <table>
-          {% for action in ref.actions.all %}
+          {% for action in referee.actions.all %}
             <tr>
               <td>{{ action.created|date:"Y-m-d H:i" }}</td>
               <td>{{ action.created|timesince }} ago</td>
@@ -22,17 +22,17 @@
       {% endif %}
     {% endwith %}
   </div>
-  <h4 class="refereename">From: {{ ref.referee.name }}</h4>
+  <h4 class="refereename">From: {{ referee.name }}</h4>
 
   <div class="referencemode" style="display:none;">{{ mode }}</div>
   <div class="reference">
-    {% if ref.received %}
+    {% if referee.reference_is_received %}
       <div class="good"><strong>Received</strong></div>
     {% else %}
-      {% if ref.requested %}
+      {% if referee.reference_was_requested %}
         <div class="ok"><strong>Requested</strong></div>
-        {% if ref.last_requested %}
-          <div>Last requested: <b> {{ ref.last_requested|timesince }} ago</b></div>
+        {% if referee.last_requested %}
+          <div>Last requested: <b> {{ referee.last_requested|timesince }} ago</b></div>
         {% endif %}
       {% else %}
         <div><strong>Not requested</strong></div>
@@ -40,52 +40,52 @@
     {% endif %}
 
     {% if mode == "received" %}
-      <p><a href="{% url 'cciw-officers-view_reference' ref_id=ref.id %}" target="_blank">View reference from {{ ref.referee.name }}</a>
+      <p><a href="{% url 'cciw-officers-view_reference' reference_id=referee.reference.id %}" target="_blank">View reference from {{ referee.name }}</a>
       </p>
     {% else %}
       <p>Ask for reference{% if mode == "requested" %} again{% endif %} - choose from the options:</p>
       <ul>
         {% if mode == "requested" %}
-          <li>Ask {{ ref.application.officer.first_name }} to prompt their referee:
+          <li>Ask {{ referee.application.officer.first_name }} to prompt their referee:
             <span class="referencebutton">
-              <button onclick="nagByOfficer({{ ref.id }});">Get {{ ref.application.officer.first_name }} to do the nagging</button>
+              <button onclick="nagByOfficer({{ referee.id }});">Get {{ referee.application.officer.first_name }} to do the nagging</button>
             </span>
           </li>
         {% endif %}
 
-        {% if ref.previous_reference %}
-          <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
-            has done a reference for {{ ref.application.officer.first_name}} before, so:
+        {% if referee.previous_reference %}
+          <li>{{ referee.name }} {% if referee.email %}&lt;{{ referee.email }}&gt;{% endif %}
+            has done a reference for {{ referee.application.officer.first_name}} before, so:
             <span class="referencebutton">
-              <button onclick="requestUpdate({{ ref.id }}, {{ ref.previous_reference.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button>
+              <button onclick="requestUpdate({{ referee.id }}, {{ referee.previous_reference.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button>
             </span>
           </li>
         {% endif %}
 
-        {% if ref.possible_previous_references %}
+        {% if referee.possible_previous_references %}
           <li>
-            There are no exact matches for <b>{{ ref.referee.name }} &lt;{{ ref.referee.email }}&gt;</b><br/>
+            There are no exact matches for <b>{{ referee.name }} &lt;{{ referee.email }}&gt;</b><br/>
             but if one of the previous references
             submitted for this officer is actually by the same person, please select:<br />
-            <select  name="ref_opts_{{ ref.id }}" id="id_ref_opts_{{ ref.id }}">
-              {% for opt in ref.possible_previous_references %}
-                <option value="{{ opt.id }}"
+            <select name="referee_opts_{{ referee.id }}" id="id_referee_opts_{{ referee.id }}">
+              {% for reference in referee.possible_previous_references %}
+                <option value="{{ reference.id }}"
                         {% if forloop.first %}selected="selected"{% endif %}>
-                  {{ opt.referee.name }} &lt;{{ opt.referee.email }}&gt;
-                  ({{ opt.application.date_submitted|date:"Y" }})
+                  {{ reference.referee.name }} &lt;{{ reference.referee.email }}&gt;
+                  ({{ reference.referee.application.date_submitted|date:"Y" }})
                 </option>
               {% endfor %}
             </select>
             <span class="referencebutton"><button
-    onclick="requestUpdateCustom({{ ref.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button></span>
+    onclick="requestUpdateCustom({{ referee.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button></span>
           </li>
         {% endif %}
 
-        {% if not ref.previous_reference %}
-          <li>{{ ref.referee.name }} {% if ref.referee.email %}&lt;{{ ref.referee.email }}&gt;{% endif %}
-            has not done an online reference for {{ ref.application.officer.first_name}} before, so:
+        {% if not referee.previous_reference %}
+          <li>{{ referee.name }} {% if referee.email %}&lt;{{ referee.email }}&gt;{% endif %}
+            has not done an online reference for {{ referee.application.officer.first_name}} before, so:
             <span class="referencebutton"><button
-    onclick="requestReference({{ ref.id }});">Request reference{% if mode == "requested" %} (again){% endif %}</button></span>
+    onclick="requestReference({{ referee.id }});">Request reference{% if mode == "requested" %} (again){% endif %}</button></span>
           </li>
         {% endif %}
       </ul>
@@ -93,5 +93,5 @@
     {% endif %}
 
   </div>
-  <p>If you need to amend details of the referee, <a href="/admin/officers/application/{{ ref.application_id }}/" target="_blank">view/edit officer's application form</a></p>
+  <p>If you need to amend details of the referee, <a href="/admin/officers/application/{{ referee.application_id }}/" target="_blank">view/edit officer's application form</a></p>
 </div>

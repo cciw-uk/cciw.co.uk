@@ -9,7 +9,7 @@ from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers.create import create_officer
 from cciw.officers.models import Application
-from cciw.officers.tests.base import ApplicationSetupMixin
+from cciw.officers.tests.base import ApplicationSetupMixin, ReferenceHelperMixin
 from cciw.officers.utils import officer_data_to_spreadsheet, camp_serious_slacker_list
 from cciw.utils.spreadsheet import ExcelFormatter
 
@@ -83,7 +83,7 @@ class TestExport(ApplicationSetupMixin, TestCase):
         self.assertTrue(app.address_firstline in wksh.col_values(4))
 
 
-class TestSlackers(BasicSetupMixin, TestCase):
+class TestSlackers(BasicSetupMixin, ReferenceHelperMixin, TestCase):
 
     def test_serious_slackers(self):
         camp1 = self.default_camp_1
@@ -107,11 +107,8 @@ class TestSlackers(BasicSetupMixin, TestCase):
         )
 
         # Officer 1 submitted references, but officer 2 did not
-        ref1, ref2 = app.references
-        ref1.received = True
-        ref1.save()
-        ref2.received = True
-        ref2.save()
+        self.create_complete_reference(app.referees[0])
+        self.create_complete_reference(app.referees[1])
 
         # Officer 1 got a CRB done, but officer 2 did not
         officer1.crb_applications.create(

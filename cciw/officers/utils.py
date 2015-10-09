@@ -58,15 +58,14 @@ def camp_serious_slacker_list(camp):
                             date_submitted__lte=latest_camp.start_date))
 
     all_received_refs = list(Reference.objects
-                             .filter(application__in=all_apps,
-                                     received=True)
-                             )
+                             .select_related('referee')
+                             .filter(referee__application__in=all_apps))
 
     all_crbs = list(CRBApplication.objects.filter(officer__in=officers))
 
     received_ref_dict = defaultdict(list)
     for ref in all_received_refs:
-        received_ref_dict[ref.application_id].append(ref)
+        received_ref_dict[ref.referee.application_id].append(ref)
 
     # For each officer, we need to build a list of the years when they were on
     # camp but failed to submit an application form.

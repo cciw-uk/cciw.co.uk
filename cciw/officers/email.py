@@ -8,7 +8,7 @@ from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference, camps_for_application
 from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
-from cciw.officers.references import reference_form_to_text
+from cciw.officers.references import reference_to_text
 from django.conf import settings
 from django.contrib import messages
 from django.core import signing
@@ -193,43 +193,43 @@ This was an automated response by the CCIW website.
               [user_email, application.address_email], fail_silently=True)
 
 
-def make_ref_form_url_hash(ref_id, prev_ref_id):
-    return salted_hmac("cciw.officers.create_reference_form", "%s:%s" % (ref_id, prev_ref_id)).hexdigest()[::2]
+def make_ref_form_url_hash(referee_id, prev_ref_id):
+    return salted_hmac("cciw.officers.create_reference_form", "%s:%s" % (referee_id, prev_ref_id)).hexdigest()[::2]
 
 
-def make_ref_form_url(ref_id, prev_ref_id):
+def make_ref_form_url(referee_id, prev_ref_id):
     if prev_ref_id is None:
         prev_ref_id = ""
     return "https://%s%s" % (common.get_current_domain(),
                              reverse('cciw-officers-create_reference_form',
-                                     kwargs=dict(ref_id=ref_id,
+                                     kwargs=dict(referee_id=referee_id,
                                                  prev_ref_id=prev_ref_id,
-                                                 hash=make_ref_form_url_hash(ref_id, prev_ref_id))))
+                                                 hash=make_ref_form_url_hash(referee_id, prev_ref_id))))
 
 
-def send_reference_request_email(message, ref, sending_officer, camp):
-    officer = ref.application.officer
+def send_reference_request_email(message, referee, sending_officer, camp):
+    officer = referee.application.officer
     EmailMessage(subject="Reference for %s %s" % (officer.first_name, officer.last_name),
                  body=message,
                  from_email=settings.REFERENCES_EMAIL,
-                 to=[ref.referee.email],
+                 to=[referee.email],
                  headers={'Reply-To': sending_officer.email,
                           'X-CCIW-Camp': '{0}-{1}'.format(camp.year, camp.number),
                           'X-CCIW-Action': 'ReferenceRequest',
                           }).send()
 
 
-def send_leaders_reference_email(refform):
+def send_leaders_reference_email(reference):
     """
     Send the leaders/admins an email with contents of submitted reference form.
     Fails silently.
     """
-    ref = refform.reference_info
-    app = ref.application
+    referee = reference.referee
+    app = referee.application
     officer = app.officer
 
-    refform_text = reference_form_to_text(refform)
-    subject = "CCIW reference form for %s %s from %s" % (officer.first_name, officer.last_name, ref.referee.name)
+    refform_text = reference_to_text(reference)
+    subject = "CCIW reference form for %s %s from %s" % (officer.first_name, officer.last_name, referee.name)
     body = ("""The following reference form has been submitted via the
 CCIW website for officer %s %s.
 
@@ -243,8 +243,8 @@ CCIW website for officer %s %s.
                   leader_emails, fail_silently=False)
 
 
-def send_nag_by_officer(message, officer, ref, sending_officer):
-    EmailMessage(subject="Need reference from %s" % ref.referee.name,
+def send_nag_by_officer(message, officer, referee, sending_officer):
+    EmailMessage(subject="Need reference from %s" % referee.name,
                  body=message,
                  from_email=settings.DEFAULT_FROM_EMAIL,
                  to=[officer.email],

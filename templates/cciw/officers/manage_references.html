@@ -10,15 +10,15 @@
                    '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
    }
 
-   function refreshReferenceSection(ref_id) {
+   function refreshReferenceSection(referee_id) {
        jQuery.ajax({
            type: "GET",
-           url: "?ref_id=" + ref_id.toString() + "&" + Math.random().toString(),
+           url: "?referee_id=" + referee_id.toString() + "&" + Math.random().toString(),
            dataType: 'text',
            success: function(data, textStatus, xhr) {
                // Replace existing div and move to correct place,
                // which might be under a different 'mode'
-               var section = jQuery('#officerref' + ref_id.toString());
+               var section = jQuery('#officerref' + referee_id.toString());
                var officerName = section.find("h3.referencestart").text();
                var refereeName = section.find(".refereename").text();
                var mode = jQuery(data).find('div.referencemode').text();
@@ -51,26 +51,26 @@
        });
    }
 
-   function requestReference(ref_id) {
-       requestGeneric('ref_id=' + ref_id.toString());
+   function requestReference(referee_id) {
+       requestGeneric('referee_id=' + referee_id.toString());
    }
 
-   function requestUpdate(ref_id, prev_ref_id) {
-       requestGeneric('ref_id=' + ref_id.toString() + '&update=1&prev_ref_id=' + prev_ref_id.toString());
+   function requestUpdate(referee_id, prev_ref_id) {
+       requestGeneric('referee_id=' + referee_id.toString() + '&update=1&prev_ref_id=' + prev_ref_id.toString());
    }
 
-   function requestUpdateCustom(ref_id) {
-       var s = document.getElementById('id_ref_opts_' + ref_id.toString());
+   function requestUpdateCustom(referee_id) {
+       var s = document.getElementById('id_referee_opts_' + referee_id.toString());
        if (s.selectedIndex == -1) {
            alert("Please select an option");
        } else {
            var val = s.options[s.selectedIndex].value;
-           requestGeneric('ref_id=' + ref_id.toString() + '&update=1&prev_ref_id=' + val);
+           requestGeneric('referee_id=' + referee_id.toString() + '&update=1&prev_ref_id=' + val);
        }
    }
 
-   function nagByOfficer(ref_id) {
-       window.open('{% url "cciw-officers-nag_by_officer" year=camp.year number=camp.number %}?ref_id=' + ref_id.toString(),
+   function nagByOfficer(referee_id) {
+       window.open('{% url "cciw-officers-nag_by_officer" year=camp.year number=camp.number %}?referee_id=' + referee_id.toString(),
                    '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
    }
 
@@ -120,7 +120,7 @@
   <h2>References to be requested</h2>
 
   <div id="notrequestedrefs">
-    {% for ref in notrequested %}
+    {% for referee in notrequested %}
 
       {% with "notrequested" as mode %}
         {% include "cciw/officers/manage_reference.html" %}
@@ -136,7 +136,7 @@
     <h2 class="ok">References requested</h2>
 
     <div id="requestedrefs">
-      {% for ref in requested %}
+      {% for referee in requested %}
 
         {% with "requested" as mode %}
           {% include "cciw/officers/manage_reference.html" %}
@@ -150,7 +150,7 @@
   <h2 class="good">References received</h2>
 
   <div id="receivedrefs">
-    {% for ref in received %}
+    {% for referee in received %}
 
       {% with "received" as mode %}
         {% include "cciw/officers/manage_reference.html" %}

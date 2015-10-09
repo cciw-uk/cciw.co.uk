@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
-from datetime import timedelta, date
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
 from cciw.cciwmain.models import Camp
-from cciw.officers.fields import YyyyMmField, AddressField, RequiredCharField, RequiredDateField, RequiredTextField, RequiredEmailField, RequiredYyyyMmField, RequiredAddressField, RequiredExplicitBooleanField
-from cciw.officers.references import reference_form_info
+from cciw.officers.fields import (AddressField, RequiredAddressField, RequiredCharField, RequiredDateField,
+                                  RequiredEmailField, RequiredExplicitBooleanField, RequiredTextField,
+                                  RequiredYyyyMmField, YyyyMmField)
+from cciw.officers.references import first_letter_cap, reference_present_val
+
+REFEREE_NUMBERS = [1, 2]
+
+REFEREE_DATA_FIELDS = ['name', 'address', 'tel', 'mobile', 'email']
 
 
 class ApplicationManager(models.Manager):
@@ -67,20 +73,6 @@ class Application(models.Model):
     employer2_job = models.CharField("Job description", max_length=60, blank=True)
     employer2_leaving = models.CharField("Reason for leaving", max_length=150, blank=True)
 
-    referee1_name = RequiredCharField("First referee's name", max_length=NAME_LENGTH,
-                                      help_text=REFEREE_NAME_HELP_TEXT)
-    referee1_address = RequiredAddressField('address')
-    referee1_tel = models.CharField('telephone', max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
-    referee1_mobile = models.CharField('mobile', max_length=22, blank=True)
-    referee1_email = models.EmailField('e-mail', blank=True)
-
-    referee2_name = RequiredCharField("Second referee's name", max_length=NAME_LENGTH,
-                                      help_text=REFEREE_NAME_HELP_TEXT)
-    referee2_address = RequiredAddressField('address')
-    referee2_tel = models.CharField('telephone', max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
-    referee2_mobile = models.CharField('mobile', max_length=22, blank=True)
-    referee2_email = models.EmailField('e-mail', blank=True)
-
     crime_declaration = RequiredExplicitBooleanField(
         """Have you ever been charged with or convicted """
         """of a criminal offence or are the subject of criminal """
@@ -115,14 +107,14 @@ class Application(models.Model):
     objects = ApplicationManager()
 
     @property
-    def references(self):
+    def referees(self):
         """A cached version of 2 items that can exist in 'references_set', which
         are created if they don't exist. Read only"""
         try:
-            return self._references_cache
+            return self._referees_cache
         except AttributeError:
-            retval = (self._ref(1), self._ref(2))
-            self._references_cache = retval
+            retval = (self._referee(1), self._referee(2))
+            self._referees_cache = retval
             return retval
 
     @property
@@ -140,14 +132,14 @@ class Application(models.Model):
             submitted = "incomplete"
         return "Application from %s (%s)" % (self.full_name, submitted)
 
-    def _ref(self, num):
+    def _referee(self, num):
         if hasattr(self, '_prefetched_objects_cache'):
-            if 'reference' in self._prefetched_objects_cache:
-                vals = [v for v in self._prefetched_objects_cache['reference']
+            if 'referee' in self._prefetched_objects_cache:
+                vals = [v for v in self._prefetched_objects_cache['referee']
                         if v.referee_number == num]
                 if len(vals) == 1:
                     return vals[0]
-        return self.reference_set.get_or_create(referee_number=num)[0]
+        return self.referee_set.get_or_create(referee_number=num)[0]
 
     class Meta:
         ordering = ('-date_submitted', 'officer__first_name', 'officer__last_name',)
@@ -159,22 +151,18 @@ class Application(models.Model):
                 self.date_submitted > camp.start_date - timedelta(days=365))
 
 
-class ReferenceManager(models.Manager):
-    # manager to reduce number of SQL queries, especially in admin
-    use_for_related_fields = True
-
-    def get_queryset(self):
-        return super(ReferenceManager, self).get_queryset().select_related('application__officer')
-
-
 class Referee(models.Model):
     # Referee applies to one Application only, and has to be soft-matched to
     # subsequent Applications by the same officer, even if the referee is the
     # same, because the officer could put different things in for their name.
-    application = models.ForeignKey(Application, limit_choices_to={'finished': True})
-    referee_number = models.SmallIntegerField("Referee number", choices=[(1, '1'), (2, '2')])
 
-    name = RequiredCharField("First referee's name", max_length=NAME_LENGTH,
+    # This model also acts as an anchor for everything related to requesting
+    # the reference from this referee.
+
+    application = models.ForeignKey(Application, limit_choices_to={'finished': True})
+    referee_number = models.SmallIntegerField("Referee number", choices=[(n, str(n)) for n in REFEREE_NUMBERS])
+
+    name = RequiredCharField("Name", max_length=NAME_LENGTH,
                              help_text=REFEREE_NAME_HELP_TEXT)
     address = RequiredAddressField('address')
     tel = models.CharField('telephone', max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
@@ -184,64 +172,16 @@ class Referee(models.Model):
     def __str__(self):
         return "{0} for {1}".format(self.name, self.application.officer.username)
 
-# =========================== #
-# Reference and ReferenceForm #
-# =========================== #
-#
-# Reference stores minimal info - whether a reference has been requested/received or not.
-# ReferenceForm is what would normally be called the reference.
-#
-# In code, instances of Reference are called things like 'ref' or 'reference_info'
-# Instance of ReferenceForm are called things like 'ref_form'
-
-
-class Reference(models.Model):
-    """
-    Stores metadata about a reference for an officer.
-    """
-    # The actual reference is stored in ReferenceForm model.  This should have
-    # been named ReferenceMeta or something.
-    application = models.ForeignKey(Application, limit_choices_to={'finished': True})
-    referee_number = models.SmallIntegerField("Referee number", choices=[(1, '1'), (2, '2')])
-    requested = models.BooleanField(default=False)
-    received = models.BooleanField(default=False)
-    comments = models.TextField(blank=True)
-
-    objects = ReferenceManager()
-
-    def __str__(self):
-        app = self.application
-        # Due to this being called before object is saved to the
-        # database in admin, self.referee_number can sometimes be a string
-        refnum = int(self.referee_number)
-
-        if refnum not in (1, 2):
-            return "<Reference improperly created>"
-        referee_name = app.referees[refnum - 1].name
-        return "For %s %s | From %s | %s" % (app.officer.first_name,
-                                             app.officer.last_name,
-                                             referee_name,
-                                             app.date_submitted.strftime('%Y-%m-%d'))
-
-    @property
-    def reference_form(self):
-        """
-        Returns the actual reference form data, or None if not available
-        """
-        # A simple wrapper around the OneToOne reverse relation, turning
-        # 'DoesNotExist' into 'None'
-        try:
-            return self._reference_form
-        except ReferenceForm.DoesNotExist:
-            return None
-
-    @property
-    def reference_form_fields(self):
-        if self.reference_form is None:
-            return None
-        return reference_form_info(self.reference_form)
-
     log_datetime_format = "%Y-%m-%d %H:%M:%S"
+
+    def reference_is_received(self):
+        try:
+            return not empty_reference(self.reference)
+        except Reference.DoesNotExist:
+            return False
+
+    def reference_was_requested(self):
+        return self.last_requested is not None
 
     @property
     def last_requested(self):
@@ -249,51 +189,41 @@ class Reference(models.Model):
         Returns the last date the reference was requested,
         or None if it is not known.
         """
-        last = self.actions.filter(action_type=ReferenceAction.REFERENCE_REQUESTED).order_by('created').last()
+        if hasattr(self, '_prefetched_objects_cache'):
+            if 'actions' in self._prefetched_objects_cache:
+                actions = [a for a in self._prefetched_objects_cache['actions']
+                           if a.action_type == ReferenceAction.REFERENCE_REQUESTED]
+                if actions:
+                    last = sorted(actions, key=lambda a: a.created)[-1]
+                else:
+                    last = None
+        else:
+            last = self.actions.filter(action_type=ReferenceAction.REFERENCE_REQUESTED).order_by('created').last()
         if last:
             return last.created
         else:
             return None
 
     def log_reference_received(self, dt):
-        self.comments = (self.comments +
-                         ("\nReference received via online system on %s\n" %
-                          dt.strftime("%Y-%m-%d %H:%M:%S")))
-        self.save()
         self.actions.create(action_type=ReferenceAction.REFERENCE_RECEIVED,
                             created=dt)
 
     def log_reference_filled_in(self, user, dt):
-        self.comments = (self.comments +
-                         ("\nReference filled in by %s on %s\n" %
-                          (user.username,
-                           dt.strftime("%Y-%m-%d %H:%M:%S"))))
-        self.save()
         self.actions.create(action_type=ReferenceAction.REFERENCE_FILLED_IN,
                             created=dt,
                             user=user)
 
     def log_request_made(self, user, dt):
-        self.comments = (self.comments +
-                         ("\nReference requested by user %s via online system on %s\n" %
-                          (user.username, dt.strftime(self.log_datetime_format))))
-        self.save()
         self.actions.create(action_type=ReferenceAction.REFERENCE_REQUESTED,
                             created=dt,
                             user=user)
 
     def log_nag_made(self, user, dt):
-        self.comments = (self.comments +
-                         ("\nNagged applicant by user %s via online system on %s\n" %
-                          (user.username, dt.strftime(self.log_datetime_format))))
-        self.save()
         self.actions.create(action_type=ReferenceAction.REFERENCE_NAG,
                             created=dt,
                             user=user)
 
     class Meta:
-        verbose_name = "Reference Metadata"
-        verbose_name_plural = verbose_name
         ordering = ('application__date_submitted',
                     'application__officer__first_name',
                     'application__officer__last_name',
@@ -327,18 +257,22 @@ class ReferenceAction(models.Model):
         ordering = [('created')]
 
     def __repr__(self):
-        return "<ReferenceAction {0} {1} | {2}>".format(self.action_type, self.created, self.reference)
+        return "<ReferenceAction {0} {1} | {2}>".format(self.action_type, self.created, self.referee)
 
 
-class ReferenceFormManager(models.Manager):
+def empty_reference(reference):
+    return reference is None or reference.how_long_known.strip() == ""
+
+
+class ReferenceManager(models.Manager):
     # manager to reduce number of SQL queries, especially in admin
     use_for_related_fields = True
 
     def get_queryset(self):
-        return super(ReferenceFormManager, self).get_queryset().select_related('reference_info__application__officer')
+        return super(ReferenceManager, self).get_queryset().select_related('referee__application__officer')
 
 
-class ReferenceForm(models.Model):
+class Reference(models.Model):
     referee_name = models.CharField("name of referee", max_length=NAME_LENGTH,
                                     help_text=REFEREE_NAME_HELP_TEXT)
     how_long_known = models.CharField("how long/since when have you known the applicant?", max_length=150)
@@ -357,29 +291,36 @@ class ReferenceForm(models.Model):
     # table should exclude these records.
     inaccurate = models.BooleanField(default=False)
 
-    objects = ReferenceFormManager()
+    objects = ReferenceManager()
 
-    def _get_applicant_name(self):
-        o = self.reference_info.application.officer
+    @property
+    def applicant_name(self):
+        o = self.referee.application.officer
         return "%s %s" % (o.first_name, o.last_name)
 
-    applicant_name = property(_get_applicant_name)
-
     def __str__(self):
-        officer = self.reference_info.application.officer
+        officer = self.referee.application.officer
         return "Reference form for %s %s by %s" % (officer.first_name, officer.last_name, self.referee_name)
 
     def save(self, *args, **kwargs):
-        retval = super(ReferenceForm, self).save(*args, **kwargs)
-        # Update application form with name of referee
-        ref_info = self.reference_info
-        app = ref_info.application
-        app.referees[ref_info.referee_number - 1].name = self.referee_name
-        app.save()
+        retval = super(Reference, self).save(*args, **kwargs)
+        # Update application form data with name of referee
+        referee = self.referee
+        referee.name = self.referee_name
+        referee.save()
         return retval
 
     class Meta:
         verbose_name = "Reference"
+
+    def reference_display_fields(self):
+        """
+        Name/value pairs for all user presentable
+        information in Reference
+        """
+        # Avoid hard coding strings into templates by using field verbose_name from model
+        return [(first_letter_cap(f.verbose_name), reference_present_val(getattr(self, f.attname)))
+                for f in self._meta.fields if f.attname not in ['id', 'referee_id', 'inaccurate']]
 
 
 class InvitationManager(models.Manager):

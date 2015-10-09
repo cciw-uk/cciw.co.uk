@@ -1,5 +1,5 @@
 """
-Utilities for dealing with ReferenceForm and Reference
+Utilities for dealing with Reference and Reference
 """
 from django import template
 
@@ -8,25 +8,14 @@ def first_letter_cap(s):
     return s[0].upper() + s[1:]
 
 
-def _present_val(v):
-    # presentation function used in view_reference
+def reference_present_val(v):
+    # presentation function
     if v is False:
         return "No"
     elif v is True:
         return "Yes"
     else:
         return v
-
-
-def reference_form_info(refform):
-    """
-    Name/value pairs for all user presentable
-    information in ReferenceForm
-    """
-    from cciw.officers.models import ReferenceForm
-    # Avoid hard coding strings into templates by using field verbose_name from model
-    return [(first_letter_cap(f.verbose_name), _present_val(getattr(refform, f.attname)))
-            for f in ReferenceForm._meta.fields if f.attname not in ('id', 'reference_info_id')]
 
 
 _REFERENCE_FORM_TEXT_TEMPLATE = """{% load reference_utils %}{% autoescape off %}{% for name, val in info %}
@@ -36,6 +25,6 @@ _REFERENCE_FORM_TEXT_TEMPLATE = """{% load reference_utils %}{% autoescape off %
 {% endfor %}{% endautoescape %}"""
 
 
-def reference_form_to_text(refform):
-    c = template.Context({'info': reference_form_info(refform)})
+def reference_to_text(reference):
+    c = template.Context({'info': reference.reference_display_fields()})
     return template.Template(_REFERENCE_FORM_TEXT_TEMPLATE).render(c)
