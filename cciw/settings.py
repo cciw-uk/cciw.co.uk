@@ -39,14 +39,12 @@ if DEVBOX:
         return True
 
     DEBUG = True
-    TEMPLATE_DEBUG = True
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
         'SHOW_TOOLBAR_CALLBACK': 'cciw.settings.show_toolbar',
     }
 else:
     DEBUG = False
-    TEMPLATE_DEBUG = False
 
 INTERNAL_IPS = ('127.0.0.1',)
 

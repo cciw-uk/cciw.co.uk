@@ -588,7 +588,7 @@ class TestEditPlaceAdmin(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin,
         })
         form = response.forms['booking_form']
         # Hack needed to cope with autocomplete_light widget
-        form.fields['account'][0].options.append((str(account.id), False))
+        form.fields['account'][0].options.append((str(account.id), False, ''))
         response = self.fill(
             form, fields).submit('save').follow()
         self.assertContains(response, 'Select booking')
