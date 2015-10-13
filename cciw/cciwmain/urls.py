@@ -26,9 +26,9 @@ about_website_link = mark_safe('<a href="/website/">About website</a>')
 urlpatterns = [
     # Camps
     url(r'^thisyear/$', camp_views.thisyear, name="cciw-cciwmain-thisyear"),
-    url(r'^camps/$', camp_views.index, name="cciw-cciwmain-index"),
-    url(r'^camps/(?P<year>\d{4})/?$', camp_views.index, name="cciw-cciwmain-index"),
-    url(r'^camps/(?P<year>\d{4})/(?P<number>\d+)/$', camp_views.detail, name="cciw-cciwmain-detail"),
+    url(r'^camps/$', camp_views.index, name="cciw-cciwmain-camps_index"),
+    url(r'^camps/(?P<year>\d{4})/?$', camp_views.index, name="cciw-cciwmain-camps_year_index"),
+    url(r'^camps/(?P<year>\d{4})/(?P<number>\d+)/$', camp_views.detail, name="cciw-cciwmain-camps_detail"),
     url(r'^' + settings.CAMP_FORUM_RE + r'$', camp_views.forum, name="cciw-cciwmain-camp_forum"),
     url(r'^' + settings.CAMP_FORUM_RE + r'(?P<topicnumber>\d+)/$', camp_views.topic, name='cciw-cciwmain-camp_topic'),
     url(r'^' + settings.CAMP_FORUM_RE + r'add/$', camp_views.add_topic, name="cciw-cciwmain-camp_add_topic"),
