@@ -828,7 +828,7 @@ def officer_list(request, year=None, number=None):
                   ("noapplicationform", "cciw/officers/officer_list_noapplicationform.html")]
         retval = {}
         for section, tname in tnames:
-            retval[section] = render_to_string(tname, context_instance=RequestContext(request, c))
+            retval[section] = render_to_string(tname, c, request=request)
         return HttpResponse(python_to_json(retval),
                             content_type="text/javascript")
     else:
