@@ -131,6 +131,7 @@ if DEVBOX:
 
 SILENCED_SYSTEM_CHECKS = [
     '1_6.W001',
+    '1_8.W001',
 ]
 
 AUTH_USER_MODEL = "accounts.User"
