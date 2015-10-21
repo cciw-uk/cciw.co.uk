@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.utils import unittest
+
+import unittest
 
 from cciw.cciwmain.common import get_member_link
 from cciw.cciwmain.templatetags import bbcode

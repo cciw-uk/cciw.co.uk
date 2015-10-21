@@ -163,7 +163,7 @@ PASSWORD_HASHERS = (
 # == TEMPLATES ==
 
 TEMPLATE_CONTEXT_PROCESSORS = [  # backwards compat for django-wiki
-    'django.core.context_processors.request',  # for django-wiki
+    'django.template.context_processors.request',
     'django.contrib.auth.context_processors.auth',
     'django.template.context_processors.media',
     'django.template.context_processors.static',
