@@ -400,15 +400,23 @@ def backup_usermedia():
 #    files to Amazon S3 service.
 
 
-def make_django_db_filename(target):
-    return "/home/cciw/db-%s.django.%s.sql" % (target.DB['NAME'], datetime.now().strftime("%Y-%m-%d_%H.%M.%S"))
+def make_django_db_filename(target, webfaction=False):
+    if webfaction:
+        return "/home/cciw/db-%s.django.%s.sql" % (target.DB['NAME'], datetime.now().strftime("%Y-%m-%d_%H.%M.%S"))
+    else:
+        return "/home/cciw/db-%s.django.%s.pgdump" % (target.DB['NAME'], datetime.now().strftime("%Y-%m-%d_%H.%M.%S"))
 
 
-def dump_db(target):
-    filename = make_django_db_filename(target)
-    run("pg_dump -Fp --clean -U %s -O -o -f %s %s" % (target.DB['USER'], filename, target.DB['NAME']))
-    run("gzip %s" % filename)
-    return filename + ".gz"
+def dump_db(target, webfaction=False):
+    filename = make_django_db_filename(target, webfaction=webfaction)
+    if webfaction:
+        run("pg_dump -Fp --clean -U %s -O -o -f %s %s" % (target.DB['USER'], filename, target.DB['NAME']))
+        run("gzip %s" % filename)
+        filename = filename + ".gz"
+    else:
+        run("pg_dump -Fc -U %s -O -o -f %s %s" % (target.DB['USER'], filename, target.DB['NAME']))
+
+    return filename
 
 
 @task
@@ -418,16 +426,49 @@ def get_live_db():
     return list(get(filename, local_path=LOCAL_DB_BACKUPS + "/%(basename)s"))[0]
 
 
-def db_restore_commands(db, filename):
+def pg_restore_cmds(db, filename):
+    return [
+        "pg_restore -O -U %s -d %s %s" %
+        (db['USER'], db['NAME'], filename),
+    ]
+
+
+def db_restore_commands(db, filename, webfaction=False):
     if filename.endswith(".gz"):
         extract = "gunzip -c |"
     else:
         extract = ""
-    return [
-        """cat %s | %s psql -U %s %s""" % (filename, extract, db['USER'], db['NAME']),
+
+    if webfaction:
+        # Don't have permission to create databases on cciw.co.uk, so are limited to psql
+        commands = [
+            """cat %s | %s psql -U %s %s""" % (filename, extract, db['USER'], db['NAME']),
+        ]
+    else:
+        commands = [
+            # DB might not exist, allow error
+            """sudo -u postgres psql -U postgres -d template1 -c "DROP DATABASE %s;" | true """
+            % db['NAME'],
+
+            """sudo -u postgres psql -U postgres -d template1 -c "CREATE DATABASE %s;" """
+            % db['NAME'],
+
+            # User might already exist, allow error
+            """sudo -u postgres psql -U postgres -d template1 -c "CREATE USER %s WITH PASSWORD '%s';" | true """
+            % (db['USER'], db['PASSWORD']),
+
+            """sudo -u postgres psql -U postgres -d template1 -c "GRANT ALL ON DATABASE %s TO %s;" """
+            % (db['NAME'], db['USER']),
+
+            """sudo -u postgres psql -U postgres -d template1 -c "ALTER USER %s CREATEDB;" """ %
+            db['USER'],
+        ] + pg_restore_cmds(db, filename)
+
+    commands.extend([
         """psql -U %s %s -c "UPDATE django_site SET domain='staging.cciw.co.uk';" """ % (db['USER'], db['NAME']),
         """psql -U %s %s -c "UPDATE django_site SET name='staging.cciw.co.uk';" """ % (db['USER'], db['NAME']),
-    ]
+    ])
+    return commands
 
 
 @task
@@ -440,10 +481,8 @@ def local_restore_from_dump(filename):
 
 @task
 def copy_production_db_to_staging():
-    filename = dump_db(PRODUCTION)
-    # Don't have permission to create databases on cciw.co.uk, so are limited to pg_restore
-
-    for cmd in db_restore_commands(STAGING.DB, filename):
+    filename = dump_db(PRODUCTION, webfaction=True)
+    for cmd in db_restore_commands(STAGING.DB, filename, webfaction=True):
         run(cmd)
 
 
