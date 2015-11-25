@@ -1,5 +1,5 @@
 from django import http
-from django.template import RequestContext, loader
+from django.template import loader
 
 
 def handler404(request, template_name='404.html'):
