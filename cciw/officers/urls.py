@@ -54,6 +54,7 @@ urlpatterns = [
     # Bookings ages
     url(r'^bookings/booking-ages-stats/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.booking_ages_stats, name="cciw-officers-booking_ages_stats"),
     url(r'^bookings/booking-ages-stats/(?P<camps>\d{4}-\d{1,3}(,\d{4}-\d{1,3})*)/$', views.booking_ages_stats, name="cciw-officers-booking_ages_stats_custom"),
+    url(r'^bookings/booking-ages-stats/(?P<single_year>\d{4})/$', views.booking_ages_stats, name="cciw-officers-booking_ages_stats_single_year"),
     url(r'^bookings/booking-ages-stats-download/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.booking_ages_stats_download, name="cciw-officers-booking_ages_stats_download"),
     url(r'^bookings/booking-ages-stats-download/(?P<camps>\d{4}-\d{1,3}(,\d{4}-\d{1,3})*)/$', views.booking_ages_stats_download, name="cciw-officers-booking_ages_stats_custom_download"),
 

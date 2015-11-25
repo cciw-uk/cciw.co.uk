@@ -134,7 +134,6 @@ def index(request):
         if most_recent_booking_year is not None:
             c['booking_stats_end_year'] = most_recent_booking_year
             c['booking_stats_start_year'] = most_recent_booking_year - 3
-            c['booking_stats_end_year_camps'] = Camp.objects.filter(year=most_recent_booking_year)
 
     return render(request, 'cciw/officers/index.html', c)
 
@@ -1476,7 +1475,12 @@ def _get_booking_ages_stats_from_params(start_year, end_year, camps):
 
 @staff_member_required
 @camp_admin_required
-def booking_ages_stats(request, start_year=None, end_year=None, camps=None):
+def booking_ages_stats(request, start_year=None, end_year=None, camps=None, single_year=None):
+    if single_year is not None:
+        camps = Camp.objects.filter(year=int(single_year))
+        return HttpResponseRedirect(reverse('cciw-officers-booking_ages_stats_custom',
+                                            kwargs={'camps':
+                                                    ','.join(c.short_name for c in camps)}))
     start_year, end_year, camp_objs, data = (
         _get_booking_ages_stats_from_params(start_year, end_year, camps)
     )

@@ -1,7 +1,5 @@
 {% extends "cciw/officers/base.html" %}
 
-{% load capture %}
-
 {% block content %}<div id="content-main">
   <h1>Officer's home page</h1>
 
@@ -18,10 +16,9 @@
           <ul>
             <li><a href="{% url 'cciw-officers-booking_summary_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">Booking summary stats {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a></li>
             <li><a href="{% url 'cciw-officers-booking_progress_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">Booking progress stats {{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a></li>
-            {% capture as all_camps_param %}{% for camp in booking_stats_end_year_camps %}{{ camp.short_name }}{% if not forloop.last %},{% endif %}{% endfor %}{% endcapture %}
             <li>Camper ages stats:
               <a href="{% url 'cciw-officers-booking_ages_stats' start_year=booking_stats_start_year end_year=booking_stats_end_year %}">{{ booking_stats_start_year }} - {{ booking_stats_end_year }}</a> |
-              <a href="{% url 'cciw-officers-booking_ages_stats_custom' camps=all_camps_param %}">All camps {{ booking_stats_end_year }}</a>
+              <a href="{% url 'cciw-officers-booking_ages_stats_single_year' single_year=booking_stats_end_year %}">All camps {{ booking_stats_end_year }}</a>
             </li>
           </ul>
         </li>
