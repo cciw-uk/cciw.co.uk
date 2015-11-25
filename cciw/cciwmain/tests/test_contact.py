@@ -37,7 +37,7 @@ class ContactUsPage(TestCase):
 
     def test_form_appears(self):
         r = self.client.get(CONTACT_US_URL)
-        b = BeautifulSoup(r.content)
+        b = BeautifulSoup(r.content, "lxml")
         self.assertNotEqual(b.find(name='input', attrs={'name': 'email'}), None)
         self.assertNotEqual(b.find(name='input', attrs={'name': 'name'}), None)
         self.assertNotEqual(b.find(name='textarea', attrs={'name': 'message'}), None)

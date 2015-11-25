@@ -432,7 +432,7 @@ class MessageLists(TestCase):
         return self.member.messages_received.filter(box=Message.MESSAGE_BOX_SAVED).count()
 
     def _msg_list_checkboxes(self, resp):
-        b = BeautifulSoup(resp.content)
+        b = BeautifulSoup(resp.content, "lxml")
         checkboxes = [c for c in b.findAll(name='input', attrs={"type": "checkbox"})
                       if c.attrs['name'].startswith('msg_')]
         return checkboxes
