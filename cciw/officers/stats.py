@@ -96,7 +96,7 @@ def get_camp_officer_stats_trend(start_year, end_year):
             application_form_ids = list(applications_for_camp(camp).values_list('id', flat=True))
             application_count += len(application_form_ids)
             reference_in_time_count += Reference.objects.filter(
-                referee_info__application__in=application_form_ids,
+                referee__application__in=application_form_ids,
                 date_created__lte=camp.start_date
             ).count()
             crb_in_time_count += CRBApplication.objects.filter(
