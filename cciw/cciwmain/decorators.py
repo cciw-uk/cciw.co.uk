@@ -1,25 +1,8 @@
-from urllib.parse import urlencode
 from functools import wraps
 
 from django.http import HttpResponse
-from django.shortcuts import render
 
 from cciw.cciwmain.utils import python_to_json
-
-
-def login_redirect(path):
-    """Returns a URL for logging in and then redirecting to the supplied path"""
-    qs = urlencode({'redirect': path})
-    return '%s?%s' % ('/login/', qs)
-
-LOGIN_FORM_KEY = 'this_is_the_login_form'
-ERROR_MESSAGE = "Please enter a correct username and password. Note that both fields are case-sensitive."
-
-
-def _display_login_form(request, error_message='', login_page=False):
-    return render(request, 'cciw/members/login.html', {'app_path': request.get_full_path(),
-                                                       'error_message': error_message,
-                                                       'title': "Login"})
 
 
 def email_errors_silently(func):
