@@ -90,7 +90,6 @@ INSTALLED_APPS = [
     'cciw.accounts',
     'cciw.cciwmain',
     'cciw.sitecontent',
-    'cciw.forums',
     'cciw.officers',
     'cciw.utils',
     'cciw.bookings',
