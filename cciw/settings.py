@@ -152,7 +152,6 @@ PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.SHA1PasswordHasher',
     'django.contrib.auth.hashers.MD5PasswordHasher',
     'django.contrib.auth.hashers.CryptPasswordHasher',
-    'cciw.forums.hashers.CciwLegacyPasswordHasher',  # for Member login only
 )
 
 # == TEMPLATES ==
@@ -282,24 +281,11 @@ COMPRESS_PRECOMPILERS = [
 ####################
 
 # CCIW SPECIFIC SETTINGS AND CONSTANTS
-AWARD_UPLOAD_PATH = 'images/awards'
-MEMBER_ICON_UPLOAD_PATH = 'images/members/temp'
-MEMBER_ICON_PATH = 'images/members'
-DEFAULT_MEMBER_ICON = 'defaultmember.png'
-MEMBER_ICON_MAX_SIZE = 48
 
-CAMP_FORUM_RE = r'camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/'
-
-FORUM_PAGINATE_POSTS_BY = 1000
-FORUM_PAGINATE_PHOTOS_BY = 1000
-FORUM_PAGINATE_TOPICS_BY = 1000
-FORUM_PAGINATE_NEWS_BY = 1000
-ESV_BROWSE_URL = "http://www.gnpcb.org/esv/search/"
 CONTACT_US_EMAIL = "feedback@cciw.co.uk"
 BOOKING_SECRETARY_EMAIL = "bookings@cciw.co.uk"
 BOOKING_FORM_EMAIL = "bookingforms@cciw.co.uk"
 BOOKINGFORMDIR = "downloads"
-MEMBERS_PAGINATE_MESSAGES_BY = 1000
 WEBMASTER_EMAIL = "webmaster@cciw.co.uk"
 LIST_MAILBOX_NAME = "camplists"
 ESV_KEY = 'IP'

@@ -1,6 +1,0 @@
-{% load standardpage %}
-{% load forums %}
-<div class="postMessage">
-  {% if obj.subject %}<div class="postSubject">{{ obj.subject }}</div>{% endif %}
-  {{ obj.message|bb2html }}
-</div>

@@ -1,11 +1,9 @@
 from urllib.parse import urlencode
 from functools import wraps
 
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.shortcuts import render
-from django.utils import timezone
 
-from cciw.middleware.threadlocals import get_current_member, set_member_session
 from cciw.cciwmain.utils import python_to_json
 
 
@@ -22,57 +20,6 @@ def _display_login_form(request, error_message='', login_page=False):
     return render(request, 'cciw/members/login.html', {'app_path': request.get_full_path(),
                                                        'error_message': error_message,
                                                        'title': "Login"})
-
-
-def member_required_generic(except_methods):
-    """Returns a decorator that forces a member to be logged in to access the view.
-    'except_methods' is a list of strings indicated HTTP methods that can get
-    through without a member logged in. e.g. ['GET'] to allow the view to be
-    accessed if it isn't a POST request.
-    """
-    def decorator(view_func):
-        """
-        Decorator for views that checks the method and may require the
-        user to log in.  It is also used by the normal '/login/' view.
-        """
-
-        from cciw.forums.models import Member
-
-        def _checklogin(request, *args, **kwargs):
-
-            if request.method in except_methods or get_current_member() is not None:
-                return view_func(request, *args, **kwargs)
-
-            # If this isn't already the login page, display it.
-            if LOGIN_FORM_KEY not in request.POST:
-                message = "Please log in again, because your session has expired."
-                return _display_login_form(request, message)
-
-            # Check the password.
-            user_name = request.POST.get('user_name', '')
-            try:
-                member = Member.objects.get(user_name=user_name)
-            except Member.DoesNotExist:
-                return _display_login_form(request, ERROR_MESSAGE)
-
-            else:
-                # The member data is correct; log in the member in and continue.
-                if member.check_password(request.POST.get('password', '')):
-                    member.last_seen = timezone.now()
-                    member.save()
-                    set_member_session(request, member)
-
-                    return HttpResponseRedirect(request.get_full_path())
-
-                else:
-                    return _display_login_form(request, ERROR_MESSAGE)
-
-        return wraps(view_func)(_checklogin)
-
-    return decorator
-
-member_required_for_post = member_required_generic(['GET'])
-member_required = member_required_generic([])
 
 
 def email_errors_silently(func):

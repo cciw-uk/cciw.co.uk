@@ -1,61 +1,6 @@
 // Misc extensions to jQuery and CCIW specific functions.
 
 (function($) {
-    $.fn.insertAtCaret = function(text) {
-        return this.each(function(){
-            if (document.selection) {
-                //IE support
-                this.focus();
-                var sel = document.selection.createRange();
-                sel.text = text;
-                this.focus();
-            }else if (this.selectionStart || this.selectionStart == '0') {
-                //MOZILLA/NETSCAPE support
-                var startPos = this.selectionStart;
-                var endPos = this.selectionEnd;
-                var scrollTop = this.scrollTop;
-                this.value = this.value.substring(0, startPos) + text + this.value.substring(endPos,this.value.length);
-                this.focus();
-                this.selectionStart = startPos + text.length;
-                this.selectionEnd = startPos + text.length;
-                this.scrollTop = scrollTop;
-            } else {
-                this.value += text;
-                this.focus();
-            }
-        });
-    };
-
-    $.fn.wrapAtCaret = function(startText, endText) {
-        return this.each(function(){
-            if (document.selection) {
-                //IE support
-                this.focus();
-                var sel = document.selection.createRange();
-                sel.text = startText + sel.text + endText;
-                this.focus();
-            } else if (this.selectionStart || this.selectionStart == '0') {
-                //MOZILLA/NETSCAPE support
-                var startPos = this.selectionStart;
-                var endPos = this.selectionEnd;
-                var scrollTop = this.scrollTop;
-                var origText = this.value.substring(startPos, endPos);
-                this.value = this.value.substring(0, startPos) + startText + origText + endText + this.value.substring(endPos,this.value.length);
-                this.focus();
-                if (origText.length == 0) {
-                    this.selectionStart = startPos + startText.length;
-                } else {
-                    this.selectionStart = startPos + startText.length + origText.length + endText.length;
-                }
-                this.selectionEnd = this.selectionStart;
-                this.scrollTop = scrollTop;
-            } else {
-                this.value += startText + endText;
-                this.focus();
-            }
-        });
-    };
-
     // Define multiSelectFilter jQuery plugin
     $.fn.multiSelectFilter = function(selectElem){
         var filterbox = this;

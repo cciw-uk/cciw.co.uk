@@ -10,12 +10,11 @@ from django.conf import settings
 from django.core.mail import mail_admins
 from django.core.paginator import Paginator, InvalidPage
 from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
 from django.http import HttpResponse, Http404
 from django.template.response import TemplateResponse
 from django.utils import timezone
 from django.utils.decorators import classonlymethod
-from django.utils.html import format_html, format_html_join
+from django.utils.html import format_html_join
 from frozendict import frozendict
 
 from cciw.cciwmain.utils import python_to_json
@@ -195,28 +194,6 @@ def json_validation_request(request, form):
         return None
 
 
-# CBV wrapper for feeds.handle_feed_request
-class FeedHandler(object):
-    """
-    Mixin that handles requests for a feed rather than HTML
-    """
-    feed_class = None
-
-    def get_feed_class(self):
-        if self.feed_class is None:
-            raise NotImplementedError("Attribute feed_class not defined.")
-        else:
-            return self.feed_class
-
-    def is_feed_request(self):
-        return self.request.GET.get('format', None) == 'atom'
-
-    def pre_handle(self, request, *args, **kwargs):
-        if self.is_feed_request():
-            feed_class = self.get_feed_class()
-            return feeds.handle_feed_request(self.request, feed_class, self.get_queryset())
-
-
 def object_list(request, queryset, extra_context=None,
                 template_name='', paginate_by=None,
                 list_name='object_list',
@@ -297,24 +274,6 @@ def standard_subs(value):
 standard_subs.is_safe = True  # provided our substitutions don't introduce anything that must be escaped
 
 
-def get_order_option(order_options, request, default_order_by):
-    """Get the order_by parameter from the request, if the request
-    contains any of the specified ordering parameters in the query string.
-
-    order_options is a dict of query string params and the corresponding lookup argument.
-
-    default_order_by is value to use for if there is no matching
-    order query string.
-    """
-
-    order_request = request.GET.get('order', None)
-    try:
-        order_by = order_options[order_request]
-    except:
-        order_by = default_order_by
-    return order_by
-
-
 def create_breadcrumb(links):
     return format_html_join(" :: ", "{0}", ((l,) for l in links))
 
@@ -325,7 +284,6 @@ def standard_processor(request):
     pages.
     """
     context = {}
-    context['current_member'] = threadlocals.get_current_member()
     format = request.GET.get('format')
     if format is not None:
         # json or atom - we are not rendering typical pages, and don't want the
@@ -374,31 +332,6 @@ def standard_processor(request):
     return context
 
 
-member_username_re = re.compile(r'^[A-Za-z0-9_]{3,15}$')
-
-
-def get_member_href(user_name):
-    if not member_username_re.match(user_name):
-        # This can get called from feeds, and we need to ensure
-        # we don't generate a URL, as it will go nowhere (also causes problems
-        # with the feed framework and utf-8).
-        # Also, this can be called via bbcode, so we need to ensure
-        # that we don't pass anything to urlresolvers.reverse that
-        # will make it die.
-        return ''
-    else:
-        return reverse('cciw-cciwmain-members_detail', kwargs={'user_name': user_name})
-
-
-def get_member_link(user_name):
-    user_name = user_name.strip()
-    if user_name.startswith("'"):
-        return user_name
-    else:
-        return format_html('<a title="Information about user \'{0}\'" href="{1}">{2}</a>',
-                           user_name, get_member_href(user_name), user_name)
-
-
 def get_current_domain():
     return Site.objects.get_current().domain
 
@@ -410,6 +343,3 @@ def exception_notify_admins(subject):
     exc_info = sys.exc_info()
     message = '\n'.join(traceback.format_exception(*exc_info))
     mail_admins(subject, message, fail_silently=True)
-
-
-from cciw.cciwmain import feeds

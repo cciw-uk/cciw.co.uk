@@ -1,14 +1,6 @@
 {% extends "cciw/standard.html" %}
 
 {% block content %}
-  <br/>
-  {% if camp.is_past %}
-    <h2>Links</h2>
-    <ul>
-      <li><a href="{{ camp.get_absolute_url }}forum/">Forum</a></li>
-      <li><a href="{{ camp.get_absolute_url }}photos/">Photos</a></li>
-    </ul>
-  {% endif %}
   <h2>Information</h2>
   <table class="sideheaders">
     <tr>

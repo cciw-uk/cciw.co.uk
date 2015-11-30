@@ -99,18 +99,15 @@ The major components of the site are:
 1) Information about the camps that are run. This is all on publically
    accessible parts of the site.
 
-2) Camp forums and photo galleries. Now largely unused. You have to log in
-   as a Member to post content.
+2) Booking - for campers (or their parents) to book places on camp and pay.
 
-3) Booking - for campers (or their parents) to book places on camp and pay.
-
-4) Admin.
+3) Admin.
 
    Used by a few people to add camp information, for example. Also used by
    booking secretary to add/manage information about bookings, and various other
    staff functions.
 
-5) Leaders and officers.
+4) Leaders and officers.
 
    This contains utilities for leaders:
 
@@ -126,21 +123,20 @@ The major components of the site are:
 
    Where possible, the Django admin is used for some of these functions.
 
+There used to be a 'forums' section with photos, topics, members etc. and its
+own login system. This is almost entirely unused since 2007 and removed in 2015.
+Backups of the data are available.
 
 Login
 -----
 
-Because of the above components, there are 3 separate login systems:
+Because of the above components, there are 2 separate login systems:
 
 * The standard django.contrib.auth system, with a custom AUTH_USER_MODEL,
   used by the Django admin and the officers section (staff members).
 
-* A custom login system for the camp forums, based on the Member model,
-  (very similar to contrib.auth.User, with passwords etc.)
-
 * A custom login system for booking places on camp, which is passwordless, based
   on BookingAccount.
-
 
 Layout
 ------

@@ -73,13 +73,3 @@
     {% endif %}
   {% endblock %}
 {% endblock %}
-
-{% block postcontent %}
-  {% if current_member %}
-    <div id="memberlinks">
-      Logged in as :  <a href="{{current_member.get_absolute_url}}">{{current_member.user_name}}</a>
-      | <a href="{{current_member.get_absolute_url}}messages/inbox/">{{current_member.new_messages}} new message(s)</a>
-    </div>
-  {% endif %}
-{% endblock %}
-
