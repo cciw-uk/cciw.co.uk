@@ -4,11 +4,12 @@ from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from cciw.cciwmain.models import Camp, Site
+from cciw.cciwmain.models import Camp, CampName, Site
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers import applications
 from cciw.officers.models import Application
-from cciw.officers.tests.base import OFFICER_USERNAME, OFFICER_PASSWORD, ApplicationSetupMixin, OfficersSetupMixin, CurrentCampsMixin
+from cciw.officers.tests.base import (OFFICER_PASSWORD, OFFICER_USERNAME, ApplicationSetupMixin, CurrentCampsMixin,
+                                      OfficersSetupMixin)
 
 User = get_user_model()
 
@@ -105,14 +106,21 @@ class ApplicationUtils(BasicSetupMixin, TestCase):
         future_camp_start = date(date.today().year + 1, 8, 1)
         past_camp_start = future_camp_start - timedelta(30 * 11)
 
+        camp_name = CampName.objects.create(
+            name="Blue",
+            slug="blue",
+        )
+
         site = Site.objects.get(id=1)
         Camp.objects.all().delete()
         c1 = Camp.objects.create(year=past_camp_start.year, number=5,
+                                 camp_name=camp_name,
                                  start_date=past_camp_start,
                                  end_date=past_camp_start + timedelta(7),
                                  minimum_age=11, maximum_age=17,
                                  site=site)
         c2 = Camp.objects.create(year=future_camp_start.year, number=1,
+                                 camp_name=camp_name,
                                  start_date=future_camp_start,
                                  end_date=future_camp_start + timedelta(7),
                                  minimum_age=11, maximum_age=17,

@@ -1,10 +1,12 @@
-from cciw.cciwmain.tests.client import CciwClient
 from django.test import TestCase
 
+from cciw.cciwmain.tests.base import BasicSetupMixin
+from cciw.cciwmain.tests.client import CciwClient
 
-class HtmlChunkPage(TestCase):
 
-    fixtures = ['basic.json', 'users.json', 'htmlchunks.json']
+class HtmlChunkPage(BasicSetupMixin, TestCase):
+
+    fixtures = ['users.json', 'htmlchunks.json']
 
     def setUp(self):
         self.client = CciwClient()

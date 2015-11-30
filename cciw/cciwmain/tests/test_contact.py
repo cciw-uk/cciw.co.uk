@@ -5,11 +5,14 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core import mail
 
+from cciw.cciwmain.tests.base import BasicSetupMixin
+
+
 CONTACT_US_URL = reverse("cciw-cciwmain-contact_us")
 
 
-class ContactUsPage(TestCase):
-    fixtures = ['basic.json', 'contact.json']
+class ContactUsPage(BasicSetupMixin, TestCase):
+    fixtures = ['contact.json']
 
     def setUp(self):
         self.client = CciwClient()

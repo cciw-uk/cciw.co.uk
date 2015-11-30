@@ -4,8 +4,9 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from cciw.cciwmain.common import get_thisyear
-from cciw.cciwmain.models import Camp, Site, Person
-from cciw.cciwmain.tests.utils import init_query_caches, FuzzyInt
+from cciw.cciwmain.models import Camp, CampName, Person, Site
+from cciw.cciwmain.tests.utils import FuzzyInt, init_query_caches
+from cciw.cciwmain.tests.base import BasicSetupMixin
 
 
 class CampModel(TestCase):
@@ -17,10 +18,14 @@ class CampModel(TestCase):
         site = Site.objects.create(short_name="farm",
                                    slug_name="farm",
                                    long_name="The Farm")
-
+        camp_name = CampName.objects.create(
+            name="Blue",
+            slug="blue",
+        )
         camp = Camp.objects.create(
             year=2013,
             number=1,
+            camp_name=camp_name,
             minimum_age=11,
             maximum_age=17,
             start_date=date(2013, 6, 1),
@@ -38,17 +43,22 @@ class CampModel(TestCase):
         self.assertEqual(str(self.camp), "2013-1 (John, Mary, Gregory)")
 
 
-class ThisyearPage(TestCase):
+class ThisyearPage(BasicSetupMixin, TestCase):
 
-    fixtures = ['basic.json', 'htmlchunks.json']
+    fixtures = ['htmlchunks.json']
 
     def test_get(self):
         init_query_caches()
         y = get_thisyear()
         site = Site.objects.get(id=1)
+        camp_name = CampName.objects.create(
+            name="Blue",
+            slug="blue",
+        )
 
         for i in range(1, 20):
             c = Camp.objects.create(year=y, number=i, site=site,
+                                    camp_name=camp_name,
                                     minimum_age=11,
                                     maximum_age=17,
                                     start_date=date(y, 6, 1),

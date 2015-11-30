@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from datetime import timedelta, date, datetime
-from decimal import Decimal
 import json
 import re
+from datetime import date, datetime, timedelta
+from decimal import Decimal
 
+import mock
+import pyquery
+import xlrd
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -13,17 +16,18 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
 from django_dynamic_fixture import G
-import mock
-import pyquery
-import xlrd
 
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
-from cciw.bookings.models import BookingAccount, Price, Booking, Payment, ManualPayment, RefundPayment, book_basket_now, process_all_payments
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND, MANUAL_PAYMENT_CHEQUE
+from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND,
+                                  BOOKING_INFO_COMPLETE, MANUAL_PAYMENT_CHEQUE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
+                                  PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL, Booking,
+                                  BookingAccount, ManualPayment, Payment, Price, RefundPayment, book_basket_now,
+                                  process_all_payments)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet
-from cciw.cciwmain.models import Camp, Person
+from cciw.cciwmain.models import Camp, CampName, Person
 from cciw.cciwmain.tests.mailhelpers import read_email_url
-from cciw.officers.tests.base import OFFICER_USERNAME, OFFICER_PASSWORD, BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD, BOOKING_SEC, OfficersSetupMixin
+from cciw.officers.tests.base import (BOOKING_SEC, BOOKING_SEC_PASSWORD, BOOKING_SEC_USERNAME, OFFICER_PASSWORD,
+                                      OFFICER_USERNAME, OfficersSetupMixin)
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.webtest import WebTestBase
@@ -49,7 +53,12 @@ class CreateCampMixin(object):
         # We also need it so that payments can be made when only the deposit is due
         delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE_DAYS
         start_date = self.today + timedelta(delta_days)
+        camp_name = CampName.objects.create(
+            name="Blue",
+            slug="blue",
+        )
         self.camp = Camp.objects.create(year=start_date.year, number=1,
+                                        camp_name=camp_name,
                                         minimum_age=self.camp_minimum_age,
                                         maximum_age=self.camp_maximum_age,
                                         start_date=start_date,
