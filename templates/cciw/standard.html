@@ -19,9 +19,6 @@
     {% endif %}
   {% endif %}
   {{ block.super }}
-  {% block atomfeed %}
-    {% atomfeedlink %}
-  {% endblock %}
   {% compress js %}
     <script type="text/javascript" src="{% static "admin/js/jquery.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>

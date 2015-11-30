@@ -2,7 +2,7 @@
 
 {% block thread_top %}
   <div class="photo">
-    {% if current_member %}
+    {% if current_member or True %}
       <img class="photo" src="{{ MEDIA_URL }}photos/real/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />
     {% else %}
       <img class="photo" src="{{ MEDIA_URL }}photos/thumbnails/{{ photo.filename }}" alt="Photo {{ photo.filename }}" />

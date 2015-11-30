@@ -120,7 +120,7 @@ if not (LIVEBOX and WEBSERVER_RUNNING):
 if DEVBOX and DEBUG:
     INSTALLED_APPS += [
         'django.contrib.admindocs',
-        'debug_toolbar',
+        #'debug_toolbar',
     ]
 
 
@@ -235,7 +235,7 @@ _MIDDLEWARE_CLASSES = [
     (DEVBOX,     "cciw.middleware.http.ActAsProxy"),
     (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
-    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
+#    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
     (True,       "django.contrib.sessions.middleware.SessionMiddleware"),
     (True,       "django.middleware.common.CommonMiddleware"),
     (True,       'django.middleware.csrf.CsrfViewMiddleware'),
@@ -290,16 +290,16 @@ MEMBER_ICON_MAX_SIZE = 48
 
 CAMP_FORUM_RE = r'camps/(?P<year>\d{4})/(?P<number>\d+|all)/forum/'
 
-FORUM_PAGINATE_POSTS_BY = 20
-FORUM_PAGINATE_PHOTOS_BY = 20
-FORUM_PAGINATE_TOPICS_BY = 30
-FORUM_PAGINATE_NEWS_BY = 10
+FORUM_PAGINATE_POSTS_BY = 1000
+FORUM_PAGINATE_PHOTOS_BY = 1000
+FORUM_PAGINATE_TOPICS_BY = 1000
+FORUM_PAGINATE_NEWS_BY = 1000
 ESV_BROWSE_URL = "http://www.gnpcb.org/esv/search/"
 CONTACT_US_EMAIL = "feedback@cciw.co.uk"
 BOOKING_SECRETARY_EMAIL = "bookings@cciw.co.uk"
 BOOKING_FORM_EMAIL = "bookingforms@cciw.co.uk"
 BOOKINGFORMDIR = "downloads"
-MEMBERS_PAGINATE_MESSAGES_BY = 20
+MEMBERS_PAGINATE_MESSAGES_BY = 1000
 WEBMASTER_EMAIL = "webmaster@cciw.co.uk"
 LIST_MAILBOX_NAME = "camplists"
 ESV_KEY = 'IP'
