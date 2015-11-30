@@ -1,27 +1,6 @@
 [
     {
         "fields": {
-            "visible": true, 
-            "extra_title": "", 
-            "parent_item": null, 
-            "title": "Home", 
-            "url": "/", 
-            "listorder": 0
-        }, 
-        "model": "sitecontent.menulink", 
-        "pk": 1
-    }, 
-    {
-        "fields": {
-            "menu_link": 1, 
-            "html": "<p>CCIW is a charitable company that runs outdoor camps on a number of sites in Wales.\r\n The camps provide great outdoor fun with God and the Bible at the centre of each day.</p>\r\n<p>The detailed format of the day varies from camp to camp, but all of them \r\ninclude a morning service as a camp, activities in the afternoon and \r\nbible studies in the evening in tent groups.  The kind of activities we do \r\ninclude canoeing, raft-building, swimming, walking, rock-climbing, and gorge-walking, \r\nas well as football, rounders and other camp site games.  Below is \r\na list of other pages to find out more about the camps.</p>\r\n\r\n<h2>Contents:</h2>\r\n<ul>\r\n<li><a href=\"/news/\">News</a><br/>\r\nThe latest news, particularly about what is available on the website,\r\n is here, with the opportunity to add your own comments.\r\n\r\n<p>See also:</p>\r\n<ul><li><a href=\"/posts/\">Recent message board posts</a></li>\r\n<li><a href=\"/topics/\">Recently started topics</a></li>\r\n</ul>\r\n<br/><br/>\r\n</li>\r\n<li><a href=\"/thisyear/\">Camps {{thisyear}}</a><br/>\r\nInformation for camps in {{thisyear}}, including dates, leadership teams,\r\n and how to book.<br/><br/>\r\n</li>\r\n\r\n<li><a href=\"/camps/\">Camp forums and photos</a><br/>\r\nHere you can find photos and messages boards from the CCIW camps that have run in the past.\r\nHopefully these will give you an idea of what we do, or help you stay in contact with\r\nfriends you met on camp. <br/><br/>\r\nThe leaders and committee members have also lead and organised camps with churches and\r\nother organisations (particularly <a href=\"http://www.emw.org.uk/\">The Evangelical Movement of Wales</a>) for many years, and some photos of these camps\r\ncan be found here. <br/><br/>\r\n</li>\r\n\r\n<li><a href=\"/sites/\">Camp sites</a><br/>\r\nInformation on the different sites we run camps at.<br/><br/>\r\n</li>\r\n\r\n\r\n<li><a href=\"/members/\">Members</a><br/>\r\nList of currently signed up members to the website.  Look for your friends here!<br/><br/>\r\n</li>\r\n\r\n<li><a href=\"/info/\">About CCIW</a><br/>\r\nCompany information, including the doctrinal basis of CCIW, legal information, and the names and addresses of the directors. \r\n<br/>\r\n<br/></li>\r\n\r\n\r\n<li><a href=\"/website/\">About website</a><br/>\r\nInformation about the website, including message boards about the different features.<br/><br/>\r\n</li>\r\n\r\n<li><a href=\"/contact/\">Contact us</a><br/>\r\nAny comments about camp, suggestions, or other reasons to get in contact with us - leave us a message.<br/>\r\n<br/>\r\n</li>\r\n\r\n</ul>\r\n<br/>\r\n<p>CCIW is a limited company (reg. No. 3900844), and a Registered Charity (No:1079713)</p>", 
-            "page_title": "Christian Camps in Wales"
-        }, 
-        "model": "sitecontent.htmlchunk", 
-        "pk": "home_page"
-    },
-    {
-        "fields": {
             "menu_link": null,
             "html": ""
         },

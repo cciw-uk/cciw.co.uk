@@ -1,15 +1,11 @@
 from django.test import TestCase
 
 from cciw.cciwmain.tests.base import BasicSetupMixin
-from cciw.cciwmain.tests.client import CciwClient
 
 
 class HtmlChunkPage(BasicSetupMixin, TestCase):
 
     fixtures = ['users.json', 'htmlchunks.json']
-
-    def setUp(self):
-        self.client = CciwClient()
 
     def test_page_anonymous(self):
         self._test_page(False)

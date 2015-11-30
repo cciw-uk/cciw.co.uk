@@ -1,21 +1,16 @@
 from bs4 import BeautifulSoup
-from cciw.cciwmain.tests.client import CciwClient
-from django.test import TestCase
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.core import mail
+from django.core.urlresolvers import reverse
+from django.test import TestCase
 
 from cciw.cciwmain.tests.base import BasicSetupMixin
-
 
 CONTACT_US_URL = reverse("cciw-cciwmain-contact_us")
 
 
 class ContactUsPage(BasicSetupMixin, TestCase):
     fixtures = ['contact.json']
-
-    def setUp(self):
-        self.client = CciwClient()
 
     def test_cant_send_without_email(self):
         self.client.post(CONTACT_US_URL, data=dict(name="My Name",

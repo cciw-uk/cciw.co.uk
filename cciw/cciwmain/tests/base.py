@@ -15,13 +15,20 @@ class BasicSetupMixin(object):
             name="www.cciw.co.uk",
             id=1)
 
-        MenuLink.objects.create(
+        m = MenuLink.objects.create(
             visible=True,
             extra_title="",
             parent_item=None,
             title="Home",
             url="/",
             listorder=0)
+
+        HtmlChunk.objects.create(
+            menu_link=m,
+            html="<p>CCIW is a charitable company...</p>",
+            page_title="Christian Camps in Wales",
+            name='home_page',
+        )
 
         HtmlChunk.objects.create(
             pk="booking_secretary_address",

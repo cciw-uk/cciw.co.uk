@@ -2,16 +2,11 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from cciw.cciwmain.tests.base import BasicSetupMixin
-from cciw.cciwmain.tests.client import CciwClient
 from cciw.cciwmain.models import Site
 from cciw.sitecontent.models import HtmlChunk
 
 
 class SitePage(BasicSetupMixin, TestCase):
-
-    def setUp(self):
-        super(SitePage, self).setUp()
-        self.client = CciwClient()
 
     def test_site_page(self):
         site = Site.objects.all()[0]
