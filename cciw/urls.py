@@ -32,13 +32,11 @@ urlpatterns = [
 
 if settings.DEVBOX:
     from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-    from django.shortcuts import render_to_response
     urlpatterns += [
         url(r'^usermedia/(?P<path>.*)$', django.views.static.serve,
             {'document_root': settings.MEDIA_ROOT}),
         url(r'^file/(?P<path>.*)$', django.contrib.staticfiles.views.serve,
             {'document_root': settings.SECUREDOWNLOAD_SERVE_ROOT}),
-        url(r'404/$', lambda r: render_to_response('404.html'))
     ]
 
     urlpatterns += staticfiles_urlpatterns()
