@@ -24,7 +24,6 @@ MIDDLEWARE_CLASSES = (
 )
 
 INSTALLED_APPS = list(filter(lambda x: x not in [
-    'anonymizer'
     'debug_toolbar'
 ], INSTALLED_APPS))
 

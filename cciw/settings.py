@@ -123,11 +123,6 @@ if DEVBOX and DEBUG:
         'debug_toolbar',
     ]
 
-if DEVBOX:
-    INSTALLED_APPS += [
-        'anonymizer',
-    ]
-
 
 SILENCED_SYSTEM_CHECKS = [
     '1_6.W001',

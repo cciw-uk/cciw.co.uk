@@ -8,7 +8,6 @@ WebTest==2.0.18
 beautifulsoup4==4.4.1
 contextlib2==0.4.0
 diff-match-patch==20110725.1
-django-anonymizer==0.4
 django-autocomplete-light==2.2.10
 django-classy-tags==0.6.1
 django-debug-toolbar==1.4
