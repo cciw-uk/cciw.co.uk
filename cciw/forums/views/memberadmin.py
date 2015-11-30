@@ -17,7 +17,6 @@ from django.utils import timezone
 from django.utils.crypto import salted_hmac
 
 from cciw.cciwmain.common import CciwBaseView, AjaxFormValidation, member_username_re
-from cciw.forums.models import Member
 from cciw.middleware.threadlocals import set_member_session, get_current_member
 from cciw.cciwmain.decorators import member_required
 from cciw.cciwmain import common
@@ -390,18 +389,17 @@ preferences_fields = ["real_name", "email", "show_email", "comments", "message_o
 
 class PreferencesForm(CciwFormMixin, forms.ModelForm):
     real_name = forms.CharField(widget=forms.TextInput(attrs={'size':
-                                                              str(Member._meta.get_field('real_name').max_length)}),
+                                                              '100'})
                                 label="Real name", required=False,
-                                max_length=Member._meta.get_field('real_name').max_length)
+                                max_length=100)
     email = forms.EmailField(widget=forms.TextInput(attrs={'size': '40'}))
-    message_option = forms.ChoiceField(choices=Member.MESSAGE_OPTIONS,
+    message_option = forms.ChoiceField(choices=[],
                                        widget=forms.RadioSelect,
                                        label="Message storing")
     icon = forms.FileField(widget=widgets.FileInput,
                            label="Icon", required=False)
 
     class Meta:
-        model = Member
         fields = preferences_fields
 
 PreferencesForm.base_fields.keyOrder = preferences_fields
