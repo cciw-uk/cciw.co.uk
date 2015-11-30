@@ -1,7 +1,8 @@
 from functools import wraps
 
-from cciw.cciwmain.models import Site, Person, Camp, Role
 from django.contrib import admin
+
+from cciw.cciwmain.models import Camp, CampName, Person, Role, Site
 
 
 def rename_app_list(func):
@@ -42,11 +43,27 @@ class PersonAdmin(admin.ModelAdmin):
     list_display = ['name', 'info']
 
 
+class CampNameAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug']
+    prepopulated_fields = {
+        'slug': ['name'],
+    }
+
+
 class CampAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Public info',
-         {'fields': ('year', 'number', 'minimum_age', 'maximum_age', 'start_date', 'end_date',
-                     'leaders', 'chaplain', 'site', 'previous_camp')
+         {'fields': ('year',
+                     'camp_name',
+                     'number',
+                     'minimum_age',
+                     'maximum_age',
+                     'start_date',
+                     'end_date',
+                     'leaders',
+                     'chaplain',
+                     'site',
+                     'previous_camp')
           }
          ),
         ('Booking constraints',
@@ -69,10 +86,10 @@ class CampAdmin(admin.ModelAdmin):
     def chaplain(camp):
         return camp.chaplain
     chaplain.admin_order_field = 'chaplain__name'
-    list_display = ('year', 'number', leaders, chaplain, 'age', 'site', 'start_date')
-    list_display_links = ('number', leaders)
+    list_display = ('year', 'camp_name', 'number', leaders, chaplain, 'age', 'site', 'start_date')
+    list_display_links = ('camp_name', 'number', leaders)
     del leaders, chaplain
-    list_filter = ('site',)
+    list_filter = ['camp_name', 'site']
     filter_horizontal = ('leaders', 'admins')
     date_hierarchy = 'start_date'
 
@@ -81,5 +98,6 @@ class CampAdmin(admin.ModelAdmin):
 
 admin.site.register(Site, SiteAdmin)
 admin.site.register(Person, PersonAdmin)
+admin.site.register(CampName, CampNameAdmin)
 admin.site.register(Camp, CampAdmin)
 admin.site.register(Role)

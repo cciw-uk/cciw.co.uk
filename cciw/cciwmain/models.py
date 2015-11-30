@@ -60,6 +60,14 @@ class Person(models.Model):
         verbose_name_plural = 'people'
 
 
+class CampName(models.Model):
+    name = models.CharField(max_length=255, help_text="Name of set of camps. Should start with captial letter")
+    slug = models.SlugField(max_length=255, help_text="Name used in URLs and email addresses. Normally just the lowercase version of the name, with spaces replaces by -")
+
+    def __str__(self):
+        return self.name
+
+
 class CampManager(models.Manager):
     use_for_related_fields = True
 
@@ -72,6 +80,7 @@ class CampManager(models.Manager):
 
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")
+    camp_name = models.ForeignKey(CampName, related_name='camps')
     number = models.PositiveSmallIntegerField("number")
     minimum_age = models.PositiveSmallIntegerField()
     maximum_age = models.PositiveSmallIntegerField()
