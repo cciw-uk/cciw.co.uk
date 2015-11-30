@@ -1113,7 +1113,7 @@ def officer_stats_download(request, year):
     camps = list(Camp.objects.filter(year=year).order_by('number'))
     formatter = get_spreadsheet_formatter(request)
     for camp in camps:
-        formatter.add_sheet_from_dataframe(camp.short_name,
+        formatter.add_sheet_from_dataframe(camp.name_with_year,
                                            get_camp_officer_stats(camp))
     return spreadsheet_response(formatter,
                                 "officer-stats-%d" % year)
@@ -1480,7 +1480,7 @@ def booking_ages_stats(request, start_year=None, end_year=None, camps=None, sing
         camps = Camp.objects.filter(year=int(single_year))
         return HttpResponseRedirect(reverse('cciw-officers-booking_ages_stats_custom',
                                             kwargs={'camps':
-                                                    ','.join(c.short_name for c in camps)}))
+                                                    ','.join(c.name_with_year for c in camps)}))
     start_year, end_year, camp_objs, data = (
         _get_booking_ages_stats_from_params(start_year, end_year, camps)
     )

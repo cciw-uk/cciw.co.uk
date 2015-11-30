@@ -115,7 +115,7 @@ class Camp(models.Model):
         return (self.year, self.number)
 
     @property
-    def short_name(self):
+    def name_with_year(self):
         return "%s-%s" % (self.year, self.number)
 
     def __str__(self):
@@ -131,7 +131,7 @@ class Camp(models.Model):
             leaders.append(chaplain)
 
         leadertext = self._format_leaders(leaders)
-        return "%s (%s)" % (self.short_name, leadertext)
+        return "%s (%s)" % (self.name_with_year, leadertext)
 
     def _format_leaders(self, ls):
         if len(ls) > 0:

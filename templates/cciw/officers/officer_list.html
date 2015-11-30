@@ -1,7 +1,7 @@
 {% extends "cciw/officers/base.html" %}
 {% load static %}
 {% load compress %}
-{% block title %}Officer list {{ camp.short_name }} | CCIW Officers{% endblock %}
+{% block title %}Officer list {{ camp.name_with_year }} | CCIW Officers{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
   {% compress js %}
@@ -131,7 +131,7 @@
                 <td class="rightbreak">{{ officer.first_name }} {{ officer.last_name }}</td>
                 <td>
                   {% for camp in officer_data.missing_application_forms %}
-                    <a target="_blank" href="{% url 'cciw-officers-officer_list' year=camp.year number=camp.number %}">{{ camp.short_name }}</a><br/>
+                    <a target="_blank" href="{% url 'cciw-officers-officer_list' year=camp.year number=camp.number %}">{{ camp.name_with_year }}</a><br/>
                   {% endfor %}
                 </td>
                 <td class="rightbreak">
@@ -141,7 +141,7 @@
                 </td>
                 <td>
                   {% for camp in officer_data.missing_references %}
-                    {{ camp.short_name }}
+                    {{ camp.name_with_year }}
                     (<a target="_blank" href="{% url 'cciw-officers-manage_references' year=camp.year number=camp.number %}?officer_id={{ officer.id }}">references</a>,
                     <a target="_blank" href="{% url 'cciw-officers-officer_list' year=camp.year number=camp.number %}">officer list</a>)
                     <br/>
@@ -154,7 +154,7 @@
                 </td>
                 <td>
                   {% for camp in officer_data.missing_crbs %}
-                    {{ camp.short_name }}
+                    {{ camp.name_with_year }}
                     (<a target="_blank" href="{% url 'cciw-officers-manage_crbs' year=camp.year %}?camp={{ camp.number }}">CRBs</a>,
                     <a target="_blank" href="{% url 'cciw-officers-officer_list' year=camp.year number=camp.number %}">officer list</a>)
                     <br/>

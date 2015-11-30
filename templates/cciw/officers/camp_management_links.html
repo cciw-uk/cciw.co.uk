@@ -9,7 +9,7 @@
       <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_stats' year=c.year %}">Officer stats {{ c.year }}</a>
       <br />&nbsp;&nbsp;&nbsp;Campers: <a href="{% url 'cciw-officers-export_camper_data' year=c.year number=c.number %}?format=xls">XLS</a>
       | <a href="{% url 'cciw-officers-export_camper_data' year=c.year number=c.number %}?format=ods">ODS</a>
-      {% capture as stats_camps_param %}{% if c.previous_camp %}{{ c.previous_camp.short_name }},{% endif %}{{ c.short_name }}{% endcapture %}
+      {% capture as stats_camps_param %}{% if c.previous_camp %}{{ c.previous_camp.name_with_year }},{% endif %}{{ c.name_with_year }}{% endcapture %}
       | <a href="{% url 'cciw-officers-booking_progress_stats_custom' camps=stats_camps_param %}">Booking progress chart</a>
       | <a href="{% url 'cciw-officers-booking_ages_stats_custom' camps=stats_camps_param %}">Camper ages chart</a>
       <br />&nbsp;&nbsp;&nbsp;Sharable transport details: <a href="{% url 'cciw-officers-export_sharable_transport_details' year=c.year number=c.number %}?format=xls">XLS</a> | <a href="{% url 'cciw-officers-export_sharable_transport_details' year=c.year number=c.number %}?format=ods">ODS</a>
