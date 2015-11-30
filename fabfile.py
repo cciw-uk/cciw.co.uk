@@ -343,6 +343,9 @@ def deploy():
 
     push_sources()
     _push_non_vcs_sources()
+    with cd(target.SRC_DIR):
+        run("find . -name '*.pyc' | xargs rm")
+
     install_dependencies()
     update_database()
     build_static()
