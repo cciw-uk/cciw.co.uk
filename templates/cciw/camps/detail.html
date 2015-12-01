@@ -15,13 +15,11 @@
       <th scope="row">Age:</th>
       <td>{{ camp.age }}</td>
     </tr>
-    {% if camp.next_camps.all %}
+    {% if camp.next_camp %}
       <tr>
         <th scope="row">Following camp:</th>
         <td>
-          {% for next_camp in camp.next_camps.all %}
-            {{ next_camp.get_link }}<br/>
-          {% endfor %}
+          {{ camp.next_camp.get_link }}<br/>
         </td>
       </tr>
     {% endif %}

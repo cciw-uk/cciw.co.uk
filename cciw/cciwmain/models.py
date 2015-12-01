@@ -3,6 +3,7 @@ from datetime import date
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.html import format_html
 
 from cciw.cciwmain import signals
@@ -133,6 +134,22 @@ class Camp(models.Model):
 
         leadertext = self._format_leaders(leaders)
         return "%s (%s)" % (self.slug_name_with_year, leadertext)
+
+    @cached_property
+    def previous_camp(self):
+        return (Camp.objects
+                .filter(year__lt=self.year,
+                        camp_name=self.camp_name)
+                .order_by('-year')
+                .first())
+
+    @cached_property
+    def next_camp(self):
+        return (Camp.objects
+                .filter(year__gt=self.year,
+                        camp_name=self.camp_name)
+                .order_by('year')
+                .first())
 
     def _format_leaders(self, ls):
         if len(ls) > 0:

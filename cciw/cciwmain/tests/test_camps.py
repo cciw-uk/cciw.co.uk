@@ -39,6 +39,21 @@ class CampModel(TestCase):
         camp.leaders.add(l1, l2)
         self.camp = camp
 
+        camp_2 = Camp.objects.create(
+            year=2014,
+            camp_name=camp_name,
+            minimum_age=11,
+            maximum_age=17,
+            start_date=date(2014, 6, 2),
+            end_date=date(2014, 6, 10),
+            max_campers=70,
+            max_male_campers=40,
+            max_female_campers=40,
+            chaplain=l3,
+            site=site,
+        )
+        self.camp_2 = camp_2
+
     def test_display(self):
         self.assertEqual(str(self.camp), "2013-blue (John, Mary, Gregory)")
 
@@ -46,6 +61,13 @@ class CampModel(TestCase):
         self.assertEqual(self.camp.name, "Blue")
         self.assertEqual(self.camp.slug_name, "blue")
         self.assertEqual(self.camp.slug_name_with_year, "2013-blue")
+
+    def test_previous_and_next(self):
+        self.assertEqual(self.camp_2.previous_camp, self.camp)
+        self.assertEqual(self.camp.next_camp, self.camp_2)
+
+        self.assertEqual(self.camp.previous_camp, None)
+        self.assertEqual(self.camp_2.next_camp, None)
 
 
 class ThisyearPage(BasicSetupMixin, TestCase):
