@@ -44,7 +44,7 @@ class PersonAdmin(admin.ModelAdmin):
 
 
 class CampNameAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug']
+    list_display = ['name', 'slug', 'color']
     prepopulated_fields = {
         'slug': ['name'],
     }

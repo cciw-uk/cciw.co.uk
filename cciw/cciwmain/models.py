@@ -1,5 +1,6 @@
 from datetime import date
 
+from colorful.fields import RGBColorField
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -7,7 +8,6 @@ from django.utils.functional import cached_property
 from django.utils.html import format_html
 
 from cciw.cciwmain import signals
-
 
 REFERENCE_CONTACT_ROLE_NAME = "Safeguarding co-ordinator"
 
@@ -64,6 +64,7 @@ class Person(models.Model):
 class CampName(models.Model):
     name = models.CharField(max_length=255, help_text="Name of set of camps. Should start with captial letter", unique=True)
     slug = models.SlugField(max_length=255, help_text="Name used in URLs and email addresses. Normally just the lowercase version of the name, with spaces replaces by -", unique=True)
+    color = RGBColorField()
 
     def __str__(self):
         return self.name
@@ -243,4 +244,4 @@ def get_reference_contact_people():
     return list(Person.objects.filter(roles__name=REFERENCE_CONTACT_ROLE_NAME))
 
 
-import cciw.cciwmain.hooks  # NOQA
+import cciw.cciwmain.hooks  # NOQA  isort:skip
