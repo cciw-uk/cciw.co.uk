@@ -11,7 +11,7 @@ urlpatterns = [
     url(r'^thisyear/$', camp_views.thisyear, name="cciw-cciwmain-thisyear"),
     url(r'^camps/$', camp_views.index, name="cciw-cciwmain-camps_index"),
     url(r'^camps/(?P<year>\d{4})/?$', camp_views.index, name="cciw-cciwmain-camps_year_index"),
-    url(r'^camps/(?P<year>\d{4})/(?P<number>\d+)/$', camp_views.detail, name="cciw-cciwmain-camps_detail"),
+    url(r'^camps/(?P<year>\d{4})/(?P<slug>[^/]+)/$', camp_views.detail, name="cciw-cciwmain-camps_detail"),
 
     # Sites
     url(r'^sites/$', sites_views.index, name="cciw-cciwmain-sites_index"),

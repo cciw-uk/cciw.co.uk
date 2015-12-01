@@ -523,8 +523,8 @@ class Booking(models.Model):
     # Methods
 
     def __str__(self):
-        return "%s, %s-%s, %s" % (self.name, self.camp.year, self.camp.number,
-                                  self.account)
+        return "%s, %s, %s" % (self.name, self.camp.slug_name_with_year,
+                               self.account)
 
     @property
     def name(self):
@@ -779,8 +779,8 @@ class Booking(models.Model):
 
         if self.account.bookings.filter(first_name=self.first_name, last_name=self.last_name, camp=self.camp).exclude(id=self.id):
             warnings.append("You have entered another set of place details for a camper "
-                            "called '%s' on camp %d. Please ensure you don't book multiple "
-                            "places for the same camper!" % (self.name, self.camp.number))
+                            "called '%s' on camp %s. Please ensure you don't book multiple "
+                            "places for the same camper!" % (self.name, self.camp.name))
 
         if self.price_type == PRICE_FULL:
             full_pricers = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()\

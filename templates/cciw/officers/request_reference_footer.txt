@@ -2,4 +2,4 @@
 
 {{ sender.first_name }} {{ sender.last_name }}
 
-For CCIW camp {{ camp.number }}, {{ camp.year }} - {{ camp.leaders_formatted }}.{% endautoescape %}
+For CCIW camp {{ camp.name }}, {{ camp.year }} - {{ camp.leaders_formatted }}.{% endautoescape %}

@@ -1,12 +1,12 @@
 {% extends "cciw/officers/base.html" %}
 {% load reference_utils %}
-{% block title %}Manage references {{ camp.name_with_year }} | CCIW Officers{% endblock %}
+{% block title %}Manage references {{ camp.nice_name }} | CCIW Officers{% endblock %}
 {% block extrastyle %}{{ block.super }}
   <script type="text/javascript">
    //<![CDATA[
 
    function requestGeneric(query) {
-       window.open('{% url "cciw-officers-request_reference" year=camp.year number=camp.number %}?' + query,
+       window.open('{% url "cciw-officers-request_reference" year=camp.year slug=camp.slug_name %}?' + query,
                    '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
    }
 
@@ -70,7 +70,7 @@
    }
 
    function nagByOfficer(referee_id) {
-       window.open('{% url "cciw-officers-nag_by_officer" year=camp.year number=camp.number %}?referee_id=' + referee_id.toString(),
+       window.open('{% url "cciw-officers-nag_by_officer" year=camp.year slug=camp.slug_name %}?referee_id=' + referee_id.toString(),
                    '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
    }
 

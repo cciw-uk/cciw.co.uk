@@ -7,7 +7,7 @@
     <ul class="camplist">
       {% for camp in yeargroup.list %}
         <li><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">
-          Camp {{ camp.number }}</a>,
+          Camp {{ camp.name }}</a>,
           led by {{ camp.leaders.all|join:", " }},
           chaplain {{ camp.chaplain }}
         </li>

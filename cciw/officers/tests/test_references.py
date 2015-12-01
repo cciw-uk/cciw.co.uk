@@ -15,22 +15,22 @@ class ReferencesPage(ReferenceSetupMixin, WebTestBase):
     def test_page_ok(self):
         # Value of this test lies in the test data.
         self.webtest_officer_login(LEADER)
-        response = self.get("cciw-officers-manage_references", year=2000, number=1)
+        response = self.get("cciw-officers-manage_references", year=2000, slug="blue")
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'For camp 2000-1')
+        self.assertContains(response, 'For camp 2000-blue')
         self.assertNotContains(response, 'referee1@email.co.uk')  # Received
         self.assertContains(response, 'referee2@email.co.uk')    # Not received
         self.assertContains(response, 'referee3@email.co.uk')
         self.assertContains(response, 'referee4@email.co.uk')
 
     def test_page_anonymous_denied(self):
-        response = self.get("cciw-officers-manage_references", year=2000, number=1)
+        response = self.get("cciw-officers-manage_references", year=2000, slug="blue")
         self.assertEqual(response.status_code, 302)
-        self.assertNotContains(response.follow(), 'For camp 2000-1')
+        self.assertNotContains(response.follow(), 'For camp 2000-blue')
 
     def test_page_officers_denied(self):
         self.webtest_officer_login(OFFICER)
-        response = self.app.get(reverse("cciw-officers-manage_references", kwargs=dict(year=2000, number=1)),
+        response = self.app.get(reverse("cciw-officers-manage_references", kwargs=dict(year=2000, slug="blue")),
                                 expect_errors=[403])
         self.assertEqual(response.status_code, 403)
 
@@ -49,7 +49,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.assertTrue(app.referees[0].email != '')
         referee = app.referees[0]
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, slug="blue"))
                                 + "?referee_id=%d" % referee.id)
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "No e-mail address")
@@ -58,6 +58,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         msgs = [e for e in mail.outbox if "Reference for" in e.subject]
         self.assertEqual(len(msgs), 1)
         self.assertEqual(msgs[0].extra_headers.get('Reply-To', ''), LEADER_EMAIL)
+        self.assertEqual(msgs[0].extra_headers.get('X-CCIW-Camp', ''), "2000-blue")
 
     def test_no_email(self):
         """
@@ -68,7 +69,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.assertTrue(app.referees[1].email == '')
         referee = app.referees[1]
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, slug="blue"))
                                 + "?referee_id=%d" % referee.id)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No e-mail address")
@@ -95,7 +96,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.assertTrue(app.referees[0].email != '')
         referee = app.referees[0]
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, slug="blue"))
                                 + "?referee_id=%d" % referee.id)
         self.assertEqual(response.status_code, 200)
         response = response.forms['id_request_reference_send'].submit("cancel")
@@ -108,7 +109,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         app = self.application3
         referee = app.referees[0]
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, slug="blue"))
                                 + "?referee_id=%d" % referee.id)
         self.assertEqual(response.status_code, 200)
         response = self.fill(response.forms['id_request_reference_send'],
@@ -127,7 +128,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         add_previous_references(referee)
         assert referee.previous_reference is not None
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2001, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2001, slug="blue"))
                                 + "?referee_id=%d&update=1&prev_ref_id=%d" % (referee.id, referee.previous_reference.id))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Referee1 Name has done a reference for Joe in the past.")
@@ -158,7 +159,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         assert referee.previous_reference is None
         assert referee.possible_previous_references[0].referee_name == "Referee1 Name"
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2001, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2001, slug="blue"))
                                 + "?referee_id=%d&update=1&prev_ref_id=%d" % (referee.id, referee.possible_previous_references[0].id))
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Referee1 Name has done a reference for Joe in the past.")
@@ -170,7 +171,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         app = self.application3
         referee = app.referees[0]
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, number=1))
+        response = self.app.get(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, slug="blue"))
                                 + "?referee_id=%d" % referee.id)
         self.assertEqual(response.status_code, 200)
         form = response.forms['id_request_reference_manual']
@@ -192,7 +193,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         app = self.application1
         referee = app.referees[0]
         self.webtest_officer_login(LEADER)
-        response = self.app.get(reverse("cciw-officers-nag_by_officer", kwargs=dict(year=2000, number=1))
+        response = self.app.get(reverse("cciw-officers-nag_by_officer", kwargs=dict(year=2000, slug="blue"))
                                 + "?referee_id=%d" % referee.id)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "to nag their referee")

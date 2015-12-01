@@ -41,7 +41,12 @@ class CampModel(TestCase):
         self.camp = camp
 
     def test_display(self):
-        self.assertEqual(str(self.camp), "2013-1 (John, Mary, Gregory)")
+        self.assertEqual(str(self.camp), "2013-blue (John, Mary, Gregory)")
+
+    def test_names(self):
+        self.assertEqual(self.camp.name, "Blue")
+        self.assertEqual(self.camp.slug_name, "blue")
+        self.assertEqual(self.camp.slug_name_with_year, "2013-blue")
 
 
 class ThisyearPage(BasicSetupMixin, TestCase):
@@ -55,14 +60,12 @@ class ThisyearPage(BasicSetupMixin, TestCase):
         init_query_caches()
         y = get_thisyear()
         site = Site.objects.get(id=1)
-        camp_name = CampName.objects.create(
-            name="Blue",
-            slug="blue",
-        )
 
         for i in range(1, 20):
+            cn = CampName.objects.create(name=chr(64 + i),
+                                         slug=chr(64 + i).lower())
             c = Camp.objects.create(year=y, number=i, site=site,
-                                    camp_name=camp_name,
+                                    camp_name=cn,
                                     minimum_age=11,
                                     maximum_age=17,
                                     start_date=date(y, 6, 1),

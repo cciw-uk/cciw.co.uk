@@ -116,7 +116,7 @@ def year_bookings_to_spreadsheet(year, spreadsheet):
     bookings = Booking.objects.filter(camp__year=year).confirmed().order_by('camp__number', 'account__name', 'first_name', 'last_name').select_related('camp', 'account')
 
     columns = [
-        ('Camp', lambda b: b.camp.number),
+        ('Camp', lambda b: b.camp.name),
         ('Account', lambda b: b.account.name),
         ('First name', lambda b: b.first_name),
         ('Last name', lambda b: b.last_name),

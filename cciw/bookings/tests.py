@@ -634,7 +634,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
 
-        self.assertContains(resp, "Camp 1")
+        self.assertContains(resp, "Camp Blue")
         self.assertContains(resp, "Frédéric Bloggs")
         self.assertContains(resp, "£100")
         self.assertContains(resp, "This place can be booked")
@@ -645,7 +645,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
 
-        self.assertContains(resp, "Camp 1")
+        self.assertContains(resp, "Camp Blue")
         self.assertContains(resp, "Frédéric Bloggs")
         self.assertContains(resp, "TBA")
         self.assertContains(resp, "A custom discount needs to be arranged by the booking secretary")
@@ -824,7 +824,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
 
-        self.assertContains(resp, "Camp 1")
+        self.assertContains(resp, "Camp Blue")
         self.assertContains(resp, "Frédéric Bloggs")
         self.assertContains(resp, "TBA")
         self.assertContains(resp, "A custom discount needs to be arranged by the booking secretary")
@@ -864,7 +864,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         resp = self.client.get(self.url)
         self.assertEqual(200, resp.status_code)
 
-        self.assertContains(resp, "Camp 1")
+        self.assertContains(resp, "Camp Blue")
         self.assertContains(resp, "Frédéric Bloggs")
         self.assertContains(resp, "£100")
         self.assertContains(resp, "This place can be booked")

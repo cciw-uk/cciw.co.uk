@@ -87,7 +87,7 @@
                if (selectedCamps.length == 0) {
                    // Special case - server side if there are no 'camp' query params,
                    // we treat this as if all camps are selected. To get behaviour to
-                   // match, we specify an invalid camp number
+                   // match, we specify an invalid camp slug
                    url = '?camp=0';
                } else {
                    url = "?" + $.map(selectedCamps,
@@ -171,8 +171,8 @@
   <div id='id_campselector'>
     <form action="." method="GET">
       <p>Select camps: {% for camp in camps %}
-        <label><input type="checkbox" name="camp" value="{{ camp.number }}"
-                      {% if camp.number in selected_camps %}checked{% endif %}> {{ camp.number }}</label>&nbsp;&nbsp;
+        <label><input type="checkbox" name="camp" value="{{ camp.slug_name }}"
+                      {% if camp.slug_name in selected_camps %}checked{% endif %}> {{ camp.slug_name }}</label>&nbsp;&nbsp;
       {% endfor %} <input type="submit" value="Update page">
       </p>
     </form>
@@ -194,12 +194,12 @@
       {% for officer in all_officers %}
         <tr id="id_highlightdiv_{{ officer.id }}"
             {% if not officer.temp.has_valid_crb and officer.temp.has_application_form and not officer.temp.last_crb_form_sent %}class="actionable"{% endif %}
-            data-camps="{% for camp in officer.temp.camps %}{{ camp.number }}{% if not forloop.last %},{% endif %}{% endfor %}"
+            data-camps="{% for camp in officer.temp.camps %}{{ camp.slug_name }}{% if not forloop.last %},{% endif %}{% endfor %}"
             {% if not officer.temp.selected %}style="display: none;"{% endif %}
             >
           <td>{{ officer.first_name }} {{ officer.last_name }}</td>
           <td>{% for camp in officer.temp.camps %}
-            <a href="{% url 'cciw-officers-officer_list' year=camp.year number=camp.number %}" target="_blank">{{ camp.number }}</a>{% if not forloop.last %}, {% endif %}
+            <a href="{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}" target="_blank">{{ camp.slug_name }}</a>{% if not forloop.last %}, {% endif %}
           {% endfor %}
           </td>
           <td>{% if officer.temp.has_application_form %}<img src="{% static "admin/img/icon-yes.gif" %}">

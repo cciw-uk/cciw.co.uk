@@ -281,8 +281,8 @@ def _thisyears_camp_for_leader(user):
 @staff_member_required
 @camp_admin_required
 @never_cache
-def manage_applications(request, year=None, number=None):
-    camp = _get_camp_or_404(year, number)
+def manage_applications(request, year=None, slug=None):
+    camp = _get_camp_or_404(year, slug)
     c = {}
     c['finished_applications'] = applications_for_camp(camp).order_by('officer__first_name', 'officer__last_name')
     c['camp'] = camp
@@ -290,9 +290,9 @@ def manage_applications(request, year=None, number=None):
     return render(request, 'cciw/officers/manage_applications.html', c)
 
 
-def _get_camp_or_404(year, number):
+def _get_camp_or_404(year, slug):
     try:
-        return Camp.objects.get(year=int(year), number=int(number))
+        return Camp.objects.get(year=int(year), camp_name__slug=slug)
     except (Camp.DoesNotExist, ValueError):
         raise Http404
 
@@ -354,7 +354,7 @@ def add_previous_references(referee):
 @staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
 @never_cache
-def manage_references(request, year=None, number=None):
+def manage_references(request, year=None, slug=None):
     c = {}
 
     # If referee_id is set, we just want to update part of the page.
@@ -368,7 +368,7 @@ def manage_references(request, year=None, number=None):
             raise Http404
 
     c['officer'] = officer
-    camp = _get_camp_or_404(year, number)
+    camp = _get_camp_or_404(year, slug)
     c['camp'] = camp
 
     if referee_id is None:
@@ -493,8 +493,8 @@ class SendReferenceRequestForm(SendMessageForm):
 
 @staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
-def request_reference(request, year=None, number=None):
-    camp = _get_camp_or_404(year, number)
+def request_reference(request, year=None, slug=None):
+    camp = _get_camp_or_404(year, slug)
     try:
         referee_id = int(request.GET.get('referee_id'))
     except (ValueError, TypeError):
@@ -602,8 +602,8 @@ class SendNagByOfficerForm(SendMessageForm):
 
 @staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
-def nag_by_officer(request, year=None, number=None):
-    camp = _get_camp_or_404(year, number)
+def nag_by_officer(request, year=None, slug=None):
+    camp = _get_camp_or_404(year, slug)
     try:
         referee_id = int(request.GET.get('referee_id'))
     except (ValueError, TypeError):
@@ -790,8 +790,8 @@ def view_reference(request, reference_id=None):
 
 @staff_member_required
 @camp_admin_required
-def officer_list(request, year=None, number=None):
-    camp = _get_camp_or_404(year, number)
+def officer_list(request, year=None, slug=None):
+    camp = _get_camp_or_404(year, slug)
 
     c = {}
     c['camp'] = camp
@@ -836,8 +836,8 @@ def officer_list(request, year=None, number=None):
 @staff_member_required
 @camp_admin_required
 @json_response
-def remove_officer(request, year=None, number=None):
-    camp = _get_camp_or_404(year, number)
+def remove_officer(request, year=None, slug=None):
+    camp = _get_camp_or_404(year, slug)
     officer_id = request.POST['officer_id']
     Invitation.objects.filter(camp=camp.id, officer=int(officer_id)).delete()
     return {'status': 'success'}
@@ -846,8 +846,8 @@ def remove_officer(request, year=None, number=None):
 @staff_member_required
 @camp_admin_required
 @json_response
-def add_officers(request, year=None, number=None):
-    camp = _get_camp_or_404(year, number)
+def add_officers(request, year=None, slug=None):
+    camp = _get_camp_or_404(year, slug)
     for officer_id in request.POST['officer_ids'].split(','):
         try:
             Invitation.objects.get(camp=camp, officer=User.objects.get(id=int(officer_id)))
@@ -1010,22 +1010,20 @@ def resend_email(request):
 
 @staff_member_required
 @camp_admin_required
-def export_officer_data(request, year=None, number=None):
-    camp = _get_camp_or_404(year, number)
+def export_officer_data(request, year=None, slug=None):
+    camp = _get_camp_or_404(year, slug)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(officer_data_to_spreadsheet(camp, formatter),
-                                "camp-%d-%d-officers"
-                                % (camp.year, camp.number))
+                                "camp-%s-officers" % camp.slug_name_with_year)
 
 
 @staff_member_required
 @camp_admin_required
-def export_camper_data(request, year=None, number=None):
-    camp = _get_camp_or_404(year, number)
+def export_camper_data(request, year=None, slug=None):
+    camp = _get_camp_or_404(year, slug)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(camp_bookings_to_spreadsheet(camp, formatter),
-                                "camp-%d-%d-campers"
-                                % (camp.year, camp.number))
+                                "camp-%s-campers" % camp.slug_name_with_year)
 
 
 @staff_member_required
@@ -1039,11 +1037,11 @@ def export_camper_data_for_year(request, year=None):
 
 @staff_member_required
 @camp_admin_required
-def export_sharable_transport_details(request, year=None, number=None):
-    camp = _get_camp_or_404(year, number)
+def export_sharable_transport_details(request, year=None, slug=None):
+    camp = _get_camp_or_404(year, slug)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(camp_sharable_transport_details_to_spreadsheet(camp, formatter),
-                                "camp-%d-%d-transport-details" % (camp.year, camp.number))
+                                "camp-%s-transport-details" % camp.slug_name_with_year)
 
 
 officer_files = access_folder_securely("officers",
@@ -1054,7 +1052,7 @@ officer_files = access_folder_securely("officers",
 @camp_admin_required
 def officer_stats(request, year=None):
     year = int(year)
-    camps = list(Camp.objects.filter(year=year).order_by('number'))
+    camps = list(Camp.objects.filter(year=year).order_by('camp_name__slug'))
     if len(camps) == 0:
         raise Http404
 
@@ -1069,7 +1067,7 @@ def officer_stats(request, year=None):
         df.pop('References')
         charts.append((camp,
                        pandas_highcharts.core.serialize(df,
-                                                        title="{0} - {1}".format(camp.number, camp.leaders_formatted),
+                                                        title="{0} - {1}".format(camp.name, camp.leaders_formatted),
                                                         output_type='json')))
     ctx['charts'] = charts
     return render(request, 'cciw/officers/stats.html', ctx)
@@ -1110,10 +1108,10 @@ def fraction_to_percent(data):
 @camp_admin_required
 def officer_stats_download(request, year):
     year = int(year)
-    camps = list(Camp.objects.filter(year=year).order_by('number'))
+    camps = list(Camp.objects.filter(year=year).order_by('camp_name__slug'))
     formatter = get_spreadsheet_formatter(request)
     for camp in camps:
-        formatter.add_sheet_from_dataframe(camp.name_with_year,
+        formatter.add_sheet_from_dataframe(camp.slug_name_with_year,
                                            get_camp_officer_stats(camp))
     return spreadsheet_response(formatter,
                                 "officer-stats-%d" % year)
@@ -1137,21 +1135,21 @@ def manage_crbs(request, year=None):
     year = int(year)
     now = timezone.now()
     # We need a lot of information. Try to get it in a few up-front queries
-    camps = list(Camp.objects.filter(year=year).order_by('number'))
+    camps = list(Camp.objects.filter(year=year).order_by('camp_name__slug'))
     if len(camps) == 0:
         raise Http404
     # Selected camps:
     # We need to support URLs that indicate which camp to select, so we
     # can permalink nicely.
-    selected_camp_numbers = None
+    selected_camp_slugs = None
     if 'camp' in request.GET:
         try:
-            selected_camp_numbers = set(map(int, request.GET.getlist('camp')))
+            selected_camp_slugs = set(request.GET.getlist('camp'))
         except ValueError:
             pass
-    if not selected_camp_numbers:  # empty or None
+    if not selected_camp_slugs:  # empty or None
         # Assume all, because having none is never useful
-        selected_camp_numbers = set([c.number for c in camps])
+        selected_camp_slugs = set([c.slug_name for c in camps])
 
     # We need all the officers, and we need to know which camp(s) they belong
     # to. Even if we have only selected one camp, it might be nice to know if
@@ -1189,7 +1187,7 @@ def manage_crbs(request, year=None):
         for c in camps:
             if o.id in officer_ids[c.id]:
                 officer_camps.append(c)
-                if c.number in selected_camp_numbers:
+                if c.slug_name in selected_camp_slugs:
                     selected = True
         app = officer_apps.get(o.id, None)
         o.temp['camps'] = officer_camps
@@ -1204,7 +1202,7 @@ def manage_crbs(request, year=None):
 
     c = {'all_officers': all_officers,
          'camps': camps,
-         'selected_camps': selected_camp_numbers,
+         'selected_camps': selected_camp_slugs,
          'year': year}
     return render(request, 'cciw/officers/manage_crbs.html', c)
 
@@ -1378,7 +1376,7 @@ def _parse_year_or_camp_params(start_year, end_year, camps):
         camp_ids = camps.split(',')
         try:
             camp_objs = [Camp.objects.get(year=int(camp.split('-')[0]),
-                                          number=int(camp.split('-')[1]))
+                                          camp_name__slug=camp.split('-')[1])
                          for camp in camp_ids]
         except Camp.DoesNotExist:
             raise Http404()
@@ -1480,7 +1478,7 @@ def booking_ages_stats(request, start_year=None, end_year=None, camps=None, sing
         camps = Camp.objects.filter(year=int(single_year))
         return HttpResponseRedirect(reverse('cciw-officers-booking_ages_stats_custom',
                                             kwargs={'camps':
-                                                    ','.join(c.name_with_year for c in camps)}))
+                                                    ','.join(c.slug_name_with_year for c in camps)}))
     start_year, end_year, camp_objs, data = (
         _get_booking_ages_stats_from_params(start_year, end_year, camps)
     )

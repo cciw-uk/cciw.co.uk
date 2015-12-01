@@ -22,15 +22,15 @@ from cciw.webfaction import webfaction_session
 
 # See also below for changes to format
 def address_for_camp_officers(camp):
-    return "camp-%d-%d-officers@cciw.co.uk" % (camp.year, camp.number)
+    return "camp-%s-officers@cciw.co.uk" % camp.slug_name_with_year
 
 
 def address_for_camp_slackers(camp):
-    return "camp-%d-%d-slackers@cciw.co.uk" % (camp.year, camp.number)
+    return "camp-%s-slackers@cciw.co.uk" % camp.slug_name_with_year
 
 
 def address_for_camp_leaders(camp):
-    return "camp-%d-%d-leaders@cciw.co.uk" % (camp.year, camp.number)
+    return "camp-%s-leaders@cciw.co.uk" % camp.slug_name_with_year
 
 
 def address_for_camp_leaders_year(year):
@@ -67,31 +67,31 @@ class MailAccessDenied(ValueError):
     pass
 
 
-def _get_camps(year=None, number=None):
+def _get_camps(year=None, slug=None):
     from cciw.cciwmain.models import Camp
     camps = Camp.objects.filter(year=int(year))
-    if number is not None:
-        camps = camps.filter(number=number)
+    if slug is not None:
+        camps = camps.filter(camp_name__slug=slug)
     return camps
 
 
-def _get_camp(year=None, number=None):
+def _get_camp(year=None, slug=None):
     try:
-        return _get_camps(year=year, number=int(number)).get()
+        return _get_camps(year=year, slug=slug).get()
     except Camp.DoesNotExist:
-        raise NoSuchList("year=%r camp=%r" % (year, number))
+        raise NoSuchList("year=%r camp=%r" % (year, slug))
 
 
-def _camp_officers(year=None, number=None):
-    return camp_officer_list(_get_camp(year=year, number=number))
+def _camp_officers(year=None, slug=None):
+    return camp_officer_list(_get_camp(year=year, slug=slug))
 
 
-def _camp_slackers(year=None, number=None):
-    return camp_slacker_list(_get_camp(year=year, number=number))
+def _camp_slackers(year=None, slug=None):
+    return camp_slacker_list(_get_camp(year=year, slug=slug))
 
 
-def _camp_leaders(year=None, number=None):
-    camps = _get_camps(year=year, number=number)
+def _camp_leaders(year=None, slug=None):
+    camps = _get_camps(year=year, slug=slug)
     s = set()
     for c in camps:
         s.update(_get_leaders_for_camp(c))
@@ -111,8 +111,8 @@ def _email_match(email, users):
     return any(user.email.lower() == email.lower() for user in users)
 
 
-def _is_camp_leader_or_admin(email, year=None, number=None):
-    camps = _get_camps(year=year, number=number)
+def _is_camp_leader_or_admin(email, year=None, slug=None):
+    camps = _get_camps(year=year, slug=slug)
     all_users = set()
     for c in camps:
         all_users.update(_get_leaders_for_camp(c))
@@ -121,8 +121,8 @@ def _is_camp_leader_or_admin(email, year=None, number=None):
     return _email_match(email, all_users)
 
 
-def _is_camp_leader_or_admin_or_site_admin(email, year=None, number=None):
-    if _is_camp_leader_or_admin(email, year=year, number=number):
+def _is_camp_leader_or_admin_or_site_admin(email, year=None, slug=None):
+    if _is_camp_leader_or_admin(email, year=year, slug=slug):
         return True
 
     if _email_match(email, get_camp_admin_group_users()):
@@ -142,11 +142,11 @@ def _mail_debug_users():
 
 # See also cciw.officers.utils
 email_lists = {
-    re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-officers@cciw.co.uk$", re.IGNORECASE):
+    re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-officers@cciw.co.uk$", re.IGNORECASE):
     (_camp_officers, _is_camp_leader_or_admin),
-    re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-slackers@cciw.co.uk$", re.IGNORECASE):
+    re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-slackers@cciw.co.uk$", re.IGNORECASE):
     (_camp_slackers, _is_camp_leader_or_admin),
-    re.compile(r"^camp-(?P<year>\d{4})-(?P<number>\d+)-leaders@cciw.co.uk$", re.IGNORECASE):
+    re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders@cciw.co.uk$", re.IGNORECASE):
     (_camp_leaders, _is_camp_leader_or_admin_or_site_admin),
     re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw.co.uk$", re.IGNORECASE):
     (_camp_leaders, _is_camp_leader_or_admin_or_site_admin),

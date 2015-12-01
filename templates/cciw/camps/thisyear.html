@@ -8,7 +8,7 @@
       <table class="topheaders responsive" summary="Details of all camps running in {{ thisyear }}">
         <thead>
           <tr>
-            <th scope="col" abbr="Num">#</th>
+            <th scope="col">Name</th>
             <th scope="col">Age</th>
             <th scope="col">Dates</th>
             <th scope="col">Leaders</th>
@@ -27,9 +27,9 @@
 
             {% for camp in campgroup.list %}
               <tr>
-                <td data-label="Number">
+                <td data-label="Name">
                   <a href="{{ camp.get_absolute_url }}"
-                     title="{{ camp.nice_name }}">{{ camp.number }}</a></td>
+                     title="{{ camp.nice_name }}">{{ camp.name }}</a></td>
                 <td data-label="Age">{{ camp.age  }}</td>
                 <td data-label="Dates">{{ camp.nice_dates }}</td>
                 <td data-label="Leaders"><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">{{ camp.leaders.all|join:", " }}</a></td>

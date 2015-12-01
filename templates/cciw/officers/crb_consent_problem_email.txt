@@ -14,7 +14,7 @@ https://www.cciw.co.uk{% url 'admin:officers_application_change' application.id 
 
 If it is correct that they do not consent to having a DBS check done, they cannot come on camp, and need to be removed from the camp officer list:
 
-{% for camp in camps %}https://www.cciw.co.uk{% url 'cciw-officers-officer_list' year=camp.year number=camp.number %}
+{% for camp in camps %}https://www.cciw.co.uk{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}
 {% endfor %}
 
 Thanks!

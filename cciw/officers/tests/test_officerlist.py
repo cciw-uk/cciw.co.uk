@@ -34,7 +34,7 @@ class TestExport(ApplicationSetupMixin, TestCase):
         Test that the export data view generates an Excel file with all the data
         we expect if there is no application form.
         """
-        c = Camp.objects.get(year=2000, number=1)
+        c = Camp.objects.get(year=2000, camp_name__slug="blue")
         officers = list(c.officers.all())
         first_names = [o.first_name for o in officers]
 

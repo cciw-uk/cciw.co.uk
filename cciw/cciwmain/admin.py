@@ -78,7 +78,7 @@ class CampAdmin(admin.ModelAdmin):
           }
          ),
     )
-    ordering = ('-year', 'number')
+    ordering = ('-year', 'start_date')
 
     def leaders(camp):
         return camp.leaders_formatted
@@ -87,7 +87,7 @@ class CampAdmin(admin.ModelAdmin):
         return camp.chaplain
     chaplain.admin_order_field = 'chaplain__name'
     list_display = ('year', 'camp_name', 'number', leaders, chaplain, 'age', 'site', 'start_date')
-    list_display_links = ('camp_name', 'number', leaders)
+    list_display_links = ('camp_name', leaders)
     del leaders, chaplain
     list_filter = ['camp_name', 'site']
     filter_horizontal = ('leaders', 'admins')

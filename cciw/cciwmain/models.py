@@ -72,10 +72,10 @@ class CampManager(models.Manager):
     use_for_related_fields = True
 
     def get_queryset(self):
-        return super(CampManager, self).get_queryset().select_related('chaplain').prefetch_related('leaders')
+        return super(CampManager, self).get_queryset().select_related('chaplain', 'camp_name').prefetch_related('leaders')
 
-    def get_by_natural_key(self, year, number):
-        return self.get(year=year, number=number)
+    def get_by_natural_key(self, year, slug):
+        return self.get(year=year, camp_name__slug=slug)
 
 
 class Camp(models.Model):
@@ -121,11 +121,7 @@ class Camp(models.Model):
             signals.camp_created.send(self)
 
     def natural_key(self):
-        return (self.year, self.number)
-
-    @property
-    def name_with_year(self):
-        return "%s-%s" % (self.year, self.number)
+        return (self.year, self.slug_name)
 
     def __str__(self):
         leaders = list(self.leaders.all())
@@ -140,7 +136,7 @@ class Camp(models.Model):
             leaders.append(chaplain)
 
         leadertext = self._format_leaders(leaders)
-        return "%s (%s)" % (self.name_with_year, leadertext)
+        return "%s (%s)" % (self.slug_name_with_year, leadertext)
 
     def _format_leaders(self, ls):
         if len(ls) > 0:
@@ -153,8 +149,20 @@ class Camp(models.Model):
         return self._format_leaders(list(self.leaders.all()))
 
     @property
+    def name(self):
+        return self.camp_name.name
+
+    @property
+    def slug_name(self):
+        return self.camp_name.slug
+
+    @property
+    def slug_name_with_year(self):
+        return "%s-%s" % (self.year, self.slug_name)
+
+    @property
     def nice_name(self):
-        return "Camp %d, year %d" % (self.number, self.year)
+        return "Camp %s, year %d" % (self.name, self.year)
 
     @property
     def nice_dates(self):
@@ -170,7 +178,8 @@ class Camp(models.Model):
         return format_html("<a href='{0}'>{1}</a>", self.get_absolute_url(), self.nice_name)
 
     def get_absolute_url(self):
-        return "/camps/{0}/{1}/".format(self.year, self.number)
+        return reverse("cciw-cciwmain-camps_detail",
+                       kwargs=dict(year=self.year, slug=self.slug_name))
 
     def is_past(self):
         return self.end_date <= date.today()
@@ -211,7 +220,7 @@ class Camp(models.Model):
         return self.open_for_bookings(date.today())
 
     class Meta:
-        ordering = ['-year', 'number']
+        ordering = ['-year', 'start_date']
         unique_together = (('year', 'number'),)
 
 

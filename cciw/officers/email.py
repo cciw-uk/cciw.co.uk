@@ -214,7 +214,7 @@ def send_reference_request_email(message, referee, sending_officer, camp):
                  from_email=settings.REFERENCES_EMAIL,
                  to=[referee.email],
                  headers={'Reply-To': sending_officer.email,
-                          'X-CCIW-Camp': '{0}-{1}'.format(camp.year, camp.number),
+                          'X-CCIW-Camp': camp.slug_name_with_year,
                           'X-CCIW-Action': 'ReferenceRequest',
                           }).send()
 
@@ -295,12 +295,12 @@ def handle_reference_bounce(email_file):
             payload = bounced_email.get_payload()
             if len(payload) > 0:
                 reply_to = payload[0].get('Reply-To', reply_to)
-                camp_s = payload[0].get('X-CCIW-Camp', camp)
+                camp_s = payload[0].get('X-CCIW-Camp', None)
                 if camp_s is not None:
                     try:
-                        camp_year, camp_number = camp_s.split("-")
+                        camp_year, camp_slug = camp_s.split("-")
                         camp = Camp.objects.get(year=int(camp_year),
-                                                number=int(camp_number))
+                                                camp_name__slug=camp_slug)
                     except (ValueError, Camp.DoesNotExist):
                         pass
 
@@ -336,7 +336,7 @@ Use the following link to manage this reference:
 {link}
 """.format(link="https://www.cciw.co.uk"
            + reverse('cciw-officers-manage_references',
-                     kwargs=dict(year=camp.year, number=camp.number))
+                     kwargs=dict(year=camp.year, slug=camp.slug_name))
            + "?ref_email=" + urlquote(bounced_email_address))
 
     forward_with_text(email_addresses,

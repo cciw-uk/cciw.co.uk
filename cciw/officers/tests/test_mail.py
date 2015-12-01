@@ -13,7 +13,7 @@ User = get_user_model()
 
 TEST_MAIL = """MIME-Version: 1.0
 Date: Thu, 30 Jul 2015 10:39:10 +0100
-To: "Camp 1 officers" <camp-2000-1-officers@cciw.co.uk>
+To: "Camp 1 officers" <camp-2000-blue-officers@cciw.co.uk>
 Subject: Minibus Drivers
 Content-Type: text/plain; charset="us-ascii"
 From: Dave Stott <leader@somewhere.com>
@@ -57,13 +57,13 @@ class MailTests(ExtraOfficersSetupMixin, TestCase):
         self.assertRaises(NoSuchList,
                           lambda: users_for_address('committee@cciw.co.uk', 'joe@random.com'))
         self.assertRaises(NoSuchList,
-                          lambda: users_for_address('x-camp-2000-1-officers@cciw.co.uk', 'joe@random.com'))
+                          lambda: users_for_address('x-camp-2000-blue-officers@cciw.co.uk', 'joe@random.com'))
 
     def test_officer_list(self):
         self.assertRaises(MailAccessDenied,
-                          lambda: users_for_address('camp-2000-1-officers@cciw.co.uk', 'joe@random.com'))
+                          lambda: users_for_address('camp-2000-blue-officers@cciw.co.uk', 'joe@random.com'))
 
-        l1 = users_for_address('camp-2000-1-officers@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
+        l1 = users_for_address('camp-2000-blue-officers@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
 
         self.assertEqual([u.username for u in l1],
                          ["fredjones", "joebloggs", "petersmith"])
@@ -74,15 +74,15 @@ class MailTests(ExtraOfficersSetupMixin, TestCase):
         # non-priviliged user:
         user = User.objects.create(username="joerandom", email="joe@random.com", is_superuser=False)
         self.assertRaises(MailAccessDenied,
-                          lambda: users_for_address('camp-2000-1-leaders@cciw.co.uk', 'joe@random.com'))
+                          lambda: users_for_address('camp-2000-blue-leaders@cciw.co.uk', 'joe@random.com'))
 
         # superuser:
         user.is_superuser = True
         user.save()
-        l1 = users_for_address('camp-2000-1-leaders@cciw.co.uk', 'JOE@RANDOM.COM')
+        l1 = users_for_address('camp-2000-blue-leaders@cciw.co.uk', 'JOE@RANDOM.COM')
 
         # leader:
-        l2 = users_for_address('camp-2000-1-leaders@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
+        l2 = users_for_address('camp-2000-blue-leaders@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
 
         # Check contents
         self.assertEqual([u.username for u in l1],
@@ -106,7 +106,7 @@ class MailTests(ExtraOfficersSetupMixin, TestCase):
         handle_mail(bad_mail)
         self.assertEqual(self.connection.sent, [])
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, "Access to mailing list camp-2000-1-officers@cciw.co.uk denied")
+        self.assertEqual(mail.outbox[0].subject, "Access to mailing list camp-2000-blue-officers@cciw.co.uk denied")
 
     def test_extract(self):
         self.assertEqual(extract_email_addresses('Some Guy <A.Body@example.com>'),
@@ -246,7 +246,7 @@ To: bobjones@xgmail.com
 Date: Fri, 10 Apr 2015 20:31:02 -0000
 Message-ID: <20150410203102.26261.51798@web178.webfaction.com>
 Reply-To: joe.bloggs@hotmail.com
-X-CCIW-Camp: 2000-1
+X-CCIW-Camp: 2000-blue
 
 Dear Mr Bob Jones,
 

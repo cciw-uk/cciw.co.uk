@@ -186,7 +186,7 @@ class BookingAdminForm(autocomplete_light.ModelForm):
 
 class BookingAdmin(admin.ModelAdmin):
     def camp(obj):
-        return obj.camp.name_with_year
+        return obj.camp.slug_name_with_year
     camp.admin_order_field = 'camp__year'
 
     def confirmed(obj):

@@ -23,11 +23,11 @@ def index(request, year=None):
     c['title'] = "Camp information"
     all_camps = Camp.objects.filter(end_date__lte=date.today())
     if (year is None):
-        camps = all_camps.order_by('-year', 'number')
+        camps = all_camps.order_by('-year', 'start_date')
     else:
         year = int(year)  # year is result of regex match
         camps = all_camps.filter(year=year)\
-                         .order_by('-year', 'number')
+                         .order_by('-year', 'start_date')
         if len(camps) == 0:
             raise Http404
     c['camps'] = camps
@@ -35,7 +35,7 @@ def index(request, year=None):
     return render(request, 'cciw/camps/index.html', c)
 
 
-def detail(request, year, number):
+def detail(request, year, slug):
     """
     Shows details of a specific camp.
 
@@ -48,7 +48,7 @@ def detail(request, year, number):
     from cciw.bookings.models import is_booking_open
 
     try:
-        camp = Camp.objects.get(year=int(year), number=int(number))
+        camp = Camp.objects.get(year=int(year), camp_name__slug=slug)
     except Camp.DoesNotExist:
         raise Http404
 
@@ -71,5 +71,5 @@ def detail(request, year, number):
 
 def thisyear(request):
     c = dict(title="Camps %d" % get_thisyear())
-    c['camps'] = Camp.objects.filter(year=get_thisyear()).order_by('number')
+    c['camps'] = Camp.objects.filter(year=get_thisyear()).order_by('start_date')
     return render(request, 'cciw/camps/thisyear.html', c)

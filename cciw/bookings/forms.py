@@ -62,7 +62,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
             return format_html("Camp {0}, {1}, {2}"
                                '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
                                '<span class="placeAvailability">{3}</span>',
-                               c.number,
+                               c.name,
                                c.leaders_formatted,
                                c.start_date.strftime("%e %b %Y"),
                                availability_msg,
