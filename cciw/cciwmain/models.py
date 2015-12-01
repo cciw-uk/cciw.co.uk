@@ -61,8 +61,8 @@ class Person(models.Model):
 
 
 class CampName(models.Model):
-    name = models.CharField(max_length=255, help_text="Name of set of camps. Should start with captial letter")
-    slug = models.SlugField(max_length=255, help_text="Name used in URLs and email addresses. Normally just the lowercase version of the name, with spaces replaces by -")
+    name = models.CharField(max_length=255, help_text="Name of set of camps. Should start with captial letter", unique=True)
+    slug = models.SlugField(max_length=255, help_text="Name used in URLs and email addresses. Normally just the lowercase version of the name, with spaces replaces by -", unique=True)
 
     def __str__(self):
         return self.name
@@ -221,6 +221,9 @@ class Camp(models.Model):
 
     class Meta:
         ordering = ['-year', 'start_date']
+        unique_together = [
+            ('year', 'camp_name'),
+        ]
 
 
 def get_reference_contact_people():

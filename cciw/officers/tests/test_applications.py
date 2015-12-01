@@ -106,7 +106,7 @@ class ApplicationUtils(BasicSetupMixin, TestCase):
         future_camp_start = date(date.today().year + 1, 8, 1)
         past_camp_start = future_camp_start - timedelta(30 * 11)
 
-        camp_name = CampName.objects.create(
+        camp_name, _ = CampName.objects.get_or_create(
             name="Blue",
             slug="blue",
         )

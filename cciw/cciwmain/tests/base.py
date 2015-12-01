@@ -46,7 +46,7 @@ class BasicSetupMixin(object):
             info="Dave and Rebecca are members of Grace Baptist Church, Southport.  Dave has been a leader or assistant leader on many camps (EMW, CCIW and church camps).",
             name="Dave & Rebecca Stott")
 
-        camp_name = CampName.objects.create(
+        camp_name, _ = CampName.objects.get_or_create(
             name="Blue",
             slug="blue",
         )

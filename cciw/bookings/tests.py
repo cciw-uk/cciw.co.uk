@@ -53,7 +53,7 @@ class CreateCampMixin(object):
         # We also need it so that payments can be made when only the deposit is due
         delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE_DAYS
         start_date = self.today + timedelta(delta_days)
-        camp_name = CampName.objects.create(
+        camp_name, _ = CampName.objects.get_or_create(
             name="Blue",
             slug="blue",
         )

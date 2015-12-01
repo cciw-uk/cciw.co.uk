@@ -19,7 +19,7 @@ class CampModel(TestCase):
         site = Site.objects.create(short_name="farm",
                                    slug_name="farm",
                                    long_name="The Farm")
-        camp_name = CampName.objects.create(
+        camp_name, _ = CampName.objects.get_or_create(
             name="Blue",
             slug="blue",
         )
