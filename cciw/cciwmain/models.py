@@ -92,10 +92,6 @@ class Camp(models.Model):
     last_booking_date = models.DateField(null=True, blank=True, help_text="Camp start date will be used if left empty.")
     south_wales_transport_available = models.BooleanField("South Wales transport available (pre 2015 only)", default=False)
 
-    previous_camp = models.ForeignKey("self",
-                                      related_name="next_camps",
-                                      verbose_name="previous camp",
-                                      null=True, blank=True)
     chaplain = models.ForeignKey(Person,
                                  related_name="camps_as_chaplain",
                                  verbose_name="chaplain",

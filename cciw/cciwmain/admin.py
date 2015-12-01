@@ -63,7 +63,7 @@ class CampAdmin(admin.ModelAdmin):
                      'leaders',
                      'chaplain',
                      'site',
-                     'previous_camp')
+                     )
           }
          ),
         ('Booking constraints',

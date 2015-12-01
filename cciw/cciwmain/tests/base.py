@@ -63,7 +63,6 @@ class BasicSetupMixin(object):
         self.default_camp_1.leaders = [self.default_leader]
 
         self.default_camp_2 = Camp.objects.create(
-            previous_camp=self.default_camp_1,
             end_date=date(2001, 7, 8),
             camp_name=camp_name,
             site=self.default_site,
