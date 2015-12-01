@@ -1,6 +1,7 @@
 from functools import wraps
 
 from django.contrib import admin
+from django.utils.html import format_html
 
 from cciw.cciwmain.models import Camp, CampName, Person, Role, Site
 
@@ -44,7 +45,11 @@ class PersonAdmin(admin.ModelAdmin):
 
 
 class CampNameAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'color']
+    def color_swab(camp_name):
+        return format_html('<span style="width:100px; height:15px; display: inline-block; background-color: {0}"></span>',
+                           camp_name.color)
+    color_swab.short_description = "Colour"
+    list_display = ['name', 'slug', color_swab]
     prepopulated_fields = {
         'slug': ['name'],
     }
