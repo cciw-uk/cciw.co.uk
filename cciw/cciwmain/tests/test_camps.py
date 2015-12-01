@@ -25,7 +25,6 @@ class CampModel(TestCase):
         )
         camp = Camp.objects.create(
             year=2013,
-            number=1,
             camp_name=camp_name,
             minimum_age=11,
             maximum_age=17,
@@ -64,7 +63,7 @@ class ThisyearPage(BasicSetupMixin, TestCase):
         for i in range(1, 20):
             cn = CampName.objects.create(name=chr(64 + i),
                                          slug=chr(64 + i).lower())
-            c = Camp.objects.create(year=y, number=i, site=site,
+            c = Camp.objects.create(year=y, site=site,
                                     camp_name=cn,
                                     minimum_age=11,
                                     maximum_age=17,

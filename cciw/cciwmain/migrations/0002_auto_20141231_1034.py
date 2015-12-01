@@ -34,6 +34,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='camp',
-            unique_together=set([('year', 'number')]),
+            unique_together=set([('number', 'year')]),
         ),
     ]

@@ -57,7 +57,7 @@ class CreateCampMixin(object):
             name="Blue",
             slug="blue",
         )
-        self.camp = Camp.objects.create(year=start_date.year, number=1,
+        self.camp = Camp.objects.create(year=start_date.year,
                                         camp_name=camp_name,
                                         minimum_age=self.camp_minimum_age,
                                         maximum_age=self.camp_maximum_age,

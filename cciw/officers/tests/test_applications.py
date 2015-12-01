@@ -113,13 +113,13 @@ class ApplicationUtils(BasicSetupMixin, TestCase):
 
         site = Site.objects.get(id=1)
         Camp.objects.all().delete()
-        c1 = Camp.objects.create(year=past_camp_start.year, number=5,
+        c1 = Camp.objects.create(year=past_camp_start.year,
                                  camp_name=camp_name,
                                  start_date=past_camp_start,
                                  end_date=past_camp_start + timedelta(7),
                                  minimum_age=11, maximum_age=17,
                                  site=site)
-        c2 = Camp.objects.create(year=future_camp_start.year, number=1,
+        c2 = Camp.objects.create(year=future_camp_start.year,
                                  camp_name=camp_name,
                                  start_date=future_camp_start,
                                  end_date=future_camp_start + timedelta(7),

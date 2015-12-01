@@ -55,7 +55,7 @@ class CampAdmin(admin.ModelAdmin):
         ('Public info',
          {'fields': ('year',
                      'camp_name',
-                     'number',
+                     'old_name',
                      'minimum_age',
                      'maximum_age',
                      'start_date',
@@ -79,6 +79,7 @@ class CampAdmin(admin.ModelAdmin):
          ),
     )
     ordering = ('-year', 'start_date')
+    readonly_fields = ['old_name']
 
     def leaders(camp):
         return camp.leaders_formatted
@@ -86,7 +87,17 @@ class CampAdmin(admin.ModelAdmin):
     def chaplain(camp):
         return camp.chaplain
     chaplain.admin_order_field = 'chaplain__name'
-    list_display = ('year', 'camp_name', 'number', leaders, chaplain, 'age', 'site', 'start_date')
+    list_display = [
+        'year',
+        'camp_name',
+        leaders,
+        chaplain,
+        'age',
+        'site',
+        'start_date',
+        'old_name',
+    ]
+
     list_display_links = ('camp_name', leaders)
     del leaders, chaplain
     list_filter = ['camp_name', 'site']

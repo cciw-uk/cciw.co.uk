@@ -81,7 +81,7 @@ class CampManager(models.Manager):
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")
     camp_name = models.ForeignKey(CampName, related_name='camps')
-    number = models.PositiveSmallIntegerField("number")
+    old_name = models.CharField(max_length=50, blank=True)
     minimum_age = models.PositiveSmallIntegerField()
     maximum_age = models.PositiveSmallIntegerField()
     start_date = models.DateField("start date")
@@ -221,7 +221,6 @@ class Camp(models.Model):
 
     class Meta:
         ordering = ['-year', 'start_date']
-        unique_together = (('year', 'number'),)
 
 
 def get_reference_contact_people():
