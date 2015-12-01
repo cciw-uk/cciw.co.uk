@@ -13,6 +13,10 @@ DATABASES = {
     }
 }
 
+PASSWORD_HASHERS = [
+    'django_plainpasswordhasher.PlainPasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+]
 
 MIDDLEWARE_CLASSES = (
     "django.contrib.sessions.middleware.SessionMiddleware",

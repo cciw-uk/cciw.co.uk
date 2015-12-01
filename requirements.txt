@@ -48,6 +48,7 @@ lockfile==0.10.2
 pandas==0.16.2
 numpy==1.9.2
 -e git://github.com/spookylukey/pandas-highcharts@24d19417bc201ee7adf38778dc98cce5f801d157#egg=pandas-highcharts
+django-plainpasswordhasher==0.3
 # Nice-to-have dev tools:
 IPython
 flake8==2.4.1

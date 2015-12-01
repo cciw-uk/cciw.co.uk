@@ -5,12 +5,22 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from cciw.cciwmain.tests.base import BasicSetupMixin
+from cciw.sitecontent.models import HtmlChunk
 
 CONTACT_US_URL = reverse("cciw-cciwmain-contact_us")
 
 
 class ContactUsPage(BasicSetupMixin, TestCase):
-    fixtures = ['contact.json']
+
+    def setUp(self):
+        super(ContactUsPage, self).setUp()
+        HtmlChunk.objects.create(
+            html="\n<p>If you have an enquiry to make to the CCIW directors,\nplease use the form below and your message will be forwarded \nto the relevant person, who will reply by e-mail.</p>\n",
+            page_title="Christian Camps in Wales",
+            name="contact_us_intro",
+        )
+
+        HtmlChunk.objects.create(name="contact_us_outro")
 
     def test_cant_send_without_email(self):
         self.client.post(CONTACT_US_URL, data=dict(name="My Name",

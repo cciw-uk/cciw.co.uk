@@ -5,8 +5,9 @@ from django.test import TestCase
 
 from cciw.cciwmain.common import get_thisyear
 from cciw.cciwmain.models import Camp, CampName, Person, Site
-from cciw.cciwmain.tests.utils import FuzzyInt, init_query_caches
 from cciw.cciwmain.tests.base import BasicSetupMixin
+from cciw.cciwmain.tests.utils import FuzzyInt, init_query_caches
+from cciw.sitecontent.models import HtmlChunk
 
 
 class CampModel(TestCase):
@@ -45,7 +46,10 @@ class CampModel(TestCase):
 
 class ThisyearPage(BasicSetupMixin, TestCase):
 
-    fixtures = ['htmlchunks.json']
+    def setUp(self):
+        super().setUp()
+        HtmlChunk.objects.create(name="camp_dates_intro_text")
+        HtmlChunk.objects.create(name="camp_dates_outro_text")
 
     def test_get(self):
         init_query_caches()
