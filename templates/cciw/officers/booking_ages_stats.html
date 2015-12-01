@@ -1,10 +1,14 @@
 {% extends "cciw/officers/stats_base.html" %}
+
+{% load json_filters %}
+
 {% block title %}Camper ages stats {% if start_year %}{{ start_year }}-{{ end_year }}{% endif %} | CCIW Officers{% endblock %}
 
 {% block content %}
   <div id="content-main">
     <div style="width:800px;height:400px;"
          data-chart="{{ chart_data }}"
+         data-chart-colors="{{ colors_data|jsonify }}"
          data-booking-ages-stats-chart-placeholder="true"
          data-stack-columns="{{ stack_columns|yesno:"true,false" }}"
          >

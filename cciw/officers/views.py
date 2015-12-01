@@ -1484,6 +1484,7 @@ def booking_ages_stats(request, start_year=None, end_year=None, camps=None, sing
     )
     if 'Total' in data:
         data.pop('Total')
+
     if camp_objs:
         if all(c.year == camp_objs[0].year for c in camp_objs):
             stack_columns = True
@@ -1491,6 +1492,19 @@ def booking_ages_stats(request, start_year=None, end_year=None, camps=None, sing
             stack_columns = False
     else:
         stack_columns = False
+
+    # Use colors defined for camps if possible. To get them to line up with data
+    # series, we have to sort in the same way the pandas_highcharts does i.e. by
+    # series name
+    colors = []
+    if camp_objs:
+        colors = [color for (title, color) in
+                  sorted([(c.slug_name_with_year, c.camp_name.color)
+                          for c in camp_objs])]
+        if len(set(colors)) != len(colors):
+            # Not enough - fall back to auto
+            colors = []
+
     ctx = {
         'start_year': start_year,
         'end_year': end_year,
@@ -1499,6 +1513,7 @@ def booking_ages_stats(request, start_year=None, end_year=None, camps=None, sing
         'chart_data': pandas_highcharts.core.serialize(data,
                                                        title="Age of campers",
                                                        output_type='json'),
+        'colors_data': colors,
         'stack_columns': stack_columns,
     }
     return render(request, 'cciw/officers/booking_ages_stats.html', ctx)

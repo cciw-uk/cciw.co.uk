@@ -92,6 +92,7 @@ $(document).ready(function () {
     $('[data-booking-ages-stats-chart-placeholder]').each(function (index, elem) {
         var $elem = $(elem);
         var data = JSON.parse($elem.attr('data-chart'));
+        var colors = JSON.parse($elem.attr('data-chart-colors'));
         var stack = $elem.attr('data-stack-columns') == 'true';
         $.extend(data, {
             chart: {
@@ -121,6 +122,13 @@ $(document).ready(function () {
                 tickInterval: 1
             }
         });
+
+        if (colors.length > 0) {
+            $.extend(data, {
+                colors: colors
+            });
+        }
+
         if (stack) {
             $.extend(data, {
                 tooltip: {
@@ -131,6 +139,5 @@ $(document).ready(function () {
         }
         $elem.highcharts(data);
     });
-
 
 });
