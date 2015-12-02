@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import warnings
-warnings.simplefilter("once", PendingDeprecationWarning)
+#warnings.simplefilter("once", PendingDeprecationWarning)
 warnings.simplefilter("once", DeprecationWarning)
 
 
