@@ -19,7 +19,8 @@
       <tr>
         <th scope="row">Following camp:</th>
         <td>
-          {{ camp.next_camp.get_link }}<br/>
+          {{ camp.next_camp.get_link }}
+          {% if camp.next_camp.old_name %} (Camp {{ camp.next_camp.old_name }}){% endif %}
         </td>
       </tr>
     {% endif %}
@@ -28,6 +29,7 @@
         <th scope="row">Previous camp:</th>
         <td>
           {{ camp.previous_camp.get_link }}
+          {% if camp.previous_camp.old_name %} (Camp {{ camp.previous_camp.old_name }}){% endif %}
         </td>
       </tr>
     {% endif %}
