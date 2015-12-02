@@ -47,6 +47,9 @@ $(document).ready(function () {
             if (val.trim() == "N/A") {
                 return null;
             }
+            if (val.trim() === "UK" && $field.attr('id') === "id_address_country") {
+                return null;
+            }
             if (val.match(/[A-Z]/) !== null) {
                 if (val.toUpperCase() === val) {
                     return "Please ensure you are using mixed capitals, not block capitals.";
