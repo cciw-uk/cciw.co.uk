@@ -50,9 +50,7 @@ class CampNameAdmin(admin.ModelAdmin):
                            camp_name.color)
     color_swab.short_description = "Colour"
     list_display = ['name', 'slug', color_swab]
-    prepopulated_fields = {
-        'slug': ['name'],
-    }
+    prepopulated_fields = {'slug': ['name']}
 
 
 class CampAdmin(admin.ModelAdmin):
