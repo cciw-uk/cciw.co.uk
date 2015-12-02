@@ -82,7 +82,9 @@ class CampManager(models.Manager):
 
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")
-    camp_name = models.ForeignKey(CampName, related_name='camps')
+    camp_name = models.ForeignKey(CampName,
+                                  on_delete=models.CASCADE,
+                                  related_name='camps')
     old_name = models.CharField(max_length=50, blank=True)
     minimum_age = models.PositiveSmallIntegerField()
     maximum_age = models.PositiveSmallIntegerField()
@@ -95,6 +97,7 @@ class Camp(models.Model):
     south_wales_transport_available = models.BooleanField("South Wales transport available (pre 2015 only)", default=False)
 
     chaplain = models.ForeignKey(Person,
+                                 on_delete=models.CASCADE,
                                  related_name="camps_as_chaplain",
                                  verbose_name="chaplain",
                                  null=True, blank=True)
@@ -107,7 +110,9 @@ class Camp(models.Model):
                                     verbose_name="admins",
                                     help_text="These users can manage references/applications for the camp. Not for normal officers.",
                                     blank=True)
-    site = models.ForeignKey(Site)
+    site = models.ForeignKey(Site,
+                             on_delete=models.CASCADE)
+
     officers = models.ManyToManyField(settings.AUTH_USER_MODEL, through='officers.Invitation')
 
     objects = CampManager()

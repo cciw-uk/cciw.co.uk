@@ -28,7 +28,10 @@ REFEREE_NAME_HELP_TEXT = "Name only - please do not include job title or other i
 
 
 class Application(models.Model):
-    officer = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, related_name='applications')  # blank=True to get the admin to work
+    officer = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE,
+                                blank=True,
+                                related_name='applications')  # blank=True to get the admin to work
     full_name = RequiredCharField('full name', max_length=NAME_LENGTH)
     full_maiden_name = models.CharField('full maiden name', max_length=NAME_LENGTH, blank=True, help_text="Name before getting married.")
     birth_date = RequiredDateField('date of birth', null=True, default=None)
@@ -159,7 +162,9 @@ class Referee(models.Model):
     # This model also acts as an anchor for everything related to requesting
     # the reference from this referee.
 
-    application = models.ForeignKey(Application, limit_choices_to={'finished': True})
+    application = models.ForeignKey(Application,
+                                    on_delete=models.CASCADE,
+                                    limit_choices_to={'finished': True})
     referee_number = models.SmallIntegerField("Referee number", choices=[(n, str(n)) for n in REFEREE_NUMBERS])
 
     name = RequiredCharField("Name", max_length=NAME_LENGTH,
@@ -243,10 +248,14 @@ class ReferenceAction(models.Model):
         (REFERENCE_FILLED_IN, "Reference filled in manually"),
         (REFERENCE_NAG, "Applicant nagged"),
     ]
-    referee = models.ForeignKey(Referee, related_name="actions")
+    referee = models.ForeignKey(Referee,
+                                on_delete=models.CASCADE,
+                                related_name="actions")
     created = models.DateTimeField(default=timezone.now)
     action_type = models.CharField(max_length=20, choices=ACTION_CHOICES)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             null=True)
 
     # This is set to True only for some records which had to be partially
     # invented in a database migration due to missing data. Any stats on this
@@ -284,7 +293,9 @@ class Reference(models.Model):
     concerns = models.TextField("Have you ever had concerns about either this applicant's ability or suitability to work with children and young people?")
     comments = models.TextField("Any other comments you wish to make", blank=True)
     date_created = models.DateField("date created")
-    referee = models.OneToOneField(Referee)
+    referee = models.OneToOneField(Referee,
+                                   on_delete=models.CASCADE)
+
 
     # This is set to True only for some records which had to be partially
     # invented in a database migration due to missing data. Any stats on this
@@ -331,8 +342,12 @@ class InvitationManager(models.Manager):
 
 
 class Invitation(models.Model):
-    officer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='invitations')
-    camp = models.ForeignKey(Camp, related_name='invitations')
+    officer = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE,
+                                related_name='invitations')
+    camp = models.ForeignKey(Camp,
+                             on_delete=models.CASCADE,
+                             related_name='invitations')
     date_added = models.DateField(default=date.today)
     notes = models.CharField(max_length=255, blank=True)
 
@@ -378,7 +393,9 @@ class CRBApplication(models.Model):
         (REQUESTED_BY_UKNOWN, 'Unknown'),
     ]
 
-    officer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='crb_applications')
+    officer = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE,
+                                related_name='crb_applications')
     crb_number = models.CharField("Disclosure number", max_length=20)
     completed = models.DateField("Date of issue")
     requested_by = models.CharField(max_length=20, choices=REQUESTED_BY_CHOICES, default=REQUESTED_BY_UKNOWN)
@@ -412,7 +429,8 @@ class CRBFormLog(models.Model):
     """
     Represents a log of a  CRB form sent to an officer
     """
-    officer = models.ForeignKey(settings.AUTH_USER_MODEL)
+    officer = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE)
     sent = models.DateTimeField("Date sent")
 
     objects = CRBFormLogManager()

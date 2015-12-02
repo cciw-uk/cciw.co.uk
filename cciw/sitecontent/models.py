@@ -15,6 +15,7 @@ class MenuLink(models.Model):
     listorder = models.SmallIntegerField("order in list")
     visible = models.BooleanField("Visible", default=True)
     parent_item = models.ForeignKey("self", null=True, blank=True,
+                                    on_delete=models.CASCADE,
                                     verbose_name="Parent item (none = top level)",
                                     related_name="child_links")
 
@@ -36,7 +37,9 @@ class MenuLink(models.Model):
 class HtmlChunk(models.Model):
     name = models.SlugField("name", primary_key=True, db_index=True)
     html = models.TextField("HTML")
-    menu_link = models.ForeignKey(MenuLink, verbose_name="Associated URL",
+    menu_link = models.ForeignKey(MenuLink,
+                                  on_delete=models.CASCADE,
+                                  verbose_name="Associated URL",
                                   null=True, blank=True)
     page_title = models.CharField("page title (for chunks that are pages)", max_length=100,
                                   blank=True)

@@ -452,10 +452,14 @@ BookingManager = BookingManagerBase.from_queryset(BookingQuerySet)
 
 
 class Booking(models.Model):
-    account = models.ForeignKey(BookingAccount, related_name='bookings')
+    account = models.ForeignKey(BookingAccount,
+                                on_delete=models.CASCADE,
+                                related_name='bookings')
 
     # Booking details - from user
-    camp = models.ForeignKey(Camp, related_name='bookings')
+    camp = models.ForeignKey(Camp,
+                             on_delete=models.CASCADE,
+                             related_name='bookings')
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     sex = models.CharField(max_length=1, choices=SEXES)
@@ -922,9 +926,11 @@ class PaymentManager(models.Manager):
 
 class Payment(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
-    account = models.ForeignKey(BookingAccount)
+    account = models.ForeignKey(BookingAccount,
+                                on_delete=models.CASCADE)
     origin_id = models.PositiveIntegerField()
-    origin_type = models.ForeignKey(ContentType)
+    origin_type = models.ForeignKey(ContentType,
+                                    on_delete=models.PROTECT)
     origin = GenericForeignKey('origin_type', 'origin_id')
     processed = models.DateTimeField(null=True)
     created = models.DateTimeField()
@@ -971,14 +977,18 @@ class ManualPaymentBase(models.Model):
 
 
 class ManualPayment(ManualPaymentBase):
-    account = models.ForeignKey(BookingAccount, related_name='manual_payments')
+    account = models.ForeignKey(BookingAccount,
+                                on_delete=models.CASCADE,
+                                related_name='manual_payments')
 
     def __str__(self):
         return "Manual payment of £%s from %s" % (self.amount, self.account)
 
 
 class RefundPayment(ManualPaymentBase):
-    account = models.ForeignKey(BookingAccount, related_name='refund_payments')
+    account = models.ForeignKey(BookingAccount,
+                                on_delete=models.CASCADE,
+                                related_name='refund_payments')
 
     def __str__(self):
         return "Refund payment of £%s to %s" % (self.amount, self.account)
