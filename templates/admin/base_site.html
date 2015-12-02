@@ -1,16 +1,14 @@
 {% extends "admin/base.html" %}
-{% load i18n %}
-{% load static %}
+
 {% load compress %}
+{% load static %}
 
-{% block title %}{{ title }} | CCIW site admin{% endblock %}
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
-{% block extrastyle %}{{ block.super }}
-  {% compress css %}
-    <link rel="stylesheet" type="text/less" href="{% static "css/adminextra.less" %}" />
-  {% endcompress %}
+{% block extrahead %}
+  {{ block.super }}
   {% compress js %}
-    <script type="text/javascript" src="{% static "admin/js/jquery.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "admin/js/vendor/jquery/jquery.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/cciwutils.js" %}"></script>
   {% endcompress %}
   {% include 'autocomplete_light/static.html' %}
@@ -30,46 +28,39 @@
     </script>
   {% endif %}
 {% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  {% compress css %}
+    <link rel="stylesheet" type="text/less" href="{% static "css/adminextra.less" %}" />
+  {% endcompress %}
+{% endblock %}
+
 {% block branding %}
-  <div id="header2">
-    <div id="headerlogo">
-      <div id="helplink"><a href="mailto:webmaster@cciw.co.uk">Help</a></div>
-    </div>
-  </div>
+<h1 id="site-name"><a href="{% url 'admin:index' %}">CCIW site administration</a></h1>
 {% endblock %}
-
-{# We override the whole block since we don't want to pass 'has_permission' #}
-{# into every officer template #}
-{% block usertools %}
-  <div id="user-tools">
-    {% block welcome-msg %}
-      Welcome,
-      <strong>{% firstof user.get_short_name user.get_username %}</strong>.
-    {% endblock %}
-
-    {% if has_permission %}
-      <a href="{% url 'admin:index' %}">Admin</a> /
-    {% endif %}
-
-    <a href="{% url 'cciw-officers-index' %}">Officer homepage</a> /
-
-    {% if user.has_usable_password %}
-      <a href="{% url 'admin:password_change' %}">Change password</a> /
-    {% endif %}
-    <a href="{% url 'admin:logout' %}">Log out</a>
-  </div>
-{% endblock %}
-
 
 {% block nav-global %}{% endblock %}
 
-{% block footer %}
-  {{ block.super }}
-  <!--[if lte IE 6]>
-<div id="ie-message">
-  Your browser is obsolete, and probably doesn't display this site
-  correctly. Please upgrade to <a href="http://abetterbrowser.org/">a better
-    browser</a>.
-</div>
-<![endif]-->
+
+{% block usertools %}
+  {# override whole block to avoid passing 'has_permission' which is in default usertools block #}
+  <div id="user-tools">
+    {% block welcome-msg %}
+      Welcome
+      <strong>{% firstof user.get_short_name user.get_username %}</strong>.
+    {% endblock %}
+    {% block userlinks %}
+      {% if has_permission %}
+        <a href="{% url 'admin:index' %}">Admin</a> /
+      {% endif %}
+
+      <a href="{% url 'cciw-officers-index' %}">Officer homepage</a> /
+
+      {% if user.has_usable_password %}
+        <a href="{% url 'admin:password_change' %}">Change password</a> /
+      {% endif %}
+      <a href="{% url 'admin:logout' %}">Log out</a>
+    {% endblock %}
+  </div>
 {% endblock %}

@@ -3,7 +3,8 @@
 {% load compress %}
 {% block title %}Officer list {{ camp.slug_name_with_year }} | CCIW Officers{% endblock %}
 
-{% block extrastyle %}{{ block.super }}
+{% block extrahead %}
+  {{ block.super }}
   {% compress js %}
     <script type="text/javascript" src="{% static "js/jquery.tablesorter.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/officer_list.js" %}"></script>
@@ -13,6 +14,7 @@
     <link rel="stylesheet" type="text/less" href="{% static "css/officer_list.less" %}" />
   {% endcompress %}
 {% endblock %}
+
 {% block bodyclass%}change-form{% endblock %}
 
 {% block content %}<div id="content-main">
@@ -44,7 +46,7 @@
                                                       alt="Add" src="{% static "images/officer-list-add.gif" %}" /></a>
         &nbsp;&nbsp;&nbsp;
         <input type="text" id="id_available_officers_filter" />
-        <img style="vertical-align: middle" alt="search" src="{% static "admin/img/selector-search.gif" %}" />
+        <img style="vertical-align: middle" alt="search" src="{% static "admin/img/search.svg" %}" />
       </div>
       <div>
         <select multiple="multiple" id="id_available_officers" style="min-width: 30em; height: 30em; max-width:100%;" name="officers">

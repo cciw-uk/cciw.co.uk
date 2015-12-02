@@ -1,7 +1,8 @@
 {% extends "cciw/officers/base.html" %}
 {% load static %}
 
-{% block extrastyle %}{{ block.super }}
+{% block extrahead %}
+  {{ block.super }}
   <script type="text/javascript" src="{% static "js/highcharts/highcharts.js" %}"></script>
   <script type="text/javascript" src="{% static "js/highcharts/modules/exporting.js" %}"></script>
   <script type="text/javascript" src="{% static "js/highcharts/modules/offline-exporting.js" %}"></script>

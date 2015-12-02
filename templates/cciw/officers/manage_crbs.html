@@ -202,11 +202,11 @@
             <a href="{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}" target="_blank">{{ camp.slug_name }}</a>{% if not forloop.last %}, {% endif %}
           {% endfor %}
           </td>
-          <td>{% if officer.temp.has_application_form %}<img src="{% static "admin/img/icon-yes.gif" %}">
+          <td>{% if officer.temp.has_application_form %}<img src="{% static "admin/img/icon-yes.svg" %}">
             <a href="{% url 'admin:officers_application_change' officer.temp.application_id %}" target="_blank">View/edit</a>{% endif %}</td>
-          <td>{% if not officer.temp.has_crb %}<img src="{% static "admin/img/icon_error.gif" %}"> Never
-          {% else %}{% if officer.temp.has_valid_crb %}<img src="{% static "admin/img/icon_success.gif" %}"> Recent
-          {% else %}<img src="{% static "admin/img/icon_alert.gif" %}"> Out of date
+          <td>{% if not officer.temp.has_crb %}<img src="{% static "admin/img/icon-no.svg" %}"> Never
+          {% else %}{% if officer.temp.has_valid_crb %}<img src="{% static "admin/img/icon-yes.svg" %}"> Recent
+          {% else %}<img src="{% static "admin/img/icon-alert.svg" %}"> Out of date
           {% endif %}
           {% endif %}</td>
           <td id="id_last_crb_form_sent_{{ officer.id }}">

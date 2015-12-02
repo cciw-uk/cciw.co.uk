@@ -1,17 +1,15 @@
-import autocomplete_light
-
-from django.contrib import admin
-from django.contrib import messages
-from django.core.urlresolvers import reverse
+from autocomplete_light import shortcuts as autocomplete_light
 from django import forms
+from django.contrib import admin, messages
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.html import escape, escapejs, format_html
 from django.utils.http import is_safe_url
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
-from cciw.bookings.models import Price, BookingAccount, Booking, ManualPayment, RefundPayment, BOOKING_APPROVED, BOOKING_INFO_COMPLETE, BOOKING_BOOKED, Payment
+from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO_COMPLETE, Booking, BookingAccount,
+                                  ManualPayment, Payment, Price, RefundPayment)
 from cciw.cciwmain.common import get_thisyear
-
 
 account_autocomplete_field = lambda: autocomplete_light.ModelChoiceField('account')
 

@@ -1,4 +1,4 @@
-import autocomplete_light
+from autocomplete_light import shortcuts as autocomplete_light
 
 import cciw.auth
 from cciw.bookings.models import BookingAccount

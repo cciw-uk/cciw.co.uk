@@ -36,7 +36,7 @@ $(document).ready(function() {
         }
         var name = 'id_account';
         name = id_to_windowname(name);
-        var href = '/admin/bookings/bookingaccount/' + getCurrentAccountId() + '/?_popup=1';
+        var href = '/admin/bookings/bookingaccount/change/' + getCurrentAccountId() + '/?_popup=1';
         var win = window.open(href, name, 'height=500,width=800,resizable=yes,scrollbars=yes');
         win.focus();
     }
@@ -93,8 +93,8 @@ $(document).ready(function() {
     };
 
     var getBookingId = function () {
-        var bookingId = document.location.pathname.split("/").slice(-2,-1)[0];
-        if (bookingId === "add") {
+        var bookingId = document.location.pathname.split("/").slice(-3,-2)[0];
+        if (bookingId === "booking") {
             return null;
         } else {
             return bookingId;

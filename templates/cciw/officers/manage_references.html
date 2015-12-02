@@ -1,7 +1,11 @@
 {% extends "cciw/officers/base.html" %}
+
 {% load reference_utils %}
+
 {% block title %}Manage references {{ camp.nice_name }} | CCIW Officers{% endblock %}
-{% block extrastyle %}{{ block.super }}
+
+{% block extrahead %}
+  {{ block.super }}
   <script type="text/javascript">
    //<![CDATA[
 

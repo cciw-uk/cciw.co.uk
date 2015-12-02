@@ -1,4 +1,4 @@
-import autocomplete_light
+from autocomplete_light import shortcuts as autocomplete_light
 from django.contrib.auth import get_user_model
 
 import cciw.auth

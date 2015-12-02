@@ -1,4 +1,4 @@
-Django==1.8.7
+Django==1.9
 -e git+https://github.com/pashinin/fabric@p33#egg=Fabric
 -e git://github.com/spookylukey/faker@d1f2896b5d59f3888d06689d442033fcc99ae4d2#egg=Faker
 Markdown==2.3.1
@@ -13,10 +13,10 @@ django-classy-tags==0.6.1
 django-debug-toolbar==1.4
 django-dynamic-fixture==1.8.5
 django-mailer==1.0.1
-django-mptt==0.7.3
+-e git://github.com/django-mptt/django-mptt@bb835385a330ec0b79a5b47a4920145e6b631c0c#egg=django-mptt
 django-nyt==0.9.8
 django-paypal==0.2.7
--e git://github.com/ojii/django-sekizai@ed986d2eb3963bcfae2f26a4ae38b8391d9bdcab#egg=django-sekizai
+-e git://github.com/spookylukey/django-sekizai@eed9921af96fd3a3900fa8f222f406459bb9ee30#egg=django-sekizai
 django-webtest==1.7.8
 ecdsa==0.10
 ezodf2==0.2.10

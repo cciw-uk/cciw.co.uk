@@ -1,6 +1,6 @@
 import datetime
 
-import autocomplete_light
+from autocomplete_light import shortcuts as autocomplete_light
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin
@@ -446,7 +446,7 @@ admin.site.register(CRBFormLog, CRBFormLogAdmin)
 
 
 # Hack the Group admin so that we can edit users belonging to a group
-Membership = Group.user_set.related.through
+Membership = Group.user_set.through
 
 
 class MembershipAdminForm(forms.ModelForm):

@@ -3,7 +3,8 @@
 {% load static %}
 {% load compress %}
 
-{% block extrastyle %}{{ block.super }}
+{% block extrastyle %}
+  {{ block.super }}
   <link rel="stylesheet" href="{% static "bookings/css/add_place.css" %}" type="text/css" />
 {% endblock %}
 
