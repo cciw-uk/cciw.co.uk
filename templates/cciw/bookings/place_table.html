@@ -10,7 +10,14 @@
   {% for booking in bookings %}
     <tr>
       <td data-label="Name">{{ booking.name }}</td>
-      <td data-label="Camp">{{ booking.camp }}</td>
+      <td data-label="Camp">
+        <span class="with-camp-colors-{{ booking.camp.slug_name }}">
+          <a href="{{ booking.camp.get_absolute_url }}">
+            {{ booking.camp.slug_name_with_year }}
+          </a>
+        </span>
+        &nbsp;({{ booking.camp.leaders_formatted }})
+      </td>
       <td data-label="Dates">{{ booking.camp.nice_dates }}
       <td data-label="Cost">£{{ booking.amount_due }}</td>
     </tr>

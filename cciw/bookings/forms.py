@@ -59,10 +59,15 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
                                  if c.get_places_left()[0] > 0
                                  else "No places available!")
                                 if c.is_open_for_bookings else "Closed for bookings")
-            return format_html('<a href="{url}" target="_blank">Camp {name}</a>, {leaders}, {start_date}'
+            return format_html('<span class="with-camp-colors-{slug}">'
+                               '<a href="{url}" target="_blank">'
+                               'Camp {name}</a>'
+                               '</span>'
+                               ', {leaders}, {start_date}'
                                '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
                                '<span class="placeAvailability">{availability}</span>',
                                url=c.get_absolute_url(),
+                               slug=c.slug_name,
                                name=c.name,
                                leaders=c.leaders_formatted,
                                start_date=c.start_date.strftime("%e %b %Y"),

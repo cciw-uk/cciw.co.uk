@@ -4,7 +4,7 @@
     {{ b.name }}
   </td>
   <td>
-    <a href="{% url 'cciw-cciwmain-camps_detail' year=b.camp.year slug=b.camp.slug_name %}">Camp {{ b.camp.name }}, {{ b.camp.leaders_formatted }}</a>,
+    <span class="with-camp-colors-{{ b.camp.slug_name }}"><a href="{% url 'cciw-cciwmain-camps_detail' year=b.camp.year slug=b.camp.slug_name %}">Camp {{ b.camp.name }}</a></span> &nbsp;{{ b.camp.leaders_formatted }},
     {{ b.camp.start_date|date:"j M Y" }}
   </td>
   <td class="price">

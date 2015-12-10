@@ -31,16 +31,12 @@ a img, a {
 
 a:link {
     color: @primaryColor;
-    font-weight: bold;
     text-decoration: none;
+    border-bottom: 1px solid @primaryColor;
 }
 
 a:visited {
     color: #22884f;
-    font-weight: bold;
-}
-a:hover {
-    text-decoration: underline;
 }
 
 //
@@ -229,6 +225,16 @@ footer {
 h2
 {
     border-bottom: 2px solid @secondaryColor;
+}
+
+h2[class^=with-camp-colors-] {
+    border-bottom: 0px;
+    padding: 2px 4px;
+}
+
+span[class^=with-camp-colors-] {
+    padding: 2px 4px 3px;
+    border-radius: 4px;
 }
 
 section.grouped {
@@ -422,6 +428,12 @@ table.topheaders
     th, td {
         padding: 2px 5px;
         vertical-align: top;
+    }
+    th {
+        font-weight: bold;
+        a:link {
+            border-bottom: 0px;
+        }
     }
 }
 
@@ -831,6 +843,7 @@ a.bigaction, input.bigaction {
     text-align: left;
     min-height: @lineHeight;
     text-align: right;
+
     a.manageaccount {
         box-shadow: inset 0px 1px 0px 0px #aaa;
         background-color: #ddd;
@@ -851,6 +864,10 @@ a.bigaction, input.bigaction {
 }
 
 #bookingbar {
+    nav a {
+        border-bottom: 0px
+    }
+
      a {
          color: white;
      }
