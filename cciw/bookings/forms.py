@@ -60,8 +60,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
                                  else "No places available!")
                                 if c.is_open_for_bookings else "Closed for bookings")
             return format_html('<span class="with-camp-colors-{slug}">'
-                               '<a href="{url}" target="_blank">'
-                               'Camp {name}</a>'
+                               'Camp {name}'
                                '</span>'
                                ', {leaders}, {start_date}'
                                '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
