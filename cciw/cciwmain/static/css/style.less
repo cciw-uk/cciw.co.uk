@@ -14,7 +14,7 @@ A65900
 
 @import "elements.less";
 @import "mixins.less";
-
+@import "camp_colors.less";
 
 @lineHeight: 24px;
 
@@ -268,7 +268,7 @@ table.topheaders
     th, td {
         border: solid 1px #336633;
     }
-    td {
+    td:not([class^=with-camp-colors-]) {
         background-color: @contentBackgroundColor;
     }
     box-shadow: 0px 2px 4px #888;

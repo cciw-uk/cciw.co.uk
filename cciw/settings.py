@@ -88,7 +88,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'cciw.accounts',
-    'cciw.cciwmain',
+    'cciw.cciwmain.apps.CciwmainConfig',
     'cciw.sitecontent',
     'cciw.officers',
     'cciw.utils',
@@ -290,6 +290,10 @@ WEBMASTER_EMAIL = "webmaster@cciw.co.uk"
 LIST_MAILBOX_NAME = "camplists"
 ESV_KEY = 'IP'
 CRB_VALID_FOR = 365 * 3  # We consider a CRB valid for 3 years
+
+# Referenced from style.less
+COLORS_LESS_FILE = "cciw/cciwmain/static/css/camp_colors.less"
+
 
 # == Bookings ==
 BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS = 3

@@ -1,16 +1,16 @@
 """
 Utility functions and base classes that are common to all views etc.
 """
-from functools import update_wrapper
 import re
 import sys
 import traceback
+from functools import update_wrapper
 
 from django.conf import settings
-from django.core.mail import mail_admins
-from django.core.paginator import Paginator, InvalidPage
 from django.contrib.sites.models import Site
-from django.http import HttpResponse, Http404
+from django.core.mail import mail_admins
+from django.core.paginator import InvalidPage, Paginator
+from django.http import Http404, HttpResponse
 from django.template.response import TemplateResponse
 from django.utils import timezone
 from django.utils.decorators import classonlymethod
@@ -18,7 +18,6 @@ from django.utils.html import format_html_join
 from frozendict import frozendict
 
 from cciw.cciwmain.utils import python_to_json
-import cciw.middleware.threadlocals as threadlocals
 
 
 # Our own CBV base class. Only the stuff we really need.

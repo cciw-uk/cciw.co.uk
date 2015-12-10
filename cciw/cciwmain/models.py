@@ -1,9 +1,11 @@
+import os.path
 from datetime import date
 
 from colorful.fields import RGBColorField
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.template.loader import render_to_string
 from django.utils.functional import cached_property
 from django.utils.html import format_html
 
@@ -249,4 +251,14 @@ def get_reference_contact_people():
     return list(Person.objects.filter(roles__name=REFERENCE_CONTACT_ROLE_NAME))
 
 
-import cciw.cciwmain.hooks  # NOQA  isort:skip
+def generate_colors_less():
+    # We could do this as a dynamic view, but we'd lose several benefits:
+    #  - django-compressor wouldn't be able to find it and bundle it with
+    #    other less files
+    #  - therefore wouldn't be able to use it for mixins that are imported
+    #    by styles.less
+    camp_names = CampName.objects.all()
+    colors_less = render_to_string('cciw/camps/camp_colors_tpl.less',
+                                   {'names': camp_names}).encode('utf-8')
+    with open(os.path.join(settings.PROJECT_ROOT, settings.COLORS_LESS_FILE), "wb") as f:
+        f.write(colors_less)

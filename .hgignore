@@ -7,3 +7,4 @@ settings*priv*.py
 settings_production.py
 settings_staging.py
 TODO.org
+cciw/cciwmain/static/css/camp_colors.less
