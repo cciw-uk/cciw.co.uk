@@ -181,6 +181,11 @@ class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
 
 
 class BookingBaseMixin(object):
+
+    MULTIPLE_FULL_PRICE_WARNING = "You have multiple places at &#39;Full price"
+    MULTIPLE_2ND_CHILD_WARNING = "You have multiple places at &#39;2nd child"
+    CANNOT_USE_2ND_CHILD = "You cannot use a 2nd child discount"
+
     def setUp(self):
         super(BookingBaseMixin, self).setUp()
         G(HtmlChunk, name="bookingform_post_to")
@@ -656,14 +661,14 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         self.create_place({'price_type': PRICE_2ND_CHILD})
 
         resp = self.client.get(self.url)
-        self.assertContains(resp, "You cannot use a 2nd child discount")
+        self.assertContains(resp, self.CANNOT_USE_2ND_CHILD)
         self.assert_book_button_disabled(resp)
 
         # 2 places, both at 2nd child discount, is not allowed.
         self.create_place({'price_type': PRICE_2ND_CHILD})
 
         resp = self.client.get(self.url)
-        self.assertContains(resp, "You cannot use a 2nd child discount")
+        self.assertContains(resp, self.CANNOT_USE_2ND_CHILD)
         self.assert_book_button_disabled(resp)
 
     def test_2nd_child_discount_allowed_if_booked(self):
@@ -1019,7 +1024,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
                            'last_name': 'Bloggs'})
 
         resp = self.client.get(self.url)
-        self.assertContains(resp, "You have multiple places at &#39;Full price")
+        self.assertContains(resp, self.MULTIPLE_FULL_PRICE_WARNING)
         self.assertContains(resp, "If Mary Bloggs and Frédéric Bloggs")
         # This is only a warning:
         self.assert_book_button_enabled(resp)
@@ -1040,7 +1045,7 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
                            'price_type': PRICE_2ND_CHILD})
 
         resp = self.client.get(self.url)
-        self.assertContains(resp, "You have multiple places at &#39;2nd child")
+        self.assertContains(resp, self.MULTIPLE_2ND_CHILD_WARNING)
         self.assertContains(resp, "If Peter Bloggs and Mary Bloggs")
         self.assertContains(resp, "one is eligible")
         # This is only a warning:
