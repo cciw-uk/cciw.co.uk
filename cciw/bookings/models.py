@@ -671,21 +671,69 @@ class Booking(models.Model):
         if self.price_type == PRICE_CUSTOM:
             errors.append("A custom discount needs to be arranged by the booking secretary")
 
+        relevant_bookings = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
+        relevant_bookings_excluding_self = relevant_bookings.exclude(first_name=self.first_name,
+                                                                     last_name=self.last_name)
+
         # 2nd/3rd child discounts
+
+        # Rule concerning 2nd/3rd child discounts and multiple camps:
+        # "A camper booking to go on a second camp will be charged at full price".
+        #
+        # Natural interpretation of this rule is that if we have two campers from the
+        # same family who both go on two camps:
+        # 1st child gets Full Price for first camp
+        # 2nd child gets 2nd child discount for first camp
+        # 1st and 2nd child both get Full Price for second camp.
+        #
+        # This is different from saying "each camper may only have one 2nd/3rd
+        # child discount", because that would allow using 1 Full Price and 1 2nd
+        # child discount for each child.
+        #
+        # A correct re-phrasing of the rule is:
+        # 1. each camper may only have one discounted place
+        # 2. total number of discounted places for a family is one less
+        #    than the number of children.
+        #
+        # However, we can't correctly detect "same family" (broken families,
+        # different surnames etc.), only "same camper", and a single account is
+        # sometimes used to book multiple families. Assuming one account = one
+        # family for this re-phrasing will disallow legitimate discounts.
+        #
+        # Second attempt to rephrase:
+        #
+        # 1. each camper may only have one discounted place
+        # 2. 2nd child discounts can only be given if there are at least
+        #    2 different children booked by an account
+        # 3. 3rd child discounts can only be given if there are at least
+        #    3 different children booked by an account
+        #
+        # This is not exactly correct, but allows everything the others allow,
+        # and assuming one account = one family doesn't disallow legitimate
+        # discounts.
+
         if self.price_type == PRICE_2ND_CHILD:
-            qs = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
-            if not qs.filter(price_type=PRICE_FULL).exists():
+            if not (relevant_bookings_excluding_self
+                    .filter(price_type=PRICE_FULL)
+                    ).exists():
                 errors.append("You cannot use a 2nd child discount unless you have "
-                              "a child at full price. Please edit the place details "
+                              "another child at full price. Please edit the place details "
                               "and choose an appropriate price type.")
 
         if self.price_type == PRICE_3RD_CHILD:
-            qs = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
-            qs = qs.filter(price_type=PRICE_FULL) | qs.filter(price_type=PRICE_2ND_CHILD)
+            qs = (relevant_bookings_excluding_self.filter(price_type=PRICE_FULL) |
+                  relevant_bookings_excluding_self.filter(price_type=PRICE_2ND_CHILD))
             if qs.count() < 2:
                 errors.append("You cannot use a 3rd child discount unless you have "
-                              "two other places without this discount. Please edit the "
+                              "two other children without this discount. Please edit the "
                               "place details and choose an appropriate price type.")
+
+        if self.price_type in [PRICE_2ND_CHILD, PRICE_3RD_CHILD]:
+            qs = relevant_bookings.filter(first_name=self.first_name,
+                                          last_name=self.last_name)
+            qs = qs.filter(price_type=PRICE_2ND_CHILD) | qs.filter(price_type=PRICE_3RD_CHILD)
+            if qs.count() > 1:
+                errors.append("If a camper goes on multiple camps, only one place may use a 2nd/3rd child discount.")
 
         # serious illness
         if self.serious_illness:
@@ -786,11 +834,12 @@ class Booking(models.Model):
                             "called '%s' on camp %s. Please ensure you don't book multiple "
                             "places for the same camper!" % (self.name, self.camp.name))
 
+        relevant_bookings = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
+
         if self.price_type == PRICE_FULL:
-            full_pricers = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()\
-                .filter(price_type=PRICE_FULL).order_by('first_name', 'last_name')
-            if len(full_pricers) > 1:
-                names = [b.name for b in full_pricers]
+            full_pricers = relevant_bookings.filter(price_type=PRICE_FULL)
+            names = sorted(set([b.name for b in full_pricers]))
+            if len(names) > 1:
                 pretty_names = ', '.join(names[1:]) + " and " + names[0]
                 warning = "You have multiple places at 'Full price'. "
                 if len(names) == 2:
@@ -803,10 +852,9 @@ class Booking(models.Model):
                 warnings.append(warning)
 
         if self.price_type == PRICE_2ND_CHILD:
-            second_childers = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()\
-                .filter(price_type=PRICE_2ND_CHILD).order_by('first_name', 'last_name')
-            if len(second_childers) > 1:
-                names = [b.name for b in second_childers]
+            second_childers = relevant_bookings.filter(price_type=PRICE_2ND_CHILD)
+            names = sorted(set([b.name for b in second_childers]))
+            if len(names) > 1:
                 pretty_names = ', '.join(names[1:]) + " and " + names[0]
                 warning = "You have multiple places at '2nd child discount'. "
                 if len(names) == 2:

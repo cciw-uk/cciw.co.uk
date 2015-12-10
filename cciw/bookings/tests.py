@@ -45,7 +45,7 @@ class CreateCampMixin(object):
     camp_minimum_age = 11
     camp_maximum_age = 17
 
-    def create_camp(self):
+    def create_camps(self):
         if hasattr(self, 'camp'):
             return
         self.today = date.today()
@@ -58,6 +58,11 @@ class CreateCampMixin(object):
             slug="blue",
             color="#0000ff",
         )
+        camp_name_2, _ = CampName.objects.get_or_create(
+            name="Red",
+            slug="red",
+            color="#ff0000",
+        )
         self.camp = Camp.objects.create(year=start_date.year,
                                         camp_name=camp_name,
                                         minimum_age=self.camp_minimum_age,
@@ -65,6 +70,13 @@ class CreateCampMixin(object):
                                         start_date=start_date,
                                         end_date=start_date + timedelta(days=7),
                                         site_id=1)
+        self.camp_2 = Camp.objects.create(year=start_date.year,
+                                          camp_name=camp_name_2,
+                                          minimum_age=self.camp_minimum_age,
+                                          maximum_age=self.camp_maximum_age,
+                                          start_date=start_date  + timedelta(days=7),
+                                          end_date=start_date + timedelta(days=14),
+                                          site_id=1)
         import cciw.cciwmain.common
         cciw.cciwmain.common._thisyear = None
         cciw.cciwmain.common._thisyear_timestamp = None
@@ -108,7 +120,7 @@ class CreatePricesMixin(object):
 
     def setUp(self):
         super(CreatePricesMixin, self).setUp()
-        self.create_camp()
+        self.create_camps()
 
 
 class LogInMixin(object):
@@ -178,7 +190,7 @@ class CreatePlaceMixin(CreatePricesMixin, CreateCampMixin, LogInMixin):
 
     def setUp(self):
         super(CreatePlaceMixin, self).setUp()
-        self.create_camp()
+        self.create_camps()
 
 
 class BookingBaseMixin(object):
@@ -186,6 +198,7 @@ class BookingBaseMixin(object):
     MULTIPLE_FULL_PRICE_WARNING = "You have multiple places at &#39;Full price"
     MULTIPLE_2ND_CHILD_WARNING = "You have multiple places at &#39;2nd child"
     CANNOT_USE_2ND_CHILD = "You cannot use a 2nd child discount"
+    CANNOT_USE_MULTIPLE_DISCOUNT_FOR_ONE_CAMPER = "only one place may use a 2nd/3rd child discount"
 
     def setUp(self):
         super(BookingBaseMixin, self).setUp()
@@ -1058,6 +1071,39 @@ class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
         resp = self.client.get(self.url)
         self.assertContains(resp, "2 are eligible")
 
+    def test_dont_warn_about_multiple_full_price_for_same_child(self):
+        self.create_place()
+        self.create_place({'camp': self.camp_2.id})
+
+        resp = self.client.get(self.url)
+        self.assertNotContains(resp, self.MULTIPLE_FULL_PRICE_WARNING)
+        self.assert_book_button_enabled(resp)
+
+    def test_error_for_2nd_child_discount_for_same_camper(self):
+        self.create_place()
+        self.create_place({'camp': self.camp_2.id,
+                           'price_type': PRICE_2ND_CHILD})
+
+        resp = self.client.get(self.url)
+        self.assertContains(resp, self.CANNOT_USE_2ND_CHILD)
+        self.assert_book_button_disabled(resp)
+
+    def test_error_for_multiple_2nd_child_discount(self):
+        # Frederik x2
+        self.create_place()
+        self.create_place({'camp': self.camp_2.id})
+
+        # Mary x2
+        self.create_place({'first_name': 'Mary',
+                           'price_type': PRICE_2ND_CHILD})
+        self.create_place({'first_name': 'Mary',
+                           'camp': self.camp_2.id,
+                           'price_type': PRICE_2ND_CHILD})
+
+        resp = self.client.get(self.url)
+        self.assertContains(resp, self.CANNOT_USE_MULTIPLE_DISCOUNT_FOR_ONE_CAMPER)
+        self.assert_book_button_disabled(resp)
+
     def test_book_now_safeguard(self):
         # It might be possible to alter the list of items in the basket in one
         # tab, and then press 'Book now' from an out-of-date representation of
@@ -1208,7 +1254,8 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceMixin, CreateLeadersMixin
         # Need to move into region where deposits are not allowed.
         Camp.objects.update(start_date=date.today() + timedelta(days=20))
         self.create_place()
-        self.create_place({'price_type': PRICE_2ND_CHILD})
+        self.create_place({'price_type': PRICE_2ND_CHILD,
+                           'first_name': 'Mary'})
         acc = self.get_account()
         book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
         self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
