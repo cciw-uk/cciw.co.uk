@@ -286,12 +286,6 @@ table tr.spacer td
     border-right-width: 0px;
 }
 
-td div.postSubject
-{
-    border-bottom: 1px solid #336633;
-}
-
-
 div.userError,
 div.validationErrors {
     border: 1px solid #d00000;
@@ -424,17 +418,22 @@ table.simpleform,
 table.topheaders
 {
     border-collapse: collapse;
+
+    th, td {
+        padding: 2px 5px;
+        vertical-align: top;
+    }
 }
+
+
 table.sideheaders,
 table.topheaders
 {
     width: 100%;
-}
+    td {
+        overflow: hidden;
+    }
 
-table.sideheaders td,
-table.topheaders td
-{
-    overflow: hidden;
 }
 
 table.sideheaders th,
@@ -443,40 +442,11 @@ table.simpleform th
     text-align: left;
 }
 
-table.sideheaders th,
-table.sideheaders td,
-table.simpleform th,
-table.simpleform td,
-table.topheaders th,
-table.topheaders td
-{
-    padding: 2px 5px;
-}
-
-
-td div.postSubject
-{
-    font-style: italic;
-    margin-top: -3px;
-    margin-left: -3px;
-    margin-right: -3px;
-    margin-bottom: 2px;
-    padding: 0px 4px;
-}
-
-table.sideheaders th,
-table.sideheaders td,
-table.simpleform th,
-table.simpleform td,
-table.topheaders td
-{
-    vertical-align: top;
-}
-
 table.topheaders th
 {
     white-space: nowrap;
 }
+
 
 ul.leaderlist
 {
