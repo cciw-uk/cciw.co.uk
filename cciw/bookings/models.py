@@ -490,7 +490,7 @@ class Booking(models.Model):
     last_tetanus_injection = models.DateField(null=True, blank=True)
     allergies = models.TextField(blank=True)
     regular_medication_required = models.TextField(blank=True)
-    illnesses = models.TextField(blank=True)
+    illnesses = models.TextField("Medical conditions", blank=True)
     can_swim_25m = models.BooleanField(blank=True, default=False,
                                        verbose_name="Can the camper swim 25m?")
     learning_difficulties = models.TextField(blank=True)
