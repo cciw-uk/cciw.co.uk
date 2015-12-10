@@ -264,5 +264,9 @@ def generate_colors_less():
     camp_names = CampName.objects.all()
     colors_less = render_to_string('cciw/camps/camp_colors_tpl.less',
                                    {'names': camp_names}).encode('utf-8')
-    with open(os.path.join(settings.PROJECT_ROOT, settings.COLORS_LESS_FILE), "wb") as f:
-        f.write(colors_less)
+    paths = [os.path.join(settings.PROJECT_ROOT, settings.COLORS_LESS_DIR, settings.COLORS_LESS_FILE),  # dev
+             os.path.join(settings.STATIC_ROOT, settings.COLORS_LESS_FILE)]  # production
+    for p in paths:
+        if os.path.exists(os.path.dirname(p)):
+            with open(p, "wb") as f:
+                f.write(colors_less)

@@ -293,7 +293,8 @@ ESV_KEY = 'IP'
 CRB_VALID_FOR = 365 * 3  # We consider a CRB valid for 3 years
 
 # Referenced from style.less
-COLORS_LESS_FILE = "cciw/cciwmain/static/css/camp_colors.less"
+COLORS_LESS_DIR = "cciw/cciwmain/static/"
+COLORS_LESS_FILE = "css/camp_colors.less"
 
 
 # == Bookings ==
