@@ -7,5 +7,5 @@ from cciw.mail.lists import create_mailboxes
 create_mailboxes_w = lambda sender, **kwargs: create_mailboxes(sender)
 signals.camp_created.connect(create_mailboxes_w)
 
-generate_colors_less_w = lambda sender, **kwargs: generate_colors_less()
+generate_colors_less_w = lambda sender, **kwargs: generate_colors_less(update_existing=True)
 post_save.connect(generate_colors_less_w, CampName)

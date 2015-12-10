@@ -255,7 +255,7 @@ def get_reference_contact_people():
     return list(Person.objects.filter(roles__name=REFERENCE_CONTACT_ROLE_NAME))
 
 
-def generate_colors_less():
+def generate_colors_less(update_existing=False):
     # We could do this as a dynamic view, but we'd lose several benefits:
     #  - django-compressor wouldn't be able to find it and bundle it with
     #    other less files
@@ -268,5 +268,6 @@ def generate_colors_less():
              os.path.join(settings.STATIC_ROOT, settings.COLORS_LESS_FILE)]  # production
     for p in paths:
         if os.path.exists(os.path.dirname(p)):
-            with open(p, "wb") as f:
-                f.write(colors_less)
+            if update_existing or not os.path.exists(p):
+                with open(p, "wb") as f:
+                    f.write(colors_less)

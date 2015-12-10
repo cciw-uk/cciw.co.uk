@@ -12,4 +12,6 @@ class CciwmainConfig(AppConfig):
 
         from cciw.cciwmain.models import generate_colors_less
         if not settings.TESTS_RUNNING:
-            generate_colors_less()
+            # Make sure that the file exists, or we will get errors
+            # when attempting to access the site
+            generate_colors_less(update_existing=False)
