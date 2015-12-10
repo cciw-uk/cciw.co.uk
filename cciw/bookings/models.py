@@ -486,7 +486,7 @@ class Booking(models.Model):
     gp_phone_number = models.CharField("GP phone number", max_length=22)
 
     # Medical details - from user
-    medical_card_number = models.CharField(max_length=100)  # no idea how long it should be
+    medical_card_number = models.CharField("NHS number", max_length=100)  # no idea how long it should be
     last_tetanus_injection = models.DateField(null=True, blank=True)
     allergies = models.TextField(blank=True)
     regular_medication_required = models.TextField(blank=True)
