@@ -22,6 +22,7 @@ class CampModel(TestCase):
         camp_name, _ = CampName.objects.get_or_create(
             name="Blue",
             slug="blue",
+            color="#0000ff",
         )
         camp = Camp.objects.create(
             year=2013,
@@ -84,7 +85,8 @@ class ThisyearPage(BasicSetupMixin, TestCase):
 
         for i in range(1, 20):
             cn = CampName.objects.create(name=chr(64 + i),
-                                         slug=chr(64 + i).lower())
+                                         slug=chr(64 + i).lower(),
+                                         color="#0000" + hex(i)[2:])
             c = Camp.objects.create(year=y, site=site,
                                     camp_name=cn,
                                     minimum_age=11,

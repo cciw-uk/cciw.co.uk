@@ -109,6 +109,7 @@ class ApplicationUtils(BasicSetupMixin, TestCase):
         camp_name, _ = CampName.objects.get_or_create(
             name="Blue",
             slug="blue",
+            color="#0000ff",
         )
 
         site = Site.objects.get(id=1)

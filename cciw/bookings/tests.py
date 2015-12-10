@@ -56,6 +56,7 @@ class CreateCampMixin(object):
         camp_name, _ = CampName.objects.get_or_create(
             name="Blue",
             slug="blue",
+            color="#0000ff",
         )
         self.camp = Camp.objects.create(year=start_date.year,
                                         camp_name=camp_name,

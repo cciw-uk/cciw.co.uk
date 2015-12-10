@@ -49,6 +49,7 @@ class BasicSetupMixin(object):
         camp_name, _ = CampName.objects.get_or_create(
             name="Blue",
             slug="blue",
+            color="#0000ff",
         )
 
         self.default_camp_1 = Camp.objects.create(

@@ -26,6 +26,7 @@ from cciw.settings_priv import PAYPAL_RECEIVER_EMAIL  # Email address of PayPal 
 from cciw.settings_priv import SECRET_KEY
 
 WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
+TESTS_RUNNING = 'test' in sys.argv
 
 # == MISC ==
 

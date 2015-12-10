@@ -54,3 +54,4 @@ django-plainpasswordhasher==0.3
 IPython
 flake8==2.4.1
 flake8-respect-noqa==0.2
+tblib==1.1.0

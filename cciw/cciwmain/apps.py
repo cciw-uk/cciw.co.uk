@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.conf import settings
 
 
 class CciwmainConfig(AppConfig):
@@ -10,4 +11,5 @@ class CciwmainConfig(AppConfig):
         import cciw.cciwmain.hooks  # NOQA
 
         from cciw.cciwmain.models import generate_colors_less
-        generate_colors_less()
+        if not settings.TESTS_RUNNING:
+            generate_colors_less()
