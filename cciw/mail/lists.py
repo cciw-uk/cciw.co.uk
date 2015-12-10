@@ -140,6 +140,9 @@ def _mail_debug_users():
     return User.objects.filter(is_superuser=True)
 
 
+# FIXME - replace with <slug_name_with_year> and have a function that parses that,
+# attached to Camp.objects.get_from_slug_and_year
+
 # See also cciw.officers.utils
 email_lists = {
     re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-officers@cciw.co.uk$", re.IGNORECASE):
