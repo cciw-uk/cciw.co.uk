@@ -186,6 +186,10 @@ class Camp(models.Model):
         return "Camp %s, year %d" % (self.name, self.year)
 
     @property
+    def bracketted_old_name(self):
+        return (" (Camp {0})".format(self.old_name) if self.old_name else "")
+
+    @property
     def nice_dates(self):
         if self.start_date.month == self.end_date.month:
             return "{0} - {1} {2}".format(self.start_date.strftime('%e').strip(),

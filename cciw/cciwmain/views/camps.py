@@ -54,13 +54,13 @@ def detail(request, year, slug):
 
     c = {}
     c['camp'] = camp
-    c['title'] = camp.nice_name
+    c['title'] = camp.nice_name + camp.bracketted_old_name
 
     if camp.is_past():
         c['breadcrumb'] = create_breadcrumb(
-            [format_html('<a href="{0}">Camps</a>',
-                         reverse("cciw-cciwmain-camps_index")),
-             camp.nice_name]
+            [format_html('<a href="{0}">See all camps</a>',
+                         reverse("cciw-cciwmain-camps_index"))
+             ]
         )
 
     c['is_booking_open'] = is_booking_open(camp.year)
