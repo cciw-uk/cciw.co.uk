@@ -1,5 +1,10 @@
+{% load static %}
+
 {% for officer in available_officers %}
-  <option value="{{ officer.id }}">{{ officer.first_name }} {{ officer.last_name }}
+  <div data-officer-id="{{ officer.id }}"
+    class="{% if officer.on_previous_camp %}previous-camp-officer{% endif %}">
+    <img alt="Add" data-add-button src="{% static "images/officer-list-add.gif" %}" />
+    {{ officer.first_name }} {{ officer.last_name }}
     &lt;{{ officer.email }}&gt;
-    {% if officer.on_previous_camp %}*{% endif %}</option>
+  </div>
 {% endfor %}

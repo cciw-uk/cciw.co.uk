@@ -310,6 +310,23 @@ ul.ui-autocomplete li {
     border: 1px solid #d0d0d0;
 }
 
+#id_available_officers {
+    height: 30em;
+    overflow: scroll;
+    img {
+        vertical-align: middle;
+        cursor: pointer;
+    }
+    & > div {
+        padding: 5px;
+        border-top: 1px solid #ccc;
+        border-left: 1px solid #ccc;
+        &.previous-camp-officer {
+            background-color: #dde;
+        }
+    }
+}
+
 .actionable {
     background-color: #ffd0d0;
 }

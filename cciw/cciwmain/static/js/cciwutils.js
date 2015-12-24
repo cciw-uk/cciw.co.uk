@@ -1,41 +1,29 @@
 // Misc extensions to jQuery and CCIW specific functions.
 
 (function($) {
-    // Define multiSelectFilter jQuery plugin
-    $.fn.multiSelectFilter = function(selectElem){
+    // Define filteredDiv jQuery plugin
+    $.fn.filteredDiv = function (containerDivSelector) {
         var filterbox = this;
-        // Make clone that stores options
-        var select = $(selectElem);
-        var clone;
+        var containerDiv = $(containerDivSelector);
 
-        var init = function() {
-            if (clone != undefined) {
-                clone.remove();
-            }
-            clone = select.clone();
-            clone.removeAttr('id').removeAttr('name').hide();
-            clone.appendTo(select.parent());
-        };
-
-        var filter = function(){
-            select.children().remove();
+        var filter = function () {
             var term = $.trim(filterbox.val().toLowerCase());
-            var tmp = [];
-            clone.children().each(function(i, elem) {
-                                      if (!term || elem.text.toLowerCase().indexOf(term) != -1) {
-                                          tmp.push($('<div>').append($(elem).eq(0).clone()).html());
-                                      }
-                                  });
-            select.append(tmp.join(''));
+            containerDiv.children().each(function(i, elem) {
+                var $elem = $(elem);
+                if (!term || $elem.text().toLowerCase().indexOf(term) != -1) {
+                    $elem.show();
+                } else {
+                    $elem.hide();
+                }
+            });
         };
 
-        init();
+        filter();
         this.keyup(filter);
 
         // If the contents are changed, the clone needs to be refreshed, so the
         // 'refresh' event should be triggered on the filterbox.
         this.bind('refresh', function() {
-            init();
             filter();
         });
         return this;

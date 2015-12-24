@@ -42,25 +42,19 @@
       <h2>Add to list</h2>
 
       <div class="selector-filter">
-        <a href="#" id="id_add_officer_btn">Add  <img style="vertical-align: middle"
-                                                      alt="Add" src="{% static "images/officer-list-add.gif" %}" /></a>
         &nbsp;&nbsp;&nbsp;
         <input type="text" id="id_available_officers_filter" />
         <img style="vertical-align: middle" alt="search" src="{% static "admin/img/search.svg" %}" />
       </div>
-      <div>
-        <select multiple="multiple" id="id_available_officers" style="min-width: 30em; height: 30em; max-width:100%;" name="officers">
-          {% include "cciw/officers/officer_list_available.html" %}
-        </select>
+      <div id="id_available_officers">
+        {% include "cciw/officers/officer_list_available.html" %}
       </div>
 
       <h3>Help</h3>
       <ul>
-        <li>Add an officer from above by double clicking on the entry,
-          or by selecting and pressing 'Enter' or clicking the 'Add' button.</li>
-        <li>Use Shift or Ctrl buttons to select multiple officers.</li>
+        <li>Add an officer from above using the arrow buttons.</li>
         <li>Type in the search box to quickly find an officer.</li>
-        <li>Officers from last year are at the start of the list and starred (if the information is available)</li>
+        <li>Officers from last year are at the start of the list and highlighted (if the information is available)</li>
       </ul>
 
       <h2>New officers</h2>

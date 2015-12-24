@@ -48,13 +48,9 @@
     };
 
     var refreshAvailableList = function(text) {
-        var selectedIdx = document.getElementById("id_available_officers").selectedIndex;
         $("#id_available_officers").html(text);
-        // restore filter
+        // restore filter:
         $("#id_available_officers_filter").trigger('refresh');
-        // restore selected item
-        var s = document.getElementById("id_available_officers");
-        s.selectedIndex = Math.min(selectedIdx, s.options.length - 1);
     };
 
     var refreshNoApplicationFormList = function(text) {
@@ -180,26 +176,11 @@
 
     var officerAddHandler = function(ev) {
         ev.preventDefault();
-        if (ev.type == "keyup") {
-            var code = (ev.keyCode ? ev.keyCode : ev.which);
-            if (code != 13) { // Enter
-                return;
-            }
-        }
-        var officer_ids = [];
-        var options = $('#id_available_officers').get(0).options;
-        for (var i = 0; i < options.length; i++) {
-            if (options[i].selected) {
-               officer_ids.push(options[i].value)
-            }
-        }
-        if (officer_ids.length == 0) {
-            return;
-        }
+        var officerId = $(ev.target).closest('div').attr('data-officer-id');
         $.ajax({
             type: "POST",
             url: cciw.addOfficersUrl,
-            data: "officer_ids=" + officer_ids.join(','),
+            data: "officer_ids=" + officerId,
             dataType: 'json',
             success: function(ev) { refreshLists(); }
         });
@@ -243,13 +224,10 @@
     }
 
     $(document).ready(function(){
-        $("#id_available_officers_filter").multiSelectFilter("#id_available_officers");
+        $("#id_available_officers_filter").filteredDiv("#id_available_officers");
         addOfficerListHandlers();
         addTableSorter();
-        $("#id_available_officers")
-           .dblclick(officerAddHandler)
-           .keyup(officerAddHandler);
-        $('#id_add_officer_btn').click(officerAddHandler);
+        $("#id_available_officers").on("click", "[data-add-button]", officerAddHandler);
         $('#id_new_officer_btn').click(newOfficerHandler);
         $('#id_popup_close_btn').click(newOfficerClose);
         $('#id_hide_add_officer_div').click(addOfficerBlockToggle);
