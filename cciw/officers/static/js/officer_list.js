@@ -147,7 +147,9 @@
 
         // event handlers for 'remove' buttons
         $(".removebtn").click(function(ev) {
-            var officerId = parseInt($(ev.target).closest('tr').attr('data-officer-id'), 10);
+            var $btn = $(ev.target);
+            $btn.attr('disabled', 'disabled');
+            var officerId = parseInt($btn.closest('tr').attr('data-officer-id'), 10);
             // Remove from list
             $.ajax({
                 type: "POST",
