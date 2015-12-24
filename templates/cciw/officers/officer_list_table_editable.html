@@ -13,21 +13,21 @@
     </thead>
     <tbody>
       {% for invite in invitations %}
-        <tr id="id_officer_table_tr_{{ invite.officer.id }}">
+        <tr data-officer-id="{{ invite.officer.id }}">
           <td>{{ invite.officer.first_name }}</td>
           <td>{{ invite.officer.last_name }}</td>
           <td><a href="mailto:{{ invite.officer.email }}">{{ invite.officer.email }}</a></td>
           <td>{{ invite.notes }}</a></td>
           <td>
-            <button class="editbtn" id="id_edit_{{ invite.officer.id }}">
+            <button class="editbtn">
               <img src="{% static "admin/img/icon-changelink.svg" %}" alt="Edit" title="Edit" />
               Edit
             </button>
-            <button class="removebtn" id="id_remove_{{ invite.officer.id }}">
+            <button class="removebtn">
               <img src="{% static "images/officer-list-remove.gif" %}" alt="Remove" title="Remove">
               Remove
             </button>
-            <button class="emailbtn" id="id_email_{{ invite.officer.id }}">
+            <button class="emailbtn">
               <img src="{% static "images/sendemail.gif" %}" alt="Re-send initial e-mail" title="Re-send initial e-mail" />
               Resend email
             </button>

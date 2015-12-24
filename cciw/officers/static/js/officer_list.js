@@ -71,8 +71,8 @@
                 return;
             }
             editOfficerMode = true;
-            var officerId = parseFloat(ev.target.id.substring(8), 10);
-            var row = $('#id_officer_table_tr_' + officerId.toString());
+            var officerId = parseInt($(ev.target).closest('tr').attr('data-officer-id'), 10);
+            var row = $(ev.target).closest('tr');
             var firstNameCell = row.find('td:nth-child(1)');
             var lastNameCell  = row.find('td:nth-child(2)');
             var emailCell     = row.find('td:nth-child(3)');
@@ -147,7 +147,7 @@
 
         // event handlers for 'remove' buttons
         $(".removebtn").click(function(ev) {
-            var officerId = parseFloat(ev.target.id.substring(10), 10);
+            var officerId = parseInt($(ev.target).closest('tr').attr('data-officer-id'), 10);
             // Remove from list
             $.ajax({
                 type: "POST",
@@ -163,7 +163,7 @@
         $(".emailbtn").click(function(ev) {
             ev.preventDefault();
             if (confirm("This will reset the officer's password and re-send the initial signup e-mail.  Continue?")) {
-                var officerId = parseFloat(ev.target.id.substring(9), 10);
+                var officerId = parseInt($(ev.target).closest('tr').attr('data-officer-id'), 10);
                 $.ajax({
                     type: "POST",
                     url: cciw.resendEmailUrl,
