@@ -79,7 +79,7 @@ $ fab test
 
 or
 
-$ ./manage.py test --keepdb --parallel --settings=cciw.settings_tests cciw.cciwmain.tests cciw.bookings.tests cciw.officers.tests
+$ ./manage.py test --keepdb --settings=cciw.settings_tests cciw.cciwmain.tests cciw.bookings.tests cciw.officers.tests
 
 Deployment
 ----------
