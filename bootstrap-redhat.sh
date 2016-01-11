@@ -41,7 +41,7 @@ sed -i.bak 's/\[updates\]/\[updates\]\nexclude=postgresql*/' /etc/yum.repos.d/Ce
 yum -y localinstall http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-2.noarch.rpm
 yum -y install postgresql94-server postgresql94-devel
 
-test -d /var/lib/pgsql/9.4/data/ || /usr/pgsql-9.4/bin/postgresql94-setup initdb
+test -f /var/lib/pgsql/9.4/data/pg_hba.conf || /usr/pgsql-9.4/bin/postgresql94-setup initdb
 
 systemctl enable postgresql-9.4.service
 systemctl stop postgresql-9.4
