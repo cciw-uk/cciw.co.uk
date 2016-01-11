@@ -50,6 +50,7 @@ numpy==1.9.2
 -e git://github.com/spookylukey/pandas-highcharts@24d19417bc201ee7adf38778dc98cce5f801d157#egg=pandas-highcharts
 django-colorful==1.1.0
 django-plainpasswordhasher==0.3
+nodeenv==0.13.6
 # Nice-to-have dev tools:
 IPython
 flake8==2.4.1

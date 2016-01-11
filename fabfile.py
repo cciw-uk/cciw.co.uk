@@ -167,7 +167,15 @@ def install_dependencies():
             # https://bugs.launchpad.net/pycrypto/+bug/1294670
             # So we need custom TMPDIR
             run_venv("test -d ~/.pip_install_tmp || mkdir ~/.pip_install_tmp")
+
+            # Need to install numpy first:
+            run_venv("pip install numpy==1.9.2")
             run_venv("TMPDIR=~/.pip_install_tmp pip install -q -r requirements.txt")
+
+            # Node dependencies
+            if not exists(os.path.join(target.VENV_DIR, "bin", "node")):
+                run_venv("nodeenv -p --node=5.4.0")
+            run_venv("npm install -g --skip-installed less@2.5.3")
 
 
 def ensure_virtualenv():
@@ -225,7 +233,7 @@ def webserver_stop():
 
 
 def _webserver_command():
-    return ("%(venv_dir)s/bin/gunicorn --log-file=%(logfile)s -b 127.0.0.1:%(port)s -D -w %(workers)s --pid %(pidfile)s %(wsgimodule)s:application" %
+    return ("PATH=%(venv_dir)s:$PATH gunicorn --log-file=%(logfile)s -b 127.0.0.1:%(port)s -D -w %(workers)s --pid %(pidfile)s %(wsgimodule)s:application" %
             {'venv_dir': target.VENV_DIR,
              'pidfile': target.GUNICORN_PIDFILE,
              'wsgimodule': WSGI_MODULE,
