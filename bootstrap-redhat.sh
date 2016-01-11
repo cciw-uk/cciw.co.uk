@@ -1,27 +1,17 @@
 #!/bin/bash
 
-yum update
+yum update -y
 
 # Need epel-release for git
 yum install -y epel-release  || exit 1
 
-# Server requirements:
-yum install -y postgresql-server.x86_64 postgresql.x86_64 git  || exit 1
-
 # Dev tools for building Python 3.4, and other Python libraries
 yum groupinstall -y "Development tools"  || exit 1
 yum install -y zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libxml2-devel libxslt-devel postgresql-devel  || exit 1
-
-# If we do yum update, we need this too, or we get errors with shared folders:
-yum install -y kernel-devel-$(uname -r) kernel-headers-$(uname -r) dkms  || exit 1
-/etc/init.d/vboxadd setup
+yum install -y gcc libstdc++-devel.x86_64  || exit 1
 
 # Something for editing files:
 yum install -y emacs joe
-
-
-# To build Python correctly, we need a newer version of gcc
-yum install -y gcc44.x86_64 gcc44-c++.x86_64 libstdc++-devel.x86_64  || exit 1
 
 
 # Custom things to build
@@ -29,19 +19,12 @@ cd $HOME
 test -d build || mkdir build
 cd ~/build
 
-# # Python 3.4:
+# Python 3.4:
 wget https://www.python.org/ftp/python/3.4.3/Python-3.4.3.tgz || exit 1
 tar -xzf Python-3.4.3.tgz || exit 1
 cd Python-3.4.3 || exit 1
-./configure --with-gcc=/usr/bin/gcc44 --prefix=/usr/local --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib" || exit 1
+./configure --with-gcc=/usr/bin/gcc --prefix=/usr/local --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib" || exit 1
 make && make altinstall || exit 1
-
-# Nodejs, needed for lessc
-cd ~/build
-wget https://nodejs.org/dist/v0.12.5/node-v0.12.5-linux-x64.tar.gz || exit 1
-cd /usr/local
-sudo tar --strip-components 1 -xzf $HOME/build/node-v0.12.5-linux-x64.tar.gz || exit 1
-sudo npm install -g less@1.7.4 || exit 1
 
 # ngrok
 cd ~/build
@@ -50,23 +33,27 @@ unzip ngrok_2.0.19_linux_amd64.zip || exit 1
 sudo mv ngrok /usr/local/bin/ || exit 1
 rm ngrok_2.0.19_linux_amd64.zip
 
-# Setup DB
+# Set up DB
+# See https://wiki.postgresql.org/wiki/YUM_Installation
 cd /
+sed -i.bak 's/\[base\]/\[base\]\nexclude=postgresql*/' /etc/yum.repos.d/CentOS-Base.repo
+sed -i.bak 's/\[updates\]/\[updates\]\nexclude=postgresql*/' /etc/yum.repos.d/CentOS-Base.repo
+yum -y localinstall http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-2.noarch.rpm
+yum -y install postgresql94-server postgresql94-devel
 
-# There can sometimes be a setup issue that creates a non-functioning
-# /var/lib/pgsql/data dir that stops the rest from working
-test -f /var/lib/pgsql/data/pg_ident.conf || rm -rf /var/lib/pgsql/data
+test -d /var/lib/pgsql/9.4/data/ || /usr/pgsql-9.4/bin/postgresql94-setup initdb
 
-service postgresql stop
-service postgresql start || exit 1
+systemctl enable postgresql-9.4.service
+systemctl stop postgresql-9.4
+systemctl start postgresql-9.4 || exit 1
+chkconfig postgresql-9.4 on
 
 # Need md5 for password login
-
-cat > /var/lib/pgsql/data/pg_hba.conf <<EOF
+cat > /var/lib/pgsql/9.4/data/pg_hba.conf <<EOF
 # TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
 
 # "local" is for Unix domain socket connections only
-local   all         postgres                          ident sameuser
+local   all         postgres                          ident
 local   all         all                               md5
 
 # IPv4 local connections:
@@ -75,9 +62,9 @@ host    all         all         127.0.0.1/32          md5
 host    all         all         ::1/128               md5
 EOF
 
-chmod ugo+r /var/lib/pgsql/data/pg_hba.conf
+chmod ugo+r /var/lib/pgsql/9.4/data/pg_hba.conf
 
-service postgresql restart
+systemctl restart postgresql-9.4
 
 # Sync passwords with settings_dev.py
 sudo -u postgres psql -U postgres -d template1 -c "CREATE DATABASE cciw;"
@@ -111,6 +98,8 @@ Control-o: menu-complete
 EOF
 
 cat > /home/vagrant/.bashrc <<'EOF'
+PATH=/usr/pgsql-9.4/bin:$PATH
+
 alias ls='ls --color=auto'
 
 shopt -s histappend

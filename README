@@ -36,6 +36,7 @@ supports the above dependencies. Once you have installed them:
 
 * In the src directory, do::
 
+    $ vagrant plugin install vagrant-vbguest
     $ vagrant up
 
   (Go bake a cake while it runs...)

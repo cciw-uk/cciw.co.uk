@@ -439,7 +439,7 @@ def get_live_db():
 
 def pg_restore_cmds(db, filename):
     return [
-        "pg_restore -O -U %s -d %s %s" %
+        "pg_restore -O -U %s -d %s %s || true" %  # pg_restore finishes with error if there are any errors
         (db['USER'], db['NAME'], filename),
     ]
 
@@ -458,14 +458,14 @@ def db_restore_commands(db, filename, webfaction=False):
     else:
         commands = [
             # DB might not exist, allow error
-            """sudo -u postgres psql -U postgres -d template1 -c "DROP DATABASE %s;" | true """
+            """sudo -u postgres psql -U postgres -d template1 -c "DROP DATABASE %s;" || true """
             % db['NAME'],
 
             """sudo -u postgres psql -U postgres -d template1 -c "CREATE DATABASE %s;" """
             % db['NAME'],
 
             # User might already exist, allow error
-            """sudo -u postgres psql -U postgres -d template1 -c "CREATE USER %s WITH PASSWORD '%s';" | true """
+            """sudo -u postgres psql -U postgres -d template1 -c "CREATE USER %s WITH PASSWORD '%s';" || true """
             % (db['USER'], db['PASSWORD']),
 
             """sudo -u postgres psql -U postgres -d template1 -c "GRANT ALL ON DATABASE %s TO %s;" """

@@ -3,13 +3,13 @@
 
 # This Vagrantfile is to enable quick setup in development. It attempts to mimic
 # the current live server where that makes sense, and therefore starts
-# from CentOS 5.11
+# from CentOS 7.2
 
 Vagrant.configure(2) do |config|
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
 
-  config.vm.box = "chef/centos-5.11"
+  config.vm.box = "boxcutter/centos72"
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine.
