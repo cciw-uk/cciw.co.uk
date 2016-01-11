@@ -20,7 +20,7 @@ supports the above dependencies. Once you have installed them:
 
 * On the host machine, create an alias for 'cciw.local' that points to
   localhost, 127.0.0.1. On Linux, you do this by adding the following line to
-  /etc/hosts:
+  /etc/hosts::
 
     127.0.0.1          cciw.local
 
@@ -73,13 +73,13 @@ Mercurial is used for VCS. Features and fixes should be developed off the
 Tests
 -----
 
-Tests can be run like so:
+Tests can be run like so::
 
-$ fab test
+  $ fab test
 
-or
+or::
 
-$ ./manage.py test --keepdb --settings=cciw.settings_tests cciw.cciwmain.tests cciw.bookings.tests cciw.officers.tests
+  $ ./manage.py test --keepdb --settings=cciw.settings_tests cciw.cciwmain.tests cciw.bookings.tests cciw.officers.tests
 
 Deployment
 ----------
@@ -117,7 +117,7 @@ The major components of the site are:
    * to manage references for officers
    * to download booking information about campers booked on the camp
 
-   ...and other things
+   …and other things
 
    It also contains utilities for officers to submit their application forms,
    and helps for the booking secretary.
@@ -170,31 +170,31 @@ Crontab
 This is not automatically deployed, because the WebFaction account that we
 deploy to hosts multiple projects and merging the crontabs for them would get
 tricky. Changes to this should be recorded here and then manually installed by
-doing 'crontab -e' on the WebFaction server.
+doing 'crontab -e' on the WebFaction server.::
 
-CCIW_PYTHON=/home/cciw/webapps/cciw_django/venv_py34/bin/python3.4
-CCIW_MANAGE=/home/cciw/webapps/cciw_django/src/manage.py
+    CCIW_PYTHON=/home/cciw/webapps/cciw_django/venv_py34/bin/python3.4
+    CCIW_MANAGE=/home/cciw/webapps/cciw_django/src/manage.py
 
-CCIW_STAGING_PYTHON=/home/cciw/webapps/cciw_staging_django/venv_py34/bin/python3.4
-CCIW_STAGING_MANAGE=/home/cciw/webapps/cciw_staging_django/src/manage.py
+    CCIW_STAGING_PYTHON=/home/cciw/webapps/cciw_staging_django/venv_py34/bin/python3.4
+    CCIW_STAGING_MANAGE=/home/cciw/webapps/cciw_staging_django/src/manage.py
 
-*       * * * * $CCIW_PYTHON $CCIW_MANAGE send_mail 2>> ~/.django-mailer-cron.log
-5,35    * * * * $CCIW_PYTHON $CCIW_MANAGE fix_mailing_lock
-0,20,40 * * * * $CCIW_PYTHON $CCIW_MANAGE retry_deferred 2>> ~/.django-mailer-deferred-cron.log
-15      1 * * * $CCIW_PYTHON $CCIW_MANAGE clear_securedownload_links
-*/10    * * * * $CCIW_PYTHON $CCIW_MANAGE process_payments
-0       2 * * * $CCIW_PYTHON $CCIW_MANAGE cleanup
-*       * * * * $CCIW_PYTHON $CCIW_MANAGE handle_mailing_lists 2>> ~/.cciw-mailings-cron.log
-0       7 * * * $CCIW_PYTHON $CCIW_MANAGE payment_reminder_emails
+    *       * * * * $CCIW_PYTHON $CCIW_MANAGE send_mail 2>> ~/.django-mailer-cron.log
+    5,35    * * * * $CCIW_PYTHON $CCIW_MANAGE fix_mailing_lock
+    0,20,40 * * * * $CCIW_PYTHON $CCIW_MANAGE retry_deferred 2>> ~/.django-mailer-deferred-cron.log
+    15      1 * * * $CCIW_PYTHON $CCIW_MANAGE clear_securedownload_links
+    */10    * * * * $CCIW_PYTHON $CCIW_MANAGE process_payments
+    0       2 * * * $CCIW_PYTHON $CCIW_MANAGE cleanup
+    *       * * * * $CCIW_PYTHON $CCIW_MANAGE handle_mailing_lists 2>> ~/.cciw-mailings-cron.log
+    0       7 * * * $CCIW_PYTHON $CCIW_MANAGE payment_reminder_emails
 
-# expire_bookings must be run only once an hour
-30      * * * * $CCIW_PYTHON $CCIW_MANAGE expire_bookings
-*/10    * * * * /home/cciw/webapps/cciw_django/venv_py34/bin/fab -f /home/cciw/webapps/cciw_django/src/fabfile.py production local_webserver_start
+    # expire_bookings must be run only once an hour
+    30      * * * * $CCIW_PYTHON $CCIW_MANAGE expire_bookings
+    */10    * * * * /home/cciw/webapps/cciw_django/venv_py34/bin/fab -f /home/cciw/webapps/cciw_django/src/fabfile.py production local_webserver_start
 
-# expire_bookings must be run only once an hour
-30      * * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE expire_bookings
-18      1 * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE clear_securedownload_links
-3       2 * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE cleanup
+    # expire_bookings must be run only once an hour
+    30      * * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE expire_bookings
+    18      1 * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE clear_securedownload_links
+    3       2 * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE cleanup
 
 
 PayPal
