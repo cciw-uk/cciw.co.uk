@@ -300,6 +300,18 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         # and it is associated with a User object.
         self.assertEqual(len(self._get_application_form_emails()), 2)
 
+    def test_finish_complete_no_officer_list(self):
+        u = User.objects.get(username=OFFICER[0])
+        u.invitations.all().delete()
+        self.assertEqual(u.applications.count(), 0)
+        self.assertEqual(len(mail.outbox), 0)
+        self.webtest_officer_login(OFFICER)
+        a = self._add_application()
+        response = self.get(self._application_edit_url(a.id))
+        response = self._finish_application_form(response).submit('_save').follow()
+        self.assertUrl(response, "cciw-officers-applications")
+        self.assertContains(response, "The application form has not been sent to any leaders")
+
     def test_change_application_after_camp_past(self):
         """
         Ensure that the user can't change an application after it has been
