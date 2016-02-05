@@ -576,7 +576,19 @@ class TestEditPlace(BookingBaseMixin, CreatePlaceMixin, TestCase):
             self.assertNotEqual(acc.bookings.all()[0].first_name, "A New Name")
 
 
-class TestEditPlaceAdmin(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin, WebTestBase):
+class FixAutocompleteAccountField(object):
+    def fill_by_name(self, fields):
+        if 'account' in fields:
+            # Hack needed to cope with autocomplete_light widget and WebTest:
+            account_id = str(fields['account'])
+            form, field = self._find_form_and_field_by_css_selector(self.last_response, '[name=account]')
+            form.fields['account'][0].options.append((account_id, False, ''))
+            fields['account'] = [account_id]  # WebTest treats as a multi select
+
+        super(FixAutocompleteAccountField, self).fill_by_name(fields)
+
+
+class TestEditPlaceAdmin(BookingBaseMixin, FixAutocompleteAccountField, OfficersSetupMixin, CreatePlaceMixin, WebTestBase):
 
     def test_approve(self):
         self.create_place({'price_type': PRICE_CUSTOM})
@@ -613,11 +625,6 @@ class TestEditPlaceAdmin(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin,
             'manual_payment_amount': '100',
             'manual_payment_payment_type': str(MANUAL_PAYMENT_CHEQUE),
         })
-        # Hack needed to cope with autocomplete_light widget and WebTest:
-        form = self.last_response.forms['booking_form']
-        form.fields['account'][0].options.append((str(account.id), False, ''))
-        fields['account'] = [fields['account']]
-
         self.fill_by_name(fields)
         self.submit('[name=_save]')
         self.assertTextPresent('Select booking')
@@ -628,6 +635,26 @@ class TestEditPlaceAdmin(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin,
         mp = booking.account.manual_payments.get()
         self.assertEqual(mp.payment_type, MANUAL_PAYMENT_CHEQUE)
         self.assertEqual(mp.amount, Decimal('100'))
+
+
+class TestEditPaymentAdmin(FixAutocompleteAccountField, BookingBaseMixin,
+                           OfficersSetupMixin, CreatePlaceMixin, WebTestBase):
+    def test_add_manual_payment(self):
+        self.create_place()
+        self.officer_login(BOOKING_SEC)
+        account = self.get_account()
+        self.get_url("admin:bookings_manualpayment_add")
+        self.fill_by_name({
+            'account': account.id,
+            'amount': '12.00',
+        })
+        self.submit('[name=_save]')
+        self.assertTextPresent("Manual payment of £12")
+        self.assertTextPresent("was added successfully")
+        self.assertEqual(account.manual_payments.count(), 1)
+        process_all_payments()
+        account = self.get_account()
+        self.assertEqual(account.total_received, Decimal('12'))
 
 
 class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
