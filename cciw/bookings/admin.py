@@ -11,8 +11,6 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO
                                   ManualPayment, Payment, Price, RefundPayment)
 from cciw.cciwmain.common import get_thisyear
 
-account_autocomplete_field = lambda: autocomplete_light.ModelChoiceField('account')
-
 
 class ReturnToAdminMixin(object):
     def conditional_redirect(self, request, main_response):
@@ -303,8 +301,6 @@ class BookingAdmin(admin.ModelAdmin):
 
 class ManualPaymentAdminFormBase(forms.ModelForm):
 
-    account = account_autocomplete_field()
-
     def clean(self):
         retval = super(ManualPaymentAdminFormBase, self).clean()
         if self.instance is not None and self.instance.id is not None:
@@ -345,8 +341,44 @@ class RefundPaymentAdmin(ManualPaymentAdminBase):
     form = RefundPaymentAdminForm
 
 
+class PaymentForm(autocomplete_light.ModelForm):
+    class Meta:
+        model = Payment
+        fields = ['account', 'amount', 'origin_id', 'origin_type', 'created', 'processed']
+
+
+class PaymentAdmin(admin.ModelAdmin):
+    date_hierarchy = 'created'
+    list_display = ['account', 'amount', 'created', 'processed']
+    search_fields = ['account__name']
+    readonly_fields = ['amount', 'origin_id', 'origin_type']
+    form = PaymentForm
+
+    fieldsets = [
+        ('Account',
+         {'fields': ['account'],
+          'description': "This table of payments is automatically managed from other records (manual "
+          "payments, PayPal payments etc. It should not normally be used for "
+          "editing/creating payment records. In rare circumstances, you may need to change "
+          "the account on a payment."
+          }),
+        ('Internal fields',
+         {'fields': ['created', 'processed'],
+          'description': "These should not normally be changed.",
+          }
+         ),
+        ('Readonly fields',
+         {'fields': ['amount', 'origin_id', 'origin_type'],
+          'description': "These can never be changed - the only way to alter them is to delete "
+                         "the origin record and create a new one.",
+          }
+         )
+    ]
+
+
 admin.site.register(Price, PriceAdmin)
 admin.site.register(BookingAccount, BookingAccountAdmin)
 admin.site.register(Booking, BookingAdmin)
 admin.site.register(ManualPayment, ManualPaymentAdmin)
 admin.site.register(RefundPayment, RefundPaymentAdmin)
+admin.site.register(Payment, PaymentAdmin)
