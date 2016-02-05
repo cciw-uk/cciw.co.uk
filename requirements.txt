@@ -9,7 +9,7 @@ django-appconf==1.0.1
 django-autocomplete-light==2.2.10
 django-classy-tags==0.6.1
 django-colorful==1.1.0
--e git+git@github.com:spookylukey/django_compressor.git@2e8e8debcecf15d683ee35fec025c866fd28c5ed#egg=django_compressor
+-e git://github.com/spookylukey/django_compressor@2e8e8debcecf15d683ee35fec025c866fd28c5ed#egg=django_compressor
 django-debug-toolbar==1.4
 django-dynamic-fixture==1.8.5
 django-functest==0.1.3
