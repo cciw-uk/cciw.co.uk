@@ -299,7 +299,7 @@ class BookingAdmin(admin.ModelAdmin):
         return retval
 
 
-class ManualPaymentAdminFormBase(forms.ModelForm):
+class ManualPaymentAdminFormBase(autocomplete_light.ModelForm):
 
     def clean(self):
         retval = super(ManualPaymentAdminFormBase, self).clean()
