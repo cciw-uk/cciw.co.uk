@@ -583,29 +583,28 @@ class TestEditPlaceAdmin(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin,
         acc = self.get_account()
         b = acc.bookings.all()[0]
 
-        self.webtest_officer_login(BOOKING_SEC)
-        response = self.get("admin:bookings_booking_change", b.id)
-        self.code(response, 200)
-        response = self.fill(response.forms['booking_form'],
-                             {'state': BOOKING_APPROVED}
-                             ).submit().follow()
-        self.assertContains(response, "An email has been sent")
+        self.officer_login(BOOKING_SEC)
+        self.get_url("admin:bookings_booking_change", b.id)
+        self.assertCode(200)
+        self.fill_by_name({'state': BOOKING_APPROVED})
+        self.submit('[name=_save]')
+        self.assertTextPresent("An email has been sent")
         self.assertEqual(len(mail.outbox), 1)
 
     def test_create(self):
-        self.webtest_officer_login(BOOKING_SEC)
-        response = self.get("admin:bookings_bookingaccount_add")
-        response = self.fill(response.forms['bookingaccount_form'],
-                             {'name': 'Joe',
-                              'email': self.email,
-                              'address': '123',
-                              'post_code': 'XYZ',
-                              }).submit().follow()
-        self.code(response, 200)
+        self.officer_login(BOOKING_SEC)
+        self.get_url("admin:bookings_bookingaccount_add")
+        self.fill_by_name({'name': 'Joe',
+                           'email': self.email,
+                           'address': '123',
+                           'post_code': 'XYZ',
+                           })
+        self.submit('[name=_save]')
+        self.assertCode(200)
         account = BookingAccount.objects.get(email=self.email)
 
-        response = self.get("admin:bookings_booking_add")
-        self.code(response, 200)
+        self.get_url("admin:bookings_booking_add")
+        self.assertCode(200)
         fields = self.place_details.copy()
         fields.update({
             'account': account.id,
@@ -614,13 +613,15 @@ class TestEditPlaceAdmin(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMixin,
             'manual_payment_amount': '100',
             'manual_payment_payment_type': str(MANUAL_PAYMENT_CHEQUE),
         })
-        form = response.forms['booking_form']
-        # Hack needed to cope with autocomplete_light widget
+        # Hack needed to cope with autocomplete_light widget and WebTest:
+        form = self.last_response.forms['booking_form']
         form.fields['account'][0].options.append((str(account.id), False, ''))
-        response = self.fill(
-            form, fields).submit('save').follow()
-        self.assertContains(response, 'Select booking')
-        self.assertContains(response, 'A confirmation email has been sent')
+        fields['account'] = [fields['account']]
+
+        self.fill_by_name(fields)
+        self.submit('[name=_save]')
+        self.assertTextPresent('Select booking')
+        self.assertTextPresent('A confirmation email has been sent')
         booking = Booking.objects.get()
         self.assertEqual(booking.created_online, False)
         self.assertEqual(booking.account.manual_payments.count(), 1)

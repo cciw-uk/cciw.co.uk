@@ -36,58 +36,58 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         ref.save()
         return a
 
-    def _finish_application_form(self, response):
+    def _finish_application_form(self):
         # A full set of values that pass validation.
-        return self.fill(response.forms['application_form'],
-                         {'full_name': 'x',
-                          'full_maiden_name': 'x',
-                          'birth_date': '2000-01-01',
-                          'birth_place': 'x',
-                          'address_firstline': 'x',
-                          'address_town': 'x',
-                          'address_county': 'x',
-                          'address_postcode': 'x',
-                          'address_country': 'x',
-                          'address_tel': 'x',
-                          'address_mobile': 'x',
-                          'address_since': '2008/01',
-                          'address_email': 'foo@foo.com',
-                          'christian_experience': 'x',
-                          'youth_experience': 'x',
-                          'youth_work_declined_details': 'x',
-                          'illness_details': 'x',
-                          'employer1_name': 'x',
-                          'employer1_from': '2008/01',
-                          'employer1_to': '2008/01',
-                          'employer1_job': 'x',
-                          'employer1_leaving': 'x',
-                          'employer2_name': 'x',
-                          'employer2_from': '2008/01',
-                          'employer2_to': '2008/01',
-                          'employer2_job': 'x',
-                          'employer2_leaving': 'x',
-                          'referee1_name': 'My Referee 1',
-                          'referee1_address': 'x',
-                          'referee1_tel': 'x',
-                          'referee1_mobile': 'x',
-                          'referee1_email': 'foo1@foo1.com',
-                          'referee2_name': 'My Referee 2',
-                          'referee2_address': 'x',
-                          'referee2_tel': 'x',
-                          'referee2_mobile': 'x',
-                          'referee2_email': 'foo2@foo2.com',
-                          'crime_details': 'x',
-                          'court_details': 'x',
-                          'concern_details': 'x',
-                          'youth_work_declined': '2',
-                          'relevant_illness': '2',
-                          'crime_declaration': '2',
-                          'court_declaration': '2',
-                          'concern_declaration': '2',
-                          'allegation_declaration': '2',
-                          'crb_check_consent': '2',
-                          'finished': 'on',
-                          })
+        return self.fill_by_name(
+            {'full_name': 'x',
+             'full_maiden_name': 'x',
+             'birth_date': '2000-01-01',
+             'birth_place': 'x',
+             'address_firstline': 'x',
+             'address_town': 'x',
+             'address_county': 'x',
+             'address_postcode': 'x',
+             'address_country': 'x',
+             'address_tel': 'x',
+             'address_mobile': 'x',
+             'address_since': '2008/01',
+             'address_email': 'foo@foo.com',
+             'christian_experience': 'x',
+             'youth_experience': 'x',
+             'youth_work_declined_details': 'x',
+             'illness_details': 'x',
+             'employer1_name': 'x',
+             'employer1_from': '2008/01',
+             'employer1_to': '2008/01',
+             'employer1_job': 'x',
+             'employer1_leaving': 'x',
+             'employer2_name': 'x',
+             'employer2_from': '2008/01',
+             'employer2_to': '2008/01',
+             'employer2_job': 'x',
+             'employer2_leaving': 'x',
+             'referee1_name': 'My Referee 1',
+             'referee1_address': 'x',
+             'referee1_tel': 'x',
+             'referee1_mobile': 'x',
+             'referee1_email': 'foo1@foo1.com',
+             'referee2_name': 'My Referee 2',
+             'referee2_address': 'x',
+             'referee2_tel': 'x',
+             'referee2_mobile': 'x',
+             'referee2_email': 'foo2@foo2.com',
+             'crime_details': 'x',
+             'court_details': 'x',
+             'concern_details': 'x',
+             'youth_work_declined': '2',
+             'relevant_illness': '2',
+             'crime_declaration': '2',
+             'court_declaration': '2',
+             'concern_declaration': '2',
+             'allegation_declaration': '2',
+             'crb_check_consent': '2',
+             'finished': True,
+             })
 
     def _get_application_form_emails(self):
         return [e for e in mail.outbox if "CCIW application form" in e.subject]
@@ -96,21 +96,19 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         return [e for e in mail.outbox if "E-mail change" in e.subject]
 
     def test_change_application(self):
-        self.webtest_officer_login(OFFICER)
+        self.officer_login(OFFICER)
         a = self._add_application()
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.applications.count(), 1)
-        response = self.get(self._application_edit_url(a.id))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Save and continue editing')
+        self.get_literal_url(self._application_edit_url(a.id))
+        self.assertCode(200)
+        self.assertTextPresent('Save and continue editing')
         # Check that Referee initial values are set from model:
-        self.assertContains(response, 'My Initial Referee 1')
-        self.assertNotContains(response, 'Save and add another')
-        response = (self.fill(response.forms['application_form'],
-                              {'full_name': 'Test full name'})
-                    .submit('_save')
-                    .follow())
-        self.assertUrl(response, "cciw-officers-applications")
+        self.assertTextPresent('My Initial Referee 1')
+        self.assertTextAbsent('Save and add another')
+        self.fill_by_name({'full_name': 'Test full name'})
+        self.submit('[name=_save]')
+        self.assertNamedUrl("cciw-officers-applications")
         self.assertEqual(u.applications.count(), 1)
         app = u.applications.all()[0]
         self.assertEqual(app.full_name, 'Test full name')
@@ -124,26 +122,26 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         Ensure that a leader can change a finished application of an officer
         """
         self.test_finish_complete()  # adds app for OFFICER
-        self.webtest_officer_logout()
+        self.officer_logout()
 
-        self.webtest_officer_login(LEADER)
+        self.officer_login(LEADER)
         # To catch a bug, give the leader an application form for the same camp
         self._add_application(officer=LEADER)
         u = User.objects.get(username=OFFICER[0])
         apps = u.applications.all()
         self.assertEqual(len(apps), 1)
-        response = self.get(self._application_edit_url(apps[0].id))
-        self.assertEqual(response.status_code, 200)
-        response = self.fill(response.forms['application_form'],
-                             {'full_name': 'Changed full name'}).submit('_save').follow()
-        self.assertUrl(response, "cciw-officers-applications")
+        self.get_literal_url(self._application_edit_url(apps[0].id))
+        self.assertCode(200)
+        self.fill_by_name({'full_name': 'Changed full name'})
+        self.submit('[name=_save]')
+        self.assertNamedUrl("cciw-officers-applications")
         self.assertEqual(u.applications.count(), 1)
         self.assertEqual(u.applications.all()[0].full_name, 'Changed full name')
 
     def _change_email_setup(self):
         # setup
         self.assertEqual(len(mail.outbox), 0)
-        self.webtest_officer_login(OFFICER)
+        self.officer_login(OFFICER)
         u = User.objects.get(username=OFFICER[0])
         a = self._add_application()
         self.assertEqual(u.applications.count(), 1)
@@ -154,13 +152,13 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         self.assertNotEqual(orig_email, new_email)
 
         # visit page
-        response = self.get(self._application_edit_url(a.id))
-        self.assertEqual(response.status_code, 200)
-        self._finish_application_form(response)
-        response = self.fill(response.forms['application_form'],
-                             {'full_name': 'Test full name',
-                              'address_email': new_email}).submit('_save').follow()
-        self.assertUrl(response, "cciw-officers-applications")
+        self.get_literal_url(self._application_edit_url(a.id))
+        self.assertCode(200)
+        self._finish_application_form()
+        self.fill_by_name({'full_name': 'Test full name',
+                           'address_email': new_email})
+        self.submit('[name=_save]')
+        self.assertNamedUrl("cciw-officers-applications")
         self.assertEqual(u.applications.count(), 1)
 
         # Check the e-mails have been sent
@@ -241,16 +239,16 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         then no e-mail is sent out
         """
         self.assertEqual(len(mail.outbox), 0)
-        self.webtest_officer_login(OFFICER)
+        self.officer_login(OFFICER)
         u = User.objects.get(username=OFFICER[0])
         a = self._add_application()
         self.assertEqual(u.applications.count(), 1)
 
-        response = self.get(self._application_edit_url(a.id))
-        self.assertEqual(response.status_code, 200)
-        self._finish_application_form(response)
-        response = self.fill(response.forms['application_form'],
-                             {'address_email': u.email.upper()}).submit('_save').follow()
+        self.get_literal_url(self._application_edit_url(a.id))
+        self.assertCode(200)
+        self._finish_application_form()
+        self.fill_by_name({'address_email': u.email.upper()})
+        self.submit('[name=_save]')
 
         # Check no e-mails have been sent
         emails = self._get_email_change_emails()
@@ -259,31 +257,33 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
     def test_finish_incomplete(self):
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.applications.count(), 0)
-        self.webtest_officer_login(OFFICER)
+        self.officer_login(OFFICER)
         a = self._add_application()
-        response = self.get(self._application_edit_url(a.id))
-        url = response.request.url
-        self.assertEqual(response.status_code, 200)
-        response = self.fill(response.forms['application_form'], {'finished': 'on'}).submit('_save')
-        self.assertEqual(url, response.request.url)  # Same page
-        self.assertContains(response, "Please correct the errors below")
-        self.assertContains(response, "form-row errors field-address")
+        self.get_literal_url(self._application_edit_url(a.id))
+        url = self.current_url
+        self.assertCode(200)
+        self.fill_by_name({'finished': True})
+        self.submit('[name=_save]')
+        self.assertUrlsEqual(url)  # Same page
+        self.assertTextPresent("Please correct the errors below")
+        self.assertTextPresent("form-row errors field-address")
         self.assertEqual(u.applications.exclude(date_submitted__isnull=True).count(), 0)  # shouldn't have been saved
 
     def test_finish_complete(self):
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.applications.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
-        self.webtest_officer_login(OFFICER)
+        self.officer_login(OFFICER)
         # An old, unfinished application form
         self._add_application()
         a = self._add_application()
-        response = self.get(self._application_edit_url(a.id))
-        self.assertEqual(response.status_code, 200)
-        response = self._finish_application_form(response).submit('_save').follow()
-        self.assertUrl(response, "cciw-officers-applications")
+        self.get_literal_url(self._application_edit_url(a.id))
+        self.assertCode(200)
+        self._finish_application_form()
+        self.submit('[name=_save]')
+        self.assertNamedUrl("cciw-officers-applications")
 
-        self.assertContains(response, "The completed application form has been sent to the leaders (Dave &amp; Rebecca Stott) via e-mail")
+        self.assertTextPresent("The completed application form has been sent to the leaders (Dave & Rebecca Stott) via e-mail")
 
         apps = list(u.applications.all())
         # The old one should have been deleted.
@@ -305,31 +305,32 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         u.invitations.all().delete()
         self.assertEqual(u.applications.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
-        self.webtest_officer_login(OFFICER)
+        self.officer_login(OFFICER)
         a = self._add_application()
-        response = self.get(self._application_edit_url(a.id))
-        response = self._finish_application_form(response).submit('_save').follow()
-        self.assertUrl(response, "cciw-officers-applications")
-        self.assertContains(response, "The application form has not been sent to any leaders")
+        self.get_literal_url(self._application_edit_url(a.id))
+        self._finish_application_form()
+        self.submit('[name=_save]')
+        self.assertNamedUrl("cciw-officers-applications")
+        self.assertTextPresent("The application form has not been sent to any leaders")
 
     def test_change_application_after_camp_past(self):
         """
         Ensure that the user can't change an application after it has been
         'finished'
         """
-        self.webtest_officer_login(OFFICER)
+        self.officer_login(OFFICER)
         a = self._add_application()
         a.finished = True
         a.save()
 
-        response = self.get(self._application_edit_url(a.id))
-        url = response.request.url
-        self.assertEqual(response.status_code, 200)
-        response = self.fill(response.forms['application_form'],
-                             {'full_name': 'A Changed Full Name'}).submit('_save')
+        self.get_literal_url(self._application_edit_url(a.id))
+        url = self.current_url
+        self.assertCode(200)
+        self.fill_by_name({'full_name': 'A Changed Full Name'})
+        self.submit('[name=_save]')
         # we should be on same page:
-        self.assertEqual(url, response.request.url)
-        self.assertContains(response, "You cannot change a submitted")
+        self.assertUrlsEqual(url)
+        self.assertTextPresent("You cannot change a submitted")
         # shouldn't have changed data:
         self.assertNotEqual(a.full_name, 'A Changed Full Name')
 
@@ -337,31 +338,32 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         """
         Ensure that normal officers can't see the list of applications
         """
-        self.webtest_officer_login(OFFICER)
-        response = self.app.get(reverse("admin:officers_application_changelist"),
-                                expect_errors=[403])
-        self.assertEqual(response.status_code, 403)
+        self.officer_login(OFFICER)
+        self.get_literal_url(reverse("admin:officers_application_changelist"),
+                             expect_errors=[403])
+        self.assertCode(403)
 
     def test_list_applications_leaders(self):
         """
         Ensure that leaders can see the list of applications
         """
-        self.webtest_officer_login(LEADER)
-        response = self.get("admin:officers_application_changelist")
-        self.assertEqual(response.status_code, 200)
+        self.officer_login(LEADER)
+        self.get_url("admin:officers_application_changelist")
+        self.assertTextPresent("Select application to change")
 
     def test_add_application_duplicate(self):
         """
         Test that we can't add a new application twice in a year
         """
-        self.webtest_officer_login(OFFICER)
+        self.officer_login(OFFICER)
         a1 = self._add_application()
         a1.date_submitted = date.today()
         a1.save()
         a2 = self._add_application()
-        response = self.get(self._application_edit_url(a2.id))
-        response = self._finish_application_form(response).submit('_save')
-        self.assertContains(response, "You&#39;ve already submitted")
+        self.get_literal_url(self._application_edit_url(a2.id))
+        self._finish_application_form()
+        self.submit('[name=_save]')
+        self.assertTextPresent("You've already submitted")
         u = User.objects.get(username=OFFICER[0])
         self.assertEqual(u.applications.exclude(date_submitted__isnull=True).count(), 1)
 
@@ -386,12 +388,12 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
 
         # Create another application
         app1 = self._add_application()
-        response = self.get(self._application_edit_url(app1.id))
-        self._finish_application_form(response)
+        self.get_literal_url(self._application_edit_url(app1.id))
+        self._finish_application_form()
         # Now change some values
-        response = self.fill(response.forms['application_form'],
-                             {'full_name': 'New Full Name'}).submit('_save').follow()
-        self.assertUrl(response, "cciw-officers-applications")
+        self.fill_by_name({'full_name': 'New Full Name'})
+        self.submit('[name=_save]')
+        self.assertNamedUrl("cciw-officers-applications")
 
         emails = self._get_application_form_emails()
         self.assertEqual(len(emails), 2)
