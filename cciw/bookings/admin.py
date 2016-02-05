@@ -358,9 +358,9 @@ class PaymentAdmin(admin.ModelAdmin):
         ('Account',
          {'fields': ['account'],
           'description': "This table of payments is automatically managed from other records (manual "
-          "payments, PayPal payments etc. It should not normally be used for "
-          "editing/creating payment records. In rare circumstances, you may need to change "
-          "the account on a payment."
+          "payments, PayPal payments etc.). It should not normally be used for editing/creating payment "
+          "records. In rare circumstances, you may need to change the account on a payment if it "
+          "is a PayPal payment."
           }),
         ('Internal fields',
          {'fields': ['created', 'processed'],
