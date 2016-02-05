@@ -656,6 +656,39 @@ class TestEditPaymentAdmin(FixAutocompleteAccountField, BookingBaseMixin,
         account = self.get_account()
         self.assertEqual(account.total_received, Decimal('12'))
 
+    def test_change_payment(self):
+        self.create_place()
+        account = self.get_account()
+        account.manual_payments.create(
+            amount=Decimal('12'),
+            payment_type=MANUAL_PAYMENT_CHEQUE
+        )
+        process_all_payments()
+        account = self.get_account()
+        self.assertEqual(account.total_received, Decimal('12'))
+        self.assertEqual(account.payments.count(), 1)
+
+        other_account = BookingAccount.objects.create(email='otheremail@somewhere.com')
+        self.officer_login(BOOKING_SEC)
+        payment = account.payments.get()
+        self.get_url("admin:bookings_payment_change", payment.id)
+        self.fill_by_name({
+             'account': other_account.id,
+        })
+        self.submit('[name=_save]')
+        self.assertTextPresent("was changed successfully")
+
+        process_all_payments()
+        account = self.get_account()
+        other_account = BookingAccount.objects.get(id=other_account.id)
+
+        self.assertEqual(account.total_received, Decimal('0'))
+        self.assertEqual(other_account.total_received, Decimal('12'))
+        self.assertEqual(account.payments.count(), 0)
+        self.assertEqual(other_account.payments.count(), 1)
+        self.assertEqual(account.manual_payments.count(), 0)
+        self.assertEqual(other_account.manual_payments.count(), 1)
+
 
 class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):
     # This includes tests for most of the business logic

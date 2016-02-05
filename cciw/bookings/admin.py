@@ -375,6 +375,22 @@ class PaymentAdmin(admin.ModelAdmin):
          )
     ]
 
+    def save_model(self, request, obj, form, change):
+        if obj.id is not None:
+            old_payment = Payment.objects.get(id=obj.id)
+        else:
+            old_payment = None
+        retval = super(PaymentAdmin, self).save_model(request, obj, form, change)
+        new_payment = obj
+        if old_payment.account_id != new_payment.account_id:
+            BookingAccount.objects.get(id=old_payment.account_id).receive_payment(-old_payment.amount)
+            BookingAccount.objects.get(id=new_payment.account_id).receive_payment(new_payment.amount)
+            origin = new_payment.origin
+            if hasattr(origin, 'account'):
+                # ManualPayment and RefundPayment, which both disallow 'save',
+                # so we need to update.
+                origin.__class__.objects.filter(id=origin.id).update(account_id=new_payment.account_id)
+        return retval
 
 admin.site.register(Price, PriceAdmin)
 admin.site.register(BookingAccount, BookingAccountAdmin)

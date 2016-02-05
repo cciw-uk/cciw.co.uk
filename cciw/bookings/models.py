@@ -975,6 +975,7 @@ class PaymentManager(models.Manager):
 class Payment(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount,
+                                related_name='payments',
                                 on_delete=models.CASCADE)
     origin_id = models.PositiveIntegerField()
     origin_type = models.ForeignKey(ContentType,
