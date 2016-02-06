@@ -1047,8 +1047,11 @@ def trigger_payment_processing():
     # NB - this is always called from a web request, for which the virtualenv
     # has been set up in os.environ, so this is passed on and the correct python
     # runs manage.py.
-    manage_py = os.path.join(settings.BASE_DIR, 'manage.py')
-    os.spawnl(os.P_NOWAIT, manage_py, 'manage.py', 'process_payments')
+    if settings.TESTS_RUNNING:
+        process_all_payments()
+    else:
+        manage_py = os.path.join(settings.BASE_DIR, 'manage.py')
+        os.spawnl(os.P_NOWAIT, manage_py, 'manage.py', 'process_payments')
 
 
 def send_payment(amount, to_account, from_obj):

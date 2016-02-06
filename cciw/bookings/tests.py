@@ -21,8 +21,7 @@ from cciw.bookings.management.commands.expire_bookings import Command as ExpireB
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND,
                                   BOOKING_INFO_COMPLETE, MANUAL_PAYMENT_CHEQUE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
                                   PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL, Booking,
-                                  BookingAccount, ManualPayment, Payment, Price, RefundPayment, book_basket_now,
-                                  process_all_payments)
+                                  BookingAccount, ManualPayment, Payment, Price, RefundPayment, book_basket_now)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet
 from cciw.cciwmain.models import Camp, CampName, Person
 from cciw.cciwmain.tests.mailhelpers import read_email_url
@@ -74,7 +73,7 @@ class CreateCampMixin(object):
                                           camp_name=camp_name_2,
                                           minimum_age=self.camp_minimum_age,
                                           maximum_age=self.camp_maximum_age,
-                                          start_date=start_date  + timedelta(days=7),
+                                          start_date=start_date + timedelta(days=7),
                                           end_date=start_date + timedelta(days=14),
                                           site_id=1)
         import cciw.cciwmain.common
@@ -652,7 +651,6 @@ class TestEditPaymentAdmin(FixAutocompleteAccountField, BookingBaseMixin,
         self.assertTextPresent("Manual payment of £12")
         self.assertTextPresent("was added successfully")
         self.assertEqual(account.manual_payments.count(), 1)
-        process_all_payments()
         account = self.get_account()
         self.assertEqual(account.total_received, Decimal('12'))
 
@@ -663,7 +661,6 @@ class TestEditPaymentAdmin(FixAutocompleteAccountField, BookingBaseMixin,
             amount=Decimal('12'),
             payment_type=MANUAL_PAYMENT_CHEQUE
         )
-        process_all_payments()
         account = self.get_account()
         self.assertEqual(account.total_received, Decimal('12'))
         self.assertEqual(account.payments.count(), 1)
@@ -678,7 +675,6 @@ class TestEditPaymentAdmin(FixAutocompleteAccountField, BookingBaseMixin,
         self.submit('[name=_save]')
         self.assertTextPresent("was changed successfully")
 
-        process_all_payments()
         account = self.get_account()
         other_account = BookingAccount.objects.get(id=other_account.id)
 
@@ -1764,7 +1760,6 @@ class TestManualPayment(TestCase):
         self.assertEqual(Payment.objects.count(), 1)
         self.assertEqual(Payment.objects.all()[0].amount, Decimal('100.00'))
 
-        process_all_payments()
         acc = BookingAccount.objects.get(id=acc.id)
         self.assertEqual(acc.total_received, Decimal('100.00'))
 
@@ -1775,10 +1770,8 @@ class TestManualPayment(TestCase):
                                           amount=Decimal('100.00'))
         self.assertEqual(Payment.objects.count(), 1)
 
-        process_all_payments()
         # Test
         cp.delete()
-        process_all_payments()
         self.assertEqual(Payment.objects.count(), 2)
         acc = BookingAccount.objects.get(id=acc.id)
         self.assertEqual(acc.total_received, Decimal('0.00'))
@@ -1803,7 +1796,6 @@ class TestRefundPayment(TestCase):
         self.assertEqual(Payment.objects.count(), 1)
         self.assertEqual(Payment.objects.all()[0].amount, Decimal('-100.00'))
 
-        process_all_payments()
         acc = BookingAccount.objects.get(id=acc.id)
         self.assertEqual(acc.total_received, Decimal('-100.00'))
 
@@ -1814,10 +1806,8 @@ class TestRefundPayment(TestCase):
                                           amount=Decimal('100.00'))
         self.assertEqual(Payment.objects.count(), 1)
 
-        process_all_payments()
         # Test
         cp.delete()
-        process_all_payments()
         self.assertEqual(Payment.objects.count(), 2)
         acc = BookingAccount.objects.get(id=acc.id)
         self.assertEqual(acc.total_received, Decimal('0.00'))
