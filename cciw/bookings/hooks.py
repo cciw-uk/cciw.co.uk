@@ -1,11 +1,12 @@
 import re
 
-from django.db.models.signals import post_save, post_delete
-from paypal.standard.ipn.signals import valid_ipn_received, invalid_ipn_received
+from django.db.models.signals import post_delete, post_save
+from paypal.standard.ipn.signals import invalid_ipn_received, valid_ipn_received
 
+from .email import send_places_confirmed_email, send_unrecognised_payment_email
+from .models import AccountTransferPayment, BookingAccount, ManualPayment, RefundPayment, send_payment
 from .signals import places_confirmed
-from .email import send_unrecognised_payment_email, send_places_confirmed_email
-from .models import BookingAccount, ManualPayment, RefundPayment, send_payment
+
 
 # == Handlers ==
 
@@ -55,6 +56,18 @@ def refund_payment_deleted(sender, **kwargs):
     send_payment(instance.amount, instance.account, instance)
 
 
+def account_transfer_payment_received(sender, **kwargs):
+    instance = kwargs['instance']
+    send_payment(-instance.amount, instance.from_account, instance)
+    send_payment(instance.amount, instance.to_account, instance)
+
+
+def account_transfer_payment_deleted(sender, **kwargs):
+    instance = kwargs['instance']
+    send_payment(instance.amount, instance.from_account, instance)
+    send_payment(-instance.amount, instance.to_account, instance)
+
+
 # == Place confirmation ==
 
 def places_confirmed_handler(sender, **kwargs):
@@ -71,3 +84,5 @@ post_save.connect(manual_payment_received, sender=ManualPayment)
 post_delete.connect(manual_payment_deleted, sender=ManualPayment)
 post_save.connect(refund_payment_sent, sender=RefundPayment)
 post_delete.connect(refund_payment_deleted, sender=RefundPayment)
+post_save.connect(account_transfer_payment_received, sender=AccountTransferPayment)
+post_delete.connect(account_transfer_payment_deleted, sender=AccountTransferPayment)

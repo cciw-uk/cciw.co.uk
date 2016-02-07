@@ -36,9 +36,9 @@ import zc.lockfile
 # - as a cron job, every minute, to ensure that nothing slips through the cracks.
 #
 # The Payment objects also act as a log of everything that has happened to the
-# BookingAccount.total_received field. Payment objects are never deleted - if,
-# for example, a ManualPayment object is deleted because of an entry error, a
-# new (negative) Payment object is created.
+# BookingAccount.total_received field. Payment objects are never modified or
+# deleted - if, for example, a ManualPayment object is deleted because of an
+# entry error, a new (negative) Payment object is created.
 
 
 from cciw.bookings.models import process_all_payments

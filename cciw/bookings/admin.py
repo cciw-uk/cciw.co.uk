@@ -7,8 +7,8 @@ from django.utils.html import escape, escapejs, format_html
 from django.utils.http import is_safe_url
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
-from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO_COMPLETE, Booking, BookingAccount,
-                                  ManualPayment, Payment, Price, RefundPayment)
+from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO_COMPLETE, AccountTransferPayment,
+                                  Booking, BookingAccount, ManualPayment, Payment, Price, RefundPayment)
 from cciw.cciwmain.common import get_thisyear
 
 
@@ -328,7 +328,7 @@ class ManualPaymentAdminBase(ReturnToAdminMixin, admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:
-            return ['account', 'amount', 'created', 'payment_type']
+            return self.fieldsets[0][1]['fields']
         else:
             return []
 
@@ -341,60 +341,35 @@ class RefundPaymentAdmin(ManualPaymentAdminBase):
     form = RefundPaymentAdminForm
 
 
-class PaymentForm(autocomplete_light.ModelForm):
+class AccountTransferPaymentForm(autocomplete_light.ModelForm):
     class Meta:
-        model = Payment
-        fields = ['account', 'amount', 'origin_id', 'origin_type', 'created', 'processed']
+        model = AccountTransferPayment
+        fields = '__all__'
 
 
-class PaymentAdmin(admin.ModelAdmin):
+class AccountTransferPaymentAdmin(admin.ModelAdmin):
+    form = AccountTransferPaymentForm
+    list_display = ['id',
+                    'from_account', 'to_account',
+                    'amount', 'created']
     date_hierarchy = 'created'
-    list_display = ['account', 'amount', 'created', 'processed']
-    search_fields = ['account__name']
-    readonly_fields = ['amount', 'origin_id', 'origin_type']
-    form = PaymentForm
+    search_fields = ['from_account__name',
+                     'to_account__name']
 
-    fieldsets = [
-        ('Account',
-         {'fields': ['account'],
-          'description': "This table of payments is automatically managed from other records (manual "
-          "payments, PayPal payments etc.). It should not normally be used for editing/creating payment "
-          "records. In rare circumstances, you may need to change the account on a payment if it "
-          "is a PayPal payment."
-          }),
-        ('Internal fields',
-         {'fields': ['created', 'processed'],
-          'description': "These should not normally be changed.",
-          }
-         ),
-        ('Readonly fields',
-         {'fields': ['amount', 'origin_id', 'origin_type'],
-          'description': "These can never be changed - the only way to alter them is to delete "
-                         "the origin record and create a new one.",
-          }
-         )
-    ]
+    fieldsets = [(None,
+                  {'fields':
+                   ['from_account', 'to_account', 'amount', 'created']})]
 
-    def save_model(self, request, obj, form, change):
-        if obj.id is not None:
-            old_payment = Payment.objects.get(id=obj.id)
+    def get_readonly_fields(self, request, obj=None):
+        if obj is not None:
+            return self.fieldsets[0][1]['fields']
         else:
-            old_payment = None
-        retval = super(PaymentAdmin, self).save_model(request, obj, form, change)
-        new_payment = obj
-        if old_payment.account_id != new_payment.account_id:
-            BookingAccount.objects.get(id=old_payment.account_id).receive_payment(-old_payment.amount)
-            BookingAccount.objects.get(id=new_payment.account_id).receive_payment(new_payment.amount)
-            origin = new_payment.origin
-            if hasattr(origin, 'account'):
-                # ManualPayment and RefundPayment, which both disallow 'save',
-                # so we need to update.
-                origin.__class__.objects.filter(id=origin.id).update(account_id=new_payment.account_id)
-        return retval
+            return []
+
 
 admin.site.register(Price, PriceAdmin)
 admin.site.register(BookingAccount, BookingAccountAdmin)
 admin.site.register(Booking, BookingAdmin)
 admin.site.register(ManualPayment, ManualPaymentAdmin)
 admin.site.register(RefundPayment, RefundPaymentAdmin)
-admin.site.register(Payment, PaymentAdmin)
+admin.site.register(AccountTransferPayment, AccountTransferPaymentAdmin)

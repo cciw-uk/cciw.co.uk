@@ -29,6 +29,7 @@ from cciw.officers.tests.base import (BOOKING_SEC, BOOKING_SEC_PASSWORD, BOOKING
                                       OFFICER_USERNAME, OfficersSetupMixin)
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
+from cciw.utils.tests.db import refresh
 from cciw.utils.tests.webtest import WebTestBase
 
 User = get_user_model()
@@ -575,19 +576,26 @@ class TestEditPlace(BookingBaseMixin, CreatePlaceMixin, TestCase):
             self.assertNotEqual(acc.bookings.all()[0].first_name, "A New Name")
 
 
-class FixAutocompleteAccountField(object):
-    def fill_by_name(self, fields):
-        if 'account' in fields:
-            # Hack needed to cope with autocomplete_light widget and WebTest:
-            account_id = str(fields['account'])
-            form, field = self._find_form_and_field_by_css_selector(self.last_response, '[name=account]')
-            form.fields['account'][0].options.append((account_id, False, ''))
-            fields['account'] = [account_id]  # WebTest treats as a multi select
+def fix_autocomplete_fields(field_names):
+    class FixAutocompleteFieldMixin(object):
+        def fill_by_name(self, fields):
+            new_fields = {}
+            for field_name, value in fields.items():
+                if field_name in field_names:
+                    # Hack needed to cope with autocomplete_light widget and WebTest:
+                    form, field = self._find_form_and_field_by_css_selector(self.last_response,
+                                                                            '[name={0}]'.format(field_name))
+                    # Modify the select widget so that it has the value we need
+                    form.fields[field_name][0].options.append((str(value), False, ''))
+                    value = [value]  # autocomplete generates a multi select
+                new_fields[field_name] = value
 
-        super(FixAutocompleteAccountField, self).fill_by_name(fields)
+            super(FixAutocompleteFieldMixin, self).fill_by_name(new_fields)
+    return FixAutocompleteFieldMixin
 
 
-class TestEditPlaceAdmin(BookingBaseMixin, FixAutocompleteAccountField, OfficersSetupMixin, CreatePlaceMixin, WebTestBase):
+class TestEditPlaceAdmin(BookingBaseMixin, fix_autocomplete_fields(['account']),
+                         OfficersSetupMixin, CreatePlaceMixin, WebTestBase):
 
     def test_approve(self):
         self.create_place({'price_type': PRICE_CUSTOM})
@@ -636,7 +644,7 @@ class TestEditPlaceAdmin(BookingBaseMixin, FixAutocompleteAccountField, Officers
         self.assertEqual(mp.amount, Decimal('100'))
 
 
-class TestEditPaymentAdmin(FixAutocompleteAccountField, BookingBaseMixin,
+class TestEditPaymentAdmin(fix_autocomplete_fields(['account']), BookingBaseMixin,
                            OfficersSetupMixin, CreatePlaceMixin, WebTestBase):
     def test_add_manual_payment(self):
         self.create_place()
@@ -654,36 +662,51 @@ class TestEditPaymentAdmin(FixAutocompleteAccountField, BookingBaseMixin,
         account = self.get_account()
         self.assertEqual(account.total_received, Decimal('12'))
 
-    def test_change_payment(self):
-        self.create_place()
-        account = self.get_account()
-        account.manual_payments.create(
-            amount=Decimal('12'),
-            payment_type=MANUAL_PAYMENT_CHEQUE
-        )
-        account = self.get_account()
-        self.assertEqual(account.total_received, Decimal('12'))
-        self.assertEqual(account.payments.count(), 1)
 
-        other_account = BookingAccount.objects.create(email='otheremail@somewhere.com')
+class TestAccountTransfer(fix_autocomplete_fields(['from_account', 'to_account']),
+                          OfficersSetupMixin, WebTestBase):
+    def test_add_account_transfer(self):
+
+        account_1 = BookingAccount.objects.create(email="account1@gmail.com")
+        account_2 = BookingAccount.objects.create(email="account2@gmail.com")
+        account_1.manual_payments.create(amount="100.00")
+        account_1 = refresh(account_1)
+        self.assertEqual(account_1.total_received, Decimal('100.00'))
+
+        self.assertEqual(account_1.payments.count(), 1)
+
         self.officer_login(BOOKING_SEC)
-        payment = account.payments.get()
-        self.get_url("admin:bookings_payment_change", payment.id)
+
+        self.get_url("admin:bookings_accounttransferpayment_add")
         self.fill_by_name({
-             'account': other_account.id,
+            'from_account': account_1.id,
+            'to_account': account_2.id,
+            'amount': '15',
         })
         self.submit('[name=_save]')
-        self.assertTextPresent("was changed successfully")
+        self.assertTextPresent("was added successfully")
 
-        account = self.get_account()
-        other_account = BookingAccount.objects.get(id=other_account.id)
+        account_1 = refresh(account_1)
+        account_2 = refresh(account_2)
 
-        self.assertEqual(account.total_received, Decimal('0'))
-        self.assertEqual(other_account.total_received, Decimal('12'))
-        self.assertEqual(account.payments.count(), 0)
-        self.assertEqual(other_account.payments.count(), 1)
-        self.assertEqual(account.manual_payments.count(), 0)
-        self.assertEqual(other_account.manual_payments.count(), 1)
+        self.assertEqual(account_1.payments.count(), 2)
+        self.assertEqual(account_2.payments.count(), 1)
+
+        self.assertEqual(account_1.total_received, Decimal('85.00'))
+        self.assertEqual(account_2.total_received, Decimal('15.00'))
+
+        # Deleting causes more payments to restore the original value
+        account_1.transfer_from_payments.get().delete()
+
+        account_1 = refresh(account_1)
+        account_2 = refresh(account_2)
+
+        self.assertEqual(account_1.payments.count(), 3)
+        self.assertEqual(account_2.payments.count(), 2)
+
+        self.assertEqual(account_1.total_received, Decimal('100.00'))
+        self.assertEqual(account_2.total_received, Decimal('0.00'))
+
 
 
 class TestListBookings(BookingBaseMixin, CreatePlaceMixin, TestCase):

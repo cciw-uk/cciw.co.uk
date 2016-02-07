@@ -73,6 +73,15 @@ MANUAL_PAYMENT_CHOICES = [
 ]
 
 
+class NoEditMixin(object):
+    def save(self, **kwargs):
+        if self.id is not None:
+            raise Exception("%s cannot be edited after it has been saved to DB" %
+                            self.__class__.__name__)
+        else:
+            return super(NoEditMixin, self).save(**kwargs)
+
+
 class Price(models.Model):
     year = models.PositiveSmallIntegerField()
     price_type = models.PositiveSmallIntegerField(choices=VALUED_PRICE_TYPES)
@@ -972,7 +981,7 @@ class PaymentManager(models.Manager):
         return super(PaymentManager, self).get_queryset().select_related('account')
 
 
-class Payment(models.Model):
+class Payment(NoEditMixin, models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount,
                                 related_name='payments',
@@ -987,9 +996,15 @@ class Payment(models.Model):
     objects = PaymentManager()
 
     def __str__(self):
-        retval = "Payment: %s %s %s via %s" % (abs(self.amount), 'from' if self.amount > 0 else 'to', self.account.name, self.origin_type)
-        if self.origin is None:
-            retval += " (deleted)"
+        if self.origin is not None and hasattr(self.origin, 'payment_description'):
+            retval = self.origin.payment_description
+        else:
+            retval = "Payment: %s %s %s via %s" % (abs(self.amount),
+                                                   'from' if self.amount > 0 else 'to',
+                                                   self.account.name, self.origin_type)
+            if self.origin is None:
+                retval += " (deleted)"
+
         return retval
 
     def payment_type(self):
@@ -1006,20 +1021,13 @@ class ManualPaymentManager(models.Manager):
         return super(ManualPaymentManager, self).get_queryset().select_related('account')
 
 
-class ManualPaymentBase(models.Model):
+class ManualPaymentBase(NoEditMixin, models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     created = models.DateTimeField(default=timezone.now)
     payment_type = models.PositiveSmallIntegerField(choices=MANUAL_PAYMENT_CHOICES,
                                                     default=MANUAL_PAYMENT_CHEQUE)
 
     objects = ManualPaymentManager()
-
-    def save(self, **kwargs):
-        if self.id is not None:
-            raise Exception("%s cannot be edited after it has been saved to DB" %
-                            self.__class__.__name__)
-        else:
-            return super(ManualPaymentBase, self).save(**kwargs)
 
     class Meta:
         abstract = True
@@ -1041,6 +1049,28 @@ class RefundPayment(ManualPaymentBase):
 
     def __str__(self):
         return "Refund payment of £%s to %s" % (self.amount, self.account)
+
+
+class AccountTransferPayment(NoEditMixin, models.Model):
+    from_account = models.ForeignKey(BookingAccount,
+                                     on_delete=models.CASCADE,
+                                     related_name='transfer_from_payments')
+    to_account = models.ForeignKey(BookingAccount,
+                                   on_delete=models.CASCADE,
+                                   related_name='transfer_to_payments')
+    amount = models.DecimalField(decimal_places=2, max_digits=10)
+    created = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return "{0} from {1} to {2} on {3}".format(self.amount,
+                                                   self.from_account, self.to_account,
+                                                   self.created)
+
+    @property
+    def payment_description(self):
+        return "Payment: {0} transferred from {1} to {2}".format(self.amount,
+                                                                 self.from_account,
+                                                                 self.to_account)
 
 
 def trigger_payment_processing():
@@ -1069,7 +1099,8 @@ def send_payment(amount, to_account, from_obj):
 def process_one_payment(payment):
     payment.account.receive_payment(payment.amount)
     payment.processed = timezone.now()
-    payment.save()
+    # Can't save Payment, so do update
+    Payment.objects.filter(id=payment.id).update(processed=payment.processed)
 
 
 def process_all_payments():
@@ -1087,6 +1118,7 @@ def process_all_payments():
                 # indirectly cause email to be sent. In that case, the
                 # admin notification is likely to fail too.
                 continue
+
 
 # Very important that the setup done in .hooks happens:
 from .hooks import *  # NOQA
