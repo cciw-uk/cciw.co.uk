@@ -299,22 +299,11 @@ class BookingAdmin(admin.ModelAdmin):
         return retval
 
 
-class ManualPaymentAdminFormBase(autocomplete_light.ModelForm):
-
-    def clean(self):
-        retval = super(ManualPaymentAdminFormBase, self).clean()
-        if self.instance is not None and self.instance.id is not None:
-            raise forms.ValidationError("Manual payments cannot be changed "
-                                        "after being created. If an error was made, "
-                                        "delete this record and create a new one. ")
-        return retval
-
-
-class ManualPaymentAdminForm(ManualPaymentAdminFormBase):
+class ManualPaymentAdminForm(autocomplete_light.ModelForm):
     pass
 
 
-class RefundPaymentAdminForm(ManualPaymentAdminFormBase):
+class RefundPaymentAdminForm(autocomplete_light.ModelForm):
     pass
 
 

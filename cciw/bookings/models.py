@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, date, timedelta
-from decimal import Decimal
 import os
+from datetime import date, datetime, timedelta
+from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-from django.db import models
-from django.db import transaction
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
+from django.db import models, transaction
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
@@ -74,6 +74,15 @@ MANUAL_PAYMENT_CHOICES = [
 
 
 class NoEditMixin(object):
+    def clean(self):
+        retval = super(NoEditMixin, self).clean()
+        if self.id is not None:
+            raise ValidationError("A {0} record cannot be changed "
+                                  "after being created. If an error was made, "
+                                  "delete this record and create a new one. "
+                                  .format(self.__class__._meta.verbose_name))
+        return retval
+
     def save(self, **kwargs):
         if self.id is not None:
             raise Exception("%s cannot be edited after it has been saved to DB" %
@@ -1120,5 +1129,4 @@ def process_all_payments():
                 continue
 
 
-# Very important that the setup done in .hooks happens:
-from .hooks import *  # NOQA
+from .hooks import *  # NOQA isort:skip
