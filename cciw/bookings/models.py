@@ -147,6 +147,7 @@ class BookingAccount(models.Model):
                                              "to other parents to help organise transport",
                                              blank=True, default=False)
     email_communication = models.BooleanField("Receive all communication from CCIW by email where possible", blank=True, default=True)
+    subscribe_to_newsletter = models.BooleanField("Subscribe to email newsletter", default=False)
     total_received = models.DecimalField(default=Decimal('0.00'), decimal_places=2, max_digits=10)
     first_login = models.DateTimeField(null=True, blank=True)
     last_login = models.DateTimeField(null=True, blank=True)

@@ -22,7 +22,16 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
             'phone_number',
             'share_phone_number',
             'email_communication',
+            'subscribe_to_newsletter',
         ]
+
+    def save(self, *args, **kwargs):
+        old_subscription = BookingAccount.objects.get(id=self.instance.id).subscribe_to_newsletter
+        retval = super(AccountDetailsForm, self).save(*args, **kwargs)
+        if old_subscription != self.instance.subscribe_to_newsletter:
+            from cciw.bookings.mailchimp import update_newsletter_subscription
+            update_newsletter_subscription(self.instance)
+        return retval
 
 # Need to override these to fix various details for use by user
 AccountDetailsForm.base_fields['name'].required = True

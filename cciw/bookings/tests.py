@@ -2,12 +2,11 @@
 from __future__ import unicode_literals
 
 import json
-import re
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 import mock
-import pyquery
+import vcr
 import xlrd
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -17,6 +16,7 @@ from django.test import TestCase
 from django.utils import timezone
 from django_dynamic_fixture import G
 
+from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND,
                                   BOOKING_INFO_COMPLETE, MANUAL_PAYMENT_CHEQUE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
@@ -26,7 +26,7 @@ from cciw.bookings.utils import camp_bookings_to_spreadsheet
 from cciw.cciwmain.models import Camp, CampName, Person
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
 from cciw.officers.tests.base import (BOOKING_SEC, BOOKING_SEC_PASSWORD, BOOKING_SEC_USERNAME, OFFICER,
-                                      OFFICER_PASSWORD, OFFICER_USERNAME, OfficersSetupMixin)
+                                      OfficersSetupMixin)
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.db import refresh
@@ -241,9 +241,6 @@ class BookingBaseMixin(object):
     NO_PLACES_LEFT_FOR_GIRLS = "There are no places left for girls"
     PRICES_NOT_SET = "prices have not been set"
 
-
-
-
     def setUp(self):
         super(BookingBaseMixin, self).setUp()
         G(HtmlChunk, name="bookingform_post_to")
@@ -457,7 +454,8 @@ class TestAccountDetails(BookingBaseMixin, LogInMixin, WebTestBase):
         self.submit()
         self.assertTextPresent("This field is required")
 
-    def test_complete(self):
+    @mock.patch('cciw.bookings.mailchimp.update_newsletter_subscription')
+    def test_complete(self, UNS_func):
         """
         Test that we can complete the account details page
         """
@@ -466,10 +464,40 @@ class TestAccountDetails(BookingBaseMixin, LogInMixin, WebTestBase):
         self.fill_by_name({'name': 'Mr Booker',
                            'address': '123, A Street',
                            'post_code': 'XY1 D45',
-                       })
+                           })
         self.submit()
         acc = self.get_account()
         self.assertEqual(acc.name, 'Mr Booker')
+        self.assertEqual(UNS_func.call_count, 0)
+
+    # For updating this, see:
+    # https://vcrpy.readthedocs.org/en/latest/usage.html
+
+    @vcr.use_cassette('cciw/booking/fixtures/vcr_cassettes/subscribe.yaml')
+    def test_subscribe(self):
+        self.login(add_account_details=False)
+        self.get_url(self.urlname)
+        self.fill_by_name({'name': 'Mr Booker',
+                           'address': '123, A Street',
+                           'post_code': 'XY1 D45',
+                           'subscribe_to_newsletter': True,
+                           })
+        self.submit()
+        acc = self.get_account()
+        self.assertEqual(acc.subscribe_to_newsletter, True)
+        self.assertEqual(get_status(acc), "subscribed")
+
+    @vcr.use_cassette('cciw/bookings/fixtures/vcr_cassettes/unsubscribe.yaml')
+    def test_unsubscribe(self):
+        self.login()
+        BookingAccount.objects.filter(id=self.get_account().id).update(subscribe_to_newsletter=True)
+
+        self.get_url(self.urlname)
+        self.fill_by_name({'subscribe_to_newsletter': False})
+        self.submit()
+        acc = self.get_account()
+        self.assertEqual(acc.subscribe_to_newsletter, False)
+        self.assertEqual(get_status(acc), "unsubscribed")
 
 
 class TestAddPlace(BookingBaseMixin, CreatePlaceWebTestMixin, WebTestBase):

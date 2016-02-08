@@ -313,3 +313,6 @@ WIKI_ATTACHMENTS_EXTENSIONS = [
     'pdf', 'doc', 'odt', 'docx', 'txt',
     'svg', 'png', 'jpg', 'jpeg',
 ]
+
+# Mailchimp
+from cciw.settings_priv import MAILCHIMP_API_KEY, MAILCHIMP_NEWSLETTER_LIST_ID, MAILCHIMP_URL_BASE
