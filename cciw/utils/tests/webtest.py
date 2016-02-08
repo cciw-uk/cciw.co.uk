@@ -1,10 +1,24 @@
 from urllib.parse import urlparse
 
+from compressor.filters import CompilerFilter
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.test.utils import override_settings
 from django_functest import FuncWebTestMixin, ShortcutLoginMixin
 
 
+# We don't need less compilation when running normal tests, and it adds a lot to
+# the test run.
+class DummyLessCssFilter(CompilerFilter):
+    def __init__(self, content, command=None, *args, **kwargs):
+        pass
+
+    def input(self, **kwargs):
+        return ''
+
+
+@override_settings(COMPRESS_PRECOMPILERS=[('text/less', 'cciw.utils.tests.webtest.DummyLessCssFilter')],
+                   )
 class WebTestBase(ShortcutLoginMixin, FuncWebTestMixin, TestCase):
     """
     Base class for integration tests that need more than Django's test Client.

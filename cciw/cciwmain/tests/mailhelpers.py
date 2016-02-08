@@ -1,5 +1,5 @@
 import re
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, urlunsplit, urlencode
 
 
 def url_to_path_and_query(url):
@@ -20,3 +20,7 @@ def read_email_url(email, regex):
     url = urlmatch.group()
     path, querydata = url_to_path_and_query(url)
     return url, path, querydata
+
+
+def path_and_query_to_url(path, querydata):
+    return urlunsplit(('', '', path, urlencode(querydata), ''))
