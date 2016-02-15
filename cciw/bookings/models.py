@@ -138,10 +138,11 @@ class BookingAccount(models.Model):
     # For online bookings, email is required, but not for paper. Initially for online
     # process only email is filled in, so to ensure we can edit all BookingAccounts
     # in the admin, all the address fields have 'blank=True'.
+    # We have email with null=True so that we can have unique=True on that field.
     email = models.EmailField(blank=True, unique=True, null=True)
-    name = models.CharField(blank=True, max_length=100, null=True)
+    name = models.CharField(blank=True, max_length=100, default="")
     address = models.TextField(blank=True)
-    post_code = models.CharField(blank=True, max_length=10, null=True)
+    post_code = models.CharField(blank=True, max_length=10, default="")
     phone_number = models.CharField(blank=True, max_length=22)
     share_phone_number = models.BooleanField("Allow this phone number to be passed on "
                                              "to other parents to help organise transport",

@@ -356,11 +356,7 @@ class BookingStart(BookingLogInBase):
                 try:
                     account = BookingAccount.objects.filter(email__iexact=email)[0]
                 except IndexError:
-                    # Ensure we use NULLs, not empty strings, or we will not be able to
-                    # create more than one, as they will have same 'name and post_code'
-                    account = BookingAccount.objects.create(email=email,
-                                                            name=None,
-                                                            post_code=None)
+                    account = BookingAccount.objects.create(email=email)
                 send_verify_email(self.request, account)
                 return HttpResponseRedirect(reverse_lazy('cciw-bookings-email_sent'))
         else:
