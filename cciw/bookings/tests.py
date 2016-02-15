@@ -471,9 +471,7 @@ class TestBookingVerifyBase(BookingBaseMixin):
         """
         self._start()
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
-        acc = BookingAccount.objects.get(email='booker@bookers.com')
-        invalid_id = BookingAccount.objects.aggregate(max_id=models.Max('id'))['max_id'] + 1
-        badpath = path.replace('%s-' % acc.id, '%s-' % invalid_id)
+        badpath = path.rstrip('/')[:-4] + "xxxx" + "/"
         self.get_literal_url(path_and_query_to_url(badpath, querydata))
         self.assertTextPresent("failed")
 
@@ -822,7 +820,6 @@ def fix_autocomplete_fields(field_names):
                         new_fields[field_name] = value
                 else:
                     new_fields[field_name] = value
-
 
             super(FixAutocompleteFieldMixin, self).fill_by_name(new_fields)
 
