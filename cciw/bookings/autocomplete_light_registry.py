@@ -9,7 +9,7 @@ class BookingAccountAutocomplete(autocomplete_light.AutocompleteModelBase):
 
     def choices_for_request(self):
         request = self.request
-        self.choices = self.choices.order_by('name', 'post_code')
+        self.choices = self.choices.order_by('name', 'address_post_code')
         if request.user.is_authenticated and cciw.auth.is_booking_secretary(request.user):
             return super(BookingAccountAutocomplete, self).choices_for_request()
         else:

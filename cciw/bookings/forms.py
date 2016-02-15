@@ -18,7 +18,7 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
         fields = [
             'name',
             'address',
-            'post_code',
+            'address_post_code',
             'phone_number',
             'share_phone_number',
             'email_communication',
@@ -36,7 +36,7 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
 # Need to override these to fix various details for use by user
 AccountDetailsForm.base_fields['name'].required = True
 AccountDetailsForm.base_fields['address'].required = True
-AccountDetailsForm.base_fields['post_code'].required = True
+AccountDetailsForm.base_fields['address_post_code'].required = True
 
 
 class FixPriceMixin(object):
@@ -95,7 +95,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
             'sex',
             'date_of_birth',
             'address',
-            'post_code',
+            'address_post_code',
             'phone_number',
             'email',
             'church',

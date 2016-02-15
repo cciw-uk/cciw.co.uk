@@ -151,7 +151,7 @@ class LogInMixin(object):
         if add_account_details:
             BookingAccount.objects.filter(email=self.email).update(name='Joe',
                                                                    address='123',
-                                                                   post_code='XYZ')
+                                                                   address_post_code='XYZ')
         self._logged_in = True
 
     def get_account(self):
@@ -177,7 +177,7 @@ class PlaceDetailsMixin(CreateCampMixin):
             'sex': 'm',
             'date_of_birth': '%d-01-01' % (self.camp.year - 14),
             'address': '123 My street',
-            'post_code': 'ABC 123',
+            'address_post_code': 'ABC 123',
             'contact_address': '98 Main Street',
             'contact_post_code': 'ABC 456',
             'contact_phone_number': '01982 987654',
@@ -426,7 +426,7 @@ class TestBookingVerifyBase(BookingBaseMixin):
         acc = BookingAccount.objects.get(email='booker@bookers.com')
         acc.name = "Joe"
         acc.address = "Home"
-        acc.post_code = "XY1 D45"
+        acc.address_post_code = "XY1 D45"
         acc.save()
 
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
@@ -443,7 +443,7 @@ class TestBookingVerifyBase(BookingBaseMixin):
         acc = BookingAccount.objects.get(email='booker@bookers.com')
         acc.name = "Joe"
         acc.address = "Home"
-        acc.post_code = "XY1 D45"
+        acc.address_post_code = "XY1 D45"
         acc.first_login = timezone.now() - timedelta(30 * 7)
         acc.last_login = acc.first_login
         acc.save()
@@ -515,7 +515,7 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin):
         self.get_url(self.urlname)
         self.fill_by_name({'name': 'Mr Booker',
                            'address': '123, A Street',
-                           'post_code': 'XY1 D45',
+                           'address_post_code': 'XY1 D45',
                            })
         self.submit()
         acc = self.get_account()
@@ -531,7 +531,7 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin):
         self.get_url(self.urlname)
         self.fill_by_name({'name': 'Mr Booker',
                            'address': '123, A Street',
-                           'post_code': 'XY1 D45',
+                           'address_post_code': 'XY1 D45',
                            'subscribe_to_newsletter': True,
                            })
         self.submit()
@@ -657,7 +657,7 @@ class TestAddPlaceSL(TestAddPlaceBase, SeleniumBase):
         self.click('#id_use_address_btn')
 
         self.assertValues({'#id_address': '123 My street',
-                           '#id_post_code': 'ABC 123',
+                           '#id_address_post_code': 'ABC 123',
                            '#id_contact_address': '98 Main Street',
                            '#id_contact_post_code': 'ABC 456',
                            '#id_first_name': '',
@@ -671,7 +671,7 @@ class TestAddPlaceSL(TestAddPlaceBase, SeleniumBase):
         self.click('#id_use_gp_info_btn')
 
         self.assertValues({'#id_address': '',
-                           '#id_post_code': '',
+                           '#id_address_post_code': '',
                            '#id_contact_address': '',
                            '#id_contact_post_code': '',
                            '#id_first_name': '',
@@ -685,7 +685,7 @@ class TestAddPlaceSL(TestAddPlaceBase, SeleniumBase):
         self.click('#id_use_all_btn')
 
         self.assertValues({'#id_address': '123 My street',
-                           '#id_post_code': 'ABC 123',
+                           '#id_address_post_code': 'ABC 123',
                            '#id_contact_address': '98 Main Street',
                            '#id_contact_post_code': 'ABC 456',
                            '#id_first_name': 'Frédéric',
@@ -697,7 +697,7 @@ class TestAddPlaceSL(TestAddPlaceBase, SeleniumBase):
 
         self.click('#id_use_account_1_btn')
         self.assertValues({'#id_address': '123',
-                           '#id_post_code': 'XYZ'})
+                           '#id_address_post_code': 'XYZ'})
 
         self.click('#id_use_account_2_btn')
         self.assertValues({'#id_contact_address': '123',
@@ -854,7 +854,7 @@ class TestEditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account
             email=self.email,
             name='Joe',
             address='123',
-            post_code='XYZ',
+            address_post_code='XYZ',
         )
         self.get_url("admin:bookings_booking_add")
         fields = self.place_details.copy()
@@ -892,7 +892,7 @@ class TestEditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreatePlace
         self.fill_by_name({'name': 'Joe',
                            'email': self.email,
                            'address': '123',
-                           'post_code': 'XYZ',
+                           'address_post_code': 'XYZ',
                            })
         self.submit('[name=_save]')
         self.assertTextPresent("was added successfully")
@@ -904,7 +904,7 @@ class TestEditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreatePlace
             email=self.email,
             name='Joe',
             address='123',
-            post_code='XYZ',
+            address_post_code='XYZ',
         )
         account.manual_payments.create(
             amount=Decimal('10.00'),
@@ -1787,7 +1787,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceWebMixin, W
 
     def test_all_accounts_json(self):
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
-                                             post_code="ABC",
+                                             address_post_code="ABC",
                                              name="Mr Foo")
 
         self.officer_login(OFFICER)
@@ -1800,7 +1800,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceWebMixin, W
         self.assertEqual(resp.status_code, 200)
 
         j = json.loads(resp.content.decode('utf-8'))
-        self.assertEqual(j['account']['post_code'], 'ABC')
+        self.assertEqual(j['account']['address_post_code'], 'ABC')
 
     def _booking_problems_json(self, place_details):
         data = {}
@@ -1820,7 +1820,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceWebMixin, W
     def test_booking_problems(self):
         self.add_prices()
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
-                                             post_code="ABC",
+                                             address_post_code="ABC",
                                              name="Mr Foo")
         self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
         resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
@@ -1845,7 +1845,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceWebMixin, W
         # This is a check that is only run for booking secretary
         self.add_prices()
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
-                                             post_code="ABC",
+                                             address_post_code="ABC",
                                              name="Mr Foo")
         self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
 
@@ -1864,7 +1864,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceWebMixin, W
         # This is a check that is only run for booking secretary
         self.add_prices()
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
-                                             post_code="ABC",
+                                             address_post_code="ABC",
                                              name="Mr Foo")
         self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
 
@@ -1889,7 +1889,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceWebMixin, W
     def test_booking_problems_early_bird_check(self):
         self.add_prices()
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
-                                             post_code="ABC",
+                                             address_post_code="ABC",
                                              name="Mr Foo")
         self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
         data = self._initial_place_details()

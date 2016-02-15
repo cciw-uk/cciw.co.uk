@@ -52,8 +52,8 @@ class BookingAccountForm(forms.ModelForm):
             name = None
         return name
 
-    def clean_post_code(self):
-        post_code = self.cleaned_data['post_code']
+    def clean_address_post_code(self):
+        post_code = self.cleaned_data['address_post_code']
         if post_code == '':
             post_code = None
         return post_code
@@ -113,7 +113,7 @@ class BookingAccountBookingInline(ReadOnlyInline, admin.TabularInline):
 
 
 class BookingAccountAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'email', 'post_code', 'phone_number']
+    list_display = ['id', 'name', 'email', 'address_post_code', 'phone_number']
     ordering = ['email']
     search_fields = ['email', 'name']
     readonly_fields = ['first_login', 'last_login', 'total_received', 'admin_balance']
@@ -129,7 +129,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
              {'fields': ['name',
                          'email',
                          'address',
-                         'post_code',
+                         'address_post_code',
                          'phone_number',
                          'share_phone_number',
                          'email_communication',
@@ -235,7 +235,7 @@ class BookingAdmin(admin.ModelAdmin):
            'sex',
            'date_of_birth',
            'address',
-           'post_code',
+           'address_post_code',
            'phone_number',
            'email',
            ]}),

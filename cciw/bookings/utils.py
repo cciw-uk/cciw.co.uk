@@ -19,7 +19,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                ('Sex', lambda b: b.get_sex_display()),
                ('Date of birth', lambda b: b.date_of_birth),
                ('Age on camp', lambda b: b.age_on_camp()),
-               ('Address', lambda b: format_address(b.address, b.post_code)),
+               ('Address', lambda b: format_address(b.address, b.address_post_code)),
                ('Email', lambda b: b.get_contact_email()),
                ('Church', lambda b: b.church),
                ('Dietary requirements', lambda b: b.dietary_requirements),
@@ -100,7 +100,7 @@ def camp_sharable_transport_details_to_spreadsheet(camp, spreadsheet):
                 .distinct()
                 )
     columns = [('Name', lambda a: a.name),
-               ('Post code', lambda a: a.post_code),
+               ('Post code', lambda a: a.address_post_code),
                ('Phone number', lambda a: a.phone_number),
                ]
 
@@ -197,7 +197,7 @@ def addresses_for_mailing_list(year, spreadsheet):
             # Account has postal address
             rows.append([account.name,
                          account.address,
-                         account.post_code,
+                         account.address_post_code,
                          account.email,
                          len(acc_bookings)])
         else:
@@ -206,18 +206,18 @@ def addresses_for_mailing_list(year, spreadsheet):
             # If they all have the same address, collapse
             first_booking = acc_bookings[0]
             if all(b.address == first_booking.address
-                   and b.post_code == first_booking.post_code
+                   and b.address_post_code == first_booking.address_post_code
                    for b in acc_bookings):
                 rows.append([account.name,
                              first_booking.address,
-                             first_booking.post_code,
+                             first_booking.address_post_code,
                              account.email,
                              len(acc_bookings)])
             else:
                 for b in acc_bookings:
                     rows.append([b.name,
                                  b.address,
-                                 b.post_code,
+                                 b.address_post_code,
                                  b.get_contact_email(),
                                  1])
     rows.sort()  # first column (Name) alphabetical

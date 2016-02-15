@@ -524,7 +524,7 @@ BOOKING_PLACE_PUBLIC_ATTRS = [
     'sex',
     'date_of_birth',
     'address',
-    'post_code',
+    'address_post_code',
     'phone_number',
     'church',
     'contact_address',
@@ -548,7 +548,7 @@ ACCOUNT_PUBLIC_ATTRS = [
     'email',
     'name',
     'address',
-    'post_code',
+    'address_post_code',
     'phone_number',
 ]
 

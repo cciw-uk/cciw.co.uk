@@ -70,7 +70,7 @@ $(document).ready(function() {
             dataType: "json",
             success: function(json) {
                 $('#id_address').val(json.account.address);
-                $('#id_post_code').val(json.account.post_code);
+                $('#id_address_post_code').val(json.account.address_post_code);
                 $('#id_phone_number').val(json.account.phone_number);
             }
         })
@@ -86,7 +86,7 @@ $(document).ready(function() {
             dataType: "json",
             success: function(json) {
                 $('#id_contact_address').val(json.account.address);
-                $('#id_contact_post_code').val(json.account.post_code);
+                $('#id_contact_post_code').val(json.account.address_post_code);
                 $('#id_contact_phone_number').val(json.account.phone_number);
             }
         })

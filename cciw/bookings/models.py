@@ -140,9 +140,9 @@ class BookingAccount(models.Model):
     # in the admin, all the address fields have 'blank=True'.
     # We have email with null=True so that we can have unique=True on that field.
     email = models.EmailField(blank=True, unique=True, null=True)
-    name = models.CharField(blank=True, max_length=100, default="")
+    name = models.CharField(blank=True, max_length=100)
     address = models.TextField(blank=True)
-    post_code = models.CharField(blank=True, max_length=10, default="")
+    address_post_code = models.CharField(blank=True, max_length=10)
     phone_number = models.CharField(blank=True, max_length=22)
     share_phone_number = models.BooleanField("Allow this phone number to be passed on "
                                              "to other parents to help organise transport",
@@ -157,14 +157,14 @@ class BookingAccount(models.Model):
     objects = BookingAccountManager()
 
     def has_account_details(self):
-        return self.name != "" and self.address != "" and self.post_code != ""
+        return self.name != "" and self.address != "" and self.address_post_code != ""
 
     def __str__(self):
         out = []
         if self.name:
             out.append(self.name)
-        if self.post_code:
-            out.append(self.post_code)
+        if self.address_post_code:
+            out.append(self.address_post_code)
         if self.email:
             out.append("<" + self.email + ">")
         if not out:
@@ -485,7 +485,8 @@ class Booking(models.Model):
     sex = models.CharField(max_length=1, choices=SEXES)
     date_of_birth = models.DateField()
     address = models.TextField()
-    post_code = models.CharField(max_length=10)
+    address_post_code = models.CharField(max_length=10)
+
     phone_number = models.CharField(blank=True, max_length=22)
     email = models.EmailField(blank=True)
     church = models.CharField("name of church", max_length=100, blank=True)

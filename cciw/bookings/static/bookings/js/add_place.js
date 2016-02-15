@@ -64,7 +64,7 @@
                          var html = ("<label><input type='radio' name='use_which_booking' value='" +
                              i.toString() + "'>" + escape(place.first_name + " " + place.last_name)
                              + " " + place.created.substr(0,4) + "<br/>" +
-                             "&nbsp;&nbsp; Post code: " + escape(place.post_code) + "<br/>" +
+                             "&nbsp;&nbsp; Post code: " + escape(place.address_post_code) + "<br/>" +
                              "&nbsp;&nbsp; GP: " + escape(place.gp_name) + "</label>" );
                          cont.append(html);
                      }
@@ -115,7 +115,7 @@
 
              var address_attrs = [
                  'address',
-                 'post_code',
+                 'address_post_code',
                  'phone_number',
                  'contact_address',
                  'contact_post_code',
@@ -201,10 +201,14 @@
                  useData(gp_info_attrs);
              };
 
-             var useAccountData = function(nameList, prefix) {
-                 // exploit the fact that we've named things nicely.
+             var useAccountData = function(nameList, mapping) {
                  $.each(nameList, function(idx, val) {
-                     var control_id = '#id_' + prefix + val;
+                     var control_id;
+                     if (mapping != undefined) {
+                         control_id = '#id_' + mapping[idx];
+                     } else {
+                         control_id = '#id_' + val;
+                     }
                      $(control_id).val(userData['account'][val]);
 
                      // Data is not quite guaranteed to be good in this case
@@ -219,13 +223,14 @@
 
              var useAccountForCamperAddressClick = function(ev) {
                  ev.preventDefault();
-                 useAccountData(['address', 'post_code', 'phone_number'], '');
+                 useAccountData(['address', 'address_post_code', 'phone_number']);
              };
 
              var useAccountForContactDetailsClick = function(ev) {
                  ev.preventDefault();
                  // copy contact_address, contact_post_code, contact_phone_number
-                 useAccountData(['address', 'post_code', 'phone_number'], 'contact_');
+                 useAccountData(['address', 'address_post_code', 'phone_number'],
+                                ['contact_address', 'contact_post_code', 'contact_phone_number'])
              };
 
              $('#id_popup_close_btn').click(useExistingDataClose);
