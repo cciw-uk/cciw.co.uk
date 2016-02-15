@@ -473,7 +473,7 @@ class TestAccountDetails(BookingBaseMixin, LogInMixin, WebTestBase):
     # For updating this, see:
     # https://vcrpy.readthedocs.org/en/latest/usage.html
 
-    @vcr.use_cassette('cciw/booking/fixtures/vcr_cassettes/subscribe.yaml')
+    @vcr.use_cassette('cciw/bookings/fixtures/vcr_cassettes/subscribe.yaml')
     def test_subscribe(self):
         self.login(add_account_details=False)
         self.get_url(self.urlname)
