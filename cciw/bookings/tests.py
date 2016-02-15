@@ -698,16 +698,12 @@ class TestEditPlaceAdmin(BookingBaseMixin, fix_autocomplete_fields(['account']),
 
     def test_create(self):
         self.officer_login(BOOKING_SEC)
-        self.get_url("admin:bookings_bookingaccount_add")
-        self.fill_by_name({'name': 'Joe',
-                           'email': self.email,
-                           'address': '123',
-                           'post_code': 'XYZ',
-                           })
-        self.submit('[name=_save]')
-        self.assertCode(200)
-        account = BookingAccount.objects.get(email=self.email)
-
+        account = BookingAccount.objects.create(
+            email=self.email,
+            name='Joe',
+            address='123',
+            post_code='XYZ',
+        )
         self.get_url("admin:bookings_booking_add")
         self.assertCode(200)
         fields = self.place_details.copy()
@@ -728,6 +724,21 @@ class TestEditPlaceAdmin(BookingBaseMixin, fix_autocomplete_fields(['account']),
         mp = booking.account.manual_payments.get()
         self.assertEqual(mp.payment_type, MANUAL_PAYMENT_CHEQUE)
         self.assertEqual(mp.amount, Decimal('100'))
+
+
+class TestEditAccountAdmin(BookingBaseMixin, OfficersSetupMixin, CreatePlaceModelMixin, WebTestBase):
+    def test_create(self):
+        self.officer_login(BOOKING_SEC)
+        self.get_url("admin:bookings_bookingaccount_add")
+        self.fill_by_name({'name': 'Joe',
+                           'email': self.email,
+                           'address': '123',
+                           'post_code': 'XYZ',
+                           })
+        self.submit('[name=_save]')
+        self.assertCode(200)
+        account = BookingAccount.objects.get(email=self.email)
+        self.assertEqual(account.name, 'Joe')
 
 
 class TestEditPaymentAdmin(fix_autocomplete_fields(['account']), BookingBaseMixin,
@@ -792,7 +803,6 @@ class TestAccountTransfer(fix_autocomplete_fields(['from_account', 'to_account']
 
         self.assertEqual(account_1.total_received, Decimal('100.00'))
         self.assertEqual(account_2.total_received, Decimal('0.00'))
-
 
 
 class TestListBookings(BookingBaseMixin, CreatePlaceWebTestMixin, WebTestBase):
