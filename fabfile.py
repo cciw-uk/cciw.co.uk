@@ -151,6 +151,13 @@ def run_venv(command, **kwargs):
 
 
 @task
+def manage_py(command):
+    with virtualenv(target.VENV_DIR):
+        with cd(target.SRC_DIR):
+            run_venv("./manage.py " + command)
+
+
+@task
 def test():
     local("./runtests.py --keepdb --parallel")
 
