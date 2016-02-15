@@ -152,7 +152,7 @@ def run_venv(command, **kwargs):
 
 @task
 def test():
-    local("./manage.py test --keepdb --settings=cciw.settings_tests cciw.cciwmain.tests cciw.bookings.tests cciw.officers.tests", capture=False)
+    local("./runtests.py --keepdb --parallel")
 
 
 def install_dependencies():

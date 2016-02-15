@@ -75,11 +75,11 @@ Tests
 
 Tests can be run like so::
 
-  $ fab test
+  $ ./runtests.py
 
 or::
 
-  $ ./manage.py test --keepdb --settings=cciw.settings_tests cciw.cciwmain.tests cciw.bookings.tests cciw.officers.tests
+  $ ./runtests.py cciw.bookings.tests.SomeSpecificTest
 
 Deployment
 ----------
