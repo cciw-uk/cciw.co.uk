@@ -176,7 +176,7 @@ class PlaceDetailsMixin(CreateCampMixin):
             'last_name': 'Bloggs',
             'sex': 'm',
             'date_of_birth': '%d-01-01' % (self.camp.year - 14),
-            'address': 'x',
+            'address': '123 My street',
             'post_code': 'ABC 123',
             'contact_address': '98 Main Street',
             'contact_post_code': 'ABC 456',
@@ -641,7 +641,69 @@ class TestAddPlaceWT(TestAddPlaceBase, WebTestBase):
 
 
 class TestAddPlaceSL(TestAddPlaceBase, SeleniumBase):
-    pass
+
+    def _use_existing_start(self):
+        self.login()
+        self.add_prices()
+        self.create_place_model()
+        self.get_url(self.urlname)
+
+    def assertValues(self, data):
+        for k, v in data.items():
+            self.assertEqual(self.value(k), v)
+
+    def test_use_existing_addresses(self):
+        self._use_existing_start()
+
+        self.click('.use_existing_btn')
+        self.click('#id_use_address_btn')
+
+        self.assertValues({'#id_address': '123 My street',
+                           '#id_post_code': 'ABC 123',
+                           '#id_contact_address': '98 Main Street',
+                           '#id_contact_post_code': 'ABC 456',
+                           '#id_first_name': '',
+                           '#id_gp_name': '',
+                           '#id_gp_address': ''})
+
+    def test_use_existing_gp(self):
+        self._use_existing_start()
+
+        self.click('.use_existing_btn')
+        self.click('#id_use_gp_info_btn')
+
+        self.assertValues({'#id_address': '',
+                           '#id_post_code': '',
+                           '#id_contact_address': '',
+                           '#id_contact_post_code': '',
+                           '#id_first_name': '',
+                           '#id_gp_name': 'Doctor Who',
+                           '#id_gp_address': 'The Tardis'})
+
+    def test_use_existing_all(self):
+        self._use_existing_start()
+
+        self.click('.use_existing_btn')
+        self.click('#id_use_all_btn')
+
+        self.assertValues({'#id_address': '123 My street',
+                           '#id_post_code': 'ABC 123',
+                           '#id_contact_address': '98 Main Street',
+                           '#id_contact_post_code': 'ABC 456',
+                           '#id_first_name': 'Frédéric',
+                           '#id_gp_name': 'Doctor Who',
+                           '#id_gp_address': 'The Tardis'})
+
+    def test_use_account_data(self):
+        self._use_existing_start()
+
+        self.click('#id_use_account_1_btn')
+        self.assertValues({'#id_address': '123',
+                           '#id_post_code': 'XYZ'})
+
+        self.click('#id_use_account_2_btn')
+        self.assertValues({'#id_contact_address': '123',
+                           '#id_contact_post_code': 'XYZ'})
 
 
 class TestEditPlaceBase(BookingBaseMixin, CreatePlaceWebMixin):
