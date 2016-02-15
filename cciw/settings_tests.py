@@ -18,14 +18,10 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
 ]
 
-MIDDLEWARE_CLASSES = (
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "cciw.middleware.threadlocals.ThreadLocals",
-)
+MIDDLEWARE_CLASSES = [m for m in MIDDLEWARE_CLASSES
+                      if m not in ["debug_toolbar.middleware.DebugToolbarMiddleware",
+                                   "cciw.middleware.debug.DebugMiddleware"]
+                      ]
 
 INSTALLED_APPS = list(filter(lambda x: x not in [
     'debug_toolbar'

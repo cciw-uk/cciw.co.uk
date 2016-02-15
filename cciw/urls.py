@@ -40,6 +40,9 @@ if settings.DEVBOX:
     ]
 
     urlpatterns += staticfiles_urlpatterns()
+    urlpatterns += [
+        url(r'^django_functest/', include('django_functest.urls'))
+    ]
 
 urlpatterns = urlpatterns + [
     url(r'', include('cciw.cciwmain.urls'))

@@ -23,6 +23,8 @@ parser.add_argument("--hashseed", action='store',
                     help="Specify the PYTHONHASHSEED to use, otherwise a random one is chosen")
 parser.add_argument("--verbosity", "-v", action='store', type=int,
                     help="Specify the verbosity to pass on to manage.py, 0 to 3. Pass 2 to print test names being run.")
+parser.add_argument("--show-browser", action='store_true',
+                    help="Display the browser window")
 
 known_args, remaining_args = parser.parse_known_args()
 
@@ -53,6 +55,9 @@ if known_args.parallel:
 
 if known_args.keepdb:
     cmd += ['--keepdb']
+
+if known_args.show_browser:
+    os.environ['TESTS_SHOW_BROWSER'] = 'TRUE'
 
 cmd += remaining_options + test_args
 
