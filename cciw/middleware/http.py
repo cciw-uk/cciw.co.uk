@@ -28,19 +28,3 @@ class WebFactionFixes(object):
         # Fix HTTPS
         if 'HTTP_X_FORWARDED_SSL' in request.META:
             request.is_secure = lambda: request.META['HTTP_X_FORWARDED_SSL'] in ['on', 'on,on']
-
-
-class ActAsProxy(object):
-    """
-    When running a demo, and wanting to show the correct domain name, simply
-    add this middleware and set 127.0.0.1:8000 as the proxy in the web
-    browser.  If you need the browser to make requests to other domains, use
-    privoxy and a redirect.
-    """
-    URLS = ["http://www.cciw.co.uk"]
-
-    def process_request(self, request):
-        for u in self.URLS:
-            if request.path.startswith(u):
-                request.path = request.path_info = request.environ['PATH_INFO'] = request.path[len(u):]
-                return
