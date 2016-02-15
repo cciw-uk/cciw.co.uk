@@ -740,6 +740,28 @@ class TestEditAccountAdmin(BookingBaseMixin, OfficersSetupMixin, CreatePlaceMode
         account = BookingAccount.objects.get(email=self.email)
         self.assertEqual(account.name, 'Joe')
 
+    def test_edit(self):
+        account = BookingAccount.objects.create(
+            email=self.email,
+            name='Joe',
+            address='123',
+            post_code='XYZ',
+        )
+        account.manual_payments.create(
+            amount=Decimal('10.00'),
+            payment_type=MANUAL_PAYMENT_CHEQUE,
+        )
+        self.assertEqual(account.payments.count(), 1)
+        self.officer_login(BOOKING_SEC)
+        self.get_url("admin:bookings_bookingaccount_change", account.id)
+        self.assertTextPresent("Payments")
+        self.assertTextPresent("Payment: 10.00 from Joe via manual payment")
+        self.fill_by_name({'name': 'Mr New Name'})
+        self.submit('[name=_save]')
+        self.assertTextPresent("was changed successfully")
+        account = refresh(account)
+        self.assertEqual(account.name, 'Mr New Name')
+
 
 class TestEditPaymentAdmin(fix_autocomplete_fields(['account']), BookingBaseMixin,
                            OfficersSetupMixin, CreatePlaceModelMixin, WebTestBase):

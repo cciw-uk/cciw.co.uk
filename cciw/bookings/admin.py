@@ -66,17 +66,41 @@ class BookingAccountForm(forms.ModelForm):
         return self.cleaned_data
 
 
-# These inlines are used to display some info on BookingAccount admin
-class BookingAccountPaymentInline(admin.TabularInline):
-    model = Payment
-    fields = ["amount", "payment_type", "created"]
-    readonly_fields = fields
+class ReadOnlyInline(object):
+    # Mixin for inlines that are readonly and for display purposes only.
+    # You must also set 'readonly_fields = fields' on the inline
+
     can_delete = False
     extra = 0
     max_num = 0
 
+    def get_formset(self, request, obj):
+        FormSet = super(ReadOnlyInline, self).get_formset(request, obj)
 
-class BookingAccountBookingInline(admin.TabularInline):
+        class ReadOnlyFormset(FormSet):
+
+            def is_valid(self):
+                return True
+
+            def save(self, *args, **kwargs):
+                pass
+
+            new_objects = ()
+            changed_objects = ()
+            deleted_objects = ()
+
+        ReadOnlyFormset.__name__ = 'ReadOnly({0})'.format(FormSet.__name__)
+        return ReadOnlyFormset
+
+
+# These inlines are used to display some info on BookingAccount admin
+class BookingAccountPaymentInline(ReadOnlyInline, admin.TabularInline):
+    model = Payment
+    fields = ["amount", "payment_type", "created"]
+    readonly_fields = fields
+
+
+class BookingAccountBookingInline(ReadOnlyInline, admin.TabularInline):
     model = Booking
     label = "Confirmed bookings"
 
@@ -86,9 +110,6 @@ class BookingAccountBookingInline(admin.TabularInline):
                            booking.name)
     fields = [name, "camp", "amount_due", "state", "is_confirmed"]
     readonly_fields = fields
-    can_delete = False
-    extra = 0
-    max_num = 0
 
 
 class BookingAccountAdmin(admin.ModelAdmin):

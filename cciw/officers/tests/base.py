@@ -140,6 +140,9 @@ class OfficersSetupMixin(BasicSetupMixin):
                                              perm("delete_manualpayment",
                                                   "bookings",
                                                   "manualpayment"),
+                                             perm("change_payment",  # so they can view payment inlines
+                                                  "bookings",
+                                                  "payment"),
                                              perm("add_price",
                                                   "bookings",
                                                   "price"),
