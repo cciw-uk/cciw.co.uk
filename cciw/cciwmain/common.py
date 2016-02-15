@@ -315,12 +315,12 @@ def standard_processor(request):
         else:
             for l in MenuLink.objects.filter(parent_item__isnull=True, visible=True):
                 l.title = standard_subs(l.title)
-                l.isCurrentPage = False
-                l.isCurrentSection = False
+                l.is_current_page = False
+                l.is_current_section = False
                 if l.url == request_path:
-                    l.isCurrentPage = True
+                    l.is_current_page = True
                 elif request_path.startswith(l.url) and l.url != '/':
-                    l.isCurrentSection = True
+                    l.is_current_section = True
                 links_cache.append(l)
             return links_cache
 

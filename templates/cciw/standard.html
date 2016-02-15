@@ -40,13 +40,13 @@
             <a href="#">Menu</a>
           </li>
           {% for menulink in menulinks %}
-            <li {% if menulink.isCurrentPage %} class="active" {% endif %}
-                {% if menulink.isCurrentSection %} class="currentSection" {% endif %}
+            <li {% if menulink.is_current_page %} class="active" {% endif %}
+                {% if menulink.is_current_section %} class="currentSection" {% endif %}
                  >
               <a href="{{ menulink.url }}"
                  {% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
-                 {% if menulink.isCurrentPage %} class="active" {% endif %}
-                 {% if menulink.isCurrentSection %} class="currentSection" {% endif %}
+                 {% if menulink.is_current_page %} class="active" {% endif %}
+                 {% if menulink.is_current_section %} class="currentSection" {% endif %}
                  >{{ menulink.title }}</a>
             </li>
           {% endfor %}
