@@ -93,7 +93,16 @@
       {% cciw_form_field form 'last_name' 'Surname' %}
       {% cciw_form_field form 'sex' 'Sex' %}
       {% cciw_form_field form 'date_of_birth' 'Date of birth' %}
-      {% cciw_form_field form 'address' 'Address' %} <input style="display:none;" type="submit" id="id_use_account_1_btn" value="Use account address">
+
+      <h3>Address</h3>
+      <input style="display:none;" type="submit" id="id_use_account_1_btn" value="Use account address">
+
+      {% cciw_form_field form 'address' 'Address' %}
+      {% cciw_form_field form 'address_line1' 'Address line 1' %}
+      {% cciw_form_field form 'address_line2' 'Address line 2' %}
+      {% cciw_form_field form 'address_city' 'City/town' %}
+      {% cciw_form_field form 'address_county' 'County/state' %}
+      {% cciw_form_field form 'address_country' 'Country' %}
       {% cciw_form_field form 'address_post_code' 'Post code' %}
       {% cciw_form_field form 'phone_number' 'Phone number' %}
       {% cciw_form_field form 'email' 'Email' %}
@@ -109,10 +118,17 @@
         camp.</p>
 
       <h2>Contact details</h2>
+      <input style="display:none;" type="submit" id="id_use_account_2_btn" value="Use account address">
 
-      <p>Please enter a contact name and number that can be used <strong>during the week of camp</strong> in case of emergency.</p>
+      <p>Please enter a contact name, address and number that can be used <strong>during the week of camp</strong> in case of emergency.</p>
 
-      {% cciw_form_field form 'contact_address' 'Address' %} <input style="display:none;" type="submit" id="id_use_account_2_btn" value="Use account address">
+      {% cciw_form_field form 'contact_address' 'Address' %}
+      {% cciw_form_field form 'contact_name' 'Name' %}
+      {% cciw_form_field form 'contact_line1' 'Address line 1' %}
+      {% cciw_form_field form 'contact_line2' 'Address line 2' %}
+      {% cciw_form_field form 'contact_city' 'City/town' %}
+      {% cciw_form_field form 'contact_county' 'County/state' %}
+      {% cciw_form_field form 'contact_country' 'Country' %}
       {% cciw_form_field form 'contact_post_code' 'Post code' %}
       {% cciw_form_field form 'contact_phone_number' 'Phone number' %}
 
@@ -128,6 +144,12 @@
 
       {% cciw_form_field form 'gp_name' 'Name' %}
       {% cciw_form_field form 'gp_address' 'Address' %}
+      {% cciw_form_field form 'gp_line1' 'Address line 1' %}
+      {% cciw_form_field form 'gp_line2' 'Address line 2' %}
+      {% cciw_form_field form 'gp_city' 'City/town' %}
+      {% cciw_form_field form 'gp_county' 'County/state' %}
+      {% cciw_form_field form 'gp_country' 'Country' %}
+      {% cciw_form_field form 'gp_post_code' 'Post code' %}
       {% cciw_form_field form 'gp_phone_number' 'Phone number' %}
 
       <h2>Medical details</h2>

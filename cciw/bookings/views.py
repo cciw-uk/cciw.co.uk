@@ -172,38 +172,37 @@
 # Leaders need to be presented with a list of bookings that they need to manually
 # approve. If they don't approve, need to send email to person booking.
 
+import os
+import re
 from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal
 from functools import wraps
-import os
-import re
 
 from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.http import HttpResponseRedirect, Http404
+from django.http import Http404, HttpResponseRedirect
 from django.utils import timezone
 from django.utils.crypto import salted_hmac
 from django.utils.http import base36_to_int
 from django.views.decorators.csrf import csrf_exempt
+from django_countries.fields import Country
 from paypal.standard.forms import PayPalPaymentsForm
 
-
 from cciw.auth import is_booking_secretary
-from cciw.cciwmain.common import get_thisyear, get_current_domain, CciwBaseView, AjaxFormValidation
+from cciw.bookings.email import check_email_verification_token, send_verify_email
+from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
+from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_INFO_COMPLETE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
+                                  PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
+                                  REQUIRED_PRICE_TYPES, Booking, BookingAccount, Price, any_bookings_possible,
+                                  book_basket_now, early_bird_is_available, get_early_bird_cutoff_date, is_booking_open,
+                                  is_booking_open_thisyear)
+from cciw.cciwmain.common import AjaxFormValidation, CciwBaseView, get_current_domain, get_thisyear
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.utils.views import user_passes_test_improved
-
-from cciw.bookings.email import send_verify_email, check_email_verification_token
-from cciw.bookings.forms import EmailForm, AccountDetailsForm, AddPlaceForm
-from cciw.bookings.models import BookingAccount, Price, Booking, book_basket_now, get_early_bird_cutoff_date, early_bird_is_available, any_bookings_possible, is_booking_open, is_booking_open_thisyear
-from cciw.bookings.models import PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, \
-    BOOKING_INFO_COMPLETE, BOOKING_APPROVED, REQUIRED_PRICE_TYPES, \
-    PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT
-
 
 # decorators and utilities
 
@@ -524,15 +523,32 @@ BOOKING_PLACE_PUBLIC_ATTRS = [
     'sex',
     'date_of_birth',
     'address',
+    'address_line1',
+    'address_line2',
+    'address_city',
+    'address_county',
+    'address_country',
     'address_post_code',
     'phone_number',
     'church',
+    'contact_name',
     'contact_address',
+    'contact_line1',
+    'contact_line2',
+    'contact_city',
+    'contact_county',
+    'contact_country',
     'contact_post_code',
     'contact_phone_number',
     'dietary_requirements',
     'gp_name',
     'gp_address',
+    'gp_line1',
+    'gp_line2',
+    'gp_city',
+    'gp_county',
+    'gp_country',
+    'gp_post_code',
     'gp_phone_number',
     'medical_card_number',
     'last_tetanus_injection',
@@ -548,12 +564,18 @@ ACCOUNT_PUBLIC_ATTRS = [
     'email',
     'name',
     'address',
+    'address_line1',
+    'address_line2',
+    'address_city',
+    'address_county',
+    'address_country',
     'address_post_code',
     'phone_number',
 ]
 
-booking_to_dict = lambda b: dict((k, getattr(b, k)) for k in BOOKING_PLACE_PUBLIC_ATTRS)
-account_to_dict = lambda acc: dict((k, getattr(acc, k))
+handle_country = lambda v: v.code if isinstance(v, Country) else v
+booking_to_dict = lambda b: dict((k, handle_country(getattr(b, k))) for k in BOOKING_PLACE_PUBLIC_ATTRS)
+account_to_dict = lambda acc: dict((k, handle_country(getattr(acc, k)))
                                    for k in ACCOUNT_PUBLIC_ATTRS)
 
 

@@ -148,7 +148,28 @@ class BookingAccountManagerBase(models.Manager):
 BookingAccountManager = BookingAccountManagerBase.from_queryset(BookingAccountQuerySet)
 
 
-class BookingAccount(models.Model):
+def migrate_address(*fields):
+    class MigrateAddressMixin(object):
+        def save(self, **kwargs):
+            for address_field_attr in fields:
+                address = getattr(self, address_field_attr)
+                if address_field_attr.endswith("_address"):
+                    # e.g. contact_line1
+                    line1_attr = address_field_attr.replace("_address", "") + "_line1"
+                else:
+                    line1_attr = address_field_attr + "_line1"
+
+                line1 = getattr(self, line1_attr)
+                if address != "" and line1 != "":
+                    # They filled the new data in, we can delete the old
+                    setattr(self, address_field_attr, "")
+
+            return super(MigrateAddressMixin, self).save(**kwargs)
+
+    return MigrateAddressMixin
+
+
+class BookingAccount(migrate_address('address'), models.Model):
     # For online bookings, email is required, but not for paper. Initially for online
     # process only email is filled in, so to ensure we can edit all BookingAccounts
     # in the admin, all the address fields have 'blank=True'.
@@ -176,7 +197,12 @@ class BookingAccount(models.Model):
     objects = BookingAccountManager()
 
     def has_account_details(self):
-        return self.name != "" and self.address != "" and self.address_post_code != ""
+        return not any(getattr(self, f) == ""
+                       for f in ['name',
+                                 'address_line1',
+                                 'address_city',
+                                 'address_country',
+                                 'address_post_code'])
 
     def __str__(self):
         out = []
@@ -196,11 +222,9 @@ class BookingAccount(models.Model):
         if self.id is None:
             return super(BookingAccount, self).save(**kwargs)
         else:
-            update_fields = [f for f in self._meta.fields if
+            update_fields = [f.name for f in self._meta.fields if
                              f.name != 'id' and f.name != 'total_received']
-            update_kwargs = dict((f.attname, getattr(self, f.attname)) for
-                                 f in update_fields)
-            BookingAccount.objects.filter(id=self.id).update(**update_kwargs)
+            return super(BookingAccount, self).save(update_fields=update_fields, **kwargs)
 
     # Business methods:
 
@@ -512,7 +536,7 @@ class Booking(models.Model):
     last_name = models.CharField(max_length=100)
     sex = models.CharField(max_length=1, choices=SEXES)
     date_of_birth = models.DateField()
-    address = models.TextField()
+    address = models.TextField(blank=True)
     address_line1 = models.CharField("address line 1", max_length=255)
     address_line2 = models.CharField("address line 2", max_length=255, blank=True)
     address_city = models.CharField("town/city", max_length=255)
@@ -527,14 +551,14 @@ class Booking(models.Model):
                                                 blank=True, default=False)
 
     # Contact - from user
-    contact_address = models.TextField()
-    contact_name = models.CharField("contact name", max_length=255)
+    contact_address = models.TextField(blank=True)
+    contact_name = models.CharField("contact name", max_length=255, blank=True)
     contact_line1 = models.CharField("address line 1", max_length=255)
     contact_line2 = models.CharField("address line 2", max_length=255, blank=True)
     contact_city = models.CharField("town/city", max_length=255)
     contact_county = models.CharField("county/state", max_length=255, blank=True)
     contact_country = CountryField("country", null=True)
-    contact_post_code = models.CharField(max_length=10)
+    contact_post_code = models.CharField("post code", max_length=10)
     contact_phone_number = models.CharField(max_length=22)
 
     # Diet - from user
@@ -542,7 +566,7 @@ class Booking(models.Model):
 
     # GP details - from user
     gp_name = models.CharField("GP name", max_length=100)
-    gp_address = models.TextField("GP address")
+    gp_address = models.TextField("GP address", blank=True)
     gp_line1 = models.CharField("address line 1", max_length=255)
     gp_line2 = models.CharField("address line 2", max_length=255, blank=True)
     gp_city = models.CharField("town/city", max_length=255)

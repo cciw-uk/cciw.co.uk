@@ -150,7 +150,9 @@ class LogInMixin(object):
 
         if add_account_details:
             BookingAccount.objects.filter(email=self.email).update(name='Joe',
-                                                                   address='123',
+                                                                   address_line1='456 My Street',
+                                                                   address_city='Metrocity',
+                                                                   address_country='GB',
                                                                    address_post_code='XYZ')
         self._logged_in = True
 
@@ -159,7 +161,7 @@ class LogInMixin(object):
 
     def _set_signed_cookie(self, key, value, salt='', **kwargs):
         value = signing.get_cookie_signer(salt=key + salt).sign(value)
-        if not self._have_visited_page:
+        if self.is_full_browser_test and not self._have_visited_page:
             self.get_url('django_functest.emptypage')
         return self._add_cookie({'name': key,
                                  'value': value,
@@ -176,13 +178,20 @@ class PlaceDetailsMixin(CreateCampMixin):
             'last_name': 'Bloggs',
             'sex': 'm',
             'date_of_birth': '%d-01-01' % (self.camp.year - 14),
-            'address': '123 My street',
+            'address_line1': '123 My street',
+            'address_city': 'Metrocity',
+            'address_country': 'GB',
             'address_post_code': 'ABC 123',
-            'contact_address': '98 Main Street',
+            'contact_line1': '98 Main Street',
+            'contact_city': 'Metrocity',
+            'contact_country': 'GB',
             'contact_post_code': 'ABC 456',
             'contact_phone_number': '01982 987654',
             'gp_name': 'Doctor Who',
-            'gp_address': 'The Tardis',
+            'gp_line1': 'The Tardis',
+            'gp_city': 'London',
+            'gp_country': 'GB',
+            'gp_post_code': 'SW1 1PQ',
             'gp_phone_number': '01234 456789',
             'medical_card_number': 'asdfasdf',
             'agreement': True,
@@ -417,18 +426,22 @@ class TestBookingVerifyBase(BookingBaseMixin):
         self.assertTrue(acc.last_login is not None)
         self.assertTrue(acc.first_login is not None)
 
+    def _add_booking_account_address(self):
+        acc = BookingAccount.objects.get(email='booker@bookers.com')
+        acc.name = "Joe"
+        acc.address_line1 = "Home"
+        acc.address_city = "My city"
+        acc.address_country = "GB"
+        acc.address_post_code = "XY1 D45"
+        acc.save()
+
     def test_verify_correct_and_has_details(self):
         """
         Test the email verification stage when the URL is correct and the
         account already has name and address
         """
         self._start()
-        acc = BookingAccount.objects.get(email='booker@bookers.com')
-        acc.name = "Joe"
-        acc.address = "Home"
-        acc.address_post_code = "XY1 D45"
-        acc.save()
-
+        self._add_booking_account_address()
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse('cciw-bookings-add_place'))
@@ -440,10 +453,8 @@ class TestBookingVerifyBase(BookingBaseMixin):
         for 'a while'.
         """
         self._start()
+        self._add_booking_account_address()
         acc = BookingAccount.objects.get(email='booker@bookers.com')
-        acc.name = "Joe"
-        acc.address = "Home"
-        acc.address_post_code = "XY1 D45"
         acc.first_login = timezone.now() - timedelta(30 * 7)
         acc.last_login = acc.first_login
         acc.save()
@@ -513,14 +524,42 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin):
         """
         self.login(add_account_details=False)
         self.get_url(self.urlname)
-        self.fill_by_name({'name': 'Mr Booker',
-                           'address': '123, A Street',
-                           'address_post_code': 'XY1 D45',
-                           })
+        self._fill_in_account_details()
         self.submit()
         acc = self.get_account()
         self.assertEqual(acc.name, 'Mr Booker')
         self.assertEqual(UNS_func.call_count, 0)
+
+    def test_address_migration(self):
+        self.login(add_account_details=True, shortcut=True)
+        acc = self.get_account()
+        BookingAccount.objects.update(id=acc.id,
+                                      address_line1="",
+                                      address_city="",
+                                      address_country="",
+                                      address="123, A Street\nMetrocity")
+        self.get_url(self.urlname)
+        self.assertTextPresent("Address:")
+        self.submit()
+        self.assertTextPresent("Please split the information")
+        self.assertTextPresent("123, A Street")
+        self._fill_in_account_details()
+        self.submit()
+        acc = self.get_account()
+        self.assertEqual(acc.address_line1, "123, A Street")
+        self.assertEqual(acc.address_city, "Metrocity")
+        self.assertEqual(acc.address, "")
+
+        self.get_url(self.urlname)
+        self.assertTextAbsent("Address:")
+
+    def _fill_in_account_details(self):
+        self.fill_by_name({'name': 'Mr Booker',
+                           'address_line1': '123, A Street',
+                           'address_city': 'Metrocity',
+                           'address_country': 'GB',
+                           'address_post_code': 'XY1 D45',
+                           })
 
     # For updating this, see:
     # https://vcrpy.readthedocs.org/en/latest/usage.html
@@ -529,11 +568,8 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin):
     def test_subscribe(self):
         self.login(add_account_details=False)
         self.get_url(self.urlname)
-        self.fill_by_name({'name': 'Mr Booker',
-                           'address': '123, A Street',
-                           'address_post_code': 'XY1 D45',
-                           'subscribe_to_newsletter': True,
-                           })
+        self._fill_in_account_details()
+        self.fill_by_name({'subscribe_to_newsletter': True})
         self.submit()
         acc = self.get_account()
         self.assertEqual(acc.subscribe_to_newsletter, True)
@@ -1778,12 +1814,14 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceWebMixin, W
     def test_account_json(self):
         self.login()
         acc = self.get_account()
-        acc.address = '123 Main Street'
+        acc.address_line1 = '123 Main Street'
+        acc.address_country = 'FR'
         acc.save()
 
         resp = self.get_url('cciw-bookings-account_json')
         j = json.loads(resp.content.decode('utf-8'))
-        self.assertEqual(j['account']['address'], '123 Main Street')
+        self.assertEqual(j['account']['address_line1'], '123 Main Street')
+        self.assertEqual(j['account']['address_country'], 'FR')
 
     def test_all_accounts_json(self):
         acc1 = BookingAccount.objects.create(email="foo@foo.com",

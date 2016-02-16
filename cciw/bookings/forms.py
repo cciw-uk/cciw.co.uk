@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.forms.forms import BoundField
 from django.utils.html import format_html
 
-from cciw.bookings.models import BookingAccount, Booking, Price
-from cciw.cciwmain.forms import CciwFormMixin
+from cciw.bookings.models import Booking, BookingAccount, Price
 from cciw.cciwmain.common import get_thisyear
+from cciw.cciwmain.forms import CciwFormMixin
 from cciw.cciwmain.models import Camp
 
 
@@ -12,12 +13,67 @@ class EmailForm(CciwFormMixin, forms.Form):
     email = forms.EmailField()
 
 
-class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
+def migrate_address_form(*fields):
+    """
+    Creates a base class used to migrate data from old address field.
+    """
+    # If the old address is present, it should be displayed
+    # in a non-editable box, with a message saying it needs to be migrated.
+    # If it is not present, it should not be displayed at all.
+
+    class MigrateAddressFormMixin(object):
+        def __init__(self, data=None, instance=None, **kwargs):
+            if data is not None and instance is not None:
+                data = data.copy()
+                # Disallow saving of data, by setting it from the instance
+                # and ignoring what was posted.
+                for f in fields:
+                    data[f] = getattr(instance, f)
+            super(MigrateAddressFormMixin, self).__init__(data=data, instance=instance, **kwargs)
+
+        def render_field(self, name, field, top_errors, hidden_fields, label_text=None):
+            if name in fields:
+                has_data = False
+                bf = BoundField(self, field, name)
+                if bf.value():
+                    has_data = True
+                if has_data:
+                    # We can have simplified logic relative to super.render_field,
+                    # since we don't need to worry about errors, required fields etc.
+                    return (
+                        "<div class=\"userError\">"
+                        "We have been unable to automatically recognize the following address. "
+                        "Please split the information in this address into the fields below, "
+                        "and ensure that the post code is correct:"
+                        "</div>"
+                    ) + self.normal_row_template % {
+                        'errors_html': '',
+                        'label': bf.label_tag((label_text or bf.label) + ":"),
+                        'field': bf.as_widget(attrs={'readonly': 'readonly'}),
+                        'help_text': '',
+                        'class': self.div_normal_class,
+                        'divid': "div_id_%s" % bf.name,
+                    }
+                else:
+                    return ''
+            else:
+                return super(MigrateAddressFormMixin, self).render_field(name, field, top_errors,
+                                                                         hidden_fields, label_text=label_text)
+
+    return MigrateAddressFormMixin
+
+
+class AccountDetailsForm(migrate_address_form('address'), CciwFormMixin, forms.ModelForm):
     class Meta:
         model = BookingAccount
         fields = [
             'name',
             'address',
+            'address_line1',
+            'address_line2',
+            'address_city',
+            'address_county',
+            'address_country',
             'address_post_code',
             'phone_number',
             'share_phone_number',
@@ -34,9 +90,8 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
         return retval
 
 # Need to override these to fix various details for use by user
-AccountDetailsForm.base_fields['name'].required = True
-AccountDetailsForm.base_fields['address'].required = True
-AccountDetailsForm.base_fields['address_post_code'].required = True
+for f in ['name', 'address_line1', 'address_city', 'address_country', 'address_post_code']:
+    AccountDetailsForm.base_fields[f].required = True
 
 
 class FixPriceMixin(object):
@@ -95,16 +150,33 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
             'sex',
             'date_of_birth',
             'address',
+            'address_line1',
+            'address_line2',
+            'address_city',
+            'address_county',
+            'address_country',
             'address_post_code',
             'phone_number',
             'email',
             'church',
             'contact_address',
+            'contact_name',
+            'contact_line1',
+            'contact_line2',
+            'contact_city',
+            'contact_county',
+            'contact_country',
             'contact_post_code',
             'contact_phone_number',
             'dietary_requirements',
             'gp_name',
             'gp_address',
+            'gp_line1',
+            'gp_line2',
+            'gp_city',
+            'gp_county',
+            'gp_country',
+            'gp_post_code',
             'gp_phone_number',
             'medical_card_number',
             'last_tetanus_injection',
