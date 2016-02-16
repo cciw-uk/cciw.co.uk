@@ -3,6 +3,7 @@ import os
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 
+from django_countries.fields import CountryField
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -142,7 +143,12 @@ class BookingAccount(models.Model):
     email = models.EmailField(blank=True, unique=True, null=True)
     name = models.CharField(blank=True, max_length=100)
     address = models.TextField(blank=True)
-    address_post_code = models.CharField(blank=True, max_length=10)
+    address_line1 = models.CharField("address line 1", max_length=255, blank=True)
+    address_line2 = models.CharField("address line 2", max_length=255, blank=True)
+    address_city = models.CharField("town/city", max_length=255, blank=True)
+    address_county = models.CharField("county/state", max_length=255, blank=True)
+    address_country = CountryField("country", null=True, blank=True)
+    address_post_code = models.CharField("post code", blank=True, max_length=10)
     phone_number = models.CharField(blank=True, max_length=22)
     share_phone_number = models.BooleanField("Allow this phone number to be passed on "
                                              "to other parents to help organise transport",
@@ -485,7 +491,12 @@ class Booking(models.Model):
     sex = models.CharField(max_length=1, choices=SEXES)
     date_of_birth = models.DateField()
     address = models.TextField()
-    address_post_code = models.CharField(max_length=10)
+    address_line1 = models.CharField("address line 1", max_length=255)
+    address_line2 = models.CharField("address line 2", max_length=255, blank=True)
+    address_city = models.CharField("town/city", max_length=255)
+    address_county = models.CharField("county/state", max_length=255, blank=True)
+    address_country = CountryField("country", null=True)
+    address_post_code = models.CharField("post code", max_length=10)
 
     phone_number = models.CharField(blank=True, max_length=22)
     email = models.EmailField(blank=True)
@@ -495,6 +506,12 @@ class Booking(models.Model):
 
     # Contact - from user
     contact_address = models.TextField()
+    contact_name = models.CharField("contact name", max_length=255)
+    contact_line1 = models.CharField("address line 1", max_length=255)
+    contact_line2 = models.CharField("address line 2", max_length=255, blank=True)
+    contact_city = models.CharField("town/city", max_length=255)
+    contact_county = models.CharField("county/state", max_length=255, blank=True)
+    contact_country = CountryField("country", null=True)
     contact_post_code = models.CharField(max_length=10)
     contact_phone_number = models.CharField(max_length=22)
 
@@ -504,6 +521,12 @@ class Booking(models.Model):
     # GP details - from user
     gp_name = models.CharField("GP name", max_length=100)
     gp_address = models.TextField("GP address")
+    gp_line1 = models.CharField("address line 1", max_length=255)
+    gp_line2 = models.CharField("address line 2", max_length=255, blank=True)
+    gp_city = models.CharField("town/city", max_length=255)
+    gp_county = models.CharField("county/state", max_length=255, blank=True)
+    gp_country = CountryField("country", null=True)
+    gp_post_code = models.CharField("post code", max_length=10)
     gp_phone_number = models.CharField("GP phone number", max_length=22)
 
     # Medical details - from user
