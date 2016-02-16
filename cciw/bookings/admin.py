@@ -12,6 +12,9 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO
 from cciw.cciwmain.common import get_thisyear
 
 
+FIRST_BOOKING_YEAR = 2012
+
+
 class ReturnToAdminMixin(object):
     def conditional_redirect(self, request, main_response):
         if 'return_to' in request.GET:
@@ -152,9 +155,24 @@ class LoggedInFilter(admin.SimpleListFilter):
             return queryset.filter(last_login__isnull=False)
 
 
+class BookingsYearFilter(admin.SimpleListFilter):
+    title = "bookings year"
+    parameter_name = "bookings_year"
+
+    def lookups(self, request, model_admin):
+        vals = range(get_thisyear(), FIRST_BOOKING_YEAR - 1, -1)
+        return [(str(v), str(v)) for v in vals]
+
+    def queryset(self, request, queryset):
+        val = self.value()
+        if val is None:
+            return queryset
+        return queryset.filter(bookings__camp__year=val)
+
+
 class BookingAccountAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'email', 'address_post_code', 'phone_number', 'last_login']
-    list_filter = [AddressesMigratedFilter, LoggedInFilter, 'subscribe_to_newsletter']
+    list_display = ['id', 'name', 'email', 'address_post_code', 'phone_number']
+    list_filter = [AddressesMigratedFilter, LoggedInFilter, BookingsYearFilter, 'subscribe_to_newsletter']
     ordering = ['email']
     search_fields = ['email', 'name']
     readonly_fields = ['first_login', 'last_login', 'total_received', 'admin_balance']
@@ -191,6 +209,10 @@ class BookingAccountAdmin(admin.ModelAdmin):
                              ]}))
         return fieldsets
 
+    def get_queryset(self, request):
+        # Distinct needed because of BookingsYearFilter
+        return super(BookingAccountAdmin, self).get_queryset(request).distinct()
+
     def response_change(self, request, obj):
         # Little hack to allow popups for changing BookingAccount
         if '_popup' in request.POST:
@@ -210,7 +232,7 @@ class YearFilter(admin.SimpleListFilter):
     def lookups(self, request, model_admin):
         # No easy way to create efficient query with Django's ORM,
         # so hard code first year we did bookings online:
-        vals = range(2012, get_thisyear() + 1)
+        vals = range(get_thisyear(), FIRST_BOOKING_YEAR - 1, -1)
         return [(str(v), str(v)) for v in vals]
 
     def queryset(self, request, queryset):
