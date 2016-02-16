@@ -109,6 +109,7 @@ INSTALLED_APPS = [
     'django_nyt',
     'compressor',
     'mailer',
+    'django_countries',
 ]
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
