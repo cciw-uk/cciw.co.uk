@@ -153,7 +153,8 @@ class LogInMixin(object):
                                                                    address_line1='456 My Street',
                                                                    address_city='Metrocity',
                                                                    address_country='GB',
-                                                                   address_post_code='XYZ')
+                                                                   address_post_code='XYZ',
+                                                                   phone_number='0123 456789')
         self._logged_in = True
 
     def get_account(self):
@@ -182,6 +183,7 @@ class PlaceDetailsMixin(CreateCampMixin):
             'address_city': 'Metrocity',
             'address_country': 'GB',
             'address_post_code': 'ABC 123',
+            'contact_name': 'Mr Father',
             'contact_line1': '98 Main Street',
             'contact_city': 'Metrocity',
             'contact_country': 'GB',
@@ -537,12 +539,12 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin):
                                       address_line1="",
                                       address_city="",
                                       address_country="",
-                                      address="123, A Street\nMetrocity")
+                                      address="121, A Street\nMetrocity")
         self.get_url(self.urlname)
         self.assertTextPresent("Address:")
         self.submit()
         self.assertTextPresent("Please split the information")
-        self.assertTextPresent("123, A Street")
+        self.assertTextPresent("121, A Street")
         self._fill_in_account_details()
         self.submit()
         acc = self.get_account()
@@ -551,7 +553,7 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin):
         self.assertEqual(acc.address, "")
 
         self.get_url(self.urlname)
-        self.assertTextAbsent("Address:")
+        self.assertTextAbsent("121, A Street")
 
     def _fill_in_account_details(self):
         self.fill_by_name({'name': 'Mr Booker',
@@ -682,6 +684,26 @@ class TestAddPlaceSL(TestAddPlaceBase, SeleniumBase):
         self.create_place_model()
         self.get_url(self.urlname)
 
+    def _use_existing_start_migrated(self):
+        self.login()
+        self.add_prices()
+        self.create_place_model(extra={
+            'address': '123 My street\nMetrocity\nUnited Kingdom',
+            'address_line1': '',
+            'address_city': '',
+            'address_country': '',
+            'contact_address': '98 Main Street\nMetrocity',
+            'contact_line1': '',
+            'contact_city': '',
+            'contact_country': '',
+            'gp_address': 'The Tardis\nLondon\nUnited Kingdom',
+            'gp_line1': '',
+            'gp_city': '',
+            'gp_country': '',
+            'gp_post_code': 'SW1 1PQ',
+        })
+        self.get_url(self.urlname)
+
     def assertValues(self, data):
         for k, v in data.items():
             self.assertEqual(self.value(k), v)
@@ -692,16 +714,104 @@ class TestAddPlaceSL(TestAddPlaceBase, SeleniumBase):
         self.click('.use_existing_btn')
         self.click('#id_use_address_btn')
 
-        self.assertValues({'#id_address': '123 My street',
+        self.assertValues({'#id_address_line1': '123 My street',
+                           '#id_address_country': 'GB',
                            '#id_address_post_code': 'ABC 123',
-                           '#id_contact_address': '98 Main Street',
+
+                           '#id_contact_name': 'Mr Father',
+                           '#id_contact_line1': '98 Main Street',
+                           '#id_contact_country': 'GB',
+                           '#id_contact_post_code': 'ABC 456',
+
+                           '#id_first_name': '',
+
+                           '#id_gp_name': '',
+                           '#id_gp_line1': '',
+                           '#id_gp_country': ''})
+
+    def test_use_existing_gp(self):
+        self._use_existing_start()
+
+        self.click('.use_existing_btn')
+        self.click('#id_use_gp_info_btn')
+
+        self.assertValues({'#id_address_line1': '',
+                           '#id_address_country': '',
+                           '#id_address_post_code': '',
+
+                           '#id_contact_name': '',
+                           '#id_contact_line1': '',
+                           '#id_contact_country': '',
+                           '#id_contact_post_code': '',
+
+                           '#id_first_name': '',
+
+                           '#id_gp_name': 'Doctor Who',
+                           '#id_gp_line1': 'The Tardis',
+                           '#id_gp_country': 'GB'})
+
+    def test_use_existing_all(self):
+        self._use_existing_start()
+
+        self.click('.use_existing_btn')
+        self.click('#id_use_all_btn')
+
+        self.assertValues({'#id_address_line1': '123 My street',
+                           '#id_address_country': 'GB',
+                           '#id_address_post_code': 'ABC 123',
+
+                           '#id_contact_name': 'Mr Father',
+                           '#id_contact_line1': '98 Main Street',
+                           '#id_contact_country': 'GB',
+                           '#id_contact_post_code': 'ABC 456',
+
+                           '#id_first_name': 'Frédéric',
+
+                           '#id_gp_name': 'Doctor Who',
+                           '#id_gp_line1': 'The Tardis',
+                           '#id_gp_country': 'GB'})
+
+    def test_use_account_data(self):
+        self._use_existing_start()
+
+        self.click('#id_use_account_1_btn')
+        self.assertValues({'#id_address_line1': '456 My Street',
+                           '#id_address_city': 'Metrocity',
+                           '#id_address_country': 'GB',
+                           '#id_phone_number': '0123 456789',
+                           '#id_address_post_code': 'XYZ'})
+
+        self.click('#id_use_account_2_btn')
+        self.assertValues({'#id_contact_line1': '456 My Street',
+                           '#id_contact_city': 'Metrocity',
+                           '#id_contact_country': 'GB',
+                           '#id_contact_phone_number': '0123 456789',
+                           '#id_contact_post_code': 'XYZ'})
+
+    def test_use_existing_addresses_migrated(self):
+        self._use_existing_start_migrated()
+
+        self.assertFalse(self.is_element_displayed('#div_id_address'))
+        self.assertFalse(self.is_element_displayed('#div_id_contact_address'))
+        self.assertFalse(self.is_element_displayed('#div_id_gp_address'))
+
+        self.click('.use_existing_btn')
+        self.click('#id_use_address_btn')
+
+        self.assertValues({'#id_address': '123 My street\nMetrocity\nUnited Kingdom',
+                           '#id_address_post_code': 'ABC 123',
+                           '#id_contact_address': '98 Main Street\nMetrocity',
                            '#id_contact_post_code': 'ABC 456',
                            '#id_first_name': '',
                            '#id_gp_name': '',
                            '#id_gp_address': ''})
 
-    def test_use_existing_gp(self):
-        self._use_existing_start()
+        self.assertTrue(self.is_element_displayed('#div_id_address'))
+        self.assertTrue(self.is_element_displayed('#div_id_contact_address'))
+        self.assertFalse(self.is_element_displayed('#div_id_gp_address'))
+
+    def test_use_existing_gp_migrated(self):
+        self._use_existing_start_migrated()
 
         self.click('.use_existing_btn')
         self.click('#id_use_gp_info_btn')
@@ -712,32 +822,29 @@ class TestAddPlaceSL(TestAddPlaceBase, SeleniumBase):
                            '#id_contact_post_code': '',
                            '#id_first_name': '',
                            '#id_gp_name': 'Doctor Who',
-                           '#id_gp_address': 'The Tardis'})
+                           '#id_gp_address': 'The Tardis\nLondon\nUnited Kingdom'})
 
-    def test_use_existing_all(self):
-        self._use_existing_start()
+        self.assertFalse(self.is_element_displayed('#div_id_address'))
+        self.assertFalse(self.is_element_displayed('#div_id_contact_address'))
+        self.assertTrue(self.is_element_displayed(' #div_id_gp_address'))
+
+    def test_use_existing_all_migrated(self):
+        self._use_existing_start_migrated()
 
         self.click('.use_existing_btn')
         self.click('#id_use_all_btn')
 
-        self.assertValues({'#id_address': '123 My street',
+        self.assertValues({'#id_address': '123 My street\nMetrocity\nUnited Kingdom',
                            '#id_address_post_code': 'ABC 123',
-                           '#id_contact_address': '98 Main Street',
+                           '#id_contact_address': '98 Main Street\nMetrocity',
                            '#id_contact_post_code': 'ABC 456',
                            '#id_first_name': 'Frédéric',
                            '#id_gp_name': 'Doctor Who',
-                           '#id_gp_address': 'The Tardis'})
+                           '#id_gp_address': 'The Tardis\nLondon\nUnited Kingdom'})
 
-    def test_use_account_data(self):
-        self._use_existing_start()
-
-        self.click('#id_use_account_1_btn')
-        self.assertValues({'#id_address': '123',
-                           '#id_address_post_code': 'XYZ'})
-
-        self.click('#id_use_account_2_btn')
-        self.assertValues({'#id_contact_address': '123',
-                           '#id_contact_post_code': 'XYZ'})
+        self.assertTrue(self.is_element_displayed('#div_id_address'))
+        self.assertTrue(self.is_element_displayed('#div_id_contact_address'))
+        self.assertTrue(self.is_element_displayed('#div_id_gp_address'))
 
 
 class TestEditPlaceBase(BookingBaseMixin, CreatePlaceWebMixin):

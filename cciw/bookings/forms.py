@@ -37,25 +37,25 @@ def migrate_address_form(*fields):
                 bf = BoundField(self, field, name)
                 if bf.value():
                     has_data = True
-                if has_data:
-                    # We can have simplified logic relative to super.render_field,
-                    # since we don't need to worry about errors, required fields etc.
-                    return (
-                        "<div class=\"userError\">"
-                        "We have been unable to automatically recognize the following address. "
-                        "Please split the information in this address into the fields below, "
-                        "and ensure that the post code is correct:"
-                        "</div>"
-                    ) + self.normal_row_template % {
-                        'errors_html': '',
-                        'label': bf.label_tag((label_text or bf.label) + ":"),
-                        'field': bf.as_widget(attrs={'readonly': 'readonly'}),
-                        'help_text': '',
-                        'class': self.div_normal_class,
-                        'divid': "div_id_%s" % bf.name,
-                    }
-                else:
-                    return ''
+                # We can have simplified logic relative to super.render_field,
+                # since we don't need to worry about errors, required fields etc.
+                field = (
+                    "<div class=\"userError\">"
+                    "We have been unable to automatically handle the following old address information. "
+                    "Please split the information in this address into the fields below, "
+                    "and ensure that the post code is correct:"
+                    "</div>"
+                ) + self.normal_row_template % {
+                    'errors_html': '',
+                    'label': bf.label_tag((label_text or bf.label) + ":"),
+                    'field': bf.as_widget(attrs={'readonly': 'readonly'}),
+                    'help_text': '',
+                    'class': self.div_normal_class,
+                    'divid': "div_id_%s" % bf.name,
+                }
+                hider = '' if has_data else 'style="display: none;"'
+                return ('<div class="addressMigrationWrapper" {0}>{1}</div>'
+                        .format(hider, field))
             else:
                 return super(MigrateAddressFormMixin, self).render_field(name, field, top_errors,
                                                                          hidden_fields, label_text=label_text)
@@ -110,7 +110,8 @@ class FixPriceMixin(object):
         self.fields['price_type'].choices = price_choices
 
 
-class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
+class AddPlaceForm(migrate_address_form('address', 'contact_address', 'gp_address'),
+                   FixPriceMixin, CciwFormMixin, forms.ModelForm):
 
     camp = forms.ChoiceField(choices=[],
                              widget=forms.RadioSelect)

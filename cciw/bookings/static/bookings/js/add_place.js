@@ -80,14 +80,11 @@
              var handleAccountData = function(json) {
                  var account = json['account'];
                  userData['account'] = account;
-                 /* Easiest way to get them where we want is to move it using javascript */
                  var btn1 = $('#id_use_account_1_btn');
-                 btn1.prependTo(btn1.prev('div.form').find('div.formrow'));
-                 btn1.css({'float':'right'}).show();
+                 btn1.show();
 
                  var btn2 = $('#id_use_account_2_btn');
-                 btn2.prependTo(btn2.prev('div.form').find('div.formrow'));
-                 btn2.css({'float':'right'}).show();
+                 btn2.show();
              };
 
              var useExistingDataShow = function(ev) {
@@ -115,9 +112,20 @@
 
              var address_attrs = [
                  'address',
+                 'address_line1',
+                 'address_line2',
+                 'address_city',
+                 'address_county',
+                 'address_country',
                  'address_post_code',
                  'phone_number',
                  'contact_address',
+                 'contact_name',
+                 'contact_line1',
+                 'contact_line2',
+                 'contact_city',
+                 'contact_county',
+                 'contact_country',
                  'contact_post_code',
                  'contact_phone_number'
              ];
@@ -125,6 +133,12 @@
              var gp_info_attrs = [
                  'gp_name',
                  'gp_address',
+                 'gp_line1',
+                 'gp_line2',
+                 'gp_city',
+                 'gp_county',
+                 'gp_country',
+                 'gp_post_code',
                  'gp_phone_number'
              ];
 
@@ -154,6 +168,25 @@
                  'learning_difficulties'
              ];
 
+             var migrated_address_fields = [
+                 'address',
+                 'contact_address',
+                 'gp_address'
+             ];
+
+             var updateMigratedAddressFields = function() {
+                 for (var i=0; i < migrated_address_fields.length; i++) {
+                     var attr = migrated_address_fields[i];
+                     var $elem = $('#id_' + attr);
+                     var $wrapper = $('#div_id_' + attr).closest('.addressMigrationWrapper');
+                     if ($elem.val() == "") {
+                         $wrapper.hide();
+                     } else {
+                         $wrapper.show();
+                     }
+                 }
+             }
+
              var useData = function(attrs) {
                  var radios = $('input[name=use_which_booking]');
                  var chosen = null;
@@ -176,7 +209,9 @@
                              // value is guaranteed to be good. So we clear
                              // errors.
                              cciw.standardformClearError(mainform[attr].id);
+
                          }
+                         updateMigratedAddressFields();
                      }
                  }
                  if (chosen === null) {
@@ -219,18 +254,40 @@
 
                      $(control_id).change();
                  });
+                 updateMigratedAddressFields();
              };
 
              var useAccountForCamperAddressClick = function(ev) {
                  ev.preventDefault();
-                 useAccountData(['address', 'address_post_code', 'phone_number']);
+                 useAccountData(['address',
+                                 'address_line1',
+                                 'address_line2',
+                                 'address_city',
+                                 'address_county',
+                                 'address_country',
+                                 'address_post_code',
+                                 'phone_number']);
              };
 
              var useAccountForContactDetailsClick = function(ev) {
                  ev.preventDefault();
                  // copy contact_address, contact_post_code, contact_phone_number
-                 useAccountData(['address', 'address_post_code', 'phone_number'],
-                                ['contact_address', 'contact_post_code', 'contact_phone_number'])
+                 useAccountData(['address',
+                                 'address_line1',
+                                 'address_line2',
+                                 'address_city',
+                                 'address_county',
+                                 'address_country',
+                                 'address_post_code',
+                                 'phone_number'],
+                                ['contact_address',
+                                 'contact_line1',
+                                 'contact_line2',
+                                 'contact_city',
+                                 'contact_county',
+                                 'contact_country',
+                                 'contact_post_code',
+                                 'contact_phone_number'])
              };
 
              $('#id_popup_close_btn').click(useExistingDataClose);

@@ -87,20 +87,20 @@
 
       {% cciw_form_field form 'price_type' 'Price' %}
 
+      <input type="submit" class="copy_data_btn use_existing_btn" value="Use previous data" style="display:none;">
       <h2>Camper details</h2>
-      <input type="submit" class="use_existing_btn" value="Use previous data" style="display:none; float: right;">
       {% cciw_form_field form 'first_name' 'First name' %}
       {% cciw_form_field form 'last_name' 'Surname' %}
       {% cciw_form_field form 'sex' 'Sex' %}
       {% cciw_form_field form 'date_of_birth' 'Date of birth' %}
 
-      <h3>Address</h3>
-      <input style="display:none;" type="submit" id="id_use_account_1_btn" value="Use account address">
+      <input type="submit" class="copy_data_btn" id="id_use_account_1_btn" value="Use account address" style="display:none;" >
+      <h2>Camper address</h2>
 
       {% cciw_form_field form 'address' 'Address' %}
       {% cciw_form_field form 'address_line1' 'Address line 1' %}
       {% cciw_form_field form 'address_line2' 'Address line 2' %}
-      {% cciw_form_field form 'address_city' 'City/town' %}
+      {% cciw_form_field form 'address_city' 'Town/city' %}
       {% cciw_form_field form 'address_county' 'County/state' %}
       {% cciw_form_field form 'address_country' 'Country' %}
       {% cciw_form_field form 'address_post_code' 'Post code' %}
@@ -117,8 +117,8 @@
         Wales. This is no longer available - please make your own arrangements to get to
         camp.</p>
 
+      <input type="submit" id="id_use_account_2_btn" class="copy_data_btn" value="Use account address" style="display:none;" >
       <h2>Contact details</h2>
-      <input style="display:none;" type="submit" id="id_use_account_2_btn" value="Use account address">
 
       <p>Please enter a contact name, address and number that can be used <strong>during the week of camp</strong> in case of emergency.</p>
 
@@ -126,7 +126,7 @@
       {% cciw_form_field form 'contact_name' 'Name' %}
       {% cciw_form_field form 'contact_line1' 'Address line 1' %}
       {% cciw_form_field form 'contact_line2' 'Address line 2' %}
-      {% cciw_form_field form 'contact_city' 'City/town' %}
+      {% cciw_form_field form 'contact_city' 'Town/city' %}
       {% cciw_form_field form 'contact_county' 'County/state' %}
       {% cciw_form_field form 'contact_country' 'Country' %}
       {% cciw_form_field form 'contact_post_code' 'Post code' %}
@@ -137,8 +137,8 @@
       <p>Please enter any special dietary requirements here (e.g. vegetarian).</p>
       {% cciw_form_field form 'dietary_requirements' 'Dietary requirements' %}
 
+      <input type="submit" class="copy_data_btn use_existing_btn" value="Use previous data" style="display:none;">
       <h2>GP details</h2>
-      <input type="submit" class="use_existing_btn" value="Use previous data" style="display:none; float: right;">
 
       <p>Please enter the details of the camper's GP:</p>
 
@@ -146,7 +146,7 @@
       {% cciw_form_field form 'gp_address' 'Address' %}
       {% cciw_form_field form 'gp_line1' 'Address line 1' %}
       {% cciw_form_field form 'gp_line2' 'Address line 2' %}
-      {% cciw_form_field form 'gp_city' 'City/town' %}
+      {% cciw_form_field form 'gp_city' 'Town/city' %}
       {% cciw_form_field form 'gp_county' 'County/state' %}
       {% cciw_form_field form 'gp_country' 'Country' %}
       {% cciw_form_field form 'gp_post_code' 'Post code' %}
