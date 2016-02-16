@@ -995,6 +995,43 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
         elif self.account_id is not None:
             return self.account.email
 
+    def get_address_display(self):
+        if self.address_line1:
+            return "\n".join(v for v in [self.address_line1,
+                                         self.address_line2,
+                                         self.address_city,
+                                         self.address_county,
+                                         self.address_country.code if self.address_country else None,
+                                         self.address_post_code,
+                                         ] if v)
+        else:
+            return self.address
+
+    def get_contact_address_display(self):
+        if self.contact_line1:
+            return "\n".join(v for v in [self.contact_name,
+                                         self.contact_line1,
+                                         self.contact_line2,
+                                         self.contact_city,
+                                         self.contact_county,
+                                         self.contact_country.code if self.contact_country else None,
+                                         self.contact_post_code,
+                                         ] if v)
+        else:
+            return self.contact_address
+
+    def get_gp_address_display(self):
+        if self.gp_line1:
+            return "\n".join(v for v in [self.gp_line1,
+                                         self.gp_line2,
+                                         self.gp_city,
+                                         self.gp_county,
+                                         self.gp_country.code if self.gp_country else None,
+                                         self.gp_post_code,
+                                         ] if v)
+        else:
+            return self.gp_address
+
     class Meta:
         ordering = ['-created']
 

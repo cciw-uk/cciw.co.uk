@@ -19,7 +19,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                ('Sex', lambda b: b.get_sex_display()),
                ('Date of birth', lambda b: b.date_of_birth),
                ('Age on camp', lambda b: b.age_on_camp()),
-               ('Address', lambda b: format_address(b.address, b.address_post_code)),
+               ('Address', lambda b: b.get_address_display()),
                ('Email', lambda b: b.get_contact_email()),
                ('Church', lambda b: b.church),
                ('Dietary requirements', lambda b: b.dietary_requirements),
@@ -39,10 +39,10 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
          ('Age on camp', lambda b: b.age_on_camp()),
          ('Parent/guardian', lambda b: b.account.name),
          ('Contact phone number', lambda b: b.contact_phone_number),
-         ('Contact address', lambda b: format_address(b.contact_address, b.contact_post_code)),
+         ('Contact address', lambda b: b.get_contact_address_display()),
          ('Church', lambda b: b.church),
          ('GP', lambda b: b.gp_name),
-         ('GP address', lambda b: b.gp_address),
+         ('GP address', lambda b: b.get_gp_address_display()),
          ('GP phone number', lambda b: b.gp_phone_number),
          ('NHS number', lambda b: b.medical_card_number),
          ('Last tetanus injection', lambda b: b.last_tetanus_injection),
@@ -189,14 +189,20 @@ def addresses_for_mailing_list(year, spreadsheet):
                 .select_related('account')
                 )
 
-    headers = ['Name', 'Address', 'Post code', 'Email', '# bookings']
+    headers = ['Name', 'Address line 1', 'Address line 2',
+               'City', 'County', 'Country', 'Post code',
+               'Email', '# bookings']
     rows = []
     for account, acc_bookings in groupby(bookings, lambda b: b.account):
         acc_bookings = list(acc_bookings)
-        if account.address.strip() != "":
+        if account.address_line1.strip() != "":
             # Account has postal address
             rows.append([account.name,
-                         account.address,
+                         account.address_line1,
+                         account.address_line2,
+                         account.address_city,
+                         account.address_county,
+                         str(account.address_country.name),
                          account.address_post_code,
                          account.email,
                          len(acc_bookings)])
@@ -205,21 +211,31 @@ def addresses_for_mailing_list(year, spreadsheet):
 
             # If they all have the same address, collapse
             first_booking = acc_bookings[0]
-            if all(b.address == first_booking.address
+            if all(b.address_line1 == first_booking.address_line1
                    and b.address_post_code == first_booking.address_post_code
+                   and b.address_line1 != ""
                    for b in acc_bookings):
                 rows.append([account.name,
-                             first_booking.address,
+                             first_booking.address_line1,
+                             first_booking.address_line2,
+                             first_booking.address_city,
+                             first_booking.address_county,
+                             str(first_booking.address_country.name),
                              first_booking.address_post_code,
                              account.email,
                              len(acc_bookings)])
             else:
                 for b in acc_bookings:
-                    rows.append([b.name,
-                                 b.address,
-                                 b.address_post_code,
-                                 b.get_contact_email(),
-                                 1])
+                    if b.address_line1 != "":
+                        rows.append([b.name,
+                                     b.address_line1,
+                                     b.address_line2,
+                                     b.address_city,
+                                     b.address_county,
+                                     str(b.address_country.name),
+                                     b.address_post_code,
+                                     b.get_contact_email(),
+                                     1])
     rows.sort()  # first column (Name) alphabetical
 
     spreadsheet.add_sheet_with_header_row("Addresses",
