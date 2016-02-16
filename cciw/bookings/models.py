@@ -10,6 +10,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
@@ -111,7 +112,16 @@ class Price(models.Model):
         return {p.year: p.price for p in q}
 
 
-class BookingAccountManager(models.Manager):
+class BookingAccountQuerySet(models.QuerySet):
+
+    def addresses_migrated(self):
+        return self.exclude(address_line1="")
+
+    def addresses_not_migrated(self):
+        return self.filter(Q(address_line1="") & ~Q(address=""))
+
+
+class BookingAccountManagerBase(models.Manager):
     def payments_due(self):
         """
         Returns a list of accounts that owe money.
@@ -133,6 +143,9 @@ class BookingAccountManager(models.Manager):
                 account.balance_due = balance_due
                 retval.append(account)
         return retval
+
+
+BookingAccountManager = BookingAccountManagerBase.from_queryset(BookingAccountQuerySet)
 
 
 class BookingAccount(models.Model):
@@ -458,6 +471,15 @@ class BookingQuerySet(models.QuerySet):
         ])
         qs = qs_custom_price | qs_serious_illness | qs_too_old | qs_too_young
         return qs
+
+    def _address_migrated_q(self):
+        return Q(address_line1="") | Q(contact_line1="") | Q(gp_line1="")
+
+    def addresses_migrated(self):
+        return self.exclude(self._address_migrated_q())
+
+    def addresses_not_migrated(self):
+        return self.filter(self._address_migrated_q())
 
 
 class BookingManagerBase(models.Manager):

@@ -112,8 +112,29 @@ class BookingAccountBookingInline(ReadOnlyInline, admin.TabularInline):
     readonly_fields = fields
 
 
+class AddressesMigratedFilter(admin.SimpleListFilter):
+    title = "Addresses migrated"
+    parameter_name = "addresses_migrated"
+
+    def lookups(self, request, model_admin):
+        return [
+            (1, 'Yes'),
+            (0, 'No'),
+        ]
+
+    def queryset(self, request, queryset):
+        val = self.value()
+        if val is None:
+            return queryset
+        if val == '0':
+            return queryset.addresses_not_migrated()
+        elif val == '1':
+            return queryset.addresses_migrated()
+
+
 class BookingAccountAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'email', 'address_post_code', 'phone_number']
+    list_filter = [AddressesMigratedFilter]
     ordering = ['email']
     search_fields = ['email', 'name']
     readonly_fields = ['first_login', 'last_login', 'total_received', 'admin_balance']
@@ -220,7 +241,7 @@ class BookingAdmin(admin.ModelAdmin):
     search_fields = ['first_name', 'last_name']
     ordering = ['-camp__year', 'first_name', 'last_name']
     date_hierarchy = 'created'
-    list_filter = [YearFilter, 'sex', 'price_type', 'early_bird_discount', 'serious_illness', 'state', 'created_online', ConfirmedFilter]
+    list_filter = [YearFilter, 'sex', 'price_type', 'early_bird_discount', 'serious_illness', 'state', 'created_online', ConfirmedFilter, AddressesMigratedFilter]
     readonly_fields = ['booked_at', 'created_online']
 
     form = BookingAdminForm
