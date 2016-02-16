@@ -154,9 +154,10 @@ def migrate_address(*fields):
             for address_field_attr in fields:
                 address = getattr(self, address_field_attr)
                 if address_field_attr.endswith("_address"):
-                    # e.g. contact_line1
+                    # e.g. contact_address -> contact_line1, gp_address -> gp_line1
                     line1_attr = address_field_attr.replace("_address", "") + "_line1"
                 else:
+                    # e.g. address
                     line1_attr = address_field_attr + "_line1"
 
                 line1 = getattr(self, line1_attr)
@@ -523,7 +524,8 @@ class BookingManagerBase(models.Manager):
 BookingManager = BookingManagerBase.from_queryset(BookingQuerySet)
 
 
-class Booking(models.Model):
+class Booking(migrate_address('address', 'contact_address', 'gp_address'),
+              models.Model):
     account = models.ForeignKey(BookingAccount,
                                 on_delete=models.CASCADE,
                                 related_name='bookings')
@@ -536,7 +538,7 @@ class Booking(models.Model):
     last_name = models.CharField(max_length=100)
     sex = models.CharField(max_length=1, choices=SEXES)
     date_of_birth = models.DateField()
-    address = models.TextField(blank=True)
+    address = models.TextField(blank=True, help_text="deprecated")
     address_line1 = models.CharField("address line 1", max_length=255)
     address_line2 = models.CharField("address line 2", max_length=255, blank=True)
     address_city = models.CharField("town/city", max_length=255)
