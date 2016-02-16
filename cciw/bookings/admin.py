@@ -132,9 +132,29 @@ class AddressesMigratedFilter(admin.SimpleListFilter):
             return queryset.addresses_migrated()
 
 
+class LoggedInFilter(admin.SimpleListFilter):
+    title = "Ever logged in"
+    parameter_name = "logged_in"
+
+    def lookups(self, request, model_admin):
+        return [
+            (1, 'Yes'),
+            (0, 'No'),
+        ]
+
+    def queryset(self, request, queryset):
+        val = self.value()
+        if val is None:
+            return queryset
+        if val == '0':
+            return queryset.filter(last_login__isnull=True)
+        elif val == '1':
+            return queryset.filter(last_login__isnull=False)
+
+
 class BookingAccountAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'email', 'address_post_code', 'phone_number']
-    list_filter = [AddressesMigratedFilter]
+    list_display = ['id', 'name', 'email', 'address_post_code', 'phone_number', 'last_login']
+    list_filter = [AddressesMigratedFilter, LoggedInFilter, 'subscribe_to_newsletter']
     ordering = ['email']
     search_fields = ['email', 'name']
     readonly_fields = ['first_login', 'last_login', 'total_received', 'admin_balance']
@@ -238,6 +258,7 @@ class BookingAdmin(admin.ModelAdmin):
 
     list_display = ['first_name', 'last_name', 'sex', 'account', camp, 'state', confirmed, 'created']
     del camp
+    del confirmed
     search_fields = ['first_name', 'last_name']
     ordering = ['-camp__year', 'first_name', 'last_name']
     date_hierarchy = 'created'
