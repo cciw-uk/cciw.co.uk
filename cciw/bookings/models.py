@@ -398,6 +398,17 @@ class BookingAccount(migrate_address('address'), models.Model):
         if confirmed_bookings:
             places_confirmed.send(self, bookings=confirmed_bookings, payment_received=True)
 
+    def get_address_display(self):
+        if self.address_line1:
+            return "\n".join(v for v in [self.address_line1,
+                                         self.address_line2,
+                                         self.address_city,
+                                         self.address_county,
+                                         self.address_country.code if self.address_country else None,
+                                         ] if v)
+        else:
+            return self.address
+
 
 class BookingQuerySet(models.QuerySet):
 
