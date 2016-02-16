@@ -70,6 +70,11 @@ $(document).ready(function() {
             dataType: "json",
             success: function(json) {
                 $('#id_address').val(json.account.address);
+                $('#id_address_line1').val(json.account.address_line1);
+                $('#id_address_line2').val(json.account.address_line2);
+                $('#id_address_city').val(json.account.address_city);
+                $('#id_address_county').val(json.account.address_county);
+                $('#id_address_country').val(json.account.address_country);
                 $('#id_address_post_code').val(json.account.address_post_code);
                 $('#id_phone_number').val(json.account.phone_number);
             }
@@ -86,6 +91,12 @@ $(document).ready(function() {
             dataType: "json",
             success: function(json) {
                 $('#id_contact_address').val(json.account.address);
+                $('#id_contact_name').val(json.account.name);
+                $('#id_contact_line1').val(json.account.address_line1);
+                $('#id_contact_line2').val(json.account.address_line2);
+                $('#id_contact_city').val(json.account.address_city);
+                $('#id_contact_county').val(json.account.address_county);
+                $('#id_contact_country').val(json.account.address_country);
                 $('#id_contact_post_code').val(json.account.address_post_code);
                 $('#id_contact_phone_number').val(json.account.phone_number);
             }
@@ -202,6 +213,9 @@ $(document).ready(function() {
 
     $('#id_use_account_for_camper').click(useAccountAddressForCamper);
     $('#id_use_account_for_contact').click(useAccountAddressForContact);
+
+    // Note that add_place.js also provides some functionality ("use previous
+    // data") that is used in admin.
 
     getBookingProblems();
     $('input,select,textarea').change(getBookingProblems);

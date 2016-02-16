@@ -177,7 +177,7 @@ class BookingAccount(migrate_address('address'), models.Model):
     # We have email with null=True so that we can have unique=True on that field.
     email = models.EmailField(blank=True, unique=True, null=True)
     name = models.CharField(blank=True, max_length=100)
-    address = models.TextField(blank=True)
+    address = models.TextField(blank=True, help_text="deprecated")
     address_line1 = models.CharField("address line 1", max_length=255, blank=True)
     address_line2 = models.CharField("address line 2", max_length=255, blank=True)
     address_city = models.CharField("town/city", max_length=255, blank=True)
@@ -553,7 +553,7 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
                                                 blank=True, default=False)
 
     # Contact - from user
-    contact_address = models.TextField(blank=True)
+    contact_address = models.TextField(blank=True, help_text="deprecated")
     contact_name = models.CharField("contact name", max_length=255, blank=True)
     contact_line1 = models.CharField("address line 1", max_length=255)
     contact_line2 = models.CharField("address line 2", max_length=255, blank=True)
@@ -568,7 +568,7 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
 
     # GP details - from user
     gp_name = models.CharField("GP name", max_length=100)
-    gp_address = models.TextField("GP address", blank=True)
+    gp_address = models.TextField("GP address", blank=True, help_text="deprecated")
     gp_line1 = models.CharField("address line 1", max_length=255)
     gp_line2 = models.CharField("address line 2", max_length=255, blank=True)
     gp_city = models.CharField("town/city", max_length=255)
