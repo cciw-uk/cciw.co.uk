@@ -783,6 +783,7 @@ class TestAddPlaceSL(TestAddPlaceBase, SeleniumBase):
 
         self.click('#id_use_account_2_btn')
         self.assertValues({'#id_contact_line1': '456 My Street',
+                           '#id_contact_name': 'Joe',
                            '#id_contact_city': 'Metrocity',
                            '#id_contact_country': 'GB',
                            '#id_contact_phone_number': '0123 456789',

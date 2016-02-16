@@ -271,8 +271,8 @@
 
              var useAccountForContactDetailsClick = function(ev) {
                  ev.preventDefault();
-                 // copy contact_address, contact_post_code, contact_phone_number
                  useAccountData(['address',
+                                 'name',
                                  'address_line1',
                                  'address_line2',
                                  'address_city',
@@ -281,6 +281,7 @@
                                  'address_post_code',
                                  'phone_number'],
                                 ['contact_address',
+                                 'contact_name',
                                  'contact_line1',
                                  'contact_line2',
                                  'contact_city',
