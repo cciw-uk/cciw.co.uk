@@ -17,5 +17,5 @@ class DebugMiddleware(object):
             from django.contrib.auth import get_user_model
             User = get_user_model()
             user = User.objects.get(username=request.GET['as'])
-            user.backend = 'django.contrib.auth.backends.ModelBackend'  # fake a call to authenticate
+            user.backend = 'cciw.auth.CciwAuthBackend'  # fake a call to authenticate
             login(request, user)

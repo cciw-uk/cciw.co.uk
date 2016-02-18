@@ -2,6 +2,7 @@ import operator
 from functools import reduce
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import Group
 
 WIKI_USERS_GROUP_NAME = 'Wiki users'
@@ -85,3 +86,20 @@ def is_committee_member(user):
     if not active_staff(user):
         return False
     return user_in_groups(user, [COMMITTEE_GROUP_NAME])
+
+
+class CciwAuthBackend(ModelBackend):
+    def get_group_permissions(self, user_obj, obj=None):
+        # This makes /admin/officers/ return something for camp admins, rather
+        # than a 403, and /admin/ return something rather than a message saying
+        # there is nothing they can edit.
+        # This is necessary because, for security reasons, we don't actually
+        # make camp admins part of a specific group with permissions, but add
+        # hacks (CampAdminPermissionMixin) to give specific permission to admin
+        # screens if the user is a camp admin for a current camp. Doing it
+        # this way means we don't have to remember to remove people from groups,
+        # it is all automatic.
+        retval = super(CciwAuthBackend, self).get_group_permissions(user_obj, obj=None)
+        if can_manage_application_forms(user_obj):
+            retval |= {'officers.change_application'}
+        return retval

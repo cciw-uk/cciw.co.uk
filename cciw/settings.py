@@ -132,6 +132,10 @@ SILENCED_SYSTEM_CHECKS = [
 
 AUTH_USER_MODEL = "accounts.User"
 
+AUTHENTICATION_BACKENDS = [
+    'cciw.auth.CciwAuthBackend',
+]
+
 # == DATABASE ==
 
 if DEVBOX:
