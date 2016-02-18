@@ -66,6 +66,13 @@ def get_camp_officer_stats(camp):
         # values get propagated to all rows,
         # and then backwards with zeros.
     ).fillna(method='ffill').fillna(value=0)
+
+    # In order to show the future values correctly (as nothing), we build up a
+    # second DataFrame which a larger Index if necessary.
+    if (camp.start_date > graph_end_date):
+        dr2 = pd.date_range(start=graph_start_date,
+                            end=camp.start_date)
+        df = pd.DataFrame(index=dr2, data=df)
     return df
 
 
