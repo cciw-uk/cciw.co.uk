@@ -4,7 +4,7 @@ from django.forms.forms import BoundField
 from django.utils.html import format_html
 
 from cciw.bookings.models import Booking, BookingAccount, Price
-from cciw.cciwmain.common import get_thisyear
+from cciw.cciwmain import common
 from cciw.cciwmain.forms import CciwFormMixin
 from cciw.cciwmain.models import Camp
 
@@ -100,7 +100,7 @@ class FixPriceMixin(object):
     """
     def fix_price_choices(self):
         price_choices = self.fields['price_type'].choices
-        year = get_thisyear()
+        year = common.get_thisyear()
         prices = dict((p.price_type, p.price) for p in Price.objects.filter(year=year))
 
         for i, (price_type, label) in enumerate(price_choices):
@@ -138,7 +138,7 @@ class AddPlaceForm(migrate_address_form('address', 'contact_address', 'gp_addres
                                availability=availability_msg,
                                )
         self.fields['camp'].choices = [(c.id, render_camp(c))
-                                       for c in Camp.objects.filter(year=get_thisyear())]
+                                       for c in Camp.objects.filter(year=common.get_thisyear())]
         self.fix_price_choices()
 
     class Meta:

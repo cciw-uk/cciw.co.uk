@@ -2,8 +2,8 @@ from datetime import date
 
 from django.contrib.sites.models import Site as DjangoSite
 
-from cciw.cciwmain.models import Site, Camp, Person, CampName
-from cciw.sitecontent.models import MenuLink, HtmlChunk
+from cciw.cciwmain.models import Camp, CampName, Person, Site
+from cciw.sitecontent.models import HtmlChunk, MenuLink
 
 
 class BasicSetupMixin(object):

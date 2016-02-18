@@ -1,22 +1,22 @@
 from datetime import timedelta
 
+import xlrd
 from django.contrib.auth import get_user_model
 from django.core import mail
-from django.test import TestCase
-import xlrd
 
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers.create import create_officer
 from cciw.officers.models import Application
 from cciw.officers.tests.base import ApplicationSetupMixin, ReferenceHelperMixin
-from cciw.officers.utils import officer_data_to_spreadsheet, camp_serious_slacker_list
+from cciw.officers.utils import camp_serious_slacker_list, officer_data_to_spreadsheet
 from cciw.utils.spreadsheet import ExcelFormatter
+from cciw.utils.tests.base import TestBase
 
 User = get_user_model()
 
 
-class TestCreate(TestCase):
+class TestCreate(TestBase):
 
     def test_create(self):
         user = create_officer("Joe", "Bloggs", "joebloggs@gmail.com")
@@ -27,7 +27,7 @@ class TestCreate(TestCase):
         self.assertEqual(user.last_login, None)
 
 
-class TestExport(ApplicationSetupMixin, TestCase):
+class TestExport(ApplicationSetupMixin, TestBase):
 
     def test_export_no_application(self):
         """
@@ -83,7 +83,7 @@ class TestExport(ApplicationSetupMixin, TestCase):
         self.assertTrue(app.address_firstline in wksh.col_values(4))
 
 
-class TestSlackers(BasicSetupMixin, ReferenceHelperMixin, TestCase):
+class TestSlackers(BasicSetupMixin, ReferenceHelperMixin, TestBase):
 
     def test_serious_slackers(self):
         camp1 = self.default_camp_1

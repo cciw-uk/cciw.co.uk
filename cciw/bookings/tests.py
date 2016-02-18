@@ -4,16 +4,15 @@ from __future__ import unicode_literals
 import json
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+from unittest import mock
 
-import mock
 import vcr
 import xlrd
-from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail, signing
 from django.core.urlresolvers import reverse
-from django.test import TestCase
+from django.db import models
 from django.utils import timezone
 from django_dynamic_fixture import G
 
@@ -31,6 +30,7 @@ from cciw.officers.tests.base import (BOOKING_SEC, BOOKING_SEC_PASSWORD, BOOKING
                                       OfficersSetupMixin)
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
+from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.db import refresh
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
@@ -309,7 +309,7 @@ class BookingBaseMixin(object):
 # created the same way a user would.
 
 
-class TestBookingModels(CreatePricesMixin, CreateCampMixin, TestCase):
+class TestBookingModels(CreatePricesMixin, CreateCampMixin, TestBase):
 
     def test_camp_open_for_bookings(self):
         self.assertTrue(self.camp.open_for_bookings(self.today))
@@ -1720,7 +1720,7 @@ class TestPayReturnPoints(BookingBaseMixin, LogInMixin, WebTestBase):
         self.assertEqual(resp.status_code, 200)
 
 
-class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeadersMixin, TestCase):
+class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeadersMixin, TestBase):
 
     def test_receive_payment(self):
         # Late booking:
@@ -2125,7 +2125,7 @@ class TestLogOutSL(TestLogOutBase, SeleniumBase):
     pass
 
 
-class TestExpireBookingsCommand(CreatePlaceModelMixin, TestCase):
+class TestExpireBookingsCommand(CreatePlaceModelMixin, TestBase):
 
     def test_just_created(self):
         """
@@ -2213,7 +2213,7 @@ class TestExpireBookingsCommand(CreatePlaceModelMixin, TestCase):
             self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
 
 
-class TestManualPayment(TestCase):
+class TestManualPayment(TestBase):
 
     def test_create(self):
         acc = BookingAccount.objects.create(email='foo@foo.com')
@@ -2249,7 +2249,7 @@ class TestManualPayment(TestCase):
         self.assertRaises(Exception, cp.save)
 
 
-class TestRefundPayment(TestCase):
+class TestRefundPayment(TestBase):
 
     def test_create(self):
         acc = BookingAccount.objects.create(email='foo@foo.com')
@@ -2285,7 +2285,7 @@ class TestRefundPayment(TestCase):
         self.assertRaises(Exception, cp.save)
 
 
-class TestCancel(CreatePlaceModelMixin, TestCase):
+class TestCancel(CreatePlaceModelMixin, TestBase):
     """
     Tests covering what happens when a user cancels.
     """
@@ -2309,7 +2309,7 @@ class TestCancel(CreatePlaceModelMixin, TestCase):
         self.assertEqual(acc.get_balance(), place.amount_due)
 
 
-class TestCancelFullRefund(CreatePlaceModelMixin, TestCase):
+class TestCancelFullRefund(CreatePlaceModelMixin, TestBase):
     """
     Tests covering what happens when CCIW cancels a camp,
     using 'full refund'.
@@ -2334,7 +2334,7 @@ class TestCancelFullRefund(CreatePlaceModelMixin, TestCase):
         self.assertEqual(acc.get_balance(), place.amount_due)
 
 
-class TestEarlyBird(CreatePlaceModelMixin, TestCase):
+class TestEarlyBird(CreatePlaceModelMixin, TestBase):
 
     def test_expected_amount_due(self):
         self.create_place()
@@ -2393,7 +2393,7 @@ class TestEarlyBird(CreatePlaceModelMixin, TestCase):
         self.assertIn("£10", mails[0].body)
 
 
-class TestExportPlaces(CreatePlaceModelMixin, TestCase):
+class TestExportPlaces(CreatePlaceModelMixin, TestBase):
 
     def test_summary(self):
         self.create_place()
@@ -2429,7 +2429,7 @@ class TestExportPlaces(CreatePlaceModelMixin, TestCase):
         self.assertEqual(wksh_bdays.cell(1, 3).value, "12")
 
 
-class TestBookingModel(CreatePlaceModelMixin, TestCase):
+class TestBookingModel(CreatePlaceModelMixin, TestBase):
 
     def test_need_approving(self):
         self.create_place()

@@ -1,13 +1,14 @@
-from datetime import timedelta, datetime, date
+from datetime import date, datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django_dynamic_fixture import G
 from django.utils import timezone
+from django_dynamic_fixture import G
 
-from cciw.auth import BOOKING_SECRETARY_GROUP_NAME, LEADER_GROUP_NAME
+from cciw.auth import BOOKING_SECRETARY_GROUP_NAME
 from cciw.cciwmain.tests.base import BasicSetupMixin
+from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.officers.models import Application, Reference
 
 User = get_user_model()
@@ -52,51 +53,6 @@ class OfficersSetupMixin(BasicSetupMixin):
         self.officer_user.set_password(OFFICER_PASSWORD)
         self.officer_user.save()
 
-        self.leaders_group = G(Group,
-                               name=LEADER_GROUP_NAME,
-                               permissions=[
-                                   perm("add_application",
-                                        "officers",
-                                        "application"),
-                                   perm("change_application",
-                                        "officers",
-                                        "application"),
-                                   perm("delete_application",
-                                        "officers",
-                                        "application"),
-                                   perm("change_camp",
-                                        "cciwmain",
-                                        "camp"),
-                                   perm("add_person",
-                                        "cciwmain",
-                                        "person"),
-                                   perm("change_person",
-                                        "cciwmain",
-                                        "person"),
-                                   perm("delete_person",
-                                        "cciwmain",
-                                        "person"),
-                                   perm("add_reference",
-                                        "officers",
-                                        "reference"),
-                                   perm("change_reference",
-                                        "officers",
-                                        "reference"),
-                                   perm("delete_reference",
-                                        "officers",
-                                        "reference"),
-                                   perm("add_user",
-                                        "accounts",
-                                        "user"),
-                                   perm("change_user",
-                                        "accounts",
-                                        "user"),
-                                   perm("delete_user",
-                                        "accounts",
-                                        "user")
-                               ],
-                               )
-
         self.leader_user = G(User,
                              username=LEADER_USERNAME,
                              first_name="Dave",
@@ -105,7 +61,6 @@ class OfficersSetupMixin(BasicSetupMixin):
                              is_superuser=False,
                              is_staff=True,
                              email=LEADER_EMAIL,
-                             groups=[self.leaders_group],
                              permissions=[])
         self.leader_user.set_password(LEADER_PASSWORD)
         self.leader_user.save()
@@ -459,15 +414,6 @@ class ReferenceHelperMixin(object):
                  )
 
 
-class ReferenceSetupMixin(ReferenceHelperMixin, ApplicationSetupMixin):
-
-    def setUp(self):
-        super(ReferenceSetupMixin, self).setUp()
-        self.reference1_1 = self.create_complete_reference(self.application1.referees[0])
-        self.application1.referees[1].log_request_made(None, timezone.now())
-        self.application2.referees[1].log_request_made(None, timezone.now())
-
-
 class CurrentCampsMixin(object):
     def setUp(self):
         super(CurrentCampsMixin, self).setUp()
@@ -479,3 +425,12 @@ class CurrentCampsMixin(object):
         self.default_camp_2.start_date = date.today() + timedelta(100)
         self.default_camp_2.end_date = date.today() + timedelta(107)
         self.default_camp_2.save()
+
+
+class ReferenceSetupMixin(ReferenceHelperMixin, set_thisyear(2000), ApplicationSetupMixin):
+
+    def setUp(self):
+        super(ReferenceSetupMixin, self).setUp()
+        self.reference1_1 = self.create_complete_reference(self.application1.referees[0])
+        self.application1.referees[1].log_request_made(None, timezone.now())
+        self.application2.referees[1].log_request_made(None, timezone.now())

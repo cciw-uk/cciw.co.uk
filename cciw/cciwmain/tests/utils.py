@@ -1,5 +1,7 @@
-from cciw.cciwmain.common import get_thisyear
+from unittest import mock
 from django.contrib.sites.models import Site
+
+from cciw.cciwmain import common
 
 
 def init_query_caches():
@@ -8,7 +10,7 @@ def init_query_caches():
 
     This is useful to improve isolation of tests that check the number of queries used.
     """
-    get_thisyear()
+    common.get_thisyear()
     Site.objects.get_current()
 
 
@@ -24,3 +26,32 @@ class FuzzyInt(int):
 
     def __repr__(self):
         return "[%d, %d]" % (self.lowest, self.highest)
+
+
+def set_thisyear(year):
+    """
+    Return mixin that monkey patches get_thisyear in tests
+    """
+    # This relies on modules doing:
+    #
+    #   from cciw.cciwmain import common
+    #   ...
+    #   common.get_thisyear()
+    #
+    # rather than:
+    #
+    #   from cciw.cciwmain.common import get_thisyear
+
+    class ThisYearMixin(object):
+        def setUp(self):
+            super(ThisYearMixin, self).setUp()
+            thisyear_patcher = mock.patch('cciw.cciwmain.common.get_thisyear')
+            mocked = thisyear_patcher.start()
+            mocked.return_value = year
+            self.thisyear_patcher = thisyear_patcher
+
+        def tearDown(self):
+            self.thisyear_patcher.stop()
+            super(ThisYearMixin, self).tearDown()
+
+    return ThisYearMixin

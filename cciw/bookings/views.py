@@ -199,7 +199,8 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_INFO_COMPLETE, PRICE
                                   REQUIRED_PRICE_TYPES, Booking, BookingAccount, Price, any_bookings_possible,
                                   book_basket_now, early_bird_is_available, get_early_bird_cutoff_date, is_booking_open,
                                   is_booking_open_thisyear)
-from cciw.cciwmain.common import AjaxFormValidation, CciwBaseView, get_current_domain, get_thisyear
+from cciw.cciwmain import common
+from cciw.cciwmain.common import AjaxFormValidation, CciwBaseView, get_current_domain
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.utils.views import user_passes_test_improved
@@ -274,7 +275,7 @@ class BookingIndex(CciwBaseView):
 
     def handle(self, request):
         ensure_booking_acount_attr(request)
-        year = get_thisyear()
+        year = common.get_thisyear()
         bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
         context = {}
         if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath)):
@@ -315,7 +316,7 @@ class BookingIndex(CciwBaseView):
             'price_deposit': getp(PRICE_DEPOSIT),
             'price_early_bird_discount': early_bird_discount,
             'booking_open': booking_open,
-            'any_bookings_possible': any_bookings_possible(get_thisyear()),
+            'any_bookings_possible': any_bookings_possible(common.get_thisyear()),
         })
         return self.render(context)
 
@@ -325,7 +326,7 @@ def next_step(account):
     Returns a redirect to the next obvious step for this account.
     """
     if account.has_account_details():
-        bookings = account.bookings.for_year(get_thisyear())
+        bookings = account.bookings.for_year(common.get_thisyear())
         if (bookings.in_basket() | bookings.on_shelf() | bookings.booked()).exists():
             return HttpResponseRedirect(reverse('cciw-bookings-account_overview'))
         else:
@@ -362,7 +363,7 @@ class BookingStart(BookingLogInBase):
             form = self.form_class()
 
         return self.render({'form': form,
-                            'any_bookings_possible': any_bookings_possible(get_thisyear()),
+                            'any_bookings_possible': any_bookings_possible(common.get_thisyear()),
                             })
 
 
@@ -458,7 +459,7 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
                      'stage': 'place'}
 
     def handle(self, request, *args, **kwargs):
-        year = get_thisyear()
+        year = common.get_thisyear()
         now = timezone.now()
 
         if request.method == "POST" and not is_booking_open_thisyear():
@@ -734,7 +735,7 @@ class BookingListBookings(CciwBaseView):
     magic_context = {'stage': 'list'}
 
     def handle(self, request):
-        year = get_thisyear()
+        year = common.get_thisyear()
         now = timezone.now()
         bookings = request.booking_account.bookings
         # NB - use lists here, not querysets, so that both state_token and book_now
@@ -907,7 +908,7 @@ class BookingPay(BookingPayBase):
 
         # This view should be accessible even if prices for the current year are
         # not defined.
-        price_deposit = list(Price.objects.filter(year=get_thisyear(), price_type=PRICE_DEPOSIT))
+        price_deposit = list(Price.objects.filter(year=common.get_thisyear(), price_type=PRICE_DEPOSIT))
         if len(price_deposit) == 0:
             price_deposit = None
         else:
@@ -954,7 +955,7 @@ class BookingAccountOverview(CciwBaseView):
 
         c = {}
         acc = self.request.booking_account
-        year = get_thisyear()
+        year = common.get_thisyear()
         bookings = acc.bookings.for_year(year)
         c['confirmed_places'] = bookings.confirmed()
         c['unconfirmed_places'] = bookings.unconfirmed()

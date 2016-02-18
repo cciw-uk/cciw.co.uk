@@ -9,7 +9,7 @@ from django.utils.http import is_safe_url
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO_COMPLETE, AccountTransferPayment,
                                   Booking, BookingAccount, ManualPayment, Payment, Price, RefundPayment)
-from cciw.cciwmain.common import get_thisyear
+from cciw.cciwmain import common
 
 
 FIRST_BOOKING_YEAR = 2012
@@ -160,7 +160,7 @@ class BookingsYearFilter(admin.SimpleListFilter):
     parameter_name = "bookings_year"
 
     def lookups(self, request, model_admin):
-        vals = range(get_thisyear(), FIRST_BOOKING_YEAR - 1, -1)
+        vals = range(common.get_thisyear(), FIRST_BOOKING_YEAR - 1, -1)
         return [(str(v), str(v)) for v in vals]
 
     def queryset(self, request, queryset):
@@ -232,7 +232,7 @@ class YearFilter(admin.SimpleListFilter):
     def lookups(self, request, model_admin):
         # No easy way to create efficient query with Django's ORM,
         # so hard code first year we did bookings online:
-        vals = range(get_thisyear(), FIRST_BOOKING_YEAR - 1, -1)
+        vals = range(common.get_thisyear(), FIRST_BOOKING_YEAR - 1, -1)
         return [(str(v), str(v)) for v in vals]
 
     def queryset(self, request, queryset):

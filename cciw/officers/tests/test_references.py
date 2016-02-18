@@ -7,7 +7,7 @@ from cciw.officers.tests.base import ReferenceSetupMixin
 from cciw.officers.views import add_previous_references, close_enough_referee_match
 from cciw.utils.tests.webtest import WebTestBase
 
-from .base import OFFICER, LEADER_EMAIL, LEADER
+from .base import LEADER, LEADER_EMAIL, OFFICER
 
 
 class ReferencesPage(ReferenceSetupMixin, WebTestBase):

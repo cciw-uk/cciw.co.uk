@@ -1,12 +1,12 @@
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 
-from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.models import Site
+from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.sitecontent.models import HtmlChunk
+from cciw.utils.tests.base import TestBase
 
 
-class SitePage(BasicSetupMixin, TestCase):
+class SitePage(BasicSetupMixin, TestBase):
 
     def test_site_page(self):
         site = Site.objects.all()[0]

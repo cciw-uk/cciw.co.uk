@@ -2,7 +2,6 @@ from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 
 from cciw.cciwmain.models import Camp, CampName, Site
 from cciw.cciwmain.tests.base import BasicSetupMixin
@@ -10,11 +9,12 @@ from cciw.officers import applications
 from cciw.officers.models import Application
 from cciw.officers.tests.base import (OFFICER_PASSWORD, OFFICER_USERNAME, ApplicationSetupMixin, CurrentCampsMixin,
                                       OfficersSetupMixin)
+from cciw.utils.tests.base import TestBase
 
 User = get_user_model()
 
 
-class ApplicationModel(ApplicationSetupMixin, TestCase):
+class ApplicationModel(ApplicationSetupMixin, TestBase):
 
     def test_referees(self):
         for appid in [1, 2, 3]:
@@ -23,7 +23,7 @@ class ApplicationModel(ApplicationSetupMixin, TestCase):
             self.assertEqual(app.referees[1], app.referee_set.get(referee_number=2))
 
 
-class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, TestCase):
+class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, TestBase):
 
     _create_button = """<input type="submit" name="new" value="Create" """
     _edit_button = """<input type="submit" name="edit" value="Continue" """
@@ -88,7 +88,7 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, TestCase):
         self.assertEqual(list(self.user.applications.all()), [app])
 
 
-class ApplicationUtils(BasicSetupMixin, TestCase):
+class ApplicationUtils(BasicSetupMixin, TestBase):
 
     def test_date_submitted_logic(self):
 

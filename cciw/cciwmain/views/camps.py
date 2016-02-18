@@ -5,7 +5,7 @@ from django.http import Http404
 from django.shortcuts import render
 from django.utils.html import format_html
 
-from cciw.cciwmain.common import create_breadcrumb, get_thisyear
+from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 
 
@@ -57,7 +57,7 @@ def detail(request, year, slug):
     c['title'] = camp.nice_name + camp.bracketted_old_name
 
     if camp.is_past():
-        c['breadcrumb'] = create_breadcrumb(
+        c['breadcrumb'] = common.create_breadcrumb(
             [format_html('<a href="{0}">See all camps</a>',
                          reverse("cciw-cciwmain-camps_index"))
              ]
@@ -70,6 +70,7 @@ def detail(request, year, slug):
 
 
 def thisyear(request):
-    c = dict(title="Camps %d" % get_thisyear())
-    c['camps'] = Camp.objects.filter(year=get_thisyear()).order_by('site__short_name', 'start_date')
+    year = common.get_thisyear()
+    c = dict(title="Camps %d" % year)
+    c['camps'] = Camp.objects.filter(year=year).order_by('site__short_name', 'start_date')
     return render(request, 'cciw/camps/thisyear.html', c)

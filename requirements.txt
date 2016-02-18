@@ -37,7 +37,6 @@ lockfile==0.10.2
 lxml==3.3.5
 Markdown==2.3.1
 mccabe==0.3.1
-mock==1.0.1
 nodeenv==0.13.6
 numpy==1.9.2
 orderedmultidict==0.7.5

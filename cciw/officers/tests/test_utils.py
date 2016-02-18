@@ -1,10 +1,9 @@
-from django.test import TestCase
-
-from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
+from cciw.officers.utils import camp_officer_list, camp_slacker_list
+from cciw.utils.tests.base import TestBase
 
 
-class UtilsTests(ExtraOfficersSetupMixin, TestCase):
+class UtilsTests(ExtraOfficersSetupMixin, TestBase):
 
     def test_camp_officer_list(self):
         c = self.default_camp_1

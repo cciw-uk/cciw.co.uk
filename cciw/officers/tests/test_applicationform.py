@@ -4,11 +4,11 @@ from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core.urlresolvers import reverse
 
-from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.cciwmain.models import Camp
-from cciw.officers.models import Application
+from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.officers.applications import application_difference
-from cciw.officers.tests.base import OFFICER, LEADER, OfficersSetupMixin, CurrentCampsMixin
+from cciw.officers.models import Application
+from cciw.officers.tests.base import LEADER, OFFICER, CurrentCampsMixin, OfficersSetupMixin
 from cciw.utils.tests.webtest import WebTestBase
 
 User = get_user_model()

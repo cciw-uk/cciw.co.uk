@@ -1,16 +1,16 @@
 from datetime import date
 
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 
-from cciw.cciwmain.common import get_thisyear
+from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import FuzzyInt, init_query_caches
 from cciw.sitecontent.models import HtmlChunk
+from cciw.utils.tests.base import TestBase
 
 
-class CampModel(TestCase):
+class CampModel(TestBase):
 
     def setUp(self):
         l1 = Person.objects.create(name="John")
@@ -71,7 +71,7 @@ class CampModel(TestCase):
         self.assertEqual(self.camp_2.next_camp, None)
 
 
-class ThisyearPage(BasicSetupMixin, TestCase):
+class ThisyearPage(BasicSetupMixin, TestBase):
 
     def setUp(self):
         super().setUp()
@@ -80,7 +80,7 @@ class ThisyearPage(BasicSetupMixin, TestCase):
 
     def test_get(self):
         init_query_caches()
-        y = get_thisyear()
+        y = common.get_thisyear()
         site = Site.objects.get(id=1)
 
         for i in range(1, 20):

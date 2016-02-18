@@ -2,12 +2,12 @@ from io import StringIO
 
 from django.contrib.auth import get_user_model
 from django.core import mail
-from django.test import TestCase
 
 import cciw.mail.lists
 from cciw.mail.lists import MailAccessDenied, NoSuchList, extract_email_addresses, handle_mail, users_for_address
 from cciw.officers.email import handle_reference_bounce
-from cciw.officers.tests.base import ExtraOfficersSetupMixin, BasicSetupMixin
+from cciw.officers.tests.base import BasicSetupMixin, ExtraOfficersSetupMixin
+from cciw.utils.tests.base import TestBase
 
 User = get_user_model()
 
@@ -43,7 +43,7 @@ class DummyBackend(object):
         pass
 
 
-class MailTests(ExtraOfficersSetupMixin, TestCase):
+class MailTests(ExtraOfficersSetupMixin, TestBase):
 
     def setUp(self):
         super(MailTests, self).setUp()
@@ -113,7 +113,7 @@ class MailTests(ExtraOfficersSetupMixin, TestCase):
                          ['A.Body@example.com'])
 
 
-class ReferenceBounceTest(BasicSetupMixin, TestCase):
+class ReferenceBounceTest(BasicSetupMixin, TestBase):
 
     BOUNCE_EMAIL_GOOD = """
 From - Mon May 11 21:38:48 2015

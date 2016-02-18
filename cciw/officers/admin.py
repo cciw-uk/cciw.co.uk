@@ -1,3 +1,4 @@
+
 import datetime
 
 from autocomplete_light import shortcuts as autocomplete_light
@@ -13,8 +14,8 @@ from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
 from cciw.officers import widgets
 from cciw.officers.fields import ExplicitBooleanField
-from cciw.officers.models import (REFEREE_DATA_FIELDS, REFEREE_NUMBERS, Application, CRBApplication, CRBFormLog, Invitation, Referee,
-                                  Reference)
+from cciw.officers.models import (REFEREE_DATA_FIELDS, REFEREE_NUMBERS, Application, CRBApplication, CRBFormLog,
+                                  Invitation, Referee, Reference)
 from cciw.utils.views import close_window_response
 
 officer_autocomplete_field = lambda: autocomplete_light.ModelChoiceField('user')

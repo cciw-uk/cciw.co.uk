@@ -2,15 +2,15 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.sitecontent.models import HtmlChunk
+from cciw.utils.tests.base import TestBase
 
 CONTACT_US_URL = reverse("cciw-cciwmain-contact_us")
 
 
-class ContactUsPage(BasicSetupMixin, TestCase):
+class ContactUsPage(BasicSetupMixin, TestBase):
 
     def setUp(self):
         super(ContactUsPage, self).setUp()

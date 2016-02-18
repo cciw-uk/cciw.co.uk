@@ -1,11 +1,10 @@
-from django.test import TestCase
-
 from cciw.cciwmain.models import Camp
 from cciw.officers.stats import get_camp_officer_stats, get_camp_officer_stats_trend
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
+from cciw.utils.tests.base import TestBase
 
 
-class StatsTests(ExtraOfficersSetupMixin, TestCase):
+class StatsTests(ExtraOfficersSetupMixin, TestBase):
 
     # Very basic tests here, should expand
 

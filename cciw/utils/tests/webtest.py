@@ -5,8 +5,9 @@ from urllib.parse import urlparse
 from compressor.filters import CompilerFilter
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 from django.test.utils import override_settings
+
+from cciw.utils.tests.base import TestBase, TestBaseMixin
 from django_functest import FuncSeleniumMixin, FuncWebTestMixin, ShortcutLoginMixin
 
 TESTS_SHOW_BROWSER = os.environ.get('TESTS_SHOW_BROWSER', '')
@@ -38,7 +39,7 @@ class CommonMixin(object):
 
 @override_settings(COMPRESS_PRECOMPILERS=[('text/less', 'cciw.utils.tests.webtest.DummyLessCssFilter')],
                    )
-class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestCase):
+class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
     """
     Base class for integration tests that need more than Django's test Client.
     """
@@ -55,7 +56,7 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestCase):
 
 
 @unittest.skipIf(os.environ.get('SKIP_SELENIUM_TESTS'), "Skipping Selenium tests")
-class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, StaticLiveServerTestCase):
+class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseMixin, StaticLiveServerTestCase):
     """
     Base class for Selenium tests.
     """

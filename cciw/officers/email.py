@@ -1,22 +1,23 @@
-from datetime import timedelta
-from email.mime.base import MIMEBase
 import email.parser
 import email.utils
 import logging
+from datetime import timedelta
+from email.mime.base import MIMEBase
 
-from cciw.cciwmain import common
-from cciw.cciwmain.models import Camp
-from cciw.officers.applications import application_to_text, application_to_rtf, application_rtf_filename, application_difference, camps_for_application
-from cciw.officers.email_utils import send_mail_with_attachments, formatted_email
-from cciw.officers.references import reference_to_text
 from django.conf import settings
 from django.contrib import messages
 from django.core import signing
-from django.core.mail import send_mail, EmailMessage
+from django.core.mail import EmailMessage, send_mail
 from django.core.urlresolvers import reverse
 from django.utils.crypto import salted_hmac
 from django.utils.http import urlquote
 
+from cciw.cciwmain import common
+from cciw.cciwmain.models import Camp
+from cciw.officers.applications import (application_difference, application_rtf_filename, application_to_rtf,
+                                        application_to_text, camps_for_application)
+from cciw.officers.email_utils import formatted_email, send_mail_with_attachments
+from cciw.officers.references import reference_to_text
 
 logger = logging.getLogger(__name__)
 

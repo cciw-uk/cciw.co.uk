@@ -1,13 +1,13 @@
 # -*- coding: utf8 -*-
 
 from django.contrib.auth.models import Permission
-from django.test import TestCase
 
 from cciw.accounts.models import User
 from cciw.cciwmain.tests.base import BasicSetupMixin
+from cciw.utils.tests.base import TestBase
 
 
-class HtmlChunkPage(BasicSetupMixin, TestCase):
+class HtmlChunkPage(BasicSetupMixin, TestBase):
 
     def setUp(self):
         super().setUp()
