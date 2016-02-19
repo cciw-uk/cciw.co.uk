@@ -318,7 +318,6 @@ def fake_migrations_mode():
 def update_database():
     with virtualenv(target.VENV_DIR):
         with cd(target.SRC_DIR):
-            run_venv("./manage.py migrate thumbnail --fake-initial")
             if getattr(env, 'fake_migrations', False):
                 run_venv("./manage.py migrate --fake --noinput")
             else:
