@@ -102,4 +102,11 @@ $(document).ready(function () {
         }
     });
 
+    var setSaveAndContinueBtn = function () {
+        $('input[name=_continue]').toggle(!$('input#id_finished').is(':checked'))
+    };
+
+    setSaveAndContinueBtn();
+    $('input#id_finished').on('change', setSaveAndContinueBtn);
+
 });
