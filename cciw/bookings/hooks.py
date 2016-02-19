@@ -1,5 +1,6 @@
 import re
 
+from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from paypal.standard.ipn.signals import invalid_ipn_received, valid_ipn_received
 
@@ -19,6 +20,10 @@ def unrecognised_payment(sender=None, **kwargs):
 
 def paypal_payment_received(sender, **kwargs):
     ipn_obj = sender
+    if ipn_obj.receiver_email != settings.PAYPAL_RECEIVER_EMAIL:
+        unrecognised_payment(ipn_obj)
+        return
+
     m = re.match("account:(\d+);", ipn_obj.custom)
     if m is None:
         unrecognised_payment(ipn_obj)

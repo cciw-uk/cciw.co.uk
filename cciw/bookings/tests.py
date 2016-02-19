@@ -39,6 +39,7 @@ User = get_user_model()
 
 class IpnMock(object):
     payment_status = 'Completed'
+    receiver_email = settings.PAYPAL_RECEIVER_EMAIL
 
 
 # == Mixins to reduce duplication ==
@@ -1820,7 +1821,8 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
                             custom="account:%s;" % account.id,
                             ipaddress='127.0.0.1',
                             payment_status='Completed',
-                            txn_id='1'
+                            txn_id='1',
+                            receiver_email=settings.PAYPAL_RECEIVER_EMAIL,
                             )
             defaults.update(kwargs)
             return PayPalIPN.objects.create(**defaults)
