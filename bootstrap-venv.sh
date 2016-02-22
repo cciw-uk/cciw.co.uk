@@ -6,7 +6,7 @@ pyvenv-3.4 ../cciw-venv
 . ../cciw-venv/bin/activate
 
 pip install --upgrade pip
-pip install numpy==1.9.2
+pip install numpy
 pip install -r requirements.txt
 
 test -f $VIRTUAL_ENV/bin/node || nodeenv -p --node=5.4.0

@@ -176,7 +176,7 @@ def install_dependencies():
             run_venv("test -d ~/.pip_install_tmp || mkdir ~/.pip_install_tmp")
 
             # Need to install numpy first:
-            run_venv("pip install numpy==1.9.2")
+            run_venv("pip install numpy")
             run_venv("TMPDIR=~/.pip_install_tmp pip install -q -r requirements.txt")
 
             # Node dependencies
