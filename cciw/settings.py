@@ -82,7 +82,8 @@ LOGIN_URL = "/officers/"
 ALLOWED_HOSTS = [".cciw.co.uk"]
 
 INSTALLED_APPS = [
-    'autocomplete_light',
+    'dal',
+    'dal_select2',
     'django.contrib.auth',
     'django.contrib.admin',
     'django.contrib.contenttypes',

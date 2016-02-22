@@ -1,4 +1,4 @@
-from autocomplete_light import shortcuts as autocomplete_light
+from dal import autocomplete
 from django import forms
 from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
@@ -13,6 +13,9 @@ from cciw.cciwmain import common
 
 
 FIRST_BOOKING_YEAR = 2012
+
+
+bookingaccount_autocomplete_widget = lambda: autocomplete.ModelSelect2(url='bookingaccount-autocomplete')
 
 
 class ReturnToAdminMixin(object):
@@ -256,7 +259,7 @@ class ConfirmedFilter(admin.SimpleListFilter):
             return queryset
 
 
-class BookingAdminForm(autocomplete_light.ModelForm):
+class BookingAdminForm(forms.ModelForm):
     manual_payment_amount = forms.DecimalField(label='Amount',
                                                decimal_places=2, max_digits=10,
                                                required=False)
@@ -267,6 +270,9 @@ class BookingAdminForm(autocomplete_light.ModelForm):
     class Meta:
         model = Booking
         fields = "__all__"
+        widgets = {
+            'account': bookingaccount_autocomplete_widget()
+        }
 
 
 class BookingAdmin(admin.ModelAdmin):
@@ -406,12 +412,20 @@ class BookingAdmin(admin.ModelAdmin):
         return retval
 
 
-class ManualPaymentAdminForm(autocomplete_light.ModelForm):
-    pass
+class ManualPaymentAdminForm(forms.ModelForm):
+
+    class Meta:
+        widgets = {
+            'account': bookingaccount_autocomplete_widget()
+        }
 
 
-class RefundPaymentAdminForm(autocomplete_light.ModelForm):
-    pass
+class RefundPaymentAdminForm(forms.ModelForm):
+
+    class Meta:
+        widgets = {
+            'account': bookingaccount_autocomplete_widget()
+        }
 
 
 class ManualPaymentAdminBase(ReturnToAdminMixin, admin.ModelAdmin):
@@ -437,10 +451,14 @@ class RefundPaymentAdmin(ManualPaymentAdminBase):
     form = RefundPaymentAdminForm
 
 
-class AccountTransferPaymentForm(autocomplete_light.ModelForm):
+class AccountTransferPaymentForm(forms.ModelForm):
     class Meta:
         model = AccountTransferPayment
         fields = '__all__'
+        widgets = {
+            'from_account': bookingaccount_autocomplete_widget(),
+            'to_account': bookingaccount_autocomplete_widget(),
+        }
 
 
 class AccountTransferPaymentAdmin(admin.ModelAdmin):

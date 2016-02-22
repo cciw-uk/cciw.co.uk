@@ -179,6 +179,7 @@ from datetime import timedelta
 from decimal import Decimal
 from functools import wraps
 
+from dal import autocomplete
 from django import forms
 from django.conf import settings
 from django.contrib import messages
@@ -964,6 +965,17 @@ class BookingAccountOverview(CciwBaseView):
         c['balance_due'] = acc.get_balance(allow_deposits=True)
         c['balance_full'] = acc.get_balance(allow_deposits=False)
         return self.render(c)
+
+
+class BookingAccountAutocomplete(autocomplete.Select2QuerySetView):
+    search_fields = ['name']
+
+    def get_queryset(self):
+        request = self.request
+        if request.user.is_authenticated and is_booking_secretary(request.user):
+            return BookingAccount.objects.order_by('name', 'address_post_code').filter(name__icontains=self.q)
+        else:
+            return BookingAccount.objects.none()
 
 
 index = BookingIndex.as_view()

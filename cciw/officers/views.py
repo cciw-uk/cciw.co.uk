@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 from functools import reduce
 from urllib.parse import urlparse
 
+from dal import autocomplete
 from django import forms
 from django.conf import settings
 from django.contrib import messages
@@ -1546,3 +1547,18 @@ def spreadsheet_response(formatter, filename):
                             content_type=formatter.mimetype)
     response['Content-Disposition'] = "attachment; filename={0}.{1}".format(filename, formatter.file_ext)
     return response
+
+
+class UserAutocomplete(autocomplete.Select2QuerySetView):
+
+    def get_result_label(self, user):
+        return "%s %s <%s>" % (user.first_name, user.last_name, user.email)
+
+    def get_queryset(self):
+        request = self.request
+        if request.user.is_authenticated() and is_camp_admin(request.user):
+            qs = User.objects.all().order_by('first_name', 'last_name', 'email')
+            return (qs.filter(first_name__istartswith=self.q) |
+                    qs.filter(last_name__istartswith=self.q))
+        else:
+            return User.objects.none()

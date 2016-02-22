@@ -21,9 +21,6 @@
                      // See also getCurrentAccountId in admin_booking.js
 
                      var val = $('#id_account').val();
-                     if (val !==null && val.length != undefined) {
-                         val = val[0]; // autocomplete_light makes val() return an array
-                     }
                      val = parseInt(val, 10);
                      // NaN madness
                      if (val == val) {

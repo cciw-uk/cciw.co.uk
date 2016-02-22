@@ -5,57 +5,12 @@ $(document).ready(function() {
     var getCurrentAccountId = function() {
         // See also getAccountId in add_place.js
         var val = $('#id_account').val();
-        if (val !== null && val.length !== undefined) {
-            val = val[0]; // autocomplete_light makes val() return an array
-        }
         val = parseInt(val, 10);
         // NaN madness
         if (val == val) {
             return val;
         } else {
             return undefined;
-        }
-    }
-
-    // For 'add another', we need slightly customised behaviour instead of showAddAnotherPopup
-    var showAddAnotherAccountPopup = function (ev) {
-        ev.preventDefault();
-        var name = 'id_account';
-        name = id_to_windowname(name);
-        var href = '/admin/bookings/bookingaccount/add/?_popup=1&name=' + encodeURIComponent($('#id_account-autocomplete').val());
-        var win = window.open(href, name, 'height=500,width=800,resizable=yes,scrollbars=yes');
-        win.focus();
-    }
-
-    var showEditAccountPopup = function (ev) {
-        ev.preventDefault();
-        var accountId = getCurrentAccountId();
-        if (accountId == null) {
-            alert("No account selected, cannot edit");
-            return;
-        }
-        var name = 'id_account';
-        name = id_to_windowname(name);
-        var href = '/admin/bookings/bookingaccount/change/' + getCurrentAccountId() + '/?_popup=1';
-        var win = window.open(href, name, 'height=500,width=800,resizable=yes,scrollbars=yes');
-        win.focus();
-    }
-
-    // // Hack: we need dismissAddAnotherPopup to do something different,
-    // // so we monkey patch it.
-
-    var originalDismissAddAnotherPopup = window.dismissAddAnotherPopup;
-    window.dismissAddAnotherPopup = function(win, newId, newRepr) {
-        var name = windowname_to_id(win.name);
-        var elem = document.getElementById(name);
-        if (name == 'id_account') {
-            // autocomplete_light seems to need the next line to avoid getting confused.
-            $('#id_account').append("<option value='tmpremove' selected='selected'>tmpremove</option>");
-            $('#id_account').append("<option value='" + newId + "' selected='selected'>" + newRepr + "</option>");
-            $("#id_account-wrapper").get(0).scrollIntoView(); // Fix a glitch with scrolling
-            win.close();
-        } else {
-            originalDismissAddAnotherPopup(win, newId, newRepr);
         }
     }
 
@@ -191,12 +146,6 @@ $(document).ready(function() {
     };
 
     // Page changes
-    $('div.field-account a.add-another').after(
-            '<a href="#" id="add_id_account"> New account </a> | ' +
-            '<a href="#" id="edit_id_account"> Edit </a>'
-    );
-    $("div.field-account a.add-another").remove();
-
     $('#id_first_name').parent().append('<input type="submit" class="use_existing_btn" value="Use previous data" style="display:none;">');
 
     $('#id_address').parent().append('<input type="submit" value="Copy address details from account"' +
@@ -208,8 +157,6 @@ $(document).ready(function() {
     $('#id_amount_due_auto').hide();
 
     // Wiring for event handlers
-    $('#add_id_account').click(showAddAnotherAccountPopup);
-    $('#edit_id_account').click(showEditAccountPopup);
 
     $('#id_use_account_for_camper').click(useAccountAddressForCamper);
     $('#id_use_account_for_contact').click(useAccountAddressForContact);

@@ -58,4 +58,8 @@ urlpatterns = [
     url(r'^bookings/booking-ages-stats-download/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.booking_ages_stats_download, name="cciw-officers-booking_ages_stats_download"),
     url(r'^bookings/booking-ages-stats-download/(?P<camps>\d{4}-[^/]+(,\d{4}-[^/]+)*)/$', views.booking_ages_stats_download, name="cciw-officers-booking_ages_stats_custom_download"),
 
+    # Autocomplete
+    url(r'^officer-autocomplete/$',
+        views.UserAutocomplete.as_view(), name='officer-autocomplete'),
+
 ]

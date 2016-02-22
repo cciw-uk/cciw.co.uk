@@ -1,7 +1,7 @@
 
 import datetime
 
-from autocomplete_light import shortcuts as autocomplete_light
+from dal import autocomplete
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin
@@ -18,7 +18,7 @@ from cciw.officers.models import (REFEREE_DATA_FIELDS, REFEREE_NUMBERS, Applicat
                                   Invitation, Referee, Reference)
 from cciw.utils.views import close_window_response
 
-officer_autocomplete_field = lambda: autocomplete_light.ModelChoiceField('user')
+officer_autocomplete_widget = lambda: autocomplete.ModelSelect2(url='officer-autocomplete')
 
 
 referee_field = lambda n, f: 'referee{0}_{1}'.format(n, f)
@@ -26,9 +26,10 @@ referee_field = lambda n, f: 'referee{0}_{1}'.format(n, f)
 
 class ApplicationAdminModelForm(forms.ModelForm):
 
-    officer = officer_autocomplete_field()
-
-    # Also added dynamically below
+    class Meta:
+        widgets = {
+            'officer': officer_autocomplete_widget(),
+        }
 
     def __init__(self, *args, **kwargs):
         try:
@@ -65,7 +66,10 @@ class ApplicationAdminModelForm(forms.ModelForm):
 
         app_finished = self.cleaned_data.get('finished', False)
         user = threadlocals.get_current_user()
-        officer = self.cleaned_data.get('officer', None)
+        if can_manage_application_forms(user):
+            officer = self.cleaned_data.get('officer', None)
+        else:
+            officer = self.instance.officer
 
         editing_old = self.instance.pk is not None and self.instance.finished
         if editing_old and not can_manage_application_forms(user):
@@ -392,7 +396,10 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
 
 class CRBApplicationModelForm(forms.ModelForm):
 
-    officer = officer_autocomplete_field()
+    class Meta:
+        widgets = {
+            'officer': officer_autocomplete_widget(),
+        }
 
 
 class CRBApplicationAdmin(admin.ModelAdmin):
@@ -418,7 +425,10 @@ class CRBApplicationAdmin(admin.ModelAdmin):
 
 class CRBFormLogModelForm(forms.ModelForm):
 
-    officer = officer_autocomplete_field()
+    class Meta:
+        widgets = {
+            'officer': officer_autocomplete_widget(),
+        }
 
 
 class CRBFormLogAdmin(admin.ModelAdmin):
@@ -453,7 +463,10 @@ Membership = Group.user_set.through
 
 class MembershipAdminForm(forms.ModelForm):
 
-    user = officer_autocomplete_field()
+    class Meta:
+        widgets = {
+            'user': officer_autocomplete_widget(),
+        }
 
 
 class MembershipInline(admin.TabularInline):

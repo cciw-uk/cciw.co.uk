@@ -961,7 +961,6 @@ def fix_autocomplete_fields(field_names):
                                                                                 '[name={0}]'.format(field_name))
                         # Modify the select widget so that it has the value we need
                         form.fields[field_name][0].options.append((str(value), False, ''))
-                        value = [value]  # autocomplete generates a multi select
                         new_fields[field_name] = value
                 else:
                     new_fields[field_name] = value
