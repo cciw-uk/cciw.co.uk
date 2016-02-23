@@ -926,8 +926,10 @@ class BookingPay(BookingPayBase):
             'price_deposit': price_deposit,
             'paypal_form': mk_paypal_form(acc, balance_due, protocol, domain),
             'paypal_form_full': mk_paypal_form(acc, balance_full, protocol, domain),
-            'paypal_form_custom': mk_paypal_form(acc, balance_due, protocol, domain,
-                                                 min_amount=balance_due,
+            'paypal_form_custom': mk_paypal_form(acc,
+                                                 max(0, balance_due),
+                                                 protocol, domain,
+                                                 min_amount=max(balance_due, 0),
                                                  max_amount=balance_full)
         }
         return self.render(c)
