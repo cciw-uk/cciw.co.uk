@@ -38,6 +38,7 @@ if known_args.fast:
 if len(test_args) == 0:
     test_args = ["cciw.cciwmain.tests",
                  "cciw.officers.tests",
+                 "cciw.mail.tests",
                  "cciw.bookings.tests"]
 
 if known_args.coverage:
