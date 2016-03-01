@@ -4,9 +4,10 @@ from unittest import mock
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
+from cciw.officers.tests.base import ExtraOfficersSetupMixin
 from cciw.utils.tests.base import TestBase
 
-from .lists import handle_all_mail
+from .lists import MailAccessDenied, NoSuchList, handle_all_mail, handle_mail, users_for_address
 
 
 def b(s):
@@ -57,9 +58,10 @@ def mock_imaplib(emails_in_inbox):
         def close():
             # Messages are only really deleted by IMAP
             # servers when the connection is closed.
-            for msg_id, flag_list in flags.items():
+            for msg_id, flag_list in list(flags.items()):
                 if "\\Deleted" in flag_list:
                     del msg_store[msg_id]
+                    del flags[msg_id]
             return ('OK', [b'Close completed.'])
 
         imap_connection = imap_class()
@@ -92,7 +94,7 @@ def mock_smtplib():
         yield conn
 
 
-class TestMailingLists(TestBase):
+class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
 
     def setUp(self):
         super(TestMailingLists, self).setUp()
@@ -106,7 +108,6 @@ class TestMailingLists(TestBase):
                             is_superuser=True)
 
     def test_handle_all_mail(self):
-
         with mock_imaplib([MSG1]) as m_i:
             with mock_smtplib() as m_s:
                 handle_all_mail()
@@ -130,6 +131,13 @@ class TestMailingLists(TestBase):
 
                 self.assertEqual(len(m_i.get_inbox()), 0)
 
+    def test_handle_all_mail_multiple(self):
+        with mock_imaplib([MSG1, MSG1, MSG1]) as m_i:
+            with mock_smtplib() as m_s:
+                handle_all_mail()
+                self.assertEqual(m_i.fetch.call_count, 3)
+                self.assertEqual(m_s.connection.sendmail.call_count, 6)
+
     def test_handle_all_mail_smtp_connection_error(self):
         """
         Test that if an SMTP connection error occurs, the email
@@ -147,6 +155,54 @@ class TestMailingLists(TestBase):
                     pass
                 self.assertEqual(len(m_i.get_inbox()), 1)
 
+    def test_users_for_address(self):
+        leader_user = self.leader_user
+
+        # non-existent
+        self.assertRaises(NoSuchList,
+                          lambda: users_for_address('no-such-list@cciw.co.uk',
+                                                    leader_user.email))
+
+        # camp-debug
+        self.assertEqual(sorted([u.email for u in
+                                 users_for_address('camp-debug@cciw.co.uk', 'anyone@gmail.com')]),
+                         ['admin1@admin.com', 'admin2@admin.com'])
+
+        # officers
+        self.assertRaises(MailAccessDenied,
+                          lambda: users_for_address('camp-2000-blue-officers@cciw.co.uk',
+                                                    'anyone@gmail.com'))
+
+        self.assertRaises(MailAccessDenied,
+                          lambda: users_for_address('camp-2000-blue-officers@cciw.co.uk',
+                                                    self.officer1.email))
+
+        self.assertEqual(set(users_for_address('camp-2000-blue-officers@cciw.co.uk',
+                                               leader_user.email)),
+                         {self.officer1,
+                          self.officer2,
+                          self.officer3})
+
+        # leaders
+        self.assertRaises(MailAccessDenied,
+                          lambda: users_for_address('camps-2000-leaders@cciw.co.uk',
+                                                    self.officer1.email))
+
+        self.assertEqual(set(users_for_address('camps-2000-leaders@cciw.co.uk',
+                                               leader_user.email)),
+                         {self.leader_user})
+
+    def test_handle_mail_permission_denied(self):
+        MSG = MSG1.replace(b'camp-debug@cciw.co.uk',
+                           b'camp-2000-blue-officers@cciw.co.uk')
+        with mock_smtplib() as m_s:
+            with mock.patch('cciw.mail.lists.send_mail') as send_mail:
+                handle_mail(MSG)
+                sent = m_s.messages_sent()
+                self.assertEqual(len(sent), 0)
+                self.assertEqual(send_mail.call_count, 1)
+                self.assertIn("you do not have permission", send_mail.call_args_list[0][0][1])
+
 
 def emailify(msg):
     return msg.strip().replace(b"\n", b"\r\n")
@@ -158,7 +214,7 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Subject: Test
 From: Joe <joe@gmail.com>
-To: camp-debug@cciw.co.uk
+To: Someone <someone@gmail.com>, camp-debug@cciw.co.uk, "Someone Else" <else@gmail.com>
 Date: Sun, 28 Feb 2016 22:32:03 -0000
 Message-ID: <56CCDE2E.9030103@gmail.com>
 

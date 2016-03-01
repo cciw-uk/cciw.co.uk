@@ -49,6 +49,7 @@ class OfficersSetupMixin(BasicSetupMixin):
                               is_active=True,
                               is_superuser=False,
                               is_staff=True,
+                              email="joebloggs@somewhere.com",
                               permissions=[])
         self.officer_user.set_password(OFFICER_PASSWORD)
         self.officer_user.save()
