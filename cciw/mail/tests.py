@@ -94,9 +94,10 @@ def mock_smtplib():
 
 class TestMailingLists(TestBase):
 
-    def test_handle_all_mail(self):
+    def setUp(self):
+        super(TestMailingLists, self).setUp()
         User = get_user_model()
-        User.objects.all().delete()
+        User.objects.filter(is_superuser=True).update(is_superuser=False)
         User.objects.create(username="admin1",
                             email="admin1@admin.com",
                             is_superuser=True)
@@ -104,13 +105,15 @@ class TestMailingLists(TestBase):
                             email="admin2@admin.com",
                             is_superuser=True)
 
-        with mock_imaplib([MSG1]) as m1:
-            with mock_smtplib() as m2:
+    def test_handle_all_mail(self):
+
+        with mock_imaplib([MSG1]) as m_i:
+            with mock_smtplib() as m_s:
                 handle_all_mail()
-                self.assertEqual(m1.fetch.call_count, 1)
-                self.assertEqual(m2.connection.sendmail.call_count, 2)
-                messages_sent = m2.messages_sent()
-                to_addresses = m2.to_addresses()
+                self.assertEqual(m_i.fetch.call_count, 1)
+                self.assertEqual(m_s.connection.sendmail.call_count, 2)
+                messages_sent = m_s.messages_sent()
+                to_addresses = m_s.to_addresses()
                 self.assertEqual(list(sorted(to_addresses)),
                                  [["admin1@admin.com"],
                                   ["admin2@admin.com"]])
@@ -125,7 +128,24 @@ class TestMailingLists(TestBase):
                 self.assertTrue(all(b"Subject: Test" in m
                                     for m in messages_sent))
 
-                self.assertEqual(len(m1.get_inbox()), 0)
+                self.assertEqual(len(m_i.get_inbox()), 0)
+
+    def test_handle_all_mail_smtp_connection_error(self):
+        """
+        Test that if an SMTP connection error occurs, the email
+        is not deleted from the inbox.
+        """
+        with mock_imaplib([MSG1]) as m_i:
+            with mock_smtplib() as m_s:
+                def connection_error():
+                    raise ConnectionRefusedError("Connection refused")
+                m_s.open.side_effect = connection_error
+
+                try:
+                    handle_all_mail()
+                except Exception:
+                    pass
+                self.assertEqual(len(m_i.get_inbox()), 1)
 
 
 def emailify(msg):
