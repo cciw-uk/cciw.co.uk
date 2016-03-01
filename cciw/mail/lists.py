@@ -193,11 +193,13 @@ def forward_email_to_list(mail, user_list, original_to, debug=False):
     mail._headers = [(name, val) for name, val in mail._headers
                      if name.lower() in good_headers]
 
-    # Use Django's wrapper object for connection,
-    # but not the message.
-    c = get_connection("django.core.mail.backends.smtp.EmailBackend")
-    c.open()
-    # send individual emails
+    # send individual emails.
+
+    # First, do as much work as possible before doing anything
+    # with side effects. That way if an error occurs early,
+    # re-trying won't re-send emails that were already sent.
+
+    messages_to_send = []
     for user in user_list:
         addr = formatted_email(user)
         del mail['To']
@@ -206,12 +208,50 @@ def forward_email_to_list(mail, user_list, original_to, debug=False):
         del mail['Message-ID']
         mail['Message-ID'] = make_msgid()
         mail_as_bytes = force_bytes(mail.as_string())
+        messages_to_send.append(
+            (addr, mail_as_bytes)
+        )
+
+    # Use Django's wrapper object for connection,
+    # but not the message.
+    errors = []
+    c = get_connection("django.core.mail.backends.smtp.EmailBackend")
+    c.open()
+    for addr, mail_as_bytes in messages_to_send:
         if debug:
             with open(".mailing_list_log", "ab") as f:
                 f.write(mail_as_bytes)
-
-        c.connection.sendmail(sender_addr, [addr], mail_as_bytes)
+        try:
+            c.connection.sendmail(sender_addr, [addr], mail_as_bytes)
+        except Exception as e:
+            errors.append((addr, e))
     c.close()
+
+    if errors:
+        # Attempt to report problem
+        try:
+            address_messages = [
+                "{0}: {1}".format(address, str(e))
+                for address, e in errors
+            ]
+            msg = """
+You attempted to email the list {0}
+with an email title "{1}".
+
+There were problems with the following addresses:
+
+{2}
+""".format(original_to, mail['Subject'], '\n'.join(address_messages))
+            send_mail("Error with email to list {0}".format(original_to),
+                      msg,
+                      settings.DEFAULT_FROM_EMAIL,
+                      [orig_from_addr],
+                      fail_silently=True)
+        except Exception:
+            # Don't raise any exceptions here, because doing so will cause the
+            # whole email sending to fail and therefore be retried, despite the
+            # fact that we've sent the email successfully to some users.
+            pass
 
 
 def extract_email_addresses(email_line):
@@ -244,10 +284,12 @@ def handle_mail(data, debug=False):
                       "You attempted to email the list {0}\n"
                       "with an email titled \"{1}\".\n"
                       "\n"
-                      "However, you do not have permission to email this list, sorry.".format(address,
-                                                                                              mail['Subject']),
+                      "However, you do not have permission to email this list, sorry.".format(
+                          address,
+                          mail['Subject']),
                       settings.DEFAULT_FROM_EMAIL,
-                      [from_email])
+                      [from_email],
+                      fail_silently=True)
         except NoSuchList:
             # addresses can contain anything else on the 'to' line, which
             # can even included valid @cciw.co.uk that we don't know about

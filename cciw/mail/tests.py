@@ -1,6 +1,8 @@
 import contextlib
 from unittest import mock
+import smtplib
 
+from django.core.mail import EmailMessage
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
@@ -81,10 +83,21 @@ def mock_imaplib(emails_in_inbox):
 
 @contextlib.contextmanager
 def mock_smtplib():
-    patcher = mock.patch('cciw.mail.lists.get_connection')
-    with patcher as get_connection:
+    # Really just mocking an SMTP connection object, with
+    # the wrapper returned by Django's 'get_connection'
+    with mock.patch('cciw.mail.lists.get_connection') as get_connection:
         conn = get_connection()
-        # Helpers
+
+        # Special behaviour:
+        def sendmail(sender_addr, to_addresses, mail_bytes):
+            for a in to_addresses:
+                if a.endswith("@faildomain.com"):
+                    raise smtplib.SMTPRecipientsRefused('"{0}" Recipient address rejected: Domain not found."'.format(a))
+            # Otherwise succeed silently
+
+        conn.connection.sendmail.side_effect = sendmail
+
+        # Helpers for tests:
         conn.from_addresses = (
             lambda: [c[0][0] for c in conn.connection.sendmail.call_args_list])
         conn.to_addresses = (
@@ -92,6 +105,18 @@ def mock_smtplib():
         conn.messages_sent = (
             lambda: [c[0][2] for c in conn.connection.sendmail.call_args_list])
         yield conn
+
+
+@contextlib.contextmanager
+def mock_send_mail():
+    with mock.patch('cciw.mail.lists.send_mail') as send_mail:
+        # Helpers:
+        def sent_messages(idx):
+            args = send_mail.call_args_list[idx][0]
+            return EmailMessage(args[0], args[1], args[2], args[3])
+
+        send_mail.sent_messages = sent_messages
+        yield send_mail
 
 
 class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
@@ -155,6 +180,34 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                     pass
                 self.assertEqual(len(m_i.get_inbox()), 1)
 
+    def test_handle_partial_sending_failure(self):
+        """
+        Test what happens when there are SMTP errors with some recipients,
+        but not all.
+        """
+        User = get_user_model()
+        User.objects.create(username="admin3",
+                            email="admin1@faildomain.com",
+                            is_superuser=True)
+
+        with mock_imaplib([MSG1]) as m_i:
+            with mock_smtplib() as m_s:
+                with mock_send_mail() as send_mail:
+                    handle_all_mail()
+                    # We should have tried to send to all recipients
+                    self.assertEqual(m_s.connection.sendmail.call_count, 3)
+                    # inbox should be empty
+                    self.assertEqual(len(m_i.get_inbox()), 0)
+                    # Should have reported the error
+                    self.assertEqual(send_mail.call_count, 1)
+                    error_email = send_mail.sent_messages(0)
+                    self.assertIn("admin1@faildomain.com",
+                                  error_email.body)
+                    self.assertEqual(error_email.subject,
+                                     "Error with email to list camp-debug@cciw.co.uk")
+                    self.assertEqual(error_email.to,
+                                     ["Joe <joe@gmail.com>"])
+
     def test_users_for_address(self):
         leader_user = self.leader_user
 
@@ -196,12 +249,12 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         MSG = MSG1.replace(b'camp-debug@cciw.co.uk',
                            b'camp-2000-blue-officers@cciw.co.uk')
         with mock_smtplib() as m_s:
-            with mock.patch('cciw.mail.lists.send_mail') as send_mail:
+            with mock_send_mail() as send_mail:
                 handle_mail(MSG)
                 sent = m_s.messages_sent()
                 self.assertEqual(len(sent), 0)
                 self.assertEqual(send_mail.call_count, 1)
-                self.assertIn("you do not have permission", send_mail.call_args_list[0][0][1])
+                self.assertIn("you do not have permission", send_mail.sent_messages(0).body)
 
 
 def emailify(msg):
