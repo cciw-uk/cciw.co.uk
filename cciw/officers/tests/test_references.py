@@ -164,9 +164,11 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
                              + "?referee_id=%d&update=1&prev_ref_id=%d" % (referee.id, referee.possible_previous_references[0].id))
         self.assertCode(200)
         self.assertTextAbsent("Referee1 Name has done a reference for Joe in the past.")
-        self.assertTextPresent("""In the past, "Referee1 Name <referee1@email.co.uk>" did""")
-        self.assertTextPresent("If you have confirmed")
-        self.assertTextPresent("""email address is now "Referee1 Name <a_new_email_for_ref1@example.com>",""")
+        self.assertHtmlPresent("""<p>In the past,"""
+                               """<b>"Referee1 Name &lt;referee1@email.co.uk&gt;"</b>"""
+                               """did a reference for Joe. If you have confirmed that this person's name/email address is now"""
+                               """<b>"Referee1 Name &lt;a_new_email_for_ref1@example.com&gt;",</b>"""
+                               """you can ask them to update their reference.</p>""")
 
     def test_fill_in_manually(self):
         app = self.application3

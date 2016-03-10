@@ -65,7 +65,7 @@
 
    function requestUpdateCustom(referee_id) {
        var s = document.getElementById('id_referee_opts_' + referee_id.toString());
-       if (s.selectedIndex == -1) {
+       if (s.selectedIndex == -1 || s.value == "") {
            alert("Please select an option");
        } else {
            var val = s.options[s.selectedIndex].value;

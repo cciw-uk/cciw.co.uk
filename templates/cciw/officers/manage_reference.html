@@ -68,9 +68,9 @@
             but if one of the previous references
             submitted for this officer is actually by the same person, please select:<br />
             <select name="referee_opts_{{ referee.id }}" id="id_referee_opts_{{ referee.id }}">
+              <option value="" selected="selected">-----</option>
               {% for reference in referee.possible_previous_references %}
-                <option value="{{ reference.id }}"
-                        {% if forloop.first %}selected="selected"{% endif %}>
+                <option value="{{ reference.id }}">
                   {{ reference.referee.name }} &lt;{{ reference.referee.email }}&gt;
                   ({{ reference.referee.application.date_submitted|date:"Y" }})
                 </option>

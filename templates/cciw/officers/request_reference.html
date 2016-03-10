@@ -54,9 +54,9 @@
       {% endif %}
 
       {% if is_update and not known_email_address %}
-        <p>In the past, "{{ old_referee.name }} &lt;{{ old_referee.email }}&gt;" did a
+        <p>In the past, <b>"{{ old_referee.name }} &lt;{{ old_referee.email }}&gt;"</b> did a
           reference for {{ app.officer.first_name }}.  If you have confirmed that this
-          person's name/email address is now "{{ referee.name }} &lt;{{ referee.email }}&gt;",
+          person's name/email address is now <b>"{{ referee.name }} &lt;{{ referee.email }}&gt;",</b>
           you can ask them to update their reference.</p>
       {% endif %}
 
