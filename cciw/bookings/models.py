@@ -780,30 +780,50 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
 
         # 2nd/3rd child discounts
 
-        # Rule concerning 2nd/3rd child discounts and multiple camps:
-        # "A camper booking to go on a second camp will be charged at full price".
+        # 2nd child discounts are allowed when there is a full price
+        # booking from the same account.
         #
-        # Natural interpretation of this rule is that if we have two campers from the
-        # same family who both go on two camps:
+        # 3rd child discounts are allowed when there are two bookings at full price/
+        # or 2nd child discount from the same account.
+
+        # When multiple camps are involved, things get complicated.
+        #
+        # The rule given concerning 2nd/3rd child discounts and multiple camps:
+        # "A camper booking to go on a second camp will be charged at full
+        # price".
+        #
+        # This is ambiguous and not possible to implement directly because
+        # we don't know which is a camper's "first" camp and which is their "second",
+        # and the logic would rely on this labelling.
+        #
+        # A natural interpretation of this rule is that if we have two campers
+        # from the same family who both go on two camps:
+        #
         # 1st child gets Full Price for first camp
         # 2nd child gets 2nd child discount for first camp
         # 1st and 2nd child both get Full Price for second camp.
         #
-        # This is different from saying "each camper may only have one 2nd/3rd
-        # child discount", because that would allow using 1 Full Price and 1 2nd
-        # child discount for each child.
+        # (This is different from saying "each camper may only have one 2nd/3rd
+        # child discount", because that would still allow using 1 Full Price and
+        # 1 2nd child discount for each child.)
         #
         # A correct re-phrasing of the rule is:
+        #
         # 1. each camper may only have one discounted place
-        # 2. total number of discounted places for a family is one less
+        # 2. the total number of discounted places for a family should be one less
         #    than the number of children.
         #
         # However, we can't correctly detect "same family" (broken families,
         # different surnames etc.), only "same camper", and a single account is
         # sometimes used to book multiple families. Assuming one account = one
-        # family for this re-phrasing will disallow legitimate discounts.
+        # family for this re-phrasing would disallow legitimate discounts.
         #
-        # Second attempt to rephrase:
+        # We cannot assume that each account will book children only from a
+        # single family, but we will assume that all children from a family will
+        # be booked by the same account, which is a reasonable constraint, and
+        # matches how bookings are actually done.
+        #
+        # With these facts in mind, we rephrase the rule:
         #
         # 1. each camper may only have one discounted place
         # 2. 2nd child discounts can only be given if there are at least
@@ -811,9 +831,7 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
         # 3. 3rd child discounts can only be given if there are at least
         #    3 different children booked by an account
         #
-        # This is not exactly correct, but allows everything the others allow,
-        # and assuming one account = one family doesn't disallow legitimate
-        # discounts.
+        # This is not exactly correct, but allows all legitimate discounts.
 
         if self.price_type == PRICE_2ND_CHILD:
             if not (relevant_bookings_excluding_self
