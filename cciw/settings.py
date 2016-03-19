@@ -1,7 +1,5 @@
 # flake8: noqa
 
-from __future__ import unicode_literals
-
 # Settings file
 import os
 import socket

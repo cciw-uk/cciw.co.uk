@@ -104,6 +104,16 @@ def send_unrecognised_payment_email(ipn_obj):
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [settings.WEBMASTER_EMAIL])
 
 
+def send_pending_payment_email(account, ipn_obj):
+    c = {
+        'account': account,
+        'ipn_obj': ipn_obj,
+    }
+    body = loader.render_to_string("cciw/bookings/pending_payment_email.txt", c)
+    subject = "CCIW booking - pending payment"
+    mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+
+
 def send_places_confirmed_email(bookings, **kwargs):
     if not bookings:
         return

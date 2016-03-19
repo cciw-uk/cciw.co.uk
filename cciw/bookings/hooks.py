@@ -1,11 +1,10 @@
-import re
-
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from paypal.standard.ipn.signals import invalid_ipn_received, valid_ipn_received
 
-from .email import send_places_confirmed_email, send_unrecognised_payment_email
-from .models import AccountTransferPayment, BookingAccount, ManualPayment, RefundPayment, send_payment
+from .email import send_places_confirmed_email, send_unrecognised_payment_email, send_pending_payment_email
+from .models import (AccountTransferPayment, ManualPayment, RefundPayment, parse_paypal_custom_field,
+                     send_payment)
 from .signals import places_confirmed
 
 
@@ -24,21 +23,21 @@ def paypal_payment_received(sender, **kwargs):
         unrecognised_payment(ipn_obj)
         return
 
-    m = re.match("account:(\d+);", ipn_obj.custom)
-    if m is None:
+    account = parse_paypal_custom_field(ipn_obj.custom)
+    if account is None:
         unrecognised_payment(ipn_obj)
         return
 
-    if ipn_obj.payment_status.lower().strip() not in \
-            ['completed', 'canceled_reversal', 'refunded']:
+    if ipn_obj.payment_status == "Pending":
+        send_pending_payment_email(account, ipn_obj)
+        return
+
+    if (ipn_obj.payment_status not in
+            ['Completed', 'Canceled_Reversal', 'Refunded']):
         unrecognised_payment(ipn_obj)
         return
 
-    try:
-        account = BookingAccount.objects.get(id=int(m.groups()[0]))
-        send_payment(ipn_obj.mc_gross, account, ipn_obj)
-    except BookingAccount.DoesNotExist:
-        unrecognised_payment(ipn_obj)
+    send_payment(ipn_obj.mc_gross, account, ipn_obj)
 
 
 def manual_payment_received(sender, **kwargs):

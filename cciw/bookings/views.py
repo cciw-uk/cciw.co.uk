@@ -198,8 +198,8 @@ from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_INFO_COMPLETE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
                                   PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
                                   REQUIRED_PRICE_TYPES, Booking, BookingAccount, Price, any_bookings_possible,
-                                  book_basket_now, early_bird_is_available, get_early_bird_cutoff_date, is_booking_open,
-                                  is_booking_open_thisyear)
+                                  book_basket_now, build_paypal_custom_field, early_bird_is_available,
+                                  get_early_bird_cutoff_date, is_booking_open, is_booking_open_thisyear)
 from cciw.cciwmain import common
 from cciw.cciwmain.common import AjaxFormValidation, CciwBaseView, get_current_domain
 from cciw.cciwmain.decorators import json_response
@@ -872,7 +872,7 @@ def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amou
         "notify_url": "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
         "return_url": "%s://%s%s" % (protocol, domain, reverse('cciw-bookings-pay_done')),
         "cancel_return": "%s://%s%s" % (protocol, domain, reverse('cciw-bookings-pay_cancelled')),
-        "custom": "account:%s;" % str(account.id),
+        "custom": build_paypal_custom_field(account),
         "currency_code": "GBP",
         "no_note": "1",
         "no_shipping": "1",
@@ -924,6 +924,7 @@ class BookingPay(BookingPayBase):
             'balance_full': balance_full,
             'account_id': acc.id,
             'price_deposit': price_deposit,
+            'pending_payment_total': acc.get_pending_payment_total(),
             'paypal_form': mk_paypal_form(acc, balance_due, protocol, domain),
             'paypal_form_full': mk_paypal_form(acc, balance_full, protocol, domain),
             'paypal_form_custom': mk_paypal_form(acc,
@@ -966,6 +967,7 @@ class BookingAccountOverview(CciwBaseView):
         c['basket_or_shelf'] = (bookings.in_basket() | bookings.on_shelf())
         c['balance_due'] = acc.get_balance(allow_deposits=True)
         c['balance_full'] = acc.get_balance(allow_deposits=False)
+        c['pending_payment_total'] = acc.get_pending_payment_total()
         return self.render(c)
 
 

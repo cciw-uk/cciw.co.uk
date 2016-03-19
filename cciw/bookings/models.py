@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 
-from django_countries.fields import CountryField
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -13,7 +13,10 @@ from django.db import models, transaction
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.safestring import mark_safe
+from django_countries.fields import CountryField
+from paypal.standard.ipn.models import PayPalIPN
 
+from cciw.bookings.email import send_booking_expiry_mail
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import Lock
@@ -397,6 +400,29 @@ class BookingAccount(migrate_address('address'), models.Model):
             i += 1
         if confirmed_bookings:
             places_confirmed.send(self, bookings=confirmed_bookings, payment_received=True)
+
+    def get_pending_payment_total(self, now=None):
+        if now is None:
+            now = timezone.now()
+
+        custom = build_paypal_custom_field(self)
+        all_payments = PayPalIPN.objects.filter(
+            custom=custom,
+        )
+        pending_payments = all_payments.filter(
+            payment_status='Pending',
+            payment_date__gt=now - timedelta(days=3 * 30),  # old ones don't count
+        )
+        completed_payments = all_payments.filter(
+            payment_status='Completed',
+        )
+        uncompleted_pending_payments = pending_payments.exclude(
+            txn_id__in=[ipn.txn_id for ipn in completed_payments])
+
+        total = uncompleted_pending_payments.aggregate(total=models.Sum('mc_gross'))['total']
+        if total is None:
+            return Decimal('0.00')
+        return total
 
     def get_address_display(self):
         if self.address_line1:
@@ -1240,6 +1266,59 @@ def send_payment(amount, to_account, from_obj):
                            processed=None,
                            created=timezone.now())
     trigger_payment_processing()
+
+
+def build_paypal_custom_field(account):
+    return "account:%s;" % str(account.id)
+
+
+def parse_paypal_custom_field(custom):
+    m = re.match("account:(\d+);", custom)
+    if m is None:
+        return None
+
+    try:
+        return BookingAccount.objects.get(id=int(m.groups()[0]))
+    except BookingAccount.DoesNotExist:
+        return None
+
+
+def expire_bookings(now=None):
+    if now is None:
+        now = timezone.now()
+
+    # For the warning, we send out between 12 and 13 hours before booking
+    # expires.  This relies on this job being run once an hour, and only
+    # once an hour.
+    nowplus12h = now + timedelta(0, 3600 * 12)
+    nowplus13h = now + timedelta(0, 3600 * 13)
+
+    unconfirmed = Booking.objects.unconfirmed().order_by('account')
+    to_warn = unconfirmed.filter(booking_expires__lte=nowplus13h,
+                                 booking_expires__gte=nowplus12h)
+    to_expire = unconfirmed.filter(booking_expires__lte=now)
+
+    for booking_set, expired in [(to_expire, True),
+                                 (to_warn, False)]:
+        groups = []
+        last_account_id = None
+        for b in booking_set:
+            if last_account_id is None or b.account_id != last_account_id:
+                group = []
+                groups.append(group)
+            group.append(b)
+            last_account_id = b.account_id
+
+        for group in groups:
+            account = group[0].account
+            if account.get_pending_payment_total(now=now) > Decimal("0.00"):
+                continue
+
+            if expired:
+                for b in group:
+                    b.expire()
+                    b.save()
+            send_booking_expiry_mail(account, group, expired)
 
 
 # These are called normally from process_payments management command.

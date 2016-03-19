@@ -1,6 +1,4 @@
 # Settings file for testing on development box
-from __future__ import unicode_literals
-
 from cciw.settings import *  # NOQA
 
 DEBUG = False

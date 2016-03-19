@@ -1,0 +1,7 @@
+{% if pending_payment_total > 0 %}
+  <div>
+    <p><b>PLEASE NOTE:</b> Before making additional payments, remember
+      that you have some payments that are waiting for confirmation,
+      totalling £{{ pending_payment_total }}.</p>
+  </div>
+{% endif %}

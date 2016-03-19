@@ -60,8 +60,9 @@
             {% include "cciw/bookings/place_table.html" %}
           {% endwith %}
         </div>
+        {% include "cciw/bookings/pending_payment_notice.html" %}
         <div class="actionbutton">
-          <a href="{% url 'cciw-bookings-list_bookings' %}" class="bigaction">Pay</a>
+          <a href="{% url 'cciw-bookings-pay' %}" class="bigaction">Pay</a>
         </div>
       </div>
     {% endif %}
@@ -132,6 +133,7 @@
         </div>
       </div>
     {% endif %}
+    {% include "cciw/bookings/pending_payment_notice.html" %}
   </section>
 
   <section class="grouped">

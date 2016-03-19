@@ -32,6 +32,8 @@
 
   {% if balance_full > 0 %}
 
+    {% include "cciw/bookings/pending_payment_notice.html" %}
+
     {% if balance_full != balance_due %}
 
       {% if balance_due > 0 %}
@@ -50,6 +52,7 @@
       <p>This amount is now due:</p>
 
     {% endif %}
+
 
     <div class="payboxes">
 
