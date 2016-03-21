@@ -2529,6 +2529,10 @@ class TestExportPaymentData(CreateIPNMixin, TestBase):
         AccountTransferPayment.objects.create(from_account=account2,
                                               to_account=account1,
                                               amount=Decimal("100.00"))
+        mp2 = ManualPayment.objects.create(account=account1,
+                                           amount=Decimal('1.23'))
+        mp2.delete()
+
         now = timezone.now()
         workbook = payments_to_spreadsheet(now - timedelta(days=3),
                                            now + timedelta(days=3),
@@ -2549,6 +2553,11 @@ class TestExportPaymentData(CreateIPNMixin, TestBase):
         self.assertIn(['Joe Bloggs', 'joe@foo.com', -0.25, 'Refund Cheque'],
                       data2)
         self.assertIn(['Joe Bloggs', 'joe@foo.com', 100.00, 'Account transfer'],
+                      data2)
+
+        self.assertNotIn(['Joe Bloggs', 'joe@foo.com', 1.23, 'ManualPayment (deleted)'],
+                      data2)
+        self.assertNotIn(['Joe Bloggs', 'joe@foo.com', -1.23, 'ManualPayment (deleted)'],
                       data2)
 
 

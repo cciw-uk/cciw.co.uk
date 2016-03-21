@@ -146,6 +146,10 @@ def payments_to_spreadsheet(date_start, date_end, spreadsheet):
                 .order_by('created')
                 )
 
+    # Ignore payments with deleted origins - these
+    # always cancel out anyway.
+    payments = [p for p in payments if p.origin is not None]
+
     columns = [
         ('Account name', lambda p: p.account.name),
         ('Account email', lambda p: p.account.email),
