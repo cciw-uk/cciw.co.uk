@@ -51,8 +51,9 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.assertTrue(app.referees[0].email != '')
         referee = app.referees[0]
         self.officer_login(LEADER)
-        self.get_literal_url(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, slug="blue"))
-                             + "?referee_id=%d" % referee.id)
+        self.get_literal_url(reverse("cciw-officers-request_reference",
+                                     kwargs=dict(year=2000, slug="blue")) +
+                             "?referee_id=%d" % referee.id)
         self.assertCode(200)
         self.assertTextAbsent("No e-mail address")
         self.assertTextPresent("The following e-mail")
@@ -71,8 +72,9 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.assertTrue(app.referees[1].email == '')
         referee = app.referees[1]
         self.officer_login(LEADER)
-        self.get_literal_url(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, slug="blue"))
-                             + "?referee_id=%d" % referee.id)
+        self.get_literal_url(reverse("cciw-officers-request_reference",
+                                     kwargs=dict(year=2000, slug="blue")) +
+                             "?referee_id=%d" % referee.id)
         self.assertCode(200)
         self.assertTextPresent("No e-mail address")
         self.assertTextAbsent("This field is required")  # Don't want errors on first view
@@ -97,8 +99,9 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.assertTrue(app.referees[0].email != '')
         referee = app.referees[0]
         self.officer_login(LEADER)
-        self.get_literal_url(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, slug="blue"))
-                             + "?referee_id=%d" % referee.id)
+        self.get_literal_url(reverse("cciw-officers-request_reference",
+                                     kwargs=dict(year=2000, slug="blue")) +
+                             "?referee_id=%d" % referee.id)
         self.assertCode(200)
         self.submit('#id_request_reference_send [name=cancel]')
         self.assertEqual(len(mail.outbox), 0)
@@ -110,8 +113,9 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         app = self.application3
         referee = app.referees[0]
         self.officer_login(LEADER)
-        self.get_literal_url(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, slug="blue"))
-                             + "?referee_id=%d" % referee.id)
+        self.get_literal_url(reverse("cciw-officers-request_reference",
+                                     kwargs=dict(year=2000, slug="blue")) +
+                             "?referee_id=%d" % referee.id)
         self.assertCode(200)
         self.fill_by_name({'message': 'I removed the link! Haha'})
         self.submit('[name=send]')
@@ -129,8 +133,10 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         add_previous_references(referee)
         assert referee.previous_reference is not None
         self.officer_login(LEADER)
-        self.get_literal_url(reverse("cciw-officers-request_reference", kwargs=dict(year=2001, slug="blue"))
-                             + "?referee_id=%d&update=1&prev_ref_id=%d" % (referee.id, referee.previous_reference.id))
+        self.get_literal_url(reverse("cciw-officers-request_reference",
+                                     kwargs=dict(year=2001, slug="blue")) +
+                             "?referee_id=%d&update=1&prev_ref_id=%d" %
+                             (referee.id, referee.previous_reference.id))
         self.assertCode(200)
         self.assertTextPresent("Referee1 Name has done a reference for Joe in the past.")
 
@@ -160,8 +166,10 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         assert referee.previous_reference is None
         assert referee.possible_previous_references[0].referee_name == "Referee1 Name"
         self.officer_login(LEADER)
-        self.get_literal_url(reverse("cciw-officers-request_reference", kwargs=dict(year=2001, slug="blue"))
-                             + "?referee_id=%d&update=1&prev_ref_id=%d" % (referee.id, referee.possible_previous_references[0].id))
+        self.get_literal_url(reverse("cciw-officers-request_reference",
+                                     kwargs=dict(year=2001, slug="blue")) +
+                             "?referee_id=%d&update=1&prev_ref_id=%d" %
+                             (referee.id, referee.possible_previous_references[0].id))
         self.assertCode(200)
         self.assertTextAbsent("Referee1 Name has done a reference for Joe in the past.")
         self.assertHtmlPresent("""<p>In the past,"""
@@ -174,8 +182,9 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         app = self.application3
         referee = app.referees[0]
         self.officer_login(LEADER)
-        self.get_literal_url(reverse("cciw-officers-request_reference", kwargs=dict(year=2000, slug="blue"))
-                             + "?referee_id=%d" % referee.id)
+        self.get_literal_url(reverse("cciw-officers-request_reference",
+                                     kwargs=dict(year=2000, slug="blue")) +
+                             "?referee_id=%d" % referee.id)
         self.assertCode(200)
         self.fill_by_name({'how_long_known': "10 years",
                            'capacity_known': "Pastor",
@@ -195,8 +204,9 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         app = self.application1
         referee = app.referees[0]
         self.officer_login(LEADER)
-        self.get_literal_url(reverse("cciw-officers-nag_by_officer", kwargs=dict(year=2000, slug="blue"))
-                             + "?referee_id=%d" % referee.id)
+        self.get_literal_url(reverse("cciw-officers-nag_by_officer",
+                                     kwargs=dict(year=2000, slug="blue")) +
+                             "?referee_id=%d" % referee.id)
         self.assertCode(200)
         self.assertTextPresent("to nag their referee")
         self.submit('[name=send]')

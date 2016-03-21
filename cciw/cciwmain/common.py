@@ -249,9 +249,8 @@ def get_thisyear():
     afterwards if that camp is in the past.
     """
     global _thisyear, _thisyear_timestamp
-    if (_thisyear is None
-            or _thisyear_timestamp is None
-            or (timezone.now() - _thisyear_timestamp).seconds > 3600):
+    if (_thisyear is None or _thisyear_timestamp is None or
+            (timezone.now() - _thisyear_timestamp).seconds > 3600):
         from cciw.cciwmain.models import Camp
         try:
             lastcamp = Camp.objects.prefetch_related(None).order_by('-end_date')[0]

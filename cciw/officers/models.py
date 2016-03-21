@@ -296,7 +296,6 @@ class Reference(models.Model):
     referee = models.OneToOneField(Referee,
                                    on_delete=models.CASCADE)
 
-
     # This is set to True only for some records which had to be partially
     # invented in a database migration due to missing data. Any stats on this
     # table should exclude these records.
@@ -414,8 +413,8 @@ class CRBApplication(models.Model):
         verbose_name_plural = "CRB/DBS Disclosures"
 
     def could_be_for_camp(self, camp):
-        return (self.completed >= camp.start_date - timedelta(days=settings.CRB_VALID_FOR)
-                and self.completed <= camp.start_date)
+        return (self.completed >= camp.start_date - timedelta(days=settings.CRB_VALID_FOR) and
+                self.completed <= camp.start_date)
 
 
 class CRBFormLogManager(models.Manager):

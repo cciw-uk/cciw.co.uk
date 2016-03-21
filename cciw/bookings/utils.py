@@ -211,9 +211,9 @@ def addresses_for_mailing_list(year, spreadsheet):
 
             # If they all have the same address, collapse
             first_booking = acc_bookings[0]
-            if all(b.address_line1 == first_booking.address_line1
-                   and b.address_post_code == first_booking.address_post_code
-                   and b.address_line1 != ""
+            if all(b.address_line1 == first_booking.address_line1 and
+                   b.address_post_code == first_booking.address_post_code and
+                   b.address_line1 != ""
                    for b in acc_bookings):
                 rows.append([account.name,
                              first_booking.address_line1,

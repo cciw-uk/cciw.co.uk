@@ -264,8 +264,9 @@ def account_details_required(view_func):
     return view
 
 
-booking_secretary_required = user_passes_test_improved(lambda user: user.is_superuser
-                                                       or is_booking_secretary(user))
+booking_secretary_required = user_passes_test_improved(lambda user:
+                                                       user.is_superuser or
+                                                       is_booking_secretary(user))
 
 
 # Views

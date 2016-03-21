@@ -308,8 +308,8 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
         # their own object.  For officers, this method will return False when
         # adding a new object (which we have to fix elsewhere), and for the case
         # of listing all objects (which is what we want)
-        if (obj is not None
-                and (obj.officer_id is not None and obj.officer_id == request.user.id)):
+        if (obj is not None and
+                (obj.officer_id is not None and obj.officer_id == request.user.id)):
             return True
         return super(ApplicationAdmin, self).has_change_permission(request, obj)
 

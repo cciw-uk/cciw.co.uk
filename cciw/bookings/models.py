@@ -96,10 +96,18 @@ class NoEditMixin(object):
             return super(NoEditMixin, self).save(**kwargs)
 
 
+class PriceQuerySet(models.QuerySet):
+
+    def required_for_booking(self):
+        return self.filter(price_type__in=[v for v, d in REQUIRED_PRICE_TYPES])
+
+
 class Price(models.Model):
     year = models.PositiveSmallIntegerField()
     price_type = models.PositiveSmallIntegerField(choices=VALUED_PRICE_TYPES)
     price = models.DecimalField(decimal_places=2, max_digits=10)
+
+    objects = models.Manager.from_queryset(PriceQuerySet)()
 
     class Meta:
         unique_together = [('year', 'price_type')]
@@ -1140,9 +1148,9 @@ def is_booking_open(year):
     """
     When passed a given year, returns True if booking is open.
     """
-    return (Price.objects.filter(year=year, price_type__in=[v for v, d in REQUIRED_PRICE_TYPES]).count()
-            == len(REQUIRED_PRICE_TYPES)
-            and Camp.objects.filter(year=year).exists())
+    return ((Price.objects.required_for_booking().filter(year=year).count() ==
+             len(REQUIRED_PRICE_TYPES)) and
+            Camp.objects.filter(year=year).exists())
 
 is_booking_open_thisyear = lambda: is_booking_open(common.get_thisyear())
 

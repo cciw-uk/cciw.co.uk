@@ -1892,7 +1892,6 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
         self.assertEqual(BookingAccount.objects.get(email='foo@foo.com').total_received,
                          Decimal('100.00'))
 
-
     def test_pending_payment_handling(self):
         # This test is story-style - checks the whole process
         # of handling pending payments.
@@ -1934,7 +1933,7 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
         self.assertEqual(account.get_pending_payment_total(now=three_days_later), Decimal("20.00"))
 
         # But pending payments are considered abandoned after 3 months.
-        three_months_later = three_days_later + timedelta(days=30*3)
+        three_months_later = three_days_later + timedelta(days=30 * 3)
         self.assertEqual(account.get_pending_payment_total(now=three_months_later), Decimal("0.00"))
 
         # Booking should not expire if they have pending payments against them.
@@ -1948,7 +1947,7 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
         # Once confirmed payment comes in, we consider that there are no pending payments.
 
         # A different payment doesn't affect whether pending ones are completed:
-        ipn_2 =  self.mk_ipn(account,
+        ipn_2 = self.mk_ipn(account,
                             txn_id="ABCDEF123",  # DIFFERENT txn_id
                             mc_gross=Decimal("10.00"),
                             payment_status="Completed",
