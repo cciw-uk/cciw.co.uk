@@ -1161,7 +1161,10 @@ class PaymentManager(models.Manager):
     use_for_related_fields = True
 
     def get_queryset(self):
-        return super(PaymentManager, self).get_queryset().select_related('account')
+        return super(PaymentManager, self).get_queryset().select_related(
+            'account',
+            'origin_type',
+        )
 
 
 class Payment(NoEditMixin, models.Model):
@@ -1191,10 +1194,29 @@ class Payment(NoEditMixin, models.Model):
         return retval
 
     def payment_type(self):
-        if hasattr(self.origin, 'get_payment_type_display'):
-            return self.origin.get_payment_type_display()
+        c = self.origin_type.model_class()
+        if c is PayPalIPN:
+            retval = 'PayPal'
         else:
-            return "PayPal"
+            if c in [ManualPayment, RefundPayment]:
+                if self.origin is not None:
+                    v = self.origin.get_payment_type_display()
+                    if c is ManualPayment:
+                        retval = v
+                    elif c is RefundPayment:
+                        retval = "Refund " + v
+                else:
+                    retval = c.__name__
+            elif c is AccountTransferPayment:
+                retval = "Account transfer"
+            else:
+                raise ValueError("Unknown model: %s" % c)
+
+            if self.origin is None:
+                # Deleted
+                retval += " (deleted)"
+
+        return retval
 
 
 class ManualPaymentManager(models.Manager):

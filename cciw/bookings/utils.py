@@ -146,31 +146,12 @@ def payments_to_spreadsheet(date_start, date_end, spreadsheet):
                 .order_by('created')
                 )
 
-    from paypal.standard.ipn.models import PayPalIPN
-    from cciw.bookings.models import ManualPayment, RefundPayment
-
-    def get_payment_type(p):
-        c = p.origin_type.model_class()
-        if c is PayPalIPN:
-            return 'PayPal'
-        else:
-            if p.origin is None:
-                # Deleted
-                return "(deleted)"
-            v = p.origin.get_payment_type_display()
-            if c is ManualPayment:
-                return v
-            elif c is RefundPayment:
-                return "Refund " + v
-            else:
-                raise "Don't know what to do with %s" % c
-
     columns = [
         ('Account name', lambda p: p.account.name),
         ('Account email', lambda p: p.account.email),
         ('Amount', lambda p: p.amount),
         ('Date', lambda p: p.created),
-        ('Type', get_payment_type),
+        ('Type', lambda p: p.payment_type()),
     ]
 
     spreadsheet.add_sheet_with_header_row("Payments",

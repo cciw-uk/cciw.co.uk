@@ -19,9 +19,10 @@ from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND,
                                   BOOKING_INFO_COMPLETE, MANUAL_PAYMENT_CHEQUE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
-                                  PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL, Booking,
-                                  BookingAccount, ManualPayment, Payment, Price, RefundPayment, book_basket_now,
-                                  build_paypal_custom_field, expire_bookings, paypal_payment_received)
+                                  PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
+                                  AccountTransferPayment, Booking, BookingAccount, ManualPayment, Payment, Price,
+                                  RefundPayment, book_basket_now, build_paypal_custom_field, expire_bookings,
+                                  paypal_payment_received)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.bookings.views import BOOKING_COOKIE_SALT
 from cciw.cciwmain.models import Camp, CampName, Person
@@ -2525,7 +2526,9 @@ class TestExportPaymentData(CreateIPNMixin, TestBase):
                                      amount=Decimal('11.50'))
         RefundPayment.objects.create(account=account1,
                                      amount=Decimal('0.25'))
-
+        AccountTransferPayment.objects.create(from_account=account2,
+                                              to_account=account1,
+                                              amount=Decimal("100.00"))
         now = timezone.now()
         workbook = payments_to_spreadsheet(now - timedelta(days=3),
                                            now + timedelta(days=3),
@@ -2544,6 +2547,8 @@ class TestExportPaymentData(CreateIPNMixin, TestBase):
         self.assertIn(['Joe Bloggs', 'joe@foo.com', 11.5, 'Cheque'],
                       data2)
         self.assertIn(['Joe Bloggs', 'joe@foo.com', -0.25, 'Refund Cheque'],
+                      data2)
+        self.assertIn(['Joe Bloggs', 'joe@foo.com', 100.00, 'Account transfer'],
                       data2)
 
 
