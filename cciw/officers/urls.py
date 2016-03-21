@@ -38,7 +38,7 @@ urlpatterns = [
     url(r'^files/(.*)$', views.officer_files, name="cciw-officers-officer_files"),
     url(r'^info/$', views.officer_info, name="cciw-officers-info"),
     url(r'^bookings/reports/(?P<year>\d{4})/$', views.booking_secretary_reports, name="cciw-officers-booking_secretary_reports"),
-    url(r'^bookings/export/$', views.export_payment_data, name="cciw-officers-export_payment_data"),
+    url(r'^bookings/export-payments/$', views.export_payment_data, name="cciw-officers-export_payment_data"),
 
     # Bookings progress
     url(r'^bookings/booking-progress-stats/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.booking_progress_stats, name="cciw-officers-booking_progress_stats"),
