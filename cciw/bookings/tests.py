@@ -298,6 +298,20 @@ class BookingBaseMixin(object):
         G(HtmlChunk, name="booking_secretary_address", menu_link=None)
 
 
+class CreateIPNMixin(object):
+    def create_ipn(self, account, **kwargs):
+        defaults = dict(mc_gross=Decimal('1.00'),
+                        custom=build_paypal_custom_field(account),
+                        ipaddress='127.0.0.1',
+                        payment_status='Completed',
+                        txn_id='1',
+                        receiver_email=settings.PAYPAL_RECEIVER_EMAIL,
+                        payment_date=timezone.now(),
+                        )
+        defaults.update(kwargs)
+        return PayPalIPN.objects.create(**defaults)
+
+
 # == Test cases ==
 
 # Most tests are against views, instead of model-based tests.
@@ -1721,7 +1735,8 @@ class TestPayReturnPoints(BookingBaseMixin, LogInMixin, WebTestBase):
         self.assertEqual(resp.status_code, 200)
 
 
-class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeadersMixin, TestBase):
+class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeadersMixin,
+                          CreateIPNMixin, TestBase):
 
     def test_receive_payment(self):
         # Late booking:
@@ -1808,23 +1823,11 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
         self.assertEqual(len(mail.outbox), 1)
         self.assertTrue('/admin/ipn/paypal' in mail.outbox[0].body)
 
-    def mk_ipn(self, account, **kwargs):
-        defaults = dict(mc_gross=Decimal('1.00'),
-                        custom=build_paypal_custom_field(account),
-                        ipaddress='127.0.0.1',
-                        payment_status='Completed',
-                        txn_id='1',
-                        receiver_email=settings.PAYPAL_RECEIVER_EMAIL,
-                        payment_date=timezone.now(),
-                        )
-        defaults.update(kwargs)
-        return PayPalIPN.objects.create(**defaults)
-
     def test_receive_payment_handler(self):
         # Use the actual signal handler, check the good path.
         account = self.get_account()
 
-        ipn_1 = self.mk_ipn(account)
+        ipn_1 = self.create_ipn(account)
         ipn_1.send_signals()
 
         # Since payments are processed in a separate process, we cannot
@@ -1834,10 +1837,10 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
         self.assertEqual(Payment.objects.all()[0].amount, ipn_1.mc_gross)
 
         # Test refund is wired up
-        ipn_2 = self.mk_ipn(account,
-                            parent_txn_id='1', txn_id='2',
-                            mc_gross=Decimal('-1.00'),
-                            payment_status='Refunded')
+        ipn_2 = self.create_ipn(account,
+                                parent_txn_id='1', txn_id='2',
+                                mc_gross=Decimal('-1.00'),
+                                payment_status='Refunded')
         ipn_2.send_signals()
 
         self.assertEqual(Payment.objects.count(), 2)
@@ -1909,12 +1912,12 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
         self.assertNotEqual(place.booking_expires, None)
 
         # Send payment that doesn't complete immediately
-        ipn_1 = self.mk_ipn(account,
-                            txn_id='8DX10782PJ789360R',
-                            mc_gross=Decimal('20.00'),
-                            payment_status="Pending",
-                            pending_reason="echeck",
-                            custom=build_paypal_custom_field(account))
+        ipn_1 = self.create_ipn(account,
+                                txn_id='8DX10782PJ789360R',
+                                mc_gross=Decimal('20.00'),
+                                payment_status="Pending",
+                                pending_reason="echeck",
+                                custom=build_paypal_custom_field(account))
         ipn_1.send_signals()
 
         # Money should not be counted as received
@@ -1947,22 +1950,22 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
         # Once confirmed payment comes in, we consider that there are no pending payments.
 
         # A different payment doesn't affect whether pending ones are completed:
-        ipn_2 = self.mk_ipn(account,
-                            txn_id="ABCDEF123",  # DIFFERENT txn_id
-                            mc_gross=Decimal("10.00"),
-                            payment_status="Completed",
-                            custom=build_paypal_custom_field(account))
+        ipn_2 = self.create_ipn(account,
+                                txn_id="ABCDEF123",  # DIFFERENT txn_id
+                                mc_gross=Decimal("10.00"),
+                                payment_status="Completed",
+                                custom=build_paypal_custom_field(account))
         ipn_2.send_signals()
         account = refresh(account)
         self.assertEqual(account.total_received, Decimal("10.00"))
         self.assertEqual(account.get_pending_payment_total(now=three_days_later), Decimal("20.00"))
 
         # But the same TXN id is recognised as cancelling the pending payment
-        ipn_3 = self.mk_ipn(account,
-                            txn_id=ipn_1.txn_id,  # SAME txn_id
-                            mc_gross=ipn_1.mc_gross,
-                            payment_status="Completed",
-                            custom=build_paypal_custom_field(account))
+        ipn_3 = self.create_ipn(account,
+                                txn_id=ipn_1.txn_id,  # SAME txn_id
+                                mc_gross=ipn_1.mc_gross,
+                                payment_status="Completed",
+                                custom=build_paypal_custom_field(account))
         ipn_3.send_signals()
 
         account = refresh(account)
