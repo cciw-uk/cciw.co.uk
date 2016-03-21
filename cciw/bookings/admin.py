@@ -105,6 +105,11 @@ class BookingAccountPaymentInline(ReadOnlyInline, admin.TabularInline):
     fields = ["amount", "payment_type", "created"]
     readonly_fields = fields
 
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).prefetch_related(
+            'origin',
+        )
+
 
 class BookingAccountBookingInline(ReadOnlyInline, admin.TabularInline):
     model = Booking
@@ -116,6 +121,15 @@ class BookingAccountBookingInline(ReadOnlyInline, admin.TabularInline):
                            booking.name)
     fields = [name, "camp", "amount_due", "state", "is_confirmed"]
     readonly_fields = fields
+
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).select_related(
+            'camp',
+            'camp__camp_name',
+            'camp__chaplain',
+        ).prefetch_related(
+            'camp__leaders',
+        )
 
 
 class AddressesMigratedFilter(admin.SimpleListFilter):
@@ -382,6 +396,9 @@ class BookingAdmin(admin.ModelAdmin):
           ['manual_payment_amount',
            'manual_payment_payment_type']}),
     )
+
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).select_related('camp__camp_name')
 
     def save_model(self, request, obj, form, change):
         if obj.id is not None:
