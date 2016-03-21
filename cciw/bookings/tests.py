@@ -22,7 +22,7 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANC
                                   PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL, Booking,
                                   BookingAccount, ManualPayment, Payment, Price, RefundPayment, book_basket_now,
                                   build_paypal_custom_field, expire_bookings, paypal_payment_received)
-from cciw.bookings.utils import camp_bookings_to_spreadsheet
+from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.bookings.views import BOOKING_COOKIE_SALT
 from cciw.cciwmain.models import Camp, CampName, Person
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
@@ -2507,6 +2507,44 @@ class TestExportPlaces(CreatePlaceModelMixin, TestBase):
 
         self.assertEqual(wksh_bdays.cell(0, 3).value, "Age")
         self.assertEqual(wksh_bdays.cell(1, 3).value, "12")
+
+
+class TestExportPaymentData(CreateIPNMixin, TestBase):
+
+    def test_export(self):
+        account1 = BookingAccount.objects.create(
+            name="Joe Bloggs",
+            email='joe@foo.com')
+        account2 = BookingAccount.objects.create(
+            name="Mary Muddle",
+            email='mary@foo.com')
+        ipn1 = self.create_ipn(account1,
+                               mc_gross=Decimal('10.00'))
+        ipn1.send_signals()
+        ManualPayment.objects.create(account=account1,
+                                     amount=Decimal('11.50'))
+        RefundPayment.objects.create(account=account1,
+                                     amount=Decimal('0.25'))
+
+        now = timezone.now()
+        workbook = payments_to_spreadsheet(now - timedelta(days=3),
+                                           now + timedelta(days=3),
+                                           ExcelFormatter()).to_bytes()
+
+        wkbk = xlrd.open_workbook(file_contents=workbook)
+        wksh = wkbk.sheet_by_index(0)
+        data = [[c.value for c in r] for r in wksh.get_rows()]
+        self.assertEqual(data[0],
+                         ['Account name', 'Account email', 'Amount', 'Date', 'Type'])
+
+        # Excel dates are a pain, so we ignore them
+        data2 = [[c for i, c in enumerate(r) if i != 3] for r in data[1:]]
+        self.assertIn(['Joe Bloggs', 'joe@foo.com', 10.0, 'PayPal'],
+                      data2)
+        self.assertIn(['Joe Bloggs', 'joe@foo.com', 11.5, 'Cheque'],
+                      data2)
+        self.assertIn(['Joe Bloggs', 'joe@foo.com', -0.25, 'Refund Cheque'],
+                      data2)
 
 
 class TestBookingModel(CreatePlaceModelMixin, TestBase):
