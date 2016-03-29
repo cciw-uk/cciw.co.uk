@@ -109,6 +109,7 @@ INSTALLED_APPS = [
     'compressor',
     'mailer',
     'django_countries',
+    'opbeat.contrib.django',
 ]
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
@@ -236,6 +237,7 @@ else:
 # == MIDDLEWARE_CLASSES ==
 
 _MIDDLEWARE_CLASSES = [
+    (True,       "opbeat.contrib.django.middleware.OpbeatAPMMiddleware"),
     (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
     (True,       "django.middleware.gzip.GZipMiddleware"),
     (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
@@ -310,6 +312,9 @@ DEFAULT_CONTENT_TYPE = "text/html"
 
 BASE_DIR = basedir
 
+
+# Third party
+
 PAYPAL_IMAGE = "https://www.paypalobjects.com/en_US/GB/i/btn/btn_buynowCC_LG.gif"
 
 WIKI_ATTACHMENTS_EXTENSIONS = [
@@ -319,3 +324,10 @@ WIKI_ATTACHMENTS_EXTENSIONS = [
 
 # Mailchimp
 from cciw.settings_priv import MAILCHIMP_API_KEY, MAILCHIMP_NEWSLETTER_LIST_ID, MAILCHIMP_URL_BASE
+
+# Opbeat
+from cciw.settings_priv import OPBEAT
+
+if TESTS_RUNNING:
+    os.environ['OPBEAT_DISABLE_SEND'] = 'true'
+    OPBEAT = {}
