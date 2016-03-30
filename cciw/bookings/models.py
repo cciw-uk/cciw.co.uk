@@ -934,8 +934,6 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
             # there are enough places)
             same_camp_bookings = self.account.bookings.filter(camp=self.camp).in_basket()
             places_to_be_booked = same_camp_bookings.count()
-            places_to_be_booked_male = same_camp_bookings.filter(sex=SEX_MALE).count()
-            places_to_be_booked_female = same_camp_bookings.filter(sex=SEX_FEMALE).count()
 
             if places_left < places_to_be_booked:
                 errors.append("There are not enough places left on this camp "
@@ -943,12 +941,14 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
                 places_available = False
 
             if places_available and self.sex == SEX_MALE:
+                places_to_be_booked_male = same_camp_bookings.filter(sex=SEX_MALE).count()
                 if places_left_male < places_to_be_booked_male:
                     errors.append("There are not enough places for boys left on this camp "
                                   "for the campers in this set of bookings.")
                     places_available = False
 
             if places_available and self.sex == SEX_FEMALE:
+                places_to_be_booked_female = same_camp_bookings.filter(sex=SEX_FEMALE).count()
                 if places_left_female < places_to_be_booked_female:
                     errors.append("There are not enough places for girls left on this camp "
                                   "for the campers in this set of bookings.")
