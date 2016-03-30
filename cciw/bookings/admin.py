@@ -313,7 +313,7 @@ class BookingAdmin(admin.ModelAdmin):
         ('Account',
          {'fields':
           ['account'],
-          'description': "Enter the account name, then choose from the suggestions, or choose 'New account' if there is no match. Use 'edit' to change the details of a selected account."}),
+          }),
         ('Camp',
          {'fields':
           ['camp']}),
