@@ -17,7 +17,7 @@ django-functest==0.1.5
 django-mailer==1.1
 django-mptt==0.8.0
 django-nyt==0.9.8
-django-paypal==0.3
+django-paypal==0.3.2
 django-plainpasswordhasher==0.3
 django-sekizai==0.9.0
 django-webtest==1.7.8
