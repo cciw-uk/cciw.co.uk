@@ -145,9 +145,8 @@ Layout
 The project uses an old style layout, with all the apps inside the 'cciw'
 module.
 
-Some of the apps do not have their own views, especially the forums, because of
-the connections between different models. So a lot of view functions are in
-cciw.cciwmain.views.
+Some of the apps do not have their own views, because of the connections between
+different models. So a lot of view functions are in cciw.cciwmain.views.
 
 The 'officers' and 'bookings' apps are structured in a more obvious way and are
 more separated than the other apps, although there are still strong dependencies
