@@ -17,7 +17,9 @@ User = get_user_model()
 class ApplicationModel(ApplicationSetupMixin, TestBase):
 
     def test_referees(self):
-        for appid in [1, 2, 3]:
+        for appid in [self.application1.id,
+                      self.application2.id,
+                      self.application3.id]:
             app = Application.objects.get(id=appid)
             self.assertEqual(app.referees[0], app.referee_set.get(referee_number=1))
             self.assertEqual(app.referees[1], app.referee_set.get(referee_number=2))
@@ -112,7 +114,7 @@ class ApplicationUtils(BasicSetupMixin, TestBase):
             color="#0000ff",
         )
 
-        site = Site.objects.get(id=1)
+        site = Site.objects.first()
         Camp.objects.all().delete()
         c1 = Camp.objects.create(year=past_camp_start.year,
                                  camp_name=camp_name,

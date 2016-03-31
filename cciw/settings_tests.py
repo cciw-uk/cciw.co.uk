@@ -5,12 +5,6 @@ DEBUG = False
 TEMPLATE_DEBUG = False
 DEBUG_PROPAGATE_EXCEPTIONS = True
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3'
-    }
-}
-
 PASSWORD_HASHERS = [
     'django_plainpasswordhasher.PlainPasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',

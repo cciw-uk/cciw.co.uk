@@ -25,7 +25,7 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANC
                                   paypal_payment_received)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.bookings.views import BOOKING_COOKIE_SALT
-from cciw.cciwmain.models import Camp, CampName, Person
+from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
 from cciw.officers.tests.base import (BOOKING_SEC, BOOKING_SEC_PASSWORD, BOOKING_SEC_USERNAME, OFFICER,
                                       OfficersSetupMixin)
@@ -67,20 +67,26 @@ class CreateCampMixin(object):
             slug="red",
             color="#ff0000",
         )
+        site, _ = Site.objects.get_or_create(
+            info="A camp site",
+            long_name="A really great camp site",
+            slug_name="a-camp-site",
+            short_name="A Camp Site")
+
         self.camp = Camp.objects.create(year=start_date.year,
                                         camp_name=camp_name,
                                         minimum_age=self.camp_minimum_age,
                                         maximum_age=self.camp_maximum_age,
                                         start_date=start_date,
                                         end_date=start_date + timedelta(days=7),
-                                        site_id=1)
+                                        site=site)
         self.camp_2 = Camp.objects.create(year=start_date.year,
                                           camp_name=camp_name_2,
                                           minimum_age=self.camp_minimum_age,
                                           maximum_age=self.camp_maximum_age,
                                           start_date=start_date + timedelta(days=7),
                                           end_date=start_date + timedelta(days=14),
-                                          site_id=1)
+                                          site=site)
         import cciw.cciwmain.common
         cciw.cciwmain.common._thisyear = None
         cciw.cciwmain.common._thisyear_timestamp = None

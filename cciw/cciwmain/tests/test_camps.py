@@ -81,7 +81,7 @@ class ThisyearPage(BasicSetupMixin, TestBase):
     def test_get(self):
         init_query_caches()
         y = common.get_thisyear()
-        site = Site.objects.get(id=1)
+        site = Site.objects.first()
 
         for i in range(1, 20):
             cn = CampName.objects.create(name=chr(64 + i),
@@ -96,7 +96,7 @@ class ThisyearPage(BasicSetupMixin, TestBase):
             p = Person.objects.create(name="Leader %s" % i)
             c.leaders.add(p)
 
-        with self.assertNumQueries(FuzzyInt(1, 6)):
+        with self.assertNumQueries(FuzzyInt(1, 8)):
             resp = self.client.get(reverse('cciw-cciwmain-thisyear'))
 
         for c in Camp.objects.filter(year=y):
