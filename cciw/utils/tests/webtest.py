@@ -63,6 +63,8 @@ class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseM
     driver_name = 'Firefox'
     browser_window_size = (1024, 768)
     display = TESTS_SHOW_BROWSER
+    default_timeout = 20
+    page_load_timeout = 40
 
     def assertCode(self, status_code):
         pass
