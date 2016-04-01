@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.core.urlresolvers import reverse
+from django.utils.html import escape
 
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp, CampName, Person, Site
@@ -71,7 +72,26 @@ class CampModel(TestBase):
         self.assertEqual(self.camp_2.next_camp, None)
 
 
-class ThisyearPage(BasicSetupMixin, TestBase):
+class MakeCampsMixin(object):
+
+    def make_camps(self, year, number):
+        site = Site.objects.first()
+
+        for i in range(1, number + 1):
+            cn = CampName.objects.create(name=chr(64 + i),
+                                         slug=chr(64 + i).lower(),
+                                         color="#0000" + hex(i)[2:])
+            c = Camp.objects.create(year=year, site=site,
+                                    camp_name=cn,
+                                    minimum_age=11,
+                                    maximum_age=17,
+                                    start_date=date(year, 6, 1),
+                                    end_date=date(year, 6, 8))
+            p = Person.objects.create(name="Leader %s" % i)
+            c.leaders.add(p)
+
+
+class ThisyearPage(MakeCampsMixin, BasicSetupMixin, TestBase):
 
     def setUp(self):
         super().setUp()
@@ -80,24 +100,36 @@ class ThisyearPage(BasicSetupMixin, TestBase):
 
     def test_get(self):
         init_query_caches()
-        y = common.get_thisyear()
-        site = Site.objects.first()
-
-        for i in range(1, 20):
-            cn = CampName.objects.create(name=chr(64 + i),
-                                         slug=chr(64 + i).lower(),
-                                         color="#0000" + hex(i)[2:])
-            c = Camp.objects.create(year=y, site=site,
-                                    camp_name=cn,
-                                    minimum_age=11,
-                                    maximum_age=17,
-                                    start_date=date(y, 6, 1),
-                                    end_date=date(y, 6, 8))
-            p = Person.objects.create(name="Leader %s" % i)
-            c.leaders.add(p)
-
+        year = common.get_thisyear()
+        self.make_camps(year, 20)
         with self.assertNumQueries(FuzzyInt(1, 8)):
             resp = self.client.get(reverse('cciw-cciwmain-thisyear'))
 
-        for c in Camp.objects.filter(year=y):
+        for c in Camp.objects.filter(year=year):
             self.assertContains(resp, c.get_absolute_url())
+
+
+class IndexPage(MakeCampsMixin, BasicSetupMixin, TestBase):
+
+    def test_get(self):
+        init_query_caches()
+        year = common.get_thisyear()
+        self.make_camps(year, 20)
+
+        with self.assertNumQueries(FuzzyInt(1, 6)):
+            resp = self.client.get(reverse('cciw-cciwmain-camps_year_index',
+                                           kwargs=dict(year=year)))
+
+        for c in Camp.objects.filter(year=year):
+            self.assertContains(resp, c.get_absolute_url())
+
+
+class DetailPage(BasicSetupMixin, TestBase):
+
+    def test_get(self):
+        camp = self.default_camp_1
+        resp = self.client.get(reverse('cciw-cciwmain-camps_detail',
+                                       kwargs=dict(year=camp.year,
+                                                   slug=camp.slug_name)))
+        self.assertContains(resp, escape(camp.leaders.all()[0].name))
+        self.assertContains(resp, camp.camp_name.name)
