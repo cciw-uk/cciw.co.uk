@@ -1,6 +1,8 @@
 # Settings file for testing on development box
 from cciw.settings import *  # NOQA
 
+DATABASES['default']['CONN_MAX_AGE'] = 0  # fix some deadlocks with DB flushing
+
 DEBUG = False
 TEMPLATE_DEBUG = False
 DEBUG_PROPAGATE_EXCEPTIONS = True
