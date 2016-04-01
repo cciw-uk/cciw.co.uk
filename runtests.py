@@ -63,7 +63,7 @@ if known_args.show_browser:
 cmd += remaining_options + test_args
 
 if known_args.coverage:
-    coverage_bin = subprocess.check_output(["which", "coverage"]).strip()
+    coverage_bin = subprocess.check_output(["which", "coverage"]).strip().decode('utf-8')
     cmd_prefix = [coverage_bin, "run"]
     if known_args.coverage_append:
         cmd_prefix.append("--append")
