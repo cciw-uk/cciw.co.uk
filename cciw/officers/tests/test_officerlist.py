@@ -12,6 +12,9 @@ from cciw.officers.tests.base import ApplicationSetupMixin, ReferenceHelperMixin
 from cciw.officers.utils import camp_serious_slacker_list, officer_data_to_spreadsheet
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.base import TestBase
+from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
+
+from .base import OfficersSetupMixin, LEADER
 
 User = get_user_model()
 
@@ -128,3 +131,12 @@ class TestSlackers(BasicSetupMixin, ReferenceHelperMixin, TestBase):
               'last_good_refs_year': None,
               'last_good_crbs_year': None,
               }])
+
+
+class TestOfficerListPage(OfficersSetupMixin, SeleniumBase):
+
+    def test_add(self):
+        camp = self.default_camp_1
+        self.officer_login(LEADER)
+        self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
+        import IPython; IPython.embed()
