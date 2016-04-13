@@ -289,7 +289,7 @@ def local_webserver_start():
     Starts the webserver that is running the Django instance, on the local machine
     """
     if not _is_webserver_running():
-        local("rm {0}".target.GUNICORN_PIDFILE)
+        local("rm {0}".format(target.GUNICORN_PIDFILE))
         local(_webserver_command())
 
 
