@@ -141,6 +141,9 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
     def remove_button_selector(self, officer):
         return '[data-officer-id="{0}"] [data-remove-button]'.format(officer.id)
 
+    def edit_button_selector(self, officer):
+        return '[data-officer-id="{0}"] [data-edit-button]'.format(officer.id)
+
     def test_add(self):
         camp = self.default_camp_1
         officer = self.officer_user
@@ -185,3 +188,31 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         # UI check:
         self.assertTrue(self.is_element_present(self.add_button_selector(officer)))
         self.assertTextPresent(officer.email)
+
+    def test_edit(self):
+        camp = self.default_camp_1
+        officer = self.officer_user
+        camp.invitations.create(officer=officer)
+
+        self.officer_login(LEADER)
+        self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
+        self.assertFalse(self.is_element_displayed('#id_officer_save'))
+
+        self.click(self.edit_button_selector(officer))
+        self.assertTrue(self.is_element_displayed('#id_officer_save'))
+        self.fill({'#id_officer_first_name': 'Altered',
+                   '#id_officer_last_name': 'Name',
+                   '#id_officer_email': 'alteredemail@somewhere.com'})
+        self.click('#id_officer_save')
+        self.wait_for_ajax()
+
+        # Test DB
+        officer = User.objects.get(id=officer.id)
+        self.assertEqual(officer.first_name, 'Altered')
+        self.assertEqual(officer.last_name, 'Name')
+        self.assertEqual(officer.email, 'alteredemail@somewhere.com')
+
+        # Test UI:
+        self.assertFalse(self.is_element_displayed('#id_officer_save'))
+        self.assertFalse(self.is_element_displayed('#id_officer_first_name'))
+        self.assertTextPresent('alteredemail@somewhere.com')
