@@ -1,4 +1,5 @@
 import os
+import time
 import unittest
 from urllib.parse import urlparse
 
@@ -6,9 +7,9 @@ from compressor.filters import CompilerFilter
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.urlresolvers import reverse
 from django.test.utils import override_settings
+from django_functest import FuncSeleniumMixin, FuncWebTestMixin, ShortcutLoginMixin
 
 from cciw.utils.tests.base import TestBase, TestBaseMixin
-from django_functest import FuncSeleniumMixin, FuncWebTestMixin, ShortcutLoginMixin
 
 TESTS_SHOW_BROWSER = os.environ.get('TESTS_SHOW_BROWSER', '')
 
@@ -71,3 +72,7 @@ class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseM
 
     def assertHtmlPresent(self, html):
         self.assertContains(self._get_page_source(), html, html=True)
+
+    def wait_for_ajax(self):
+        time.sleep(0.1)
+        self.wait_until(lambda driver: driver.execute_script('return (typeof(jQuery) == "undefined" || jQuery.active == 0)'))

@@ -64,7 +64,7 @@
 
     var addOfficerListHandlers = function() {
         // event handlers for all 'edit' buttons
-        $(".editbtn").click(function(ev) {
+        $("[data-edit-button]").click(function(ev) {
             ev.preventDefault();
             if (editOfficerMode) {
                 alert("Please finish editing the other row first");
@@ -146,7 +146,7 @@
         });
 
         // event handlers for 'remove' buttons
-        $(".removebtn").click(function(ev) {
+        $("[data-remove-button]").click(function(ev) {
             var $btn = $(ev.target);
             $btn.attr('disabled', 'disabled');
             var officerId = parseInt($btn.closest('tr').attr('data-officer-id'), 10);
@@ -162,7 +162,7 @@
         });
 
         // event handlers for 'email' buttons
-        $(".emailbtn").click(function(ev) {
+        $("[data-email-button]").click(function(ev) {
             ev.preventDefault();
             if (confirm("This will reset the officer's password and re-send the initial signup e-mail.  Continue?")) {
                 var officerId = parseInt($(ev.target).closest('tr').attr('data-officer-id'), 10);

@@ -14,7 +14,7 @@ from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
-from .base import OfficersSetupMixin, LEADER
+from .base import LEADER, CurrentCampsMixin, OfficersSetupMixin
 
 User = get_user_model()
 
@@ -133,10 +133,55 @@ class TestSlackers(BasicSetupMixin, ReferenceHelperMixin, TestBase):
               }])
 
 
-class TestOfficerListPage(OfficersSetupMixin, SeleniumBase):
+class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
+
+    def add_button_selector(self, officer):
+        return '[data-officer-id="{0}"] [data-add-button]'.format(officer.id)
+
+    def remove_button_selector(self, officer):
+        return '[data-officer-id="{0}"] [data-remove-button]'.format(officer.id)
 
     def test_add(self):
         camp = self.default_camp_1
+        officer = self.officer_user
+
         self.officer_login(LEADER)
         self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
-        import IPython; IPython.embed()
+
+        # Check initial:
+        self.assertNotIn(officer, camp.officers.all())
+        self.assertFalse(self.is_element_present(self.remove_button_selector(officer)))
+        self.assertTextPresent(officer.email)
+
+        # Action:
+        self.click(self.add_button_selector(officer))
+        self.wait_for_ajax()
+
+        # DB check:
+        self.assertIn(officer, camp.officers.all())
+        # UI check:
+        self.assertTrue(self.is_element_present(self.remove_button_selector(officer)))
+        self.assertTextPresent(officer.email)
+
+    def test_remove(self):
+        camp = self.default_camp_1
+        officer = self.officer_user
+        camp.invitations.create(officer=officer)
+
+        self.officer_login(LEADER)
+        self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
+
+        # Check initial:
+        self.assertIn(officer, camp.officers.all())
+        self.assertFalse(self.is_element_present(self.add_button_selector(officer)))
+        self.assertTextPresent(officer.email)
+
+        # Action:
+        self.click(self.remove_button_selector(officer))
+        self.wait_for_ajax()
+
+        # DB check:
+        self.assertNotIn(officer, camp.officers.all())
+        # UI check:
+        self.assertTrue(self.is_element_present(self.add_button_selector(officer)))
+        self.assertTextPresent(officer.email)

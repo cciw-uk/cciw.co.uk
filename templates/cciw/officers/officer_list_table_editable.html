@@ -19,15 +19,15 @@
           <td><a href="mailto:{{ invite.officer.email }}">{{ invite.officer.email }}</a></td>
           <td>{{ invite.notes }}</a></td>
           <td>
-            <button class="editbtn">
+            <button data-edit-button>
               <img src="{% static "admin/img/icon-changelink.svg" %}" alt="Edit" title="Edit" />
               Edit
             </button>
-            <button class="removebtn">
+            <button data-remove-button>
               <img src="{% static "images/officer-list-remove.gif" %}" alt="Remove" title="Remove">
               Remove
             </button>
-            <button class="emailbtn">
+            <button data-email-button>
               <img src="{% static "images/sendemail.gif" %}" alt="Re-send initial e-mail" title="Re-send initial e-mail" />
               Resend email
             </button>

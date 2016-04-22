@@ -184,6 +184,10 @@
       </li>
     </ul>
 
+    <form>
+      {% csrf_token %}{# Ensure cookie is set for AJAX #}
+    </form>
+
 </div> {# id=content-main #}
 
 <div id="id_add_officer_popup" class="inlinepopup">
