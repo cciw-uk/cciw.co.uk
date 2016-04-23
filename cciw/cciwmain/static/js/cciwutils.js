@@ -36,7 +36,7 @@
             if (document.cookie && document.cookie != '') {
                 var cookies = document.cookie.split(';');
                 for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
+                    var cookie = $.trim(cookies[i]);
                     // Does this cookie string begin with the name we want?
                     if (cookie.substring(0, name.length + 1) == (name + '=')) {
                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
@@ -170,6 +170,25 @@ var cciw = (function(pub, $) {
         return on_input_change;
     };
 
+    var genericAjaxErrorHandler = function (jqXHR, textStatus, errorThrown) {
+        if (jqXHR.status === 400) {
+            var json = $.parseJSON(jqXHR.responseText);
+            var message = "";
+            var errors = json.errors;
+            var fields = Object.keys(errors);
+            for (var i = 0; i < fields.length; i++) {
+                var field = fields[i];
+                var errs = errors[field];
+                for (var j = 0; j < errs.length; j++) {
+                    message += field + ": " + errs[j] + "\n";
+                }
+            }
+            alert("Data not saved: \n" + message);
+        } else {
+            alert("Data not saved: " + textStatus);
+        }
+    };
+
     // Public interface:
     pub.standardformAddOnchangeHandlers = function(form) {
         addFormOnchangeHandlers(form, function(input) {
@@ -178,6 +197,7 @@ var cciw = (function(pub, $) {
     };
 
     pub.standardformClearError = standardformClearError;
+    pub.genericAjaxErrorHandler = genericAjaxErrorHandler;
 
     return pub;
 })(cciw || {}, jQuery);

@@ -6,14 +6,14 @@ from datetime import date, datetime, timedelta
 from functools import reduce
 from urllib.parse import urlparse
 
+import pandas_highcharts.core
 from dal import autocomplete
-from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
 from django.core import signing
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -23,7 +23,6 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
-import pandas_highcharts.core
 from cciw.auth import (is_booking_secretary, is_camp_admin, is_camp_officer, is_cciw_secretary, is_committee_member,
                        is_wiki_user)
 from cciw.bookings.models import Booking
@@ -33,23 +32,24 @@ from cciw.bookings.utils import (addresses_for_mailing_list, camp_bookings_to_sp
                                  year_bookings_to_spreadsheet)
 from cciw.cciwmain import common
 from cciw.cciwmain.decorators import json_response
-from cciw.cciwmain.models import Camp, get_reference_contact_people
+from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email, python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
-from cciw.officers import create
-from cciw.officers.applications import (application_rtf_filename, application_to_rtf, application_to_text,
-                                        application_txt_filename, applications_for_camp, camps_for_application,
-                                        thisyears_applications)
-from cciw.officers.email import (make_ref_form_url, make_ref_form_url_hash, send_crb_consent_problem_email,
-                                 send_leaders_reference_email, send_nag_by_officer, send_reference_request_email)
-from cciw.officers.email_utils import formatted_email, send_mail_with_attachments
-from cciw.officers.models import (Application, CRBApplication, CRBFormLog, Invitation, Referee, Reference,
-                                  ReferenceAction, empty_reference)
-from cciw.officers.stats import get_camp_officer_stats, get_camp_officer_stats_trend
-from cciw.officers.utils import camp_serious_slacker_list, camp_slacker_list, officer_data_to_spreadsheet
-from cciw.officers.widgets import ExplicitBooleanFieldSelect
 from cciw.utils.views import close_window_response, get_spreadsheet_formatter, user_passes_test_improved
 from securedownload.views import access_folder_securely
+
+from . import create
+from .applications import (application_rtf_filename, application_to_rtf, application_to_text, application_txt_filename,
+                           applications_for_camp, camps_for_application, thisyears_applications)
+from .email import (make_ref_form_url, make_ref_form_url_hash, send_crb_consent_problem_email, send_nag_by_officer,
+                    send_reference_request_email)
+from .email_utils import formatted_email, send_mail_with_attachments
+from .forms import (AdminReferenceForm, CrbConsentProblemForm, CreateOfficerForm, ReferenceForm,
+                    SendNagByOfficerForm, SendReferenceRequestForm, SetEmailForm, UpdateOfficerForm)
+from .models import (Application, CRBApplication, CRBFormLog, Invitation, Referee, Reference, ReferenceAction,
+                     empty_reference)
+from .stats import get_camp_officer_stats, get_camp_officer_stats_trend
+from .utils import camp_serious_slacker_list, camp_slacker_list, officer_data_to_spreadsheet
 
 User = get_user_model()
 
@@ -447,51 +447,6 @@ def officer_history(request, officer_id=None):
                    })
 
 
-class SetEmailForm(forms.Form):
-    name = forms.CharField(widget=forms.TextInput(attrs={'size': '50'}))
-    email = forms.EmailField(widget=forms.TextInput(attrs={'size': '50'}))
-
-    def save(self, referee):
-        referee.name = self.cleaned_data['name']
-        referee.email = self.cleaned_data['email']
-        referee.save()
-
-
-class SendMessageForm(forms.Form):
-    message = forms.CharField(widget=forms.Textarea(attrs={'cols': 80, 'rows': 20}))
-
-    def __init__(self, *args, **kwargs):
-        message_info = kwargs.pop('message_info', {})
-        self.message_info = message_info
-        msg_template = self.get_message_template()
-        msg = render_to_string(msg_template, message_info)
-        initial = kwargs.pop('initial', {})
-        initial['message'] = msg
-        kwargs['initial'] = initial
-        return super(SendMessageForm, self).__init__(*args, **kwargs)
-
-    def get_message_template(self):
-        raise NotImplementedError
-
-
-class SendReferenceRequestForm(SendMessageForm):
-
-    def get_message_template(self):
-        if self.message_info['update']:
-            return 'cciw/officers/request_reference_update.txt'
-        else:
-            return 'cciw/officers/request_reference_new.txt'
-
-    def clean(self):
-        cleaned_data = self.cleaned_data
-        url = self.message_info['url']
-        if url not in cleaned_data.setdefault('message', ''):
-            errmsg = "You removed the link %s from the message.  This link is needed for the referee to be able to submit their reference" % url
-            self._errors.setdefault('message', self.error_class([])).append(errmsg)
-            del cleaned_data['message']
-        return cleaned_data
-
-
 @staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
 def request_reference(request, year=None, slug=None):
@@ -596,11 +551,6 @@ def request_reference(request, year=None, slug=None):
     return render(request, 'cciw/officers/request_reference.html', c)
 
 
-class SendNagByOfficerForm(SendMessageForm):
-    def get_message_template(self):
-        return 'cciw/officers/nag_by_officer_email.txt'
-
-
 @staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
 def nag_by_officer(request, year=None, slug=None):
@@ -640,68 +590,6 @@ def nag_by_officer(request, year=None, slug=None):
     c['messageform'] = messageform
     c['is_popup'] = True
     return render(request, 'cciw/officers/nag_by_officer.html', c)
-
-
-class ReferenceForm(forms.ModelForm):
-    class Meta:
-        model = Reference
-        fields = ('referee_name',
-                  'how_long_known',
-                  'capacity_known',
-                  'known_offences',
-                  'known_offences_details',
-                  'capability_children',
-                  'character',
-                  'concerns',
-                  'comments')
-
-    def __init__(self, *args, **kwargs):
-        super(ReferenceForm, self).__init__(*args, **kwargs)
-        reference_contact_people = get_reference_contact_people()
-        if reference_contact_people:
-            contact_message = (" If you would prefer to discuss your concerns on the telephone "
-                               "and in confidence, please contact: " +
-                               " or ".join("{0} on {1}".format(person.name,
-                                                               person.phone_number)
-                                           for person in reference_contact_people))
-            self.fields['concerns'].label += contact_message
-
-    def save(self, referee, user=None):
-        obj = super(ReferenceForm, self).save(commit=False)
-        obj.referee = referee
-        obj.date_created = date.today()
-        obj.save()
-        self.log_reference_received(referee, user=user)
-        self.send_emails(obj)
-
-    def log_reference_received(self, referee, user=None):
-        referee.log_reference_received(timezone.now())
-
-    def send_emails(self, reference):
-        send_leaders_reference_email(reference)
-
-
-class AdminReferenceForm(ReferenceForm):
-    def log_reference_received(self, referee, user=None):
-        referee.log_reference_filled_in(user, timezone.now())
-
-
-normal_textarea = forms.Textarea(attrs={'cols': 80, 'rows': 10})
-small_textarea = forms.Textarea(attrs={'cols': 80, 'rows': 5})
-
-
-def fix_ref_form(form_class):
-    form_class.base_fields['capacity_known'].widget = small_textarea
-    form_class.base_fields['known_offences'].widget = ExplicitBooleanFieldSelect()
-    form_class.base_fields['known_offences_details'].widget = normal_textarea
-    form_class.base_fields['capability_children'].widget = normal_textarea
-    form_class.base_fields['character'].widget = normal_textarea
-    form_class.base_fields['concerns'].widget = normal_textarea
-    form_class.base_fields['comments'].widget = normal_textarea
-
-
-fix_ref_form(ReferenceForm)
-fix_ref_form(AdminReferenceForm)
 
 
 def initial_reference_form_data(referee, prev_reference):
@@ -863,13 +751,14 @@ def add_officers(request, year=None, slug=None):
 @camp_admin_required
 @json_response
 def update_officer(request):
-    User.objects.filter(pk=int(request.POST['officer_id'])).update(first_name=request.POST['first_name'].strip(),
-                                                                   last_name=request.POST['last_name'].strip(),
-                                                                   email=request.POST['email'].strip()
-                                                                   )
-    Invitation.objects.filter(camp=int(request.POST['camp_id']),
-                              officer=int(request.POST['officer_id'])).update(notes=request.POST['notes'].strip().replace('\n', ' ').replace('\r', ' ')[0:255])
-    return {'status': 'success'}
+    form = UpdateOfficerForm(request.POST)
+    if form.is_valid():
+        officer_id = int(request.POST['officer_id'])
+        camp_id = int(request.POST['camp_id'])
+        form.save(officer_id, camp_id)
+        return {'status': 'success'}
+    else:
+        raise ValidationError(form.errors)
 
 
 def correct_email(request):
@@ -908,29 +797,6 @@ def correct_application(request):
         c['success'] = True
 
     return render(request, 'cciw/officers/email_update.html', c)
-
-
-class StripStringsMixin(object):
-    def clean(self):
-        for field, value in self.cleaned_data.items():
-            if isinstance(value, str):
-                self.cleaned_data[field] = value.strip()
-        return self.cleaned_data
-
-
-class BaseForm(StripStringsMixin, forms.Form):
-    pass
-
-
-class CreateOfficerForm(BaseForm):
-    first_name = forms.CharField()
-    last_name = forms.CharField()
-    email = forms.EmailField()
-
-    def save(self):
-        return create.create_officer(self.cleaned_data['first_name'],
-                                     self.cleaned_data['last_name'],
-                                     self.cleaned_data['email'])
 
 
 @staff_member_required
@@ -1228,11 +1094,6 @@ def undo_mark_crb_sent(request):
     crbformlog_id = int(request.POST['crbformlog_id'])
     CRBFormLog.objects.filter(id=crbformlog_id).delete()
     return {'status': 'success'}
-
-
-class CrbConsentProblemForm(SendMessageForm):
-    def get_message_template(self):
-        return 'cciw/officers/crb_consent_problem_email.txt'
 
 
 @staff_member_required

@@ -86,7 +86,7 @@
             // Make input boxes, and save/cancel buttons
             firstNameCell.html('<input size=8 id="id_officer_first_name" type="text" value="' + escape(officer.firstName) + '" /></td>');
             lastNameCell.html('<input size=8 id="id_officer_last_name" type="text" value="' +  escape(officer.lastName) + '" />');
-            emailCell.html('<input size=25 id="id_officer_email" type="text" value="' + escape(officer.email) + '" />');
+            emailCell.html('<input size=25 id="id_officer_email" type="email" value="' + escape(officer.email) + '" />');
             notesCell.html('<input size=25 id="id_officer_notes" type="text" value="' + escape(officer.notes) + '" />');
             editCell.find('button').hide();
             editCell.append(
@@ -123,10 +123,6 @@
                 officer.lastName  = $('#id_officer_last_name').val();
                 officer.email     = $('#id_officer_email').val();
                 officer.notes     = $('#id_officer_notes').val();
-                setOfficerRow(officer);
-                $('#id_officer_list_table table').trigger('update');
-                // For responsiveness, we update UI before server has
-                // saved data.
                 $.ajax({
                     type: 'POST',
                     url: cciw.updateOfficerUrl,
@@ -140,7 +136,9 @@
                     dataType: 'json',
                     success: function() {
                         refreshLists("noapplication");
-                    }
+                        setOfficerRow(officer);
+                    },
+                    error: cciw.genericAjaxErrorHandler
                 });
             });
         });

@@ -76,3 +76,11 @@ class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseM
     def wait_for_ajax(self):
         time.sleep(0.1)
         self.wait_until(lambda driver: driver.execute_script('return (typeof(jQuery) == "undefined" || jQuery.active == 0)'))
+
+    def accept_alert(self):
+        self._driver.switch_to.alert.accept()
+        time.sleep(0.2)
+
+    def click_expecting_alert(self, css_selector):
+        # Don't do wait_until_finished
+        self._find(css_selector).click()
