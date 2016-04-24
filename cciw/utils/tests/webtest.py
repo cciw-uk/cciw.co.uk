@@ -82,5 +82,7 @@ class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseM
         time.sleep(0.2)
 
     def click_expecting_alert(self, css_selector):
+        # TODO - fix django-functest so this isn't needed
+
         # Don't do wait_until_finished
         self._find(css_selector).click()

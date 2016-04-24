@@ -146,6 +146,9 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
     def edit_button_selector(self, officer):
         return '[data-officer-id="{0}"] [data-edit-button]'.format(officer.id)
 
+    def resend_email_button_selector(self, officer):
+        return '[data-officer-id="{0}"] [data-email-button]'.format(officer.id)
+
     def test_add(self):
         camp = self.default_camp_1
         officer = self.officer_user
@@ -190,6 +193,23 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         # UI check:
         self.assertTrue(self.is_element_present(self.add_button_selector(officer)))
         self.assertTextPresent(officer.email)
+
+    def test_resend_email(self):
+        camp = self.default_camp_1
+        officer = self.officer_user
+        camp.invitations.create(officer=officer)
+
+        self.officer_login(LEADER)
+        self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
+
+        # Action:
+        self.click_expecting_alert(self.resend_email_button_selector(officer))
+        self.accept_alert()
+
+        self.assertEqual(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertIn(officer.first_name, m.body)
+        self.assertIn("https://www.cciw.co.uk/officers/", m.body)
 
     def test_edit(self):
         camp = self.default_camp_1
