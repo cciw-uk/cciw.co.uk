@@ -27,10 +27,6 @@ def make_username(first_name, last_name, guess_number=1):
         return guess
 
 
-class EmailError(Exception):
-    pass
-
-
 def create_officer(first_name, last_name, email):
     """
     Create an officer with the specified username, first_name, last_name, e-mail.
@@ -40,17 +36,7 @@ def create_officer(first_name, last_name, email):
     username = make_username(first_name, last_name)
     password = User.objects.make_random_password()
     officer = _create_officer(username, first_name, last_name, email, password)
-    try:
-        # We don't want to send an e-mail if the data wasn't actually saved
-        # to the the database, so we do this second.  However, we don't really
-        # want to leave the officer in the database if we couldn't send the e-mail
-        # (usability problems for admins creating the officer in the DB - they
-        # will not be able to send the e-mail manually).  So we delete the
-        # User if there was a problem sending mail.
-        email_officer(username, first_name, email, password, update=False)
-    except Exception:
-        User.objects.get(username=username).delete()
-        raise EmailError()
+    email_officer(username, first_name, email, password, update=False)
     return officer
 
 

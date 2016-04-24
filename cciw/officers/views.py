@@ -840,15 +840,12 @@ def create_officer(request):
                 process_form = True
 
             if process_form:
-                try:
-                    u = form.save()
-                    form = CreateOfficerForm()
-                    messages.info(request, "Officer %s has been added and e-mailed.  You can add another if required, or close this popup to continue." % u.username)
-                    camp_id = request.GET.get('camp_id')
-                    if camp_id is not None:
-                        Invitation.objects.get_or_create(camp=Camp.objects.get(id=camp_id), officer=u)
-                except create.EmailError:
-                    messages.error(request, "Due to a problem sending e-mail, the officer has not been added to the system.  Please try again later.")
+                u = form.save()
+                form = CreateOfficerForm()
+                messages.info(request, "Officer %s has been added and e-mailed.  You can add another if required, or close this popup to continue." % u.username)
+                camp_id = request.GET.get('camp_id')
+                if camp_id is not None:
+                    Invitation.objects.get_or_create(camp=Camp.objects.get(id=camp_id), officer=u)
 
     else:
         form = CreateOfficerForm()
