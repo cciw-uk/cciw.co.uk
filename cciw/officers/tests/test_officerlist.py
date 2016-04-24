@@ -1,8 +1,10 @@
+import time
 from datetime import timedelta
 
 import xlrd
 from django.contrib.auth import get_user_model
 from django.core import mail
+from django.core.urlresolvers import reverse
 
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import BasicSetupMixin
@@ -240,3 +242,115 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         # Test UI:
         self.accept_alert()
         self.assertTrue(self.is_element_displayed('#id_officer_save'))
+
+    def test_add_officer_button(self):
+        camp = self.default_camp_1
+        self.officer_login(LEADER)
+        self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
+        self.click('#id_new_officer_btn')
+        self.assertTrue(self.is_element_displayed('#id_add_officer_popup'))
+        self.click('#id_popup_close_btn')
+        time.sleep(1)
+        self.assertFalse(self.is_element_displayed('#id_add_officer_popup'))
+        # Functionality of "New officer" popup is tested separately.
+
+
+class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
+    # This is implemented as a popup from the officer list that shows an iframe
+    # hosting a separate page, making it easiest to test using WebTest on the
+    # separate page.
+
+    CONFIRM_BUTTON = "input[name=confirm]"
+
+    def setUp(self):
+        super().setUp()
+        mail.outbox = []
+
+    def get_page(self):
+        self.get_literal_url(reverse('cciw-officers-create_officer') +
+                             "?camp_id={0}".format(self.default_camp_1.id))
+
+    def create_officer(self, *args):
+        create_officer(*args)
+        mail.outbox = []
+
+    def test_permissions(self):
+        self.get_page()
+        self.assertTrue(self.is_element_present('body.login'))
+        self.officer_login(LEADER)
+        self.get_page()
+        self.assertFalse(self.is_element_present('body.login'))
+        self.assertTextPresent("Enter details for officer")
+
+    def test_success(self):
+        self.officer_login(LEADER)
+        self.get_page()
+        self.fill({
+            '#id_first_name': 'Mary',
+            '#id_last_name': 'Andrews',
+            '#id_email': 'mary@andrews.com',
+        })
+        self.submit('input[type=submit]')
+        self._assert_created()
+
+    def test_duplicate_user(self):
+        self.create_officer('Mary',
+                            'Andrews',
+                            'mary@andrews.com')
+        self.officer_login(LEADER)
+        self.get_page()
+        self.fill({
+            '#id_first_name': 'Mary',
+            '#id_last_name': 'Andrews',
+            '#id_email': 'mary@andrews.com',
+        })
+        self.submit('input[type=submit]')
+        self.assertTextPresent("A user with that name and e-mail address already exists")
+        self.assertFalse(self.is_element_present(self.CONFIRM_BUTTON))
+
+    def test_duplicate_name(self):
+        self.create_officer('Mary',
+                            'Andrews',
+                            'mary.andrews@gmail.com')
+        self.officer_login(LEADER)
+        self.get_page()
+        self.fill({
+            '#id_first_name': 'Mary',
+            '#id_last_name': 'Andrews',
+            '#id_email': 'mary@andrews.com',
+        })
+        self.submit('input[type=submit]')
+        self.assertTextPresent("A user with that first name and last name already exists")
+        self.submit(self.CONFIRM_BUTTON)
+        self._assert_created()
+
+    def test_duplicate_email(self):
+        self.create_officer('Mike',
+                            'Andrews',
+                            'mary@andrews.com')
+        self.officer_login(LEADER)
+        self.get_page()
+        self.fill({
+            '#id_first_name': 'Mary',
+            '#id_last_name': 'Andrews',
+            '#id_email': 'mary@andrews.com',
+        })
+        self.submit('input[type=submit]')
+        self.assertTextPresent("A user with that e-mail address already exists")
+        self.submit(self.CONFIRM_BUTTON)
+        self._assert_created()
+
+    def _assert_created(self):
+        u = User.objects.get(email='mary@andrews.com', first_name='Mary')
+        self.assertEqual(u.first_name, 'Mary')
+        self.assertEqual(u.last_name, 'Andrews')
+        c = User.objects.filter(first_name='Mary',
+                                last_name='Andrews').count()
+        username = 'maryandrews' + (str(c) if c > 1 else '')
+
+        self.assertEqual(u.username, username)
+        self.assertEqual(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertIn("Hi Mary", m.body)
+        self.assertIn("https://www.cciw.co.uk/officers/", m.body)
+        self.assertIn(u, self.default_camp_1.officers.all())
