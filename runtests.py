@@ -11,6 +11,8 @@ parser.add_argument('--coverage', "-c", action='store_true',
                     help="Use coverage")
 parser.add_argument('--coverage-append', action='store_true',
                     help="Use 'append' with coverage run")
+parser.add_argument('--ca', action='store_true',
+                    help="Same as --coverage --coverage-append")
 parser.add_argument('--skip-selenium', "-s", action='store_true',
                     help="Skip any Selenium tests")
 parser.add_argument("--fast", "-f", action='store_true',
@@ -61,6 +63,10 @@ if known_args.show_browser:
     os.environ['TESTS_SHOW_BROWSER'] = 'TRUE'
 
 cmd += remaining_options + test_args
+
+if known_args.ca:
+    known_args.coverage_append = True
+    known_args.coverage = True
 
 if known_args.coverage:
     coverage_bin = subprocess.check_output(["which", "coverage"]).strip().decode('utf-8')
