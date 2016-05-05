@@ -13,17 +13,6 @@ from django.utils.functional import Promise
 from django.utils.encoding import force_text
 
 
-def strip_control_chars(text):
-    for i in range(0, 32):
-        text = text.replace(chr(i), '')
-    return text
-
-
-def unslugify(slug):
-    "Turns dashes and underscores into spaces and applies title casing"
-    return slug.replace("-", " ").replace("_", " ").title()
-
-
 # form.errors contains strings marked for translation,
 # even though USE_I18N==False.  We have to do this so
 # that we can serialize
