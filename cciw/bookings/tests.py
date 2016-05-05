@@ -500,6 +500,15 @@ class TestBookingVerifyBase(BookingBaseMixin):
         self.get_literal_url(path_and_query_to_url(badpath, querydata))
         self.assertTextPresent("failed")
 
+        # Trigger some different error paths:
+        badpath2 = path.replace('v/', 'v/AAAAAAAAAAAAAAAA')
+        self.get_literal_url(path_and_query_to_url(badpath2, querydata))
+        self.assertTextPresent("failed")
+
+        badpath3 = path.replace('v/', 'v/1000')
+        self.get_literal_url(path_and_query_to_url(badpath3, querydata))
+        self.assertTextPresent("failed")
+
     def test_verify_invalid_account(self):
         """
         Test the email verification stage when the URL contains an invalid
@@ -2562,9 +2571,9 @@ class TestExportPaymentData(CreateIPNMixin, TestBase):
                       data2)
 
         self.assertNotIn(['Joe Bloggs', 'joe@foo.com', 1.23, 'ManualPayment (deleted)'],
-                      data2)
+                         data2)
         self.assertNotIn(['Joe Bloggs', 'joe@foo.com', -1.23, 'ManualPayment (deleted)'],
-                      data2)
+                         data2)
 
 
 class TestBookingModel(CreatePlaceModelMixin, TestBase):
