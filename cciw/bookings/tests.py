@@ -15,6 +15,7 @@ from django.utils import timezone
 from django_dynamic_fixture import G
 from paypal.standard.ipn.models import PayPalIPN
 
+from cciw.bookings.email import send_payment_reminder_emails
 from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND,
@@ -527,6 +528,27 @@ class TestBookingVerifyWT(TestBookingVerifyBase, WebTestBase):
 
 class TestBookingVerifySL(TestBookingVerifyBase, SeleniumBase):
     pass
+
+
+class TestPaymentReminderEmails(CreatePlaceModelMixin, BookingBaseMixin, WebTestBase):
+
+    def test_payment_reminder_email(self):
+        booking = self.create_place_model()
+        book_basket_now(booking.account.bookings.all())
+        booking = Booking.objects.get(id=booking.id)
+        booking.confirm()
+        booking.save()
+        self.assertEqual(len(BookingAccount.objects.payments_due()), 1)
+        mail.outbox = []
+        send_payment_reminder_emails()
+        self.assertEqual(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertIn("You have payments due", m.body)
+        self.assertEqual("CCIW payments due", m.subject)
+        url, path, querydata = read_email_url(m, "https?://.*/booking/p.*")
+        self.get_literal_url(path_and_query_to_url(path, querydata))
+        self.assertUrlsEqual(reverse('cciw-bookings-pay'))
+        self.assertTextPresent(booking.account.get_balance())
 
 
 class TestAccountDetailsBase(BookingBaseMixin, LogInMixin):
