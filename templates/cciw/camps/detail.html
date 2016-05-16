@@ -80,6 +80,12 @@
                 <a href="{% url 'cciw-bookings-index' %}">See other booking options and prices</a>
               {% else %}
                 No more places available on this camp, sorry.
+                {% if camp.slug_name == "green" %}
+                  <p>We're sorry camp green is full. However do note <a href="/camps/2016/yellow/">camp yellow</a>
+                    has spaces and is the sister camp of camp green (having been
+                    one camp last year), just 4 miles down the road with many of
+                    the same leaders and helpers.</p>
+                {% endif %}
               {% endif %}
             {% endwith %}
           {% else %}
