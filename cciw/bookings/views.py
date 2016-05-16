@@ -288,8 +288,7 @@ class BookingIndex(CciwBaseView):
             now = timezone.now()
             early_bird_available = early_bird_is_available(year, now)
             context['early_bird_available'] = early_bird_available
-            if early_bird_available:
-                context['early_bird_date'] = get_early_bird_cutoff_date(year)
+            context['early_bird_date'] = get_early_bird_cutoff_date(year)
         else:
             # Show last year's prices
             prices = Price.objects.filter(year=year - 1)
