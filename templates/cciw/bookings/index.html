@@ -4,7 +4,8 @@
 
   {% if request.booking_account %}
     <h2>Your account</h2>
-    You are logged in as <b>{{ request.booking_account.name }}</b>. <a href="{% url 'cciw-bookings-account_overview' %}">View your account details</a>.
+    You are logged in as <b>{{ request.booking_account.name }}</b>.
+    <a href="{% url 'cciw-bookings-account_overview' %}">View your account details</a>.
   {% endif %}
 
 
