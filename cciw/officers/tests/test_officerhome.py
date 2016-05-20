@@ -1,9 +1,10 @@
 from django.core.urlresolvers import reverse
 
+from cciw.cciwmain.common import get_thisyear
 from cciw.utils.tests.webtest import WebTestBase
-from cciw.officers.tests.base import OfficersSetupMixin, CurrentCampsMixin
+from .base import OfficersSetupMixin, CurrentCampsMixin
 
-from .base import LEADER, OFFICER, BOOKING_SECRETARY
+from .base import LEADER, OFFICER, BOOKING_SECRETARY, SECRETARY
 
 
 class OfficerHomePage(OfficersSetupMixin, CurrentCampsMixin, WebTestBase):
@@ -33,3 +34,11 @@ class OfficerHomePage(OfficersSetupMixin, CurrentCampsMixin, WebTestBase):
         self.assertTextPresent("Manage bookings")
         self.follow_link('a[href="{0}"]'.format(reverse('admin:app_list',
                                                         args=('bookings',))))
+
+    def test_secretary_access(self):
+        self.officer_login(SECRETARY)
+        self.get_url('cciw-officers-index')
+        self.assertCode(200)
+        self.assertTextPresent("Manage DBSs")
+        self.follow_link('a[href="{0}"]'.format(reverse('cciw-officers-manage_crbs',
+                                                        args=(get_thisyear(),))))

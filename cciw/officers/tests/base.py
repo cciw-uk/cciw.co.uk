@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django_dynamic_fixture import G
 
-from cciw.auth import BOOKING_SECRETARY_GROUP_NAME
+from cciw.auth import BOOKING_SECRETARY_GROUP_NAME, SECRETARY_GROUP_NAME
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.officers.models import Application, Reference
@@ -24,9 +24,14 @@ LEADER_EMAIL = 'leader@somewhere.com'
 LEADER = (LEADER_USERNAME, LEADER_PASSWORD)
 
 
-BOOKING_SECRETARY_USERNAME = 'booker'
-BOOKING_SECRETARY_PASSWORD = 'test_normaluser_password'
+BOOKING_SECRETARY_USERNAME = 'bookingsec'
+BOOKING_SECRETARY_PASSWORD = 'a_password'
 BOOKING_SECRETARY = (BOOKING_SECRETARY_USERNAME, BOOKING_SECRETARY_PASSWORD)
+
+
+SECRETARY_USERNAME = 'mrsecretary'
+SECRETARY_PASSWORD = 'test_password'
+SECRETARY = (SECRETARY_USERNAME, SECRETARY_PASSWORD)
 
 
 def perm(codename, app_label, model):
@@ -140,6 +145,42 @@ class OfficersSetupMixin(BasicSetupMixin):
                                    groups=[self.booking_secretary_group])
         self.booking_secretary.set_password(BOOKING_SECRETARY_PASSWORD)
         self.booking_secretary.save()
+
+        self.secretary_group = G(Group,
+                                 name=SECRETARY_GROUP_NAME,
+                                 permissions=[
+                                     perm("change_application",
+                                          "officers",
+                                          "application"),
+                                     perm("add_crbapplication",
+                                          "officers",
+                                          "crbapplication"),
+                                     perm("change_crbapplication",
+                                          "officers",
+                                          "crbapplication"),
+                                     perm("delete_crbapplication",
+                                          "officers",
+                                          "crbapplication"),
+                                     perm("add_crbformlog",
+                                          "officers",
+                                          "crbformlog"),
+                                     perm("change_crbformlog",
+                                          "officers",
+                                          "crbformlog"),
+                                     perm("delete_crbformlog",
+                                          "officers",
+                                          "crbformlog"),
+                                 ],
+                                 )
+
+        self.secretary = G(User,
+                           username=SECRETARY_USERNAME,
+                           is_active=True,
+                           is_superuser=False,
+                           is_staff=True,
+                           groups=[self.secretary_group])
+        self.secretary.set_password(SECRETARY_PASSWORD)
+        self.secretary.save()
 
 
 class ExtraOfficersSetupMixin(OfficersSetupMixin):
