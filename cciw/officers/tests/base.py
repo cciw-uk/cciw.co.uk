@@ -415,7 +415,7 @@ class ReferenceHelperMixin(object):
                  )
 
 
-class CurrentCampsMixin(object):
+class CurrentCampsMixin(BasicSetupMixin):
     def setUp(self):
         super(CurrentCampsMixin, self).setUp()
         # Make sure second camp has end date in future, otherwise we won't be able to

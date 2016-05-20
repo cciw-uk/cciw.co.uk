@@ -6,7 +6,7 @@
   <h2>Menu:</h2>
   <ul>
     {% if show_booking_secretary_links %}
-      <li><a href="/admin/bookings/">Manage bookings</a></li>
+      <li><a href="{% url 'admin:app_list' 'bookings' %}">Manage bookings</a></li>
       <li><a href="{% url 'cciw-officers-booking_secretary_reports' thisyear %}">
         Booking reports {{ thisyear }}</a></li>
       <li><a href="{% url 'cciw-officers-booking_secretary_reports' lastyear %}">
