@@ -28,7 +28,7 @@ from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spread
 from cciw.bookings.views import BOOKING_COOKIE_SALT
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
-from cciw.officers.tests.base import (BOOKING_SEC, BOOKING_SEC_PASSWORD, BOOKING_SEC_USERNAME, OFFICER,
+from cciw.officers.tests.base import (BOOKING_SECRETARY, BOOKING_SECRETARY_PASSWORD, BOOKING_SECRETARY_USERNAME, OFFICER,
                                       OfficersSetupMixin)
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
@@ -1038,7 +1038,7 @@ class TestEditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account
         acc = self.get_account()
         b = acc.bookings.all()[0]
 
-        self.officer_login(BOOKING_SEC)
+        self.officer_login(BOOKING_SECRETARY)
         self.get_url("admin:bookings_booking_change", b.id)
         self.fill_by_name({'state': BOOKING_APPROVED})
         self.submit('[name=_save]')
@@ -1046,7 +1046,7 @@ class TestEditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account
         self.assertEqual(len(mail.outbox), 1)
 
     def test_create(self):
-        self.officer_login(BOOKING_SEC)
+        self.officer_login(BOOKING_SECRETARY)
         account = BookingAccount.objects.create(
             email=self.email,
             name='Joe',
@@ -1084,7 +1084,7 @@ class TestEditPlaceAdminSL(TestEditPlaceAdminBase, SeleniumBase):
 
 class TestEditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreatePlaceModelMixin):
     def test_create(self):
-        self.officer_login(BOOKING_SEC)
+        self.officer_login(BOOKING_SECRETARY)
         self.get_url("admin:bookings_bookingaccount_add")
         self.fill_by_name({'name': 'Joe',
                            'email': self.email,
@@ -1108,7 +1108,7 @@ class TestEditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreatePlace
             payment_type=MANUAL_PAYMENT_CHEQUE,
         )
         self.assertEqual(account.payments.count(), 1)
-        self.officer_login(BOOKING_SEC)
+        self.officer_login(BOOKING_SECRETARY)
         self.get_url("admin:bookings_bookingaccount_change", account.id)
         self.assertTextPresent("Payments")
         self.assertTextPresent("Payment: 10.00 from Joe via manual payment")
@@ -1131,7 +1131,7 @@ class TestEditPaymentAdminBase(fix_autocomplete_fields(['account']), BookingBase
                                OfficersSetupMixin, CreatePlaceModelMixin):
     def test_add_manual_payment(self):
         self.create_place()
-        self.officer_login(BOOKING_SEC)
+        self.officer_login(BOOKING_SECRETARY)
         account = self.get_account()
         self.get_url("admin:bookings_manualpayment_add")
         self.fill_by_name({
@@ -1166,7 +1166,7 @@ class TestAccountTransferBase(fix_autocomplete_fields(['from_account', 'to_accou
 
         self.assertEqual(account_1.payments.count(), 1)
 
-        self.officer_login(BOOKING_SEC)
+        self.officer_login(BOOKING_SECRETARY)
 
         self.get_url("admin:bookings_accounttransferpayment_add")
         self.fill_by_name({
@@ -2059,7 +2059,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceWebMixin, W
         self.assertEqual(resp.status_code, 403)
 
         # Now as booking secretary
-        self.officer_login(BOOKING_SEC)
+        self.officer_login(BOOKING_SECRETARY)
         resp = self.get_literal_url(reverse('cciw-bookings-all_accounts_json') + "?id=%d" % acc1.id)
         self.assertEqual(resp.status_code, 200)
 
@@ -2086,7 +2086,8 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceWebMixin, W
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
                                              address_post_code="ABC",
                                              name="Mr Foo")
-        self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
+        self.client.login(username=BOOKING_SECRETARY_USERNAME,
+                          password=BOOKING_SECRETARY_PASSWORD)
         resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
                                 {'account': str(acc1.id)})
 
@@ -2111,7 +2112,8 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceWebMixin, W
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
                                              address_post_code="ABC",
                                              name="Mr Foo")
-        self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
+        self.client.login(username=BOOKING_SECRETARY_USERNAME,
+                          password=BOOKING_SECRETARY_PASSWORD)
 
         data = self._initial_place_details()
         data['account'] = str(acc1.id)
@@ -2130,7 +2132,8 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceWebMixin, W
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
                                              address_post_code="ABC",
                                              name="Mr Foo")
-        self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
+        self.client.login(username=BOOKING_SECRETARY_USERNAME,
+                          password=BOOKING_SECRETARY_PASSWORD)
 
         data = self._initial_place_details()
         data['account'] = str(acc1.id)
@@ -2155,7 +2158,8 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreatePlaceWebMixin, W
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
                                              address_post_code="ABC",
                                              name="Mr Foo")
-        self.client.login(username=BOOKING_SEC_USERNAME, password=BOOKING_SEC_PASSWORD)
+        self.client.login(username=BOOKING_SECRETARY_USERNAME,
+                          password=BOOKING_SECRETARY_PASSWORD)
         data = self._initial_place_details()
         data['early_bird_discount'] = '1'
         data['account'] = str(acc1.id)

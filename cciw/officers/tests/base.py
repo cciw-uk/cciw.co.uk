@@ -24,9 +24,9 @@ LEADER_EMAIL = 'leader@somewhere.com'
 LEADER = (LEADER_USERNAME, LEADER_PASSWORD)
 
 
-BOOKING_SEC_USERNAME = 'booker'
-BOOKING_SEC_PASSWORD = 'test_normaluser_password'
-BOOKING_SEC = (BOOKING_SEC_USERNAME, BOOKING_SEC_PASSWORD)
+BOOKING_SECRETARY_USERNAME = 'booker'
+BOOKING_SECRETARY_PASSWORD = 'test_normaluser_password'
+BOOKING_SECRETARY = (BOOKING_SECRETARY_USERNAME, BOOKING_SECRETARY_PASSWORD)
 
 
 def perm(codename, app_label, model):
@@ -133,12 +133,12 @@ class OfficersSetupMixin(BasicSetupMixin):
                                          )
 
         self.booking_secretary = G(User,
-                                   username=BOOKING_SEC_USERNAME,
+                                   username=BOOKING_SECRETARY_USERNAME,
                                    is_active=True,
                                    is_superuser=False,
                                    is_staff=True,
                                    groups=[self.booking_secretary_group])
-        self.booking_secretary.set_password(BOOKING_SEC_PASSWORD)
+        self.booking_secretary.set_password(BOOKING_SECRETARY_PASSWORD)
         self.booking_secretary.save()
 
 

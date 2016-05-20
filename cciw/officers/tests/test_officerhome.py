@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from cciw.utils.tests.webtest import WebTestBase
 from cciw.officers.tests.base import OfficersSetupMixin, CurrentCampsMixin
 
-from .base import LEADER, OFFICER, BOOKING_SEC
+from .base import LEADER, OFFICER, BOOKING_SECRETARY
 
 
 class OfficerHomePage(OfficersSetupMixin, CurrentCampsMixin, WebTestBase):
@@ -27,7 +27,7 @@ class OfficerHomePage(OfficersSetupMixin, CurrentCampsMixin, WebTestBase):
         self.follow_link('a[href="{0}"]'.format(reverse('cciw-officers-leaders_index')))
 
     def test_booking_secretary_access(self):
-        self.officer_login(BOOKING_SEC)
+        self.officer_login(BOOKING_SECRETARY)
         self.get_url('cciw-officers-index')
         self.assertCode(200)
         self.assertTextPresent("Manage bookings")
