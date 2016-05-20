@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -311,7 +312,13 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         self._finish_application_form()
         self.submit('[name=_save]')
         self.assertNamedUrl("cciw-officers-applications")
-        self.assertTextPresent("The application form has not been sent to any leaders")
+        self.assertTextPresent("The application form has been sent to the CCIW secretary")
+
+        # There should be two emails in outbox, one to officer, one to
+        # secretary.
+        emails = self._get_application_form_emails()
+        self.assertEqual(len(emails), 2)
+        self.assertTrue(any(e.to == [settings.SECRETARY_EMAIL] for e in emails))
 
     def test_change_application_after_camp_past(self):
         """

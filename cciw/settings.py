@@ -291,6 +291,7 @@ COMPRESS_PRECOMPILERS = [
 CONTACT_US_EMAIL = "feedback@cciw.co.uk"
 BOOKING_SECRETARY_EMAIL = "bookings@cciw.co.uk"
 BOOKING_FORM_EMAIL = "bookingforms@cciw.co.uk"
+SECRETARY_EMAIL = "secretary@cciw.co.uk"
 BOOKINGFORMDIR = "downloads"
 WEBMASTER_EMAIL = "webmaster@cciw.co.uk"
 LIST_MAILBOX_NAME = "camplists"

@@ -81,9 +81,10 @@ def send_application_emails(request, application):
                       camp.leaders_formatted)
 
     if len(leader_email_groups) == 0:
-        messages.warning(request,
-                         "The application form has not been sent to any leaders, "
-                         "because you are not on any camp's officer list this year.")
+        send_leader_email([settings.SECRETARY_EMAIL], application, application_text, rtf_attachment, None)
+        messages.info(request,
+                      "The application form has been sent to the CCIW secretary, "
+                      "because you are not on any camp's officer list this year.")
 
     # If an admin user corrected an application, we don't send the user a copy
     if request.user == application.officer:
