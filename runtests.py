@@ -43,6 +43,12 @@ if len(test_args) == 0:
                  "cciw.mail.tests",
                  "cciw.bookings.tests"]
 
+
+if known_args.ca:
+    known_args.coverage_append = True
+    known_args.coverage = True
+
+
 if known_args.coverage:
     cmd = []
 else:
@@ -63,10 +69,6 @@ if known_args.show_browser:
     os.environ['TESTS_SHOW_BROWSER'] = 'TRUE'
 
 cmd += remaining_options + test_args
-
-if known_args.ca:
-    known_args.coverage_append = True
-    known_args.coverage = True
 
 if known_args.coverage:
     coverage_bin = subprocess.check_output(["which", "coverage"]).strip().decode('utf-8')
