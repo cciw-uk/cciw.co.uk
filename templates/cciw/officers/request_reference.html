@@ -28,9 +28,8 @@
     {% if bad_email %}
       <p>No e-mail address (or an invalid e-mail address) was provided, so the
         referee can't be e-mailed.  If you cannot find out their e-mail address, you
-        must manage the reference manually.  If you can find out the e-mail
+        must fill in the reference manually. If you can find out the e-mail
         address, enter it below and press 'Save' to continue:</p>
-
 
       <form id="id_set_email_form" method="post" action="">
         {% csrf_token %}
@@ -39,6 +38,14 @@
         </table>
         <div><input type="submit" name="setemail" value="Save" /></div>
       </form>
+
+      <hr>
+
+      <div class="tabber">
+        <div class="tabbertab tabbertabdefault" title="Fill in manually">
+          {% include "cciw/officers/request_reference_edit_form_inc.html" %}
+        </div>
+      </div>
 
     {% else %}
       {% if is_update and known_email_address %}
