@@ -60,7 +60,8 @@ class UpdateOfficerForm(BaseForm):
 
 class SetEmailForm(BaseForm):
     name = forms.CharField(widget=forms.TextInput(attrs={'size': '50'}))
-    email = forms.EmailField(widget=forms.TextInput(attrs={'size': '50'}))
+    email = forms.EmailField(widget=forms.TextInput(attrs={'size': '50'}),
+                             required=False)
 
     def save(self, referee):
         referee.name = self.cleaned_data['name']
