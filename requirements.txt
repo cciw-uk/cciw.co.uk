@@ -14,7 +14,7 @@ django-countries==3.4.1
 django-debug-toolbar==1.4
 django-dynamic-fixture==1.8.5
 django-functest==0.1.5
-django-mailer==1.1
+django-mailer==1.2.1
 django-mptt==0.8.0
 django-nyt==0.9.8
 django-paypal==0.3.2
