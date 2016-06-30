@@ -1,19 +1,25 @@
-/******************* COLOURS *******************/
-/*
-  Primary Color:
-  007633 22884F		(37DA7E) BACB97
-
-
-Secondary Color A:
-A65900
-
-*/
-
-/* Include all borders here too */
-
+// Imports
 
 @import "elements.less";
 @import "mixins.less";
+
+// Colours
+//  Primary Color:
+//  007633 22884F		(37DA7E) BACB97
+//
+// Secondary Color A: A65900
+
+@primaryColor: #007633;
+@primaryColorLighter: #BACB97;
+
+@secondaryColor: #A65900;
+
+@headerColor: #444;
+@pageTitleColor: @primaryColor;
+@contentBackgroundColor: white;
+
+
+// General
 
 @lineHeight: 24px;
 
@@ -22,6 +28,9 @@ body {
     color: black;
     font-size: 15px;
     line-height: @lineHeight;
+    margin: 0 0 10px 0;
+    padding: 0;
+    font-family: arial, helvetica, sans;
 }
 
 a img, a {
@@ -38,31 +47,77 @@ a:visited {
     color: #22884f;
 }
 
-//
 
-// Colour defs
-
-@primaryColor: #007633;
-@primaryColorLighter: #BACB97;
-
-@secondaryColor: #A65900;
-
-
-@headerColor: #444;
-
-@pageTitleColor: @primaryColor;
-
-
-// Page elements
-
-#pagewrapper, footer
-{
-    max-width: 750px;
-    margin: auto;
+pre {
+    margin-top: 0px;
 }
+
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: Amaranth, Tahoma;
+    font-weight: normal;
+    margin-top: 0;
+    margin-bottom: 0.6em;
+}
+
+h1 {
+    font-size: 1.5em;
+    line-height: 1.5em;
+}
+
+h2 {
+    font-size: 1.3em;
+    margin-top: 0.5em; /* Needed for when h2 follows a form label */
+}
+
+h3 {
+    font-size: 1.2em;
+}
+
+h4 {
+    font-size: 1.1em;
+}
+
+h5, h6 {
+    font-size: 1em;
+}
+
+p {
+    margin-top: 2px;
+    margin-bottom: 1em;
+}
+
+
+
+// Footer
 
 footer {
     margin-top: 10px;
+    text-align: right;
+    padding: 0 6px 4px 6px;
+    font-size: 80%;
+
+    img {
+        vertical-align: top;
+    }
+
+    &, a:link, a:visited {
+        color: #202020;
+    }
+    a:link {
+        border-bottom: 1px solid #808080;
+    }
+    a:hover {
+        color: #404040;
+    }
+}
+
+
+// Page layout
+
+#pagewrapper, footer {
+    max-width: 750px;
+    margin: auto;
 }
 
 #pagewrapper {
@@ -70,8 +125,7 @@ footer {
     box-shadow: 2px 0px 6px #000, -2px 0px 6px #888;
 }
 
-#pageTitle
-{
+#pageTitle {
     color: white;
     background-color: @pageTitleColor;
     border-bottom: 2px solid darken(@pageTitleColor, 5%);
@@ -84,24 +138,21 @@ footer {
 
 @contentPadding: 16px;
 
-#contentInner
-{
+#contentInner {
     padding: 10px @contentPadding 32px @contentPadding;
 }
 
 
-#skiptocontentdiv
-{
+#skiptocontentdiv {
     display: none;
 }
 
 
-/* Header */
+// Header
 
 @headerHeight: 72px;
 
-#header
-{
+#header {
     color: white;
     box-shadow: inset 0px -3px 8px -3px #000,
                 0px 2px 4px -2px #888;
@@ -118,26 +169,21 @@ footer {
     }
 }
 
-#headerlogo
-{
+#headerlogo {
     background-image: url('/static/images/headerlogo.png');
     background-repeat: no-repeat;
     margin-left: 0px;
     float: left;
+    &, a {
+        height: @headerHeight;
+        width: 200px;
+        display: block;
+    }
 }
 
-#headerlogo, #headerlogo a {
-    height: @headerHeight;
-    width: 200px;
-    display: block;
-}
+// Main body
 
-/* Main body */
-
-@contentBackgroundColor: white;
-
-#content
-{
+#content {
     background-color: @contentBackgroundColor;
     border-bottom: 2px solid @primaryColor;
     // Additional shadow to pagewrapper, as this bit is 'higher'.
@@ -145,14 +191,13 @@ footer {
     box-shadow: 2px 3px 4px #888, -1px 3px 4px #888;
 }
 
-#contentBody
-{
+#contentBody {
     background-image: url('/static/images/contentbg.png');
     background-repeat: no-repeat;
     background-position: right bottom;
 }
 
-/* menubar */
+// menubar
 
 @menubarLineHeight: @lineHeight;
 
@@ -209,10 +254,9 @@ footer {
     }
 }
 
-/* Content styles */
+// Content styles
 
-#contentInner h1
-{
+#contentInner h1 {
     margin-left: -@contentPadding; // to make bg go to edge
     margin-right: -@contentPadding;
     padding-left: @contentPadding;
@@ -221,8 +265,7 @@ footer {
     text-shadow: 2px 2px 2px white, 2px -2px 2px white, -2px 2px 2px white, -2px -2px 2px white;
 }
 
-h2
-{
+h2 {
     border-bottom: 2px solid @secondaryColor;
 }
 
@@ -259,20 +302,29 @@ section.grouped {
     // Still want the text shadow
 }
 
-/* Tables */
 
+// Tables
 
 table.sideheaders,
 table.simpleform,
-table.topheaders
-{
-    th {
-        background-color: @primaryColorLighter;
-    }
+table.topheaders {
+    border-collapse: collapse;
+
 
     th, td {
+        padding: 2px 5px;
+        vertical-align: top;
         border: solid 1px #336633;
     }
+
+    th {
+        background-color: @primaryColorLighter;
+        font-weight: bold;
+        a:link {
+            border-bottom: 0px;
+        }
+    }
+
     td:not([class^=with-camp-colors-]) {
         background-color: @contentBackgroundColor;
     }
@@ -285,8 +337,25 @@ table.topheaders
     }
 }
 
-table tr.spacer td
-{
+table.sideheaders,
+table.topheaders {
+    width: 100%;
+    td {
+        overflow: hidden;
+    }
+}
+
+table.sideheaders th,
+table.simpleform th {
+    text-align: left;
+}
+
+table.topheaders th {
+    white-space: nowrap;
+}
+
+
+table tr.spacer td {
     border-left-width: 0px;
     border-right-width: 0px;
 }
@@ -297,8 +366,96 @@ div.validationErrors {
     border-radius: 7px;
 }
 
+table.topheaders tr.selected td {
+    background-color: #f8fff8;
+}
+
+
+// Lists
+
+ul.leaderlist {
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+
+    li {
+        margin: 0 0 1em 0;
+        padding: 0px;
+    }
+
+}
+// Photos
+
+
+div.sitephoto {
+    text-align: center;
+}
+
+// Forms
+
+@labelWidth: 16em;
+
+div.formrow {
+
+    clear: both;
+    margin: 0px 0px 4px 0px;
+    padding: 0px 6px 2px 6px;
+
+    .field {
+        // LHS of form
+        label {
+            display: block;
+            float: left;
+            width: @labelWidth;
+            margin-bottom: 0.8em;
+        }
+
+        // RHS of form
+        ul, ul li {
+            list-style-type: none;
+            margin-left: 0px;
+            padding-left: 0px;
+        }
+
+        ul {
+            margin-left: @labelWidth;
+        }
+
+        ul label {
+            /* Override what we set before under div.formrow label */
+            float: none;
+            width: auto;
+        }
+    }
+
+    .emptywarning {
+        color: blue;
+        font-weight: bold;
+        font-style: italic;
+    }
+
+    textarea {
+        max-width: 100%;
+    }
+}
+
+
+div.userError {
+    padding: 5px;
+    text-align: left;
+    margin-bottom: 1em;
+    margin-top: 0.5em;
+}
+
+ul.errorlist {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+    margin-top: 5px;
+}
+
 div.validationErrors::after {
-    /* auto-clearing of floats */
+    // auto-clearing of floats
     content: ".";
     display: block;
     height: 0;
@@ -322,332 +479,32 @@ input.placeholder {
     color: #808080;
 }
 
-.successMessage
-{
+.successMessage {
     border: 1px solid @primaryColor;
     background-color: @primaryColorLighter;
-}
-
-div.breadcrumb
-{
-    border-bottom: 1px solid @primaryColor;
-}
-
-div.bottombreadcrumb
-{
-    border-top: 1px solid @primaryColor;
-}
-
-table.topheaders tr.selected td
-{
-    background-color: #f8fff8;
-}
-
-footer, footer a:link, footer a:visited
-{
-    color: #202020;
-}
-footer a:hover
-{
-    color: #404040;
-}
-
-/************************** END COLOURS *******************/
-
-
-/************* LAYOUT, SPACING, GENERAL STYLES ************/
-
-body
-{
-    margin: 0;
-    margin-bottom: 10px;
-    padding: 0;
-    font-family: arial, helvetica, sans;
-}
-
-pre
-{
-    margin-top: 0px;
-}
-
-
-h1, h2, h3, h4, h5, h6
-{
-    font-family: Amaranth, Tahoma;
-    font-weight: normal;
-    margin-top: 0;
-    margin-bottom: 0.6em;
-}
-
-h1
-{
-    font-size: 1.5em;
-    line-height: 1.5em;
-}
-
-h2
-{
-    font-size: 1.3em;
-    margin-top: 0.5em; /* Needed for when h2 follows a form label */
-}
-
-h3
-{
-    font-size: 1.2em;
-}
-
-h4
-{
-    font-size: 1.1em;
-}
-
-h5, h6
-{
-    font-size: 1em;
-}
-
-p
-{
-    margin-top: 2px;
-    margin-bottom: 1em;
-}
-
-
-/* Content styles */
-
-
-/* Tables */
-
-table.sideheaders,
-table.simpleform,
-table.topheaders
-{
-    border-collapse: collapse;
-
-    th, td {
-        padding: 2px 5px;
-        vertical-align: top;
-    }
-    th {
-        font-weight: bold;
-        a:link {
-            border-bottom: 0px;
-        }
-    }
-}
-
-
-table.sideheaders,
-table.topheaders
-{
-    width: 100%;
-    td {
-        overflow: hidden;
-    }
-
-}
-
-table.sideheaders th,
-table.simpleform th
-{
-    text-align: left;
-}
-
-table.topheaders th
-{
-    white-space: nowrap;
-}
-
-
-ul.leaderlist
-{
-    margin: 0px;
-    padding: 0px;
-    list-style: none;
-}
-
-ul.leaderlist li
-{
-    margin: 0 0 1em 0;
-    padding: 0px;
-}
-
-div.sitephoto
-{
-    text-align: center;
-}
-
-/*** FORMS ***/
-
-div.formrow
-{
-    clear: both;
-    margin: 0px 0px 4px 0px;
-    padding: 0px 6px 2px 6px;
-}
-
-@labelWidth: 16em;
-
-div.formrow {
-
-    /* LHS of form */
-    .field label {
-        display: block;
-        float: left;
-        width: @labelWidth;
-        margin-bottom: 0.8em;
-    }
-
-    /* RHS of form */
-    .field ul, .field ul li
-    {
-        list-style-type: none;
-        margin-left: 0px;
-        padding-left: 0px;
-    }
-
-    .field ul {
-        margin-left: @labelWidth;
-    }
-
-    .field ul label {
-        /* Override what we set before under div.formrow label */
-        float: none;
-        width: auto;
-    }
-
-    .emptywarning {
-        color: blue;
-        font-weight: bold;
-        font-style: italic;
-    }
-}
-
-div.userError
-{
     padding: 5px;
     text-align: left;
     margin-bottom: 1em;
     margin-top: 0.5em;
+
 }
 
-ul.errorlist
-{
-    padding-top: 0px;
-    padding-bottom: 0px;
-    margin-bottom: 0px;
-    margin-top: 5px;
-}
+// Breadcrumbs
 
-div.formrow textarea {
-    max-width: 100%;
-}
-
-
-div.breadcrumb
-{
+div.breadcrumb {
+    border-bottom: 1px solid @primaryColor;
     margin-bottom: 5px;
 }
 
-div.bottombreadcrumb
-{
+div.bottombreadcrumb {
+    border-top: 1px solid @primaryColor;
     margin-top: 1em;
 }
 
-div.center
-{
-    text-align: center;
-}
 
-.successMessage
-{
-    padding: 5px;
-    text-align: left;
-    margin-bottom: 1em;
-    margin-top: 0.5em;
-}
-
-.editChunkLink
-{
+.editChunkLink {
     font-size: 80%;
     text-align: right;
-}
-
-/* 'Recent posts' page */
-.individualPost
-{
-    margin-bottom: 1em;
-    margin-left: 1em;
-}
-
-.individualPost .postHeader h2
-{
-    margin-bottom: 0;
-    margin-left: -1em;
-}
-
-.individualPost .postHeader
-{
-    margin-bottom: 0em;
-}
-.individualPost .postMessage
-{
-    margin-left: 1px;
-    padding-left: 1em;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    margin-top: 2px;
-    margin-bottom: 2px;
-}
-
-.readmore
-{
-    font-style: italic;
-}
-
-
-.verse-num
-{
-    vertical-align: super;
-    font-size: smaller;
-}
-.chapter-num
-{
-    font-size: larger;
-    font-weight: bold;
-}
-
-.note
-{
-    font-size: 85%;
-}
-
-a.button, a.button img
-{
-    border-width: 0px;
-}
-a.button img
-{
-    vertical-align: bottom;
-    border-width: 0px;
-}
-
-#esvblock
-{
-    padding-bottom: 1em;
-    border-bottom: 1px solid white;
-    margin-bottom: 1em;
-}
-
-footer
-{
-    text-align: right;
-    padding: 0 6px 4px 6px;
-    font-size: 80%;
-}
-footer img
-{
-    vertical-align: top;
 }
 
 .placeAvailability {
@@ -664,44 +521,42 @@ footer img
     z-index: 2;
     background-color: white;
     color: black;
-}
 
-.inlinepopup .closebar {
-    padding: 3px;
-    background-color: black;
-    color: white;
-    text-align: right;
-}
+    .closebar {
+        padding: 3px;
+        background-color: black;
+        color: white;
+        text-align: right;
+        a {
+            color: white;
+        }
+    }
 
-.inlinepopup .closebar a {
-    color: white;
+    .popupbody {
+        padding: 5px;
+    }
+
+    table {
+        border-collapse: collapse;
+        border: 1px solid black;
+    }
+
+    th, td {
+        padding: 2px;
+        border-left: 1px solid black
+    }
 }
 
 .inlinepopup_background {
-    display:none;
-    position:fixed;
-    height:100%;
-    width:100%;
-    top:0;
-    left:0;
-    background:#000000;
-    z-index:1;
+    display: none;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background: #000000;
+    z-index: 1;
     opacity: 0.7;
-}
-
-.inlinepopup .popupbody {
-    padding: 5px;
-}
-
-.inlinepopup table {
-    border-collapse: collapse;
-    border: 1px solid black;
-}
-
-.inlinepopup th,
-.inlinepopup td {
-    padding: 2px;
-    border-left: 1px solid black
 }
 
 
@@ -734,23 +589,23 @@ footer img
 ul.messagelist {
     padding: 0 0 5px 0;
     margin: 0;
-}
 
-ul.messagelist li {
-    display: block;
-    padding: 4px 5px 4px 25px;
-    margin: 0 0 3px 0;
-    border-bottom: 1px solid #ddd;
-    color: #666;
-    background: #ffc url(/static/admin/img/icon-yes.svg) 5px .3em no-repeat;
-}
+    li {
+        display: block;
+        padding: 4px 5px 4px 25px;
+        margin: 0 0 3px 0;
+        border-bottom: 1px solid #ddd;
+        color: #666;
+        background: #ffc url(/static/admin/img/icon-yes.svg) 5px .3em no-repeat;
 
-ul.messagelist li.warning{
-    background-image: url(/static/admin/img/icon-alert.svg);
-}
+        &.warning{
+            background-image: url(/static/admin/img/icon-alert.svg);
+        }
 
-ul.messagelist li.error{
-    background-image: url(/static/admin/img/icon-no.svg);
+        &.error{
+            background-image: url(/static/admin/img/icon-no.svg);
+        }
+    }
 }
 
 /* Booking */
@@ -803,11 +658,7 @@ ul.messagelist li.error{
     }
 }
 
-a.booknow {
-    .bigaction();
-}
-
-a.bigaction, input.bigaction {
+a.booknow, a.bigaction, input.bigaction {
     .bigaction();
 }
 
@@ -943,22 +794,26 @@ table.prices td {
 
 /* list bookings */
 
-table td.total, table td.discounts {
-    text-align: right;
-    font-weight: bold;
+table {
+    td.total, td.discounts {
+        text-align: right;
+        font-weight: bold;
+    }
+
+    tr.sectionbottom td, td.bookinglistaction {
+        border-bottom-width: 2px;
+    }
+
+    td.price {
+        text-align: right;
+    }
+
+    td.bookinglistaction {
+        text-align: center;
+    }
 }
 
-table tr.sectionbottom td, table td.bookinglistaction {
-    border-bottom-width: 2px;
-}
-
-table td.price {
-    text-align: right;
-}
-
-table td.bookinglistaction {
-    text-align: center;
-}
+// Smaller screens
 
 @media screen and (max-width: 600px) {
     body {
@@ -987,7 +842,6 @@ table td.bookinglistaction {
 
 
 @media screen and (min-width: (@mobileMenuWidth + 1px)) {
-
 
     #menubar {
         ul {
