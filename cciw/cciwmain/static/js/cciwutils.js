@@ -214,6 +214,17 @@ var cciw = (function(pub, $) {
             $('#menubar ul li').toggleClass('expanded');
         })
 
+        // JS confirmation for destructive actions
+        $('input[type=submit][data-js-confirm]').on('click', function (ev) {
+            var msg = $(ev.target).attr('data-js-confirm-message');
+            if (msg == undefined) {
+                msg = "Are you sure?";
+            }
+            if (!confirm(msg)) {
+                ev.preventDefault();
+            }
+        })
+
         // placeholder fallback for older browsers:
         var i = document.createElement('input');
         if (!('placeholder' in i)) {

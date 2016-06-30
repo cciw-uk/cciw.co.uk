@@ -1516,7 +1516,11 @@ class TestListBookingsBase(BookingBaseMixin, CreatePlaceWebMixin):
         b = acc.bookings.all()[0]
         self.get_url(self.urlname)
 
-        self.submit("[name=delete_%s]" % b.id)
+        if self.is_full_browser_test:
+            self.click_expecting_alert("[name=delete_%s]" % b.id)
+            self.accept_alert()
+        else:
+            self.submit("[name=delete_%s]" % b.id)
 
         # Should be gone
         self.assertEqual(0, acc.bookings.count())
