@@ -448,6 +448,7 @@ class TestBookingVerifyBase(BookingBaseMixin):
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse('cciw-bookings-account_details'))
+        self.assertTextPresent("Logged in! You will stay logged in for two weeks")
         acc = BookingAccount.objects.get(email='booker@bookers.com')
         self.assertTrue(acc.last_login is not None)
         self.assertTrue(acc.first_login is not None)
@@ -488,7 +489,7 @@ class TestBookingVerifyBase(BookingBaseMixin):
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse('cciw-bookings-account_details'))
-        self.assertTextPresent("Welcome back")
+        self.assertTextPresent("Welcome back!")
         self.assertTextPresent("Please check and update your account details")
 
     def test_verify_incorrect(self):
