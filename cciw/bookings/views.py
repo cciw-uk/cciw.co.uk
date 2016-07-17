@@ -193,7 +193,7 @@ from django_countries.fields import Country
 from paypal.standard.forms import PayPalPaymentsForm
 
 from cciw.auth import is_booking_secretary
-from cciw.bookings.email import check_email_verification_token, send_verify_email
+from cciw.bookings.email import EmailVerifyTokenGenerator, send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_INFO_COMPLETE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
                                   PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
@@ -354,11 +354,7 @@ class BookingStart(BookingLogInBase):
             form = self.form_class(request.POST)
             if form.is_valid():
                 email = form.cleaned_data['email']
-                try:
-                    account = BookingAccount.objects.filter(email__iexact=email)[0]
-                except IndexError:
-                    account = BookingAccount.objects.create(email=email)
-                send_verify_email(self.request, account)
+                send_verify_email(self.request, email)
                 return HttpResponseRedirect(reverse_lazy('cciw-bookings-email_sent'))
         else:
             form = self.form_class()
@@ -372,24 +368,20 @@ class BookingEmailSent(BookingLogInBase):
     template_name = "cciw/bookings/email_sent.html"
 
 
-def verify_email(request, account_id, token, action):
+def verify_email(request, token, action):
     fail = lambda: HttpResponseRedirect(reverse('cciw-bookings-verify_email_failed'))
-    try:
-        account_id = base36_to_int(account_id)
-    except ValueError:
+    verified_email = EmailVerifyTokenGenerator().email_for_token(token)
+    if verified_email is None:
         return fail()
-    try:
-        account = BookingAccount.objects.get(id=account_id)
-    except BookingAccount.DoesNotExist:
-        return fail()
-
-    if check_email_verification_token(account, token):
-        return action(account)
     else:
-        return fail()
+        try:
+            account = BookingAccount.objects.filter(email__iexact=verified_email)[0]
+        except IndexError:
+            account = BookingAccount.objects.create(email=verified_email)
+        return action(account)
 
 
-def verify_email_and_start(request, account_id, token):
+def verify_email_and_start(request, token):
     def action(account):
         now = timezone.now()
         last_login = account.last_login
@@ -411,18 +403,16 @@ def verify_email_and_start(request, account_id, token):
         messages.info(request, "Logged in! You will stay logged in for two weeks. Remember to log out if you are using a public computer.")
         return resp
 
-    return verify_email(request, account_id, token,
-                        action)
+    return verify_email(request, token, action)
 
 
-def verify_email_and_pay(request, account_id, token):
+def verify_email_and_pay(request, token):
     def action(account):
         resp = HttpResponseRedirect(reverse('cciw-bookings-pay'))
         set_booking_account_cookie(resp, account)
         return resp
 
-    return verify_email(request, account_id, token,
-                        action)
+    return verify_email(request, token, action)
 
 
 class BookingVerifyEmailFailed(BookingLogInBase):

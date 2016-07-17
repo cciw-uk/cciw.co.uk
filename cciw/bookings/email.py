@@ -1,12 +1,13 @@
-from datetime import date, datetime
+import binascii
+import base64
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
+from django.core.signing import BadSignature, TimestampSigner
 from django.template import loader
 from django.utils import timezone
-from django.utils.crypto import constant_time_compare, salted_hmac
-from django.utils.http import int_to_base36, base36_to_int
 
 from cciw.officers.email import admin_emails_for_camp
 
@@ -18,70 +19,41 @@ class EmailVerifyTokenGenerator(object):
     Strategy object used to generate and check tokens for the email verification
     mechanism.
     """
-    def make_token(self, account):
-        return self._make_token_with_timestamp(account, self._num_days(self._today()))
+    def __init__(self):
+        self.signer = TimestampSigner(salt="cciw.bookings.EmailVerifyTokenGenerator")
 
-    def check_token(self, account, token):
-        # Parse the token
+    def token_for_email(self, email):
+        """
+        Returns a verification token for the provided email address
+        """
+        return base64.urlsafe_b64encode(
+            self.signer.sign(email).encode('utf-8')).decode('utf-8')
+
+    def email_for_token(self, token):
+        """
+        Extracts the verified email address from the token, or None if verification failed
+        """
         try:
-            ts_b36, hash = token.split("-")
-        except ValueError:
-            return False
-
-        try:
-            ts = base36_to_int(ts_b36)
-        except ValueError:
-            return False
-
-        # Check that the timestamp/uid has not been tampered with
-        if not constant_time_compare(self._make_token_with_timestamp(account, ts), token):
-            return False
-
-        # Check the timestamp is within limit
-        if (self._num_days(self._today()) - ts) > settings.BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS:
-            return False
-
-        return True
-
-    def _make_token_with_timestamp(self, account, timestamp):
-        # timestamp is number of days since 2011-1-1.  Converted to
-        # base 36, this gives us a 3 digit string until about 2131
-        ts_b36 = int_to_base36(timestamp)
-
-        key_salt = "cciw.bookings.EmailVerifyTokenGenerator"
-        value = "%s:%s:%s" % (account.id, account.email, timestamp)
-        # We limit the hash to 20 chars to keep URL short
-        hash = salted_hmac(key_salt, value).hexdigest()[::2]
-        return "%s-%s" % (ts_b36, hash)
-
-    def _num_days(self, dt):
-        return (dt - date(2011, 1, 1)).days
-
-    def _today(self):
-        # Used for mocking in tests
-        return date.today()
+            return self.signer.unsign(
+                base64.urlsafe_b64decode(token.encode('utf-8')).decode('utf-8'),
+                max_age=settings.BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS * 60 * 60 * 24
+            )
+        except (binascii.Error, BadSignature, UnicodeDecodeError):
+            return None
 
 
-def send_verify_email(request, booking_account):
-    if not booking_account.email:
-        return
+def send_verify_email(request, booking_account_email):
     current_site = get_current_site(request)
     domain = current_site.domain
-    token_generator = EmailVerifyTokenGenerator()
     c = {
         'domain': domain,
-        'account_id': int_to_base36(booking_account.id),
-        'token': token_generator.make_token(booking_account),
+        'token': EmailVerifyTokenGenerator().token_for_email(booking_account_email),
         'protocol': 'https' if request.is_secure() else 'http',
     }
 
     body = loader.render_to_string("cciw/bookings/verification_email.txt", c)
     subject = "CCIW booking account"
-    mail.send_mail(subject, body, settings.SERVER_EMAIL, [booking_account.email])
-
-
-def check_email_verification_token(account, token):
-    return EmailVerifyTokenGenerator().check_token(account, token)
+    mail.send_mail(subject, body, settings.SERVER_EMAIL, [booking_account_email])
 
 
 def site_address_url_start():
@@ -225,8 +197,7 @@ def send_payment_reminder_emails():
 
         c = {
             'account': account,
-            'account_id': int_to_base36(account.id),
-            'token': EmailVerifyTokenGenerator().make_token(account),
+            'token': EmailVerifyTokenGenerator().token_for_email(account.email),
         }
         body = loader.render_to_string('cciw/bookings/payments_due_email.txt', c)
         mail.send_mail(subject, body, settings.BOOKING_SECRETARY_EMAIL, [account.email])

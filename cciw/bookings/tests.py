@@ -374,7 +374,7 @@ class TestBookingStartBase(BookingBaseMixin, CreatePlaceWebMixin):
         self.get_url(self.urlname)
         self.fill_by_name({'email': 'booker@bookers.com'})
         self.submit()
-        self.assertEqual(BookingAccount.objects.all().count(), 1)
+        self.assertEqual(BookingAccount.objects.all().count(), 0)
         self.assertEqual(len(mail.outbox), 1)
 
     def test_complete_form_existing_email(self):
@@ -442,9 +442,6 @@ class TestBookingVerifyBase(BookingBaseMixin):
         Test the email verification stage when the URL is correct
         """
         self._start()
-        acc = BookingAccount.objects.get(email='booker@bookers.com')
-        self.assertTrue(acc.last_login is None)
-        self.assertTrue(acc.first_login is None)
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse('cciw-bookings-account_details'))
@@ -454,7 +451,7 @@ class TestBookingVerifyBase(BookingBaseMixin):
         self.assertTrue(acc.first_login is not None)
 
     def _add_booking_account_address(self):
-        acc = BookingAccount.objects.get(email='booker@bookers.com')
+        acc, _ = BookingAccount.objects.get_or_create(email='booker@bookers.com')
         acc.name = "Joe"
         acc.address_line1 = "Home"
         acc.address_city = "My city"
@@ -498,28 +495,22 @@ class TestBookingVerifyBase(BookingBaseMixin):
         """
         self._start()
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
-        badpath = path.replace('-', '-1')
+
+        # The following will trigger a BadSignature
+        badpath = path.replace('v/', 'v/a000')
         self.get_literal_url(path_and_query_to_url(badpath, querydata))
         self.assertTextPresent("failed")
 
-        # Trigger some different error paths:
-        badpath2 = path.replace('v/', 'v/AAAAAAAAAAAAAAAA')
+        # This will trigger a base64 decode error:
+        url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
+        badpath2 = path.replace('v/', 'v/XXX')
         self.get_literal_url(path_and_query_to_url(badpath2, querydata))
         self.assertTextPresent("failed")
 
-        badpath3 = path.replace('v/', 'v/1000')
-        self.get_literal_url(path_and_query_to_url(badpath3, querydata))
-        self.assertTextPresent("failed")
-
-    def test_verify_invalid_account(self):
-        """
-        Test the email verification stage when the URL contains an invalid
-        BookingAccount id
-        """
-        self._start()
+        # This will trigger a UnicodeDecodeError
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
-        badpath = path.rstrip('/')[:-4] + "xxxx" + "/"
-        self.get_literal_url(path_and_query_to_url(badpath, querydata))
+        badpath3 = '/booking/v/xxxx/'
+        self.get_literal_url(path_and_query_to_url(badpath3, querydata))
         self.assertTextPresent("failed")
 
 
