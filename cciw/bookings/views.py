@@ -195,6 +195,8 @@ from paypal.standard.forms import PayPalPaymentsForm
 from cciw.auth import is_booking_secretary
 from cciw.bookings.email import EmailVerifyTokenGenerator, send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
+from cciw.bookings.middleware import (get_booking_account_from_request, set_booking_account_cookie,
+                                      unset_booking_account_cookie)
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_INFO_COMPLETE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
                                   PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
                                   REQUIRED_PRICE_TYPES, Booking, BookingAccount, Price, any_bookings_possible,
@@ -206,34 +208,8 @@ from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.utils.views import user_passes_test_improved
 
+
 # decorators and utilities
-
-BOOKING_COOKIE_SALT = 'cciw.bookings.BookingAccount cookie'
-
-
-def set_booking_account_cookie(response, account):
-    response.set_signed_cookie('bookingaccount', account.id,
-                               salt=BOOKING_COOKIE_SALT,
-                               max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS)
-
-
-def unset_booking_account_cookie(response):
-    response.delete_cookie('bookingaccount')
-
-
-def get_booking_account_from_request(request):
-    cookie = request.get_signed_cookie('bookingaccount',
-                                       salt=BOOKING_COOKIE_SALT,
-                                       default=None,
-                                       max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS)
-    if cookie is None:
-        return None
-    try:
-        return BookingAccount.objects.get(id=cookie)
-    except BookingAccount.DoesNotExist:
-        return None
-
-
 def ensure_booking_acount_attr(request):
     if not hasattr(request, 'booking_account'):
         request.booking_account = get_booking_account_from_request(request)
@@ -368,51 +344,28 @@ class BookingEmailSent(BookingLogInBase):
     template_name = "cciw/bookings/email_sent.html"
 
 
-def verify_email(request, token, action):
-    fail = lambda: HttpResponseRedirect(reverse('cciw-bookings-verify_email_failed'))
-    verified_email = EmailVerifyTokenGenerator().email_for_token(token)
-    if verified_email is None:
-        return fail()
+@booking_account_required
+def verify_and_continue(request):
+    # Verification and login already done by the middleware,
+    # checking already done by booking_account_required.
+    account = request.booking_account
+
+    now = timezone.now()
+    last_login = account.last_login
+
+    if account.first_login is None:
+        account.first_login = now
+    account.last_login = now
+    account.save()
+
+    if last_login is not None and (
+            (now - last_login) > timedelta(30 * 6)):  # six months
+        resp = HttpResponseRedirect(reverse('cciw-bookings-account_details'))
+        messages.info(request, "Welcome back! Please check and update your account details")
+        return resp
     else:
-        try:
-            account = BookingAccount.objects.filter(email__iexact=verified_email)[0]
-        except IndexError:
-            account = BookingAccount.objects.create(email=verified_email)
-        return action(account)
-
-
-def verify_email_and_start(request, token):
-    def action(account):
-        now = timezone.now()
-        last_login = account.last_login
-
-        if account.first_login is None:
-            account.first_login = now
-        account.last_login = now
-        account.save()
-
-        if last_login is not None and (
-                (now - last_login) > timedelta(30 * 6)):  # six months
-            resp = HttpResponseRedirect(reverse('cciw-bookings-account_details'))
-            set_booking_account_cookie(resp, account)
-            messages.info(request, "Welcome back! Please check and update your account details")
-            return resp
-
         resp = next_step(account)
-        set_booking_account_cookie(resp, account)
-        messages.info(request, "Logged in! You will stay logged in for two weeks. Remember to log out if you are using a public computer.")
         return resp
-
-    return verify_email(request, token, action)
-
-
-def verify_email_and_pay(request, token):
-    def action(account):
-        resp = HttpResponseRedirect(reverse('cciw-bookings-pay'))
-        set_booking_account_cookie(resp, account)
-        return resp
-
-    return verify_email(request, token, action)
 
 
 class BookingVerifyEmailFailed(BookingLogInBase):

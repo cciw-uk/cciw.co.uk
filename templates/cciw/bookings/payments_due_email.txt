@@ -12,7 +12,7 @@ The amount you need to pay is: £{{ account.balance_due }}
 If you have a credit/debit card, or a PayPal account, you can pay this
 money online:
 
-https://www.cciw.co.uk{% url 'cciw-bookings-verify_email_and_pay' token=token %}
+https://www.cciw.co.uk{% url 'cciw-bookings-pay' %}?bt={{ token }}
 
 You can also pay by cheque, and post to the address given here:
 

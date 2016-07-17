@@ -250,6 +250,7 @@ _MIDDLEWARE_CLASSES = [
     (True,       "django.contrib.messages.middleware.MessageMiddleware"),
     (True,       'django.middleware.clickjacking.XFrameOptionsMiddleware'),
     (True,       "cciw.middleware.auth.PrivateWiki"),
+    (True,       "cciw.bookings.middleware.BookingTokenLogin"),
     (True,       "cciw.middleware.threadlocals.ThreadLocals"),
 ]
 

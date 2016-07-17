@@ -25,7 +25,7 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANC
                                   RefundPayment, book_basket_now, build_paypal_custom_field, expire_bookings,
                                   paypal_payment_received)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
-from cciw.bookings.views import BOOKING_COOKIE_SALT
+from cciw.bookings.middleware import BOOKING_COOKIE_SALT
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
 from cciw.officers.tests.base import (BOOKING_SECRETARY, BOOKING_SECRETARY_PASSWORD, BOOKING_SECRETARY_USERNAME, OFFICER,
@@ -494,23 +494,23 @@ class TestBookingVerifyBase(BookingBaseMixin):
         Test the email verification stage when the URL is incorrect
         """
         self._start()
-        url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
 
         # The following will trigger a BadSignature
-        badpath = path.replace('v/', 'v/a000')
-        self.get_literal_url(path_and_query_to_url(badpath, querydata))
+        url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
+        querydata['bt'] = 'a000' + querydata['bt']
+        self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertTextPresent("failed")
 
         # This will trigger a base64 decode error:
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
-        badpath2 = path.replace('v/', 'v/XXX')
-        self.get_literal_url(path_and_query_to_url(badpath2, querydata))
+        querydata['bt'] = 'XXX' + querydata['bt']
+        self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertTextPresent("failed")
 
         # This will trigger a UnicodeDecodeError
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
-        badpath3 = '/booking/v/xxxx/'
-        self.get_literal_url(path_and_query_to_url(badpath3, querydata))
+        querydata['bt'] = 'xxxx'
+        self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertTextPresent("failed")
 
 
