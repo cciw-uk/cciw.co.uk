@@ -136,6 +136,7 @@ def send_booking_expiry_mail(account, bookings, expired):
         'account': account,
         'bookings': bookings,
         'expired': expired,
+        'token': EmailVerifyTokenGenerator().token_for_email(account.email),
     }
     body = loader.render_to_string('cciw/bookings/place_expired_mail.txt', c)
     if expired:
@@ -152,6 +153,7 @@ def send_booking_approved_mail(booking):
 
     c = {
         'url_start': site_address_url_start(),
+        'token': EmailVerifyTokenGenerator().token_for_email(account.email),
         'account': account,
         'booking': booking,
     }

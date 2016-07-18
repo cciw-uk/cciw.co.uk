@@ -18,7 +18,7 @@ Dates: {{ b.camp.start_date|date:"d F" }} to {{ b.camp.end_date|date:"d F Y" }}
 The places have been moved back to your 'basket'. If you still want them,
 you can book and pay here:
 
-{{ url_start }}{% url 'cciw-bookings-list_bookings' %}
+{{ url_start }}{% url 'cciw-bookings-list_bookings' %}?bt={{ token }}
 
 {% else %}
 If you do not pay within 12 hours, the bookings will expire so that
@@ -26,7 +26,7 @@ other people will be able to take the places.
 
 Please go to the following URL to pay online:
 
-{{ url_start }}{% url 'cciw-bookings-pay' %}
+{{ url_start }}{% url 'cciw-bookings-pay' %}?bt={{ token }}
 {% endif %}
 If you think you have in fact paid, or have had some other problem
 with the web site that is preventing you from paying, please reply to
