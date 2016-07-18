@@ -4,7 +4,7 @@ Dear {{ account.name }},
 The place for {{ booking.name }} on camp {{ booking.camp.name }} has been
 approved. You can now book and pay here:
 
-{{ url_start }}{% url 'cciw-bookings-list_bookings' %}?bt={{ token }}
+https://{{ domain }}{% url 'cciw-bookings-list_bookings' %}?bt={{ token }}
 
 Thanks,
 

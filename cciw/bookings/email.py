@@ -43,10 +43,8 @@ class EmailVerifyTokenGenerator(object):
 
 
 def send_verify_email(request, booking_account_email):
-    current_site = get_current_site(request)
-    domain = current_site.domain
     c = {
-        'domain': domain,
+        'domain': get_current_site(request).domain,
         'token': EmailVerifyTokenGenerator().token_for_email(booking_account_email),
         'protocol': 'https' if request.is_secure() else 'http',
     }
@@ -56,18 +54,9 @@ def send_verify_email(request, booking_account_email):
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [booking_account_email])
 
 
-def site_address_url_start():
-    """
-    Returns start of URL (protocol and domain) for this site
-    (a guess)
-    """
-    protocol = 'https' if settings.SESSION_COOKIE_SECURE else 'http'  # best guess
-    return protocol + '://' + get_current_site(None).domain
-
-
 def send_unrecognised_payment_email(ipn_obj):
     c = {
-        'url_start': site_address_url_start(),
+        'domain': get_current_site(None).domain,
         'ipn_obj': ipn_obj,
     }
 
@@ -94,7 +83,7 @@ def send_places_confirmed_email(bookings, **kwargs):
         return
 
     c = {
-        'url_start': site_address_url_start(),
+        'domain': get_current_site(None).domain,
         'account': account,
         'bookings': bookings,
         'payment_received': 'payment_received' in kwargs,
@@ -118,7 +107,7 @@ def send_places_confirmed_email(bookings, **kwargs):
                 'account': account,
                 'booking': booking,
                 'camp': booking.camp,
-                'url_start': site_address_url_start(),
+                'domain': get_current_site(None).domain,
             }
             body = loader.render_to_string('cciw/bookings/late_place_confirmed_email.txt', c)
             subject = "CCIW late booking: %s" % booking.name
@@ -132,7 +121,7 @@ def send_booking_expiry_mail(account, bookings, expired):
         return
 
     c = {
-        'url_start': site_address_url_start(),
+        'domain': get_current_site(None).domain,
         'account': account,
         'bookings': bookings,
         'expired': expired,
@@ -152,7 +141,7 @@ def send_booking_approved_mail(booking):
         return False
 
     c = {
-        'url_start': site_address_url_start(),
+        'domain': get_current_site(None).domain,
         'token': EmailVerifyTokenGenerator().token_for_email(account.email),
         'account': account,
         'booking': booking,
