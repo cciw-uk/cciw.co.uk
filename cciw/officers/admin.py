@@ -147,6 +147,7 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     list_filter = ['finished', 'date_submitted']
     ordering = ['full_name']
     search_fields = ['full_name']
+    readonly_fields = ['date_submitted']
     date_hierarchy = 'date_submitted'
     form = ApplicationAdminModelForm
 
@@ -252,7 +253,7 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
 
     camp_leader_application_fieldsets = [
         (None,
-            {'fields': ['officer'],
+            {'fields': ['officer', 'date_submitted'],
              'classes': ['wide']}
          )] + camp_officer_application_fieldsets
 
