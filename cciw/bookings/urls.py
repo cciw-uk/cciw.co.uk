@@ -1,3 +1,4 @@
+from django.views.generic import RedirectView
 from django.conf.urls import url
 
 from . import views
@@ -8,6 +9,8 @@ urlpatterns = [
     url(r'^email-sent/$', views.email_sent, name="cciw-bookings-email_sent"),
     url(r'^v/$', views.verify_and_continue, name="cciw-bookings-verify_and_continue"),
     url(r'^verify-failed/$', views.verify_email_failed, name="cciw-bookings-verify_email_failed"),
+    url(r'^v/.+/$', RedirectView.as_view(pattern_name="cciw-bookings-verify_email_failed")),
+    url(r'^p/.+/$', RedirectView.as_view(pattern_name="cciw-bookings-verify_email_failed")),
     url(r'^account/$', views.account_details, name="cciw-bookings-account_details"),
     url(r'^loggedout/$', views.not_logged_in, name="cciw-bookings-not_logged_in"),
     url(r'^add-camper-details/$', views.add_place, name="cciw-bookings-add_place"),
