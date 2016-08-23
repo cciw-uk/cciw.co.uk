@@ -4,6 +4,7 @@ Utility functions and base classes that are common to all views etc.
 import re
 import sys
 import traceback
+from datetime import date, timedelta
 from functools import update_wrapper
 
 from django.conf import settings
@@ -246,7 +247,9 @@ def get_thisyear():
     """
     Get the year the website is currently on.  The website year is
     equal to the year of the last camp in the database, or the year
-    afterwards if that camp is in the past.
+    afterwards if that camp is at least 30 days in the past.
+    (30 days, to give a leaders the chance to access the leader
+    area after their camp is finished).
     """
     global _thisyear, _thisyear_timestamp
     if (_thisyear is None or _thisyear_timestamp is None or
@@ -256,7 +259,7 @@ def get_thisyear():
             lastcamp = Camp.objects.prefetch_related(None).order_by('-end_date')[0]
         except IndexError:
             return timezone.now().year
-        if lastcamp.is_past():
+        if lastcamp.end_date + timedelta(days=30) <= date.today():
             _thisyear = lastcamp.year + 1
         else:
             _thisyear = lastcamp.year
