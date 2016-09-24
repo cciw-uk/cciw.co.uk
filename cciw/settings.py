@@ -107,9 +107,9 @@ INSTALLED_APPS = [
     'wiki.plugins.macros',
     'django_nyt',
     'compressor',
+    'mailer',
     'django_countries',
     'opbeat.contrib.django',
-    'anymail',
 ]
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
@@ -195,18 +195,21 @@ REFERENCES_EMAIL = "CCIW references <references@cciw.co.uk>"
 
 if LIVEBOX:
     if PRODUCTION:
-        EMAIL_BACKEND = "anymail.backends.mailgun.MailgunBackend"
+        EMAIL_BACKEND = "mailer.backend.DbBackend"
     elif STAGING:
-        EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
+        EMAIL_BACKEND = "cciw.mail.backend.StagingBackend"
+
 
 if DEVBOX:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    EMAIL_HOST = 'localhost'
+    EMAIL_HOST_USER = None
+    EMAIL_HOST_PASSWORD = None
+    EMAIL_PORT = 8025
 
-from cciw.settings_priv import MAILGUN_API_KEY
-ANYMAIL = {
-    "MAILGUN_API_KEY": MAILGUN_API_KEY,
-}
-
+else:
+    EMAIL_HOST = "smtp.webfaction.com"
+    from cciw.settings_priv import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
 
 # == MAILING LISTS ==
 
