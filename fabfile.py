@@ -606,6 +606,20 @@ def set_site_from_url(url):
 
 @task
 def initial_dev_setup():
+    local_pth_file()
     get_and_load_production_db()
     production()
     _get_non_vcs_sources()
+
+
+@task
+def local_pth_file():
+    TEMPLATE = """
+import sys; sys.__plen = len(sys.path)
+%(projectpath)s
+import sys; new=sys.path[sys.__plen:]; del sys.path[sys.__plen:]; p=getattr(sys,'__egginsert',0); sys.path[p:p]=new; sys.__egginsert = p+len(new)
+"""
+    pth_name = os.path.join(os.environ['VIRTUAL_ENV'], 'lib/python3.4/site-packages/project.pth')
+    content = TEMPLATE % {'projectpath': os.path.abspath('.')}
+    with open(pth_name, "w") as f:
+        f.write(content)
