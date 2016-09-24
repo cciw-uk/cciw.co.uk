@@ -2,9 +2,10 @@ beautifulsoup4==4.4.1
 contextlib2==0.5.1
 coverage==4.0.3
 cssselect==0.9.1
-decorator==4.0.9
+decorator==4.0.10
 diff-match-patch==20121119
 Django==1.9.3
+django-anymail==0.5
 django-appconf==1.0.1
 django-autocomplete-light==3.0.4
 django-classy-tags==0.7.1
@@ -20,6 +21,7 @@ django-paypal==0.3.2
 django-plainpasswordhasher==0.3
 django-sekizai==0.9.0
 django-webtest==1.7.8
+duvet==0.1.2
 EasyProcess==0.2.2
 ecdsa==0.13
 ezodf2==0.2.10
@@ -30,7 +32,7 @@ frozendict==0.5
 furl==0.4.91
 future==0.15.2
 gunicorn==19.4.5
-ipython==4.1.1
+ipython==5.1.0
 ipython-genutils==0.1.0
 lockfile==0.12.2
 lxml==3.5.0
@@ -38,20 +40,24 @@ Markdown==2.6.5
 mccabe==0.4.0
 nodeenv==0.13.6
 numpy==1.10.4
+opbeat==3.3
 orderedmultidict==0.7.5
 pandas==0.17.1
 pandas-highcharts==0.5.2
 -e git+https://github.com/paramiko/paramiko/@d99342d119fcf268c57d025fa9a9fd1124f39de0#egg=paramiko
 path.py==8.1.2
 pep8==1.7.0
-pexpect==4.0.1
-pickleshare==0.6
+pexpect==4.2.1
+pickleshare==0.7.4
 Pillow==3.1.1
+ply==3.8
+prompt-toolkit==1.0.7
 psutil==4.0.0
 psycopg2==2.6.1
 ptyprocess==0.5.1
 pycrypto==2.6.1
 pyflakes==1.0.0
+Pygments==2.1.3
 pyquery==1.2.11
 python-dateutil==2.4.2
 python3-memcached==1.51
@@ -67,9 +73,11 @@ six==1.10.0
 sorl-thumbnail==12.4a1
 sqlparse==0.1.18
 tblib==1.2.0
-traitlets==4.1.0
+tkreadonly==0.6.0
+traitlets==4.3.0
 vcrpy==1.7.4
 waitress==0.8.10
+wcwidth==0.1.7
 WebOb==1.5.1
 WebTest==2.0.20
 wheel==0.29.0
@@ -78,4 +86,3 @@ wrapt==1.10.6
 xlrd==0.9.4
 xlwt-future==0.8.0
 zc.lockfile==1.1.0
-opbeat==3.3
