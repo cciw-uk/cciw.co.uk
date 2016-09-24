@@ -30,7 +30,7 @@ if settings.DEVBOX:
     urlpatterns += [
         url(r'^usermedia/(?P<path>.*)$', django.views.static.serve,
             {'document_root': settings.MEDIA_ROOT}),
-        url(r'^file/(?P<path>.*)$', django.contrib.staticfiles.views.serve,
+        url(r'^file/(?P<path>.*)$', django.views.static.serve,
             {'document_root': settings.SECUREDOWNLOAD_SERVE_ROOT}),
     ]
 
