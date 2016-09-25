@@ -1,15 +1,18 @@
 import contextlib
-from unittest import mock
 import smtplib
+from unittest import mock
 
-from django.core.mail import EmailMessage
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.mail import EmailMessage
+from django.test.client import RequestFactory
 
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
 from cciw.utils.tests.base import TestBase
 
 from .lists import MailAccessDenied, NoSuchList, handle_all_mail, handle_mail, users_for_address
+from . import views
+from .test_data import MAILGUN_EXAMPLE_POST_DATA_FOR_MIME_ENDPOINT
 
 
 def b(s):
@@ -255,6 +258,32 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                 self.assertEqual(len(sent), 0)
                 self.assertEqual(send_mail.call_count, 1)
                 self.assertIn("you do not have permission", send_mail.sent_messages(0).body)
+
+    def test_mailgun_incoming(self):
+        rf = RequestFactory()
+        request = rf.post('/', data=MAILGUN_EXAMPLE_POST_DATA_FOR_MIME_ENDPOINT,
+                          content_type='application/x-www-form-urlencoded')
+        with mock.patch('cciw.mail.views.handle_mail') as m:
+            response = views.mailgun_incoming(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(m.call_count, 1)
+        self.assertEqual(type(m.call_args[0][0]), bytes)
+
+    def test_mailgun_incoming_bad_sig(self):
+        data = MAILGUN_EXAMPLE_POST_DATA_FOR_MIME_ENDPOINT
+        sig = b"d1551e3de499c753ab801d81dea14f378dbb9c369b393a16c50e50e374eceb9d"
+        assert sig in data
+        # one char different:
+        data = data.replace(sig, b"d1551e3de499c753ab801d81dea14f378dbb9c369b393a16c50e50e374eceb9e")
+
+        rf = RequestFactory()
+        request = rf.post('/', data=data,
+                          content_type='application/x-www-form-urlencoded')
+        with mock.patch('cciw.mail.views.handle_mail') as m:
+            response = views.mailgun_incoming(request)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(m.call_count, 0)
 
 
 def emailify(msg):

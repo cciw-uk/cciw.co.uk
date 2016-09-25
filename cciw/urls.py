@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^notifications/', get_nyt_pattern()),
     url(r'^wiki/', get_wiki_pattern()),
     url(r'^paypal/ipn/', include('paypal.standard.ipn.urls')),
+    url(r'^mail/', include('cciw.mail.urls')),
 ]
 
 if settings.DEVBOX:
