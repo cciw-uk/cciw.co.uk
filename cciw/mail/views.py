@@ -1,27 +1,15 @@
-from django.http import HttpResponse, HttpResponseForbidden
-from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
-
-from .lists import handle_mail
 from functools import wraps
 
-import hmac
-import hashlib
+from django.conf import settings
+from django.http import HttpResponse, HttpResponseForbidden
+from django.views.decorators.csrf import csrf_exempt
 
-from django.utils.crypto import constant_time_compare
+from .lists import handle_mail
+from .mailgun import verify
 
 
 def b(s):
     return bytes(s, 'ascii')
-
-
-# See https://documentation.mailgun.com/user_manual.html#securing-webhooks
-def verify(api_key, token, timestamp, signature):
-    return constant_time_compare(signature,
-                                 hmac.new(
-                                     key=api_key,
-                                     msg=timestamp + token,
-                                     digestmod=hashlib.sha256).hexdigest())
 
 
 def ensure_from_mailgun(f):
