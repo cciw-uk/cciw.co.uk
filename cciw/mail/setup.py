@@ -15,11 +15,11 @@ def setup_mailgun_routes():
             update_route(route['id'],
                          name,
                          expression,
-                         action)
+                         actions)
         else:
             create_route(name,
                          expression,
-                         action)
+                         actions)
 
     for name, regex, func, perm_func in EMAIL_LISTS:
         pattern = regex.pattern
@@ -27,5 +27,6 @@ def setup_mailgun_routes():
         expression = """match_recipient('{0}')""".format(pattern)
         domain = "https://www.cciw.co.uk"
         forwarding_url = domain + reverse("cciw-mailgun-incoming")
-        action = """forward("{0}")""".format(forwarding_url)
-        update_or_create(name, expression, action)
+        actions = ["""forward("{0}")""".format(forwarding_url),
+                   "stop()"]
+        update_or_create(name, expression, actions)

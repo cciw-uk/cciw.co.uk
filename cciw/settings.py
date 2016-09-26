@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     'cciw.officers',
     'cciw.utils',
     'cciw.bookings',
+    'cciw.mail',
     'django.contrib.messages',
     'securedownload',
     'paypal.standard.ipn',

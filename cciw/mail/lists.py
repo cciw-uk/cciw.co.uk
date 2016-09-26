@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 from django.core.mail import make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
-from cciw.auth import WEBMASTER_GROUP_NAME, get_camp_admin_group_users
+from cciw.auth import get_camp_admin_group_users
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
 from cciw.officers.email_utils import formatted_email
@@ -125,23 +125,26 @@ def _mail_debug_users():
     return User.objects.filter(is_superuser=True)
 
 
-def _website_email_replies_users():
-    User = get_user_model()
-    return User.objects.filter(groups__in=Group.objects.filter(name=WEBMASTER_GROUP_NAME))
-
-
 # Mailing list names are used as keys when updating Routes on Mailgun. Regexes
-# are used here and in Mailgun routes. Remember to run
-# setup.setup_mailgun_routes() if making additions to this list.
+# are used here and in Mailgun routes.
 
 # See also above functions which generate these email addresses.
+
+# Simple forwarding email addresses are defined in Mailgun control panel, especially
+# those which should be available even if the website is down, including:
+
+#  cciw@
+#  webmaster@
+#  website@
+#  bookings@
+#  bookingforms@
+#  feedback@
 
 CAMP_OFFICERS_LIST = "Camp officers"
 CAMP_SLACKERS_LIST = "Camp slackers"
 CAMP_LEADERS_LIST = "Camp leaders"
 CAMP_LEADERS_FOR_YEAR_LIST = "Camp leaders for year"
 CAMP_DEBUG = "Debug"
-WEBSITE_FROM_LIST = "website"
 
 EMAIL_LISTS = [
     (CAMP_OFFICERS_LIST,
@@ -167,13 +170,6 @@ EMAIL_LISTS = [
     (CAMP_DEBUG,
      re.compile(r"^camp-debug@cciw\.co\.uk$"),
      _mail_debug_users,
-     lambda email: True),
-
-    # Replies to website@cciw.co.uk this go to this group. This route needs to
-    # exist on Mailgun for it to send emails with this 'Sender' address.
-    (WEBSITE_FROM_LIST,
-     re.compile(re.escape(extract_email_addresses(settings.DEFAULT_FROM_EMAIL)[0]), re.IGNORECASE),
-     _website_email_replies_users,
      lambda email: True),
 ]
 
