@@ -56,16 +56,22 @@ def list_routes():
     return api_request('/routes', add_domain=False)
 
 
-def create_route(description, expression, actions):
+def create_route(description, expression, actions, priority=None):
+    if priority is None:
+        priority = 0
     return api_request('/routes',
                        data=dict(description=description,
                                  expression=expression,
-                                 action=actions))
+                                 action=actions,
+                                 priority=priority))
 
 
-def update_route(id, description, expression, actions):
+def update_route(id, description, expression, actions, priority=None):
+    if priority is None:
+        priority = 0
     return api_request('/routes/{0}'.format(id),
                        method='put',
                        data=dict(description=description,
                                  expression=expression,
-                                 action=actions))
+                                 action=actions,
+                                 priority=priority))
