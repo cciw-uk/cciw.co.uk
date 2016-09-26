@@ -1,5 +1,3 @@
-import email.parser
-import email.utils
 import logging
 from datetime import timedelta
 from email.mime.base import MIMEBase
@@ -14,12 +12,16 @@ from django.utils.http import urlquote
 
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
+from cciw.mail import X_CCIW_ACTION, X_CCIW_CAMP
 from cciw.officers.applications import (application_difference, application_rtf_filename, application_to_rtf,
                                         application_to_text, camps_for_application)
 from cciw.officers.email_utils import formatted_email, send_mail_with_attachments
 from cciw.officers.references import reference_to_text
 
 logger = logging.getLogger(__name__)
+
+
+X_REFERENCE_REQUEST = 'ReferenceRequest'
 
 
 def admin_emails_for_camp(camp):
@@ -213,8 +215,8 @@ def send_reference_request_email(message, referee, sending_officer, camp):
                  from_email=settings.REFERENCES_EMAIL,
                  to=[referee.email],
                  headers={'Reply-To': sending_officer.email,
-                          'X-CCIW-Camp': camp.slug_name_with_year,
-                          'X-CCIW-Action': 'ReferenceRequest',
+                          X_CCIW_CAMP: camp.slug_name_with_year,
+                          X_CCIW_ACTION: X_REFERENCE_REQUEST,
                           }).send()
 
 
@@ -264,48 +266,21 @@ def send_crb_consent_problem_email(message, officer, camps):
               fail_silently=False)
 
 
-def handle_reference_bounce(email_file):
-    p = email.parser.Parser()
-    msg = p.parse(email_file)
-
+def handle_reference_bounce(bounced_email_address, reply_to, original_message, camp_name):
     admin_emails = [e for name, e in settings.ADMINS]
-    if msg.get_content_type() != 'multipart/report':
-        logger.warn("Unrecognised content type '%s' in bounce email", msg.get_content_type())
-        forward_with_text(admin_emails, "Unrecognised message", "Unrecognised message:\n\n", msg)
-        return
 
-    bounced_email = None
-    bounced_email_address = None
-    if len(msg.get_payload()) > 1:
-        status = msg.get_payload(1)
-        if status.get_content_type() == 'message/delivery-status':
-            for dsn in status.get_payload():
-                if dsn.get('action', '').lower() == 'failed':
-                    address_type, email_address = dsn['Final-Recipient'].split(';')
-                    email_address = email_address.strip()
-                    if address_type.lower() == 'rfc822':
-                        bounced_email_address = email_address
-
-    if bounced_email_address is not None:
+    if reply_to == '':
         reply_to = admin_emails
-        camp = None
-        if len(msg.get_payload()) > 2:
-            bounced_email = msg.get_payload(2)
-            payload = bounced_email.get_payload()
-            if len(payload) > 0:
-                reply_to = payload[0].get('Reply-To', reply_to)
-                camp_s = payload[0].get('X-CCIW-Camp', None)
-                if camp_s is not None:
-                    try:
-                        camp_year, camp_slug = camp_s.split("-")
-                        camp = Camp.objects.get(year=int(camp_year),
-                                                camp_name__slug=camp_slug)
-                    except (ValueError, Camp.DoesNotExist):
-                        pass
+    camp = None
+    if camp_name is not None:
+        try:
+            camp_year, camp_slug = camp_name.split("-")
+            camp = Camp.objects.get(year=int(camp_year),
+                                    camp_name__slug=camp_slug)
+        except (ValueError, Camp.DoesNotExist):
+            pass
 
-        forward_bounce_to([reply_to], bounced_email_address, msg, camp)
-    else:
-        forward_with_text(admin_emails, "Unrecognised DSN message", "Unrecognised DSN message:\n\n", msg)
+    forward_bounce_to([reply_to], bounced_email_address, original_message, camp)
 
 
 def forward_with_text(email_addresses, subject, text, original_message):
@@ -322,10 +297,9 @@ def forward_with_text(email_addresses, subject, text, original_message):
 
 def forward_bounce_to(email_addresses, bounced_email_address, original_message, camp):
     forward_body = """
-The message below to {email} was not received.
+A reference request (see attached), sent to {email} was not received.
 
-If this message was asking for a reference, you will need
-to find a correct email address for this referee.
+Please find a correct email address for this referee.
 """.format(email=bounced_email_address)
 
     if camp is not None:

@@ -5,6 +5,7 @@ import vcr
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.core import mail
 from django.core.mail import EmailMessage
 from django.test.client import RequestFactory
 from requests.exceptions import ConnectionError
@@ -16,7 +17,10 @@ from cciw.utils.tests.base import TestBase
 from . import views
 from .lists import MailAccessDenied, NoSuchList, handle_mail, users_for_address
 from .mailgun import send_mime_message
-from .test_data import MAILGUN_EXAMPLE_POST_DATA_FOR_MIME_ENDPOINT
+from .test_data import (MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
+                        MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE,
+                        MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_FOR_REFERENCE,
+                        MAILGUN_EXAMPLE_POST_DATA_FOR_MIME_ENDPOINT)
 
 
 def b(s):
@@ -254,6 +258,35 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
     def test_send_mime_message_error(self):
         to = 'someone@gmail.com'
         self.assertRaises(Exception, send_mime_message, to, MSG_MAILGUN_TEST)
+
+    def test_mailgun_bounce(self):
+        rf = RequestFactory()
+        request = rf.post('/', data=MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
+                          content_type=MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE)
+        with mock.patch('cciw.officers.email.handle_reference_bounce') as m:
+            response = views.mailgun_bounce_notification(request)
+        self.assertEqual(m.call_count, 0)
+        self.assertEqual(response.status_code, 200)
+
+    def test_mailgun_bounce_for_reference(self):
+        rf = RequestFactory()
+        request = rf.post('/', data=MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_FOR_REFERENCE,
+                          content_type=MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE)
+        response = views.mailgun_bounce_notification(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertEqual(m.to, ["joe.bloggs@hotmail.com"])
+        self.assertIn("was not received", m.body)
+        self.assertIn("sent to bobjones@xgmail.com", m.body)
+        self.assertIn("Use the following link", m.body)
+
+        # Check that we can serialise
+        m.message().as_bytes()
+
+        # Check the attachment
+        attachment = m.attachments[0]
+        self.assertIn(b'Hi Bob, Please do a reference.', attachment.as_bytes())
 
 
 def emailify(msg):
