@@ -2,7 +2,7 @@ CCIW source code
 ================
 
 The CCIW site is fairly standard Django site. It is currently hosted on
-WebFaction shared hosting and makes use of some of its API and email features.
+WebFaction shared hosting but makes no use of its API and special features.
 
 Development setup
 -----------------
@@ -183,7 +183,6 @@ doing 'crontab -e' on the WebFaction server.::
     15      1 * * * $CCIW_PYTHON $CCIW_MANAGE clear_securedownload_links
     */10    * * * * $CCIW_PYTHON $CCIW_MANAGE process_payments
     0       2 * * * $CCIW_PYTHON $CCIW_MANAGE cleanup
-    *       * * * * $CCIW_PYTHON $CCIW_MANAGE handle_mailing_lists 2>> ~/.cciw-mailings-cron.log
     0       7 * * * $CCIW_PYTHON $CCIW_MANAGE payment_reminder_emails
 
     # expire_bookings must be run only once an hour

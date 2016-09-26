@@ -1,0 +1,38 @@
+interactions:
+- request:
+    body: !!binary |
+      LS02Y2U4YWEzODZiMzk0MDQ4YmZjN2ZhNWVkYTI0MDMzYw0KQ29udGVudC1EaXNwb3NpdGlvbjog
+      Zm9ybS1kYXRhOyBuYW1lPSJ0byINCg0Kc3Bvb2t5bHVrZXlAZmFzdG1haWwuZm0NCi0tNmNlOGFh
+      Mzg2YjM5NDA0OGJmYzdmYTVlZGEyNDAzM2MNCkNvbnRlbnQtRGlzcG9zaXRpb246IGZvcm0tZGF0
+      YTsgbmFtZT0ibWVzc2FnZSI7IGZpbGVuYW1lPSJtZXNzYWdlIg0KDQpNSU1FLVZlcnNpb246IDEu
+      MA0KQ29udGVudC1UeXBlOiB0ZXh0L3BsYWluOyBjaGFyc2V0PSJ1dGYtOCINCkNvbnRlbnQtVHJh
+      bnNmZXItRW5jb2Rpbmc6IDdiaXQNClN1YmplY3Q6IFRlc3QNCkZyb206IHdlYnNpdGVAY2Npdy5j
+      by51aw0KVG86IHNwb29reWx1a2V5QGZhc3RtYWlsLmZtDQpEYXRlOiBTdW4sIDI4IEZlYiAyMDE2
+      IDIyOjMyOjAzIC0wMDAwDQpNZXNzYWdlLUlEOiA8NTZDQ0RFMkUuOTAzMDEwM0BnbWFpbC5jb20+
+      DQoNClRlc3QgbWVzc2FnZQ0KLS02Y2U4YWEzODZiMzk0MDQ4YmZjN2ZhNWVkYTI0MDMzYy0tDQo=
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Authorization: [Basic YXBpOmtleS0xM2YwMWFlY2QwOTU3YTM4YmE5MTdiNzg5NDE3OTJmNA==]
+      Connection: [keep-alive]
+      Content-Length: ['512']
+      Content-Type: [multipart/form-data; boundary=6ce8aa386b394048bfc7fa5eda24033c]
+      User-Agent: [python-requests/2.9.1]
+    method: POST
+    uri: https://api.mailgun.net/v3/sandboxa848433b24f04313b0571f8631fbe5d4.mailgun.org/messages.mime
+  response:
+    body: {string: "{\n  \"id\": \"<56CCDE2E.9030103@gmail.com>\",\n  \"message\"\
+        : \"Queued. Thank you.\"\n}"}
+    headers:
+      Access-Control-Allow-Headers: ['Content-Type, x-requested-with']
+      Access-Control-Allow-Methods: ['GET, POST, PUT, DELETE, OPTIONS']
+      Access-Control-Allow-Origin: ['*']
+      Access-Control-Max-Age: ['600']
+      Connection: [keep-alive]
+      Content-Disposition: [inline]
+      Content-Length: ['77']
+      Content-Type: [application/json]
+      Date: ['Mon, 26 Sep 2016 06:42:08 GMT']
+      Server: [nginx]
+    status: {code: 200, message: OK}
+version: 1

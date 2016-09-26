@@ -1,20 +1,19 @@
 import email
-import imaplib
 import re
-import xmlrpc.client
 
-from django.contrib.auth import get_user_model
 from django.conf import settings
-from django.core.mail import get_connection, make_msgid, send_mail
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.core.mail import make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
-from cciw.auth import get_camp_admin_group_users
-from cciw.cciwmain.decorators import email_errors_silently
+from cciw.auth import WEBMASTER_GROUP_NAME, get_camp_admin_group_users
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
 from cciw.officers.email_utils import formatted_email
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
-from cciw.webfaction import webfaction_session
+
+from .mailgun import send_mime_message
 
 
 # External utility functions #
@@ -37,26 +36,12 @@ def address_for_camp_leaders_year(year):
     return "camps-%d-leaders@cciw.co.uk" % year
 
 
-# Creation of mailboxes
-@email_errors_silently
-def create_mailboxes(camp):
-    s = webfaction_session()
-    if s is None:  # WEBFACTION_USER not set
-        return
-    for address in [address_for_camp_officers(camp),
-                    address_for_camp_slackers(camp),
-                    address_for_camp_leaders(camp),
-                    address_for_camp_leaders_year(camp.year)]:
-        try:
-            s.create_email(address, settings.LIST_MAILBOX_NAME)
-        except xmlrpc.client.Fault as e:
-            if e.faultString == 'username: Value already exists':
-                pass
-            else:
-                raise
-
 # Reading mailboxes
 email_extract_re = re.compile(r"([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)", re.IGNORECASE)
+
+
+def extract_email_addresses(email_line):
+    return email_extract_re.findall(email_line)
 
 
 class NoSuchList(ValueError):
@@ -140,26 +125,61 @@ def _mail_debug_users():
     return User.objects.filter(is_superuser=True)
 
 
-# FIXME - replace with <slug_name_with_year> and have a function that parses that,
-# attached to Camp.objects.get_from_slug_and_year
+def _website_email_replies_users():
+    User = get_user_model()
+    return User.objects.filter(groups__in=Group.objects.filter(name=WEBMASTER_GROUP_NAME))
 
-# See also cciw.officers.utils
-email_lists = {
-    re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-officers@cciw.co.uk$", re.IGNORECASE):
-    (_camp_officers, _is_camp_leader_or_admin),
-    re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-slackers@cciw.co.uk$", re.IGNORECASE):
-    (_camp_slackers, _is_camp_leader_or_admin),
-    re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders@cciw.co.uk$", re.IGNORECASE):
-    (_camp_leaders, _is_camp_leader_or_admin_or_site_admin),
-    re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw.co.uk$", re.IGNORECASE):
-    (_camp_leaders, _is_camp_leader_or_admin_or_site_admin),
-    re.compile(r"^camp-debug@cciw.co.uk$"):
-    (_mail_debug_users, lambda email: True)
-}
+
+# Mailing list names are used as keys when updating Routes on Mailgun. Regexes
+# are used here and in Mailgun routes. Remember to run
+# setup.setup_mailgun_routes() if making additions to this list.
+
+# See also above functions which generate these email addresses.
+
+CAMP_OFFICERS_LIST = "Camp officers"
+CAMP_SLACKERS_LIST = "Camp slackers"
+CAMP_LEADERS_LIST = "Camp leaders"
+CAMP_LEADERS_FOR_YEAR_LIST = "Camp leaders for year"
+CAMP_DEBUG = "Debug"
+WEBSITE_FROM_LIST = "website"
+
+EMAIL_LISTS = [
+    (CAMP_OFFICERS_LIST,
+     re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-officers@cciw\.co\.uk$", re.IGNORECASE),
+     _camp_officers,
+     _is_camp_leader_or_admin),
+
+    (CAMP_SLACKERS_LIST,
+     re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-slackers@cciw\.co\.uk$", re.IGNORECASE),
+     _camp_slackers,
+     _is_camp_leader_or_admin),
+
+    (CAMP_LEADERS_LIST,
+     re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders@cciw\.co\.uk$", re.IGNORECASE),
+     _camp_leaders,
+     _is_camp_leader_or_admin_or_site_admin),
+
+    (CAMP_LEADERS_FOR_YEAR_LIST,
+     re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw\.co\.uk$", re.IGNORECASE),
+     _camp_leaders,
+     _is_camp_leader_or_admin_or_site_admin),
+
+    (CAMP_DEBUG,
+     re.compile(r"^camp-debug@cciw\.co\.uk$"),
+     _mail_debug_users,
+     lambda email: True),
+
+    # Replies to website@cciw.co.uk this go to this group. This route needs to
+    # exist on Mailgun for it to send emails with this 'Sender' address.
+    (WEBSITE_FROM_LIST,
+     re.compile(re.escape(extract_email_addresses(settings.DEFAULT_FROM_EMAIL)[0]), re.IGNORECASE),
+     _website_email_replies_users,
+     lambda email: True),
+]
 
 
 def users_for_address(address, from_addr):
-    for pat, (func, perm_func) in email_lists.items():
+    for name, pat, func, perm_func in EMAIL_LISTS:
         m = pat.match(address)
         if m is not None:
             if not perm_func(from_addr, **m.groupdict()):
@@ -204,7 +224,7 @@ def forward_email_to_list(mail, user_list, original_to, debug=False):
         addr = formatted_email(user)
         del mail['To']
         mail['To'] = addr
-        # Need new message ID, or webfaction's mail server will only send one
+        # Need new message ID, or some mail servers will only send one
         del mail['Message-ID']
         mail['Message-ID'] = make_msgid()
         mail_as_bytes = force_bytes(mail.as_string())
@@ -212,20 +232,23 @@ def forward_email_to_list(mail, user_list, original_to, debug=False):
             (addr, mail_as_bytes)
         )
 
-    # Use Django's wrapper object for connection,
-    # but not the message.
+    if len(messages_to_send) == 0:
+        return
+
     errors = []
-    c = get_connection("django.core.mail.backends.smtp.EmailBackend")
-    c.open()
     for addr, mail_as_bytes in messages_to_send:
         if debug:
             with open(".mailing_list_log", "ab") as f:
                 f.write(mail_as_bytes)
         try:
-            c.connection.sendmail(sender_addr, [addr], mail_as_bytes)
+            send_mime_message(addr, mail_as_bytes)
         except Exception as e:
             errors.append((addr, e))
-    c.close()
+
+    if len(errors) == len(messages_to_send):
+        # Probably a temporary error. By re-raising the last error, we cancel
+        # everything, and can retry the whole email.
+        raise errors[-1][1]
 
     if errors:
         # Attempt to report problem
@@ -254,10 +277,6 @@ There were problems with the following addresses:
             pass
 
 
-def extract_email_addresses(email_line):
-    return email_extract_re.findall(email_line)
-
-
 def handle_mail(data, debug=False):
     """
     Forwards an email to the correct list of people.
@@ -284,7 +303,8 @@ def handle_mail(data, debug=False):
                       "You attempted to email the list {0}\n"
                       "with an email titled \"{1}\".\n"
                       "\n"
-                      "However, you do not have permission to email this list, sorry.".format(
+                      "However, you do not have permission to email this list, \n"
+                      "or the list does not exist. Sorry!".format(
                           address,
                           mail['Subject']),
                       settings.DEFAULT_FROM_EMAIL,
@@ -296,33 +316,3 @@ def handle_mail(data, debug=False):
             # (e.g. other mailboxes).  So if we don't recognise the
             # address, just ignore
             pass
-
-
-def handle_all_mail(debug=False):
-    # We do error handling just using asserts here and catching all errors in
-    # calling routine
-    im = imaplib.IMAP4_SSL(settings.IMAP_MAIL_SERVER)
-    im.login(settings.LIST_MAILBOX_NAME, settings.MAILBOX_PASSWORD)
-    # If mail was successfully forwarded, we need to delete it and close the
-    # mailbox to actually delete the items.  Otherwise, some exception that
-    # occurs later could cause the deleted messages to stay undeleted and be
-    # handled again.  So, we have to select the mailbox every time.
-    cont = True
-    while cont:
-        typ, data = im.select("INBOX")
-        assert typ == 'OK'
-        typ, data = im.search(None, 'ALL')
-        assert typ == 'OK'
-        if len(data[0]) > 0:
-            # handle the first one, then close the box
-            num = data[0].split()[0]
-            typ, data = im.fetch(num, '(RFC822)')
-            assert typ == 'OK'
-            handle_mail(data[0][1], debug=debug)
-            typ, data = im.store(num, '+FLAGS', '\\Deleted')
-            assert typ == 'OK'
-            typ, data = im.close()
-            assert typ == 'OK'
-        else:
-            cont = False
-    im.logout()

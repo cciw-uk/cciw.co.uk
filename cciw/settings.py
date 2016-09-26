@@ -200,11 +200,9 @@ TEMPLATES = [
 
 if LIVEBOX and PRODUCTION:
     MAILGUN_DOMAIN = "cciw.co.uk"
-    MAILGUN_SANBDOX_MODE = False
 else:
     from cciw.settings_priv import MAILGUN_SANDBOX_DOMAIN
     MAILGUN_DOMAIN = MAILGUN_SANDBOX_DOMAIN
-    MAILGUN_SANBDOX_MODE = True
 
 
 SERVER_EMAIL = "CCIW website <website@cciw.co.uk>"

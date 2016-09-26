@@ -168,7 +168,7 @@ def camp_serious_slacker_list(camp):
 
 
 def officer_data_to_spreadsheet(camp, spreadsheet):
-    # Import here to avoid import cycle when starting from handle_mail script
+    # Import here to avoid import cycle
     from cciw.officers.applications import applications_for_camp
 
     # All the data we need:

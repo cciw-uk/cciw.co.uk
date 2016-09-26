@@ -1,4 +1,4 @@
-# Mailgun specify things.
+# Mailgun specific things.
 
 import hashlib
 import hmac
@@ -18,16 +18,54 @@ def verify_webhook(api_key, token, timestamp, signature):
                                      digestmod=hashlib.sha256).hexdigest())
 
 
-def api_request(path, data, files):
+def api_request(path, data=None, files=None, method=None, add_domain=False):
     domain = settings.MAILGUN_DOMAIN
-    return requests.post(
-        "https://api.mailgun.net/v3/{0}/{1}".format(domain, path),
+    url = "https://api.mailgun.net/v3"
+    if add_domain:
+        url += "/" + domain
+    url += path
+
+    if method is None:
+        if data is None and files is None:
+            method = 'get'
+        else:
+            method = 'post'
+
+    response = requests.request(
+        method,
+        url,
         auth=("api", settings.MAILGUN_API_KEY),
         data=data,
         files=files)
+    response.raise_for_status()
+    return response.json()
 
+
+# Emails that we generate are sent using the anymail Mailgun backend, via
+# EMAIL_BACKEND. But for MIME messages that we are modifying and forwarding, we
+# need to use send_mime_message.
 
 def send_mime_message(to, mime_message):
-    return api_request('messages.mime',
+    return api_request('/messages.mime',
+                       add_domain=True,
                        data={"to": to},
                        files={"message": BytesIO(mime_message)})
+
+
+def list_routes():
+    return api_request('/routes', add_domain=False)
+
+
+def create_route(description, expression, action):
+    return api_request('/routes',
+                       data=dict(description=description,
+                                 expression=expression,
+                                 action=action))
+
+
+def update_route(id, description, expression, action):
+    return api_request('/routes/{0}'.format(id),
+                       method='put',
+                       data=dict(description=description,
+                                 expression=expression,
+                                 action=action))

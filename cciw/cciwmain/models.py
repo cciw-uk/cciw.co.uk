@@ -9,7 +9,6 @@ from django.template.loader import render_to_string
 from django.utils.functional import cached_property
 from django.utils.html import format_html
 
-from cciw.cciwmain import signals
 
 REFERENCE_CONTACT_ROLE_NAME = "Safeguarding co-ordinator"
 
@@ -118,12 +117,6 @@ class Camp(models.Model):
     officers = models.ManyToManyField(settings.AUTH_USER_MODEL, through='officers.Invitation')
 
     objects = CampManager()
-
-    def save(self, *args, **kwargs):
-        new = self.id is None
-        super(Camp, self).save(*args, **kwargs)
-        if new:
-            signals.camp_created.send(self)
 
     def natural_key(self):
         return (self.year, self.slug_name)
