@@ -56,7 +56,7 @@ class MailTests(ExtraOfficersSetupMixin, TestBase):
 
     def test_invalid_list(self):
         self.assertRaises(NoSuchList,
-                          lambda: users_for_address('committee@cciw.co.uk', 'joe@random.com'))
+                          lambda: users_for_address('everyone@cciw.co.uk', 'joe@random.com'))
         self.assertRaises(NoSuchList,
                           lambda: users_for_address('x-camp-2000-blue-officers@cciw.co.uk', 'joe@random.com'))
 
