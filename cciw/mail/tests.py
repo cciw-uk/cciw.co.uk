@@ -96,12 +96,12 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
             username="awoman1",
             email="a.woman@example.com")
 
-        msg = MSG1.replace(b'camp-debug@cciw.co.uk', b'committee@cciw.co.uk')
+        msg = MSG1.replace('camp-debug@cciw.co.uk', 'committee@cciw.co.uk')
         with mock_mailgun_send_mime() as m_s:
             handle_mail(msg)
 
         self.assertEqual(m_s.call_count, 0)  # Permission denied
-        msg2 = msg.replace(b'joe@gmail.com', b'a.woman@example.com')
+        msg2 = msg.replace('joe@gmail.com', 'a.woman@example.com')
 
         with mock_mailgun_send_mime() as m_s2:
             handle_mail(msg2)
@@ -129,7 +129,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
     def test_handle_invalid_list(self):
         with mock_mailgun_send_mime() as m_s:
             with mock_send_mail() as send_mail:
-                msg = MSG1.replace(b'camp-debug@cciw.co.uk', b'camp-1990-blue-officers@cciw.co.uk')
+                msg = MSG1.replace('camp-debug@cciw.co.uk', 'camp-1990-blue-officers@cciw.co.uk')
                 handle_mail(msg)
         self.assertEqual(m_s.call_count, 0)
         self.assertEqual(send_mail.call_count, 1)
@@ -203,8 +203,8 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                          {self.leader_user})
 
     def test_handle_mail_permission_denied(self):
-        MSG = MSG1.replace(b'camp-debug@cciw.co.uk',
-                           b'camp-2000-blue-officers@cciw.co.uk')
+        MSG = MSG1.replace('camp-debug@cciw.co.uk',
+                           'camp-2000-blue-officers@cciw.co.uk')
         with mock_mailgun_send_mime() as m_s:
             with mock_send_mail() as send_mail:
                 handle_mail(MSG)
@@ -222,7 +222,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(m.call_count, 1)
-        self.assertEqual(type(m.call_args[0][0]), bytes)
+        self.assertEqual(type(m.call_args[0][0]), str)
 
     def test_mailgun_incoming_bad_sig(self):
         data = MAILGUN_EXAMPLE_POST_DATA_FOR_MIME_ENDPOINT
@@ -245,8 +245,8 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
     @vcr.use_cassette('cciw/mail/fixtures/vcr_cassettes/send_mime_message_good.yaml')
     def test_send_mime_message_good(self):
         to = settings.MAILGUN_TEST_RECEIVER  # authorized recipient
-        msg = MSG_MAILGUN_TEST.replace(b'someone@gmail.com', to.encode('utf-8'))
-        response = send_mime_message(to, msg)
+        msg = MSG_MAILGUN_TEST.replace('someone@gmail.com', to)
+        response = send_mime_message(to, msg.encode('utf-8'))
         self.assertIn('id', response)
         self.assertEqual(response['id'], '<56CCDE2E.9030103@gmail.com>')
 
@@ -257,10 +257,10 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
 
 
 def emailify(msg):
-    return msg.strip().replace(b"\n", b"\r\n")
+    return msg.strip().replace("\n", "\r\n")
 
 
-MSG1 = emailify(b"""
+MSG1 = emailify("""
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -273,7 +273,7 @@ Message-ID: <56CCDE2E.9030103@gmail.com>
 Test message
 """)
 
-MSG_MAILGUN_TEST = emailify(b"""
+MSG_MAILGUN_TEST = emailify("""
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit

@@ -22,7 +22,7 @@ Content-Type: text/plain; charset=utf-8
 
 This is a message!
 
-""".encode('utf-8')
+"""
 
 
 class DummyConnection(object):
@@ -104,7 +104,7 @@ class MailTests(ExtraOfficersSetupMixin, TestBase):
         self.assertIn(b"From: Dave Stott <leader@somewhere.com>", sent_messages[0])
 
     def test_handle_bounce(self):
-        bad_mail = TEST_MAIL.replace(b"leader@somewhere.com", b"notleader@somewhere.com")
+        bad_mail = TEST_MAIL.replace("leader@somewhere.com", "notleader@somewhere.com")
         with mock_mailgun_send_mime() as m_s:
             handle_mail(bad_mail)
         self.assertEqual(m_s.messages_sent(), [])

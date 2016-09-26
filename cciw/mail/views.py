@@ -35,5 +35,5 @@ def ensure_from_mailgun(f):
 def mailgun_incoming(request):
     # TODO - handle email that is too big (25 Mb limit). We could send back a
     # 406 response to Mailgun, and send an explanation to sender.
-    handle_mail(request.POST['body-mime'].encode('utf-8'))
+    handle_mail(request.POST['body-mime'])
     return HttpResponse('OK!')
