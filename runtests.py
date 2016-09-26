@@ -17,8 +17,8 @@ parser.add_argument('--skip-selenium', "-s", action='store_true',
                     help="Skip any Selenium tests")
 parser.add_argument("--fast", "-f", action='store_true',
                     help="Fast test run - implies --skip-selenium")
-parser.add_argument("--keepdb", "-k", action='store_true',
-                    help="Preserves the test DB between runs.")
+parser.add_argument("--nokeepdb", action='store_true',
+                    help="Don't preserves the test DB between runs.")
 parser.add_argument('--parallel', dest='parallel', action='store_true',
                     help='Run tests using parallel processes.')
 parser.add_argument("--hashseed", action='store',
@@ -62,7 +62,7 @@ if known_args.verbosity is not None:
 if known_args.parallel:
     cmd += ['--parallel']
 
-if known_args.keepdb:
+if not known_args.nokeepdb:
     cmd += ['--keepdb']
 
 if known_args.show_browser:
