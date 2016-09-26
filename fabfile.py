@@ -277,8 +277,8 @@ def _is_webserver_running():
         return False
     for ps in psutil.process_iter():
         if (ps.pid == pid and
-            any('gunicorn' in c for c in ps.cmdline)
-                and ps.username == USER):
+                any('gunicorn' in c for c in ps.cmdline) and
+                ps.username == USER):
             return True
     return False
 

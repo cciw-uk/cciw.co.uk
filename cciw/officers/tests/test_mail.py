@@ -2,9 +2,9 @@ from django.contrib.auth import get_user_model
 from django.core import mail
 
 from cciw.mail.lists import MailAccessDenied, NoSuchList, extract_email_addresses, handle_mail, users_for_address
+from cciw.mail.tests import mock_mailgun_send_mime
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
 from cciw.utils.tests.base import TestBase
-from cciw.mail.tests import mock_mailgun_send_mime
 
 User = get_user_model()
 

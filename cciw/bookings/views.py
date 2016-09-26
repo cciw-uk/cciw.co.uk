@@ -187,15 +187,14 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import Http404, HttpResponseRedirect
 from django.utils import timezone
 from django.utils.crypto import salted_hmac
-from django.utils.http import base36_to_int
 from django.views.decorators.csrf import csrf_exempt
 from django_countries.fields import Country
 from paypal.standard.forms import PayPalPaymentsForm
 
 from cciw.auth import is_booking_secretary
-from cciw.bookings.email import EmailVerifyTokenGenerator, send_verify_email
+from cciw.bookings.email import send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
-from cciw.bookings.middleware import (get_booking_account_from_request, set_booking_account_cookie,
+from cciw.bookings.middleware import (get_booking_account_from_request,
                                       unset_booking_account_cookie)
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_INFO_COMPLETE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
                                   PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
