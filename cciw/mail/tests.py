@@ -4,10 +4,12 @@ from unittest import mock
 import vcr
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.core.mail import EmailMessage
 from django.test.client import RequestFactory
 from requests.exceptions import ConnectionError
 
+from cciw.auth import COMMITTEE_GROUP_NAME
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
 from cciw.utils.tests.base import TestBase
 
@@ -83,6 +85,33 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
             self.assertTrue(any(b"To: admin2@admin.com" in m
                                 for m in messages_sent))
             self.assertTrue(all(b"Subject: Test" in m
+                                for m in messages_sent))
+
+    def test_handle_list_committee(self):
+        committee, _ = Group.objects.get_or_create(name=COMMITTEE_GROUP_NAME)
+        committee.user_set.create(
+            username="aman1",
+            email="a.man@example.com")
+        committee.user_set.create(
+            username="awoman1",
+            email="a.woman@example.com")
+
+        msg = MSG1.replace(b'camp-debug@cciw.co.uk', b'committee@cciw.co.uk')
+        with mock_mailgun_send_mime() as m_s:
+            handle_mail(msg)
+
+        self.assertEqual(m_s.call_count, 0)  # Permission denied
+        msg2 = msg.replace(b'joe@gmail.com', b'a.woman@example.com')
+
+        with mock_mailgun_send_mime() as m_s2:
+            handle_mail(msg2)
+
+            messages_sent = m_s2.messages_sent()
+            to_addresses = m_s2.to_addresses()
+            self.assertEqual(list(sorted(to_addresses)),
+                             ["a.man@example.com",
+                              "a.woman@example.com"])
+            self.assertTrue(all(b"Sender: CCIW lists <lists@cciw.co.uk>" in m
                                 for m in messages_sent))
 
     def test_handle_mail_exception(self):
@@ -215,7 +244,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
     # We then use VCR to record the interaction and make the test fast and deterministic
     @vcr.use_cassette('cciw/mail/fixtures/vcr_cassettes/send_mime_message_good.yaml')
     def test_send_mime_message_good(self):
-        to = settings.MAILGUN_TEST_RECEIVER
+        to = settings.MAILGUN_TEST_RECEIVER  # authorized recipient
         msg = MSG_MAILGUN_TEST.replace(b'someone@gmail.com', to.encode('utf-8'))
         response = send_mime_message(to, msg)
         self.assertIn('id', response)

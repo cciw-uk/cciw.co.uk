@@ -52,6 +52,10 @@ def get_camp_admin_group_users():
     return User.objects.filter(groups__in=Group.objects.filter(name__in=CAMP_ADMIN_GROUPS))
 
 
+def get_group_users(group_name):
+    return Group.objects.get(name=group_name).user_set.all()
+
+
 def is_wiki_user(user):
     if not active_staff(user):
         return False

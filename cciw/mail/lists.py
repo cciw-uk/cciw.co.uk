@@ -3,11 +3,10 @@ import re
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.core.mail import make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
-from cciw.auth import get_camp_admin_group_users
+from cciw.auth import get_camp_admin_group_users, get_group_users, COMMITTEE_GROUP_NAME
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
 from cciw.officers.email_utils import formatted_email
@@ -84,6 +83,14 @@ def _camp_leaders(year=None, slug=None):
     return list(s)
 
 
+def _committee_users():
+    return get_group_users(COMMITTEE_GROUP_NAME)
+
+
+def _is_in_committee(email):
+    return get_group_users(COMMITTEE_GROUP_NAME).filter(email__iexact=email).exists()
+
+
 def _get_leaders_for_camp(camp):
     retval = set()
     for p in camp.leaders.all():
@@ -145,6 +152,7 @@ CAMP_SLACKERS_LIST = "Camp slackers"
 CAMP_LEADERS_LIST = "Camp leaders"
 CAMP_LEADERS_FOR_YEAR_LIST = "Camp leaders for year"
 CAMP_DEBUG = "Debug"
+COMMITTEE = "Committee"
 
 EMAIL_LISTS = [
     (CAMP_OFFICERS_LIST,
@@ -171,6 +179,11 @@ EMAIL_LISTS = [
      re.compile(r"^camp-debug@cciw\.co\.uk$"),
      _mail_debug_users,
      lambda email: True),
+
+    (COMMITTEE,
+     re.compile(r"^committee@cciw\.co\.uk$"),
+     _committee_users,
+     _is_in_committee),
 ]
 
 
