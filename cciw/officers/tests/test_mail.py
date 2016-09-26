@@ -8,6 +8,7 @@ from cciw.mail.lists import MailAccessDenied, NoSuchList, extract_email_addresse
 from cciw.officers.email import handle_reference_bounce
 from cciw.officers.tests.base import BasicSetupMixin, ExtraOfficersSetupMixin
 from cciw.utils.tests.base import TestBase
+from cciw.mail.tests import mock_mailgun_send_mime
 
 User = get_user_model()
 
@@ -91,20 +92,22 @@ class MailTests(ExtraOfficersSetupMixin, TestBase):
         self.assertEqual(l1, l2)
 
     def test_handle(self):
-        connection = self.connection
-        self.assertEqual(connection.sent, [])
-        handle_mail(TEST_MAIL)
-        self.assertEqual(len(connection.sent), 3)
+        with mock_mailgun_send_mime() as m_s:
+            handle_mail(TEST_MAIL)
 
-        self.assertTrue(all(b'From: Dave Stott <leader@somewhere.com>' in m for f, t, m in connection.sent))
-        self.assertEqual(connection.sent[0][1][0], '"Fred Jones" <fredjones@somewhere.com>')
-        self.assertIn(b"Sender: CCIW lists", connection.sent[0][2])
-        self.assertIn(b"From: Dave Stott <leader@somewhere.com>", connection.sent[0][2])
+        sent_messages = m_s.messages_sent()
+        self.assertEqual(len(sent_messages), 3)
+
+        self.assertTrue(all(b'From: Dave Stott <leader@somewhere.com>' in m for m in sent_messages))
+        self.assertEqual(m_s.call_args_list[0][0][0], '"Fred Jones" <fredjones@somewhere.com>')
+        self.assertIn(b"Sender: CCIW lists", sent_messages[0])
+        self.assertIn(b"From: Dave Stott <leader@somewhere.com>", sent_messages[0])
 
     def test_handle_bounce(self):
         bad_mail = TEST_MAIL.replace(b"leader@somewhere.com", b"notleader@somewhere.com")
-        handle_mail(bad_mail)
-        self.assertEqual(self.connection.sent, [])
+        with mock_mailgun_send_mime() as m_s:
+            handle_mail(bad_mail)
+        self.assertEqual(m_s.messages_sent(), [])
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, "Access to mailing list camp-2000-blue-officers@cciw.co.uk denied")
 
