@@ -329,7 +329,7 @@ def update_database():
 def setup_mailgun():
     with virtualenv(target.VENV_DIR):
         with cd(target.SRC_DIR):
-            run_venv("./manage.py migrate setup_mailgun")
+            run_venv("./manage.py setup_mailgun")
 
 
 NON_VCS_SOURCES = [
