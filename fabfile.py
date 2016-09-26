@@ -326,10 +326,10 @@ def update_database():
 
 
 @task
-def setup_mailgun_routes():
+def setup_mailgun():
     with virtualenv(target.VENV_DIR):
         with cd(target.SRC_DIR):
-            run_venv("./manage.py migrate setup_mailgun_routes")
+            run_venv("./manage.py migrate setup_mailgun")
 
 
 NON_VCS_SOURCES = [
@@ -378,7 +378,7 @@ def deploy():
     webserver_start()
     _copy_protected_downloads()
     if target is PRODUCTION:
-        setup_mailgun_routes()
+        setup_mailgun()
 
     #  Update 'live' branch so that we can switch to it easily if needed.
     if target is PRODUCTION:

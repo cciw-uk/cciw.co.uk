@@ -75,3 +75,17 @@ def update_route(id, description, expression, actions, priority=None):
                                  expression=expression,
                                  action=actions,
                                  priority=priority))
+
+
+def update_webhook(name, url):
+    return api_request('/domains/cciw.co.uk/webhooks/' + name,
+                       method='put',
+                       data={'url': url})
+
+
+def create_webhook(name, url):
+    return api_request('/domains/cciw.co.uk/webhooks',
+                       data={
+                           'id': name,
+                           'url': url,
+                       })

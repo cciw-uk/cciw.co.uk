@@ -1,7 +1,7 @@
 from django.core.urlresolvers import reverse
 
 from .lists import EMAIL_LISTS
-from .mailgun import create_route, list_routes, update_route
+from .mailgun import create_route, list_routes, update_route, update_webhook, create_webhook
 
 
 # See https://mailgun.com/app/routes
@@ -32,3 +32,12 @@ def setup_mailgun_routes():
         actions = ["""forward("{0}")""".format(forwarding_url),
                    "stop()"]
         update_or_create(name, expression, actions, priority=5)
+
+
+def setup_mailgun_webhooks():
+    domain = "https://www.cciw.co.uk"
+    webhook_bounce_url = domain + reverse("cciw-mailgun-bounce")
+    try:
+        create_webhook('bounce', webhook_bounce_url)
+    except Exception:
+        update_webhook('bounce', webhook_bounce_url)
