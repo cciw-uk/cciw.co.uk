@@ -189,17 +189,31 @@ TEMPLATES = [
 
 # == EMAIL ==
 
+# Try to ensure we don't send mail via Mailgun when testing.
+
+# First step: set EMAIL_BACKEND correctly. This deals with mail sent via
+# django's send_mail.
+
+# However, we also use Mailgun API directly. Rather than changing every
+# reference to @cciw.co.uk, we patch up outgoing emails in cciw.mail.mailgun to
+# use the sandbox domain.
+
+if LIVEBOX and PRODUCTION:
+    MAILGUN_DOMAIN = "cciw.co.uk"
+    MAILGUN_SANBDOX_MODE = False
+else:
+    from cciw.settings_priv import MAILGUN_SANDBOX_DOMAIN
+    MAILGUN_DOMAIN = MAILGUN_SANDBOX_DOMAIN
+    MAILGUN_SANBDOX_MODE = True
+
+
 SERVER_EMAIL = "CCIW website <website@cciw.co.uk>"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 REFERENCES_EMAIL = "CCIW references <references@cciw.co.uk>"
 
-if LIVEBOX:
-    if PRODUCTION:
-        EMAIL_BACKEND = "anymail.backends.mailgun.MailgunBackend"
-    elif STAGING:
-        EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
-
-if DEVBOX:
+if LIVEBOX and PRODUCTION:
+    EMAIL_BACKEND = "anymail.backends.mailgun.MailgunBackend"
+else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 from cciw.settings_priv import MAILGUN_API_KEY
