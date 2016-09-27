@@ -27,6 +27,10 @@ parser.add_argument("--verbosity", "-v", action='store', type=int,
                     help="Specify the verbosity to pass on to manage.py, 0 to 3. Pass 2 to print test names being run.")
 parser.add_argument("--show-browser", action='store_true',
                     help="Display the browser window")
+parser.add_argument("--selenium-driver", action='store',
+                    help="Pass 'Chrome' or 'PhantomJS' to use thoese WebDrivers instead of Firefox for Selenium tests")
+parser.add_argument("--firefox-binary", action='store',
+                    help="Specify the path to the Firefox binary to use, otherwise default Firefox will be found")
 
 known_args, remaining_args = parser.parse_known_args()
 
@@ -67,6 +71,12 @@ if not known_args.nokeepdb:
 
 if known_args.show_browser:
     os.environ['TESTS_SHOW_BROWSER'] = 'TRUE'
+
+if known_args.selenium_driver:
+    os.environ['TEST_SELENIUM_DRIVER'] = known_args.selenium_driver
+
+if known_args.firefox_binary:
+    os.environ['TEST_SELENIUM_FIREFOX_BINARY'] = known_args.firefox_binary
 
 cmd += remaining_options + test_args
 
