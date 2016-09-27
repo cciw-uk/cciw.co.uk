@@ -103,8 +103,9 @@ def _committee_users():
     return get_group_users(COMMITTEE_GROUP_NAME)
 
 
-def _is_in_committee(email):
-    return get_group_users(COMMITTEE_GROUP_NAME).filter(email__iexact=email).exists()
+def _is_in_committee_or_superuser(email):
+    return (get_group_users(COMMITTEE_GROUP_NAME).filter(email__iexact=email).exists() or
+            _is_superuser(email))
 
 
 def _get_leaders_for_camp(camp):
@@ -129,18 +130,22 @@ def _is_camp_leader_or_admin(email, year=None, slug=None):
     return _email_match(email, all_users)
 
 
-def _is_camp_leader_or_admin_or_site_admin(email, year=None, slug=None):
+def _is_camp_leader_or_admin_or_superuser(email, year=None, slug=None):
     if _is_camp_leader_or_admin(email, year=year, slug=slug):
         return True
 
     if _email_match(email, get_camp_admin_group_users()):
         return True
 
-    User = get_user_model()
-    if User.objects.filter(email__iexact=email, is_superuser=True).exists():
+    if _is_superuser(email):
         return True
 
     return False
+
+
+def _is_superuser(email):
+    User = get_user_model()
+    return User.objects.filter(email__iexact=email, is_superuser=True).exists()
 
 
 def _mail_debug_users():
@@ -184,12 +189,12 @@ EMAIL_LISTS = [
     (CAMP_LEADERS_LIST,
      re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders@cciw\.co\.uk$", re.IGNORECASE),
      _camp_leaders,
-     _is_camp_leader_or_admin_or_site_admin),
+     _is_camp_leader_or_admin_or_superuser),
 
     (CAMP_LEADERS_FOR_YEAR_LIST,
      re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw\.co\.uk$", re.IGNORECASE),
      _camp_leaders,
-     _is_camp_leader_or_admin_or_site_admin),
+     _is_camp_leader_or_admin_or_superuser),
 
     (CAMP_DEBUG,
      re.compile(r"^camp-debug@cciw\.co\.uk$"),
@@ -199,7 +204,7 @@ EMAIL_LISTS = [
     (COMMITTEE,
      re.compile(r"^committee@cciw\.co\.uk$"),
      _committee_users,
-     _is_in_committee),
+     _is_in_committee_or_superuser),
 ]
 
 
