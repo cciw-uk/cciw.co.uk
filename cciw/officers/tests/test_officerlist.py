@@ -325,7 +325,7 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
             '#id_email': 'mary@andrews.com',
         })
         self.submit('input[type=submit]')
-        self.assertTextPresent("A user with that name and e-mail address already exists")
+        self.assertTextPresent("A user with that name and email address already exists")
         self.assertFalse(self.is_element_present(self.CONFIRM_BUTTON))
 
     def test_duplicate_name(self):
@@ -356,7 +356,7 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
             '#id_email': 'mary@andrews.com',
         })
         self.submit('input[type=submit]')
-        self.assertTextPresent("A user with that e-mail address already exists")
+        self.assertTextPresent("A user with that email address already exists")
         self.submit(self.CONFIRM_BUTTON)
         self._assert_created()
 

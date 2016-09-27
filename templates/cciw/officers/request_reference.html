@@ -26,9 +26,9 @@
     {% endif %}
 
     {% if bad_email %}
-      <p>No e-mail address (or an invalid e-mail address) was provided, so the
-        referee can't be e-mailed.  If you cannot find out their e-mail address, you
-        must fill in the reference manually. If you can find out the e-mail
+      <p>No email address (or an invalid email address) was provided, so the
+        referee can't be emailed.  If you cannot find out their email address, you
+        must fill in the reference manually. If you can find out the email
         address, enter it below and press 'Save' to continue:</p>
 
       <form id="id_set_email_form" method="post" action="">
@@ -56,7 +56,7 @@
         <p><strong>{{ referee.name }} has not done a reference for
           {{ app.officer.first_name }} in the past.</strong>  Before requesting this
           reference, you should endeavour to ensure that this person is who the
-          applicant claims they are, and <strong>ensure the e-mail address is
+          applicant claims they are, and <strong>ensure the email address is
           correct</strong>, and that they are happy to do a reference.</p>
       {% endif %}
 
@@ -67,7 +67,7 @@
           you can ask them to update their reference.</p>
       {% endif %}
 
-      <p>If you need to correct the name/e-mail address, please edit below and press
+      <p>If you need to correct the name/email address, please edit below and press
         'Save' before continuing. The name should be the full name only, and not include
         a title or any other information.</p>
 

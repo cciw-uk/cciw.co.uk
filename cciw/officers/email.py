@@ -55,7 +55,7 @@ def send_application_emails(request, application):
     application_rtf = application_to_rtf(application)
     rtf_attachment = (application_rtf_filename(application), application_rtf, 'text/rtf')
 
-    # Collect e-mails to send to
+    # Collect emails to send to
     leader_email_groups = admin_emails_for_application(application)
     for camp, leader_emails in leader_email_groups:
         # Did the officer submit one last year?
@@ -79,7 +79,7 @@ def send_application_emails(request, application):
         if len(leader_emails) > 0:
             send_leader_email(leader_emails, application, application_text, rtf_attachment,
                               application_diff)
-        messages.info(request, "The completed application form has been sent to the leaders (%s) via e-mail." %
+        messages.info(request, "The completed application form has been sent to the leaders (%s) via email." %
                       camp.leaders_formatted)
 
     if len(leader_email_groups) == 0:
@@ -91,7 +91,7 @@ def send_application_emails(request, application):
     # If an admin user corrected an application, we don't send the user a copy
     if request.user == application.officer:
         send_officer_email(application.officer, application, application_text, rtf_attachment)
-        messages.info(request, "A copy of the application form has been sent to you via e-mail.")
+        messages.info(request, "A copy of the application form has been sent to you via email.")
 
         if application.officer.email.lower() != application.address_email.lower():
             send_email_change_emails(application.officer, application)
@@ -105,7 +105,7 @@ def send_officer_email(officer, application, application_text, rtf_attachment):
     user_msg = ("""%s,
 
 For your records, here is a copy of the application you have submitted
-to CCIW. It is also attached to this e-mail as an RTF file.
+to CCIW. It is also attached to this email as an RTF file.
 
 """ % application.officer.first_name) + application_text
 
@@ -118,7 +118,7 @@ def send_leader_email(leader_emails, application, application_text, rtf_attachme
                       application_diff):
     subject = "CCIW application form from %s" % application.full_name
     body = ("""The following application form has been submitted via the
-CCIW website.  It is also attached to this e-mail as an RTF file.
+CCIW website.  It is also attached to this email as an RTF file.
 
 """)
     if application_diff is not None:
@@ -157,25 +157,25 @@ def make_update_application_url(application, email):
 
 
 def send_email_change_emails(officer, application):
-    subject = "E-mail change on CCIW"
+    subject = "Email change on CCIW"
     user_email = formatted_email(officer)
     user_msg = ("""%(name)s,
 
 In your most recently submitted application form, you entered your
-e-mail address as %(new)s.  The e-mail address stored against your
+email address as %(new)s.  The email address stored against your
 account is %(old)s.  If you would like this to be updated to '%(new)s'
 then click the link below:
 
  %(correct_email_url)s
 
-If the e-mail address you entered on your application form (%(new)s)
+If the email address you entered on your application form (%(new)s)
 is, in fact, incorrect, then click the link below to correct
 your application form to %(old)s:
 
  %(correct_application_url)s
 
-NB. This e-mail has been sent to both the old and new e-mail
-addresses, you only need to respond to one e-mail.
+NB. This email has been sent to both the old and new email
+addresses, you only need to respond to one email.
 
 Thanks,
 
@@ -254,7 +254,7 @@ def send_nag_by_officer(message, officer, referee, sending_officer):
 
 def send_crb_consent_problem_email(message, officer, camps):
     # If more than one camp involved, we deliberately put all camp leaders
-    # together on a single e-mail, so that they can see that more than one camp
+    # together on a single email, so that they can see that more than one camp
     # is involved
     emails = []
     for c in camps:

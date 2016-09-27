@@ -39,14 +39,14 @@ class ReferencesPage(ReferenceSetupMixin, WebTestBase):
 
 class RequestReference(ReferenceSetupMixin, WebTestBase):
     """
-    Tests for page where reference is requested, and referee e-mail can be updated.
+    Tests for page where reference is requested, and referee email can be updated.
     """
 
     def test_with_email(self):
         """
-        Ensure page allows you to proceed if there is an e-mail address for referee
+        Ensure page allows you to proceed if there is an email address for referee
         """
-        # Application 3 has an e-mail address for first referee
+        # Application 3 has an email address for first referee
         app = self.application3
         self.assertTrue(app.referees[0].email != '')
         referee = app.referees[0]
@@ -55,8 +55,8 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
                                      kwargs=dict(year=2000, slug="blue")) +
                              "?referee_id=%d" % referee.id)
         self.assertCode(200)
-        self.assertTextAbsent("No e-mail address")
-        self.assertTextPresent("The following e-mail")
+        self.assertTextAbsent("No email address")
+        self.assertTextPresent("The following email")
         self.submit('#id_request_reference_send input[name=send]')
         msgs = [e for e in mail.outbox if "Reference for" in e.subject]
         self.assertEqual(len(msgs), 1)
@@ -65,9 +65,9 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
 
     def test_no_email(self):
         """
-        Ensure page requires an e-mail address to be entered if it isn't set.
+        Ensure page requires an email address to be entered if it isn't set.
         """
-        # Application 3 has no e-mail address for second referee
+        # Application 3 has no email address for second referee
         app = self.application3
         self.assertTrue(app.referees[1].email == '')
         referee = app.referees[1]
@@ -76,13 +76,13 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
                                      kwargs=dict(year=2000, slug="blue")) +
                              "?referee_id=%d" % referee.id)
         self.assertCode(200)
-        self.assertTextPresent("No e-mail address")
+        self.assertTextPresent("No email address")
         self.assertTextAbsent("This field is required")  # Don't want errors on first view
-        self.assertTextAbsent("The following e-mail")
+        self.assertTextAbsent("The following email")
 
     def test_add_email(self):
         """
-        Ensure we can add the e-mail address
+        Ensure we can add the email address
         """
         self.test_no_email()
         self.fill_by_name({'email': 'addedemail@example.com',
@@ -91,10 +91,10 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         app = Application.objects.get(id=self.application3.id)
         self.assertEqual(app.referees[1].email, 'addedemail@example.com')
         self.assertEqual(app.referees[1].name, 'Added Name')
-        self.assertTextPresent("Name/e-mail address updated.")
+        self.assertTextPresent("Name/email address updated.")
 
     def test_cancel(self):
-        # Application 3 has an e-mail address for first referee
+        # Application 3 has an email address for first referee
         app = self.application3
         self.assertTrue(app.referees[0].email != '')
         referee = app.referees[0]

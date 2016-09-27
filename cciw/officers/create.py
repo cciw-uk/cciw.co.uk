@@ -29,8 +29,8 @@ def make_username(first_name, last_name, guess_number=1):
 
 def create_officer(first_name, last_name, email):
     """
-    Create an officer with the specified username, first_name, last_name, e-mail.
-    Officer will be e-mailed with password.  Set username to None for an
+    Create an officer with the specified username, first_name, last_name, email.
+    Officer will be emailed with password.  Set username to None for an
     automatically assigned one.  Returns the created User object.
     """
     username = make_username(first_name, last_name)
@@ -66,7 +66,7 @@ An account has been set up for you on the CCIW website, which allows
 you to fill in application form for coming on a CCIW camp.
 
 Below are the instructions for filling in the application form online.
-When you have finished filling the form in, it will be e-mailed to the
+When you have finished filling the form in, it will be emailed to the
 leader of the camp, who will need to send reference forms to the
 referees you have specified.
 
@@ -104,7 +104,7 @@ To fill in the application form
    to correct the data before it is actually saved.
 
 
-If you have any problems, please e-mail me at %(webmasteremail)s
+If you have any problems, please email me at %(webmasteremail)s
 
 The CCIW webmaster.
 """
@@ -113,7 +113,7 @@ The CCIW webmaster.
 def email_officer(username, first_name, email, password, update=False):
     if update:
         repeat_message = ("""
-This is a repeat e-mail sent either because the first e-mail never
+This is a repeat email sent either because the first email never
 arrived or the password was forgotten.  Your username has not been
 changed, but a new random password has been given to you, see below.
 """)

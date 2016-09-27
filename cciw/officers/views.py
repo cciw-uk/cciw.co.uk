@@ -260,7 +260,7 @@ Please find attached a copy of the application you requested
                                    msg, settings.SERVER_EMAIL,
                                    [formatted_email(request.user)],
                                    attachments=[rtf_attachment])
-        messages.info(request, "E-mail sent.")
+        messages.info(request, "Email sent.")
 
         # Redirect back where we came from
         return HttpResponseRedirect(request.POST.get('to', '/officers/'))
@@ -337,7 +337,7 @@ def add_previous_references(referee):
 
     # Sort by relevance
     def relevance_key(reference):
-        # Matching name or e-mail address is better, so has lower value,
+        # Matching name or email address is better, so has lower value,
         # so it comes first.
         return -(int(reference.referee.email.lower() == referee.email.lower()) +
                  int(reference.referee.name.lower() == referee.name.lower()))
@@ -468,7 +468,7 @@ def request_reference(request, year=None, slug=None):
         emailform = SetEmailForm(request.POST)
         if emailform.is_valid():
             emailform.save(referee)
-            messages.info(request, "Name/e-mail address updated.")
+            messages.info(request, "Name/email address updated.")
 
     # Work out 'old_referee' or 'known_email_address', and the URL to use in the
     # message.
@@ -768,13 +768,13 @@ def correct_email(request):
                                             salt="cciw-officers-correct_email",
                                             max_age=60 * 60 * 24 * 10)  # 10 days
     except signing.BadSignature:
-        c['message'] = ("The URL was invalid. Please ensure you copied the URL from the e-mail correctly, "
+        c['message'] = ("The URL was invalid. Please ensure you copied the URL from the email correctly, "
                         "or contact the webmaster if you are having difficulties")
     else:
         u = get_object_or_404(User.objects.filter(username=username))
         u.email = new_email
         u.save()
-        c['message'] = "Your e-mail address has been updated, thanks."
+        c['message'] = "Your email address has been updated, thanks."
         c['success'] = True
 
     return render(request, 'cciw/officers/email_update.html', c)
@@ -787,7 +787,7 @@ def correct_application(request):
                                               salt="cciw-officers-correct_application",
                                               max_age=60 * 60 * 24 * 10)  # 10 days
     except signing.BadSignature:
-        c['message'] = ("The URL was invalid. Please ensure you copied the URL from the e-mail correctly, "
+        c['message'] = ("The URL was invalid. Please ensure you copied the URL from the email correctly, "
                         "or contact the webmaster if you are having difficulties.")
     else:
         application = get_object_or_404(Application.objects.filter(id=application_id))
@@ -817,7 +817,7 @@ def create_officer(request):
                 same_user = same_name_users & same_email_users
                 if same_user.exists():
                     allow_confirm = False
-                    duplicate_message = "A user with that name and e-mail address already exists. You can change the details above and try again."
+                    duplicate_message = "A user with that name and email address already exists. You can change the details above and try again."
                 elif len(same_name_users) > 0:
                     existing_users = same_name_users
                     if len(existing_users) == 1:
@@ -829,9 +829,9 @@ def create_officer(request):
                 elif len(same_email_users):
                     existing_users = same_email_users
                     if len(existing_users) == 1:
-                        duplicate_message = "A user with that e-mail address already exists:"
+                        duplicate_message = "A user with that email address already exists:"
                     else:
-                        duplicate_message = "%d users with that e-mail address already exist:"\
+                        duplicate_message = "%d users with that email address already exist:"\
                                             % len(existing_users)
                 else:
                     process_form = True
@@ -842,7 +842,7 @@ def create_officer(request):
             if process_form:
                 u = form.save()
                 form = CreateOfficerForm()
-                messages.info(request, "Officer %s has been added and e-mailed.  You can add another if required, or close this popup to continue." % u.username)
+                messages.info(request, "Officer %s has been added and emailed.  You can add another if required, or close this popup to continue." % u.username)
                 camp_id = request.GET.get('camp_id')
                 if camp_id is not None:
                     Invitation.objects.get_or_create(camp=Camp.objects.get(id=camp_id), officer=u)

@@ -4,11 +4,11 @@ You put down {{ referee.name }} as one of your referees on your camp application
 
 The details you gave us:
 
-E-mail: {{ referee.email }}
+Email: {{ referee.email }}
 Tel: {{ referee.tel }}
 Mobile: {{ referee.mobile }}
 
-If the e-mail is wrong, please let us know.
+If the email is wrong, please let us know.
 
 Thanks.
 

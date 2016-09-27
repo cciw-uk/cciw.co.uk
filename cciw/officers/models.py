@@ -43,7 +43,7 @@ class Application(models.Model):
     address_country = RequiredCharField('country', max_length=30)
     address_tel = RequiredCharField('telephone', max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
     address_mobile = models.CharField('mobile', max_length=22, blank=True)
-    address_email = RequiredEmailField('e-mail')
+    address_email = RequiredEmailField('email')
     address_since = RequiredYyyyMmField('resident at address since')
 
     address2_from = YyyyMmField('resident at address from', blank=True)
@@ -172,7 +172,7 @@ class Referee(models.Model):
     address = RequiredAddressField('address')
     tel = models.CharField('telephone', max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
     mobile = models.CharField('mobile', max_length=22, blank=True)
-    email = models.EmailField('e-mail', blank=True)
+    email = models.EmailField('email', blank=True)
 
     def __str__(self):
         return "{0} for {1}".format(self.name, self.application.officer.username)

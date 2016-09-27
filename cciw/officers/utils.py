@@ -181,7 +181,7 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
     app_attr_getter = lambda attr: lambda user, inv, app: getattr(app, attr) if app is not None else ''
     columns = [('First name', lambda u, inv, app: u.first_name),
                ('Last name', lambda u, inv, app: u.last_name),
-               ('E-mail', lambda u, inv, app: u.email),
+               ('Email', lambda u, inv, app: u.email),
                ('Notes', lambda u, inv, app: inv.notes),
                ('Address', app_attr_getter('address_firstline')),
                ('Town', app_attr_getter('address_town')),

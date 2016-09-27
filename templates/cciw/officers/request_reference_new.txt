@@ -4,7 +4,7 @@
 
 {{ url }}
 
-In most e-mail programs, you should be able to click on the link above.  If not, open up your web browser and copy and paste the whole link into the address bar at the top of the web browser.
+In most email programs, you should be able to click on the link above.  If not, open up your web browser and copy and paste the whole link into the address bar at the top of the web browser.
 
 For those who don't enjoy writing references, please be assured that in the future you will simply be asked to confirm or update what you wrote this year.
 

@@ -94,7 +94,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         return [e for e in mail.outbox if "CCIW application form" in e.subject]
 
     def _get_email_change_emails(self):
-        return [e for e in mail.outbox if "E-mail change" in e.subject]
+        return [e for e in mail.outbox if "Email change" in e.subject]
 
     def test_change_application(self):
         self.officer_login(OFFICER)
@@ -162,22 +162,22 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         self.assertNamedUrl("cciw-officers-applications")
         self.assertEqual(u.applications.count(), 1)
 
-        # Check the e-mails have been sent
+        # Check the emails have been sent
         emails = self._get_email_change_emails()
         self.assertEqual(len(emails), 1)
         return orig_email, new_email, emails
 
     def test_change_email_address(self):
         # When submitted email address is different from the one stored against
-        # the user, an e-mail should be sent with a link to update the stored
-        # e-mail address
+        # the user, an email should be sent with a link to update the stored
+        # email address
 
         # This is a 'story' test, really, not a unit test, because we want to
         # check several different conclusions.
 
         orig_email, new_email, emails = self._change_email_setup()
 
-        # Read the e-mail
+        # Read the email
         url, path, querydata = read_email_url(emails[0], 'https?://.*/correct-email/.*')
 
         # Check that nothing has changed yet
@@ -198,7 +198,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Update successful")
 
-        # check e-mail address has changed
+        # check email address has changed
         self.assertEqual(User.objects.get(username=OFFICER[0]).email, new_email)
 
     def test_change_email_address_mistakenly(self):
@@ -208,7 +208,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         user_email, application_email, emails = self._change_email_setup()
         user = User.objects.get(username=OFFICER[0])
 
-        # Read the e-mail
+        # Read the email
         url, path, querydata = read_email_url(emails[0], 'https?://.*/correct-application/.*')
 
         # Check that nothing has changed yet
@@ -230,14 +230,14 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Update successful")
 
-        # check e-mail address has changed
+        # check email address has changed
         self.assertEqual(user.applications.all()[0].address_email,
                          user_email)
 
     def test_unchanged_email_address(self):
         """
-        Check that if the e-mail address is not changed (or is just different case)
-        then no e-mail is sent out
+        Check that if the email address is not changed (or is just different case)
+        then no email is sent out
         """
         self.assertEqual(len(mail.outbox), 0)
         self.officer_login(OFFICER)
@@ -251,7 +251,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         self.fill_by_name({'address_email': u.email.upper()})
         self.submit('[name=_save]')
 
-        # Check no e-mails have been sent
+        # Check no emails have been sent
         emails = self._get_email_change_emails()
         self.assertEqual(len(emails), 0)
 
@@ -284,7 +284,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         self.submit('[name=_save]')
         self.assertNamedUrl("cciw-officers-applications")
 
-        self.assertTextPresent("The completed application form has been sent to the leaders (Dave & Rebecca Stott) via e-mail")
+        self.assertTextPresent("The completed application form has been sent to the leaders (Dave & Rebecca Stott) via email")
 
         apps = list(u.applications.all())
         # The old one should have been deleted.
@@ -376,7 +376,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
 
     def test_application_differences_email(self):
         """
-        Tests the 'application difference' e-mail that is sent when an
+        Tests the 'application difference' email that is sent when an
         application form is submitted
         """
         u = User.objects.get(username=OFFICER[0])
@@ -408,12 +408,12 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
                         if e.subject == 'CCIW application form from New Full Name'][0]
         msg = leader_email.message()
 
-        # E-mail will have 3 parts - text, RTF, and differences from last year
+        # Email will have 3 parts - text, RTF, and differences from last year
         # as an HTML file.
         attachments = msg.get_payload()
         self.assertEqual(len(attachments), 3)
 
-        # Testing the actual content is hard from this point, due to e-mail
+        # Testing the actual content is hard from this point, due to email
         # formatting, so we do it manually:
 
         apps = u.applications.order_by('date_submitted')

@@ -4,7 +4,7 @@ On their application form, {{ officer.first_name }} {{ officer.last_name }} indi
 
 Contact details:
 
-E-mail: {{ application.address_email }}
+Email:  {{ application.address_email }}
 Tel:    {{ application.address_tel }}
 Mobile: {{ application.address_mobile }}
 

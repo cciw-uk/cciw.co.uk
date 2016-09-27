@@ -12,7 +12,7 @@ Address:          {{ app.address_firstline }}
                   {{ app.address_country }}
 Tel:              {{ app.address_tel }}
 Mobile:           {{ app.address_mobile }}
-E-mail:           {{ app.address_email }}
+Email:            {{ app.address_email }}
 At this address since: {{ app.address_since }}
 
 ----------------------------------------------------------------------
@@ -70,14 +70,14 @@ Address:
 {{ app.referees.0.address }}
 Tel:              {{ app.referees.0.tel }}
 Mobile:           {{ app.referees.0.mobile }}
-E-mail:           {{ app.referees.0.email }}
+Email:            {{ app.referees.0.email }}
 
 Referee 2:        {{ app.referees.1.name }}
 Address:
 {{ app.referees.1.address }}
 Tel:              {{ app.referees.1.tel }}
 Mobile:           {{ app.referees.1.mobile }}
-E-mail:           {{ app.referees.1.email }}
+Email:            {{ app.referees.1.email }}
 ----------------------------------------------------------------------
 Declarations
 ============
