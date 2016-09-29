@@ -178,55 +178,93 @@ COMMITTEE = "Committee"
 
 
 @attr.s
-class EmailList(object):
+class EmailListGroup(object):
     name = attr.ib()
     address_matcher = attr.ib()
+    get_members = attr.ib()
+    has_permission = attr.ib()
+    list_reply = attr.ib()
+
+    def match(self, address, from_address):
+        """
+        Returns an EmailList for the given address if it matches
+        this group of lists.
+
+        If no match, returns None
+        If the from_address doesn't have permission, raises MailAccessDenied
+        """
+        m = self.address_matcher.match(address)
+        if m is None:
+            return None
+        captures = m.groupdict()
+        if not self.has_permission(from_address, **captures):
+            raise MailAccessDenied()
+        return EmailList(address, self.get_members(**captures), self.list_reply)
+
+
+@attr.s
+class EmailList(object):
+    address = attr.ib()
     members = attr.ib()
-    permission = attr.ib()
+    list_reply = attr.ib()
 
 
 EMAIL_LISTS = [
-    EmailList(CAMP_OFFICERS_LIST,
-              re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-officers@cciw\.co\.uk$", re.IGNORECASE),
-              _camp_officers,
-              _is_camp_leader_or_admin),
-    EmailList(CAMP_SLACKERS_LIST,
-              re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-slackers@cciw\.co\.uk$", re.IGNORECASE),
-              _camp_slackers,
-              _is_camp_leader_or_admin),
-    EmailList(CAMP_LEADERS_LIST,
-              re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders@cciw\.co\.uk$", re.IGNORECASE),
-              _camp_leaders,
-              _is_camp_leader_or_admin_or_superuser),
-    EmailList(CAMP_LEADERS_FOR_YEAR_LIST,
-              re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw\.co\.uk$", re.IGNORECASE),
-              _camp_leaders,
-              _is_camp_leader_or_admin_or_superuser),
-    EmailList(CAMP_DEBUG,
-              re.compile(r"^camp-debug@cciw\.co\.uk$"),
-              _mail_debug_users,
-              lambda email: True),
-    EmailList(COMMITTEE,
-              re.compile(r"^committee@cciw\.co\.uk$"),
-              _committee_users,
-              _is_in_committee_or_superuser),
+    EmailListGroup(
+        CAMP_OFFICERS_LIST,
+        re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-officers@cciw\.co\.uk$", re.IGNORECASE),
+        _camp_officers,
+        _is_camp_leader_or_admin,
+        False),
+    EmailListGroup(
+        CAMP_SLACKERS_LIST,
+        re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-slackers@cciw\.co\.uk$", re.IGNORECASE),
+        _camp_slackers,
+        _is_camp_leader_or_admin,
+        False),
+    EmailListGroup(
+        CAMP_LEADERS_LIST,
+        re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders@cciw\.co\.uk$", re.IGNORECASE),
+        _camp_leaders,
+        _is_camp_leader_or_admin_or_superuser,
+        False),
+    EmailListGroup(
+        CAMP_LEADERS_FOR_YEAR_LIST,
+        re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw\.co\.uk$", re.IGNORECASE),
+        _camp_leaders,
+        _is_camp_leader_or_admin_or_superuser,
+        True),
+    EmailListGroup(
+        CAMP_DEBUG,
+        re.compile(r"^camp-debug@cciw\.co\.uk$"),
+        _mail_debug_users,
+        lambda email: True,
+        False),
+    EmailListGroup(
+        COMMITTEE,
+        re.compile(r"^committee@cciw\.co\.uk$"),
+        _committee_users,
+        _is_in_committee_or_superuser,
+        True)
 ]
 
 
-def users_for_address(address, from_addr):
+def find_list(address, from_addr):
     for e in EMAIL_LISTS:
-        m = e.address_matcher.match(address)
+        m = e.match(address, from_addr)
         if m is not None:
-            if not e.permission(from_addr, **m.groupdict()):
-                raise MailAccessDenied()
-            return e.members(**m.groupdict())
+            return m
     raise NoSuchList()
 
 
-def forward_email_to_list(mail, user_list, original_to, debug=False):
+def forward_email_to_list(mail, email_list, debug=False):
     orig_from_addr = mail['From']
 
-    sender_addr = "CCIW lists <lists@cciw.co.uk>"
+    if email_list.list_reply:
+        sender_addr = email_list.address
+        mail['List-Post'] = '<mailto:{0}>'.format(email_list.address)
+    else:
+        sender_addr = "CCIW lists <lists@cciw.co.uk>"
     mail['Sender'] = sender_addr
     mail['Return-Path'] = "website@cciw.co.uk"
     mail['Reply-To'] = orig_from_addr
@@ -244,6 +282,7 @@ def forward_email_to_list(mail, user_list, original_to, debug=False):
         'date',
         'reply-to',
         'sender',
+        'list-post',
     ]
     mail._headers = [(name, val) for name, val in mail._headers
                      if name.lower() in good_headers]
@@ -255,7 +294,7 @@ def forward_email_to_list(mail, user_list, original_to, debug=False):
     # re-trying won't re-send emails that were already sent.
 
     messages_to_send = []
-    for user in user_list:
+    for user in email_list.members:
         addr = formatted_email(user)
         del mail['To']
         mail['To'] = addr
@@ -299,8 +338,8 @@ with an email title "{1}".
 There were problems with the following addresses:
 
 {2}
-""".format(original_to, mail['Subject'], '\n'.join(address_messages))
-            send_mail("Error with email to list {0}".format(original_to),
+""".format(email_list.address, mail['Subject'], '\n'.join(address_messages))
+            send_mail("Error with email to list {0}".format(email_list.address),
                       msg,
                       settings.DEFAULT_FROM_EMAIL,
                       [orig_from_addr],
@@ -329,10 +368,9 @@ def handle_mail(data, debug=False):
     from_email = extract_email_addresses(mail['From'])[0]
 
     for address in addresses:
-
         try:
-            l = users_for_address(address, from_email)
-            forward_email_to_list(mail, l, address, debug=debug)
+            email_list = find_list(address, from_email)
+            forward_email_to_list(mail, email_list, debug=debug)
         except MailAccessDenied:
             send_mail("Access to mailing list {0} denied".format(address),
                       "You attempted to email the list {0}\n"

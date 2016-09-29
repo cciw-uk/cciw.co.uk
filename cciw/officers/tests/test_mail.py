@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core import mail
 
-from cciw.mail.lists import MailAccessDenied, NoSuchList, extract_email_addresses, handle_mail, users_for_address
+from cciw.mail.lists import MailAccessDenied, NoSuchList, extract_email_addresses, handle_mail, find_list
 from cciw.mail.tests import mock_mailgun_send_mime
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
 from cciw.utils.tests.base import TestBase
@@ -21,40 +21,21 @@ This is a message!
 """
 
 
-class DummyConnection(object):
-    def __init__(self):
-        self.sent = []
-
-    def sendmail(self, *args):
-        self.sent.append(args)
-
-
-class DummyBackend(object):
-    def __init__(self, connection):
-        self.connection = connection
-
-    def open(self):
-        pass
-
-    def close(self):
-        pass
-
-
 class MailTests(ExtraOfficersSetupMixin, TestBase):
 
     def test_invalid_list(self):
         self.assertRaises(NoSuchList,
-                          lambda: users_for_address('everyone@cciw.co.uk', 'joe@random.com'))
+                          lambda: find_list('everyone@cciw.co.uk', 'joe@random.com'))
         self.assertRaises(NoSuchList,
-                          lambda: users_for_address('x-camp-2000-blue-officers@cciw.co.uk', 'joe@random.com'))
+                          lambda: find_list('x-camp-2000-blue-officers@cciw.co.uk', 'joe@random.com'))
 
     def test_officer_list(self):
         self.assertRaises(MailAccessDenied,
-                          lambda: users_for_address('camp-2000-blue-officers@cciw.co.uk', 'joe@random.com'))
+                          lambda: find_list('camp-2000-blue-officers@cciw.co.uk', 'joe@random.com'))
 
-        l1 = users_for_address('camp-2000-blue-officers@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
+        l = find_list('camp-2000-blue-officers@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
 
-        self.assertEqual([u.username for u in l1],
+        self.assertEqual([u.username for u in l.members],
                          ["fredjones", "joebloggs", "petersmith"])
 
     def test_leader_list(self):
@@ -63,18 +44,18 @@ class MailTests(ExtraOfficersSetupMixin, TestBase):
         # non-priviliged user:
         user = User.objects.create(username="joerandom", email="joe@random.com", is_superuser=False)
         self.assertRaises(MailAccessDenied,
-                          lambda: users_for_address('camp-2000-blue-leaders@cciw.co.uk', 'joe@random.com'))
+                          lambda: find_list('camp-2000-blue-leaders@cciw.co.uk', 'joe@random.com'))
 
         # superuser:
         user.is_superuser = True
         user.save()
-        l1 = users_for_address('camp-2000-blue-leaders@cciw.co.uk', 'JOE@RANDOM.COM')
+        l1 = find_list('camp-2000-blue-leaders@cciw.co.uk', 'JOE@RANDOM.COM')
 
         # leader:
-        l2 = users_for_address('camp-2000-blue-leaders@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
+        l2 = find_list('camp-2000-blue-leaders@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
 
         # Check contents
-        self.assertEqual([u.username for u in l1],
+        self.assertEqual([u.username for u in l1.members],
                          ["davestott"])
 
         self.assertEqual(l1, l2)

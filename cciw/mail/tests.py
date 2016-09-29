@@ -15,7 +15,7 @@ from cciw.officers.tests.base import ExtraOfficersSetupMixin
 from cciw.utils.tests.base import TestBase
 
 from . import views
-from .lists import MailAccessDenied, NoSuchList, handle_mail, users_for_address
+from .lists import MailAccessDenied, NoSuchList, handle_mail, find_list
 from .mailgun import send_mime_message
 from .test_data import (MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE,
@@ -115,7 +115,9 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
             self.assertEqual(list(sorted(to_addresses)),
                              ["a.man@example.com",
                               "a.woman@example.com"])
-            self.assertTrue(all(b"Sender: CCIW lists <lists@cciw.co.uk>" in m
+            self.assertTrue(all(b"Sender: committee@cciw.co.uk" in m
+                                for m in messages_sent))
+            self.assertTrue(all(b"List-Post: <mailto:committee@cciw.co.uk>" in m
                                 for m in messages_sent))
 
     def test_handle_mail_exception(self):
@@ -169,41 +171,41 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                 self.assertEqual(error_email.to,
                                  ["Joe <joe@gmail.com>"])
 
-    def test_users_for_address(self):
+    def test_find_list(self):
         leader_user = self.leader_user
 
         # non-existent
         self.assertRaises(NoSuchList,
-                          lambda: users_for_address('no-such-list@cciw.co.uk',
-                                                    leader_user.email))
+                          lambda: find_list('no-such-list@cciw.co.uk',
+                                            leader_user.email))
 
         # camp-debug
         self.assertEqual(sorted([u.email for u in
-                                 users_for_address('camp-debug@cciw.co.uk', 'anyone@gmail.com')]),
+                                 find_list('camp-debug@cciw.co.uk', 'anyone@gmail.com').members]),
                          ['admin1@admin.com', 'admin2@admin.com'])
 
         # officers
         self.assertRaises(MailAccessDenied,
-                          lambda: users_for_address('camp-2000-blue-officers@cciw.co.uk',
-                                                    'anyone@gmail.com'))
+                          lambda: find_list('camp-2000-blue-officers@cciw.co.uk',
+                                            'anyone@gmail.com'))
 
         self.assertRaises(MailAccessDenied,
-                          lambda: users_for_address('camp-2000-blue-officers@cciw.co.uk',
-                                                    self.officer1.email))
+                          lambda: find_list('camp-2000-blue-officers@cciw.co.uk',
+                                            self.officer1.email))
 
-        self.assertEqual(set(users_for_address('camp-2000-blue-officers@cciw.co.uk',
-                                               leader_user.email)),
+        self.assertEqual(set(find_list('camp-2000-blue-officers@cciw.co.uk',
+                                       leader_user.email).members),
                          {self.officer1,
                           self.officer2,
                           self.officer3})
 
         # leaders
         self.assertRaises(MailAccessDenied,
-                          lambda: users_for_address('camps-2000-leaders@cciw.co.uk',
-                                                    self.officer1.email))
+                          lambda: find_list('camps-2000-leaders@cciw.co.uk',
+                                            self.officer1.email))
 
-        self.assertEqual(set(users_for_address('camps-2000-leaders@cciw.co.uk',
-                                               leader_user.email)),
+        self.assertEqual(set(find_list('camps-2000-leaders@cciw.co.uk',
+                                       leader_user.email).members),
                          {self.leader_user})
 
     def test_handle_mail_permission_denied(self):
