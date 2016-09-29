@@ -23,15 +23,14 @@ def setup_mailgun_routes():
                          actions,
                          priority=priority)
 
-    for name, regex, func, perm_func in EMAIL_LISTS:
-        pattern = regex.pattern
-
+    for e in EMAIL_LISTS:
+        pattern = e.address_matcher.pattern
         expression = """match_recipient('{0}')""".format(pattern)
         domain = "https://www.cciw.co.uk"
         forwarding_url = domain + reverse("cciw-mailgun-incoming")
         actions = ["""forward("{0}")""".format(forwarding_url),
                    "stop()"]
-        update_or_create(name, expression, actions, priority=5)
+        update_or_create(e.name, expression, actions, priority=5)
 
 
 def setup_mailgun_webhooks():

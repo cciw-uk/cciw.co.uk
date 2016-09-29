@@ -17,6 +17,7 @@
 import email
 import re
 
+import attr
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import make_msgid, send_mail
@@ -175,46 +176,50 @@ CAMP_LEADERS_FOR_YEAR_LIST = "Camp leaders for year"
 CAMP_DEBUG = "Debug"
 COMMITTEE = "Committee"
 
+
+@attr.s
+class EmailList(object):
+    name = attr.ib()
+    address_matcher = attr.ib()
+    members = attr.ib()
+    permission = attr.ib()
+
+
 EMAIL_LISTS = [
-    (CAMP_OFFICERS_LIST,
-     re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-officers@cciw\.co\.uk$", re.IGNORECASE),
-     _camp_officers,
-     _is_camp_leader_or_admin),
-
-    (CAMP_SLACKERS_LIST,
-     re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-slackers@cciw\.co\.uk$", re.IGNORECASE),
-     _camp_slackers,
-     _is_camp_leader_or_admin),
-
-    (CAMP_LEADERS_LIST,
-     re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders@cciw\.co\.uk$", re.IGNORECASE),
-     _camp_leaders,
-     _is_camp_leader_or_admin_or_superuser),
-
-    (CAMP_LEADERS_FOR_YEAR_LIST,
-     re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw\.co\.uk$", re.IGNORECASE),
-     _camp_leaders,
-     _is_camp_leader_or_admin_or_superuser),
-
-    (CAMP_DEBUG,
-     re.compile(r"^camp-debug@cciw\.co\.uk$"),
-     _mail_debug_users,
-     lambda email: True),
-
-    (COMMITTEE,
-     re.compile(r"^committee@cciw\.co\.uk$"),
-     _committee_users,
-     _is_in_committee_or_superuser),
+    EmailList(CAMP_OFFICERS_LIST,
+              re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-officers@cciw\.co\.uk$", re.IGNORECASE),
+              _camp_officers,
+              _is_camp_leader_or_admin),
+    EmailList(CAMP_SLACKERS_LIST,
+              re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-slackers@cciw\.co\.uk$", re.IGNORECASE),
+              _camp_slackers,
+              _is_camp_leader_or_admin),
+    EmailList(CAMP_LEADERS_LIST,
+              re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders@cciw\.co\.uk$", re.IGNORECASE),
+              _camp_leaders,
+              _is_camp_leader_or_admin_or_superuser),
+    EmailList(CAMP_LEADERS_FOR_YEAR_LIST,
+              re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw\.co\.uk$", re.IGNORECASE),
+              _camp_leaders,
+              _is_camp_leader_or_admin_or_superuser),
+    EmailList(CAMP_DEBUG,
+              re.compile(r"^camp-debug@cciw\.co\.uk$"),
+              _mail_debug_users,
+              lambda email: True),
+    EmailList(COMMITTEE,
+              re.compile(r"^committee@cciw\.co\.uk$"),
+              _committee_users,
+              _is_in_committee_or_superuser),
 ]
 
 
 def users_for_address(address, from_addr):
-    for name, pat, func, perm_func in EMAIL_LISTS:
-        m = pat.match(address)
+    for e in EMAIL_LISTS:
+        m = e.address_matcher.match(address)
         if m is not None:
-            if not perm_func(from_addr, **m.groupdict()):
+            if not e.permission(from_addr, **m.groupdict()):
                 raise MailAccessDenied()
-            return func(**m.groupdict())
+            return e.members(**m.groupdict())
     raise NoSuchList()
 
 
