@@ -129,8 +129,6 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         self.assertEqual(list(sorted(to_addresses)),
                          ["admin1@admin.com",
                           "admin2@admin.com"])
-        self.assertTrue(all(b"Sender: CCIW lists <lists@cciw.co.uk>" in m
-                            for m in messages_sent))
         self.assertTrue(all(b"From: Joe <joe@gmail.com>" in m
                             for m in messages_sent))
         self.assertTrue(any(b"To: admin1@admin.com" in m
@@ -175,7 +173,10 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         sent_messages = m_s.messages_sent()
         self.assertEqual(len(sent_messages), 3)
 
-        self.assertTrue(all(b'From: Dave Stott <leader@somewhere.com>' in m for m in sent_messages))
+        self.assertTrue(all(b'From: Dave Stott <leader@somewhere.com>' in m
+                            for m in sent_messages))
+        self.assertTrue(all(b"Sender: CCIW lists <lists@cciw.co.uk>" in m
+                            for m in sent_messages))
         self.assertEqual(m_s.call_args_list[0][0][0], '"Fred Jones" <fredjones@somewhere.com>')
         self.assertIn(b"Sender: CCIW lists", sent_messages[0])
         self.assertIn(b"From: Dave Stott <leader@somewhere.com>", sent_messages[0])

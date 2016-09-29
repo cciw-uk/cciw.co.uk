@@ -239,7 +239,7 @@ EMAIL_LISTS = [
         re.compile(r"^camp-debug@cciw\.co\.uk$"),
         _mail_debug_users,
         lambda email: True,
-        False),
+        True),
     EmailListGroup(
         COMMITTEE,
         re.compile(r"^committee@cciw\.co\.uk$"),
