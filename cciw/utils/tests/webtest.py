@@ -37,6 +37,32 @@ class CommonMixin(object):
         path = urlparse(self.current_url).path
         self.assertEqual(path, url)
 
+    def assert_html5_form_invalid(self):
+        self.assertTrue(len(self._driver.find_elements_by_css_selector('form:invalid')),
+                        1)
+
+    def submit_expecting_html5_validation_errors(self, submit_css_selector=None):
+        """
+        Submit a form, checking for and clearing HTML5 validation
+        errors
+        """
+        # Requires `self.submit_css_selector` to be set, or
+        # `submit_css_selector` to be passed as argument.
+        if self.is_full_browser_test:
+            # HTML5 validation to deal with
+            if submit_css_selector is None:
+                submit_css_selector = self.submit_css_selector
+            self.click(self.submit_css_selector)
+            self.assert_html5_form_invalid()
+            self.execute_script('$("[required]").removeAttr("required");')
+            # Now we can go ahead and submit normally
+        if submit_css_selector is None:
+            # This can work if subclass has overridden `submit` to provide
+            # the right css_selector by default
+            self.submit()
+        else:
+            self.submit(submit_css_selector)
+
 
 @override_settings(COMPRESS_PRECOMPILERS=[('text/less', 'cciw.utils.tests.webtest.DummyLessCssFilter')],
                    )

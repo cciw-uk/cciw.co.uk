@@ -546,8 +546,9 @@ class TestPaymentReminderEmails(CreatePlaceModelMixin, BookingBaseMixin, WebTest
 class TestAccountDetailsBase(BookingBaseMixin, LogInMixin):
 
     urlname = 'cciw-bookings-account_details'
+    submit_css_selector = '[type=submit]'
 
-    def submit(self, css_selector='[type=submit]'):
+    def submit(self, css_selector=submit_css_selector):
         return super(TestAccountDetailsBase, self).submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
@@ -562,7 +563,7 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin):
     def test_missing_name(self):
         self.login(add_account_details=False)
         self.get_url(self.urlname)
-        self.submit()
+        self.submit_expecting_html5_validation_errors()
         self.assertTextPresent("This field is required")
 
     @mock.patch('cciw.bookings.mailchimp.update_newsletter_subscription')
@@ -588,7 +589,7 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin):
                                       address="121, A Street\nMetrocity")
         self.get_url(self.urlname)
         self.assertTextPresent("Address:")
-        self.submit()
+        self.submit_expecting_html5_validation_errors()
         self.assertTextPresent("Please split the information")
         self.assertTextPresent("121, A Street")
         self._fill_in_account_details()
@@ -650,7 +651,9 @@ class TestAddPlaceBase(BookingBaseMixin, CreatePlaceWebMixin):
 
     SAVE_BTN = '#id_save_btn'
 
-    def submit(self, css_selector=SAVE_BTN):
+    submit_css_selector = SAVE_BTN
+
+    def submit(self, css_selector=submit_css_selector):
         return super(TestAddPlaceBase, self).submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
@@ -679,6 +682,8 @@ class TestAddPlaceBase(BookingBaseMixin, CreatePlaceWebMixin):
 
         self.add_prices()
         self.get_url(self.urlname)
+        data = self.place_details.copy()
+        self.fill_by_name(data)
         # Now remove prices, just to be awkward:
         Price.objects.all().delete()
         self.submit()
@@ -694,7 +699,7 @@ class TestAddPlaceBase(BookingBaseMixin, CreatePlaceWebMixin):
         self.login()
         self.add_prices()
         self.get_url(self.urlname)
-        self.submit()
+        self.submit_expecting_html5_validation_errors()
         self.assertTextPresent("This field is required")
 
     def test_complete(self):
@@ -898,6 +903,8 @@ class TestEditPlaceBase(BookingBaseMixin, CreatePlaceWebMixin):
 
     # Most functionality is shared with the 'add' form, so doesn't need testing separately.
 
+    submit_css_selector = '#id_save_btn'
+
     def edit_place(self, booking, expect_code=None):
         url = reverse('cciw-bookings-edit_place', kwargs={'id': str(booking.id)})
         expect_errors = expect_code is not None and str(expect_code).startswith('4')
@@ -905,7 +912,7 @@ class TestEditPlaceBase(BookingBaseMixin, CreatePlaceWebMixin):
         if expect_code is not None:
             self.assertCode(expect_code)
 
-    def submit(self, css_selector='#id_save_btn'):
+    def submit(self, css_selector=submit_css_selector):
         return super(TestEditPlaceBase, self).submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
@@ -928,7 +935,7 @@ class TestEditPlaceBase(BookingBaseMixin, CreatePlaceWebMixin):
         self.create_place()
         self.edit_place(self.get_account().bookings.all()[0])
         self.fill_by_name({'first_name': ''})
-        self.submit()
+        self.submit_expecting_html5_validation_errors()
         self.assertTextPresent("This field is required")
 
     def test_complete(self):

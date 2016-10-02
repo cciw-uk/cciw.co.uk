@@ -282,5 +282,5 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
         self.assertCode(200)
 
         # Check it is pre-filled as we expect
-        self.assertHtmlPresent("""<input id="id_referee_name" maxlength="100" name="referee_name" type="text" value="Referee1 Name" />""")
-        self.assertHtmlPresent("""<input id="id_how_long_known" maxlength="150" name="how_long_known" type="text" value="A long time" />""")
+        self.assertHtmlPresent("""<input id="id_referee_name" maxlength="100" name="referee_name" type="text" value="Referee1 Name" required />""")
+        self.assertHtmlPresent("""<input id="id_how_long_known" maxlength="150" name="how_long_known" type="text" value="A long time" required />""")

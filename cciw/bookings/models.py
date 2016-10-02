@@ -138,11 +138,10 @@ class BookingAccountManagerBase(models.Manager):
         Returns a list of accounts that owe money.
         Account objects are annotated with attribute 'balance_due' as a Decimal
         """
-        # To limit the size of queries, so do a SQL query for people who might
+        # To limit the size of queries, we do a SQL query for people who might
         # owe money.
         potentials = (
             self.get_queryset()
-            .only('id', 'total_received')
             .annotate(total_amount_due=models.Sum('bookings__amount_due'))
             .exclude(total_amount_due=models.F('total_received'))
         )

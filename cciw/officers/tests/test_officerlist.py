@@ -268,9 +268,10 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.officer_login(LEADER)
         self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
         self.click('#id_new_officer_btn')
+        time.sleep(1.5)
         self.assertTrue(self.is_element_displayed('#id_add_officer_popup'))
         self.click('#id_popup_close_btn')
-        time.sleep(1)
+        time.sleep(1.5)
         self.assertFalse(self.is_element_displayed('#id_add_officer_popup'))
         # Functionality of "New officer" popup is tested separately.
 
