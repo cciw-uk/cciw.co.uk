@@ -172,7 +172,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [  # backwards compat for django-wiki
     "django.contrib.messages.context_processors.messages",
     'cciw.cciwmain.common.standard_processor',
     'sekizai.context_processors.sekizai',
-] + ([] if DEBUG else ['django.core.context_processors.debug'])
+] + ([] if not DEBUG else ['django.template.context_processors.debug'])
 
 TEMPLATES = [
     {
