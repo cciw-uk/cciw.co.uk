@@ -32,12 +32,14 @@
 
 {% block topbar %}
   <nav id="menubarOuter">
-    <div id="menubarSpacer"></div>
     <div id="menubar">
       {% spaceless %}
         <ul>
+          <li class="spacerstart">
+            <span class="spacer">&nbsp;</span>
+          </li>
           <li id="menutoggle">
-            <a href="#">Menu</a>
+            <a href="#">&#9776;</a>
           </li>
           {% for menulink in menulinks %}
             <li {% if menulink.is_current_page %} class="active" {% endif %}
@@ -50,13 +52,16 @@
                  >{{ menulink.title }}</a>
             </li>
           {% endfor %}
+          <li class="spacerend">
+            <span class="spacer">&nbsp;</span>
+          </li>
         </ul>
       {% endspaceless %}
     </div>
   </nav>
 {% endblock %}
 
-{% block contentTop %}
+{% block contenttop %}
   {% block messages %}
     {% if messages %}
       <ul class="messagelist">{% for message in messages %}
@@ -64,7 +69,7 @@
       {% endfor %}</ul>
     {% endif %}
   {% endblock messages %}
-{% endblock contentTop %}
+{% endblock contenttop %}
 
 {% block precontent %}
   {% block breadcrumb %}

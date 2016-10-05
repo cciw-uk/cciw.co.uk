@@ -30,68 +30,88 @@
       </script>
     {% endif %}
   </head>
-  <body>
+  <body {% block bodyattr %}{% endblock %}>
     {% block bodystart %}
     {% endblock %}
-    <div id="pagewrapper">
-      <div id="header" {% block headerattr %}{% endblock %}>
-        <div class="headerinner">
-          <div id="headerlogo">
-            <a href="/" title="Home page"></a>
-          </div>
-          {% block topbar %}
-          {% endblock %}
+    <div id="header">
+      <div class="headerinner">
+        <div id="headerlogo">
+          <a href="/" title="Home page">
+            <img src="{% static "images/whitelogoshadow.svg" %}" alt="CCIW logo" width="157" height="157">
+          </a>
         </div>
-      </div>
-      <div id="main">
-        {% block main %}
-          <div id="content">
-            {% block pagetitlediv %}
-              <div id="pageTitle">
-                <h1>{% block pagetitle %}{{ title }}{% endblock %}</h1>
-              </div>
-            {% endblock %}
-            <div id="contentBody">
-              {% block contentTop %} {# outside padding #}
-              {% endblock %}
-              <div id="contentInner"> {# has padding #}
-                {% block precontent %}
-                {% endblock %}
-                {% block content %}
-                {% endblock %}
-                {% block postcontent %}
-                {% endblock %}
-              </div>
-            </div>
+        {% block topbar %}
+        {% endblock %}
+        {% block pagetitlediv %}
+          <div id="pagetitle">
+            <h1>{% block pagetitle %}{{ title }}{% endblock %}</h1>
           </div>
         {% endblock %}
       </div>
-
-      <!--[if lte IE 6]>
-    <div id="ie-message">
-      Your browser is obsolete, and probably doesn't display this site
-      correctly. Please upgrade to <a href="http://abetterbrowser.org/">a better
-      browser</a>.
     </div>
-    <![endif]-->
-    <!--[if IE]>
-    <div id="winxp-ie-message" style="display: none;">
-      You are running Internet Explorer on Windows XP. This does not support
-      modern ways of supporting HTTP/SSL, so you will have seen an SSL
-      certificate error to get to this page. Please use
-      a <a href="http://abetterbrowser.org/">different browser</a>, or upgrade
-      your operating system to a more recent version of Windows.
-    </div>
-    <script type="text/javascript">
-      if (/Windows NT 5.1/.test(window.navigator.userAgent)) {
-         document.getElementById("winxp-ie-message").style.display = "block";
-      }
-    </script>
-    <![endif]-->
-    </div>
+    {% block main %}
+      <div id="content">
+        {% block contenttop %}
+        {% endblock %}
+        <div class="content"> {# has margin #}
+          <div id="contentinner"> {# has padding #}
+            {% block precontent %}
+            {% endblock %}
+            {% block content %}
+            {% endblock %}
+            {% block postcontent %}
+            {% endblock %}
+          </div>
+        </div>
+      </div>
+    {% endblock %}
     <footer>
-      <a href="/website/help/" title="Get help or report problems with the site">Help</a> |
-      <a href="/website/abuse/" title="How to report absue of the web site">Report abuse</a>
+      <div class="websiteinfo">
+        <div class="content">
+          <div class="linkgroupcontainer">
+            <div class="linkgroup">
+              <h2>About our camps</h2>
+              <ul>
+                <li><a href="{% url 'cciw-cciwmain-thisyear' %}">Camps {{ thisyear }}</a></li>
+                <li><a href="{% url 'cciw-cciwmain-sites_index' %}">Camp sites</a></li>
+                <li><a href="{% url 'cciw-bookings-index' %}">Booking</a></li>
+              </ul>
+            </div>
+            <div class="linkgroup">
+              <h2>Helping</h2>
+              <ul>
+                <li><a href="/helpers/">Helping on camp</a></li>
+                <li><a href="{% url 'cciw-officers-index' %}">Officer login</a></li>
+              </ul>
+            </div>
+            <div class="linkgroup">
+              <h2>About CCIW</h2>
+              <ul>
+                <li><a href="/info/about-camp/">Ethos</a></li>
+                <li><a href="/info/directors/">Directors</a></li>
+                <li><a href="/info/doctrinal-basis/">Doctrinal basis</a></li>
+                <li><a href="/info/legal/">Legal information</a></li>
+              </ul>
+            </div>
+            <div class="linkgroup">
+              <h2>Website help</h2>
+              <ul>
+                <li><a href="/website/help/" title="Get help or report problems with the site">General help</a></li>
+                <li><a href="/website/abuse/" title="How to report absue of the web site">Report abuse</a></li>
+                <li><a href="/website/terms/">Terms of service</a></li>
+                <li><a href="/">Back to home page</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="companyinfo">
+        <div class="content">
+          <p>© 2016 CCIW</p>
+
+          <p>CCIW is a limited company (reg. No. 3900844), and a Registered Charity (No. <a href="http://apps.charitycommission.gov.uk/Showcharity/RegisterOfCharities/CharityWithoutPartB.aspx?RegisteredCharityNumber=1079713&amp;SubsidiaryNumber=0">1079713</a>)</p>
+        </div>
+      </div>
     </footer>
   </body>
 </html>

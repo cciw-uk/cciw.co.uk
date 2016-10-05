@@ -2,6 +2,7 @@
 
 @import "elements.less";
 @import "mixins.less";
+@import (reference) "flexbox.less";
 
 // Colours
 //  Primary Color:
@@ -14,21 +15,45 @@
 
 @secondaryColor: #A65900;
 
-@headerColor: #444;
 @pageTitleColor: @primaryColor;
+@headerColor: fadeout(@pageTitleColor, 50%);
 @contentBackgroundColor: white;
+@footerBackgroundColor: #0b2333;
+
+@smallMenubarFontScreenWidth: 800px;
+@mobileMenuWidth: 600px;
+@smallScreenWidth: 600px;
+@noColumnsScreenWidth: 400px;
+@responsiveTablesScreenWidth: 480px;
+@contentWidth: 850px;
+
+// Fonts
+@font-face {
+    font-family: 'a028_extraboldregular';
+    src: url('/static/fonts/a028-ext-webfont.woff2') format('woff2'),
+         url('/static/fonts/a028-ext-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
 
 
 // General
 
-@lineHeight: 24px;
+@lineHeight: 26px;
 
 body {
-    background: #f0f0f0 url("/static/images/subtle_white_feathers.png") repeat scroll 0% 0%;
     color: black;
-    font-size: 15px;
+    background-color: @footerBackgroundColor;
+    font-size: 17px;
     line-height: @lineHeight;
-    margin: 0 0 10px 0;
+
+    @media screen and (max-width: @smallScreenWidth) {
+        font-size: 14px;
+        line-height: 21px;
+    }
+
+    margin: 0;
     padding: 0;
     font-family: arial, helvetica, sans;
 }
@@ -39,8 +64,7 @@ a img, a {
 
 a:link {
     color: @primaryColor;
-    text-decoration: none;
-    border-bottom: 1px solid @primaryColor;
+    text-decoration: underline;
 }
 
 a:visited {
@@ -54,10 +78,15 @@ pre {
 
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: Amaranth, Tahoma;
-    font-weight: normal;
     margin-top: 0;
     margin-bottom: 0.6em;
+}
+
+#content, #header {
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: normal;
+        font-family: 'a028_extraboldregular', Tahoma;
+    }
 }
 
 h1 {
@@ -88,59 +117,7 @@ p {
 }
 
 
-
-// Footer
-
-footer {
-    margin-top: 10px;
-    text-align: right;
-    padding: 0 6px 4px 6px;
-    font-size: 80%;
-
-    img {
-        vertical-align: top;
-    }
-
-    &, a:link, a:visited {
-        color: #202020;
-    }
-    a:link {
-        border-bottom: 1px solid #808080;
-    }
-    a:hover {
-        color: #404040;
-    }
-}
-
-
 // Page layout
-
-#pagewrapper, footer {
-    max-width: 750px;
-    margin: auto;
-}
-
-#pagewrapper {
-    background-color: @headerColor;
-    box-shadow: 2px 0px 6px #000, -2px 0px 6px #888;
-}
-
-#pageTitle {
-    color: white;
-    background-color: @pageTitleColor;
-    border-bottom: 2px solid darken(@pageTitleColor, 5%);
-    h1 {
-        margin: 0;
-        padding: 0.6em 0 0.3em 0;
-        text-align: center;
-    }
-}
-
-@contentPadding: 16px;
-
-#contentInner {
-    padding: 10px @contentPadding 32px @contentPadding;
-}
 
 
 #skiptocontentdiv {
@@ -150,51 +127,62 @@ footer {
 
 // Header
 
-@headerHeight: 72px;
-
 #header {
-    color: white;
-    box-shadow: inset 0px -3px 8px -3px #000,
-                0px 2px 4px -2px #888;
+    background-color: @primaryColor;
+    background: url('/static/images/topbanner_1600x1200.jpeg') no-repeat center top -10vw fixed;
+    background-size: 100% auto;
 
-    // Include floats:
-    &:after {
-          clear: both;
-          display: block;
-          height: 0;
-          overflow: hidden;
-          visibility: hidden;
-          content: ".";
-          font-size: 0;
-    }
+}
+
+.headerinner {
+    background-color: @headerColor;
 }
 
 #headerlogo {
-    background-image: url('/static/images/headerlogo.png');
-    background-repeat: no-repeat;
     margin-left: 0px;
-    float: left;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 5;
     &, a {
-        height: @headerHeight;
-        width: 200px;
         display: block;
+    }
+    img {
+        max-width: 100%;
+        height: 100%;
+    }
+    @media screen and (max-width: @contentWidth) {
+        width: 15vw;
+        height: 15vw;
+    }
+    @media screen and (max-width: @mobileMenuWidth) {
+        position: static;
+        float: left;
+        width: 10vw;
+        height: 10vw;
     }
 }
 
-// Main body
-
-#content {
-    background-color: @contentBackgroundColor;
-    border-bottom: 2px solid @primaryColor;
-    // Additional shadow to pagewrapper, as this bit is 'higher'.
-    // Make sure it doesn't go up over header though.
-    box-shadow: 2px 3px 4px #888, -1px 3px 4px #888;
-}
-
-#contentBody {
-    background-image: url('/static/images/contentbg.png');
-    background-repeat: no-repeat;
-    background-position: right bottom;
+#pagetitle {
+    color: white;
+    padding: 20px 0px;
+    @media screen and (max-width: @contentWidth) {
+        padding: 2vw 0;
+    }
+    h1 {
+        font-size: 2.5em;
+        margin: 0;
+        padding: 0.3em 0 0.3em 0;
+        @media screen and (max-width: @contentWidth) {
+            padding: 0;
+            font-size: 5vw;
+        }
+        text-align: center;
+        text-shadow: 0px 2px 5px black;
+        @media screen and (max-width: @mobileMenuWidth) {
+            font-size: 5vw;
+        }
+    }
 }
 
 // menubar
@@ -204,40 +192,72 @@ footer {
 @menubarPaddingHeight: 3px;
 @menubarBorderHeight: 1px;
 
-#menubarSpacer {
-    height: @headerHeight - (@menubarLineHeight + 2 * @menubarPaddingHeight + @menubarBorderHeight);
-    width: 100px;
-}
-
 // menubar unselected wants to look about same as @primaryColorLighter, but due
 // to contrast from dark background in header we have to darken and destaturate it
 @menubarUnselectedColor: #90ab70;
 
+.topnavlinks() {
+   text-shadow: 0px 1px 3px #222;
+}
+
 #menubar {
-    float: right;
 
     font-weight: bold;
+    width: 100%;
+    .topnavlinks();
+
+    @media screen and (max-width: @smallMenubarFontScreenWidth) {
+        font-size: 80%;
+    }
+
+    // The need to use flexbox here is caused by:
+    //
+    // 1) getting the right transparency effects, including making the empty
+    // area to the left of the menu items look the same as the menu items
+    //
+    // 2) getting this area to stretch to full width
+    //
+    // 3) getting the active menu item to be exactly the same as the page title
+    // area, for the tab effect
 
     ul {
         margin: 0;
         padding: 0;
         list-style-type: none;
-        text-align: center;
+
+        #flexbox .display(flex);
+        #flexbox .direction(row);
 
         li {
-            display: inline-block;
             z-index: 0;
 
-            a {
+            a, .spacer {
+                background-color: fadeout(@menubarUnselectedColor, 50%);
                 line-height: @menubarLineHeight;
-                text-decoration: none;
-                padding: @menubarPaddingHeight 10px;
-                color: white;
-                background-color: @menubarUnselectedColor;
-                margin: 0px 1px 0px 1px;
                 display: inline-block;
-                border-bottom: @menubarBorderHeight solid #444;
+                padding: @menubarPaddingHeight 20px;
+                @media screen and (max-width: @smallMenubarFontScreenWidth) {
+                    padding-left: 10px;
+                    padding-right: 10px;
+                }
+            }
 
+            #flexbox .flex(0, 1, auto);
+
+            &.spacerstart {
+                #flexbox .flex(1, 1, auto);
+            }
+            &.spacerend {
+                display: none;
+            }
+            .spacer {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            a {
+                text-decoration: none;
+                color: white;
 
                 &:hover {
                     background-color: lighten(@menubarUnselectedColor, 20%);
@@ -247,16 +267,125 @@ footer {
                 &.active:hover,
                 &.currentSection,
                 &.currentSection:hover {
-                    background: @pageTitleColor;
+                    background-color: transparent;
                 }
             }
+        }
+    }
+
+}
+
+// Main body
+
+@contentPadding: 16px;
+
+#contentinner {
+    padding: 10px @contentPadding 32px @contentPadding;
+    min-height: 20em;
+}
+
+#content {
+    background-color: @contentBackgroundColor;
+}
+
+.content {
+    max-width: @contentWidth;
+    margin: 0 auto;
+}
+
+
+
+// Footer
+
+footer {
+    font-size: 85%;
+    @media screen and (max-width: @smallScreenWidth) {
+        font-size: inherit;
+    }
+
+    background-color: @footerBackgroundColor;
+    text-align: left;
+    color: #e0e0e0;
+    min-height: 10em;
+
+    .content {
+        padding: 1.5em 1em 0.5em 1em;
+    }
+
+    img {
+        vertical-align: top;
+    }
+
+
+    a:link, a:visited {
+        color: #e0e0e0;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: white;
+        text-decoration: underline;
+    }
+
+    .websiteinfo {
+        @websiteinfoColor: lighten(@footerBackgroundColor, 5%);
+        background-color: @websiteinfoColor;
+        box-shadow: 0px 3px 2px darken(@websiteinfoColor, 10%);
+        padding: 0 0 2em 0;
+    }
+
+    h2 {
+        border-bottom: 1px solid #aaa;
+    }
+
+    @linkgroupPadding: 20px;
+
+    .linkgroupcontainer {
+        #flexbox .display(flex);
+        #flexbox .direction(row);
+        #flexbox .wrap(wrap);
+
+        // Compensate for padding at left and right edges:
+        margin-left: (-@linkgroupPadding);
+        margin-right: (-@linkgroupPadding);
+
+        @media screen and (max-width: @noColumnsScreenWidth) {
+            // No columns
+            display: block;
+            margin-left: 0px;
+            margin-right: 0px;
+        }
+
+    }
+
+    .linkgroup {
+        margin-top: 1em;
+        width: 25%;
+        box-sizing: border-box;
+        padding: 0px @linkgroupPadding;
+
+        @media screen and (max-width: @smallMenubarFontScreenWidth) {
+            width: 50%;
+        }
+
+        @media screen and (max-width: @noColumnsScreenWidth) {
+            // No columns
+            display: block;
+            width: 100%;
+            padding: 0px;
+        }
+
+        ul, li {
+            list-style: none;
+            margin: 0px;
+            padding: 0px;
         }
     }
 }
 
 // Content styles
 
-#contentInner h1 {
+#contentinner h1 {
     margin-left: -@contentPadding; // to make bg go to edge
     margin-right: -@contentPadding;
     padding-left: @contentPadding;
@@ -292,8 +421,8 @@ section.grouped {
     }
 }
 
-// Counteract #contentInner h1 styles
-#contentInner section.grouped h1:first-child {
+// Counteract #contentinner h1 styles
+#contentinner section.grouped h1:first-child {
     margin-left: 0px;
     margin-right: 0px;
     padding-left: 0px;
@@ -321,7 +450,7 @@ table.topheaders {
         background-color: @primaryColorLighter;
         font-weight: bold;
         a:link {
-            border-bottom: 0px;
+            text-decoration: none;
         }
     }
 
@@ -419,6 +548,12 @@ div.formrow {
 
         ul {
             margin-left: @labelWidth;
+
+            @media screen and (max-width: @smallScreenWidth) {
+                display: block;
+                clear: left;
+                margin-left: 0px;
+            }
         }
 
         ul label {
@@ -559,32 +694,6 @@ div.bottombreadcrumb {
     opacity: 0.7;
 }
 
-
-
-/* Internet Explorer message */
-#ie-message {
-    position: fixed;
-    bottom: 0px;
-    left: 0px;
-    width: 100%;
-    text-align: center;
-    background-color: #800000;
-    color: white;
-    padding: 5px;
-}
-
-/* Internet Explorer on WinXP message */
-#winxp-ie-message {
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    text-align: center;
-    background-color: #800000;
-    color: white;
-    padding: 5px;
-}
-
 /* Messages */
 ul.messagelist {
     padding: 0 0 5px 0;
@@ -630,7 +739,10 @@ ul.messagelist {
     border:1px solid #005611;
     display:inline-block;
     color:#ffffff;
-    font-size:15px;
+    font-size: 19px;
+    @media screen and (max-width: @smallScreenWidth) {
+        font-size: 15px;
+    }
     font-weight:bold;
     padding:6px 24px;
     text-decoration:none;
@@ -677,47 +789,12 @@ a.booknow, a.bigaction, input.bigaction {
     .clearfix();
 }
 
-@bookingbarColor: @pageTitleColor;
-
 #bookingbar {
-    background-color: @bookingbarColor;
     color: white;
     text-align: center;
     box-shadow: inset 0 -3px 5px -3px #222;
     padding: 0 4px;
-}
-
-#bookingbartop {
-    padding: 3px;
-    margin: 0px 0px 3px 0px;
-    text-align: left;
-    min-height: @lineHeight;
-    text-align: right;
-
-    a.manageaccount {
-        box-shadow: inset 0px 1px 0px 0px #aaa;
-        background-color: #ddd;
-        background-image: linear-gradient(180deg, #ddd 0%, #bbb 100%);
-        border-radius: 6px;
-        border: 1px solid #005611;
-        display: inline-block;
-        color: black;
-        padding: 3px 12px;
-        text-decoration: none;
-        margin-left: 5px;
-        margin-top: 3px;
-        &:hover {
-            background-color: #eee;
-            background-image: linear-gradient(180deg, #eee 0%, #ccc 100%);
-        }
-    }
-}
-
-#bookingbar {
-    nav a {
-        border-bottom: 0px
-    }
-
+    .topnavlinks();
     a {
         color: white;
     }
@@ -739,7 +816,7 @@ a.booknow, a.bigaction, input.bigaction {
                 font-weight: bold;
 
                 &:hover {
-                    background-color: lighten(@bookingbarColor, 10%);
+                    background-color: lighten(@menubarUnselectedColor, 20%);
                 }
             }
 
@@ -748,6 +825,7 @@ a.booknow, a.bigaction, input.bigaction {
             a.active:hover {
                 color: black;
                 background:white;
+                text-shadow: none;
             }
         }
     }
@@ -815,117 +893,62 @@ table {
 
 // Smaller screens
 
-@media screen and (max-width: 600px) {
-    body {
-        font-size: 14px;
-        line-height: 21px;
-    }
-
-    div.formrow .field ul {
-        display: block;
-        clear: left;
-        margin-left: 0px;
-    }
-
+@media screen and (max-width: @smallScreenWidth) {
     img {
         max-width: 100%;
         height: auto;
     }
-
 }
 
-// Navigation bar differences
-@mobileMenuWidth: 600px;
-
-// Need shadows for tab effect for the desktop nav bar, but not on mobile nav
-// menu
-
+// Menubar for mobile:
 
 @media screen and (min-width: (@mobileMenuWidth + 1px)) {
-
-    #menubar {
-        ul {
-            li {
-                box-shadow: 0px -2px 2px #222;
-
-                &.active,
-                &.currentSection {
-                    box-shadow: 2px -3px 3px -1px #222, -2px -3px 3px -1px #222;
-                    z-index: 10;
-                    position: relative; // make it stack in front of other tabs
-                }
-
-                a {
-                    background-image: linear-gradient(180deg, @menubarUnselectedColor 80%, darken(@menubarUnselectedColor, 15%));
-
-                    &:hover {
-                        background-image: linear-gradient(180deg, lighten(@menubarUnselectedColor, 10%) 80%, lighten(darken(@menubarUnselectedColor, 15%), 10%));
-                    }
-
-                    &.active,
-                    &.active:hover,
-                    &.currentSection,
-                    &.currentSection:hover {
-                        border-color: @pageTitleColor; // make it look like tab, not button
-                    }
-                }
-
-                &#menutoggle {
-                    display: none;
-                }
-            }
-
-        }
+    #menubar #menutoggle {
+        display: none;
     }
 }
 
 @media screen and (max-width: @mobileMenuWidth) {
-
-    #menubarSpacer {
-        display: none;
-    }
-
     #menubar {
         position: absolute;
         top: 5px;
         right: 5px;
+        width: auto;
+        font-size: inherit;
+
         ul {
+            display: block;
             text-align: left;
             li {
                 display: none; // See cciwutils.js
                 &.expanded {
                     display: block;
+                    &.spacerstart, &.spacerend {
+                        display: none;
+                    }
                 }
                 a {
                     display: block;
-                    border-left: 1px solid @headerColor;
-                    border-right: 1px solid @headerColor;
+
+                    &,
+                    &.active,
+                    &.active:hover,
+                    &.currentSection,
+                    &.currentSection:hover {
+                        background-color: fadeout(@menubarUnselectedColor, 10%);
+                    }
                 }
 
                 &#menutoggle {
                     display: block;
-                    a {
-                        background-color: lighten(@headerColor, 10%);
-                        &:hover {
-                            background-color: lighten(@headerColor, 20%);
-                        }
-                    }
-
-                    a:after {
-                        content: " ↓";
-                        font-size: 120%;
-                        font-weight: bold;
-                    }
-                    &.expanded a:after {
-                        content: " ↑";
-                    }
+                    text-align: right;
                 }
             }
         }
     }
 }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: @responsiveTablesScreenWidth) {
 
     table.responsive {
         box-shadow: none;
@@ -969,5 +992,54 @@ table {
             margin-top: 2px;
         }
     }
+}
 
+// homepage
+
+.homepage {
+    .headerinner {
+        background-color: transparent;
+    }
+    #header {
+        background: url('/static/images/topbanner_1600x1200.jpeg') no-repeat center top fixed;
+        background-size: 100% auto;
+        height: 75vw;  // 1200/1600 - fit whole of topbanner image
+        max-height: 60vh;
+    }
+    #pagetitle {
+        padding-top: 20vh;
+    }
+    @media screen and (min-width: (@mobileMenuWidth + 1px)) {
+        // If not displaying mobile menu bar, shift menubar down to below photo
+        // and center it.
+        #header {
+            position: relative; // establish bounding box for #menubar
+        }
+        #menubar {
+            position: absolute;
+            bottom: 0px;
+            li.spacerstart, li.spacerend {
+                display: block;
+                #flexbox .flex(1, 1, auto);
+            }
+        }
+    }
+    .lead {
+        color: white;
+        font-size: 120%;
+        background-color: #065a1b;
+        .content {
+            padding: 2em;
+            box-sizing: border-box;
+            text-align: center;
+        }
+    }
+}
+
+
+// bookings pages
+.bookingspage {
+    #contentinner {
+        padding-top: 1em;
+    }
 }
