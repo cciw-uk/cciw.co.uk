@@ -129,7 +129,7 @@ p {
 
 #header {
     background-color: @primaryColor;
-    background: url('/static/images/topbanner_1600x1200.jpeg') no-repeat center top -10vw fixed;
+    background: url('/static/images/topbanner_1600x1200.jpeg') no-repeat center top -10vw;
     background-size: 100% auto;
 
 }
@@ -156,8 +156,6 @@ p {
         height: 15vw;
     }
     @media screen and (max-width: @mobileMenuWidth) {
-        position: static;
-        float: left;
         width: 10vw;
         height: 10vw;
     }
@@ -166,6 +164,12 @@ p {
 #pagetitle {
     color: white;
     padding: 20px 0px;
+
+    // For small screens, the vertical padding and font-size of the title are
+    // defined in terms of viewport width, because the logo width scales with
+    // viewport width, and therefore its height does too, so the height of the
+    // header has to scale this way too.
+
     @media screen and (max-width: @contentWidth) {
         padding: 2vw 0;
     }
@@ -282,6 +286,10 @@ p {
 #contentinner {
     padding: 10px @contentPadding 32px @contentPadding;
     min-height: 20em;
+
+    > p:first-child, > form > p:first-child {
+        padding-top: 1em;
+    }
 }
 
 #content {
@@ -1001,7 +1009,7 @@ table {
         background-color: transparent;
     }
     #header {
-        background: url('/static/images/topbanner_1600x1200.jpeg') no-repeat center top fixed;
+        background: url('/static/images/topbanner_1600x1200.jpeg') no-repeat center top;
         background-size: 100% auto;
         height: 75vw;  // 1200/1600 - fit whole of topbanner image
         max-height: 60vh;
@@ -1033,13 +1041,5 @@ table {
             box-sizing: border-box;
             text-align: center;
         }
-    }
-}
-
-
-// bookings pages
-.bookingspage {
-    #contentinner {
-        padding-top: 1em;
     }
 }

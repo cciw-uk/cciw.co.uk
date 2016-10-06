@@ -21,22 +21,6 @@
   {% else %}
 
     <form action="" method="POST" id="id_addplaceform" name="addplaceform" class="ajaxify">
-      {% csrf_token %}
-
-      <script type="text/javascript">
-       var cciw = (function(pub) {
-           "use strict";
-           pub.placesJsonUrl = '{% url "cciw-bookings-places_json" %}';
-           pub.accountJsonUrl ='{% url "cciw-bookings-account_json" %}';
-           return pub;
-
-       })(cciw || {});
-
-      </script>
-
-      <input id="readonly" type="hidden" value="{% if readonly %}1{% else %}0{% endif %}">
-      <input id="formInstanceId" type="hidden" value='{{ form.instance.id }}'>
-
 
       {% if form.errors %}
         <div class="userError">The details could not be saved - please correct the
@@ -210,6 +194,21 @@
           <input type="submit" name="submit" value="Save place details" id="id_save_btn" />
 
       {% endif %}
+
+      {# Put extra stuff at end so that CSS first-child selectors work #}
+      {% csrf_token %}
+      <script type="text/javascript">
+       var cciw = (function(pub) {
+           "use strict";
+           pub.placesJsonUrl = '{% url "cciw-bookings-places_json" %}';
+           pub.accountJsonUrl ='{% url "cciw-bookings-account_json" %}';
+           return pub;
+
+       })(cciw || {});
+      </script>
+      <input id="readonly" type="hidden" value="{% if readonly %}1{% else %}0{% endif %}">
+      <input id="formInstanceId" type="hidden" value='{{ form.instance.id }}'>
+
 
     </form>
 
