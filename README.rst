@@ -171,10 +171,10 @@ deploy to hosts multiple projects and merging the crontabs for them would get
 tricky. Changes to this should be recorded here and then manually installed by
 doing 'crontab -e' on the WebFaction server.::
 
-    CCIW_PYTHON=/home/cciw/webapps/cciw_django/venv_py34/bin/python3.4
+    CCIW_PYTHON=/home/cciw/webapps/cciw_django/venv_py35/bin/python3.5
     CCIW_MANAGE=/home/cciw/webapps/cciw_django/src/manage.py
 
-    CCIW_STAGING_PYTHON=/home/cciw/webapps/cciw_staging_django/venv_py34/bin/python3.4
+    CCIW_STAGING_PYTHON=/home/cciw/webapps/cciw_staging_django/venv_py35/bin/python3.5
     CCIW_STAGING_MANAGE=/home/cciw/webapps/cciw_staging_django/src/manage.py
 
     *       * * * * $CCIW_PYTHON $CCIW_MANAGE send_mail 2>> ~/.django-mailer-cron.log
@@ -187,7 +187,7 @@ doing 'crontab -e' on the WebFaction server.::
 
     # expire_bookings must be run only once an hour
     30      * * * * $CCIW_PYTHON $CCIW_MANAGE expire_bookings
-    */10    * * * * /home/cciw/webapps/cciw_django/venv_py34/bin/fab -f /home/cciw/webapps/cciw_django/src/fabfile.py production local_webserver_start
+    */10    * * * * /home/cciw/webapps/cciw_django/venv_py35/bin/fab -f /home/cciw/webapps/cciw_django/src/fabfile.py production local_webserver_start
 
     # expire_bookings must be run only once an hour
     30      * * * * $CCIW_STAGING_PYTHON $CCIW_STAGING_MANAGE expire_bookings
