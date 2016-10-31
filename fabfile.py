@@ -168,21 +168,33 @@ def install_dependencies():
     ensure_virtualenv()
     with virtualenv(target.VENV_DIR):
         with cd(target.SRC_DIR):
-            # Use -q (quiet) to stop errors in fabric/io.py
-            run_venv("pip install --upgrade -q pip")
-            # pycrypto has error installing on WebFaction due to this:
-            # https://bugs.launchpad.net/pycrypto/+bug/1294670
-            # So we need custom TMPDIR
-            run_venv("test -d ~/.pip_install_tmp || mkdir ~/.pip_install_tmp")
+            _install_deps_remote()
 
-            # Need to install numpy first:
-            run_venv("pip install numpy")
-            run_venv("TMPDIR=~/.pip_install_tmp pip install -q -r requirements.txt")
 
-            # Node dependencies
-            if not exists(os.path.join(target.VENV_DIR, "bin", "node")):
-                run_venv("nodeenv -p --node=5.4.0")
-            run_venv("npm install -g --skip-installed less@2.5.3")
+def _install_deps_remote():
+    _install_deps(run_venv, exists, target.VENV_DIR)
+
+
+def _install_deps_local():
+    _install_deps(local, os.path.exists, os.environ['VIRTUAL_ENV'])
+
+
+def _install_deps(run_command, exists_command, venv_dir):
+    # Use -q (quiet) to stop errors in fabric/io.py
+    run_command("pip install --upgrade -q pip")
+    # pycrypto has error installing on WebFaction due to this:
+    # https://bugs.launchpad.net/pycrypto/+bug/1294670
+    # So we need custom TMPDIR
+    run_command("test -d ~/.pip_install_tmp || mkdir ~/.pip_install_tmp")
+
+    # Need to install numpy first:
+    run_command("pip install numpy")
+    run_command("TMPDIR=~/.pip_install_tmp pip install -q -r requirements.txt")
+
+    # Node dependencies
+    if not exists_command(os.path.join(venv_dir, "bin", "node")):
+        run_command("nodeenv -p --node=5.4.0")
+    run_command("npm install -g --skip-installed less@2.5.3")
 
 
 def ensure_virtualenv():
@@ -615,10 +627,13 @@ def set_site_from_url(url):
 
 @task
 def initial_dev_setup():
+    if 'VIRTUAL_ENV' not in os.environ:
+        raise AssertionError("You need to set up a virtualenv before using this")
     local_pth_file()
     get_and_load_production_db()
     production()
     _get_non_vcs_sources()
+    _install_deps_local()
 
 
 @task
@@ -628,7 +643,8 @@ import sys; sys.__plen = len(sys.path)
 %(projectpath)s
 import sys; new=sys.path[sys.__plen:]; del sys.path[sys.__plen:]; p=getattr(sys,'__egginsert',0); sys.path[p:p]=new; sys.__egginsert = p+len(new)
 """
-    pth_name = os.path.join(os.environ['VIRTUAL_ENV'], 'lib/python3.4/site-packages/project.pth')
+    pth_name = os.path.join(os.environ['VIRTUAL_ENV'],
+                            'lib/{0}/site-packages/project.pth'.format(PYTHON_BIN))
     content = TEMPLATE % {'projectpath': os.path.abspath('.')}
     with open(pth_name, "w") as f:
         f.write(content)
