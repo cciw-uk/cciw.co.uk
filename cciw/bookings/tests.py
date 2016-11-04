@@ -333,7 +333,7 @@ class CreateIPNMixin(object):
 # created the same way a user would.
 
 
-class TestBookingModels(CreatePricesMixin, CreateCampMixin, TestBase):
+class TestBookingModels(CreatePlaceModelMixin, TestBase):
 
     def test_camp_open_for_bookings(self):
         self.assertTrue(self.camp.open_for_bookings(self.today))
@@ -343,6 +343,37 @@ class TestBookingModels(CreatePricesMixin, CreateCampMixin, TestBase):
         self.camp.last_booking_date = self.today
         self.assertTrue(self.camp.open_for_bookings(self.today))
         self.assertFalse(self.camp.open_for_bookings(self.today + timedelta(days=1)))
+
+    @mock.patch('cciw.bookings.models.early_bird_is_available', return_value=False)
+    def test_book_with_money_in_account(self, m):
+        self.create_place_model()
+
+        # Put some money in the account - just the deposit price will do.
+        acc = self.get_account()
+        acc.receive_payment(self.price_deposit)
+        acc.save()
+
+        # Book
+        book_basket_now(acc.bookings.all())
+
+        # Place should be booked AND should not expire
+        b = acc.bookings.all()[0]
+        self.assertEqual(b.state, BOOKING_BOOKED)
+        self.assertEqual(b.booking_expires, None)
+
+        acc = self.get_account()
+        # balance should be zero
+        self.assertEqual(acc.get_balance(allow_deposits=True), Decimal('0.00'))
+        self.assertEqual(acc.get_balance(confirmed_only=True, allow_deposits=True), Decimal('0.00'))
+
+        # But for full amount, they still owe 80 (full price minus deposit)
+        self.assertEqual(acc.get_balance(allow_deposits=False), Decimal('80.00'))
+
+        # Test some model methods:
+        self.assertEqual(len(acc.bookings.only_deposit_required(False)),
+                         1)
+        self.assertEqual(len(acc.bookings.payable(False, True)),
+                         0)
 
 
 class TestBookingIndex(BookingBaseMixin, CreatePricesMixin, CreateCampMixin, WebTestBase):
@@ -1675,38 +1706,6 @@ class TestListBookingsBase(BookingBaseMixin, CreatePlaceWebMixin):
         b = acc.bookings.all()[0]
         self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
         self.assertTextPresent("Places were not booked due to modifications made")
-
-    @mock.patch('cciw.bookings.models.early_bird_is_available', return_value=False)
-    def test_book_with_money_in_account(self, m):
-        self.create_place()
-
-        # Put some money in the account - just the deposit price will do.
-        acc = self.get_account()
-        acc.receive_payment(self.price_deposit)
-        acc.save()
-
-        # Book
-        self.get_url(self.urlname)
-        self.submit('[name=book_now]')
-
-        # Place should be booked AND should not expire
-        b = acc.bookings.all()[0]
-        self.assertEqual(b.state, BOOKING_BOOKED)
-        self.assertEqual(b.booking_expires, None)
-
-        acc = self.get_account()
-        # balance should be zero
-        self.assertEqual(acc.get_balance(allow_deposits=True), Decimal('0.00'))
-        self.assertEqual(acc.get_balance(confirmed_only=True, allow_deposits=True), Decimal('0.00'))
-
-        # But for full amount, they still owe 80 (full price minus deposit)
-        self.assertEqual(acc.get_balance(allow_deposits=False), Decimal('80.00'))
-
-        # Test some model methods:
-        self.assertEqual(len(acc.bookings.only_deposit_required(False)),
-                         1)
-        self.assertEqual(len(acc.bookings.payable(False, True)),
-                         0)
 
 
 class TestListBookingsWT(TestListBookingsBase, WebTestBase):
