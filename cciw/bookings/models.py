@@ -914,15 +914,17 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
             errors.append("There are no places left on this camp.")
             places_available = False
 
-        if places_available and self.sex == SEX_MALE:
-            if places_left_male <= 0:
-                errors.append("There are no places left for boys on this camp.")
-                places_available = False
+        SEXES = [
+            (SEX_MALE, 'boys', places_left_male),
+            (SEX_FEMALE, 'girls', places_left_female),
+        ]
 
-        if places_available and self.sex == SEX_FEMALE:
-            if places_left_female <= 0:
-                errors.append("There are no places left for girls on this camp.")
-                places_available = False
+        if places_available:
+            for sex_const, sex_label, places_left_for_sex in SEXES:
+                if self.sex == sex_const and places_left_for_sex <= 0:
+                    errors.append("There are no places left for {0} on this camp.".format(sex_label))
+                    places_available = False
+                    break
 
         if places_available:
             # Complex - need to check the other places that are about to be booked.
@@ -936,19 +938,15 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
                               "for the campers in this set of bookings.")
                 places_available = False
 
-            if places_available and self.sex == SEX_MALE:
-                places_to_be_booked_male = same_camp_bookings.filter(sex=SEX_MALE).count()
-                if places_left_male < places_to_be_booked_male:
-                    errors.append("There are not enough places for boys left on this camp "
-                                  "for the campers in this set of bookings.")
-                    places_available = False
-
-            if places_available and self.sex == SEX_FEMALE:
-                places_to_be_booked_female = same_camp_bookings.filter(sex=SEX_FEMALE).count()
-                if places_left_female < places_to_be_booked_female:
-                    errors.append("There are not enough places for girls left on this camp "
-                                  "for the campers in this set of bookings.")
-                    places_available = False
+            if places_available:
+                for sex_const, sex_label, places_left_for_sex in SEXES:
+                    if self.sex == sex_const:
+                        places_to_be_booked_for_sex = same_camp_bookings.filter(sex=sex_const).count()
+                        if places_left_for_sex < places_to_be_booked_for_sex:
+                            errors.append("There are not enough places for {0} left on this camp "
+                                          "for the campers in this set of bookings.".format(sex_label))
+                            places_available = False
+                            break
 
         if self.south_wales_transport and not self.camp.south_wales_transport_available:
             errors.append("Transport from South Wales is not available for this camp, or all places have been taken already.")
