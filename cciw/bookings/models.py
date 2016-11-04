@@ -288,11 +288,8 @@ class BookingAccount(migrate_address('address'), models.Model):
             if deposit_price_dict is None:
                 deposit_price_dict = Price.get_deposit_prices([b.camp.year for b in extra_bookings])
             for b in extra_bookings:
-                p = deposit_price_dict[b.camp.year]
-                if p < b.amount_due:
-                    total += p
-                else:
-                    total += b.amount_due
+                total += min(b.amount_due,
+                             deposit_price_dict[b.camp.year])
 
         return total - self.total_received
 
