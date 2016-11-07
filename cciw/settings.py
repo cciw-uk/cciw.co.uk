@@ -77,7 +77,7 @@ USE_TZ = True
 
 LOGIN_URL = "/officers/"
 
-ALLOWED_HOSTS = [".cciw.co.uk"]
+ALLOWED_HOSTS = [".cciw.co.uk", "cciw.local"]
 
 INSTALLED_APPS = [
     'dal',
