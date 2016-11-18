@@ -140,22 +140,20 @@ def payments_to_spreadsheet(date_start, date_end, spreadsheet):
 
     payments = (Payment.objects
                 .filter(created__gte=date_start,
-                        created__lt=date_end)
-                .select_related('account', 'origin_type')
-                .prefetch_related('origin')
+                        created__lt=date_end,
+                        # Ignore payments with deleted source - these always
+                        # cancel out anyway:
+                        source__isnull=False,
+                        )
                 .order_by('created')
                 )
-
-    # Ignore payments with deleted origins - these
-    # always cancel out anyway.
-    payments = [p for p in payments if p.origin is not None]
 
     columns = [
         ('Account name', lambda p: p.account.name),
         ('Account email', lambda p: p.account.email),
         ('Amount', lambda p: p.amount),
         ('Date', lambda p: p.created),
-        ('Type', lambda p: p.payment_type()),
+        ('Type', lambda p: p.payment_type),
     ]
 
     spreadsheet.add_sheet_with_header_row("Payments",

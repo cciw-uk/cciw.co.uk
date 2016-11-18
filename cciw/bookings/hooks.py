@@ -47,7 +47,7 @@ def manual_payment_received(sender, **kwargs):
 
 def manual_payment_deleted(sender, **kwargs):
     instance = kwargs['instance']
-    send_payment(-instance.amount, instance.account, instance)
+    send_payment(-instance.amount, instance.account, None)
 
 
 def refund_payment_sent(sender, **kwargs):
@@ -57,7 +57,7 @@ def refund_payment_sent(sender, **kwargs):
 
 def refund_payment_deleted(sender, **kwargs):
     instance = kwargs['instance']
-    send_payment(instance.amount, instance.account, instance)
+    send_payment(instance.amount, instance.account, None)
 
 
 def account_transfer_payment_received(sender, **kwargs):
@@ -68,8 +68,8 @@ def account_transfer_payment_received(sender, **kwargs):
 
 def account_transfer_payment_deleted(sender, **kwargs):
     instance = kwargs['instance']
-    send_payment(instance.amount, instance.from_account, instance)
-    send_payment(-instance.amount, instance.to_account, instance)
+    send_payment(instance.amount, instance.from_account, None)
+    send_payment(-instance.amount, instance.to_account, None)
 
 
 # == Place confirmation ==

@@ -1162,6 +1162,12 @@ class PaymentManager(models.Manager):
             'source__ipn_payment',
         )
 
+    def create(self, source_instance=None, **kwargs):
+        if source_instance is not None:
+            source = PaymentSource.from_source_instance(source_instance)
+            kwargs['source'] = source
+        return super(PaymentManager, self).create(**kwargs)
+
 
 class Payment(NoEditMixin, models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
@@ -1177,41 +1183,21 @@ class Payment(NoEditMixin, models.Model):
     objects = PaymentManager()
 
     def __str__(self):
-        if self.origin is not None and hasattr(self.origin, 'payment_description'):
-            retval = self.origin.payment_description
+        if self.source_id is not None and hasattr(self.source, 'payment_description'):
+            retval = self.source.payment_description
         else:
             retval = "Payment: %s %s %s via %s" % (abs(self.amount),
                                                    'from' if self.amount > 0 else 'to',
-                                                   self.account.name, self.origin_type)
-            if self.origin is None:
-                retval += " (deleted)"
+                                                   self.account.name, self.payment_type)
 
         return retval
 
+    @property
     def payment_type(self):
-        c = self.origin_type.model_class()
-        if c is PayPalIPN:
-            retval = 'PayPal'
-        else:
-            if c in [ManualPayment, RefundPayment]:
-                if self.origin is not None:
-                    v = self.origin.get_payment_type_display()
-                    if c is ManualPayment:
-                        retval = v
-                    elif c is RefundPayment:
-                        retval = "Refund " + v
-                else:
-                    retval = c.__name__
-            elif c is AccountTransferPayment:
-                retval = "Account transfer"
-            else:
-                raise ValueError("Unknown model: %s" % c)
+        if self.source_id is None:
+            return "[deleted]"
 
-            if self.origin is None:
-                # Deleted
-                retval += " (deleted)"
-
-        return retval
+        return self.source.payment_type
 
 
 class ManualPaymentManager(models.Manager):
@@ -1274,7 +1260,8 @@ class AccountTransferPayment(NoEditMixin, models.Model):
 
 
 # This model abstracts the different types of payment that can be the source for
-# Payment.
+# Payment. The real 'source' is the instance pointed to by one of the FKs it
+# contains.
 class PaymentSource(models.Model):
     manual_payment = models.OneToOneField(ManualPayment,
                                           null=True, blank=True,
@@ -1291,9 +1278,29 @@ class PaymentSource(models.Model):
                                        null=True, blank=True,
                                        on_delete=models.CASCADE)
 
+    MODEL_MAP = {
+        ManualPayment: 'manual_payment',
+        RefundPayment: 'refund_payment',
+        AccountTransferPayment: 'account_transfer_payment',
+        PayPalIPN: 'ipn_payment',
+    }
+
     def save(self, *args, **kwargs):
         self._assert_one_source()
         super(PaymentSource, self).save()
+
+    @property
+    def payment_type(self):
+        if self.manual_payment_id is not None:
+            return self.manual_payment.get_payment_type_display()
+        elif self.refund_payment_id is not None:
+            return "Refund " + self.refund_payment.get_payment_type_display()
+        elif self.account_transfer_payment_id is not None:
+            return "Account transfer"
+        elif self.ipn_payment_id is not None:
+            return "PayPal"
+        else:
+            raise ValueError("No related object for PaymentSource {0}".format(self.id))
 
     def _assert_one_source(self):
         if not [self.manual_payment_id,
@@ -1302,11 +1309,22 @@ class PaymentSource(models.Model):
                 self.ipn_payment_id].count(None) == 3:
             raise AssertionError("PaymentSource must have exactly one payment FK set")
 
+    @classmethod
+    def from_source_instance(cls, source_instance):
+        """
+        Create a PaymentSource from a real payment model
+        """
+        source_cls = source_instance.__class__
+        if source_cls not in cls.MODEL_MAP:
+            raise AssertionError("Can't create PaymentSource for {0}".format(source_instance.__class__))
+        kwargs = {cls.MODEL_MAP[source_cls]: source_instance}
+        return cls.objects.create(**kwargs)
+
 
 def send_payment(amount, to_account, from_obj):
     Payment.objects.create(amount=amount,
                            account=to_account,
-                           origin=from_obj,
+                           source_instance=from_obj,
                            processed=None,
                            created=timezone.now())
     process_all_payments()
@@ -1398,6 +1416,7 @@ def process_one_payment(payment):
 def process_all_payments():
     # Use select_for_update to serialize usages of this function.
     for payment in (Payment.objects
+                    .select_related(None)
                     .select_for_update()
                     .filter(processed__isnull=True).order_by('created')):
         try:

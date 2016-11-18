@@ -1141,7 +1141,7 @@ class TestEditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreatePlace
         self.officer_login(BOOKING_SECRETARY)
         self.get_url("admin:bookings_bookingaccount_change", account.id)
         self.assertTextPresent("Payments")
-        self.assertTextPresent("Payment: 10.00 from Joe via manual payment")
+        self.assertTextPresent("Payment: 10.00 from Joe via Cheque")
         self.fill_by_name({'name': 'Mr New Name'})
         self.submit('[name=_save]')
         self.assertTextPresent("was changed successfully")
