@@ -3,7 +3,7 @@ Personal info
 =============
 Name:             {{ app.full_name }}
 Maiden name:      {{ app.full_maiden_name }}
-Date of birth:    {{ app.birth_date }}
+Date of birth:    {{ app.birth_date|date:"Y-m-d" }}
 Place of birth:   {{ app.birth_place }}
 Address:          {{ app.address_firstline }}
                   {{ app.address_town }}
@@ -32,6 +32,11 @@ with children/young people declined?    {{ app.youth_work_declined|yesno:"YES,NO
 Details:
 --------
 {{ app.youth_work_declined_details|wordwrap:70 }}
+----------------------------------------------------------------------
+Qualifications
+==============
+{% for q in app.qualifications.all %}
+{{ q.type }}, issued {{ q.date_issued|date:"Y-m-d" }}{% endfor %}
 ----------------------------------------------------------------------
 Illnesses
 =========

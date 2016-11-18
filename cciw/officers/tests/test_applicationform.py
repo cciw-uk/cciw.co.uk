@@ -9,13 +9,14 @@ from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.officers.applications import application_difference
 from cciw.officers.models import Application
-from cciw.officers.tests.base import LEADER, OFFICER, CurrentCampsMixin, OfficersSetupMixin
+from cciw.officers.tests.base import (LEADER, OFFICER, CurrentCampsMixin, OfficersSetupMixin,
+                                      RequireQualificationTypesMixin)
 from cciw.utils.tests.webtest import WebTestBase
 
 User = get_user_model()
 
 
-class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
+class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualificationTypesMixin, WebTestBase):
 
     def _application_edit_url(self, app_id):
         return reverse('admin:officers_application_change', args=[app_id])
@@ -87,6 +88,8 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
              'concern_declaration': '2',
              'allegation_declaration': '2',
              'crb_check_consent': '2',
+             'qualifications-0-type': str(self.first_aid_qualification.id),
+             'qualifications-0-date_issued': '2016-01-01',
              'finished': True,
              })
 

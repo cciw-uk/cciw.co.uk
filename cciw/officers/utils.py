@@ -174,7 +174,7 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
     # All the data we need:
     invites = camp.invitations.all().select_related('officer').order_by('officer__first_name',
                                                                         'officer__last_name')
-    apps = applications_for_camp(camp)
+    apps = applications_for_camp(camp).prefetch_related('qualifications')
     app_dict = dict((app.officer.id, app) for app in apps)
 
     # Attributes we need
@@ -205,4 +205,13 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
             yield row
 
     spreadsheet.add_sheet_with_header_row("Officers", header_row, data_rows())
+
+    # Qualifications sheet
+    spreadsheet.add_sheet_with_header_row(
+        "Qualifications",
+        ["First name", "Last name", "Qualification", "Date issued"],
+        [[a.officer.first_name, a.officer.last_name, q.type.name, q.date_issued]
+         for a in apps
+         for q in a.qualifications.all()]
+    )
     return spreadsheet

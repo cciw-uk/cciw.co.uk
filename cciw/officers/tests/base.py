@@ -9,7 +9,7 @@ from django_dynamic_fixture import G
 from cciw.auth import BOOKING_SECRETARY_GROUP_NAME, SECRETARY_GROUP_NAME
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
-from cciw.officers.models import Application, Reference
+from cciw.officers.models import Application, Reference, QualificationType
 
 User = get_user_model()
 
@@ -42,6 +42,17 @@ def perm(codename, app_label, model):
         return G(Permission,
                  codename=codename,
                  content_type=ct)
+
+
+class CreateQualificationTypesMixin(object):
+    def create_qualification_types(self):
+        self.first_aid_qualification, _ = QualificationType.objects.get_or_create(name="First Aid (1 day)")
+
+
+class RequireQualificationTypesMixin(CreateQualificationTypesMixin):
+    def setUp(self):
+        super(RequireQualificationTypesMixin, self).setUp()
+        self.create_qualification_types()
 
 
 class OfficersSetupMixin(BasicSetupMixin):
@@ -134,6 +145,15 @@ class OfficersSetupMixin(BasicSetupMixin):
                                              perm("change_camp",
                                                   "cciwmain",
                                                   "camp"),
+                                             perm("add_qualificationtype",
+                                                  "officers",
+                                                  "qualificationtype"),
+                                             perm("change_qualificationtype",
+                                                  "officers",
+                                                  "qualificationtype"),
+                                             perm("delete_qualificationtype",
+                                                  "officers",
+                                                  "qualificationtype"),
                                          ],
                                          )
 
@@ -170,6 +190,15 @@ class OfficersSetupMixin(BasicSetupMixin):
                                      perm("delete_crbformlog",
                                           "officers",
                                           "crbformlog"),
+                                     perm("add_qualificationtype",
+                                          "officers",
+                                          "qualificationtype"),
+                                     perm("change_qualificationtype",
+                                          "officers",
+                                          "qualificationtype"),
+                                     perm("delete_qualificationtype",
+                                          "officers",
+                                          "qualificationtype"),
                                  ],
                                  )
 

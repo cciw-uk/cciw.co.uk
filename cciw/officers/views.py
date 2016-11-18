@@ -77,6 +77,10 @@ def _copy_application(application):
             setattr(new_ref, f, getattr(old_ref, f))
         new_ref.save()
 
+    for q in application.qualifications.all():
+        new_q = q.copy(application=new_obj)
+        new_q.save()
+
     return new_obj
 
 

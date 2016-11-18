@@ -8,7 +8,7 @@ from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers import applications
 from cciw.officers.models import Application
 from cciw.officers.tests.base import (OFFICER_PASSWORD, OFFICER_USERNAME, ApplicationSetupMixin, CurrentCampsMixin,
-                                      OfficersSetupMixin)
+                                      OfficersSetupMixin, RequireQualificationTypesMixin)
 from cciw.utils.tests.base import TestBase
 
 User = get_user_model()
@@ -25,7 +25,8 @@ class ApplicationModel(ApplicationSetupMixin, TestBase):
             self.assertEqual(app.referees[1], app.referee_set.get(referee_number=2))
 
 
-class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, TestBase):
+class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQualificationTypesMixin,
+                              TestBase):
 
     _create_button = """<input type="submit" name="new" value="Create" """
     _edit_button = """<input type="submit" name="edit" value="Continue" """
@@ -72,6 +73,9 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, TestBase):
         ref, _ = app.referee_set.get_or_create(referee_number=1)
         ref.name = "Last Years Referee"
         ref.save()
+        app.qualifications.create(
+            type=self.first_aid_qualification,
+            date_issued=date(2016, 1, 1))
         resp = self.client.post(self.url, {'new': 'Create'})
         self.assertEqual(302, resp.status_code)
         self.assertEqual(len(self.user.applications.all()), 2)
@@ -80,6 +84,8 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, TestBase):
             self.assertEqual(a.full_name, app.full_name)
             self.assertEqual(a.referee_set.get(referee_number=1).name,
                              app.referee_set.get(referee_number=1).name)
+            self.assertEqual(list([q.type, q.date_issued] for q in a.qualifications.all()),
+                             list([q.type, q.date_issued] for q in app.qualifications.all()))
 
     def test_create_when_already_done(self):
         # Should not create a new application if a recent one is submitted

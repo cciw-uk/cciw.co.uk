@@ -9,13 +9,13 @@ from django.contrib.auth.models import Group
 from django.core import urlresolvers
 from django.forms.utils import ErrorList
 
-from cciw.auth import can_manage_application_forms
+from cciw.auth import can_manage_application_forms, is_camp_officer
 from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
 from cciw.officers import widgets
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.models import (REFEREE_DATA_FIELDS, REFEREE_NUMBERS, Application, CRBApplication, CRBFormLog,
-                                  Invitation, Referee, Reference)
+                                  Invitation, Qualification, QualificationType, Referee, Reference)
 from cciw.utils.views import close_window_response
 
 officer_autocomplete_widget = lambda: autocomplete.ModelSelect2(url='officer-autocomplete')
@@ -128,6 +128,28 @@ for f in REFEREE_DATA_FIELDS:
         ApplicationAdminModelForm.base_fields[referee_field(n, f)] = field
 
 
+class QualificationInline(admin.TabularInline):
+    model = Qualification
+
+    def has_add_permission(self, request):
+        if is_camp_officer(request.user):
+            return True
+        else:
+            return super(QualificationInline, self).has_add_permission(request)
+
+    def has_change_permission(self, request, obj=None):
+        if is_camp_officer(request.user) and (obj is None or obj.officer_id == request.user.id):
+            return True
+        else:
+            return super(QualificationInline, self).has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        if is_camp_officer(request.user) and (obj is None or obj.officer_id == request.user.id):
+            return True
+        else:
+            return super(QualificationInline, self).has_delete_permission(request, obj)
+
+
 class CampAdminPermissionMixin(object):
 
     def has_change_permission(self, request, obj=None):
@@ -164,7 +186,7 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
          ),
         ('Experience',
             {'fields': ['christian_experience'],
-             'classes': ['wide'],
+             'classes': ['applicationexperience', 'wide'],
              'description': '''Please tells us about your Christian experience '''
              '''(i.e. how you became a Christian and how long you have been a Christian, '''
              '''which Churches you have attended and dates, names of minister/leader)'''}
@@ -183,7 +205,7 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
          ),
         ('Illnesses',
             {'fields': ['relevant_illness', 'illness_details'],
-             'classes': ['wide']}
+             'classes': ['applicationillness', 'wide']}
          ),
         ('Employment history',
             {'fields': ['employer1_name', 'employer1_from', 'employer1_to',
@@ -256,6 +278,8 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
             {'fields': ['officer', 'date_submitted'],
              'classes': ['wide']}
          )] + camp_officer_application_fieldsets
+
+    inlines = [QualificationInline]
 
     class Media:
         js = ['js/application_form.js']
@@ -456,6 +480,7 @@ admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(Reference, ReferenceAdmin)
 admin.site.register(CRBApplication, CRBApplicationAdmin)
 admin.site.register(CRBFormLog, CRBFormLogAdmin)
+admin.site.register(QualificationType)
 
 
 # Hack the Group admin so that we can edit users belonging to a group

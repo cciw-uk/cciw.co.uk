@@ -333,6 +333,40 @@ class Reference(models.Model):
                 for f in self._meta.fields if f.attname not in ['id', 'referee_id', 'inaccurate']]
 
 
+class QualificationType(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+
+
+class Qualification(models.Model):
+    application = models.ForeignKey(Application, related_name='qualifications')
+    type = models.ForeignKey(QualificationType, related_name='qualifications')
+    date_issued = models.DateField()
+
+    def __str__(self):
+        return "{0} qualification for {1}".format(self.type, self.application.officer)
+
+    def copy(self, **kwargs):
+        q = Qualification()
+        q.application = self.application
+        q.type = self.type
+        q.date_issued = self.date_issued
+        for k, v in kwargs.items():
+            setattr(q, k, v)
+        return q
+
+    class Meta:
+        ordering = ['application', 'type__name']
+        unique_together = [
+            ('application', 'type')
+        ]
+
+
 class InvitationManager(models.Manager):
     use_for_related_fields = True
 

@@ -32,7 +32,12 @@
 {\par {\b Details}}
 {\par {{ app.youth_work_declined_details|rtfescape|rtflinebreaks }}}
 {% endif %}
-
+\line
+{\par {\b Qualifications}}
+{% for q in app.qualifications.all %}
+{\par {{ q.type|rtfescape }}, issued {{ q.date_issued|date:"Y-m-d"|rtfescape }}}
+{% endfor %}
+\par
 {\par {\ul Illnesses}}
 \par
 {\trowd \intbl\cellx7000\cellx9000 {Do you suffer or have you suffered from any illness which

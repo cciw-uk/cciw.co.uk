@@ -109,4 +109,9 @@ $(document).ready(function () {
     setSaveAndContinueBtn();
     $('input#id_finished').on('change', setSaveAndContinueBtn);
 
+    // Move qualifications section to before declarations:
+    $("fieldset.applicationillness").prepend(
+        $('#qualifications-group')
+    );
+
 });
