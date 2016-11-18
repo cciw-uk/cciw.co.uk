@@ -1282,9 +1282,11 @@ class PaymentSource(models.Model):
     refund_payment = models.OneToOneField(RefundPayment,
                                           null=True, blank=True,
                                           on_delete=models.CASCADE)
-    account_transfer_payment = models.OneToOneField(AccountTransferPayment,
-                                                    null=True, blank=True,
-                                                    on_delete=models.CASCADE)
+    # There are two PaymentSource items for each AccountTransferPayment
+    # so this is FK not OneToOneField
+    account_transfer_payment = models.ForeignKey(AccountTransferPayment,
+                                                 null=True, blank=True,
+                                                 on_delete=models.CASCADE)
     ipn_payment = models.OneToOneField(PayPalIPN,
                                        null=True, blank=True,
                                        on_delete=models.CASCADE)
