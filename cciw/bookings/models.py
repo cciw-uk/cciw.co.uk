@@ -1155,7 +1155,11 @@ class PaymentManager(models.Manager):
     def get_queryset(self):
         return super(PaymentManager, self).get_queryset().select_related(
             'account',
-            'origin_type',
+            'source',
+            'source__manual_payment',
+            'source__refund_payment',
+            'source__account_transfer_payment',
+            'source__ipn_payment',
         )
 
 
@@ -1164,10 +1168,6 @@ class Payment(NoEditMixin, models.Model):
     account = models.ForeignKey(BookingAccount,
                                 related_name='payments',
                                 on_delete=models.CASCADE)
-    origin_id = models.PositiveIntegerField()
-    origin_type = models.ForeignKey(ContentType,
-                                    on_delete=models.PROTECT)
-    origin = GenericForeignKey('origin_type', 'origin_id')
     source = models.OneToOneField('PaymentSource',
                                   null=True, blank=True,
                                   on_delete=models.SET_NULL)

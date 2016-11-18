@@ -105,11 +105,6 @@ class BookingAccountPaymentInline(ReadOnlyInline, admin.TabularInline):
     fields = ["amount", "payment_type", "created"]
     readonly_fields = fields
 
-    def get_queryset(self, *args, **kwargs):
-        return super().get_queryset(*args, **kwargs).prefetch_related(
-            'origin',
-        )
-
 
 class BookingAccountBookingInline(ReadOnlyInline, admin.TabularInline):
     model = Booking
