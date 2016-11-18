@@ -181,7 +181,6 @@ doing 'crontab -e' on the WebFaction server.::
     5,35    * * * * $CCIW_PYTHON $CCIW_MANAGE fix_mailing_lock
     0,20,40 * * * * $CCIW_PYTHON $CCIW_MANAGE retry_deferred 2>> ~/.django-mailer-deferred-cron.log
     15      1 * * * $CCIW_PYTHON $CCIW_MANAGE clear_securedownload_links
-    */10    * * * * $CCIW_PYTHON $CCIW_MANAGE process_payments
     0       2 * * * $CCIW_PYTHON $CCIW_MANAGE cleanup
     0       7 * * * $CCIW_PYTHON $CCIW_MANAGE payment_reminder_emails
 

@@ -301,10 +301,10 @@ class BookingAccount(migrate_address('address'), models.Model):
     def receive_payment(self, amount):
         """
         Adds the amount to the account's total_received field.  This should only
-        ever be called by the 'process_payments' management command. Client code
+        ever be called by the 'process_all_payments' function. Client code
         should use the 'send_payment' function.
         """
-        # See process_payments management command for an explanation of the above
+        # See process_all_payments function for an explanation of the above
 
         # = Receiving payments =
         #
@@ -1149,8 +1149,6 @@ def is_booking_open(year):
 is_booking_open_thisyear = lambda: is_booking_open(common.get_thisyear())
 
 
-# See process_payments management command for explanation
-
 class PaymentManager(models.Manager):
     use_for_related_fields = True
 
@@ -1272,24 +1270,13 @@ class AccountTransferPayment(NoEditMixin, models.Model):
                                                                  self.to_account)
 
 
-def trigger_payment_processing():
-    # NB - this is always called from a web request, for which the virtualenv
-    # has been set up in os.environ, so this is passed on and the correct python
-    # runs manage.py.
-    if settings.TESTS_RUNNING:
-        process_all_payments()
-    else:
-        manage_py = os.path.join(settings.BASE_DIR, 'manage.py')
-        os.spawnl(os.P_NOWAIT, manage_py, 'manage.py', 'process_payments')
-
-
 def send_payment(amount, to_account, from_obj):
     Payment.objects.create(amount=amount,
                            account=to_account,
                            origin=from_obj,
                            processed=None,
                            created=timezone.now())
-    trigger_payment_processing()
+    process_all_payments()
 
 
 def build_paypal_custom_field(account):
@@ -1345,18 +1332,41 @@ def expire_bookings(now=None):
             send_booking_expiry_mail(account, group, expired)
 
 
-# These are called normally from process_payments management command.
-
 @transaction.atomic
 def process_one_payment(payment):
     payment.account.receive_payment(payment.amount)
     payment.processed = timezone.now()
-    # Can't save Payment, so do update
+    # Payment.processed is ignored in Payment.save, so do update
     Payment.objects.filter(id=payment.id).update(processed=payment.processed)
 
 
+# When processing payments, we need to alter the BookingAccount.total_received
+# field, and may need to deal with concurrency, to avoid race conditions that
+# would cause this field to have the wrong value.
+#
+# We arrange for updates to BookingAccount.total_received to be serialised
+# using the function below.
+#
+# To support this, the Payment model keeps track of payments to be credited
+# against an account. Any function that needs to transfer funds into an account
+# uses 'cciw.bookings.models.send_payment', which creates Payment objects for
+# later processing, rather than calling BookingAccount.receive_payment directly.
+#
+# The Payment model also allows payments from multiple sources to be handled
+# - the Payment has a GenericForeignKey to the source object, which could
+# be a PayPal payment object, or a ManualPayment object.
+#
+# The Payment objects also act as a log of everything that has happened to the
+# BookingAccount.total_received field. Payment objects are never modified or
+# deleted - if, for example, a ManualPayment object is deleted because of an
+# entry error, a new (negative) Payment object is created.
+
+
 def process_all_payments():
-    for payment in Payment.objects.filter(processed__isnull=True).order_by('created'):
+    # Use select_for_update to serialize usages of this function.
+    for payment in (Payment.objects
+                    .select_for_update()
+                    .filter(processed__isnull=True).order_by('created')):
         try:
             process_one_payment(payment)
         except Exception:
