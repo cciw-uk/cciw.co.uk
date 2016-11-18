@@ -18,18 +18,18 @@ from paypal.standard.ipn.models import PayPalIPN
 from cciw.bookings.email import send_payment_reminder_emails
 from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
+from cciw.bookings.middleware import BOOKING_COOKIE_SALT
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND,
                                   BOOKING_INFO_COMPLETE, MANUAL_PAYMENT_CHEQUE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
                                   PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
-                                  AccountTransferPayment, Booking, BookingAccount, ManualPayment, Payment, Price,
-                                  RefundPayment, book_basket_now, build_paypal_custom_field, expire_bookings,
-                                  paypal_payment_received)
+                                  AccountTransferPayment, Booking, BookingAccount, ManualPayment, Payment,
+                                  PaymentSource, Price, RefundPayment, book_basket_now, build_paypal_custom_field,
+                                  expire_bookings, paypal_payment_received)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
-from cciw.bookings.middleware import BOOKING_COOKIE_SALT
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
-from cciw.officers.tests.base import (BOOKING_SECRETARY, BOOKING_SECRETARY_PASSWORD, BOOKING_SECRETARY_USERNAME, OFFICER,
-                                      OfficersSetupMixin)
+from cciw.officers.tests.base import (BOOKING_SECRETARY, BOOKING_SECRETARY_PASSWORD, BOOKING_SECRETARY_USERNAME,
+                                      OFFICER, OfficersSetupMixin)
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.base import TestBase
@@ -2618,3 +2618,20 @@ class TestBookingModel(CreatePlaceModelMixin, TestBase):
         self.assertEqual(len(Booking.objects.need_approving()), 1)
 
         self.assertEqual(Booking.objects.get().approval_reasons(), ['Too old'])
+
+
+class TestPaymentModels(TestBase):
+
+    def test_payment_source_save_bad(self):
+        manual = G(ManualPayment)
+        refund = G(RefundPayment)
+        self.assertRaises(AssertionError,
+                          lambda: PaymentSource.objects.create(
+                              manual_payment=manual,
+                              refund_payment=refund))
+
+    def test_payment_source_save_good(self):
+        manual = G(ManualPayment)
+        PaymentSource.objects.all().delete()
+        p = PaymentSource.objects.create(manual_payment=manual)
+        self.assertNotEqual(p.id, None)

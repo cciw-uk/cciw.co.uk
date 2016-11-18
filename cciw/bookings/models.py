@@ -1168,6 +1168,9 @@ class Payment(NoEditMixin, models.Model):
     origin_type = models.ForeignKey(ContentType,
                                     on_delete=models.PROTECT)
     origin = GenericForeignKey('origin_type', 'origin_id')
+    source = models.OneToOneField('PaymentSource',
+                                  null=True, blank=True,
+                                  on_delete=models.SET_NULL)
     processed = models.DateTimeField(null=True)
     created = models.DateTimeField()
 
@@ -1268,6 +1271,34 @@ class AccountTransferPayment(NoEditMixin, models.Model):
         return "Payment: {0} transferred from {1} to {2}".format(self.amount,
                                                                  self.from_account,
                                                                  self.to_account)
+
+
+# This model abstracts the different types of payment that can be the source for
+# Payment.
+class PaymentSource(models.Model):
+    manual_payment = models.OneToOneField(ManualPayment,
+                                          null=True, blank=True,
+                                          on_delete=models.CASCADE)
+    refund_payment = models.OneToOneField(RefundPayment,
+                                          null=True, blank=True,
+                                          on_delete=models.CASCADE)
+    account_transfer_payment = models.OneToOneField(AccountTransferPayment,
+                                                    null=True, blank=True,
+                                                    on_delete=models.CASCADE)
+    ipn_payment = models.OneToOneField(PayPalIPN,
+                                       null=True, blank=True,
+                                       on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        self._assert_one_source()
+        super(PaymentSource, self).save()
+
+    def _assert_one_source(self):
+        if not [self.manual_payment_id,
+                self.refund_payment_id,
+                self.account_transfer_payment_id,
+                self.ipn_payment_id].count(None) == 3:
+            raise AssertionError("PaymentSource must have exactly one payment FK set")
 
 
 def send_payment(amount, to_account, from_obj):
