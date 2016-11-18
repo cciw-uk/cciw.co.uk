@@ -1169,6 +1169,12 @@ class PaymentManager(models.Manager):
         return super(PaymentManager, self).create(**kwargs)
 
 
+# The Payment object keeps track of all the payments that need to be or have
+# been credited to an account. It also acts as a log of everything that has
+# happened to the BookingAccount.total_received field. Payment objects are never
+# modified or deleted - if, for example, a ManualPayment object is deleted
+# because of an entry error, a new (negative) Payment object is created.
+
 class Payment(NoEditMixin, models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount,
@@ -1402,15 +1408,6 @@ def process_one_payment(payment):
 # against an account. Any function that needs to transfer funds into an account
 # uses 'cciw.bookings.models.send_payment', which creates Payment objects for
 # later processing, rather than calling BookingAccount.receive_payment directly.
-#
-# The Payment model also allows payments from multiple sources to be handled
-# - the Payment has a GenericForeignKey to the source object, which could
-# be a PayPal payment object, or a ManualPayment object.
-#
-# The Payment objects also act as a log of everything that has happened to the
-# BookingAccount.total_received field. Payment objects are never modified or
-# deleted - if, for example, a ManualPayment object is deleted because of an
-# entry error, a new (negative) Payment object is created.
 
 @transaction.atomic
 def process_all_payments():
@@ -1419,19 +1416,7 @@ def process_all_payments():
                     .select_related(None)
                     .select_for_update()
                     .filter(processed__isnull=True).order_by('created')):
-        try:
-            process_one_payment(payment)
-        except Exception:
-            # Send email, but carry on with next payment
-            from cciw.cciwmain.common import exception_notify_admins
-            try:
-                exception_notify_admins('CCIW booking - payment processing error')
-            except Exception:
-                # Exception sending email - that's the most likely cause
-                # of process_one_payment failing, since it can
-                # indirectly cause email to be sent. In that case, the
-                # admin notification is likely to fail too.
-                continue
+        process_one_payment(payment)
 
 
 from .hooks import *  # NOQA isort:skip

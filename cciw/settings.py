@@ -111,6 +111,7 @@ INSTALLED_APPS = [
     'django_countries',
     'opbeat.contrib.django',
     'anymail',
+    'mailer',
 ]
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
@@ -215,11 +216,18 @@ if LIVEBOX and PRODUCTION:
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+# django-mailer - used for some things where we need a queue. It is not used as
+# default backend via EMAIL_BACKEND, but by call mailer.send_mail explicitly.
+MAILER_EMAIL_BACKEND = EMAIL_BACKEND
+
 from cciw.settings_priv import MAILGUN_API_KEY
 ANYMAIL = {
     "MAILGUN_API_KEY": MAILGUN_API_KEY,
 }
 
+if TESTS_RUNNING:
+    EMAIL_BACKEND = "cciw.mail.tests.TestMailBackend"
+    MAILER_EMAIL_BACKEND = EMAIL_BACKEND
 
 # == MAILING LISTS ==
 

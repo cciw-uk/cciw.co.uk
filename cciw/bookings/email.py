@@ -1,7 +1,8 @@
-import binascii
 import base64
+import binascii
 from datetime import datetime
 
+import mailer as queued_mail
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
@@ -91,7 +92,11 @@ def send_places_confirmed_email(bookings, **kwargs):
     }
     body = loader.render_to_string('cciw/bookings/place_confirmed_email.txt', c)
     subject = "CCIW booking - place confirmed"
-    mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+
+    # Use queued_mail, which uses DB storage, because this function gets
+    # triggered from within payment processing, and we want to ensure that
+    # network errors won't affect this processing.
+    queued_mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
     # Email leaders. Bookings could be for different camps, so send different
     # emails.
@@ -112,8 +117,8 @@ def send_places_confirmed_email(bookings, **kwargs):
             body = loader.render_to_string('cciw/bookings/late_place_confirmed_email.txt', c)
             subject = "CCIW late booking: %s" % booking.name
 
-            mail.send_mail(subject, body, settings.SERVER_EMAIL,
-                           admin_emails_for_camp(booking.camp))
+            queued_mail.send_mail(subject, body, settings.SERVER_EMAIL,
+                                  admin_emails_for_camp(booking.camp))
 
 
 def send_booking_expiry_mail(account, bookings, expired):

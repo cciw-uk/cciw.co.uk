@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.mail import EmailMessage
+from django.core.mail.backends.locmem import EmailBackend as LocMemEmailBackend
 from django.test.client import RequestFactory
 from requests.exceptions import ConnectionError
 
@@ -330,6 +331,26 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
 
 def emailify(msg):
     return msg.strip().replace("\n", "\r\n")
+
+
+_EMAIL_SENDING_DISALLOWED = []
+
+
+def disable_email_sending():
+    _EMAIL_SENDING_DISALLOWED.append(None)
+
+
+def enable_email_sending():
+    _EMAIL_SENDING_DISALLOWED.pop(0)
+
+
+class TestMailBackend(LocMemEmailBackend):
+
+    def send_messages(self, messages):
+        if len(_EMAIL_SENDING_DISALLOWED) == 0:
+            return super(TestMailBackend, self).send_messages(messages)
+        else:
+            raise AssertionError("Email should not be sent")
 
 
 MSG_DEBUG_LIST = emailify("""

@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal
 from unittest import mock
 
+import mailer.engine
 import vcr
 import xlrd
 from django.conf import settings
@@ -13,6 +14,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 from django_dynamic_fixture import G
+from mailer.models import Message
 from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.bookings.email import send_payment_reminder_emails
@@ -24,7 +26,7 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANC
                                   PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
                                   AccountTransferPayment, Booking, BookingAccount, ManualPayment, Payment,
                                   PaymentSource, Price, RefundPayment, book_basket_now, build_paypal_custom_field,
-                                  expire_bookings, paypal_payment_received)
+                                  expire_bookings, paypal_payment_received, process_all_payments)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
@@ -42,6 +44,20 @@ User = get_user_model()
 class IpnMock(object):
     payment_status = 'Completed'
     receiver_email = settings.PAYPAL_RECEIVER_EMAIL
+
+
+# Most mail is sent directly, but some is specifically put on a queue, to ensure
+# errors don't mess up payment processing. We 'send' and retrieve those here:
+def send_queued_mail():
+    len_outbox_start = len(mail.outbox)
+    sent_count = Message.objects.all().count()
+    mailer.engine.send_all()
+    len_outbox_end = len(mail.outbox)
+    assert len_outbox_start + sent_count == len_outbox_end
+    sent = mail.outbox[len_outbox_start:]
+    mail.outbox[len_outbox_start:] = []
+    assert len(mail.outbox) == len_outbox_start
+    return sent
 
 
 # == Mixins to reduce duplication ==
@@ -281,7 +297,35 @@ class CreatePlaceWebMixin(CreatePlaceModelMixin, LogInMixin):
         return super(CreatePlaceWebMixin, self).fill(data2)
 
 
-class BookingBaseMixin(object):
+class BookingEmailChecksMixin(object):
+    def setUp(self):
+        super(BookingEmailChecksMixin, self).setUp()
+
+        # This is a protection mechanism to ensure we are not sending
+        # emails from within the process_all_payments function.
+        def replacement_process_all_payments():
+            import cciw.mail.tests
+            cciw.mail.tests.disable_email_sending()
+            try:
+                return process_all_payments()
+            finally:
+                cciw.mail.tests.enable_email_sending()
+
+        # To get our custom email backend to be used, we have to patch settings
+        # at this point, due to how Django's test runner also sets this value:
+
+        settings.EMAIL_BACKEND = "cciw.mail.tests.TestMailBackend"
+
+        process_payments_patcher = mock.patch('cciw.bookings.models.process_all_payments',
+                                              new=replacement_process_all_payments)
+        process_payments_patcher.start()
+        self.process_payments_patcher = process_payments_patcher
+
+    def tearDown(self):
+        self.process_payments_patcher.stop()
+
+
+class BookingBaseMixin(BookingEmailChecksMixin):
 
     # Constants used in 'assertTextPresent' and 'assertTextAbsent', the latter
     # being prone to false positives if a constant isn't used.
@@ -333,7 +377,7 @@ class CreateIPNMixin(object):
 # created the same way a user would.
 
 
-class TestBookingModels(CreatePlaceModelMixin, TestBase):
+class TestBookingModels(BookingEmailChecksMixin, CreatePlaceModelMixin, TestBase):
 
     def test_camp_open_for_bookings(self):
         self.assertTrue(self.camp.open_for_bookings(self.today))
@@ -1076,6 +1120,7 @@ class TestEditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account
         self.assertEqual(len(mail.outbox), 1)
 
     def test_create(self):
+        self.add_prices()
         self.officer_login(BOOKING_SECRETARY)
         account = BookingAccount.objects.create(
             email=self.email,
@@ -1185,6 +1230,7 @@ class TestEditPaymentAdminSL(TestEditPaymentAdminBase, SeleniumBase):
 
 
 class TestAccountTransferBase(fix_autocomplete_fields(['from_account', 'to_account']),
+                              BookingEmailChecksMixin,
                               OfficersSetupMixin):
     def test_add_account_transfer(self):
 
@@ -1789,7 +1835,9 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
         self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
 
         mail.outbox = []
-        acc.receive_payment(self.price_full)
+        ManualPayment.objects.create(
+            account=acc,
+            amount=self.price_full)
 
         acc = self.get_account()
 
@@ -1801,11 +1849,12 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
 
         # Check for emails sent
         # 1 to account
-        self.assertEqual(len([m for m in mail.outbox if m.to == [self.email]]), 1)
+        mails = send_queued_mail()
+        self.assertEqual(len([m for m in mails if m.to == [self.email]]), 1)
 
         # This is a late booking, therefore there is also:
         # 1 to camp leaders altogether
-        self.assertEqual(len([m for m in mail.outbox
+        self.assertEqual(len([m for m in mails
                               if sorted(m.to) == sorted([self.leader_1_user.email,
                                                          self.leader_2_user.email])]),
                          1)
@@ -1897,11 +1946,12 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
         mail.outbox = []
         acc.receive_payment(acc.bookings.all()[0].amount_due)
 
-        self.assertEqual(len(mail.outbox), 1)
+        mails = send_queued_mail()
+        self.assertEqual(len(mails), 1)
 
-        self.assertEqual(mail.outbox[0].subject, "CCIW booking - place confirmed")
-        self.assertEqual(mail.outbox[0].to, [self.email])
-        self.assertTrue("Thank you for your payment" in mail.outbox[0].body)
+        self.assertEqual(mails[0].subject, "CCIW booking - place confirmed")
+        self.assertEqual(mails[0].to, [self.email])
+        self.assertTrue("Thank you for your payment" in mails[0].body)
 
     def test_only_one_email_for_multiple_places(self):
         self.create_place()
@@ -1914,12 +1964,13 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
         mail.outbox = []
         acc.receive_payment(acc.get_balance())
 
-        self.assertEqual(len(mail.outbox), 1)
+        mails = send_queued_mail()
+        self.assertEqual(len(mails), 1)
 
-        self.assertEqual(mail.outbox[0].subject, "CCIW booking - place confirmed")
-        self.assertEqual(mail.outbox[0].to, [self.email])
-        self.assertTrue(self.place_details['first_name'] in mail.outbox[0].body)
-        self.assertTrue('Another Child' in mail.outbox[0].body)
+        self.assertEqual(mails[0].subject, "CCIW booking - place confirmed")
+        self.assertEqual(mails[0].to, [self.email])
+        self.assertTrue(self.place_details['first_name'] in mails[0].body)
+        self.assertTrue('Another Child' in mails[0].body)
 
     def test_concurrent_save(self):
         acc1 = BookingAccount.objects.create(email='foo@foo.com')
@@ -2511,7 +2562,7 @@ class TestEarlyBird(CreatePlaceModelMixin, TestBase):
             book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
             acc.receive_payment(self.price_full)
         acc = self.get_account()
-        mails = [m for m in mail.outbox if m.to == [self.email]]
+        mails = [m for m in send_queued_mail() if m.to == [self.email]]
         assert len(mails) == 1
         self.assertIn("If you had booked earlier", mails[0].body)
         self.assertIn("£10", mails[0].body)
