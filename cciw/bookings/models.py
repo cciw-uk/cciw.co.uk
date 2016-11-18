@@ -1361,7 +1361,7 @@ def process_one_payment(payment):
 # deleted - if, for example, a ManualPayment object is deleted because of an
 # entry error, a new (negative) Payment object is created.
 
-
+@transaction.atomic
 def process_all_payments():
     # Use select_for_update to serialize usages of this function.
     for payment in (Payment.objects
