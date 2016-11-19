@@ -21,7 +21,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cciw.settings")
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
 from django.core.wsgi import get_wsgi_application  # noqa
-application = get_wsgi_application()
+from raven.contrib.django.raven_compat.middleware.wsgi import Sentry  # noqa
+application = Sentry(get_wsgi_application())
 
 # Apply WSGI middleware here.
 # from helloworld.wsgi import HelloWorldApplication

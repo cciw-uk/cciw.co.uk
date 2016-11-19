@@ -41,7 +41,6 @@ Markdown==2.6.7
 mccabe==0.5.2
 nodeenv==1.0.0
 numpy==1.11.1
-opbeat==3.4.0
 orderedmultidict==0.7.6
 pandas==0.18.1
 pandas-highcharts==0.5.2
@@ -66,6 +65,7 @@ python3-memcached==1.51
 pytz==2016.6.1
 PyVirtualDisplay==0.2
 PyYAML==3.12
+raven==5.32.0
 rcssmin==1.0.6
 requests==2.11.1
 rjsmin==1.0.12
