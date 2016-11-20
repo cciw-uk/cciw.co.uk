@@ -17,6 +17,15 @@ DEVBOX = ('webfaction' not in hostname)
 LIVEBOX = not DEVBOX
 
 if LIVEBOX:
+    # Don't use /tmp because on shared hosting this could leak to other users.
+    TMP_DIR = os.path.join(HOME_DIR, "tmp")  # See fabfile
+    LOG_DIR = os.path.join(HOME_DIR, "logs", "user")  # See fabfile
+else:
+    TMP_DIR = "/tmp"
+    LOG_DIR = os.path.join(parentdir, "logs")
+
+
+if LIVEBOX:
     from cciw.settings_priv import PRODUCTION, STAGING, GOOGLE_ANALYTICS_ACCOUNT
 
 from cciw.settings_priv import PAYPAL_TEST  # boolean indicating PayPal test mode
@@ -141,23 +150,51 @@ AUTHENTICATION_BACKENDS = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
+
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+
     'formatters': {
+        'django.server': {
+            '()': 'django.utils.log.ServerFormatter',
+            'format': '[%(server_time)s] %(message)s',
+        },
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(module)s '
                       '%(process)d %(thread)d %(message)s'
         },
     },
+
     'handlers': {
+        'django.server': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'django.server',
+        },
         'sentry': {
-            'level': 'ERROR', # To capture more than ERROR, change to WARNING, INFO, etc.
+            'level': 'ERROR',
             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose'
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'cloghandler.ConcurrentRotatingFileHandler',
+            'filename': 'info_cciw_django.log',
+            'maxBytes': 1000000,
+            'backupCount': 5,
         }
     },
+
     'loggers': {
         'root': {
             'level': 'WARNING',
@@ -166,6 +203,15 @@ LOGGING = {
         'django.db.backends': {
             'level': 'ERROR',
             'handlers': ['console'],
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'django.server': {
+            'handlers': ['django.server'],
+            'level': 'INFO',
             'propagate': False,
         },
         'raven': {
@@ -178,8 +224,16 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': False,
         },
+        'cciw.mail.mailgun': {
+            'level': 'INFO',
+            'handlers': ['file'],
+            'propagate': False,
+        }
     },
 }
+
+# For large attachments to emails sent through mailgun endpoint:
+DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024
 
 # == DATABASE ==
 
@@ -248,6 +302,7 @@ if LIVEBOX and PRODUCTION:
 else:
     from cciw.settings_priv import MAILGUN_SANDBOX_DOMAIN
     MAILGUN_DOMAIN = MAILGUN_SANDBOX_DOMAIN
+from cciw.settings_priv import MAILGUN_API_KEY
 
 
 SERVER_EMAIL = "CCIW website <website@cciw.co.uk>"
@@ -263,7 +318,6 @@ else:
 # default backend via EMAIL_BACKEND, but by call mailer.send_mail explicitly.
 MAILER_EMAIL_BACKEND = EMAIL_BACKEND
 
-from cciw.settings_priv import MAILGUN_API_KEY
 ANYMAIL = {
     "MAILGUN_API_KEY": MAILGUN_API_KEY,
 }
@@ -274,15 +328,6 @@ if TESTS_RUNNING:
 
 # == MAILING LISTS ==
 
-if LIVEBOX:
-    from cciw.settings_priv import MAILBOX_PASSWORD, IMAP_MAIL_SERVER
-
-# == WEBFACTION ==
-
-if LIVEBOX:
-    from cciw.settings_priv import WEBFACTION_PASSWORD, WEBFACTION_USER
-else:
-    WEBFACTION_USER, WEBFACTION_PASSWORD = None, None
 
 # == SECUREDOWNLOAD ==
 

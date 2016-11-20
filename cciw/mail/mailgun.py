@@ -1,12 +1,15 @@
 # Mailgun specific things.
-
 import hashlib
 import hmac
+import logging
 from io import BytesIO
 
 import requests
 from django.conf import settings
 from django.utils.crypto import constant_time_compare
+
+
+logger = logging.getLogger("cciw.mail.mailgun")
 
 
 # See https://documentation.mailgun.com/user_manual.html#securing-webhooks
@@ -46,6 +49,7 @@ def api_request(path, data=None, files=None, method=None, add_domain=False):
 # need to use send_mime_message.
 
 def send_mime_message(to, mime_message):
+    logger.info("send_mime_message to=%s message=%s...", to, mime_message[0:50])
     return api_request('/messages.mime',
                        add_domain=True,
                        data={"to": to},

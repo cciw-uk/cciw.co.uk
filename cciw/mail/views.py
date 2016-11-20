@@ -10,7 +10,7 @@ from requests.structures import CaseInsensitiveDict
 from cciw.officers.email import X_REFERENCE_REQUEST, handle_reference_bounce
 
 from . import X_CCIW_ACTION, X_CCIW_CAMP
-from .lists import handle_mail
+from .lists import handle_mail_async
 from .mailgun import verify_webhook
 
 
@@ -41,7 +41,12 @@ def ensure_from_mailgun(f):
 def mailgun_incoming(request):
     # TODO - handle email that is too big (25 Mb limit). We could send back a
     # 406 response to Mailgun, and send an explanation to sender.
-    handle_mail(request.POST['body-mime'])
+    data = request.POST['body-mime']
+    # If we handle mail within the request/response cycle, we can easily end up
+    # with timeouts - e.g. a 5 Mb attachment that gets sent to 30 people has to
+    # be sent 30 times back to Mailgun. So we save and deal with it
+    # asynchronously.
+    handle_mail_async(data.encode('utf-8'))
     return HttpResponse('OK!')
 
 

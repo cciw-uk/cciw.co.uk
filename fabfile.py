@@ -77,6 +77,8 @@ WSGI_MODULE = '%s.wsgi' % APP_NAME
 THIS_DIR = rel(".")
 PARENT_DIR = rel("..")
 WEBAPPS_ROOT = '/home/%s/webapps' % USER
+TMP_DIR = '/home/%s/tmp' % USER  # See settings.py
+LOG_DIR = '/home/%s/logs/user' % USER  # See settings.py
 
 USERMEDIA_LOCAL = join(PARENT_DIR, 'usermedia')
 USERMEDIA_PRODUCTION = join(WEBAPPS_ROOT, 'cciw_usermedia')
@@ -208,6 +210,13 @@ def ensure_virtualenv():
             (target.SRC_DIR, VENV_SUBDIR, PYTHON_BIN))
 
 
+def ensure_dirs():
+    ensure_src_dir()
+    for d in [TMP_DIR, LOG_DIR]:
+        if not exists(d):
+            run("mkdir -p %s" % d)
+
+
 def ensure_src_dir():
     if not exists(target.SRC_DIR):
         run("mkdir -p %s" % target.SRC_DIR)
@@ -228,7 +237,6 @@ def push_sources():
     """
     Push source code to server.
     """
-    ensure_src_dir()
     push_rev = getattr(env, 'push_rev', None)
     if push_rev is None:
         push_rev = local("hg id", capture=True).split(" ")[0].strip().strip("+")
@@ -376,6 +384,7 @@ def deploy():
                 if x != "y":
                     sys.exit()
 
+    ensure_dirs()
     push_sources()
     _push_non_vcs_sources()
     with cd(target.SRC_DIR):

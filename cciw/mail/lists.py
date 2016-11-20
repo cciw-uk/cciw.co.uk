@@ -15,7 +15,9 @@
 
 
 import email
+import os
 import re
+import tempfile
 
 import attr
 from django.conf import settings
@@ -23,7 +25,7 @@ from django.contrib.auth import get_user_model
 from django.core.mail import make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
-from cciw.auth import get_camp_admin_group_users, get_group_users, COMMITTEE_GROUP_NAME
+from cciw.auth import COMMITTEE_GROUP_NAME, get_camp_admin_group_users, get_group_users
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
 from cciw.officers.email_utils import formatted_email
@@ -351,12 +353,20 @@ There were problems with the following addresses:
             pass
 
 
+def handle_mail_async(data):
+    fd, name = tempfile.mkstemp(prefix="mailgun-incoming-", dir=settings.TMP_DIR)
+    os.write(fd, data)
+    os.close(fd)
+    manage_py_path = os.path.join(settings.PROJECT_ROOT, "manage.py")
+    os.spawnlp(os.P_NOWAIT, "nohup", "nohup", manage_py_path, "handle_message", name)
+
+
 def handle_mail(data, debug=False):
     """
     Forwards an email to the correct list of people.
-    data is RFC822 formatted data
+    data is RFC822 formatted bytes
     """
-    mail = email.message_from_string(data)
+    mail = email.message_from_bytes(data)
     to = mail['To']
     assert to is not None, "Message did not have 'To' field set, cannot send email"
 

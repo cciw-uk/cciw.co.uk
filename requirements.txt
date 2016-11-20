@@ -1,5 +1,6 @@
 attrs==16.2.0
 beautifulsoup4==4.5.1
+ConcurrentLogHandler==0.9.1
 contextlib2==0.5.4
 coverage==4.2
 cssselect==1.0.0
