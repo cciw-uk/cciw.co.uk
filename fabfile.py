@@ -435,6 +435,9 @@ def quick():
 
 @task
 def upload_usermedia():
+    """
+    Upload locally stored usermedia (e.g. booking forms) to the live site.
+    """
     local("rsync -z -r %s/ cciw@cciw.co.uk:%s" % (USERMEDIA_LOCAL, USERMEDIA_PRODUCTION), capture=False)
     run("find %s -type f -exec chmod ugo+r {} ';'" % USERMEDIA_PRODUCTION)
 
