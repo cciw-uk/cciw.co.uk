@@ -28,6 +28,7 @@ from django.utils.encoding import force_bytes
 from cciw.auth import COMMITTEE_GROUP_NAME, get_camp_admin_group_users, get_group_users
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
+from cciw.officers.models import Application
 from cciw.officers.email_utils import formatted_email
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 
@@ -382,6 +383,10 @@ def handle_mail(data, debug=False):
             email_list = find_list(address, from_email)
             forward_email_to_list(mail, email_list, debug=debug)
         except MailAccessDenied:
+            if not known_officer_email_address(from_email):
+                # Don't bother sending bounce emails to addresses
+                # we've never seen before. This is highly likely to be spam.
+                continue
             send_mail("Access to mailing list {0} denied".format(address),
                       "You attempted to email the list {0}\n"
                       "with an email titled \"{1}\".\n"
@@ -399,3 +404,12 @@ def handle_mail(data, debug=False):
             # (e.g. other mailboxes).  So if we don't recognise the
             # address, just ignore
             pass
+
+
+def known_officer_email_address(address):
+    User = get_user_model()
+    if User.objects.filter(email__iexact=address).exists():
+        return True
+    if Application.objects.filter(address_email__iexact=address).exists():
+        return True
+    return False

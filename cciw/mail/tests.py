@@ -72,6 +72,8 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         User.objects.create(username="admin2",
                             email="admin2@admin.com",
                             is_superuser=True)
+        User.objects.create(username="joe",
+                            email="joe@gmail.com")
 
     def test_invalid_list(self):
         self.assertRaises(NoSuchList,
@@ -182,14 +184,6 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         self.assertIn(b"Sender: CCIW lists", sent_messages[0])
         self.assertIn(b"From: Dave Stott <leader@somewhere.com>", sent_messages[0])
 
-    def test_handle_officer_list_bounce(self):
-        bad_mail = MSG_OFFICER_LIST.replace(b"leader@somewhere.com", b"notleader@somewhere.com")
-        with mock_mailgun_send_mime() as m_s:
-            handle_mail(bad_mail)
-        self.assertEqual(m_s.messages_sent(), [])
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, "Access to mailing list camp-2000-blue-officers@cciw.co.uk denied")
-
     def test_extract(self):
         self.assertEqual(extract_email_addresses('Some Guy <A.Body@example.com>'),
                          ['A.Body@example.com'])
@@ -247,15 +241,21 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                          ["Joe <joe@gmail.com>"])
 
     def test_handle_mail_permission_denied(self):
-        MSG = MSG_OFFICER_LIST.replace(b'leader@somewhere.com',
-                                       b'someone@somewhere.com')
+        bad_mail = MSG_OFFICER_LIST.replace(b"leader@somewhere.com",
+                                            b"joe@gmail.com")
         with mock_mailgun_send_mime() as m_s:
-            with mock_send_mail() as send_mail:
-                handle_mail(MSG)
-            sent = m_s.messages_sent()
-            self.assertEqual(len(sent), 0)
-            self.assertEqual(send_mail.call_count, 1)
-            self.assertIn("you do not have permission", send_mail.sent_messages(0).body)
+            handle_mail(bad_mail)
+        self.assertEqual(m_s.messages_sent(), [])
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, "Access to mailing list camp-2000-blue-officers@cciw.co.uk denied")
+        self.assertIn("you do not have permission", mail.outbox[0].body)
+
+    def test_handle_mail_permission_denied_for_unknown(self):
+        bad_mail = MSG_OFFICER_LIST.replace(b"leader@somewhere.com", b"randomer@random.com")
+        with mock_mailgun_send_mime() as m_s:
+            handle_mail(bad_mail)
+        self.assertEqual(m_s.messages_sent(), [])
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_mailgun_incoming(self):
         rf = RequestFactory()
