@@ -34,7 +34,7 @@ from cciw.officers.tests.base import (BOOKING_SECRETARY, BOOKING_SECRETARY_PASSW
                                       OFFICER, OfficersSetupMixin)
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
-from cciw.utils.tests.base import TestBase
+from cciw.utils.tests.base import TestBase, disable_logging
 from cciw.utils.tests.db import refresh
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
@@ -983,7 +983,12 @@ class TestEditPlaceBase(BookingBaseMixin, CreatePlaceWebMixin):
     def edit_place(self, booking, expect_code=None):
         url = reverse('cciw-bookings-edit_place', kwargs={'id': str(booking.id)})
         expect_errors = expect_code is not None and str(expect_code).startswith('4')
-        self.get_literal_url(url, expect_errors=expect_errors)
+        action = lambda: self.get_literal_url(url, expect_errors=expect_errors)
+        if expect_errors:
+            with disable_logging():  # suppress django.request warning
+                action()
+        else:
+            action()
         if expect_code is not None:
             self.assertCode(expect_code)
 

@@ -1,4 +1,7 @@
+import logging
+
 from django.test import TestCase
+from django.test.utils import TestContextDecorator
 
 
 class TestBaseMixin(object):
@@ -11,3 +14,11 @@ class TestBaseMixin(object):
 
 class TestBase(TestBaseMixin, TestCase):
     pass
+
+
+class disable_logging(TestContextDecorator):
+    def enable(self):
+        logging.disable(logging.CRITICAL)
+
+    def disable(self):
+        logging.disable(logging.NOTSET)
