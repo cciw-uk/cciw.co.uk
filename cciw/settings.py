@@ -1,4 +1,5 @@
 # flake8: noqa
+# isort:skip_file
 
 # Settings file
 import os
@@ -28,8 +29,6 @@ else:
 if LIVEBOX:
     from cciw.settings_priv import PRODUCTION, STAGING, GOOGLE_ANALYTICS_ACCOUNT
 
-from cciw.settings_priv import PAYPAL_TEST  # boolean indicating PayPal test mode
-from cciw.settings_priv import PAYPAL_RECEIVER_EMAIL  # Email address of PayPal receiving account
 from cciw.settings_priv import SECRET_KEY
 
 WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
@@ -435,10 +434,9 @@ DEFAULT_CONTENT_TYPE = "text/html"
 BASE_DIR = basedir
 
 
-# Third party
+# == Third party ==
 
-PAYPAL_IMAGE = "https://www.paypalobjects.com/en_US/GB/i/btn/btn_buynowCC_LG.gif"
-
+# Wiki
 WIKI_ATTACHMENTS_EXTENSIONS = [
     'pdf', 'doc', 'odt', 'docx', 'txt',
     'svg', 'png', 'jpg', 'jpeg',
@@ -446,3 +444,10 @@ WIKI_ATTACHMENTS_EXTENSIONS = [
 
 # Mailchimp
 from cciw.settings_priv import MAILCHIMP_API_KEY, MAILCHIMP_NEWSLETTER_LIST_ID, MAILCHIMP_URL_BASE
+
+# PayPal
+from cciw.settings_priv import PAYPAL_TEST, PAYPAL_RECEIVER_EMAIL
+PAYPAL_IMAGE = "https://www.paypalobjects.com/en_US/GB/i/btn/btn_buynowCC_LG.gif"
+
+# Raven
+from cciw.settings_priv import RAVEN_CONFIG
