@@ -227,6 +227,8 @@ def ensure_src_dir():
     with cd(target.SRC_DIR):
         if not exists(join(target.SRC_DIR, '.hg')):
             run("hg init")
+        if not exists(join(target.SRC_DIR, 'config')):
+            run("mkdir config")
 
 
 @task
