@@ -1,7 +1,7 @@
 # Settings file for testing on development box
 from cciw.settings import *  # NOQA
+from cciw.settings import DATABASES, INSTALLED_APPS, MIDDLEWARE_CLASSES, basedir
 from cciw.settings_priv import MAILGUN_TEST_RECEIVER  # NOQA
-
 
 DATABASES['default']['CONN_MAX_AGE'] = 0  # fix some deadlocks with DB flushing
 

@@ -384,6 +384,7 @@ def deploy():
                 if x != "y":
                     sys.exit()
 
+    code_quality_checks()
     ensure_dirs()
     push_sources()
     _push_non_vcs_sources()
@@ -412,6 +413,15 @@ def _copy_protected_downloads():
     rsync_dir(join(PARENT_DIR, "secure_downloads_src"),
               join(WEBAPPS_ROOT, 'cciw_protected_downloads_src'))
     run("chmod -R ugo+r %s" % join(WEBAPPS_ROOT, 'cciw_protected_downloads_src'))
+
+
+@task
+def code_quality_checks():
+    """
+    Run code quality checks, including tests.
+    """
+    local("flake8 .")
+    local("./runtests.py -f")
 
 
 @task
