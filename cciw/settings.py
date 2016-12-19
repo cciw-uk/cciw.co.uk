@@ -19,8 +19,8 @@ HOME_DIR = os.environ['HOME']
 DEVBOX = ('webfaction' not in hostname)
 LIVEBOX = not DEVBOX
 if LIVEBOX:
-    PRODUCTION = "webapps/cciw_django/" in p
-    STAGING = "webapps/cciw_staging_django/" in p
+    PRODUCTION = "webapps/cciw_django/" in basedir
+    STAGING = "webapps/cciw_staging_django/" in basedir
     assert not (PRODUCTION and STAGING)
 else:
     PRODUCTION = False
