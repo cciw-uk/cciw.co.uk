@@ -1,16 +1,17 @@
+import json
 import os
 import os.path
-import sys
-
-from datetime import datetime
-from fabric.api import run, local, env, get, task
-from fabric.contrib.files import exists
-from fabric.context_managers import cd, lcd, settings
-import psutil
 import re
 import subprocess
+import sys
 import tempfile
 import time
+from datetime import datetime
+
+import psutil
+from fabric.api import env, get, local, run, task
+from fabric.context_managers import cd, lcd, settings
+from fabric.contrib.files import exists
 
 join = os.path.join
 
@@ -45,7 +46,7 @@ join = os.path.join
 #    - for the static app
 # - STAGING has SSL turned off.
 #
-# settings_priv.py and settings.py controls these things.
+# settings.py controls these things.
 
 # The information about this layout is unfortunately spread around a couple of
 # places - this file and the settings file - because it is needed in both at
@@ -89,6 +90,7 @@ LOCAL_DB_BACKUPS = rel("..", "db_backups")
 class Target(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+        SECRETS = json.load(open(os.path.join(THIS_DIR, 'config', 'secrets.json')))
 
         # Directory where everything to do with this app will be stored on the server.
         self.DJANGO_APP_ROOT = '/home/%s/webapps/%s_django' % (USER, self.APP_BASE_NAME)
@@ -102,14 +104,16 @@ class Target(object):
         self.GUNICORN_PIDFILE = "%s/gunicorn.pid" % self.DJANGO_APP_ROOT
         self.GUNICORN_LOGFILE = "/home/%s/logs/user/gunicorn_%s.log" % (USER, self.APP_BASE_NAME)
 
-        if self.NAME == "PRODUCTION":
-            from cciw.settings_production import DATABASES
-        elif self.NAME == "STAGING":
-            from cciw.settings_staging import DATABASES
-        else:
-            assert False, "Unknown target %s" % self.NAME
-
-        self.DB = DATABASES['default']
+        from cciw.settings import DATABASES
+        self.DB = DB = DATABASES['default'].copy()
+        if self.NAME == 'PRODUCTION':
+            DB['NAME'] = SECRETS['PRODUCTION_DB_NAME']
+            DB['USER'] = SECRETS['PRODUCTION_DB_USER']
+            DB['PASSWORD'] = SECRETS['PRODUCTION_DB_PASSWORD']
+        elif self.NAME == 'STAGING':
+            DB['NAME'] = SECRETS['STAGING_DB_NAME']
+            DB['USER'] = SECRETS['STAGING_DB_USER']
+            DB['PASSWORD'] = SECRETS['STAGING_DB_PASSWORD']
 
 
 PRODUCTION = Target(
@@ -353,10 +357,7 @@ def setup_mailgun():
 
 
 NON_VCS_SOURCES = [
-    "cciw/settings_priv.py",
-    "cciw/settings_priv_common.py",
-    "cciw/settings_production.py",
-    "cciw/settings_staging.py",
+    "config/secrets.json",
 ]
 
 
@@ -535,7 +536,7 @@ def db_restore_commands(db, filename, webfaction=False):
 
 @task
 def local_restore_from_dump(filename):
-    from cciw.settings_dev import DATABASES
+    from cciw.settings import DATABASES
     db = DATABASES['default']
     for cmd in db_restore_commands(db, filename):
         local(cmd)
