@@ -189,10 +189,19 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'cloghandler.ConcurrentRotatingFileHandler',
-            'filename': 'info_cciw_django.log',
+            'formatter': 'verbose',
+            'filename': os.path.join(LOG_DIR, 'info_cciw_django.log'),
             'maxBytes': 1000000,
             'backupCount': 5,
-        }
+        },
+        'paypal_debug': {
+            'level': 'DEBUG',
+            'class': 'cloghandler.ConcurrentRotatingFileHandler',
+            'formatter': 'verbose',
+            'filename': os.path.join(LOG_DIR, 'paypal_debug_cciw_django.log'),
+            'maxBytes': 1000000,
+            'backupCount': 5,
+        },
     },
 
     'loggers': {
@@ -231,7 +240,8 @@ LOGGING = {
         },
         'paypal' : {
             'level': 'DEBUG',
-            'handlers': ['file'],
+            'handlers': ['paypal_debug'],
+            'propagate': False,
         },
     },
 }
