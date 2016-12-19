@@ -423,6 +423,8 @@ def code_quality_checks():
     """
     Run code quality checks, including tests.
     """
+    if getattr(env, 'no_tests', False):
+        return
     local("flake8 .")
     local("./runtests.py -f")
 
@@ -441,8 +443,14 @@ def no_installs():
 
 
 @task
+def no_tests():
+    env.no_tests = True
+
+
+@task
 def quick():
     no_db()
+    no_tests()
     no_installs()
 
 
