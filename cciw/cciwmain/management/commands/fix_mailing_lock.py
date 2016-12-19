@@ -12,6 +12,8 @@ class Command(BaseCommand):
         # Sometimes, the django-mailer 'send_mail.lock' doesn't get deleted,
         # causing mail to queue up.
         lock_file = os.path.expandvars("$HOME/send_mail.lock")
+        if not os.path.exists(lock_file):
+            return
         f_time = os.lstat(lock_file).st_mtime
         c_time = time.time()
 
