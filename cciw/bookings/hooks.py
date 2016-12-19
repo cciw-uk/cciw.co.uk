@@ -19,7 +19,7 @@ def unrecognised_payment(sender=None, **kwargs):
 
 def paypal_payment_received(sender, **kwargs):
     ipn_obj = sender
-    if ipn_obj.receiver_email != settings.PAYPAL_RECEIVER_EMAIL:
+    if ipn_obj.business != settings.PAYPAL_RECEIVER_EMAIL:
         unrecognised_payment(ipn_obj)
         return
 

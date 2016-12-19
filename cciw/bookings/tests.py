@@ -43,7 +43,7 @@ User = get_user_model()
 
 class IpnMock(object):
     payment_status = 'Completed'
-    receiver_email = settings.PAYPAL_RECEIVER_EMAIL
+    business = settings.PAYPAL_RECEIVER_EMAIL
 
 
 # Most mail is sent directly, but some is specifically put on a queue, to ensure
@@ -357,7 +357,7 @@ class CreateIPNMixin(object):
                         ipaddress='127.0.0.1',
                         payment_status='Completed',
                         txn_id='1',
-                        receiver_email=settings.PAYPAL_RECEIVER_EMAIL,
+                        business=settings.PAYPAL_RECEIVER_EMAIL,
                         payment_date=timezone.now(),
                         )
         defaults.update(kwargs)
