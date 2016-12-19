@@ -3,8 +3,6 @@ syntax:glob
 *.pyc
 *\.\#*
 *\#
-settings*priv*.py
-settings_production.py
-settings_staging.py
+config/secrets.json
 TODO.org
 cciw/cciwmain/static/css/camp_colors.less

@@ -2,6 +2,7 @@
 # isort:skip_file
 
 # Settings file
+import json
 import os
 import socket
 import sys
@@ -10,12 +11,21 @@ hostname = socket.gethostname()
 
 basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # ../
 parentdir = os.path.dirname(basedir)
+SECRETS = json.load(open(os.path.join(basedir, 'config', 'secrets.json')))
 
 PROJECT_ROOT = basedir
 HOME_DIR = os.environ['HOME']
 
 DEVBOX = ('webfaction' not in hostname)
 LIVEBOX = not DEVBOX
+if LIVEBOX:
+    PRODUCTION = "webapps/cciw_django/" in p
+    STAGING = "webapps/cciw_staging_django/" in p
+    assert not (PRODUCTION and STAGING)
+else:
+    PRODUCTION = False
+    STAGING = False
+
 
 if LIVEBOX:
     # Don't use /tmp because on shared hosting this could leak to other users.
@@ -26,10 +36,17 @@ else:
     LOG_DIR = os.path.join(parentdir, "logs")
 
 
-if LIVEBOX:
-    from cciw.settings_priv import PRODUCTION, STAGING, GOOGLE_ANALYTICS_ACCOUNT
 
-from cciw.settings_priv import SECRET_KEY
+if LIVEBOX:
+    if PRODUCTION:
+        SECRET_KEY = SECRETS['PRODUCTION_SECRET_KEY']
+    elif STAGING:
+        SECRET_KEY = SECRETS['STAGING_SECRET_KEY']
+else:
+    # We don't want any SECRET_KEY in a file in a VCS, and we also want the
+    # SECRET_KEY to be to be the same as for production so that we can use
+    # downloaded session database if needed.
+    SECRET_KEY = SECRETS['PRODUCTION_SECRET_KEY']
 
 WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
 TESTS_RUNNING = 'test' in sys.argv
@@ -250,10 +267,32 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024
 
 # == DATABASE ==
 
-if DEVBOX:
-    from cciw.settings_dev import DATABASES
+if LIVEBOX:
+    if PRODUCTION:
+        DB_NAME = SECRETS['PRODUCTION_DB_NAME']
+        DB_USER = SECRETS['PRODUCTION_DB_USER']
+        DB_PASSWORD = SECRETS['PRODUCTION_DB_PASSWORD']
+    if STAGING:
+        DB_NAME = SECRETS['STAGING_DB_NAME']
+        DB_USER = SECRETS['STAGING_DB_USER']
+        DB_PASSWORD = SECRETS['STAGING_DB_PASSWORD']
 else:
-    from cciw.settings_priv import DATABASES
+    DB_NAME = 'cciw'
+    DB_USER = 'cciw'
+    DB_PASSWORD = 'foo'  # Need to sync with Vagrantfile
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': 'localhost',
+        'CONN_MAX_AGE': 30,
+        'ATOMIC_REQUESTS': True,
+    }
+}
 
 # == SESSIONS ==
 
@@ -310,12 +349,15 @@ TEMPLATES = [
 # reference to @cciw.co.uk, we patch up outgoing emails in cciw.mail.mailgun to
 # use the sandbox domain.
 
+MAILGUN_API_KEY = SECRETS['MAILGUN_API_KEY']
 if LIVEBOX and PRODUCTION:
     MAILGUN_DOMAIN = "cciw.co.uk"
 else:
-    from cciw.settings_priv import MAILGUN_SANDBOX_DOMAIN
-    MAILGUN_DOMAIN = MAILGUN_SANDBOX_DOMAIN
-from cciw.settings_priv import MAILGUN_API_KEY
+    MAILGUN_DOMAIN = SECRETS['MAILGUN_SANDBOX_DOMAIN']
+
+# This address has to be set up as an authorized recipient for the sandbox
+# account:
+MAILGUN_TEST_RECEIVER = SECRETS['MAILGUN_TEST_RECEIVER']
 
 
 SERVER_EMAIL = "CCIW website <website@cciw.co.uk>"
@@ -347,11 +389,12 @@ if TESTS_RUNNING:
 SECUREDOWNLOAD_SERVE_URL = "/file/"
 SECUREDOWNLOAD_TIMEOUT = 3600
 
-if DEVBOX:
+if LIVEBOX:
+    SECUREDOWNLOAD_SOURCE = "/home/cciw/webapps/cciw_protected_downloads_src"
+    SECUREDOWNLOAD_SERVE_ROOT = "/home/cciw/webapps/cciw_protected_downloads"
+else:
     SECUREDOWNLOAD_SOURCE = os.path.join(parentdir, "secure_downloads_src")
     SECUREDOWNLOAD_SERVE_ROOT = os.path.join(parentdir, "secure_downloads")
-else:
-    from cciw.settings_priv import SECUREDOWNLOAD_SOURCE, SECUREDOWNLOAD_SERVE_ROOT
 
 # == MIDDLEWARE_CLASSES ==
 
@@ -382,11 +425,16 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"
 
 # == MEDIA ==
 
-if DEVBOX:
+if LIVEBOX:
+    # TODO - may need MEDIA_ROOT to be different for STAGING in future
+    MEDIA_ROOT = '/home/cciw/webapps/cciw_usermedia'
+    if PRODUCTION:
+        STATIC_ROOT = '/home/cciw/webapps/cciw_static'
+    elif STAGING:
+        STATIC_ROOT = '/home/cciw/webapps/cciw_staging_static'
+else:
     MEDIA_ROOT = os.path.join(parentdir, 'usermedia')
     STATIC_ROOT = os.path.join(parentdir, 'static')
-else:
-    from cciw.settings_priv import MEDIA_ROOT, STATIC_ROOT
 
 MEDIA_URL = '/usermedia/'
 STATIC_URL = '/static/'
@@ -443,11 +491,37 @@ WIKI_ATTACHMENTS_EXTENSIONS = [
 ]
 
 # Mailchimp
-from cciw.settings_priv import MAILCHIMP_API_KEY, MAILCHIMP_NEWSLETTER_LIST_ID, MAILCHIMP_URL_BASE
+if LIVEBOX and PRODUCTION:
+    MAILCHIMP_API_KEY = SECRETS['PRODUCTION_MAILCHIMP_API_KEY']
+    MAILCHIMP_NEWSLETTER_LIST_ID = SECRETS['PRODUCTION_MAILCHIMP_NEWSLETTER_LIST_ID']
+    MAILCHIMP_URL_BASE = SECRETS['PRODUCTION_MAILCHIMP_URL_BASE']
+else:
+    MAILCHIMP_API_KEY = SECRETS['STAGING_MAILCHIMP_API_KEY']
+    MAILCHIMP_NEWSLETTER_LIST_ID = SECRETS['STAGING_MAILCHIMP_NEWSLETTER_LIST_ID']
+    MAILCHIMP_URL_BASE = SECRETS['STAGING_MAILCHIMP_URL_BASE']
+
 
 # PayPal
-from cciw.settings_priv import PAYPAL_TEST, PAYPAL_RECEIVER_EMAIL
+if LIVEBOX and PRODUCTION:
+    PAYPAL_TEST = False
+    PAYPAL_RECEIVER_EMAIL = SECRETS['PRODUCTION_PAYPAL_RECEIVER_EMAIL']
+else:
+    PAYPAL_TEST = True
+    PAYPAL_RECEIVER_EMAIL = SECRETS['STAGING_PAYPAL_RECEIVER_EMAIL']
+
 PAYPAL_IMAGE = "https://www.paypalobjects.com/en_US/GB/i/btn/btn_buynowCC_LG.gif"
 
 # Raven
-from cciw.settings_priv import RAVEN_CONFIG
+if LIVEBOX:
+    if PRODUCTION:
+        RAVEN_CONFIG = SECRETS['PRODUCTION_RAVEN_CONFIG']
+    elif STAGING:
+        RAVEN_CONFIG = SECRETS['STAGING_RAVEN_CONFIG']
+else:
+    RAVEN_CONFIG = {}
+
+# Google analytics
+if LIVEBOX and PRODUCTION:
+    GOOGLE_ANALYTICS_ACCOUNT = SECRETS['GOOGLE_ANALYTICS_ACCOUNT']
+else:
+    GOOGLE_ANALYTICS_ACCOUNT = ''
