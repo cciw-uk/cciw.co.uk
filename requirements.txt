@@ -66,7 +66,7 @@ python3-memcached==1.51
 pytz==2016.6.1
 PyVirtualDisplay==0.2
 PyYAML==3.12
-raven==5.32.0
+raven==5.23.0
 rcssmin==1.0.6
 requests==2.11.1
 rjsmin==1.0.12
