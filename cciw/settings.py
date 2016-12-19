@@ -228,7 +228,11 @@ LOGGING = {
             'level': 'INFO',
             'handlers': ['file'],
             'propagate': False,
-        }
+        },
+        'paypal' : {
+            'level': 'DEBUG',
+            'handlers': ['file'],
+        },
     },
 }
 
