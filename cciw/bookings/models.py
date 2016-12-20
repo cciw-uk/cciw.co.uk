@@ -1307,10 +1307,8 @@ class PaymentSource(models.Model):
             raise ValueError("No related object for PaymentSource {0}".format(self.id))
 
     def _assert_one_source(self):
-        if not [self.manual_payment_id,
-                self.refund_payment_id,
-                self.account_transfer_payment_id,
-                self.ipn_payment_id].count(None) == 3:
+        attrs = ['{}_id'.format(a) for a in self.MODEL_MAP.values()]
+        if not [getattr(self, a) for a in attrs].count(None) == len(attrs) - 1:
             raise AssertionError("PaymentSource must have exactly one payment FK set")
 
     @classmethod
