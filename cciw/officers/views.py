@@ -95,6 +95,7 @@ def any_passes(*funcs):
 camp_admin_required = user_passes_test_improved(is_camp_admin)
 booking_secretary_required = user_passes_test_improved(is_booking_secretary)
 cciw_secretary_required = user_passes_test_improved(is_cciw_secretary)
+cciw_secretary_or_booking_secretary_required = user_passes_test_improved(any_passes(is_booking_secretary, is_cciw_secretary))
 secretary_or_committee_required = user_passes_test_improved(any_passes(is_booking_secretary, is_cciw_secretary, is_committee_member))
 
 
@@ -1397,7 +1398,7 @@ def booking_ages_stats_download(request, start_year=None, end_year=None, camps=N
     return spreadsheet_response(formatter, filename)
 
 
-@cciw_secretary_required
+@cciw_secretary_or_booking_secretary_required
 def brochure_mailing_list(request, year):
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(addresses_for_mailing_list(int(year), formatter),
