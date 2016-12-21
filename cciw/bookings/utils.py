@@ -174,12 +174,18 @@ def addresses_for_mailing_list(year, spreadsheet):
 
     headers = ['Name', 'Address line 1', 'Address line 2',
                'City', 'County', 'Country', 'Post code',
-               'Email', '# bookings']
+               'Email', 'Church', '# bookings']
     rows = []
     for account, acc_bookings in groupby(bookings, lambda b: b.account):
         acc_bookings = list(acc_bookings)
         if account.address_line1.strip() != "":
             # Account has postal address
+
+            # Use booking data for church. It isn't important to be accurate,
+            # this is just used to adjust mailing lists if a church is known to
+            # already receive enough brochures.
+            churches = [b.church.strip() for b in acc_bookings if b.church.strip()]
+            church = churches[0] if churches else ''
             rows.append([account.name,
                          account.address_line1,
                          account.address_line2,
@@ -188,6 +194,7 @@ def addresses_for_mailing_list(year, spreadsheet):
                          str(account.address_country.name),
                          account.address_post_code,
                          account.email,
+                         church,
                          len(acc_bookings)])
         else:
             # Use bookings for address
@@ -206,6 +213,7 @@ def addresses_for_mailing_list(year, spreadsheet):
                              str(first_booking.address_country.name),
                              first_booking.address_post_code,
                              account.email,
+                             first_booking.church,
                              len(acc_bookings)])
             else:
                 for b in acc_bookings:
@@ -218,6 +226,7 @@ def addresses_for_mailing_list(year, spreadsheet):
                                      str(b.address_country.name),
                                      b.address_post_code,
                                      b.get_contact_email(),
+                                     b.church,
                                      1])
     rows.sort()  # first column (Name) alphabetical
 
