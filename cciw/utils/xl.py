@@ -13,6 +13,7 @@ import xlwt
 
 def add_sheet_with_header_row(wkbk, name, headers, contents):
     """
+    Utility function for adding sheet to xlwt workbook.
     sheet_header is an iterable of strings
     sheet_contents is an iterable of rows, where each row is an interable of strings
     """
@@ -27,6 +28,9 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
 
     wrapped_style = deepcopy(normal_style)
     wrapped_style.alignment.wrap = True
+
+    url_style = deepcopy(normal_style)
+    url_style.font.colour_index = 12  # blue
 
     date_style = deepcopy(normal_style)
     date_style.num_format_str = 'YYYY/MM/DD'
@@ -59,8 +63,19 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
                     style = wrapped_style
                     # Set height to be able to see all lines
                     row_height = max(row_height, normal_style.font.height * (val.count('\n') + 1))
+                if looks_like_url(val):
+                    val = xlwt.Formula('HYPERLINK("{0}"; "{1}")'.format(val, val))
+                    style = url_style
             wksh.write(r + 1, c, val, style=style)
         wksh.rows[r + 1].height = row_height + 100  # fudge for margin, based on OpenOffice
+
+
+def looks_like_url(val):
+    return (isinstance(val, str) and
+            " " not in val and
+            "\n" not in val and
+            (val.startswith("http://") or
+             val.startswith("https://")))
 
 
 def workbook_to_bytes(wkbk):

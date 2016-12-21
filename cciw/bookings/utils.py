@@ -2,8 +2,10 @@ from datetime import timedelta
 from itertools import groupby
 
 from dateutil.relativedelta import relativedelta
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse
 
-from cciw.bookings.models import Booking, Payment, BookingAccount
+from cciw.bookings.models import Booking, BookingAccount, Payment
 from cciw.officers.applications import applications_for_camp
 
 
@@ -174,8 +176,12 @@ def addresses_for_mailing_list(year, spreadsheet):
 
     headers = ['Name', 'Address line 1', 'Address line 2',
                'City', 'County', 'Country', 'Post code',
-               'Email', 'Church', '# bookings']
+               'Email', 'Church', '# bookings', 'URL']
     rows = []
+    domain = get_current_site(None).domain
+
+    link_start = "https://{}".format(domain)
+
     for account, acc_bookings in groupby(bookings, lambda b: b.account):
         acc_bookings = list(acc_bookings)
         if account.address_line1.strip() != "":
@@ -195,7 +201,9 @@ def addresses_for_mailing_list(year, spreadsheet):
                          account.address_post_code,
                          account.email,
                          church,
-                         len(acc_bookings)])
+                         len(acc_bookings),
+                         link_start + reverse('admin:bookings_bookingaccount_change', args=[account.id]),
+                         ])
         else:
             # Use bookings for address
 
@@ -214,7 +222,9 @@ def addresses_for_mailing_list(year, spreadsheet):
                              first_booking.address_post_code,
                              account.email,
                              first_booking.church,
-                             len(acc_bookings)])
+                             len(acc_bookings),
+                             link_start + reverse('admin:bookings_booking_change', args=[first_booking.id]),
+                             ])
             else:
                 for b in acc_bookings:
                     if b.address_line1 != "":
@@ -227,7 +237,9 @@ def addresses_for_mailing_list(year, spreadsheet):
                                      b.address_post_code,
                                      b.get_contact_email(),
                                      b.church,
-                                     1])
+                                     1,
+                                     link_start + reverse('admin:bookings_booking_change', args=[b.id]),
+                                     ])
     rows.sort()  # first column (Name) alphabetical
 
     spreadsheet.add_sheet_with_header_row("Addresses",
