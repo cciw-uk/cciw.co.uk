@@ -167,6 +167,11 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
 
+    'root': {
+        'level': 'WARNING',
+        'handlers': ['sentry'],
+    },
+
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
@@ -221,10 +226,6 @@ LOGGING = {
     },
 
     'loggers': {
-        'root': {
-            'level': 'WARNING',
-            'handlers': ['sentry'],
-        },
         'django.db.backends': {
             'level': 'ERROR',
             'handlers': ['console'],
