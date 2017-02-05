@@ -2,7 +2,7 @@
 import json
 from datetime import date, datetime, timedelta
 from decimal import Decimal
-from unittest import mock
+from unittest import TestCase, mock
 
 import mailer.engine
 import vcr
@@ -14,10 +14,13 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 from django_dynamic_fixture import G
+from hypothesis import strategies as st
+from hypothesis import given, example
+from hypothesis.extra.django import models as djst
 from mailer.models import Message
 from paypal.standard.ipn.models import PayPalIPN
 
-from cciw.bookings.email import send_payment_reminder_emails
+from cciw.bookings.email import EmailVerifyTokenGenerator, send_payment_reminder_emails
 from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
@@ -2692,3 +2695,28 @@ class TestPaymentModels(TestBase):
         PaymentSource.objects.all().delete()
         p = PaymentSource.objects.create(manual_payment=manual)
         self.assertNotEqual(p.id, None)
+
+
+class TestEmailVerifyTokenGenerator(TestCase):
+    @given(djst.emails)
+    def test_decode_inverts_encode(self, email):
+        v = EmailVerifyTokenGenerator()
+        assert v.email_for_token(v.token_for_email(email)) == email
+
+    @given(djst.emails)
+    def test_truncated_returns_none(self, email):
+        v = EmailVerifyTokenGenerator()
+        assert v.email_for_token(v.token_for_email(email)[2:]) is None
+
+    @given(email=st.text())
+    @example(email='abcdefgh')  # b64 encode results in trailing ==
+    def test_tolerate_truncated_trailing_equals(self, email):
+        v = EmailVerifyTokenGenerator()
+
+        # Either some silly people, or some dumb email programs, decide to strip
+        # trailing = from URLs (despite this being a supposedly URL safe
+        # character). Ensure that we tolerate this.
+        def remove_equals(s):
+            return s.rstrip('=')
+
+        assert v.email_for_token(remove_equals(v.token_for_email(email))) == email

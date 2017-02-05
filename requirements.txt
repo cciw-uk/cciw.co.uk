@@ -34,6 +34,7 @@ frozendict==1.0
 furl==0.5.3
 future==0.16.0
 gunicorn==19.6.0
+hypothesis==3.6.1
 ipython==5.1.0
 ipython-genutils==0.1.0
 lockfile==0.12.2
