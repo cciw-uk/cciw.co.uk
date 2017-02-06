@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
 import re
 from datetime import date, datetime, timedelta
 from decimal import Decimal
@@ -17,7 +16,6 @@ from paypal.standard.ipn.models import PayPalIPN
 from cciw.bookings.email import send_booking_expiry_mail
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
-from cciw.cciwmain.utils import Lock
 
 from .signals import places_confirmed
 
@@ -1079,45 +1077,49 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
         ordering = ['-created']
 
 
+@transaction.atomic
 def book_basket_now(bookings):
     """
     Book a basket of bookings, returning True if successful,
     False otherwise.
     """
-    try:
-        lock = Lock(os.path.join(os.environ['HOME'], '.cciw_booking_lock'))
-        lock.acquire()
-        bookings = list(bookings)
-        now = timezone.now()
-        for b in bookings:
-            if len(b.get_booking_problems()[0]) > 0:
-                return False
+    bookings = list(bookings)
 
-        for b in bookings:
-            b.booked_at = now
-            # Early bird discounts are only applied for online bookings, and
-            # this needs to be re-assessed if a booking expires and is later
-            # booked again. Therefore it makes sense to put the logic here
-            # rather than in the Booking model.
-            b.early_bird_discount = b.can_have_early_bird_discount()
-            b.auto_set_amount_due()
-            b.state = BOOKING_BOOKED
-            b.booking_expires = now + timedelta(1)  # 24 hours
-            b.save()
+    now = timezone.now()
+    for b in bookings:
+        if len(b.get_booking_problems()[0]) > 0:
+            return False
 
-        # In some cases we may have enough money to pay for places from money in
-        # account. Since a payment will not be needed or received, we need to
-        # make sure these don't expire.
-        seen_accounts = set()
-        for b in bookings:
-            if b.account_id in seen_accounts:
-                continue
-            b.account.distribute_balance()
-            seen_accounts.add(b.account_id)
+    # Serialize access to this function, to stop more places than available
+    # being booked:
+    years = set([b.camp.year for b in bookings])
+    assert len(years) == 1
+    year_bookings = Booking.objects.for_year(list(years)[0]).select_for_update()
+    list(year_bookings)  # evaluate query to apply lock, don't need the result
 
-        return True
-    finally:
-        lock.release()
+    for b in bookings:
+        b.booked_at = now
+        # Early bird discounts are only applied for online bookings, and
+        # this needs to be re-assessed if a booking expires and is later
+        # booked again. Therefore it makes sense to put the logic here
+        # rather than in the Booking model.
+        b.early_bird_discount = b.can_have_early_bird_discount()
+        b.auto_set_amount_due()
+        b.state = BOOKING_BOOKED
+        b.booking_expires = now + timedelta(1)  # 24 hours
+        b.save()
+
+    # In some cases we may have enough money to pay for places from money in
+    # account. Since a payment will not be needed or received, we need to
+    # make sure these don't expire.
+    seen_accounts = set()
+    for b in bookings:
+        if b.account_id in seen_accounts:
+            continue
+        b.account.distribute_balance()
+        seen_accounts.add(b.account_id)
+
+    return True
 
 
 def get_early_bird_cutoff_date(year):
