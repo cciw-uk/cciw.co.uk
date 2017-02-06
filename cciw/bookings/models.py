@@ -745,11 +745,9 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
     def age_base_date(self):
         return date(self.camp.year, 8, 31)
 
-    @property
     def is_too_young(self):
         return self.age_on_camp() < self.camp.minimum_age
 
-    @property
     def is_too_old(self):
         return self.age_on_camp() > self.camp.maximum_age
 
@@ -763,9 +761,9 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
             reasons.append("Serious illness")
         if self.is_custom_discount:
             reasons.append("Custom discount")
-        if self.is_too_young:
+        if self.is_too_young():
             reasons.append("Too young")
-        if self.is_too_old:
+        if self.is_too_old():
             reasons.append("Too old")
         return reasons
 
@@ -891,11 +889,11 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
         # Check age.
         camper_age = self.age_on_camp()
         age_base = self.age_base_date().strftime("%e %B %Y")
-        if self.is_too_young:
+        if self.is_too_young():
             errors.append("Camper will be %d which is below the minimum age (%d) on %s"
                           % (camper_age, self.camp.minimum_age, age_base))
 
-        if self.is_too_old:
+        if self.is_too_old():
             errors.append("Camper will be %d which is above the maximum age (%d) on %s"
                           % (camper_age, self.camp.maximum_age, age_base))
 
