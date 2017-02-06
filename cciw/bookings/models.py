@@ -757,7 +757,7 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
         reasons = []
         if self.serious_illness:
             reasons.append("Serious illness")
-        if self.is_custom_discount:
+        if self.is_custom_discount():
             reasons.append("Custom discount")
         if self.is_too_young():
             reasons.append("Too young")
@@ -1026,7 +1026,6 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
     def is_user_editable(self):
         return self.state == BOOKING_INFO_COMPLETE
 
-    @property
     def is_custom_discount(self):
         return self.price_type == PRICE_CUSTOM
 
