@@ -803,6 +803,8 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
         relevant_bookings = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
         relevant_bookings_excluding_self = relevant_bookings.exclude(first_name=self.first_name,
                                                                      last_name=self.last_name)
+        relevant_bookings_limited_to_self = relevant_bookings.filter(first_name=self.first_name,
+                                                                     last_name=self.last_name)
 
         # 2nd/3rd child discounts
 
@@ -876,8 +878,7 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
                               "place details and choose an appropriate price type.")
 
         if self.price_type in [PRICE_2ND_CHILD, PRICE_3RD_CHILD]:
-            qs = relevant_bookings.filter(first_name=self.first_name,
-                                          last_name=self.last_name)
+            qs = relevant_bookings_limited_to_self
             qs = qs.filter(price_type=PRICE_2ND_CHILD) | qs.filter(price_type=PRICE_3RD_CHILD)
             if qs.count() > 1:
                 errors.append("If a camper goes on multiple camps, only one place may use a 2nd/3rd child discount.")
