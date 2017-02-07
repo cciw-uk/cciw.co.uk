@@ -463,6 +463,7 @@ class CRBFormLog(models.Model):
     Represents a log of a  CRB form sent to an officer
     """
     officer = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                related_name='crbformlogs',
                                 on_delete=models.CASCADE)
     sent = models.DateTimeField("Date sent")
 

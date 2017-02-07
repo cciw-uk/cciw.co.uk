@@ -43,9 +43,7 @@ class TestExport(ApplicationSetupMixin, TestBase):
         officers = list(c.officers.all())
         first_names = [o.first_name for o in officers]
 
-        # In this test, delete completed applications, so we can test what
-        # happens with no application.
-        Application.objects.all().delete()
+        self.assertEqual(Application.objects.all().count(), 0)
 
         for i, inv in enumerate(c.invitations.all()):
             inv.notes = "Some notes %s" % i
@@ -71,6 +69,7 @@ class TestExport(ApplicationSetupMixin, TestBase):
         Test that the export data view generates an Excel file with all the data
         we expect if there are application forms.
         """
+        self.create_default_applications()
         camp = self.default_camp_1
 
         # Data from setup

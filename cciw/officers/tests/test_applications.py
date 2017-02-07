@@ -7,14 +7,14 @@ from cciw.cciwmain.models import Camp, CampName, Site
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers import applications
 from cciw.officers.models import Application
-from cciw.officers.tests.base import (OFFICER_PASSWORD, OFFICER_USERNAME, ApplicationSetupMixin, CurrentCampsMixin,
+from cciw.officers.tests.base import (OFFICER_PASSWORD, OFFICER_USERNAME, RequireApplicationsMixin, CurrentCampsMixin,
                                       OfficersSetupMixin, RequireQualificationTypesMixin)
 from cciw.utils.tests.base import TestBase
 
 User = get_user_model()
 
 
-class ApplicationModel(ApplicationSetupMixin, TestBase):
+class ApplicationModel(RequireApplicationsMixin, TestBase):
 
     def test_referees(self):
         for appid in [self.application1.id,

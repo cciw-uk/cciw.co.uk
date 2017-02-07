@@ -250,9 +250,7 @@ class ExtraOfficersSetupMixin(OfficersSetupMixin):
 
 class ApplicationSetupMixin(ExtraOfficersSetupMixin):
 
-    def setUp(self):
-        super(ApplicationSetupMixin, self).setUp()
-
+    def create_default_applications(self):
         # Data: Applications 1 to 3 are in year 2000, for camps in summer 2000
         # Application 4 is for 2001
 
@@ -468,6 +466,12 @@ class ApplicationSetupMixin(ExtraOfficersSetupMixin):
                 email=r.email)
 
 
+class RequireApplicationsMixin(ApplicationSetupMixin):
+    def setUp(self):
+        super(RequireApplicationsMixin, self).setUp()
+        self.create_default_applications()
+
+
 class ReferenceHelperMixin(object):
 
     def create_complete_reference(self, referee):
@@ -498,7 +502,7 @@ class CurrentCampsMixin(BasicSetupMixin):
         self.default_camp_2.save()
 
 
-class ReferenceSetupMixin(ReferenceHelperMixin, set_thisyear(2000), ApplicationSetupMixin):
+class ReferenceSetupMixin(ReferenceHelperMixin, set_thisyear(2000), RequireApplicationsMixin):
 
     def setUp(self):
         super(ReferenceSetupMixin, self).setUp()

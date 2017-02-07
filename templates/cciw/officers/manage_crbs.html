@@ -235,7 +235,7 @@
           </td>
           <td>
             {% if not officer.temp.has_valid_crb and officer.temp.has_application_form and officer.temp.crb_check_consent %}
-              <button onclick="CRBFormSent({{ officer.id }});">Click when sent</button>
+              <button id="id_send_{{ officer.id }}" onclick="CRBFormSent({{ officer.id }});">Click when sent</button>
               <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
             {% endif %}
           </td>

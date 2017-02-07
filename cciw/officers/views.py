@@ -22,6 +22,7 @@ from django.template.defaultfilters import wordwrap
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from cciw.auth import (is_booking_secretary, is_camp_admin, is_camp_officer, is_cciw_secretary, is_committee_member,
                        is_wiki_user)
@@ -44,8 +45,8 @@ from .applications import (application_rtf_filename, application_to_rtf, applica
 from .email import (make_ref_form_url, make_ref_form_url_hash, send_crb_consent_problem_email, send_nag_by_officer,
                     send_reference_request_email)
 from .email_utils import formatted_email, send_mail_with_attachments
-from .forms import (AdminReferenceForm, CrbConsentProblemForm, CreateOfficerForm, ReferenceForm,
-                    SendNagByOfficerForm, SendReferenceRequestForm, SetEmailForm, UpdateOfficerForm)
+from .forms import (AdminReferenceForm, CrbConsentProblemForm, CreateOfficerForm, ReferenceForm, SendNagByOfficerForm,
+                    SendReferenceRequestForm, SetEmailForm, UpdateOfficerForm)
 from .models import (Application, CRBApplication, CRBFormLog, Invitation, Referee, Reference, ReferenceAction,
                      empty_reference)
 from .stats import get_camp_officer_stats, get_camp_officer_stats_trend
@@ -1000,6 +1001,7 @@ def officer_stats_trend_download(request, start_year, end_year):
 
 @staff_member_required
 @camp_admin_required
+@ensure_csrf_cookie
 def manage_crbs(request, year=None):
     year = int(year)
     now = timezone.now()
@@ -1023,7 +1025,7 @@ def manage_crbs(request, year=None):
     # We need all the officers, and we need to know which camp(s) they belong
     # to. Even if we have only selected one camp, it might be nice to know if
     # they are on other camps. So we get data for all camps, and filter later.
-    # We also want to be able to filtering by javascript in the frontend.
+    # We also want to be able to do filtering by javascript in the frontend.
     camps_officers = [[i.officer for i in c.invitations.all()] for c in camps]
     all_officers = reduce(operator.or_, map(set, camps_officers))
     all_officers = sorted(all_officers, key=lambda o: (o.first_name, o.last_name))
@@ -1035,13 +1037,13 @@ def manage_crbs(request, year=None):
     all_crb_officer_ids = set(CRBApplication.objects.values_list('officer_id', flat=True))
     # CRB forms sent: set cutoff to a year before now, on the basis that
     # anything more than that will have been lost, and we don't want to load
-    # everything into membery.
+    # everything into memory.
     crb_forms_sent = list(CRBFormLog.objects.filter(sent__gt=now - timedelta(365)).order_by('sent'))
     # Work out, without doing any more queries:
-    #   which camps each officer is on
-    #   if they have an application form
-    #   if they have an up to date CRB
-    #   when the last CRB form was sent to officer
+    # - which camps each officer is on
+    # - if they have an application form
+    # - if they have an up to date CRB
+    # - when the last CRB form was sent to officer
     officer_ids = dict([(camp.id, set([o.id for o in officers]))
                         for camp, officers in zip(camps, camps_officers)])
     officer_apps = dict([(a.officer_id, a) for a in apps])
