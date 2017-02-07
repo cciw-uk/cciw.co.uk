@@ -1,15 +1,17 @@
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.core.urlresolvers import reverse
 
 from cciw.cciwmain.models import Camp, CampName, Site
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers import applications
 from cciw.officers.models import Application
-from cciw.officers.tests.base import (OFFICER_PASSWORD, OFFICER_USERNAME, RequireApplicationsMixin, CurrentCampsMixin,
-                                      OfficersSetupMixin, RequireQualificationTypesMixin)
+from cciw.officers.tests.base import (OFFICER, OFFICER_PASSWORD, OFFICER_USERNAME, CurrentCampsMixin,
+                                      OfficersSetupMixin, RequireApplicationsMixin, RequireQualificationTypesMixin)
 from cciw.utils.tests.base import TestBase
+from cciw.utils.tests.webtest import WebTestBase
 
 User = get_user_model()
 
@@ -94,6 +96,44 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQual
         resp = self.client.post(self.url, {'new': 'Create'})
         self.assertEqual(200, resp.status_code)
         self.assertEqual(list(self.user.applications.all()), [app])
+
+
+class PersonalApplicationView(RequireApplicationsMixin, WebTestBase):
+    def submit(self):
+        super(PersonalApplicationView, self).submit('input[value="Get it"]')
+
+    def test_view_txt(self):
+        self.officer_login(OFFICER)
+        self.get_url('cciw-officers-applications')
+        self.fill({'#application': self.officer1.applications.all()[0].id,
+                   '#format': 'txt'})
+        self.submit()
+        self.assertEqual(self.last_response.content_type, 'text/plain')
+        self.assertIn(b"Joe Winston Bloggs", self.last_response.content)
+
+    def test_view_rtf(self):
+        self.officer_login(OFFICER)
+        self.get_url('cciw-officers-applications')
+        self.fill({'#application': self.officer1.applications.all()[0].id,
+                   '#format': 'rtf'})
+        self.submit()
+        self.assertEqual(self.last_response.content_type, 'text/rtf')
+        self.assertIn(b"\cell Joe Winston Bloggs", self.last_response.content)
+
+    def test_view_email(self):
+        self.officer_login(OFFICER)
+        self.get_url('cciw-officers-applications')
+        self.fill({'#application': self.officer1.applications.filter(date_submitted__year=2001)[0].id,
+                   '#format': 'send'})
+        self.submit()
+        self.assertTextPresent("Email sent")
+
+        m = mail.outbox[0]
+        self.assertIn("Joe Winston Bloggs", m.body)
+        fname, fdata, ftype = m.attachments[0]
+        self.assertEqual(fname, "Application_joebloggs_2001-03-01.rtf")
+        self.assertIn("\cell Joe Winston Bloggs", fdata)
+        self.assertEqual(ftype, "text/rtf")
 
 
 class ApplicationUtils(BasicSetupMixin, TestBase):
