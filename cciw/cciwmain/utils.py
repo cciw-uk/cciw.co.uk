@@ -6,7 +6,6 @@ For CCIW specific utilities see cciw.cciwmain.common
 """
 from datetime import date
 import json
-import fcntl
 
 from django.core.validators import validate_email, ValidationError
 from django.utils.functional import Promise
