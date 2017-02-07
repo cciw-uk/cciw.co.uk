@@ -722,12 +722,12 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
             return amount
 
     def auto_set_amount_due(self):
-        if self.price_type == PRICE_CUSTOM:
-            if self.amount_due is None:
-                self.amount_due = Decimal('0.00')
-            # Otherwise do nothing - we can't auto set for a custom amount
+        amount = self.expected_amount_due()
+        if amount is None and self.amount_due is None:
+            # This happens for PRICE_CUSTOM
+            self.amount_due = Decimal('0.00')
         else:
-            self.amount_due = self.expected_amount_due()
+            self.amount_due = amount
 
     def amount_now_due(self):
         # Amount due, taking into account the fact that only a deposit might be due.
