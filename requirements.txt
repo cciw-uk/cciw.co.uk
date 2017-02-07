@@ -1,5 +1,6 @@
 attrs==16.2.0
 beautifulsoup4==4.5.1
+bleach==1.5.0
 ConcurrentLogHandler==0.9.1
 contextlib2==0.5.4
 coverage==4.2
@@ -18,8 +19,8 @@ django-debug-toolbar==1.5
 django-dynamic-fixture==1.9.0
 django-functest==0.2.0
 django-mailer==1.2.2
-django-mptt==0.8.6
-django-nyt==0.9.9
+django-mptt==0.8.7
+django-nyt==1.0b1
 django-paypal==0.3.6
 django-plainpasswordhasher==0.3
 django-sekizai==0.10.0
@@ -34,15 +35,17 @@ frozendict==1.0
 furl==0.5.3
 future==0.16.0
 gunicorn==19.6.0
+html5lib==0.9999999
 hypothesis==3.6.1
 ipython==5.1.0
 ipython-genutils==0.1.0
 lockfile==0.12.2
 lxml==3.6.4
-Markdown==2.6.7
+Markdown==2.6.8
 mccabe==0.5.2
 nodeenv==1.0.0
 numpy==1.11.1
+olefile==0.44
 orderedmultidict==0.7.6
 pandas==0.18.1
 pandas-highcharts==0.5.2
@@ -51,7 +54,7 @@ path.py==8.2.1
 pep8==1.7.0
 pexpect==4.2.1
 pickleshare==0.7.4
-Pillow==3.3.1
+Pillow==4.0.0
 ply==3.9
 prompt-toolkit==1.0.7
 psutil==4.3.1
@@ -84,7 +87,7 @@ waitress==1.0.0
 wcwidth==0.1.7
 WebOb==1.6.1
 WebTest==2.0.23
-wiki==0.1.2
+wiki==0.2
 wrapt==1.10.8
 xlrd==1.0.0
 xlwt==1.1.2
