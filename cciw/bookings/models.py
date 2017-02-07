@@ -261,25 +261,29 @@ class BookingAccount(migrate_address('address'), models.Model):
 
         if bookings_list is not None:
             total = Decimal('0.00')
-            l = BookingManager.payable(self.bookings, confirmed_only, allow_deposits, today=today,
-                                       from_list=bookings_list)
+            l = self.bookings.payable(confirmed_only=confirmed_only,
+                                      allow_deposits=allow_deposits,
+                                      today=today,
+                                      from_list=bookings_list)
             assert type(l) == list
             for item in l:
                 total += item.amount_due
-
         else:
-            total = self.bookings.payable(confirmed_only, allow_deposits, today=today).aggregate(models.Sum('amount_due'))['amount_due__sum']
+            total = self.bookings.payable(confirmed_only=confirmed_only,
+                                          allow_deposits=allow_deposits,
+                                          today=today).aggregate(models.Sum('amount_due'))['amount_due__sum']
         if total is None:
             total = Decimal('0.00')
 
         if allow_deposits:
             # Need to add in the cost of deposits.
             if bookings_list is not None:
-                extra_bookings = BookingManager.only_deposit_required(self.bookings, confirmed_only,
-                                                                      today=today,
-                                                                      from_list=bookings_list)
+                extra_bookings = self.bookings.only_deposit_required(confirmed_only=confirmed_only,
+                                                                     today=today,
+                                                                     from_list=bookings_list)
             else:
-                extra_bookings = list(self.bookings.only_deposit_required(confirmed_only, today=today))
+                extra_bookings = list(self.bookings.only_deposit_required(confirmed_only=confirmed_only,
+                                                                          today=today))
             # Need to use the deposit price for each.
             if deposit_price_dict is None:
                 deposit_price_dict = Price.get_deposit_prices([b.camp.year for b in extra_bookings])
@@ -465,43 +469,59 @@ class BookingQuerySet(models.QuerySet):
         return self.filter(state=BOOKING_BOOKED,
                            booking_expires__isnull=False)
 
-    def payable(self, confirmed_only, full_amount_only, today=None, from_list=None):
+    def payable(self, confirmed_only=None, allow_deposits=None, today=None, from_list=None):
         """
         Returns bookings for which payment is due.
         If confirmed_only is True, unconfirmed places are excluded.
-        If full_amount_only is True, places which require only the deposit
+        If allow_deposits is True, places which require only the deposit
         at this point in time are excluded.
+
+        If from_list is passed, the logic will use the already fetched
+        list of bookings, instead of creating use a QuerySet.
         """
+        if confirmed_only is None:
+            raise ValueError("confirmed_only must be True or False")
+        if allow_deposits is None:
+            raise ValueError("allow_deposits must be True or False")
+
         # 'Full refund' cancelled bookings do not have payment due, but the
         # others do.
         # Logic duplicated in booking_secretary_reports.
-        if full_amount_only:
+        if allow_deposits:
             if today is None:
                 today = date.today()
             cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
 
-        # Optimization - duplicates the logic below
         if from_list is not None:
+            # This path is an optimization for the case where
+            # we already have a list in memory, in 'from_list'.
+            # The logic is the same as for the QuerySet case below.
             bookings = from_list
-            retval = [b for b in bookings if b.state in [BOOKING_CANCELLED, BOOKING_CANCELLED_HALF_REFUND]]
+            cancelled = [b for b in bookings if b.state in [BOOKING_CANCELLED,
+                                                            BOOKING_CANCELLED_HALF_REFUND]]
             if confirmed_only:
-                retval = retval + [b for b in bookings if b.is_confirmed]
+                retval = cancelled + [b for b in bookings if b.is_confirmed]
             else:
-                retval = retval + [b for b in bookings if b.is_booked]
+                retval = cancelled + [b for b in bookings if b.is_booked]
 
-            if full_amount_only:
+            if allow_deposits:
                 retval = [b for b in retval if not (b.camp.start_date > cutoff)]
 
             return retval
+        else:
+            cancelled = self.filter(state__in=[BOOKING_CANCELLED,
+                                               BOOKING_CANCELLED_HALF_REFUND])
+            retval = cancelled | (self.confirmed() if confirmed_only else self.booked())
 
-        cancelled = self.filter(state__in=[BOOKING_CANCELLED,
-                                           BOOKING_CANCELLED_HALF_REFUND])
-        retval = cancelled | (self.confirmed() if confirmed_only else self.booked())
-        if full_amount_only:
-            retval = retval.exclude(camp__start_date__gt=cutoff)
-        return retval
+            if allow_deposits:
+                retval = retval.exclude(camp__start_date__gt=cutoff)
 
-    def only_deposit_required(self, confirmed_only, today=None, from_list=None):
+            return retval
+
+    def only_deposit_required(self, confirmed_only=None, today=None, from_list=None):
+        if confirmed_only is None:
+            raise ValueError("confirmed_only must be True or False")
+
         if today is None:
             today = date.today()
         cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
@@ -1415,4 +1435,4 @@ def process_all_payments():
         process_one_payment(payment)
 
 
-from .hooks import *  # NOQA isort:skip
+from . import hooks  # NOQA isort:skip

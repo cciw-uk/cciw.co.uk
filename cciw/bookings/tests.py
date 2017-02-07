@@ -15,12 +15,13 @@ from django.db import models
 from django.utils import timezone
 from django_dynamic_fixture import G
 from hypothesis import strategies as st
-from hypothesis import given, example
+from hypothesis import example, given
 from hypothesis.extra.django import models as djst
 from mailer.models import Message
 from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.bookings.email import EmailVerifyTokenGenerator, send_payment_reminder_emails
+from cciw.bookings.hooks import paypal_payment_received
 from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
@@ -29,7 +30,7 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANC
                                   PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
                                   AccountTransferPayment, Booking, BookingAccount, ManualPayment, Payment,
                                   PaymentSource, Price, RefundPayment, book_basket_now, build_paypal_custom_field,
-                                  expire_bookings, paypal_payment_received, process_all_payments)
+                                  expire_bookings, process_all_payments)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
@@ -383,6 +384,15 @@ class CreateIPNMixin(object):
 
 class TestBookingModels(BookingEmailChecksMixin, CreatePlaceModelMixin, TestBase):
 
+    def get_account(self):
+        if BookingAccount.objects.filter(email=self.email).count() == 0:
+            BookingAccount.objects.create(email=self.email)
+
+        if getattr(self, 'use_prefetch_related_for_get_account', False):
+            return BookingAccount.objects.filter(email=self.email).prefetch_related('bookings')[0]
+        else:
+            return BookingAccount.objects.get(email=self.email)
+
     def test_camp_open_for_bookings(self):
         self.assertTrue(self.camp.open_for_bookings(self.today))
         self.assertTrue(self.camp.open_for_bookings(self.camp.start_date))
@@ -405,6 +415,7 @@ class TestBookingModels(BookingEmailChecksMixin, CreatePlaceModelMixin, TestBase
         book_basket_now(acc.bookings.all())
 
         # Place should be booked AND should not expire
+        acc = self.get_account()
         b = acc.bookings.all()[0]
         self.assertEqual(b.state, BOOKING_BOOKED)
         self.assertEqual(b.booking_expires, None)
@@ -418,10 +429,16 @@ class TestBookingModels(BookingEmailChecksMixin, CreatePlaceModelMixin, TestBase
         self.assertEqual(acc.get_balance(allow_deposits=False), Decimal('80.00'))
 
         # Test some model methods:
-        self.assertEqual(len(acc.bookings.only_deposit_required(False)),
+        self.assertEqual(len(acc.bookings.only_deposit_required(confirmed_only=False)),
                          1)
-        self.assertEqual(len(acc.bookings.payable(False, True)),
+        self.assertEqual(len(acc.bookings.payable(confirmed_only=False, allow_deposits=True)),
                          0)
+
+    def test_get_balance_opts(self):
+        # Tests that the other code paths in get_balance/BookingManager.payable
+        # work.
+        self.use_prefetch_related_for_get_account = True
+        self.test_book_with_money_in_account()
 
 
 class TestBookingIndex(BookingBaseMixin, CreatePricesMixin, CreateCampMixin, WebTestBase):
