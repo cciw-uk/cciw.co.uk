@@ -11,7 +11,7 @@ class CciwmainConfig(AppConfig):
         import cciw.cciwmain.hooks  # NOQA
 
         from cciw.cciwmain.models import generate_colors_less
-        if not settings.TESTS_RUNNING:
+        if not settings.TESTS_RUNNING and not settings.CHECK_DEPLOY:
             # Make sure that the file exists, or we will get errors
             # when attempting to access the site
             generate_colors_less(update_existing=False)

@@ -16,18 +16,26 @@ SECRETS = json.load(open(os.path.join(basedir, 'config', 'secrets.json')))
 PROJECT_ROOT = basedir
 HOME_DIR = os.environ['HOME']
 
-DEVBOX = ('webfaction' not in hostname)
-LIVEBOX = not DEVBOX
-if LIVEBOX:
-    PRODUCTION = "webapps/cciw_django/" in basedir
-    STAGING = "webapps/cciw_staging_django/" in basedir
-    assert not (PRODUCTION and STAGING)
-else:
-    PRODUCTION = False
+CHECK_DEPLOY = 'manage.py check --deploy' in ' '.join(sys.argv)
+if CHECK_DEPLOY:
+    LIVEBOX = True
+    DEVBOX = False
+    PRODUCTION = True
     STAGING = False
+else:
+    DEVBOX = ('webfaction' not in hostname)
+    LIVEBOX = not DEVBOX
+
+    if LIVEBOX:
+        PRODUCTION = "webapps/cciw_django/" in basedir
+        STAGING = "webapps/cciw_staging_django/" in basedir
+        assert not (PRODUCTION and STAGING)
+    else:
+        PRODUCTION = False
+        STAGING = False
 
 
-if LIVEBOX:
+if LIVEBOX and not CHECK_DEPLOY:
     # Don't use /tmp because on shared hosting this could leak to other users.
     TMP_DIR = os.path.join(HOME_DIR, "tmp")  # See fabfile
     LOG_DIR = os.path.join(HOME_DIR, "logs", "user")  # See fabfile
