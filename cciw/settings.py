@@ -412,6 +412,7 @@ else:
 
 _MIDDLEWARE_CLASSES = [
     (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
+    (True, 'django.middleware.security.SecurityMiddleware'),
     (True,       "django.middleware.gzip.GZipMiddleware"),
     (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
     (True,       "django.contrib.sessions.middleware.SessionMiddleware"),
