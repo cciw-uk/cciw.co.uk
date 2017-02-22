@@ -5,6 +5,7 @@ ConcurrentLogHandler==0.9.1
 contextlib2==0.5.4
 coverage==4.2
 cssselect==1.0.0
+datedelta==1.2
 decorator==4.0.10
 diff-match-patch==20121119
 Django==1.10.5

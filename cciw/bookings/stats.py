@@ -1,3 +1,5 @@
+import datedelta
+
 import pandas as pd
 from django.db import models
 
@@ -26,7 +28,7 @@ def get_booking_progress_stats(start_year=None, end_year=None, camps=None, overl
         rows2 = [[r[0] if r[0] else r[1], r[2]] for r in rows]  # prefer 'booked_at' to 'created'
         if rows2:
             if overlay_years:
-                dates = [d1.date().replace(year=d1.date().year - d2.year + last_year) for d1, d2 in rows2]
+                dates = [d1.date() + datedelta.datedelta(years=last_year - d2.year) for d1, d2 in rows2]
             else:
                 dates = [d1.date() for d1, d2 in rows2]
             label = labeller(item)
