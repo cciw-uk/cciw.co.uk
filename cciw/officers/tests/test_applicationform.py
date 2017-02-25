@@ -302,7 +302,14 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         # There should be two emails in outbox, one to officer, one to
         # leader.  This assumes that there is a leader for the camp,
         # and it is associated with a User object.
-        self.assertEqual(len(self._get_application_form_emails()), 2)
+        emails = self._get_application_form_emails()
+        self.assertEqual(len(emails), 2)
+
+        # Email should be sent when application is fully saved.
+        for m in emails:
+            for txt in ['My Referee 1', 'First Aid']:
+                self.assertIn(txt, m.body)
+                self.assertIn(txt, m.attachments[0][1])
 
     def test_finish_complete_no_officer_list(self):
         u = User.objects.get(username=OFFICER[0])

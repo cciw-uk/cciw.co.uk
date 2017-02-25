@@ -350,7 +350,6 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
         return self._redirect(request, resp)
 
     def save_model(self, request, obj, form, change):
-        from cciw.officers import email
         super(ApplicationAdmin, self).save_model(request, obj, form, change)
         if obj.finished and obj.officer == request.user:
             # We clear out any unfinished application forms, as they will just
@@ -364,7 +363,12 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
             if obj.date_submitted is not None:
                 old2 = old2 | old.filter(date_submitted__lt=obj.date_submitted)
             old2.delete()
-        email.send_application_emails(request, obj)
+
+    def save_related(self, request, form, formsets, change):
+        from cciw.officers import email
+        retval = super(ApplicationAdmin, self).save_related(request, form, formsets, change)
+        email.send_application_emails(request, form.instance)
+        return retval
 
 
 class InvitationAdmin(admin.ModelAdmin):
