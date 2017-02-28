@@ -132,9 +132,10 @@ p {
 
 #header {
     background-color: @primaryColor;
-    background: url('/static/images/topbanner_1600x1200.jpeg') no-repeat center top -10vw;
+    background-image: url('/static/images/topbanner_1600x1200.jpeg');
+    background-repeat: no-repeat;
+    background-position: center top -10vw;
     background-size: 100% auto;
-
 }
 
 .headerinner {
@@ -1008,7 +1009,10 @@ table {
         background-color: transparent;
     }
     #header {
-        background: url('/static/images/topbanner_1600x1200.jpeg') no-repeat center top;
+        background-color: #738a2c; // hand-picked to match image
+        background-image: url('/static/images/topbanner_1600x1200.jpeg');
+        background-repeat: no-repeat;
+        background-position: center top;
         background-size: 100% auto;
         height: 75vw;  // 1200/1600 - fit whole of topbanner image
         max-height: 60vh;
