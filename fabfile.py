@@ -187,7 +187,7 @@ def _install_deps_local():
 
 def _install_deps(run_command, exists_command, venv_dir):
     # Use -q (quiet) to stop errors in fabric/io.py
-    run_command("pip install --upgrade -q pip")
+    run_command("pip install --upgrade -q pip setuptools")
     # pycrypto has error installing on WebFaction due to this:
     # https://bugs.launchpad.net/pycrypto/+bug/1294670
     # So we need custom TMPDIR
