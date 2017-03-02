@@ -502,6 +502,7 @@ WIKI_ATTACHMENTS_EXTENSIONS = [
     'pdf', 'doc', 'odt', 'docx', 'txt',
     'svg', 'png', 'jpg', 'jpeg',
 ]
+WIKI_CHECK_SLUG_URL_AVAILABLE = False  # it checks it incorrectly for our situation
 
 # Mailchimp
 if LIVEBOX and PRODUCTION:

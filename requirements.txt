@@ -88,7 +88,7 @@ waitress==1.0.0
 wcwidth==0.1.7
 WebOb==1.6.1
 WebTest==2.0.23
-wiki==0.2
+wiki==0.2.1
 wrapt==1.10.8
 xlrd==1.0.0
 xlwt==1.1.2
