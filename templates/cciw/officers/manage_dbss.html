@@ -149,6 +149,10 @@
            // only useful for updating the URL, as other updates happen immediately.
            $('#id_campselector input[type=submit]').attr('disabled', 'disabled').val('Update page address');
        }
+
+       // Run update on page load:
+       updateVisibleRows(getSelectedCamps());
+
    });
   </script>
 
@@ -195,7 +199,6 @@
         <tr id="id_highlightdiv_{{ officer.id }}"
             {% if dbs_info.requires_action %}class="requires_action"{% endif %}
             data-camps="{% for camp in dbs_info.camps %}{{ camp.slug_name }}{% if not forloop.last %},{% endif %}{% endfor %}"
-            {% if not dbs_info.selected %}style="display: none;"{% endif %}
             >
           <td>{{ officer.first_name }} {{ officer.last_name }}</td>
           <td>{% for camp in dbs_info.camps %}

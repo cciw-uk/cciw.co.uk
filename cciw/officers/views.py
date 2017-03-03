@@ -1076,16 +1076,12 @@ def get_officers_with_dbs_info_for_camps(camps, selected_camps):
     retval = []
     for o in all_officers:
         officer_camps = []
-        selected = False
         for c in camps:
             if o.id in officer_ids[c.id]:
                 officer_camps.append(c)
-                if c in selected_camps:
-                    selected = True
         app = officer_apps.get(o.id, None)
         dbs_info = DbsInfo(
             camps=officer_camps,
-            selected=selected,
             has_application_form=app is not None,
             application_id=app.id if app is not None else None,
             has_dbs=o.id in all_dbs_officer_ids,
@@ -1101,7 +1097,6 @@ def get_officers_with_dbs_info_for_camps(camps, selected_camps):
 @attr.s
 class DbsInfo(object):
     camps = attr.ib()
-    selected = attr.ib()
     has_application_form = attr.ib()
     application_id = attr.ib()
     has_dbs = attr.ib()
