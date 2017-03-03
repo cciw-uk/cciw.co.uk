@@ -107,7 +107,7 @@
         <h2>Application form/references track record</h2>
 
         <p>A number of officers need attention regarding their <b>recent</b> track record with
-          application forms, references or CRB/DBS. (If they didn't actually come on the camps
+          application forms, references or DBS. (If they didn't actually come on the camps
           listed, it will help to remove them from the officer lists for those camps).
         </p>
         <table>
@@ -117,7 +117,7 @@
             <th class="rightbreak">Last good year</th>
             <th>Missing references</th>
             <th class="rightbreak">Last good year</th>
-            <th>Missing CRB/DBS</th>
+            <th>Missing DBS</th>
             <th class="rightbreak">Last good year</th>
             <th>History</th>
           </tr>
@@ -149,16 +149,16 @@
                   {% endif %}
                 </td>
                 <td>
-                  {% for camp in officer_data.missing_crbs %}
+                  {% for camp in officer_data.missing_dbss %}
                     {{ camp.slug_name_with_year }}
-                    (<a target="_blank" href="{% url 'cciw-officers-manage_crbs' year=camp.year %}?camp={{ camp.slug_name }}">CRBs</a>,
+                    (<a target="_blank" href="{% url 'cciw-officers-manage_dbss' year=camp.year %}?camp={{ camp.slug_name }}">DBSs</a>,
                     <a target="_blank" href="{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}">officer list</a>)
                     <br/>
                   {% endfor %}
                 </td>
                 <td class="rightbreak">
-                  {% if officer_data.missing_crbs %}
-                    {{ officer_data.last_good_crbs_year|default:"Never" }}
+                  {% if officer_data.missing_dbss %}
+                    {{ officer_data.last_good_dbss_year|default:"Never" }}
                   {% endif %}
                 </td>
                 <td>

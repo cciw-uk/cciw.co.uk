@@ -109,9 +109,9 @@ class SendNagByOfficerForm(SendMessageForm):
         return 'cciw/officers/nag_by_officer_email.txt'
 
 
-class CrbConsentProblemForm(SendMessageForm):
+class DbsConsentProblemForm(SendMessageForm):
     def get_message_template(self):
-        return 'cciw/officers/crb_consent_problem_email.txt'
+        return 'cciw/officers/dbs_consent_problem_email.txt'
 
 
 class ReferenceForm(StripStringsMixin, forms.ModelForm):

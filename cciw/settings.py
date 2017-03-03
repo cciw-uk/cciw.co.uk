@@ -476,7 +476,7 @@ BOOKINGFORMDIR = "downloads"
 WEBMASTER_EMAIL = "webmaster@cciw.co.uk"
 LIST_MAILBOX_NAME = "camplists"
 ESV_KEY = 'IP'
-CRB_VALID_FOR = 365 * 3  # We consider a CRB valid for 3 years
+DBS_VALID_FOR = 365 * 3  # We consider a DBS check valid for 3 years
 
 # Referenced from style.less
 COLORS_LESS_DIR = "cciw/cciwmain/static/"

@@ -100,10 +100,10 @@ class Application(models.Model):
         """which has been reported to and investigated by Social """
         """Services and /or the Police?""")
 
-    crb_number = models.CharField("DBS number",
+    dbs_number = models.CharField("DBS number",
                                   max_length=128, default="", blank=True,
                                   help_text="Current enhanced DBS number with update service")
-    crb_check_consent = ExplicitBooleanField(
+    dbs_check_consent = ExplicitBooleanField(
         """Do you consent to the obtaining of a Disclosure and Barring """
         """Service check on yourself? """)
 
@@ -160,8 +160,8 @@ class Application(models.Model):
     def clean(self):
         super(Application, self).clean()
         if self.finished:
-            if self.crb_number.strip() == "" and self.crb_check_consent is None:
-                raise ValidationError({'crb_check_consent':
+            if self.dbs_number.strip() == "" and self.dbs_check_consent is None:
+                raise ValidationError({'dbs_check_consent':
                                        "If you do not provide a DBS number, you "
                                        "must answer this question."})
 
@@ -408,9 +408,9 @@ class Invitation(models.Model):
 
 # CRBs/DBSs - Criminal Records Bureau/Disclosure and Barring Service
 #
-# NB for historical reasons, internal code uses 'CRB' in all model and variable
-# names. Most user facing text has been changed to 'DBS' since that is the
-# services new name.
+# Related models and fields in the past were named 'CRB', and now renamed to
+# 'DBS' for consistency with new DBS features. Older data was technically a CRB
+# not DBS.
 
 class DBSCheckManager(models.Manager):
     use_for_related_fields = True
@@ -420,15 +420,15 @@ class DBSCheckManager(models.Manager):
 
     def get_for_camp(self, camp, include_late=False):
         """
-        Returns the CRBs that might be valid for a camp (ignoring the camp
+        Returns the DBSs that might be valid for a camp (ignoring the camp
         officer list)
         """
         # This logic is duplicated in cciw.officers.views.stats.
 
-        # We include CRB applications that are after the camp date, for the sake
-        # of the 'manage_crbs' function which might be used even after the camp
+        # We include DBS applications that are after the camp date, for the sake
+        # of the 'manage_dbss' function which might be used even after the camp
         # has run.
-        qs = self.get_queryset().filter(completed__gte=camp.start_date - timedelta(settings.CRB_VALID_FOR))
+        qs = self.get_queryset().filter(completed__gte=camp.start_date - timedelta(settings.DBS_VALID_FOR))
         if not include_late:
             qs = qs.filter(completed__lte=camp.start_date)
         return qs
@@ -446,8 +446,8 @@ class DBSCheck(models.Model):
 
     officer = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 on_delete=models.CASCADE,
-                                related_name='crb_applications')
-    crb_number = models.CharField("Disclosure number", max_length=20)
+                                related_name='dbs_applications')
+    dbs_number = models.CharField("Disclosure number", max_length=20)
     completed = models.DateField("Date of issue")
     requested_by = models.CharField(max_length=20, choices=REQUESTED_BY_CHOICES, default=REQUESTED_BY_UKNOWN)
     other_organisation = models.CharField(max_length=255, blank=True)
@@ -456,16 +456,16 @@ class DBSCheck(models.Model):
     objects = DBSCheckManager()
 
     def __str__(self):
-        return "CRB application for %s %s, %s" % (self.officer.first_name,
+        return "DBS application for %s %s, %s" % (self.officer.first_name,
                                                   self.officer.last_name,
                                                   self.completed.strftime("%Y-%m-%d"))
 
     class Meta:
-        verbose_name = "CRB/DBS Disclosure"
-        verbose_name_plural = "CRB/DBS Disclosures"
+        verbose_name = "DBS/CRB Disclosure"
+        verbose_name_plural = "DBS/CRB Disclosures"
 
     def could_be_for_camp(self, camp):
-        return (self.completed >= camp.start_date - timedelta(days=settings.CRB_VALID_FOR) and
+        return (self.completed >= camp.start_date - timedelta(days=settings.DBS_VALID_FOR) and
                 self.completed <= camp.start_date)
 
 
@@ -478,23 +478,23 @@ class DBSFormLogManager(models.Manager):
 
 class DBSFormLog(models.Model):
     """
-    Represents a log of a  CRB form sent to an officer
+    Represents a log of a DBS form sent to an officer
     """
     officer = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                related_name='crbformlogs',
+                                related_name='dbsformlogs',
                                 on_delete=models.CASCADE)
     sent = models.DateTimeField("Date sent")
 
     objects = DBSFormLogManager()
 
     def __str__(self):
-        return "Log of CRB/DBS form sent to %s %s on %s" % (self.officer.first_name,
-                                                            self.officer.last_name,
-                                                            self.sent.strftime("%Y-%m-%d"))
+        return "Log of DBS form sent to %s %s on %s" % (self.officer.first_name,
+                                                        self.officer.last_name,
+                                                        self.sent.strftime("%Y-%m-%d"))
 
     class Meta:
-        verbose_name = "CRB/DBS form log"
-        verbose_name_plural = "CRB/DBS form logs"
+        verbose_name = "DBS form log"
+        verbose_name_plural = "DBS form logs"
 
 
 # This is monkey patched on User in apps.py as a cached property, so it is best

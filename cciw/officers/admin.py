@@ -250,7 +250,7 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
                 we will need to discuss this with you'''}
          ),
         ('DBS checks',
-            {'fields': ['crb_number', 'crb_check_consent'],
+            {'fields': ['dbs_number', 'dbs_check_consent'],
              'classes': ['wide'],
              'description': mark_safe("""
 <h3>Important information, please read:</h3>
@@ -455,9 +455,9 @@ class DBSCheckAdmin(admin.ModelAdmin):
     form = DBSCheckModelForm
 
     search_fields = ('officer__first_name', 'officer__last_name')
-    list_display = ['first_name', 'last_name', 'crb_number', 'completed',
+    list_display = ['first_name', 'last_name', 'dbs_number', 'completed',
                     'requested_by', 'registered_with_dbs_update']
-    list_display_links = ('first_name', 'last_name', 'crb_number')
+    list_display_links = ('first_name', 'last_name', 'dbs_number')
     list_filter = ['requested_by', 'registered_with_dbs_update']
     ordering = ('-completed',)
     date_hierarchy = 'completed'

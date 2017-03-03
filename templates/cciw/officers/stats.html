@@ -14,7 +14,7 @@
              style="width:600px;height:300px;"
              data-chart="{{ chart }}"
              data-url-officer-list="{% url "cciw-officers-officer_list" year=camp.year slug=camp.slug_name %}"
-             data-url-manage-crbs="{% url "cciw-officers-manage_crbs" year=year %}?camp={{ camp.slug_name }}"
+             data-url-manage-dbss="{% url "cciw-officers-manage_dbss" year=year %}?camp={{ camp.slug_name }}"
              data-url-manage-applications="{% url "cciw-officers-manage_applications" year=camp.year slug=camp.slug_name %}"
              data-url-manage-references="{% url "cciw-officers-manage_references" year=camp.year slug=camp.slug_name %}"
              data-officer-stats-chart-placeholder="true"

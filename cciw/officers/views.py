@@ -43,10 +43,10 @@ from securedownload.views import access_folder_securely
 from . import create
 from .applications import (application_rtf_filename, application_to_rtf, application_to_text, application_txt_filename,
                            applications_for_camp, camps_for_application, thisyears_applications)
-from .email import (make_ref_form_url, make_ref_form_url_hash, send_crb_consent_problem_email, send_nag_by_officer,
+from .email import (make_ref_form_url, make_ref_form_url_hash, send_dbs_consent_problem_email, send_nag_by_officer,
                     send_reference_request_email)
 from .email_utils import formatted_email, send_mail_with_attachments
-from .forms import (AdminReferenceForm, CrbConsentProblemForm, CreateOfficerForm, ReferenceForm, SendNagByOfficerForm,
+from .forms import (AdminReferenceForm, DbsConsentProblemForm, CreateOfficerForm, ReferenceForm, SendNagByOfficerForm,
                     SendReferenceRequestForm, SetEmailForm, UpdateOfficerForm)
 from .models import (Application, DBSCheck, DBSFormLog, Invitation, Referee, Reference, ReferenceAction,
                      empty_reference)
@@ -69,7 +69,7 @@ def _copy_application(application):
     new_obj.court_declaration = None
     new_obj.concern_declaration = None
     new_obj.allegation_declaration = None
-    new_obj.crb_check_consent = None
+    new_obj.dbs_check_consent = None
     new_obj.finished = False
     new_obj.date_submitted = None
     new_obj.save()
@@ -1003,7 +1003,7 @@ def officer_stats_trend_download(request, start_year, end_year):
 @staff_member_required
 @camp_admin_required
 @ensure_csrf_cookie
-def manage_crbs(request, year=None):
+def manage_dbss(request, year=None):
     year = int(year)
     # We need a lot of information. Try to get it in a few up-front queries
     camps = list(Camp.objects.filter(year=year).order_by('camp_name__slug'))
@@ -1024,19 +1024,19 @@ def manage_crbs(request, year=None):
         # Assume all, because having none is never useful
         selected_camps = set(camps)
 
-    officers_and_crb_info = get_officers_with_crb_info_for_camps(camps, selected_camps)
+    officers_and_dbs_info = get_officers_with_dbs_info_for_camps(camps, selected_camps)
 
-    c = {'officers_and_crb_info': officers_and_crb_info,
+    c = {'officers_and_dbs_info': officers_and_dbs_info,
          'camps': camps,
          'selected_camps': selected_camps,
          'year': year}
-    return render(request, 'cciw/officers/manage_crbs.html', c)
+    return render(request, 'cciw/officers/manage_dbss.html', c)
 
 
-def get_officers_with_crb_info_for_camps(camps, selected_camps):
+def get_officers_with_dbs_info_for_camps(camps, selected_camps):
     """
-    Get needed CRB officer info for the given set of camps,
-    return a list of two tuples, [(officer, crb_info)]
+    Get needed DBS officer info for the given set of camps,
+    return a list of two tuples, [(officer, dbs_info)]
     """
     # Some of this logic could be put onto specific models. However, we only
     # ever need this info in bulk for specific views, and efficient data access
@@ -1052,26 +1052,26 @@ def get_officers_with_crb_info_for_camps(camps, selected_camps):
     all_officers = reduce(operator.or_, map(set, camps_officers))
     all_officers = sorted(all_officers, key=lambda o: (o.first_name, o.last_name))
     apps = list(reduce(operator.or_, map(applications_for_camp, camps)))
-    valid_crb_officer_ids = set(reduce(operator.or_,
+    valid_dbs_officer_ids = set(reduce(operator.or_,
                                        [DBSCheck.objects.get_for_camp(c, include_late=True)
                                         for c in camps])
                                 .values_list('officer_id', flat=True))
-    all_crb_officer_ids = set(DBSCheck.objects.values_list('officer_id', flat=True))
-    # CRB forms sent: set cutoff to a year before now, on the basis that
+    all_dbs_officer_ids = set(DBSCheck.objects.values_list('officer_id', flat=True))
+    # DBS forms sent: set cutoff to a year before now, on the basis that
     # anything more than that will have been lost, and we don't want to load
     # everything into memory.
-    crb_forms_sent = list(DBSFormLog.objects.filter(sent__gt=now - timedelta(365)).order_by('sent'))
+    dbs_forms_sent = list(DBSFormLog.objects.filter(sent__gt=now - timedelta(365)).order_by('sent'))
     # Work out, without doing any more queries:
     # - which camps each officer is on
     # - if they have an application form
-    # - if they have an up to date CRB
-    # - when the last CRB form was sent to officer
+    # - if they have an up to date DBS
+    # - when the last DBS form was sent to officer
     officer_ids = dict([(camp.id, set([o.id for o in officers]))
                         for camp, officers in zip(camps, camps_officers)])
     officer_apps = dict([(a.officer_id, a) for a in apps])
     # NB: order_by('sent') above means that requests sent later will overwrite
     # those sent earlier in the following dictionary
-    crb_forms_sent_for_officers = dict([(f.officer_id, f.sent) for f in crb_forms_sent])
+    dbs_forms_sent_for_officers = dict([(f.officer_id, f.sent) for f in dbs_forms_sent])
 
     retval = []
     for o in all_officers:
@@ -1083,63 +1083,63 @@ def get_officers_with_crb_info_for_camps(camps, selected_camps):
                 if c in selected_camps:
                     selected = True
         app = officer_apps.get(o.id, None)
-        crb_info = CrbInfo(
+        dbs_info = DbsInfo(
             camps=officer_camps,
             selected=selected,
             has_application_form=app is not None,
             application_id=app.id if app is not None else None,
-            has_crb=o.id in all_crb_officer_ids,
-            has_valid_crb=o.id in valid_crb_officer_ids,
-            last_crb_form_sent=crb_forms_sent_for_officers.get(o.id, None),
+            has_dbs=o.id in all_dbs_officer_ids,
+            has_valid_dbs=o.id in valid_dbs_officer_ids,
+            last_dbs_form_sent=dbs_forms_sent_for_officers.get(o.id, None),
             address=app.one_line_address if app is not None else "",
-            crb_check_consent=app.crb_check_consent if app is not None else False,
+            dbs_check_consent=app.dbs_check_consent if app is not None else False,
         )
-        retval.append((o, crb_info))
+        retval.append((o, dbs_info))
     return retval
 
 
 @attr.s
-class CrbInfo(object):
+class DbsInfo(object):
     camps = attr.ib()
     selected = attr.ib()
     has_application_form = attr.ib()
     application_id = attr.ib()
-    has_crb = attr.ib()
-    has_valid_crb = attr.ib()
-    last_crb_form_sent = attr.ib()
+    has_dbs = attr.ib()
+    has_valid_dbs = attr.ib()
+    last_dbs_form_sent = attr.ib()
     address = attr.ib()
-    crb_check_consent = attr.ib()
+    dbs_check_consent = attr.ib()
 
     @property
     def requires_action(self):
-        return not self.has_valid_crb and self.has_application_form and self.last_crb_form_sent is None
+        return not self.has_valid_dbs and self.has_application_form and self.last_dbs_form_sent is None
 
 
 @staff_member_required
 @camp_admin_required
 @json_response
-def mark_crb_sent(request):
+def mark_dbs_sent(request):
     officer_id = int(request.POST['officer_id'])
     officer = User.objects.get(id=officer_id)
     c = DBSFormLog.objects.create(officer=officer,
                                   sent=timezone.now())
     return {'status': 'success',
-            'crbFormLogId': str(c.id)
+            'dbsFormLogId': str(c.id)
             }
 
 
 @staff_member_required
 @camp_admin_required
 @json_response
-def undo_mark_crb_sent(request):
-    crbformlog_id = int(request.POST['crbformlog_id'])
-    DBSFormLog.objects.filter(id=crbformlog_id).delete()
+def undo_mark_dbs_sent(request):
+    dbsformlog_id = int(request.POST['dbsformlog_id'])
+    DBSFormLog.objects.filter(id=dbsformlog_id).delete()
     return {'status': 'success'}
 
 
 @staff_member_required
 @camp_admin_required
-def crb_consent_problem(request):
+def dbs_consent_problem(request):
     try:
         app_id = int(request.GET.get('application_id'))
     except (ValueError, TypeError):
@@ -1156,21 +1156,21 @@ def crb_consent_problem(request):
 
     if request.method == 'POST':
         if 'send' in request.POST:
-            messageform = CrbConsentProblemForm(request.POST, message_info=messageform_info)
+            messageform = DbsConsentProblemForm(request.POST, message_info=messageform_info)
             # It's impossible for the form to be invalid, so assume valid
             messageform.is_valid()
-            send_crb_consent_problem_email(wordwrap(messageform.cleaned_data['message'], 70), officer, camps)
+            send_dbs_consent_problem_email(wordwrap(messageform.cleaned_data['message'], 70), officer, camps)
             return close_window_response()
         else:
             # cancel
             return close_window_response()
 
-    messageform = CrbConsentProblemForm(message_info=messageform_info)
+    messageform = DbsConsentProblemForm(message_info=messageform_info)
 
     c['messageform'] = messageform
     c['officer'] = officer
     c['is_popup'] = True
-    return render(request, 'cciw/officers/crb_consent_problem.html', c)
+    return render(request, 'cciw/officers/dbs_consent_problem.html', c)
 
 
 @staff_member_required

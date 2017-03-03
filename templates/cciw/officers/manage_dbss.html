@@ -3,18 +3,18 @@
 {% block title %}Manage DBSs {{ year }} | CCIW Officers{% endblock %}
 {% block content %}
   <script type="text/javascript">
-   function CRBFormSent(officerId) {
+   function DBSFormSent(officerId) {
        jQuery.ajax({
            type: "POST",
-           url: "{% url 'cciw-officers-mark_crb_sent' %}",
+           url: "{% url 'cciw-officers-mark_dbs_sent' %}",
            data: "officer_id=" + officerId.toString(),
            dataType: 'json',
            success: function(data) {
-               // We need undo information, and we need to update the 'CRB form
+               // We need undo information, and we need to update the 'DBS form
                // sent' column. We store undo information in a stack, on the undo
                // button itself.
                var btn = jQuery('#id_undo_' + officerId.toString());
-               var lastSentCell = jQuery('#id_last_crb_form_sent_' + officerId.toString());
+               var lastSentCell = jQuery('#id_last_dbs_form_sent_' + officerId.toString());
                var highlightDiv = jQuery('#id_highlightdiv_' + officerId.toString());
                if (btn.data('undoIdList') == null) {
                    btn.data('undoIdList', new Array);
@@ -24,7 +24,7 @@
                }
                var undoIdList = btn.data('undoIdList');
                var undoLastSentList = btn.data('undoLastSentList');
-               undoIdList.push(data.crbFormLogId);
+               undoIdList.push(data.dbsFormLogId);
                undoLastSentList.push(lastSentCell.html());
                lastSentCell.html('Just now');
                highlightDiv.removeClass("requires_action");
@@ -35,8 +35,8 @@
                    // Delete server side
                    jQuery.ajax({
                        type: "POST",
-                       url: "{% url 'cciw-officers-undo_mark_crb_sent' %}",
-                       data: "crbformlog_id=" + undoIdList.pop().toString(),
+                       url: "{% url 'cciw-officers-undo_mark_dbs_sent' %}",
+                       data: "dbsformlog_id=" + undoIdList.pop().toString(),
                        dataType: 'json'
                    });
                    // Fix up cell client side
@@ -55,8 +55,8 @@
        });
    }
 
-   function alertLeadersCrbConsentCheck(applicationId) {
-       window.open("{% url 'cciw-officers-crb_consent_problem' %}?application_id=" + applicationId.toString(),
+   function alertLeadersDbsConsentCheck(applicationId) {
+       window.open("{% url 'cciw-officers-dbs_consent_problem' %}?application_id=" + applicationId.toString(),
                    '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
 
    }
@@ -191,42 +191,42 @@
       </tr>
     </thead>
     <tbody>
-      {% for officer, crb_info in officers_and_crb_info %}
+      {% for officer, dbs_info in officers_and_dbs_info %}
         <tr id="id_highlightdiv_{{ officer.id }}"
-            {% if crb_info.requires_action %}class="requires_action"{% endif %}
-            data-camps="{% for camp in crb_info.camps %}{{ camp.slug_name }}{% if not forloop.last %},{% endif %}{% endfor %}"
-            {% if not crb_info.selected %}style="display: none;"{% endif %}
+            {% if dbs_info.requires_action %}class="requires_action"{% endif %}
+            data-camps="{% for camp in dbs_info.camps %}{{ camp.slug_name }}{% if not forloop.last %},{% endif %}{% endfor %}"
+            {% if not dbs_info.selected %}style="display: none;"{% endif %}
             >
           <td>{{ officer.first_name }} {{ officer.last_name }}</td>
-          <td>{% for camp in crb_info.camps %}
+          <td>{% for camp in dbs_info.camps %}
             <a href="{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}" target="_blank">{{ camp.slug_name }}</a>{% if not forloop.last %}, {% endif %}
           {% endfor %}
           </td>
-          <td>{% if crb_info.has_application_form %}<img src="{% static "admin/img/icon-yes.svg" %}">
-            <a href="{% url 'admin:officers_application_change' crb_info.application_id %}" target="_blank">View/edit</a>{% endif %}</td>
-          <td>{% if not crb_info.has_crb %}<img src="{% static "admin/img/icon-no.svg" %}"> Never
-          {% else %}{% if crb_info.has_valid_crb %}<img src="{% static "admin/img/icon-yes.svg" %}"> Recent
+          <td>{% if dbs_info.has_application_form %}<img src="{% static "admin/img/icon-yes.svg" %}">
+            <a href="{% url 'admin:officers_application_change' dbs_info.application_id %}" target="_blank">View/edit</a>{% endif %}</td>
+          <td>{% if not dbs_info.has_dbs %}<img src="{% static "admin/img/icon-no.svg" %}"> Never
+          {% else %}{% if dbs_info.has_valid_dbs %}<img src="{% static "admin/img/icon-yes.svg" %}"> Recent
           {% else %}<img src="{% static "admin/img/icon-alert.svg" %}"> Out of date
           {% endif %}
           {% endif %}</td>
-          <td id="id_last_crb_form_sent_{{ officer.id }}">
-            {% if crb_info.has_valid_crb %}
+          <td id="id_last_dbs_form_sent_{{ officer.id }}">
+            {% if dbs_info.has_valid_dbs %}
               n/a
             {% else %}
-              {% if crb_info.last_crb_form_sent %}
-                {{ crb_info.last_crb_form_sent|timesince }} ago
+              {% if dbs_info.last_dbs_form_sent %}
+                {{ dbs_info.last_dbs_form_sent|timesince }} ago
               {% endif %}
             {% endif %}
           </td>
           <td>
-            {% if not crb_info.has_valid_crb %}
-              {% if crb_info.has_application_form %}
-                {% if crb_info.crb_check_consent %}
+            {% if not dbs_info.has_valid_dbs %}
+              {% if dbs_info.has_application_form %}
+                {% if dbs_info.dbs_check_consent %}
                   <a href="javascript:void(0)" onclick="$('#id_address_{{ officer.id }}').toggle();">Show address</a>
-                  <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ crb_info.address }}</span>
+                  <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ dbs_info.address }}</span>
                 {% else %}
                   <b>Officer does not<br/> consent to DBS check.<br/></b>
-                  <button onclick="alertLeadersCrbConsentCheck({{ crb_info.application_id }})">Alert leaders</button>
+                  <button onclick="alertLeadersDbsConsentCheck({{ dbs_info.application_id }})">Alert leaders</button>
                 {% endif %}
               {% else %}
                 Needs application form
@@ -234,8 +234,8 @@
             {% endif %}
           </td>
           <td>
-            {% if not crb_info.has_valid_crb and crb_info.has_application_form and crb_info.crb_check_consent %}
-              <button id="id_send_{{ officer.id }}" onclick="CRBFormSent({{ officer.id }});">Click when sent</button>
+            {% if not dbs_info.has_valid_dbs and dbs_info.has_application_form and dbs_info.dbs_check_consent %}
+              <button id="id_send_{{ officer.id }}" onclick="DBSFormSent({{ officer.id }});">Click when sent</button>
               <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
             {% endif %}
           </td>

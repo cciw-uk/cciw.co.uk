@@ -114,9 +114,9 @@ class TestSlackers(BasicSetupMixin, ReferenceHelperMixin, TestBase):
         self.create_complete_reference(app.referees[0])
         self.create_complete_reference(app.referees[1])
 
-        # Officer 1 got a CRB done, but officer 2 did not
-        officer1.crb_applications.create(
-            crb_number="123456",
+        # Officer 1 got a DBS done, but officer 2 did not
+        officer1.dbs_applications.create(
+            dbs_number="123456",
             completed=camp1.start_date - timedelta(days=5),
         )
 
@@ -127,10 +127,10 @@ class TestSlackers(BasicSetupMixin, ReferenceHelperMixin, TestBase):
             [{'officer': officer2,
               'missing_application_forms': [camp1],
               'missing_references': [camp1],
-              'missing_crbs': [camp1],
+              'missing_dbss': [camp1],
               'last_good_apps_year': None,
               'last_good_refs_year': None,
-              'last_good_crbs_year': None,
+              'last_good_dbss_year': None,
               }])
 
 

@@ -36,7 +36,7 @@ def user_in_groups(user, groups):
 def is_camp_admin(user):
     """
     Returns True if the user is an admin for any camp, or has rights
-    for editing camp/officer/reference/CRB information
+    for editing camp/officer/reference/DBS information
     """
     if not active_staff(user):
         return False

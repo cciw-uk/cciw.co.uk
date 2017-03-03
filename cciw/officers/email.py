@@ -252,14 +252,14 @@ def send_nag_by_officer(message, officer, referee, sending_officer):
                  headers={'Reply-To': sending_officer.email}).send()
 
 
-def send_crb_consent_problem_email(message, officer, camps):
+def send_dbs_consent_problem_email(message, officer, camps):
     # If more than one camp involved, we deliberately put all camp leaders
     # together on a single email, so that they can see that more than one camp
     # is involved
     emails = []
     for c in camps:
         emails.extend(admin_emails_for_camp(c))
-    send_mail("CRB consent problem for %s %s" % (officer.first_name, officer.last_name),
+    send_mail("DBS consent problem for %s %s" % (officer.first_name, officer.last_name),
               message,
               settings.DEFAULT_FROM_EMAIL,
               emails,

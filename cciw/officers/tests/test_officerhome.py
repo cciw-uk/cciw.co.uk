@@ -40,5 +40,5 @@ class OfficerHomePage(OfficersSetupMixin, CurrentCampsMixin, WebTestBase):
         self.get_url('cciw-officers-index')
         self.assertCode(200)
         self.assertTextPresent("Manage DBSs")
-        self.follow_link('a[href="{0}"]'.format(reverse('cciw-officers-manage_crbs',
+        self.follow_link('a[href="{0}"]'.format(reverse('cciw-officers-manage_dbss',
                                                         args=(get_thisyear(),))))

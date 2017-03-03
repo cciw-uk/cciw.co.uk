@@ -32,23 +32,23 @@ def get_camp_officer_stats(camp):
                              date_created__lte=camp.start_date)
                      .order_by('date_created')
                      .values_list('date_created', flat=True))
-    all_crb_info = list(DBSCheck.objects
+    all_dbs_info = list(DBSCheck.objects
                         .filter(officer__in=officer_ids,
                                 completed__lte=camp.start_date)
                         .order_by('completed')
                         .values_list('completed', 'officer_id'))
-    # There can be multiple CRBs for each officer. For 'all CRBs' and 'valid
-    # CRBs', we only care about the first.
-    any_crb_dates = get_first(all_crb_info)
-    valid_crb_dates = get_first([(d, o) for (d, o) in all_crb_info
-                                 if d >= camp.start_date - timedelta(days=settings.CRB_VALID_FOR)])
+    # There can be multiple DBSs for each officer. For 'all DBSs' and 'valid
+    # DBSs', we only care about the first.
+    any_dbs_dates = get_first(all_dbs_info)
+    valid_dbs_dates = get_first([(d, o) for (d, o) in all_dbs_info
+                                 if d >= camp.start_date - timedelta(days=settings.DBS_VALID_FOR)])
 
     dr = pd.date_range(start=graph_start_date,
                        end=graph_end_date)
 
     def trim(ds):
         # this is needed for officer list dates, as officers can sometimes
-        # be retrospectively add to officer lists. Also for CRB
+        # be retrospectively add to officer lists. Also for DBS
         # dates which can be before the year it makes the fillna logic
         # simpler.
         return [max(min(d, graph_end_date), graph_start_date) for d in ds]
@@ -59,8 +59,8 @@ def get_camp_officer_stats(camp):
             'Officers': accumulate_dates(trim(officer_dates)),
             'Applications': accumulate_dates(app_dates),
             'References': accumulate_dates(ref_dates),
-            'Any DBS': accumulate_dates(trim(any_crb_dates)),
-            'Valid DBS': accumulate_dates(trim(valid_crb_dates)),
+            'Any DBS': accumulate_dates(trim(any_dbs_dates)),
+            'Valid DBS': accumulate_dates(trim(valid_dbs_dates)),
         }
         # Fill forward so that accumulated
         # values get propagated to all rows,
@@ -81,21 +81,21 @@ def get_camp_officer_stats_trend(start_year, end_year):
     officer_counts = []
     application_counts = []
     reference_in_time_counts = []
-    crb_in_time_counts = []
+    dbs_in_time_counts = []
     for year in years:
         camps = Camp.objects.filter(year=year)
         # It's hard to make use of SQL efficiently here, because the
-        # applications_for_camp logic and the CRB application logic can't be
+        # applications_for_camp logic and the DBS application logic can't be
         # captured in SQL efficiently, due to there being no direct link to
         # camps.
         officer_count = 0
         application_count = 0
         reference_in_time_count = 0
-        crb_in_time_count = 0
+        dbs_in_time_count = 0
 
         # There are some slight 'bugs' here when officers go on mutliple camps.
         # Correct behaviour is tricky to define - for example, if an officer
-        # goes on two camps, and for one of them has a valid CRB and the other
+        # goes on two camps, and for one of them has a valid DBS and the other
         # he/she doesn't, due to dates.
         for camp in camps:
             officer_ids = list(camp.invitations.values_list('officer_id', flat=True))
@@ -106,21 +106,21 @@ def get_camp_officer_stats_trend(start_year, end_year):
                 referee__application__in=application_form_ids,
                 date_created__lte=camp.start_date
             ).count()
-            crb_in_time_count += DBSCheck.objects.filter(
+            dbs_in_time_count += DBSCheck.objects.filter(
                 officer__in=officer_ids,
                 completed__isnull=False,
                 completed__lte=camp.start_date,
-                completed__gte=camp.start_date - timedelta(days=settings.CRB_VALID_FOR)
+                completed__gte=camp.start_date - timedelta(days=settings.DBS_VALID_FOR)
             ).count()  # ignores the possibility that an officer can have more than one
         officer_counts.append(officer_count)
         application_counts.append(application_count)
         reference_in_time_counts.append(reference_in_time_count)
-        crb_in_time_counts.append(crb_in_time_count)
+        dbs_in_time_counts.append(dbs_in_time_count)
     df = pd.DataFrame(index=years,
                       data={'Officer count': officer_counts,
                             'Application count': application_counts,
                             'References received in time': reference_in_time_counts,
-                            'Valid DBS received in time': crb_in_time_counts,
+                            'Valid DBS received in time': dbs_in_time_counts,
                             })
     df['Application fraction'] = df['Application count'] / df['Officer count']
     df['References fraction'] = df['References received in time'] / (df['Officer count'] * 2)
