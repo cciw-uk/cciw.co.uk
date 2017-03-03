@@ -446,7 +446,7 @@ class DBSCheck(models.Model):
 
     officer = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 on_delete=models.CASCADE,
-                                related_name='dbs_applications')
+                                related_name='dbs_checks')
     dbs_number = models.CharField("Disclosure number", max_length=20)
     completed = models.DateField("Date of issue")
     requested_by = models.CharField(max_length=20, choices=REQUESTED_BY_CHOICES, default=REQUESTED_BY_UKNOWN)
@@ -456,13 +456,13 @@ class DBSCheck(models.Model):
     objects = DBSCheckManager()
 
     def __str__(self):
-        return "DBS application for %s %s, %s" % (self.officer.first_name,
-                                                  self.officer.last_name,
-                                                  self.completed.strftime("%Y-%m-%d"))
+        return "DBS check for %s %s, %s" % (self.officer.first_name,
+                                            self.officer.last_name,
+                                            self.completed.strftime("%Y-%m-%d"))
 
     class Meta:
-        verbose_name = "DBS/CRB Disclosure"
-        verbose_name_plural = "DBS/CRB Disclosures"
+        verbose_name = "DBS/CRB check"
+        verbose_name_plural = "DBS/CRB check"
 
     def could_be_for_camp(self, camp):
         return (self.completed >= camp.start_date - timedelta(days=settings.DBS_VALID_FOR) and

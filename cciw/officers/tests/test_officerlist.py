@@ -115,7 +115,7 @@ class TestSlackers(BasicSetupMixin, ReferenceHelperMixin, TestBase):
         self.create_complete_reference(app.referees[1])
 
         # Officer 1 got a DBS done, but officer 2 did not
-        officer1.dbs_applications.create(
+        officer1.dbs_checks.create(
             dbs_number="123456",
             completed=camp1.start_date - timedelta(days=5),
         )
