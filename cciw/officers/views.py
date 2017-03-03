@@ -1110,6 +1110,10 @@ class CrbInfo(object):
     address = attr.ib()
     crb_check_consent = attr.ib()
 
+    @property
+    def requires_action(self):
+        return not self.has_valid_crb and self.has_application_form and self.last_crb_form_sent is None
+
 
 @staff_member_required
 @camp_admin_required

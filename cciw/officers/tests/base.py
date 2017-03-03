@@ -55,9 +55,12 @@ class RequireQualificationTypesMixin(CreateQualificationTypesMixin):
         self.create_qualification_types()
 
 
-class OfficersSetupMixin(BasicSetupMixin):
+class SimpleOfficerSetupMixin(BasicSetupMixin):
+    """
+    Sets up a single officer with minimal permissions
+    """
     def setUp(self):
-        super(OfficersSetupMixin, self).setUp()
+        super(SimpleOfficerSetupMixin, self).setUp()
         self.officer_user = G(User,
                               username=OFFICER_USERNAME,
                               first_name="Joe",
@@ -70,6 +73,13 @@ class OfficersSetupMixin(BasicSetupMixin):
         self.officer_user.set_password(OFFICER_PASSWORD)
         self.officer_user.save()
 
+
+class OfficersSetupMixin(SimpleOfficerSetupMixin):
+    """
+    Sets up a suite of officers with correct permissions etc.
+    """
+    def setUp(self):
+        super(OfficersSetupMixin, self).setUp()
         self.leader_user = G(User,
                              username=LEADER_USERNAME,
                              first_name="Dave",
@@ -213,6 +223,10 @@ class OfficersSetupMixin(BasicSetupMixin):
 
 
 class ExtraOfficersSetupMixin(OfficersSetupMixin):
+    """
+    Sets up a set of normal officers who are on camp lists,
+    along with those created by OfficersSetupMixin
+    """
 
     def setUp(self):
         super(ExtraOfficersSetupMixin, self).setUp()
@@ -248,208 +262,123 @@ class ExtraOfficersSetupMixin(OfficersSetupMixin):
         self.default_camp_1.invitations.create(officer=self.officer3)
 
 
-class ApplicationSetupMixin(ExtraOfficersSetupMixin):
+class CreateApplicationMixin(object):
+    def create_application(self, officer, year,
+                           overrides=None,
+                           referee1_overrides=None,
+                           referee2_overrides=None):
+        fields = dict(
+            officer=officer,
+            address2_address="123 abc",
+            address2_from="2003/08",
+            address2_to="2004/06",
+            address3_address="456 zxc",
+            address3_from="1996/11",
+            address3_to="2003/08",
+            address_country="UK",
+            address_county="Yorkshire",
+            address_email="hey@boo.com",
+            address_firstline="654 Stupid Way",
+            address_mobile="",
+            address_postcode="XY9 8WN",
+            address_since="2004/06",
+            address_tel="01048378569",
+            address_town="Bradford",
+            allegation_declaration=False,
+            birth_date="1911-02-07",
+            birth_place="Foobar",
+            christian_experience="Became a Christian at age 0.2 years",
+            concern_declaration=False,
+            concern_details="",
+            court_declaration=False,
+            court_details="",
+            crb_check_consent=True,
+            crb_number="",
+            crime_declaration=False,
+            crime_details="",
+            date_submitted=datetime(year, 3, 1),
+            employer1_from="2003/09",
+            employer1_job="Pilot",
+            employer1_leaving="",
+            employer1_name="Employer 1",
+            employer1_to="0000/00",
+            employer2_from="1988/10",
+            employer2_job="Manager",
+            employer2_leaving="Just because",
+            employer2_name="Employer 2",
+            employer2_to="2003/06",
+            finished=True,
+            full_maiden_name="",
+            full_name="Joe Winston Bloggs",
+            illness_details="",
+            relevant_illness=False,
+            youth_experience="Lots",
+            youth_work_declined=False,
+            youth_work_declined_details="",
+        )
+        if overrides:
+            fields.update(overrides)
+        application = G(Application, **fields)
+        for referee_number, ref_overrides in zip([1, 2], [referee1_overrides, referee2_overrides]):
+            referee_fields = dict(
+                referee_number=referee_number,
+                address="Referee {0} Address\r\nLine 2".format(referee_number),
+                email="referee{0}@email.co.uk".format(referee_number),
+                mobile="",
+                name="Referee{0} Name".format(referee_number),
+                tel="01222 666666",
+            )
+            if ref_overrides:
+                referee_fields.update(ref_overrides)
+
+            application.referee_set.create(**referee_fields)
+        return application
+
+
+class DefaultApplicationsMixin(CreateApplicationMixin, ExtraOfficersSetupMixin):
 
     def create_default_applications(self):
         # Data: Applications 1 to 3 are in year 2000, for camps in summer 2000
         # Application 4 is for 2001
+        self.application1 = self.create_application(
+            self.officer1, 2000,
+            referee2_overrides=dict(
+                address="1267a Somewhere Road\r\nThereyougo",
+                name="Mr Referee2 Name",
+            ))
 
-        self.application1 = G(Application,
-                              officer=self.officer1,
-                              address2_address="123 abc",
-                              address2_from="2003/08",
-                              address2_to="2004/06",
-                              address3_address="456 zxc",
-                              address3_from="1996/11",
-                              address3_to="2003/08",
-                              address_country="UK",
-                              address_county="Yorkshire",
-                              address_email="hey@boo.com",
-                              address_firstline="654 Stupid Way",
-                              address_mobile="",
-                              address_postcode="XY9 8WN",
-                              address_since="2004/06",
-                              address_tel="01048378569",
-                              address_town="Bradford",
-                              allegation_declaration=False,
-                              birth_date="1911-02-07",
-                              birth_place="Foobar",
-                              christian_experience="Became a Christian at age 0.2 years",
-                              concern_declaration=False,
-                              concern_details="",
-                              court_declaration=False,
-                              court_details="",
-                              crb_check_consent=True,
-                              crime_declaration=False,
-                              crime_details="",
-                              date_submitted=datetime(2000, 3, 1),
-                              employer1_from="2003/09",
-                              employer1_job="Pilot",
-                              employer1_leaving="",
-                              employer1_name="Employer 1",
-                              employer1_to="0000/00",
-                              employer2_from="1988/10",
-                              employer2_job="Manager",
-                              employer2_leaving="Just because",
-                              employer2_name="Employer 2",
-                              employer2_to="2003/06",
-                              finished=True,
-                              full_maiden_name="",
-                              full_name="Joe Winston Bloggs",
-                              illness_details="",
-                              relevant_illness=False,
-                              youth_experience="Lots",
-                              youth_work_declined=False,
-                              youth_work_declined_details="",
-                              )
-        self.application1.referee_set.create(
-            referee_number=1,
-            address="Referee 1 Address\r\nLine 2",
-            email="referee1@email.co.uk",
-            mobile="",
-            name="Referee1 Name",
-            tel="01222 666666",
-        )
-        self.application1.referee_set.create(
-            referee_number=2,
-            address="1267a Somewhere Road\r\nThereyougo",
-            email="referee2@email.co.uk",
-            mobile="",
-            name="Mr Referee2 Name",
-            tel="01234 567890",
-        )
+        self.application2 = self.create_application(
+            self.officer2, 2000,
+            overrides=dict(
+                full_name="Peter Smith",
+            ),
+            referee1_overrides=dict(
+                address="Referee 3 Address\r\nLine 2",
+                email="referee3@email.co.uk",
+                name="Mr Referee3 Name",
+            ),
+            referee2_overrides=dict(
+                address="Referee 4 adddress",
+                email="referee4@email.co.uk",
+                name="Mr Referee4 Name",
+            ))
 
-        self.application2 = G(Application,
-                              officer=self.officer2,
-                              address2_address="123 abc",
-                              address2_from="2003/08",
-                              address2_to="2004/06",
-                              address3_address="456 zxc",
-                              address3_from="1996/11",
-                              address3_to="2003/08",
-                              address_country="UK",
-                              address_county="Yorkshire",
-                              address_email="hey@boo.com",
-                              address_firstline="654 Stupid Way",
-                              address_mobile="",
-                              address_postcode="XY9 8WN",
-                              address_since="2004/06",
-                              address_tel="01048378569",
-                              address_town="Bradford",
-                              allegation_declaration=False,
-                              birth_date="1911-02-07",
-                              birth_place="Foobar",
-                              christian_experience="Became a Christian at age 0.2 years",
-                              concern_declaration=False,
-                              concern_details="",
-                              court_declaration=False,
-                              court_details="",
-                              crb_check_consent=True,
-                              crime_declaration=False,
-                              crime_details="",
-                              date_submitted=datetime(2000, 3, 1),
-                              employer1_from="2003/09",
-                              employer1_job="Pilot",
-                              employer1_leaving="",
-                              employer1_name="Employer 1",
-                              employer1_to="0000/00",
-                              employer2_from="1988/10",
-                              employer2_job="Manager",
-                              employer2_leaving="Just because",
-                              employer2_name="Employer 2",
-                              employer2_to="2003/06",
-                              finished=True,
-                              full_maiden_name="",
-                              full_name="Peter Smith",
-                              illness_details="",
-                              relevant_illness=False,
-                              youth_experience="Lots",
-                              youth_work_declined=False,
-                              youth_work_declined_details="",
-                              )
-
-        self.application2.referee_set.create(
-            referee_number=1,
-            address="Referee 3 Address\r\nLine 2",
-            email="referee3@email.co.uk",
-            mobile="",
-            name="Mr Referee3 Name",
-            tel="01222 666666",
-        )
-        self.application2.referee_set.create(
-            referee_number=2,
-            address="Referee 4 adddress",
-            email="referee4@email.co.uk",
-            mobile="",
-            name="Mr Referee4 Name",
-            tel="01234 567890",
-        )
-
-        self.application3 = G(Application,
-                              officer=self.officer3,
-                              address2_address="123 abc",
-                              address2_from="2003/08",
-                              address2_to="2004/06",
-                              address3_address="456 zxc",
-                              address3_from="1996/11",
-                              address3_to="2003/08",
-                              address_country="UK",
-                              address_county="Yorkshire",
-                              address_email="hey@boo.com",
-                              address_firstline="654 Stupid Way",
-                              address_mobile="",
-                              address_postcode="XY9 8WN",
-                              address_since="2004/06",
-                              address_tel="01048378569",
-                              address_town="Bradford",
-                              allegation_declaration=False,
-                              birth_date="1911-02-07",
-                              birth_place="Foobar",
-                              christian_experience="Became a Christian at age 0.2 years",
-                              concern_declaration=False,
-                              concern_details="",
-                              court_declaration=False,
-                              court_details="",
-                              crb_check_consent=True,
-                              crime_declaration=False,
-                              crime_details="",
-                              date_submitted=datetime(2000, 3, 1),
-                              employer1_from="2003/09",
-                              employer1_job="Pilot",
-                              employer1_leaving="",
-                              employer1_name="Employer 1",
-                              employer1_to="0000/00",
-                              employer2_from="1988/10",
-                              employer2_job="Manager",
-                              employer2_leaving="Just because",
-                              employer2_name="Employer 2",
-                              employer2_to="2003/06",
-                              finished=True,
-                              full_maiden_name="",
-                              full_name="Fred Jones",
-                              illness_details="",
-                              relevant_illness=False,
-                              youth_experience="Lots",
-                              youth_work_declined=False,
-                              youth_work_declined_details="",
-                              )
-
-        self.application3.referee_set.create(
-            referee_number=1,
-            address="Referee 5 Address\r\nLine 2",
-            email="referee5@email.co.uk",
-            mobile="",
-            name="Mr Refere5 Name",
-            tel="01222 666666",
-        ),
-        self.application3.referee_set.create(
-            referee_number=2,
-            address="Referee 6 adddress",
-            email="",
-            mobile="",
-            name="Mr Referee6 Name",
-            tel="01234 567890",
-        )
+        self.application3 = self.create_application(
+            self.officer3, 2000,
+            overrides=dict(
+                full_name="Fred Jones",
+            ),
+            referee1_overrides=dict(
+                address="Referee 5 Address\r\nLine 2",
+                email="referee5@email.co.uk",
+                name="Mr Refere5 Name",
+            ),
+            referee2_overrides=dict(
+                address="Referee 6 adddress",
+                email="",
+                name="Mr Referee6 Name",
+                tel="01234 567890",
+            ))
 
         # Application 4 is like 1 but a year later
 
@@ -466,7 +395,7 @@ class ApplicationSetupMixin(ExtraOfficersSetupMixin):
                 email=r.email)
 
 
-class RequireApplicationsMixin(ApplicationSetupMixin):
+class RequireApplicationsMixin(DefaultApplicationsMixin):
     def setUp(self):
         super(RequireApplicationsMixin, self).setUp()
         self.create_default_applications()

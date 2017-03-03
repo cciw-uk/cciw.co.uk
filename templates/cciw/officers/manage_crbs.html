@@ -27,7 +27,7 @@
                undoIdList.push(data.crbFormLogId);
                undoLastSentList.push(lastSentCell.html());
                lastSentCell.html('Just now');
-               highlightDiv.removeClass("actionable");
+               highlightDiv.removeClass("requires_action");
 
                // Add callback to undo button
                btn.unbind();
@@ -46,7 +46,7 @@
                        btn.hide();
                    }
                    if (lastSentCellContents.replace(/\n|\r| /g, '') == "") {
-                       highlightDiv.addClass("actionable");
+                       highlightDiv.addClass("requires_action");
                    }
 
                });
@@ -162,7 +162,7 @@
   <ul>
     <li>Use 'Show address' to view the officer's address (from application form)</li>
     <li>Use the buttons in the 'Manage' column to indicate you've physically sent them a DBS form to fill in.</li>
-    <li>Officers most likely to need attention are <span class="actionable">highlighted</span>.</li>
+    <li>Officers requiring attention are <span class="requires_action">highlighted</span>.</li>
   </ul>
 
   <p>To enter information for DBSs that have been <em>completed</em>, use the
@@ -193,7 +193,7 @@
     <tbody>
       {% for officer, crb_info in officers_and_crb_info %}
         <tr id="id_highlightdiv_{{ officer.id }}"
-            {% if not crb_info.has_valid_crb and crb_info.has_application_form and not crb_info.last_crb_form_sent %}class="actionable"{% endif %}
+            {% if crb_info.requires_action %}class="requires_action"{% endif %}
             data-camps="{% for camp in crb_info.camps %}{{ camp.slug_name }}{% if not forloop.last %},{% endif %}{% endfor %}"
             {% if not crb_info.selected %}style="display: none;"{% endif %}
             >

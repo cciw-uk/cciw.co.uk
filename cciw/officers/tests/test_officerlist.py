@@ -10,7 +10,7 @@ from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers.create import create_officer
 from cciw.officers.models import Application
-from cciw.officers.tests.base import ApplicationSetupMixin, ReferenceHelperMixin
+from cciw.officers.tests.base import DefaultApplicationsMixin, ReferenceHelperMixin
 from cciw.officers.utils import camp_serious_slacker_list, officer_data_to_spreadsheet
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.base import TestBase
@@ -32,7 +32,7 @@ class TestCreate(TestBase):
         self.assertEqual(user.last_login, None)
 
 
-class TestExport(ApplicationSetupMixin, TestBase):
+class TestExport(DefaultApplicationsMixin, TestBase):
 
     def test_export_no_application(self):
         """
