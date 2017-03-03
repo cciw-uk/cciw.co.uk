@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 from functools import reduce
 from urllib.parse import urlparse
 
+import attr
 import pandas_highcharts.core
 from dal import autocomplete
 from django.conf import settings
@@ -1004,28 +1005,49 @@ def officer_stats_trend_download(request, start_year, end_year):
 @ensure_csrf_cookie
 def manage_crbs(request, year=None):
     year = int(year)
-    now = timezone.now()
     # We need a lot of information. Try to get it in a few up-front queries
     camps = list(Camp.objects.filter(year=year).order_by('camp_name__slug'))
     if len(camps) == 0:
         raise Http404
+
     # Selected camps:
     # We need to support URLs that indicate which camp to select, so we
     # can permalink nicely.
-    selected_camp_slugs = None
+    selected_camps = set()
     if 'camp' in request.GET:
         try:
             selected_camp_slugs = set(request.GET.getlist('camp'))
+            selected_camps = set([c for c in camps if c.slug_name in selected_camp_slugs])
         except ValueError:
             pass
-    if not selected_camp_slugs:  # empty or None
+    if not selected_camps:  # empty or None
         # Assume all, because having none is never useful
-        selected_camp_slugs = set([c.slug_name for c in camps])
+        selected_camps = set(camps)
 
+    officers_and_crb_info = get_officers_with_crb_info_for_camps(camps, selected_camps)
+
+    c = {'officers_and_crb_info': officers_and_crb_info,
+         'camps': camps,
+         'selected_camps': selected_camps,
+         'year': year}
+    return render(request, 'cciw/officers/manage_crbs.html', c)
+
+
+def get_officers_with_crb_info_for_camps(camps, selected_camps):
+    """
+    Get needed CRB officer info for the given set of camps,
+    return a list of two tuples, [(officer, crb_info)]
+    """
+    # Some of this logic could be put onto specific models. However, we only
+    # ever need this info in bulk for specific views, and efficient data access
+    # patterns look completely different for the bulk case. So we use this
+    # utility functions.
     # We need all the officers, and we need to know which camp(s) they belong
     # to. Even if we have only selected one camp, it might be nice to know if
     # they are on other camps. So we get data for all camps, and filter later.
     # We also want to be able to do filtering by javascript in the frontend.
+    now = timezone.now()
+
     camps_officers = [[i.officer for i in c.invitations.all()] for c in camps]
     all_officers = reduce(operator.or_, map(set, camps_officers))
     all_officers = sorted(all_officers, key=lambda o: (o.first_name, o.last_name))
@@ -1051,31 +1073,42 @@ def manage_crbs(request, year=None):
     # those sent earlier in the following dictionary
     crb_forms_sent_for_officers = dict([(f.officer_id, f.sent) for f in crb_forms_sent])
 
+    retval = []
     for o in all_officers:
-        o.temp = {}
         officer_camps = []
         selected = False
         for c in camps:
             if o.id in officer_ids[c.id]:
                 officer_camps.append(c)
-                if c.slug_name in selected_camp_slugs:
+                if c in selected_camps:
                     selected = True
         app = officer_apps.get(o.id, None)
-        o.temp['camps'] = officer_camps
-        o.temp['selected'] = selected
-        o.temp['has_application_form'] = app is not None
-        o.temp['application_id'] = app.id if app is not None else None
-        o.temp['has_crb'] = o.id in all_crb_officer_ids
-        o.temp['has_valid_crb'] = o.id in valid_crb_officer_ids
-        o.temp['last_crb_form_sent'] = crb_forms_sent_for_officers.get(o.id, None)
-        o.temp['address'] = app.one_line_address if app is not None else ""
-        o.temp['crb_check_consent'] = app.crb_check_consent if app is not None else False
+        crb_info = CrbInfo(
+            camps=officer_camps,
+            selected=selected,
+            has_application_form=app is not None,
+            application_id=app.id if app is not None else None,
+            has_crb=o.id in all_crb_officer_ids,
+            has_valid_crb=o.id in valid_crb_officer_ids,
+            last_crb_form_sent=crb_forms_sent_for_officers.get(o.id, None),
+            address=app.one_line_address if app is not None else "",
+            crb_check_consent=app.crb_check_consent if app is not None else False,
+        )
+        retval.append((o, crb_info))
+    return retval
 
-    c = {'all_officers': all_officers,
-         'camps': camps,
-         'selected_camps': selected_camp_slugs,
-         'year': year}
-    return render(request, 'cciw/officers/manage_crbs.html', c)
+
+@attr.s
+class CrbInfo(object):
+    camps = attr.ib()
+    selected = attr.ib()
+    has_application_form = attr.ib()
+    application_id = attr.ib()
+    has_crb = attr.ib()
+    has_valid_crb = attr.ib()
+    last_crb_form_sent = attr.ib()
+    address = attr.ib()
+    crb_check_consent = attr.ib()
 
 
 @staff_member_required

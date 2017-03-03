@@ -172,7 +172,7 @@
     <form action="." method="GET">
       <p>Select camps: {% for camp in camps %}
         <label><input type="checkbox" name="camp" value="{{ camp.slug_name }}"
-                      {% if camp.slug_name in selected_camps %}checked{% endif %}> {{ camp.slug_name }}</label>&nbsp;&nbsp;
+                      {% if camp in selected_camps %}checked{% endif %}> {{ camp.slug_name }}</label>&nbsp;&nbsp;
       {% endfor %} <input type="submit" value="Update page">
       </p>
     </form>
@@ -191,42 +191,42 @@
       </tr>
     </thead>
     <tbody>
-      {% for officer in all_officers %}
+      {% for officer, crb_info in officers_and_crb_info %}
         <tr id="id_highlightdiv_{{ officer.id }}"
-            {% if not officer.temp.has_valid_crb and officer.temp.has_application_form and not officer.temp.last_crb_form_sent %}class="actionable"{% endif %}
-            data-camps="{% for camp in officer.temp.camps %}{{ camp.slug_name }}{% if not forloop.last %},{% endif %}{% endfor %}"
-            {% if not officer.temp.selected %}style="display: none;"{% endif %}
+            {% if not crb_info.has_valid_crb and crb_info.has_application_form and not crb_info.last_crb_form_sent %}class="actionable"{% endif %}
+            data-camps="{% for camp in crb_info.camps %}{{ camp.slug_name }}{% if not forloop.last %},{% endif %}{% endfor %}"
+            {% if not crb_info.selected %}style="display: none;"{% endif %}
             >
           <td>{{ officer.first_name }} {{ officer.last_name }}</td>
-          <td>{% for camp in officer.temp.camps %}
+          <td>{% for camp in crb_info.camps %}
             <a href="{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}" target="_blank">{{ camp.slug_name }}</a>{% if not forloop.last %}, {% endif %}
           {% endfor %}
           </td>
-          <td>{% if officer.temp.has_application_form %}<img src="{% static "admin/img/icon-yes.svg" %}">
-            <a href="{% url 'admin:officers_application_change' officer.temp.application_id %}" target="_blank">View/edit</a>{% endif %}</td>
-          <td>{% if not officer.temp.has_crb %}<img src="{% static "admin/img/icon-no.svg" %}"> Never
-          {% else %}{% if officer.temp.has_valid_crb %}<img src="{% static "admin/img/icon-yes.svg" %}"> Recent
+          <td>{% if crb_info.has_application_form %}<img src="{% static "admin/img/icon-yes.svg" %}">
+            <a href="{% url 'admin:officers_application_change' crb_info.application_id %}" target="_blank">View/edit</a>{% endif %}</td>
+          <td>{% if not crb_info.has_crb %}<img src="{% static "admin/img/icon-no.svg" %}"> Never
+          {% else %}{% if crb_info.has_valid_crb %}<img src="{% static "admin/img/icon-yes.svg" %}"> Recent
           {% else %}<img src="{% static "admin/img/icon-alert.svg" %}"> Out of date
           {% endif %}
           {% endif %}</td>
           <td id="id_last_crb_form_sent_{{ officer.id }}">
-            {% if officer.temp.has_valid_crb %}
+            {% if crb_info.has_valid_crb %}
               n/a
             {% else %}
-              {% if officer.temp.last_crb_form_sent %}
-                {{ officer.temp.last_crb_form_sent|timesince }} ago
+              {% if crb_info.last_crb_form_sent %}
+                {{ crb_info.last_crb_form_sent|timesince }} ago
               {% endif %}
             {% endif %}
           </td>
           <td>
-            {% if not officer.temp.has_valid_crb %}
-              {% if officer.temp.has_application_form %}
-                {% if officer.temp.crb_check_consent %}
+            {% if not crb_info.has_valid_crb %}
+              {% if crb_info.has_application_form %}
+                {% if crb_info.crb_check_consent %}
                   <a href="javascript:void(0)" onclick="$('#id_address_{{ officer.id }}').toggle();">Show address</a>
-                  <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ officer.temp.address }}</span>
+                  <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ crb_info.address }}</span>
                 {% else %}
                   <b>Officer does not<br/> consent to DBS check.<br/></b>
-                  <button onclick="alertLeadersCrbConsentCheck({{ officer.temp.application_id }})">Alert leaders</button>
+                  <button onclick="alertLeadersCrbConsentCheck({{ crb_info.application_id }})">Alert leaders</button>
                 {% endif %}
               {% else %}
                 Needs application form
@@ -234,7 +234,7 @@
             {% endif %}
           </td>
           <td>
-            {% if not officer.temp.has_valid_crb and officer.temp.has_application_form and officer.temp.crb_check_consent %}
+            {% if not crb_info.has_valid_crb and crb_info.has_application_form and crb_info.crb_check_consent %}
               <button id="id_send_{{ officer.id }}" onclick="CRBFormSent({{ officer.id }});">Click when sent</button>
               <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
             {% endif %}
