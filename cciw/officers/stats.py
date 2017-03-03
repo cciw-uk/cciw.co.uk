@@ -5,13 +5,13 @@ from django.conf import settings
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.applications import applications_for_camp
-from cciw.officers.models import Reference, CRBApplication
+from cciw.officers.models import Reference, DBSCheck
 from cciw.utils.stats import accumulate_dates
 
 
 def get_camp_officer_stats(camp):
     # For efficiency, we are careful about what DB queries we do and what is
-    # done in Python. Some logic from CRBApplication.get_for_camp duplicated here
+    # done in Python. Some logic from DBSCheck.get_for_camp duplicated here
 
     graph_start_date = camp.start_date - timedelta(365)
     graph_end_date = min(camp.start_date, date.today())
@@ -32,7 +32,7 @@ def get_camp_officer_stats(camp):
                              date_created__lte=camp.start_date)
                      .order_by('date_created')
                      .values_list('date_created', flat=True))
-    all_crb_info = list(CRBApplication.objects
+    all_crb_info = list(DBSCheck.objects
                         .filter(officer__in=officer_ids,
                                 completed__lte=camp.start_date)
                         .order_by('completed')
@@ -106,7 +106,7 @@ def get_camp_officer_stats_trend(start_year, end_year):
                 referee__application__in=application_form_ids,
                 date_created__lte=camp.start_date
             ).count()
-            crb_in_time_count += CRBApplication.objects.filter(
+            crb_in_time_count += DBSCheck.objects.filter(
                 officer__in=officer_ids,
                 completed__isnull=False,
                 completed__lte=camp.start_date,

@@ -33,7 +33,7 @@ def camp_serious_slacker_list(camp):
     # the logic exactly.
 
     from cciw.cciwmain.models import Camp
-    from cciw.officers.models import Invitation, Application, Reference, CRBApplication
+    from cciw.officers.models import Invitation, Application, Reference, DBSCheck
 
     officers = [i.officer for i in camp.invitations.all()]
     # We need to allow applications/references for the current year to 'fix' a
@@ -61,7 +61,7 @@ def camp_serious_slacker_list(camp):
                              .select_related('referee')
                              .filter(referee__application__in=all_apps))
 
-    all_crbs = list(CRBApplication.objects.filter(officer__in=officers))
+    all_crbs = list(DBSCheck.objects.filter(officer__in=officers))
 
     received_ref_dict = defaultdict(list)
     for ref in all_received_refs:

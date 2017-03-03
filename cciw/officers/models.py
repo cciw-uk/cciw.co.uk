@@ -412,11 +412,11 @@ class Invitation(models.Model):
 # names. Most user facing text has been changed to 'DBS' since that is the
 # services new name.
 
-class CRBApplicationManager(models.Manager):
+class DBSCheckManager(models.Manager):
     use_for_related_fields = True
 
     def get_queryset(self):
-        return super(CRBApplicationManager, self).get_queryset().select_related('officer')
+        return super(DBSCheckManager, self).get_queryset().select_related('officer')
 
     def get_for_camp(self, camp, include_late=False):
         """
@@ -434,7 +434,7 @@ class CRBApplicationManager(models.Manager):
         return qs
 
 
-class CRBApplication(models.Model):
+class DBSCheck(models.Model):
     REQUESTED_BY_CCIW = 'CCIW'
     REQUESTED_BY_OTHER = 'other'
     REQUESTED_BY_UKNOWN = 'unknown'
@@ -453,7 +453,7 @@ class CRBApplication(models.Model):
     other_organisation = models.CharField(max_length=255, blank=True)
     registered_with_dbs_update = models.NullBooleanField("registered with DBS update service")
 
-    objects = CRBApplicationManager()
+    objects = DBSCheckManager()
 
     def __str__(self):
         return "CRB application for %s %s, %s" % (self.officer.first_name,
@@ -469,14 +469,14 @@ class CRBApplication(models.Model):
                 self.completed <= camp.start_date)
 
 
-class CRBFormLogManager(models.Manager):
+class DBSFormLogManager(models.Manager):
     use_for_related_fields = True
 
     def get_queryset(self):
-        return super(CRBFormLogManager, self).get_queryset().select_related('officer')
+        return super(DBSFormLogManager, self).get_queryset().select_related('officer')
 
 
-class CRBFormLog(models.Model):
+class DBSFormLog(models.Model):
     """
     Represents a log of a  CRB form sent to an officer
     """
@@ -485,7 +485,7 @@ class CRBFormLog(models.Model):
                                 on_delete=models.CASCADE)
     sent = models.DateTimeField("Date sent")
 
-    objects = CRBFormLogManager()
+    objects = DBSFormLogManager()
 
     def __str__(self):
         return "Log of CRB/DBS form sent to %s %s on %s" % (self.officer.first_name,

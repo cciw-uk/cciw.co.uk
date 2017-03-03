@@ -15,7 +15,7 @@ from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
 from cciw.officers import widgets
 from cciw.officers.fields import ExplicitBooleanField
-from cciw.officers.models import (REFEREE_DATA_FIELDS, REFEREE_NUMBERS, Application, CRBApplication, CRBFormLog,
+from cciw.officers.models import (REFEREE_DATA_FIELDS, REFEREE_NUMBERS, Application, DBSCheck, DBSFormLog,
                                   Invitation, Qualification, QualificationType, Referee, Reference)
 from cciw.utils.views import close_window_response
 
@@ -442,7 +442,7 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
             return super(ReferenceAdmin, self).response_change(request, obj)
 
 
-class CRBApplicationModelForm(forms.ModelForm):
+class DBSCheckModelForm(forms.ModelForm):
 
     class Meta:
         widgets = {
@@ -450,9 +450,9 @@ class CRBApplicationModelForm(forms.ModelForm):
         }
 
 
-class CRBApplicationAdmin(admin.ModelAdmin):
+class DBSCheckAdmin(admin.ModelAdmin):
 
-    form = CRBApplicationModelForm
+    form = DBSCheckModelForm
 
     search_fields = ('officer__first_name', 'officer__last_name')
     list_display = ['first_name', 'last_name', 'crb_number', 'completed',
@@ -471,7 +471,7 @@ class CRBApplicationAdmin(admin.ModelAdmin):
     last_name.admin_order_field = 'officer__last_name'
 
 
-class CRBFormLogModelForm(forms.ModelForm):
+class DBSFormLogModelForm(forms.ModelForm):
 
     class Meta:
         widgets = {
@@ -479,9 +479,9 @@ class CRBFormLogModelForm(forms.ModelForm):
         }
 
 
-class CRBFormLogAdmin(admin.ModelAdmin):
+class DBSFormLogAdmin(admin.ModelAdmin):
 
-    form = CRBFormLogModelForm
+    form = DBSFormLogModelForm
 
     search_fields = ('officer__first_name', 'officer__last_name')
     list_display = ('first_name', 'last_name', 'sent')
@@ -501,8 +501,8 @@ class CRBFormLogAdmin(admin.ModelAdmin):
 admin.site.register(Application, ApplicationAdmin)
 admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(Reference, ReferenceAdmin)
-admin.site.register(CRBApplication, CRBApplicationAdmin)
-admin.site.register(CRBFormLog, CRBFormLogAdmin)
+admin.site.register(DBSCheck, DBSCheckAdmin)
+admin.site.register(DBSFormLog, DBSFormLogAdmin)
 admin.site.register(QualificationType)
 
 
