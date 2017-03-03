@@ -445,3 +445,15 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
                         in application_diff.lower())
         self.assertTrue('>x</del>'
                         in application_diff.lower())
+
+    def test_save_partial(self):
+        self.officer_login(OFFICER)
+        self._start_new()
+        self.fill_by_name({'full_name': 'My Name Is ...'})
+        self._save()
+        user = self._get_user(OFFICER)
+        apps = user.applications.all()
+        self.assertEqual(len(apps), 1)
+        a = apps[0]
+        self.assertEqual(a.full_name, 'My Name Is ...')
+        self.assertEqual(a.finished, False)
