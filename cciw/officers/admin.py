@@ -7,6 +7,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.models import Group
 from django.core import urlresolvers
+from django.utils.safestring import mark_safe
 from django.forms.utils import ErrorList
 
 from cciw.auth import can_manage_application_forms, is_camp_officer
@@ -248,12 +249,30 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
              'description': '''If you answer yes to the following question
                 we will need to discuss this with you'''}
          ),
-        (None,
-            {'fields': ['crb_check_consent'],
+        ('DBS checks',
+            {'fields': ['crb_number', 'crb_check_consent'],
              'classes': ['wide'],
-             'description': '''If you answer NO  to
-                the following question we regret that we
-                cannot proceed with your application. '''}
+             'description': mark_safe("""
+<h3>Important information, please read:</h3>
+
+<p>If you have a current enhanced Disclosure and Barring Service check and have
+signed up for the update system, and if you give permission for CCIW to look at
+it, please enter the number below. If not, you will need to give permission for
+us to obtain a DBS check for you. Otherwise we regret that we cannot proceed
+with your application.</p>
+
+<p>If we need a new DBS check for you, once your application form is received a
+DBS application form will be sent to you, so please ensure your postal address
+is up to date. The DBS form must be filled in and all instructions adhered to.
+<b>By CCIW policy, failure to do so will mean that you will be unable to come on
+camp.</b></p>
+
+<p><b>Please also note</b> the instructions to sign up for the <b>update
+service</b>. This will save you and everyone else a lot of time in subsequent
+years. You will receive an e-mail from DBS with a reference number and at the
+bottom of the e-mail are details of signing up for the update service. THIS MUST
+BE DONE WITHIN 19 DAYS of the issue of the DBS. Otherwise after 3 years you will
+have to fill in another DBS.</p> """)}
          ),
         ("Confirmation",
             {'fields': ('finished',),

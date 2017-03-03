@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 from datetime import date, timedelta
 
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
 from cciw.cciwmain.models import Camp
-from cciw.officers.fields import (AddressField, RequiredAddressField, RequiredCharField, RequiredDateField,
-                                  RequiredEmailField, RequiredExplicitBooleanField, RequiredTextField,
-                                  RequiredYyyyMmField, YyyyMmField)
+from cciw.officers.fields import (AddressField, ExplicitBooleanField, RequiredAddressField, RequiredCharField,
+                                  RequiredDateField, RequiredEmailField, RequiredExplicitBooleanField,
+                                  RequiredTextField, RequiredYyyyMmField, YyyyMmField)
 from cciw.officers.references import first_letter_cap, reference_present_val
 
 REFEREE_NUMBERS = [1, 2]
@@ -99,7 +100,10 @@ class Application(models.Model):
         """which has been reported to and investigated by Social """
         """Services and /or the Police?""")
 
-    crb_check_consent = RequiredExplicitBooleanField(
+    crb_number = models.CharField("DBS number",
+                                  max_length=128, default="", blank=True,
+                                  help_text="Current enhanced DBS number with update service")
+    crb_check_consent = ExplicitBooleanField(
         """Do you consent to the obtaining of a Disclosure and Barring """
         """Service check on yourself? """)
 
@@ -152,6 +156,14 @@ class Application(models.Model):
         # the camp start date. Logic duplicated in applications_for_camp
         return (self.date_submitted <= camp.start_date and
                 self.date_submitted > camp.start_date - timedelta(days=365))
+
+    def clean(self):
+        super(Application, self).clean()
+        if self.finished:
+            if self.crb_number.strip() == "" and self.crb_check_consent is None:
+                raise ValidationError({'crb_check_consent':
+                                       "If you do not provide a DBS number, you "
+                                       "must answer this question."})
 
 
 class Referee(models.Model):
@@ -393,6 +405,12 @@ class Invitation(models.Model):
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name')
         unique_together = (('officer', 'camp'),)
 
+
+# CRBs/DBSs - Criminal Records Bureau/Disclosure and Barring Service
+#
+# NB for historical reasons, internal code uses 'CRB' in all model and variable
+# names. Most user facing text has been changed to 'DBS' since that is the
+# services new name.
 
 class CRBApplicationManager(models.Manager):
     use_for_related_fields = True

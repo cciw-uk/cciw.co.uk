@@ -128,8 +128,12 @@
 {{ app.allegation_declaration|yesno:"YES,NO,-"|rtfescape }}\cell}\row}
 
 \par
+{\trowd \intbl\cellx7000\cellx9000 {DBS number  \cell
+{{ app.crb_number|rtfescape }}\cell}\row}
+
+\par
 {\trowd \intbl\cellx7000\cellx9000 {Do you consent to the obtaining of 
- a Criminal Records Bureau check on yourself?  \cell
+ a Disclosure and Barring Service check on yourself?  \cell
 {{ app.crb_check_consent|yesno:"YES,NO,-"|rtfescape }}\cell}\row}
 
 

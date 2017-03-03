@@ -47,9 +47,9 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self.submit('input[name=new]')
         self.assertCode(200)
 
-    def _finish_application_form(self):
+    def _finish_application_form(self, enter_crb_number=False, override=None):
         # A full set of values that pass validation.
-        return self.fill_by_name(
+        values = \
             {'full_name': 'x',
              'full_maiden_name': 'x',
              'birth_date': '2000-01-01',
@@ -96,11 +96,22 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
              'court_declaration': '2',
              'concern_declaration': '2',
              'allegation_declaration': '2',
-             'crb_check_consent': '2',
              'qualifications-0-type': str(self.first_aid_qualification.id),
              'qualifications-0-date_issued': '2016-01-01',
              'finished': True,
-             })
+             }
+        if enter_crb_number:
+            values['crb_number'] = '1234'
+        else:
+            # Only need this if no CRB number entered
+            values['crb_check_consent'] = '2'
+        if override:
+            for k, v in override.items():
+                if v is None:
+                    del values[k]
+                else:
+                    values[k] = v
+        return self.fill_by_name(values)
 
     def _get_application_form_emails(self):
         return [e for e in mail.outbox if "CCIW application form" in e.subject]
@@ -457,3 +468,27 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         a = apps[0]
         self.assertEqual(a.full_name, 'My Name Is ...')
         self.assertEqual(a.finished, False)
+
+    def test_crb_number_entered(self):
+        self.officer_login(OFFICER)
+        self._start_new()
+        self._finish_application_form(enter_crb_number=True)
+        self._save()
+        self._assert_finished_successful()
+        a = self._get_user(OFFICER).applications.get()
+        self.assertEqual(a.crb_number, '1234')
+        self.assertEqual(a.finished, True)
+
+    def test_save_without_crb_number_requires_consent(self):
+        self.officer_login(OFFICER)
+        self._start_new()
+        self._finish_application_form(enter_crb_number=False,
+                                      override={'crb_check_consent': None})
+        self._save()
+        # Shouldn't be saved:
+        self.assertEqual(self._get_user(OFFICER).applications.filter(finished=True).count(), 0)
+        self.assertTextPresent("If you do not provide a DBS number")
+        self.fill_by_name({'crb_check_consent': '2'})
+        self._save()
+        self._assert_finished_successful()
+        self.assertEqual(self._get_user(OFFICER).applications.filter(finished=True).count(), 1)

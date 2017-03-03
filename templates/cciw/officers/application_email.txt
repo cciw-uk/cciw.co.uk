@@ -117,8 +117,10 @@ concerning children/young people which
 has been reported to and investigated 
 by Social Services and /or the Police?  {{ app.allegation_declaration|yesno:"YES,NO,-" }}
 
-Do you consent to the obtaining of 
-a Criminal Records Bureau check 
+DBS number:                             {{ app.crb_number }}
+
+Do you consent to the obtaining of a
+Disclosure and Barring Service check
 on yourself?                            {{ app.crb_check_consent|yesno:"YES,NO,-" }}
 
 {% endautoescape %}
