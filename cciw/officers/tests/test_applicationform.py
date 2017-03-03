@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from datetime import date, timedelta
 
 from django.conf import settings
@@ -25,18 +26,26 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         super(ApplicationFormView, self).setUp()
 
         # Add some invitations:
-        u = User.objects.get(username=OFFICER[0])
+        u = self._get_user(OFFICER)
         for camp in Camp.objects.all():
             u.invitations.create(camp=camp)
 
+    def _get_user(self, user_details):
+        return User.objects.get(username=user_details[0])
+
     def _add_application(self, officer=OFFICER):
-        u = User.objects.get(username=officer[0])
+        u = self._get_user(officer)
         a = Application(officer=u, address_email=u.email)
         a.save()
         ref, _ = a.referee_set.get_or_create(referee_number=1)
         ref.name = "My Initial Referee 1"
         ref.save()
         return a
+
+    def _start_new(self):
+        self.get_url('cciw-officers-applications')
+        self.submit('input[name=new]')
+        self.assertCode(200)
 
     def _finish_application_form(self):
         # A full set of values that pass validation.
@@ -99,10 +108,19 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
     def _get_email_change_emails(self):
         return [e for e in mail.outbox if "Email change" in e.subject]
 
+    def _assert_finished_successful(self):
+        self.assertNamedUrl("cciw-officers-applications")
+
+        self.assertTextPresent("The completed application form has been sent to the leaders (Dave & Rebecca Stott) via email")
+
+    def _save(self):
+        self.submit('[name=_save]')
+
     def test_change_application(self):
         self.officer_login(OFFICER)
+        # An unfinished application form:
         a = self._add_application()
-        u = User.objects.get(username=OFFICER[0])
+        u = self._get_user(OFFICER)
         self.assertEqual(u.applications.count(), 1)
         self.get_literal_url(self._application_edit_url(a.id))
         self.assertCode(200)
@@ -111,7 +129,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self.assertTextPresent('My Initial Referee 1')
         self.assertTextAbsent('Save and add another')
         self.fill_by_name({'full_name': 'Test full name'})
-        self.submit('[name=_save]')
+        self._save()
         self.assertNamedUrl("cciw-officers-applications")
         self.assertEqual(u.applications.count(), 1)
         app = u.applications.all()[0]
@@ -131,13 +149,13 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self.officer_login(LEADER)
         # To catch a bug, give the leader an application form for the same camp
         self._add_application(officer=LEADER)
-        u = User.objects.get(username=OFFICER[0])
+        u = self._get_user(OFFICER)
         apps = u.applications.all()
         self.assertEqual(len(apps), 1)
         self.get_literal_url(self._application_edit_url(apps[0].id))
         self.assertCode(200)
         self.fill_by_name({'full_name': 'Changed full name'})
-        self.submit('[name=_save]')
+        self._save()
         self.assertNamedUrl("cciw-officers-applications")
         self.assertEqual(u.applications.count(), 1)
         self.assertEqual(u.applications.all()[0].full_name, 'Changed full name')
@@ -146,7 +164,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         # setup
         self.assertEqual(len(mail.outbox), 0)
         self.officer_login(OFFICER)
-        u = User.objects.get(username=OFFICER[0])
+        u = self._get_user(OFFICER)
         a = self._add_application()
         self.assertEqual(u.applications.count(), 1)
 
@@ -161,7 +179,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self._finish_application_form()
         self.fill_by_name({'full_name': 'Test full name',
                            'address_email': new_email})
-        self.submit('[name=_save]')
+        self._save()
         self.assertNamedUrl("cciw-officers-applications")
         self.assertEqual(u.applications.count(), 1)
 
@@ -184,7 +202,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         url, path, querydata = read_email_url(emails[0], 'https?://.*/correct-email/.*')
 
         # Check that nothing has changed yet
-        self.assertEqual(User.objects.get(username=OFFICER[0]).email,
+        self.assertEqual(self._get_user(OFFICER).email,
                          orig_email)
 
         # follow link - deliberately wrong first time
@@ -193,7 +211,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self.assertContains(response, "Update failed")
 
         # Check that nothing has changed yet
-        self.assertEqual(User.objects.get(username=OFFICER[0]).email,
+        self.assertEqual(self._get_user(OFFICER).email,
                          orig_email)
 
         # follow link, right this time
@@ -202,14 +220,14 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self.assertContains(response, "Update successful")
 
         # check email address has changed
-        self.assertEqual(User.objects.get(username=OFFICER[0]).email, new_email)
+        self.assertEqual(self._get_user(OFFICER).email, new_email)
 
     def test_change_email_address_mistakenly(self):
         # Same as above, but this time we click the link to correct the
         # application form which has a wrong email address
 
         user_email, application_email, emails = self._change_email_setup()
-        user = User.objects.get(username=OFFICER[0])
+        user = self._get_user(OFFICER)
 
         # Read the email
         url, path, querydata = read_email_url(emails[0], 'https?://.*/correct-application/.*')
@@ -244,50 +262,44 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         """
         self.assertEqual(len(mail.outbox), 0)
         self.officer_login(OFFICER)
-        u = User.objects.get(username=OFFICER[0])
-        a = self._add_application()
-        self.assertEqual(u.applications.count(), 1)
-
-        self.get_literal_url(self._application_edit_url(a.id))
-        self.assertCode(200)
+        u = self._get_user(OFFICER)
+        self._start_new()
         self._finish_application_form()
         self.fill_by_name({'address_email': u.email.upper()})
-        self.submit('[name=_save]')
+        self._save()
 
         # Check no emails have been sent
         emails = self._get_email_change_emails()
         self.assertEqual(len(emails), 0)
 
     def test_finish_incomplete(self):
-        u = User.objects.get(username=OFFICER[0])
+        u = self._get_user(OFFICER)
         self.assertEqual(u.applications.count(), 0)
         self.officer_login(OFFICER)
-        a = self._add_application()
-        self.get_literal_url(self._application_edit_url(a.id))
+        self._start_new()
         url = self.current_url
-        self.assertCode(200)
         self.fill_by_name({'finished': True})
-        self.submit('[name=_save]')
+        self._save()
         self.assertUrlsEqual(url)  # Same page
         self.assertTextPresent("Please correct the errors below")
         self.assertTextPresent("form-row errors field-address")
         self.assertEqual(u.applications.exclude(date_submitted__isnull=True).count(), 0)  # shouldn't have been saved
 
     def test_finish_complete(self):
-        u = User.objects.get(username=OFFICER[0])
+        u = self._get_user(OFFICER)
         self.assertEqual(u.applications.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
         self.officer_login(OFFICER)
-        # An old, unfinished application form
-        self._add_application()
-        a = self._add_application()
+        self._start_new()
+
+        # Add two applications
+        self._add_application()  # old, unfinshed one
+        a = self._add_application()  # most recent
         self.get_literal_url(self._application_edit_url(a.id))
         self.assertCode(200)
         self._finish_application_form()
-        self.submit('[name=_save]')
-        self.assertNamedUrl("cciw-officers-applications")
-
-        self.assertTextPresent("The completed application form has been sent to the leaders (Dave & Rebecca Stott) via email")
+        self._save()
+        self._assert_finished_successful()
 
         apps = list(u.applications.all())
         # The old one should have been deleted.
@@ -312,15 +324,14 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
                 self.assertIn(txt, m.attachments[0][1])
 
     def test_finish_complete_no_officer_list(self):
-        u = User.objects.get(username=OFFICER[0])
+        u = self._get_user(OFFICER)
         u.invitations.all().delete()
         self.assertEqual(u.applications.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
         self.officer_login(OFFICER)
-        a = self._add_application()
-        self.get_literal_url(self._application_edit_url(a.id))
+        self._start_new()
         self._finish_application_form()
-        self.submit('[name=_save]')
+        self._save()
         self.assertNamedUrl("cciw-officers-applications")
         self.assertTextPresent("The application form has been sent to the CCIW secretary")
 
@@ -344,11 +355,12 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         url = self.current_url
         self.assertCode(200)
         self.fill_by_name({'full_name': 'A Changed Full Name'})
-        self.submit('[name=_save]')
+        self._save()
         # we should be on same page:
         self.assertUrlsEqual(url)
         self.assertTextPresent("You cannot change a submitted")
         # shouldn't have changed data:
+        a = Application.objects.get(id=a.id)
         self.assertNotEqual(a.full_name, 'A Changed Full Name')
 
     def test_list_applications_officers(self):
@@ -379,9 +391,9 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         a2 = self._add_application()
         self.get_literal_url(self._application_edit_url(a2.id))
         self._finish_application_form()
-        self.submit('[name=_save]')
+        self._save()
         self.assertTextPresent("You've already submitted")
-        u = User.objects.get(username=OFFICER[0])
+        u = self._get_user(OFFICER)
         self.assertEqual(u.applications.exclude(date_submitted__isnull=True).count(), 1)
 
     def test_application_differences_email(self):
@@ -389,7 +401,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         Tests the 'application difference' email that is sent when an
         application form is submitted
         """
-        u = User.objects.get(username=OFFICER[0])
+        u = self._get_user(OFFICER)
 
         # Create one application
         self.test_finish_complete()
@@ -404,12 +416,11 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         app0.save()
 
         # Create another application
-        app1 = self._add_application()
-        self.get_literal_url(self._application_edit_url(app1.id))
+        self._start_new()
         self._finish_application_form()
         # Now change some values
         self.fill_by_name({'full_name': 'New Full Name'})
-        self.submit('[name=_save]')
+        self._save()
         self.assertNamedUrl("cciw-officers-applications")
 
         emails = self._get_application_form_emails()

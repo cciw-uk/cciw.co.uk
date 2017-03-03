@@ -68,7 +68,7 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQual
         resp = self.client.get(self.url)
         self.assertContains(resp, self._edit_button)
 
-    def test_create(self):
+    def test_create_from_old(self):
         app = self.user.applications.create(finished=True,
                                             full_name="My Full Name",
                                             date_submitted=date.today() - timedelta(365))
