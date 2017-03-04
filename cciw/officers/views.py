@@ -1069,6 +1069,8 @@ def get_officers_with_dbs_info_for_camps(camps, selected_camps):
     leader_alerts_sent = list(relevant_action_logs.filter(
         action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT))
 
+    update_service_dbs_numbers_for_officers = get_update_service_dbs_numbers(all_officers)
+
     # Work out, without doing any more queries:
     # - which camps each officer is on
     # - if they have an application form
@@ -1104,8 +1106,32 @@ def get_officers_with_dbs_info_for_camps(camps, selected_camps):
             last_leader_alert_sent=leader_alerts_sent_for_officers.get(o.id, None),
             address=app.one_line_address if app is not None else "",
             dbs_check_consent=app.dbs_check_consent if app is not None else False,
+            update_enabled_dbs_number=update_service_dbs_numbers_for_officers.get(o.id, None),
         )
         retval.append((o, dbs_info))
+    return retval
+
+
+def get_update_service_dbs_numbers(officers):
+    # Find DBS numbers than can be used with the update service.
+    # Two sources:
+    # 1) DBSCheck
+    # 2) ApplicationForm
+    update_service_dbs_numbers_1 = (DBSCheck.objects
+                                    .filter(officer__in=officers,
+                                            registered_with_dbs_update=True)
+                                    .values_list('officer_id', 'dbs_number', 'completed'))
+    update_service_dbs_numbers_2 = (Application.objects
+                                    .filter(officer__in=officers)
+                                    .exclude(dbs_number="")
+                                    .values_list('officer_id', 'dbs_number', 'date_submitted'))
+    update_service_dbs_numbers = list(update_service_dbs_numbers_1) + list(update_service_dbs_numbers_2)
+    retval = {}
+
+    # We want the most recent value to win, sort descending by timestamp
+    update_service_dbs_numbers.sort(key=lambda r: r[2], reverse=True)
+    for officer_id, dbs_number, dt in update_service_dbs_numbers:
+        retval[officer_id] = dbs_number.strip()
     return retval
 
 
@@ -1120,6 +1146,7 @@ class DbsInfo(object):
     last_leader_alert_sent = attr.ib()
     address = attr.ib()
     dbs_check_consent = attr.ib()
+    update_enabled_dbs_number = attr.ib()
 
     @property
     def requires_action(self):
@@ -1137,6 +1164,10 @@ class DbsInfo(object):
     @property
     def can_register_received_dbs_form(self):
         return not self.has_valid_dbs and self.has_application_form
+
+    @property
+    def can_check_dbs_online(self):
+        return bool(self.update_enabled_dbs_number)
 
 
 @staff_member_required

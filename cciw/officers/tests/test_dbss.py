@@ -1,11 +1,11 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.utils import timezone
 from django.core import mail
 from django_functest import FuncBaseMixin
 
 from cciw.cciwmain.models import Camp
-from cciw.officers.models import DBSActionLog
+from cciw.officers.models import DBSActionLog, DBSCheck
 from cciw.officers.views import get_officers_with_dbs_info_for_camps
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
@@ -69,6 +69,42 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
 
         # But we should now have last_leader_alert_sent
         self.assertEqual(dbs_info.last_leader_alert_sent, t2)
+
+    def test_can_check_dbs_online_default(self):
+        self.create_application(self.officer_user, self.year)
+        officer, dbs_info = self.get_officer_with_dbs_info()
+        self.assertFalse(dbs_info.can_check_dbs_online)
+
+    def test_can_check_dbs_online_application_form_dbs_number(self):
+        self.create_application(self.officer_user, self.year,
+                                overrides={'dbs_number': 'ABC123'})
+        officer, dbs_info = self.get_officer_with_dbs_info()
+        self.assertTrue(dbs_info.can_check_dbs_online)
+
+    def test_can_check_dbs_online_previous_check_dbs_number(self):
+        self.create_application(self.officer_user, self.year)
+        self.officer_user.dbs_checks.create(
+            completed=date.today() - timedelta(365 * 10),
+            dbs_number='ABC123',
+            check_type=DBSCheck.CHECK_TYPE_FORM,
+            registered_with_dbs_update=True,
+        )
+        officer, dbs_info = self.get_officer_with_dbs_info()
+        self.assertTrue(dbs_info.can_check_dbs_online)
+
+    def test_update_enabled_dbs_number(self):
+        # Test that data from Application/DBSCheck is prioritised by date
+        self.create_application(self.officer_user, self.year,
+                                overrides={'dbs_number': 'ABC123'})
+        self.officer_user.dbs_checks.create(
+            completed=date.today() - timedelta(365 * 10),
+            dbs_number='DEF456',
+            check_type=DBSCheck.CHECK_TYPE_FORM,
+            registered_with_dbs_update=True,
+        )
+        officer, dbs_info = self.get_officer_with_dbs_info()
+        # Application form data should win because it is more recent
+        self.assertEqual(dbs_info.update_enabled_dbs_number, 'ABC123')
 
 
 class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixin):
