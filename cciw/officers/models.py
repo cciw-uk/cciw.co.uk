@@ -480,23 +480,23 @@ class DBSCheck(models.Model):
                 self.completed <= camp.start_date)
 
 
-class DBSFormLogManager(models.Manager):
+class DBSActionLogManager(models.Manager):
     use_for_related_fields = True
 
     def get_queryset(self):
-        return super(DBSFormLogManager, self).get_queryset().select_related('officer')
+        return super(DBSActionLogManager, self).get_queryset().select_related('officer')
 
 
-class DBSFormLog(models.Model):
+class DBSActionLog(models.Model):
     """
     Represents a log of a DBS form sent to an officer
     """
     officer = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                related_name='dbsformlogs',
+                                related_name='dbsactionlogs',
                                 on_delete=models.CASCADE)
     sent = models.DateTimeField("Date sent")
 
-    objects = DBSFormLogManager()
+    objects = DBSActionLogManager()
 
     def __str__(self):
         return "Log of DBS form sent to %s %s on %s" % (self.officer.first_name,

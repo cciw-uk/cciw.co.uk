@@ -48,7 +48,7 @@ from .email import (make_ref_form_url, make_ref_form_url_hash, send_dbs_consent_
 from .email_utils import formatted_email, send_mail_with_attachments
 from .forms import (AdminReferenceForm, DbsConsentProblemForm, CreateOfficerForm, ReferenceForm, SendNagByOfficerForm,
                     SendReferenceRequestForm, SetEmailForm, UpdateOfficerForm)
-from .models import (Application, DBSCheck, DBSFormLog, Invitation, Referee, Reference, ReferenceAction,
+from .models import (Application, DBSCheck, DBSActionLog, Invitation, Referee, Reference, ReferenceAction,
                      empty_reference)
 from .stats import get_camp_officer_stats, get_camp_officer_stats_trend
 from .utils import camp_serious_slacker_list, camp_slacker_list, officer_data_to_spreadsheet
@@ -1060,7 +1060,7 @@ def get_officers_with_dbs_info_for_camps(camps, selected_camps):
     # DBS forms sent: set cutoff to a year before now, on the basis that
     # anything more than that will have been lost, and we don't want to load
     # everything into memory.
-    dbs_forms_sent = list(DBSFormLog.objects.filter(sent__gt=now - timedelta(365)).order_by('sent'))
+    dbs_forms_sent = list(DBSActionLog.objects.filter(sent__gt=now - timedelta(365)).order_by('sent'))
     # Work out, without doing any more queries:
     # - which camps each officer is on
     # - if they have an application form
@@ -1125,13 +1125,13 @@ class DbsInfo(object):
 def mark_dbs_sent(request):
     officer_id = int(request.POST['officer_id'])
     officer = User.objects.get(id=officer_id)
-    c = DBSFormLog.objects.create(officer=officer,
-                                  sent=timezone.now())
+    c = DBSActionLog.objects.create(officer=officer,
+                                    sent=timezone.now())
     accept = [a.strip() for a in request.META.get('HTTP_ACCEPT', '').split(',')]
 
     if 'application/json' in accept:
         return {'status': 'success',
-                'dbsFormLogId': str(c.id)
+                'dbsActionLogId': str(c.id)
                 }
     else:
         # This path really only exists to support WebBrowser tests
@@ -1142,8 +1142,8 @@ def mark_dbs_sent(request):
 @camp_admin_required
 @json_response
 def undo_mark_dbs_sent(request):
-    dbsformlog_id = int(request.POST['dbsformlog_id'])
-    DBSFormLog.objects.filter(id=dbsformlog_id).delete()
+    dbsactionlog_id = int(request.POST['dbsactionlog_id'])
+    DBSActionLog.objects.filter(id=dbsactionlog_id).delete()
     return {'status': 'success'}
 
 

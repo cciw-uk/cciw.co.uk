@@ -25,7 +25,7 @@ $(document).ready(function() {
                    }
                    var undoIdList = btn.data('undoIdList');
                    var undoLastSentList = btn.data('undoLastSentList');
-                   undoIdList.push(data.dbsFormLogId);
+                   undoIdList.push(data.dbsActionLogId);
                    undoLastSentList.push(lastSentCell.html());
                    lastSentCell.html('Just now');
                    highlightDiv.removeClass("requires_action");
@@ -37,7 +37,7 @@ $(document).ready(function() {
                        jQuery.ajax({
                            type: "POST",
                            url: btn.attr('action'),
-                           data: "dbsformlog_id=" + undoIdList.pop().toString(),
+                           data: "dbsactionlog_id=" + undoIdList.pop().toString(),
                            dataType: 'json'
                        });
                        // Fix up cell client side

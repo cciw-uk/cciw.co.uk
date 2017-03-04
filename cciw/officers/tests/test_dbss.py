@@ -73,17 +73,17 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
 
-        self.assertEqual(officer.dbsformlogs.count(), 0)
+        self.assertEqual(officer.dbsactionlogs.count(), 0)
 
         self.click_dbs_sent_button(officer)
         # should be on same page
         self.assertUrlsEqual(url)
-        self.assertEqual(officer.dbsformlogs.count(), 1)
+        self.assertEqual(officer.dbsactionlogs.count(), 1)
 
         if self.is_full_browser_test:
             # Undo only works with Javascript at the moment
             self.click_dbs_sent_undo_button(officer)
-            self.assertEqual(officer.dbsformlogs.count(), 0)
+            self.assertEqual(officer.dbsactionlogs.count(), 0)
             self.assertUrlsEqual(url)
 
     def test_alert_leaders(self):

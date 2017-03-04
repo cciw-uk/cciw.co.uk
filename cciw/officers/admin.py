@@ -15,7 +15,7 @@ from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
 from cciw.officers import widgets
 from cciw.officers.fields import ExplicitBooleanField
-from cciw.officers.models import (REFEREE_DATA_FIELDS, REFEREE_NUMBERS, Application, DBSCheck, DBSFormLog,
+from cciw.officers.models import (REFEREE_DATA_FIELDS, REFEREE_NUMBERS, Application, DBSCheck, DBSActionLog,
                                   Invitation, Qualification, QualificationType, Referee, Reference)
 from cciw.utils.views import close_window_response
 
@@ -471,7 +471,7 @@ class DBSCheckAdmin(admin.ModelAdmin):
     last_name.admin_order_field = 'officer__last_name'
 
 
-class DBSFormLogModelForm(forms.ModelForm):
+class DBSActionLogModelForm(forms.ModelForm):
 
     class Meta:
         widgets = {
@@ -479,9 +479,9 @@ class DBSFormLogModelForm(forms.ModelForm):
         }
 
 
-class DBSFormLogAdmin(admin.ModelAdmin):
+class DBSActionLogAdmin(admin.ModelAdmin):
 
-    form = DBSFormLogModelForm
+    form = DBSActionLogModelForm
 
     search_fields = ('officer__first_name', 'officer__last_name')
     list_display = ('first_name', 'last_name', 'sent')
@@ -502,7 +502,7 @@ admin.site.register(Application, ApplicationAdmin)
 admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(Reference, ReferenceAdmin)
 admin.site.register(DBSCheck, DBSCheckAdmin)
-admin.site.register(DBSFormLog, DBSFormLogAdmin)
+admin.site.register(DBSActionLog, DBSActionLogAdmin)
 admin.site.register(QualificationType)
 
 
