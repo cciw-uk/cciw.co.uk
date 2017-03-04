@@ -111,7 +111,7 @@ class SendNagByOfficerForm(SendMessageForm):
 
 class DbsConsentProblemForm(SendMessageForm):
     def get_message_template(self):
-        return 'cciw/officers/dbs_consent_problem_email.txt'
+        return 'cciw/officers/dbs_consent_alert_leaders_email.txt'
 
 
 class ReferenceForm(StripStringsMixin, forms.ModelForm):

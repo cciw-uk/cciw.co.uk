@@ -43,7 +43,7 @@ from securedownload.views import access_folder_securely
 from . import create
 from .applications import (application_rtf_filename, application_to_rtf, application_to_text, application_txt_filename,
                            applications_for_camp, camps_for_application, thisyears_applications)
-from .email import (make_ref_form_url, make_ref_form_url_hash, send_dbs_consent_problem_email, send_nag_by_officer,
+from .email import (make_ref_form_url, make_ref_form_url_hash, send_dbs_consent_alert_leaders_email, send_nag_by_officer,
                     send_reference_request_email)
 from .email_utils import formatted_email, send_mail_with_attachments
 from .forms import (AdminReferenceForm, DbsConsentProblemForm, CreateOfficerForm, ReferenceForm, SendNagByOfficerForm,
@@ -1149,7 +1149,7 @@ def undo_mark_dbs_sent(request):
 
 @staff_member_required
 @camp_admin_required
-def dbs_consent_problem(request):
+def dbs_consent_alert_leaders(request):
     try:
         app_id = int(request.GET.get('application_id'))
     except (ValueError, TypeError):
@@ -1169,7 +1169,7 @@ def dbs_consent_problem(request):
             messageform = DbsConsentProblemForm(request.POST, message_info=messageform_info)
             # It's impossible for the form to be invalid, so assume valid
             messageform.is_valid()
-            send_dbs_consent_problem_email(wordwrap(messageform.cleaned_data['message'], 70), officer, camps)
+            send_dbs_consent_alert_leaders_email(wordwrap(messageform.cleaned_data['message'], 70), officer, camps)
             return temporary_window_finish_response(request)
         else:
             # cancel
@@ -1180,7 +1180,7 @@ def dbs_consent_problem(request):
     c['messageform'] = messageform
     c['officer'] = officer
     c['is_popup'] = True
-    return render(request, 'cciw/officers/dbs_consent_problem.html', c)
+    return render(request, 'cciw/officers/dbs_consent_alert_leaders.html', c)
 
 
 @staff_member_required

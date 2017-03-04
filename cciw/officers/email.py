@@ -252,7 +252,7 @@ def send_nag_by_officer(message, officer, referee, sending_officer):
                  headers={'Reply-To': sending_officer.email}).send()
 
 
-def send_dbs_consent_problem_email(message, officer, camps):
+def send_dbs_consent_alert_leaders_email(message, officer, camps):
     # If more than one camp involved, we deliberately put all camp leaders
     # together on a single email, so that they can see that more than one camp
     # is involved
