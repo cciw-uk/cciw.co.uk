@@ -216,8 +216,7 @@
             {% if not dbs_info.has_valid_dbs %}
               {% if dbs_info.has_application_form %}
                 {% if dbs_info.dbs_check_consent %}
-                  <a href="javascript:void(0)" onclick="$('#id_address_{{ officer.id }}').toggle();">Show address</a>
-                  <span class="address" style="display:none;" id="id_address_{{ officer.id }}">{{ dbs_info.address }}</span>
+                  Address: <textarea class="address" id="id_address_{{ officer.id }}">{{ dbs_info.address }}</textarea>
                 {% else %}
                   <b>Officer does not<br/> consent to DBS check.<br/></b>
                   <button onclick="alertLeadersDbsConsentCheck({{ dbs_info.application_id }})">Alert leaders</button>
@@ -229,7 +228,7 @@
           </td>
           <td>
             {% if not dbs_info.has_valid_dbs and dbs_info.has_application_form and dbs_info.dbs_check_consent %}
-              <button id="id_send_{{ officer.id }}" onclick="DBSFormSent({{ officer.id }});">Click when sent</button>
+              <button id="id_send_{{ officer.id }}" onclick="DBSFormSent({{ officer.id }});">Mark DBS form sent</button>
               <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
             {% endif %}
           </td>
