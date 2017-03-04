@@ -79,6 +79,8 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         # should be on same page
         self.assertUrlsEqual(url)
         self.assertEqual(officer.dbsactionlogs.count(), 1)
+        self.assertEqual(officer.dbsactionlogs.get().user.username,
+                         SECRETARY[0])
 
         if self.is_full_browser_test:
             # Undo only works with Javascript at the moment

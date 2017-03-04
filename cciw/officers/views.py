@@ -1125,8 +1125,8 @@ class DbsInfo(object):
 def mark_dbs_sent(request):
     officer_id = int(request.POST['officer_id'])
     officer = User.objects.get(id=officer_id)
-    c = DBSActionLog.objects.create(officer=officer,
-                                    timestamp=timezone.now())
+    c = request.user.dbsactions_performed.create(officer=officer,
+                                                 timestamp=timezone.now())
     accept = [a.strip() for a in request.META.get('HTTP_ACCEPT', '').split(',')]
 
     if 'application/json' in accept:

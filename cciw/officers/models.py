@@ -495,6 +495,12 @@ class DBSActionLog(models.Model):
                                 related_name='dbsactionlogs',
                                 on_delete=models.CASCADE)
     timestamp = models.DateTimeField("Timestamp")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             verbose_name="User who performed action",
+                             related_name='dbsactions_performed',
+                             null=True, blank=True,
+                             default=None,
+                             on_delete=models.SET_NULL)
 
     objects = DBSActionLogManager()
 
