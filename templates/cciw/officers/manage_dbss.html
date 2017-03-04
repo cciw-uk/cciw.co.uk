@@ -48,7 +48,6 @@
         <th>Application form</th>
         <th>DBS status</th>
         <th>Info and actions</th>
-        <th>DBS form sent</th>
       </tr>
     </thead>
     <tbody>
@@ -93,6 +92,15 @@
                                 action="{% url 'cciw-officers-undo_mark_dbs_sent' %}"
                                 style="display: none;">Undo</button>
                       </td>
+                      <td>
+                        {% if dbs_info.last_dbs_form_sent %}
+                          DBS form sent:
+                          <span id="id_last_dbs_form_sent_{{ officer.id }}">
+                            {{ dbs_info.last_dbs_form_sent|timesince }} ago
+                          </span>
+                        {% endif %}
+                      </td>
+
                     {% else %}
                       <td colspan="2">
                         <b>Officer does not consent to DBS check</b>
@@ -117,15 +125,6 @@
                 {% endif %}
               </tr>
             </table>
-          </td>
-          <td id="id_last_dbs_form_sent_{{ officer.id }}">
-            {% if dbs_info.has_valid_dbs %}
-              n/a
-            {% else %}
-              {% if dbs_info.last_dbs_form_sent %}
-                {{ dbs_info.last_dbs_form_sent|timesince }} ago
-              {% endif %}
-            {% endif %}
           </td>
         </tr>
       {% endfor %}
