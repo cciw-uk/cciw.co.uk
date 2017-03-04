@@ -1107,6 +1107,15 @@ class DbsInfo(object):
 
     @property
     def requires_action(self):
+        return (self.requires_alert_leaders or
+                self.requires_send_dbs_form)
+
+    @property
+    def requires_alert_leaders(self):
+        return not self.has_valid_dbs and self.has_application_form and not self.dbs_check_consent
+
+    @property
+    def requires_send_dbs_form(self):
         return not self.has_valid_dbs and self.has_application_form and self.last_dbs_form_sent is None
 
 
