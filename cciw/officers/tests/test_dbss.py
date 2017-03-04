@@ -84,6 +84,10 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
                          SECRETARY[0])
 
         if self.is_full_browser_test:
+            self.assertElementText('#id_last_dbs_form_sent_{0}'.format(officer.id),
+                                   'Just now')
+
+        if self.is_full_browser_test:
             # Undo only works with Javascript at the moment
             self.click_dbs_sent_undo_button(officer)
             self.assertEqual(officer.dbsactionlogs.count(), 0)

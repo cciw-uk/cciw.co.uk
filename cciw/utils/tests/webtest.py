@@ -109,6 +109,10 @@ class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseM
     def assertHtmlPresent(self, html):
         self.assertContains(self._get_page_source(), html, html=True)
 
+    def assertElementText(self, css_selector, text):
+        e = self._driver.find_element_by_css_selector(css_selector)
+        self.assertEqual(e.text, text)
+
     def wait_for_ajax(self):
         time.sleep(0.1)
         self.wait_until(lambda driver: driver.execute_script('return (typeof(jQuery) == "undefined" || jQuery.active == 0)'))

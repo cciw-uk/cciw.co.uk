@@ -93,12 +93,14 @@
                                 style="display: none;">Undo</button>
                       </td>
                       <td>
-                        {% if dbs_info.last_dbs_form_sent %}
-                          DBS form sent:
-                          <span id="id_last_dbs_form_sent_{{ officer.id }}">
+                        DBS form sent:
+                        <span id="id_last_dbs_form_sent_{{ officer.id }}">
+                          {% if dbs_info.last_dbs_form_sent %}
                             {{ dbs_info.last_dbs_form_sent|timesince }} ago
-                          </span>
-                        {% endif %}
+                          {% else %}
+                            Never
+                          {% endif %}
+                        </span>
                       </td>
 
                     {% else %}

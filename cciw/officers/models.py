@@ -489,7 +489,7 @@ class DBSActionLogManager(models.Manager):
     def create(self, *args, **kwargs):
         if 'action_type' not in kwargs:
             raise TypeError("action_type is a required field")
-        super(DBSActionLogManager, self).create(*args, **kwargs)
+        return super(DBSActionLogManager, self).create(*args, **kwargs)
 
 
 class DBSActionLog(models.Model):

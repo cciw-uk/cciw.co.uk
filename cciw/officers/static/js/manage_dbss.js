@@ -46,7 +46,7 @@ $(document).ready(function() {
                        if (undoIdList.length == 0) {
                            btn.hide();
                        }
-                       if (lastSentCellContents.replace(/\n|\r| /g, '') == "") {
+                       if (lastSentCellContents.replace(/\n|\r| /g, '') == "Never") {
                            highlightDiv.addClass("requires_action");
                        }
 
