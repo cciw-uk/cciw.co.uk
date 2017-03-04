@@ -48,7 +48,7 @@
                            // Delete server side
                            jQuery.ajax({
                                type: "POST",
-                               url: "{% url 'cciw-officers-undo_mark_dbs_sent' %}",
+                               url: btn.attr('action'),
                                data: "dbsformlog_id=" + undoIdList.pop().toString(),
                                dataType: 'json'
                            });
@@ -238,7 +238,9 @@
                           <input type="hidden" name="officer_id" value="{{ officer.id }}" />
                           <button id="id_send_{{ officer.id }}">Mark DBS form sent</button>
                         </form>
-                        <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
+                        <button id="id_undo_{{ officer.id }}"
+                                action="{% url 'cciw-officers-undo_mark_dbs_sent' %}"
+                                style="display: none;">Undo</button>
                       </td>
                     {% else %}
                       <td colspan="2">
