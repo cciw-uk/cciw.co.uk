@@ -476,6 +476,7 @@ class DBSActionLogModelForm(forms.ModelForm):
     class Meta:
         widgets = {
             'officer': officer_autocomplete_widget(),
+            'user': officer_autocomplete_widget(),
         }
 
 
@@ -484,8 +485,9 @@ class DBSActionLogAdmin(admin.ModelAdmin):
     form = DBSActionLogModelForm
 
     search_fields = ('officer__first_name', 'officer__last_name')
-    list_display = ('first_name', 'last_name', 'timestamp')
-    list_display_links = ('first_name', 'last_name')
+    list_display = ['action_type', 'first_name', 'last_name', 'timestamp', 'user']
+    list_display_links = ['action_type']
+    list_filter = ['action_type']
     ordering = ('-timestamp',)
     date_hierarchy = 'timestamp'
 

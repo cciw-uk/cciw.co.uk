@@ -486,15 +486,30 @@ class DBSActionLogManager(models.Manager):
     def get_queryset(self):
         return super(DBSActionLogManager, self).get_queryset().select_related('officer')
 
+    def create(self, *args, **kwargs):
+        if 'action_type' not in kwargs:
+            raise TypeError("action_type is a required field")
+        super(DBSActionLogManager, self).create(*args, **kwargs)
+
 
 class DBSActionLog(models.Model):
     """
     Represents a log of a DBS form sent to an officer
     """
+    ACTION_FORM_SENT = 'form_sent'
+    ACTION_LEADER_ALERT_SENT = 'leader_alert_sent'
+    ACTION_CHOICES = [
+        (ACTION_FORM_SENT, "DBS form sent"),
+        (ACTION_LEADER_ALERT_SENT, "Alert sent to leader"),
+    ]
+
     officer = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 related_name='dbsactionlogs',
                                 on_delete=models.CASCADE)
-    timestamp = models.DateTimeField("Timestamp")
+    action_type = models.CharField("action type", max_length=20,
+                                   choices=ACTION_CHOICES)
+    timestamp = models.DateTimeField("Timestamp",
+                                     default=timezone.now)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              verbose_name="User who performed action",
                              related_name='dbsactions_performed',
@@ -510,8 +525,8 @@ class DBSActionLog(models.Model):
                                                         self.timestamp.strftime("%Y-%m-%d"))
 
     class Meta:
-        verbose_name = "DBS form log"
-        verbose_name_plural = "DBS form logs"
+        verbose_name = "DBS action log"
+        verbose_name_plural = "DBS action logs"
 
 
 # This is monkey patched on User in apps.py as a cached property, so it is best

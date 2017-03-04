@@ -3,6 +3,7 @@ from django.core import mail
 from django_functest import FuncBaseMixin
 
 from cciw.cciwmain.models import Camp
+from cciw.officers.models import DBSActionLog
 from cciw.officers.views import get_officers_with_dbs_info_for_camps
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
@@ -111,6 +112,9 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
             # but we still need to switch back.
             self.switch_window()
         self.assertUrlsEqual(url)
+        self.assertEqual(self.secretary.dbsactions_performed.count(), 1)
+        self.assertEqual(self.secretary.dbsactions_performed.get().action_type,
+                         DBSActionLog.ACTION_LEADER_ALERT_SENT)
 
 
 class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):

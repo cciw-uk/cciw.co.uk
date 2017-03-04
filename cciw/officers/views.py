@@ -1126,7 +1126,7 @@ def mark_dbs_sent(request):
     officer_id = int(request.POST['officer_id'])
     officer = User.objects.get(id=officer_id)
     c = request.user.dbsactions_performed.create(officer=officer,
-                                                 timestamp=timezone.now())
+                                                 action_type=DBSActionLog.ACTION_FORM_SENT)
     accept = [a.strip() for a in request.META.get('HTTP_ACCEPT', '').split(',')]
 
     if 'application/json' in accept:
@@ -1170,6 +1170,8 @@ def dbs_consent_alert_leaders(request):
             # It's impossible for the form to be invalid, so assume valid
             messageform.is_valid()
             send_dbs_consent_alert_leaders_email(wordwrap(messageform.cleaned_data['message'], 70), officer, camps)
+            request.user.dbsactions_performed.create(officer=officer,
+                                                     action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT)
             return temporary_window_finish_response(request)
         else:
             # cancel
