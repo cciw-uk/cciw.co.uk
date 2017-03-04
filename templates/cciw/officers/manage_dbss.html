@@ -188,10 +188,10 @@
         <th>Name</th>
         <th>Camps</th>
         <th>Application form</th>
-        <th>DBS</th>
-        <th>DBS form sent</th>
+        <th>DBS status</th>
         <th>Address</th>
         <th>Manage</th>
+        <th>DBS form sent</th>
       </tr>
     </thead>
     <tbody>
@@ -212,15 +212,6 @@
           {% else %}<img src="{% static "admin/img/icon-alert.svg" %}"> Out of date
           {% endif %}
           {% endif %}</td>
-          <td id="id_last_dbs_form_sent_{{ officer.id }}">
-            {% if dbs_info.has_valid_dbs %}
-              n/a
-            {% else %}
-              {% if dbs_info.last_dbs_form_sent %}
-                {{ dbs_info.last_dbs_form_sent|timesince }} ago
-              {% endif %}
-            {% endif %}
-          </td>
           <td>
             {% if not dbs_info.has_valid_dbs %}
               {% if dbs_info.has_application_form %}
@@ -240,6 +231,15 @@
             {% if not dbs_info.has_valid_dbs and dbs_info.has_application_form and dbs_info.dbs_check_consent %}
               <button id="id_send_{{ officer.id }}" onclick="DBSFormSent({{ officer.id }});">Click when sent</button>
               <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
+            {% endif %}
+          </td>
+          <td id="id_last_dbs_form_sent_{{ officer.id }}">
+            {% if dbs_info.has_valid_dbs %}
+              n/a
+            {% else %}
+              {% if dbs_info.last_dbs_form_sent %}
+                {{ dbs_info.last_dbs_form_sent|timesince }} ago
+              {% endif %}
             {% endif %}
           </td>
         </tr>
