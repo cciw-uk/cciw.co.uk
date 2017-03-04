@@ -64,7 +64,7 @@
    $(document).ready(function() {
 
        // convert 'data-camps' into jQuery data
-       $('#id_officer_table tbody tr').each(function(idx, elem) {
+       $('#id_officer_table tr.officer_dbs_row').each(function(idx, elem) {
            $(elem).data('camps', $(elem).attr('data-camps').split(','));
        });
 
@@ -101,7 +101,7 @@
 
        function updateVisibleRows(selectedCamps) {
            // Now go through all rows
-           $('#id_officer_table tbody tr').each(function(idx, elem) {
+           $('#id_officer_table tr.officer_dbs_row').each(function(idx, elem) {
                var show = false;
                var tr = $(elem);
                $.each(tr.data('camps'), function(idx, val) {
@@ -189,15 +189,14 @@
         <th>Camps</th>
         <th>Application form</th>
         <th>DBS status</th>
-        <th>Info</th>
-        <th>Action</th>
+        <th>Info and actions</th>
         <th>DBS form sent</th>
       </tr>
     </thead>
     <tbody>
       {% for officer, dbs_info in officers_and_dbs_info %}
         <tr id="id_highlightdiv_{{ officer.id }}"
-            {% if dbs_info.requires_action %}class="requires_action"{% endif %}
+            class="officer_dbs_row {% if dbs_info.requires_action %}requires_action{% endif %}"
             data-camps="{% for camp in dbs_info.camps %}{{ camp.slug_name }}{% if not forloop.last %},{% endif %}{% endfor %}"
             >
           <td>{{ officer.first_name }} {{ officer.last_name }}</td>
@@ -213,27 +212,38 @@
           {% endif %}
           {% endif %}</td>
           <td>
-            {% if not dbs_info.has_valid_dbs %}
-              {% if dbs_info.has_application_form %}
-                {% if dbs_info.dbs_check_consent %}
-                  Address: <textarea class="address" id="id_address_{{ officer.id }}">{{ dbs_info.address }}</textarea>
-                {% else %}
-                  <b>Officer does not<br/> consent to DBS check.<br/></b>
+            <table class="actions">
+              <tr>
+                {% if not dbs_info.has_valid_dbs %}
+                  {% if dbs_info.has_application_form %}
+                    {% if dbs_info.dbs_check_consent %}
+                      <td>
+                        Address:
+                      </td>
+                      <td>
+                        <textarea class="address" id="id_address_{{ officer.id }}">{{ dbs_info.address }}</textarea>
+                      </td>
+                      <td>
+                        <button id="id_send_{{ officer.id }}" onclick="DBSFormSent({{ officer.id }});">Mark DBS form sent</button>
+                        <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
+                      </td>
+                    {% else %}
+                      <td colspan="2">
+                        <b>Officer does not<br/> consent to DBS check.<br/></b>
+                      </td>
+                      <td>
+                        <button onclick="alertLeadersDbsConsentCheck({{ dbs_info.application_id }})">Alert leaders</button>
+                      </td>
+
+                    {% endif %}
+                  {% else %}
+                    <td colspan="2">
+                      Needs application form
+                    </td>
+                  {% endif %}
                 {% endif %}
-              {% else %}
-                Needs application form
-              {% endif %}
-            {% endif %}
-          </td>
-          <td>
-            {% if not dbs_info.has_valid_dbs and dbs_info.has_application_form %}
-              {% if dbs_info.dbs_check_consent %}
-                <button id="id_send_{{ officer.id }}" onclick="DBSFormSent({{ officer.id }});">Mark DBS form sent</button>
-                <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
-              {% else %}
-                <button onclick="alertLeadersDbsConsentCheck({{ dbs_info.application_id }})">Alert leaders</button>
-                {% endif %}
-            {% endif %}
+              </tr>
+            </table>
           </td>
           <td id="id_last_dbs_form_sent_{{ officer.id }}">
             {% if dbs_info.has_valid_dbs %}
