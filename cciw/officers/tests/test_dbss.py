@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.utils import timezone
 from django.core import mail
 from django_functest import FuncBaseMixin
@@ -11,9 +13,9 @@ from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 from .base import SECRETARY, CreateApplicationMixin, OfficersSetupMixin, SimpleOfficerSetupMixin
 
 
-class DbsInfo(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
+class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
     def setUp(self):
-        super(DbsInfo, self).setUp()
+        super(DbsInfoTests, self).setUp()
         self.camp = self.default_camp_1
         self.year = self.camp.year
         self.camp.invitations.create(officer=self.officer_user)
@@ -34,6 +36,13 @@ class DbsInfo(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.create_application(self.officer_user, self.year)
         officer, dbs_info = self.get_officer_with_dbs_info()
         self.assertTrue(dbs_info.requires_action)
+
+    def test_can_register_received_dbs_form(self):
+        officer, dbs_info = self.get_officer_with_dbs_info()
+        self.assertFalse(dbs_info.can_register_received_dbs_form)
+        self.create_application(self.officer_user, self.year)
+        officer, dbs_info = self.get_officer_with_dbs_info()
+        self.assertTrue(dbs_info.can_register_received_dbs_form)
 
     def test_last_action_attributes(self):
         self.create_application(self.officer_user, self.year)
@@ -145,6 +154,28 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.assertEqual(self.secretary.dbsactions_performed.count(), 1)
         self.assertEqual(self.secretary.dbsactions_performed.get().action_type,
                          DBSActionLog.ACTION_LEADER_ALERT_SENT)
+
+    def test_register_received_dbs(self):
+        self.create_application(self.officer_user, self.year)
+        self.assertEqual(self.officer_user.dbs_checks.all().count(), 0)
+        self.officer_login(SECRETARY)
+        self.get_url('cciw-officers-manage_dbss', self.year)
+        url = self.current_url
+        self.click_register_received_button(self.officer_user)
+        self.fill({'#id_dbs_number': '1234',
+                   '#id_completed': date.today().strftime('%Y-%m-%d'),
+                   })
+        self.submit('input[name="_save"]')
+
+        # Should get redirected back
+        self.assertUrlsEqual(url)
+        dbs_checks = list(self.officer_user.dbs_checks.all())
+        self.assertEqual(len(dbs_checks), 1)
+        dbs_check = dbs_checks[0]
+        self.assertEqual(dbs_check.dbs_number, '1234')
+
+    def click_register_received_button(self, officer):
+        self.submit('#id_register_received_dbs_{0}'.format(officer.id))
 
 
 class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):

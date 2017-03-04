@@ -9,28 +9,13 @@ from cciw.bookings.email import send_booking_approved_mail, send_booking_confirm
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO_COMPLETE, AccountTransferPayment,
                                   Booking, BookingAccount, ManualPayment, Payment, Price, RefundPayment)
 from cciw.cciwmain import common
-from cciw.utils.views import get_return_to_response
+from cciw.utils.admin import ReturnToAdminMixin
+
 
 FIRST_BOOKING_YEAR = 2012
 
 
 bookingaccount_autocomplete_widget = lambda: autocomplete.ModelSelect2(url='bookingaccount-autocomplete')
-
-
-class ReturnToAdminMixin(object):
-    def conditional_redirect(self, request, main_response):
-        redirect = get_return_to_response(request)
-        if redirect is not None:
-            return redirect
-        return main_response
-
-    def response_post_save_add(self, request, obj):
-        return self.conditional_redirect(request,
-                                         super(ReturnToAdminMixin, self).response_post_save_add(request, obj))
-
-    def response_post_save_change(self, request, obj):
-        return self.conditional_redirect(request,
-                                         super(ReturnToAdminMixin, self).response_post_save_change(request, obj))
 
 
 class PriceAdmin(admin.ModelAdmin):

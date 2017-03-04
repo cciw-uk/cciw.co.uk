@@ -1134,6 +1134,10 @@ class DbsInfo(object):
     def requires_send_dbs_form(self):
         return not self.has_valid_dbs and self.has_application_form and self.last_dbs_form_sent is None
 
+    @property
+    def can_register_received_dbs_form(self):
+        return not self.has_valid_dbs and self.has_application_form
+
 
 @staff_member_required
 @camp_admin_required

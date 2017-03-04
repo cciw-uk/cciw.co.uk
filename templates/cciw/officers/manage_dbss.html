@@ -70,8 +70,15 @@
           {% endif %}</td>
           <td>
             <table class="actions">
-              <tr>
-                {% if not dbs_info.has_valid_dbs %}
+              {# Col 1 - caption for info #}
+              {# Col 2 - info #}
+              {# Col 3 - action button #}
+              {# Col 2 - info about action completed #}
+
+              {% if not dbs_info.has_valid_dbs %}
+                <tr>
+                {# Row 1 - either mark DBS form as sent, or alert leaders #}
+                {# regarding dbs_check_consent field #}
                   {% if dbs_info.has_application_form %}
                     {% if dbs_info.dbs_check_consent %}
                       <td>
@@ -133,8 +140,28 @@
                       Needs application form
                     </td>
                   {% endif %}
-                {% endif %}
-              </tr>
+                </tr>
+              {% endif %}
+
+              {% if dbs_info.can_register_received_dbs_form %}
+                <tr>
+                {# Row 2 - register received DBS form #}
+                  <td colspan="2">
+                    If/when DBS is received:
+                  </td>
+                  <td colspan="2">
+                    <form action="{% url 'admin:officers_dbscheck_add' %}"
+                          method="GET"
+                          class="register-received-dbs"
+                          >
+                      <input type="hidden" name="officer" value="{{ officer.id }}">
+                      {% return_to_here %}
+                      <button id="id_register_received_dbs_{{ officer.id }}">DBS received ...</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endif %}
+
             </table>
           </td>
         </tr>

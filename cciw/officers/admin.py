@@ -7,16 +7,17 @@ from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.models import Group
 from django.core import urlresolvers
-from django.utils.safestring import mark_safe
 from django.forms.utils import ErrorList
+from django.utils.safestring import mark_safe
 
 from cciw.auth import can_manage_application_forms, is_camp_officer
 from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
 from cciw.officers import widgets
 from cciw.officers.fields import ExplicitBooleanField
-from cciw.officers.models import (REFEREE_DATA_FIELDS, REFEREE_NUMBERS, Application, DBSCheck, DBSActionLog,
-                                  Invitation, Qualification, QualificationType, Referee, Reference)
+from cciw.officers.models import (REFEREE_DATA_FIELDS, REFEREE_NUMBERS, Application, DBSActionLog, DBSCheck, Invitation,
+                                  Qualification, QualificationType, Referee, Reference)
+from cciw.utils.admin import ReturnToAdminMixin
 from cciw.utils.views import close_window_response
 
 officer_autocomplete_widget = lambda: autocomplete.ModelSelect2(url='officer-autocomplete')
@@ -450,7 +451,7 @@ class DBSCheckModelForm(forms.ModelForm):
         }
 
 
-class DBSCheckAdmin(admin.ModelAdmin):
+class DBSCheckAdmin(ReturnToAdminMixin, admin.ModelAdmin):
 
     form = DBSCheckModelForm
 
