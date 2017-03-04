@@ -494,14 +494,14 @@ class DBSActionLog(models.Model):
     officer = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 related_name='dbsactionlogs',
                                 on_delete=models.CASCADE)
-    sent = models.DateTimeField("Date sent")
+    timestamp = models.DateTimeField("Timestamp")
 
     objects = DBSActionLogManager()
 
     def __str__(self):
         return "Log of DBS form sent to %s %s on %s" % (self.officer.first_name,
                                                         self.officer.last_name,
-                                                        self.sent.strftime("%Y-%m-%d"))
+                                                        self.timestamp.strftime("%Y-%m-%d"))
 
     class Meta:
         verbose_name = "DBS form log"

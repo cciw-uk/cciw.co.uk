@@ -484,10 +484,10 @@ class DBSActionLogAdmin(admin.ModelAdmin):
     form = DBSActionLogModelForm
 
     search_fields = ('officer__first_name', 'officer__last_name')
-    list_display = ('first_name', 'last_name', 'sent')
+    list_display = ('first_name', 'last_name', 'timestamp')
     list_display_links = ('first_name', 'last_name')
-    ordering = ('-sent',)
-    date_hierarchy = 'sent'
+    ordering = ('-timestamp',)
+    date_hierarchy = 'timestamp'
 
     def first_name(self, obj):
         return obj.officer.first_name

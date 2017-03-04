@@ -1060,7 +1060,7 @@ def get_officers_with_dbs_info_for_camps(camps, selected_camps):
     # DBS forms sent: set cutoff to a year before now, on the basis that
     # anything more than that will have been lost, and we don't want to load
     # everything into memory.
-    dbs_forms_sent = list(DBSActionLog.objects.filter(sent__gt=now - timedelta(365)).order_by('sent'))
+    dbs_forms_sent = list(DBSActionLog.objects.filter(timestamp__gt=now - timedelta(365)).order_by('timestamp'))
     # Work out, without doing any more queries:
     # - which camps each officer is on
     # - if they have an application form
@@ -1069,9 +1069,9 @@ def get_officers_with_dbs_info_for_camps(camps, selected_camps):
     officer_ids = dict([(camp.id, set([o.id for o in officers]))
                         for camp, officers in zip(camps, camps_officers)])
     officer_apps = dict([(a.officer_id, a) for a in apps])
-    # NB: order_by('sent') above means that requests sent later will overwrite
+    # NB: order_by('timestamp') above means that requests sent later will overwrite
     # those sent earlier in the following dictionary
-    dbs_forms_sent_for_officers = dict([(f.officer_id, f.sent) for f in dbs_forms_sent])
+    dbs_forms_sent_for_officers = dict([(f.officer_id, f.timestamp) for f in dbs_forms_sent])
 
     retval = []
     for o in all_officers:
@@ -1126,7 +1126,7 @@ def mark_dbs_sent(request):
     officer_id = int(request.POST['officer_id'])
     officer = User.objects.get(id=officer_id)
     c = DBSActionLog.objects.create(officer=officer,
-                                    sent=timezone.now())
+                                    timestamp=timezone.now())
     accept = [a.strip() for a in request.META.get('HTTP_ACCEPT', '').split(',')]
 
     if 'application/json' in accept:
