@@ -1057,21 +1057,35 @@ def get_officers_with_dbs_info_for_camps(camps, selected_camps):
                                         for c in camps])
                                 .values_list('officer_id', flat=True))
     all_dbs_officer_ids = set(DBSCheck.objects.values_list('officer_id', flat=True))
-    # DBS forms sent: set cutoff to a year before now, on the basis that
-    # anything more than that will have been lost, and we don't want to load
-    # everything into memory.
-    dbs_forms_sent = list(DBSActionLog.objects.filter(timestamp__gt=now - timedelta(365)).order_by('timestamp'))
+
+    # Looking for action logs: set cutoff to a year before now, on the basis that
+    # anything more than that will have been lost or irrelevant, and we don't
+    # want to load everything into memory.
+    relevant_action_logs = (DBSActionLog.objects
+                            .filter(timestamp__gt=now - timedelta(365))
+                            .order_by('timestamp'))
+    dbs_forms_sent = list(relevant_action_logs.filter(
+        action_type=DBSActionLog.ACTION_FORM_SENT))
+    leader_alerts_sent = list(relevant_action_logs.filter(
+        action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT))
+
     # Work out, without doing any more queries:
     # - which camps each officer is on
     # - if they have an application form
     # - if they have an up to date DBS
     # - when the last DBS form was sent to officer
+    # - when the last alert was sent to leader
     officer_ids = dict([(camp.id, set([o.id for o in officers]))
                         for camp, officers in zip(camps, camps_officers)])
     officer_apps = dict([(a.officer_id, a) for a in apps])
-    # NB: order_by('timestamp') above means that requests sent later will overwrite
-    # those sent earlier in the following dictionary
-    dbs_forms_sent_for_officers = dict([(f.officer_id, f.timestamp) for f in dbs_forms_sent])
+
+    def logs_to_dict(logs):
+        # NB: order_by('timestamp') above means that requests sent later will overwrite
+        # those sent earlier in the following dictionary
+        return dict([(f.officer_id, f.timestamp) for f in logs])
+
+    dbs_forms_sent_for_officers = logs_to_dict(dbs_forms_sent)
+    leader_alerts_sent_for_officers = logs_to_dict(leader_alerts_sent)
 
     retval = []
     for o in all_officers:
@@ -1087,6 +1101,7 @@ def get_officers_with_dbs_info_for_camps(camps, selected_camps):
             has_dbs=o.id in all_dbs_officer_ids,
             has_valid_dbs=o.id in valid_dbs_officer_ids,
             last_dbs_form_sent=dbs_forms_sent_for_officers.get(o.id, None),
+            last_leader_alert_sent=leader_alerts_sent_for_officers.get(o.id, None),
             address=app.one_line_address if app is not None else "",
             dbs_check_consent=app.dbs_check_consent if app is not None else False,
         )
@@ -1102,6 +1117,7 @@ class DbsInfo(object):
     has_dbs = attr.ib()
     has_valid_dbs = attr.ib()
     last_dbs_form_sent = attr.ib()
+    last_leader_alert_sent = attr.ib()
     address = attr.ib()
     dbs_check_consent = attr.ib()
 

@@ -117,7 +117,16 @@
                           <button id="id_alert_leaders_{{ officer.id }}">Alert leaders</button>
                         </form>
                       </td>
-
+                      <td>
+                        Alert sent:
+                        <span id="id_last_leader_alert_sent_{{ officer.id }}">
+                          {% if dbs_info.last_leader_alert_sent %}
+                            {{ dbs_info.last_leader_alert_sent|timesince }} ago
+                          {% else %}
+                            Never
+                          {% endif %}
+                        </span>
+                      </td>
                     {% endif %}
                   {% else %}
                     <td colspan="2">

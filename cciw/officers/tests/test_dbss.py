@@ -1,4 +1,4 @@
-
+from django.utils import timezone
 from django.core import mail
 from django_functest import FuncBaseMixin
 
@@ -34,6 +34,32 @@ class DbsInfo(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.create_application(self.officer_user, self.year)
         officer, dbs_info = self.get_officer_with_dbs_info()
         self.assertTrue(dbs_info.requires_action)
+
+    def test_last_action_attributes(self):
+        self.create_application(self.officer_user, self.year)
+        officer, dbs_info = self.get_officer_with_dbs_info()
+        self.assertEqual(dbs_info.last_dbs_form_sent, None)
+        self.assertEqual(dbs_info.last_leader_alert_sent, None)
+
+        # Now create an 'form sent' action log
+        t1 = timezone.now()
+        DBSActionLog.objects.create(officer=self.officer_user,
+                                    timestamp=t1,
+                                    action_type=DBSActionLog.ACTION_FORM_SENT)
+        officer, dbs_info = self.get_officer_with_dbs_info()
+        self.assertNotEqual(dbs_info.last_dbs_form_sent, None)
+        self.assertEqual(dbs_info.last_dbs_form_sent, t1)
+
+        # A leader alert action should not change last_dbs_form_sent
+        t2 = timezone.now()
+        DBSActionLog.objects.create(officer=self.officer_user,
+                                    timestamp=t2,
+                                    action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT)
+        officer, dbs_info = self.get_officer_with_dbs_info()
+        self.assertEqual(dbs_info.last_dbs_form_sent, t1)
+
+        # But we should now have last_leader_alert_sent
+        self.assertEqual(dbs_info.last_leader_alert_sent, t2)
 
 
 class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixin):
