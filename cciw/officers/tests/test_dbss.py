@@ -5,14 +5,14 @@ from cciw.officers.views import get_officers_with_dbs_info_for_camps
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
-from .base import SECRETARY, SimpleOfficerSetupMixin, DefaultApplicationsMixin, CreateApplicationMixin
+from .base import SECRETARY, SimpleOfficerSetupMixin, OfficersSetupMixin, CreateApplicationMixin
 
 
 class DbsInfo(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
     def setUp(self):
         super(DbsInfo, self).setUp()
-        self.year = 2000
         self.camp = self.default_camp_1
+        self.year = self.camp.year
         self.camp.invitations.create(officer=self.officer_user)
 
     def get_officer_with_dbs_info(self):
@@ -33,16 +33,20 @@ class DbsInfo(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.assertTrue(dbs_info.requires_action)
 
 
-class ManageDbsPageBase(DefaultApplicationsMixin, FuncBaseMixin):
+class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixin):
+    def setUp(self):
+        super(ManageDbsPageBase, self).setUp()
+        self.camp = self.default_camp_1
+        self.year = self.camp.year
+        self.camp.invitations.create(officer=self.officer_user)
 
     def test_view_no_application_forms(self):
-        camp = self.default_camp_1
         self.officer_login(SECRETARY)
-        self.get_url('cciw-officers-manage_dbss', camp.year)
+        self.get_url('cciw-officers-manage_dbss', self.year)
         self.assertCode(200)
         self.assertTextPresent("Manage DBSs 2000 | CCIW Officers")
 
-        officers = [i.officer for i in camp.invitations.all()]
+        officers = [i.officer for i in self.camp.invitations.all()]
         self.assertNotEqual(len(officers), 0)
         for officer in officers:
             # Sanity check assumptions
@@ -55,18 +59,16 @@ class ManageDbsPageBase(DefaultApplicationsMixin, FuncBaseMixin):
         self.assertTextPresent('Needs application form')
 
     def test_view_with_application_forms(self):
-        self.create_default_applications()
-        camp = self.default_camp_1
+        self.create_application(self.officer_user, self.year)
         self.officer_login(SECRETARY)
-        self.get_url('cciw-officers-manage_dbss', camp.year)
+        self.get_url('cciw-officers-manage_dbss', self.year)
         self.assertTextAbsent('Needs application form')
 
     def test_log_dbs_sent(self):
-        self.create_default_applications()
-        camp = self.default_camp_1
-        officer = self.officer1
+        self.create_application(self.officer_user, self.year)
+        officer = self.officer_user
         self.officer_login(SECRETARY)
-        self.get_url('cciw-officers-manage_dbss', camp.year)
+        self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
 
         self.assertEqual(officer.dbsformlogs.count(), 0)
