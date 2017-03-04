@@ -1,3 +1,5 @@
+
+from django.core import mail
 from django_functest import FuncBaseMixin
 
 from cciw.cciwmain.models import Camp
@@ -5,7 +7,7 @@ from cciw.officers.views import get_officers_with_dbs_info_for_camps
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
-from .base import SECRETARY, SimpleOfficerSetupMixin, OfficersSetupMixin, CreateApplicationMixin
+from .base import SECRETARY, CreateApplicationMixin, OfficersSetupMixin, SimpleOfficerSetupMixin
 
 
 class DbsInfo(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
@@ -84,6 +86,24 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
             self.assertEqual(officer.dbsformlogs.count(), 0)
             self.assertUrlsEqual(url)
 
+    def test_alert_leaders(self):
+        self.create_application(self.officer_user, self.year,
+                                overrides={'dbs_check_consent': False})
+        self.officer_login(SECRETARY)
+        self.get_url('cciw-officers-manage_dbss', self.year)
+        self.assertTextPresent('Officer does not consent')
+        self.click_alert_leaders_button(self.officer_user)
+        self.assertTextPresent("Report DBS problem to leaders")
+        self.submit('input[name="send"]')
+        self.assertEqual(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertIn("Dear camp leaders",
+                      m.body)
+        self.assertIn("{0} {1} indicated that they do NOT\nconsent to having a DBS check done"
+                      .format(self.officer_user.first_name,
+                              self.officer_user.last_name),
+                      m.body)
+
 
 class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):
     def click_dbs_sent_button(self, officer):
@@ -91,6 +111,9 @@ class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):
 
     def click_dbs_sent_undo_button(self, officer):
         raise NotImplementedError()
+
+    def click_alert_leaders_button(self, officer):
+        self.submit('#id_alert_leaders_{0}'.format(officer.id))
 
 
 class ManageDbsPageSL(ManageDbsPageBase, SeleniumBase):
@@ -101,3 +124,8 @@ class ManageDbsPageSL(ManageDbsPageBase, SeleniumBase):
     def click_dbs_sent_undo_button(self, officer):
         self.click('#id_undo_{0}'.format(officer.id))
         self.wait_for_ajax()
+
+    def click_alert_leaders_button(self, officer):
+        self.click('#id_alert_leaders_{0}'.format(officer.id))
+        self.switch_window()
+        self.wait_until_loaded('body')

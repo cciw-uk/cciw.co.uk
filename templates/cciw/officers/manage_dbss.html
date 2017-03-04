@@ -244,10 +244,11 @@
                       </td>
                     {% else %}
                       <td colspan="2">
-                        <b>Officer does not<br/> consent to DBS check.<br/></b>
+                        <b>Officer does not consent to DBS check</b>
                       </td>
                       <td>
-                        <button onclick="alertLeadersDbsConsentCheck({{ dbs_info.application_id }})">Alert leaders</button>
+                        <button id="id_alert_leaders_{{ officer.id }}"
+                                onclick="alertLeadersDbsConsentCheck({{ dbs_info.application_id }})">Alert leaders</button>
                       </td>
 
                     {% endif %}
