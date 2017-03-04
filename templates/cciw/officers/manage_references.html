@@ -10,8 +10,9 @@
    //<![CDATA[
 
    function requestGeneric(query) {
-       window.open('{% url "cciw-officers-request_reference" year=camp.year slug=camp.slug_name %}?' + query,
-                   '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+       cciw.openTemporaryWindow('{% url "cciw-officers-request_reference" year=camp.year slug=camp.slug_name %}?' + query,
+                                '_blank',
+                                "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
    }
 
    function refreshReferenceSection(referee_id) {
@@ -74,8 +75,9 @@
    }
 
    function nagByOfficer(referee_id) {
-       window.open('{% url "cciw-officers-nag_by_officer" year=camp.year slug=camp.slug_name %}?referee_id=' + referee_id.toString(),
-                   '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+       cciw.openTemporaryWindow('{% url "cciw-officers-nag_by_officer" year=camp.year slug=camp.slug_name %}?referee_id=' + referee_id.toString(),
+                                '_blank',
+                                "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
    }
 
 

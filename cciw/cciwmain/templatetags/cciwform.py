@@ -1,7 +1,10 @@
 from django import template
-from django.utils.html import mark_safe
+from django.utils.html import format_html, mark_safe
+
+register = template.Library()
 
 
+@register.simple_tag
 def cciw_form_field(form, field_name, label):
     """
     Display a single field in the standard CCIW format.
@@ -14,5 +17,9 @@ def cciw_form_field(form, field_name, label):
                                        top_errors, hidden_fields, label_text=label) +
                      form.end_template)
 
-register = template.Library()
-register.simple_tag(cciw_form_field)
+
+@register.simple_tag(takes_context=True)
+def return_to_here(context):
+    request = context['request']
+    return format_html('<input type="hidden" name="_return_to" value="{0}" />'
+                       .format(request.get_full_path()))

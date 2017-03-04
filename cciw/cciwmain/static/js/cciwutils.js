@@ -189,6 +189,16 @@ var cciw = (function(pub, $) {
         }
     };
 
+    var openTemporaryWindow = function (url, windowName, windowFeatures) {
+        if (url.indexOf("?") < 0) {
+            url += "?";
+        } else {
+            url += "&";
+        }
+        url += "_temporary_window=1";
+        return window.open(url, windowName, windowFeatures)
+    }
+
     // Public interface:
     pub.standardformAddOnchangeHandlers = function(form) {
         addFormOnchangeHandlers(form, function(input) {
@@ -198,6 +208,7 @@ var cciw = (function(pub, $) {
 
     pub.standardformClearError = standardformClearError;
     pub.genericAjaxErrorHandler = genericAjaxErrorHandler;
+    pub.openTemporaryWindow = openTemporaryWindow;
 
     return pub;
 })(cciw || {}, jQuery);

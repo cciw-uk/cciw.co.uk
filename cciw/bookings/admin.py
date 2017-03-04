@@ -2,15 +2,14 @@ from dal import autocomplete
 from django import forms
 from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.utils.html import escape, escapejs, format_html
-from django.utils.http import is_safe_url
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO_COMPLETE, AccountTransferPayment,
                                   Booking, BookingAccount, ManualPayment, Payment, Price, RefundPayment)
 from cciw.cciwmain import common
-
+from cciw.utils.views import get_return_to_response
 
 FIRST_BOOKING_YEAR = 2012
 
@@ -20,10 +19,9 @@ bookingaccount_autocomplete_widget = lambda: autocomplete.ModelSelect2(url='book
 
 class ReturnToAdminMixin(object):
     def conditional_redirect(self, request, main_response):
-        if 'return_to' in request.GET:
-            url = request.GET['return_to']
-            if is_safe_url(url=url, host=request.get_host()):
-                return HttpResponseRedirect(url)
+        redirect = get_return_to_response(request)
+        if redirect is not None:
+            return redirect
         return main_response
 
     def response_post_save_add(self, request, obj):

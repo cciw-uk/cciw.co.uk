@@ -37,7 +37,7 @@ from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email, python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
-from cciw.utils.views import close_window_response, get_spreadsheet_formatter, user_passes_test_improved
+from cciw.utils.views import temporary_window_finish_response, get_spreadsheet_formatter, user_passes_test_improved
 from securedownload.views import access_folder_securely
 
 from . import create
@@ -529,7 +529,7 @@ def request_reference(request, year=None, slug=None):
                 editreferenceform.save(referee, user=request.user)
                 return close_window_and_update_referee(referee_id)
         elif 'cancel' in request.POST:
-            return close_window_response()
+            return temporary_window_finish_response(request)
 
     if emailform is None:
         emailform = SetEmailForm(initial={'email': referee.email,
@@ -587,7 +587,7 @@ def nag_by_officer(request, year=None, slug=None):
             return close_window_and_update_referee(referee_id)
         else:
             # cancel
-            return close_window_response()
+            return temporary_window_finish_response(request)
 
     messageform = SendNagByOfficerForm(message_info=messageform_info)
 
@@ -1170,10 +1170,10 @@ def dbs_consent_problem(request):
             # It's impossible for the form to be invalid, so assume valid
             messageform.is_valid()
             send_dbs_consent_problem_email(wordwrap(messageform.cleaned_data['message'], 70), officer, camps)
-            return close_window_response()
+            return temporary_window_finish_response(request)
         else:
             # cancel
-            return close_window_response()
+            return temporary_window_finish_response(request)
 
     messageform = DbsConsentProblemForm(message_info=messageform_info)
 

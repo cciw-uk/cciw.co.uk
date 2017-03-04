@@ -91,6 +91,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
                                 overrides={'dbs_check_consent': False})
         self.officer_login(SECRETARY)
         self.get_url('cciw-officers-manage_dbss', self.year)
+        url = self.current_url
         self.assertTextPresent('Officer does not consent')
         self.click_alert_leaders_button(self.officer_user)
         self.assertTextPresent("Report DBS problem to leaders")
@@ -103,6 +104,11 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
                       .format(self.officer_user.first_name,
                               self.officer_user.last_name),
                       m.body)
+        if self.is_full_browser_test:
+            # Previous page opened in new window. It is closed now,
+            # but we still need to switch back.
+            self.switch_window()
+        self.assertUrlsEqual(url)
 
 
 class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):

@@ -1,14 +1,11 @@
 {% extends "cciw/officers/base.html" %}
+
 {% load static %}
+{% load cciwform %}
+
 {% block title %}Manage DBSs {{ year }} | CCIW Officers{% endblock %}
 {% block content %}
   <script type="text/javascript">
-
-   function alertLeadersDbsConsentCheck(applicationId) {
-       window.open("{% url 'cciw-officers-dbs_consent_problem' %}?application_id=" + applicationId.toString(),
-                   '_blank',"toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
-
-   }
 
    $(document).ready(function() {
        "use strict";
@@ -69,6 +66,17 @@
            });
        });
 
+       $('form.alert-leaders').each(function (idx, elem) {
+           var $form = $(this);
+           $form.submit(function (ev) {
+               ev.preventDefault();
+               var data = $form.serialize();
+               var url = $form.attr('action');
+               cciw.openTemporaryWindow(url + '?' + data,
+                                        '_blank',
+                                        "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+           });
+       });
 
        // convert 'data-camps' into jQuery data
        $('#id_officer_table tr.officer_dbs_row').each(function(idx, elem) {
@@ -247,8 +255,14 @@
                         <b>Officer does not consent to DBS check</b>
                       </td>
                       <td>
-                        <button id="id_alert_leaders_{{ officer.id }}"
-                                onclick="alertLeadersDbsConsentCheck({{ dbs_info.application_id }})">Alert leaders</button>
+                        <form action="{% url 'cciw-officers-dbs_consent_problem' %}"
+                              method="GET"
+                              class="alert-leaders"
+                              >
+                          <input type="hidden" name="application_id" value="{{ dbs_info.application_id }}">
+                          {% return_to_here %}
+                          <button id="id_alert_leaders_{{ officer.id }}">Alert leaders</button>
+                        </form>
                       </td>
 
                     {% endif %}
