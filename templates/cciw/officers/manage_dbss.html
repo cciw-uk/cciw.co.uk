@@ -189,8 +189,8 @@
         <th>Camps</th>
         <th>Application form</th>
         <th>DBS status</th>
-        <th>Address</th>
-        <th>Manage</th>
+        <th>Info</th>
+        <th>Action</th>
         <th>DBS form sent</th>
       </tr>
     </thead>
@@ -219,7 +219,6 @@
                   Address: <textarea class="address" id="id_address_{{ officer.id }}">{{ dbs_info.address }}</textarea>
                 {% else %}
                   <b>Officer does not<br/> consent to DBS check.<br/></b>
-                  <button onclick="alertLeadersDbsConsentCheck({{ dbs_info.application_id }})">Alert leaders</button>
                 {% endif %}
               {% else %}
                 Needs application form
@@ -227,9 +226,13 @@
             {% endif %}
           </td>
           <td>
-            {% if not dbs_info.has_valid_dbs and dbs_info.has_application_form and dbs_info.dbs_check_consent %}
-              <button id="id_send_{{ officer.id }}" onclick="DBSFormSent({{ officer.id }});">Mark DBS form sent</button>
-              <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
+            {% if not dbs_info.has_valid_dbs and dbs_info.has_application_form %}
+              {% if dbs_info.dbs_check_consent %}
+                <button id="id_send_{{ officer.id }}" onclick="DBSFormSent({{ officer.id }});">Mark DBS form sent</button>
+                <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
+              {% else %}
+                <button onclick="alertLeadersDbsConsentCheck({{ dbs_info.application_id }})">Alert leaders</button>
+                {% endif %}
             {% endif %}
           </td>
           <td id="id_last_dbs_form_sent_{{ officer.id }}">
