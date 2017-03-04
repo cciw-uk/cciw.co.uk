@@ -3,57 +3,6 @@
 {% block title %}Manage DBSs {{ year }} | CCIW Officers{% endblock %}
 {% block content %}
   <script type="text/javascript">
-   function DBSFormSent(officerId) {
-       jQuery.ajax({
-           type: "POST",
-           url: "{% url 'cciw-officers-mark_dbs_sent' %}",
-           data: "officer_id=" + officerId.toString(),
-           dataType: 'json',
-           success: function(data) {
-               // We need undo information, and we need to update the 'DBS form
-               // sent' column. We store undo information in a stack, on the undo
-               // button itself.
-               var btn = jQuery('#id_undo_' + officerId.toString());
-               var lastSentCell = jQuery('#id_last_dbs_form_sent_' + officerId.toString());
-               var highlightDiv = jQuery('#id_highlightdiv_' + officerId.toString());
-               if (btn.data('undoIdList') == null) {
-                   btn.data('undoIdList', new Array);
-               }
-               if (btn.data('undoLastSentList') == null) {
-                   btn.data('undoLastSentList', new Array);
-               }
-               var undoIdList = btn.data('undoIdList');
-               var undoLastSentList = btn.data('undoLastSentList');
-               undoIdList.push(data.dbsFormLogId);
-               undoLastSentList.push(lastSentCell.html());
-               lastSentCell.html('Just now');
-               highlightDiv.removeClass("requires_action");
-
-               // Add callback to undo button
-               btn.unbind();
-               btn.click(function() {
-                   // Delete server side
-                   jQuery.ajax({
-                       type: "POST",
-                       url: "{% url 'cciw-officers-undo_mark_dbs_sent' %}",
-                       data: "dbsformlog_id=" + undoIdList.pop().toString(),
-                       dataType: 'json'
-                   });
-                   // Fix up cell client side
-                   var lastSentCellContents = undoLastSentList.pop();
-                   lastSentCell.html(lastSentCellContents);
-                   if (undoIdList.length == 0) {
-                       btn.hide();
-                   }
-                   if (lastSentCellContents.replace(/\n|\r| /g, '') == "") {
-                       highlightDiv.addClass("requires_action");
-                   }
-
-               });
-               btn.show();
-           }
-       });
-   }
 
    function alertLeadersDbsConsentCheck(applicationId) {
        window.open("{% url 'cciw-officers-dbs_consent_problem' %}?application_id=" + applicationId.toString(),
@@ -62,6 +11,64 @@
    }
 
    $(document).ready(function() {
+       "use strict";
+       $('form.dbs-form-sent').each(function (i, elem) {
+           var $form = $(this);
+           var officerId = $form.find('input[name=officer_id]').val();
+           $form.submit(function (ev) {
+               ev.preventDefault();
+               jQuery.ajax({
+                   type: "POST",
+                   url: $form.attr('action'),
+                   data: $form.serialize(),
+                   dataType: 'json',
+                   success: function(data) {
+                       // We need undo information, and we need to update the 'DBS form
+                       // sent' column. We store undo information in a stack, on the undo
+                       // button itself.
+                       var btn = jQuery('#id_undo_' + officerId.toString());
+                       var lastSentCell = jQuery('#id_last_dbs_form_sent_' + officerId.toString());
+                       var highlightDiv = jQuery('#id_highlightdiv_' + officerId.toString());
+                       if (btn.data('undoIdList') == null) {
+                           btn.data('undoIdList', new Array);
+                       }
+                       if (btn.data('undoLastSentList') == null) {
+                           btn.data('undoLastSentList', new Array);
+                       }
+                       var undoIdList = btn.data('undoIdList');
+                       var undoLastSentList = btn.data('undoLastSentList');
+                       undoIdList.push(data.dbsFormLogId);
+                       undoLastSentList.push(lastSentCell.html());
+                       lastSentCell.html('Just now');
+                       highlightDiv.removeClass("requires_action");
+
+                       // Add callback to undo button
+                       btn.unbind();
+                       btn.click(function() {
+                           // Delete server side
+                           jQuery.ajax({
+                               type: "POST",
+                               url: "{% url 'cciw-officers-undo_mark_dbs_sent' %}",
+                               data: "dbsformlog_id=" + undoIdList.pop().toString(),
+                               dataType: 'json'
+                           });
+                           // Fix up cell client side
+                           var lastSentCellContents = undoLastSentList.pop();
+                           lastSentCell.html(lastSentCellContents);
+                           if (undoIdList.length == 0) {
+                               btn.hide();
+                           }
+                           if (lastSentCellContents.replace(/\n|\r| /g, '') == "") {
+                               highlightDiv.addClass("requires_action");
+                           }
+
+                       });
+                       btn.show();
+                   }
+               });
+           });
+       });
+
 
        // convert 'data-camps' into jQuery data
        $('#id_officer_table tr.officer_dbs_row').each(function(idx, elem) {
@@ -224,7 +231,13 @@
                         <textarea class="address" id="id_address_{{ officer.id }}">{{ dbs_info.address }}</textarea>
                       </td>
                       <td>
-                        <button id="id_send_{{ officer.id }}" onclick="DBSFormSent({{ officer.id }});">Mark DBS form sent</button>
+                        <form action="{% url 'cciw-officers-mark_dbs_sent' %}"
+                              method="POST"
+                              class="dbs-form-sent">
+                          {% csrf_token %}
+                          <input type="hidden" name="officer_id" value="{{ officer.id }}" />
+                          <button id="id_send_{{ officer.id }}">Mark DBS form sent</button>
+                        </form>
                         <button id="id_undo_{{ officer.id }}" style="display: none;">Undo</button>
                       </td>
                     {% else %}

@@ -38,6 +38,9 @@ def json_response(view_func):
         else:
             code = 200
 
+        if isinstance(data, HttpResponse):
+            return data
+
         if not isinstance(data, (bytes, str)):
             data = python_to_json(data)
         resp = HttpResponse(data,

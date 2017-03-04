@@ -1127,9 +1127,15 @@ def mark_dbs_sent(request):
     officer = User.objects.get(id=officer_id)
     c = DBSFormLog.objects.create(officer=officer,
                                   sent=timezone.now())
-    return {'status': 'success',
-            'dbsFormLogId': str(c.id)
-            }
+    accept = [a.strip() for a in request.META.get('HTTP_ACCEPT', '').split(',')]
+
+    if 'application/json' in accept:
+        return {'status': 'success',
+                'dbsFormLogId': str(c.id)
+                }
+    else:
+        # This path really only exists to support WebBrowser tests
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 
 @staff_member_required

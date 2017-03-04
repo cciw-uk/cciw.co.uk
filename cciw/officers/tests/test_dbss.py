@@ -61,27 +61,41 @@ class ManageDbsPageBase(DefaultApplicationsMixin, FuncBaseMixin):
         self.get_url('cciw-officers-manage_dbss', camp.year)
         self.assertTextAbsent('Needs application form')
 
-
-class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):
-    pass
-
-
-class ManageDbsPageSL(ManageDbsPageBase, SeleniumBase):
     def test_log_dbs_sent(self):
         self.create_default_applications()
         camp = self.default_camp_1
         officer = self.officer1
         self.officer_login(SECRETARY)
         self.get_url('cciw-officers-manage_dbss', camp.year)
+        url = self.current_url
 
         self.assertEqual(officer.dbsformlogs.count(), 0)
 
+        self.click_dbs_sent_button(officer)
+        # should be on same page
+        self.assertUrlsEqual(url)
+        self.assertEqual(officer.dbsformlogs.count(), 1)
+
+        if self.is_full_browser_test:
+            # Undo only works with Javascript at the moment
+            self.click_dbs_sent_undo_button(officer)
+            self.assertEqual(officer.dbsformlogs.count(), 0)
+            self.assertUrlsEqual(url)
+
+
+class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):
+    def click_dbs_sent_button(self, officer):
+        self.submit('#id_send_{0}'.format(officer.id))
+
+    def click_dbs_sent_undo_button(self, officer):
+        raise NotImplementedError()
+
+
+class ManageDbsPageSL(ManageDbsPageBase, SeleniumBase):
+    def click_dbs_sent_button(self, officer):
         self.click('#id_send_{0}'.format(officer.id))
         self.wait_for_ajax()
 
-        self.assertEqual(officer.dbsformlogs.count(), 1)
-
+    def click_dbs_sent_undo_button(self, officer):
         self.click('#id_undo_{0}'.format(officer.id))
         self.wait_for_ajax()
-
-        self.assertEqual(officer.dbsformlogs.count(), 0)
