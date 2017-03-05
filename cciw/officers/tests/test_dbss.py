@@ -210,8 +210,50 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         dbs_check = dbs_checks[0]
         self.assertEqual(dbs_check.dbs_number, '1234')
 
+    def test_dbs_checked_online(self):
+        """
+        Test the "DBS checked online" action and flow
+        """
+        self.create_application(self.officer_user, self.year)
+
+        # Create old DBS check
+        self.assertEqual(self.officer_user.dbs_checks.count(), 0)
+        self.officer_user.dbs_checks.create(
+            dbs_number="123400001",
+            completed=date(1990, 1, 1),
+            requested_by=DBSCheck.REQUESTED_BY_CCIW,
+            check_type=DBSCheck.CHECK_TYPE_FORM,
+            registered_with_dbs_update=True,
+        )
+        today = date.today()
+
+        # Use the DBS page
+        self.officer_login(SECRETARY)
+        self.get_url('cciw-officers-manage_dbss', self.year)
+        url = self.current_url
+        self.click_dbs_checked_online_button(self.officer_user)
+        # Should be filled out with everything needed.
+        self.submit('input[name="_save"]')
+
+        # Should get redirected back
+        self.assertUrlsEqual(url)
+
+        # Check created DBS:
+        self.assertEqual(self.officer_user.dbs_checks.count(), 2)
+        dbs_check = self.officer_user.dbs_checks.all().order_by('-completed')[0]
+
+        # Should have copied other info from old DBS check automatically.
+        self.assertEqual(dbs_check.dbs_number, '123400001')
+        self.assertEqual(dbs_check.check_type, DBSCheck.CHECK_TYPE_ONLINE)
+        self.assertEqual(dbs_check.completed, today)
+        self.assertEqual(dbs_check.requested_by, DBSCheck.REQUESTED_BY_CCIW)
+        self.assertEqual(dbs_check.registered_with_dbs_update, True)
+
     def click_register_received_button(self, officer):
         self.submit('#id_register_received_dbs_{0}'.format(officer.id))
+
+    def click_dbs_checked_online_button(self, officer):
+        self.submit('#id_dbs_checked_online_{0}'.format(officer.id))
 
 
 class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):

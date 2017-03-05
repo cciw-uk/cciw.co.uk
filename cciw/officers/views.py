@@ -7,6 +7,7 @@ from functools import reduce
 from urllib.parse import urlparse
 
 import attr
+import furl
 import pandas_highcharts.core
 from dal import autocomplete
 from django.conf import settings
@@ -37,18 +38,18 @@ from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email, python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
-from cciw.utils.views import temporary_window_finish_response, get_spreadsheet_formatter, user_passes_test_improved
+from cciw.utils.views import get_spreadsheet_formatter, temporary_window_finish_response, user_passes_test_improved
 from securedownload.views import access_folder_securely
 
 from . import create
 from .applications import (application_rtf_filename, application_to_rtf, application_to_text, application_txt_filename,
                            applications_for_camp, camps_for_application, thisyears_applications)
-from .email import (make_ref_form_url, make_ref_form_url_hash, send_dbs_consent_alert_leaders_email, send_nag_by_officer,
-                    send_reference_request_email)
+from .email import (make_ref_form_url, make_ref_form_url_hash, send_dbs_consent_alert_leaders_email,
+                    send_nag_by_officer, send_reference_request_email)
 from .email_utils import formatted_email, send_mail_with_attachments
-from .forms import (AdminReferenceForm, DbsConsentProblemForm, CreateOfficerForm, ReferenceForm, SendNagByOfficerForm,
+from .forms import (AdminReferenceForm, CreateOfficerForm, DbsConsentProblemForm, ReferenceForm, SendNagByOfficerForm,
                     SendReferenceRequestForm, SetEmailForm, UpdateOfficerForm)
-from .models import (Application, DBSCheck, DBSActionLog, Invitation, Referee, Reference, ReferenceAction,
+from .models import (Application, DBSActionLog, DBSCheck, Invitation, Referee, Reference, ReferenceAction,
                      empty_reference)
 from .stats import get_camp_officer_stats, get_camp_officer_stats_trend
 from .utils import camp_serious_slacker_list, camp_slacker_list, officer_data_to_spreadsheet
@@ -1029,7 +1030,10 @@ def manage_dbss(request, year=None):
     c = {'officers_and_dbs_info': officers_and_dbs_info,
          'camps': camps,
          'selected_camps': selected_camps,
-         'year': year}
+         'year': year,
+         'CHECK_TYPE_FORM': DBSCheck.CHECK_TYPE_FORM,
+         'CHECK_TYPE_ONLINE': DBSCheck.CHECK_TYPE_ONLINE,
+         }
     return render(request, 'cciw/officers/manage_dbss.html', c)
 
 
@@ -1234,6 +1238,33 @@ def dbs_consent_alert_leaders(request):
     c['officer'] = officer
     c['is_popup'] = True
     return render(request, 'cciw/officers/dbs_consent_alert_leaders.html', c)
+
+
+@staff_member_required
+@camp_admin_required
+def dbs_checked_online(request):
+    officer = User.objects.get(id=int(request.GET['officer_id']))
+    dbs_number = request.GET['dbs_number']
+    old_dbs_check = (officer.dbs_checks
+                     .filter(dbs_number=dbs_number)
+                     .order_by('-completed')
+                     .first())
+    params = {
+        '_return_to': request.GET['_return_to'],
+        'officer': officer.id,
+        'dbs_number': dbs_number,
+        'registered_with_dbs_update': '2',  # = Yes
+        'completed': date.today().strftime('%Y-%m-%d'),
+        'check_type': DBSCheck.CHECK_TYPE_ONLINE,
+    }
+    if old_dbs_check:
+        params.update({
+            'requested_by': old_dbs_check.requested_by,
+            'other_organisation': old_dbs_check.other_organisation,
+        })
+    url = furl.furl(reverse('admin:officers_dbscheck_add')).add(params).url
+
+    return HttpResponseRedirect(url)
 
 
 @staff_member_required

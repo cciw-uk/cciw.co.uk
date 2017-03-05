@@ -4,10 +4,14 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name="cciw-officers-index"),
+
+    # Application forms
     url(r'^applications/$', views.applications, name="cciw-officers-applications"),
     url(r'^view-application/$', views.view_application, name="cciw-officers-view_application"),
     url(r'^correct-email/$', views.correct_email, name="cciw-officers-correct_email"),
     url(r'^correct-application/$', views.correct_application, name="cciw-officers-correct_application"),
+
+    # Leaders pages
     url(r'^leaders/$', views.leaders_index, name="cciw-officers-leaders_index"),
     url(r'^leaders/applications/(?P<year>\d{4})-(?P<slug>[^/]+)/$', views.manage_applications, name="cciw-officers-manage_applications"),
     url(r'^leaders/references/(?P<year>\d{4})-(?P<slug>[^/]+)/$', views.manage_references, name="cciw-officers-manage_references"),
@@ -24,16 +28,25 @@ urlpatterns = [
     url(r'^leaders/request-reference/(?P<year>\d{4})-(?P<slug>[^/]+)/$', views.request_reference, name="cciw-officers-request_reference"),
     url(r'^leaders/nag-by-officer/(?P<year>\d{4})-(?P<slug>[^/]+)/$', views.nag_by_officer, name="cciw-officers-nag_by_officer"),
     url(r'^leaders/reference/(?P<reference_id>\d+)/$', views.view_reference, name="cciw-officers-view_reference"),
+
+    # DBS
     url(r'^leaders/dbss/(?P<year>\d{4})/', views.manage_dbss, name="cciw-officers-manage_dbss"),
     url(r'^leaders/mark-dbs-sent/', views.mark_dbs_sent, name="cciw-officers-mark_dbs_sent"),
     url(r'^leaders/undo-mark-dbs-sent/', views.undo_mark_dbs_sent, name="cciw-officers-undo_mark_dbs_sent"),
     url(r'^leaders/dbs-consent-alert-leaders/', views.dbs_consent_alert_leaders, name="cciw-officers-dbs_consent_alert_leaders"),
+    url(r'^leaders/dbs-checked-online/', views.dbs_checked_online, name="cciw-officers-dbs_checked_online"),
+
+
+    # Officer stats
     url(r'^leaders/officer-stats/(?P<year>\d{4})/$', views.officer_stats, name="cciw-officers-officer_stats"),
     url(r'^leaders/officer-stats-download/(?P<year>\d{4})/$', views.officer_stats_download, name="cciw-officers-officer_stats_download"),
     url(r'^leaders/officer-stats-trend/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.officer_stats_trend, name="cciw-officers-officer_stats_trend"),
     url(r'^leaders/officer-stats-trend-download/(?P<start_year>\d{4})-(?P<end_year>\d{4})/$', views.officer_stats_trend_download, name="cciw-officers-officer_stats_trend_download"),
+
+    # References
     url(r'^ref/(?P<referee_id>\d+)-(?P<prev_ref_id>\d*)-(?P<hash>.*)/$', views.create_reference_form, name="cciw-officers-create_reference_form"),
     url(r'^ref/thanks/$', views.create_reference_thanks, name="cciw-officers-create_reference_thanks"),
+
     url(r'^add-officer/$', views.create_officer, name="cciw-officers-create_officer"),
     url(r'^files/(.*)$', views.officer_files, name="cciw-officers-officer_files"),
     url(r'^info/$', views.officer_info, name="cciw-officers-info"),

@@ -147,7 +147,7 @@
                 <tr>
                 {# Row 2 - register received DBS form #}
                   <td colspan="2">
-                    If/when DBS is received:
+                    DBS form received:
                   </td>
                   <td colspan="2">
                     <form action="{% url 'admin:officers_dbscheck_add' %}"
@@ -155,8 +155,32 @@
                           class="register-received-dbs"
                           >
                       <input type="hidden" name="officer" value="{{ officer.id }}">
+                      <input type="hidden" name="check_type" value="{{ CHECK_TYPE_FORM }}">
                       {% return_to_here %}
                       <button id="id_register_received_dbs_{{ officer.id }}">DBS received ...</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endif %}
+
+              {% if not dbs_info.has_valid_dbs and dbs_info.can_check_dbs_online %}
+                <tr>
+                {# Row 3 - check DBS online #}
+                  <td>
+                    DBS number:
+                  </td>
+                  <td>
+                    {{ dbs_info.update_enabled_dbs_number }}
+                  </td>
+                  <td colspan="2">
+                    <form action="{% url 'cciw-officers-dbs_checked_online' %}"
+                          method="GET"
+                          class="dbs-checked-online"
+                          >
+                      <input type="hidden" name="officer_id" value="{{ officer.id }}">
+                      <input type="hidden" name="dbs_number" value="{{ dbs_info.update_enabled_dbs_number }}">
+                      {% return_to_here %}
+                      <button id="id_dbs_checked_online_{{ officer.id }}">DBS checked online ...</button>
                     </form>
                   </td>
                 </tr>
