@@ -494,7 +494,7 @@ class DBSActionLogManager(models.Manager):
 
 class DBSActionLog(models.Model):
     """
-    Represents a log of a DBS form sent to an officer
+    Represents a log of a DBS action done by DBS officer
     """
     ACTION_FORM_SENT = 'form_sent'
     ACTION_LEADER_ALERT_SENT = 'leader_alert_sent'
@@ -520,9 +520,11 @@ class DBSActionLog(models.Model):
     objects = DBSActionLogManager()
 
     def __str__(self):
-        return "Log of DBS form sent to %s %s on %s" % (self.officer.first_name,
-                                                        self.officer.last_name,
-                                                        self.timestamp.strftime("%Y-%m-%d"))
+        return "Log of DBS action '%s' for %s %s on %s" % (
+            self.get_action_type_display(),
+            self.officer.first_name,
+            self.officer.last_name,
+            self.timestamp.strftime("%Y-%m-%d"))
 
     class Meta:
         verbose_name = "DBS action log"
