@@ -723,9 +723,11 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
 
     def auto_set_amount_due(self):
         amount = self.expected_amount_due()
-        if amount is None and self.amount_due is None:
+        if amount is None:
             # This happens for PRICE_CUSTOM
-            self.amount_due = Decimal('0.00')
+            if self.amount_due is None:
+                self.amount_due = Decimal('0.00')
+            # Otherwise - should leave as it was.
         else:
             self.amount_due = amount
 
