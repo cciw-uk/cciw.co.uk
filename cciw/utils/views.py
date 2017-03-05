@@ -2,6 +2,7 @@ from functools import wraps
 from urllib.parse import urlparse
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.views import redirect_to_login
 from django.http import Http404, HttpResponse, HttpResponseForbidden, HttpResponseRedirect
@@ -10,7 +11,15 @@ from django.utils.http import is_safe_url
 from cciw.utils.spreadsheet import ExcelFormatter, OdsFormatter
 
 
-def close_window_response():
+def close_window_response(request=None, clear_messages=False):
+    # First we clear any messages, because, due to the closed window, these will
+    # otherwise appear in another window at an unrelated moment, confusing the
+    # user.
+    if clear_messages:
+        assert request is not None
+        list(messages.get_messages(request))
+
+    # Closes the response via javascript:
     return HttpResponse("""<!DOCTYPE html><html><head><title>Close</title><script type="text/javascript">window.close()</script></head><body></body></html>""")
 
 
@@ -21,7 +30,7 @@ def reroute_response(request, default_to_close=True):
     # if '_temporary_window=1 in query string, that overrides everything
     # - we should close the window.
     if request.GET.get('_temporary_window', '') == '1':
-        return close_window_response()
+        return close_window_response(request=request, clear_messages=True)
 
     # if we have a safe return to URL, do a redirect
     if '_return_to' in request.GET:
@@ -31,7 +40,7 @@ def reroute_response(request, default_to_close=True):
 
     # Otherwise close the window
     if default_to_close:
-        return close_window_response()
+        return close_window_response(request=request, clear_messages=True)
     else:
         return None
 
