@@ -282,9 +282,14 @@ ul.ui-autocomplete li {
     }
     table.actions {
         td {
-            border: 0px;
+            border-top-width: 0px;
+            border-bottom-width: 1px;
             vertical-align: top;
-            padding-top: 0px;
+            padding-top: 1px;
+            padding-bottom: 1px;
+        }
+        tbody tr:last-child td {
+            border-bottom-width: 0px;
             padding-bottom: 0px;
         }
     }
