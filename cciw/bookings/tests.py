@@ -192,7 +192,7 @@ class LogInMixin(object):
 
     def _set_signed_cookie(self, key, value, salt='', **kwargs):
         value = signing.get_cookie_signer(salt=key + salt).sign(value)
-        if self.is_full_browser_test and not self._have_visited_page:
+        if self.is_full_browser_test and not self._have_visited_page():
             self.get_url('django_functest.emptypage')
         return self._add_cookie({'name': key,
                                  'value': value,
