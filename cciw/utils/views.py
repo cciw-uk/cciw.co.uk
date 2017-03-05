@@ -14,27 +14,26 @@ def close_window_response():
     return HttpResponse("""<!DOCTYPE html><html><head><title>Close</title><script type="text/javascript">window.close()</script></head><body></body></html>""")
 
 
-def get_return_to_response(request):
-    if '_return_to' in request.GET:
-        url = request.GET['_return_to']
-        if is_safe_url(url=url, host=request.get_host()):
-            return HttpResponseRedirect(url)
-    return None
-
-
-def temporary_window_finish_response(request):
+def reroute_response(request, default_to_close=True):
+    """
+    Utility for rerouting (or closing window) at the end of a page being used.
+    """
     # if '_temporary_window=1 in query string, that overrides everything
     # - we should close the window.
     if request.GET.get('_temporary_window', '') == '1':
         return close_window_response()
 
     # if we have a safe return to URL, do a redirect
-    redirect = get_return_to_response(request)
-    if redirect is not None:
-        return redirect
+    if '_return_to' in request.GET:
+        url = request.GET['_return_to']
+        if is_safe_url(url=url, host=request.get_host()):
+            return HttpResponseRedirect(url)
 
     # Otherwise close the window
-    return close_window_response()
+    if default_to_close:
+        return close_window_response()
+    else:
+        return None
 
 
 def user_passes_test_improved(test_func, login_url=None, redirect_field_name=REDIRECT_FIELD_NAME):

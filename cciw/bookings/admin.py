@@ -9,7 +9,7 @@ from cciw.bookings.email import send_booking_approved_mail, send_booking_confirm
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO_COMPLETE, AccountTransferPayment,
                                   Booking, BookingAccount, ManualPayment, Payment, Price, RefundPayment)
 from cciw.cciwmain import common
-from cciw.utils.admin import ReturnToAdminMixin
+from cciw.utils.admin import RerouteResponseAdminMixin
 
 
 FIRST_BOOKING_YEAR = 2012
@@ -423,7 +423,7 @@ class RefundPaymentAdminForm(forms.ModelForm):
         }
 
 
-class ManualPaymentAdminBase(ReturnToAdminMixin, admin.ModelAdmin):
+class ManualPaymentAdminBase(RerouteResponseAdminMixin, admin.ModelAdmin):
     list_display = ['account', 'amount', 'payment_type', 'created']
     search_fields = ['account__name']
     date_hierarchy = 'created'

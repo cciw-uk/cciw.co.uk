@@ -185,17 +185,14 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
                       .format(self.officer_user.first_name,
                               self.officer_user.last_name),
                       m.body)
-        if self.is_full_browser_test:
-            # Previous page opened in new window. It is closed now,
-            # but we still need to switch back.
-            self.switch_window()
-        self.assertUrlsEqual(url)
+
         self.assertEqual(self.secretary.dbsactions_performed.count(), 1)
         self.assertEqual(self.secretary.dbsactions_performed.get().action_type,
                          DBSActionLog.ACTION_LEADER_ALERT_SENT)
-        if self.is_full_browser_test:
-            time.sleep(1)
-            self.wait_for_ajax()
+
+        self.handle_closed_window()
+        self.assertUrlsEqual(url)
+
         self.assertEqual(self.get_element_text('#id_last_leader_alert_sent_{0}'.format(self.officer_user.id)).strip().replace('\u00A0', ' '),
                          "0 minutes ago")
 
@@ -211,12 +208,16 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
                    })
         self.submit('input[name="_save"]')
 
-        # Should get redirected back
-        self.assertUrlsEqual(url)
         dbs_checks = list(self.officer_user.dbs_checks.all())
         self.assertEqual(len(dbs_checks), 1)
         dbs_check = dbs_checks[0]
         self.assertEqual(dbs_check.dbs_number, '1234')
+
+        self.handle_closed_window()
+        self.assertUrlsEqual(url)
+
+        # DBS received - no need to have any action buttons.
+        self.assertFalse(self.is_element_present(self.register_received_button_selector(self.officer_user)))
 
     def test_dbs_checked_online(self):
         """
@@ -243,9 +244,6 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         # Should be filled out with everything needed.
         self.submit('input[name="_save"]')
 
-        # Should get redirected back
-        self.assertUrlsEqual(url)
-
         # Check created DBS:
         self.assertEqual(self.officer_user.dbs_checks.count(), 2)
         dbs_check = self.officer_user.dbs_checks.all().order_by('-completed')[0]
@@ -257,14 +255,31 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.assertEqual(dbs_check.requested_by, DBSCheck.REQUESTED_BY_CCIW)
         self.assertEqual(dbs_check.registered_with_dbs_update, True)
 
+        self.handle_closed_window()
+        self.assertUrlsEqual(url)
+        # Check done - no need for any action buttons
+        self.assertFalse(self.is_element_present(self.dbs_checked_online_button_selector(self.officer_user)))
+
     def click_register_received_button(self, officer):
-        self.submit('#id_register_received_dbs_{0}'.format(officer.id))
+        self.submit(self.register_received_button_selector(officer))
+
+    def register_received_button_selector(self, officer):
+        return '#id_register_received_dbs_{0}'.format(officer.id)
 
     def click_dbs_checked_online_button(self, officer):
-        self.submit('#id_dbs_checked_online_{0}'.format(officer.id))
+        self.submit(self.dbs_checked_online_button_selector(officer))
+
+    def dbs_checked_online_button_selector(self, officer):
+        return '#id_dbs_checked_online_{0}'.format(officer.id)
 
 
 class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):
+    def handle_closed_window(self):
+        # with no javascript, instead of popups and
+        # closing windows, we get redirects which
+        # handle everything.
+        pass
+
     def click_dbs_sent_button(self, officer):
         self.submit('#id_send_{0}'.format(officer.id))
 
@@ -276,6 +291,14 @@ class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):
 
 
 class ManageDbsPageSL(ManageDbsPageBase, SeleniumBase):
+    def handle_closed_window(self):
+        # Previous page opened in new window. It is closed now...
+        self.assertEqual(len(self._driver.window_handles), 1)
+        # but we still need to switch back.
+        self.switch_window()
+        time.sleep(1)
+        self.wait_for_ajax()
+
     def click_dbs_sent_button(self, officer):
         self.click('#id_send_{0}'.format(officer.id))
         self.wait_for_ajax()
@@ -286,5 +309,15 @@ class ManageDbsPageSL(ManageDbsPageBase, SeleniumBase):
 
     def click_alert_leaders_button(self, officer):
         self.click('#id_alert_leaders_{0}'.format(officer.id))
+        self.switch_window()
+        self.wait_until_loaded('body')
+
+    def click_register_received_button(self, officer):
+        self.click(self.register_received_button_selector(officer))
+        self.switch_window()
+        self.wait_until_loaded('body')
+
+    def click_dbs_checked_online_button(self, officer):
+        self.click(self.dbs_checked_online_button_selector(officer))
         self.switch_window()
         self.wait_until_loaded('body')

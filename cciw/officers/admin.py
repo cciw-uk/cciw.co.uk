@@ -17,7 +17,7 @@ from cciw.officers import widgets
 from cciw.officers.fields import ExplicitBooleanField
 from cciw.officers.models import (REFEREE_DATA_FIELDS, REFEREE_NUMBERS, Application, DBSActionLog, DBSCheck, Invitation,
                                   Qualification, QualificationType, Referee, Reference)
-from cciw.utils.admin import ReturnToAdminMixin
+from cciw.utils.admin import RerouteResponseAdminMixin
 from cciw.utils.views import close_window_response
 
 officer_autocomplete_widget = lambda: autocomplete.ModelSelect2(url='officer-autocomplete')
@@ -451,7 +451,7 @@ class DBSCheckModelForm(forms.ModelForm):
         }
 
 
-class DBSCheckAdmin(ReturnToAdminMixin, admin.ModelAdmin):
+class DBSCheckAdmin(RerouteResponseAdminMixin, admin.ModelAdmin):
 
     form = DBSCheckModelForm
 

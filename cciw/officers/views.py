@@ -38,7 +38,7 @@ from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email, python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
-from cciw.utils.views import get_spreadsheet_formatter, temporary_window_finish_response, user_passes_test_improved
+from cciw.utils.views import get_spreadsheet_formatter, reroute_response, user_passes_test_improved
 from securedownload.views import access_folder_securely
 
 from . import create
@@ -530,7 +530,7 @@ def request_reference(request, year=None, slug=None):
                 editreferenceform.save(referee, user=request.user)
                 return close_window_and_update_referee(referee_id)
         elif 'cancel' in request.POST:
-            return temporary_window_finish_response(request)
+            return reroute_response(request)
 
     if emailform is None:
         emailform = SetEmailForm(initial={'email': referee.email,
@@ -588,7 +588,7 @@ def nag_by_officer(request, year=None, slug=None):
             return close_window_and_update_referee(referee_id)
         else:
             # cancel
-            return temporary_window_finish_response(request)
+            return reroute_response(request)
 
     messageform = SendNagByOfficerForm(message_info=messageform_info)
 
@@ -1247,10 +1247,10 @@ def dbs_consent_alert_leaders(request):
             send_dbs_consent_alert_leaders_email(wordwrap(messageform.cleaned_data['message'], 70), officer, camps)
             request.user.dbsactions_performed.create(officer=officer,
                                                      action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT)
-            return temporary_window_finish_response(request)
+            return reroute_response(request)
         else:
             # cancel
-            return temporary_window_finish_response(request)
+            return reroute_response(request)
 
     messageform = DbsConsentProblemForm(message_info=messageform_info)
 
@@ -1277,6 +1277,9 @@ def dbs_checked_online(request):
         'completed': date.today().strftime('%Y-%m-%d'),
         'check_type': DBSCheck.CHECK_TYPE_ONLINE,
     }
+    if '_temporary_window' in request.GET:
+        params['_temporary_window'] = request.GET['_temporary_window']
+
     if old_dbs_check:
         params.update({
             'requested_by': old_dbs_check.requested_by,

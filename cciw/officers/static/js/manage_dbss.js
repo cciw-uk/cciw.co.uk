@@ -57,10 +57,12 @@ $(document).ready(function() {
         });
     });
 
-    $('form.alert-leaders').each(function (idx, elem) {
-        var $form = $(this);
-        $form.submit(function (ev) {
+    $('#id_officer_table').on(
+        'submit',
+        'form.alert-leaders, form.register-received-dbs, form.dbs-checked-online',
+        function (ev) {
             ev.preventDefault();
+            var $form = $(this);
             var data = $form.serialize();
             var url = $form.attr('action');
             var newWindow =
@@ -69,27 +71,24 @@ $(document).ready(function() {
                                          "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
 
             // Refresh the row when the child window is closed.
+            var intervalId;
             var checkClosed = function () {
                 if (newWindow.closed) {
-                    console.log("Window closed, refreshing");
-                    window.clearInterval(checkClosed);
+                    window.clearInterval(intervalId);
                     refreshRow($form.closest('tr.officer_dbs_row'));
                 }
             }
-            window.setInterval(checkClosed, 200);
+            intervalId = window.setInterval(checkClosed, 200);
         });
-    });
 
     function refreshRow ($row) {
         var officerId = $row.attr('data-officer-id');
-        console.log("refreshing " + officerId);
         jQuery.ajax({
             type: 'GET',
             url: $('#id_officer_table').attr('data-url'),
             data: {'officer_id': officerId},
             dataType: 'text',
             success: function (data, textStatus, xhr) {
-                console.log("Replacing with " + data);
                 $row.replaceWith(jQuery(data));
             }
         });
