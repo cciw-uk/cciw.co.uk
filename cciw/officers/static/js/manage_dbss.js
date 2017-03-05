@@ -14,9 +14,9 @@ $(document).ready(function() {
                    // We need undo information, and we need to update the 'DBS form
                    // sent' column. We store undo information in a stack, on the undo
                    // button itself.
-                   var btn = jQuery('#id_undo_' + officerId.toString());
-                   var lastSentCell = jQuery('#id_last_dbs_form_sent_' + officerId.toString());
-                   var highlightDiv = jQuery('#id_highlightdiv_' + officerId.toString());
+                   var btn = jQuery('#id_undo_' + officerId);
+                   var lastSentCell = jQuery('#id_last_dbs_form_sent_' + officerId);
+                   var highlightDiv = jQuery('tr.officer_dbs_row[data-officer-id="' + officerId + '"]');
                    if (btn.data('undoIdList') == null) {
                        btn.data('undoIdList', new Array);
                    }
@@ -63,11 +63,37 @@ $(document).ready(function() {
            ev.preventDefault();
            var data = $form.serialize();
            var url = $form.attr('action');
-           cciw.openTemporaryWindow(url + '?' + data,
-                                    '_blank',
-                                    "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+           var newWindow =
+               cciw.openTemporaryWindow(url + '?' + data,
+                                        '_blank',
+                                        "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+
+           // Refresh the row when the child window is closed.
+           var checkClosed = function () {
+               if (newWindow.closed) {
+                   console.log("Window closed, refreshing");
+                   window.clearInterval(checkClosed);
+                   refreshRow($form.closest('tr.officer_dbs_row'));
+               }
+           }
+           window.setInterval(checkClosed, 200);
        });
    });
+
+    function refreshRow ($row) {
+        var officerId = $row.attr('data-officer-id');
+        console.log("refreshing " + officerId);
+        jQuery.ajax({
+            type: 'GET',
+            url: $('#id_officer_table').attr('data-url'),
+            data: {'officer_id': officerId},
+            dataType: 'text',
+            success: function (data, textStatus, xhr) {
+                console.log("Replacing with " + data);
+                $row.replaceWith(jQuery(data));
+            }
+        });
+    }
 
    // convert 'data-camps' into jQuery data
    $('#id_officer_table tr.officer_dbs_row').each(function(idx, elem) {

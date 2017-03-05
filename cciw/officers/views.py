@@ -1025,7 +1025,14 @@ def manage_dbss(request, year=None):
         # Assume all, because having none is never useful
         selected_camps = set(camps)
 
-    officers_and_dbs_info = get_officers_with_dbs_info_for_camps(camps, selected_camps)
+    if 'officer_id' in request.GET:
+        officer_id = int(request.GET['officer_id'])
+        template_name = 'cciw/officers/manage_dbss_rows_inc.html'
+    else:
+        officer_id = None
+        template_name = 'cciw/officers/manage_dbss.html'
+
+    officers_and_dbs_info = get_officers_with_dbs_info_for_camps(camps, officer_id=officer_id)
 
     c = {'officers_and_dbs_info': officers_and_dbs_info,
          'camps': camps,
@@ -1034,10 +1041,10 @@ def manage_dbss(request, year=None):
          'CHECK_TYPE_FORM': DBSCheck.CHECK_TYPE_FORM,
          'CHECK_TYPE_ONLINE': DBSCheck.CHECK_TYPE_ONLINE,
          }
-    return render(request, 'cciw/officers/manage_dbss.html', c)
+    return render(request, template_name, c)
 
 
-def get_officers_with_dbs_info_for_camps(camps, selected_camps):
+def get_officers_with_dbs_info_for_camps(camps, officer_id=None):
     """
     Get needed DBS officer info for the given set of camps,
     return a list of two tuples, [(officer, dbs_info)]
@@ -1052,7 +1059,12 @@ def get_officers_with_dbs_info_for_camps(camps, selected_camps):
     # We also want to be able to do filtering by javascript in the frontend.
     now = timezone.now()
 
-    camps_officers = [[i.officer for i in c.invitations.all()] for c in camps]
+    if officer_id is not None:
+        camps_officers = [[i.officer for i in c.invitations.all().filter(officer__id=officer_id)]
+                          for c in camps]
+    else:
+        camps_officers = [[i.officer for i in c.invitations.all()] for c in camps]
+
     all_officers = reduce(operator.or_, map(set, camps_officers))
     all_officers = sorted(all_officers, key=lambda o: (o.first_name, o.last_name))
     apps = list(reduce(operator.or_, map(applications_for_camp, camps)))
@@ -1060,12 +1072,16 @@ def get_officers_with_dbs_info_for_camps(camps, selected_camps):
                                        [DBSCheck.objects.get_for_camp(c, include_late=True)
                                         for c in camps])
                                 .values_list('officer_id', flat=True))
-    all_dbs_officer_ids = set(DBSCheck.objects.values_list('officer_id', flat=True))
+
+    all_dbs_officer_ids = set(DBSCheck.objects
+                              .filter(officer__in=all_officers)
+                              .values_list('officer_id', flat=True))
 
     # Looking for action logs: set cutoff to a year before now, on the basis that
     # anything more than that will have been lost or irrelevant, and we don't
     # want to load everything into memory.
     relevant_action_logs = (DBSActionLog.objects
+                            .filter(officer__in=all_officers)
                             .filter(timestamp__gt=now - timedelta(365))
                             .order_by('timestamp'))
     dbs_forms_sent = list(relevant_action_logs.filter(
@@ -1158,16 +1174,20 @@ class DbsInfo(object):
                 self.requires_send_dbs_form)
 
     @property
+    def _action_possible(self):
+        return not self.has_valid_dbs and self.has_application_form
+
+    @property
     def requires_alert_leaders(self):
-        return not self.has_valid_dbs and self.has_application_form and not self.dbs_check_consent
+        return self._action_possible and not self.dbs_check_consent and not self.last_leader_alert_sent
 
     @property
     def requires_send_dbs_form(self):
-        return not self.has_valid_dbs and self.has_application_form and self.last_dbs_form_sent is None
+        return self._action_possible and self.dbs_check_consent and self.last_dbs_form_sent is None
 
     @property
     def can_register_received_dbs_form(self):
-        return not self.has_valid_dbs and self.has_application_form
+        return self._action_possible
 
     @property
     def can_check_dbs_online(self):

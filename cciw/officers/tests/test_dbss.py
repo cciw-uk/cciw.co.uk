@@ -1,7 +1,8 @@
+import time
 from datetime import date, timedelta
 
-from django.utils import timezone
 from django.core import mail
+from django.utils import timezone
 from django_functest import FuncBaseMixin
 
 from cciw.cciwmain.models import Camp
@@ -22,7 +23,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
 
     def get_officer_with_dbs_info(self):
         camps = Camp.objects.filter(year=self.year)
-        officers_and_dbs_info = get_officers_with_dbs_info_for_camps(camps, set(camps))
+        officers_and_dbs_info = get_officers_with_dbs_info_for_camps(camps)
         relevant = [(o, c) for o, c in officers_and_dbs_info
                     if o == self.officer_user]
         assert len(relevant) == 1
@@ -171,6 +172,8 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
         self.assertTextPresent('Officer does not consent')
+        self.assertEqual(self.get_element_text('#id_last_leader_alert_sent_{0}'.format(self.officer_user.id)).strip(),
+                         'Never')
         self.click_alert_leaders_button(self.officer_user)
         self.assertTextPresent("Report DBS problem to leaders")
         self.submit('input[name="send"]')
@@ -190,6 +193,11 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.assertEqual(self.secretary.dbsactions_performed.count(), 1)
         self.assertEqual(self.secretary.dbsactions_performed.get().action_type,
                          DBSActionLog.ACTION_LEADER_ALERT_SENT)
+        if self.is_full_browser_test:
+            time.sleep(1)
+            self.wait_for_ajax()
+        self.assertEqual(self.get_element_text('#id_last_leader_alert_sent_{0}'.format(self.officer_user.id)).strip().replace('\u00A0', ' '),
+                         "0 minutes ago")
 
     def test_register_received_dbs(self):
         self.create_application(self.officer_user, self.year)

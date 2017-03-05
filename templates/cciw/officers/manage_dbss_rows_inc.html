@@ -1,0 +1,148 @@
+{% load static %}
+{% load cciwform %}
+
+{% for officer, dbs_info in officers_and_dbs_info %}
+  <tr data-officer-id="{{ officer.id }}"
+      class="officer_dbs_row {% if dbs_info.requires_action %}requires_action{% endif %}"
+      data-camps="{% for camp in dbs_info.camps %}{{ camp.slug_name }}{% if not forloop.last %},{% endif %}{% endfor %}"
+      >
+    <td>{{ officer.first_name }} {{ officer.last_name }}</td>
+    <td>{% for camp in dbs_info.camps %}
+      <a href="{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}" target="_blank">{{ camp.slug_name }}</a>{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+    </td>
+    <td>{% if dbs_info.has_application_form %}<img src="{% static "admin/img/icon-yes.svg" %}">
+      <a href="{% url 'admin:officers_application_change' dbs_info.application_id %}" target="_blank">View/edit</a>{% endif %}</td>
+    <td>
+      {% if not dbs_info.has_dbs %}
+        <img src="{% static "admin/img/icon-no.svg" %}"> Never
+      {% else %}
+        {% if dbs_info.has_valid_dbs %}
+          <img src="{% static "admin/img/icon-yes.svg" %}"> Recent
+        {% else %}
+          <img src="{% static "admin/img/icon-alert.svg" %}"> Out of date
+        {% endif %}
+      {% endif %}
+    </td>
+    <td>
+      <table class="actions">
+        {# Col 1 - caption for info #}
+        {# Col 2 - info #}
+        {# Col 3 - action button #}
+        {# Col 2 - info about action completed #}
+
+        {% if not dbs_info.has_valid_dbs %}
+          <tr>
+            {# Row 1 - either mark DBS form as sent, or alert leaders #}
+            {# regarding dbs_check_consent field #}
+            {% if dbs_info.has_application_form %}
+              {% if dbs_info.dbs_check_consent %}
+                <td>
+                  Address:
+                </td>
+                <td>
+                  <textarea class="address" id="id_address_{{ officer.id }}">{{ dbs_info.address }}</textarea>
+                </td>
+                <td>
+                  <form action="{% url 'cciw-officers-mark_dbs_sent' %}"
+                        method="POST"
+                        class="dbs-form-sent">
+                    {% csrf_token %}
+                    <input type="hidden" name="officer_id" value="{{ officer.id }}" />
+                    <button id="id_send_{{ officer.id }}">Mark DBS form sent</button>
+                  </form>
+                  <button id="id_undo_{{ officer.id }}"
+                          action="{% url 'cciw-officers-undo_mark_dbs_sent' %}"
+                          style="display: none;">Undo</button>
+                </td>
+                <td>
+                  DBS form sent:
+                  <span id="id_last_dbs_form_sent_{{ officer.id }}">
+                    {% if dbs_info.last_dbs_form_sent %}
+                      {{ dbs_info.last_dbs_form_sent|timesince }} ago
+                    {% else %}
+                      Never
+                    {% endif %}
+                  </span>
+                </td>
+
+              {% else %}
+                <td colspan="2">
+                  <b>Officer does not consent to DBS check</b>
+                </td>
+                <td>
+                  <form action="{% url 'cciw-officers-dbs_consent_alert_leaders' %}"
+                        method="GET"
+                        class="alert-leaders"
+                        >
+                    <input type="hidden" name="application_id" value="{{ dbs_info.application_id }}">
+                    {% return_to_here %}
+                    <button id="id_alert_leaders_{{ officer.id }}">Alert leaders</button>
+                  </form>
+                </td>
+                <td>
+                  Alert sent:
+                  <span id="id_last_leader_alert_sent_{{ officer.id }}">
+                    {% if dbs_info.last_leader_alert_sent %}
+                      {{ dbs_info.last_leader_alert_sent|timesince }} ago
+                    {% else %}
+                      Never
+                    {% endif %}
+                  </span>
+                </td>
+              {% endif %}
+            {% else %}
+              <td colspan="2">
+                Needs application form
+              </td>
+            {% endif %}
+          </tr>
+        {% endif %}
+
+        {% if dbs_info.can_register_received_dbs_form %}
+          <tr>
+            {# Row 2 - register received DBS form #}
+            <td colspan="2">
+              DBS form received:
+            </td>
+            <td colspan="2">
+              <form action="{% url 'admin:officers_dbscheck_add' %}"
+                    method="GET"
+                    class="register-received-dbs"
+                    >
+                <input type="hidden" name="officer" value="{{ officer.id }}">
+                <input type="hidden" name="check_type" value="{{ CHECK_TYPE_FORM }}">
+                {% return_to_here %}
+                <button id="id_register_received_dbs_{{ officer.id }}">DBS received ...</button>
+              </form>
+            </td>
+          </tr>
+        {% endif %}
+
+        {% if not dbs_info.has_valid_dbs and dbs_info.can_check_dbs_online %}
+          <tr>
+            {# Row 3 - check DBS online #}
+            <td>
+              DBS number:
+            </td>
+            <td>
+              {{ dbs_info.update_enabled_dbs_number }}
+            </td>
+            <td colspan="2">
+              <form action="{% url 'cciw-officers-dbs_checked_online' %}"
+                    method="GET"
+                    class="dbs-checked-online"
+                    >
+                <input type="hidden" name="officer_id" value="{{ officer.id }}">
+                <input type="hidden" name="dbs_number" value="{{ dbs_info.update_enabled_dbs_number }}">
+                {% return_to_here %}
+                <button id="id_dbs_checked_online_{{ officer.id }}">DBS checked online ...</button>
+              </form>
+            </td>
+          </tr>
+        {% endif %}
+
+      </table>
+    </td>
+  </tr>
+{% endfor %}

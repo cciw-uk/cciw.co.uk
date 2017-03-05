@@ -3,6 +3,7 @@ import time
 import unittest
 from urllib.parse import urlparse
 
+from pyquery import PyQuery
 from compressor.filters import CompilerFilter
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.urlresolvers import reverse
@@ -36,6 +37,9 @@ class CommonMixin(object):
         url = reverse(urlname)
         path = urlparse(self.current_url).path
         self.assertEqual(path, url)
+
+    def assertElementText(self, css_selector, text):
+        self.assertEqual(self.get_element_text(css_selector), text)
 
     def assert_html5_form_invalid(self):
         self.assertTrue(len(self._driver.find_elements_by_css_selector('form:invalid')),
@@ -81,6 +85,10 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
     def assertHtmlPresent(self, html):
         self.assertContains(self.last_response, html, html=True)
 
+    def get_element_text(self, css_selector):
+        pq = PyQuery(self.last_response.content.decode('utf-8'))
+        return pq.find(css_selector)[0].text_content()
+
 
 @unittest.skipIf(os.environ.get('SKIP_SELENIUM_TESTS'), "Skipping Selenium tests")
 class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseMixin, StaticLiveServerTestCase):
@@ -109,9 +117,8 @@ class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseM
     def assertHtmlPresent(self, html):
         self.assertContains(self._get_page_source(), html, html=True)
 
-    def assertElementText(self, css_selector, text):
-        e = self._driver.find_element_by_css_selector(css_selector)
-        self.assertEqual(e.text, text)
+    def get_element_text(self, css_selector):
+        return self._driver.find_element_by_css_selector(css_selector).text
 
     def wait_for_ajax(self):
         time.sleep(0.1)
