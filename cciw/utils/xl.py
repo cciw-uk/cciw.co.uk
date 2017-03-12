@@ -2,13 +2,12 @@
 Simplified xlwt interface
 """
 from copy import deepcopy
-from datetime import datetime, date
+from datetime import date, datetime
 from io import BytesIO
 
+import xlwt
 from django.utils import timezone
 from pytz import UTC
-
-import xlwt
 
 
 def add_sheet_with_header_row(wkbk, name, headers, contents):

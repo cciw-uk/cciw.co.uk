@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django import template
-from django.utils.safestring import mark_safe, SafeData
+from django.utils.safestring import SafeData, mark_safe
 
 register = template.Library()
 

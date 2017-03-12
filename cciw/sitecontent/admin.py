@@ -1,5 +1,6 @@
-from cciw.sitecontent.models import MenuLink, HtmlChunk
 from django.contrib import admin
+
+from cciw.sitecontent.models import HtmlChunk, MenuLink
 
 
 class MenuLinkAdmin(admin.ModelAdmin):

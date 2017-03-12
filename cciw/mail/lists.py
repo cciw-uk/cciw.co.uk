@@ -28,8 +28,8 @@ from django.utils.encoding import force_bytes
 from cciw.auth import COMMITTEE_GROUP_NAME, get_camp_admin_group_users, get_group_users
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
-from cciw.officers.models import Application
 from cciw.officers.email_utils import formatted_email
+from cciw.officers.models import Application
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 
 from .mailgun import send_mime_message

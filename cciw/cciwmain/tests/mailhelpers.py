@@ -1,5 +1,5 @@
 import re
-from urllib.parse import urlparse, parse_qs, urlunsplit, urlencode
+from urllib.parse import parse_qs, urlencode, urlparse, urlunsplit
 
 
 def url_to_path_and_query(url):

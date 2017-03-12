@@ -2,9 +2,8 @@ from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from paypal.standard.ipn.signals import invalid_ipn_received, valid_ipn_received
 
-from .email import send_places_confirmed_email, send_unrecognised_payment_email, send_pending_payment_email
-from .models import (AccountTransferPayment, ManualPayment, RefundPayment, parse_paypal_custom_field,
-                     send_payment)
+from .email import send_pending_payment_email, send_places_confirmed_email, send_unrecognised_payment_email
+from .models import AccountTransferPayment, ManualPayment, RefundPayment, parse_paypal_custom_field, send_payment
 from .signals import places_confirmed
 
 

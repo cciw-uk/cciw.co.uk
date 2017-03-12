@@ -4,8 +4,8 @@ from django.db import models
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from cciw.cciwmain.common import standard_subs
 import cciw.middleware.threadlocals as threadlocals
+from cciw.cciwmain.common import standard_subs
 
 
 class MenuLink(models.Model):

@@ -9,7 +9,7 @@ from django_dynamic_fixture import G
 from cciw.auth import BOOKING_SECRETARY_GROUP_NAME, SECRETARY_GROUP_NAME
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
-from cciw.officers.models import Application, Reference, QualificationType
+from cciw.officers.models import Application, QualificationType, Reference
 
 User = get_user_model()
 

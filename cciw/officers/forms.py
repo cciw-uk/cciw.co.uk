@@ -7,9 +7,9 @@ from django.utils import timezone
 
 from cciw.cciwmain.models import get_reference_contact_people
 from cciw.officers import create
+from cciw.officers.email import send_leaders_reference_email
 from cciw.officers.models import Invitation, Reference
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
-from cciw.officers.email import send_leaders_reference_email
 
 User = get_user_model()
 

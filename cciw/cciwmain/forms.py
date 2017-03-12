@@ -1,6 +1,6 @@
-from django.utils.html import escape, mark_safe
 from django.forms.forms import BoundField
 from django.utils.encoding import force_text
+from django.utils.html import escape, mark_safe
 
 
 class CciwFormMixin(object):

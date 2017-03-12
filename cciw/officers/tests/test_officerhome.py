@@ -2,9 +2,8 @@ from django.core.urlresolvers import reverse
 
 from cciw.cciwmain.common import get_thisyear
 from cciw.utils.tests.webtest import WebTestBase
-from .base import OfficersSetupMixin, CurrentCampsMixin
 
-from .base import LEADER, OFFICER, BOOKING_SECRETARY, SECRETARY
+from .base import BOOKING_SECRETARY, LEADER, OFFICER, SECRETARY, CurrentCampsMixin, OfficersSetupMixin
 
 
 class OfficerHomePage(OfficersSetupMixin, CurrentCampsMixin, WebTestBase):

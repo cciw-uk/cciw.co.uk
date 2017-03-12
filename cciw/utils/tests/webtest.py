@@ -3,12 +3,12 @@ import time
 import unittest
 from urllib.parse import urlparse
 
-from pyquery import PyQuery
 from compressor.filters import CompilerFilter
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.urlresolvers import reverse
 from django.test.utils import override_settings
 from django_functest import FuncSeleniumMixin, FuncWebTestMixin, ShortcutLoginMixin
+from pyquery import PyQuery
 
 from cciw.utils.tests.base import TestBase, TestBaseMixin
 

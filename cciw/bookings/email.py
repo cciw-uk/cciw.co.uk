@@ -10,9 +10,8 @@ from django.core.signing import BadSignature, TimestampSigner
 from django.template import loader
 from django.utils import timezone
 
-from cciw.officers.email import admin_emails_for_camp
 from cciw.mail.models import log_user_email_sent
-
+from cciw.officers.email import admin_emails_for_camp
 
 LATE_BOOKING_THRESHOLD = 30  # days
 

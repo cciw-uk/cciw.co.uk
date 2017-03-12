@@ -5,7 +5,7 @@ from django.conf import settings
 
 from cciw.cciwmain.models import Camp
 from cciw.officers.applications import applications_for_camp
-from cciw.officers.models import Reference, DBSCheck
+from cciw.officers.models import DBSCheck, Reference
 from cciw.utils.stats import accumulate_dates
 
 

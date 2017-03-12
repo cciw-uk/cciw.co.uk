@@ -426,6 +426,7 @@ def code_quality_checks():
     if getattr(env, 'no_tests', False):
         return
     local("flake8 .")
+    local("isort -c")
     local("./runtests.py -f")
 
 

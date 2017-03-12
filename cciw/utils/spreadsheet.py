@@ -1,9 +1,9 @@
 # Simple spreadsheet abstraction that does what we need for returning data in
 # spreadsheets, supporting .xls and .ods
 
+import ezodf2
 import pandas as pd
 import xlwt
-import ezodf2
 
 from cciw.utils import xl
 

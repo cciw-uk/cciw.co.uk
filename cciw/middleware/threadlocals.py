@@ -1,7 +1,6 @@
 # Utilities and middleware for thread local storage
-import threading
 import os
-
+import threading
 
 _thread_locals = threading.local()
 

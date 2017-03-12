@@ -1,8 +1,8 @@
 from django.conf.urls import url
 
 from cciw.cciwmain.views import camps as camp_views
-from cciw.cciwmain.views import sites as sites_views
 from cciw.cciwmain.views import misc as misc_views
+from cciw.cciwmain.views import sites as sites_views
 from cciw.sitecontent import views as sitecontent_views
 
 from . import views

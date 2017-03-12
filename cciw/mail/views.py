@@ -3,7 +3,7 @@ import json
 from functools import wraps
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from requests.structures import CaseInsensitiveDict
 

@@ -1,12 +1,13 @@
-# Utilities for creation of officers in the database# Utilities for creation of officers in the database
-
+# Utilities for creation of officers in the database# Utilities for creation of
+# officers in the database
+#
 # Some of these are used from a script, and so print messages to the console if
 # 'verbose=True'.  A bit icky...
-from django.contrib.auth import get_user_model
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.utils import timezone
-
 
 User = get_user_model()
 

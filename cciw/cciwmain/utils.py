@@ -4,12 +4,12 @@ Utility functions and classes.
 
 For CCIW specific utilities see cciw.cciwmain.common
 """
-from datetime import date
 import json
+from datetime import date
 
-from django.core.validators import validate_email, ValidationError
-from django.utils.functional import Promise
+from django.core.validators import ValidationError, validate_email
 from django.utils.encoding import force_text
+from django.utils.functional import Promise
 
 
 # form.errors contains strings marked for translation,

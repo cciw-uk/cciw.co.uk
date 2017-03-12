@@ -1,6 +1,7 @@
+import encodings
+
 from django import template
 from django.template.defaultfilters import stringfilter
-import encodings
 
 register = template.Library()
 

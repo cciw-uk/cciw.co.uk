@@ -14,6 +14,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 from django_dynamic_fixture import G
+from django_functest import FuncBaseMixin
 from hypothesis import strategies as st
 from hypothesis import example, given
 from hypothesis.extra.django import models as djst
@@ -41,7 +42,6 @@ from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.base import TestBase, disable_logging
 from cciw.utils.tests.db import refresh
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
-from django_functest import FuncBaseMixin
 
 User = get_user_model()
 

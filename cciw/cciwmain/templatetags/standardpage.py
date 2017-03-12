@@ -1,6 +1,7 @@
 from django import template
-from cciw.sitecontent.models import HtmlChunk
+
 from cciw.cciwmain.common import standard_subs
+from cciw.sitecontent.models import HtmlChunk
 
 
 class RenderHtmlChunk(template.Node):

@@ -1,7 +1,7 @@
+from django.conf import settings
 from django.http import HttpResponseForbidden
 from django.utils.html import escape
 from django.utils.http import urlquote
-from django.conf import settings
 
 from cciw.auth import is_wiki_user
 

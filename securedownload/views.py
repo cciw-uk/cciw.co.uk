@@ -5,7 +5,7 @@ from urllib.parse import unquote
 
 from django.conf import settings
 from django.contrib.auth.views import redirect_to_login
-from django.http import Http404, HttpResponseRedirect, HttpResponseForbidden
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.utils.crypto import salted_hmac
 
 
