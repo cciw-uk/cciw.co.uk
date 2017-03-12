@@ -19,7 +19,7 @@ django-compressor==2.1
 django-countries==4.0
 django-debug-toolbar==1.5
 django-dynamic-fixture==1.9.0
-django-functest==0.2.0
+-e git+https://github.com/django-functest/django-functest@ba4c80aab9a143b49b75217d348d611237e58a1d#egg=django_functest
 django-mailer==1.2.2
 django-mptt==0.8.7
 django-nyt==1.0b1
@@ -41,6 +41,7 @@ html5lib==0.9999999
 hypothesis==3.6.1
 ipython==5.3.0
 ipython-genutils==0.1.0
+jsonfield==2.0.1
 lockfile==0.12.2
 lxml==3.7.3
 Markdown==2.6.8
