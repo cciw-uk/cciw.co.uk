@@ -343,8 +343,8 @@ class BookingStart(BookingLogInBase):
 class BookingEmailSent(BookingLogInBase):
     template_name = "cciw/bookings/email_sent.html"
 
-    def handle(self, request):
-        return self.render({'email_notification': get_email_notification_for_session(request)})
+    def magic_context(self):
+        return {'email_notification': get_email_notification_for_session(self.request)}
 
 
 @booking_account_required
