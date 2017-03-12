@@ -322,7 +322,7 @@ class BookingStart(BookingLogInBase):
     template_name = 'cciw/bookings/start.html'
     magic_context = {'booking_open': is_booking_open_thisyear}
 
-    def handle(self, request, *args, **kwargs):
+    def handle(self, request):
         account = get_booking_account_from_request(request)
         if account is not None:
             return next_step(account)
@@ -405,7 +405,7 @@ class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
     magic_context = {'booking_open': is_booking_open_thisyear,
                      'stage': 'place'}
 
-    def handle(self, request, *args, **kwargs):
+    def handle(self, request, **kwargs):
         year = common.get_thisyear()
         now = timezone.now()
 
