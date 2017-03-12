@@ -26,15 +26,17 @@
       </div>
     {% elif email_notification.is_delivered %}
       <div class="successMessage">
-        Success! Our email to {{ email_notification.email }} was delivered to your email server at {{ email_notification.timestamp|date:"r" }}
+        Delivered! Our email to {{ email_notification.email }} was delivered to the appropriate email server at {{ email_notification.timestamp|date:"r" }}.
+        You should find it in your inbox (unless you are using a forwarding service).
       </div>
     {% endif %}
   {% else %}
     <div class="userError">
-      <h3>Email delivery status: unknown</h3>
-      <p>
-        We are waiting for confirmation of whether your email was delivered or not.
-        Please refresh this page to see any updates.
+      <p><b>Email delivery status: unknown</b><br/>
+        We are waiting for confirmation of whether your email was delivered or
+        not. Please refresh this page to see any updates,
+        or <a href="{% url 'cciw-bookings-start' %}">try to send the email
+        again.</a>
       </p>
     </div>
   {% endif %}

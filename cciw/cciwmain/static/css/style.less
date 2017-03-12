@@ -496,10 +496,16 @@ table tr.spacer td {
     border-right-width: 0px;
 }
 
+
+div.userError,
+div.validationErrors,
+div.successMessage {
+    border-radius: 7px;
+}
+
 div.userError,
 div.validationErrors {
     border: 1px solid #d00000;
-    border-radius: 7px;
 }
 
 table.topheaders tr.selected td {
@@ -584,7 +590,7 @@ div.formrow {
 
 
 div.userError {
-    padding: 5px;
+    padding: 5px 9px;
     text-align: left;
     margin-bottom: 1em;
     margin-top: 0.5em;
@@ -625,7 +631,7 @@ input.placeholder {
 .successMessage {
     border: 1px solid @primaryColor;
     background-color: @primaryColorLighter;
-    padding: 5px;
+    padding: 5px 9px;
     text-align: left;
     margin-bottom: 1em;
     margin-top: 0.5em;
