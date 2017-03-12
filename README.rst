@@ -160,7 +160,11 @@ Views are done using a mixture of classic functions and Class Based Views,
 depending on whether the move to CBVs was worth the effort. This means that
 there is sometimes some duplication between the function based way of doing
 something and the equivalent CBV way, and you need to be comfortable with both
-styles. Note that we use our own, simplified CBV base class.
+styles.
+
+Note that we use our own, simplified CBV base class. See
+https://lukeplant.me.uk/blog/posts/my-approach-to-class-based-views/ for more
+explanation of the rationale here.
 
 
 Crontab

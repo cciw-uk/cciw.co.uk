@@ -23,6 +23,7 @@ from cciw.cciwmain.utils import python_to_json
 
 # Our own CBV base class. Only the stuff we really need.
 # Subclasses must implement 'handle'.
+# See - https://lukeplant.me.uk/blog/posts/my-approach-to-class-based-views/
 
 class View(object):
 
