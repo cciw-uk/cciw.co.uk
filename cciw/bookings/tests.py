@@ -51,6 +51,62 @@ class IpnMock(object):
     business = settings.PAYPAL_RECEIVER_EMAIL
 
 
+MAILGUN_DROPPED_DATA_EXAMPLE = [
+    ('Message-Id', '<20130503192659.13651.20287@cciw.co.uk>'),
+    ('X-Mailgun-Sid', 'WyIwNzI5MCIsICJpZG91YnR0aGlzb25lZXhpc3RzQGdtYWlsLmNvbSIsICI2Il0='),
+    ('attachment-count', '1'),
+    ('body-plain', ''),
+    ('code', '605'),
+    ('description', 'Not delivering to previously bounced address'),
+    ('domain', 'cciw.co.uk'),
+    ('event', 'dropped'),
+    ('my-var-2', 'awesome'),
+    ('my_var_1', 'Mailgun Variable #1'),
+    ('reason', 'hardfail'),
+    ('recipient', 'alice@example.com'),
+    ('signature', '5dc6626a6cfc08012c7dd185586e401639f84148d30c750517286ac10c91b6e0'),
+    ('timestamp', '1489255135'),
+    ('token', '657c87b2f50d1a223288a4d5dd3245f0e2d3c307a4dae27585'),
+    ('message-headers',
+     '[["Received", "by luna.mailgun.net with SMTP mgrt 8755546751405; Fri, 03 '
+     'May 2013 19:26:59 +0000"], ["Content-Type", ["multipart/alternative", '
+     '{"boundary": "23041bcdfae54aafb801a8da0283af85"}]], ["Mime-Version", '
+     '"1.0"], ["Subject", "Test drop webhook"], ["From", "Bob <bob@cciw.co.uk>"], '
+     '["To", "Alice <alice@example.com>"], ["Message-Id", '
+     '"<20130503192659.13651.20287@cciw.co.uk>"], ["List-Unsubscribe", '
+     '"<mailto:u+na6tmy3ege4tgnldmyytqojqmfsdembyme3tmy3cha4wcndbgaydqyrgoi6wszdpo'
+     'vrhi5dinfzw63tfmv4gs43uomstimdhnvqws3bomnxw2jtuhusteqjgmq6tm@cciw.co.uk>"], '
+     '["X-Mailgun-Sid", '
+     '"WyIwNzI5MCIsICJpZG91YnR0aGlzb25lZXhpc3RzQGdtYWlsLmNvbSIsICI2Il0="], '
+     '["X-Mailgun-Variables", "{\\"my_var_1\\": \\"Mailgun Variable #1\\", '
+     '\\"my-var-2\\": \\"awesome\\"}"], ["Date", "Fri, 03 May 2013 19:26:59 '
+     '+0000"], ["Sender", "bob@cciw.co.uk"]]'),
+]
+
+MAILGUN_DELIVERED_DATA_EXAMPLE = [
+    ('Message-Id', '<20130503182626.18666.16540@cciw.co.uk>'),
+    ('body-plain', ''),
+    ('domain', 'cciw.co.uk'),
+    ('event', 'delivered'),
+    ('my-var-2', 'awesome'),
+    ('my_var_1', 'Mailgun Variable #1'),
+    ('recipient', 'alice@example.com'),
+    ('signature', '4db431460b3f6e4d1aec0e6b10626f9812f3b6e948a84b52d5b75032d7f54773'),
+    ('timestamp', '1489343204'),
+    ('token', 'ba2125511e121ea3345fc960f2ec42c35de355a702674f2919'),
+    ('message-headers',
+     '[["Received", "by luna.mailgun.net with SMTP mgrt 8734663311733; Fri, '
+     '03 May 2013 18:26:27 +0000"], ["Content-Type", ["multipart/alternative",'
+     ' {"boundary": "eb663d73ae0a4d6c9153cc0aec8b7520"}]], ["Mime-Version", "1.0"],'
+     ' ["Subject", "Test deliver webhook"], ["From", "Bob <bob@cciw.co.uk>"], '
+     '["To", "Alice <alice@example.com>"], ["Message-Id", "<20130503182626.18666.'
+     '16540@cciw.co.uk>"], ["X-Mailgun-Variables", "{\\"my_var_1\\": \\"Mailgun '
+     'Variable #1\\", \\"my-var-2\\": \\"awesome\\"}"], ["Date", "Fri, 03 May 2013'
+     ' 18:26:27 +0000"], ["Sender", "bob@cciw.co.uk"]]'),
+]
+
+
+
 # Most mail is sent directly, but some is specifically put on a queue, to ensure
 # errors don't mess up payment processing. We 'send' and retrieve those here:
 def send_queued_mail():
@@ -509,6 +565,44 @@ class TestBookingStartBase(BookingBaseMixin, CreatePlaceWebMixin, FuncBaseMixin)
         self.create_place()
         self.get_url(self.urlname)
         self.assertUrlsEqual(reverse('cciw-bookings-account_overview'))
+
+    MAIL_DELIVERY_UNKNOWN_MESSAGE = "Email delivery status: unknown"
+
+    def test_mailgun_email_unknown(self):
+        self.test_complete_form()
+        self.assertTextPresent(self.MAIL_DELIVERY_UNKNOWN_MESSAGE)
+
+    def test_mailgun_email_blocked(self):
+        self.test_complete_form()
+
+        # Simulate mailgun sending us a dropped notification.
+        self.mailgun_dropped_message('booker@bookers.com')
+        # Refresh
+        self.get_literal_url(self.current_url)
+        self.assertTextAbsent(self.MAIL_DELIVERY_UNKNOWN_MESSAGE)
+        self.assertTextPresent("Our email to booker@bookers.com could not be delivered")
+
+    def test_mailgun_email_delivered(self):
+        self.test_complete_form()
+
+        # Simulate mailgun sending us a notification.
+        self.mailgun_delivered_message('booker@bookers.com')
+        # Refresh
+        self.get_literal_url(self.current_url)
+        self.assertTextAbsent(self.MAIL_DELIVERY_UNKNOWN_MESSAGE)
+        self.assertTextPresent("Our email to booker@bookers.com was delivered")
+
+    def mailgun_dropped_message(self, email_address):
+        data = {k: v for k, v in MAILGUN_DROPPED_DATA_EXAMPLE}
+        data['recipient'] = email_address
+        self.client.post(reverse('cciw-mailgun-drop'),
+                         data=data)
+
+    def mailgun_delivered_message(self, email_address):
+        data = {k: v for k, v in MAILGUN_DELIVERED_DATA_EXAMPLE}
+        data['recipient'] = email_address
+        self.client.post(reverse('cciw-mailgun-deliver'),
+                         data=data)
 
 
 class TestBookingStartWT(TestBookingStartBase, WebTestBase):

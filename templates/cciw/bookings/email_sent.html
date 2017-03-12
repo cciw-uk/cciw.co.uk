@@ -3,4 +3,40 @@
   <p>An email has been sent to your address to verify that it works. Please follow
     the instructions in the email to continue the booking process.</p>
 
+  {% if email_notification %}
+    {% if email_notification.is_dropped %}
+      <div class="userError">
+        <p>Our email to {{ email_notification.email }} could not be delivered.
+          This normally happens for one of the following reasons:</p>
+        <ul>
+          <li>The email address you entered was incorrect</li>
+          <li>Your email server has (temporarily) blocked our servers due to issues with spam. Normally
+            this will be resolved in about 24 hours, and unfortunately there is nothing we can
+            do to speed this up.</li>
+        </ul>
+        <p>The details for the email not being delivered are given below:</p>
+
+        <blockquote>
+          timestamp: {{ email_notification.timestamp|date:"c" }}<br>
+          reason: {{ email_notification.reason }}<br>
+          description: {{ email_notification.description }}<br>
+        </blockquote>
+
+        <p><a href="{% url 'cciw-bookings-start' %}">Try to send again.</a></p>
+      </div>
+    {% elif email_notification.is_delivered %}
+      <div class="successMessage">
+        Success! Our email to {{ email_notification.email }} was delivered to your email server at {{ email_notification.timestamp|date:"r" }}
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="userError">
+      <h3>Email delivery status: unknown</h3>
+      <p>
+        We are waiting for confirmation of whether your email was delivered or not.
+        Please refresh this page to see any updates.
+      </p>
+    </div>
+  {% endif %}
+
 {% endblock %}

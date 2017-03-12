@@ -194,8 +194,7 @@ from paypal.standard.forms import PayPalPaymentsForm
 from cciw.auth import is_booking_secretary
 from cciw.bookings.email import send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
-from cciw.bookings.middleware import (get_booking_account_from_request,
-                                      unset_booking_account_cookie)
+from cciw.bookings.middleware import get_booking_account_from_request, unset_booking_account_cookie
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_INFO_COMPLETE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
                                   PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
                                   REQUIRED_PRICE_TYPES, Booking, BookingAccount, Price, any_bookings_possible,
@@ -205,6 +204,7 @@ from cciw.cciwmain import common
 from cciw.cciwmain.common import AjaxFormValidation, CciwBaseView, get_current_domain
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
+from cciw.mail.models import get_email_notification_for_session
 from cciw.utils.views import user_passes_test_improved
 
 
@@ -342,6 +342,9 @@ class BookingStart(BookingLogInBase):
 
 class BookingEmailSent(BookingLogInBase):
     template_name = "cciw/bookings/email_sent.html"
+
+    def handle(self, request):
+        return self.render({'email_notification': get_email_notification_for_session(request)})
 
 
 @booking_account_required

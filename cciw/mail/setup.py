@@ -49,11 +49,18 @@ def setup_mailgun_routes():
 
 def setup_mailgun_webhooks():
     domain = "https://www.cciw.co.uk"
-    webhook_bounce_url = domain + reverse("cciw-mailgun-bounce")
-    try:
-        create_webhook('bounce', webhook_bounce_url)
-    except Exception:
-        update_webhook('bounce', webhook_bounce_url)
+    urls = [
+        ('bounce', 'cciw-mailgun-bounce'),
+        ('drop', 'cciw-mailgun-drop'),
+        ('deliver', 'cciw-mailgun-deliver'),
+    ]
+
+    for webhook_name, named_url in urls:
+        webhook_url = domain + reverse(named_url)
+        try:
+            create_webhook(webhook_name, webhook_url)
+        except Exception:
+            update_webhook(webhook_name, webhook_url)
 
 
 def limit_pattern(pattern):

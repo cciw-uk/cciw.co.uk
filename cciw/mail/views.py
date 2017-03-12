@@ -3,7 +3,7 @@ import json
 from functools import wraps
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from requests.structures import CaseInsensitiveDict
 
@@ -12,6 +12,7 @@ from cciw.officers.email import X_REFERENCE_REQUEST, handle_reference_bounce
 from . import X_CCIW_ACTION, X_CCIW_CAMP
 from .lists import handle_mail_async
 from .mailgun import verify_webhook
+from .models import EmailNotification
 
 
 def b(s):
@@ -65,3 +66,23 @@ def mailgun_bounce_notification(request):
         handle_reference_bounce(recipient, reply_to, original_message, camp_name)
 
     return HttpResponse('OK!')
+
+
+def make_mailgun_notification_handler(required_event):
+
+    @csrf_exempt
+    @ensure_from_mailgun
+    def mailgun_notification(request):
+        event = request.POST['event']
+        if event != required_event:
+            return HttpResponseBadRequest("Expecting event == {0}, not {1}".format(
+                required_event, event))
+        EmailNotification.log_event(email=request.POST['recipient'],
+                                    event=event,
+                                    data=request.POST.items())
+        return HttpResponse('OK!')
+    return mailgun_notification
+
+
+mailgun_drop_notification = make_mailgun_notification_handler('dropped')
+mailgun_deliver_notification = make_mailgun_notification_handler('delivered')
