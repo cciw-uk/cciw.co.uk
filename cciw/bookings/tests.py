@@ -106,7 +106,6 @@ MAILGUN_DELIVERED_DATA_EXAMPLE = [
 ]
 
 
-
 # Most mail is sent directly, but some is specifically put on a queue, to ensure
 # errors don't mess up payment processing. We 'send' and retrieve those here:
 def send_queued_mail():
