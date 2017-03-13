@@ -342,7 +342,7 @@ There were problems with the following addresses:
 
 {2}
 """.format(email_list.address, mail['Subject'], '\n'.join(address_messages))
-            send_mail("Error with email to list {0}".format(email_list.address),
+            send_mail("[CCIW] Error with email to list {0}".format(email_list.address),
                       msg,
                       settings.DEFAULT_FROM_EMAIL,
                       [orig_from_addr],
@@ -387,7 +387,7 @@ def handle_mail(data, debug=False):
                 # Don't bother sending bounce emails to addresses
                 # we've never seen before. This is highly likely to be spam.
                 continue
-            send_mail("Access to mailing list {0} denied".format(address),
+            send_mail("[CCIW] Access to mailing list {0} denied".format(address),
                       "You attempted to email the list {0}\n"
                       "with an email titled \"{1}\".\n"
                       "\n"

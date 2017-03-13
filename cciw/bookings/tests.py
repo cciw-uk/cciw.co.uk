@@ -371,11 +371,6 @@ class BookingEmailChecksMixin(object):
             finally:
                 cciw.mail.tests.enable_email_sending()
 
-        # To get our custom email backend to be used, we have to patch settings
-        # at this point, due to how Django's test runner also sets this value:
-
-        settings.EMAIL_BACKEND = "cciw.mail.tests.TestMailBackend"
-
         process_payments_patcher = mock.patch('cciw.bookings.models.process_all_payments',
                                               new=replacement_process_all_payments)
         process_payments_patcher.start()
@@ -725,7 +720,7 @@ class TestPaymentReminderEmails(CreatePlaceModelMixin, BookingBaseMixin, WebTest
         self.assertEqual(len(mail.outbox), 1)
         m = mail.outbox[0]
         self.assertIn("You have payments due", m.body)
-        self.assertEqual("CCIW payments due", m.subject)
+        self.assertEqual("[CCIW] Payment due", m.subject)
         url, path, querydata = read_email_url(m, "https?://.*/booking/p.*")
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse('cciw-bookings-pay'))
@@ -2068,7 +2063,7 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
         mails = send_queued_mail()
         self.assertEqual(len(mails), 1)
 
-        self.assertEqual(mails[0].subject, "CCIW booking - place confirmed")
+        self.assertEqual(mails[0].subject, "[CCIW] Booking - place confirmed")
         self.assertEqual(mails[0].to, [self.email])
         self.assertTrue("Thank you for your payment" in mails[0].body)
 
@@ -2086,7 +2081,7 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
         mails = send_queued_mail()
         self.assertEqual(len(mails), 1)
 
-        self.assertEqual(mails[0].subject, "CCIW booking - place confirmed")
+        self.assertEqual(mails[0].subject, "[CCIW] Booking - place confirmed")
         self.assertEqual(mails[0].to, [self.email])
         self.assertTrue(self.place_details['first_name'] in mails[0].body)
         self.assertTrue('Another Child' in mails[0].body)

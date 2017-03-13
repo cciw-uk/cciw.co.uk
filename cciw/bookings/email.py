@@ -57,7 +57,7 @@ def send_verify_email(request, booking_account_email):
     }
 
     body = loader.render_to_string("cciw/bookings/verification_email.txt", c)
-    subject = "CCIW booking account"
+    subject = "[CCIW] Booking account"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [booking_account_email])
     log_user_email_sent(request, booking_account_email)
 
@@ -69,7 +69,7 @@ def send_unrecognised_payment_email(ipn_obj):
     }
 
     body = loader.render_to_string("cciw/bookings/unrecognised_payment_email.txt", c)
-    subject = "CCIW booking - unrecognised payment"
+    subject = "[CCIW] Booking - unrecognised payment"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [settings.WEBMASTER_EMAIL])
 
 
@@ -79,7 +79,7 @@ def send_pending_payment_email(account, ipn_obj):
         'ipn_obj': ipn_obj,
     }
     body = loader.render_to_string("cciw/bookings/pending_payment_email.txt", c)
-    subject = "CCIW booking - pending payment"
+    subject = "[CCIW] Booking - pending payment"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
 
@@ -98,7 +98,7 @@ def send_places_confirmed_email(bookings, **kwargs):
         'early_bird_discount_missed': sum(b.early_bird_discount_missed() for b in bookings)
     }
     body = loader.render_to_string('cciw/bookings/place_confirmed_email.txt', c)
-    subject = "CCIW booking - place confirmed"
+    subject = "[CCIW] Booking - place confirmed"
 
     # Use queued_mail, which uses DB storage, because this function gets
     # triggered from within payment processing, and we want to ensure that
@@ -122,7 +122,7 @@ def send_places_confirmed_email(bookings, **kwargs):
                 'domain': get_current_site(None).domain,
             }
             body = loader.render_to_string('cciw/bookings/late_place_confirmed_email.txt', c)
-            subject = "CCIW late booking: %s" % booking.name
+            subject = "[CCIW] Late booking: %s" % booking.name
 
             queued_mail.send_mail(subject, body, settings.SERVER_EMAIL,
                                   admin_emails_for_camp(booking.camp))
@@ -141,9 +141,9 @@ def send_booking_expiry_mail(account, bookings, expired):
     }
     body = loader.render_to_string('cciw/bookings/place_expired_mail.txt', c)
     if expired:
-        subject = "CCIW booking - booking expired"
+        subject = "[CCIW] Booking expired"
     else:
-        subject = "CCIW booking - booking expiry warning"
+        subject = "[CCIW] Booking expiry warning"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
 
@@ -159,7 +159,7 @@ def send_booking_approved_mail(booking):
         'booking': booking,
     }
     body = loader.render_to_string('cciw/bookings/place_approved_email.txt', c)
-    subject = "CCIW booking - approved"
+    subject = "[CCIW] Booking - approved"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
     return True
@@ -175,7 +175,7 @@ def send_booking_confirmed_mail(booking):
         'booking': booking,
     }
     body = loader.render_to_string('cciw/bookings/place_booked_email.txt', c)
-    subject = "CCIW booking - confirmed"
+    subject = "[CCIW] Booking - confirmed"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
     return True
@@ -185,7 +185,7 @@ def send_payment_reminder_emails():
     from cciw.bookings.models import BookingAccount
     accounts = BookingAccount.objects.payments_due()
 
-    subject = "CCIW payments due"
+    subject = "[CCIW] Payment due"
     now = timezone.now()
     for account in accounts:
         if (account.last_payment_reminder is not None and

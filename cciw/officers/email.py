@@ -98,7 +98,7 @@ def send_application_emails(request, application):
 
 
 def send_officer_email(officer, application, application_text, rtf_attachment):
-    subject = "CCIW application form submitted"
+    subject = "[CCIW] Application form submitted"
 
     # Email to the officer
     user_email = formatted_email(application.officer)
@@ -116,7 +116,7 @@ to CCIW. It is also attached to this email as an RTF file.
 
 def send_leader_email(leader_emails, application, application_text, rtf_attachment,
                       application_diff):
-    subject = "CCIW application form from %s" % application.full_name
+    subject = "[CCIW] Application form from %s" % application.full_name
     body = ("""The following application form has been submitted via the
 CCIW website.  It is also attached to this email as an RTF file.
 
@@ -157,7 +157,7 @@ def make_update_application_url(application, email):
 
 
 def send_email_change_emails(officer, application):
-    subject = "Email change on CCIW"
+    subject = "[CCIW] Email change on CCIW"
     user_email = formatted_email(officer)
     user_msg = ("""%(name)s,
 
@@ -210,7 +210,7 @@ def make_ref_form_url(referee_id, prev_ref_id):
 
 def send_reference_request_email(message, referee, sending_officer, camp):
     officer = referee.application.officer
-    EmailMessage(subject="Reference for %s %s" % (officer.first_name, officer.last_name),
+    EmailMessage(subject="[CCIW] Reference for %s %s" % (officer.first_name, officer.last_name),
                  body=message,
                  from_email=settings.REFERENCES_EMAIL,
                  to=[referee.email],
@@ -230,7 +230,7 @@ def send_leaders_reference_email(reference):
     officer = app.officer
 
     refform_text = reference_to_text(reference)
-    subject = "CCIW reference form for %s %s from %s" % (officer.first_name, officer.last_name, referee.name)
+    subject = "[CCIW] Reference form for %s %s from %s" % (officer.first_name, officer.last_name, referee.name)
     body = ("""The following reference form has been submitted via the
 CCIW website for officer %s %s.
 
@@ -245,7 +245,7 @@ CCIW website for officer %s %s.
 
 
 def send_nag_by_officer(message, officer, referee, sending_officer):
-    EmailMessage(subject="Need reference from %s" % referee.name,
+    EmailMessage(subject="[CCIW] Need reference from %s" % referee.name,
                  body=message,
                  from_email=settings.DEFAULT_FROM_EMAIL,
                  to=[officer.email],
@@ -259,7 +259,7 @@ def send_dbs_consent_alert_leaders_email(message, officer, camps):
     emails = []
     for c in camps:
         emails.extend(admin_emails_for_camp(c))
-    send_mail("DBS consent problem for %s %s" % (officer.first_name, officer.last_name),
+    send_mail("[CCIW] DBS consent problem for %s %s" % (officer.first_name, officer.last_name),
               message,
               settings.DEFAULT_FROM_EMAIL,
               emails,
@@ -313,6 +313,6 @@ Use the following link to manage this reference:
            "?ref_email=" + urlquote(bounced_email_address))
 
     forward_with_text(email_addresses,
-                      "Reference request to {0} bounced.".format(bounced_email_address),
+                      "[CCIW] Reference request to {0} bounced.".format(bounced_email_address),
                       forward_body,
                       original_message)

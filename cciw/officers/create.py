@@ -121,7 +121,7 @@ changed, but a new random password has been given to you, see below.
     else:
         repeat_message = ""
 
-    subject = "CCIW application form system"
+    subject = "[CCIW] Application form system"
     template = officer_template
 
     msg = template % {'username': username,

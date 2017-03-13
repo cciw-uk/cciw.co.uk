@@ -192,7 +192,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
                            'capability_children': "Great.",
                            'concerns': "No."})
         self.submit('#id_request_reference_manual [name=save]')
-        msgs = [e for e in mail.outbox if "CCIW reference form for" in e.subject]
+        msgs = [e for e in mail.outbox if "Reference form for" in e.subject]
         self.assertTrue(len(msgs) >= 0)
         app = Application.objects.get(id=app.id)
         self.assertTrue(app.referees[0].reference_is_received())

@@ -236,7 +236,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         self.assertIn("admin1@faildomain.com",
                       error_email.body)
         self.assertEqual(error_email.subject,
-                         "Error with email to list camp-debug@cciw.co.uk")
+                         "[CCIW] Error with email to list camp-debug@cciw.co.uk")
         self.assertEqual(error_email.to,
                          ["Joe <joe@gmail.com>"])
 
@@ -247,7 +247,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
             handle_mail(bad_mail)
         self.assertEqual(m_s.messages_sent(), [])
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, "Access to mailing list camp-2000-blue-officers@cciw.co.uk denied")
+        self.assertEqual(mail.outbox[0].subject, "[CCIW] Access to mailing list camp-2000-blue-officers@cciw.co.uk denied")
         self.assertIn("you do not have permission", mail.outbox[0].body)
 
     def test_handle_mail_permission_denied_for_unknown(self):
@@ -348,6 +348,11 @@ class TestMailBackend(LocMemEmailBackend):
 
     def send_messages(self, messages):
         if len(_EMAIL_SENDING_DISALLOWED) == 0:
+            for m in messages:
+                if not m.subject.startswith('[CCIW]'):
+                    raise AssertionError("Email with subject \"{0}\" should start with [CCIW]"
+                                         .format(m.subject))
+
             return super(TestMailBackend, self).send_messages(messages)
         else:
             raise AssertionError("Email should not be sent")

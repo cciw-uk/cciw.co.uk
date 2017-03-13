@@ -114,7 +114,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         return self.fill_by_name(values)
 
     def _get_application_form_emails(self):
-        return [e for e in mail.outbox if "CCIW application form" in e.subject]
+        return [e for e in mail.outbox if "Application form" in e.subject]
 
     def _get_email_change_emails(self):
         return [e for e in mail.outbox if "Email change" in e.subject]
@@ -437,7 +437,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         emails = self._get_application_form_emails()
         self.assertEqual(len(emails), 2)
         leader_email = [e for e in emails
-                        if e.subject == 'CCIW application form from New Full Name'][0]
+                        if e.subject == '[CCIW] Application form from New Full Name'][0]
         msg = leader_email.message()
 
         # Email will have 3 parts - text, RTF, and differences from last year
