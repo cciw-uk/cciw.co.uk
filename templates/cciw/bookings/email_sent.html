@@ -27,7 +27,7 @@
     {% elif email_notification.is_delivered %}
       <div class="successMessage">
         Delivered! Our email to {{ email_notification.email }} was delivered to the appropriate email server at {{ email_notification.timestamp|date:"r" }}.
-        You should find it in your inbox (unless you are using a forwarding service).
+        It should be in your inbox. (If you are using a forwarding service it may take a little longer).
       </div>
     {% endif %}
   {% else %}
