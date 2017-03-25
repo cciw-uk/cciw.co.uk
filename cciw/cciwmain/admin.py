@@ -3,6 +3,7 @@ from functools import wraps
 from django.contrib import admin
 from django.utils.html import format_html
 
+from cciw.auth import can_edit_any_camps, can_edit_camp, editable_camps
 from cciw.cciwmain.models import Camp, CampName, Person, Role, Site
 
 
@@ -107,7 +108,21 @@ class CampAdmin(admin.ModelAdmin):
     date_hierarchy = 'start_date'
 
     def get_queryset(self, request):
-        return super(CampAdmin, self).get_queryset(request).select_related('site', 'chaplain')
+        qs = super(CampAdmin, self).get_queryset(request).select_related('site', 'chaplain')
+        if request.user.has_perm('cciwmain.change_camp'):
+            return qs
+        else:
+            return qs.filter(id__in=[c.id for c in editable_camps(request.user)])
+
+    def has_change_permission(self, request, obj=None):
+        if obj is None:
+            if can_edit_any_camps(request.user):
+                return True
+        else:
+            if can_edit_camp(request.user, obj):
+                return True
+        return super(CampAdmin, self).has_change_permission(request, obj=obj)
+
 
 admin.site.register(Site, SiteAdmin)
 admin.site.register(Person, PersonAdmin)

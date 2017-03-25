@@ -153,7 +153,7 @@ class QualificationInline(admin.TabularInline):
 
 
 class CampAdminPermissionMixin(object):
-
+    # NB also CciwAuthBackend
     def has_change_permission(self, request, obj=None):
         if can_manage_application_forms(request.user):
             return True

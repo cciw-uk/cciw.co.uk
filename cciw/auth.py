@@ -86,6 +86,33 @@ def can_manage_application_forms(user):
     return False
 
 
+def can_edit_any_camps(user):
+    if user.has_perm('cciwmain.change_camp'):
+        return True
+    # NB - only *current* camp leaders can edit any camp.
+    # (past camp leaders are not assumed as responsible)
+    if user.current_camps_as_admin_or_leader:
+        return True
+    return False
+
+
+def can_edit_camp(user, camp):
+    # NB also editable_camps
+    if user.has_perm('cciwmain.change_camp'):
+        return True
+
+    # We only allow current camps to be edited by
+    # camp leaders, to avoid confusion and mistakes
+    if (can_edit_any_camps(user) and
+            camp in user.current_camps_as_admin_or_leader):
+        return True
+    return False
+
+
+def editable_camps(user):
+    return user.current_camps_as_admin_or_leader
+
+
 def is_committee_member(user):
     if not active_staff(user):
         return False
@@ -93,17 +120,24 @@ def is_committee_member(user):
 
 
 class CciwAuthBackend(ModelBackend):
-    def get_group_permissions(self, user_obj, obj=None):
+    def has_module_perms(self, user_obj, app_label):
+        """
+        Returns True if user_obj has any permissions in the given app_label.
+        """
         # This makes /admin/officers/ return something for camp admins, rather
         # than a 403, and /admin/ return something rather than a message saying
-        # there is nothing they can edit.
-        # This is necessary because, for security reasons, we don't actually
-        # make camp admins part of a specific group with permissions, but add
-        # hacks (CampAdminPermissionMixin) to give specific permission to admin
-        # screens if the user is a camp admin for a current camp. Doing it
-        # this way means we don't have to remember to remove people from groups,
-        # it is all automatic.
-        retval = super(CciwAuthBackend, self).get_group_permissions(user_obj, obj=None)
-        if can_manage_application_forms(user_obj):
-            retval |= {'officers.change_application'}
-        return retval
+        # there is nothing they can edit. This is necessary because, for
+        # security reasons, we don't actually make camp admins/leaders part of a
+        # specific group with permissions, but add hacks
+        # (CampAdminPermissionMixin and other 'has_change_permission' methods)
+        # to give specific permission to admin screens if the user is a camp
+        # admin for a current camp. Doing it this way means we don't have to
+        # remember to remove people from groups, it is all automatic.
+        if app_label == 'officers':
+            if can_manage_application_forms(user_obj):
+                return True
+        if app_label == 'cciwmain':
+            if can_edit_any_camps(user_obj):
+                return True
+
+        return super(CciwAuthBackend, self).has_module_perms(user_obj, app_label)
