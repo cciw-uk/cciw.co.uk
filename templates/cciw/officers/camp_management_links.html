@@ -3,6 +3,9 @@
 <ul>
   {% for c in camps %}
     <li>{{ c }}:
+      {% if c.year == thisyear %}
+        <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'admin:cciwmain_camp_change' c.id %}">Edit camp details</a>
+      {% endif %}
       <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_list' year=c.year slug=c.slug_name %}">Officer list</a>
       <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-manage_applications' year=c.year slug=c.slug_name %}">Applications</a>
       <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-manage_references' year=c.year slug=c.slug_name %}">References</a>
