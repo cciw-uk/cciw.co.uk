@@ -133,11 +133,12 @@ class CciwAuthBackend(ModelBackend):
         # to give specific permission to admin screens if the user is a camp
         # admin for a current camp. Doing it this way means we don't have to
         # remember to remove people from groups, it is all automatic.
-        if app_label == 'officers':
-            if can_manage_application_forms(user_obj):
-                return True
-        if app_label == 'cciwmain':
-            if can_edit_any_camps(user_obj):
-                return True
+        if user_obj.is_staff:
+            if app_label == 'officers':
+                if can_manage_application_forms(user_obj):
+                    return True
+            if app_label == 'cciwmain':
+                if can_edit_any_camps(user_obj):
+                    return True
 
         return super(CciwAuthBackend, self).has_module_perms(user_obj, app_label)
