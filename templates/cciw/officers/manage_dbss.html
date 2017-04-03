@@ -47,10 +47,12 @@
   <p>If necessary, you can edit an officer's application form to correct bad data, using the links
     in the <b>Application Form</b> column.</p>
 
-  <p>Other pages that can be useful:</p>
+  <h2>Other options</h2>
 
   <ul>
-    <li><a href="{% url 'admin:officers_dbscheck_changelist' %}" target="_blank">DBS Disclosures admin</a></li>
+    <li>To record information for an officer who is not listed as needing a DBS check below: <a href="{% url 'admin:officers_dbscheck_add' %}?_return_to={{ request.get_full_path|urlencode }}">manually add a DBS check record</a>.</li>
+
+    <li><a target="_blank" href="{% url 'admin:officers_dbscheck_changelist' %}" target="_blank">Browse existing DBS check records</a></li>
   </ul>
 
   <p>The officer list below can be filtered by camp if required:</p>
