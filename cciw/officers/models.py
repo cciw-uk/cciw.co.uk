@@ -460,8 +460,13 @@ class DBSCheck(models.Model):
                                   default=CHECK_TYPE_FORM)
     completed = models.DateField("Date of issue/check",
                                  help_text="For full forms, use the date of issue. For online checks, use the date of the check")
-    requested_by = models.CharField(max_length=20, choices=REQUESTED_BY_CHOICES, default=REQUESTED_BY_UKNOWN)
-    other_organisation = models.CharField(max_length=255, blank=True)
+    requested_by = models.CharField(max_length=20, choices=REQUESTED_BY_CHOICES,
+                                    default=REQUESTED_BY_UKNOWN,
+                                    help_text="The organisation that asked for this DBS to be done, "
+                                    "normally CCIW.")
+    other_organisation = models.CharField(max_length=255, blank=True,
+                                          help_text="If previous answer is not CCIW, please fill in")
+
     registered_with_dbs_update = models.NullBooleanField("registered with DBS update service")
 
     objects = DBSCheckManager()
