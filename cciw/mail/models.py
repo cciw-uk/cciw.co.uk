@@ -53,8 +53,9 @@ def log_user_email_sent(request, email_address):
 def get_email_notification_for_session(request):
     if USER_EMAIL_SENT_SESSION_KEY not in request.session:
         return None
-    dt = timezone.make_aware(datetime.fromtimestamp(
-        int(request.session[USER_EMAIL_SENT_TIMESTAMP_SESSION_KEY])), timezone.utc)
+    dt = datetime.fromtimestamp(
+        int(request.session[USER_EMAIL_SENT_TIMESTAMP_SESSION_KEY]),
+        timezone.utc)
 
     # Ignore anything more than an hour ago
     if (timezone.now() - dt).seconds > 3600:
