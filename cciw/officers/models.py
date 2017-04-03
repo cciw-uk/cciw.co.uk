@@ -466,6 +466,9 @@ class DBSCheck(models.Model):
                                     "normally CCIW.")
     other_organisation = models.CharField(max_length=255, blank=True,
                                           help_text="If previous answer is not CCIW, please fill in")
+    applicant_accepted = models.BooleanField(default=True,
+                                             help_text="Enter 'No' if the applicant could not be accepted "
+                                             "on the basis of this DBS check")
 
     registered_with_dbs_update = models.NullBooleanField("registered with DBS update service")
 
