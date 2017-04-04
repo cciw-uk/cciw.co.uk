@@ -79,6 +79,12 @@ class CampManager(models.Manager):
         return self.get(year=year, camp_name__slug=slug)
 
 
+class CampQuerySet(models.QuerySet):
+
+    def include_other_years_info(self):
+        return self.prefetch_related('camp_name__camps')
+
+
 class Camp(models.Model):
     year = models.PositiveSmallIntegerField("year")
     camp_name = models.ForeignKey(CampName,
@@ -114,7 +120,7 @@ class Camp(models.Model):
 
     officers = models.ManyToManyField(settings.AUTH_USER_MODEL, through='officers.Invitation')
 
-    objects = CampManager()
+    objects = CampManager.from_queryset(CampQuerySet)()
 
     class Meta:
         ordering = ['-year', 'start_date']
@@ -143,6 +149,18 @@ class Camp(models.Model):
 
     @cached_property
     def previous_camp(self):
+        if getattr(self, '_camp_name_cache', None) is not None:
+            camp_name = self.camp_name
+            if hasattr(camp_name, '_prefetched_objects_cache'):
+                other_camps = camp_name._prefetched_objects_cache.get('camps', None)
+                if other_camps is not None:
+                    previous_camps = [c for c in other_camps if c.year < self.year]
+                    previous_camps.sort(key=lambda c: -c.year)
+                    if previous_camps:
+                        return previous_camps[0]
+                    else:
+                        return None
+
         return (Camp.objects
                 .filter(year__lt=self.year,
                         camp_name=self.camp_name)

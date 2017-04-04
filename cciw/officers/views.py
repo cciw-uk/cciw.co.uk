@@ -156,10 +156,14 @@ def leaders_index(request):
     thisyear = common.get_thisyear()
 
     show_all = 'show_all' in request.GET
+    base_qs = Camp.objects.all().include_other_years_info()
     if show_all:
-        camps = list(Camp.objects.all())
+        camps = base_qs
     else:
-        camps = user.camps_as_admin_or_leader
+        camps = base_qs.filter(id__in=[c.id for c in user.camps_as_admin_or_leader])
+
+    camps = list(camps)
+
     ctx['current_camps'] = [c for c in camps
                             if c.year == thisyear]
     ctx['old_camps'] = [c for c in camps
