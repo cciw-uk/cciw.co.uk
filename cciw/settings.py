@@ -410,27 +410,27 @@ else:
 
 # == MIDDLEWARE_CLASSES ==
 
-_MIDDLEWARE_CLASSES = [
-    (LIVEBOX,    "cciw.middleware.http.WebFactionFixes"),
+_MIDDLEWARE = [
+    (LIVEBOX,    "cciw.middleware.http.webfaction_fixes"),
     (True, 'django.middleware.security.SecurityMiddleware'),
     (True,       "django.middleware.gzip.GZipMiddleware"),
-    (DEVBOX,     "debug_toolbar.middleware.DebugToolbarMiddleware"),
+    (DEVBOX and DEBUG, "debug_toolbar.middleware.DebugToolbarMiddleware"),
     (True,       "django.contrib.sessions.middleware.SessionMiddleware"),
     (True,       "django.middleware.common.CommonMiddleware"),
     (True,       'django.middleware.csrf.CsrfViewMiddleware'),
-    (DEVBOX and DEBUG, "cciw.middleware.debug.DebugMiddleware"),
+    (DEVBOX and DEBUG, "cciw.middleware.debug.debug_middleware"),
     (True,       "django.contrib.auth.middleware.AuthenticationMiddleware"),
     (True,       "django.contrib.auth.middleware.SessionAuthenticationMiddleware"),
     (True,       "django.contrib.messages.middleware.MessageMiddleware"),
     (True,       'django.middleware.clickjacking.XFrameOptionsMiddleware'),
-    (True,       "cciw.middleware.auth.PrivateWiki"),
-    (True,       "cciw.bookings.middleware.BookingTokenLogin"),
-    (True,       "cciw.middleware.threadlocals.ThreadLocals"),
+    (True,       "cciw.middleware.auth.private_wiki"),
+    (True,       "cciw.bookings.middleware.booking_token_login"),
+    (True,       "cciw.middleware.threadlocals.thread_locals"),
 ]
 
 DATABASE_ENGINE = 'postgresql'
 
-MIDDLEWARE_CLASSES = tuple([val for (test, val) in _MIDDLEWARE_CLASSES if test])
+MIDDLEWARE = tuple([val for (test, val) in _MIDDLEWARE if test])
 
 # == MESSAGES ==
 

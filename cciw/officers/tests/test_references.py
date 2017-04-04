@@ -1,5 +1,5 @@
 from django.core import mail
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application, ReferenceAction

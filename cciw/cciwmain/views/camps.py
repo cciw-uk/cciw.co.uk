@@ -1,8 +1,8 @@
 from datetime import date
 
-from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.html import format_html
 
 from cciw.cciwmain import common

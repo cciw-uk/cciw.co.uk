@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django import template
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from cciw.bookings.views import ensure_booking_acount_attr
 

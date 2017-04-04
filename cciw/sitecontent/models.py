@@ -1,5 +1,5 @@
 from django.contrib.admin.utils import quote
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -52,7 +52,7 @@ class HtmlChunk(models.Model):
         made and any member specific adjustments."""
         html = mark_safe(standard_subs(self.html))
         user = threadlocals.get_current_user()
-        if (user and not user.is_anonymous() and user.is_staff and
+        if (user and not user.is_anonymous and user.is_staff and
                 user.has_perm('sitecontent.change_htmlchunk')):
             html += format_html("""<div class="editChunkLink">&laquo;
                                 <a href="{0}">Edit {1}</a> &raquo;

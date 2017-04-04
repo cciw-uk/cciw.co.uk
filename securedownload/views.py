@@ -67,7 +67,7 @@ def access_folder_securely(folder, check_permission):
             return serve_secure_file(os.path.join(folder, fname))
         else:
             user = getattr(request, 'user', None)
-            if user is not None and not user.is_authenticated():
+            if user is not None and not user.is_authenticated:
                 # redirect to login
                 return redirect_to_login(request.get_full_path())
             return HttpResponseForbidden("<h1>Access denied</h1>")

@@ -1,5 +1,6 @@
 
-class WebFactionFixes(object):
+
+def webfaction_fixes(get_response):
     """
     Middleware that applies some fixes for people using
     the WebFaction hosting provider.  In particular:
@@ -13,7 +14,7 @@ class WebFactionFixes(object):
       does not remove it, so it will appear to be a secure request
       when it is not.
     """
-    def process_request(self, request):
+    def middleware(request):
         # Fix REMOTE_ADDR
         try:
             real_ip = request.META['HTTP_X_FORWARDED_FOR']
@@ -28,3 +29,5 @@ class WebFactionFixes(object):
         # Fix HTTPS
         if 'HTTP_X_FORWARDED_SSL' in request.META:
             request.is_secure = lambda: request.META['HTTP_X_FORWARDED_SSL'] in ['on', 'on,on']
+
+        return get_response(request)

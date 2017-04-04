@@ -18,7 +18,10 @@ def set_current_user(user):
     _thread_locals.user = user
 
 
-class ThreadLocals(object):
+def thread_locals(get_response):
     """Adds various objects to thread local storage from the request object."""
-    def process_request(self, request):
+    def middleware(request):
         set_current_user(getattr(request, 'user', None))
+        return get_response(request)
+
+    return middleware

@@ -1,8 +1,8 @@
 import furl
 from django.conf import settings
 from django.contrib import messages
-from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 from cciw.bookings.email import EmailVerifyTokenGenerator
 from cciw.bookings.models import BookingAccount
@@ -33,8 +33,8 @@ def unset_booking_account_cookie(response):
     response.delete_cookie('bookingaccount')
 
 
-class BookingTokenLogin(object):
-    def process_request(self, request):
+def booking_token_login(get_response):
+    def middleware(request):
         if 'bt' in request.GET:
             token = request.GET['bt']
             verified_email = EmailVerifyTokenGenerator().email_for_token(token)
@@ -54,3 +54,7 @@ class BookingTokenLogin(object):
                 set_booking_account_cookie(resp, account)
                 messages.info(request, "Logged in! You will stay logged in for two weeks. Remember to log out if you are using a public computer.")
                 return resp
+
+        return get_response(request)
+
+    return middleware

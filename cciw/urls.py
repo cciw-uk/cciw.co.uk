@@ -28,6 +28,7 @@ urlpatterns = [
 
 if settings.DEVBOX:
     from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+    import debug_toolbar
     urlpatterns += [
         url(r'^usermedia/(?P<path>.*)$', django.views.static.serve,
             {'document_root': settings.MEDIA_ROOT}),
@@ -39,6 +40,11 @@ if settings.DEVBOX:
     urlpatterns += [
         url(r'^django_functest/', include('django_functest.urls'))
     ]
+
+    if settings.DEBUG and 'debug_toolbar' in settings.INSTALLED_APPS:
+        urlpatterns = [
+            url(r'^__debug__/', include(debug_toolbar.urls)),
+        ] + urlpatterns
 
 urlpatterns = urlpatterns + [
     url(r'', include('cciw.cciwmain.urls'))

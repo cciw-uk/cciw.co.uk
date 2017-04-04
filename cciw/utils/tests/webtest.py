@@ -5,8 +5,8 @@ from urllib.parse import urlparse
 
 from compressor.filters import CompilerFilter
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.core.urlresolvers import reverse
 from django.test.utils import override_settings
+from django.urls import reverse
 from django_functest import FuncSeleniumMixin, FuncWebTestMixin, ShortcutLoginMixin
 from pyquery import PyQuery
 

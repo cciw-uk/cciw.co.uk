@@ -10,8 +10,8 @@ import xlrd
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail, signing
-from django.core.urlresolvers import reverse
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 from django_dynamic_fixture import G
 from django_functest import FuncBaseMixin

@@ -1,6 +1,6 @@
 # Settings file for testing on development box
 from cciw.settings import *  # NOQA
-from cciw.settings import DATABASES, INSTALLED_APPS, MIDDLEWARE_CLASSES, basedir
+from cciw.settings import DATABASES, INSTALLED_APPS, MIDDLEWARE, basedir
 
 DATABASES['default']['CONN_MAX_AGE'] = 0  # fix some deadlocks with DB flushing
 
@@ -13,10 +13,10 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
 ]
 
-MIDDLEWARE_CLASSES = [m for m in MIDDLEWARE_CLASSES
-                      if m not in ["debug_toolbar.middleware.DebugToolbarMiddleware",
-                                   "cciw.middleware.debug.DebugMiddleware"]
-                      ]
+MIDDLEWARE = [m for m in MIDDLEWARE
+              if m not in ["debug_toolbar.middleware.DebugToolbarMiddleware",
+                           "cciw.middleware.debug.debug_middleware"]
+              ]
 
 INSTALLED_APPS = list(filter(lambda x: x not in [
     'debug_toolbar'

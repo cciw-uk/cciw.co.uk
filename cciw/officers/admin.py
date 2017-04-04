@@ -306,7 +306,7 @@ have to fill in another DBS.</p> """)}
 
     def get_fieldsets(self, request, obj=None):
         user = request.user
-        if user is None or user.is_anonymous():
+        if user is None or user.is_anonymous:
             # never get here normally
             return ()
         else:

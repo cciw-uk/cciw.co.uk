@@ -3,12 +3,11 @@ from datetime import date
 
 from colorful.fields import RGBColorField
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.html import format_html
-
 
 REFERENCE_CONTACT_ROLE_NAME = "Safeguarding co-ordinator"
 
@@ -72,7 +71,6 @@ class CampName(models.Model):
 
 
 class CampManager(models.Manager):
-    use_for_related_fields = True
 
     def get_queryset(self):
         return super(CampManager, self).get_queryset().select_related('chaplain', 'camp_name').prefetch_related('leaders')
@@ -117,6 +115,13 @@ class Camp(models.Model):
     officers = models.ManyToManyField(settings.AUTH_USER_MODEL, through='officers.Invitation')
 
     objects = CampManager()
+
+    class Meta:
+        ordering = ['-year', 'start_date']
+        unique_together = [
+            ('year', 'camp_name'),
+        ]
+        base_manager_name = 'objects'
 
     def natural_key(self):
         return (self.year, self.slug_name)
@@ -236,12 +241,6 @@ class Camp(models.Model):
     @property
     def is_open_for_bookings(self):
         return self.open_for_bookings(date.today())
-
-    class Meta:
-        ordering = ['-year', 'start_date']
-        unique_together = [
-            ('year', 'camp_name'),
-        ]
 
 
 def get_reference_contact_people():

@@ -16,12 +16,12 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
 from django.core import signing
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
-from django.core.urlresolvers import reverse
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.template.defaultfilters import wordwrap
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -917,7 +917,7 @@ def export_sharable_transport_details(request, year=None, slug=None):
 
 
 officer_files = access_folder_securely("officers",
-                                       lambda request: request.user.is_authenticated() and is_camp_officer(request.user))
+                                       lambda request: request.user.is_authenticated and is_camp_officer(request.user))
 
 
 @staff_member_required
@@ -1575,7 +1575,7 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_queryset(self):
         request = self.request
-        if request.user.is_authenticated() and is_camp_admin(request.user):
+        if request.user.is_authenticated and is_camp_admin(request.user):
             qs = User.objects.all().order_by('first_name', 'last_name', 'email')
             return (qs.filter(first_name__istartswith=self.q) |
                     qs.filter(last_name__istartswith=self.q))

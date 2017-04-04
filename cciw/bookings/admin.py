@@ -1,8 +1,8 @@
 from dal import autocomplete
 from django import forms
 from django.contrib import admin, messages
-from django.core.urlresolvers import reverse
 from django.http import HttpResponse
+from django.urls import reverse
 from django.utils.html import escape, escapejs, format_html
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
@@ -10,7 +10,6 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO
                                   Booking, BookingAccount, ManualPayment, Payment, Price, RefundPayment)
 from cciw.cciwmain import common
 from cciw.utils.admin import RerouteResponseAdminMixin
-
 
 FIRST_BOOKING_YEAR = 2012
 

@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from cciw.cciwmain.common import get_thisyear
 from cciw.utils.tests.webtest import WebTestBase

@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from .lists import EMAIL_LISTS
 from .mailgun import create_route, create_webhook, list_routes, update_route, update_webhook

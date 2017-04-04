@@ -61,7 +61,7 @@ class BasicSetupMixin(object):
             year=2000,
             start_date=date(2000, 7, 1),
             chaplain=None)
-        self.default_camp_1.leaders = [self.default_leader]
+        self.default_camp_1.leaders.set([self.default_leader])
 
         self.default_camp_2 = Camp.objects.create(
             end_date=date(2001, 7, 8),
@@ -72,4 +72,4 @@ class BasicSetupMixin(object):
             year=2001,
             start_date=date(2001, 7, 1),
             chaplain=None)
-        self.default_camp_2.leaders = [self.default_leader]
+        self.default_camp_2.leaders.set([self.default_leader])

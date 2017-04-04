@@ -2,7 +2,7 @@
 import os
 import warnings
 
-# warnings.simplefilter("once", PendingDeprecationWarning)
+warnings.simplefilter("once", PendingDeprecationWarning)
 warnings.simplefilter("once", DeprecationWarning)
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'

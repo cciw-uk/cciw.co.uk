@@ -18,7 +18,6 @@ REFEREE_DATA_FIELDS = ['name', 'address', 'tel', 'mobile', 'email']
 
 
 class ApplicationManager(models.Manager):
-    use_for_related_fields = True
 
     def get_queryset(self):
         return super(ApplicationManager, self).get_queryset().select_related('officer')
@@ -113,6 +112,10 @@ class Application(models.Model):
 
     objects = ApplicationManager()
 
+    class Meta:
+        ordering = ('-date_submitted', 'officer__first_name', 'officer__last_name',)
+        base_manager_name = 'objects'
+
     @property
     def referees(self):
         """A cached version of 2 items that can exist in 'references_set', which
@@ -148,8 +151,6 @@ class Application(models.Model):
                     return vals[0]
         return self.referee_set.get_or_create(referee_number=num)[0]
 
-    class Meta:
-        ordering = ('-date_submitted', 'officer__first_name', 'officer__last_name',)
 
     def could_be_for_camp(self, camp):
         # An application is 'for' a camp if it is submitted in the year before
@@ -286,8 +287,6 @@ def empty_reference(reference):
 
 
 class ReferenceManager(models.Manager):
-    # manager to reduce number of SQL queries, especially in admin
-    use_for_related_fields = True
 
     def get_queryset(self):
         return super(ReferenceManager, self).get_queryset().select_related('referee__application__officer')
@@ -315,6 +314,10 @@ class Reference(models.Model):
 
     objects = ReferenceManager()
 
+    class Meta:
+        base_manager_name = 'objects'
+        verbose_name = "Reference"
+
     @property
     def applicant_name(self):
         o = self.referee.application.officer
@@ -331,9 +334,6 @@ class Reference(models.Model):
         referee.name = self.referee_name
         referee.save()
         return retval
-
-    class Meta:
-        verbose_name = "Reference"
 
     def reference_display_fields(self):
         """
@@ -356,8 +356,10 @@ class QualificationType(models.Model):
 
 
 class Qualification(models.Model):
-    application = models.ForeignKey(Application, related_name='qualifications')
-    type = models.ForeignKey(QualificationType, related_name='qualifications')
+    application = models.ForeignKey(Application, related_name='qualifications',
+                                    on_delete=models.CASCADE)
+    type = models.ForeignKey(QualificationType, related_name='qualifications',
+                             on_delete=models.CASCADE)
     date_issued = models.DateField()
 
     def __str__(self):
@@ -380,7 +382,6 @@ class Qualification(models.Model):
 
 
 class InvitationManager(models.Manager):
-    use_for_related_fields = True
 
     def get_queryset(self):
         return super(InvitationManager, self).get_queryset().select_related('officer', 'camp', 'camp__chaplain')
@@ -398,12 +399,13 @@ class Invitation(models.Model):
 
     objects = InvitationManager()
 
-    def __str__(self):
-        return "%s %s — camp %s" % (self.officer.first_name, self.officer.last_name, self.camp)
-
     class Meta:
         ordering = ('-camp__year', 'officer__first_name', 'officer__last_name')
         unique_together = (('officer', 'camp'),)
+        base_manager_name = 'objects'
+
+    def __str__(self):
+        return "%s %s — camp %s" % (self.officer.first_name, self.officer.last_name, self.camp)
 
 
 # CRBs/DBSs - Criminal Records Bureau/Disclosure and Barring Service
@@ -413,7 +415,6 @@ class Invitation(models.Model):
 # not DBS.
 
 class DBSCheckManager(models.Manager):
-    use_for_related_fields = True
 
     def get_queryset(self):
         return super(DBSCheckManager, self).get_queryset().select_related('officer')
@@ -482,6 +483,7 @@ class DBSCheck(models.Model):
     class Meta:
         verbose_name = "DBS/CRB check"
         verbose_name_plural = "DBS/CRB check"
+        base_manager_name = 'objects'
 
     def could_be_for_camp(self, camp):
         return (self.completed >= camp.start_date - timedelta(days=settings.DBS_VALID_FOR) and
@@ -489,7 +491,6 @@ class DBSCheck(models.Model):
 
 
 class DBSActionLogManager(models.Manager):
-    use_for_related_fields = True
 
     def get_queryset(self):
         return super(DBSActionLogManager, self).get_queryset().select_related('officer')
@@ -527,16 +528,17 @@ class DBSActionLog(models.Model):
 
     objects = DBSActionLogManager()
 
+    class Meta:
+        base_manager_name = 'objects'
+        verbose_name = "DBS action log"
+        verbose_name_plural = "DBS action logs"
+
     def __str__(self):
         return "Log of DBS action '%s' for %s %s on %s" % (
             self.get_action_type_display(),
             self.officer.first_name,
             self.officer.last_name,
             self.timestamp.strftime("%Y-%m-%d"))
-
-    class Meta:
-        verbose_name = "DBS action log"
-        verbose_name_plural = "DBS action logs"
 
 
 # This is monkey patched on User in apps.py as a cached property, so it is best

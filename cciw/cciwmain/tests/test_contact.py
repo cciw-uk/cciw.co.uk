@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core import mail
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.sitecontent.models import HtmlChunk

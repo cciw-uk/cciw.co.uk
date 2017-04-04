@@ -565,7 +565,6 @@ class BookingQuerySet(models.QuerySet):
 
 
 class BookingManagerBase(models.Manager):
-    use_for_related_fields = True
 
     def get_queryset(self):
         return super(BookingManagerBase, self).get_queryset().select_related('camp', 'account')
@@ -672,6 +671,10 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
     created_online = models.BooleanField(blank=True, default=False)
 
     objects = BookingManager()
+
+    class Meta:
+        ordering = ['-created']
+        base_manager_name = 'objects'
 
     # Methods
 
@@ -1094,9 +1097,6 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
         else:
             return self.gp_address
 
-    class Meta:
-        ordering = ['-created']
-
 
 @transaction.atomic
 def book_basket_now(bookings):
@@ -1170,7 +1170,6 @@ is_booking_open_thisyear = lambda: is_booking_open(common.get_thisyear())
 
 
 class PaymentManager(models.Manager):
-    use_for_related_fields = True
 
     def get_queryset(self):
         return super(PaymentManager, self).get_queryset().select_related(
@@ -1208,6 +1207,9 @@ class Payment(NoEditMixin, models.Model):
 
     objects = PaymentManager()
 
+    class Meta:
+        base_manager_name = 'objects'
+
     def __str__(self):
         if self.source_id is not None and hasattr(self.source, 'payment_description'):
             retval = self.source.payment_description
@@ -1227,7 +1229,6 @@ class Payment(NoEditMixin, models.Model):
 
 
 class ManualPaymentManager(models.Manager):
-    use_for_related_fields = True
 
     def get_queryset(self):
         return super(ManualPaymentManager, self).get_queryset().select_related('account')
@@ -1239,16 +1240,20 @@ class ManualPaymentBase(NoEditMixin, models.Model):
     payment_type = models.PositiveSmallIntegerField(choices=MANUAL_PAYMENT_CHOICES,
                                                     default=MANUAL_PAYMENT_CHEQUE)
 
-    objects = ManualPaymentManager()
-
     class Meta:
         abstract = True
+        base_manager_name = 'objects'
 
 
 class ManualPayment(ManualPaymentBase):
     account = models.ForeignKey(BookingAccount,
                                 on_delete=models.CASCADE,
                                 related_name='manual_payments')
+
+    objects = ManualPaymentManager()
+
+    class Meta:
+        base_manager_name = 'objects'
 
     def __str__(self):
         return "Manual payment of £%s from %s" % (self.amount, self.account)
@@ -1258,6 +1263,11 @@ class RefundPayment(ManualPaymentBase):
     account = models.ForeignKey(BookingAccount,
                                 on_delete=models.CASCADE,
                                 related_name='refund_payments')
+
+    objects = ManualPaymentManager()
+
+    class Meta:
+        base_manager_name = 'objects'
 
     def __str__(self):
         return "Refund payment of £%s to %s" % (self.amount, self.account)
