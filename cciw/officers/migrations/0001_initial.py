@@ -74,7 +74,7 @@ class Migration(migrations.Migration):
                 ('crb_check_consent', cciw.officers.fields.RequiredExplicitBooleanField(verbose_name='Do you consent to the obtaining of a Criminal\n            Records Bureau check on yourself? ', default=None)),
                 ('finished', models.BooleanField(verbose_name='is the above information complete?', default=False)),
                 ('date_submitted', models.DateField(null=True, verbose_name='date submitted', blank=True)),
-                ('officer', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL)),
+                ('officer', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('-date_submitted', 'officer__first_name', 'officer__last_name'),
@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('crb_number', models.CharField(verbose_name='Disclosure number', max_length=20)),
                 ('completed', models.DateField(verbose_name='Date of issue')),
-                ('officer', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('officer', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'CRB Disclosure',
@@ -100,7 +100,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('sent', models.DateTimeField(verbose_name='Date sent')),
-                ('officer', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('officer', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'CRB form log',
@@ -114,8 +114,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('date_added', models.DateField(default=datetime.date.today)),
                 ('notes', models.CharField(blank=True, max_length=255)),
-                ('camp', models.ForeignKey(to='cciwmain.Camp')),
-                ('officer', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('camp', models.ForeignKey(to='cciwmain.Camp', on_delete=models.CASCADE)),
+                ('officer', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('-camp__year', 'officer__first_name', 'officer__last_name'),
@@ -130,7 +130,7 @@ class Migration(migrations.Migration):
                 ('requested', models.BooleanField(default=False)),
                 ('received', models.BooleanField(default=False)),
                 ('comments', models.TextField(blank=True)),
-                ('application', models.ForeignKey(to='officers.Application')),
+                ('application', models.ForeignKey(to='officers.Application', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'Reference Metadata',
@@ -153,7 +153,7 @@ class Migration(migrations.Migration):
                 ('concerns', models.TextField(verbose_name="Have you ever had concerns about either this applicant's ability or suitability to work with children and young people? If you would prefer to discuss your concerns on the telephone and in confidence, please contact: Shirley Evans on 020 8569 0669.")),
                 ('comments', models.TextField(blank=True, verbose_name='Any other comments you wish to make')),
                 ('date_created', models.DateField(verbose_name='date created')),
-                ('reference_info', models.OneToOneField(related_name='_reference_form', to='officers.Reference')),
+                ('reference_info', models.OneToOneField(related_name='_reference_form', to='officers.Reference', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'Reference',

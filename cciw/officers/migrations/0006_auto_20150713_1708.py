@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='crbapplication',
             name='officer',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='crb_applications'),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='crb_applications', on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='crbapplication',

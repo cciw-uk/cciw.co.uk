@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('tel', models.CharField(max_length=22, blank=True, verbose_name='telephone')),
                 ('mobile', models.CharField(max_length=22, blank=True, verbose_name='mobile')),
                 ('email', models.EmailField(max_length=254, blank=True, verbose_name='e-mail')),
-                ('application', models.ForeignKey(to='officers.Application')),
+                ('application', models.ForeignKey(to='officers.Application', on_delete=models.CASCADE)),
             ],
         ),
     ]

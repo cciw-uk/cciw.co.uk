@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='referenceform',
             name='referee',
-            field=models.OneToOneField(to='officers.Referee'),
+            field=models.OneToOneField(to='officers.Referee', on_delete=models.CASCADE),
         ),
     ]

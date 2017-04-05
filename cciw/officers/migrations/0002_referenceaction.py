@@ -20,8 +20,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('created', models.DateTimeField(default=django.utils.timezone.now)),
                 ('action_type', models.CharField(choices=[('request', 'Reference requested'), ('received', 'Reference receieved'), ('nag', 'Applicant nagged')], max_length=20)),
-                ('reference', models.ForeignKey(related_name='actions', to='officers.Reference')),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True)),
+                ('reference', models.ForeignKey(related_name='actions', to='officers.Reference', on_delete=models.CASCADE)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
             },

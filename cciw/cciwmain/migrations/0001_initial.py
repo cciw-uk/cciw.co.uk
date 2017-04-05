@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='camp',
             name='chaplain',
-            field=models.ForeignKey(null=True, to='cciwmain.Person', blank=True, verbose_name='chaplain', related_name='camps_as_chaplain'),
+            field=models.ForeignKey(null=True, to='cciwmain.Person', blank=True, verbose_name='chaplain', related_name='camps_as_chaplain', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(

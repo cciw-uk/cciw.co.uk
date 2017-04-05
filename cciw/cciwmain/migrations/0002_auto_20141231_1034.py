@@ -23,13 +23,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='camp',
             name='previous_camp',
-            field=models.ForeignKey(null=True, to='cciwmain.Camp', blank=True, verbose_name='previous camp', related_name='next_camps'),
+            field=models.ForeignKey(null=True, to='cciwmain.Camp', blank=True, verbose_name='previous camp', related_name='next_camps', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='camp',
             name='site',
-            field=models.ForeignKey(to='cciwmain.Site'),
+            field=models.ForeignKey(to='cciwmain.Site', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(

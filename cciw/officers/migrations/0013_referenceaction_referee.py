@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='referenceaction',
             name='referee',
-            field=models.ForeignKey(related_name='actions', to='officers.Referee', null=True),
+            field=models.ForeignKey(related_name='actions', to='officers.Referee', null=True, on_delete=models.CASCADE),
         ),
     ]

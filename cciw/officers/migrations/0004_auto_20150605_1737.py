@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='application',
             name='officer',
-            field=models.ForeignKey(related_name='applications', to=settings.AUTH_USER_MODEL, blank=True),
+            field=models.ForeignKey(related_name='applications', to=settings.AUTH_USER_MODEL, blank=True, on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='application',
@@ -68,12 +68,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='invitation',
             name='camp',
-            field=models.ForeignKey(related_name='invitations', to='cciwmain.Camp'),
+            field=models.ForeignKey(related_name='invitations', to='cciwmain.Camp', on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='invitation',
             name='officer',
-            field=models.ForeignKey(related_name='invitations', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(related_name='invitations', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='referenceaction',

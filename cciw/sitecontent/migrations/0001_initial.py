@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('extra_title', models.CharField(verbose_name='Disambiguation title', blank=True, max_length=100)),
                 ('listorder', models.SmallIntegerField(verbose_name='order in list')),
                 ('visible', models.BooleanField(verbose_name='Visible', default=True)),
-                ('parent_item', models.ForeignKey(verbose_name='Parent item (none = top level)', null=True, to='sitecontent.MenuLink', blank=True, related_name='child_links')),
+                ('parent_item', models.ForeignKey(verbose_name='Parent item (none = top level)', null=True, to='sitecontent.MenuLink', blank=True, related_name='child_links', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ('-parent_item__id', 'listorder'),
@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='htmlchunk',
             name='menu_link',
-            field=models.ForeignKey(verbose_name='Associated URL', null=True, to='sitecontent.MenuLink', blank=True),
+            field=models.ForeignKey(verbose_name='Associated URL', null=True, to='sitecontent.MenuLink', blank=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
     ]

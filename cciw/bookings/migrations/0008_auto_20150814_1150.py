@@ -24,11 +24,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='manualpayment',
             name='account',
-            field=models.ForeignKey(to='bookings.BookingAccount', related_name='manual_payments'),
+            field=models.ForeignKey(to='bookings.BookingAccount', related_name='manual_payments', on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='refundpayment',
             name='account',
-            field=models.ForeignKey(to='bookings.BookingAccount', related_name='refund_payments'),
+            field=models.ForeignKey(to='bookings.BookingAccount', related_name='refund_payments', on_delete=models.CASCADE),
         ),
     ]

@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='camp',
             name='camp_name',
-            field=models.ForeignKey(null=True, related_name='camps', to='cciwmain.CampName'),
+            field=models.ForeignKey(null=True, related_name='camps', to='cciwmain.CampName', on_delete=models.CASCADE),
         ),
     ]

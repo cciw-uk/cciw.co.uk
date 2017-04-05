@@ -85,7 +85,7 @@ class Migration(migrations.Migration):
                 ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
                 ('created', models.DateTimeField(default=django.utils.timezone.now)),
                 ('payment_type', models.PositiveSmallIntegerField(default=0, choices=[(0, 'Cheque'), (1, 'Cash'), (2, 'e-Cheque'), (3, 'Bank transfer')])),
-                ('account', models.ForeignKey(to='bookings.BookingAccount')),
+                ('account', models.ForeignKey(to='bookings.BookingAccount', on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -100,8 +100,8 @@ class Migration(migrations.Migration):
                 ('origin_id', models.PositiveIntegerField()),
                 ('processed', models.DateTimeField(null=True)),
                 ('created', models.DateTimeField()),
-                ('account', models.ForeignKey(to='bookings.BookingAccount')),
-                ('origin_type', models.ForeignKey(to='contenttypes.ContentType')),
+                ('account', models.ForeignKey(to='bookings.BookingAccount', on_delete=models.CASCADE)),
+                ('origin_type', models.ForeignKey(to='contenttypes.ContentType', on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -126,7 +126,7 @@ class Migration(migrations.Migration):
                 ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
                 ('created', models.DateTimeField(default=django.utils.timezone.now)),
                 ('payment_type', models.PositiveSmallIntegerField(default=0, choices=[(0, 'Cheque'), (1, 'Cash'), (2, 'e-Cheque'), (3, 'Bank transfer')])),
-                ('account', models.ForeignKey(to='bookings.BookingAccount')),
+                ('account', models.ForeignKey(to='bookings.BookingAccount', on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -144,13 +144,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='booking',
             name='account',
-            field=models.ForeignKey(related_name='bookings', to='bookings.BookingAccount'),
+            field=models.ForeignKey(related_name='bookings', to='bookings.BookingAccount', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='booking',
             name='camp',
-            field=models.ForeignKey(related_name='bookings', to='cciwmain.Camp'),
+            field=models.ForeignKey(related_name='bookings', to='cciwmain.Camp', on_delete=models.CASCADE),
             preserve_default=True,
         ),
     ]
