@@ -427,7 +427,7 @@ def code_quality_checks():
         return
     local("flake8 .")
     local("isort -c")
-    local("./runtests.py -f --nokeepdb")
+    local("./runtests.py -f --nokeepdb --noinput")
 
 
 @task
