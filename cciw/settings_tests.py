@@ -26,14 +26,31 @@ SEND_BROKEN_LINK_EMAILS = False
 
 TEST_DIR = basedir + r'/cciw/cciwmain/tests'
 
+ALLOWED_HOSTS = [
+    'localhost',
+]
 
-# Hack to disable migrations for tests, for speed
-class DisableMigrations(object):
+# Disable migrations for tests, for speed
+app_names = [
+    'accounts',
+    'admin',
+    'auth',
+    'bookings',
+    'cciwmain',
+    'contenttypes',
+    'django_nyt',
+    'ipn',
+    'mail',
+    'mailer',
+    'officers',
+    'sessions',
+    'sitecontent',
+    'sites',
+    'thumbnail',
+    'wiki',
+    'wiki_attachments',
+    'wiki_images',
+    'wiki_notifications'
+]
 
-    def __contains__(self, item):
-        return True
-
-    def __getitem__(self, item):
-        return "notmigrations"
-
-MIGRATION_MODULES = DisableMigrations()
+MIGRATION_MODULES = {app: None for app in app_names}

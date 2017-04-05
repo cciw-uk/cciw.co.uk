@@ -156,7 +156,7 @@ if not (LIVEBOX and WEBSERVER_RUNNING):
 if DEVBOX and DEBUG:
     INSTALLED_APPS += [
         'django.contrib.admindocs',
-        'debug_toolbar',
+#        'debug_toolbar',
     ]
 
 
@@ -414,7 +414,7 @@ _MIDDLEWARE = [
     (LIVEBOX,    "cciw.middleware.http.webfaction_fixes"),
     (True, 'django.middleware.security.SecurityMiddleware'),
     (True,       "django.middleware.gzip.GZipMiddleware"),
-    (DEVBOX and DEBUG, "debug_toolbar.middleware.DebugToolbarMiddleware"),
+#    (DEVBOX and DEBUG, "debug_toolbar.middleware.DebugToolbarMiddleware"),
     (True,       "django.contrib.sessions.middleware.SessionMiddleware"),
     (True,       "django.middleware.common.CommonMiddleware"),
     (True,       'django.middleware.csrf.CsrfViewMiddleware'),

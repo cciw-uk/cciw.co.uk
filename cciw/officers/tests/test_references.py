@@ -216,6 +216,12 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.assertEqual(referee.actions.filter(action_type=ReferenceAction.REFERENCE_NAG).count(), 1)
 
 
+def make_local_url(url):
+    url = url.replace('https://www.cciw.co.uk', '')
+    assert 'www.cciw.co.uk' not in url
+    return url
+
+
 class CreateReference(ReferenceSetupMixin, WebTestBase):
     """
     Tests for page for referees submitting references
@@ -226,10 +232,7 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
         Test for 200 code if we get the right URL
         """
         app = self.application2
-        url = make_ref_form_url(app.referees[0].id, None)
-        if 'www.cciw.co.uk' in url:
-            url = url.replace('https://www.cciw.co.uk', '')
-        assert 'www.cciw.co.uk' not in url
+        url = make_local_url(make_ref_form_url(app.referees[0].id, None))
         response = self.get_literal_url(url)
         self.assertCode(200)
         return response
@@ -277,7 +280,7 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
         self.assertEqual(app2.referees[0].previous_reference, app1.referees[0].reference)
 
         # Go to the corresponding URL
-        url = make_ref_form_url(app2.referees[0].id, app1.referees[0].reference.id)
+        url = make_local_url(make_ref_form_url(app2.referees[0].id, app1.referees[0].reference.id))
         self.get_literal_url(url)
         self.assertCode(200)
 
