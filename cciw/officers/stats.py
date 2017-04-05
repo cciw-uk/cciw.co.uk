@@ -40,7 +40,7 @@ def get_camp_officer_stats(camp):
     # There can be multiple DBSs for each officer. For 'all DBSs' and 'valid
     # DBSs', we only care about the first.
     any_dbs_dates = get_first(all_dbs_info)
-    valid_dbs_dates = get_first([(d, o) for (d, o) in all_dbs_info
+    recent_dbs_dates = get_first([(d, o) for (d, o) in all_dbs_info
                                  if d >= camp.start_date - timedelta(days=settings.DBS_VALID_FOR)])
 
     dr = pd.date_range(start=graph_start_date,
@@ -60,7 +60,7 @@ def get_camp_officer_stats(camp):
             'Applications': accumulate_dates(app_dates),
             'References': accumulate_dates(ref_dates),
             'Any DBS': accumulate_dates(trim(any_dbs_dates)),
-            'Valid DBS': accumulate_dates(trim(valid_dbs_dates)),
+            'Recent DBS': accumulate_dates(trim(recent_dbs_dates)),
         }
         # Fill forward so that accumulated
         # values get propagated to all rows,

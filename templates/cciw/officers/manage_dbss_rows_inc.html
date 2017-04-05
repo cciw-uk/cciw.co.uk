@@ -17,7 +17,9 @@
       {% if not dbs_info.has_dbs %}
         <img src="{% static "admin/img/icon-no.svg" %}"> Never
       {% else %}
-        {% if dbs_info.has_valid_dbs %}
+        {% if dbs_info.applicant_rejected %}
+          <img src="{% static "admin/img/icon-no.svg" %}"> Applicant rejected
+        {% elif dbs_info.has_recent_dbs %}
           <img src="{% static "admin/img/icon-yes.svg" %}"> Recent
         {% else %}
           <img src="{% static "admin/img/icon-alert.svg" %}"> Out of date
@@ -31,7 +33,17 @@
         {# Col 3 - action button #}
         {# Col 2 - info about action completed #}
 
-        {% if not dbs_info.has_valid_dbs %}
+        {% if dbs_info.applicant_rejected %}
+          <tr>
+            <td>
+              APPLICANT REJECTED</br>
+              Due to rejected DBS, this officer should be removed from the
+              officer list. Please contact leaders/CCIW committee.
+            </td>
+          </tr>
+        {% endif %}
+
+        {% if not dbs_info.has_recent_dbs and not dbs_info.applicant_rejected %}
           <tr>
             {# Row 1 - either mark DBS form as sent, or alert leaders #}
             {# regarding dbs_check_consent field #}
@@ -103,7 +115,7 @@
           <tr>
             {# Row 2 - register received DBS form #}
             <td colspan="2">
-              DBS form received:
+              DBS result received:
             </td>
             <td colspan="2">
               <form action="{% url 'admin:officers_dbscheck_add' %}"
@@ -119,26 +131,37 @@
           </tr>
         {% endif %}
 
-        {% if not dbs_info.has_valid_dbs and dbs_info.can_check_dbs_online %}
+        {% if not dbs_info.has_recent_dbs and not dbs_info.applicant_rejected and dbs_info.update_enabled_dbs_number %}
           <tr>
-            {# Row 3 - check DBS online #}
-            <td>
-              DBS number:
-            </td>
-            <td>
-              {{ dbs_info.update_enabled_dbs_number }}
-            </td>
-            <td colspan="2">
-              <form action="{% url 'cciw-officers-dbs_checked_online' %}"
-                    method="GET"
-                    class="dbs-checked-online"
-                    >
-                <input type="hidden" name="officer_id" value="{{ officer.id }}">
-                <input type="hidden" name="dbs_number" value="{{ dbs_info.update_enabled_dbs_number }}">
-                {% return_to_here %}
-                <button id="id_dbs_checked_online_{{ officer.id }}">DBS checked online ...</button>
-              </form>
-            </td>
+            {% if dbs_info.can_check_dbs_online %}
+              {# Row 3 - check DBS online #}
+              <td>
+                DBS number:<br>
+                Date of birth
+              </td>
+              <td>
+                {{ dbs_info.update_enabled_dbs_number.number }}<br>
+                {{ dbs_info.birth_date|date:"Y-m-d" }}
+              </td>
+              <td colspan="2">
+                <form action="{% url 'cciw-officers-dbs_checked_online' %}"
+                      method="GET"
+                      class="dbs-checked-online"
+                      >
+                  <input type="hidden" name="officer_id" value="{{ officer.id }}">
+                  <input type="hidden" name="dbs_number" value="{{ dbs_info.update_enabled_dbs_number.number }}">
+                  {% return_to_here %}
+                  <button id="id_dbs_checked_online_{{ officer.id }}">DBS checked online ...</button>
+                </form>
+              </td>
+            {% else %}
+              <td colspan="3">
+                CANNOT CHECK ONLINE: we have a DBS number ({{ dbs_info.update_enabled_dbs_number.number }}),
+                but no info about the original DBS, and the online service only
+                gives updates. Either the DBS must be checked, or a new DBS
+                requested.
+              </td>
+            {% endif %}
           </tr>
         {% endif %}
 

@@ -1072,14 +1072,18 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id=None):
     all_officers = reduce(operator.or_, map(set, camps_officers))
     all_officers = sorted(all_officers, key=lambda o: (o.first_name, o.last_name))
     apps = list(reduce(operator.or_, map(applications_for_camp, camps)))
-    valid_dbs_officer_ids = set(reduce(operator.or_,
-                                       [DBSCheck.objects.get_for_camp(c, include_late=True)
-                                        for c in camps])
-                                .values_list('officer_id', flat=True))
+    recent_dbs_officer_ids = set(reduce(operator.or_,
+                                        [DBSCheck.objects.get_for_camp(c, include_late=True)
+                                         for c in camps])
+                                 .values_list('officer_id', flat=True))
 
     all_dbs_officer_ids = set(DBSCheck.objects
                               .filter(officer__in=all_officers)
                               .values_list('officer_id', flat=True))
+
+    last_dbs_status = dict(DBSCheck.objects
+                           .filter(officer__in=all_dbs_officer_ids)
+                           .values_list('officer_id', 'applicant_accepted'))
 
     # Looking for action logs: set cutoff to a year before now, on the basis that
     # anything more than that will have been lost or irrelevant, and we don't
@@ -1125,15 +1129,23 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id=None):
             has_application_form=app is not None,
             application_id=app.id if app is not None else None,
             has_dbs=o.id in all_dbs_officer_ids,
-            has_valid_dbs=o.id in valid_dbs_officer_ids,
+            has_recent_dbs=o.id in recent_dbs_officer_ids,
             last_dbs_form_sent=dbs_forms_sent_for_officers.get(o.id, None),
             last_leader_alert_sent=leader_alerts_sent_for_officers.get(o.id, None),
             address=app.one_line_address if app is not None else "",
+            birth_date=app.birth_date if app is not None else None,
             dbs_check_consent=app.dbs_check_consent if app is not None else False,
             update_enabled_dbs_number=update_service_dbs_numbers_for_officers.get(o.id, None),
+            last_dbs_rejected=not last_dbs_status[o.id] if o.id in last_dbs_status else False,
         )
         retval.append((o, dbs_info))
     return retval
+
+
+@attr.s
+class DBSNumber(object):
+    number = attr.ib()
+    previous_check_good = attr.ib()  # True = good, False = bad, None = unknown
 
 
 def get_update_service_dbs_numbers(officers):
@@ -1141,21 +1153,56 @@ def get_update_service_dbs_numbers(officers):
     # Two sources:
     # 1) DBSCheck
     # 2) ApplicationForm
-    update_service_dbs_numbers_1 = (DBSCheck.objects
-                                    .filter(officer__in=officers,
-                                            registered_with_dbs_update=True)
-                                    .values_list('officer_id', 'dbs_number', 'completed'))
-    update_service_dbs_numbers_2 = (Application.objects
-                                    .filter(officer__in=officers)
-                                    .exclude(dbs_number="")
-                                    .values_list('officer_id', 'dbs_number', 'date_submitted'))
-    update_service_dbs_numbers = list(update_service_dbs_numbers_1) + list(update_service_dbs_numbers_2)
+
+    # We also need to know, for a given DBS number, what the status of any
+    # previous check was, or if none has been done, because the update service
+    # only tells us what has changed since last time, not what was originally
+    # listed.
+
+    # These may or may not be update-service registered
+    dbs_checks = (
+        DBSCheck.objects
+        .filter(officer__in=officers)
+        .order_by('completed')  # most recent last
+    )
+
+    update_service_dbs_numbers = []
+    applicant_accepted_dict = {}
+    for dbs_check in dbs_checks:
+        dbs_number = dbs_check.dbs_number.strip()
+        # Most recent last means most recent wins in the case of duplicates.
+        # For online check, we count 'bad' (we saw something bad on
+        # an update), but only count 'good' for the full form.
+        if dbs_check.check_type == DBSCheck.CHECK_TYPE_FORM:
+            applicant_accepted_dict[dbs_number] = dbs_check.applicant_accepted
+        elif dbs_check.check_type == DBSCheck.CHECK_TYPE_ONLINE and not dbs_check.applicant_accepted:
+            applicant_accepted_dict[dbs_number] = dbs_check.applicant_accepted
+
+        if dbs_check.registered_with_dbs_update:
+            update_service_dbs_numbers.append((dbs_check.completed, dbs_check.officer_id, dbs_number))
+
+    # According to instructions given officers, these should all be
+    # update-service registered
+    update_service_dbs_numbers_from_application_form = (
+        Application.objects
+        .filter(officer__in=officers)
+        .exclude(dbs_number="")
+        .order_by('date_submitted')  # most recent last
+        .values_list('officer_id', 'dbs_number', 'date_submitted'))
+
+    for o_id, dbs_number, completed in update_service_dbs_numbers_from_application_form:
+        dbs_number = dbs_number.strip()
+        update_service_dbs_numbers.append((completed, o_id, dbs_number))
+
     retval = {}
 
-    # We want the most recent value to win, sort descending by timestamp
-    update_service_dbs_numbers.sort(key=lambda r: r[2], reverse=True)
-    for officer_id, dbs_number, dt in update_service_dbs_numbers:
-        retval[officer_id] = dbs_number.strip()
+    update_service_dbs_numbers.sort()  # by date submitted, ascending
+    for dt, officer_id, dbs_number in update_service_dbs_numbers:
+        # Most recent last means most recent wins in the case of more than one for officer:
+        retval[officer_id] = DBSNumber(
+            number=dbs_number.strip(),
+            previous_check_good=applicant_accepted_dict.get(dbs_number, None)
+        )
     return retval
 
 
@@ -1165,21 +1212,30 @@ class DbsInfo(object):
     has_application_form = attr.ib()
     application_id = attr.ib()
     has_dbs = attr.ib()
-    has_valid_dbs = attr.ib()
+    has_recent_dbs = attr.ib()
     last_dbs_form_sent = attr.ib()
     last_leader_alert_sent = attr.ib()
     address = attr.ib()
+    birth_date = attr.ib()
     dbs_check_consent = attr.ib()
     update_enabled_dbs_number = attr.ib()
+    last_dbs_rejected = attr.ib()
+
+    @property
+    def applicant_rejected(self):
+        return (self.last_dbs_rejected or
+                (self.update_enabled_dbs_number is not None and
+                 self.update_enabled_dbs_number.previous_check_good is False))
 
     @property
     def requires_action(self):
         return (self.requires_alert_leaders or
-                self.requires_send_dbs_form)
+                self.requires_send_dbs_form or
+                self.applicant_rejected)
 
     @property
     def _action_possible(self):
-        return not self.has_valid_dbs and self.has_application_form
+        return not self.has_recent_dbs and self.has_application_form
 
     @property
     def requires_alert_leaders(self):
@@ -1191,11 +1247,14 @@ class DbsInfo(object):
 
     @property
     def can_register_received_dbs_form(self):
-        return self._action_possible
+        return not self.applicant_rejected and self._action_possible
 
     @property
     def can_check_dbs_online(self):
-        return bool(self.update_enabled_dbs_number)
+        return (self._action_possible and
+                not self.applicant_rejected and
+                (self.update_enabled_dbs_number is not None and
+                 self.update_enabled_dbs_number.previous_check_good is True))
 
 
 @staff_member_required

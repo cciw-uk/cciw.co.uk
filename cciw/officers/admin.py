@@ -256,11 +256,12 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
              'description': mark_safe("""
 <h3>Important information, please read:</h3>
 
+<p>You need to give permission for us to obtain a DBS check for you. Otherwise
+we regret that we cannot proceed with your application.</p>
+
 <p>If you have a current enhanced Disclosure and Barring Service check and have
 signed up for the update system, and if you give permission for CCIW to look at
-it, please enter the number below. If not, you will need to give permission for
-us to obtain a DBS check for you. Otherwise we regret that we cannot proceed
-with your application.</p>
+it, please enter the number below..</p>
 
 <p>If we need a new DBS check for you, once your application form is received a
 DBS application form will be sent to you, so please ensure your postal address
@@ -455,7 +456,7 @@ class DBSCheckAdmin(RerouteResponseAdminMixin, admin.ModelAdmin):
 
     form = DBSCheckModelForm
 
-    search_fields = ('officer__first_name', 'officer__last_name')
+    search_fields = ['officer__first_name', 'officer__last_name', 'dbs_number']
     list_display = ['first_name', 'last_name', 'dbs_number', 'completed',
                     'requested_by', 'registered_with_dbs_update']
     list_display_links = ('first_name', 'last_name', 'dbs_number')
