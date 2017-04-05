@@ -59,7 +59,7 @@ $(document).ready(function() {
 
     $('#id_officer_table').on(
         'submit',
-        'form.alert-leaders, form.register-received-dbs, form.dbs-checked-online',
+        'form.alert-leaders, form.register-received-dbs, form.dbs-checked-online, form.request-dbs-form-action',
         function (ev) {
             ev.preventDefault();
             var $form = $(this);

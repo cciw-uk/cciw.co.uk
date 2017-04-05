@@ -1,0 +1,19 @@
+{% autoescape off %}Dear {{ external_dbs_officer.name }},
+
+{{ officer.first_name }} {{ officer.last_name }} needs a new DBS check as either it has been 3 years since the last DBS was issued, or we have no DBS on record at all for them. Please can you send the forms and information pack to the following address:
+
+{{ officer.first_name }} {{ officer.last_name }}
+{{ application.address_firstline }}
+{{ application.address_town }}
+{{ application.address_county }}
+{{ application.address_postcode }}
+{{ application.address_country }}
+
+Many thanks,
+
+{{ sender.first_name }} {{ sender.last_name }}
+
+(DBS Administrator for CCIW)
+
+Sent via the CCIW website.
+{% endautoescape %}

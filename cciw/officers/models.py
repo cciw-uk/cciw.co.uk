@@ -507,15 +507,17 @@ class DBSActionLog(models.Model):
     """
     ACTION_FORM_SENT = 'form_sent'
     ACTION_LEADER_ALERT_SENT = 'leader_alert_sent'
+    ACTION_REQUEST_FOR_DBS_FORM_SENT = 'request_for_dbs_form_sent'
     ACTION_CHOICES = [
         (ACTION_FORM_SENT, "DBS form sent"),
         (ACTION_LEADER_ALERT_SENT, "Alert sent to leader"),
+        (ACTION_REQUEST_FOR_DBS_FORM_SENT, "Request for DBS form sent"),
     ]
 
     officer = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 related_name='dbsactionlogs',
                                 on_delete=models.CASCADE)
-    action_type = models.CharField("action type", max_length=20,
+    action_type = models.CharField("action type", max_length=40,
                                    choices=ACTION_CHOICES)
     timestamp = models.DateTimeField("Timestamp",
                                      default=timezone.now)

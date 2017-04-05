@@ -44,11 +44,38 @@
         {% endif %}
 
         {% if not dbs_info.has_recent_dbs and not dbs_info.applicant_rejected %}
-          <tr>
-            {# Row 1 - either mark DBS form as sent, or alert leaders #}
-            {# regarding dbs_check_consent field #}
-            {% if dbs_info.has_application_form %}
-              {% if dbs_info.dbs_check_consent %}
+          {% if dbs_info.has_application_form %}
+            {% if dbs_info.dbs_check_consent %}
+
+              {# Get external organisation to send DBS #}
+              <tr>
+                <td colspan="2">
+                </td>
+                <td>
+                  <form action="{% url 'cciw-officers-request_dbs_form_action' %}"
+                        method="GET"
+                        class="request-dbs-form-action"
+                        >
+                    <input type="hidden" name="application_id" value="{{ dbs_info.application_id }}">
+                    {% return_to_here %}
+                    <button id="id_request_form_to_be_sent_{{ officer.id }}">Request {{ external_dbs_officer.organisation }} to send DBS</button>
+                  </form>
+                </td>
+                <td>
+                  Request sent:
+                  <span id="id_last_form_request_sent_{{ officer.id }}">
+                    {% if dbs_info.last_form_request_sent %}
+                      {{ dbs_info.last_form_request_sent|timesince }} ago
+                    {% else %}
+                      No record
+                    {% endif %}
+                  </span>
+
+                </td>
+              </tr>
+
+              {# Mark DBS form as sent #}
+              <tr>
                 <td>
                   Address:
                 </td>
@@ -73,12 +100,16 @@
                     {% if dbs_info.last_dbs_form_sent %}
                       {{ dbs_info.last_dbs_form_sent|timesince }} ago
                     {% else %}
-                      Never
+                      No record
                     {% endif %}
                   </span>
                 </td>
+              </tr>
 
-              {% else %}
+            {% else %}
+
+              {# Alert leaders to non-consent #}
+              <tr>
                 <td colspan="2">
                   <b>Officer does not consent to DBS check</b>
                 </td>
@@ -98,22 +129,25 @@
                     {% if dbs_info.last_leader_alert_sent %}
                       {{ dbs_info.last_leader_alert_sent|timesince }} ago
                     {% else %}
-                      Never
+                      No record
                     {% endif %}
                   </span>
                 </td>
-              {% endif %}
-            {% else %}
+              </tr>
+            {% endif %}
+          {% else %}
+            <tr>
               <td colspan="2">
                 Needs application form
               </td>
-            {% endif %}
-          </tr>
+            </tr>
+          {% endif %}
         {% endif %}
 
         {% if dbs_info.can_register_received_dbs_form %}
+
+          {# Register received DBS form #}
           <tr>
-            {# Row 2 - register received DBS form #}
             <td colspan="2">
               DBS result received:
             </td>
@@ -134,7 +168,7 @@
         {% if not dbs_info.has_recent_dbs and not dbs_info.applicant_rejected and dbs_info.update_enabled_dbs_number %}
           <tr>
             {% if dbs_info.can_check_dbs_online %}
-              {# Row 3 - check DBS online #}
+              {# Row - check DBS online #}
               <td>
                 DBS number:<br>
                 Date of birth

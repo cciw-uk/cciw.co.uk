@@ -266,6 +266,14 @@ def send_dbs_consent_alert_leaders_email(message, officer, camps):
               fail_silently=False)
 
 
+def send_request_for_dbs_form_email(message, officer, sending_officer):
+    EmailMessage(subject="[CCIW] DBS form needed for %s %s" % (officer.first_name, officer.last_name),
+                 body=message,
+                 from_email=settings.DEFAULT_FROM_EMAIL,
+                 to=[settings.EXTERNAL_DBS_OFFICER['email']],
+                 headers={'Reply-To': sending_officer.email}).send()
+
+
 def handle_reference_bounce(bounced_email_address, reply_to, original_message, camp_name):
     admin_emails = [e for name, e in settings.ADMINS]
 

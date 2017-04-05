@@ -34,6 +34,7 @@ urlpatterns = [
     url(r'^leaders/mark-dbs-sent/', views.mark_dbs_sent, name="cciw-officers-mark_dbs_sent"),
     url(r'^leaders/undo-mark-dbs-sent/', views.undo_mark_dbs_sent, name="cciw-officers-undo_mark_dbs_sent"),
     url(r'^leaders/dbs-consent-alert-leaders/', views.dbs_consent_alert_leaders, name="cciw-officers-dbs_consent_alert_leaders"),
+    url(r'^leaders/request-dbs-form-action/', views.request_dbs_form_action, name="cciw-officers-request_dbs_form_action"),
     url(r'^leaders/dbs-checked-online/', views.dbs_checked_online, name="cciw-officers-dbs_checked_online"),
 
 

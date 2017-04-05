@@ -46,10 +46,10 @@ from . import create
 from .applications import (application_rtf_filename, application_to_rtf, application_to_text, application_txt_filename,
                            applications_for_camp, camps_for_application, thisyears_applications)
 from .email import (make_ref_form_url, make_ref_form_url_hash, send_dbs_consent_alert_leaders_email,
-                    send_nag_by_officer, send_reference_request_email)
+                    send_nag_by_officer, send_reference_request_email, send_request_for_dbs_form_email)
 from .email_utils import formatted_email, send_mail_with_attachments
-from .forms import (AdminReferenceForm, CreateOfficerForm, DbsConsentProblemForm, ReferenceForm, SendNagByOfficerForm,
-                    SendReferenceRequestForm, SetEmailForm, UpdateOfficerForm)
+from .forms import (AdminReferenceForm, CreateOfficerForm, DbsConsentProblemForm, ReferenceForm, RequestDbsFormForm,
+                    SendNagByOfficerForm, SendReferenceRequestForm, SetEmailForm, UpdateOfficerForm)
 from .models import (Application, DBSActionLog, DBSCheck, Invitation, Referee, Reference, ReferenceAction,
                      empty_reference)
 from .stats import get_camp_officer_stats, get_camp_officer_stats_trend
@@ -1045,6 +1045,7 @@ def manage_dbss(request, year=None):
          'year': year,
          'CHECK_TYPE_FORM': DBSCheck.CHECK_TYPE_FORM,
          'CHECK_TYPE_ONLINE': DBSCheck.CHECK_TYPE_ONLINE,
+         'external_dbs_officer': settings.EXTERNAL_DBS_OFFICER,
          }
     return render(request, template_name, c)
 
@@ -1095,6 +1096,8 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id=None):
                             .order_by('timestamp'))
     dbs_forms_sent = list(relevant_action_logs.filter(
         action_type=DBSActionLog.ACTION_FORM_SENT))
+    requests_for_dbs_form_sent = list(relevant_action_logs.filter(
+        action_type=DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT))
     leader_alerts_sent = list(relevant_action_logs.filter(
         action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT))
 
@@ -1116,6 +1119,7 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id=None):
         return dict([(f.officer_id, f.timestamp) for f in logs])
 
     dbs_forms_sent_for_officers = logs_to_dict(dbs_forms_sent)
+    requests_for_dbs_form_sent_for_officers = logs_to_dict(requests_for_dbs_form_sent)
     leader_alerts_sent_for_officers = logs_to_dict(leader_alerts_sent)
 
     retval = []
@@ -1133,6 +1137,7 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id=None):
             has_recent_dbs=o.id in recent_dbs_officer_ids,
             last_dbs_form_sent=dbs_forms_sent_for_officers.get(o.id, None),
             last_leader_alert_sent=leader_alerts_sent_for_officers.get(o.id, None),
+            last_form_request_sent=requests_for_dbs_form_sent_for_officers.get(o.id, None),
             address=app.one_line_address if app is not None else "",
             birth_date=app.birth_date if app is not None else None,
             dbs_check_consent=app.dbs_check_consent if app is not None else False,
@@ -1216,6 +1221,7 @@ class DbsInfo(object):
     has_recent_dbs = attr.ib()
     last_dbs_form_sent = attr.ib()
     last_leader_alert_sent = attr.ib()
+    last_form_request_sent = attr.ib()
     address = attr.ib()
     birth_date = attr.ib()
     dbs_check_consent = attr.ib()
@@ -1231,7 +1237,7 @@ class DbsInfo(object):
     @property
     def requires_action(self):
         return (self.requires_alert_leaders or
-                self.requires_send_dbs_form or
+                self.requires_send_dbs_form_or_request or
                 self.applicant_rejected)
 
     @property
@@ -1243,8 +1249,9 @@ class DbsInfo(object):
         return self._action_possible and not self.dbs_check_consent and not self.last_leader_alert_sent
 
     @property
-    def requires_send_dbs_form(self):
-        return self._action_possible and self.dbs_check_consent and self.last_dbs_form_sent is None
+    def requires_send_dbs_form_or_request(self):
+        return (self._action_possible and self.dbs_check_consent and
+                (self.last_dbs_form_sent is None and self.last_form_request_sent is None))
 
     @property
     def can_register_received_dbs_form(self):
@@ -1308,7 +1315,7 @@ class PopupEmailAction(TemplateView):
                 # cancel
                 return reroute_response(request)
 
-        messageform = DbsConsentProblemForm(message_info=messageform_info)
+        messageform = self.messageform_class(message_info=messageform_info)
 
         c['messageform'] = messageform
         c['is_popup'] = True
@@ -1342,6 +1349,37 @@ class DbsConsentAlertLeaders(PopupEmailAction):
 
 
 dbs_consent_alert_leaders = staff_member_required(camp_admin_required(DbsConsentAlertLeaders.as_view()))
+
+
+class RequestDbsFormAction(PopupEmailAction):
+
+    template_name = 'cciw/officers/request_dbs_form_action.html'
+    messageform_class = RequestDbsFormForm
+
+    def get_messageform_info(self, request):
+        try:
+            app_id = int(request.GET.get('application_id'))
+        except (ValueError, TypeError):
+            raise Http404
+        app = get_object_or_404(Application.objects.filter(id=app_id))
+        external_dbs_officer = settings.EXTERNAL_DBS_OFFICER
+        self.officer = officer = app.officer
+
+        # For view:
+        self.context['officer'] = officer
+        self.context['external_dbs_officer'] = external_dbs_officer
+
+        return dict(external_dbs_officer=external_dbs_officer,
+                    application=app,
+                    officer=officer,
+                    sender=request.user)
+
+    def send_email(self, request, message):
+        send_request_for_dbs_form_email(message, self.officer, request.user)
+        request.user.dbsactions_performed.create(officer=self.officer,
+                                                 action_type=DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT)
+
+request_dbs_form_action = staff_member_required(camp_admin_required(RequestDbsFormAction.as_view()))
 
 
 @staff_member_required

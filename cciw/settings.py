@@ -494,6 +494,11 @@ DEFAULT_CONTENT_TYPE = "text/html"
 
 BASE_DIR = basedir
 
+# == DBS ==
+
+# This should be a dictionary with 'name', 'email' and 'organisation' keys:
+EXTERNAL_DBS_OFFICER = SECRETS['EXTERNAL_DBS_OFFICER']
+
 
 # == Third party ==
 
