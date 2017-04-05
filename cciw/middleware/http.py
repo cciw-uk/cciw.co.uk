@@ -31,3 +31,4 @@ def webfaction_fixes(get_response):
             request.is_secure = lambda: request.META['HTTP_X_FORWARDED_SSL'] in ['on', 'on,on']
 
         return get_response(request)
+    return middleware
