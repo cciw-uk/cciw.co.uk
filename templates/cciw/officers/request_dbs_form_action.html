@@ -1,10 +1,10 @@
 {% extends "cciw/officers/base.html" %}
-{% block title %}Request DBS form to be sent to {{ officer.first_name }} {{ officer.last_name }} | CCIW Officers {% endblock %}
+{% block title %}Ask for DBS form to be sent to {{ officer.first_name }} {{ officer.last_name }} | CCIW Officers {% endblock %}
 
 {% block content %}
   <div id="content-main">
 
-    <h2>Request {{ external_dbs_officer.organisation }} to send DBS form</h2>
+    <h2>Ask {{ external_dbs_officer.organisation }} to send DBS form</h2>
 
     <p>The following email, which you can now modify, will be sent to
       <b>{{ external_dbs_officer.name }} &lt;{{ external_dbs_officer.email }}&gt;</b>

@@ -273,7 +273,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.assertEqual(self.get_element_text('#id_last_form_request_sent_{0}'.format(self.officer_user.id)).strip(),
                          'No record')
         self.click_request_dbs_form_button(self.officer_user)
-        self.assertTextPresent("Request DBS form to be sent to {0} {1}".format(self.officer_user.first_name,
+        self.assertTextPresent("Ask for DBS form to be sent to {0} {1}".format(self.officer_user.first_name,
                                                                                self.officer_user.last_name))
         self.submit('input[name="send"]')
         self.assertEqual(len(mail.outbox), 1)

@@ -151,7 +151,6 @@ class Application(models.Model):
                     return vals[0]
         return self.referee_set.get_or_create(referee_number=num)[0]
 
-
     def could_be_for_camp(self, camp):
         # An application is 'for' a camp if it is submitted in the year before
         # the camp start date. Logic duplicated in applications_for_camp
