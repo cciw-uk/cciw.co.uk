@@ -34,6 +34,7 @@ from cciw.bookings.utils import (addresses_for_mailing_list, camp_bookings_to_sp
                                  camp_sharable_transport_details_to_spreadsheet, payments_to_spreadsheet,
                                  year_bookings_to_spreadsheet)
 from cciw.cciwmain import common
+from cciw.cciwmain.common import TemplateView
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email, python_to_json
@@ -1285,42 +1286,62 @@ def undo_mark_dbs_sent(request):
     return {'status': 'success'}
 
 
-@staff_member_required
-@camp_admin_required
-def dbs_consent_alert_leaders(request):
-    try:
-        app_id = int(request.GET.get('application_id'))
-    except (ValueError, TypeError):
-        raise Http404
-    app = get_object_or_404(Application.objects.filter(id=app_id))
-    officer = app.officer
-    camps = camps_for_application(app)
+class PopupEmailAction(TemplateView):
+    def get_messageform_info(self, request):
+        raise NotImplementedError()
 
-    c = {}
-    messageform_info = dict(application=app,
-                            officer=officer,
-                            camps=camps,
-                            sender=request.user)
+    def send_email(self, request, message):
+        raise NotImplementedError()
 
-    if request.method == 'POST':
-        if 'send' in request.POST:
-            messageform = DbsConsentProblemForm(request.POST, message_info=messageform_info)
-            # It's impossible for the form to be invalid, so assume valid
-            messageform.is_valid()
-            send_dbs_consent_alert_leaders_email(wordwrap(messageform.cleaned_data['message'], 70), officer, camps)
-            request.user.dbsactions_performed.create(officer=officer,
-                                                     action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT)
-            return reroute_response(request)
-        else:
-            # cancel
-            return reroute_response(request)
+    def handle(self, request):
+        self.context = {}
+        c = {}
+        messageform_info = self.get_messageform_info(request)
+        if request.method == 'POST':
+            if 'send' in request.POST:
+                messageform = self.messageform_class(request.POST, message_info=messageform_info)
+                # It's impossible for the form to be invalid, so assume valid
+                messageform.is_valid()
+                self.send_email(request, wordwrap(messageform.cleaned_data['message'], 70))
+                return reroute_response(request)
+            else:
+                # cancel
+                return reroute_response(request)
 
-    messageform = DbsConsentProblemForm(message_info=messageform_info)
+        messageform = DbsConsentProblemForm(message_info=messageform_info)
 
-    c['messageform'] = messageform
-    c['officer'] = officer
-    c['is_popup'] = True
-    return render(request, 'cciw/officers/dbs_consent_alert_leaders.html', c)
+        c['messageform'] = messageform
+        c['is_popup'] = True
+        return self.render(c)
+
+
+class DbsConsentAlertLeaders(PopupEmailAction):
+
+    template_name = 'cciw/officers/dbs_consent_alert_leaders.html'
+    messageform_class = DbsConsentProblemForm
+
+    def get_messageform_info(self, request):
+        try:
+            app_id = int(request.GET.get('application_id'))
+        except (ValueError, TypeError):
+            raise Http404
+        app = get_object_or_404(Application.objects.filter(id=app_id))
+        self.officer = officer = app.officer
+        self.camps = camps = camps_for_application(app)
+        self.context['officer'] = officer
+        return dict(application=app,
+                    officer=officer,
+                    camps=camps,
+                    sender=request.user)
+
+    def send_email(self, request, message):
+        send_dbs_consent_alert_leaders_email(message,
+                                             self.officer, self.camps)
+        request.user.dbsactions_performed.create(officer=self.officer,
+                                                 action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT)
+
+
+dbs_consent_alert_leaders = staff_member_required(camp_admin_required(DbsConsentAlertLeaders.as_view()))
 
 
 @staff_member_required
