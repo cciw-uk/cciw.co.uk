@@ -525,6 +525,6 @@ class MembershipAdminForm(forms.ModelForm):
 class MembershipInline(admin.TabularInline):
     model = Membership
     form = MembershipAdminForm
-    extra = 3
+    extra = 0
 
 GroupAdmin.inlines = list(GroupAdmin.inlines) + [MembershipInline]
