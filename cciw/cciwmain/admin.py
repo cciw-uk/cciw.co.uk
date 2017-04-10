@@ -3,7 +3,6 @@ from functools import wraps
 from django.contrib import admin
 from django.utils.html import format_html
 
-from cciw.auth import can_edit_any_camps, can_edit_camp, editable_camps
 from cciw.cciwmain.models import Camp, CampName, Person, Role, Site
 
 
@@ -112,14 +111,14 @@ class CampAdmin(admin.ModelAdmin):
         if request.user.has_perm('cciwmain.change_camp'):
             return qs
         else:
-            return qs.filter(id__in=[c.id for c in editable_camps(request.user)])
+            return qs.filter(id__in=[c.id for c in request.user.editable_camps])
 
     def has_change_permission(self, request, obj=None):
         if obj is None:
-            if can_edit_any_camps(request.user):
+            if request.user.can_edit_any_camps:
                 return True
         else:
-            if can_edit_camp(request.user, obj):
+            if request.user.can_edit_camp(obj):
                 return True
         return super(CampAdmin, self).has_change_permission(request, obj=obj)
 

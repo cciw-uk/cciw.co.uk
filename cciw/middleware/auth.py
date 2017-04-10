@@ -3,8 +3,6 @@ from django.http import HttpResponseForbidden
 from django.utils.html import escape
 from django.utils.http import urlquote
 
-from cciw.auth import is_wiki_user
-
 
 def private_wiki(get_response):
     # Make the wiki restricted to logged in users only.  Djiki does not provide
@@ -16,7 +14,7 @@ def private_wiki(get_response):
                 return HttpResponseForbidden("<h1>Forbidden</h1>"
                                              "<p>You must be <a href='%s?next=%s'>logged in</a> to use this.</p>" %
                                              (settings.LOGIN_URL, escape(urlquote(request.get_full_path()))))
-            if not is_wiki_user(request.user):
+            if not request.user.is_wiki_user:
                 return HttpResponseForbidden("<h1>Forbidden</h1>"
                                              "<p>You do not have permission to access the wiki.</p>")
 

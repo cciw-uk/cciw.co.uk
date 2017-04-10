@@ -10,7 +10,6 @@ from django.core import urlresolvers
 from django.forms.utils import ErrorList
 from django.utils.safestring import mark_safe
 
-from cciw.auth import can_manage_application_forms, is_camp_officer
 from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
 from cciw.officers import widgets
@@ -68,13 +67,13 @@ class ApplicationAdminModelForm(forms.ModelForm):
 
         app_finished = self.cleaned_data.get('finished', False)
         user = threadlocals.get_current_user()
-        if can_manage_application_forms(user):
+        if user.can_manage_application_forms:
             officer = self.cleaned_data.get('officer', None)
         else:
             officer = self.instance.officer
 
         editing_old = self.instance.pk is not None and self.instance.finished
-        if editing_old and not can_manage_application_forms(user):
+        if editing_old and not user.can_manage_application_forms:
             # Once an Application has been marked 'finished' we don't allow any
             # value to be changed, to stop the possibility of tampering with saved
             # data.
@@ -134,19 +133,19 @@ class QualificationInline(admin.TabularInline):
     model = Qualification
 
     def has_add_permission(self, request):
-        if is_camp_officer(request.user):
+        if request.user.is_potential_camp_officer:
             return True
         else:
             return super(QualificationInline, self).has_add_permission(request)
 
     def has_change_permission(self, request, obj=None):
-        if is_camp_officer(request.user) and (obj is None or obj.officer_id == request.user.id):
+        if request.user.is_potential_camp_officer and (obj is None or obj.officer_id == request.user.id):
             return True
         else:
             return super(QualificationInline, self).has_change_permission(request, obj)
 
     def has_delete_permission(self, request, obj=None):
-        if is_camp_officer(request.user) and (obj is None or obj.officer_id == request.user.id):
+        if request.user.is_potential_camp_officer and (obj is None or obj.officer_id == request.user.id):
             return True
         else:
             return super(QualificationInline, self).has_delete_permission(request, obj)
@@ -155,7 +154,7 @@ class QualificationInline(admin.TabularInline):
 class CampAdminPermissionMixin(object):
     # NB also CciwAuthBackend
     def has_change_permission(self, request, obj=None):
-        if can_manage_application_forms(request.user):
+        if request.user.can_manage_application_forms:
             return True
         return super(CampAdminPermissionMixin, self).has_change_permission(request, obj)
 
@@ -311,7 +310,7 @@ have to fill in another DBS.</p> """)}
             # never get here normally
             return ()
         else:
-            if can_manage_application_forms(user):
+            if user.can_manage_application_forms:
                 return self.camp_leader_application_fieldsets
             else:
                 return self.camp_officer_application_fieldsets
@@ -330,7 +329,7 @@ have to fill in another DBS.</p> """)}
 
     def _force_user_val(self, request):
         user = request.user
-        if not can_manage_application_forms(user):
+        if not user.can_manage_application_forms:
             request.POST['officer'] = str(request.user.id)
         else:
             # The leader possibly forgot to set the 'user' box while submitting

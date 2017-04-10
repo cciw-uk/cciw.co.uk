@@ -1,7 +1,5 @@
 from django import template
 
-from cciw.auth import is_camp_admin
-
 register = template.Library()
 
 
@@ -17,7 +15,7 @@ class FixPermissions(template.Node):
                 d['has_change_permission'] = True
                 # We don't want 'Save and add another' to appear
                 d['has_add_permission'] = False
-                if 'allow_save_as_new' in request.GET and (is_camp_admin(user) or user.is_superuser):
+                if 'allow_save_as_new' in request.GET and (user.is_camp_admin or user.is_superuser):
                     d['save_as'] = True
 
         return ''

@@ -191,7 +191,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django_countries.fields import Country
 from paypal.standard.forms import PayPalPaymentsForm
 
-from cciw.auth import is_booking_secretary
 from cciw.bookings.email import send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
 from cciw.bookings.middleware import get_booking_account_from_request, unset_booking_account_cookie
@@ -241,7 +240,7 @@ def account_details_required(view_func):
 
 booking_secretary_required = user_passes_test_improved(lambda user:
                                                        user.is_superuser or
-                                                       is_booking_secretary(user))
+                                                       user.is_booking_secretary)
 
 
 # Views
@@ -922,7 +921,7 @@ class BookingAccountAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_queryset(self):
         request = self.request
-        if request.user.is_authenticated and is_booking_secretary(request.user):
+        if request.user.is_authenticated and request.user.is_booking_secretary:
             return BookingAccount.objects.order_by('name', 'address_post_code').filter(name__icontains=self.q)
         else:
             return BookingAccount.objects.none()

@@ -11,7 +11,7 @@ from django.core.mail.backends.locmem import EmailBackend as LocMemEmailBackend
 from django.test.client import RequestFactory
 from requests.exceptions import ConnectionError
 
-from cciw.auth import COMMITTEE_GROUP_NAME
+from cciw.accounts.models import COMMITTEE_GROUP_NAME
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
 from cciw.utils.tests.base import TestBase
 

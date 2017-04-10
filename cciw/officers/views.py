@@ -26,8 +26,6 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-from cciw.auth import (is_booking_secretary, is_camp_admin, is_camp_officer, is_cciw_secretary, is_committee_member,
-                       is_dbs_officer, is_wiki_user)
 from cciw.bookings.models import Booking
 from cciw.bookings.stats import get_booking_ages_stats, get_booking_progress_stats, get_booking_summary_stats
 from cciw.bookings.utils import (addresses_for_mailing_list, camp_bookings_to_spreadsheet,
@@ -96,12 +94,12 @@ def any_passes(*funcs):
         return False
     return func
 
-camp_admin_required = user_passes_test_improved(is_camp_admin)
-dbs_officer_required = user_passes_test_improved(is_dbs_officer)
-booking_secretary_required = user_passes_test_improved(is_booking_secretary)
-cciw_secretary_required = user_passes_test_improved(is_cciw_secretary)
-cciw_secretary_or_booking_secretary_required = user_passes_test_improved(any_passes(is_booking_secretary, is_cciw_secretary))
-secretary_or_committee_required = user_passes_test_improved(any_passes(is_booking_secretary, is_cciw_secretary, is_committee_member))
+camp_admin_required = user_passes_test_improved(lambda u: u.is_camp_admin)
+dbs_officer_required = user_passes_test_improved(lambda u: u.is_dbs_officer)
+booking_secretary_required = user_passes_test_improved(lambda u: u.is_booking_secretary)
+cciw_secretary_required = user_passes_test_improved(lambda u: u.is_cciw_secretary)
+cciw_secretary_or_booking_secretary_required = user_passes_test_improved(any_passes(lambda u: u.is_booking_secretary, lambda u: u.is_cciw_secretary))
+secretary_or_committee_required = user_passes_test_improved(any_passes(lambda u: u.is_booking_secretary, lambda u: u.is_cciw_secretary, lambda u: u.is_committee_member))
 
 
 def close_window_and_update_referee(ref_id):
@@ -131,17 +129,17 @@ def index(request):
     c = {}
     c['thisyear'] = common.get_thisyear()
     c['lastyear'] = c['thisyear'] - 1
-    if is_camp_admin(user):
+    if user.is_camp_admin:
         c['show_leader_links'] = True
         c['show_admin_link'] = True
-    if is_cciw_secretary(user):
+    if user.is_cciw_secretary:
         c['show_secretary_links'] = True
         c['show_admin_link'] = True
-    if is_dbs_officer(user):
+    if user.is_dbs_officer:
         c['show_dbs_officer_links'] = True
-    if is_booking_secretary(user):
+    if user.is_booking_secretary:
         c['show_booking_secretary_links'] = True
-    if is_committee_member(user) or is_booking_secretary(user):
+    if user.is_committee_member or user.is_booking_secretary:
         c['show_secretary_and_committee_links'] = True
         most_recent_booking_year = Booking.objects.most_recent_booking_year()
         if most_recent_booking_year is not None:
@@ -241,7 +239,7 @@ def view_application(request):
         raise Http404
 
     if app.officer_id != request.user.id and \
-            not is_camp_admin(request.user):
+            not request.user.is_camp_admin:
         raise PermissionDenied
 
     # NB, this is is called by both normal users and leaders.
@@ -925,7 +923,7 @@ def export_sharable_transport_details(request, year=None, slug=None):
 
 
 officer_files = access_folder_securely("officers",
-                                       lambda request: request.user.is_authenticated and is_camp_officer(request.user))
+                                       lambda request: request.user.is_authenticated and request.user.is_potential_camp_officer)
 
 
 @staff_member_required
@@ -1418,7 +1416,7 @@ def dbs_checked_online(request):
 @staff_member_required
 def officer_info(request):
     return render(request, 'cciw/officers/info.html', {
-        'show_wiki_link': is_wiki_user(request.user),
+        'show_wiki_link': request.user.is_wiki_user,
     })
 
 
@@ -1700,7 +1698,7 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_queryset(self):
         request = self.request
-        if request.user.is_authenticated and is_camp_admin(request.user):
+        if request.user.is_authenticated and request.user.is_camp_admin:
             qs = User.objects.all().order_by('first_name', 'last_name', 'email')
             return (qs.filter(first_name__istartswith=self.q) |
                     qs.filter(last_name__istartswith=self.q))

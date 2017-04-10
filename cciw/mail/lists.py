@@ -25,7 +25,7 @@ from django.contrib.auth import get_user_model
 from django.core.mail import make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
-from cciw.auth import COMMITTEE_GROUP_NAME, get_camp_admin_group_users, get_group_users
+from cciw.accounts.models import COMMITTEE_GROUP_NAME, get_camp_admin_group_users, get_group_users
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
 from cciw.officers.email_utils import formatted_email
