@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django_dynamic_fixture import G
 
-from cciw.auth import BOOKING_SECRETARY_GROUP_NAME, SECRETARY_GROUP_NAME
+from cciw.auth import BOOKING_SECRETARY_GROUP_NAME, SECRETARY_GROUP_NAME, DBS_OFFICER_GROUP_NAME
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.officers.models import Application, QualificationType, Reference
@@ -32,6 +32,11 @@ BOOKING_SECRETARY = (BOOKING_SECRETARY_USERNAME, BOOKING_SECRETARY_PASSWORD)
 SECRETARY_USERNAME = 'mrsecretary'
 SECRETARY_PASSWORD = 'test_password'
 SECRETARY = (SECRETARY_USERNAME, SECRETARY_PASSWORD)
+
+
+DBSOFFICER_USERNAME = 'mrsdbsofficer'
+DBSOFFICER_PASSWORD = 'my_password'
+DBSOFFICER = (DBSOFFICER_USERNAME, DBSOFFICER_PASSWORD)
 
 
 def perm(codename, app_label, model):
@@ -182,24 +187,6 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
                                      perm("change_application",
                                           "officers",
                                           "application"),
-                                     perm("add_dbscheck",
-                                          "officers",
-                                          "dbscheck"),
-                                     perm("change_dbscheck",
-                                          "officers",
-                                          "dbscheck"),
-                                     perm("delete_dbscheck",
-                                          "officers",
-                                          "dbscheck"),
-                                     perm("add_dbsactionlog",
-                                          "officers",
-                                          "dbsactionlog"),
-                                     perm("change_dbsactionlog",
-                                          "officers",
-                                          "dbsactionlog"),
-                                     perm("delete_dbsactionlog",
-                                          "officers",
-                                          "dbsactionlog"),
                                      perm("add_qualificationtype",
                                           "officers",
                                           "qualificationtype"),
@@ -220,6 +207,38 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
                            groups=[self.secretary_group])
         self.secretary.set_password(SECRETARY_PASSWORD)
         self.secretary.save()
+
+        self.dbs_officer_group = G(Group,
+                                   name=DBS_OFFICER_GROUP_NAME,
+                                   permissions=[
+                                       perm("add_dbscheck",
+                                            "officers",
+                                            "dbscheck"),
+                                       perm("change_dbscheck",
+                                            "officers",
+                                            "dbscheck"),
+                                       perm("delete_dbscheck",
+                                            "officers",
+                                            "dbscheck"),
+                                       perm("add_dbsactionlog",
+                                            "officers",
+                                            "dbsactionlog"),
+                                       perm("change_dbsactionlog",
+                                            "officers",
+                                            "dbsactionlog"),
+                                       perm("delete_dbsactionlog",
+                                            "officers",
+                                            "dbsactionlog"),
+                                   ])
+
+        self.dbs_officer = G(User,
+                             username=DBSOFFICER_USERNAME,
+                             is_active=True,
+                             is_superuser=False,
+                             is_staff=True,
+                             groups=[self.dbs_officer_group])
+        self.dbs_officer.set_password(DBSOFFICER_PASSWORD)
+        self.dbs_officer.save()
 
 
 class ExtraOfficersSetupMixin(OfficersSetupMixin):

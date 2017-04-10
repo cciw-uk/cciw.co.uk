@@ -11,7 +11,7 @@ from cciw.officers.views import get_officers_with_dbs_info_for_camps
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
-from .base import SECRETARY, CreateApplicationMixin, OfficersSetupMixin, SimpleOfficerSetupMixin
+from .base import DBSOFFICER, CreateApplicationMixin, OfficersSetupMixin, SimpleOfficerSetupMixin
 
 
 class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
@@ -185,7 +185,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.camp.invitations.create(officer=self.officer_user)
 
     def test_view_no_application_forms(self):
-        self.officer_login(SECRETARY)
+        self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         self.assertCode(200)
         self.assertTextPresent("Manage DBSs 2000 | CCIW Officers")
@@ -204,14 +204,14 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
 
     def test_view_with_application_forms(self):
         self.create_application(self.officer_user, self.year)
-        self.officer_login(SECRETARY)
+        self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         self.assertTextAbsent('Needs application form')
 
     def test_log_dbs_sent(self):
         self.create_application(self.officer_user, self.year)
         officer = self.officer_user
-        self.officer_login(SECRETARY)
+        self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
 
@@ -222,7 +222,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.assertUrlsEqual(url)
         self.assertEqual(officer.dbsactionlogs.count(), 1)
         self.assertEqual(officer.dbsactionlogs.get().user.username,
-                         SECRETARY[0])
+                         DBSOFFICER[0])
 
         if self.is_full_browser_test:
             self.assertElementText('#id_last_dbs_form_sent_{0}'.format(officer.id),
@@ -237,7 +237,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
     def test_alert_leaders(self):
         self.create_application(self.officer_user, self.year,
                                 overrides={'dbs_check_consent': False})
-        self.officer_login(SECRETARY)
+        self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
         self.assertTextPresent('Officer does not consent')
@@ -255,8 +255,8 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
                               self.officer_user.last_name),
                       m.body)
 
-        self.assertEqual(self.secretary.dbsactions_performed.count(), 1)
-        self.assertEqual(self.secretary.dbsactions_performed.get().action_type,
+        self.assertEqual(self.dbs_officer.dbsactions_performed.count(), 1)
+        self.assertEqual(self.dbs_officer.dbsactions_performed.get().action_type,
                          DBSActionLog.ACTION_LEADER_ALERT_SENT)
 
         self.handle_closed_window()
@@ -267,7 +267,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
 
     def test_request_dbs_form_sent(self):
         self.create_application(self.officer_user, self.year)
-        self.officer_login(SECRETARY)
+        self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
         self.assertEqual(self.get_element_text('#id_last_form_request_sent_{0}'.format(self.officer_user.id)).strip(),
@@ -283,8 +283,8 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
                               self.officer_user.last_name),
                       m.body)
 
-        self.assertEqual(self.secretary.dbsactions_performed.count(), 1)
-        self.assertEqual(self.secretary.dbsactions_performed.get().action_type,
+        self.assertEqual(self.dbs_officer.dbsactions_performed.count(), 1)
+        self.assertEqual(self.dbs_officer.dbsactions_performed.get().action_type,
                          DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT)
 
         self.handle_closed_window()
@@ -296,7 +296,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
     def test_register_received_dbs(self):
         self.create_application(self.officer_user, self.year)
         self.assertEqual(self.officer_user.dbs_checks.all().count(), 0)
-        self.officer_login(SECRETARY)
+        self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
         self.click_register_received_button(self.officer_user)
@@ -334,7 +334,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         today = date.today()
 
         # Use the DBS page
-        self.officer_login(SECRETARY)
+        self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
         self.click_dbs_checked_online_button(self.officer_user)

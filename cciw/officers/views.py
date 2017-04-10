@@ -27,7 +27,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from cciw.auth import (is_booking_secretary, is_camp_admin, is_camp_officer, is_cciw_secretary, is_committee_member,
-                       is_wiki_user)
+                       is_dbs_officer, is_wiki_user)
 from cciw.bookings.models import Booking
 from cciw.bookings.stats import get_booking_ages_stats, get_booking_progress_stats, get_booking_summary_stats
 from cciw.bookings.utils import (addresses_for_mailing_list, camp_bookings_to_spreadsheet,
@@ -97,6 +97,7 @@ def any_passes(*funcs):
     return func
 
 camp_admin_required = user_passes_test_improved(is_camp_admin)
+dbs_officer_required = user_passes_test_improved(is_dbs_officer)
 booking_secretary_required = user_passes_test_improved(is_booking_secretary)
 cciw_secretary_required = user_passes_test_improved(is_cciw_secretary)
 cciw_secretary_or_booking_secretary_required = user_passes_test_improved(any_passes(is_booking_secretary, is_cciw_secretary))
@@ -136,6 +137,8 @@ def index(request):
     if is_cciw_secretary(user):
         c['show_secretary_links'] = True
         c['show_admin_link'] = True
+    if is_dbs_officer(user):
+        c['show_dbs_officer_links'] = True
     if is_booking_secretary(user):
         c['show_booking_secretary_links'] = True
     if is_committee_member(user) or is_booking_secretary(user):
@@ -1007,7 +1010,7 @@ def officer_stats_trend_download(request, start_year, end_year):
 
 
 @staff_member_required
-@camp_admin_required
+@dbs_officer_required
 @ensure_csrf_cookie
 def manage_dbss(request, year=None):
     year = int(year)
@@ -1266,7 +1269,7 @@ class DbsInfo(object):
 
 
 @staff_member_required
-@camp_admin_required
+@dbs_officer_required
 @json_response
 def mark_dbs_sent(request):
     officer_id = int(request.POST['officer_id'])
@@ -1285,7 +1288,7 @@ def mark_dbs_sent(request):
 
 
 @staff_member_required
-@camp_admin_required
+@dbs_officer_required
 @json_response
 def undo_mark_dbs_sent(request):
     dbsactionlog_id = int(request.POST['dbsactionlog_id'])
@@ -1348,7 +1351,7 @@ class DbsConsentAlertLeaders(PopupEmailAction):
                                                  action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT)
 
 
-dbs_consent_alert_leaders = staff_member_required(camp_admin_required(DbsConsentAlertLeaders.as_view()))
+dbs_consent_alert_leaders = staff_member_required(dbs_officer_required(DbsConsentAlertLeaders.as_view()))
 
 
 class RequestDbsFormAction(PopupEmailAction):
@@ -1379,11 +1382,11 @@ class RequestDbsFormAction(PopupEmailAction):
         request.user.dbsactions_performed.create(officer=self.officer,
                                                  action_type=DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT)
 
-request_dbs_form_action = staff_member_required(camp_admin_required(RequestDbsFormAction.as_view()))
+request_dbs_form_action = staff_member_required(dbs_officer_required(RequestDbsFormAction.as_view()))
 
 
 @staff_member_required
-@camp_admin_required
+@dbs_officer_required
 def dbs_checked_online(request):
     officer = User.objects.get(id=int(request.GET['officer_id']))
     dbs_number = request.GET['dbs_number']

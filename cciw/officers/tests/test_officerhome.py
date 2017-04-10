@@ -3,7 +3,7 @@ from django.urls import reverse
 from cciw.cciwmain.common import get_thisyear
 from cciw.utils.tests.webtest import WebTestBase
 
-from .base import BOOKING_SECRETARY, LEADER, OFFICER, SECRETARY, CurrentCampsMixin, OfficersSetupMixin
+from .base import BOOKING_SECRETARY, DBSOFFICER, LEADER, OFFICER, CurrentCampsMixin, OfficersSetupMixin
 
 
 class OfficerHomePage(OfficersSetupMixin, CurrentCampsMixin, WebTestBase):
@@ -34,8 +34,8 @@ class OfficerHomePage(OfficersSetupMixin, CurrentCampsMixin, WebTestBase):
         self.follow_link('a[href="{0}"]'.format(reverse('admin:app_list',
                                                         args=('bookings',))))
 
-    def test_secretary_access(self):
-        self.officer_login(SECRETARY)
+    def test_dbs_officer_access(self):
+        self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-index')
         self.assertCode(200)
         self.assertTextPresent("Manage DBSs")

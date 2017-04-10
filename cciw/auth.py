@@ -7,6 +7,7 @@ from django.contrib.auth.models import Group
 
 WIKI_USERS_GROUP_NAME = 'Wiki users'
 SECRETARY_GROUP_NAME = 'Secretaries'
+DBS_OFFICER_GROUP_NAME = 'DBS Officers'
 COMMITTEE_GROUP_NAME = 'Committee'
 BOOKING_SECRETARY_GROUP_NAME = 'Booking secretaries'
 
@@ -68,6 +69,12 @@ def is_cciw_secretary(user):
     return user_in_groups(user, [SECRETARY_GROUP_NAME])
 
 
+def is_dbs_officer(user):
+    if not active_staff(user):
+        return False
+    return user_in_groups(user, [DBS_OFFICER_GROUP_NAME])
+
+
 def is_camp_officer(user):
     return active_staff(user)
 
@@ -82,6 +89,8 @@ def can_manage_application_forms(user):
     if user.has_perm('officers.change_application'):
         return True
     if is_camp_admin(user):
+        return True
+    if is_dbs_officer(user):
         return True
     return False
 
