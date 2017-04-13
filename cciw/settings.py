@@ -374,7 +374,7 @@ DEFAULT_FROM_EMAIL = SERVER_EMAIL
 REFERENCES_EMAIL = "CCIW references <references@cciw.co.uk>"
 
 if LIVEBOX and PRODUCTION:
-    EMAIL_BACKEND = "anymail.backends.mailgun.MailgunBackend"
+    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
