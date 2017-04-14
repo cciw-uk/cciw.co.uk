@@ -183,6 +183,7 @@ from dal import autocomplete
 from django import forms
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -635,8 +636,9 @@ def place_availability_json(request):
     return retval
 
 
-@csrf_exempt
 @json_response
+@staff_member_required
+@booking_secretary_required
 def get_expected_amount_due(request):
     fail = {'status': 'success',
             'amount': None}
