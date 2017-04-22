@@ -162,6 +162,24 @@ class QualificationInline(admin.TabularInline):
             return super(QualificationInline, self).has_delete_permission(request, obj)
 
 
+class InconsistentDBSNumbersFilter(admin.SimpleListFilter):
+    title = "Inconsistent DBS numbers"
+    parameter_name = "dbs_numbers_problems"
+
+    def lookups(self, request, model_admin):
+        return [
+            (1, 'Inconsistent'),
+        ]
+
+    def queryset(self, request, queryset):
+        val = self.value()
+        if val is None:
+            return queryset
+        if val == '1':
+            return (queryset.filter(dbs_number="").exclude(dbs_update_service_id="") |
+                    queryset.exclude(dbs_number="").filter(dbs_update_service_id=""))
+
+
 class CampAdminPermissionMixin(object):
     # NB also CciwAuthBackend
     def has_change_permission(self, request, obj=None):
@@ -177,8 +195,8 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
         return obj.officer.username
     officer_username.admin_order_field = 'officer__username'
     officer_username.short_description = 'username'
-    list_display = ['full_name', 'officer_username', 'finished', 'date_submitted']
-    list_filter = ['finished', 'date_submitted']
+    list_display = ['full_name', 'officer_username', 'address_email', 'finished', 'date_submitted']
+    list_filter = ['finished', 'date_submitted', InconsistentDBSNumbersFilter]
     ordering = ['full_name']
     search_fields = ['full_name']
     readonly_fields = ['date_submitted']
