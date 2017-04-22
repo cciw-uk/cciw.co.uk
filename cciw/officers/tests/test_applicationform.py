@@ -96,15 +96,13 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
              'court_declaration': '2',
              'concern_declaration': '2',
              'allegation_declaration': '2',
+             'dbs_check_consent': '2',
              'qualifications-0-type': str(self.first_aid_qualification.id),
              'qualifications-0-date_issued': '2016-01-01',
              'finished': True,
              }
         if enter_dbs_number:
             values['dbs_number'] = '1234'
-        else:
-            # Only need this if no DBS number entered
-            values['dbs_check_consent'] = '2'
         if override:
             for k, v in override.items():
                 if v is None:
@@ -478,17 +476,3 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         a = self._get_user(OFFICER).applications.get()
         self.assertEqual(a.dbs_number, '1234')
         self.assertEqual(a.finished, True)
-
-    def test_save_without_dbs_number_requires_consent(self):
-        self.officer_login(OFFICER)
-        self._start_new()
-        self._finish_application_form(enter_dbs_number=False,
-                                      override={'dbs_check_consent': None})
-        self._save()
-        # Shouldn't be saved:
-        self.assertEqual(self._get_user(OFFICER).applications.filter(finished=True).count(), 0)
-        self.assertTextPresent("If you do not provide a DBS number")
-        self.fill_by_name({'dbs_check_consent': '2'})
-        self._save()
-        self._assert_finished_successful()
-        self.assertEqual(self._get_user(OFFICER).applications.filter(finished=True).count(), 1)

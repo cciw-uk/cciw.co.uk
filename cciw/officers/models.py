@@ -2,12 +2,11 @@
 from datetime import date, timedelta
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
 from cciw.cciwmain.models import Camp
-from cciw.officers.fields import (AddressField, ExplicitBooleanField, RequiredAddressField, RequiredCharField,
+from cciw.officers.fields import (AddressField, RequiredAddressField, RequiredCharField,
                                   RequiredDateField, RequiredEmailField, RequiredExplicitBooleanField,
                                   RequiredTextField, RequiredYyyyMmField, YyyyMmField)
 from cciw.officers.references import first_letter_cap, reference_present_val
@@ -102,7 +101,7 @@ class Application(models.Model):
     dbs_number = models.CharField("DBS number",
                                   max_length=128, default="", blank=True,
                                   help_text="Current enhanced DBS number with update service")
-    dbs_check_consent = ExplicitBooleanField(
+    dbs_check_consent = RequiredExplicitBooleanField(
         """Do you consent to the obtaining of a Disclosure and Barring """
         """Service check on yourself? """)
 
@@ -156,14 +155,6 @@ class Application(models.Model):
         # the camp start date. Logic duplicated in applications_for_camp
         return (self.date_submitted <= camp.start_date and
                 self.date_submitted > camp.start_date - timedelta(days=365))
-
-    def clean(self):
-        super(Application, self).clean()
-        if self.finished:
-            if self.dbs_number.strip() == "" and self.dbs_check_consent is None:
-                raise ValidationError({'dbs_check_consent':
-                                       "If you do not provide a DBS number, you "
-                                       "must answer this question."})
 
 
 class Referee(models.Model):
