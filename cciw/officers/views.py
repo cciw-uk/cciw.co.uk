@@ -1152,6 +1152,7 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id=None):
 @attr.s
 class DBSNumber(object):
     number = attr.ib()
+    update_service_id = attr.ib()
     previous_check_good = attr.ib()  # True = good, False = bad, None = unknown
 
 
@@ -1177,6 +1178,7 @@ def get_update_service_dbs_numbers(officers):
     applicant_accepted_dict = {}
     for dbs_check in dbs_checks:
         dbs_number = dbs_check.dbs_number.strip()
+        dbs_update_service_id = dbs_check.dbs_update_service_id.strip()
         # Most recent last means most recent wins in the case of duplicates.
         # For online check, we count 'bad' (we saw something bad on
         # an update), but only count 'good' for the full form.
@@ -1186,7 +1188,7 @@ def get_update_service_dbs_numbers(officers):
             applicant_accepted_dict[dbs_number] = dbs_check.applicant_accepted
 
         if dbs_check.registered_with_dbs_update:
-            update_service_dbs_numbers.append((dbs_check.completed, dbs_check.officer_id, dbs_number))
+            update_service_dbs_numbers.append((dbs_check.completed, dbs_check.officer_id, dbs_number, dbs_update_service_id))
 
     # According to instructions given officers, these should all be
     # update-service registered
@@ -1195,19 +1197,21 @@ def get_update_service_dbs_numbers(officers):
         .filter(officer__in=officers)
         .exclude(dbs_number="")
         .order_by('date_submitted')  # most recent last
-        .values_list('officer_id', 'dbs_number', 'date_submitted'))
+        .values_list('officer_id', 'dbs_number', 'dbs_update_service_id', 'date_submitted'))
 
-    for o_id, dbs_number, completed in update_service_dbs_numbers_from_application_form:
+    for o_id, dbs_number, dbs_update_service_id, completed in update_service_dbs_numbers_from_application_form:
         dbs_number = dbs_number.strip()
-        update_service_dbs_numbers.append((completed, o_id, dbs_number))
+        dbs_update_service_id = dbs_update_service_id.strip()
+        update_service_dbs_numbers.append((completed, o_id, dbs_number, dbs_update_service_id))
 
     retval = {}
 
     update_service_dbs_numbers.sort()  # by date submitted, ascending
-    for dt, officer_id, dbs_number in update_service_dbs_numbers:
+    for dt, officer_id, dbs_number, dbs_update_service_id in update_service_dbs_numbers:
         # Most recent last means most recent wins in the case of more than one for officer:
         retval[officer_id] = DBSNumber(
             number=dbs_number.strip(),
+            update_service_id=dbs_update_service_id.strip(),
             previous_check_good=applicant_accepted_dict.get(dbs_number, None)
         )
     return retval
@@ -1388,6 +1392,7 @@ request_dbs_form_action = staff_member_required(dbs_officer_required(RequestDbsF
 def dbs_checked_online(request):
     officer = User.objects.get(id=int(request.GET['officer_id']))
     dbs_number = request.GET['dbs_number']
+    dbs_update_service_id = request.GET['dbs_update_service_id']
     old_dbs_check = (officer.dbs_checks
                      .filter(dbs_number=dbs_number)
                      .order_by('-completed')
@@ -1396,6 +1401,7 @@ def dbs_checked_online(request):
         '_return_to': request.GET['_return_to'],
         'officer': officer.id,
         'dbs_number': dbs_number,
+        'dbs_update_service_id': dbs_update_service_id,
         'registered_with_dbs_update': '2',  # = Yes
         'completed': date.today().strftime('%Y-%m-%d'),
         'check_type': DBSCheck.CHECK_TYPE_ONLINE,
