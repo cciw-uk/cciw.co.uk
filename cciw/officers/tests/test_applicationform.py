@@ -47,7 +47,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self.submit('input[name=new]')
         self.assertCode(200)
 
-    def _finish_application_form(self, enter_dbs_number=False, override=None):
+    def _finish_application_form(self, enter_dbs_number=False, enter_dbs_update_id=None, override=None):
         # A full set of values that pass validation.
         values = \
             {'full_name': 'x',
@@ -101,8 +101,12 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
              'qualifications-0-date_issued': '2016-01-01',
              'finished': True,
              }
+        if enter_dbs_update_id is None and enter_dbs_number:
+            enter_dbs_update_id = True
         if enter_dbs_number:
-            values['dbs_number'] = '1234'
+            values['dbs_number'] = '001234'
+        if enter_dbs_update_id:
+            values['dbs_update_service_id'] = 'C5678'
         if override:
             for k, v in override.items():
                 if v is None:
@@ -470,9 +474,28 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
     def test_dbs_number_entered(self):
         self.officer_login(OFFICER)
         self._start_new()
-        self._finish_application_form(enter_dbs_number=True)
+        self._finish_application_form(enter_dbs_number=True, enter_dbs_update_id=True)
         self._save()
         self._assert_finished_successful()
         a = self._get_user(OFFICER).applications.get()
-        self.assertEqual(a.dbs_number, '1234')
+        self.assertEqual(a.dbs_number, '001234')
+        self.assertEqual(a.dbs_update_service_id, 'C5678')
         self.assertEqual(a.finished, True)
+
+    def test_dbs_number_without_update_id(self):
+        self.officer_login(OFFICER)
+        self._start_new()
+        self._finish_application_form(enter_dbs_number=True, enter_dbs_update_id=False)
+        self._save()
+        # Shouldn't be saved:
+        self.assertEqual(self._get_user(OFFICER).applications.filter(finished=True).count(), 0)
+        self.assertTextPresent("If you enter a DBS number you need to enter the update service ID")
+
+    def test_dbs_update_id_without_dbs_number(self):
+        self.officer_login(OFFICER)
+        self._start_new()
+        self._finish_application_form(enter_dbs_number=False, enter_dbs_update_id=True)
+        self._save()
+        # Shouldn't be saved:
+        self.assertEqual(self._get_user(OFFICER).applications.filter(finished=True).count(), 0)
+        self.assertTextPresent("If you enter the update service ID you need to enter the DBS certificate number")

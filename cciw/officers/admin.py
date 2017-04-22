@@ -8,6 +8,7 @@ from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.models import Group
 from django.core import urlresolvers
 from django.forms.utils import ErrorList
+from django.forms import ValidationError
 from django.utils.safestring import mark_safe
 
 from cciw.cciwmain.models import Camp
@@ -97,6 +98,16 @@ class ApplicationAdminModelForm(forms.ModelForm):
         if editing_old:
             # Ensure we don't overwrite this
             self.cleaned_data['date_submitted'] = self.instance.date_submitted
+
+        if self.cleaned_data.get('dbs_number', '').strip() != "":
+            if self.cleaned_data.get('dbs_update_service_id', '').strip() == "":
+                self.add_error('dbs_update_service_id',
+                               ValidationError("If you enter a DBS number you need to enter the update service ID.", code='required'))
+
+        if self.cleaned_data.get('dbs_update_service_id', '').strip() != "":
+            if self.cleaned_data.get('dbs_number', '').strip() == "":
+                self.add_error('dbs_number',
+                               ValidationError("If you enter the update service ID you need to enter the DBS certificate number.", code='required'))
 
         if app_finished:
             # All fields decorated with 'required_field' need to be
@@ -250,7 +261,7 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
                 we will need to discuss this with you'''}
          ),
         ('DBS checks',
-            {'fields': ['dbs_number', 'dbs_check_consent'],
+            {'fields': ['dbs_number', 'dbs_update_service_id', 'dbs_check_consent'],
              'classes': ['wide'],
              'description': mark_safe("""
 <h3>Important information, please read:</h3>
@@ -260,7 +271,7 @@ we regret that we cannot proceed with your application.</p>
 
 <p>If you have a current enhanced Disclosure and Barring Service check and have
 signed up for the update system, and if you give permission for CCIW to look at
-it, please enter the number below..</p>
+it, please enter the number and the update service ID below.</p>
 
 <p>If we need a new DBS check for you, once your application form is received a
 DBS application form will be sent to you, so please ensure your postal address

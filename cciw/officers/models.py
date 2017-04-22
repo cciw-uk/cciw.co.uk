@@ -101,6 +101,8 @@ class Application(models.Model):
     dbs_number = models.CharField("DBS number",
                                   max_length=128, default="", blank=True,
                                   help_text="Current enhanced DBS number with update service")
+    dbs_update_service_id = models.CharField("DBS update service ID",
+                                             max_length=128, default="", blank=True)
     dbs_check_consent = RequiredExplicitBooleanField(
         """Do you consent to the obtaining of a Disclosure and Barring """
         """Service check on yourself? """)
@@ -462,6 +464,8 @@ class DBSCheck(models.Model):
                                              "on the basis of this DBS check")
 
     registered_with_dbs_update = models.NullBooleanField("registered with DBS update service")
+    dbs_update_service_id = models.CharField("DBS update service ID",
+                                             max_length=128, default="", blank=True)
 
     objects = DBSCheckManager()
 

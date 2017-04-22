@@ -118,6 +118,7 @@ has been reported to and investigated
 by Social Services and /or the Police?  {{ app.allegation_declaration|yesno:"YES,NO,-" }}
 
 DBS number:                             {{ app.dbs_number }}
+DBS update service ID:                  {{ app.dbs_update_service_id }}
 
 Do you consent to the obtaining of a
 Disclosure and Barring Service check
