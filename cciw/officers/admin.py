@@ -486,9 +486,9 @@ class DBSCheckAdmin(RerouteResponseAdminMixin, admin.ModelAdmin):
 
     search_fields = ['officer__first_name', 'officer__last_name', 'dbs_number']
     list_display = ['first_name', 'last_name', 'dbs_number', 'completed',
-                    'requested_by', 'registered_with_dbs_update']
+                    'requested_by', 'registered_with_dbs_update', 'dbs_update_service_id']
     list_display_links = ('first_name', 'last_name', 'dbs_number')
-    list_filter = ['requested_by', 'registered_with_dbs_update']
+    list_filter = ['requested_by', 'registered_with_dbs_update', 'check_type']
     ordering = ('-completed',)
     date_hierarchy = 'completed'
 
