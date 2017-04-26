@@ -116,12 +116,17 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         # leader:
         l2 = find_list('camp-2000-blue-leaders@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
 
+        # DBS officer
+        l3 = find_list('camp-2000-blue-leaders@cciw.co.uk', 'DBSOFFICER@somewhere.com')
+
         # Contents
-        self.assertEqual(set(find_list('camps-2000-leaders@cciw.co.uk',
-                                       leader_user.email).members),
+        members = set(find_list('camps-2000-leaders@cciw.co.uk',
+                                leader_user.email).members)
+        self.assertEqual(members,
                          {self.leader_user})
 
         self.assertEqual(l1, l2)
+        self.assertEqual(l1, l3)
 
     def test_handle_debug_list(self):
         with mock_mailgun_send_mime() as m_s:

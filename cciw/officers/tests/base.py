@@ -36,6 +36,7 @@ SECRETARY = (SECRETARY_USERNAME, SECRETARY_PASSWORD)
 
 DBSOFFICER_USERNAME = 'mrsdbsofficer'
 DBSOFFICER_PASSWORD = 'my_password'
+DBSOFFICER_EMAIL = 'dbsofficer@somewhere.com'
 DBSOFFICER = (DBSOFFICER_USERNAME, DBSOFFICER_PASSWORD)
 
 
@@ -233,6 +234,7 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
 
         self.dbs_officer = G(User,
                              username=DBSOFFICER_USERNAME,
+                             email=DBSOFFICER_EMAIL,
                              is_active=True,
                              is_superuser=False,
                              is_staff=True,

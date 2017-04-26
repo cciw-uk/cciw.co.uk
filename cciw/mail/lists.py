@@ -25,7 +25,8 @@ from django.contrib.auth import get_user_model
 from django.core.mail import make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
-from cciw.accounts.models import COMMITTEE_GROUP_NAME, get_camp_admin_group_users, get_group_users
+from cciw.accounts.models import (COMMITTEE_GROUP_NAME, DBS_OFFICER_GROUP_NAME, get_camp_admin_group_users,
+                                  get_group_users)
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
 from cciw.officers.email_utils import formatted_email
@@ -134,11 +135,14 @@ def _is_camp_leader_or_admin(email, year=None, slug=None):
     return _email_match(email, all_users)
 
 
-def _is_camp_leader_or_admin_or_superuser(email, year=None, slug=None):
+def _is_camp_leader_or_admin_or_dbs_officer_or_superuser(email, year=None, slug=None):
     if _is_camp_leader_or_admin(email, year=year, slug=slug):
         return True
 
     if _email_match(email, get_camp_admin_group_users()):
+        return True
+
+    if get_group_users(DBS_OFFICER_GROUP_NAME).filter(email__iexact=email).exists():
         return True
 
     if _is_superuser(email):
@@ -229,13 +233,13 @@ EMAIL_LISTS = [
         CAMP_LEADERS_LIST,
         re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders@cciw\.co\.uk$", re.IGNORECASE),
         _camp_leaders,
-        _is_camp_leader_or_admin_or_superuser,
+        _is_camp_leader_or_admin_or_dbs_officer_or_superuser,
         False),
     EmailListGroup(
         CAMP_LEADERS_FOR_YEAR_LIST,
         re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw\.co\.uk$", re.IGNORECASE),
         _camp_leaders,
-        _is_camp_leader_or_admin_or_superuser,
+        _is_camp_leader_or_admin_or_dbs_officer_or_superuser,
         True),
     EmailListGroup(
         CAMP_DEBUG,
