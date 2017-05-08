@@ -1351,8 +1351,8 @@ class PaymentSource(models.Model):
         source_cls = source_instance.__class__
         if source_cls not in cls.MODEL_MAP:
             raise AssertionError("Can't create PaymentSource for {0}".format(source_cls))
-        kwargs = {cls.MODEL_MAP[source_cls]: source_instance}
-        return cls.objects.create(**kwargs)
+        attr_name_for_model = cls.MODEL_MAP[source_cls]
+        return cls.objects.create(**{attr_name_for_model: source_instance})
 
 
 def send_payment(amount, to_account, from_obj):
