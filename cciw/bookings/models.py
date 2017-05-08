@@ -1350,7 +1350,7 @@ class PaymentSource(models.Model):
         """
         source_cls = source_instance.__class__
         if source_cls not in cls.MODEL_MAP:
-            raise AssertionError("Can't create PaymentSource for {0}".format(source_instance.__class__))
+            raise AssertionError("Can't create PaymentSource for {0}".format(source_cls))
         kwargs = {cls.MODEL_MAP[source_cls]: source_instance}
         return cls.objects.create(**kwargs)
 
