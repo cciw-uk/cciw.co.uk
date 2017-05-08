@@ -24,7 +24,7 @@ class PriceAdmin(admin.ModelAdmin):
 
 class BookingAccountForm(forms.ModelForm):
 
-    # We need to ensure that email/name/post_code that are blank get saved as
+    # We need to ensure that emails that are blank get saved as
     # NULL, so that they can pass our uniqueness constraints if they are empty
     # (NULLs do not compare equal, but empty strings do)
 
@@ -34,21 +34,9 @@ class BookingAccountForm(forms.ModelForm):
             email = None
         return email
 
-    def clean_name(self):
-        name = self.cleaned_data['name']
-        if name == '':
-            name = None
-        return name
-
-    def clean_address_post_code(self):
-        post_code = self.cleaned_data['address_post_code']
-        if post_code == '':
-            post_code = None
-        return post_code
-
     def clean(self):
         super(BookingAccountForm, self).clean()
-        if (self.cleaned_data['name'] is None and
+        if (self.cleaned_data['name'] == '' and
                 self.cleaned_data['email'] is None):
             raise forms.ValidationError("Either name or email must be defined")
         return self.cleaned_data
