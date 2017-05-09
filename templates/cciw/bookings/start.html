@@ -1,6 +1,11 @@
 {% extends "cciw/bookings/standard.html" %}
 {% block content %}
 
+  <p>This is the starting point for booking camper places online. If you are
+    wanting to come on camp as a leader/officer, this booking system is not
+    for you – please see the <a href="/helpers/officers/">leaders and officers</a> section.</p>
+
+
   {% if not booking_open %}
     <p><strong>PLEASE NOTE: Booking is not yet open for this year - you will not be
       able to complete the booking process at this stage.</strong></p>
@@ -16,7 +21,7 @@
     and must not be a minor.</p>
 
   <p>To get started, we first need your email address. Note - this is the email address
-    of the person booking, not of the camper.</p>
+    of the person booking and paying, not of the camper.</p>
 
 
   <p>In order to receive the email, you may need
