@@ -11,9 +11,9 @@ The easiest way is to use Vagrant and the provided Vagrantfile which will set up
 a development VM that is fairly close to the WebFaction shared server we are
 using. On the host machine, install:
 
-    Vagrant  https://www.vagrantup.com/
-    A Vagrant backend e.g. VirtualBox
-    Mercurial https://mercurial.selenic.com/
+* `Vagrant <https://www.vagrantup.com/>`_
+* A Vagrant backend e.g. `VirtualBox <https://www.virtualbox.org/>`_
+* `Mercurial <https://mercurial.selenic.com/>`_
 
 The following method should work on any host machine (Linux, Windows, Mac) which
 supports the above dependencies. Once you have installed them:
