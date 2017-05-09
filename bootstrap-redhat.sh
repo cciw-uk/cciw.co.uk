@@ -28,10 +28,10 @@ make && make altinstall || exit 1
 
 # ngrok
 cd ~/build
-wget https://dl.ngrok.com/ngrok_2.0.19_linux_amd64.zip || exit 1
-unzip ngrok_2.0.19_linux_amd64.zip || exit 1
+wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip || exit 1
+unzip ngrok-stable-linux-amd64.zip || exit 1
 sudo mv ngrok /usr/local/bin/ || exit 1
-rm ngrok_2.0.19_linux_amd64.zip
+rm ngrok-stable-linux-amd64.zip
 
 # Set up DB
 # See https://wiki.postgresql.org/wiki/YUM_Installation
