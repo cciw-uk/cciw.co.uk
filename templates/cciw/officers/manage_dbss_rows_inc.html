@@ -24,6 +24,10 @@
         {% else %}
           <img src="{% static "admin/img/icon-alert.svg" %}"> Out of date
         {% endif %}
+        <br/>
+        <a href="{% url "admin:officers_dbscheck_changelist" %}?officer_id={{ officer.id }}"
+           target="_blank"
+           >Details</a>
       {% endif %}
     </td>
     <td>
