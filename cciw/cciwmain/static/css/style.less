@@ -271,8 +271,8 @@ p {
                     background-color: lighten(@menubarUnselectedColor, 20%);
                 }
 
-                &.active,
-                &.active:hover,
+                &[aria-current="page"],
+                &[aria-current="page"]:hover,
                 &.currentSection,
                 &.currentSection:hover {
                     background-color: transparent;
@@ -834,9 +834,9 @@ a.booknow, a.bigaction, input.bigaction {
                 }
             }
 
-            a.active,
-            span.active,
-            a.active:hover {
+            a[aria-current="step"],
+            span[aria-current="step"],
+            a[aria-current="step"]:hover {
                 color: black;
                 background:white;
                 text-shadow: none;
@@ -949,8 +949,8 @@ table {
                     display: block;
 
                     &,
-                    &.active,
-                    &.active:hover,
+                    &[aria-current="page"],
+                    &[aria-current="page"]:hover,
                     &.currentSection,
                     &.currentSection:hover {
                         background-color: fadeout(@menubarUnselectedColor, 10%);

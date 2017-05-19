@@ -7,7 +7,7 @@
             {% if is_link and name != current_stage %}
               <a href="{{ url }}">{{ caption }}</a>
             {% elif name == current_stage %}
-              <span class="active">{{ caption }}</span>
+              <span aria-current="step">{{ caption }}</span>
             {% else %}
               <span title="{{ msg }}">{{ caption }}</span>
             {% endif %}
