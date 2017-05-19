@@ -311,10 +311,15 @@ have to fill in another DBS.</p> """)}
              that:</div>
              <ol>
              <li>the information you have submitted is <strong>correct and complete</strong>,</li>
-             <li>you have <strong>read and understood</strong> the relevant sections of the
-             <a target="_blank" href="/officers/files/CCIW%20CPP.doc">camp manual</a>.</li>
-             <li>you permit CCIW to store this information and the references that we will collect
-             for as long as necessary.</li>
+             <li>you have <strong>read and understood</strong>:
+             <ol>
+               <li>the relevant sections of the <a target="_blank" href="/officers/files/Officers%20Handbook%202017-05-11.pdf">Officers Handbook</a>.</li>
+               <li>our <a target="_blank" href="/officers/files/Doctrinal%20statement%202017-05-11.pdf">Doctrinal statement</a>.</li>
+               <li>our <a target="_blank" href="/officers/files/Child%20Protection%20Policy%202017-05-11.pdf">Child Protection Policy</a>.</li>
+
+             </ol>
+             <li>you permit CCIW to store this information and the references and DBS checks that
+             we will collect for as long as necessary.</li>
              </ol>
              <div>Your information will then be sent to the camp leader.  By leaving this
              box un-ticked, you can save what you have done so far and edit it later.</div>"""
