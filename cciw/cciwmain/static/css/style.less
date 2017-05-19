@@ -85,7 +85,7 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 0.6em;
 }
 
-#content, #header {
+#content, header {
     h1, h2, h3, h4, h5, h6 {
         font-weight: normal;
         font-family: 'a028_extraboldregular', Tahoma;
@@ -130,7 +130,7 @@ p {
 
 // Header
 
-#header {
+header {
     background-color: @primaryColor;
     background-image: url('/static/images/topbanner_1600x1200.jpeg');
     background-repeat: no-repeat;
@@ -1018,7 +1018,7 @@ table {
     .headerinner {
         background-color: transparent;
     }
-    #header {
+    header {
         background-color: #738a2c; // hand-picked to match image
         background-image: url('/static/images/topbanner_1600x1200.jpeg');
         background-repeat: no-repeat;
@@ -1033,7 +1033,7 @@ table {
     @media screen and (min-width: (@mobileMenuWidth + 1px)) {
         // If not displaying mobile menu bar, shift menubar down to below photo
         // and center it.
-        #header {
+        header {
             position: relative; // establish bounding box for #menubar
         }
         #menubar {
