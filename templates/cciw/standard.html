@@ -35,7 +35,7 @@
     <div id="menubar">
       {% spaceless %}
         <ul>
-          <li class="spacerstart">
+          <li aria-hidden="true" class="spacerstart">
             <span class="spacer">&nbsp;</span>
           </li>
           <li id="menutoggle">
@@ -50,7 +50,7 @@
                  >{{ menulink.title }}</a>
             </li>
           {% endfor %}
-          <li class="spacerend">
+          <li aria-hidden="true" class="spacerend">
             <span class="spacer">&nbsp;</span>
           </li>
         </ul>
