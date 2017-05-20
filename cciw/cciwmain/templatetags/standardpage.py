@@ -10,15 +10,12 @@ class RenderHtmlChunk(template.Node):
         self.ignore_missing = ignore_missing
 
     def render(self, context):
-        chunk = getattr(self, 'chunk', None)
-        if chunk is None:
-            try:
-                chunk = HtmlChunk.objects.get(name=self.chunk_name)
-            except HtmlChunk.DoesNotExist:
-                if not self.ignore_missing:
-                    raise
-                chunk = None
-            self.chunk = chunk
+        try:
+            chunk = HtmlChunk.objects.get(name=self.chunk_name)
+        except HtmlChunk.DoesNotExist:
+            if not self.ignore_missing:
+                raise
+            chunk = None
         if chunk is None:
             return ''
         return chunk.render(context['request'])
