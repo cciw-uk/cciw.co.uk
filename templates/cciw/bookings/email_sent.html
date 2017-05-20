@@ -1,7 +1,16 @@
 {% extends "cciw/bookings/standard.html" %}
 {% block content %}
-  <p>An email has been sent to your address to verify that it works. Please follow
-    the instructions in the email to continue the booking process.</p>
+  {% if link_expired %}
+    <p><b>The link you used for logging in automatically has expired.</b></p>
+
+    <p>We have sent you a new email with a login link. Please follow the
+      instructions in the email promptly to continue the booking and payment
+      process process.</p>
+  {% else %}
+    <p>An email has been sent to your address to verify that it works. Please
+      follow the instructions in the email to continue the booking and payment
+      process.</p>
+  {% endif %}
 
   {% if email_notification %}
     {% if email_notification.is_dropped %}

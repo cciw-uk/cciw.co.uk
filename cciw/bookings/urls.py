@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^$', views.index, name="cciw-bookings-index"),
     url(r'^start/$', views.start, name="cciw-bookings-start"),
     url(r'^email-sent/$', views.email_sent, name="cciw-bookings-email_sent"),
+    url(r'^email-resent/$', views.link_expired_email_sent, name="cciw-bookings-link_expired_email_sent"),
     url(r'^v/$', views.verify_and_continue, name="cciw-bookings-verify_and_continue"),
     url(r'^verify-failed/$', views.verify_email_failed, name="cciw-bookings-verify_email_failed"),
     url(r'^v/.+/$', RedirectView.as_view(pattern_name="cciw-bookings-verify_email_failed")),

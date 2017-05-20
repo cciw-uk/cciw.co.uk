@@ -185,7 +185,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404, HttpResponseRedirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.crypto import salted_hmac
 from django.views.decorators.csrf import csrf_exempt
@@ -331,7 +331,7 @@ class BookingStart(BookingLogInBase):
             if form.is_valid():
                 email = form.cleaned_data['email']
                 send_verify_email(self.request, email)
-                return HttpResponseRedirect(reverse_lazy('cciw-bookings-email_sent'))
+                return HttpResponseRedirect(reverse('cciw-bookings-email_sent'))
         else:
             form = self.form_class()
 
@@ -345,6 +345,10 @@ class BookingEmailSent(BookingLogInBase):
 
     def magic_context(self):
         return {'email_notification': get_email_notification_for_session(self.request)}
+
+
+class BookingLinkExpiredEmailSent(BookingEmailSent):
+    magic_context = {'link_expired': True}
 
 
 @booking_account_required
@@ -932,6 +936,7 @@ class BookingAccountAutocomplete(autocomplete.Select2QuerySetView):
 index = BookingIndex.as_view()
 start = BookingStart.as_view()
 email_sent = BookingEmailSent.as_view()
+link_expired_email_sent = BookingLinkExpiredEmailSent.as_view()
 verify_email_failed = BookingVerifyEmailFailed.as_view()
 account_details = booking_account_required(BookingAccountDetails.as_view())
 not_logged_in = BookingNotLoggedIn.as_view()

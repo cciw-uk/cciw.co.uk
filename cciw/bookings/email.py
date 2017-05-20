@@ -2,11 +2,12 @@ import base64
 import binascii
 from datetime import datetime
 
+import attr
 import mailer as queued_mail
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
-from django.core.signing import BadSignature, TimestampSigner
+from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.template import loader
 from django.utils import timezone
 
@@ -14,6 +15,18 @@ from cciw.mail.models import log_user_email_sent
 from cciw.officers.email import admin_emails_for_camp
 
 LATE_BOOKING_THRESHOLD = 30  # days
+
+
+class VerifyFailed(object):
+    pass
+
+
+VerifyFailed = VerifyFailed()
+
+
+@attr.s
+class VerifyExpired(object):
+    email = attr.ib()
 
 
 class EmailVerifyTokenGenerator(object):
@@ -30,17 +43,23 @@ class EmailVerifyTokenGenerator(object):
         """
         return self.url_safe_encode(self.signer.sign(email))
 
-    def email_for_token(self, token):
+    def email_for_token(self, token, max_age=None):
         """
-        Extracts the verified email address from the token, or None if verification failed
+        Extracts the verified email address from the token, or a VerifyFailed
+        constant if verification failed, or VerifyExpired if the link expired.
         """
+        if max_age is None:
+            max_age = settings.BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS * 60 * 60 * 24
         try:
-            return self.signer.unsign(
-                self.url_safe_decode(token),
-                max_age=settings.BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS * 60 * 60 * 24
-            )
-        except (binascii.Error, BadSignature, UnicodeDecodeError):
-            return None
+            unencoded_token = self.url_safe_decode(token)
+        except (UnicodeDecodeError, binascii.Error):
+            return VerifyFailed
+        try:
+            return self.signer.unsign(unencoded_token, max_age=max_age)
+        except (SignatureExpired,):
+            return VerifyExpired(self.signer.unsign(unencoded_token))
+        except (BadSignature,):
+            return VerifyFailed
 
     # Somehow the trailing '=' produced by base64 encode gets eaten by
     # people/programs handling the email verification link. Additional
@@ -55,13 +74,15 @@ class EmailVerifyTokenGenerator(object):
         return base64.urlsafe_b64decode(token.encode('utf-8')).decode('utf-8')
 
 
-def send_verify_email(request, booking_account_email):
+def send_verify_email(request, booking_account_email,
+                      target_view_name=None):
+    if target_view_name is None:
+        target_view_name = 'cciw-bookings-verify_and_continue'
     c = {
         'domain': get_current_site(request).domain,
         'token': EmailVerifyTokenGenerator().token_for_email(booking_account_email),
-        'protocol': 'https' if request.is_secure() else 'http',
+        'target_view_name': target_view_name,
     }
-
     body = loader.render_to_string("cciw/bookings/verification_email.txt", c)
     subject = "[CCIW] Booking account"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [booking_account_email])

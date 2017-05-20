@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail, signing
 from django.db import models
+from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils import timezone
 from django_dynamic_fixture import G
@@ -21,7 +22,7 @@ from hypothesis.extra.django import models as djst
 from mailer.models import Message
 from paypal.standard.ipn.models import PayPalIPN
 
-from cciw.bookings.email import EmailVerifyTokenGenerator, send_payment_reminder_emails
+from cciw.bookings.email import EmailVerifyTokenGenerator, VerifyExpired, VerifyFailed, send_payment_reminder_emails
 from cciw.bookings.hooks import paypal_payment_received
 from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
@@ -230,7 +231,7 @@ class LogInMixin(object):
             self.get_url('cciw-bookings-start')
             self.fill_by_name({'email': self.email})
             self.submit('[type=submit]')
-            url, path, querydata = read_email_url(mail.outbox.pop(), "https?://.*/booking/v/.*")
+            url, path, querydata = read_email_url(mail.outbox.pop(), "https://.*/booking/v/.*")
             self.get_literal_url(path_and_query_to_url(path, querydata))
 
         if add_account_details:
@@ -613,7 +614,7 @@ class TestBookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         return super(TestBookingVerifyBase, self).submit(css_selector)
 
     def _read_email_verify_email(self, email):
-        return read_email_url(email, "https?://.*/booking/v/.*")
+        return read_email_url(email, "https://.*/booking/v/.*")
 
     def _start(self):
         # Assumes booking_start works:
@@ -629,7 +630,7 @@ class TestBookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse('cciw-bookings-account_details'))
-        self.assertTextPresent("Logged in! You will stay logged in for two weeks")
+        self.assertTextPresent("Logged in as booker@bookers.com! You will stay logged in for two weeks")
         acc = BookingAccount.objects.get(email='booker@bookers.com')
         self.assertTrue(acc.last_login is not None)
         self.assertTrue(acc.first_login is not None)
@@ -708,23 +709,46 @@ class TestBookingVerifySL(TestBookingVerifyBase, SeleniumBase):
 
 class TestPaymentReminderEmails(CreatePlaceModelMixin, BookingBaseMixin, WebTestBase):
 
-    def test_payment_reminder_email(self):
+    def _create_booking(self):
         booking = self.create_place_model()
         book_basket_now(booking.account.bookings.all())
         booking = Booking.objects.get(id=booking.id)
         booking.confirm()
         booking.save()
         self.assertEqual(len(BookingAccount.objects.payments_due()), 1)
+        return booking
+
+    def test_payment_reminder_email(self):
+        booking = self._create_booking()
         mail.outbox = []
         send_payment_reminder_emails()
         self.assertEqual(len(mail.outbox), 1)
         m = mail.outbox[0]
         self.assertIn("You have payments due", m.body)
         self.assertEqual("[CCIW] Payment due", m.subject)
-        url, path, querydata = read_email_url(m, "https?://.*/booking/p.*")
+        url, path, querydata = read_email_url(m, "https://.*/booking/p.*")
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse('cciw-bookings-pay'))
         self.assertTextPresent(booking.account.get_balance())
+
+    def test_payment_reminder_email_link_expired(self):
+        self._create_booking()
+        mail.outbox = []
+        send_payment_reminder_emails()
+        m = mail.outbox[0]
+        url, path, querydata = read_email_url(m, "https://.*/booking/p.*")
+
+        with override_settings(BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS=-1):
+            self.get_literal_url(path_and_query_to_url(path, querydata))
+
+        # link expired, new email should be sent.
+        self.assertUrlsEqual(reverse('cciw-bookings-link_expired_email_sent'))
+        self.assertEqual(len(mail.outbox), 2)
+        m2 = mail.outbox[1]
+
+        url2, path2, querydata2 = read_email_url(m2, "https://.*/booking/p.*")
+        self.get_literal_url(path_and_query_to_url(path2, querydata2))
+        self.assertUrlsEqual(reverse('cciw-bookings-pay'))
 
 
 class TestAccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
@@ -2806,12 +2830,21 @@ class TestEmailVerifyTokenGenerator(TestCase):
     @given(djst.emails)
     def test_decode_inverts_encode(self, email):
         v = EmailVerifyTokenGenerator()
-        assert v.email_for_token(v.token_for_email(email)) == email
+        self.assertEqual(v.email_for_token(v.token_for_email(email)),
+                         email)
 
     @given(djst.emails)
-    def test_truncated_returns_none(self, email):
+    def test_truncated_returns_invalid(self, email):
         v = EmailVerifyTokenGenerator()
-        assert v.email_for_token(v.token_for_email(email)[2:]) is None
+        self.assertEqual(v.email_for_token(v.token_for_email(email)[2:]),
+                         VerifyFailed)
+
+    @given(djst.emails)
+    def test_expired_returns_expired(self, email):
+        v = EmailVerifyTokenGenerator()
+        self.assertEqual(v.email_for_token(v.token_for_email(email),
+                                           max_age=-1),
+                         VerifyExpired(email))
 
     @given(email=st.text())
     @example(email='abcdefgh')  # b64 encode results in trailing ==
@@ -2824,4 +2857,5 @@ class TestEmailVerifyTokenGenerator(TestCase):
         def remove_equals(s):
             return s.rstrip('=')
 
-        assert v.email_for_token(remove_equals(v.token_for_email(email))) == email
+        self.assertEqual(v.email_for_token(remove_equals(v.token_for_email(email))),
+                         email)

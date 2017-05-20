@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
-from cciw.bookings.email import EmailVerifyTokenGenerator
+from cciw.bookings.email import EmailVerifyTokenGenerator, VerifyExpired, VerifyFailed, send_verify_email
 from cciw.bookings.models import BookingAccount
 
 BOOKING_COOKIE_SALT = 'cciw.bookings.BookingAccount cookie'
@@ -38,8 +38,18 @@ def booking_token_login(get_response):
         if 'bt' in request.GET:
             token = request.GET['bt']
             verified_email = EmailVerifyTokenGenerator().email_for_token(token)
-            if verified_email is None:
+            if verified_email is VerifyFailed:
                 return HttpResponseRedirect(reverse('cciw-bookings-verify_email_failed'))
+            elif isinstance(verified_email, VerifyExpired):
+                EXPECTED_VIEWS = [
+                    'cciw-bookings-pay'
+                ]
+                target_view_name = None
+                for view_name in EXPECTED_VIEWS:
+                    if reverse(view_name) == request.path:
+                        target_view_name = view_name
+                send_verify_email(request, verified_email.email, target_view_name=target_view_name)
+                return HttpResponseRedirect(reverse('cciw-bookings-link_expired_email_sent'))
             else:
                 try:
                     account = BookingAccount.objects.filter(email__iexact=verified_email)[0]
@@ -52,7 +62,10 @@ def booking_token_login(get_response):
                 url = furl.furl(request.build_absolute_uri())
                 resp = HttpResponseRedirect(url.remove(['bt']))
                 set_booking_account_cookie(resp, account)
-                messages.info(request, "Logged in! You will stay logged in for two weeks. Remember to log out if you are using a public computer.")
+                messages.info(request,
+                              "Logged in as {0}! You will stay logged in for two weeks. "
+                              "Remember to log out if you are using a "
+                              "public computer.".format(account.email))
                 return resp
 
         return get_response(request)
