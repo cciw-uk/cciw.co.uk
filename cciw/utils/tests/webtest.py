@@ -7,7 +7,7 @@ from compressor.filters import CompilerFilter
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test.utils import override_settings
 from django.urls import reverse
-from django_functest import FuncSeleniumMixin, FuncWebTestMixin, ShortcutLoginMixin
+from django_functest import FuncSeleniumMixin, FuncWebTestMixin, MultiThreadedLiveServerMixin, ShortcutLoginMixin
 from pyquery import PyQuery
 
 from cciw.utils.tests.base import TestBase, TestBaseMixin
@@ -91,7 +91,7 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
 
 
 @unittest.skipIf(os.environ.get('SKIP_SELENIUM_TESTS'), "Skipping Selenium tests")
-class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseMixin, StaticLiveServerTestCase):
+class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseMixin, MultiThreadedLiveServerMixin, StaticLiveServerTestCase):
     """
     Base class for Selenium tests.
     """
