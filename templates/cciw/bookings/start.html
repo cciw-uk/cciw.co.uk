@@ -1,9 +1,9 @@
 {% extends "cciw/bookings/standard.html" %}
 {% block content %}
 
-  <p>This is the starting point for booking camper places online. If you are
-    wanting to come on camp as a leader/officer, this booking system is not
-    for you – please see the <a href="/helpers/officers/">leaders and officers</a> section.</p>
+  <p>This is the starting point for <b>booking</b> camper places online, and <b>paying</b>
+    online. If you are wanting to come on camp as a leader/officer, this booking
+    system is not for you – please see the <a href="/helpers/officers/">leaders and officers</a> section.</p>
 
 
   {% if not booking_open %}
@@ -17,21 +17,19 @@
       camp if you can arrange an exception with the camp leaders.</strong></p>
   {% endif %}
 
-  <p>To book online, you must have a credit card, debit card, or Paypal account,
+  <p>To book online, you must have a <b>credit card, debit card, or Paypal account</b>,
     and must not be a minor.</p>
 
-  <p>To get started, we first need your email address. Note - this is the email address
-    of the person booking and paying, not of the camper.</p>
-
-
-  <p>In order to receive the email, you may need
-    to <a href="/website/help/whitelist-email/">whitelist our email address</a>
-    <strong>website@cciw.co.uk</strong> or our emails might be classified as junk mail.</p>
+  <p>To get started, we first need your <b>email address</b>. Note - this is the
+    email address of the person booking and paying, not of the camper.</p>
 
   <form method="POST" action="">
     {% csrf_token %}
     {{ form.as_p }}
     <p><input type="submit" name="submit" value="Submit" /></p>
   </form>
+
+  <p>If you have trouble receiving the email, you may need to <a href="/website/help/whitelist-email/">whitelist our email address</a>
+    <strong>website@cciw.co.uk</strong> or our emails might be classified as junk mail.</p>
 
 {% endblock %}
