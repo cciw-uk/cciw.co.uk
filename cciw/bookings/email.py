@@ -28,25 +28,31 @@ class EmailVerifyTokenGenerator(object):
         """
         Returns a verification token for the provided email address
         """
-        return base64.urlsafe_b64encode(
-            self.signer.sign(email).encode('utf-8')).decode('utf-8').rstrip('=')
+        return self.url_safe_encode(self.signer.sign(email))
 
     def email_for_token(self, token):
         """
         Extracts the verified email address from the token, or None if verification failed
         """
-        # Somehow the trailing '=' produced by base64 encode gets eaten by
-        # people/programs handling the email verification link. Additional
-        # trailing '=' don't hurt base64 decode. So we strip them add them here
-        # in case. This also means we can strip them when we encode above.
-        token = token + "=="
         try:
             return self.signer.unsign(
-                base64.urlsafe_b64decode(token.encode('utf-8')).decode('utf-8'),
+                self.url_safe_decode(token),
                 max_age=settings.BOOKING_EMAIL_VERIFY_TIMEOUT_DAYS * 60 * 60 * 24
             )
         except (binascii.Error, BadSignature, UnicodeDecodeError):
             return None
+
+    # Somehow the trailing '=' produced by base64 encode gets eaten by
+    # people/programs handling the email verification link. Additional
+    # trailing '=' don't hurt base64 decode. So we strip thenm when encoding,
+    # and strip them on decoding.
+
+    def url_safe_encode(self, value):
+        return base64.urlsafe_b64encode(value.encode('utf-8')).decode('utf-8').rstrip('=')
+
+    def url_safe_decode(self, token):
+        token = token + "=="
+        return base64.urlsafe_b64decode(token.encode('utf-8')).decode('utf-8')
 
 
 def send_verify_email(request, booking_account_email):
