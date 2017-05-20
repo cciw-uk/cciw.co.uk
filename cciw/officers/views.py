@@ -94,6 +94,7 @@ def any_passes(*funcs):
         return False
     return func
 
+
 camp_admin_required = user_passes_test_improved(lambda u: u.is_camp_admin)
 dbs_officer_required = user_passes_test_improved(lambda u: u.is_dbs_officer)
 booking_secretary_required = user_passes_test_improved(lambda u: u.is_booking_secretary)
@@ -1383,6 +1384,7 @@ class RequestDbsFormAction(PopupEmailAction):
         send_request_for_dbs_form_email(message, self.officer, request.user)
         request.user.dbsactions_performed.create(officer=self.officer,
                                                  action_type=DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT)
+
 
 request_dbs_form_action = staff_member_required(dbs_officer_required(RequestDbsFormAction.as_view()))
 

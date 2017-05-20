@@ -11,6 +11,7 @@ def rtflinebreaks(value):
     "Converts newlines into RTF \lines"
     return value.replace('\n', '{\line}')
 
+
 register.filter(rtflinebreaks)
 
 encoder = encodings.codecs.getencoder('1252')
@@ -51,5 +52,6 @@ def rtfescape(value):
     "Escapes RTF control characters"
 
     return unicode_to_rtf(value.replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}'))
+
 
 register.filter(rtfescape)

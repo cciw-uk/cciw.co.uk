@@ -23,4 +23,6 @@ class FixPermissions(template.Node):
 
 def fix_permissions(parser, token):
     return FixPermissions()
+
+
 register.tag('fix_permissions', fix_permissions)

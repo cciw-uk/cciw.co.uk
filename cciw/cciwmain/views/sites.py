@@ -8,8 +8,6 @@ class SiteList(ListView, CciwBaseView):
     queryset = Site.objects.all()
     list_name = 'sites'
 
-index = SiteList.as_view()
-
 
 class SiteDetail(DetailView, CciwBaseView):
     queryset = Site.objects.all()
@@ -17,4 +15,6 @@ class SiteDetail(DetailView, CciwBaseView):
     object_name = 'site'
     template_name = 'cciw/sites/detail.html'
 
+
+index = SiteList.as_view()
 detail = SiteDetail.as_view()

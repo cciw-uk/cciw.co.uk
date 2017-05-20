@@ -89,6 +89,7 @@ class AccountDetailsForm(migrate_address_form('address'), CciwFormMixin, forms.M
             update_newsletter_subscription(self.instance)
         return retval
 
+
 # Need to override these to fix various details for use by user
 for f in ['name', 'address_line1', 'address_city', 'address_country', 'address_post_code']:
     AccountDetailsForm.base_fields[f].required = True
@@ -193,6 +194,7 @@ class AddPlaceForm(migrate_address_form('address', 'contact_address', 'gp_addres
     def clean_camp(self):
         camp_id = self.cleaned_data['camp']
         return Camp.objects.get(id=int(camp_id))
+
 
 AddPlaceForm.base_fields['agreement'].required = True
 AddPlaceForm.base_fields['date_of_birth'].widget.attrs['placeholder'] = 'YYYY-MM-DD'

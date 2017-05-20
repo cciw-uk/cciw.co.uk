@@ -1166,6 +1166,7 @@ def is_booking_open(year):
              len(REQUIRED_PRICE_TYPES)) and
             Camp.objects.filter(year=year).exists())
 
+
 is_booking_open_thisyear = lambda: is_booking_open(common.get_thisyear())
 
 

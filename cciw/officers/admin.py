@@ -560,4 +560,5 @@ class MembershipInline(admin.TabularInline):
     form = MembershipAdminForm
     extra = 0
 
+
 GroupAdmin.inlines = list(GroupAdmin.inlines) + [MembershipInline]

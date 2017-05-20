@@ -24,6 +24,7 @@ class LazyEncoder(json.JSONEncoder):
             return obj.strftime('%Y-%m-%d')
         return obj
 
+
 json_encoder = LazyEncoder(ensure_ascii=False)
 
 

@@ -28,6 +28,7 @@ def rename_app_list(func):
         return response
     return _wrapper
 
+
 admin.site.index = rename_app_list(admin.site.index)
 admin.site.app_index = rename_app_list(admin.site.app_index)
 

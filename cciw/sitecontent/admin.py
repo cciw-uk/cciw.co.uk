@@ -13,5 +13,6 @@ class MenuLinkAdmin(admin.ModelAdmin):
 class HtmlChunkAdmin(admin.ModelAdmin):
     list_display = ('name', 'page_title', 'menu_link')
 
+
 admin.site.register(MenuLink, MenuLinkAdmin)
 admin.site.register(HtmlChunk, HtmlChunkAdmin)

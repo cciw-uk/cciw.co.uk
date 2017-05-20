@@ -273,7 +273,7 @@ def standard_subs(value):
     return value.replace('{{thisyear}}', str(get_thisyear()))\
                 .replace('{{media}}', settings.MEDIA_URL)\
                 .replace('{{static}}', settings.STATIC_URL)
-standard_subs.is_safe = True  # provided our substitutions don't introduce anything that must be escaped
+standard_subs.is_safe = True  # noqa:305 provided our substitutions don't introduce anything that must be escaped
 
 
 def create_breadcrumb(links):

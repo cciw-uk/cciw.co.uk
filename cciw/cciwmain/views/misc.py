@@ -28,6 +28,7 @@ Message:
         headers={'Reply-To': from_email})
     email.send()
 
+
 CONTACT_CHOICE_GENERAL = 'general'
 CONTACT_CHOICE_WEBSITE = 'website'
 CONTACT_CHOICE_BOOKINGS = 'bookings'
