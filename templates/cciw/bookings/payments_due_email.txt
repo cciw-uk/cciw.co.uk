@@ -14,6 +14,8 @@ to pay online:
 
 https://www.cciw.co.uk{% url 'cciw-bookings-pay' %}?bt={{ token }}
 
+Please do this within a few days or the link above will expire.
+
 If you think there has been some mistake, please contact the booking
 secretary by replying to this email.
 
