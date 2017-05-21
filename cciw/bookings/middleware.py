@@ -1,3 +1,5 @@
+import logging
+
 import furl
 from django.conf import settings
 from django.contrib import messages
@@ -8,6 +10,9 @@ from cciw.bookings.email import EmailVerifyTokenGenerator, VerifyExpired, Verify
 from cciw.bookings.models import BookingAccount
 
 BOOKING_COOKIE_SALT = 'cciw.bookings.BookingAccount cookie'
+
+
+logger = logging.getLogger(__name__)
 
 
 def set_booking_account_cookie(response, account):
@@ -39,8 +44,10 @@ def booking_token_login(get_response):
             token = request.GET['bt']
             verified_email = EmailVerifyTokenGenerator().email_for_token(token)
             if verified_email is VerifyFailed:
+                logger.warning("Booking login verification failed, token=%s", token)
                 return HttpResponseRedirect(reverse('cciw-bookings-verify_email_failed'))
             elif isinstance(verified_email, VerifyExpired):
+                logger.warning("Booking login verification token expired, token=%s", token)
                 EXPECTED_VIEWS = [
                     'cciw-bookings-pay'
                 ]
