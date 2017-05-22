@@ -271,7 +271,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.wait_for_ajax()
         time.sleep(5.0)
         self.assertTrue(self.is_element_displayed('#id_add_officer_popup'))
-        self.click('#id_popup_close_btn', scroll=False)
+        self.click('#id_popup_close_btn')
         self.wait_for_ajax()
         time.sleep(1.5)
         self.assertFalse(self.is_element_displayed('#id_add_officer_popup'))
