@@ -2,6 +2,7 @@ import time
 from datetime import timedelta
 
 import xlrd
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.urls import reverse
@@ -208,7 +209,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.assertEqual(len(mail.outbox), 1)
         m = mail.outbox[0]
         self.assertIn(officer.first_name, m.body)
-        self.assertIn("https://www.cciw.co.uk/officers/", m.body)
+        self.assertIn("https://" + settings.PRODUCTION_DOMAIN + "/officers/", m.body)
 
     def test_edit(self):
         camp = self.default_camp_1
@@ -374,5 +375,5 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         self.assertEqual(len(mail.outbox), 1)
         m = mail.outbox[0]
         self.assertIn("Hi Mary", m.body)
-        self.assertIn("https://www.cciw.co.uk/officers/", m.body)
+        self.assertIn("https://" + settings.PRODUCTION_DOMAIN + "/officers/", m.body)
         self.assertIn(u, self.default_camp_1.officers.all())

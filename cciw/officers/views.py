@@ -1345,6 +1345,7 @@ class DbsConsentAlertLeaders(PopupEmailAction):
         return dict(application=app,
                     officer=officer,
                     camps=camps,
+                    domain=common.get_current_domain(),
                     sender=request.user)
 
     def send_email(self, request, message):

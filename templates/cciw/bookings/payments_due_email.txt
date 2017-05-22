@@ -12,7 +12,7 @@ The amount you need to pay is: £{{ account.balance_due }}
 Please click on the link below, or copy and paste it into a web browser,
 to pay online:
 
-https://www.cciw.co.uk{% url 'cciw-bookings-pay' %}?bt={{ token }}
+https://{{ domain }}{% url 'cciw-bookings-pay' %}?bt={{ token }}
 
 Please do this within a few days or the link above will expire.
 

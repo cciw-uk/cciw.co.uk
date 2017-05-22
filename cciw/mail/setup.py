@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.urls import reverse
 
 from .lists import EMAIL_LISTS
@@ -30,8 +31,7 @@ def setup_mailgun_routes():
     for e in EMAIL_LISTS:
         pattern = limit_pattern(e.address_matcher.pattern)
         expression = """match_recipient('{0}')""".format(pattern)
-        domain = "https://www.cciw.co.uk"
-        forwarding_url = domain + reverse("cciw-mailgun-incoming")
+        forwarding_url = "https://" + settings.PRODUCTION_DOMAIN + reverse("cciw-mailgun-incoming")
         actions = ["""forward("{0}")""".format(forwarding_url),
                    "stop()"]
         update_or_create(e.name, expression, actions, priority=5)
@@ -48,7 +48,7 @@ def setup_mailgun_routes():
 
 
 def setup_mailgun_webhooks():
-    domain = "https://www.cciw.co.uk"
+    base_url = "https://" + settings.PRODUCTION_DOMAIN
     urls = [
         ('bounce', 'cciw-mailgun-bounce'),
         ('drop', 'cciw-mailgun-drop'),
@@ -56,7 +56,7 @@ def setup_mailgun_webhooks():
     ]
 
     for webhook_name, named_url in urls:
-        webhook_url = domain + reverse(named_url)
+        webhook_url = base_url + reverse(named_url)
         try:
             create_webhook(webhook_name, webhook_url)
         except Exception:

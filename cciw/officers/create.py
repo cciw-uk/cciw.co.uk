@@ -7,7 +7,10 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from django.utils import timezone
+
+from cciw.cciwmain import common
 
 User = get_user_model()
 
@@ -60,74 +63,14 @@ def _create_officer(username, first_name, last_name, email, password):
     return officer
 
 
-officer_template = """
-Hi %(first_name)s,
-%(repeat_message)s
-An account has been set up for you on the CCIW website, which allows
-you to fill in application form for coming on a CCIW camp.
-
-Below are the instructions for filling in the application form online.
-When you have finished filling the form in, it will be emailed to the
-leader of the camp, who will need to send reference forms to the
-referees you have specified.
-
-To fill in the application form
-
-1) Go to:
-     https://www.cciw.co.uk/officers/
-
-2) Log in using:
-     Username: %(username)s
-     Password: %(password)s
-
-     (You should change your password to something more memorable once
-      you have logged in)
-
-3) Choose from the options.  If you have already completed an
-   application form online, you can choose to create an application
-   form based on a previous one.  Some tickboxes will be blanked out
-   and you will have to fill them in again, but it should only take a
-   few minutes.
-
-   If you have not already completed an application form, you will
-   have to start by creating a new one.
-
-4) Fill in the form.
-
-   You can save your work at any time (using the 'Save' button at the
-   bottom) and come back to it later if you want.  When you have
-   finished and want to submit the application form to the leaders, you
-   need to check the 'Completed' checkbox at the bottom and press
-   'Save'.
-
-   Please note that if you have any validation errors (marked in red
-   when you try to save), your data won't have been saved.  You'll need
-   to correct the data before it is actually saved.
-
-
-If you have any problems, please email me at %(webmasteremail)s
-
-The CCIW webmaster.
-"""
-
-
 def email_officer(username, first_name, email, password, update=False):
-    if update:
-        repeat_message = ("""
-This is a repeat email sent either because the first email never
-arrived or the password was forgotten.  Your username has not been
-changed, but a new random password has been given to you, see below.
-""")
-    else:
-        repeat_message = ""
-
     subject = "[CCIW] Application form system"
-    template = officer_template
-
-    msg = template % {'username': username,
-                      'password': password,
-                      'first_name': first_name,
-                      'webmasteremail': settings.WEBMASTER_EMAIL,
-                      'repeat_message': repeat_message}
+    msg = render_to_string('cciw/officers/add_officer_email.txt',
+                           {'username': username,
+                            'password': password,
+                            'first_name': first_name,
+                            'webmasteremail': settings.WEBMASTER_EMAIL,
+                            'domain': common.get_current_domain(),
+                            'update': update})
 
     send_mail(subject, msg, settings.WEBMASTER_EMAIL, [email])

@@ -15,6 +15,7 @@ SECRETS = json.load(open(os.path.join(basedir, 'config', 'secrets.json')))
 
 PROJECT_ROOT = basedir
 HOME_DIR = os.environ['HOME']
+BASE_DIR = basedir
 
 CHECK_DEPLOY = 'manage.py check --deploy' in ' '.join(sys.argv)
 if CHECK_DEPLOY:
@@ -86,7 +87,10 @@ ADMINS = (
 
 LANGUAGE_CODE = 'en-gb'
 
+DEFAULT_CONTENT_TYPE = "text/html"
+
 SITE_ID = 1
+PRODUCTION_DOMAIN = 'www.cciw.co.uk'
 
 ROOT_URLCONF = 'cciw.urls'
 
@@ -489,10 +493,6 @@ BOOKING_SESSION_TIMEOUT_SECONDS = 60 * 60 * 24 * 14  # 2 weeks
 BOOKING_FULL_PAYMENT_DUE_DAYS = 3 * 30  # 3 months
 BOOKING_FULL_PAYMENT_DUE_TIME = "3 months"  # for display purposes
 BOOKING_EMAIL_REMINDER_FREQUENCY_DAYS = 3
-
-DEFAULT_CONTENT_TYPE = "text/html"
-
-BASE_DIR = basedir
 
 # == DBS ==
 

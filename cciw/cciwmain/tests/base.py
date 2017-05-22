@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.conf import settings
 from django.contrib.sites.models import Site as DjangoSite
 
 from cciw.cciwmain.models import Camp, CampName, Person, Site
@@ -11,8 +12,8 @@ class BasicSetupMixin(object):
         super(BasicSetupMixin, self).setUp()
         DjangoSite.objects.all().delete()
         DjangoSite.objects.create(
-            domain="www.cciw.co.uk",
-            name="www.cciw.co.uk",
+            domain=settings.PRODUCTION_DOMAIN,
+            name=settings.PRODUCTION_DOMAIN,
             id=1)
 
         m = MenuLink.objects.create(

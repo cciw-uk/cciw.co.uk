@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core import mail
 from django.urls import reverse
 
@@ -217,8 +218,8 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
 
 
 def make_local_url(url):
-    url = url.replace('https://www.cciw.co.uk', '')
-    assert 'www.cciw.co.uk' not in url
+    url = url.replace('https://' + settings.PRODUCTION_DOMAIN, '')
+    assert settings.PRODUCTION_DOMAIN not in url
     return url
 
 

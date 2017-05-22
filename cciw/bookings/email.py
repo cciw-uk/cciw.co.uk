@@ -5,12 +5,12 @@ from datetime import datetime
 import attr
 import mailer as queued_mail
 from django.conf import settings
-from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.template import loader
 from django.utils import timezone
 
+from cciw.cciwmain import common
 from cciw.mail.models import log_user_email_sent
 from cciw.officers.email import admin_emails_for_camp
 
@@ -79,7 +79,7 @@ def send_verify_email(request, booking_account_email,
     if target_view_name is None:
         target_view_name = 'cciw-bookings-verify_and_continue'
     c = {
-        'domain': get_current_site(request).domain,
+        'domain': common.get_current_domain(),
         'token': EmailVerifyTokenGenerator().token_for_email(booking_account_email),
         'target_view_name': target_view_name,
     }
@@ -91,7 +91,7 @@ def send_verify_email(request, booking_account_email,
 
 def send_unrecognised_payment_email(ipn_obj):
     c = {
-        'domain': get_current_site(None).domain,
+        'domain': common.get_current_domain(),
         'ipn_obj': ipn_obj,
     }
 
@@ -118,7 +118,7 @@ def send_places_confirmed_email(bookings, **kwargs):
         return
 
     c = {
-        'domain': get_current_site(None).domain,
+        'domain': common.get_current_domain(),
         'account': account,
         'bookings': bookings,
         'payment_received': 'payment_received' in kwargs,
@@ -143,10 +143,10 @@ def send_places_confirmed_email(bookings, **kwargs):
         if (booking.camp.start_date - today).days < LATE_BOOKING_THRESHOLD:
 
             c = {
+                'domain': common.get_current_domain(),
                 'account': account,
                 'booking': booking,
                 'camp': booking.camp,
-                'domain': get_current_site(None).domain,
             }
             body = loader.render_to_string('cciw/bookings/late_place_confirmed_email.txt', c)
             subject = "[CCIW] Late booking: %s" % booking.name
@@ -160,7 +160,7 @@ def send_booking_expiry_mail(account, bookings, expired):
         return
 
     c = {
-        'domain': get_current_site(None).domain,
+        'domain': common.get_current_domain(),
         'account': account,
         'bookings': bookings,
         'expired': expired,
@@ -180,7 +180,7 @@ def send_booking_approved_mail(booking):
         return False
 
     c = {
-        'domain': get_current_site(None).domain,
+        'domain': common.get_current_domain(),
         'token': EmailVerifyTokenGenerator().token_for_email(account.email),
         'account': account,
         'booking': booking,
@@ -226,6 +226,7 @@ def send_payment_reminder_emails():
         account.save()
 
         c = {
+            'domain': common.get_current_domain(),
             'account': account,
             'token': EmailVerifyTokenGenerator().token_for_email(account.email),
         }

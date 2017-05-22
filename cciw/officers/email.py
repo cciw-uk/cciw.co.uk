@@ -315,7 +315,7 @@ Please find a correct email address for this referee.
 Use the following link to manage this reference:
 
 {link}
-""".format(link="https://www.cciw.co.uk" +
+""".format(link="https://" + common.get_current_domain() +
            reverse('cciw-officers-manage_references',
                    kwargs=dict(year=camp.year, slug=camp.slug_name)) +
            "?ref_email=" + urlquote(bounced_email_address))
