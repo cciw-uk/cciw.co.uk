@@ -7,7 +7,6 @@ from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.models import Group
 from django.core import urlresolvers
-from django.forms import ValidationError
 from django.forms.utils import ErrorList
 from django.utils.safestring import mark_safe
 
@@ -99,16 +98,6 @@ class ApplicationAdminModelForm(forms.ModelForm):
             # Ensure we don't overwrite this
             self.cleaned_data['date_submitted'] = self.instance.date_submitted
 
-        if self.cleaned_data.get('dbs_number', '').strip() != "":
-            if self.cleaned_data.get('dbs_update_service_id', '').strip() == "":
-                self.add_error('dbs_update_service_id',
-                               ValidationError("If you enter a DBS number you need to enter the update service ID.", code='required'))
-
-        if self.cleaned_data.get('dbs_update_service_id', '').strip() != "":
-            if self.cleaned_data.get('dbs_number', '').strip() == "":
-                self.add_error('dbs_number',
-                               ValidationError("If you enter the update service ID you need to enter the DBS certificate number.", code='required'))
-
         if app_finished:
             # All fields decorated with 'required_field' need to be
             # non-empty
@@ -162,24 +151,6 @@ class QualificationInline(admin.TabularInline):
             return super(QualificationInline, self).has_delete_permission(request, obj)
 
 
-class InconsistentDBSNumbersFilter(admin.SimpleListFilter):
-    title = "Inconsistent DBS numbers"
-    parameter_name = "dbs_numbers_problems"
-
-    def lookups(self, request, model_admin):
-        return [
-            (1, 'Inconsistent'),
-        ]
-
-    def queryset(self, request, queryset):
-        val = self.value()
-        if val is None:
-            return queryset
-        if val == '1':
-            return (queryset.filter(dbs_number="").exclude(dbs_update_service_id="") |
-                    queryset.exclude(dbs_number="").filter(dbs_update_service_id=""))
-
-
 class CampAdminPermissionMixin(object):
     # NB also CciwAuthBackend
     def has_change_permission(self, request, obj=None):
@@ -196,7 +167,7 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
     officer_username.admin_order_field = 'officer__username'
     officer_username.short_description = 'username'
     list_display = ['full_name', 'officer_username', 'address_email', 'finished', 'date_submitted']
-    list_filter = ['finished', 'date_submitted', InconsistentDBSNumbersFilter]
+    list_filter = ['finished', 'date_submitted']
     ordering = ['full_name']
     search_fields = ['full_name']
     readonly_fields = ['date_submitted']
@@ -279,7 +250,7 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
                 we will need to discuss this with you'''}
          ),
         ('DBS checks',
-            {'fields': ['dbs_number', 'dbs_update_service_id', 'dbs_check_consent'],
+            {'fields': ['dbs_number', 'dbs_check_consent'],
              'classes': ['wide'],
              'description': mark_safe("""
 <h3>Important information, please read:</h3>
@@ -287,9 +258,9 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
 <p>You need to give permission for us to obtain a DBS check for you. Otherwise
 we regret that we cannot proceed with your application.</p>
 
-<p>If you have a current enhanced Disclosure and Barring Service check and have
-signed up for the update system, and if you give permission for CCIW to look at
-it, please enter the number and the update service ID below.</p>
+<p>If you have a current enhanced Disclosure and Barring Service check <b>and have
+signed up for the update system</b>, and if you give permission for CCIW to look at
+it, please enter the certificate number below.</p>
 
 <p>If we need a new DBS check for you, once your application form is received a
 DBS application form will be sent to you, so please ensure your postal address
@@ -491,7 +462,7 @@ class DBSCheckAdmin(RerouteResponseAdminMixin, admin.ModelAdmin):
 
     search_fields = ['officer__first_name', 'officer__last_name', 'dbs_number']
     list_display = ['first_name', 'last_name', 'dbs_number', 'completed',
-                    'requested_by', 'registered_with_dbs_update', 'dbs_update_service_id']
+                    'requested_by', 'registered_with_dbs_update']
     list_display_links = ('first_name', 'last_name', 'dbs_number')
     list_filter = ['requested_by', 'registered_with_dbs_update', 'check_type']
     ordering = ('-completed',)

@@ -180,7 +180,6 @@
               </td>
               <td>
                 {{ dbs_info.update_enabled_dbs_number.number }}<br>
-                {{ dbs_info.update_enabled_dbs_number.update_service_id }}<br>
                 {{ dbs_info.birth_date|date:"Y-m-d" }}
               </td>
               <td colspan="2">
@@ -190,7 +189,6 @@
                       >
                   <input type="hidden" name="officer_id" value="{{ officer.id }}">
                   <input type="hidden" name="dbs_number" value="{{ dbs_info.update_enabled_dbs_number.number }}">
-                  <input type="hidden" name="dbs_update_service_id" value="{{ dbs_info.update_enabled_dbs_number.update_service_id }}">
                   {% return_to_here %}
                   <button id="id_dbs_checked_online_{{ officer.id }}">DBS checked online ...</button>
                 </form>
@@ -198,7 +196,7 @@
             {% else %}
               <td colspan="4">
                 CANNOT CHECK ONLINE: we have a DBS number
-                ({{ dbs_info.update_enabled_dbs_number.number }}/{{ dbs_info.update_enabled_dbs_number.update_service_id }}),
+                ({{ dbs_info.update_enabled_dbs_number.number }}),
                 but no info about the original DBS, and the online service only
                 gives updates. Either the DBS must be checked, or a new DBS
                 requested.

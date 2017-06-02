@@ -132,10 +132,6 @@
 {{ app.dbs_number|rtfescape }}\cell}\row}
 
 \par
-{\trowd \intbl\cellx7000\cellx9000 {DBS update ID \cell
-{{ app.dbs_update_service_id|rtfescape }}\cell}\row}
-
-\par
 {\trowd \intbl\cellx7000\cellx9000 {Do you consent to the obtaining of 
  a Disclosure and Barring Service check on yourself?  \cell
 {{ app.dbs_check_consent|yesno:"YES,NO,-"|rtfescape }}\cell}\row}

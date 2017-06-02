@@ -80,11 +80,9 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         # If we only have a DBS number from application form, we can't do online
         # check.
         self.create_application(self.officer_user, self.year,
-                                overrides={'dbs_number': '00123',
-                                           'dbs_update_service_id': 'C456'})
+                                overrides={'dbs_number': '00123'})
         officer, dbs_info = self.get_officer_with_dbs_info()
         self.assertEqual(dbs_info.update_enabled_dbs_number.number, '00123')
-        self.assertEqual(dbs_info.update_enabled_dbs_number.update_service_id, 'C456')
         self.assertEqual(dbs_info.update_enabled_dbs_number.previous_check_good, None)
         self.assertFalse(dbs_info.can_check_dbs_online)
 
@@ -93,7 +91,6 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.officer_user.dbs_checks.create(
             completed=application.date_submitted - timedelta(365 * 10),
             dbs_number='001234',
-            dbs_update_service_id='C56789',
             check_type=DBSCheck.CHECK_TYPE_FORM,
             registered_with_dbs_update=True,
             applicant_accepted=True,
@@ -101,21 +98,18 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         officer, dbs_info = self.get_officer_with_dbs_info()
         self.assertTrue(dbs_info.can_check_dbs_online)
         self.assertEqual(dbs_info.update_enabled_dbs_number.number, '001234')
-        self.assertEqual(dbs_info.update_enabled_dbs_number.update_service_id, 'C56789')
         self.assertEqual(dbs_info.update_enabled_dbs_number.previous_check_good, True)
 
     def test_can_check_dbs_online_combined_info(self):
         # Application form indicates update-enabled DBS
         application = self.create_application(self.officer_user, self.year,
-                                              overrides={'dbs_number': '00123',
-                                                         'dbs_update_service_id': 'C456'})
+                                              overrides={'dbs_number': '00123'})
 
         # DBS check indicates good DBS, but don't know if it is
         # registered as update-enabled
         self.officer_user.dbs_checks.create(
             completed=application.date_submitted - timedelta(365 * 10),
             dbs_number='00123',
-            dbs_update_service_id='C456',
             check_type=DBSCheck.CHECK_TYPE_FORM,
             registered_with_dbs_update=None,
             applicant_accepted=True,
@@ -125,7 +119,6 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         # We should be able to combine the above info:
         self.assertTrue(dbs_info.can_check_dbs_online)
         self.assertEqual(dbs_info.update_enabled_dbs_number.number, '00123')
-        self.assertEqual(dbs_info.update_enabled_dbs_number.update_service_id, 'C456')
         self.assertEqual(dbs_info.update_enabled_dbs_number.previous_check_good, True)
 
     def test_applicant_rejected_recent(self):
@@ -133,7 +126,6 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.officer_user.dbs_checks.create(
             completed=application.date_submitted - timedelta(days=10),
             dbs_number='00123',
-            dbs_update_service_id='C456',
             check_type=DBSCheck.CHECK_TYPE_FORM,
             registered_with_dbs_update=True,
             applicant_accepted=False,
@@ -147,7 +139,6 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.officer_user.dbs_checks.create(
             completed=application.date_submitted - timedelta(days=365 * 10),
             dbs_number='00123',
-            dbs_update_service_id='C456',
             check_type=DBSCheck.CHECK_TYPE_FORM,
             registered_with_dbs_update=True,
             applicant_accepted=False,
@@ -161,7 +152,6 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.officer_user.dbs_checks.create(
             completed=application.date_submitted - timedelta(365 * 10),
             dbs_number='00123',
-            dbs_update_service_id='C456',
             check_type=DBSCheck.CHECK_TYPE_FORM,
             registered_with_dbs_update=True,
             applicant_accepted=False,
@@ -174,19 +164,16 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
     def test_update_enabled_dbs_number(self):
         # Test that data from Application/DBSCheck is prioritised by date
         application = self.create_application(self.officer_user, self.year,
-                                              overrides={'dbs_number': '00123',
-                                                         'dbs_update_service_id': 'C456'})
+                                              overrides={'dbs_number': '00123'})
         self.officer_user.dbs_checks.create(
             completed=application.date_submitted - timedelta(365 * 10),
             dbs_number='00456',
-            dbs_update_service_id='C789',
             check_type=DBSCheck.CHECK_TYPE_FORM,
             registered_with_dbs_update=True,
         )
         officer, dbs_info = self.get_officer_with_dbs_info()
         # Application form data should win because it is more recent
         self.assertEqual(dbs_info.update_enabled_dbs_number.number, '00123')
-        self.assertEqual(dbs_info.update_enabled_dbs_number.update_service_id, 'C456')
         self.assertEqual(dbs_info.update_enabled_dbs_number.previous_check_good, None)
 
 
@@ -339,7 +326,6 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.assertEqual(self.officer_user.dbs_checks.count(), 0)
         self.officer_user.dbs_checks.create(
             dbs_number="00123400001",
-            dbs_update_service_id="C456789",
             completed=date(1990, 1, 1),
             requested_by=DBSCheck.REQUESTED_BY_CCIW,
             check_type=DBSCheck.CHECK_TYPE_FORM,
@@ -361,7 +347,6 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
 
         # Should have copied other info from old DBS check automatically.
         self.assertEqual(dbs_check.dbs_number, '00123400001')
-        self.assertEqual(dbs_check.dbs_update_service_id, 'C456789')
         self.assertEqual(dbs_check.check_type, DBSCheck.CHECK_TYPE_ONLINE)
         self.assertEqual(dbs_check.completed, today)
         self.assertEqual(dbs_check.requested_by, DBSCheck.REQUESTED_BY_CCIW)
