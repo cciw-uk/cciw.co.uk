@@ -1703,7 +1703,25 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
         request = self.request
         if request.user.is_authenticated and request.user.is_camp_admin:
             qs = User.objects.all().order_by('first_name', 'last_name', 'email')
-            return (qs.filter(first_name__istartswith=self.q) |
-                    qs.filter(last_name__istartswith=self.q))
+            parts = self.q.strip().split()
+            if len(parts) == 1:
+                # First name or last name
+                part = parts[0]
+                qs = (qs.filter(first_name__istartswith=part) |
+                      qs.filter(last_name__istartswith=part))
+            elif len(parts) > 1:
+                # Cope with:
+                # - "FirstName LastName"
+                # - "FirstName Last Name"
+                # - "Last Name" e.g. "le Page"
+                # - "First Name" e.g. "Mary Jane"
+                first_name1, last_name1 = parts[0], " ".join(parts[1:])
+                first_name2 = " ".join(parts)
+                last_name2 = " ".join(parts)
+                qs = (qs.filter(first_name__istartswith=first_name1,
+                                last_name__istartswith=last_name1) |
+                      qs.filter(first_name__istartswith=first_name2) |
+                      qs.filter(last_name__istartswith=last_name2))
+            return qs
         else:
             return User.objects.none()
