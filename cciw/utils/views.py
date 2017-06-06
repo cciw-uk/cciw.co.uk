@@ -53,11 +53,14 @@ def user_passes_test_improved(test_func, login_url=None, redirect_field_name=RED
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
-            if test_func(request.user):
-                return view_func(request, *args, **kwargs)
             if request.user.is_authenticated:
-                return HttpResponseForbidden("<h1>Access denied</h1>")
+                if test_func(request.user):
+                    return view_func(request, *args, **kwargs)
+                else:
+                    return HttpResponseForbidden("<h1>Access denied</h1>")
 
+            # All unauthenticated users are blocked access, and redirected to
+            # login.
             path = request.build_absolute_uri()
             # If the login url is the same scheme and net location then just
             # use the path as the "next" url.
