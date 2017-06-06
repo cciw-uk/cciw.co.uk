@@ -93,6 +93,7 @@ wcwidth==0.1.7
 WebOb==1.7.2
 WebTest==2.0.27
 wiki==0.2.1
+-e git://github.com/django-wiki/django-wiki.git@6a03638ba014d52fbe0ea2bd95ebc429846731ad#egg=wiki
 wrapt==1.10.8
 xlrd==1.0.0
 xlwt==1.1.2
