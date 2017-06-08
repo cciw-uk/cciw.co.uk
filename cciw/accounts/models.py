@@ -156,3 +156,10 @@ class User(AbstractUser):
     @cached_property
     def editable_camps(self):
         return self.current_camps_as_admin_or_leader
+
+    @cached_property
+    def can_search_officer_names(self):
+        return (self.is_dbs_officer or
+                self.is_committee_member or
+                self.is_cciw_secretary or
+                self.is_camp_admin)

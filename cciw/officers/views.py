@@ -1701,7 +1701,7 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_queryset(self):
         request = self.request
-        if request.user.is_authenticated and request.user.is_camp_admin:
+        if request.user.is_authenticated and request.user.can_search_officer_names:
             qs = User.objects.all().order_by('first_name', 'last_name', 'email')
             parts = self.q.strip().split()
             if len(parts) == 1:
