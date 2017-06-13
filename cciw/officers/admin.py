@@ -377,16 +377,8 @@ have to fill in another DBS.</p> """)}
         super(ApplicationAdmin, self).save_model(request, obj, form, change)
         if obj.finished and obj.officer == request.user:
             # We clear out any unfinished application forms, as they will just
-            # confuse the officer in future.  It is possible for an admin to be
-            # editing an old form of their own, while a new form of their own is
-            # still unfinished. So we filter on date_submitted.  If
-            # date_submitted is NULL, the form has never been saved, so its fine
-            # to delete.
-            old = obj.officer.applications.filter(finished=False)
-            old2 = old.filter(date_submitted__isnull=True)
-            if obj.date_submitted is not None:
-                old2 = old2 | old.filter(date_submitted__lt=obj.date_submitted)
-            old2.delete()
+            # confuse the officer in future.
+            obj.clear_out_old_unfinished()
 
     def save_related(self, request, form, formsets, change):
         from cciw.officers import email

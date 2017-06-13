@@ -157,6 +157,26 @@ class Application(models.Model):
         return (self.date_submitted <= camp.start_date and
                 self.date_submitted > camp.start_date - timedelta(days=365))
 
+    def clear_out_old_unfinished(self):
+        # This is called when an application is created and saved by the
+        # officer. In some cases it could be when a leader is editing old
+        # application form of their own, in which case we don't want to delete a
+        # currently in progress more recent application form.
+
+        others = self.officer.applications.exclude(id=self.id)
+        unfinished = others.filter(finished=False)
+        unsaved = unfinished.filter(date_submitted__isnull=True)
+
+        # We can definitely delete all other old unsaved applications:
+        to_delete = unsaved
+
+        # We can also delete any unfinished application forms with
+        # a date_submitted before this one:
+        if self.date_submitted is not None:
+            unfinshed_saved_earlier = unfinished.filter(date_submitted__lt=self.date_submitted)
+            to_delete = to_delete | unfinshed_saved_earlier
+        to_delete.delete()
+
 
 class Referee(models.Model):
     # Referee applies to one Application only, and has to be soft-matched to
