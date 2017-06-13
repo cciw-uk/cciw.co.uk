@@ -220,8 +220,9 @@ Sandbox
 
 This is managed from:
 
-Site: https://developer.paypal.com
-Login: paypal@cciw.co.uk
+* Site: https://developer.paypal.com
+* Login: paypal@cciw.co.uk
+* Password - see password store
 
 From this site, you can create/manage various sandbox accounts which play the
 role of buyer/seller:
@@ -229,11 +230,13 @@ role of buyer/seller:
 https://developer.paypal.com/developer/accounts
 
 'Buyer' account:
-Email: paypal-buyer@cciw.co.uk
-Password: asdfghjk
+
+* Email: paypal-buyer@cciw.co.uk
+* Password: asdfghjk
 
 'Seller' account - this is the one you need to test PayPal interactions in development
-Email: paypal-facilitator@cciw.co.uk
-Password: qwertyui
 
-These accounts can be used to log in on www.sandbox.paypal.com/
+* Email: paypal-facilitator@cciw.co.uk
+* Password: qwertyui
+
+These accounts can be used to log in on https://www.sandbox.paypal.com/
