@@ -80,7 +80,7 @@
           <label for="application">Choose application</label>
           <select name="application" id="application">
             {% for app in finished_applications %}
-              <option value="{{ app.id }}">Submitted {{ app.date_submitted|date:"Y-m-d" }}</option>
+              <option value="{{ app.id }}">Submitted {{ app.date_saved|date:"Y-m-d" }}</option>
             {% endfor %}
           </select>
         </div>

@@ -89,7 +89,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
     def test_can_check_dbs_online_previous_check_dbs_number(self):
         application = self.create_application(self.officer_user, self.year)
         self.officer_user.dbs_checks.create(
-            completed=application.date_submitted - timedelta(365 * 10),
+            completed=application.date_saved - timedelta(365 * 10),
             dbs_number='001234',
             check_type=DBSCheck.CHECK_TYPE_FORM,
             registered_with_dbs_update=True,
@@ -108,7 +108,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         # DBS check indicates good DBS, but don't know if it is
         # registered as update-enabled
         self.officer_user.dbs_checks.create(
-            completed=application.date_submitted - timedelta(365 * 10),
+            completed=application.date_saved - timedelta(365 * 10),
             dbs_number='00123',
             check_type=DBSCheck.CHECK_TYPE_FORM,
             registered_with_dbs_update=None,
@@ -124,7 +124,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
     def test_applicant_rejected_recent(self):
         application = self.create_application(self.officer_user, self.year)
         self.officer_user.dbs_checks.create(
-            completed=application.date_submitted - timedelta(days=10),
+            completed=application.date_saved - timedelta(days=10),
             dbs_number='00123',
             check_type=DBSCheck.CHECK_TYPE_FORM,
             registered_with_dbs_update=True,
@@ -137,7 +137,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
     def test_applicant_rejected_old(self):
         application = self.create_application(self.officer_user, self.year)
         self.officer_user.dbs_checks.create(
-            completed=application.date_submitted - timedelta(days=365 * 10),
+            completed=application.date_saved - timedelta(days=365 * 10),
             dbs_number='00123',
             check_type=DBSCheck.CHECK_TYPE_FORM,
             registered_with_dbs_update=True,
@@ -150,7 +150,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
     def test_can_check_dbs_online_previous_check_bad(self):
         application = self.create_application(self.officer_user, self.year)
         self.officer_user.dbs_checks.create(
-            completed=application.date_submitted - timedelta(365 * 10),
+            completed=application.date_saved - timedelta(365 * 10),
             dbs_number='00123',
             check_type=DBSCheck.CHECK_TYPE_FORM,
             registered_with_dbs_update=True,
@@ -166,7 +166,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         application = self.create_application(self.officer_user, self.year,
                                               overrides={'dbs_number': '00123'})
         self.officer_user.dbs_checks.create(
-            completed=application.date_submitted - timedelta(365 * 10),
+            completed=application.date_saved - timedelta(365 * 10),
             dbs_number='00456',
             check_type=DBSCheck.CHECK_TYPE_FORM,
             registered_with_dbs_update=True,

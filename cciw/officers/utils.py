@@ -55,7 +55,7 @@ def camp_serious_slacker_list(camp):
     all_apps = list(Application.objects
                     .filter(finished=True,
                             officer__in=officers,
-                            date_submitted__lte=latest_camp.start_date))
+                            date_saved__lte=latest_camp.start_date))
 
     all_received_refs = list(Reference.objects
                              .select_related('referee')

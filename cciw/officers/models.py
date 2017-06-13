@@ -107,12 +107,14 @@ class Application(models.Model):
 
     finished = models.BooleanField("is the above information complete?", default=False)
 
-    date_submitted = models.DateField('date submitted', null=True, blank=True)
+    # Date the information was saved - not updated after 'finished' is set to
+    # True.
+    date_saved = models.DateField('date saved', null=True, blank=True)
 
     objects = ApplicationManager()
 
     class Meta:
-        ordering = ('-date_submitted', 'officer__first_name', 'officer__last_name',)
+        ordering = ('-date_saved', 'officer__first_name', 'officer__last_name',)
         base_manager_name = 'objects'
 
     @property
@@ -135,9 +137,9 @@ class Application(models.Model):
                                        self.address_country]))
 
     def __str__(self):
-        if self.date_submitted is not None:
+        if self.date_saved is not None:
             submitted = (("submitted " if self.finished else "saved ") +
-                         self.date_submitted.strftime("%Y-%m-%d"))
+                         self.date_saved.strftime("%Y-%m-%d"))
         else:
             submitted = "incomplete"
         return "Application from %s (%s)" % (self.full_name, submitted)
@@ -154,8 +156,8 @@ class Application(models.Model):
     def could_be_for_camp(self, camp):
         # An application is 'for' a camp if it is submitted in the year before
         # the camp start date. Logic duplicated in applications_for_camp
-        return (self.date_submitted <= camp.start_date and
-                self.date_submitted > camp.start_date - timedelta(days=365))
+        return (self.date_saved <= camp.start_date and
+                self.date_saved > camp.start_date - timedelta(days=365))
 
     def clear_out_old_unfinished(self):
         # This is called when an application is created and saved by the
@@ -165,15 +167,15 @@ class Application(models.Model):
 
         others = self.officer.applications.exclude(id=self.id)
         unfinished = others.filter(finished=False)
-        unsaved = unfinished.filter(date_submitted__isnull=True)
+        unsaved = unfinished.filter(date_saved__isnull=True)
 
         # We can definitely delete all other old unsaved applications:
         to_delete = unsaved
 
         # We can also delete any unfinished application forms with
-        # a date_submitted before this one:
-        if self.date_submitted is not None:
-            unfinshed_saved_earlier = unfinished.filter(date_submitted__lt=self.date_submitted)
+        # a date_saved before this one:
+        if self.date_saved is not None:
+            unfinshed_saved_earlier = unfinished.filter(date_saved__lt=self.date_saved)
             to_delete = to_delete | unfinshed_saved_earlier
         to_delete.delete()
 
@@ -253,7 +255,7 @@ class Referee(models.Model):
                             user=user)
 
     class Meta:
-        ordering = ('application__date_submitted',
+        ordering = ('application__date_saved',
                     'application__officer__first_name',
                     'application__officer__last_name',
                     'referee_number')

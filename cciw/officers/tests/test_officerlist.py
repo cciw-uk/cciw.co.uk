@@ -107,7 +107,7 @@ class TestSlackers(BasicSetupMixin, ReferenceHelperMixin, TestBase):
 
         # Officer 1 submitted an Application, but officer 2 did not
         app = officer1.applications.create(
-            date_submitted=camp1.start_date - timedelta(days=10),
+            date_saved=camp1.start_date - timedelta(days=10),
             finished=True,
         )
 

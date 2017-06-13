@@ -11,7 +11,7 @@
     <table>
       {% for referees in referee_pairs %}
         <tr class="reference-header">
-          <td colspan="2"><h3>For application on {{ referees.0.application.date_submitted }}</h3></td>
+          <td colspan="2"><h3>For application on {{ referees.0.application.date_saved }}</h3></td>
         </tr>
         <tr class="reference-list">
           {% for referee in referees %}

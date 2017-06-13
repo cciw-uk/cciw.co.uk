@@ -13,7 +13,7 @@ from cciw.officers.models import Application
 # the summer) and the invitations to camp that ab officer has.
 
 # Logic for dates:
-# - an application is considered valid for a camp/year if the date_submitted
+# - an application is considered valid for a camp/year if the date_saved
 #   - is within 12 months of the start date of the camp/first camp that year
 #   - is after the previous year's camps' end dates.
 #
@@ -35,7 +35,7 @@ def thisyears_applications(user):
         pass
 
     if future_camp is not None:
-        apps = apps.filter(date_submitted__gte=future_camp.start_date - timedelta(365))
+        apps = apps.filter(date_saved__gte=future_camp.start_date - timedelta(365))
         past_camps = Camp.objects.filter(start_date__year=future_camp.year - 1)\
             .order_by('-end_date')
     else:
@@ -48,7 +48,7 @@ def thisyears_applications(user):
         pass
 
     if past_camp is not None:
-        apps = apps.filter(date_submitted__gt=past_camp.end_date)
+        apps = apps.filter(date_saved__gt=past_camp.end_date)
 
     return apps
 
@@ -60,10 +60,10 @@ def camps_for_application(application):
     """
     # We get all camps that are in the year following the application form
     # submitted date.
-    if application.date_submitted is None:
+    if application.date_saved is None:
         return []
-    invites = application.officer.invitations.filter(camp__start_date__gte=application.date_submitted,
-                                                     camp__start_date__lt=application.date_submitted +
+    invites = application.officer.invitations.filter(camp__start_date__gte=application.date_saved,
+                                                     camp__start_date__lt=application.date_saved +
                                                      timedelta(365))
     # In some cases, the above query can catch two years of camps.  We only want
     # to the first year. (This doesn't matter very much, as
@@ -88,8 +88,8 @@ def applications_for_camp(camp, officer_ids=None):
     apps = Application.objects.filter(finished=True,
                                       officer__in=officer_ids)
 
-    apps = apps.filter(date_submitted__lte=camp.start_date,
-                       date_submitted__gt=camp.start_date - timedelta(365))
+    apps = apps.filter(date_saved__lte=camp.start_date,
+                       date_saved__gt=camp.start_date - timedelta(365))
 
     previous_camps = Camp.objects.filter(year=camp.year - 1)\
         .order_by('-end_date')
@@ -100,7 +100,7 @@ def applications_for_camp(camp, officer_ids=None):
         pass
     if last is not None:
         # We have some previous camps
-        apps = apps.filter(date_submitted__gt=last.end_date)
+        apps = apps.filter(date_saved__gt=last.end_date)
     return apps
 
 
@@ -123,10 +123,10 @@ def application_txt_filename(app):
 
 
 def _application_filename_stem(app):
-    if app.date_submitted is None:
+    if app.date_saved is None:
         submitted = ''
     else:
-        submitted = '_' + app.date_submitted.strftime('%Y-%m-%d')
+        submitted = '_' + app.date_saved.strftime('%Y-%m-%d')
     return 'Application_%s%s' % (app.officer.username, submitted)
 
 

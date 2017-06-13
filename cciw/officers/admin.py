@@ -96,7 +96,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
 
         if editing_old:
             # Ensure we don't overwrite this
-            self.cleaned_data['date_submitted'] = self.instance.date_submitted
+            self.cleaned_data['date_saved'] = self.instance.date_saved
 
         if app_finished:
             # All fields decorated with 'required_field' need to be
@@ -110,7 +110,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
 
     def save(self, **kwargs):
         if not self.editing_old:
-            self.instance.date_submitted = datetime.date.today()
+            self.instance.date_saved = datetime.date.today()
         retval = super(ApplicationAdminModelForm, self).save(**kwargs)
         for n in REFEREE_NUMBERS:
             ref = self.instance.referees[n - 1]
@@ -166,12 +166,12 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
         return obj.officer.username
     officer_username.admin_order_field = 'officer__username'
     officer_username.short_description = 'username'
-    list_display = ['full_name', 'officer_username', 'address_email', 'finished', 'date_submitted']
-    list_filter = ['finished', 'date_submitted']
+    list_display = ['full_name', 'officer_username', 'address_email', 'finished', 'date_saved']
+    list_filter = ['finished', 'date_saved']
     ordering = ['full_name']
     search_fields = ['full_name']
-    readonly_fields = ['date_submitted']
-    date_hierarchy = 'date_submitted'
+    readonly_fields = ['date_saved']
+    date_hierarchy = 'date_saved'
     form = ApplicationAdminModelForm
 
     camp_officer_application_fieldsets = [
@@ -299,7 +299,7 @@ have to fill in another DBS.</p> """)}
 
     camp_leader_application_fieldsets = [
         (None,
-            {'fields': ['officer', 'date_submitted'],
+            {'fields': ['officer', 'date_saved'],
              'classes': ['wide']}
          )] + camp_officer_application_fieldsets
 

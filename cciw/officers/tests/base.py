@@ -317,7 +317,7 @@ class CreateApplicationMixin(object):
             dbs_number="",
             crime_declaration=False,
             crime_details="",
-            date_submitted=datetime(year, 3, 1),
+            date_saved=datetime(year, 3, 1),
             employer1_from="2003/09",
             employer1_job="Pilot",
             employer1_leaving="",
@@ -405,7 +405,7 @@ class DefaultApplicationsMixin(CreateApplicationMixin, ExtraOfficersSetupMixin):
 
         self.application4 = Application.objects.get(id=self.application1.id)
         self.application4.id = None  # force save as new
-        self.application4.date_submitted += timedelta(days=365)
+        self.application4.date_saved += timedelta(days=365)
         self.application4.save()
 
         # Dupe referee info:

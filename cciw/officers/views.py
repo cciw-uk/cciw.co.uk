@@ -71,7 +71,7 @@ def _copy_application(application):
     new_obj.allegation_declaration = None
     new_obj.dbs_check_consent = None
     new_obj.finished = False
-    new_obj.date_submitted = None
+    new_obj.date_saved = None
     new_obj.save()
 
     for old_ref, new_ref in zip(application.referees, new_obj.referees):
@@ -191,13 +191,13 @@ def applications(request):
 
     finished_applications = (user.applications
                              .filter(finished=True)
-                             .order_by('-date_submitted'))
-    # A NULL date_submitted means they never pressed save, so there is no point
+                             .order_by('-date_saved'))
+    # A NULL date_saved means they never pressed save, so there is no point
     # re-editing, so we ignore them.
     unfinished_applications = (user.applications
                                .filter(finished=False)
-                               .exclude(date_submitted__isnull=True)
-                               .order_by('-date_submitted'))
+                               .exclude(date_saved__isnull=True)
+                               .order_by('-date_saved'))
     has_thisyears_app = thisyears_applications(user).exists()
     has_completed_app = thisyears_applications(user).filter(finished=True).exists()
 
@@ -341,14 +341,14 @@ def add_previous_references(referee):
     # Look for References for same officer, within the previous five
     # years.  Don't look for references from this year's
     # application (which will be the other referee).
-    cutoffdate = referee.application.date_submitted - timedelta(365 * 5)
+    cutoffdate = referee.application.date_saved - timedelta(365 * 5)
     prev = list(Reference.objects
                 .filter(referee__application__officer=referee.application.officer,
                         referee__application__finished=True,
                         date_created__gte=cutoffdate)
                 .select_related('referee__application')
                 .exclude(referee__application=referee.application)
-                .order_by('-referee__application__date_submitted'))
+                .order_by('-referee__application__date_saved'))
 
     # Sort by relevance
     def relevance_key(reference):
@@ -453,7 +453,7 @@ def officer_history(request, officer_id=None):
                      for app in (officer.applications.all()
                                  .prefetch_related('referee_set',
                                                    'referee_set__reference')
-                                 .order_by('-date_submitted'))
+                                 .order_by('-date_saved'))
                      ]
 
     return render(request, "cciw/officers/officer_history.html",
@@ -1195,8 +1195,8 @@ def get_update_service_dbs_numbers(officers):
         Application.objects
         .filter(officer__in=officers)
         .exclude(dbs_number="")
-        .order_by('date_submitted')  # most recent last
-        .values_list('officer_id', 'dbs_number', 'date_submitted'))
+        .order_by('date_saved')  # most recent last
+        .values_list('officer_id', 'dbs_number', 'date_saved'))
 
     for o_id, dbs_number, completed in update_service_dbs_numbers_from_application_form:
         dbs_number = dbs_number.strip()

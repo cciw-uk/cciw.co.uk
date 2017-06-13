@@ -292,7 +292,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self.assertUrlsEqual(url)  # Same page
         self.assertTextPresent("Please correct the errors below")
         self.assertTextPresent("form-row errors field-address")
-        self.assertEqual(u.applications.exclude(date_submitted__isnull=True).count(), 0)  # shouldn't have been saved
+        self.assertEqual(u.applications.exclude(date_saved__isnull=True).count(), 0)  # shouldn't have been saved
 
     def test_finish_complete(self):
         u = self._get_user(OFFICER)
@@ -395,7 +395,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         """
         self.officer_login(OFFICER)
         a1 = self._add_application()
-        a1.date_submitted = date.today()
+        a1.date_saved = date.today()
         a1.save()
         a2 = self._add_application()
         self.get_literal_url(self._application_edit_url(a2.id))
@@ -403,7 +403,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self._save()
         self.assertTextPresent("You've already submitted")
         u = self._get_user(OFFICER)
-        self.assertEqual(u.applications.exclude(date_submitted__isnull=True).count(), 1)
+        self.assertEqual(u.applications.exclude(date_saved__isnull=True).count(), 1)
 
     def test_application_differences_email(self):
         """
@@ -421,7 +421,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         # Change the date on the existing app, so that we can
         # create a new one
         app0 = u.applications.all()[0]
-        app0.date_submitted = date.today() + timedelta(-365)
+        app0.date_saved = date.today() + timedelta(-365)
         app0.save()
 
         # Create another application
@@ -446,7 +446,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         # Testing the actual content is hard from this point, due to email
         # formatting, so we do it manually:
 
-        apps = u.applications.order_by('date_submitted')
+        apps = u.applications.order_by('date_saved')
         assert len(apps) == 2
 
         application_diff = application_difference(apps[0], apps[1])

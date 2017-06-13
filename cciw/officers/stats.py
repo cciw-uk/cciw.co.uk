@@ -20,8 +20,8 @@ def get_camp_officer_stats(camp):
                             .order_by('date_added')
                             .values_list('officer_id', 'date_added'))
     application_forms = list(applications_for_camp(camp)
-                             .order_by('date_submitted')
-                             .values_list('id', 'date_submitted'))
+                             .order_by('date_saved')
+                             .values_list('id', 'date_saved'))
 
     officer_ids = [o[0] for o in invited_officers]
     officer_dates = [o[1] for o in invited_officers]
