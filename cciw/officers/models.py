@@ -136,7 +136,8 @@ class Application(models.Model):
 
     def __str__(self):
         if self.date_submitted is not None:
-            submitted = "submitted " + self.date_submitted.strftime("%Y-%m-%d")
+            submitted = (("submitted " if self.finished else "saved ") +
+                         self.date_submitted.strftime("%Y-%m-%d"))
         else:
             submitted = "incomplete"
         return "Application from %s (%s)" % (self.full_name, submitted)
