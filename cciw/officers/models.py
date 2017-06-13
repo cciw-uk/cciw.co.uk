@@ -4,11 +4,12 @@ from datetime import date, timedelta
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 from cciw.cciwmain.models import Camp
-from cciw.officers.fields import (AddressField, RequiredAddressField, RequiredCharField,
-                                  RequiredDateField, RequiredEmailField, RequiredExplicitBooleanField,
-                                  RequiredTextField, RequiredYyyyMmField, YyyyMmField)
+from cciw.officers.fields import (AddressField, RequiredAddressField, RequiredCharField, RequiredDateField,
+                                  RequiredEmailField, RequiredExplicitBooleanField, RequiredTextField,
+                                  RequiredYyyyMmField, YyyyMmField)
 from cciw.officers.references import first_letter_cap, reference_present_val
 
 REFEREE_NUMBERS = [1, 2]
@@ -117,16 +118,11 @@ class Application(models.Model):
         ordering = ('-date_saved', 'officer__first_name', 'officer__last_name',)
         base_manager_name = 'objects'
 
-    @property
+    @cached_property
     def referees(self):
         """A cached version of 2 items that can exist in 'references_set', which
         are created if they don't exist. Read only"""
-        try:
-            return self._referees_cache
-        except AttributeError:
-            retval = (self._referee(1), self._referee(2))
-            self._referees_cache = retval
-            return retval
+        return (self._referee(1), self._referee(2))
 
     @property
     def one_line_address(self):
