@@ -72,7 +72,7 @@
               {% for reference in referee.possible_previous_references %}
                 <option value="{{ reference.id }}">
                   {{ reference.referee.name }} &lt;{{ reference.referee.email }}&gt;
-                  ({{ reference.referee.application.date_submitted|date:"Y" }})
+                  ({{ reference.date_created|date:"Y" }})
                 </option>
               {% endfor %}
             </select>
