@@ -29,7 +29,7 @@ supports the above dependencies. Once you have installed them:
 
 * Within it, checkout the CCIW source code into a folder 'src'::
 
-    hg clone ssh://hg@bitbucket.org/spookylukey/cciw-website src
+    hg clone ssh://hg@bitbucket.org/cciw/cciw-website src
 
   These folders will be shared between the host and the VM, so you can
   edit the source code from your host machine if wanted.
