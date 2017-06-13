@@ -221,8 +221,7 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
                         'referee2_name', 'referee2_address', 'referee2_tel', 'referee2_mobile', 'referee2_email'],
              'classes': ['wide'],
              'description': '''Please give the names and addresses,
-             telephones numbers and email addresses and role or
-             relationship of <strong>two</strong> people who know you
+             telephones numbers and email addresses of <strong>two</strong> people who know you
              well and who would be able to give a personal character reference.
              In addition we reserve the right to take up additional character
              references from any other individuals deemed necessary. <strong>One
