@@ -1,5 +1,14 @@
 {% extends "admin/change_form.html" %}
 {% load application_admin %}
+
+
+{% block breadcrumbs %}
+  {% if request.user.can_manage_application_forms %}
+    {{ block.super }}
+  {% endif %}
+{% endblock %}
+
+
 {% block after_related_objects %}
   {% fix_permissions %}
   <h2>Notes</h2>
