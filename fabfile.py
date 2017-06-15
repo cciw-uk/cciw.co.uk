@@ -363,12 +363,20 @@ NON_VCS_SOURCES = [
 ]
 
 
-def _push_non_vcs_sources():
+@task
+def push_non_vcs_sources():
+    """
+    Push non-VCS sources to server
+    """
     for s in NON_VCS_SOURCES:
         local("rsync %s cciw@cciw.co.uk:%s/%s" % (s, target.SRC_DIR, s))
 
 
-def _get_non_vcs_sources():
+@task
+def get_non_vcs_sources():
+    """
+    Pull non-VCS sources (including secrets.json) from server
+    """
     for s in NON_VCS_SOURCES:
         local("rsync cciw@cciw.co.uk:%s/%s %s" % (target.SRC_DIR, s, s))
 
@@ -390,7 +398,7 @@ def deploy():
     code_quality_checks()
     ensure_dirs()
     push_sources()
-    _push_non_vcs_sources()
+    push_non_vcs_sources()
     with cd(target.SRC_DIR):
         run("find . -name '*.pyc' | xargs rm")
 
@@ -666,7 +674,7 @@ def initial_dev_setup():
     local_pth_file()
     get_and_load_production_db()
     production()
-    _get_non_vcs_sources()
+    get_non_vcs_sources()
     _install_deps_local()
 
 
