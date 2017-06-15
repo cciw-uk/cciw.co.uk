@@ -64,7 +64,8 @@ class EmailVerifyTokenGenerator(object):
     # Somehow the trailing '=' produced by base64 encode gets eaten by
     # people/programs handling the email verification link. Additional
     # trailing '=' don't hurt base64 decode. So we strip thenm when encoding,
-    # and strip them on decoding.
+    # and add them on decoding.
+    # See also TestEmailVerifyTokenGenerator.
 
     def url_safe_encode(self, value):
         return base64.urlsafe_b64encode(value.encode('utf-8')).decode('utf-8').rstrip('=')
