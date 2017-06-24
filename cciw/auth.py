@@ -10,7 +10,7 @@ class CciwAuthBackend(ModelBackend):
         # than a 403, and /admin/ return something rather than a message saying
         # there is nothing they can edit. This is necessary because, for
         # security reasons, we don't actually make camp admins/leaders part of a
-        # specific group with permissions, but add hacks
+        # specific group with permissions, but add overrides
         # (CampAdminPermissionMixin and other 'has_change_permission' methods)
         # to give specific permission to admin screens if the user is a camp
         # admin for a current camp. Doing it this way means we don't have to
