@@ -6,7 +6,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django_dynamic_fixture import G
 
-from cciw.accounts.models import BOOKING_SECRETARY_GROUP_NAME, DBS_OFFICER_GROUP_NAME, SECRETARY_GROUP_NAME
+from cciw.accounts.models import (BOOKING_SECRETARY_GROUP_NAME, DBS_OFFICER_GROUP_NAME, SECRETARY_GROUP_NAME,
+                                  setup_auth_groups)
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.officers.models import Application, QualificationType, Reference
@@ -86,6 +87,7 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
     """
     def setUp(self):
         super(OfficersSetupMixin, self).setUp()
+        setup_auth_groups()
         self.leader_user = G(User,
                              username=LEADER_USERNAME,
                              first_name="Dave",
@@ -101,77 +103,7 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
         # Associate with Person object
         self.default_leader.users.add(self.leader_user)
 
-        self.booking_secretary_group = G(Group,
-                                         name=BOOKING_SECRETARY_GROUP_NAME,
-                                         permissions=[
-                                             perm("add_booking",
-                                                  "bookings",
-                                                  "booking"),
-                                             perm("change_booking",
-                                                  "bookings",
-                                                  "booking"),
-                                             perm("delete_booking",
-                                                  "bookings",
-                                                  "booking"),
-                                             perm("add_bookingaccount",
-                                                  "bookings",
-                                                  "bookingaccount"),
-                                             perm("change_bookingaccount",
-                                                  "bookings",
-                                                  "bookingaccount"),
-                                             perm("add_manualpayment",
-                                                  "bookings",
-                                                  "manualpayment"),
-                                             perm("change_manualpayment",
-                                                  "bookings",
-                                                  "manualpayment"),
-                                             perm("delete_manualpayment",
-                                                  "bookings",
-                                                  "manualpayment"),
-                                             perm("change_payment",  # so they can view payment inlines
-                                                  "bookings",
-                                                  "payment"),
-                                             perm("add_price",
-                                                  "bookings",
-                                                  "price"),
-                                             perm("change_price",
-                                                  "bookings",
-                                                  "price"),
-                                             perm("delete_price",
-                                                  "bookings",
-                                                  "price"),
-                                             perm("add_accounttransferpayment",
-                                                  "bookings",
-                                                  "accounttransferpayment"),
-                                             perm("change_accounttransferpayment",
-                                                  "bookings",
-                                                  "accounttransferpayment"),
-                                             perm("delete_accounttransferpayment",
-                                                  "bookings",
-                                                  "accounttransferpayment"),
-                                             perm("add_refundpayment",
-                                                  "bookings",
-                                                  "refundpayment"),
-                                             perm("change_refundpayment",
-                                                  "bookings",
-                                                  "refundpayment"),
-                                             perm("delete_refundpayment",
-                                                  "bookings",
-                                                  "refundpayment"),
-                                             perm("change_camp",
-                                                  "cciwmain",
-                                                  "camp"),
-                                             perm("add_qualificationtype",
-                                                  "officers",
-                                                  "qualificationtype"),
-                                             perm("change_qualificationtype",
-                                                  "officers",
-                                                  "qualificationtype"),
-                                             perm("delete_qualificationtype",
-                                                  "officers",
-                                                  "qualificationtype"),
-                                         ],
-                                         )
+        self.booking_secretary_group = Group.objects.get(name=BOOKING_SECRETARY_GROUP_NAME)
 
         self.booking_secretary = G(User,
                                    username=BOOKING_SECRETARY_USERNAME,
@@ -182,23 +114,7 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
         self.booking_secretary.set_password(BOOKING_SECRETARY_PASSWORD)
         self.booking_secretary.save()
 
-        self.secretary_group = G(Group,
-                                 name=SECRETARY_GROUP_NAME,
-                                 permissions=[
-                                     perm("change_application",
-                                          "officers",
-                                          "application"),
-                                     perm("add_qualificationtype",
-                                          "officers",
-                                          "qualificationtype"),
-                                     perm("change_qualificationtype",
-                                          "officers",
-                                          "qualificationtype"),
-                                     perm("delete_qualificationtype",
-                                          "officers",
-                                          "qualificationtype"),
-                                 ],
-                                 )
+        self.secretary_group = Group.objects.get(name=SECRETARY_GROUP_NAME)
 
         self.secretary = G(User,
                            username=SECRETARY_USERNAME,
@@ -209,28 +125,7 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
         self.secretary.set_password(SECRETARY_PASSWORD)
         self.secretary.save()
 
-        self.dbs_officer_group = G(Group,
-                                   name=DBS_OFFICER_GROUP_NAME,
-                                   permissions=[
-                                       perm("add_dbscheck",
-                                            "officers",
-                                            "dbscheck"),
-                                       perm("change_dbscheck",
-                                            "officers",
-                                            "dbscheck"),
-                                       perm("delete_dbscheck",
-                                            "officers",
-                                            "dbscheck"),
-                                       perm("add_dbsactionlog",
-                                            "officers",
-                                            "dbsactionlog"),
-                                       perm("change_dbsactionlog",
-                                            "officers",
-                                            "dbsactionlog"),
-                                       perm("delete_dbsactionlog",
-                                            "officers",
-                                            "dbsactionlog"),
-                                   ])
+        self.dbs_officer_group = Group.objects.get(name=DBS_OFFICER_GROUP_NAME)
 
         self.dbs_officer = G(User,
                              username=DBSOFFICER_USERNAME,

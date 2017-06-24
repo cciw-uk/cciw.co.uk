@@ -349,6 +349,7 @@ def update_database():
                 run_venv("./manage.py migrate --fake --noinput")
             else:
                 run_venv("./manage.py migrate --noinput")
+            run_venv("./manage.py setup_auth_groups")
 
 
 @task

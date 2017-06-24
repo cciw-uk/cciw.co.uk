@@ -1,9 +1,14 @@
 import operator
 from functools import reduce
 
-from django.contrib.auth.models import AbstractUser, Group
+import yaml
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 from django.utils.functional import cached_property
 
+# These names need to be synced with /config/groups.yaml
 WIKI_USERS_GROUP_NAME = 'Wiki users'
 SECRETARY_GROUP_NAME = 'Secretaries'
 DBS_OFFICER_GROUP_NAME = 'DBS Officers'
@@ -163,3 +168,28 @@ class User(AbstractUser):
                 self.is_committee_member or
                 self.is_cciw_secretary or
                 self.is_camp_admin)
+
+
+def get_or_create_perm(app_label, model, codename):
+    ct = ContentType.objects.get_by_natural_key(app_label, model)
+    try:
+        return Permission.objects.get(codename=codename, content_type=ct)
+    except Permission.DoesNotExist:
+        # This branch is generally only reached when running tests.
+        return Permission.objects.create(codename=codename,
+                                         name=codename,
+                                         content_type=ct)
+
+
+def setup_auth_groups():
+    permissions_conf = yaml.load(open(settings.GROUPS_CONFIG_FILE))
+    groups = permissions_conf['Groups']
+    for group_name, group_details in groups.items():
+        g, _ = Group.objects.get_or_create(name=group_name)
+        permission_details = group_details['Permissions']
+        perms = []
+        for p in permission_details:
+            parts = p.split(',')
+            perms.append(get_or_create_perm(*parts))
+        with transaction.atomic():
+            g.permissions.set(perms)

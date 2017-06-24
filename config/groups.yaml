@@ -1,0 +1,106 @@
+# This file defines various important groups and the permissions to be given to
+# them in the Django admin. These permissions are stored in the DB itself, and
+# control only the general Django admin (which allows users to add/change/delete
+# records of different types). Other permissions for the different groups are
+# specified directly in the source code in various ways.
+
+# This file is used by automated tests, and is applied to the production
+# database as part of the deployment procedure, ensuring that each group exists
+# and has all and only the permissions specified here.
+
+# The contents need to be agreed with the CCIW committee, as per the "CCIW
+# website security procedures" document.
+
+# The names of the groups need to be synced with /cciw/accounts/models.py
+
+# Format of permissions is: app name,model name,permission code name
+
+# See https://docs.djangoproject.com/en/1.11/topics/auth/default/#permissions-and-authorization
+
+# Django has no 'view' permission. By giving 'change' permission, we give a user
+# 'view' permission as well.
+
+Groups:
+  Wiki users:
+    # Wiki users don't need permissions, it is just a marker group
+    Permissions: []
+  Secretaries:
+    Permissions:
+      # Need to be able to view officer applications, other small edits
+      - officers,application,change_application
+      - officers,qualificationtype,add_qualificationtype
+      - officers,qualificationtype,change_qualificationtype
+      - officers,qualificationtype,delete_qualificationtype
+  Booking secretaries:
+    Permissions:
+      # Need to be able to add and change bookings and their accounts
+      - bookings,booking,add_booking
+      - bookings,booking,change_booking
+      - bookings,booking,delete_booking
+      - bookings,bookingaccount,add_bookingaccount
+      - bookings,bookingaccount,change_bookingaccount
+      - bookings,bookingaccount,delete_bookingaccount
+      # Need to be able to record manual payments, refunds and transfers
+      - bookings,manualpayment,add_manualpayment
+      - bookings,manualpayment,change_manualpayment
+      - bookings,manualpayment,delete_manualpayment
+      - bookings,accounttransferpayment,add_accounttransferpayment
+      - bookings,accounttransferpayment,change_accounttransferpayment
+      - bookings,accounttransferpayment,delete_accounttransferpayment
+      - bookings,refundpayment,add_refundpayment
+      - bookings,refundpayment,change_refundpayment
+      - bookings,refundpayment,delete_refundpayment
+      # In order to view payment inlines, need this:
+      - bookings,payment,change_payment
+      # Helpful for them to be able to manage prices
+      - bookings,price,add_price
+      - bookings,price,change_price
+      - bookings,price,delete_price
+      # To be able to change number of bookings allowed, they can edit camps
+      - cciwmain,camp,change_camp
+  DBS Officers:
+    Permissions:
+      - officers,dbscheck,add_dbscheck
+      - officers,dbscheck,change_dbscheck
+      - officers,dbscheck,delete_dbscheck
+      - officers,dbsactionlog,add_dbsactionlog
+      - officers,dbsactionlog,change_dbsactionlog
+      - officers,dbsactionlog,delete_dbsactionlog
+  Committee:
+    Permissions:
+      # Need to be able change roles of people. This effectively gives them
+      # superuser privileges, since they can change themselves to superuser if
+      # wanted. This is deliberate. Having a more limited set of permissions
+      # will give them a less cluttered Django admin.
+      - accounts,user,change_user
+      - cciwmain,camp,change_camp
+      - cciwmain,person,change_person
+      # Need to be able to view/manage application forms
+      - officers,application,change_application
+      - officers,qualificationtype,add_qualificationtype
+      - officers,qualificationtype,change_qualificationtype
+      - officers,qualificationtype,delete_qualificationtype
+      # View references
+      - officers,reference,change_reference
+  Site editors:
+    # People with general permissions to manage the
+    # site - enter camp information etc.
+    Permissions:
+      - cciwmain,camp,add_camp
+      - cciwmain,camp,change_camp
+      - cciwmain,camp,delete_camp
+      - cciwmain,campname,add_campname
+      - cciwmain,campname,change_campname
+      - cciwmain,campname,delete_campname
+      - cciwmain,person,add_person
+      - cciwmain,person,change_person
+      - cciwmain,person,delete_person
+      - cciwmain,site,add_site
+      - cciwmain,site,change_site
+      - cciwmain,site,delete_site
+      - sitecontent,htmlchunk,add_htmlchunk
+      - sitecontent,htmlchunk,change_htmlchunk
+      - sitecontent,htmlchunk,delete_htmlchunk
+      - sitecontent,menulink,add_menulink
+      - sitecontent,menulink,change_menulink
+      - sitecontent,menulink,delete_menulink

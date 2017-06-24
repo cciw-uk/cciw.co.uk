@@ -481,6 +481,7 @@ WEBMASTER_EMAIL = "webmaster@cciw.co.uk"
 LIST_MAILBOX_NAME = "camplists"
 ESV_KEY = 'IP'
 DBS_VALID_FOR = 365 * 3  # We consider a DBS check valid for 3 years
+GROUPS_CONFIG_FILE = os.path.join(basedir, 'config', 'groups.yaml')
 
 # Referenced from style.less
 COLORS_LESS_DIR = "cciw/cciwmain/static/"
