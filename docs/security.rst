@@ -49,16 +49,16 @@ following points must be observed:
 * Access to all officer functionality must be controlled on a "need to know
   basis". The primary places where these are controlled are:
 
-  * permission related methods on the ``User`` model in `<cciw/accounts/models.py>`_
-  * permission decorators on views in `<cciw/officers/views.py>`_
-  * definitions of group permissions in `<config/groups.yaml>`_
-  * other functions in `<cciw/auth.py>`_
+  * permission related methods on the ``User`` model in `</cciw/accounts/models.py>`_
+  * permission decorators on views in `</cciw/officers/views.py>`_
+  * definitions of group permissions in `</config/groups.yaml>`_
+  * other functions in `</cciw/auth.py>`_
 
 * As much as possible, privileged access roles should be determined dynamically,
-  rather than by manual configuration of permission groups. For example, by link
+  rather than by manual configuration of permission groups. For example, by linking
   the ``User``, ``Camp`` and ``Person`` models, we can dynamically determine
   whether a ``User`` account is a leader of a current camp, rather than by
-  maintaining a group “leaders of current camps”.
+  having to maintain a group “leaders of current camps”.
 
 * If dynamic roles are not possible, we can create groups for additional
   permissions. We don't add individual permissions to User accounts.
