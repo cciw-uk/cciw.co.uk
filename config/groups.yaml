@@ -68,11 +68,7 @@ Groups:
       - officers,dbsactionlog,delete_dbsactionlog
   Committee:
     Permissions:
-      # Need to be able change roles of people. This effectively gives them
-      # superuser privileges, since they can change themselves to superuser if
-      # wanted. This is deliberate. Having a more limited set of permissions
-      # will give them a less cluttered Django admin.
-      - accounts,user,change_user
+      # Do general changes to camps, including setting leaders
       - cciwmain,camp,change_camp
       - cciwmain,person,change_person
       # Need to be able to view/manage application forms
@@ -82,6 +78,13 @@ Groups:
       - officers,qualificationtype,delete_qualificationtype
       # View references
       - officers,reference,change_reference
+  Chairperson:
+    # This person will be a member of Committee as well. They additionally have
+    # the rights to change User, which is effectively superuser rights. To avoid
+    # giving this to too many users who will not understand that they have it,
+    # this permission is separated out.
+    Permissions:
+      - accounts,user,change_user
   Site editors:
     # People with general permissions to manage the
     # site - enter camp information etc.
