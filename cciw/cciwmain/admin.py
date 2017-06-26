@@ -3,7 +3,7 @@ from functools import wraps
 from django.contrib import admin
 from django.utils.html import format_html
 
-from cciw.cciwmain.models import Camp, CampName, Person, Role, Site
+from cciw.cciwmain.models import Camp, CampName, Person, Site
 
 
 def rename_app_list(func):
@@ -128,4 +128,3 @@ admin.site.register(Site, SiteAdmin)
 admin.site.register(Person, PersonAdmin)
 admin.site.register(CampName, CampNameAdmin)
 admin.site.register(Camp, CampAdmin)
-admin.site.register(Role)
