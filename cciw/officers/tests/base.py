@@ -6,8 +6,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django_dynamic_fixture import G
 
-from cciw.accounts.models import (BOOKING_SECRETARY_GROUP_NAME, DBS_OFFICER_GROUP_NAME, SECRETARY_GROUP_NAME, REFERENCE_CONTACT_GROUP_NAME,
-                                  setup_auth_groups)
+from cciw.accounts.models import (BOOKING_SECRETARY_GROUP_NAME, DBS_OFFICER_GROUP_NAME, REFERENCE_CONTACT_GROUP_NAME,
+                                  SECRETARY_GROUP_NAME, setup_auth_groups)
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.officers.models import Application, QualificationType, Reference
