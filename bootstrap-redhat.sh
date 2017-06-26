@@ -5,6 +5,8 @@ yum update -y
 # Need epel-release for git
 yum install -y epel-release  || exit 1
 
+yum install deltarpm
+
 # Dev tools for building Python 3.4, and other Python libraries
 yum groupinstall -y "Development tools"  || exit 1
 yum install -y zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libxml2-devel libxslt-devel postgresql-devel  || exit 1
