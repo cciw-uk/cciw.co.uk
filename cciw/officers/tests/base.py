@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django_dynamic_fixture import G
 
-from cciw.accounts.models import (BOOKING_SECRETARY_GROUP_NAME, DBS_OFFICER_GROUP_NAME, SECRETARY_GROUP_NAME,
+from cciw.accounts.models import (BOOKING_SECRETARY_GROUP_NAME, DBS_OFFICER_GROUP_NAME, SECRETARY_GROUP_NAME, REFERENCE_CONTACT_GROUP_NAME,
                                   setup_auth_groups)
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
@@ -136,6 +136,14 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
                              groups=[self.dbs_officer_group])
         self.dbs_officer.set_password(DBSOFFICER_PASSWORD)
         self.dbs_officer.save()
+
+        self.reference_contact_group = Group.objects.get(name=REFERENCE_CONTACT_GROUP_NAME)
+        self.safeguarding_coordinator = G(User,
+                                          username="safeguarder",
+                                          first_name="Safe",
+                                          last_name="Guarder",
+                                          contact_phone_number="01234 567890",
+                                          groups=[self.reference_contact_group])
 
 
 class ExtraOfficersSetupMixin(OfficersSetupMixin):

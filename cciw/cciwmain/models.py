@@ -9,8 +9,6 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.html import format_html
 
-REFERENCE_CONTACT_ROLE_NAME = "Safeguarding co-ordinator"
-
 
 class Site(models.Model):
     short_name = models.CharField("Short name", max_length=25, blank=False, unique=True)
@@ -259,10 +257,6 @@ class Camp(models.Model):
     @property
     def is_open_for_bookings(self):
         return self.open_for_bookings(date.today())
-
-
-def get_reference_contact_people():
-    return list(Person.objects.filter(roles__name=REFERENCE_CONTACT_ROLE_NAME))
 
 
 def generate_colors_less(update_existing=False):

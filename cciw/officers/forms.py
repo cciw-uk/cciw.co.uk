@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from cciw.cciwmain.models import get_reference_contact_people
+from cciw.accounts.models import get_reference_contact_users
 from cciw.officers import create
 from cciw.officers.email import send_leaders_reference_email
 from cciw.officers.models import Invitation, Reference
@@ -134,13 +134,13 @@ class ReferenceForm(StripStringsMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ReferenceForm, self).__init__(*args, **kwargs)
-        reference_contact_people = get_reference_contact_people()
-        if reference_contact_people:
+        reference_contact_users = get_reference_contact_users()
+        if reference_contact_users:
             contact_message = (" If you would prefer to discuss your concerns on the telephone "
                                "and in confidence, please contact: " +
-                               " or ".join("{0} on {1}".format(person.name,
-                                                               person.phone_number)
-                                           for person in reference_contact_people))
+                               " or ".join("{0} on {1}".format(user.full_name,
+                                                               user.contact_phone_number)
+                                           for user in reference_contact_users))
             self.fields['concerns'].label += contact_message
 
     def save(self, referee, user=None):

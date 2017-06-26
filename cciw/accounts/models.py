@@ -50,6 +50,10 @@ def get_group_users(group_name):
     return Group.objects.get(name=group_name).user_set.all()
 
 
+def get_reference_contact_users():
+    return get_group_users(REFERENCE_CONTACT_GROUP_NAME)
+
+
 class User(AbstractUser):
 
     contact_phone_number = models.CharField("Phone number", max_length=40,
@@ -58,6 +62,10 @@ class User(AbstractUser):
 
     def __str__(self):
         return "{0} {1} <{2}>".format(self.first_name, self.last_name, self.email)
+
+    @property
+    def full_name(self):
+        return "{0} {1}".format(self.first_name, self.last_name).strip()
 
     @cached_property
     def is_booking_secretary(user):

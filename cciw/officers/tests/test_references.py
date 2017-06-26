@@ -236,6 +236,9 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
         url = make_local_url(make_ref_form_url(app.referees[0].id, None))
         response = self.get_literal_url(url)
         self.assertCode(200)
+        # Safeguarding coordinator details should be present:
+        self.assertTextPresent("Safe Guarder")
+        self.assertTextPresent("01234 567890")
         return response
 
     def test_page_submit(self):
