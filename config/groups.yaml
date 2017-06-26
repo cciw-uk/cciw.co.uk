@@ -107,3 +107,6 @@ Groups:
       - sitecontent,menulink,add_menulink
       - sitecontent,menulink,change_menulink
       - sitecontent,menulink,delete_menulink
+  Safeguarding co-ordinators:
+    # No permisssions needed, just a marker group for other purposes.
+    Permissions: []

@@ -5,7 +5,7 @@ import yaml
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction
+from django.db import models, transaction
 from django.utils.functional import cached_property
 
 # These names need to be synced with /config/groups.yaml
@@ -14,6 +14,7 @@ SECRETARY_GROUP_NAME = 'Secretaries'
 DBS_OFFICER_GROUP_NAME = 'DBS Officers'
 COMMITTEE_GROUP_NAME = 'Committee'
 BOOKING_SECRETARY_GROUP_NAME = 'Booking secretaries'
+REFERENCE_CONTACT_GROUP_NAME = "Safeguarding co-ordinators"
 
 CAMP_ADMIN_GROUPS = [SECRETARY_GROUP_NAME, COMMITTEE_GROUP_NAME, BOOKING_SECRETARY_GROUP_NAME]
 
@@ -50,6 +51,10 @@ def get_group_users(group_name):
 
 
 class User(AbstractUser):
+
+    contact_phone_number = models.CharField("Phone number", max_length=40,
+                                            blank=True,
+                                            help_text="Required only for staff like CPO who need to be contacted.")
 
     def __str__(self):
         return "{0} {1} <{2}>".format(self.first_name, self.last_name, self.email)
