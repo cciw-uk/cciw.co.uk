@@ -31,7 +31,7 @@ duvet==0.1.2
 EasyProcess==0.2.3
 ecdsa==0.13
 ezodf2==0.2.10
--e git+https://github.com/pashinin/fabric@324c6f01ff3147d5e7a13a3498a0d4122f33dbe8#egg=Fabric
+fabric3==1.13.1.post1
 flake8==3.3.0
 frozendict==1.0
 furl==1.0.0
@@ -53,7 +53,7 @@ orderedmultidict==0.7.11
 packaging==16.8
 pandas==0.18.1
 pandas-highcharts==0.5.2
--e git+https://github.com/paramiko/paramiko/@d99342d119fcf268c57d025fa9a9fd1124f39de0#egg=paramiko
+paramiko==2.1.2
 path.py==8.2.1
 pep8==1.7.0
 pexpect==4.2.1
@@ -61,7 +61,7 @@ pickleshare==0.7.4
 Pillow==4.0.0
 ply==3.9
 prompt-toolkit==1.0.14
-psutil==4.3.1
+psutil==5.2.2
 psycopg2==2.6.2
 ptyprocess==0.5.1
 pycodestyle==2.3.1
