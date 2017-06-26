@@ -13,9 +13,10 @@ class MyUserAdmin(UserAdmin):
           }),
         ('Permissions',
          {'fields': (
-             'is_active', 'is_staff', 'is_superuser',
-             'groups', 'user_permissions')
-          }),
+             'is_active', 'is_staff', 'is_superuser', 'groups',
+             # deliberately miss out 'user_permissions' here,
+             # as per our security policy.
+         )}),
         ('Important dates',
          {'fields': (
              'last_login', 'date_joined')
