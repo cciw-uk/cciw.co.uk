@@ -19,7 +19,7 @@ def formatted_email(user):
     Get the email address plus name of the user, formatted for
     use in sending an email, or 'None' if no email address available
     """
-    name = ("%s %s" % (user.first_name, user.last_name)).strip().replace('"', '')
+    name = user.full_name.strip().replace('"', '')
     email = user.email.strip()
     if len(email) == 0:
         return None

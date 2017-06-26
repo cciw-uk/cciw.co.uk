@@ -61,7 +61,7 @@ class User(AbstractUser):
                                             help_text="Required only for staff like CPO who need to be contacted.")
 
     def __str__(self):
-        return "{0} {1} <{2}>".format(self.first_name, self.last_name, self.email)
+        return "{0} <{1}>".format(self.full_name, self.email)
 
     @property
     def full_name(self):

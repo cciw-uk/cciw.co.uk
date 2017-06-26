@@ -124,7 +124,7 @@
           {% for officer_data in officers_serious_slackers %}
             {% with officer=officer_data.officer %}
               <tr>
-                <td class="rightbreak">{{ officer.first_name }} {{ officer.last_name }}</td>
+                <td class="rightbreak">{{ officer.full_name }}</td>
                 <td>
                   {% for camp in officer_data.missing_application_forms %}
                     <a target="_blank" href="{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}">{{ camp.slug_name_with_year }}</a><br/>

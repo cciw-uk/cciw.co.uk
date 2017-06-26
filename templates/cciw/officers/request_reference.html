@@ -7,12 +7,12 @@
   <script type="text/javascript" src="{% static "js/tabber.js" %}"></script>
 {% endblock %}
 
-{% block title %}Request reference for {{ app.officer.first_name }} {{ app.officer.last_name }} | CCIW Officers {% endblock %}
+{% block title %}Request reference for {{ app.officer.full_name }} | CCIW Officers {% endblock %}
 
 {% block content %}
   <div id="content-main">
 
-    <h2>Request reference for {{ app.officer.first_name }} {{ app.officer.last_name }}</h2>
+    <h2>Request reference for {{ app.officer.full_name }}</h2>
 
     <p>From referee: {{ referee.name }} {% if referee.email %}&lt;{{ referee.email }}&gt;{% endif %}</p>
     <p>Address:</p>

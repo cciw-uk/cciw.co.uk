@@ -4,7 +4,7 @@
   <div data-officer-id="{{ officer.id }}"
     class="{% if officer.on_previous_camp %}previous-camp-officer{% endif %}">
     <img alt="Add" data-add-button src="{% static "images/officer-list-add.gif" %}" />
-    {{ officer.first_name }} {{ officer.last_name }}
+    {{ officer.full_name }}
     &lt;{{ officer.email }}&gt;
   </div>
 {% endfor %}

@@ -329,12 +329,11 @@ class Reference(models.Model):
 
     @property
     def applicant_name(self):
-        o = self.referee.application.officer
-        return "%s %s" % (o.first_name, o.last_name)
+        return self.referee.application.officer.full_name
 
     def __str__(self):
         officer = self.referee.application.officer
-        return "Reference form for %s %s by %s" % (officer.first_name, officer.last_name, self.referee_name)
+        return "Reference form for {0} by {1}".format(officer.full_name, self.referee_name)
 
     def save(self, *args, **kwargs):
         retval = super(Reference, self).save(*args, **kwargs)
@@ -414,7 +413,7 @@ class Invitation(models.Model):
         base_manager_name = 'objects'
 
     def __str__(self):
-        return "%s %s — camp %s" % (self.officer.first_name, self.officer.last_name, self.camp)
+        return "{0} — camp {1}".format(self.officer.full_name, self.camp)
 
 
 # CRBs/DBSs - Criminal Records Bureau/Disclosure and Barring Service

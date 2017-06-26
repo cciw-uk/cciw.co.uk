@@ -1,7 +1,7 @@
 {% extends "cciw/officers/base.html" %}
 {% block title %}Submit reference | CCIW Officers{% endblock %}
 {% block content %}
-  <h1>Submit reference for {{ officer.first_name }} {{ officer.last_name }}</h1>
+  <h1>Submit reference for {{ officer.full_name }}</h1>
   {% if incorrect_url %}
     <p>The address is not correct.  Please ensure you have used the complete URL
       from the email</p>

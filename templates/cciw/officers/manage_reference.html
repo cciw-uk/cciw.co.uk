@@ -1,6 +1,6 @@
 <div id="officerref{{ referee.id }}" class="referencesection">
   <h3 class="referencestart">
-    {{ referee.application.officer.first_name }} {{ referee.application.officer.last_name }}
+    {{ referee.application.officer.full_name }}
     &nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_history' officer_id=referee.application.officer.id %}"
         target="_blank"
        >full history</a>

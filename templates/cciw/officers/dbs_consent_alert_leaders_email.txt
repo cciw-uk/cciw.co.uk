@@ -1,6 +1,6 @@
 {% autoescape off %}Dear camp leaders,
 
-On their application form, {{ officer.first_name }} {{ officer.last_name }} indicated that they do NOT consent to having a DBS check done. It is possible that this was simply a mistake. In this case, after contacting them you can edit and correct their application form:
+On their application form, {{ officer.full_name }} indicated that they do NOT consent to having a DBS check done. It is possible that this was simply a mistake. In this case, after contacting them you can edit and correct their application form:
 
 Contact details:
 
@@ -19,7 +19,7 @@ If it is correct that they do not consent to having a DBS check done, they canno
 
 Thanks!
 
-{{ sender.first_name }} {{ sender.last_name }}
+{{ sender.full_name }}
 
 Sent via the CCIW website.
 {% endautoescape %}

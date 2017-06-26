@@ -1,8 +1,8 @@
 {% extends "cciw/officers/base.html" %}
-{% block title %}Reference for {{ officer.first_name }} {{ officer.last_name }} from {{ referee.name }} | CCIW Officers {% endblock %}
+{% block title %}Reference for {{ officer.full_name }} from {{ referee.name }} | CCIW Officers {% endblock %}
 
 {% block content %}
-  <h1>Reference for {{ officer.first_name }} {{ officer.last_name }} from {{ referee.name }}</h1>
+  <h1>Reference for {{ officer.full_name }} from {{ referee.name }}</h1>
   {% include "cciw/officers/officer_ref_inc.html" %}
 
 {% endblock %}

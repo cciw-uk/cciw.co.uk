@@ -219,7 +219,7 @@ def applications(request):
             new_obj = _copy_application(finished_applications[0])
         else:
             new_obj = Application.objects.create(officer=user,
-                                                 full_name="%s %s" % (user.first_name, user.last_name))
+                                                 full_name=user.full_name)
 
         return HttpResponseRedirect('/admin/officers/application/%s/' %
                                     new_obj.id)
@@ -1697,7 +1697,7 @@ def spreadsheet_response(formatter, filename):
 class UserAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_result_label(self, user):
-        return "%s %s <%s>" % (user.first_name, user.last_name, user.email)
+        return "{0} <{1}>".format(user.full_name, user.email)
 
     def get_queryset(self):
         request = self.request

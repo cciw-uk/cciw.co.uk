@@ -210,7 +210,7 @@ def make_ref_form_url(referee_id, prev_ref_id):
 
 def send_reference_request_email(message, referee, sending_officer, camp):
     officer = referee.application.officer
-    EmailMessage(subject="[CCIW] Reference for %s %s" % (officer.first_name, officer.last_name),
+    EmailMessage(subject="[CCIW] Reference for {0}".format(officer.full_name),
                  body=message,
                  from_email=settings.REFERENCES_EMAIL,
                  to=[referee.email],
@@ -230,12 +230,12 @@ def send_leaders_reference_email(reference):
     officer = app.officer
 
     refform_text = reference_to_text(reference)
-    subject = "[CCIW] Reference form for %s %s from %s" % (officer.first_name, officer.last_name, referee.name)
+    subject = "[CCIW] Reference form for {0} from {1}".format(officer.full_name, referee.name)
     body = ("""The following reference form has been submitted via the
-CCIW website for officer %s %s.
+CCIW website for officer {0}.
 
-%s
-""" % (officer.first_name, officer.last_name, refform_text)
+{1}
+""".format(officer.full_name, refform_text)
     )
 
     leader_email_groups = admin_emails_for_application(app)
@@ -259,7 +259,7 @@ def send_dbs_consent_alert_leaders_email(message, officer, camps):
     emails = []
     for c in camps:
         emails.extend(admin_emails_for_camp(c))
-    send_mail("[CCIW] DBS consent problem for %s %s" % (officer.first_name, officer.last_name),
+    send_mail("[CCIW] DBS consent problem for {0}".format(officer.full_name),
               message,
               settings.DEFAULT_FROM_EMAIL,
               emails,
@@ -267,7 +267,7 @@ def send_dbs_consent_alert_leaders_email(message, officer, camps):
 
 
 def send_request_for_dbs_form_email(message, officer, sending_officer):
-    EmailMessage(subject="[CCIW] DBS form needed for %s %s" % (officer.first_name, officer.last_name),
+    EmailMessage(subject="[CCIW] DBS form needed for {0}".format(officer.full_name),
                  body=message,
                  from_email=settings.DEFAULT_FROM_EMAIL,
                  to=[settings.EXTERNAL_DBS_OFFICER['email']],
