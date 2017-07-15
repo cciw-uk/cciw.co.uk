@@ -97,6 +97,7 @@ def any_passes(*funcs):
 
 camp_admin_required = user_passes_test_improved(lambda u: u.is_camp_admin)
 dbs_officer_required = user_passes_test_improved(lambda u: u.is_dbs_officer)
+dbs_officer_or_camp_admin_required = user_passes_test_improved(lambda u: u.is_dbs_officer or u.is_camp_admin)
 booking_secretary_required = user_passes_test_improved(lambda u: u.is_booking_secretary)
 cciw_secretary_required = user_passes_test_improved(lambda u: u.is_cciw_secretary)
 cciw_secretary_or_booking_secretary_required = user_passes_test_improved(any_passes(lambda u: u.is_booking_secretary, lambda u: u.is_cciw_secretary))
@@ -136,7 +137,7 @@ def index(request):
     if user.is_cciw_secretary:
         c['show_secretary_links'] = True
         c['show_admin_link'] = True
-    if user.is_dbs_officer:
+    if user.is_dbs_officer or user.is_camp_admin:
         c['show_dbs_officer_links'] = True
     if user.is_booking_secretary:
         c['show_booking_secretary_links'] = True
@@ -1009,7 +1010,7 @@ def officer_stats_trend_download(request, start_year, end_year):
 
 
 @staff_member_required
-@dbs_officer_required
+@dbs_officer_or_camp_admin_required
 @ensure_csrf_cookie
 def manage_dbss(request, year=None):
     year = int(year)
