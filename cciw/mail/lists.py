@@ -293,6 +293,8 @@ def forward_email_to_list(mail, email_list, debug=False):
         'sender',
         'list-post',
         'x-original-from',
+        'disposition-notification-to',
+        'return-receipt-to',
     ]
     mail._headers = [(name, val) for name, val in mail._headers
                      if name.lower() in good_headers]
