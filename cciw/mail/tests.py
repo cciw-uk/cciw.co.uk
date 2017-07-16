@@ -16,7 +16,7 @@ from cciw.officers.tests.base import ExtraOfficersSetupMixin
 from cciw.utils.tests.base import TestBase
 
 from . import views
-from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail
+from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
 from .mailgun import send_mime_message
 from .test_data import (MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE,
@@ -137,7 +137,11 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         self.assertEqual(list(sorted(to_addresses)),
                          ["admin1@admin.com",
                           "admin2@admin.com"])
-        self.assertTrue(all(b"From: Joe <joe@gmail.com>" in m
+        self.assertTrue(all(b"\nFrom: Joe <joe@gmail.com>" not in m
+                            for m in messages_sent))
+        self.assertTrue(all(b"\nFrom: Joe joe(at)gmail.com via <lists@cciw.co.uk>" in m
+                            for m in messages_sent))
+        self.assertTrue(all(b"\nX-Original-From: Joe <joe@gmail.com>" in m
                             for m in messages_sent))
         self.assertTrue(any(b"To: admin1@admin.com" in m
                             for m in messages_sent))
@@ -181,13 +185,15 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         sent_messages = m_s.messages_sent()
         self.assertEqual(len(sent_messages), 3)
 
-        self.assertTrue(all(b'From: Dave Stott <leader@somewhere.com>' in m
+        self.assertTrue(all(b'\nFrom: Dave Stott <leader@somewhere.com>' not in m
+                            for m in sent_messages))
+        self.assertTrue(all(b'\nX-Original-From: Dave Stott <leader@somewhere.com>' in m
+                            for m in sent_messages))
+        self.assertTrue(all(b'\nFrom: Dave Stott leader(at)somewhere.com via <lists@cciw.co.uk>' in m
                             for m in sent_messages))
         self.assertTrue(all(b"Sender: CCIW lists <lists@cciw.co.uk>" in m
                             for m in sent_messages))
         self.assertEqual(m_s.call_args_list[0][0][0], '"Fred Jones" <fredjones@somewhere.com>')
-        self.assertIn(b"Sender: CCIW lists", sent_messages[0])
-        self.assertIn(b"From: Dave Stott <leader@somewhere.com>", sent_messages[0])
 
     def test_extract(self):
         self.assertEqual(extract_email_addresses('Some Guy <A.Body@example.com>'),
@@ -332,6 +338,12 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         # Check the attachment
         attachment = m.attachments[0]
         self.assertIn(b'Hi Bob, Please do a reference.', attachment.as_bytes())
+
+    def test_mangle_from_address(self):
+        self.assertEqual(mangle_from_address("foo@bar.com"),
+                         "foo(at)bar.com via <lists@cciw.co.uk>")
+        self.assertEqual(mangle_from_address("Mr Foo <foo@bar.com>"),
+                         "Mr Foo foo(at)bar.com via <lists@cciw.co.uk>")
 
 
 def emailify(msg):

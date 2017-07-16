@@ -268,11 +268,13 @@ def forward_email_to_list(mail, email_list, debug=False):
     orig_from_addr = mail['From']
 
     if email_list.list_reply:
-        sender_addr = email_list.address
+        mail['Sender'] = email_list.address
         mail['List-Post'] = '<mailto:{0}>'.format(email_list.address)
     else:
-        sender_addr = "CCIW lists <lists@cciw.co.uk>"
-    mail['Sender'] = sender_addr
+        mail['Sender'] = "CCIW lists <lists@cciw.co.uk>"
+    del mail['From']
+    mail['From'] = mangle_from_address(orig_from_addr)
+    mail['X-Original-From'] = orig_from_addr
     mail['Return-Path'] = "website@cciw.co.uk"
     mail['Reply-To'] = orig_from_addr
 
@@ -290,6 +292,7 @@ def forward_email_to_list(mail, email_list, debug=False):
         'reply-to',
         'sender',
         'list-post',
+        'x-original-from',
     ]
     mail._headers = [(name, val) for name, val in mail._headers
                      if name.lower() in good_headers]
@@ -356,6 +359,12 @@ There were problems with the following addresses:
             # whole email sending to fail and therefore be retried, despite the
             # fact that we've sent the email successfully to some users.
             pass
+
+
+def mangle_from_address(address):
+    address = address.replace("@", "(at)").replace("<", "").replace(">", "")
+    address = address + " via <lists@cciw.co.uk>"
+    return address
 
 
 def handle_mail_async(data):
