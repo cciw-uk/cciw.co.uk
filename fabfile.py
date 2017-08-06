@@ -558,8 +558,9 @@ def db_restore_commands(db, filename, webfaction=False):
 def local_restore_from_dump(filename):
     from cciw.settings import DATABASES
     db = DATABASES['default']
-    for cmd in db_restore_commands(db, filename):
-        local(cmd)
+    for cmd in db_restore_commands(db, os.path.abspath(filename)):
+        with lcd('/'):
+            local(cmd)
 
 
 @task
