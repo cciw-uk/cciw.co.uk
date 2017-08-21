@@ -665,6 +665,7 @@ def copy_protected_downloads(target):
     rsync_dir(LOCAL_SECURE_DOWNLOAD_ROOT,
               target.SECURE_DOWNLOAD_ROOT)
     run("chmod -R ugo+r %s" % target.SECURE_DOWNLOAD_ROOT)
+    run("find %s -type d | xargs chmod ugo+rx" % target.SECURE_DOWNLOAD_ROOT)
 
 
 def rsync_dir(local_dir, dest_dir):
