@@ -533,7 +533,7 @@ def push_sources(target):
     target_src_root = target.SRC_ROOT
     previous_src_root = previous_target.SRC_ROOT
 
-    if not exists(target_src_root):
+    if not exists(os.path.join(target_src_root, '.hg')):
         previous_target = get_target_current_version(target)
         previous_src_root = previous_target.SRC_ROOT
         if exists(previous_src_root) and exists(os.path.join(previous_src_root, '.hg')):
@@ -543,11 +543,8 @@ def push_sources(target):
             run("hg clone %s %s" % (previous_src_root,
                                     target_src_root))
         else:
-            run("mkdir -p %s" % target_src_root)
-
-    if not exists(os.path.join(target_src_root, '.hg')):
-        with cd(target_src_root):
-            run("hg init")
+            with cd(target_src_root):
+                run("hg init")
 
     local("hg push -f ssh://%(user)s@%(host)s/%(path)s || true" %
           dict(host=env.host,
@@ -583,7 +580,7 @@ def tag_deploy():
     if getattr(env, 'no_tag', False):
         return
     with lcd(rel(".")):
-        local('hg update -r live && hg merge -r default && hg commit -m "Merged from default" && hg update -r default', capture=False)
+        local('hg update -r live && hg merge -r default && hg commit -m "Merged from default" && hg update -r master', capture=False)
 
     local("hg tag -f deploy-production-$(date --iso-8601=seconds | tr ':' '-' | cut -f 1 -d '+')")
 
