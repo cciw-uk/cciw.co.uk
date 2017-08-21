@@ -901,7 +901,13 @@ def pg_environ(db):
 @as_rootuser
 def db_restore(db, filename):
     with shell_env(**pg_environ(db)):
-        for run_as_postgres, cmd in db_restore_commands(db, filename):
+        if not db_check_user_exists_remote(db):
+            for run_as_postgres, cmd in db_create_user_commands(db):
+                pg_run(cmd, run_as_postgres)
+
+        for run_as_postgres, cmd in (db_drop_database_commands(db) +
+                                     db_create_commands(db) +
+                                     pg_restore_cmds(db, filename)):
             pg_run(cmd, run_as_postgres)
 
 
