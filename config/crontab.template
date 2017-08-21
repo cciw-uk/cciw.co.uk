@@ -5,7 +5,6 @@ DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 *       * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE send_mail 2>> ~/.django-mailer-cron.log
 5,35    * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE fix_mailing_lock
 0,20,40 * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE retry_deferred 2>> ~/.django-mailer-deferred-cron.log
-15      1 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE clear_securedownload_links
 0       2 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE cleanup
 0       7 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE payment_reminder_emails
 

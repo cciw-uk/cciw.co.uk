@@ -96,6 +96,12 @@ server {
         log_not_found   off;
     }
 
+    # See SECURE_DOWNLOAD_URL
+    location /protected/ {
+        internal;
+        alias      %(SECURE_DOWNLOAD_ROOT)s/;
+    }
+
     # Finally, send all non-media requests to the Django server.
     location / {
 

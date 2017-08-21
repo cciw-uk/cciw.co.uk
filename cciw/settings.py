@@ -115,7 +115,6 @@ INSTALLED_APPS = [
     'cciw.bookings',
     'cciw.mail',
     'django.contrib.messages',
-    'securedownload',
     'paypal.standard.ipn',
     'django.contrib.humanize',
     'mptt',
@@ -381,18 +380,9 @@ if TESTS_RUNNING:
 # == MAILING LISTS ==
 
 
-# == SECUREDOWNLOAD ==
+# == SECURE DOWNLOADS ==
 
-# TODO - set this up in nginx (somehow)
-SECUREDOWNLOAD_SERVE_URL = "/file/"
-SECUREDOWNLOAD_TIMEOUT = 3600
-
-if LIVEBOX:
-    SECUREDOWNLOAD_SOURCE = "/home/cciw/webapps/secure_downloads_src"
-    SECUREDOWNLOAD_SERVE_ROOT = "/home/cciw/webapps/secure_downloads"
-else:
-    SECUREDOWNLOAD_SOURCE = os.path.join(parentdir, "secure_downloads_src")
-    SECUREDOWNLOAD_SERVE_ROOT = os.path.join(parentdir, "secure_downloads")
+SECURE_DOWNLOAD_URL_BASE = "/protected/"  # See nginx conf
 
 # == MIDDLEWARE_CLASSES ==
 

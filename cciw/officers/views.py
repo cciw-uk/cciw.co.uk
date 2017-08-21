@@ -35,10 +35,9 @@ from cciw.cciwmain import common
 from cciw.cciwmain.common import TemplateView
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
-from cciw.cciwmain.utils import is_valid_email, python_to_json
+from cciw.cciwmain.utils import get_protected_download, is_valid_email, python_to_json
 from cciw.mail.lists import address_for_camp_officers, address_for_camp_slackers
 from cciw.utils.views import get_spreadsheet_formatter, reroute_response, user_passes_test_improved
-from securedownload.views import access_folder_securely
 
 from . import create
 from .applications import (application_rtf_filename, application_to_rtf, application_to_text, application_txt_filename,
@@ -102,6 +101,7 @@ booking_secretary_required = user_passes_test_improved(lambda u: u.is_booking_se
 cciw_secretary_required = user_passes_test_improved(lambda u: u.is_cciw_secretary)
 cciw_secretary_or_booking_secretary_required = user_passes_test_improved(any_passes(lambda u: u.is_booking_secretary, lambda u: u.is_cciw_secretary))
 secretary_or_committee_required = user_passes_test_improved(any_passes(lambda u: u.is_booking_secretary, lambda u: u.is_cciw_secretary, lambda u: u.is_committee_member))
+potential_camp_officer_required = user_passes_test_improved(lambda u: u.is_potential_camp_officer)
 
 
 def close_window_and_update_referee(ref_id):
@@ -924,8 +924,10 @@ def export_sharable_transport_details(request, year=None, slug=None):
                                 "camp-%s-transport-details" % camp.slug_name_with_year)
 
 
-officer_files = access_folder_securely("officers",
-                                       lambda request: request.user.is_authenticated and request.user.is_potential_camp_officer)
+@staff_member_required
+@potential_camp_officer_required
+def officer_files(request, path):
+    return get_protected_download("officers", path)
 
 
 @staff_member_required

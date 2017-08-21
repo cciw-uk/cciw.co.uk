@@ -44,7 +44,7 @@ PYTHON_FULL_PATH = "%s/bin/%s" % (PYTHON_PREFIX, PYTHON_BIN) if PYTHON_PREFIX el
 
 LOCAL_DB_BACKUPS = rel("..", "db_backups")
 LOCAL_USERMEDIA = rel("..", "usermedia")
-
+LOCAL_SECURE_DOWNLOAD_ROOT = rel("..", "secure_downloads_src")
 
 SECRETS_FILE_REL = "config/secrets.json"
 NON_VCS_SOURCES = [
@@ -171,6 +171,7 @@ class Version(object):
         # MEDIA_ROOT/STATIC_ROOT -  sync with settings
         self.STATIC_ROOT = os.path.join(self.PROJECT_ROOT, 'static')
         self.MEDIA_ROOT = os.path.join(self.PROJECT_ROOT, 'usermedia')
+        self.SECURE_DOWNLOAD_ROOT = os.path.join(WEBAPPS_ROOT, 'secure_downloads_src')
 
         CONF = secrets()
 
@@ -461,10 +462,10 @@ def deploy():
     build_static(target)
     update_database(target)
     make_target_current(target)
-    tag_deploy()  # Once 'current' symlink is switched
     deploy_system()
     restart_all()
-    copy_protected_downloads()
+    tag_deploy()  # Once 'current' symlink is switched and services are restarted
+    copy_protected_downloads(target)
     setup_mailgun(target)
     delete_old_versions()
 
@@ -660,10 +661,10 @@ def setup_mailgun(target):
         run("./manage.py setup_mailgun")
 
 
-def copy_protected_downloads():
-    rsync_dir(rel("..", "secure_downloads_src"),
-              join(WEBAPPS_ROOT, 'secure_downloads_src'))
-    run("chmod -R ugo+r %s" % join(WEBAPPS_ROOT, 'secure_downloads_src'))
+def copy_protected_downloads(target):
+    rsync_dir(LOCAL_SECURE_DOWNLOAD_ROOT,
+              target.SECURE_DOWNLOAD_ROOT)
+    run("chmod -R ugo+r %s" % target.SECURE_DOWNLOAD_ROOT)
 
 
 def rsync_dir(local_dir, dest_dir):
@@ -1069,6 +1070,8 @@ def initial_dev_setup():
     get_and_load_production_db()
     target = Version.current()
     get_non_vcs_sources(target)
+    if not os.path.exists(LOCAL_SECURE_DOWNLOAD_ROOT):
+        local("mkdir -p %s" % LOCAL_SECURE_DOWNLOAD_ROOT)
     _install_deps_local()
 
 
