@@ -16,7 +16,6 @@ import fabtools
 from fabric.api import env, hide, local, run, task
 from fabric.context_managers import cd, lcd, prefix, settings, shell_env
 from fabric.contrib.files import append, exists, upload_template
-from fabric.contrib.project import rsync_project
 from fabric.decorators import with_settings
 from fabric.operations import get, put
 
