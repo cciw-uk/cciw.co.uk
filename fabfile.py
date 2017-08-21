@@ -466,7 +466,7 @@ def deploy():
     deploy_system()
     restart_all()
     copy_protected_downloads()
-    setup_mailgun()
+    setup_mailgun(target)
     delete_old_versions()
 
 
@@ -627,7 +627,7 @@ def build_static(target):
         run("./manage.py collectstatic -v 0 --noinput")
 
     # This is needed for certbot/letsencrypt:
-    run("mkdir {0}/root".format(target.STATIC_ROOT))
+    run("mkdir -p {0}/root".format(target.STATIC_ROOT))
 
     # Permissions
     run("chmod -R ugo+r %s" % target.STATIC_ROOT)
@@ -659,7 +659,7 @@ def rsync_dir(local_dir, dest_dir):
     # clean first
     with settings(warn_only=True):
         local("find -L %s -name '*.pyc' | xargs rm || true" % local_dir, capture=True)
-    local("rsync -z -r -L --delete --exclude='_build' --exclude='.hg' --exclude='.git' --exclude='.svn' --delete-excluded %s/ cciw@cciw.co.uk:%s" % (local_dir, dest_dir), capture=False)
+    local("rsync -z -r -L --delete --exclude='_build' --exclude='.hg' --exclude='.git' --exclude='.svn' --delete-excluded %s/ %s@%s:%s" % (local_dir, env.proj_user, env.hosts[0], dest_dir), capture=False)
 
 
 def get_target_current_version(target):
@@ -719,7 +719,13 @@ def restart_webserver():
     """
     Gracefully restarts the webserver that is running the Django instance
     """
-    run("kill -HUP `cat /tmp/%s_uwsgi.pid`" % (env.proj_name))
+    pidfile = "/tmp/%s_uwsgi.pid" % env.proj_name
+    if exists(pidfile):
+        output = run("kill -HUP `cat %s`" % pidfile, warn_only=True)
+        if output.failed:
+            start_webserver()
+    else:
+        start_webserver()
 
 
 @task
@@ -905,14 +911,14 @@ def upload_usermedia():
     Upload locally stored usermedia (e.g. booking forms) to the live site.
     """
     target = Version.current()
-    local("rsync -z -r %s/ cciw@cciw.co.uk:%s" % (LOCAL_USERMEDIA, target.MEDIA_ROOT), capture=False)
+    local("rsync -z -r %s/ %s@%s:%s" % (LOCAL_USERMEDIA, env.proj_user, env.hosts[0], target.MEDIA_ROOT), capture=False)
     run("find %s -type f -exec chmod ugo+r {} ';'" % target.MEDIA_ROOT)
 
 
 @task
 def backup_usermedia():
     target = Version.current()
-    local("rsync -z -r  cciw@cciw.co.uk:%s/ %s" % (target.MEDIA_ROOT, LOCAL_USERMEDIA), capture=False)
+    local("rsync -z -r  %s@%s:%s/ %s" % (env.proj_user, env.hosts[0], target.MEDIA_ROOT, LOCAL_USERMEDIA), capture=False)
 
 
 # --- SSL ---
