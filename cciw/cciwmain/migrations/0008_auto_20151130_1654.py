@@ -7,6 +7,9 @@ from django.db import migrations
 def forwards(apps, schema_editor):
     Camp = apps.get_model('cciwmain.Camp')
     CampName = apps.get_model('cciwmain.CampName')
+    if Camp.objects.count() == 0:
+        # Empty DB
+        return
 
     # Need to fix up one thing - two camps have same 'previous camp'
     Camp.objects.filter(year=2007, number=5).update(previous_camp=None)
