@@ -21,36 +21,19 @@ CHECK_DEPLOY = 'manage.py check --deploy' in ' '.join(sys.argv)
 if CHECK_DEPLOY:
     LIVEBOX = True
     DEVBOX = False
-    PRODUCTION = True
-    STAGING = False
 else:
-    DEVBOX = ('webfaction' not in hostname)
+    DEVBOX = ('webfaction' not in hostname and hostname != 'cciw')
     LIVEBOX = not DEVBOX
-
-    if LIVEBOX:
-        PRODUCTION = "webapps/cciw_django/" in basedir
-        STAGING = "webapps/cciw_staging_django/" in basedir
-        assert not (PRODUCTION and STAGING)
-    else:
-        PRODUCTION = False
-        STAGING = False
 
 
 if LIVEBOX and not CHECK_DEPLOY:
-    # Don't use /tmp because on shared hosting this could leak to other users.
-    TMP_DIR = os.path.join(HOME_DIR, "tmp")  # See fabfile
-    LOG_DIR = os.path.join(HOME_DIR, "logs", "user")  # See fabfile
+    LOG_DIR = os.path.join(HOME_DIR, "logs")  # See fabfile
 else:
-    TMP_DIR = "/tmp"
     LOG_DIR = os.path.join(parentdir, "logs")
 
 
-
 if LIVEBOX:
-    if PRODUCTION:
-        SECRET_KEY = SECRETS['PRODUCTION_SECRET_KEY']
-    elif STAGING:
-        SECRET_KEY = SECRETS['STAGING_SECRET_KEY']
+    SECRET_KEY = SECRETS['PRODUCTION_SECRET_KEY']
 else:
     # We don't want any SECRET_KEY in a file in a VCS, and we also want the
     # SECRET_KEY to be to be the same as for production so that we can use
@@ -98,7 +81,7 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': 'unix:%s/memcached.sock' % HOME_DIR,
-        'KEY_PREFIX': 'cciw.co.uk' if PRODUCTION else 'staging.cciw.co.uk'
+        'KEY_PREFIX': 'cciw.co.uk',
     }
 } if LIVEBOX else {
     'default': {
@@ -281,18 +264,15 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024
 # == DATABASE ==
 
 if LIVEBOX:
-    if PRODUCTION:
-        DB_NAME = SECRETS['PRODUCTION_DB_NAME']
-        DB_USER = SECRETS['PRODUCTION_DB_USER']
-        DB_PASSWORD = SECRETS['PRODUCTION_DB_PASSWORD']
-    if STAGING:
-        DB_NAME = SECRETS['STAGING_DB_NAME']
-        DB_USER = SECRETS['STAGING_DB_USER']
-        DB_PASSWORD = SECRETS['STAGING_DB_PASSWORD']
+    DB_NAME = SECRETS['PRODUCTION_DB_NAME']
+    DB_USER = SECRETS['PRODUCTION_DB_USER']
+    DB_PASSWORD = SECRETS['PRODUCTION_DB_PASSWORD']
+    DB_PORT = SECRETS['PRODUCTION_DB_PORT']
 else:
     DB_NAME = 'cciw'
     DB_USER = 'cciw'
     DB_PASSWORD = 'foo'  # Need to sync with Vagrantfile
+    DB_PORT = '5432'
 
 
 DATABASES = {
@@ -301,6 +281,7 @@ DATABASES = {
         'NAME': DB_NAME,
         'USER': DB_USER,
         'PASSWORD': DB_PASSWORD,
+        'PORT': DB_PORT,
         'HOST': 'localhost',
         'CONN_MAX_AGE': 30,
         'ATOMIC_REQUESTS': True,
@@ -309,7 +290,7 @@ DATABASES = {
 
 # == SESSIONS ==
 
-if LIVEBOX and PRODUCTION:
+if LIVEBOX:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
@@ -363,7 +344,7 @@ TEMPLATES = [
 # use the sandbox domain.
 
 MAILGUN_API_KEY = SECRETS['MAILGUN_API_KEY']
-if LIVEBOX and PRODUCTION:
+if LIVEBOX:
     MAILGUN_DOMAIN = "cciw.co.uk"
 else:
     MAILGUN_DOMAIN = SECRETS['MAILGUN_SANDBOX_DOMAIN']
@@ -377,7 +358,7 @@ SERVER_EMAIL = "CCIW website <website@cciw.co.uk>"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 REFERENCES_EMAIL = "CCIW references <references@cciw.co.uk>"
 
-if LIVEBOX and PRODUCTION:
+if LIVEBOX:
     EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -402,12 +383,13 @@ if TESTS_RUNNING:
 
 # == SECUREDOWNLOAD ==
 
+# TODO - set this up in nginx (somehow)
 SECUREDOWNLOAD_SERVE_URL = "/file/"
 SECUREDOWNLOAD_TIMEOUT = 3600
 
 if LIVEBOX:
-    SECUREDOWNLOAD_SOURCE = "/home/cciw/webapps/cciw_protected_downloads_src"
-    SECUREDOWNLOAD_SERVE_ROOT = "/home/cciw/webapps/cciw_protected_downloads"
+    SECUREDOWNLOAD_SOURCE = "/home/cciw/webapps/secure_downloads_src"
+    SECUREDOWNLOAD_SERVE_ROOT = "/home/cciw/webapps/secure_downloads"
 else:
     SECUREDOWNLOAD_SOURCE = os.path.join(parentdir, "secure_downloads_src")
     SECUREDOWNLOAD_SERVE_ROOT = os.path.join(parentdir, "secure_downloads")
@@ -442,16 +424,8 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"
 
 # == MEDIA ==
 
-if LIVEBOX:
-    # TODO - may need MEDIA_ROOT to be different for STAGING in future
-    MEDIA_ROOT = '/home/cciw/webapps/cciw_usermedia'
-    if PRODUCTION:
-        STATIC_ROOT = '/home/cciw/webapps/cciw_static'
-    elif STAGING:
-        STATIC_ROOT = '/home/cciw/webapps/cciw_staging_static'
-else:
-    MEDIA_ROOT = os.path.join(parentdir, 'usermedia')
-    STATIC_ROOT = os.path.join(parentdir, 'static')
+MEDIA_ROOT = os.path.join(parentdir, 'usermedia')
+STATIC_ROOT = os.path.join(parentdir, 'static')
 
 MEDIA_URL = '/usermedia/'
 STATIC_URL = '/static/'
@@ -511,37 +485,33 @@ WIKI_ATTACHMENTS_EXTENSIONS = [
 WIKI_CHECK_SLUG_URL_AVAILABLE = False  # it checks it incorrectly for our situation
 
 # Mailchimp
-if LIVEBOX and PRODUCTION:
+if LIVEBOX:
     MAILCHIMP_API_KEY = SECRETS['PRODUCTION_MAILCHIMP_API_KEY']
     MAILCHIMP_NEWSLETTER_LIST_ID = SECRETS['PRODUCTION_MAILCHIMP_NEWSLETTER_LIST_ID']
     MAILCHIMP_URL_BASE = SECRETS['PRODUCTION_MAILCHIMP_URL_BASE']
 else:
-    MAILCHIMP_API_KEY = SECRETS['STAGING_MAILCHIMP_API_KEY']
-    MAILCHIMP_NEWSLETTER_LIST_ID = SECRETS['STAGING_MAILCHIMP_NEWSLETTER_LIST_ID']
-    MAILCHIMP_URL_BASE = SECRETS['STAGING_MAILCHIMP_URL_BASE']
-
+    MAILCHIMP_API_KEY = SECRETS['DEV_MAILCHIMP_API_KEY']
+    MAILCHIMP_NEWSLETTER_LIST_ID = SECRETS['DEV_MAILCHIMP_NEWSLETTER_LIST_ID']
+    MAILCHIMP_URL_BASE = SECRETS['DEV_MAILCHIMP_URL_BASE']
 
 # PayPal
-if LIVEBOX and PRODUCTION:
+if LIVEBOX:
     PAYPAL_TEST = False
     PAYPAL_RECEIVER_EMAIL = SECRETS['PRODUCTION_PAYPAL_RECEIVER_EMAIL']
 else:
     PAYPAL_TEST = True
-    PAYPAL_RECEIVER_EMAIL = SECRETS['STAGING_PAYPAL_RECEIVER_EMAIL']
+    PAYPAL_RECEIVER_EMAIL = SECRETS['DEV_PAYPAL_RECEIVER_EMAIL']
 
 PAYPAL_IMAGE = "https://www.paypalobjects.com/en_US/GB/i/btn/btn_buynowCC_LG.gif"
 
 # Raven
 if LIVEBOX:
-    if PRODUCTION:
-        RAVEN_CONFIG = SECRETS['PRODUCTION_RAVEN_CONFIG']
-    elif STAGING:
-        RAVEN_CONFIG = SECRETS['STAGING_RAVEN_CONFIG']
+    RAVEN_CONFIG = SECRETS['PRODUCTION_RAVEN_CONFIG']
 else:
     RAVEN_CONFIG = {}
 
 # Google analytics
-if LIVEBOX and PRODUCTION:
+if LIVEBOX:
     GOOGLE_ANALYTICS_ACCOUNT = SECRETS['GOOGLE_ANALYTICS_ACCOUNT']
 else:
     GOOGLE_ANALYTICS_ACCOUNT = ''

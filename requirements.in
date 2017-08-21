@@ -13,9 +13,9 @@ django-mailer==1.2.2
 django-paypal==0.3.6
 ezodf2==0.2.10
 fabric3==1.13.1.post1
+fabtools3==0.19.0
 frozendict==1.0
 furl==1.0.0
-gunicorn==19.6.0
 jsonfield==2.0.1
 nodeenv==1.0.0
 numpy==1.11.1
@@ -31,6 +31,7 @@ raven==5.32.0
 rcssmin==1.0.6
 requests==2.13.0
 rjsmin==1.0.12
+uwsgi==2.0.15
 wiki==0.3b1
 xlrd==1.0.0
 xlwt==1.1.2

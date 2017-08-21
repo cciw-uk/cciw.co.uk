@@ -1,0 +1,17 @@
+PYTHON=%(VENV_ROOT)s/bin/python
+DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
+
+
+*       * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE send_mail 2>> ~/.django-mailer-cron.log
+5,35    * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE fix_mailing_lock
+0,20,40 * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE retry_deferred 2>> ~/.django-mailer-deferred-cron.log
+15      1 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE clear_securedownload_links
+0       2 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE cleanup
+0       7 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE payment_reminder_emails
+
+# expire_bookings must be run only once an hour
+30      * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE expire_bookings
+
+
+# Recycle webserver instance once a day
+30      2 * * *  root          supervisorctl restart %(proj_name)s_uwsgi

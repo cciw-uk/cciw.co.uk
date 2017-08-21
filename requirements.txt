@@ -44,7 +44,6 @@ first==2.0.1              # via pip-tools
 flake8==3.3.0
 frozendict==1.0
 furl==1.0.0
-gunicorn==19.6.0
 html5lib==0.9999999       # via bleach
 hypothesis==3.9.0
 idna==2.5                 # via cryptography
@@ -93,12 +92,13 @@ six==1.10.0               # via bcrypt, bleach, cryptography, django-anymail, dj
 sorl-thumbnail==12.3      # via wiki
 sqlparse==0.2.3           # via django-debug-toolbar
 traitlets==4.3.2          # via ipython
+uwsgi==2.0.15
 vcrpy==1.10.2
 waitress==1.0.2           # via webtest
 wcwidth==0.1.7            # via prompt-toolkit
 webob==1.7.3              # via webtest
 webtest==2.0.27
 wiki==0.3b1
-wrapt==1.10.10            # via vcrpy
+wrapt==1.10.11            # via vcrpy
 xlrd==1.0.0
 xlwt==1.1.2
