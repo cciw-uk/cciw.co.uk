@@ -490,6 +490,8 @@ def skip_code_quality_checks():
 def check_branch():
     if local("hg id -b", capture=True) != "default":
         raise AssertionError("Branch must be 'default' for deploying")
+    if "master" not in local("hg id -B", capture=True).split(" "):
+        raise AssertionError("Bookmark must be 'master' for deploying")
     if local("hg st", capture=True).strip() != "":
         x = input("Project dir is not clean, merge to live may fail. Continue anyway? [y/n] ")
         if x != "y":
@@ -531,7 +533,7 @@ def push_sources(target):
     target_src_root = target.SRC_ROOT
     previous_src_root = previous_target.SRC_ROOT
 
-    if not exists(target.SRC_ROOT):
+    if not exists(target_src_root):
         previous_target = get_target_current_version(target)
         previous_src_root = previous_target.SRC_ROOT
         if exists(previous_src_root) and exists(os.path.join(previous_src_root, '.hg')):
@@ -542,8 +544,10 @@ def push_sources(target):
                                     target_src_root))
         else:
             run("mkdir -p %s" % target_src_root)
-            with cd(target_src_root):
-                run("hg init")
+
+    if not exists(os.path.join(target_src_root, '.hg')):
+        with cd(target_src_root):
+            run("hg init")
 
     local("hg push -f ssh://%(user)s@%(host)s/%(path)s || true" %
           dict(host=env.host,
