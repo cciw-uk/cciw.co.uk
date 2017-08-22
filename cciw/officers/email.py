@@ -15,7 +15,6 @@ from cciw.mail import X_CCIW_ACTION, X_CCIW_CAMP
 from cciw.officers.applications import (application_rtf_filename, application_to_rtf,
                                         application_to_text, camps_for_application)
 from cciw.officers.email_utils import formatted_email, send_mail_with_attachments
-from cciw.officers.references import reference_to_text
 
 logger = logging.getLogger(__name__)
 
@@ -203,13 +202,15 @@ def send_leaders_reference_email(reference):
     app = referee.application
     officer = app.officer
 
-    refform_text = reference_to_text(reference)
+    view_reference_url = "https://%s%s" % (common.get_current_domain(),
+                                           reverse('cciw-officers-view_reference',
+                                                   kwargs=dict(reference_id=reference.id)))
     subject = "[CCIW] Reference form for {0} from {1}".format(officer.full_name, referee.name)
     body = ("""The following reference form has been submitted via the
 CCIW website for officer {0}.
 
 {1}
-""".format(officer.full_name, refform_text)
+""".format(officer.full_name, view_reference_url)
     )
 
     leader_email_groups = admin_emails_for_application(app)

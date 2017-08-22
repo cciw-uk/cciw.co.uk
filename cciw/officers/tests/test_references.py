@@ -269,6 +269,11 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
         # Check the application has been updated with amended referee name
         self.assertEqual(app.referees[0].name, "Referee3 Name")
 
+        self.assertEqual(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertIn("The following reference form has been submitted", m.body)
+        self.assertIn("https://www.cciw.co.uk/officers/leaders/reference/", m.body)
+
     def test_reference_update(self):
         """
         Check that if we are updating a reference that previous data appears

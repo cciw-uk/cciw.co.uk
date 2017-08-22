@@ -1,7 +1,6 @@
 """
-Utilities for dealing with Reference and Reference
+Utilities for dealing with Reference and ReferenceForm
 """
-from django import template
 
 
 def first_letter_cap(s):
@@ -16,15 +15,3 @@ def reference_present_val(v):
         return "Yes"
     else:
         return v
-
-
-_REFERENCE_FORM_TEXT_TEMPLATE = """{% load reference_utils %}{% autoescape off %}{% for name, val in info %}
-{{ name|wordwrap:65 }}
-
-{{ val|wordwrap:62|indent:3 }}
-{% endfor %}{% endautoescape %}"""
-
-
-def reference_to_text(reference):
-    c = template.Context({'info': reference.reference_display_fields()})
-    return template.Template(_REFERENCE_FORM_TEXT_TEMPLATE).render(c)
