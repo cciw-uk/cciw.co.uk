@@ -1,5 +1,4 @@
 import logging
-from datetime import timedelta
 from email.mime.base import MIMEBase
 
 from django.conf import settings
@@ -13,7 +12,7 @@ from django.utils.http import urlquote
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 from cciw.mail import X_CCIW_ACTION, X_CCIW_CAMP
-from cciw.officers.applications import (application_difference, application_rtf_filename, application_to_rtf,
+from cciw.officers.applications import (application_rtf_filename, application_to_rtf,
                                         application_to_text, camps_for_application)
 from cciw.officers.email_utils import formatted_email, send_mail_with_attachments
 from cciw.officers.references import reference_to_text
@@ -51,45 +50,28 @@ def send_application_emails(request, application):
 
     # Email to the leaders:
 
-    application_text = application_to_text(application)
-    application_rtf = application_to_rtf(application)
-    rtf_attachment = (application_rtf_filename(application), application_rtf, 'text/rtf')
-
     # Collect emails to send to
     leader_email_groups = admin_emails_for_application(application)
     for camp, leader_emails in leader_email_groups:
-        # Did the officer submit one last year?
-        previous_camp = camp.previous_camp
-        application_diff = None
-        if previous_camp is not None:
-            officer = application.officer
-            previous_app = None
-            if previous_camp.invitations.filter(officer=officer).exists():
-                try:
-                    previous_app = officer.applications.filter(date_saved__lte=previous_camp.start_date,
-                                                               date_saved__gte=previous_camp.start_date + timedelta(-365),
-                                                               finished=True)[0]
-                except IndexError:
-                    pass
-            if previous_app is not None:
-                application_diff = ("differences_from_last_year.html",
-                                    application_difference(previous_app, application),
-                                    "text/html")
 
         if len(leader_emails) > 0:
-            send_leader_email(leader_emails, application, application_text, rtf_attachment,
-                              application_diff)
+            send_leader_email(leader_emails, application)
         messages.info(request, "The completed application form has been sent to the leaders (%s) via email." %
                       camp.leaders_formatted)
 
     if len(leader_email_groups) == 0:
-        send_leader_email([settings.SECRETARY_EMAIL], application, application_text, rtf_attachment, None)
+        send_leader_email([settings.SECRETARY_EMAIL], application)
         messages.info(request,
                       "The application form has been sent to the CCIW secretary, "
                       "because you are not on any camp's officer list this year.")
 
-    # If an admin user corrected an application, we don't send the user a copy
+    # If this is someone editing their own application, we send them a copy, but
+    # not otherwise.
     if request.user == application.officer:
+        application_text = application_to_text(application)
+        application_rtf = application_to_rtf(application)
+        rtf_attachment = (application_rtf_filename(application), application_rtf, 'text/rtf')
+
         send_officer_email(application.officer, application, application_text, rtf_attachment)
         messages.info(request, "A copy of the application form has been sent to you via email.")
 
@@ -114,28 +96,20 @@ to CCIW. It is also attached to this email as an RTF file.
                                    [user_email], attachments=[rtf_attachment])
 
 
-def send_leader_email(leader_emails, application, application_text, rtf_attachment,
-                      application_diff):
+def send_leader_email(leader_emails, application):
     subject = "[CCIW] Application form from %s" % application.full_name
-    body = ("""The following application form has been submitted via the
-CCIW website.  It is also attached to this email as an RTF file.
+    url = 'https://%(domain)s%(path)s' % dict(
+        domain=common.get_current_domain(),
+        path=reverse('cciw-officers-view_application',
+                     kwargs=dict(application_id=application.id)))
+    body = """The following application form has been submitted via the
+CCIW website:
 
-""")
-    if application_diff is not None:
-        body += ("""The second attachment shows the differences between this year's
-application form and last year's - pink indicates information that has
-been removed, green indicates new information.
+%(url)s
 
-""")
+""" % dict(url=url)
 
-    body += application_text
-
-    attachments = [rtf_attachment]
-    if application_diff is not None:
-        attachments.append(application_diff)
-
-    send_mail_with_attachments(subject, body, settings.SERVER_EMAIL,
-                               leader_emails, attachments=attachments)
+    send_mail(subject, body, settings.SERVER_EMAIL, leader_emails)
 
 
 def make_update_email_url(application):

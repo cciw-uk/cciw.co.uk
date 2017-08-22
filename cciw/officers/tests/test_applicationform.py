@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import date, timedelta
+from datetime import date
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -8,9 +8,8 @@ from django.urls import reverse
 
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
-from cciw.officers.applications import application_difference
 from cciw.officers.models import Application
-from cciw.officers.tests.base import (LEADER, OFFICER, CurrentCampsMixin, OfficersSetupMixin,
+from cciw.officers.tests.base import (LEADER, OFFICER, OFFICER_EMAIL, CurrentCampsMixin, OfficersSetupMixin,
                                       RequireQualificationTypesMixin)
 from cciw.utils.tests.webtest import WebTestBase
 
@@ -329,8 +328,14 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         # Email should be sent when application is fully saved.
         for m in emails:
             for txt in ['My Referee 1', 'First Aid']:
-                self.assertIn(txt, m.body)
-                self.assertIn(txt, m.attachments[0][1])
+                # One to officer should contain attachments, one to leader must
+                # not.
+                if any(OFFICER_EMAIL in a for a in m.to):
+                    self.assertIn(txt, m.body)
+                    self.assertIn(txt, m.attachments[0][1])
+                else:
+                    self.assertNotIn(txt, m.body)
+                    self.assertEqual(len(m.attachments), 0)
 
     def test_finish_complete_no_officer_list(self):
         u = self._get_user(OFFICER)
@@ -404,56 +409,6 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self.assertTextPresent("You've already submitted")
         u = self._get_user(OFFICER)
         self.assertEqual(u.applications.exclude(date_saved__isnull=True).count(), 1)
-
-    def test_application_differences_email(self):
-        """
-        Tests the 'application difference' email that is sent when an
-        application form is submitted
-        """
-        u = self._get_user(OFFICER)
-
-        # Create one application
-        self.test_finish_complete()
-
-        # Empty outbox
-        mail.outbox[:] = []
-
-        # Change the date on the existing app, so that we can
-        # create a new one
-        app0 = u.applications.all()[0]
-        app0.date_saved = date.today() + timedelta(-365)
-        app0.save()
-
-        # Create another application
-        self._start_new()
-        self._finish_application_form()
-        # Now change some values
-        self.fill_by_name({'full_name': 'New Full Name'})
-        self._save()
-        self.assertNamedUrl("cciw-officers-applications")
-
-        emails = self._get_application_form_emails()
-        self.assertEqual(len(emails), 2)
-        leader_email = [e for e in emails
-                        if e.subject == '[CCIW] Application form from New Full Name'][0]
-        msg = leader_email.message()
-
-        # Email will have 3 parts - text, RTF, and differences from last year
-        # as an HTML file.
-        attachments = msg.get_payload()
-        self.assertEqual(len(attachments), 3)
-
-        # Testing the actual content is hard from this point, due to email
-        # formatting, so we do it manually:
-
-        apps = u.applications.order_by('date_saved')
-        assert len(apps) == 2
-
-        application_diff = application_difference(apps[0], apps[1])
-        self.assertTrue('>new full name</ins>'
-                        in application_diff.lower())
-        self.assertTrue('>x</del>'
-                        in application_diff.lower())
 
     def test_save_partial(self):
         self.officer_login(OFFICER)

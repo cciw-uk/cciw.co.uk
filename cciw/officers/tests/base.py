@@ -16,6 +16,7 @@ User = get_user_model()
 
 OFFICER_USERNAME = 'joebloggs'
 OFFICER_PASSWORD = 'test_normaluser_password'
+OFFICER_EMAIL = "joebloggs@somewhere.com"
 OFFICER = (OFFICER_USERNAME, OFFICER_PASSWORD)
 
 
@@ -75,7 +76,7 @@ class SimpleOfficerSetupMixin(BasicSetupMixin):
                               is_active=True,
                               is_superuser=False,
                               is_staff=True,
-                              email="joebloggs@somewhere.com",
+                              email=OFFICER_EMAIL,
                               permissions=[])
         self.officer_user.set_password(OFFICER_PASSWORD)
         self.officer_user.save()

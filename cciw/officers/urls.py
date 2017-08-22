@@ -7,7 +7,8 @@ urlpatterns = [
 
     # Application forms
     url(r'^applications/$', views.applications, name="cciw-officers-applications"),
-    url(r'^view-application/$', views.view_application, name="cciw-officers-view_application"),
+    url(r'^get-application/$', views.get_application, name="cciw-officers-get_application"),
+    url(r'^view-application/(?P<application_id>\d*)/$', views.view_application, name="cciw-officers-view_application"),
     url(r'^correct-email/$', views.correct_email, name="cciw-officers-correct_email"),
     url(r'^correct-application/$', views.correct_application, name="cciw-officers-correct_application"),
 

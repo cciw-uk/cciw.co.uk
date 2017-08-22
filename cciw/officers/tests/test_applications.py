@@ -120,6 +120,14 @@ class PersonalApplicationView(RequireApplicationsMixin, WebTestBase):
         self.assertEqual(self.last_response.content_type, 'text/rtf')
         self.assertIn(b"\cell Joe Winston Bloggs", self.last_response.content)
 
+    def test_view_html(self):
+        self.officer_login(OFFICER)
+        self.get_url('cciw-officers-applications')
+        self.fill({'#application': self.officer1.applications.all()[0].id,
+                   '#format': 'html'})
+        self.submit()
+        self.assertTextPresent("Joe Winston Bloggs")
+
     def test_view_email(self):
         self.officer_login(OFFICER)
         self.get_url('cciw-officers-applications')

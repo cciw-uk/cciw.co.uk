@@ -18,7 +18,6 @@ cryptography==2.0.2       # via paramiko
 cssselect==1.0.1          # via pyquery
 datedelta==1.2
 decorator==4.1.2          # via ipython, traitlets
-diff-match-patch==20121119
 django-anymail==0.10
 django-appconf==1.0.2     # via django-compressor
 django-autocomplete-light==3.2.1

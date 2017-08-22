@@ -128,38 +128,3 @@ def _application_filename_stem(app):
     else:
         submitted = '_' + app.date_saved.strftime('%Y-%m-%d')
     return 'Application_%s%s' % (app.officer.username, submitted)
-
-
-def application_difference(app1, app2):
-    from diff_match_patch import diff_match_patch
-    differ = diff_match_patch()
-    diffs = differ.diff_main(application_to_text(app1),
-                             application_to_text(app2))
-    differ.diff_cleanupSemantic(diffs)
-    html = differ.diff_prettyHtml(diffs)
-    # It looks better without the '&para;'
-    html = html.replace('&para;', '')
-
-    # Use custom colours etc.
-    html = html.replace('background:#E6FFE6;', '')
-    html = html.replace('background:#FFE6E6;', '')
-    html = html.replace(' STYLE=""', '')
-
-    return """<html>
-<style>
-body {
-    font-family:monospace;
-}
-
-ins {
-    background: #51FF17;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-del {
-   background: #FF6989;
-   text-decoration: strike-through;
-}
-</style>
-<body><pre>%s</pre></body></html>""" % html

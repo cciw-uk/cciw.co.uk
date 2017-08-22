@@ -74,7 +74,7 @@
     <h2>Download</h2>
     <p>Download applications that you have already submitted.</p>
 
-    <form action="{% url 'cciw-officers-view_application' %}" method="post">{% csrf_token %}
+    <form action="{% url 'cciw-officers-get_application' %}" method="post">{% csrf_token %}
       <div class="aligned">
         <div class="form-row">
           <label for="application">Choose application</label>
@@ -87,9 +87,10 @@
         <div class="form-row">
           <label for="format">Format</label>
           <select name="format" id="format">
+            <option value="html">View as web page</option>
             <option value="txt">Plain text</option>
             <option value="rtf">Rich Text Format</option>
-            <option value="send">Send me both in an email</option>
+            <option value="send">Send me plain text and RTF in an email</option>
           </select>
         </div>
         <div class="form-row">

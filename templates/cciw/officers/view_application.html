@@ -1,0 +1,290 @@
+{% extends "cciw/officers/base_limited_width.html" %}
+
+{% block title %}Application from {{ officer.full_name }} | CCIW Officers {% endblock %}
+
+{% block content %}
+  <h1>Application from {{ officer.full_name }}</h1>
+
+
+<h2>Personal info</h2>
+
+<table class="application-view">
+  <tr>
+    <th>Name:</th>
+    <td>{{ application.full_name }}</td>
+  </tr>
+  <tr>
+    <th>Maiden name:</th>
+    <td>{{ application.full_maiden_name }}</td>
+  </tr>
+  <tr>
+    <th>Date of birth:</th>
+    <td>{{ application.birth_date|date:"Y-m-d" }}</td>
+  </tr>
+  <tr>
+    <th>Place of birth:</th>
+    <td>{{ application.birth_place }}</td>
+  </tr>
+  <tr>
+    <th>Address:</th>
+    <td>
+      {{ application.address_firstline }}<br>
+      {{ application.address_town }}<br>
+      {{ application.address_county }}<br>
+      {{ application.address_postcode }}<br>
+      {{ application.address_country }}<br>
+    </td>
+  </tr>
+  <tr>
+    <th>Tel:</th>
+    <td>{{ application.address_tel }}</td>
+  </tr>
+  <tr>
+    <th>Mobile:</th>
+    <td>{{ application.address_mobile }}</td>
+  </tr>
+  <tr>
+    <th>Email:</th>
+    <td>{{ application.address_email }}</td>
+  </tr>
+  <tr>
+    <th>At this address since:</th>
+    <td>{{ application.address_since }}</td>
+  </tr>
+
+</table>
+
+<h2>Statements</h2>
+
+<h3>Christian experience:</h3>
+
+<div class="application-statement">
+  {{ application.christian_experience|linebreaksbr }}
+</div>
+
+
+<h3>Youth work experience:</h3>
+
+<div class="application-statement">
+  {{ application.youth_experience|linebreaksbr }}
+</div>
+
+<h3>Have you ever had an offer to work with children/young people declined?</h3>
+
+<div class="application-statement">
+  {{ application.youth_work_declined|yesno:"YES,NO,-" }}
+</div>
+
+{% if application.youth_work_declined_details %}
+  <p>Details:</p>
+
+  <div class="application-statement">
+    {{ application.youth_work_declined_details|linebreaksbr }}
+  </div>
+{% endif %}
+
+<h2>Qualifications</h2>
+{% with application.qualifications.all as qualifications %}
+  {% if qualifications %}
+    <table>
+      {% for q in qualifications %}
+        <tr>
+          <td>{{ q.type }}</td>
+          <td>{{ q.date_issued|date:"Y-m-d" }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    None entered
+  {% endif %}
+{% endwith %}
+
+<h2>Illnesses</h2>
+
+<h3>Do you suffer or have you suffered from any illness which may directly affect your work with children/young people?</h3>
+
+<div class="application-statement">
+  {{ application.relevant_illness|yesno:"YES,NO,-" }}
+</div>
+
+{% if application.illness_details %}
+  <p>Details:</p>
+
+  <div class="application-statement">
+    {{ application.illness_details|linebreaksbr }}
+  </div>
+{% endif %}
+
+<h2>Employment history</h2>
+
+{% if application.employer1_name %}
+  <p>Employer 1</p>
+
+  <table>
+    <tr>
+      <th>Name:</th>
+      <td>{{ application.employer1_name }}</td>
+    </tr>
+    <tr>
+      <th>From:</th>
+      <td>{{ application.employer1_from }}</td>
+    </tr>
+    <tr>
+      <th>Until:</th>
+      <td>{{ application.employer1_to }}</td>
+    </tr>
+    <tr>
+      <th>Job description:</th>
+      <td>{{ application.employer1_job }}</td>
+    </tr>
+    <tr>
+      <th>Reason for leaving:</th>
+      <td>{{ application.employer1_leaving|linebreaksbr }}</td>
+    </tr>
+  </table>
+{% endif %}
+
+{% if application.employer2_name %}
+  <p>Employer 2</p>
+
+  <table>
+    <tr>
+      <th>Name:</th>
+      <td>{{ application.employer2_name }}</td>
+    </tr>
+    <tr>
+      <th>From:</th>
+      <td>{{ application.employer2_from }}</td>
+    </tr>
+    <tr>
+      <th>Until:</th>
+      <td>{{ application.employer2_to }}</td>
+    </tr>
+    <tr>
+      <th>Job description:</th>
+      <td>{{ application.employer2_job }}</td>
+    </tr>
+    <tr>
+      <th>Reason for leaving:</th>
+      <td>{{ application.employer2_leaving|linebreaksbr }}</td>
+    </tr>
+  </table>
+{% endif %}
+
+<h2>References</h2>
+
+<table>
+  <tr>
+    <th>Referee 1:</th>
+    <td>{{ application.referees.0.name }}</td>
+  </tr>
+  <tr>
+    <th>Address:</th>
+    <td>{{ application.referees.0.address }}</td>
+  </tr>
+  <tr>
+    <th>Tel:</th>
+    <td>{{ application.referees.0.tel }}</td>
+  </tr>
+  <tr>
+    <th>Mobile:</th>
+    <td>{{ application.referees.0.mobile }}</td>
+  </tr>
+  <tr>
+    <th>Email:</th>
+    <td>{{ application.referees.0.email }}</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>Referee 2:</th>
+    <td>{{ application.referees.1.name }}</td>
+  </tr>
+  <tr>
+    <th>Address:</th>
+    <td>{{ application.referees.1.address }}</td>
+  </tr>
+  <tr>
+    <th>Tel:</th>
+    <td>{{ application.referees.1.tel }}</td>
+  </tr>
+  <tr>
+    <th>Mobile:</th>
+    <td>{{ application.referees.1.mobile }}</td>
+  </tr>
+  <tr>
+    <th>Email:</th>
+    <td>{{ application.referees.1.email }}</td>
+  </tr>
+</table>
+
+<h2>Declarations</h2>
+
+<h3>Have you ever been charged with or convicted of a criminal offence or are the subject of criminal proceedings?</h3>
+
+<div class="application-statement">
+  {{ application.crime_declaration|yesno:"YES,NO,-" }}
+</div>
+
+{% if application.crime_details %}
+  <p>Details:</p>
+  <div class="application-statement">
+    {{ application.crime_details|linebreaksbr }}
+  </div>
+{% endif %}
+
+<h3>Have you ever been involved in court proceedings concerning a child for whom you have parental responsibility?</h3>
+
+<div class="application-statement">
+  {{ application.court_declaration|yesno:"YES,NO,-" }}
+</div>
+
+{% if application.court_details %}
+  <p>Details:</p>
+  <div class="application-statement">
+    {{ application.court_details|linebreaksbr }}
+  </div>
+{% endif %}
+
+<h3>Has there ever been any cause for concern regarding your conduct with children/young people?</h3>
+
+<div class="application-statement">
+  {{ application.concern_declaration|yesno:"YES,NO,-" }}
+</div>
+
+{% if application.concern_details %}
+  <p>Details</p>
+  <div class="application-statement">
+    {{ application.concern_details|linebreaksbr }}
+  </div>
+{% endif %}
+
+<h3>To your knowledge have you ever had any allegation made against you concerning children/young people which has been reported to and investigated by Social Services and/or the Police?</h3>
+
+<div class="application-statement">
+  {{ application.allegation_declaration|yesno:"YES,NO,-" }}
+</div>
+
+<h2>DBS</h2>
+<table>
+  <tr>
+    <th>DBS number:</th>
+    <td>
+      {% if application.dbs_number %}
+        {{ application.dbs_number }}
+      {% else %}
+        -
+      {% endif %}
+    </td>
+  </tr>
+</table>
+
+<h3>Do you consent to the obtaining of a Disclosure and Barring Service check on yourself?</h3>
+
+<div class="application-statement">
+  {{ application.dbs_check_consent|yesno:"YES,NO,-" }}
+</div>
+
+
+{% endblock %}

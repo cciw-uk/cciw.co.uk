@@ -229,14 +229,14 @@ def applications(request):
 
 
 @staff_member_required
-def view_application(request):
+def get_application(request):
     try:
         application_id = int(request.POST['application'])
     except:
         raise Http404
 
     try:
-        app = Application.objects.get(id=application_id)
+        app = request.user.applications.get(id=application_id)
     except Application.DoesNotExist:
         raise Http404
 
@@ -248,7 +248,10 @@ def view_application(request):
     # In the latter case, request.user != app.officer
 
     format = request.POST.get('format', '')
-    if format == 'txt':
+    if format == 'html':
+        return HttpResponseRedirect(reverse("cciw-officers-view_application",
+                                            kwargs=dict(application_id=application_id)))
+    elif format == 'txt':
         resp = HttpResponse(application_to_text(app), content_type="text/plain")
         resp['Content-Disposition'] = 'attachment; filename=%s;' % \
                                       application_txt_filename(app)
@@ -285,6 +288,31 @@ Please find attached a copy of the application you requested
         raise Http404
 
     return resp
+
+
+@staff_member_required
+def view_application(request, application_id=None):
+    if 'application_id' in request.GET:
+        return HttpResponseRedirect(reverse('cciw-officers-view_application',
+                                            kwargs=dict(application_id=request.GET['application_id'])))
+
+    try:
+        application = Application.objects.get(id=int(application_id))
+    except Application.DoesNotExist:
+        raise Http404
+
+    if application.officer_id != request.user.id and \
+            not request.user.is_camp_admin:
+        raise PermissionDenied
+
+    # NB, this is is called by both normal users and leaders.
+    # In the latter case, request.user != app.officer
+
+    return render(request, "cciw/officers/view_application.html",
+                  {'application': application,
+                   'officer': application.officer,
+                   'is_popup': True,
+                   })
 
 
 def _thisyears_camp_for_leader(user):
