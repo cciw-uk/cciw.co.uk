@@ -241,7 +241,7 @@ def get_application(request):
         raise Http404
 
     if app.officer_id != request.user.id and \
-            not request.user.is_camp_admin:
+            not request.user.can_manage_application_forms:
         raise PermissionDenied
 
     # NB, this is is called by both normal users and leaders.
@@ -302,7 +302,7 @@ def view_application(request, application_id=None):
         raise Http404
 
     if application.officer_id != request.user.id and \
-            not request.user.is_camp_admin:
+            not request.user.can_manage_application_forms:
         raise PermissionDenied
 
     # NB, this is is called by both normal users and leaders.
