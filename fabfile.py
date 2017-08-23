@@ -654,6 +654,7 @@ def update_database(target):
         else:
             args = "--fake-initial"
         run("./manage.py migrate --noinput %s" % args)
+        run("./manage.py setup_auth_groups")
 
 
 def setup_mailgun(target):
