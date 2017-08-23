@@ -60,8 +60,12 @@ following points must be observed:
   whether a ``User`` account is a leader of a current camp, rather than by
   having to maintain a group “leaders of current camps”.
 
+  (Due to ``Person`` records sometimes being a married couple, the relationship
+  with ``User`` is not a one-to-one, but many-to-many).
+
 * If dynamic roles are not possible, we can create groups for additional
-  permissions. We don't add individual permissions to User accounts.
+  permissions. We don't add individual permissions to User accounts. We do
+  not manually add permissions to groups either, but edit `</config/groups.yaml>`_.
 
 * Privileged access must be limited in time - for example, being a leader one
   year does not mean a person should have higher access in subsequent years.
