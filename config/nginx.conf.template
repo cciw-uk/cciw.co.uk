@@ -19,10 +19,8 @@ server {
     keepalive_timeout    15;
     error_log /home/%(proj_user)s/logs/%(proj_name)s_error_nginx.log info;
 
-    ssl_certificate      /etc/nginx/ssl/www.cciw.co.uk.fullchain.pem;
-    ssl_certificate_key  /etc/nginx/ssl/www.cciw.co.uk.privkey.pem;
-    #ssl_certificate      /etc/letsencrypt/live/www.cciw.co.uk/fullchain.pem;
-    #ssl_certificate_key  /etc/letsencrypt/live/www.cciw.co.uk/privkey.pem;
+    ssl_certificate      /etc/letsencrypt/live/www.cciw.co.uk/fullchain.pem;
+    ssl_certificate_key  /etc/letsencrypt/live/www.cciw.co.uk/privkey.pem;
 
     # Based on 'intermediate' compatibility 2017-08-21 from:
     # https://wiki.mozilla.org/Security/Server_Side_TLS#Recommended_configurations

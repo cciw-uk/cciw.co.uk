@@ -14,3 +14,9 @@ DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 
 # Recycle webserver instance once a day
 30      2 * * *  root          supervisorctl restart %(proj_name)s_uwsgi
+
+
+# Renew letsencrypt
+51         4    * * *  root          letsencrypt renew --agree-tos
+# nginx won't pick up the new certificate created above until we restart it:
+57         4    * * *  root          service nginx restart
