@@ -16,6 +16,10 @@ DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 30      2 * * *  root          supervisorctl restart %(proj_name)s_uwsgi
 
 
+# Backups once a day
+35      6 * * * %(proj_user)s  $PYTHON %(SRC_ROOT)s/backup_s3.py
+
+
 # Renew letsencrypt
 51         4    * * *  root          letsencrypt renew --agree-tos
 # nginx won't pick up the new certificate created above until we restart it:
