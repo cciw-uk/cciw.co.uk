@@ -283,7 +283,6 @@ DATABASES = {
         'PORT': DB_PORT,
         'HOST': 'localhost',
         'CONN_MAX_AGE': 30,
-        'ATOMIC_REQUESTS': True,
     }
 }
 
