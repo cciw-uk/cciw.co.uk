@@ -365,7 +365,7 @@ else:
 # django-mailer - used for some things where we need a queue. It is not used as
 # default backend via EMAIL_BACKEND, but by calling mailer.send_mail explicitly,
 # usally aliased as queued_mail.send_mail. We also can test this is being used
-# e.g. in BookingEmailChecksMixin
+# e.g. in TestBaseMixin
 MAILER_EMAIL_BACKEND = EMAIL_BACKEND
 
 ANYMAIL = {
@@ -373,7 +373,7 @@ ANYMAIL = {
 }
 
 if TESTS_RUNNING:
-    # This doesn't seem to take effect, see BookingEmailChecksMixin
+    # This doesn't seem to take effect, see TestBaseMixin
     EMAIL_BACKEND = "cciw.mail.tests.TestMailBackend"
     MAILER_EMAIL_BACKEND = EMAIL_BACKEND
 

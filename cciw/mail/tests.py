@@ -372,7 +372,8 @@ class TestMailBackend(LocMemEmailBackend):
 
             return super(TestMailBackend, self).send_messages(messages)
         else:
-            raise AssertionError("Email should not be sent")
+            raise AssertionError("Normal email should not be sent within transactions, "
+                                 "use queued_mail instead")
 
 
 MSG_DEBUG_LIST = emailify("""

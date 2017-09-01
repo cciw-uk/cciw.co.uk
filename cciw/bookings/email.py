@@ -188,7 +188,7 @@ def send_booking_approved_mail(booking):
     }
     body = loader.render_to_string('cciw/bookings/place_approved_email.txt', c)
     subject = "[CCIW] Booking - approved"
-    mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+    queued_mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
     return True
 
@@ -204,7 +204,7 @@ def send_booking_confirmed_mail(booking):
     }
     body = loader.render_to_string('cciw/bookings/place_booked_email.txt', c)
     subject = "[CCIW] Booking - confirmed"
-    mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+    queued_mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
 
     return True
 

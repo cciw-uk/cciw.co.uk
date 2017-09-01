@@ -32,7 +32,7 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANC
                                   PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
                                   AccountTransferPayment, Booking, BookingAccount, ManualPayment, Payment,
                                   PaymentSource, Price, RefundPayment, book_basket_now, build_paypal_custom_field,
-                                  expire_bookings, process_all_payments)
+                                  expire_bookings)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
@@ -40,7 +40,7 @@ from cciw.officers.tests.base import (BOOKING_SECRETARY, BOOKING_SECRETARY_PASSW
                                       OFFICER, OfficersSetupMixin)
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
-from cciw.utils.tests.base import TestBase, disable_logging
+from cciw.utils.tests.base import AtomicChecksMixin, TestBase, disable_logging
 from cciw.utils.tests.db import refresh
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
@@ -358,30 +358,7 @@ class CreatePlaceWebMixin(CreatePlaceModelMixin, LogInMixin):
         return super(CreatePlaceWebMixin, self).fill(data2)
 
 
-class BookingEmailChecksMixin(object):
-    def setUp(self):
-        super(BookingEmailChecksMixin, self).setUp()
-
-        # This is a protection mechanism to ensure we are not sending
-        # emails from within the process_all_payments function.
-        def replacement_process_all_payments():
-            import cciw.mail.tests
-            cciw.mail.tests.disable_email_sending()
-            try:
-                return process_all_payments()
-            finally:
-                cciw.mail.tests.enable_email_sending()
-
-        process_payments_patcher = mock.patch('cciw.bookings.models.process_all_payments',
-                                              new=replacement_process_all_payments)
-        process_payments_patcher.start()
-        self.process_payments_patcher = process_payments_patcher
-
-    def tearDown(self):
-        self.process_payments_patcher.stop()
-
-
-class BookingBaseMixin(BookingEmailChecksMixin):
+class BookingBaseMixin(AtomicChecksMixin):
 
     # Constants used in 'assertTextPresent' and 'assertTextAbsent', the latter
     # being prone to false positives if a constant isn't used.
@@ -433,7 +410,7 @@ class CreateIPNMixin(object):
 # created the same way a user would.
 
 
-class TestBookingModels(BookingEmailChecksMixin, CreatePlaceModelMixin, TestBase):
+class TestBookingModels(CreatePlaceModelMixin, AtomicChecksMixin, TestBase):
 
     def get_account(self):
         if BookingAccount.objects.filter(email=self.email).count() == 0:
@@ -1255,7 +1232,8 @@ class TestEditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account
         self.fill_by_name({'state': BOOKING_APPROVED})
         self.submit('[name=_save]')
         self.assertTextPresent("An email has been sent")
-        self.assertEqual(len(mail.outbox), 1)
+        mails = send_queued_mail()
+        self.assertEqual(len(mails), 1)
 
     def test_create(self):
         self.add_prices()
@@ -1368,7 +1346,7 @@ class TestEditPaymentAdminSL(TestEditPaymentAdminBase, SeleniumBase):
 
 
 class TestAccountTransferBase(fix_autocomplete_fields(['from_account', 'to_account']),
-                              BookingEmailChecksMixin,
+                              AtomicChecksMixin,
                               OfficersSetupMixin, FuncBaseMixin):
     def test_add_account_transfer(self):
 
