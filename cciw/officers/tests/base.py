@@ -59,7 +59,7 @@ class CreateQualificationTypesMixin(object):
 
 class RequireQualificationTypesMixin(CreateQualificationTypesMixin):
     def setUp(self):
-        super(RequireQualificationTypesMixin, self).setUp()
+        super().setUp()
         self.create_qualification_types()
 
 
@@ -68,7 +68,7 @@ class SimpleOfficerSetupMixin(BasicSetupMixin):
     Sets up a single officer with minimal permissions
     """
     def setUp(self):
-        super(SimpleOfficerSetupMixin, self).setUp()
+        super().setUp()
         self.officer_user = G(User,
                               username=OFFICER_USERNAME,
                               first_name="Joe",
@@ -87,7 +87,7 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
     Sets up a suite of officers with correct permissions etc.
     """
     def setUp(self):
-        super(OfficersSetupMixin, self).setUp()
+        super().setUp()
         setup_auth_groups()
         self.leader_user = G(User,
                              username=LEADER_USERNAME,
@@ -154,7 +154,7 @@ class ExtraOfficersSetupMixin(OfficersSetupMixin):
     """
 
     def setUp(self):
-        super(ExtraOfficersSetupMixin, self).setUp()
+        super().setUp()
 
         self.officer1 = self.officer_user
         self.officer2 = G(User,
@@ -322,7 +322,7 @@ class DefaultApplicationsMixin(CreateApplicationMixin, ExtraOfficersSetupMixin):
 
 class RequireApplicationsMixin(DefaultApplicationsMixin):
     def setUp(self):
-        super(RequireApplicationsMixin, self).setUp()
+        super().setUp()
         self.create_default_applications()
 
 
@@ -345,7 +345,7 @@ class ReferenceHelperMixin(object):
 
 class CurrentCampsMixin(BasicSetupMixin):
     def setUp(self):
-        super(CurrentCampsMixin, self).setUp()
+        super().setUp()
         # Make sure second camp has end date in future, otherwise we won't be able to
         # save. Previous camp should be one year earlier i.e in the past
         self.default_camp_1.start_date = date.today() + timedelta(100 - 365)
@@ -359,7 +359,7 @@ class CurrentCampsMixin(BasicSetupMixin):
 class ReferenceSetupMixin(ReferenceHelperMixin, set_thisyear(2000), RequireApplicationsMixin):
 
     def setUp(self):
-        super(ReferenceSetupMixin, self).setUp()
+        super().setUp()
         self.reference1_1 = self.create_complete_reference(self.application1.referees[0])
         self.application1.referees[1].log_request_made(None, timezone.now())
         self.application2.referees[1].log_request_made(None, timezone.now())

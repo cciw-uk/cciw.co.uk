@@ -207,7 +207,7 @@ class CreatePricesMixin(object):
                                                                      price=Decimal('10'))[0].price
 
     def setUp(self):
-        super(CreatePricesMixin, self).setUp()
+        super().setUp()
         self.create_camps()
 
 
@@ -287,7 +287,7 @@ class PlaceDetailsMixin(CreateCampMixin):
         }
 
     def setUp(self):
-        super(PlaceDetailsMixin, self).setUp()
+        super().setUp()
         self.create_camps()
 
 
@@ -401,7 +401,7 @@ class BookingBaseMixin(BookingEmailChecksMixin):
     PRICES_NOT_SET = "prices have not been set"
 
     def setUp(self):
-        super(BookingBaseMixin, self).setUp()
+        super().setUp()
         G(HtmlChunk, name="bookingform_post_to", menu_link=None)
         G(HtmlChunk, name="booking_secretary_address", menu_link=None)
 

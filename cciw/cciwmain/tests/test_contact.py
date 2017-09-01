@@ -13,7 +13,7 @@ CONTACT_US_URL = reverse("cciw-cciwmain-contact_us")
 class ContactUsPage(BasicSetupMixin, TestBase):
 
     def setUp(self):
-        super(ContactUsPage, self).setUp()
+        super().setUp()
         HtmlChunk.objects.create(
             html="\n<p>If you have an enquiry to make to the CCIW directors,\nplease use the form below and your message will be forwarded \nto the relevant person, who will reply by email.</p>\n",
             page_title="Christian Camps in Wales",

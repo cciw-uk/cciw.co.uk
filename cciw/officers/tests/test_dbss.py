@@ -16,7 +16,7 @@ from .base import DBSOFFICER, CreateApplicationMixin, OfficersSetupMixin, Simple
 
 class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
     def setUp(self):
-        super(DbsInfoTests, self).setUp()
+        super().setUp()
         self.camp = self.default_camp_1
         self.year = self.camp.year
         self.camp.invitations.create(officer=self.officer_user)
@@ -179,7 +179,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
 
 class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixin):
     def setUp(self):
-        super(ManageDbsPageBase, self).setUp()
+        super().setUp()
         self.camp = self.default_camp_1
         self.year = self.camp.year
         self.camp.invitations.create(officer=self.officer_user)

@@ -14,6 +14,7 @@ from cciw.utils.tests.base import TestBase
 class CampModel(TestBase):
 
     def setUp(self):
+        super().setUp()
         l1 = Person.objects.create(name="John")
         l2 = Person.objects.create(name="Mary")
         l3 = Person.objects.create(name="Gregory")

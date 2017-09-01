@@ -22,7 +22,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         return reverse('admin:officers_application_change', args=[app_id])
 
     def setUp(self):
-        super(ApplicationFormView, self).setUp()
+        super().setUp()
 
         # Add some invitations:
         u = self._get_user(OFFICER)

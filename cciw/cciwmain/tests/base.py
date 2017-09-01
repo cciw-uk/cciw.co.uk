@@ -9,7 +9,7 @@ from cciw.sitecontent.models import HtmlChunk, MenuLink
 
 class BasicSetupMixin(object):
     def setUp(self):
-        super(BasicSetupMixin, self).setUp()
+        super().setUp()
         DjangoSite.objects.all().delete()
         DjangoSite.objects.create(
             domain=settings.PRODUCTION_DOMAIN,

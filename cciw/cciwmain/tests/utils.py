@@ -44,7 +44,7 @@ def set_thisyear(year):
 
     class ThisYearMixin(object):
         def setUp(self):
-            super(ThisYearMixin, self).setUp()
+            super().setUp()
             thisyear_patcher = mock.patch('cciw.cciwmain.common.get_thisyear')
             mocked = thisyear_patcher.start()
             mocked.return_value = year
@@ -52,6 +52,6 @@ def set_thisyear(year):
 
         def tearDown(self):
             self.thisyear_patcher.stop()
-            super(ThisYearMixin, self).tearDown()
+            super().tearDown()
 
     return ThisYearMixin

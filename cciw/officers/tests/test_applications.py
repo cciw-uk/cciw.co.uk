@@ -34,7 +34,7 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQual
     _edit_button = """<input type="submit" name="edit" value="Continue" """
 
     def setUp(self):
-        super(PersonalApplicationList, self).setUp()
+        super().setUp()
         self.client.login(username=OFFICER_USERNAME, password=OFFICER_PASSWORD)
         self.url = reverse('cciw-officers-applications')
         self.user = User.objects.get(username=OFFICER_USERNAME)

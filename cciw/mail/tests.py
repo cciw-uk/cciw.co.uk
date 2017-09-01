@@ -64,7 +64,7 @@ def mock_send_mail():
 class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
 
     def setUp(self):
-        super(TestMailingLists, self).setUp()
+        super().setUp()
         User.objects.filter(is_superuser=True).update(is_superuser=False)
         User.objects.create(username="admin1",
                             email="admin1@admin.com",
