@@ -23,7 +23,7 @@ from django.template.defaultfilters import wordwrap
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
-from django.views.decorators.cache import never_cache
+from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from cciw.bookings.models import Booking
@@ -291,6 +291,7 @@ Please find attached a copy of the application you requested
 
 
 @staff_member_required
+@cache_control(max_age=3600)
 def view_application(request, application_id=None):
     if 'application_id' in request.GET:
         return HttpResponseRedirect(reverse('cciw-officers-view_application',
@@ -476,6 +477,7 @@ def manage_references(request, year=None, slug=None):
 
 @staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
+@cache_control(max_age=3600)
 def officer_history(request, officer_id=None):
     officer = get_object_or_404(User.objects.filter(id=int(officer_id)))
     referee_pairs = [app.referees
@@ -710,6 +712,7 @@ def create_reference_thanks(request):
 
 @staff_member_required
 @camp_admin_required
+@cache_control(max_age=3600)
 def view_reference(request, reference_id=None):
     reference = get_object_or_404(Reference.objects.filter(id=reference_id))
     c = {}
