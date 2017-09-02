@@ -1,6 +1,3 @@
-import operator
-from functools import reduce
-
 import yaml
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group, Permission
@@ -32,11 +29,26 @@ def active_staff(user):
     return user.is_staff and user.is_active
 
 
-def user_in_groups(user, groups):
-    if len(groups) == 0:
+def user_in_groups(user, group_names):
+    if len(group_names) == 0:
         return False
-    return reduce(operator.or_,
-                  [user.groups.filter(name=g) for g in groups]).exists()
+    # We generally use this multiple times, so it is usually going to be much
+    # faster to fetch and cache all the groups once if not already fetched.
+    groups = None
+    if hasattr(user, '_prefetched_objects_cache'):
+        if 'groups' in user._prefetched_objects_cache:
+            groups = user._prefetched_objects_cache['groups']
+    else:
+        user._prefetched_objects_cache = {}
+    if groups is None:
+        groups = user.groups.all()
+        # Evaluate:
+        list(groups)
+        user._prefetched_objects_cache['groups'] = groups
+
+    return any(g.name == name
+               for name in group_names
+               for g in groups)
 
 
 def get_camp_admin_group_users():
