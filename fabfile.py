@@ -196,6 +196,9 @@ class Version(object):
             if not exists(l):
                 run("ln -s %s %s" % (dest, l))
 
+        # Perms for usermedia
+        run("find %s -type d -exec chmod ugo+rx {} ';'" % self.MEDIA_ROOT_SHARED)
+
 
 def secrets():
     return json.load(open(SECRETS_FILE))
@@ -932,7 +935,7 @@ def upload_usermedia():
     """
     target = Version.current()
     local("rsync -z -r --progress %s/ %s@%s:%s" % (LOCAL_USERMEDIA, env.proj_user, env.hosts[0], target.MEDIA_ROOT), capture=False)
-    run("find %s -type f -exec chmod ugo+r {} ';'" % target.MEDIA_ROOT)
+    run("find -L %s -type f -exec chmod ugo+r {} ';'" % target.MEDIA_ROOT)
 
 
 @task
