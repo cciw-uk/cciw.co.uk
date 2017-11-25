@@ -2031,25 +2031,31 @@ class TestPaymentReceived(BookingBaseMixin, CreatePlaceModelMixin, CreateLeaders
     def test_receive_payment_handler(self):
         # Use the actual signal handler, check the good path.
         account = self.get_account()
+        self.assertEqual(account.total_received, Decimal(0))
 
         ipn_1 = self.create_ipn(account)
         ipn_1.send_signals()
 
-        # Since payments are processed in a separate process, we cannot
-        # test that the account was updated in this process.
-        # But we can test for Payment objects
+        # Test for Payment objects
         self.assertEqual(Payment.objects.count(), 1)
         self.assertEqual(Payment.objects.all()[0].amount, ipn_1.mc_gross)
+
+        # Test account updated
+        account = self.get_account()  # refresh
+        self.assertEqual(account.total_received, ipn_1.mc_gross)
 
         # Test refund is wired up
         ipn_2 = self.create_ipn(account,
                                 parent_txn_id='1', txn_id='2',
-                                mc_gross=Decimal('-1.00'),
+                                mc_gross=-1 * ipn_1.mc_gross,
                                 payment_status='Refunded')
         ipn_2.send_signals()
 
         self.assertEqual(Payment.objects.count(), 2)
         self.assertEqual(Payment.objects.order_by('-created')[0].amount, ipn_2.mc_gross)
+
+        account = self.get_account()  # refresh
+        self.assertEqual(account.total_received, Decimal(0))
 
     def test_email_for_good_payment(self):
         # This email could be triggered by whenever BookingAccount.distribute_funds
