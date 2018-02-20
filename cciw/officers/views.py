@@ -1227,7 +1227,8 @@ def get_update_service_dbs_numbers(officers):
     # update-service registered
     update_service_dbs_numbers_from_application_form = (
         Application.objects
-        .filter(officer__in=officers)
+        .filter(officer__in=officers,
+                finished=True)
         .exclude(dbs_number="")
         .order_by('date_saved')  # most recent last
         .values_list('officer_id', 'dbs_number', 'date_saved'))
