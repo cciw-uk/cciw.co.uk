@@ -55,7 +55,8 @@ def make_content_disposition_safe_filename(filename):
     #
     # Also throw away quotes (interferes with quoting in header) and other chars
     # that are tricky for file systems.
-    value = re.sub('[\\\/:\'"]', '', filename)
+    value = filename.split('/')[-1]
+    value = re.sub('[\\\/:\'"]', '', value)
     value = unicodedata.normalize('NFKD', value)
     value = value.encode('ascii', 'ignore')
     return value.decode('utf-8')
