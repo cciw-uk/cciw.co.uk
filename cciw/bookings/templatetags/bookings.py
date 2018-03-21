@@ -30,9 +30,9 @@ def bookingbar(context):
          reverse('cciw-bookings-account_details'),
          msg_need_login),
 
-        ('overview', 'Overview', logged_in and has_account_details,
+        ('overview', 'Overview', logged_in,
          reverse('cciw-bookings-account_overview'),
-         msg_need_account_details),
+         msg_need_login),
 
         ('place',
          'Edit camper details' if current_stage == 'place' and 'edit_mode' in context
