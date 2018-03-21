@@ -183,7 +183,10 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
             {'fields': ['address_firstline', 'address_town', 'address_county',
                         'address_postcode', 'address_country', 'address_tel',
                         'address_mobile', 'address_since', 'address_email'],
-             'classes': ['wide']}
+             'classes': ['wide'],
+             'description': "We will use this information to send you information about camp, "
+                            "and for other necessary purposes such as DBS checks."
+             }
          ),
         ('Experience',
             {'fields': ['christian_experience'],
