@@ -176,6 +176,18 @@ def migrate_address(*fields):
     return MigrateAddressMixin
 
 
+MAILCHIMP_NOTICE = mark_safe("""<span class='mailchimp-notice'>We use a third party email service provider,
+MailChimp, to send you these newsletter emails. We provide MailChimp with only
+your email address. MailChimp treats information about you in accordance with
+the provisions of its <a href='https://mailchimp.com/legal/privacy/'>Privacy
+Policy</a>. MailChimp also utilizes certain technologies, such as pixels and web
+beacons, in the emails that are sent through MailChimp. These technologies allow
+MailChimp to track whether you have opened or clicked on our emails and if so,
+the date, time, and IP address associated with the open and/or click. For more
+information on MailChimp's use of these technologies, you can read their <a
+href='https://mailchimp.com/legal/cookies/'>Cookie Statement</a>.</span>""")
+
+
 class BookingAccount(migrate_address('address'), models.Model):
     # For online bookings, email is required, but not for paper. Initially for online
     # process only email is filled in, so to ensure we can edit all BookingAccounts
@@ -195,8 +207,10 @@ class BookingAccount(migrate_address('address'), models.Model):
                                              "to other parents to help organise transport",
                                              blank=True, default=False)
     email_communication = models.BooleanField("Receive all communication from CCIW by email where possible", blank=True, default=True)
+    subscribe_to_mailings = models.NullBooleanField("Receive mailings about future camps",
+                                                    default=None, blank=True)
     subscribe_to_newsletter = models.BooleanField("Subscribe to email newsletter", default=False,
-                                                  help_text=mark_safe("Your email address will be registered with a newsletter service, <a href='https://mailchimp.com/'>MailChimp</a>, if this is selected."))
+                                                  help_text=MAILCHIMP_NOTICE)
     total_received = models.DecimalField(default=Decimal('0.00'), decimal_places=2, max_digits=10)
     first_login = models.DateTimeField(null=True, blank=True)
     last_login = models.DateTimeField(null=True, blank=True)

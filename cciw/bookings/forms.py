@@ -64,6 +64,7 @@ def migrate_address_form(*fields):
 
 
 class AccountDetailsForm(migrate_address_form('address'), CciwFormMixin, forms.ModelForm):
+
     class Meta:
         model = BookingAccount
         fields = [
@@ -78,6 +79,7 @@ class AccountDetailsForm(migrate_address_form('address'), CciwFormMixin, forms.M
             'phone_number',
             'share_phone_number',
             'email_communication',
+            'subscribe_to_mailings',
             'subscribe_to_newsletter',
         ]
 
@@ -93,6 +95,8 @@ class AccountDetailsForm(migrate_address_form('address'), CciwFormMixin, forms.M
 # Need to override these to fix various details for use by user
 for f in ['name', 'address_line1', 'address_city', 'address_country', 'address_post_code']:
     AccountDetailsForm.base_fields[f].required = True
+
+AccountDetailsForm.base_fields['subscribe_to_mailings'].widget = forms.CheckboxInput()
 
 
 class FixPriceMixin(object):

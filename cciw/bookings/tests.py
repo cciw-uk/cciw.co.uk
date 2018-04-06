@@ -766,9 +766,6 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
 
     @mock.patch('cciw.bookings.mailchimp.update_newsletter_subscription')
     def test_news_letter_subscribe(self, UNS_func):
-        """
-        Test that we can complete the account details page
-        """
         self.login(add_account_details=False)
         self.get_url(self.urlname)
         self._fill_in_account_details()
@@ -777,6 +774,30 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         acc = self.get_account()
         self.assertEqual(acc.subscribe_to_newsletter, True)
         self.assertEqual(UNS_func.call_count, 1)
+
+    def test_subscribe_to_mailings_unselected(self):
+        self.login(add_account_details=False)
+        self.get_url(self.urlname)
+        acc = self.get_account()
+        #  Initial value should be NULL - we haven't asked.
+        self.assertIs(acc.subscribe_to_mailings, None)
+        self._fill_in_account_details()
+        self.submit()
+        acc = self.get_account()
+        # The form should default to 'False'. As soon as this
+        # page has been submitted, we *have* asked the question
+        # and they have said 'no' by not selecting the box.
+        self.assertIs(acc.subscribe_to_mailings, False)
+
+    def test_subscribe_to_mailings_selected(self):
+        self.login(add_account_details=False)
+        self.get_url(self.urlname)
+        acc = self.get_account()
+        self._fill_in_account_details()
+        self.fill({'#id_subscribe_to_mailings': True})
+        self.submit()
+        acc = self.get_account()
+        self.assertIs(acc.subscribe_to_mailings, True)
 
     def test_address_migration(self):
         self.login(add_account_details=True, shortcut=True)
