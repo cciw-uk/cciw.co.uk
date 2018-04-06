@@ -3,12 +3,13 @@ import datetime
 
 from dal import autocomplete
 from django import forms
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.models import Group
 from django.core import urlresolvers
 from django.forms.utils import ErrorList
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 
 from cciw.cciwmain.models import Camp
 from cciw.middleware import threadlocals
@@ -254,7 +255,7 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
         ('DBS checks',
             {'fields': ['dbs_number', 'dbs_check_consent'],
              'classes': ['wide'],
-             'description': mark_safe("""
+             'description': format_html("""
 <h3>Important information, please read:</h3>
 
 <p>You need to give permission for us to obtain a DBS check for you. Otherwise
@@ -267,6 +268,7 @@ it, please enter the certificate number below.</p>
 <p>If we need a new DBS check for you, once your application form is received a
 DBS application form will be sent to you, so please ensure your postal address
 is up to date. The DBS form must be filled in and all instructions adhered to.
+The DBS check will be carried out by {0}.
 <b>By CCIW policy, failure to do so will mean that you will be unable to come on
 camp.</b></p>
 
@@ -275,7 +277,7 @@ service</b>. This will save you and everyone else a lot of time in subsequent
 years. You will receive an e-mail from DBS with a reference number and at the
 bottom of the e-mail are details of signing up for the update service. THIS MUST
 BE DONE WITHIN 19 DAYS of the issue of the DBS. Otherwise after 3 years you will
-have to fill in another DBS.</p> """)}
+have to fill in another DBS.</p> """, settings.EXTERNAL_DBS_OFFICER['organisation_long'])}
          ),
         ("Confirmation",
             {'fields': ('finished',),

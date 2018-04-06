@@ -4,11 +4,11 @@
 {% block content %}
   <div id="content-main">
 
-    <h2>Ask {{ external_dbs_officer.organisation }} to send DBS form</h2>
+    <h2>Ask {{ external_dbs_officer.organisation_short }} to send DBS form</h2>
 
     <p>The following email, which you can now modify, will be sent to
       <b>{{ external_dbs_officer.name }} &lt;{{ external_dbs_officer.email }}&gt;</b>
-      at <b>{{ external_dbs_officer.organisation }}</b>.</p>
+      at <b>{{ external_dbs_officer.organisation_short }}</b>.</p>
 
     <form action="" method="post">{% csrf_token %}
       {{ messageform.as_p }}
