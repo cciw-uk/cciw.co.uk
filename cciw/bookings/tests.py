@@ -764,6 +764,20 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         self.assertEqual(acc.name, 'Mr Booker')
         self.assertEqual(UNS_func.call_count, 0)
 
+    @mock.patch('cciw.bookings.mailchimp.update_newsletter_subscription')
+    def test_news_letter_subscribe(self, UNS_func):
+        """
+        Test that we can complete the account details page
+        """
+        self.login(add_account_details=False)
+        self.get_url(self.urlname)
+        self._fill_in_account_details()
+        self.fill({'#id_subscribe_to_newsletter': True})
+        self.submit()
+        acc = self.get_account()
+        self.assertEqual(acc.subscribe_to_newsletter, True)
+        self.assertEqual(UNS_func.call_count, 1)
+
     def test_address_migration(self):
         self.login(add_account_details=True, shortcut=True)
         acc = self.get_account()
