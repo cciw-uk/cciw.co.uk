@@ -1,8 +1,10 @@
 {% extends 'cciw/bookings/standard.html' %}
 {% block content %}
 
-  <p>Please enter your name, address and contact preferences. We do not pass any
-    details on to third parties, except as indicated.</p>
+  <p>Please enter your name and address - we will use these to send you
+    information about camp. You may also choose to receive other communications
+    from us. Note that we do not pass on any details to third parties, except as
+    indicated.</p>
 
   <form id='id_accountdetails' action="" method="POST" class="ajaxify">
     {% csrf_token %}
