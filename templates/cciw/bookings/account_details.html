@@ -6,11 +6,14 @@
   <form id='id_accountdetails' action="" method="POST" class="ajaxify">
     {% csrf_token %}
     {{ form.as_p }}
+
+    <p>We do not pass any details on to third parties, except as indicated.</p>
     <div class="formrow">
       <br/>
       <input type="submit" name="submit" value="Save and continue" />
     </div>
   </form>
+
 
   <p><br/><br/>If you need to change the email address on your account, please <a href="{% url 'cciw-cciwmain-contact_us' %}?bookings">contact us</a>.
 

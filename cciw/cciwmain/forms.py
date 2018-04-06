@@ -12,7 +12,7 @@ class CciwFormMixin(object):
     error_row_template = '<div class="userError">%s</div>'
     errors_template = '<div class="fieldMessages">%s</div>'
 
-    help_text_html_template = ' %s'
+    help_text_html_template = ' <span class="field-help">%s</span>'
 
     div_normal_class = 'formrow'
     div_error_class = 'formrow validationErrors'

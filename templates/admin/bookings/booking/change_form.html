@@ -5,7 +5,9 @@
 
 {% block extrastyle %}
   {{ block.super }}
-  <link rel="stylesheet" href="{% static "bookings/css/add_place.css" %}" type="text/css" />
+  {% compress css %}
+    <link rel="stylesheet" href="{% static "css/bookings_add_place.less" %}" type="text/less" />
+  {% endcompress %}
 {% endblock %}
 
 

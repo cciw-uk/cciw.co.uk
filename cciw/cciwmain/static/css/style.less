@@ -3,29 +3,7 @@
 @import "elements.less";
 @import "mixins.less";
 @import (reference) "flexbox.less";
-
-// Colours
-//  Primary Color:
-//  007633 22884F		(37DA7E) BACB97
-//
-// Secondary Color A: A65900
-
-@primaryColor: #007633;
-@primaryColorLighter: #BACB97;
-
-@secondaryColor: #A65900;
-
-@pageTitleColor: @primaryColor;
-@headerColor: fadeout(@pageTitleColor, 50%);
-@contentBackgroundColor: white;
-@footerBackgroundColor: #0b2333;
-
-@smallMenubarFontScreenWidth: 800px;
-@mobileMenuWidth: 600px;
-@smallScreenWidth: 600px;
-@noColumnsScreenWidth: 400px;
-@responsiveTablesScreenWidth: 480px;
-@contentWidth: 850px;
+@import "variables.less";
 
 // Fonts
 @font-face {
@@ -43,7 +21,7 @@
 @lineHeight: 26px;
 
 body {
-    color: black;
+    color: @textColor;
     background-color: @footerBackgroundColor;
     margin: 0;
     padding: 0;
@@ -586,6 +564,11 @@ div.formrow {
     textarea, select, input {
         max-width: 100%;
     }
+
+    .field-help {
+        font-size: 90%;
+        color: @textLighterColor;
+    }
 }
 
 
@@ -654,10 +637,6 @@ div.bottombreadcrumb {
 .editChunkLink {
     font-size: 80%;
     text-align: right;
-}
-
-.placeAvailability {
-    color: #404040;
 }
 
 /* Popups */
