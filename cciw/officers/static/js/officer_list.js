@@ -162,7 +162,7 @@
         // event handlers for 'email' buttons
         $("[data-email-button]").click(function(ev) {
             ev.preventDefault();
-            if (confirm("This will reset the officer's password and re-send the initial signup email.  Continue?")) {
+            if (confirm("This will re-send the initial signup email. Continue?")) {
                 var officerId = parseInt($(ev.target).closest('tr').attr('data-officer-id'), 10);
                 $.ajax({
                     type: "POST",

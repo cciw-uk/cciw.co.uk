@@ -911,11 +911,8 @@ def create_officer(request):
 @camp_admin_required
 @json_response
 def resend_email(request):
-    u = User.objects.get(pk=int(request.POST['officer_id']))
-    password = User.objects.make_random_password()
-    u.set_password(password)
-    u.save()
-    create.email_officer(u.username, u.first_name, u.email, password, update=True)
+    user = User.objects.get(pk=int(request.POST['officer_id']))
+    create.email_officer(user, update=True)
     return {'status': 'success'}
 
 

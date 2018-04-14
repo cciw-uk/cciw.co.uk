@@ -1,8 +1,6 @@
 {% autoescape off %}Hi {{ first_name }},
 {% if update %}
-This is a repeat email sent either because the first email never
-arrived or the password was forgotten. Your username has not been
-changed, but a new random password has been given to you, see below.
+This is a repeat email.
 {% endif %}
 An account has been set up for you on the CCIW website, which allows
 you to fill in application form for coming on a CCIW camp.
@@ -12,19 +10,25 @@ When you have finished filling the form in, it will be emailed to the
 leader of the camp, who will need to send reference forms to the
 referees you have specified.
 
-To fill in the application form
+To fill in the application form:
 
-1) Go to:
+1) If you haven't already set a password, or you have forgotten it,
+   please set your password here:
+
+     https://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
+
+   You must do this within **{{ PASSWORD_RESET_TIMEOUT_DAYS }} days**
+   of receiving this email.
+
+   Otherwise please do the password reset procedure here:
+
+     https://{{ domain }}{% url 'admin_password_reset' %}
+
+2) Then log in here:
 
      https://{{ domain }}{% url 'cciw-officers-index' %}
 
-2) Log in using:
-
-     Username: {{ username }}
-     Password: {{ password }}
-
-     (You should change your password to something more memorable once
-      you have logged in)
+     Your username is: {{ username }}
 
 3) Choose from the options. If you have already completed an
    application form online, your new one will start with the answers

@@ -260,6 +260,9 @@ LOGGING = {
 # For large attachments to emails sent through mailgun endpoint:
 DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024
 
+
+PASSWORD_RESET_TIMEOUT_DAYS = 7
+
 # == DATABASE ==
 
 if LIVEBOX:

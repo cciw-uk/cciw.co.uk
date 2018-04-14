@@ -6,9 +6,12 @@
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from cciw.cciwmain import common
 
@@ -33,44 +36,39 @@ def make_username(first_name, last_name, guess_number=1):
 
 def create_officer(first_name, last_name, email):
     """
-    Create an officer with the specified username, first_name, last_name, email.
-    Officer will be emailed with password.  Set username to None for an
-    automatically assigned one.  Returns the created User object.
+    Create an officer with the specified first_name, last_name, email.
+    Officer will be emailed.  Returns the created User object.
     """
     username = make_username(first_name, last_name)
-    password = User.objects.make_random_password()
-    officer = _create_officer(username, first_name, last_name, email, password)
-    email_officer(username, first_name, email, password, update=False)
+    officer = _create_officer(username, first_name, last_name, email)
+    email_officer(officer, update=False)
     return officer
 
 
-def _create_officer(username, first_name, last_name, email, password):
+def _create_officer(username, first_name, last_name, email):
     officer = User(username=username)
     officer.date_joined = timezone.now()
     officer.last_login = None
-
     officer.first_name = first_name
     officer.last_name = last_name
     officer.is_staff = True
     officer.is_active = True
     officer.is_superuser = False
     officer.email = email
-
     officer.save()
-    officer.set_password(password)
-    officer.save()
-
     return officer
 
 
-def email_officer(username, first_name, email, password, update=False):
+def email_officer(user, update=False, token_generator=default_token_generator):
     subject = "[CCIW] Application form system"
     msg = render_to_string('cciw/officers/add_officer_email.txt',
-                           {'username': username,
-                            'password': password,
-                            'first_name': first_name,
+                           {'username': user.username,
+                            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                            'token': token_generator.make_token(user),
+                            'PASSWORD_RESET_TIMEOUT_DAYS': settings.PASSWORD_RESET_TIMEOUT_DAYS,
+                            'first_name': user.first_name,
                             'webmasteremail': settings.WEBMASTER_EMAIL,
                             'domain': common.get_current_domain(),
                             'update': update})
 
-    send_mail(subject, msg, settings.WEBMASTER_EMAIL, [email])
+    send_mail(subject, msg, settings.WEBMASTER_EMAIL, [user.email])
