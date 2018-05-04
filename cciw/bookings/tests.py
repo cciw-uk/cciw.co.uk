@@ -781,6 +781,7 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         acc = self.get_account()
         #  Initial value should be NULL - we haven't asked.
         self.assertIs(acc.subscribe_to_mailings, None)
+        self.assertIs(acc.include_in_mailings, True)
         self._fill_in_account_details()
         self.submit()
         acc = self.get_account()
@@ -788,6 +789,7 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         # page has been submitted, we *have* asked the question
         # and they have said 'no' by not selecting the box.
         self.assertIs(acc.subscribe_to_mailings, False)
+        self.assertIs(acc.include_in_mailings, False)
 
     def test_subscribe_to_mailings_selected(self):
         self.login(add_account_details=False)
@@ -798,6 +800,7 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         self.submit()
         acc = self.get_account()
         self.assertIs(acc.subscribe_to_mailings, True)
+        self.assertIs(acc.include_in_mailings, True)
 
     def test_address_migration(self):
         self.login(add_account_details=True, shortcut=True)

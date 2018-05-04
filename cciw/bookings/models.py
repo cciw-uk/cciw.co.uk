@@ -454,6 +454,16 @@ class BookingAccount(migrate_address('address'), models.Model):
         else:
             return self.address
 
+    @property
+    def include_in_mailings(self):
+        if self.subscribe_to_mailings is None:
+            # GDPR. We have not obtained an answer to this question.
+            # For postal mailings, by legitimate interest we
+            # are allowed to assume 'Yes'
+            return True
+        else:
+            return self.subscribe_to_mailings
+
 
 class BookingQuerySet(models.QuerySet):
 
