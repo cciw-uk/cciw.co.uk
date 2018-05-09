@@ -240,13 +240,6 @@ def get_application(request):
     except Application.DoesNotExist:
         raise Http404
 
-    if app.officer_id != request.user.id and \
-            not request.user.can_manage_application_forms:
-        raise PermissionDenied
-
-    # NB, this is is called by both normal users and leaders.
-    # In the latter case, request.user != app.officer
-
     format = request.POST.get('format', '')
     if format == 'html':
         return HttpResponseRedirect(reverse("cciw-officers-view_application",
