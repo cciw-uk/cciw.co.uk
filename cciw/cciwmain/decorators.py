@@ -6,22 +6,6 @@ from django.http import HttpResponse
 from cciw.cciwmain.utils import python_to_json
 
 
-def email_errors_silently(func):
-    """
-    Decorator causes any errors raised by a function to be emailed to admins,
-    and then silently ignored.
-    """
-    def _inner(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except:
-            from cciw.cciwmain.common import exception_notify_admins
-            exception_notify_admins('Error on CCIW site')
-            return None
-
-    return wraps(func)(_inner)
-
-
 def json_response(view_func):
     def _inner(request, *args, **kwargs):
         try:
