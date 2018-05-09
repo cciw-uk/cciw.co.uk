@@ -232,7 +232,7 @@ def applications(request):
 def get_application(request):
     try:
         application_id = int(request.POST['application'])
-    except:
+    except (KeyError, ValueError):
         raise Http404
 
     try:
