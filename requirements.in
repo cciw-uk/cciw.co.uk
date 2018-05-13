@@ -1,5 +1,5 @@
 ConcurrentLogHandler==0.9.1
-Django==1.11.1
+Django==1.11.13
 PyYAML==3.12
 attrs==16.2.0
 boto3==1.4.7
@@ -8,9 +8,9 @@ django-anymail==0.10
 django-autocomplete-light==3.2.1
 django-colorful==1.2
 django-compressor==2.1
-django-countries==4.3
+django-countries==5.3
 django-mailer==1.2.2
-django-paypal==0.3.6
+django-paypal==0.5.0
 ezodf2==0.2.10
 fabric3==1.13.1.post1
 fabtools3==0.19.0
@@ -21,12 +21,12 @@ nodeenv==1.0.0
 numpy==1.11.1
 pandas-highcharts==0.5.2
 pandas==0.18.1
-pip-tools==1.9.0
+pip-tools==2.0.2
 psutil==5.2.2
 psycopg2==2.7.3
 python-dateutil==2.5.3
 python3-memcached==1.51
-pytz==2017.2
+pytz==2018.4
 raven==5.32.0
 rcssmin==1.0.6
 requests==2.13.0

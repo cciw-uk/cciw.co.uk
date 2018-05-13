@@ -1,7 +1,7 @@
 beautifulsoup4==4.6.0
 django-debug-toolbar==1.7
 django-dynamic-fixture==1.9.5
-django-functest==1.0.1
+django-functest==1.0.3
 django-plainpasswordhasher==0.3
 flake8==3.3.0
 hypothesis==3.9.0
@@ -11,7 +11,3 @@ mccabe==0.6.1
 pyquery==1.2.17
 selenium==2.53.6
 vcrpy==1.10.2
-
-# Dependency of django-functest, but listed here because 2.0.28 is broken for
-# django-functest 1.0.1:
-webtest==2.0.27
