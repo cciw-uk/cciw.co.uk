@@ -821,7 +821,7 @@ def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amou
         "invoice": "%s-%s-%s" % (account.id, balance,
                                  timezone.now()),  # We don't need this, but must be unique
         "notify_url": "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
-        "return_url": "%s://%s%s" % (protocol, domain, reverse('cciw-bookings-pay_done')),
+        "return": "%s://%s%s" % (protocol, domain, reverse('cciw-bookings-pay_done')),
         "cancel_return": "%s://%s%s" % (protocol, domain, reverse('cciw-bookings-pay_cancelled')),
         "custom": build_paypal_custom_field(account),
         "currency_code": "GBP",
