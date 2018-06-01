@@ -55,7 +55,7 @@ def send_application_emails(request, application):
 
         if len(leader_emails) > 0:
             send_leader_email(leader_emails, application)
-        messages.info(request, "The completed application form has been sent to the leaders (%s) via email." %
+        messages.info(request, "The leaders (%s) have been notified of the completed application form by email." %
                       camp.leaders_formatted)
 
     if len(leader_email_groups) == 0:
