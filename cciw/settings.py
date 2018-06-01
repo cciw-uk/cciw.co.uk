@@ -494,7 +494,7 @@ else:
     PAYPAL_TEST = True
     PAYPAL_RECEIVER_EMAIL = SECRETS['DEV_PAYPAL_RECEIVER_EMAIL']
 
-PAYPAL_IMAGE = "https://www.paypalobjects.com/en_US/GB/i/btn/btn_buynowCC_LG.gif"
+PAYPAL_BUY_BUTTON_IMAGE = "https://www.paypalobjects.com/en_US/GB/i/btn/btn_buynowCC_LG.gif"
 
 # Raven
 if LIVEBOX:
