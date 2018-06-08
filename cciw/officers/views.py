@@ -284,12 +284,16 @@ Please find attached a copy of the application you requested
 
 
 @staff_member_required
-@cache_control(max_age=3600)
-def view_application(request, application_id=None):
+def view_application_redirect(request):
     if 'application_id' in request.GET:
         return HttpResponseRedirect(reverse('cciw-officers-view_application',
                                             kwargs=dict(application_id=request.GET['application_id'])))
+    raise Http404
 
+
+@staff_member_required
+@cache_control(max_age=3600)
+def view_application(request, application_id=None):
     try:
         application = Application.objects.get(id=int(application_id))
     except Application.DoesNotExist:
