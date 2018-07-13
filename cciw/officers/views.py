@@ -14,6 +14,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
+from django.contrib.auth.views import password_reset
 from django.core import signing
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
 from django.db.models import Prefetch
@@ -45,8 +46,8 @@ from .applications import (application_rtf_filename, application_to_rtf, applica
 from .email import (make_ref_form_url, make_ref_form_url_hash, send_dbs_consent_alert_leaders_email,
                     send_nag_by_officer, send_reference_request_email, send_request_for_dbs_form_email)
 from .email_utils import formatted_email, send_mail_with_attachments
-from .forms import (AdminReferenceForm, CreateOfficerForm, DbsConsentProblemForm, ReferenceForm, RequestDbsFormForm,
-                    SendNagByOfficerForm, SendReferenceRequestForm, SetEmailForm, UpdateOfficerForm)
+from .forms import (AdminReferenceForm, CciwPasswordResetForm, CreateOfficerForm, DbsConsentProblemForm, ReferenceForm,
+                    RequestDbsFormForm, SendNagByOfficerForm, SendReferenceRequestForm, SetEmailForm, UpdateOfficerForm)
 from .models import (Application, DBSActionLog, DBSCheck, Invitation, Referee, Reference, ReferenceAction,
                      empty_reference)
 from .stats import get_camp_officer_stats, get_camp_officer_stats_trend
@@ -1754,3 +1755,7 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
             return qs
         else:
             return User.objects.none()
+
+
+def cciw_password_reset(request, *args, **kwargs):
+    return password_reset(request, *args, password_reset_form=CciwPasswordResetForm)

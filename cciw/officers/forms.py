@@ -2,6 +2,7 @@ from datetime import date
 
 from django import forms
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import PasswordResetForm
 from django.template.loader import render_to_string
 from django.utils import timezone
 
@@ -179,3 +180,12 @@ def fix_ref_form(form_class):
 
 fix_ref_form(ReferenceForm)
 fix_ref_form(AdminReferenceForm)
+
+
+class CciwPasswordResetForm(PasswordResetForm):
+    def get_users(self, email):
+        # Unlike base class, we allow users who have never set a password to
+        # reset their password, otherwise our onboarding process (which involves
+        # accounts being created by someone else) can get stuck.
+        return User._default_manager.filter(email__iexact=email,
+                                            is_active=True)
