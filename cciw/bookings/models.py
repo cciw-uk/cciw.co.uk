@@ -276,12 +276,12 @@ class BookingAccount(migrate_address('address'), models.Model):
 
         if bookings_list is not None:
             total = Decimal('0.00')
-            l = self.bookings.payable(confirmed_only=confirmed_only,
-                                      allow_deposits=allow_deposits,
-                                      today=today,
-                                      from_list=bookings_list)
-            assert type(l) == list
-            for item in l:
+            payable_bookings = self.bookings.payable(confirmed_only=confirmed_only,
+                                                     allow_deposits=allow_deposits,
+                                                     today=today,
+                                                     from_list=bookings_list)
+            assert type(payable_bookings) == list
+            for item in payable_bookings:
                 total += item.amount_due
         else:
             total = self.bookings.payable(confirmed_only=confirmed_only,

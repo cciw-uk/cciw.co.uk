@@ -90,9 +90,9 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                           lambda: find_list('camp-2000-blue-officers@cciw.co.uk',
                                             self.officer1.email))
 
-        l = find_list('camp-2000-blue-officers@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
+        officer_list = find_list('camp-2000-blue-officers@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
 
-        self.assertEqual([u.username for u in l.members],
+        self.assertEqual([u.username for u in officer_list.members],
                          ["fredjones", "joebloggs", "petersmith"])
 
     def test_debug_list(self):

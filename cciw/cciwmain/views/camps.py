@@ -71,6 +71,7 @@ def detail(request, year, slug):
 
 def thisyear(request):
     year = common.get_thisyear()
-    c = dict(title="Camps %d" % year)
-    c['camps'] = Camp.objects.filter(year=year).order_by('site__short_name', 'start_date')
+    c = dict(title="Camps %d" % year,
+             camps=Camp.objects.filter(year=year).order_by('site__short_name', 'start_date')
+             )
     return render(request, 'cciw/camps/thisyear.html', c)

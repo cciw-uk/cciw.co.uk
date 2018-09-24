@@ -149,14 +149,14 @@ def camp_serious_slacker_list(camp):
                                   officer_dbss_missing,
                                   officer_dbss_last_good_year)
 
-    l = [(o, officer_apps_missing[o], officer_refs_missing[o], officer_dbss_missing[o])
-         for o in (set(officer_apps_missing.keys()) |
-                   set(officer_refs_missing.keys()) |
-                   set(officer_dbss_missing.keys()))
-         ]
+    tmp1 = [(o, officer_apps_missing[o], officer_refs_missing[o], officer_dbss_missing[o])
+            for o in (set(officer_apps_missing.keys()) |
+                      set(officer_refs_missing.keys()) |
+                      set(officer_dbss_missing.keys()))
+            ]
     # Remove empty items:
-    l = [(o, a, r, c) for (o, a, r, c) in l
-         if len(a) > 0 or len(r) > 0 or len(c) > 0]
+    tmp1 = [(o, a, r, c) for (o, a, r, c) in tmp1
+            if len(a) > 0 or len(r) > 0 or len(c) > 0]
     return [{'officer': o,
              'missing_application_forms': a,
              'missing_references': r,
@@ -164,7 +164,7 @@ def camp_serious_slacker_list(camp):
              'last_good_apps_year': officer_apps_last_good_year.get(o, None),
              'last_good_refs_year': officer_refs_last_good_year.get(o, None),
              'last_good_dbss_year': officer_dbss_last_good_year.get(o, None),
-             } for o, a, r, c in l]
+             } for o, a, r, c in tmp1]
 
 
 def officer_data_to_spreadsheet(camp, spreadsheet):
