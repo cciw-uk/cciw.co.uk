@@ -6,7 +6,6 @@ from .email import send_pending_payment_email, send_places_confirmed_email, send
 from .models import AccountTransferPayment, ManualPayment, RefundPayment, parse_paypal_custom_field, send_payment
 from .signals import places_confirmed
 
-
 # == Handlers ==
 
 # == Payments ==

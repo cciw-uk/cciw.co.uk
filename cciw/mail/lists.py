@@ -35,7 +35,6 @@ from cciw.officers.utils import camp_officer_list, camp_slacker_list
 
 from .mailgun import send_mime_message
 
-
 # External utility functions #
 
 

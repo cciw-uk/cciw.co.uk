@@ -1,7 +1,7 @@
-from django.core.mail import EmailMessage, get_connection
 """
 Utilities for sending email with attachments
 """
+from django.core.mail import EmailMessage, get_connection
 
 
 def send_mail_with_attachments(subject, message, from_email,

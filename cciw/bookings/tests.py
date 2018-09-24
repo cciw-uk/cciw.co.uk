@@ -16,8 +16,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django_dynamic_fixture import G
 from django_functest import FuncBaseMixin
-from hypothesis import strategies as st
 from hypothesis import example, given
+from hypothesis import strategies as st
 from hypothesis.extra.django import models as djst
 from mailer.models import Message
 from paypal.standard.ipn.models import PayPalIPN

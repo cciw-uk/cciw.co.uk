@@ -1,4 +1,5 @@
 from unittest import mock
+
 from django.contrib.sites.models import Site
 
 from cciw.cciwmain import common

@@ -12,8 +12,8 @@ from django.utils.http import urlquote
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 from cciw.mail import X_CCIW_ACTION, X_CCIW_CAMP
-from cciw.officers.applications import (application_rtf_filename, application_to_rtf,
-                                        application_to_text, camps_for_application)
+from cciw.officers.applications import (application_rtf_filename, application_to_rtf, application_to_text,
+                                        camps_for_application)
 from cciw.officers.email_utils import formatted_email, send_mail_with_attachments
 
 logger = logging.getLogger(__name__)

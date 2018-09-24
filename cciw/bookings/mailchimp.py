@@ -1,4 +1,5 @@
 import hashlib
+
 import requests
 from django.conf import settings
 from requests.auth import HTTPBasicAuth

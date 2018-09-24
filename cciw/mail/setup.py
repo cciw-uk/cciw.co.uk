@@ -4,12 +4,11 @@ from django.urls import reverse
 from .lists import EMAIL_LISTS
 from .mailgun import create_route, create_webhook, list_routes, update_route, update_webhook
 
-
 # See https://mailgun.com/app/routes
+
 
 # In addition to the ones created here, which are routed through the website,
 # there are simple forwarding addresses set up with the mailgun control panel.
-
 def setup_mailgun_routes():
     existing_routes = list_routes()['items']
     existing_d = {i['description']: i for i in existing_routes}
