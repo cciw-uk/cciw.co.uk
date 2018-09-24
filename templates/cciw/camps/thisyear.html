@@ -49,7 +49,10 @@
     </div>
     {% htmlchunk camp_dates_outro_text %}
   {% else %}
-    <p>Information for camps in {{thisyear}} is not yet available.</p>
+    <p>Information for camps in {{ thisyear }} is not yet available. You can
+      browse our list of <a href="{% url "cciw-cciwmain-camps_index" %}">previous camps</a>
+      for information about our recent leaders and chaplains.
+    </p>
   {% endif %}
 
 
