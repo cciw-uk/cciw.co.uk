@@ -39,7 +39,7 @@
         {% for leader in camp.leaders.all %}
           <h3>{{ leader.name }}</h3>
           <p>
-            {{ leader.info|escape|linebreaksbr }}
+            {{ leader.info|linebreaksbr }}
           </p>
         {% endfor %}
       </td>
@@ -50,7 +50,7 @@
         {% if camp.chaplain %}
           <h3>{{ camp.chaplain.name }}</h3>
           <p>
-            {{ camp.chaplain.info|escape|linebreaksbr }}
+            {{ camp.chaplain.info|linebreaksbr }}
           </p>
         {% else %}
           TBA
