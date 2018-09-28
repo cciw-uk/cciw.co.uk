@@ -5,11 +5,11 @@ Architecture
 ------------
 
 The CCIW site is fairly standard Django site. It is currently hosted on
-WebFaction shared hosting but makes no use of its API and special features.
+DigitalOcean.
 
 We use:
 
-* nginx as main webserver (currently WebFaction's instance)
+* nginx as main webserver
 * postgresql as database
 * mailgun for mail services
 

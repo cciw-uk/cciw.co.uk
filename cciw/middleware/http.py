@@ -1,5 +1,6 @@
 
 
+# TODO - work out if this is needed at all now we are on DigitalOcean
 def webfaction_fixes(get_response):
     """
     Middleware that applies some fixes for people using

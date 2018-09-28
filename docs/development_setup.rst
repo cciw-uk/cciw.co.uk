@@ -2,7 +2,7 @@ Development setup
 =================
 
 The easiest way is to use Vagrant and the provided Vagrantfile which will set up
-a development VM that is fairly close to the WebFaction shared server we are
+a development VM that is fairly close to the DigitalOcean VM we are
 using. On the host machine, install:
 
 * `Vagrant <https://www.vagrantup.com/>`_
