@@ -2,9 +2,9 @@ PYTHON=%(VENV_ROOT)s/bin/python
 DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 
 
-*       * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE send_mail 2>> ~/.django-mailer-cron.log
+*       * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE send_mail 2>> /dev/null
 5,35    * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE fix_mailing_lock
-0,20,40 * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE retry_deferred 2>> ~/.django-mailer-deferred-cron.log
+0,20,40 * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE retry_deferred 2>> /dev/null
 0       2 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE cleanup
 0       7 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE payment_reminder_emails
 
@@ -24,3 +24,7 @@ DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 51         4    * * *  root          letsencrypt renew --agree-tos
 # nginx won't pick up the new certificate created above until we restart it:
 57         4    * * *  root          /usr/sbin/service nginx restart
+
+
+# Clear out old uWSGI logs which don't rotate proplerly:
+42         4    * * *  root          find /home/%(proj_user)s/logs/ -name '*_uwsgi.log.*' -mtime +7 -exec rm {} \;
