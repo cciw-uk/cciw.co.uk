@@ -6,38 +6,41 @@ interactions:
       Accept-Encoding: ['gzip, deflate']
       Authorization: [Basic dXNlcjo0ODhlODMwY2Y2MjMxNzkyYjExODFiNzBjZWVhODZlZQ==]
       Connection: [keep-alive]
-      User-Agent: [python-requests/2.8.0]
+      User-Agent: [python-requests/2.20.0]
     method: GET
     uri: https://us12.api.mailchimp.com/3.0/lists/8c4c60ac33/members/7d5724cf25f0886f287237265369a506
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA8RU32/aMBD+V6Y80yQ4JECehjrWTaLVpNGnaYqMc0k8HDuLHSSG+N93TkgprbS1
-        U2FPHHfn777vfmTn8NSJnXEajsmIZSTM/MkkyshkTIIxicIgmtLQj5yBAyXlIqFpWoPW+GSl1Brq
-        992PdpkqMamR/GcDSZfbIrPpKqA0JBF7wDDbCjBSmFKgTxtqGguom5VmNV9Bit4S6hySjINIMbZz
-        Pt7NbueYhKFFb+67x22cbvJEVSCTmhoE9wethwnO1r0L03mVaJ7LpuqQDC8BEcpTLyapyqA9ityh
-        P3RJ5Ab+SXYXJv4wuvLJlT95NwzicBoHpCVerqC2NbnMnZgMHEG1SVhBZQ7pk2ejeBjFwdSxSTJv
-        aA4dhQ1HLhkVGvqeoRKQposKxRBdSatboGWatJMslMyP//LSqCxrzVQ/mEw10tTbhKkUjl34pSQc
-        Wio40m1HN2EjFvmUBQFmJYLLNbb6286pQdhxgcjQX9SQtcM0lY49r9FD4tKKu5Y1K3hZ2c3wAtf3
-        LLD2jqBe1yrtvWD5SjCFspxu5ktLmeJ2mK+swOb8vbhu81oOi5bD7aHwZ4nzlAzcHxq7uR/00ipa
-        22a/hbizcb9WQgCza9Cxx1t4PeQRZGGne1riaVeaKrWHdPGRf5ktrz/9m76XjbupNNRvM+7XCbtf
-        nlNWCgL+x7w+zBfz5fwREYobtuFmexkq3qNy5zm92aHAsxs8Ss4VfrwvpLevdR6xNxb9D0qlMnAp
-        pX2t8yi9s+jPlX7f/wYAAP//AwDuE9+bJAkAAA==
+        H4sIAAAAAAAAA8VVUW+bMBD+L7wuAQMJITytarPuIe2mlT5NFXLMQbwam2FTqavy33eGpmk6RWun
+        lD1x3J3vu+/z2X5weO4kziyfzoIJK4JpQeI4KoJ4FoSzIJqG0ZxOSeSMHKgoFxnN8wa0xiUrpW6h
+        +dh/tMtUhUmt5D9byPrcrjKbr0JKp0HEnmqY+xowsjaVQJ821LS2oG5XmjV8BTl6K2hKyAoOIsfY
+        g/Pp8uRigUkYWm7NTb+4i9O7MlM1yKyhBouTUedhgrPbrQvTeZ1pXsq27isZXgFWqPa9mKRqg/Yk
+        cn3iu0HkhmQvuw8HxI/GJBiTOPXDZDpPwuADIQkhXfvVChqLzGXpJMHIEVSbjK2pLCHvF8djn4yD
+        KPXjxJ8nk91igUktLaFv545jXwUVGrb6ISuQpo8KxRBDSauBQMu0eU9fKFnu/srKqKLozFw/mUy1
+        0jT3GVM57BT5pSQ8ymtoqbMuq8u3v07y/Qarc2TT7W/MJiwilIUhLs8El7c25cFpQNg9BVGgf91A
+        0e24qXXiea32A5fW3LV02JpXtR0fL3SJZwtrb1fU65XU3ismtAKzVran80VquVAcIXPF1qja38F1
+        l9f1cAYFl9yqqr1l18/FYxPfQNfoBfeHRsk3oy3NmjZ2R45BdBAep0oIYDayzwgP1NthdsWWdvf3
+        oV4q1da5PY2Dj8TXk/T08xBD8U8SHi7e9f2niBqa44zb20S8HuRcHVvC6/SlgDkI+B9TeLZYLtLF
+        s0Yonps7bu6HacV7Bvf+l8zJI9jBW7NU+KoNxHyL9f60zy3SQc5SGRiK8xbr/TlfWqSDr8rLc5fV
+        0FRUHuvFfN3Y26Z7+PFz+N3d9uUqdTY3m99hXUANEQsAAA==
     headers:
       Connection: [keep-alive]
       Content-Encoding: [gzip]
-      Content-Length: ['598']
+      Content-Length: ['661']
       Content-Type: [application/json; charset=utf-8]
-      Date: ['Mon, 08 Feb 2016 14:16:40 GMT']
+      Date: ['Fri, 26 Oct 2018 18:24:14 GMT']
       Link: ['<https://us12.api.mailchimp.com/schema/3.0/Lists/Members/Instance.json>;
-          rel="describedBy"']
-      Server: [nginx]
+          rel="describedBy", <https://us12.admin.mailchimp.com/lists/members/view?id=69067337>;
+          rel="dashboard"']
+      Server: [openresty]
+      Set-Cookie: [_AVESTA_ENVIRONMENT=prod; path=/, '_mcid=1.329631cf918a8953bd1c6f4e16b57e16;
+          expires=Sat, 26-Oct-2019 18:24:14 GMT; Max-Age=31536000; path=/; domain=.mailchimp.com']
       Vary: [Accept-Encoding]
-      X-Request-Id: [836c4ab4-cc5b-4ce8-9597-1fc6754bb846]
+      X-Request-Id: [de900539-3d08-48f6-94f9-d7e9aaa36267]
     status: {code: 200, message: OK}
 - request:
-    body: !!binary |
-      eyJzdGF0dXMiOiAidW5zdWJzY3JpYmVkIn0=
+    body: '{"status": "unsubscribed"}'
     headers:
       Accept: ['*/*']
       Accept-Encoding: ['gzip, deflate']
@@ -45,34 +48,39 @@ interactions:
       Connection: [keep-alive]
       Content-Length: ['26']
       Content-Type: [application/json]
-      User-Agent: [python-requests/2.8.0]
+      User-Agent: [python-requests/2.20.0]
     method: PATCH
     uri: https://us12.api.mailchimp.com/3.0/lists/8c4c60ac33/members/7d5724cf25f0886f287237265369a506
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA8RU32/aMBD+V6Y80yQ4JECehjrWTaLVpNGnaYqMc0k8HDuLHSSG+N93TkgprbS1
-        U2FPHHfn777vfmTn8NSJnXEajsmIZSTM/MkkyshkTIIxicIgmtLQj5yBAyXlIqFpWoPW+GSl1Brq
-        992PdpkqMamR/GcDSZfbIrPpKqA0JBF7wDDbCjBSmFKgTxtqGgvYSN2sNKv5ClL0l1DnkGQcRIrR
-        nfPxbnY7xzQMLXpz3z1v43STJ6oCmdTUILw/aD1McLbuXZjOq0TzXDZVh2R4CYhQnnoxSVUG7VHk
-        Dv2hSyI38E+yuzDxh9GVT678ybthEIfTOCAt8XIFta3JZe7EZOAIqk3CCipzSJ88G8XDKB5ZcIHh
-        hubQUdhw5JJRoaHvGioBabqoUAzRlbS6BVqmSTvJQsn8+C8vjcqy1kz1g8lUI029TZhK4diFX0rC
-        oaWCI912eBM2YpFPWRBgViK4XGOrv+2cGgRGNYgM/UUNWTtOU+nY8xo9JC6tuGtZs4KXld0NL3B9
-        zwJr7wjqda3S3gvWrwRTKMvpZr60lCluh/nKCmzO34vrNq/lsGg53B4Kf5Y4T8nA/aGxm/tBL62i
-        tW32W4g7G/drJQQwuwYde7yF10MeQRZ2uqclnnalqVJ7SBcf+ZfZ8vrTv+l72bibSkP9NuN+nbD7
-        5TllpSDgf8zrw3wxX84fEaG4YRtutpeh4j0qd57Tmx0KPLvBo+Rc4cf7Qnr7WucRe2PR/6BUKgOX
-        UtrXOo/SO4v+XOn3/W8AAAD//wMAl7t52SYJAAA=
+        H4sIAAAAAAAAA8VVXW+bMBT9KxVPm5aAgYSkPC1qs+4h7aY1fZoq5JgL8Wpshk2lLMp/3zU0X52i
+        tVOaPWHfr3PP4dpeOjx1YmeQ9gdBj2VBPyPDYZQFw0EQDoKoH0bntE8ip+NAQblIaJpWoDWmzJR6
+        gOpj+9EuUwUG1ZL/rCFpY5vK7HwWUtoPIrapYRYloGduCoE2baipbcFa6nqmWcVnkDalNtukAqqV
+        xJgbb3T27m4n8Gy2OKNpweV7TCmgyiHJOIgUCy6dTzej6zFmoWuyXq5axMZPH/NElSCTihrsiHQa
+        CxOcPaxNGM7LRPNc1mVbyfACsEKxb8UgVRpc9yLXJ74bRG5I9qJbd0D8qEuCLhlO/TDun8dh8IGQ
+        mJCm/WIGlUXmMnfioOMIqk3C5lTmkLbJw65PukE09Ydx0Iv9aJMsMKimObTtPHLsK6NCw1p0ZAXS
+        tF6hGGJYQZeYZ7ip05a+UDLf7vLCqCxrlqneLJmqpakWCVMpbBX5pSQ8yWtorpMmqom3Wyf+fo/V
+        ObJphmLIeiwilIUhpieCywcbsnQqEOjVIDK0zyvImjExpY49r9Z+4NKSu5YOm/OitDPnhS7xbGHt
+        bYt6rZLae8FYF2DmyvZ0NZ5aLhRHyNyyOar2d3DdxDU9XELGJbeqam/S9HP91MQ30CVawf1hZ3jV
+        WdMsaWX/yDGInoTHhRICmPXsM8ID9XqYbbGJ/fv7UM+VqsvUnsaTj8TX0fTi8ymG4p8kPFy86ftP
+        ETVUxxm314l4d5JzdWwJ76bPBUxBwP+YwsvxZDwd7zRC8dw8crM4TSveDtzbXzKjJ7CDt2au8FU7
+        EfM11tvTvrJIBzlLZeBUnNdYb8/5xiIdfFWen7ukhKqg8lgv5svG3jbdwnd34bd325fbqbO6X/0G
+        uJCLyUYLAAA=
     headers:
       Connection: [keep-alive]
       Content-Encoding: [gzip]
-      Content-Length: ['599']
+      Content-Length: ['692']
       Content-Type: [application/json; charset=utf-8]
-      Date: ['Mon, 08 Feb 2016 14:16:40 GMT']
+      Date: ['Fri, 26 Oct 2018 18:24:16 GMT']
       Link: ['<https://us12.api.mailchimp.com/schema/3.0/Lists/Members/Instance.json>;
-          rel="describedBy"']
-      Server: [nginx]
+          rel="describedBy", <https://us12.admin.mailchimp.com/lists/members/view?id=69067337>;
+          rel="dashboard"']
+      Server: [openresty]
+      Set-Cookie: [_AVESTA_ENVIRONMENT=prod; path=/, '_mcid=1.ca4f195da26b916784891d318d7029c7;
+          expires=Sat, 26-Oct-2019 18:24:16 GMT; Max-Age=31536000; path=/; domain=.mailchimp.com']
       Vary: [Accept-Encoding]
-      X-Request-Id: [cccd2417-1507-420c-89ee-944a43bf1805]
+      X-Request-Id: [0877cc9c-565d-4b78-af4d-fdc94f892e6e]
     status: {code: 200, message: OK}
 - request:
     body: null
@@ -81,33 +89,38 @@ interactions:
       Accept-Encoding: ['gzip, deflate']
       Authorization: [Basic dXNlcjo0ODhlODMwY2Y2MjMxNzkyYjExODFiNzBjZWVhODZlZQ==]
       Connection: [keep-alive]
-      User-Agent: [python-requests/2.8.0]
+      User-Agent: [python-requests/2.20.0]
     method: GET
     uri: https://us12.api.mailchimp.com/3.0/lists/8c4c60ac33/members/7d5724cf25f0886f287237265369a506
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA8RU32/aMBD+V6Y80yQ4JECehjrWTaLVpNGnaYqMc0k8HDuLHSSG+N93TkgprbS1
-        U2FPHHfn777vfmTn8NSJnXEajsmIZSTM/MkkyshkTIIxicIgmtLQj5yBAyXlIqFpWoPW+GSl1Brq
-        992PdpkqMamR/GcDSZfbIrPpKqA0JBF7wDDbCjBSmFKgTxtqGgvYSN2sNKv5ClL0l1DnkGQcRIrR
-        nfPxbnY7xzQMLXpz3z1v43STJ6oCmdTUILw/aD1McLbuXZjOq0TzXDZVh2R4CYhQnnoxSVUG7VHk
-        Dv2hSyI38E+yuzDxh9GVT678ybthEIfTOCAt8XIFta3JZe7EZOAIqk3CCipzSJ88G8XDKB5ZcIHh
-        hubQUdhw5JJRoaHvGioBabqoUAzRlbS6BVqmSTvJQsn8+C8vjcqy1kz1g8lUI029TZhK4diFX0rC
-        oaWCI912eBM2YpFPWRBgViK4XGOrv+2cGgRGNYgM/UUNWTtOU+nY8xo9JC6tuGtZs4KXld0NL3B9
-        zwJr7wjqda3S3gvWrwRTKMvpZr60lCluh/nKCmzO34vrNq/lsGg53B4Kf5Y4T8nA/aGxm/tBL62i
-        tW32W4g7G/drJQQwuwYde7yF10MeQRZ2uqclnnalqVJ7SBcf+ZfZ8vrTv+l72bibSkP9NuN+nbD7
-        5TllpSDgf8zrw3wxX84fEaG4YRtutpeh4j0qd57Tmx0KPLvBo+Rc4cf7Qnr7WucRe2PR/6BUKgOX
-        UtrXOo/SO4v+XOn3/W8AAAD//wMAl7t52SYJAAA=
+        H4sIAAAAAAAAA8VVXW+bMBT9KxVPm5aAgYSkPC1qs+4h7aY1fZoq5JgL8Wpshk2lLMp/3zU0X52i
+        tVOaPWHfr3PP4dpeOjx1YmeQ9gdBj2VBPyPDYZQFw0EQDoKoH0bntE8ip+NAQblIaJpWoDWmzJR6
+        gOpj+9EuUwUG1ZL/rCFpY5vK7HwWUtoPIrapYRYloGduCoE2baipbcFa6nqmWcVnkDalNtukAqqV
+        xJgbb3T27m4n8Gy2OKNpweV7TCmgyiHJOIgUCy6dTzej6zFmoWuyXq5axMZPH/NElSCTihrsiHQa
+        CxOcPaxNGM7LRPNc1mVbyfACsEKxb8UgVRpc9yLXJ74bRG5I9qJbd0D8qEuCLhlO/TDun8dh8IGQ
+        mJCm/WIGlUXmMnfioOMIqk3C5lTmkLbJw65PukE09Ydx0Iv9aJMsMKimObTtPHLsK6NCw1p0ZAXS
+        tF6hGGJYQZeYZ7ip05a+UDLf7vLCqCxrlqneLJmqpakWCVMpbBX5pSQ8yWtorpMmqom3Wyf+fo/V
+        ObJphmLIeiwilIUhpieCywcbsnQqEOjVIDK0zyvImjExpY49r9Z+4NKSu5YOm/OitDPnhS7xbGHt
+        bYt6rZLae8FYF2DmyvZ0NZ5aLhRHyNyyOar2d3DdxDU9XELGJbeqam/S9HP91MQ30CVawf1hZ3jV
+        WdMsaWX/yDGInoTHhRICmPXsM8ID9XqYbbGJ/fv7UM+VqsvUnsaTj8TX0fTi8ymG4p8kPFy86ftP
+        ETVUxxm314l4d5JzdWwJ76bPBUxBwP+YwsvxZDwd7zRC8dw8crM4TSveDtzbXzKjJ7CDt2au8FU7
+        EfM11tvTvrJIBzlLZeBUnNdYb8/5xiIdfFWen7ukhKqg8lgv5svG3jbdwnd34bd325fbqbO6X/0G
+        uJCLyUYLAAA=
     headers:
       Connection: [keep-alive]
       Content-Encoding: [gzip]
-      Content-Length: ['599']
+      Content-Length: ['692']
       Content-Type: [application/json; charset=utf-8]
-      Date: ['Mon, 08 Feb 2016 14:16:41 GMT']
+      Date: ['Fri, 26 Oct 2018 18:24:17 GMT']
       Link: ['<https://us12.api.mailchimp.com/schema/3.0/Lists/Members/Instance.json>;
-          rel="describedBy"']
-      Server: [nginx]
+          rel="describedBy", <https://us12.admin.mailchimp.com/lists/members/view?id=69067337>;
+          rel="dashboard"']
+      Server: [openresty]
+      Set-Cookie: [_AVESTA_ENVIRONMENT=prod; path=/, '_mcid=1.e6b6167efb1e71187ecc2d559e05ed7d;
+          expires=Sat, 26-Oct-2019 18:24:17 GMT; Max-Age=31536000; path=/; domain=.mailchimp.com']
       Vary: [Accept-Encoding]
-      X-Request-Id: [1a9b4385-08e7-4166-af13-7ddbd5570809]
+      X-Request-Id: [45f0bf7e-970b-49bc-b7b5-e99a81255b72]
     status: {code: 200, message: OK}
 version: 1

@@ -839,7 +839,7 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
     # For updating this, see:
     # https://vcrpy.readthedocs.org/en/latest/usage.html
 
-    @vcr.use_cassette('cciw/bookings/fixtures/vcr_cassettes/subscribe.yaml')
+    @vcr.use_cassette('cciw/bookings/fixtures/vcr_cassettes/subscribe.yaml', ignore_localhost=True)
     def test_subscribe(self):
         self.login(add_account_details=False)
         self.get_url(self.urlname)
@@ -850,7 +850,7 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         self.assertEqual(acc.subscribe_to_newsletter, True)
         self.assertEqual(get_status(acc), "subscribed")
 
-    @vcr.use_cassette('cciw/bookings/fixtures/vcr_cassettes/unsubscribe.yaml')
+    @vcr.use_cassette('cciw/bookings/fixtures/vcr_cassettes/unsubscribe.yaml', ignore_localhost=True)
     def test_unsubscribe(self):
         self.login()
         BookingAccount.objects.filter(id=self.get_account().id).update(subscribe_to_newsletter=True)
