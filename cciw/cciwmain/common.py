@@ -10,7 +10,6 @@ from functools import update_wrapper
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import mail_admins
-from django.core.paginator import InvalidPage, Paginator
 from django.http import Http404, HttpResponse
 from django.template.response import TemplateResponse
 from django.utils import timezone
@@ -148,39 +147,6 @@ class AjaxFormValidation(object):
                 )
 
 
-class DetailView(object):
-    def handle(self, request, slug=None):
-        assert hasattr(self, 'slug_field'), "DetailView class must define slug_field (model lookup name)"
-        assert hasattr(self, 'object_name'), "DetailView class must define object_name (name to be used in template)"
-        assert hasattr(self, 'queryset'), "DetailView class must define queryset"
-        kwargs = {self.slug_field + "__exact": slug}
-        model = self.queryset.model
-        try:
-            obj = self.queryset.get(**kwargs)
-        except model.DoesNotExist:
-            raise Http404
-        return self.render({self.object_name: obj})
-
-
-class ListView(object):
-    def get_queryset(self):
-        assert hasattr(self, 'queryset'), "ListView class must define queryset, or override get_queryset"
-        return self.queryset
-
-    def handle(self, request):
-        assert hasattr(self, 'list_name'), "ListView class must define list_name (name to be used in template)"
-        queryset = self.get_queryset()
-        paginate_by = getattr(self, 'paginate_by', None)
-        return object_list(
-            request,
-            template_name=self.template_name,
-            paginate_by=paginate_by,
-            queryset=queryset,
-            list_name=self.list_name,
-            extra_context=self.get_context_data(request),
-        )
-
-
 def json_validation_request(request, form):
     """
     Returns a JSON validation response for a form, if the request is for JSON
@@ -192,51 +158,6 @@ def json_validation_request(request, form):
                             content_type='text/javascript')
     else:
         return None
-
-
-def object_list(request, queryset, extra_context=None,
-                template_name='', paginate_by=None,
-                list_name='object_list',
-                ):
-    if paginate_by:
-        paginator = Paginator(queryset, paginate_by, orphans=0,
-                              allow_empty_first_page=True)
-
-        page = request.GET.get('page') or 1
-        try:
-            page_number = int(page)
-        except ValueError:
-            if page == 'last':
-                page_number = paginator.num_pages
-            else:
-                raise Http404("Page is not 'last', nor can it be converted to an int.")
-
-        try:
-            page = paginator.page(page_number)
-        except InvalidPage as e:
-            raise Http404('Invalid page (%(page_number)s): %(message)s' % {
-                'page_number': page_number,
-                'message': str(e)
-            })
-        context = {
-            'paginator': paginator,
-            'page_obj': page,
-            'is_paginated': page.has_other_pages(),
-            list_name: page.object_list,
-        }
-    else:
-        context = {
-            'paginator': None,
-            'page_obj': None,
-            'is_paginated': False,
-            list_name: queryset,
-        }
-    context.update(extra_context)
-    return TemplateResponse(
-        request=request,
-        template=[template_name],
-        context=context,
-    )
 
 
 _thisyear = None
