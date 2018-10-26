@@ -1,3 +1,4 @@
+import contextlib
 import logging
 from email.mime.base import MIMEBase
 
@@ -256,12 +257,10 @@ def handle_reference_bounce(bounced_email_address, reply_to, original_message, c
         reply_to = admin_emails
     camp = None
     if camp_name is not None:
-        try:
+        with contextlib.suppress(ValueError, Camp.DoesNotExist):
             camp_year, camp_slug = camp_name.split("-")
             camp = Camp.objects.get(year=int(camp_year),
                                     camp_name__slug=camp_slug)
-        except (ValueError, Camp.DoesNotExist):
-            pass
 
     forward_bounce_to([reply_to], bounced_email_address, original_message, camp)
 

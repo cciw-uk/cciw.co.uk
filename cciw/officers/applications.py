@@ -1,7 +1,8 @@
-from datetime import date, timedelta
+from datetime import timedelta
 
 from django.template import loader
 
+from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 from cciw.officers.models import Application
 
@@ -10,7 +11,7 @@ from cciw.officers.models import Application
 # This means we need another way to associate them. We also need to have a
 # concept of 'this year', so that an officer submits once application form 'per
 # year'. To manage this logic we're using dates of camps (which are clustered in
-# the summer) and the invitations to camp that ab officer has.
+# the summer) and the invitations to camp that am officer has.
 
 # Logic for dates:
 # - an application is considered valid for a camp/year if the date_saved
@@ -26,26 +27,16 @@ def thisyears_applications(user):
     Returns a QuerySet containing the applications a user has that
     apply to 'this year', i.e. to camps still in the future.
     """
-    future_camps = Camp.objects.filter(start_date__gte=date.today())
+    first_camp_thisyear = Camp.objects.filter(year=common.get_thisyear()).order_by('start_date').first()
     apps = user.applications.all()
-    future_camp = None
-    try:
-        future_camp = future_camps[0]
-    except IndexError:
-        pass
 
-    if future_camp is not None:
-        apps = apps.filter(date_saved__gte=future_camp.start_date - timedelta(365))
-        past_camps = Camp.objects.filter(start_date__year=future_camp.year - 1)\
-            .order_by('-end_date')
+    if first_camp_thisyear is not None:
+        apps = apps.filter(date_saved__gte=first_camp_thisyear.start_date - timedelta(365))
+        past_camp = (Camp.objects.filter(start_date__year=first_camp_thisyear.year - 1)
+                     .order_by('-end_date')
+                     .first())
     else:
-        past_camps = Camp.objects.order_by('-end_date')
-
-    past_camp = None
-    try:
-        past_camp = past_camps[0]
-    except IndexError:
-        pass
+        past_camp = Camp.objects.order_by('-end_date').first()
 
     if past_camp is not None:
         apps = apps.filter(date_saved__gt=past_camp.end_date)
@@ -91,16 +82,11 @@ def applications_for_camp(camp, officer_ids=None):
     apps = apps.filter(date_saved__lte=camp.start_date,
                        date_saved__gt=camp.start_date - timedelta(365))
 
-    previous_camps = Camp.objects.filter(year=camp.year - 1)\
-        .order_by('-end_date')
-    last = None
-    try:
-        last = previous_camps[0]
-    except IndexError:
-        pass
-    if last is not None:
+    previous_years_last_camp = Camp.objects.filter(year=camp.year - 1)\
+        .order_by('-end_date').first()
+    if previous_years_last_camp is not None:
         # We have some previous camps
-        apps = apps.filter(date_saved__gt=last.end_date)
+        apps = apps.filter(date_saved__gt=previous_years_last_camp.end_date)
     return apps
 
 

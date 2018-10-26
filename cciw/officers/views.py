@@ -1050,14 +1050,10 @@ def manage_dbss(request, year=None):
     # Selected camps:
     # We need to support URLs that indicate which camp to select, so we
     # can permalink nicely.
-    selected_camps = set()
     if 'camp' in request.GET:
-        try:
-            selected_camp_slugs = set(request.GET.getlist('camp'))
-            selected_camps = set([c for c in camps if c.slug_name in selected_camp_slugs])
-        except ValueError:
-            pass
-    if not selected_camps:  # empty or None
+        selected_camp_slugs = set(request.GET.getlist('camp'))
+        selected_camps = set([c for c in camps if c.slug_name in selected_camp_slugs])
+    else:
         # Assume all, because having none is never useful
         selected_camps = set(camps)
 

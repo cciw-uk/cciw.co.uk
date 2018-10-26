@@ -172,6 +172,7 @@
 # Leaders need to be presented with a list of bookings that they need to manually
 # approve. If they don't approve, need to send email to person booking.
 
+import contextlib
 import os
 import re
 from collections import defaultdict
@@ -553,11 +554,9 @@ def _get_places_dict(request, account):
     retval = {'status': 'success'}
     qs = account.bookings.all()
     if 'exclude' in request.GET:
-        try:
+        with contextlib.suppress(ValueError):
             exclude_id = int(request.GET['exclude'])
             qs = qs.exclude(id=exclude_id)
-        except ValueError:
-            pass
     retval['places'] = [booking_to_dict(b) for b in qs]
     return retval
 
@@ -597,10 +596,8 @@ def booking_problems_json(request):
 
     # Make it easy on front end:
     data = request.POST.copy()
-    try:
+    with contextlib.suppress(KeyError):
         data['created'] = data['created_0'] + ' ' + data['created_1']
-    except KeyError:
-        pass
 
     if 'booking_id' in data:
         booking_obj = Booking.objects.get(id=int(data['booking_id']))
@@ -728,16 +725,15 @@ class BookingListBookings(CciwBaseView):
                                   ]:
                     m = re.match(r, k)
                     if m is not None:
-                        try:
+                        with contextlib.suppress(
+                                ValueError,  # converting to string
+                                IndexError,  # not in list
+                        ):
                             b_id = int(m.groups()[0])
                             place = [p for p in places if p.id == b_id][0]
                             retval = action(place)
                             if retval is not None:
                                 return retval
-                        except (ValueError,  # converting to string
-                                IndexError,  # not in list
-                                ):
-                            pass
 
             if 'book_now' in request.POST:
                 state_token = request.POST.get('state_token', '')
