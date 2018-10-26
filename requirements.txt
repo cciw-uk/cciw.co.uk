@@ -11,7 +11,9 @@ beautifulsoup4==4.6.0
 bleach==1.5.0             # via wiki
 boto3==1.4.7
 botocore==1.7.48          # via boto3, s3transfer
+certifi==2018.10.15       # via requests
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
+chardet==3.0.4            # via requests
 click==6.7                # via pip-tools
 concurrentloghandler==0.9.1
 contextlib2==0.5.5        # via raven
@@ -49,7 +51,7 @@ frozendict==1.0
 furl==1.0.0
 html5lib==0.9999999       # via bleach
 hypothesis==3.9.0
-idna==2.6                 # via cryptography
+idna==2.6                 # via cryptography, requests
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.0.0
 jedi==0.12.0              # via ipython
@@ -88,15 +90,16 @@ pyvirtualdisplay==0.2.1   # via django-functest
 pyyaml==3.12
 raven==5.32.0
 rcssmin==1.0.6
-requests==2.13.0
+requests==2.20.0
 rjsmin==1.0.12
 s3transfer==0.1.13        # via boto3
-selenium==2.53.6
+selenium==3.14.1
 simplegeneric==0.8.1      # via ipython
 six==1.11.0               # via bcrypt, bleach, cryptography, django-anymail, django-dynamic-fixture, django-functest, django-nyt, django-paypal, fabric3, furl, html5lib, orderedmultidict, pip-tools, prompt-toolkit, pynacl, python-dateutil, traitlets, vcrpy, webtest, wiki
 sorl-thumbnail==12.4.1    # via wiki
 sqlparse==0.2.4           # via django-debug-toolbar
 traitlets==4.3.2          # via ipython
+urllib3==1.24             # via requests, selenium
 uwsgi==2.0.15
 vcrpy==1.10.2
 waitress==1.1.0           # via webtest
