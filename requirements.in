@@ -1,5 +1,5 @@
 ConcurrentLogHandler==0.9.1
-Django==1.11.13
+Django==1.11.17
 PyYAML==3.12
 attrs==16.2.0
 boto3==1.4.7

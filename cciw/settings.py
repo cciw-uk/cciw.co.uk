@@ -96,6 +96,7 @@ LOGIN_URL = "/officers/"
 ALLOWED_HOSTS = [".cciw.co.uk", "cciw.local"]
 
 INSTALLED_APPS = [
+    # 3rd party (that probably need to come first??)
     'dal',
     'dal_select2',
     'django.contrib.auth',
@@ -103,6 +104,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+
+    # Ours
     'cciw.accounts',
     'cciw.cciwmain.apps.CciwmainConfig',
     'cciw.sitecontent',
@@ -110,6 +113,9 @@ INSTALLED_APPS = [
     'cciw.utils',
     'cciw.bookings',
     'cciw.mail',
+    'cciw.contact_us',
+
+    # 3rd party
     'django.contrib.messages',
     'paypal.standard.ipn',
     'django.contrib.humanize',

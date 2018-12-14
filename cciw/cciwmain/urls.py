@@ -1,7 +1,6 @@
 from django.conf.urls import url
 
 from cciw.cciwmain.views import camps as camp_views
-from cciw.cciwmain.views import misc as misc_views
 from cciw.cciwmain.views import sites as sites_views
 from cciw.sitecontent import views as sitecontent_views
 
@@ -18,9 +17,6 @@ urlpatterns = [
     url(r'^sites/$', sites_views.index, name="cciw-cciwmain-sites_index"),
     url(r'^sites/(?P<slug>.*)/$', sites_views.detail, name="cciw-cciwmain-sites_detail"),
 
-    # ContactUs form
-    url(r'^contact/$', misc_views.contact_us, name="cciw-cciwmain-contact_us"),
-    url(r'^contact/done/$', misc_views.contact_us_done, name="cciw-cciwmain-contact_us_done"),
 
     url(r'^404/$', views.show404, name="cciw-404"),
     url(r'^500/$', views.show500, name="cciw-500"),

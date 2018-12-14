@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^wiki/', get_wiki_pattern()),
     url(r'^paypal/ipn/', include('paypal.standard.ipn.urls')),
     url(r'^mail/', include('cciw.mail.urls')),
+    url(r'^contact/', include('cciw.contact_us.urls')),
 ]
 
 if settings.DEVBOX:

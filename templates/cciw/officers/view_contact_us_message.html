@@ -1,0 +1,37 @@
+{% extends "cciw/officers/base_limited_width.html" %}
+
+{% block title %}Contact form message {{ message.id }} | CCIW Officers {% endblock %}
+
+{% block content %}
+  <h1>Message received via contact form</h1>
+  <table>
+    <tr>
+      <th>Name</th>
+      <td><input type="text" value="{{ message.name }}" readonly></td>
+    </tr>
+    <tr>
+      <th>Email</th>
+      <td><input type="text" value="{{ message.email }}" readonly> <a href="mailto:{{ message.email }}">(compose email)</a></td>
+    </tr>
+    <tr>
+      <th>Sent at</th>
+      <td>{{ message.timestamp|date:"Y-m-d, H:i" }}</td>
+    </tr>
+
+    <tr>
+      <th>Message</th>
+      <td>
+        <textarea rows="20" cols="60" readonly>{{ message.message }}
+        </textarea>
+      </td>
+    </tr>
+  </table>
+  <p><a href="mailto:{{ message.email|urlencode }}?subject={{ subject|urlencode }}&body={{ reply_template|urlencode }}">Reply in your email program</a></p>
+
+  <p class="help-text">If your browser is configured for your email program
+    properly, the above link should start a new email ready for your reply.
+    Otherwise you will need to copy the details into your email program with
+    copy-paste.
+  </p>
+
+{% endblock %}

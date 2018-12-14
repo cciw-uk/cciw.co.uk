@@ -1,0 +1,43 @@
+Email sending
+=============
+
+Email sending has been a severe headache!
+
+Running your own mailserver comes with a lot of problems regarding maintaining
+email reputation, to avoid being on a spam list.
+
+We are currently using mailgun.com to send email, to outsource this problem, but
+they also end up on blacklists sometimes.
+
+We need to send email for certain purposes:
+
+1. Our booking login process works via a confirmation email.
+
+2. We send confirmation of bookings to people who have booked, and reminders to pay.
+
+3. Our contact form needs to send out messages to a few CCIW staff.
+
+4. We send various emails about references to CCIW staff and other people.
+   We also handle bounces to some of these emails by notifying CCIW staff by email.
+
+5. We send out group emails to CCIW officers.
+
+We have the following strategies to cope with spam and avoiding being on black lists.
+
+1. Do not send out anything that could look spammy. This means having no
+   'forwarding' type @cciw.co.uk addresses. For example, we don't have
+   'bookings@cciw.co.uk', because spammers will spam it, we will forward the
+   spam from our mail server, and our server will get a bad reputation.
+
+2. Any group lists should have some kind of security on them to stop spammers sending to them.
+   For example, officer group lists require sender to be a part of the list. Sender fields are
+   spoofable, but less so these days for spammers, and would require specific knowledge to get
+   around this.
+
+3. For the few cases where we need to send out data that could be from a spammer (e.g. contact
+   form and a single 'webmaster@cciw.co.uk' address for various problems):
+
+   * The recipients of these will be limited to a few CCIW staff
+   * The email will not be sent. Instead, a link to a CCIW web page will be sent.
+   * This page shows the email from the user, and has a ``mailto`` link set
+     up that allows the staff to reply in their own email program.
