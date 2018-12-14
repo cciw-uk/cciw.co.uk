@@ -27,7 +27,7 @@ django-appconf==1.0.2     # via django-compressor
 django-autocomplete-light==3.2.1
 django-classy-tags==0.8.0  # via django-sekizai
 django-colorful==1.2
-django-compressor==2.1
+django-compressor==2.2
 django-countries==5.3
 django-debug-toolbar==1.7
 django-dynamic-fixture==1.9.5
@@ -37,7 +37,9 @@ django-mptt==0.8.7        # via wiki
 django-nyt==1.0           # via wiki
 django-paypal==0.5.0
 django-plainpasswordhasher==0.3
+django-ranged-response==0.2.0  # via django-simple-captcha
 django-sekizai==0.10.0    # via wiki
+django-simple-captcha==0.5.9
 django-webtest==1.9.3     # via django-functest
 django==1.11.13
 docutils==0.14            # via botocore
@@ -70,7 +72,7 @@ paramiko==2.4.1           # via fabric3
 parso==0.2.0              # via jedi
 pexpect==4.5.0            # via ipython
 pickleshare==0.7.4        # via ipython
-pillow==5.1.0             # via wiki
+pillow==5.3.0             # via django-simple-captcha, wiki
 pip-tools==2.0.2
 prompt-toolkit==1.0.15    # via ipython
 psutil==5.2.2
@@ -95,7 +97,7 @@ rjsmin==1.0.12
 s3transfer==0.1.13        # via boto3
 selenium==3.14.1
 simplegeneric==0.8.1      # via ipython
-six==1.11.0               # via bcrypt, bleach, cryptography, django-anymail, django-dynamic-fixture, django-functest, django-nyt, django-paypal, fabric3, furl, html5lib, orderedmultidict, pip-tools, prompt-toolkit, pynacl, python-dateutil, traitlets, vcrpy, webtest, wiki
+six==1.11.0               # via bcrypt, bleach, cryptography, django-anymail, django-dynamic-fixture, django-functest, django-nyt, django-paypal, django-simple-captcha, fabric3, furl, html5lib, orderedmultidict, pip-tools, prompt-toolkit, pynacl, python-dateutil, traitlets, vcrpy, webtest, wiki
 sorl-thumbnail==12.4.1    # via wiki
 sqlparse==0.2.4           # via django-debug-toolbar
 traitlets==4.3.2          # via ipython
