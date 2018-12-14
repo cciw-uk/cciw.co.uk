@@ -137,12 +137,22 @@ class AjaxFormValidation(object):
     A mixin that enables the returning of validation results by JSON
     if accessed with ?format=json.
     """
+    ajax_form_validation_skip_fields = []
+
     def pre_handle(self, request, *args, **kwargs):
         if request.method == "POST":
             if request.GET.get('format', None) == 'json':
-                form = self.form_class(request.POST)
+                data = request.POST.copy()
+                # Don't validate skipped fields
+                for f in self.ajax_form_validation_skip_fields:
+                    data.pop(f)
+                form = self.form_class(data)
+                errors = form.errors.copy()
+                # And don't report their errors either
+                for f in self.ajax_form_validation_skip_fields:
+                    errors.pop(f)
                 return HttpResponse(
-                    python_to_json(form.errors),
+                    python_to_json(errors),
                     content_type='text/javascript',
                 )
 

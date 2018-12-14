@@ -514,6 +514,7 @@ div.sitephoto {
 // Forms
 
 @labelWidth: 16em;
+@fieldHelpScale: 0.9;
 
 div.formrow {
 
@@ -566,7 +567,7 @@ div.formrow {
     }
 
     .field-help {
-        font-size: 90%;
+        font-size: @fieldHelpScale * 100%;
         color: @textLighterColor;
     }
 }
@@ -621,6 +622,14 @@ input.placeholder {
 
 }
 
+#contactform .field-help {
+    display: block;
+    margin-left: @labelWidth / @fieldHelpScale;
+}
+
+img.captcha {
+    vertical-align: top;
+}
 // Breadcrumbs
 
 div.breadcrumb {

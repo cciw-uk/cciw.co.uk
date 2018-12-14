@@ -131,6 +131,7 @@ INSTALLED_APPS = [
     'raven.contrib.django.raven_compat',
     'anymail',
     'mailer',
+    'captcha',
 ]
 
 if not (LIVEBOX and WEBSERVER_RUNNING):
@@ -507,3 +508,12 @@ if LIVEBOX:
     GOOGLE_ANALYTICS_ACCOUNT = SECRETS['GOOGLE_ANALYTICS_ACCOUNT']
 else:
     GOOGLE_ANALYTICS_ACCOUNT = ''
+
+CAPTCHA_FONT_PATH = os.path.join(BASE_DIR, "cciw", "cciwmain", "static", "fonts", "Jurassic_Park.ttf")
+if not os.path.exists(CAPTCHA_FONT_PATH):
+    raise ValueError("CAPTCHA_FONT_PATH is incorrect - file missing {0}".format(CAPTCHA_FONT_PATH))
+CAPTCHA_FONT_SIZE = 60   # Jurassic Park font is really small for some reason
+CAPTCHA_LETTER_ROTATION = (-30, 30)
+
+if TESTS_RUNNING:
+    CAPTCHA_TEST_MODE = True

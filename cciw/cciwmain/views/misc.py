@@ -1,4 +1,4 @@
-
+from captcha.fields import CaptchaField
 from django import forms
 from django.conf import settings
 from django.core import mail
@@ -54,6 +54,8 @@ class ContactUsForm(CciwFormMixin, forms.Form):
     email = forms.EmailField(label="Email address", max_length=320)
     name = forms.CharField(label="Name", max_length=200, required=False)
     message = forms.CharField(label="Message", widget=forms.Textarea)
+    cx = CaptchaField(label="Captcha",
+                      help_text="To show you are not a spam-bot please enter the text you see above")
 
 
 class ContactUsBase(CciwBaseView):
@@ -63,6 +65,8 @@ class ContactUsBase(CciwBaseView):
 class ContactUsFormView(AjaxFormValidation, ContactUsBase):
     form_class = ContactUsForm
     template_name = 'cciw/contact_us.html'
+
+    ajax_form_validation_skip_fields = ["cx"]
 
     def handle(self, request):
         if request.method == "POST":

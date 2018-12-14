@@ -26,6 +26,8 @@ class ContactUsPage(BasicSetupMixin, TestBase):
         self.client.post(CONTACT_US_URL, data=dict(name="My Name",
                                                    email="",
                                                    message="The Message",
+                                                   cx_0="PASSED",
+                                                   cx_1="PASSED",
                                                    subject="website"))
         self.assertEqual(len(mail.outbox), 0)
 
@@ -33,6 +35,8 @@ class ContactUsPage(BasicSetupMixin, TestBase):
         self.client.post(CONTACT_US_URL, data=dict(name="My Name",
                                                    email="invalidemail",
                                                    message="The Message",
+                                                   cx_0="PASSED",
+                                                   cx_1="PASSED",
                                                    subject="website"))
         self.assertEqual(len(mail.outbox), 0)
 
@@ -40,6 +44,8 @@ class ContactUsPage(BasicSetupMixin, TestBase):
         self.client.post(CONTACT_US_URL, data=dict(name="My Name",
                                                    email="validemail@somewhere.com",
                                                    message="",
+                                                   cx_0="PASSED",
+                                                   cx_1="PASSED",
                                                    subject="website"))
         self.assertEqual(len(mail.outbox), 0)
 
@@ -54,6 +60,8 @@ class ContactUsPage(BasicSetupMixin, TestBase):
         self.client.post(CONTACT_US_URL, data=dict(name="My Name",
                                                    email="validemail@somewhere.com",
                                                    message="The Message",
+                                                   cx_0="PASSED",
+                                                   cx_1="PASSED",
                                                    subject="general"))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [settings.CONTACT_US_EMAIL])
@@ -64,6 +72,8 @@ class ContactUsPage(BasicSetupMixin, TestBase):
                          data=dict(name="My Name",
                                    email="validemail@somewhere.com",
                                    message="The Message",
+                                   cx_0="PASSED",
+                                   cx_1="PASSED",
                                    subject="bookings"))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(sorted(mail.outbox[0].to),
