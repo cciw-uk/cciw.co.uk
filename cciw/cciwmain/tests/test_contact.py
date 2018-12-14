@@ -64,7 +64,7 @@ class ContactUsPage(BasicSetupMixin, TestBase):
                                                    cx_1="PASSED",
                                                    subject="general"))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [settings.CONTACT_US_EMAIL])
+        self.assertEqual(mail.outbox[0].to, settings.EMAIL_RECIPIENTS["GENERAL_CONTACT"])
         self.assertEqual(mail.outbox[0].extra_headers['Reply-To'], 'validemail@somewhere.com')
 
     def test_send_to_booking_secretary(self):
@@ -77,5 +77,4 @@ class ContactUsPage(BasicSetupMixin, TestBase):
                                    subject="bookings"))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(sorted(mail.outbox[0].to),
-                         sorted([settings.BOOKING_SECRETARY_EMAIL,
-                                 settings.CONTACT_US_EMAIL]))
+                         sorted(settings.EMAIL_RECIPIENTS["BOOKING_SECRETARY"]))

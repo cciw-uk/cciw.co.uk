@@ -60,7 +60,7 @@ def send_application_emails(request, application):
                       camp.leaders_formatted)
 
     if len(leader_email_groups) == 0:
-        send_leader_email([settings.SECRETARY_EMAIL], application)
+        send_leader_email(settings.SECRETARY_EMAILS, application)
         messages.info(request,
                       "The application form has been sent to the CCIW secretary, "
                       "because you are not on any camp's officer list this year.")
@@ -186,7 +186,7 @@ def send_reference_request_email(message, referee, sending_officer, camp):
     officer = referee.application.officer
     EmailMessage(subject="[CCIW] Reference for {0}".format(officer.full_name),
                  body=message,
-                 from_email=settings.REFERENCES_EMAIL,
+                 from_email=settings.WEBMASTER_FROM_EMAIL,
                  to=[referee.email],
                  headers={'Reply-To': sending_officer.email,
                           X_CCIW_CAMP: camp.slug_name_with_year,

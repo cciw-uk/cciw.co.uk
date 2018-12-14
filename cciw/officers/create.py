@@ -67,8 +67,8 @@ def email_officer(user, update=False, token_generator=default_token_generator):
                             'token': token_generator.make_token(user),
                             'PASSWORD_RESET_TIMEOUT_DAYS': settings.PASSWORD_RESET_TIMEOUT_DAYS,
                             'first_name': user.first_name,
-                            'webmasteremail': settings.WEBMASTER_EMAIL,
+                            'webmasteremail': settings.WEBMASTER_FROM_EMAIL,
                             'domain': common.get_current_domain(),
                             'update': update})
 
-    send_mail(subject, msg, settings.WEBMASTER_EMAIL, [user.email])
+    send_mail(subject, msg, settings.WEBMASTER_FROM_EMAIL, [user.email])

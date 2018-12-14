@@ -98,7 +98,7 @@ def send_unrecognised_payment_email(ipn_obj):
 
     body = loader.render_to_string("cciw/bookings/unrecognised_payment_email.txt", c)
     subject = "[CCIW] Booking - unrecognised payment"
-    mail.send_mail(subject, body, settings.SERVER_EMAIL, [settings.WEBMASTER_EMAIL])
+    mail.send_mail(subject, body, settings.SERVER_EMAIL, settings.WEBMASTER_EMAILS)
 
 
 def send_pending_payment_email(account, ipn_obj):
@@ -108,7 +108,7 @@ def send_pending_payment_email(account, ipn_obj):
     }
     body = loader.render_to_string("cciw/bookings/pending_payment_email.txt", c)
     subject = "[CCIW] Booking - pending payment"
-    mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
 
 def send_places_confirmed_email(bookings, **kwargs):
@@ -131,7 +131,7 @@ def send_places_confirmed_email(bookings, **kwargs):
     # Use queued_mail, which uses DB storage, because this function gets
     # triggered from within payment processing, and we want to ensure that
     # network errors won't affect this processing.
-    queued_mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+    queued_mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
     # Email leaders. Bookings could be for different camps, so send different
     # emails.
@@ -172,7 +172,7 @@ def send_booking_expiry_mail(account, bookings, expired):
         subject = "[CCIW] Booking expired"
     else:
         subject = "[CCIW] Booking expiry warning"
-    mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+    mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
 
 def send_booking_approved_mail(booking):
@@ -188,7 +188,7 @@ def send_booking_approved_mail(booking):
     }
     body = loader.render_to_string('cciw/bookings/place_approved_email.txt', c)
     subject = "[CCIW] Booking - approved"
-    queued_mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+    queued_mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
     return True
 
@@ -204,7 +204,7 @@ def send_booking_confirmed_mail(booking):
     }
     body = loader.render_to_string('cciw/bookings/place_booked_email.txt', c)
     subject = "[CCIW] Booking - confirmed"
-    queued_mail.send_mail(subject, body, settings.SERVER_EMAIL, [account.email])
+    queued_mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
     return True
 
@@ -232,4 +232,4 @@ def send_payment_reminder_emails():
             'token': EmailVerifyTokenGenerator().token_for_email(account.email),
         }
         body = loader.render_to_string('cciw/bookings/payments_due_email.txt', c)
-        mail.send_mail(subject, body, settings.BOOKING_SECRETARY_EMAIL, [account.email])
+        mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])

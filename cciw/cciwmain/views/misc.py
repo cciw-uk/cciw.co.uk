@@ -12,9 +12,7 @@ from cciw.cciwmain.forms import CciwFormMixin
 
 def send_feedback(to_emails, from_email, name, message):
     message = wrap(message, 70)
-    email = mail.EmailMessage(
-        subject="[CCIW] Website feedback",
-        body="""
+    body = """
 The following message has been sent on the CCIW website feedback form:
 
 From: %(name)s
@@ -22,7 +20,11 @@ Email: %(from_email)s
 Message:
 %(message)s
 
-""" % locals(),
+""" % locals()
+
+    email = mail.EmailMessage(
+        subject="[CCIW] Website feedback",
+        body=body,
         from_email=settings.SERVER_EMAIL,
         to=to_emails,
         headers={'Reply-To': from_email})
@@ -40,13 +42,6 @@ CONTACT_CHOICES = [
     (CONTACT_CHOICE_BOOKINGS, 'Bookings'),
     (CONTACT_CHOICE_GENERAL, 'Other'),
 ]
-
-CONTACT_CHOICE_DESTS = {
-    CONTACT_CHOICE_GENERAL: ['CONTACT_US_EMAIL'],
-    CONTACT_CHOICE_BOOKINGFORM: ['BOOKING_FORM_EMAIL', 'CONTACT_US_EMAIL'],
-    CONTACT_CHOICE_WEBSITE: ['WEBMASTER_EMAIL', 'CONTACT_US_EMAIL'],
-    CONTACT_CHOICE_BOOKINGS: ['BOOKING_SECRETARY_EMAIL', 'CONTACT_US_EMAIL'],
-}
 
 
 class ContactUsForm(CciwFormMixin, forms.Form):
@@ -69,10 +64,18 @@ class ContactUsFormView(AjaxFormValidation, ContactUsBase):
     ajax_form_validation_skip_fields = ["cx"]
 
     def handle(self, request):
+        # At module level, use of 'settings' seems to cause problems
+        CONTACT_CHOICE_DESTS = {
+            CONTACT_CHOICE_GENERAL: settings.GENERAL_CONTACT_EMAILS,
+            CONTACT_CHOICE_BOOKINGFORM: settings.BOOKING_FORMS_EMAILS,
+            CONTACT_CHOICE_WEBSITE: settings.WEBMASTER_EMAILS,
+            CONTACT_CHOICE_BOOKINGS: settings.BOOKING_SECRETARY_EMAILS,
+        }
+
         if request.method == "POST":
             form = self.form_class(request.POST)
             if form.is_valid():
-                to_emails = [getattr(settings, email) for email in CONTACT_CHOICE_DESTS[form.cleaned_data['subject']]]
+                to_emails = CONTACT_CHOICE_DESTS[form.cleaned_data['subject']]
                 send_feedback(
                     to_emails,
                     form.cleaned_data['email'],

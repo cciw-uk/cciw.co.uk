@@ -64,10 +64,6 @@ else:
 
 INTERNAL_IPS = ('127.0.0.1',)
 
-ADMINS = (
-    ('Luke Plant', 'L.Plant.98@cantab.net'),
-)
-
 LANGUAGE_CODE = 'en-gb'
 
 DEFAULT_CONTENT_TYPE = "text/html"
@@ -356,9 +352,14 @@ else:
 MAILGUN_TEST_RECEIVER = SECRETS['MAILGUN_TEST_RECEIVER']
 
 
-SERVER_EMAIL = "CCIW website <website@cciw.co.uk>"
+EMAIL_RECIPIENTS = SECRETS["EMAIL_RECIPIENTS"]
+SERVER_EMAIL = "CCIW website <noreply@cciw.co.uk>"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
-REFERENCES_EMAIL = "CCIW references <references@cciw.co.uk>"
+ADMINS = [
+    ('webmaster', email)
+    for email in EMAIL_RECIPIENTS['WEBMASTER']
+]
+
 
 if LIVEBOX:
     EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
@@ -379,6 +380,8 @@ if TESTS_RUNNING:
     # This doesn't seem to take effect, see TestBaseMixin
     EMAIL_BACKEND = "cciw.mail.tests.TestMailBackend"
     MAILER_EMAIL_BACKEND = EMAIL_BACKEND
+
+EMAIL_ENCRYPTION_PUBLIC_KEYS = SECRETS["EMAIL_ENCRYPTION_PUBLIC_KEYS"]
 
 # == MAILING LISTS ==
 
@@ -439,13 +442,19 @@ COMPRESS_PRECOMPILERS = [
 
 # CCIW SPECIFIC SETTINGS AND CONSTANTS
 
-CONTACT_US_EMAIL = "feedback@cciw.co.uk"
-BOOKING_SECRETARY_EMAIL = "bookings@cciw.co.uk"
-BOOKING_FORM_EMAIL = "bookingforms@cciw.co.uk"
-SECRETARY_EMAIL = "secretary@cciw.co.uk"
+# This 'from' email address is used on emails where the user
+# might want to press 'reply' and get to a person e.g. for
+# booking issues
+WEBMASTER_FROM_EMAIL = "webmaster@cciw.co.uk"
+
+BOOKING_FORMS_EMAILS = EMAIL_RECIPIENTS["BOOKING_FORMS"]
+BOOKING_SECRETARY_EMAILS = EMAIL_RECIPIENTS["BOOKING_SECRETARY"]
+GENERAL_CONTACT_EMAILS = EMAIL_RECIPIENTS["GENERAL_CONTACT"]
+SECRETARY_EMAILS = EMAIL_RECIPIENTS["SECRETARY"]
+WEBMASTER_EMAILS = EMAIL_RECIPIENTS["WEBMASTER"]
+
 BOOKINGFORMDIR = "downloads"
-WEBMASTER_EMAIL = "webmaster@cciw.co.uk"
-LIST_MAILBOX_NAME = "camplists"
+
 ESV_KEY = 'IP'
 DBS_VALID_FOR = 365 * 3  # We consider a DBS check valid for 3 years
 GROUPS_CONFIG_FILE = os.path.join(basedir, 'config', 'groups.yaml')

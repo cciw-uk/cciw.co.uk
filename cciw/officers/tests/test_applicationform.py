@@ -353,7 +353,8 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         # secretary.
         emails = self._get_application_form_emails()
         self.assertEqual(len(emails), 2)
-        self.assertTrue(any(e.to == [settings.SECRETARY_EMAIL] for e in emails))
+        self.assertTrue(
+            any(e.to == settings.SECRETARY_EMAILS for e in emails))
 
     def test_change_application_after_camp_past(self):
         """
