@@ -14,6 +14,11 @@ Assuming a Linux/Unix machine, the requirements are:
 * Postgres >= 9.5
 * Node
 
+For tests, see also:
+
+* requirements of `django-functest <https://django-functest.readthedocs.io/en/latest/installation.html#dependencies>`_
+* requirements of `PyVirtualDisplay <https://github.com/ponty/pyvirtualdisplay#installation/>`_
+
 Steps:
 
 These steps have only been tested on Ubuntu-based Linux installations.
