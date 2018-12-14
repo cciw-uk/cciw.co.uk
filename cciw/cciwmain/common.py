@@ -10,7 +10,7 @@ from functools import update_wrapper
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import mail_admins
-from django.http import Http404, HttpResponse
+from django.http import HttpResponse
 from django.template.response import TemplateResponse
 from django.utils import timezone
 from django.utils.decorators import classonlymethod
