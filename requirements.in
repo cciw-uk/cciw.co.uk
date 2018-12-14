@@ -12,7 +12,7 @@ django-countries==5.3
 django-mailer==1.2.2
 django-paypal==0.5.0
 ezodf2==0.2.10
-fabric3==1.13.1.post1
+fabric3==1.14.post1
 fabtools3==0.19.0
 frozendict==1.0
 furl==1.0.0
@@ -23,7 +23,7 @@ pandas-highcharts==0.5.2
 pandas==0.18.1
 pip-tools==2.0.2
 psutil==5.2.2
-psycopg2==2.7.3
+psycopg2==2.7.6.1
 python-dateutil==2.5.3
 python3-memcached==1.51
 pytz==2018.4
