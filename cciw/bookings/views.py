@@ -210,7 +210,7 @@ from cciw.utils.views import user_passes_test_improved
 
 
 # decorators and utilities
-def ensure_booking_acount_attr(request):
+def ensure_booking_account_attr(request):
     if not hasattr(request, 'booking_account'):
         request.booking_account = get_booking_account_from_request(request)
 
@@ -223,7 +223,7 @@ def booking_account_required(view_func):
     """
     @wraps(view_func)
     def view(request, *args, **kwargs):
-        ensure_booking_acount_attr(request)
+        ensure_booking_account_attr(request)
         if request.booking_account is None:
             return HttpResponseRedirect(reverse('cciw-bookings-not_logged_in'))
         return view_func(request, *args, **kwargs)
@@ -233,7 +233,7 @@ def booking_account_required(view_func):
 def account_details_required(view_func):
     @wraps(view_func)
     def view(request, *args, **kwargs):
-        ensure_booking_acount_attr(request)
+        ensure_booking_account_attr(request)
         if not request.booking_account.has_account_details():
             return next_step(request.booking_account)
         return view_func(request, *args, **kwargs)
@@ -252,7 +252,7 @@ class BookingIndex(CciwBaseView):
     template_name = "cciw/bookings/index.html"
 
     def handle(self, request):
-        ensure_booking_acount_attr(request)
+        ensure_booking_account_attr(request)
         year = common.get_thisyear()
         bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
         context = {}

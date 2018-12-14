@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django import template
 from django.urls import reverse
 
-from cciw.bookings.views import ensure_booking_acount_attr
+from cciw.bookings.views import ensure_booking_account_attr
 
 register = template.Library()
 
@@ -12,7 +12,7 @@ register = template.Library()
 def bookingbar(context):
 
     request = context['request']
-    ensure_booking_acount_attr(request)
+    ensure_booking_account_attr(request)
     booking_account = request.booking_account
     logged_in = booking_account is not None
     current_stage = context['stage']
