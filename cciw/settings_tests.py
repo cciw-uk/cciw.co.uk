@@ -30,29 +30,15 @@ ALLOWED_HOSTS = [
     'localhost',
 ]
 
-# Disable migrations for tests, for speed
-app_names = [
-    'accounts',
-    'admin',
-    'auth',
-    'bookings',
-    'cciwmain',
-    'contact_us',
-    'contenttypes',
-    'django_nyt',
-    'ipn',
-    'mail',
-    'mailer',
-    'officers',
-    'sessions',
-    'sitecontent',
-    'sites',
-    'thumbnail',
-    'wiki',
-    'wiki_attachments',
-    'wiki_images',
-    'wiki_notifications',
-    'captcha',
-]
 
-MIGRATION_MODULES = {app: None for app in app_names}
+# Hack to disable migrations for tests, for speed
+class DisableMigrations(object):
+
+    def __contains__(self, item):
+        return True
+
+    def __getitem__(self, item):
+        return None
+
+
+MIGRATION_MODULES = DisableMigrations()
