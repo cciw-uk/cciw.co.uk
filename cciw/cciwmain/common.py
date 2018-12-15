@@ -145,12 +145,12 @@ class AjaxFormValidation(object):
                 data = request.POST.copy()
                 # Don't validate skipped fields
                 for f in self.ajax_form_validation_skip_fields:
-                    data.pop(f)
+                    data.pop(f, None)
                 form = self.form_class(data)
                 errors = form.errors.copy()
                 # And don't report their errors either
                 for f in self.ajax_form_validation_skip_fields:
-                    errors.pop(f)
+                    errors.pop(f, None)
                 return HttpResponse(
                     python_to_json(errors),
                     content_type='text/javascript',
