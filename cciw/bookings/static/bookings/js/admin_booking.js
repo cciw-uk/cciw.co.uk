@@ -24,7 +24,6 @@ $(document).ready(function() {
             url: cciw.allAccountJsonUrl + "?id=" + accId.toString(),
             dataType: "json",
             success: function(json) {
-                $('#id_address').val(json.account.address);
                 $('#id_address_line1').val(json.account.address_line1);
                 $('#id_address_line2').val(json.account.address_line2);
                 $('#id_address_city').val(json.account.address_city);
@@ -45,7 +44,6 @@ $(document).ready(function() {
             url: cciw.allAccountJsonUrl + "?id=" + accId.toString(),
             dataType: "json",
             success: function(json) {
-                $('#id_contact_address').val(json.account.address);
                 $('#id_contact_name').val(json.account.name);
                 $('#id_contact_line1').val(json.account.address_line1);
                 $('#id_contact_line2').val(json.account.address_line2);
@@ -148,9 +146,9 @@ $(document).ready(function() {
     // Page changes
     $('#id_first_name').parent().append('<input type="submit" class="use_existing_btn" value="Use previous data" style="display:none;">');
 
-    $('#id_address').parent().append('<input type="submit" value="Copy address details from account"' +
+    $('#id_address_line1').parent().append('<input type="submit" value="Copy address details from account"' +
                                      'id="id_use_account_for_camper">');
-    $('#id_contact_address').parent().append('<input type="submit" value="Copy contact details from account"' +
+    $('#id_contact_name').parent().append('<input type="submit" value="Copy contact details from account"' +
                                      'id="id_use_account_for_contact">');
     $('div.field-camp').append('<div id="place-availability">');
     $('#id_amount_due').after('<input type="submit" id="id_amount_due_auto" value="">');

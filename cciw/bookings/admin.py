@@ -97,26 +97,6 @@ class BookingAccountBookingInline(ReadOnlyInline, admin.TabularInline):
         )
 
 
-class AddressesMigratedFilter(admin.SimpleListFilter):
-    title = "Addresses migrated"
-    parameter_name = "addresses_migrated"
-
-    def lookups(self, request, model_admin):
-        return [
-            (1, 'Yes'),
-            (0, 'No'),
-        ]
-
-    def queryset(self, request, queryset):
-        val = self.value()
-        if val is None:
-            return queryset
-        if val == '0':
-            return queryset.addresses_not_migrated()
-        elif val == '1':
-            return queryset.addresses_migrated()
-
-
 class LoggedInFilter(admin.SimpleListFilter):
     title = "Ever logged in"
     parameter_name = "logged_in"
@@ -154,7 +134,7 @@ class BookingsYearFilter(admin.SimpleListFilter):
 
 class BookingAccountAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'email', 'address_post_code', 'phone_number']
-    list_filter = [AddressesMigratedFilter, LoggedInFilter, BookingsYearFilter, 'subscribe_to_newsletter']
+    list_filter = [LoggedInFilter, BookingsYearFilter, 'subscribe_to_newsletter']
     ordering = ['email']
     search_fields = ['email', 'name']
     readonly_fields = ['first_login', 'last_login', 'total_received', 'admin_balance']
@@ -169,7 +149,6 @@ class BookingAccountAdmin(admin.ModelAdmin):
             (None,
              {'fields': ['name',
                          'email',
-                         'address',
                          'address_line1',
                          'address_line2',
                          'address_city',
@@ -269,7 +248,7 @@ class BookingAdmin(admin.ModelAdmin):
     search_fields = ['first_name', 'last_name']
     ordering = ['-camp__year', 'first_name', 'last_name']
     date_hierarchy = 'created'
-    list_filter = [YearFilter, 'sex', 'price_type', 'early_bird_discount', 'serious_illness', 'state', 'created_online', ConfirmedFilter, AddressesMigratedFilter]
+    list_filter = [YearFilter, 'sex', 'price_type', 'early_bird_discount', 'serious_illness', 'state', 'created_online', ConfirmedFilter]
     readonly_fields = ['booked_at', 'created_online']
 
     form = BookingAdminForm
@@ -288,7 +267,6 @@ class BookingAdmin(admin.ModelAdmin):
            'last_name',
            'sex',
            'date_of_birth',
-           'address',
            'address_line1',
            'address_line2',
            'address_city',
@@ -302,8 +280,7 @@ class BookingAdmin(admin.ModelAdmin):
          {'fields': ['church']}),
         ('Contact details',
          {'fields':
-          ['contact_address',
-           'contact_name',
+          ['contact_name',
            'contact_line1',
            'contact_line2',
            'contact_city',
@@ -318,7 +295,6 @@ class BookingAdmin(admin.ModelAdmin):
         ('GP details',
          {'fields':
           ['gp_name',
-           'gp_address',
            'gp_line1',
            'gp_line2',
            'gp_city',

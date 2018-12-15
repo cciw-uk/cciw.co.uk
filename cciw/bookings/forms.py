@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from django.forms.forms import BoundField
 from django.utils.html import format_html
 
 from cciw.bookings.models import Booking, BookingAccount, Price
@@ -13,63 +12,12 @@ class EmailForm(CciwFormMixin, forms.Form):
     email = forms.EmailField()
 
 
-def migrate_address_form(*fields):
-    """
-    Creates a base class used to migrate data from old address field.
-    """
-    # If the old address is present, it should be displayed
-    # in a non-editable box, with a message saying it needs to be migrated.
-    # If it is not present, it should not be displayed at all.
-
-    class MigrateAddressFormMixin(object):
-        def __init__(self, data=None, instance=None, **kwargs):
-            if data is not None and instance is not None:
-                data = data.copy()
-                # Disallow saving of data, by setting it from the instance
-                # and ignoring what was posted.
-                for f in fields:
-                    data[f] = getattr(instance, f)
-            super(MigrateAddressFormMixin, self).__init__(data=data, instance=instance, **kwargs)
-
-        def render_field(self, name, field, top_errors, hidden_fields, label_text=None):
-            if name in fields:
-                has_data = False
-                bf = BoundField(self, field, name)
-                if bf.value():
-                    has_data = True
-                # We can have simplified logic relative to super.render_field,
-                # since we don't need to worry about errors, required fields etc.
-                field = (
-                    "<div class=\"userError\">"
-                    "We have been unable to automatically handle the following old address information. "
-                    "Please split the information in this address into the fields below, "
-                    "and ensure that the post code is correct:"
-                    "</div>"
-                ) + self.normal_row_template % {
-                    'errors_html': '',
-                    'label': bf.label_tag((label_text or bf.label) + ":"),
-                    'field': bf.as_widget(attrs={'readonly': 'readonly'}),
-                    'help_text': '',
-                    'class': self.div_normal_class,
-                    'divid': "div_id_%s" % bf.name,
-                }
-                hider = '' if has_data else 'style="display: none;"'
-                return ('<div class="addressMigrationWrapper" {0}>{1}</div>'
-                        .format(hider, field))
-            else:
-                return super(MigrateAddressFormMixin, self).render_field(name, field, top_errors,
-                                                                         hidden_fields, label_text=label_text)
-
-    return MigrateAddressFormMixin
-
-
-class AccountDetailsForm(migrate_address_form('address'), CciwFormMixin, forms.ModelForm):
+class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
 
     class Meta:
         model = BookingAccount
         fields = [
             'name',
-            'address',
             'address_line1',
             'address_line2',
             'address_city',
@@ -115,8 +63,7 @@ class FixPriceMixin(object):
         self.fields['price_type'].choices = price_choices
 
 
-class AddPlaceForm(migrate_address_form('address', 'contact_address', 'gp_address'),
-                   FixPriceMixin, CciwFormMixin, forms.ModelForm):
+class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
 
     camp = forms.ChoiceField(choices=[],
                              widget=forms.RadioSelect)
@@ -155,7 +102,6 @@ class AddPlaceForm(migrate_address_form('address', 'contact_address', 'gp_addres
             'last_name',
             'sex',
             'date_of_birth',
-            'address',
             'address_line1',
             'address_line2',
             'address_city',
@@ -165,7 +111,6 @@ class AddPlaceForm(migrate_address_form('address', 'contact_address', 'gp_addres
             'phone_number',
             'email',
             'church',
-            'contact_address',
             'contact_name',
             'contact_line1',
             'contact_line2',
@@ -176,7 +121,6 @@ class AddPlaceForm(migrate_address_form('address', 'contact_address', 'gp_addres
             'contact_phone_number',
             'dietary_requirements',
             'gp_name',
-            'gp_address',
             'gp_line1',
             'gp_line2',
             'gp_city',

@@ -108,7 +108,6 @@
              };
 
              var address_attrs = [
-                 'address',
                  'address_line1',
                  'address_line2',
                  'address_city',
@@ -116,7 +115,6 @@
                  'address_country',
                  'address_post_code',
                  'phone_number',
-                 'contact_address',
                  'contact_name',
                  'contact_line1',
                  'contact_line2',
@@ -129,7 +127,6 @@
 
              var gp_info_attrs = [
                  'gp_name',
-                 'gp_address',
                  'gp_line1',
                  'gp_line2',
                  'gp_city',
@@ -165,25 +162,6 @@
                  'learning_difficulties'
              ];
 
-             var migrated_address_fields = [
-                 'address',
-                 'contact_address',
-                 'gp_address'
-             ];
-
-             var updateMigratedAddressFields = function() {
-                 for (var i=0; i < migrated_address_fields.length; i++) {
-                     var attr = migrated_address_fields[i];
-                     var $elem = $('#id_' + attr);
-                     var $wrapper = $('#div_id_' + attr).closest('.addressMigrationWrapper');
-                     if ($elem.val() == "") {
-                         $wrapper.hide();
-                     } else {
-                         $wrapper.show();
-                     }
-                 }
-             }
-
              var useData = function(attrs) {
                  var radios = $('input[name=use_which_booking]');
                  var chosen = null;
@@ -208,7 +186,6 @@
                              cciw.standardformClearError(mainform[attr].id);
 
                          }
-                         updateMigratedAddressFields();
                      }
                  }
                  if (chosen === null) {
@@ -251,13 +228,11 @@
 
                      $(control_id).change();
                  });
-                 updateMigratedAddressFields();
              };
 
              var useAccountForCamperAddressClick = function(ev) {
                  ev.preventDefault();
-                 useAccountData(['address',
-                                 'address_line1',
+                 useAccountData(['address_line1',
                                  'address_line2',
                                  'address_city',
                                  'address_county',
@@ -268,8 +243,7 @@
 
              var useAccountForContactDetailsClick = function(ev) {
                  ev.preventDefault();
-                 useAccountData(['address',
-                                 'name',
+                 useAccountData(['name',
                                  'address_line1',
                                  'address_line2',
                                  'address_city',
@@ -277,8 +251,7 @@
                                  'address_country',
                                  'address_post_code',
                                  'phone_number'],
-                                ['contact_address',
-                                 'contact_name',
+                                ['contact_name',
                                  'contact_line1',
                                  'contact_line2',
                                  'contact_city',

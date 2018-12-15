@@ -7,7 +7,6 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models import Q
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django_countries.fields import CountryField
@@ -120,12 +119,7 @@ class Price(models.Model):
 
 
 class BookingAccountQuerySet(models.QuerySet):
-
-    def addresses_migrated(self):
-        return self.exclude(address_line1="")
-
-    def addresses_not_migrated(self):
-        return self.filter(Q(address_line1="") & ~Q(address=""))
+    pass
 
 
 class BookingAccountManagerBase(models.Manager):
@@ -154,28 +148,6 @@ class BookingAccountManagerBase(models.Manager):
 BookingAccountManager = BookingAccountManagerBase.from_queryset(BookingAccountQuerySet)
 
 
-def migrate_address(*fields):
-    class MigrateAddressMixin(object):
-        def save(self, **kwargs):
-            for address_field_attr in fields:
-                address = getattr(self, address_field_attr)
-                if address_field_attr.endswith("_address"):
-                    # e.g. contact_address -> contact_line1, gp_address -> gp_line1
-                    line1_attr = address_field_attr.replace("_address", "") + "_line1"
-                else:
-                    # e.g. address
-                    line1_attr = address_field_attr + "_line1"
-
-                line1 = getattr(self, line1_attr)
-                if address != "" and line1 != "":
-                    # They filled the new data in, we can delete the old
-                    setattr(self, address_field_attr, "")
-
-            return super(MigrateAddressMixin, self).save(**kwargs)
-
-    return MigrateAddressMixin
-
-
 MAILCHIMP_NOTICE = mark_safe("""<span class='mailchimp-notice'>We use a third party email service provider,
 MailChimp, to send you these newsletter emails. We provide MailChimp with only
 your email address. MailChimp treats information about you in accordance with
@@ -188,7 +160,7 @@ information on MailChimp's use of these technologies, you can read their <a
 href='https://mailchimp.com/legal/cookies/'>Cookie Statement</a>.</span>""")
 
 
-class BookingAccount(migrate_address('address'), models.Model):
+class BookingAccount(models.Model):
     # For online bookings, email is required, but not for paper. Initially for online
     # process only email is filled in, so to ensure we can edit all BookingAccounts
     # in the admin, all the address fields have 'blank=True'.
@@ -444,15 +416,12 @@ class BookingAccount(migrate_address('address'), models.Model):
         return total
 
     def get_address_display(self):
-        if self.address_line1:
-            return "\n".join(v for v in [self.address_line1,
-                                         self.address_line2,
-                                         self.address_city,
-                                         self.address_county,
-                                         self.address_country.code if self.address_country else None,
-                                         ] if v)
-        else:
-            return self.address
+        return "\n".join(v for v in [self.address_line1,
+                                     self.address_line2,
+                                     self.address_city,
+                                     self.address_county,
+                                     self.address_country.code if self.address_country else None,
+                                     ] if v)
 
     @property
     def include_in_mailings(self):
@@ -579,15 +548,6 @@ class BookingQuerySet(models.QuerySet):
         qs = qs_custom_price | qs_serious_illness | qs_too_old | qs_too_young
         return qs
 
-    def _address_migrated_q(self):
-        return Q(address_line1="") | Q(contact_line1="") | Q(gp_line1="")
-
-    def addresses_migrated(self):
-        return self.exclude(self._address_migrated_q())
-
-    def addresses_not_migrated(self):
-        return self.filter(self._address_migrated_q())
-
 
 class BookingManagerBase(models.Manager):
 
@@ -605,8 +565,7 @@ class BookingManagerBase(models.Manager):
 BookingManager = BookingManagerBase.from_queryset(BookingQuerySet)
 
 
-class Booking(migrate_address('address', 'contact_address', 'gp_address'),
-              models.Model):
+class Booking(models.Model):
     account = models.ForeignKey(BookingAccount,
                                 on_delete=models.CASCADE,
                                 related_name='bookings')
@@ -1086,41 +1045,32 @@ class Booking(migrate_address('address', 'contact_address', 'gp_address'),
             return self.account.email
 
     def get_address_display(self):
-        if self.address_line1:
-            return "\n".join(v for v in [self.address_line1,
-                                         self.address_line2,
-                                         self.address_city,
-                                         self.address_county,
-                                         self.address_country.code if self.address_country else None,
-                                         self.address_post_code,
-                                         ] if v)
-        else:
-            return self.address
+        return "\n".join(v for v in [self.address_line1,
+                                     self.address_line2,
+                                     self.address_city,
+                                     self.address_county,
+                                     self.address_country.code if self.address_country else None,
+                                     self.address_post_code,
+                                     ] if v)
 
     def get_contact_address_display(self):
-        if self.contact_line1:
-            return "\n".join(v for v in [self.contact_name,
-                                         self.contact_line1,
-                                         self.contact_line2,
-                                         self.contact_city,
-                                         self.contact_county,
-                                         self.contact_country.code if self.contact_country else None,
-                                         self.contact_post_code,
-                                         ] if v)
-        else:
-            return self.contact_address
+        return "\n".join(v for v in [self.contact_name,
+                                     self.contact_line1,
+                                     self.contact_line2,
+                                     self.contact_city,
+                                     self.contact_county,
+                                     self.contact_country.code if self.contact_country else None,
+                                     self.contact_post_code,
+                                     ] if v)
 
     def get_gp_address_display(self):
-        if self.gp_line1:
-            return "\n".join(v for v in [self.gp_line1,
-                                         self.gp_line2,
-                                         self.gp_city,
-                                         self.gp_county,
-                                         self.gp_country.code if self.gp_country else None,
-                                         self.gp_post_code,
-                                         ] if v)
-        else:
-            return self.gp_address
+        return "\n".join(v for v in [self.gp_line1,
+                                     self.gp_line2,
+                                     self.gp_city,
+                                     self.gp_county,
+                                     self.gp_country.code if self.gp_country else None,
+                                     self.gp_post_code,
+                                     ] if v)
 
 
 @transaction.atomic
