@@ -9,8 +9,6 @@ import django.contrib.auth.models
 
 class Migration(migrations.Migration):
 
-    replaces = [('accounts', '0001_initial'), ('accounts', '0002_auto_20150818_1728'), ('accounts', '0003_auto_20150818_1728'), ('accounts', '0004_auto_20150818_1728'), ('accounts', '0005_auto_20150818_1728'), ('accounts', '0006_auto_20150818_1728')]
-
     dependencies = [
         ('auth', '0006_require_contenttypes_0002'),
     ]
