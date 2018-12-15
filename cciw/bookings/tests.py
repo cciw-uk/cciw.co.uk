@@ -1181,7 +1181,6 @@ class TestEditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account
         account = BookingAccount.objects.create(
             email=self.email,
             name='Joe',
-            address='123',
             address_post_code='XYZ',
         )
         self.get_url("admin:bookings_booking_add")
@@ -1230,7 +1229,6 @@ class TestEditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreatePlace
         account = BookingAccount.objects.create(
             email=self.email,
             name='Joe',
-            address='123',
             address_post_code='XYZ',
         )
         account.manual_payments.create(
