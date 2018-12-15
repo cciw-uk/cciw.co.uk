@@ -37,6 +37,7 @@ app_names = [
     'auth',
     'bookings',
     'cciwmain',
+    'contact_us',
     'contenttypes',
     'django_nyt',
     'ipn',
@@ -50,7 +51,8 @@ app_names = [
     'wiki',
     'wiki_attachments',
     'wiki_images',
-    'wiki_notifications'
+    'wiki_notifications',
+    'captcha',
 ]
 
 MIGRATION_MODULES = {app: None for app in app_names}
