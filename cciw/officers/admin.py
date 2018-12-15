@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.models import Group
-from django.core import urlresolvers
+from django.urls import reverse
 from django.forms.utils import ErrorList
 from django.utils.html import format_html
 
@@ -389,7 +389,7 @@ have to fill in another DBS.</p> """, settings.EXTERNAL_DBS_OFFICER['organisatio
     def _redirect(self, request, response):
         if '_continue' not in request.POST and response.has_header("Location"):
             location = request.GET.get('_redirect_to',
-                                       urlresolvers.reverse('cciw-officers-applications'))
+                                       reverse('cciw-officers-applications'))
             response["Location"] = location
         return response
 
