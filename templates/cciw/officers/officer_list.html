@@ -172,7 +172,7 @@
     <h2>Export officer data</h2>
 
     <p>The officer list above, along with address details and qualifications from this year's
-      application forms, can be downloaded below:</p>
+      application forms, can be downloaded below, <b>subject to our data retention rules as below.</b></p>
 
     <ul>
       <li>Officer data, camp {{ camp.name }}, {{ camp.year }}:
@@ -180,7 +180,7 @@
         <a href="{% url 'cciw-officers-export_officer_data' year=camp.year slug=camp.slug_name %}?format=ods">ODS</a>
       </li>
     </ul>
-
+    {% include "cciw/officers/officer_data_retention_rules_inc.html" with expand_details=True %}
     <form>
       {% csrf_token %}{# Ensure cookie is set for AJAX #}
     </form>
