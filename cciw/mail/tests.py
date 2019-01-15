@@ -364,16 +364,19 @@ def enable_email_sending():
 class TestMailBackend(LocMemEmailBackend):
 
     def send_messages(self, messages):
-        if len(_EMAIL_SENDING_DISALLOWED) == 0:
-            for m in messages:
-                if not m.subject.startswith('[CCIW]'):
-                    raise AssertionError("Email with subject \"{0}\" should start with [CCIW]"
-                                         .format(m.subject))
-
-            return super(TestMailBackend, self).send_messages(messages)
-        else:
+        # Transaction check
+        if len(_EMAIL_SENDING_DISALLOWED) > 0:
             raise AssertionError("Normal email should not be sent within transactions, "
                                  "use queued_mail instead")
+
+        # Subject check
+        for m in messages:
+            if not m.subject.startswith('[CCIW]'):
+                raise AssertionError("Email with subject \"{0}\" should start with [CCIW]"
+                                     .format(m.subject))
+
+        return super(TestMailBackend, self).send_messages(messages)
+
 
 
 MSG_DEBUG_LIST = emailify("""
