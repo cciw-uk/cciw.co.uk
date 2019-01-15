@@ -270,11 +270,11 @@ def forward_email_to_list(mail, email_list, debug=False):
         mail['Sender'] = email_list.address
         mail['List-Post'] = '<mailto:{0}>'.format(email_list.address)
     else:
-        mail['Sender'] = "CCIW lists <lists@cciw.co.uk>"
+        mail['Sender'] = "CCIW lists <{0}>".format(settings.SERVER_EMAIL)
     del mail['From']
     mail['From'] = mangle_from_address(orig_from_addr)
     mail['X-Original-From'] = orig_from_addr
-    mail['Return-Path'] = "website@cciw.co.uk"
+    mail['Return-Path'] = settings.SERVER_EMAIL
     mail['Reply-To'] = orig_from_addr
 
     # Various headers seem to cause problems. We whitelist the ones

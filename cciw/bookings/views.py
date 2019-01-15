@@ -10,7 +10,7 @@
 # Step 1  /booking/start/
 #  - enter email address
 #    - must be contact address for person booking
-#      "You may want to add 'website@cciw.co.uk' to your known contacts list to
+#      "You may want to add 'noreply@cciw.co.uk' to your known contacts list to
 #      ensure our email is not treated as spam"
 
 #  - On POST
