@@ -90,6 +90,11 @@ def _camp_officers(year=None, slug=None):
     return camp_officer_list(_get_camp(year=year, slug=slug))
 
 
+def _webmasters():
+    User = get_user_model()
+    return User.objects.filter(is_superuser=True)
+
+
 def _camp_slackers(year=None, slug=None):
     return camp_slacker_list(_get_camp(year=year, slug=slug))
 
@@ -181,6 +186,7 @@ CAMP_LEADERS_LIST = "Camp leaders"
 CAMP_LEADERS_FOR_YEAR_LIST = "Camp leaders for year"
 CAMP_DEBUG = "Debug"
 COMMITTEE = "Committee"
+WEBMASTERS = "Webmasters"
 
 
 @attr.s
@@ -251,7 +257,14 @@ EMAIL_LISTS = [
         re.compile(r"^committee@cciw\.co\.uk$"),
         _committee_users,
         _is_in_committee_or_superuser,
-        True)
+        True),
+    EmailListGroup(
+        WEBMASTERS,
+        re.compile(r"webmaster@cciw\.co\.uk|noreply@cciw\.co\.uk"),
+        _webmasters,
+        lambda email: True,  # Need to allow all temporarily to confirm address with SES
+        False,
+    ),
 ]
 
 

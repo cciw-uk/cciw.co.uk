@@ -378,7 +378,6 @@ class TestMailBackend(LocMemEmailBackend):
         return super(TestMailBackend, self).send_messages(messages)
 
 
-
 MSG_DEBUG_LIST = emailify("""
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
