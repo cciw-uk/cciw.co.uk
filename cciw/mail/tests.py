@@ -139,7 +139,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                           "admin2@admin.com"])
         self.assertTrue(all(b"\nFrom: Joe <joe@gmail.com>" not in m
                             for m in messages_sent))
-        self.assertTrue(all(b"\nFrom: Joe joe(at)gmail.com via <lists@cciw.co.uk>" in m
+        self.assertTrue(all(b"\nFrom: Joe joe(at)gmail.com via <noreply@cciw.co.uk>" in m
                             for m in messages_sent))
         self.assertTrue(all(b"\nX-Original-From: Joe <joe@gmail.com>" in m
                             for m in messages_sent))
@@ -189,9 +189,9 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                             for m in sent_messages))
         self.assertTrue(all(b'\nX-Original-From: Dave Stott <leader@somewhere.com>' in m
                             for m in sent_messages))
-        self.assertTrue(all(b'\nFrom: Dave Stott leader(at)somewhere.com via <lists@cciw.co.uk>' in m
+        self.assertTrue(all(b'\nFrom: Dave Stott leader(at)somewhere.com via <noreply@cciw.co.uk>' in m
                             for m in sent_messages))
-        self.assertTrue(all(b"Sender: CCIW lists <noreply@cciw.co.uk>" in m
+        self.assertTrue(all(b"Sender: CCIW website <noreply@cciw.co.uk>" in m
                             for m in sent_messages))
         self.assertEqual(m_s.call_args_list[0][0][0], '"Fred Jones" <fredjones@somewhere.com>')
 
@@ -341,9 +341,9 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
 
     def test_mangle_from_address(self):
         self.assertEqual(mangle_from_address("foo@bar.com"),
-                         "foo(at)bar.com via <lists@cciw.co.uk>")
+                         "foo(at)bar.com via <noreply@cciw.co.uk>")
         self.assertEqual(mangle_from_address("Mr Foo <foo@bar.com>"),
-                         "Mr Foo foo(at)bar.com via <lists@cciw.co.uk>")
+                         "Mr Foo foo(at)bar.com via <noreply@cciw.co.uk>")
 
 
 def emailify(msg):

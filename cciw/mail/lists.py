@@ -283,7 +283,7 @@ def forward_email_to_list(mail, email_list, debug=False):
         mail['Sender'] = email_list.address
         mail['List-Post'] = '<mailto:{0}>'.format(email_list.address)
     else:
-        mail['Sender'] = "CCIW lists <{0}>".format(settings.SERVER_EMAIL)
+        mail['Sender'] = settings.SERVER_EMAIL
     del mail['From']
     mail['From'] = mangle_from_address(orig_from_addr)
     mail['X-Original-From'] = orig_from_addr
@@ -377,7 +377,7 @@ There were problems with the following addresses:
 
 def mangle_from_address(address):
     address = address.replace("@", "(at)").replace("<", "").replace(">", "")
-    address = address + " via <lists@cciw.co.uk>"
+    address = address + " via <noreply@cciw.co.uk>"
     return address
 
 
