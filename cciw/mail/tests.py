@@ -191,7 +191,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                             for m in sent_messages))
         self.assertTrue(all(b'\nFrom: Dave Stott leader(at)somewhere.com via <lists@cciw.co.uk>' in m
                             for m in sent_messages))
-        self.assertTrue(all(b"Sender: CCIW lists <lists@cciw.co.uk>" in m
+        self.assertTrue(all(b"Sender: CCIW lists <noreply@cciw.co.uk>" in m
                             for m in sent_messages))
         self.assertEqual(m_s.call_args_list[0][0][0], '"Fred Jones" <fredjones@somewhere.com>')
 
