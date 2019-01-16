@@ -43,7 +43,7 @@ def api_request(path, data=None, files=None, method=None, add_domain=False):
     return response.json()
 
 
-# Emails that we generate are sent using the anymail Mailgun backend, via
+# Emails that we generate are sent using the normal Django backend, via
 # EMAIL_BACKEND. But for MIME messages that we are modifying and forwarding, we
 # need to use send_mime_message.
 
