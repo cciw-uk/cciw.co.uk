@@ -1,4 +1,4 @@
-from captcha.fields import CaptchaField
+# from captcha.fields import CaptchaField
 from django import forms
 
 from cciw.cciwmain.forms import CciwFormMixin
@@ -20,8 +20,11 @@ CONTACT_CHOICES = [
 
 class ContactUsForm(CciwFormMixin, forms.ModelForm):
     subject = forms.ChoiceField(label="Subject", choices=CONTACT_CHOICES)
-    cx = CaptchaField(label="Captcha",
-                      help_text="To show you are not a spam-bot please enter the text you see above")
+
+    # Disable CAPTCHA for now, doesn't seem to be working properly
+    # (blocks completely if you get it wrong once).
+    # cx = CaptchaField(label="Captcha",
+    #                   help_text="To show you are not a spam-bot please enter the text you see above")
 
     class Meta:
         model = Message
@@ -30,5 +33,5 @@ class ContactUsForm(CciwFormMixin, forms.ModelForm):
             'email',
             'name',
             'message',
-            'cx',
+            # 'cx',
         ]
