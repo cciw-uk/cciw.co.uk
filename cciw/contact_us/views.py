@@ -11,7 +11,7 @@ from cciw.cciwmain.common import AjaxFormValidation, CciwBaseView, get_current_d
 from cciw.officers.views import cciw_secretary_or_booking_secretary_required
 
 from .forms import (CONTACT_CHOICE_BOOKINGFORM, CONTACT_CHOICE_BOOKINGS, CONTACT_CHOICE_GENERAL, CONTACT_CHOICE_WEBSITE,
-                    CONTACT_CHOICES, ContactUsForm)
+                    CONTACT_CHOICES, AjaxContactUsForm, ContactUsForm)
 from .models import Message
 
 
@@ -21,9 +21,8 @@ class ContactUsBase(CciwBaseView):
 
 class ContactUsFormView(AjaxFormValidation, ContactUsBase):
     form_class = ContactUsForm
+    ajax_form_class = AjaxContactUsForm
     template_name = 'cciw/contact_us.html'
-
-    ajax_form_validation_skip_fields = ["cx"]
 
     def handle(self, request):
         ensure_booking_account_attr(request)

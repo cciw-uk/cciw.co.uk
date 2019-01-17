@@ -1,4 +1,4 @@
-# from captcha.fields import CaptchaField
+from captcha.fields import CaptchaField
 from django import forms
 
 from cciw.cciwmain.forms import CciwFormMixin
@@ -23,8 +23,8 @@ class ContactUsForm(CciwFormMixin, forms.ModelForm):
 
     # Disable CAPTCHA for now, doesn't seem to be working properly
     # (blocks completely if you get it wrong once).
-    # cx = CaptchaField(label="Captcha",
-    #                   help_text="To show you are not a spam-bot please enter the text you see above")
+    cx = CaptchaField(label="Captcha",
+                      help_text="To show you are not a spam-bot please enter the text you see above")
 
     class Meta:
         model = Message
@@ -33,5 +33,16 @@ class ContactUsForm(CciwFormMixin, forms.ModelForm):
             'email',
             'name',
             'message',
-            # 'cx',
+            'cx',
         ]
+
+
+class AjaxContactUsForm(ContactUsForm):
+    class Meta:
+        model = Message
+        fields = [f for f in ContactUsForm.Meta.fields if f != "cx"]
+
+
+# We have to remove the captcha field in AJAX validation
+# because its clean() method removes the Captcha from the database
+del AjaxContactUsForm.base_fields['cx']
