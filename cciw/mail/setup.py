@@ -50,8 +50,6 @@ def setup_mailgun_webhooks():
     base_url = "https://" + settings.PRODUCTION_DOMAIN
     urls = [
         ('bounce', 'cciw-mailgun-bounce'),
-        ('drop', 'cciw-mailgun-drop'),
-        ('deliver', 'cciw-mailgun-deliver'),
     ]
 
     for webhook_name, named_url in urls:
