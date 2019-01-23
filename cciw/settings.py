@@ -343,9 +343,9 @@ TEMPLATES = [
 # First step: set EMAIL_BACKEND correctly. This deals with mail sent via
 # django's send_mail.
 
-# However, we also use Mailgun API directly. Rather than changing every
-# reference to @cciw.co.uk, we patch up outgoing emails in cciw.mail.mailgun to
-# use the sandbox domain.
+# However, we also use Mailgun API directly for some tasks (some sending and all
+# receiving). So we patch up outgoing emails in cciw.mail.mailgun to use the
+# sandbox domain when in development/testing.
 
 MAILGUN_API_KEY = SECRETS['MAILGUN_API_KEY']
 if LIVEBOX:
@@ -368,7 +368,13 @@ ADMINS = [
 
 
 if LIVEBOX:
-    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
+    # We currently send using SMTP (amazon SES), while we receive using mailgun
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = SECRETS["SMTP_HOST"]
+    EMAIL_PORT = SECRETS["SMTP_PORT"]
+    EMAIL_HOST_USER = SECRETS["SMTP_USERNAME"]
+    EMAIL_HOST_PASSWORD = SECRETS["SMTP_PASSWORD"]
+    EMAIL_USE_TLS = SECRETS["SMTP_USE_TLS"]
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
