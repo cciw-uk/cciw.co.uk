@@ -541,44 +541,6 @@ class TestBookingStartBase(BookingBaseMixin, CreatePlaceWebMixin, FuncBaseMixin)
         self.get_url(self.urlname)
         self.assertUrlsEqual(reverse('cciw-bookings-account_overview'))
 
-    MAIL_DELIVERY_UNKNOWN_MESSAGE = "Email delivery status: unknown"
-
-    def test_mailgun_email_unknown(self):
-        self.test_complete_form()
-        self.assertTextPresent(self.MAIL_DELIVERY_UNKNOWN_MESSAGE)
-
-    def test_mailgun_email_blocked(self):
-        self.test_complete_form()
-
-        # Simulate mailgun sending us a dropped notification.
-        self.mailgun_dropped_message('booker@bookers.com')
-        # Refresh
-        self.get_literal_url(self.current_url)
-        self.assertTextAbsent(self.MAIL_DELIVERY_UNKNOWN_MESSAGE)
-        self.assertTextPresent("Our email to booker@bookers.com could not be delivered")
-
-    def test_mailgun_email_delivered(self):
-        self.test_complete_form()
-
-        # Simulate mailgun sending us a notification.
-        self.mailgun_delivered_message('booker@bookers.com')
-        # Refresh
-        self.get_literal_url(self.current_url)
-        self.assertTextAbsent(self.MAIL_DELIVERY_UNKNOWN_MESSAGE)
-        self.assertTextPresent("Our email to booker@bookers.com was delivered")
-
-    def mailgun_dropped_message(self, email_address):
-        data = {k: v for k, v in MAILGUN_DROPPED_DATA_EXAMPLE}
-        data['recipient'] = email_address
-        self.client.post(reverse('cciw-mailgun-drop'),
-                         data=data)
-
-    def mailgun_delivered_message(self, email_address):
-        data = {k: v for k, v in MAILGUN_DELIVERED_DATA_EXAMPLE}
-        data['recipient'] = email_address
-        self.client.post(reverse('cciw-mailgun-deliver'),
-                         data=data)
-
 
 class TestBookingStartWT(TestBookingStartBase, WebTestBase):
     pass

@@ -205,7 +205,6 @@ from cciw.cciwmain import common
 from cciw.cciwmain.common import AjaxFormValidation, CciwBaseView, get_current_domain
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
-from cciw.mail.models import get_email_notification_for_session
 from cciw.utils.views import user_passes_test_improved
 
 
@@ -343,9 +342,6 @@ class BookingStart(BookingLogInBase):
 
 class BookingEmailSent(BookingLogInBase):
     template_name = "cciw/bookings/email_sent.html"
-
-    def magic_context(self):
-        return {'email_notification': get_email_notification_for_session(self.request)}
 
 
 class BookingLinkExpiredEmailSent(BookingEmailSent):

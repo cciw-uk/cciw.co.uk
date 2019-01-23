@@ -11,7 +11,6 @@ from django.template import loader
 from django.utils import timezone
 
 from cciw.cciwmain import common
-from cciw.mail.models import log_user_email_sent
 from cciw.officers.email import admin_emails_for_camp
 
 LATE_BOOKING_THRESHOLD = 30  # days
@@ -87,7 +86,6 @@ def send_verify_email(request, booking_account_email,
     body = loader.render_to_string("cciw/bookings/verification_email.txt", c)
     subject = "[CCIW] Booking account"
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [booking_account_email])
-    log_user_email_sent(request, booking_account_email)
 
 
 def send_unrecognised_payment_email(ipn_obj):
