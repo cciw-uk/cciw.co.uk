@@ -110,7 +110,7 @@ On {timestamp}, <{email}> wrote:
                   {
                       'message': msg,
                       'reply_template': reply_template,
-                      'subject': 'CCIW contact form reply',
+                      'subject': '[CCIW] Contact form reply - message #{0}'.format(msg.id),
                       'is_popup': True,
                   })
 
