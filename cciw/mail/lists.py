@@ -170,16 +170,6 @@ def _mail_debug_users():
 
 # See also above functions which generate these email addresses.
 
-# Simple forwarding email addresses are defined in Mailgun control panel, especially
-# those which should be available even if the website is down, including:
-
-#  cciw@
-#  webmaster@
-#  website@
-#  bookings@
-#  bookingforms@
-#  feedback@
-
 CAMP_OFFICERS_LIST = "Camp officers"
 CAMP_SLACKERS_LIST = "Camp slackers"
 CAMP_LEADERS_LIST = "Camp leaders"

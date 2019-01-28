@@ -6,8 +6,8 @@ Email sending has been a severe headache!
 Running your own mailserver comes with a lot of problems regarding maintaining
 email reputation, to avoid being on a spam list.
 
-We are currently using mailgun.com to send email, to outsource this problem, but
-they also end up on blacklists sometimes.
+We are currently using Amazon SES and mailgun.com to send email, to outsource
+this problem, but they also end up on blacklists sometimes.
 
 We need to send email for certain purposes:
 
