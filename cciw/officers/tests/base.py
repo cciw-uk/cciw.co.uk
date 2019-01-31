@@ -1,8 +1,7 @@
 from datetime import date, datetime, timedelta
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, Permission
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Group
 from django.utils import timezone
 from django_dynamic_fixture import G
 
@@ -40,16 +39,6 @@ DBSOFFICER_USERNAME = 'mrsdbsofficer'
 DBSOFFICER_PASSWORD = 'my_password'
 DBSOFFICER_EMAIL = 'dbsofficer@somewhere.com'
 DBSOFFICER = (DBSOFFICER_USERNAME, DBSOFFICER_PASSWORD)
-
-
-def perm(codename, app_label, model):
-    ct = ContentType.objects.get_by_natural_key(app_label, model)
-    try:
-        return Permission.objects.get(codename=codename, content_type=ct)
-    except Permission.DoesNotExist:
-        return G(Permission,
-                 codename=codename,
-                 content_type=ct)
 
 
 class CreateQualificationTypesMixin(object):

@@ -370,11 +370,11 @@ have to fill in another DBS.</p> """, settings.EXTERNAL_DBS_OFFICER['organisatio
         self._force_no_add_another(request)
         self._force_user_val(request)
 
-    def change_view(self, request, obj_id):
+    def change_view(self, request, object_id):
         if request.method == "POST":
             self._force_post_vals(request)
 
-        return super(ApplicationAdmin, self).change_view(request, obj_id)
+        return super(ApplicationAdmin, self).change_view(request, object_id)
 
     def has_change_permission(self, request, obj=None):
         # Normal users do not have change permission, unless they are editing

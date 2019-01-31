@@ -66,8 +66,6 @@ INTERNAL_IPS = ('127.0.0.1',)
 
 LANGUAGE_CODE = 'en-gb'
 
-DEFAULT_CONTENT_TYPE = "text/html"
-
 SITE_ID = 1
 PRODUCTION_DOMAIN = 'www.cciw.co.uk'
 
@@ -402,7 +400,7 @@ EMAIL_ENCRYPTION_PUBLIC_KEYS = SECRETS["EMAIL_ENCRYPTION_PUBLIC_KEYS"]
 
 SECURE_DOWNLOAD_URL_BASE = "/protected/"  # See nginx conf
 
-# == MIDDLEWARE_CLASSES ==
+# == MIDDLEWARE ==
 
 _MIDDLEWARE = [
     (LIVEBOX,    "cciw.middleware.http.webfaction_fixes"),
@@ -414,15 +412,12 @@ _MIDDLEWARE = [
     (True,       'django.middleware.csrf.CsrfViewMiddleware'),
     (DEVBOX and DEBUG, "cciw.middleware.debug.debug_middleware"),
     (True,       "django.contrib.auth.middleware.AuthenticationMiddleware"),
-    (True,       "django.contrib.auth.middleware.SessionAuthenticationMiddleware"),
     (True,       "django.contrib.messages.middleware.MessageMiddleware"),
     (True,       'django.middleware.clickjacking.XFrameOptionsMiddleware'),
     (True,       "cciw.middleware.auth.private_wiki"),
     (True,       "cciw.bookings.middleware.booking_token_login"),
     (True,       "cciw.middleware.threadlocals.thread_locals"),
 ]
-
-DATABASE_ENGINE = 'postgresql'
 
 MIDDLEWARE = tuple([val for (test, val) in _MIDDLEWARE if test])
 

@@ -67,7 +67,7 @@ def booking_token_login(get_response):
                 # stop the token being leaked (e.g. via the Referer header if
                 # the page loads external resources).
                 url = furl.furl(request.build_absolute_uri())
-                resp = HttpResponseRedirect(url.remove(['bt']))
+                resp = HttpResponseRedirect(url.remove(['bt']).url)
                 set_booking_account_cookie(resp, account)
                 messages.info(request,
                               "Logged in as {0}! You will stay logged in for two weeks. "

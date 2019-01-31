@@ -63,7 +63,7 @@ def email_officer(user, update=False, token_generator=default_token_generator):
     subject = "[CCIW] Application form system"
     msg = render_to_string('cciw/officers/add_officer_email.txt',
                            {'username': user.username,
-                            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                            'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode('ascii'),
                             'token': token_generator.make_token(user),
                             'PASSWORD_RESET_TIMEOUT_DAYS': settings.PASSWORD_RESET_TIMEOUT_DAYS,
                             'first_name': user.first_name,

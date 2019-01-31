@@ -114,7 +114,8 @@ def send_queued_mail():
     sent_count = Message.objects.all().count()
     mailer.engine.send_all()
     len_outbox_end = len(mail.outbox)
-    assert len_outbox_start + sent_count == len_outbox_end
+    assert len_outbox_start + sent_count == len_outbox_end, \
+        "Expected {0} + {1} == {2}".format(len_outbox_start, sent_count, len_outbox_end)
     sent = mail.outbox[len_outbox_start:]
     mail.outbox[len_outbox_start:] = []
     assert len(mail.outbox) == len_outbox_start
@@ -1115,7 +1116,7 @@ def fix_autocomplete_fields(field_names):
                 for field_name, value in to_fix:
                     # Hack to cope with autocomplete_light widget and Selenium
                     self.execute_script(
-                        """$('[name={0}]').append('<option value="{1}" selected="selected"></option>');"""
+                        """django.jQuery('[name={0}]').append('<option value="{1}" selected="selected"></option>');"""
                         .format(field_name, value))
 
     return FixAutocompleteFieldMixin
@@ -1610,6 +1611,7 @@ class TestListBookingsBase(BookingBaseMixin, CreatePlaceWebMixin, FuncBaseMixin)
         if self.is_full_browser_test:
             self.click_expecting_alert("[name=delete_%s]" % b.id)
             self.accept_alert()
+            self.wait_until_loaded('body')
         else:
             self.submit("[name=delete_%s]" % b.id)
 

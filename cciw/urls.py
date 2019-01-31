@@ -4,8 +4,6 @@ import django.views.static
 from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
-from django_nyt.urls import get_pattern as get_nyt_pattern
-from wiki.urls import get_pattern as get_wiki_pattern
 
 import cciw.officers.views
 
@@ -26,8 +24,8 @@ urlpatterns = [
     # Our normal views
     url(r'^booking/', include('cciw.bookings.urls')),
     url(r'^officers/', include('cciw.officers.urls')),
-    url(r'^notifications/', get_nyt_pattern()),
-    url(r'^wiki/', get_wiki_pattern()),
+    url(r'^notifications/', include('django_nyt.urls')),
+    url(r'^wiki/', include('wiki.urls')),
     url(r'^paypal/ipn/', include('paypal.standard.ipn.urls')),
     url(r'^mail/', include('cciw.mail.urls')),
     url(r'^contact/', include('cciw.contact_us.urls')),
