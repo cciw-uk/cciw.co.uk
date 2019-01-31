@@ -1,4 +1,7 @@
 # Settings file for testing on development box
+import faulthandler
+import signal
+
 from cciw.settings import *  # NOQA
 from cciw.settings import DATABASES, INSTALLED_APPS, MIDDLEWARE, basedir
 
@@ -42,3 +45,7 @@ class DisableMigrations(object):
 
 
 MIGRATION_MODULES = DisableMigrations()
+
+# If the process receives signal SIGUSR1, dump a traceback
+faulthandler.enable()
+faulthandler.register(signal.SIGUSR1)
