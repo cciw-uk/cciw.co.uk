@@ -1,4 +1,4 @@
-CCIW website source code
+CCiW website source code
 ========================
 
 This repo contains the source code for https://www.cciw.co.uk/

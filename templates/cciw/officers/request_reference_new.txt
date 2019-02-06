@@ -1,6 +1,6 @@
 {% autoescape off %}Dear {{ referee.name }},
 
-{{ applicant.full_name }} has applied to be an officer on a CCIW camp, and has put your name down as a referee.  We would appreciate it if you could take a few minutes to fill out a reference form online, by visiting the following page in your web browser and filling out the form:
+{{ applicant.full_name }} has applied to be an officer on a CCiW camp, and has put your name down as a referee.  We would appreciate it if you could take a few minutes to fill out a reference form online, by visiting the following page in your web browser and filling out the form:
 
 {{ url }}
 

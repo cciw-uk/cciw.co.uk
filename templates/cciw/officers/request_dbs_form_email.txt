@@ -13,7 +13,7 @@ Many thanks,
 
 {{ sender.full_name }}
 
-(DBS Administrator for CCIW)
+(DBS Administrator for CCiW)
 
-Sent via the CCIW website.
+Sent via the CCiW website.
 {% endautoescape %}

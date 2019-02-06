@@ -62,7 +62,7 @@ def send_application_emails(request, application):
     if len(leader_email_groups) == 0:
         send_leader_email(settings.SECRETARY_EMAILS, application)
         messages.info(request,
-                      "The application form has been sent to the CCIW secretary, "
+                      "The application form has been sent to the CCiW secretary, "
                       "because you are not on any camp's officer list this year.")
 
     # If this is someone editing their own application, we send them a copy, but
@@ -87,7 +87,7 @@ def send_officer_email(officer, application, application_text, rtf_attachment):
     user_msg = ("""%s,
 
 For your records, here is a copy of the application you have submitted
-to CCIW. It is also attached to this email as an RTF file.
+to CCiW. It is also attached to this email as an RTF file.
 
 """ % application.officer.first_name) + application_text
 
@@ -103,7 +103,7 @@ def send_leader_email(leader_emails, application):
         path=reverse('cciw-officers-view_application',
                      kwargs=dict(application_id=application.id)))
     body = """The following application form has been submitted via the
-CCIW website:
+CCiW website:
 
 %(url)s
 
@@ -131,7 +131,7 @@ def make_update_application_url(application, email):
 
 
 def send_email_change_emails(officer, application):
-    subject = "[CCIW] Email change on CCIW"
+    subject = "[CCIW] Email change on CCiW"
     user_email = formatted_email(officer)
     user_msg = ("""%(name)s,
 
@@ -154,7 +154,7 @@ addresses, you only need to respond to one email.
 Thanks,
 
 
-This was an automated response by the CCIW website.
+This was an automated response by the CCiW website.
 
 
 """ % dict(name=officer.first_name, old=officer.email,
@@ -208,7 +208,7 @@ def send_leaders_reference_email(reference):
                                                    kwargs=dict(reference_id=reference.id)))
     subject = "[CCIW] Reference form for {0} from {1}".format(officer.full_name, referee.name)
     body = ("""The following reference form has been submitted via the
-CCIW website for officer {0}.
+CCiW website for officer {0}.
 
 {1}
 """.format(officer.full_name, view_reference_url)

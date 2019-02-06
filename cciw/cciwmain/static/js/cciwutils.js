@@ -1,4 +1,4 @@
-// Misc extensions to jQuery and CCIW specific functions.
+// Misc extensions to jQuery and CCiW specific functions.
 
 (function($) {
     // Define filteredDiv jQuery plugin

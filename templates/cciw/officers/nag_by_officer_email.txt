@@ -1,6 +1,6 @@
 {% autoescape off %}Hi {{ officer.first_name }},
 
-You put down {{ referee.name }} as one of your referees on your camp application form, but they are not responding to our requests for a reference. CCIW policy is that you *must* have two up-to-date references every year if you want to come on camp, so could you get in contact with them and ask them to do the reference?
+You put down {{ referee.name }} as one of your referees on your camp application form, but they are not responding to our requests for a reference. CCiW policy is that you *must* have two up-to-date references every year if you want to come on camp, so could you get in contact with them and ask them to do the reference?
 
 The details you gave us:
 
@@ -14,5 +14,5 @@ Thanks.
 
 {{ sender.full_name }}
 
-For CCIW camp {{ camp.name }}, {{ camp.year }} - {{ camp.leaders_formatted }}.
+For CCiW camp {{ camp.name }}, {{ camp.year }} - {{ camp.leaders_formatted }}.
 {% endautoescape %}

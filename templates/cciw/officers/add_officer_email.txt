@@ -2,8 +2,8 @@
 {% if update %}
 This is a repeat email.
 {% endif %}
-An account has been set up for you on the CCIW website, which allows
-you to fill in application form for coming on a CCIW camp.
+An account has been set up for you on the CCiW website, which allows
+you to fill in application form for coming on a CCiW camp.
 
 Below are the instructions for filling in the application form online.
 When you have finished filling the form in, it will be emailed to the
@@ -54,6 +54,6 @@ To fill in the application form:
 
 If you have any problems, please email me at {{ webmasteremail }}
 
-The CCIW webmaster.
+The CCiW webmaster.
 
 {% endautoescape %}

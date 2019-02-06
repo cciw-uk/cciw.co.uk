@@ -23,7 +23,7 @@ Steps:
 
 These steps have only been tested on Ubuntu-based Linux installations.
 
-* Within a directory of your choice, checkout the CCIW source code into a folder 'src'::
+* Within a directory of your choice, checkout the CCiW source code into a folder 'src'::
 
     hg clone ssh://hg@bitbucket.org/cciw/cciw-website src
     cd src

@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
                 ('post_code', models.CharField(max_length=10, blank=True, null=True)),
                 ('phone_number', models.CharField(max_length=22, blank=True)),
                 ('share_phone_number', models.BooleanField(default=False, verbose_name='Allow this phone number to be passed on to other parents to help organise transport')),
-                ('email_communication', models.BooleanField(default=True, verbose_name='Receive all communication from CCIW by email where possible')),
+                ('email_communication', models.BooleanField(default=True, verbose_name='Receive all communication from CCiW by email where possible')),
                 ('total_received', models.DecimalField(default=Decimal('0.00'), decimal_places=2, max_digits=10)),
                 ('first_login', models.DateTimeField(blank=True, null=True)),
                 ('last_login', models.DateTimeField(blank=True, null=True)),

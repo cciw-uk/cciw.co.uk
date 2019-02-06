@@ -8,7 +8,7 @@
 # database as part of the deployment procedure, ensuring that each group exists
 # and has all and only the permissions specified here.
 
-# The contents need to be agreed with the CCIW committee, as per the "CCIW
+# The contents need to be agreed with the CCiW committee, as per the "CCiW
 # website security procedures" document.
 
 # The names of the groups need to be synced with /cciw/accounts/models.py

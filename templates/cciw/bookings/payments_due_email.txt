@@ -1,6 +1,6 @@
 {% autoescape off %}Hello {{ account.name }},
 
-You have payments due for CCIW.
+You have payments due for CCiW.
 
 This usually happens when you have only paid the deposit for a place
 on camp, and the full amount is now due. Alternatively, you may have

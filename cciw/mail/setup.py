@@ -40,7 +40,7 @@ def setup_mailgun_routes():
     # # Some incoming spam from @cciw.co.uk addresses. There is virtually no
     # # reason for a valid person to be using an @cciw.co.uk address, so we block
     # # this by adding a high priority rule.
-    # update_or_create("From CCIW domain blocker",
+    # update_or_create("From CCiW domain blocker",
     #                  r"""match_header("from", "@cciw\.co\.uk")""",
     #                  ["stop()"],
     #                  priority=0)

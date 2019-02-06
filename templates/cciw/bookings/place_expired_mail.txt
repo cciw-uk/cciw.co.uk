@@ -1,10 +1,10 @@
 {% autoescape off %}
 Dear {{ account.name }},
 {% if expired %}
-The following place(s) on CCIW camps have expired because no payment was
+The following place(s) on CCiW camps have expired because no payment was
 received within 24 hours of booking online.
 {% else %}
-You have booked the following place(s) on CCIW camps, but have not yet
+You have booked the following place(s) on CCiW camps, but have not yet
 paid:
 {% endif %}
 ----------------------------------------

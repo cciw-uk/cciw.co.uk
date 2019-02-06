@@ -188,7 +188,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         self.assertCode(200)
-        self.assertTextPresent("Manage DBSs 2000 | CCIW Officers")
+        self.assertTextPresent("Manage DBSs 2000 | CCiW Officers")
 
         officers = [i.officer for i in self.camp.invitations.all()]
         self.assertNotEqual(len(officers), 0)

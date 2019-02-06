@@ -347,7 +347,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self._finish_application_form()
         self._save()
         self.assertNamedUrl("cciw-officers-applications")
-        self.assertTextPresent("The application form has been sent to the CCIW secretary")
+        self.assertTextPresent("The application form has been sent to the CCiW secretary")
 
         # There should be two emails in outbox, one to officer, one to
         # secretary.

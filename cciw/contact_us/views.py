@@ -74,7 +74,7 @@ def send_contact_us_emails(to_emails, msg):
     # Instead we send a link to a page that will show the message.
 
     body = """
-A message has been sent on the CCIW website feedback form, follow
+A message has been sent on the CCiW website feedback form, follow
 the link to view it:
 
 %(url)s

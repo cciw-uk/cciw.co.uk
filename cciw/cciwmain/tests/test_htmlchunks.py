@@ -65,7 +65,7 @@ class HtmlChunkPage(BasicSetupMixin, TestBase):
 
     def _test_page(self, should_see_edit_link):
         response = self.client.get('/')
-        self.assertContains(response, '<p>CCIW is a charitable company')
+        self.assertContains(response, '<p>CCiW is a charitable company')
         if should_see_edit_link:
             self.assertContains(response, "Edit home_page")
         else:

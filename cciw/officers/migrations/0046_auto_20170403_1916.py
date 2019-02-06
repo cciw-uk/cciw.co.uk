@@ -15,11 +15,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='dbscheck',
             name='other_organisation',
-            field=models.CharField(blank=True, help_text='If previous answer is not CCIW, please fill in', max_length=255),
+            field=models.CharField(blank=True, help_text='If previous answer is not CCiW, please fill in', max_length=255),
         ),
         migrations.AlterField(
             model_name='dbscheck',
             name='requested_by',
-            field=models.CharField(choices=[('CCIW', 'CCIW'), ('other', 'Other organisation'), ('unknown', 'Unknown')], default='unknown', help_text='The organisation that asked for this DBS to be done, normally CCIW.', max_length=20),
+            field=models.CharField(choices=[('CCIW', 'CCiW'), ('other', 'Other organisation'), ('unknown', 'Unknown')], default='unknown', help_text='The organisation that asked for this DBS to be done, normally CCiW.', max_length=20),
         ),
     ]

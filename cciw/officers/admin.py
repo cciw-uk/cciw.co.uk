@@ -262,14 +262,14 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
 we regret that we cannot proceed with your application.</p>
 
 <p>If you have a current enhanced Disclosure and Barring Service check <b>and have
-signed up for the update system</b>, and if you give permission for CCIW to look at
+signed up for the update system</b>, and if you give permission for CCiW to look at
 it, please enter the certificate number below.</p>
 
 <p>If we need a new DBS check for you, once your application form is received a
 DBS application form will be sent to you, so please ensure your postal address
 is up to date. The DBS form must be filled in and all instructions adhered to.
 The DBS check will be carried out by {0}.
-<b>By CCIW policy, failure to do so will mean that you will be unable to come on
+<b>By CCiW policy, failure to do so will mean that you will be unable to come on
 camp.</b></p>
 
 <p><b>Please also note</b> the instructions to sign up for the <b>update
@@ -290,7 +290,7 @@ have to fill in another DBS.</p> """, settings.EXTERNAL_DBS_OFFICER['organisatio
                 handbook. These include:
 
              <ul>
-             <li><a target="_blank" href="/officers/files/handbook/Intro%20-%20CCiW%20Safe%20From%20Harm%20Policy.pdf">Intro - CCIW Safe From Harm Policy</a></li>
+             <li><a target="_blank" href="/officers/files/handbook/Intro%20-%20CCiW%20Safe%20From%20Harm%20Policy.pdf">Intro - CCiW Safe From Harm Policy</a></li>
              <li><a target="_blank" href="/officers/files/handbook/1.%20Officers%20Handbook.pdf">1. Officers Handbook</a></li>
              <li><a target="_blank" href="/officers/files/handbook/2.%20Guidance%20for%20Leaders%20and%20Chaplains.pdf">2. Guidance for Leaders and Chaplains</a></li>
              <li><a target="_blank" href="/officers/files/handbook/3.%20Guidance%20for%20Medical%20and%20First%20Aid.pdf">3. Guidance for Medical and First Aid</a></li>
@@ -303,7 +303,7 @@ have to fill in another DBS.</p> """, settings.EXTERNAL_DBS_OFFICER['organisatio
 
              <div>The following sections are required:</div>
              <ul>
-             <li>All officers must read “Intro - CCIW Safe From Harm Policy”</li>
+             <li>All officers must read “Intro - CCiW Safe From Harm Policy”</li>
              <li>Officers should all be familiar with Appendices 1, 6 and 8.</li>
              <li>Kitchen Leaders and Helpers should be familiar with Appendices 1, 6, 7 & 8</li>
              <li>Officers and Helpers requested to provide medical assistance or first aid should be familiar with Appendix 3.</li>
@@ -312,7 +312,7 @@ have to fill in another DBS.</p> """, settings.EXTERNAL_DBS_OFFICER['organisatio
              <li>Directors, Leaders, Assistant Leaders and Chaplains should be familiar with all of the Appendices</li>
 
              </ul>
-             <li>you permit CCIW to store this information and the references and DBS checks that
+             <li>you permit CCiW to store this information and the references and DBS checks that
              we will collect for as long as necessary.</li>
              </ol>
              <div>Your information will then be sent to the camp leader.  By leaving this

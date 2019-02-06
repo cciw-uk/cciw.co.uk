@@ -2509,7 +2509,7 @@ class TestCancel(CreatePlaceModelMixin, TestBase):
 
 class TestCancelFullRefund(CreatePlaceModelMixin, TestBase):
     """
-    Tests covering what happens when CCIW cancels a camp,
+    Tests covering what happens when CCiW cancels a camp,
     using 'full refund'.
     """
 

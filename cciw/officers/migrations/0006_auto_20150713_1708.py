@@ -25,6 +25,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='crbapplication',
             name='requested_by',
-            field=models.CharField(max_length=20, default='unknown', choices=[('CCIW', 'CCIW'), ('other', 'Other organisation'), ('unknown', 'Unknown')]),
+            field=models.CharField(max_length=20, default='unknown', choices=[('CCIW', 'CCiW'), ('other', 'Other organisation'), ('unknown', 'Unknown')]),
         ),
     ]

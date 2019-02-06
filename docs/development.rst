@@ -1,4 +1,4 @@
-CCIW project development
+CCiW project development
 ========================
 
 General notes

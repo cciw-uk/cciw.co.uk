@@ -4,7 +4,7 @@ from django.utils.html import escape, mark_safe
 
 
 class CciwFormMixin(object):
-    """Form mixin that provides the rendering methods used on the CCIW site"""
+    """Form mixin that provides the rendering methods used on the CCiW site"""
 
     normal_row_template = \
         '<div id="%(divid)s" class="%(class)s">%(errors_html)s' + \

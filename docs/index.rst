@@ -1,4 +1,4 @@
-CCIW website source code documentation
+CCiW website source code documentation
 ======================================
 
 Contents:

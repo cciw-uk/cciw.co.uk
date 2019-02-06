@@ -1,15 +1,15 @@
 Security considerations
 =======================
 
-The CCIW website database stores personal information of various kinds. Because
+The CCiW website database stores personal information of various kinds. Because
 of this, having a secure site is a very high priority.
 
 In addition, this repo, including this documentation, is publicly readable (on
 BitBucket and possible elsewhere). This imposes further constraints on personal
 information.
 
-A longer document on the security procedures observed by CCIW is available
-outside this repository, "CCIW website security procedures". The contents of
+A longer document on the security procedures observed by CCiW is available
+outside this repository, "CCiW website security procedures". The contents of
 that document need to be understood. It also contains more information on the
 different groups of access to the website database, and access to 3rd party
 services.
@@ -25,10 +25,10 @@ following points must be observed:
   and SSH for server access.
 
 * The source code in this project should not contain any information that is
-  private to CCIW and specific to the deployment of this project. This includes
+  private to CCiW and specific to the deployment of this project. This includes
   all passwords and API keys. These should instead be stored in the file
   ``config/secrets.json``, and transferred when necessary as per the procedures
-  in "CCIW website security procedures".
+  in "CCiW website security procedures".
 
 * The source code must not contain personal information - for example the names
   email addresses or name of people to be emailed in different circumstances.
@@ -43,7 +43,7 @@ following points must be observed:
   * In ``secrets.json`` as a last resort.
 
 * Retention of all personal data must be done in accord with the relevant data
-  protection laws, and CCIW's own data protection policy (external to this
+  protection laws, and CCiW's own data protection policy (external to this
   repo).
 
 * Access to all officer functionality must be controlled on a "need to know

@@ -5,7 +5,7 @@ We have received a payment of £{{ ipn_obj.mc_gross }} that is pending
 confirmation for the following reason: {{ ipn_obj.pending_reason }}.
 
 These often take several days to clear. At that point we will be notified and
-our records will be updated, but until then your CCIW account will not show the
+our records will be updated, but until then your CCiW account will not show the
 money.
 
 Thanks,

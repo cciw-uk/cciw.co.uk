@@ -26,7 +26,7 @@ class BasicSetupMixin(object):
 
         HtmlChunk.objects.create(
             menu_link=m,
-            html="<p>CCIW is a charitable company...</p>",
+            html="<p>CCiW is a charitable company...</p>",
             page_title="Christian Camps in Wales",
             name='home_page',
         )
@@ -44,7 +44,7 @@ class BasicSetupMixin(object):
             short_name="Llys Andreas")
 
         self.default_leader = Person.objects.create(
-            info="Dave and Rebecca are members of Grace Baptist Church, Southport.  Dave has been a leader or assistant leader on many camps (EMW, CCIW and church camps).",
+            info="Dave and Rebecca are members of Grace Baptist Church, Southport.  Dave has been a leader or assistant leader on many camps (EMW, CCiW and church camps).",
             name="Dave & Rebecca Stott")
 
         camp_name, _ = CampName.objects.get_or_create(

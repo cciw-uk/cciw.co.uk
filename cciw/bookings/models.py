@@ -177,7 +177,7 @@ class BookingAccount(models.Model):
     share_phone_number = models.BooleanField("Allow this phone number to be passed on "
                                              "to other parents to help organise transport",
                                              blank=True, default=False)
-    email_communication = models.BooleanField("Receive all communication from CCIW by email where possible", blank=True, default=True)
+    email_communication = models.BooleanField("Receive all communication from CCiW by email where possible", blank=True, default=True)
     subscribe_to_mailings = models.NullBooleanField("Receive mailings about future camps",
                                                     default=None, blank=True)
     subscribe_to_newsletter = models.BooleanField("Subscribe to email newsletter", default=False,

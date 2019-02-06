@@ -7,7 +7,7 @@ register = template.Library()
 @register.simple_tag
 def cciw_form_field(form, field_name, label):
     """
-    Display a single field in the standard CCIW format.
+    Display a single field in the standard CCiW format.
     """
     # Assumes form has CciwFormMixin as a base
 

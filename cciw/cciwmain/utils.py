@@ -2,7 +2,7 @@
 """
 Utility functions and classes.
 
-For CCIW specific utilities see cciw.cciwmain.common
+For CCiW specific utilities see cciw.cciwmain.common
 """
 import json
 import re

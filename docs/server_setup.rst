@@ -3,7 +3,7 @@ Server setup
 
 How the server was set up:
 
-On Digital Ocean, CCIW account, created new VM:
+On Digital Ocean, CCiW account, created new VM:
 
 - Ubuntu 16.04.3
 - 512 Mb

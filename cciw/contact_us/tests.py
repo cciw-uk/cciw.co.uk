@@ -17,7 +17,7 @@ class ContactUsPage(BasicSetupMixin, TestBase):
     def setUp(self):
         super().setUp()
         HtmlChunk.objects.create(
-            html="\n<p>If you have an enquiry to make to the CCIW directors,\nplease use the form below and your message will be forwarded \nto the relevant person, who will reply by email.</p>\n",
+            html="\n<p>If you have an enquiry to make to the CCiW directors,\nplease use the form below and your message will be forwarded \nto the relevant person, who will reply by email.</p>\n",
             page_title="Christian Camps in Wales",
             name="contact_us_intro",
         )

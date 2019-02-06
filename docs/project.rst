@@ -1,10 +1,10 @@
-CCIW project overview
+CCiW project overview
 =====================
 
 Architecture
 ------------
 
-The CCIW site is fairly standard Django site. It is currently hosted on
+The CCiW site is fairly standard Django site. It is currently hosted on
 DigitalOcean.
 
 We use:

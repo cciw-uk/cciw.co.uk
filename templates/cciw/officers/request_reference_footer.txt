@@ -1,5 +1,5 @@
-{% autoescape off %}Many thanks for your support of CCIW.
+{% autoescape off %}Many thanks for your support of CCiW.
 
 {{ sender.full_name }}
 
-For CCIW camp {{ camp.name }}, {{ camp.year }} - {{ camp.leaders_formatted }}.{% endautoescape %}
+For CCiW camp {{ camp.name }}, {{ camp.year }} - {{ camp.leaders_formatted }}.{% endautoescape %}
