@@ -99,7 +99,7 @@ def view_message(request, message_id):
 
 
 ----
-On {timestamp}, <{email}> wrote:
+On {timestamp}, {name} <{email}> wrote:
 
 {quoted_message_body}
 """.format(name=msg.name if msg.name else "user",
