@@ -288,6 +288,7 @@ class PlaceDetailsMixin(CreateCampMixin):
             'medical_card_number': 'asdfasdf',
             'agreement': True,
             'price_type': '0',
+            'last_tetanus_injection': '%d-02-03' % (self.camp.year - 5),
         }
 
     def setUp(self):
@@ -339,6 +340,7 @@ class CreatePlaceWebMixin(CreatePlaceModelMixin, LogInMixin):
 
         # Otherwise, we use public views to create place, to ensure that they
         # are created in the same way that a user would.
+        old_booking_ids = list(Booking.objects.values_list('id', flat=True))
         self.add_prices()
         data = self.place_details.copy()
         if extra is not None:
@@ -350,6 +352,8 @@ class CreatePlaceWebMixin(CreatePlaceModelMixin, LogInMixin):
         self.fill_by_name(data)
         self.submit('#id_save_btn')
         self.assertUrlsEqual(reverse('cciw-bookings-list_bookings'))
+        new_booking = Booking.objects.exclude(id__in=old_booking_ids).get()
+        return new_booking
 
     def fill(self, data):
         data2 = {}
@@ -380,6 +384,7 @@ class BookingBaseMixin(AtomicChecksMixin):
     NO_PLACES_LEFT_FOR_BOYS = "There are no places left for boys"
     NO_PLACES_LEFT_FOR_GIRLS = "There are no places left for girls"
     PRICES_NOT_SET = "prices have not been set"
+    LAST_TETANUS_INJECTION_REQUIRED = "last tetanus injection"
 
     def setUp(self):
         super().setUp()
@@ -1769,6 +1774,13 @@ class TestListBookingsBase(BookingBaseMixin, CreatePlaceWebMixin, FuncBaseMixin)
         b = acc.bookings.all()[0]
         self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
         self.assertTextPresent("Places were not booked due to modifications made")
+
+    def test_last_tetanus_injection_required(self):
+        booking = self.create_place({'last_tetanus_injection': None})
+        self.get_url(self.urlname)
+        self.assert_book_button_disabled()
+        self.assertTextPresent(self.LAST_TETANUS_INJECTION_REQUIRED)
+        self.assertIn(booking, Booking.objects.need_approving())
 
 
 class TestListBookingsWT(TestListBookingsBase, WebTestBase):
