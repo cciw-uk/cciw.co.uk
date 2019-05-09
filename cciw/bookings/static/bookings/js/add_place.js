@@ -343,4 +343,4 @@
              $('#booking_form').on('change', '#id_account', loadExistingPlacesData);
          }
      });
-})(jQuery, cciw);
+})(jQuery || django.jQuery, cciw);
