@@ -30,23 +30,30 @@ def b(s):
     return bytes(s, 'ascii')
 
 
-@contextlib.contextmanager
-def mock_mailgun_send_mime():
-    with mock.patch('cciw.mail.lists.send_mime_message') as m:
-        # Special behaviour:
-        def sendmail(to_address, from_address, mail_bytes):
-            if to_address.endswith("@faildomain.com"):
-                raise Exception("Mailgun doesn't like {0}!".format(to_address))
-            # Otherwise succeed silently
+def make_mock_send_mime(function_to_patch):
+    @contextlib.contextmanager
+    def mock_send_mime():
+        with mock.patch(function_to_patch) as m:
+            # Special behaviour:
+            def sendmail(to_address, from_address, mail_bytes):
+                if to_address.endswith("@faildomain.com"):
+                    raise Exception("We don't like {0}!".format(to_address))
+                # Otherwise succeed silently
 
-        m.side_effect = sendmail
+            m.side_effect = sendmail
 
-        # Helpers for tests:
-        m.to_addresses = (
-            lambda: [c[0][0] for c in m.call_args_list])
-        m.messages_sent = (
-            lambda: [c[0][2] for c in m.call_args_list])
-        yield m
+            # Helpers for tests:
+            m.to_addresses = (
+                lambda: [c[0][0] for c in m.call_args_list])
+            m.messages_sent = (
+                lambda: [c[0][2] for c in m.call_args_list])
+            yield m
+
+    return mock_send_mime
+
+
+mock_mailgun_send_mime = make_mock_send_mime('cciw.mail.lists.send_mime_message_mailgun')
+mock_smtp_send_mime = make_mock_send_mime('cciw.mail.lists.send_mime_message_smtp')
 
 
 @contextlib.contextmanager
@@ -129,7 +136,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         self.assertEqual(l1, l3)
 
     def test_handle_debug_list(self):
-        with mock_mailgun_send_mime() as m_s:
+        with mock_smtp_send_mime() as m_s:
             handle_mail(MSG_DEBUG_LIST)
         self.assertEqual(m_s.call_count, 2)
         messages_sent = m_s.messages_sent()
@@ -235,7 +242,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                             email="admin1@faildomain.com",
                             is_superuser=True)
 
-        with mock_mailgun_send_mime() as m_s:
+        with mock_smtp_send_mime() as m_s:
             with mock_send_mail() as send_mail:
                 handle_mail(MSG_DEBUG_LIST)
         # We should have tried to send to all recipients

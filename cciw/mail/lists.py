@@ -33,7 +33,8 @@ from cciw.officers.email_utils import formatted_email
 from cciw.officers.models import Application
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 
-from .mailgun import send_mime_message
+from .mailgun import send_mime_message as send_mime_message_mailgun
+from .smtp import send_mime_message as send_mime_message_smtp
 
 # External utility functions #
 
@@ -326,11 +327,12 @@ def forward_email_to_list(mail, email_list, debug=False):
 
     errors = []
     for addr, from_address, mail_as_bytes in messages_to_send:
+        sender = send_mime_message_smtp if 'debug' in email_list.address else send_mime_message_mailgun
         if debug:
             with open(".mailing_list_log", "ab") as f:
                 f.write(mail_as_bytes)
         try:
-            send_mime_message(addr, from_address, mail_as_bytes)
+            sender(addr, from_address, mail_as_bytes)
         except Exception as e:
             errors.append((addr, e))
 
