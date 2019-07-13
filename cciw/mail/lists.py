@@ -316,20 +316,21 @@ def forward_email_to_list(mail, email_list, debug=False):
         del mail['Message-ID']
         mail['Message-ID'] = make_msgid()
         mail_as_bytes = force_bytes(mail.as_string())
+        from_address = mail['From']
         messages_to_send.append(
-            (addr, mail_as_bytes)
+            (addr, from_address, mail_as_bytes)
         )
 
     if len(messages_to_send) == 0:
         return
 
     errors = []
-    for addr, mail_as_bytes in messages_to_send:
+    for addr, from_address, mail_as_bytes in messages_to_send:
         if debug:
             with open(".mailing_list_log", "ab") as f:
                 f.write(mail_as_bytes)
         try:
-            send_mime_message(addr, mail_as_bytes)
+            send_mime_message(addr, from_address, mail_as_bytes)
         except Exception as e:
             errors.append((addr, e))
 

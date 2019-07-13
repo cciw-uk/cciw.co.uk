@@ -47,7 +47,7 @@ def api_request(path, data=None, files=None, method=None, add_domain=False):
 # EMAIL_BACKEND. But for MIME messages that we are modifying and forwarding, we
 # need to use send_mime_message.
 
-def send_mime_message(to, mime_message):
+def send_mime_message(to, from_address, mime_message):
     logger.info("send_mime_message to=%s message=%s...", to, mime_message[0:50])
     return api_request('/messages.mime',
                        add_domain=True,

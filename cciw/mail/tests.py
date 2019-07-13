@@ -34,7 +34,7 @@ def b(s):
 def mock_mailgun_send_mime():
     with mock.patch('cciw.mail.lists.send_mime_message') as m:
         # Special behaviour:
-        def sendmail(to_address, mail_bytes):
+        def sendmail(to_address, from_address, mail_bytes):
             if to_address.endswith("@faildomain.com"):
                 raise Exception("Mailgun doesn't like {0}!".format(to_address))
             # Otherwise succeed silently
@@ -45,7 +45,7 @@ def mock_mailgun_send_mime():
         m.to_addresses = (
             lambda: [c[0][0] for c in m.call_args_list])
         m.messages_sent = (
-            lambda: [c[0][1] for c in m.call_args_list])
+            lambda: [c[0][2] for c in m.call_args_list])
         yield m
 
 
@@ -301,14 +301,14 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
     def test_send_mime_message_good(self):
         to = settings.MAILGUN_TEST_RECEIVER  # authorized recipient
         msg = MSG_MAILGUN_TEST.replace(b'someone@gmail.com', to.encode('utf-8'))
-        response = send_mime_message(to, msg)
+        response = send_mime_message(to, 'noreply@cciw.co.uk', msg)
         self.assertIn('id', response)
         self.assertEqual(response['id'], '<56CCDE2E.9030103@gmail.com>')
 
     @vcr.use_cassette('cciw/mail/fixtures/vcr_cassettes/send_mime_message_error.yaml')
     def test_send_mime_message_error(self):
         to = 'someone@gmail.com'
-        self.assertRaises(Exception, send_mime_message, to, MSG_MAILGUN_TEST)
+        self.assertRaises(Exception, send_mime_message, to, 'noreply@cciw.co.uk', MSG_MAILGUN_TEST)
 
     def test_mailgun_bounce(self):
         rf = RequestFactory()
