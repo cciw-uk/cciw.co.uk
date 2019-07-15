@@ -1,4 +1,4 @@
-import contextlib
+import re
 from unittest import mock
 
 import vcr
@@ -6,13 +6,13 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core import mail
-from django.core.mail import EmailMessage
 from django.core.mail.backends.locmem import EmailBackend as LocMemEmailBackend
 from django.test.client import RequestFactory
 from requests.exceptions import ConnectionError
 
 from cciw.accounts.models import COMMITTEE_GROUP_NAME
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
+from cciw.utils.functional import partition
 from cciw.utils.tests.base import TestBase
 
 from . import views
@@ -30,45 +30,15 @@ def b(s):
     return bytes(s, 'ascii')
 
 
-def make_mock_send_mime(function_to_patch):
-    @contextlib.contextmanager
-    def mock_send_mime():
-        with mock.patch(function_to_patch) as m:
-            # Special behaviour:
-            def sendmail(to_address, from_address, mail_bytes):
-                if to_address.endswith("@faildomain.com"):
-                    raise Exception("We don't like {0}!".format(to_address))
-                # Otherwise succeed silently
-
-            m.side_effect = sendmail
-
-            # Helpers for tests:
-            m.to_addresses = (
-                lambda: [c[0][0] for c in m.call_args_list])
-            m.messages_sent = (
-                lambda: [c[0][2] for c in m.call_args_list])
-            yield m
-
-    return mock_send_mime
-
-
-mock_mailgun_send_mime = make_mock_send_mime('cciw.mail.lists.send_mime_message_mailgun')
-mock_smtp_send_mime = make_mock_send_mime('cciw.mail.lists.send_mime_message_smtp')
-
-
-@contextlib.contextmanager
-def mock_send_mail():
-    with mock.patch('cciw.mail.lists.send_mail') as send_mail:
-        # Helpers:
-        def sent_messages(idx):
-            args = send_mail.call_args_list[idx][0]
-            return EmailMessage(args[0], args[1], args[2], args[3])
-
-        send_mail.sent_messages = sent_messages
-        yield send_mail
+def partition_mailing_list_rejections(messages):
+    return partition(lambda m: re.match('\[CCIW\] Access to mailing list .* denied', m.subject), messages)
 
 
 class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
+    # Tests for mailing list sending. Note that because we are forwarding on raw
+    # MIME objects with minimal changes, we are using
+    # cciw.mail.smtp.RawEmailMessage, and that means we have to test most things
+    # about messages using `email.message().as_bytes()`
 
     def setUp(self):
         super().setUp()
@@ -136,26 +106,19 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         self.assertEqual(l1, l3)
 
     def test_handle_debug_list(self):
-        with mock_smtp_send_mime() as m_s:
-            handle_mail(MSG_DEBUG_LIST)
-        self.assertEqual(m_s.call_count, 2)
-        messages_sent = m_s.messages_sent()
-        to_addresses = m_s.to_addresses()
+        handle_mail(MSG_DEBUG_LIST)
+        self.assertEqual(len(mail.outbox), 2)
+        sent_messages_bytes = [m.message().as_bytes() for m in mail.outbox]
+        to_addresses = [e for m in mail.outbox for e in m.to]
         self.assertEqual(list(sorted(to_addresses)),
                          ["admin1@admin.com",
                           "admin2@admin.com"])
-        self.assertTrue(all(b"\nFrom: Joe <joe@gmail.com>" not in m
-                            for m in messages_sent))
-        self.assertTrue(all(b"\nFrom: Joe joe(at)gmail.com via <noreply@cciw.co.uk>" in m
-                            for m in messages_sent))
+        self.assertTrue(all(m.from_email == "Joe joe(at)gmail.com via <noreply@cciw.co.uk>"
+                            for m in mail.outbox))
         self.assertTrue(all(b"\nX-Original-From: Joe <joe@gmail.com>" in m
-                            for m in messages_sent))
-        self.assertTrue(any(b"To: admin1@admin.com" in m
-                            for m in messages_sent))
-        self.assertTrue(any(b"To: admin2@admin.com" in m
-                            for m in messages_sent))
+                            for m in sent_messages_bytes))
         self.assertTrue(all(b"Subject: Test" in m
-                            for m in messages_sent))
+                            for m in sent_messages_bytes))
 
     def test_handle_committee_list(self):
         committee, _ = Group.objects.get_or_create(name=COMMITTEE_GROUP_NAME)
@@ -166,41 +129,44 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
             username="awoman1",
             email="a.woman@example.com")
 
+        # Email address without permission
         msg = MSG_COMMITTEE_LIST.replace(b'a.woman@example.com', b'joe@gmail.com')
-        with mock_mailgun_send_mime() as m_s:
-            handle_mail(msg)
+        handle_mail(msg)
 
-        self.assertEqual(m_s.call_count, 0)  # Permission denied
+        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+        self.assertEqual(len(rejections), 1)
+        self.assertEqual(len(sent_messages), 0)
 
-        with mock_mailgun_send_mime() as m_s2:
-            handle_mail(MSG_COMMITTEE_LIST)
+        # Email address without permission
+        handle_mail(MSG_COMMITTEE_LIST)
 
-        messages_sent = m_s2.messages_sent()
-        to_addresses = m_s2.to_addresses()
-        self.assertEqual(list(sorted(to_addresses)),
+        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+        sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
+        sent_to_addresses = list(sorted([address for m in sent_messages for address in m.recipients()]))
+        self.assertEqual(sent_to_addresses,
                          ["a.man@example.com",
                           "a.woman@example.com"])
         self.assertTrue(all(b"Sender: committee@cciw.co.uk" in m
-                            for m in messages_sent))
+                            for m in sent_messages_bytes))
         self.assertTrue(all(b"List-Post: <mailto:committee@cciw.co.uk>" in m
-                            for m in messages_sent))
+                            for m in sent_messages_bytes))
 
     def test_handle_officer_list(self):
-        with mock_mailgun_send_mime() as m_s:
-            handle_mail(MSG_OFFICER_LIST)
+        handle_mail(MSG_OFFICER_LIST)
 
-        sent_messages = m_s.messages_sent()
+        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+        self.assertEqual(len(rejections), 0)
         self.assertEqual(len(sent_messages), 3)
 
-        self.assertTrue(all(b'\nFrom: Dave Stott <leader@somewhere.com>' not in m
-                            for m in sent_messages))
+        sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
+
         self.assertTrue(all(b'\nX-Original-From: Dave Stott <leader@somewhere.com>' in m
-                            for m in sent_messages))
-        self.assertTrue(all(b'\nFrom: Dave Stott leader(at)somewhere.com via <noreply@cciw.co.uk>' in m
+                            for m in sent_messages_bytes))
+        self.assertTrue(all(m.from_email == 'Dave Stott leader(at)somewhere.com via <noreply@cciw.co.uk>'
                             for m in sent_messages))
         self.assertTrue(all(b"Sender: CCIW website <noreply@cciw.co.uk>" in m
-                            for m in sent_messages))
-        self.assertEqual(m_s.call_args_list[0][0][0], '"Fred Jones" <fredjones@somewhere.com>')
+                            for m in sent_messages_bytes))
+        self.assertTrue(any(True for m in mail.outbox if '"Fred Jones" <fredjones@somewhere.com>' in m.to))
 
     def test_extract(self):
         self.assertEqual(extract_email_addresses('Some Guy <A.Body@example.com>'),
@@ -208,25 +174,24 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
 
     def test_handle_mail_exception(self):
         """
-        Test that if an error occurs trying to send, handle_mail raises
+        Test that if an error always occurs trying to send, handle_mail raises
         Exception. (This means that mailgun_incoming will return
         a 500, and Mailgun will attempt to POST again)
         """
-        with mock_mailgun_send_mime() as m_s:
+        with mock.patch('cciw.mail.lists.send_mime_message') as m_s:
             def connection_error():
                 raise ConnectionError("Connection refused")
             m_s.side_effect = connection_error
             self.assertRaises(Exception, handle_mail, MSG_DEBUG_LIST)
 
     def test_handle_invalid_list(self):
-        with mock_mailgun_send_mime() as m_s:
-            with mock_send_mail() as send_mail:
-                msg = MSG_DEBUG_LIST.replace(b'camp-debug@cciw.co.uk',
-                                             b'camp-1990-blue-officers@cciw.co.uk')
-                handle_mail(msg)
-        self.assertEqual(m_s.call_count, 0)
-        self.assertEqual(send_mail.call_count, 1)
-        error_email = send_mail.sent_messages(0)
+        msg = MSG_DEBUG_LIST.replace(b'camp-debug@cciw.co.uk',
+                                     b'camp-1990-blue-officers@cciw.co.uk')
+        handle_mail(msg)
+        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+        self.assertEqual(len(sent_messages), 0)
+        self.assertEqual(len(rejections), 1)
+        error_email = rejections[0]
         self.assertIn('camp-1990-blue-officers@cciw.co.uk',
                       error_email.body)
         self.assertIn('list does not exist',
@@ -234,7 +199,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
 
     def test_handle_partial_sending_failure(self):
         """
-        Test what happens when there are Mailgun errors with some recipients,
+        Test what happens when there are SMTP errors with some recipients,
         but not all.
         """
         User = get_user_model()
@@ -242,15 +207,20 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                             email="admin1@faildomain.com",
                             is_superuser=True)
 
-        with mock_smtp_send_mime() as m_s:
-            with mock_send_mail() as send_mail:
-                handle_mail(MSG_DEBUG_LIST)
+        with mock.patch('cciw.mail.lists.send_mime_message') as m_s:
+            def sendmail(to_address, from_address, mail_bytes):
+                if to_address.endswith("@faildomain.com"):
+                    raise Exception("We don't like {0}!".format(to_address))
+                # Otherwise succeed silently
+            m_s.side_effect = sendmail
+
+            handle_mail(MSG_DEBUG_LIST)
         # We should have tried to send to all recipients
         self.assertEqual(m_s.call_count, 3)
 
         # Should have reported the error
-        self.assertEqual(send_mail.call_count, 1)
-        error_email = send_mail.sent_messages(0)
+        self.assertEqual(len(mail.outbox), 1)
+        error_email = mail.outbox[0]
         self.assertIn("admin1@faildomain.com",
                       error_email.body)
         self.assertEqual(error_email.subject,
@@ -261,18 +231,16 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
     def test_handle_mail_permission_denied(self):
         bad_mail = MSG_OFFICER_LIST.replace(b"leader@somewhere.com",
                                             b"joe@gmail.com")
-        with mock_mailgun_send_mime() as m_s:
-            handle_mail(bad_mail)
-        self.assertEqual(m_s.messages_sent(), [])
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, "[CCIW] Access to mailing list camp-2000-blue-officers@cciw.co.uk denied")
-        self.assertIn("you do not have permission", mail.outbox[0].body)
+        handle_mail(bad_mail)
+        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+        self.assertEqual(sent_messages, [])
+        self.assertEqual(len(rejections), 1)
+        self.assertEqual(rejections[0].subject, "[CCIW] Access to mailing list camp-2000-blue-officers@cciw.co.uk denied")
+        self.assertIn("you do not have permission", rejections[0].body)
 
     def test_handle_mail_permission_denied_for_unknown(self):
         bad_mail = MSG_OFFICER_LIST.replace(b"leader@somewhere.com", b"randomer@random.com")
-        with mock_mailgun_send_mime() as m_s:
-            handle_mail(bad_mail)
-        self.assertEqual(m_s.messages_sent(), [])
+        handle_mail(bad_mail)
         self.assertEqual(len(mail.outbox), 0)
 
     def test_mailgun_incoming(self):
@@ -378,7 +346,8 @@ class TestMailBackend(LocMemEmailBackend):
 
         # Subject check
         for m in messages:
-            if not m.subject.startswith('[CCIW]'):
+            if (not m.subject.startswith('[CCIW]') and
+                    b' via <noreply@cciw.co.uk>' not in m.message().as_bytes()):
                 raise AssertionError("Email with subject \"{0}\" should start with [CCIW]"
                                      .format(m.subject))
 

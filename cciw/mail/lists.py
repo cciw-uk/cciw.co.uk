@@ -33,8 +33,7 @@ from cciw.officers.email_utils import formatted_email
 from cciw.officers.models import Application
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 
-from .mailgun import send_mime_message as send_mime_message_mailgun
-from .smtp import send_mime_message as send_mime_message_smtp
+from .smtp import send_mime_message
 
 # External utility functions #
 
@@ -326,19 +325,19 @@ def forward_email_to_list(mail, email_list, debug=False):
         return
 
     errors = []
-    for addr, from_address, mail_as_bytes in messages_to_send:
-        sender = send_mime_message_smtp if 'debug' in email_list.address else send_mime_message_mailgun
+    for to_addr, from_address, mail_as_bytes in messages_to_send:
         if debug:
             with open(".mailing_list_log", "ab") as f:
                 f.write(mail_as_bytes)
         try:
-            sender(addr, from_address, mail_as_bytes)
+            send_mime_message(to_addr, from_address, mail_as_bytes)
         except Exception as e:
             errors.append((addr, e))
 
     if len(errors) == len(messages_to_send):
         # Probably a temporary error. By re-raising the last error, we cancel
-        # everything, and can retry the whole email.
+        # everything, and can retry the whole email, because Mailgun will
+        # re-attempt if we return 500 from the handler.
         raise errors[-1][1]
 
     if errors:
