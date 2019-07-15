@@ -1,8 +1,6 @@
 import re
 from unittest import mock
 
-import vcr
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core import mail
@@ -17,7 +15,6 @@ from cciw.utils.tests.base import TestBase
 
 from . import views
 from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
-from .mailgun import send_mime_message
 from .test_data import (MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_FOR_REFERENCE,
@@ -268,22 +265,6 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
             response = views.mailgun_incoming(request)
         self.assertEqual(response.status_code, 403)
         self.assertEqual(m.call_count, 0)
-
-    # In test mode, we run against the sandbox account, which only has a few
-    # authorized recipients. Using this, we can test both good and error conditions.
-    # We then use VCR to record the interaction and make the test fast and deterministic
-    @vcr.use_cassette('cciw/mail/fixtures/vcr_cassettes/send_mime_message_good.yaml')
-    def test_send_mime_message_good(self):
-        to = settings.MAILGUN_TEST_RECEIVER  # authorized recipient
-        msg = MSG_MAILGUN_TEST.replace(b'someone@gmail.com', to.encode('utf-8'))
-        response = send_mime_message(to, 'noreply@cciw.co.uk', msg)
-        self.assertIn('id', response)
-        self.assertEqual(response['id'], '<56CCDE2E.9030103@gmail.com>')
-
-    @vcr.use_cassette('cciw/mail/fixtures/vcr_cassettes/send_mime_message_error.yaml')
-    def test_send_mime_message_error(self):
-        to = 'someone@gmail.com'
-        self.assertRaises(Exception, send_mime_message, to, 'noreply@cciw.co.uk', MSG_MAILGUN_TEST)
 
     def test_mailgun_bounce(self):
         rf = RequestFactory()
