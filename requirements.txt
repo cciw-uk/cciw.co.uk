@@ -63,7 +63,7 @@ lockfile==0.12.2          # via django-mailer
 lxml==3.7.3
 markdown==2.6.11          # via wiki
 mccabe==0.6.1
-nodeenv==1.0.0
+nodeenv==1.3.3
 numpy==1.11.1
 orderedmultidict==0.7.11  # via furl
 pandas-highcharts==0.5.2

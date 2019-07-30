@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime
 
@@ -23,7 +24,7 @@ join = os.path.join
 rel = lambda *x: os.path.normpath(join(os.path.abspath(os.path.dirname(__file__)), *x))
 
 env.user = 'cciw'
-env.hosts = ['cciw.digitalocean.com']
+env.hosts = ['cciw.co.uk']
 
 env.proj_name = "cciw"
 env.proj_app = "cciw"  # Python module for project
@@ -201,6 +202,9 @@ class Version(object):
 
 
 def secrets():
+    if not os.path.exists(SECRETS_FILE):
+        print("WARNING: missing secrets file")
+        return defaultdict(str)
     return json.load(open(SECRETS_FILE))
 
 
@@ -631,7 +635,7 @@ def install_requirements(target):
 def _install_deps_with(run_with):
     run_with("pip install --upgrade setuptools pip wheel six")
     run_with("pip install -r requirements.txt --exists-action w")
-    run_with("nodeenv --node=system --python-virtualenv --requirement=requirements-node.txt")
+    run_with("nodeenv --node=latest --python-virtualenv --requirement=requirements-node.txt")
 
 
 def build_static(target):
@@ -1072,12 +1076,14 @@ def _local_django_setup():
 def initial_dev_setup():
     if 'VIRTUAL_ENV' not in os.environ:
         raise AssertionError("You need to set up a virtualenv before using this")
-    get_and_load_production_db()
-    target = Version.current()
-    get_non_vcs_sources(target)
     if not os.path.exists(LOCAL_SECURE_DOWNLOAD_ROOT):
         local("mkdir -p %s" % LOCAL_SECURE_DOWNLOAD_ROOT)
+    if not os.path.exists("../logs"):
+        local("mkdir ../logs")
     _install_deps_local()
+    target = Version.current()
+    get_non_vcs_sources(target)
+    get_and_load_production_db()
 
 
 def _install_deps_local():
