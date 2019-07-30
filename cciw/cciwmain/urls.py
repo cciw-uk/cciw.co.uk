@@ -25,5 +25,5 @@ urlpatterns = [
     path('', sitecontent_views.home, name="cciw-cciwmain-sitecontent_home"),
     # Fallback -- allows any other URL to be defined as arbitary pages.
     # htmlchunk.find will throw a 404 for any URL not defined.
-    path('<path:path>', sitecontent_views.find, name="cciw-cciwmain-sitecontent_find"),
+    path('<path:path>/', sitecontent_views.find, name="cciw-cciwmain-sitecontent_find"),
 ]
