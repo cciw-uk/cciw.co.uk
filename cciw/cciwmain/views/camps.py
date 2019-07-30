@@ -21,7 +21,7 @@ def index(request, year=None):
     """
     c = {}
     c['title'] = "Camp information"
-    all_camps = Camp.objects.filter(end_date__lte=date.today())
+    all_camps = Camp.objects.all()
     if (year is None):
         camps = all_camps.order_by('-year', 'start_date')
     else:
