@@ -4,9 +4,9 @@ from django.shortcuts import render
 from cciw.sitecontent.models import MenuLink
 
 
-def find(request, template_name='cciw/chunk_page.html'):
+def find(request, path, template_name='cciw/chunk_page.html'):
     try:
-        link = MenuLink.objects.get(url=request.path)
+        link = MenuLink.objects.get(url='/' + path)
     except MenuLink.DoesNotExist:
         raise Http404()
 
@@ -21,4 +21,4 @@ def find(request, template_name='cciw/chunk_page.html'):
 
 
 def home(request):
-    return find(request, template_name='cciw/home.html')
+    return find(request, '', template_name='cciw/home.html')
