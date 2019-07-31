@@ -20,8 +20,8 @@
     <h2>Data</h2>
 
     <p>Download raw data:
-      {% if camps_param %}
-        <a href="{% url 'cciw-officers-booking_progress_stats_custom_download' camps=camps_param %}?format=xls">XLS</a></p>
+      {% if camp_ids %}
+        <a href="{% url 'cciw-officers-booking_progress_stats_custom_download' camp_ids=camp_ids %}?format=xls">XLS</a></p>
       {% else %}
         <a href="{% url 'cciw-officers-booking_progress_stats_download' start_year=start_year end_year=end_year %}?format=xls">XLS</a></p>
       {% endif %}

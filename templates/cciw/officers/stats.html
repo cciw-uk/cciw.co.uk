@@ -13,10 +13,10 @@
         <div id="camp-graph-{{ camp.slug_name }}"
              style="width:600px;height:300px;"
              data-chart="{{ chart }}"
-             data-url-officer-list="{% url "cciw-officers-officer_list" year=camp.year slug=camp.slug_name %}"
+             data-url-officer-list="{% url "cciw-officers-officer_list" camp_id=camp.url_id %}"
              data-url-manage-dbss="{% url "cciw-officers-manage_dbss" year=year %}?camp={{ camp.slug_name }}"
-             data-url-manage-applications="{% url "cciw-officers-manage_applications" year=camp.year slug=camp.slug_name %}"
-             data-url-manage-references="{% url "cciw-officers-manage_references" year=camp.year slug=camp.slug_name %}"
+             data-url-manage-applications="{% url "cciw-officers-manage_applications" camp_id=camp.url_id %}"
+             data-url-manage-references="{% url "cciw-officers-manage_references" camp_id=camp.url_id %}"
              data-officer-stats-chart-placeholder="true"
              >
         </div>

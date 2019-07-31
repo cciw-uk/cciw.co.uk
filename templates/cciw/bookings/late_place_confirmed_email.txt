@@ -7,7 +7,7 @@ Sex: {{ booking.get_sex_display }}
 
 Please see the spreadsheet for more information:
 
-https://{{ domain }}{% url 'cciw-officers-export_camper_data' year=camp.year slug=camp.slug_name %}
+https://{{ domain }}{% url 'cciw-officers-export_camper_data' camp_id=camp.url_id %}
 
 You were sent an email about this because it was a late
 booking - within 30 days of the start of camp.

@@ -15,20 +15,20 @@ urlpatterns = [
 
     # Leaders pages
     path('leaders/', views.leaders_index, name="cciw-officers-leaders_index"),
-    path('leaders/applications/<yyyy:year>-<slug:slug>/', views.manage_applications, name="cciw-officers-manage_applications"),
-    path('leaders/references/<yyyy:year>-<slug:slug>/', views.manage_references, name="cciw-officers-manage_references"),
-    path('leaders/officer-list/<yyyy:year>-<slug:slug>/', views.officer_list, name="cciw-officers-officer_list"),
+    path('leaders/applications/<campid:camp_id>/', views.manage_applications, name="cciw-officers-manage_applications"),
+    path('leaders/references/<campid:camp_id>/', views.manage_references, name="cciw-officers-manage_references"),
+    path('leaders/officer-list/<campid:camp_id>/', views.officer_list, name="cciw-officers-officer_list"),
     path('leaders/officer/<int:officer_id>/', views.officer_history, name="cciw-officers-officer_history"),
-    path('leaders/export-officer-data/<yyyy:year>-<slug:slug>/', views.export_officer_data, name="cciw-officers-export_officer_data"),
-    path('leaders/export-camper-data/<yyyy:year>-<slug:slug>/', views.export_camper_data, name="cciw-officers-export_camper_data"),
+    path('leaders/export-officer-data/<campid:camp_id>/', views.export_officer_data, name="cciw-officers-export_officer_data"),
+    path('leaders/export-camper-data/<campid:camp_id>/', views.export_camper_data, name="cciw-officers-export_camper_data"),
     path('leaders/export-camper-data/<yyyy:year>/', views.export_camper_data_for_year, name="cciw-officers-export_camper_data_for_year"),
-    path('leaders/export-sharable-transport-details/<yyyy:year>-<slug:slug>/', views.export_sharable_transport_details, name="cciw-officers-export_sharable_transport_details"),
-    path('leaders/remove-officer/<yyyy:year>-<slug:slug>/', views.remove_officer, name="cciw-officers-remove_officer"),
-    path('leaders/add-officers/<yyyy:year>-<slug:slug>/', views.add_officers, name="cciw-officers-add_officers"),
+    path('leaders/export-sharable-transport-details/<campid:camp_id>/', views.export_sharable_transport_details, name="cciw-officers-export_sharable_transport_details"),
+    path('leaders/remove-officer/<campid:camp_id>/', views.remove_officer, name="cciw-officers-remove_officer"),
+    path('leaders/add-officers/<campid:camp_id>/', views.add_officers, name="cciw-officers-add_officers"),
     path('leaders/update-officer/', views.update_officer, name="cciw-officers-update_officer"),
     path('leaders/resend-email/', views.resend_email, name="cciw-officers-resend_email"),
-    path('leaders/request-reference/<yyyy:year>-<slug:slug>/', views.request_reference, name="cciw-officers-request_reference"),
-    path('leaders/nag-by-officer/<yyyy:year>-<slug:slug>/', views.nag_by_officer, name="cciw-officers-nag_by_officer"),
+    path('leaders/request-reference/<campid:camp_id>/', views.request_reference, name="cciw-officers-request_reference"),
+    path('leaders/nag-by-officer/<campid:camp_id>/', views.nag_by_officer, name="cciw-officers-nag_by_officer"),
     path('leaders/reference/<int:reference_id>/', views.view_reference, name="cciw-officers-view_reference"),
 
     # DBS
@@ -58,9 +58,9 @@ urlpatterns = [
 
     # Bookings progress
     path('bookings/booking-progress-stats/<yyyy:start_year>-<yyyy:end_year>/', views.booking_progress_stats, name="cciw-officers-booking_progress_stats"),
-    path('bookings/booking-progress-stats/<campidlist:camps>/', views.booking_progress_stats, name="cciw-officers-booking_progress_stats_custom"),
+    path('bookings/booking-progress-stats/<campidlist:camp_ids>/', views.booking_progress_stats, name="cciw-officers-booking_progress_stats_custom"),
     path('bookings/booking-progress-stats-download/<yyyy:start_year>-<yyyy:end_year>/', views.booking_progress_stats_download, name="cciw-officers-booking_progress_stats_download"),
-    path('bookings/booking-progress-stats-download/<campidlist:camps>/', views.booking_progress_stats_download, name="cciw-officers-booking_progress_stats_custom_download"),
+    path('bookings/booking-progress-stats-download/<campidlist:camp_ids>/', views.booking_progress_stats_download, name="cciw-officers-booking_progress_stats_custom_download"),
 
     # Bookings summary
     path('bookings/booking-summary-stats/<yyyy:start_year>-<yyyy:end_year>/', views.booking_summary_stats, name="cciw-officers-booking_summary_stats"),
@@ -69,10 +69,10 @@ urlpatterns = [
 
     # Bookings ages
     path('bookings/booking-ages-stats/<yyyy:start_year>-<yyyy:end_year>/', views.booking_ages_stats, name="cciw-officers-booking_ages_stats"),
-    path('bookings/booking-ages-stats/<campidlist:camps>/', views.booking_ages_stats, name="cciw-officers-booking_ages_stats_custom"),
+    path('bookings/booking-ages-stats/<campidlist:camp_ids>/', views.booking_ages_stats, name="cciw-officers-booking_ages_stats_custom"),
     path('bookings/booking-ages-stats/<yyyy:single_year>/', views.booking_ages_stats, name="cciw-officers-booking_ages_stats_single_year"),
     path('bookings/booking-ages-stats-download/<yyyy:start_year>-<yyyy:end_year>/', views.booking_ages_stats_download, name="cciw-officers-booking_ages_stats_download"),
-    path('bookings/booking-ages-stats-download/<campidlist:camps>/', views.booking_ages_stats_download, name="cciw-officers-booking_ages_stats_custom_download"),
+    path('bookings/booking-ages-stats-download/<campidlist:camp_ids>/', views.booking_ages_stats_download, name="cciw-officers-booking_ages_stats_custom_download"),
 
     # Autocomplete
     path('officer-autocomplete/',

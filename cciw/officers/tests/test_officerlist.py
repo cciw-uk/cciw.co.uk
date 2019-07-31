@@ -154,7 +154,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         officer = self.officer_user
 
         self.officer_login(LEADER)
-        self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
+        self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
 
         # Check initial:
         self.assertNotIn(officer, camp.officers.all())
@@ -177,7 +177,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         camp.invitations.create(officer=officer)
 
         self.officer_login(LEADER)
-        self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
+        self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
 
         # Check initial:
         self.assertIn(officer, camp.officers.all())
@@ -200,7 +200,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         camp.invitations.create(officer=officer)
 
         self.officer_login(LEADER)
-        self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
+        self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
 
         # Action:
         self.click_expecting_alert(self.resend_email_button_selector(officer))
@@ -217,7 +217,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         camp.invitations.create(officer=officer)
 
         self.officer_login(LEADER)
-        self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
+        self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
         self.assertFalse(self.is_element_displayed('#id_officer_save'))
 
         self.click(self.edit_button_selector(officer))
@@ -249,7 +249,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         camp.invitations.create(officer=officer)
 
         self.officer_login(LEADER)
-        self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
+        self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
 
         self.click(self.edit_button_selector(officer))
         self.fill({'#id_officer_email': 'bademail'})
@@ -266,7 +266,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
     def test_add_officer_button(self):
         camp = self.default_camp_1
         self.officer_login(LEADER)
-        self.get_url('cciw-officers-officer_list', year=camp.year, slug=camp.slug_name)
+        self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
         self.click('#id_new_officer_btn')
         self.wait_for_ajax()
         time.sleep(5.0)

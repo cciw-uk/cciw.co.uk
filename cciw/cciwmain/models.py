@@ -182,6 +182,18 @@ class Camp(models.Model):
         return "%s-%s" % (self.year, self.slug_name)
 
     @property
+    def url_id(self):
+        """
+        'camp_id' used in URLs
+        """
+        return (self.year, self.slug_name)
+
+    @property
+    def camp_ids_for_stats(self):
+        camps = [self, self.previous_camp] if self.previous_camp else [self]
+        return [c.url_id for c in camps]
+
+    @property
     def nice_name(self):
         return "Camp %s, year %d" % (self.name, self.year)
 
