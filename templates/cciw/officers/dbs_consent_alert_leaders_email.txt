@@ -14,7 +14,7 @@ https://{{ domain }}{% url 'admin:officers_application_change' application.id %}
 
 If it is correct that they do not consent to having a DBS check done, they cannot come on camp, and need to be removed from the camp officer list:
 
-{% for camp in camps %}https://{{ domain }}{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}
+{% for camp in camps %}https://{{ domain }}{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}
 {% endfor %}
 
 Thanks!

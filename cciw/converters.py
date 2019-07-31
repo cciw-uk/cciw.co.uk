@@ -21,14 +21,34 @@ class TwoDigitMonthConverter:
         return '%02d' % value
 
 
+class CampId:
+    regex = r'\d{4}-[^/]+'
+
+    @staticmethod
+    def to_python(value):
+        year, slug = value.split('-', 1)
+        return int(year), slug
+
+    @staticmethod
+    def to_url(value):
+        year, slug = value
+        return "{0}-{1}".format(year, slug)
+
+
 class CampIdList:
-    regex = r'\d{4}-[^/]+(,\d{4}-[^/]+)*'
+    regex = r'{0}(,{1})*'.format(CampId.regex, CampId.regex)
 
     def to_python(self, value):
-        return value
+        return [
+            CampId.to_python(camp_id_str)
+            for camp_id_str in value.split(',')
+        ]
 
     def to_url(self, value):
-        return value
+        return ','.join(
+            CampId.to_url(camp_id)
+            for camp_id in value
+        )
 
 
 class OptStr:

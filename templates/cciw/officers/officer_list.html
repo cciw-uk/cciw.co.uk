@@ -75,9 +75,9 @@
        // Add some things to cciw object that we will need. Rest of javascript in officer_list.js
        pub.campId = {{ camp.id }};
        pub.updateOfficerUrl = "{% url 'cciw-officers-update_officer' %}";
-       pub.removeOfficerUrl = "{% url 'cciw-officers-remove_officer' year=camp.year slug=camp.slug_name %}";
+       pub.removeOfficerUrl = "{% url 'cciw-officers-remove_officer' camp_id=camp.url_id %}";
        pub.resendEmailUrl = "{% url 'cciw-officers-resend_email' %}";
-       pub.addOfficersUrl =  "{% url 'cciw-officers-add_officers' year=camp.year slug=camp.slug_name %}";
+       pub.addOfficersUrl =  "{% url 'cciw-officers-add_officers' camp_id=camp.url_id %}";
        pub.createOfficerUrl = "{% url 'cciw-officers-create_officer' %}";
 
        return pub;
@@ -124,7 +124,7 @@
                 <td class="rightbreak">{{ officer.full_name }}</td>
                 <td>
                   {% for camp in officer_data.missing_application_forms %}
-                    <a target="_blank" href="{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}">{{ camp.slug_name_with_year }}</a><br/>
+                    <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">{{ camp.slug_name_with_year }}</a><br/>
                   {% endfor %}
                 </td>
                 <td class="rightbreak">
@@ -135,8 +135,8 @@
                 <td>
                   {% for camp in officer_data.missing_references %}
                     {{ camp.slug_name_with_year }}
-                    (<a target="_blank" href="{% url 'cciw-officers-manage_references' year=camp.year slug=camp.slug_name %}?officer_id={{ officer.id }}">references</a>,
-                    <a target="_blank" href="{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}">officer list</a>)
+                    (<a target="_blank" href="{% url 'cciw-officers-manage_references' camp_id=camp.url_id %}?officer_id={{ officer.id }}">references</a>,
+                    <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">officer list</a>)
                     <br/>
                   {% endfor %}
                 </td>
@@ -149,7 +149,7 @@
                   {% for camp in officer_data.missing_dbss %}
                     {{ camp.slug_name_with_year }}
                     (<a target="_blank" href="{% url 'cciw-officers-manage_dbss' year=camp.year %}?camp={{ camp.slug_name }}">DBSs</a>,
-                    <a target="_blank" href="{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}">officer list</a>)
+                    <a target="_blank" href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}">officer list</a>)
                     <br/>
                   {% endfor %}
                 </td>
@@ -176,8 +176,8 @@
 
     <ul>
       <li>Officer data, camp {{ camp.name }}, {{ camp.year }}:
-        <a href="{% url 'cciw-officers-export_officer_data' year=camp.year slug=camp.slug_name %}?format=xls">XLS</a> |
-        <a href="{% url 'cciw-officers-export_officer_data' year=camp.year slug=camp.slug_name %}?format=ods">ODS</a>
+        <a href="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}?format=xls">XLS</a> |
+        <a href="{% url 'cciw-officers-export_officer_data' camp_id=camp.url_id %}?format=ods">ODS</a>
       </li>
     </ul>
     {% include "cciw/officers/officer_data_retention_rules_inc.html" with expand_details=True %}

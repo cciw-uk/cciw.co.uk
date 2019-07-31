@@ -8,7 +8,7 @@
       >
     <td>{{ officer.full_name }}</td>
     <td>{% for camp in dbs_info.camps %}
-      <a href="{% url 'cciw-officers-officer_list' year=camp.year slug=camp.slug_name %}" target="_blank">{{ camp.slug_name }}</a>{% if not forloop.last %}, {% endif %}
+      <a href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}" target="_blank">{{ camp.slug_name }}</a>{% if not forloop.last %}, {% endif %}
     {% endfor %}
     </td>
     <td>{% if dbs_info.has_application_form %}<img src="{% static "admin/img/icon-yes.svg" %}">

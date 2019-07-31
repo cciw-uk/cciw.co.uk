@@ -291,7 +291,7 @@ Use the following link to manage this reference:
 {link}
 """.format(link="https://" + common.get_current_domain() +
            reverse('cciw-officers-manage_references',
-                   kwargs=dict(year=camp.year, slug=camp.slug_name)) +
+                   kwargs=dict(camp_id=camp.url_id)) +
            "?ref_email=" + urlquote(bounced_email_address))
 
     forward_with_text(email_addresses,

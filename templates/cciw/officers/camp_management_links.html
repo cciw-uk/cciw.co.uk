@@ -6,16 +6,15 @@
       {% if c.year == thisyear %}
         <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'admin:cciwmain_camp_change' c.id %}">Edit camp details</a>
       {% endif %}
-      <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_list' year=c.year slug=c.slug_name %}">Officer list</a>
-      <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-manage_applications' year=c.year slug=c.slug_name %}">Applications</a>
-      <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-manage_references' year=c.year slug=c.slug_name %}">References</a>
+      <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_list' camp_id=c.url_id %}">Officer list</a>
+      <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-manage_applications' camp_id=c.url_id %}">Applications</a>
+      <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-manage_references' camp_id=c.url_id %}">References</a>
       <br />&nbsp;&nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_stats' year=c.year %}">Officer stats {{ c.year }}</a>
-      <br />&nbsp;&nbsp;&nbsp;Campers: <a href="{% url 'cciw-officers-export_camper_data' year=c.year slug=c.slug_name %}?format=xls">XLS</a>
-      | <a href="{% url 'cciw-officers-export_camper_data' year=c.year slug=c.slug_name %}?format=ods">ODS</a>
-      {% capture as stats_camps_param %}{% if c.previous_camp %}{{ c.previous_camp.slug_name_with_year }},{% endif %}{{ c.slug_name_with_year }}{% endcapture %}
-      | <a href="{% url 'cciw-officers-booking_progress_stats_custom' camps=stats_camps_param %}">Booking progress chart</a>
-      | <a href="{% url 'cciw-officers-booking_ages_stats_custom' camps=stats_camps_param %}">Camper ages chart</a>
-      <br />&nbsp;&nbsp;&nbsp;Sharable transport details: <a href="{% url 'cciw-officers-export_sharable_transport_details' year=c.year slug=c.slug_name %}?format=xls">XLS</a> | <a href="{% url 'cciw-officers-export_sharable_transport_details' year=c.year slug=c.slug_name %}?format=ods">ODS</a>
+      <br />&nbsp;&nbsp;&nbsp;Campers: <a href="{% url 'cciw-officers-export_camper_data' camp_id=c.url_id %}?format=xls">XLS</a>
+      | <a href="{% url 'cciw-officers-export_camper_data' camp_id=c.url_id %}?format=ods">ODS</a>
+      | <a href="{% url 'cciw-officers-booking_progress_stats_custom' camp_ids=c.camp_ids_for_stats %}">Booking progress chart</a>
+      | <a href="{% url 'cciw-officers-booking_ages_stats_custom' camp_ids=c.camp_ids_for_stats %}">Camper ages chart</a>
+      <br />&nbsp;&nbsp;&nbsp;Sharable transport details: <a href="{% url 'cciw-officers-export_sharable_transport_details' camp_id=c.url_id %}?format=xls">XLS</a> | <a href="{% url 'cciw-officers-export_sharable_transport_details' camp_id=c.url_id %}?format=ods">ODS</a>
     </li>
   {% endfor %}
 

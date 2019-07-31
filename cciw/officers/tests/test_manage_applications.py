@@ -9,7 +9,7 @@ class ManageApplicationsPage(RequireApplicationsMixin, set_thisyear(2000), WebTe
     def test_access_application(self):
         self.officer_login(LEADER)
         camp = self.default_camp_1
-        self.get_url('cciw-officers-manage_applications', year=camp.year, slug=camp.slug_name)
+        self.get_url('cciw-officers-manage_applications', camp_id=camp.url_id)
         self.assertCode(200)
         self.fill({'#application': str(self.application1.id)})
         self.submit('input[name="view"]')
@@ -21,6 +21,6 @@ class ManageApplicationsPage(RequireApplicationsMixin, set_thisyear(2000), WebTe
         self.officer_login(OFFICER)
         camp = self.default_camp_1
         self.get_literal_url(reverse('cciw-officers-manage_applications',
-                                     kwargs=dict(year=camp.year, slug=camp.slug_name)),
+                                     kwargs=dict(camp_id=camp.url_id)),
                              expect_errors=[403])
         self.assertCode(403)
