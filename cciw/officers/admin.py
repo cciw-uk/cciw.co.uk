@@ -386,6 +386,9 @@ have to fill in another DBS.</p> """, settings.EXTERNAL_DBS_OFFICER['organisatio
             return True
         return super(ApplicationAdmin, self).has_change_permission(request, obj)
 
+    def has_view_permission(self, request, obj=None):
+        return self.has_change_permission(request, obj=obj)
+
     def _redirect(self, request, response):
         if '_continue' not in request.POST and response.has_header("Location"):
             location = request.GET.get('_redirect_to',
