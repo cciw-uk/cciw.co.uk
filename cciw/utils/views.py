@@ -35,7 +35,7 @@ def reroute_response(request, default_to_close=True):
     # if we have a safe return to URL, do a redirect
     if '_return_to' in request.GET:
         url = request.GET['_return_to']
-        if is_safe_url(url=url):
+        if is_safe_url(url, settings.ALLOWED_HOSTS):
             return HttpResponseRedirect(url)
 
     # Otherwise close the window
