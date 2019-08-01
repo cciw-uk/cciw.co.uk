@@ -41,7 +41,7 @@ django-ranged-response==0.2.0  # via django-simple-captcha
 django-sekizai==0.10.0    # via wiki
 django-simple-captcha==0.5.9
 django-webtest==1.9.3     # via django-functest
-django==2.0.10
+django==2.1.11
 docutils==0.14            # via botocore
 easyprocess==0.2.3        # via pyvirtualdisplay
 ezodf2==0.2.10

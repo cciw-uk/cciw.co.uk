@@ -133,7 +133,7 @@ for f in REFEREE_DATA_FIELDS:
 class QualificationInline(admin.TabularInline):
     model = Qualification
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         if request.user.is_potential_camp_officer:
             return True
         else:

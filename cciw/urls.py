@@ -21,9 +21,9 @@ register_converter(converters.OptStr, 'optstr')
 urlpatterns = [
     # Plug in the password reset views (before 'admin')
     path('admin/password_reset/', cciw.officers.views.cciw_password_reset, name="admin_password_reset"),
-    path('admin/password_reset/done/', django.contrib.auth.views.password_reset_done, name="password_reset_done"),
-    path('reset/<uidb64>/<token>/', django.contrib.auth.views.password_reset_confirm, name="password_reset_confirm"),
-    path('reset/done/', django.contrib.auth.views.password_reset_complete, name="password_reset_complete"),
+    path('admin/password_reset/done/', django.contrib.auth.views.PasswordResetDoneView.as_view(), name="password_reset_done"),
+    path('reset/<uidb64>/<token>/', django.contrib.auth.views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
+    path('reset/done/', django.contrib.auth.views.PasswordResetCompleteView.as_view(), name="password_reset_complete"),
 
     # Other 3rd party views
     path('captcha/', include('captcha.urls')),
