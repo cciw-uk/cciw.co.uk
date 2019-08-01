@@ -3,20 +3,14 @@ from django import template
 register = template.Library()
 
 
-# Used to override part of normal 'submit row'
+# Used to override part of normal 'submit row' for application forms
 # UGLY HACK!
 class FixPermissions(template.Node):
     def render(self, context):
-        request = context['request']
-        user = request.user
         for d in context.dicts:
             if 'has_change_permission' in d:
-                # We want 'Save and continue editing' to appear
-                d['has_change_permission'] = True
                 # We don't want 'Save and add another' to appear
                 d['has_add_permission'] = False
-                if 'allow_save_as_new' in request.GET and (user.is_camp_admin or user.is_superuser):
-                    d['save_as'] = True
 
         return ''
 
