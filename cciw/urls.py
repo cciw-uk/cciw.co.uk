@@ -2,8 +2,8 @@ import django.contrib.auth.views
 import django.contrib.staticfiles.views
 import django.views.static
 from django.conf import settings
-from django.urls import include, path, register_converter
 from django.contrib import admin
+from django.urls import include, path, register_converter
 
 import cciw.officers.views
 
