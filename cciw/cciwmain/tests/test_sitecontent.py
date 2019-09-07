@@ -4,6 +4,7 @@ from django.contrib.auth.models import Permission
 
 from cciw.accounts.models import User
 from cciw.cciwmain.tests.base import BasicSetupMixin
+from cciw.sitecontent.models import MenuLink
 from cciw.utils.tests.base import TestBase
 
 
@@ -70,3 +71,18 @@ class HtmlChunkPage(BasicSetupMixin, TestBase):
             self.assertContains(response, "Edit home_page")
         else:
             self.assertNotContains(response, "Edit home_page")
+
+
+class FindViewTests(BasicSetupMixin, TestBase):
+    def test_find(self):
+        menu_link = MenuLink.objects.create(title="Menu link title",
+                                            listorder=0,
+                                            url="/my-page/")
+        menu_link.htmlchunk_set.create(
+            name="my-page",
+            html="<p>This is <b>my</b> page</p>",
+            page_title="This is the page title",
+        )
+        response = self.client.get("/my-page/")
+        self.assertContains(response, "This is the page title")
+        self.assertContains(response, "This is <b>my</b> page")
