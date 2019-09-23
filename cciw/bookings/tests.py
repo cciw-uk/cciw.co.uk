@@ -4,7 +4,6 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal
 from unittest import TestCase, mock
 
-import mailer.engine
 import vcr
 import xlrd
 from django.conf import settings
@@ -19,7 +18,6 @@ from django_functest import FuncBaseMixin
 from hypothesis import example, given
 from hypothesis import strategies as st
 from hypothesis.extra.django import models as djst
-from mailer.models import Message
 from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.bookings.email import EmailVerifyTokenGenerator, VerifyExpired, VerifyFailed, send_payment_reminder_emails
@@ -36,6 +34,7 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANC
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
+from cciw.mail.tests import send_queued_mail
 from cciw.officers.tests.base import (BOOKING_SECRETARY, BOOKING_SECRETARY_PASSWORD, BOOKING_SECRETARY_USERNAME,
                                       OFFICER, OfficersSetupMixin)
 from cciw.sitecontent.models import HtmlChunk
@@ -105,21 +104,6 @@ MAILGUN_DELIVERED_DATA_EXAMPLE = [
      'Variable #1\\", \\"my-var-2\\": \\"awesome\\"}"], ["Date", "Fri, 03 May 2013'
      ' 18:26:27 +0000"], ["Sender", "bob@cciw.co.uk"]]'),
 ]
-
-
-# Most mail is sent directly, but some is specifically put on a queue, to ensure
-# errors don't mess up payment processing. We 'send' and retrieve those here:
-def send_queued_mail():
-    len_outbox_start = len(mail.outbox)
-    sent_count = Message.objects.all().count()
-    mailer.engine.send_all()
-    len_outbox_end = len(mail.outbox)
-    assert len_outbox_start + sent_count == len_outbox_end, \
-        "Expected {0} + {1} == {2}".format(len_outbox_start, sent_count, len_outbox_end)
-    sent = mail.outbox[len_outbox_start:]
-    mail.outbox[len_outbox_start:] = []
-    assert len(mail.outbox) == len_outbox_start
-    return sent
 
 
 # == Mixins to reduce duplication ==
