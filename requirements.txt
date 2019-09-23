@@ -32,7 +32,7 @@ django-debug-toolbar==1.7
 django-dynamic-fixture==2.0.0
 django-functest==1.0.3
 django-js-asset==1.1.0    # via django-mptt
-django-mailer==1.2.5
+django-mailer==2.0
 django-mptt==0.9.1        # via wiki
 django-nyt==1.1.2         # via wiki
 django-paypal==0.5.0
@@ -97,7 +97,7 @@ rjsmin==1.0.12
 s3transfer==0.1.13        # via boto3
 selenium==3.14.1
 simplegeneric==0.8.1      # via ipython
-six==1.11.0               # via bcrypt, bleach, cryptography, django-anymail, django-dynamic-fixture, django-functest, django-paypal, django-simple-captcha, fabric3, furl, html5lib, orderedmultidict, pip-tools, prompt-toolkit, pynacl, python-dateutil, traitlets, vcrpy, webtest
+six==1.11.0               # via bcrypt, bleach, cryptography, django-anymail, django-dynamic-fixture, django-functest, django-mailer, django-paypal, django-simple-captcha, fabric3, furl, html5lib, orderedmultidict, pip-tools, prompt-toolkit, pynacl, python-dateutil, traitlets, vcrpy, webtest
 sorl-thumbnail==12.4.1    # via wiki
 sqlparse==0.2.4           # via django-debug-toolbar
 traitlets==4.3.2          # via ipython
