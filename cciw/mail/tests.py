@@ -1,11 +1,14 @@
 import re
 from unittest import mock
 
+import mailer.engine
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.mail.backends.locmem import EmailBackend as LocMemEmailBackend
 from django.test.client import RequestFactory
+from django.test.utils import override_settings
+from mailer.models import Message
 from requests.exceptions import ConnectionError
 
 from cciw.accounts.models import COMMITTEE_GROUP_NAME
@@ -315,6 +318,24 @@ def disable_email_sending():
 
 def enable_email_sending():
     _EMAIL_SENDING_DISALLOWED.pop(0)
+
+
+# Most mail is sent directly, but some is specifically put on a queue, to ensure
+# errors don't mess up payment processing. We 'send' and retrieve those here:
+def send_queued_mail():
+    len_outbox_start = len(mail.outbox)
+    sent_count = Message.objects.all().count()
+    # mailer itself uses transactions for sending, triggering our AtomicChecksMixin
+    # logic and disabling email sending using TestMailBackend:
+    with override_settings(MAILER_EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'):
+        mailer.engine.send_all()
+    len_outbox_end = len(mail.outbox)
+    assert len_outbox_start + sent_count == len_outbox_end, \
+        "Expected {0} + {1} == {2}".format(len_outbox_start, sent_count, len_outbox_end)
+    sent = mail.outbox[len_outbox_start:]
+    mail.outbox[len_outbox_start:] = []
+    assert len(mail.outbox) == len_outbox_start
+    return sent
 
 
 class TestMailBackend(LocMemEmailBackend):
