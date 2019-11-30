@@ -207,7 +207,7 @@ def get_or_create_perm(app_label, model, codename):
 
 
 def setup_auth_groups():
-    permissions_conf = yaml.load(open(settings.GROUPS_CONFIG_FILE))
+    permissions_conf = yaml.load(open(settings.GROUPS_CONFIG_FILE), Loader=yaml.SafeLoader)
     groups = permissions_conf['Groups']
     for group_name, group_details in groups.items():
         g, _ = Group.objects.get_or_create(name=group_name)
