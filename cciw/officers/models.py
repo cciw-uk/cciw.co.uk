@@ -63,6 +63,7 @@ class Application(models.Model):
     relevant_illness = RequiredExplicitBooleanField('''Do you suffer or have you suffered from any
             illness which may directly affect your work with children/young people?''')
     illness_details = models.TextField('illness details', blank=True)
+    dietary_requirements = models.TextField('dietary requirements (if any)', blank=True)
 
     employer1_name = models.CharField("1. Employer's name and address", max_length=NAME_LENGTH, blank=True)
     employer1_from = YyyyMmField("Employed from", blank=True)

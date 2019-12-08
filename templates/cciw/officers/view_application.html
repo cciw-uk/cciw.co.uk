@@ -99,7 +99,7 @@
   {% endif %}
 {% endwith %}
 
-<h2>Illnesses</h2>
+<h2>Health</h2>
 
 <h3>Do you suffer or have you suffered from any illness which may directly affect your work with children/young people?</h3>
 
@@ -114,6 +114,12 @@
     {{ application.illness_details|linebreaksbr }}
   </div>
 {% endif %}
+
+<h3>Dietary requirements</h3>
+
+<div class="application-statement">
+  {{ application.dietary_requirements|linebreaksbr }}
+</div>
 
 <h2>Employment history</h2>
 

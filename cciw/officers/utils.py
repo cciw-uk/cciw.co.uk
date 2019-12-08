@@ -214,4 +214,11 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
          for a in apps
          for q in a.qualifications.all()]
     )
+
+    spreadsheet.add_sheet_with_header_row(
+        "Dietary Requirements",
+        ["First name", "Last name", "Requirements"],
+        [[a.officer.first_name, a.officer.last_name, a.dietary_requirements]
+         for a in apps if a.dietary_requirements]
+    )
     return spreadsheet
