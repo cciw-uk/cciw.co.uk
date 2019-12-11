@@ -5,8 +5,13 @@ from cciw.sitecontent.models import MenuLink
 
 
 def find(request, path, template_name='cciw/chunk_page.html'):
+    if path in ('', '/'):
+        url = '/'
+    else:
+        url = '/' + path + '/'
+
     try:
-        link = MenuLink.objects.get(url='/' + path)
+        link = MenuLink.objects.get(url=url)
     except MenuLink.DoesNotExist:
         raise Http404()
 

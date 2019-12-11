@@ -6,7 +6,7 @@ from cciw.bookings.models import BookingAccount
 
 class Message(models.Model):
     email = models.EmailField("Email address")
-    booking_account = models.ForeignKey(BookingAccount, null=True, blank=True, on_delete=models.CASCADE)
+    booking_account = models.ForeignKey(BookingAccount, null=True, blank=True, on_delete=models.SET_NULL)
     name = models.CharField(max_length=200, blank=True)
     message = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)

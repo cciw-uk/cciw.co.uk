@@ -133,7 +133,7 @@ for f in REFEREE_DATA_FIELDS:
 class QualificationInline(admin.TabularInline):
     model = Qualification
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         if request.user.is_potential_camp_officer:
             return True
         else:
@@ -385,6 +385,9 @@ have to fill in another DBS.</p> """, settings.EXTERNAL_DBS_OFFICER['organisatio
                 (obj.officer_id is not None and obj.officer_id == request.user.id)):
             return True
         return super(ApplicationAdmin, self).has_change_permission(request, obj)
+
+    def has_view_permission(self, request, obj=None):
+        return self.has_change_permission(request, obj=obj)
 
     def _redirect(self, request, response):
         if '_continue' not in request.POST and response.has_header("Location"):

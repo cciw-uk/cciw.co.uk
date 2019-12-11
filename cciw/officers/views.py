@@ -14,7 +14,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
-from django.contrib.auth.views import password_reset
+from django.contrib.auth.views import PasswordResetView
 from django.core import signing
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
 from django.db.models import Prefetch
@@ -1741,5 +1741,4 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
             return User.objects.none()
 
 
-def cciw_password_reset(request, *args, **kwargs):
-    return password_reset(request, *args, password_reset_form=CciwPasswordResetForm)
+cciw_password_reset = PasswordResetView.as_view(form_class=CciwPasswordResetForm)
