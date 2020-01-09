@@ -544,8 +544,7 @@ class BookingQuerySet(models.QuerySet):
             """ "bookings_booking"."date_of_birth" <= """
             """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."maximum_age" - 1) as text) || '-08-31')"""
         ])
-        qs_no_last_tetanus = qs.filter(last_tetanus_injection__isnull=True)
-        qs = qs_custom_price | qs_serious_illness | qs_too_old | qs_too_young | qs_no_last_tetanus
+        qs = qs_custom_price | qs_serious_illness | qs_too_old | qs_too_young
         return qs
 
 
@@ -769,8 +768,6 @@ class Booking(models.Model):
             reasons.append("Too young")
         if self.is_too_old():
             reasons.append("Too old")
-        if self.last_tetanus_injection is None:
-            reasons.append("No last tetanus injection")
         return reasons
 
     def get_available_discounts(self, now):
@@ -975,9 +972,6 @@ class Booking(models.Model):
             else:
                 msg = "This camp is closed for bookings."
             errors.append(msg)
-
-        if not self.last_tetanus_injection:
-            errors.append("Must be approved manually because last tetanus injection date has not been entered.")
 
         return errors
 
