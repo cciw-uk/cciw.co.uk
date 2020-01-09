@@ -109,7 +109,7 @@ var cciw = (function(pub, $) {
     // standardform_* functions depend on the HTML in CciwFormMixin
     var standardformDisplayError = function(control_id, errors) {
         var row = $('#div_' + control_id);
-        if (row.size == 0) {
+        if (row.length == 0) {
             return;
         }
         if (!row.hasClass("validationErrors")) {
@@ -126,7 +126,7 @@ var cciw = (function(pub, $) {
 
     var standardformClearError = function(control_id) {
         var row = $('#div_' + control_id);
-        if (row.size == 0) {
+        if (row.length == 0) {
             return;
         }
         if (row.hasClass("validationErrors")) {

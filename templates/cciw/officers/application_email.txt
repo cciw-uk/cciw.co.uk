@@ -38,8 +38,8 @@ Qualifications
 {% for q in app.qualifications.all %}
 {{ q.type }}, issued {{ q.date_issued|date:"Y-m-d" }}{% endfor %}
 ----------------------------------------------------------------------
-Illnesses
-=========
+Health
+======
 Do you suffer or have you suffered from 
 any illness which may directly affect 
 your work with children/young people?   {{ app.relevant_illness|yesno:"YES,NO,-" }}
@@ -47,6 +47,10 @@ your work with children/young people?   {{ app.relevant_illness|yesno:"YES,NO,-"
 Details:
 --------
 {{ app.illness_details|wordwrap:70 }}
+
+Dietary requirements:
+{{ app.dietary_requirements|wordwrap:70 }}
+
 ----------------------------------------------------------------------
 Employment history
 ==================

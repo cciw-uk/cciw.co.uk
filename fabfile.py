@@ -500,7 +500,7 @@ def check_branch():
     if "master" not in local("hg id -B", capture=True).split(" "):
         raise AssertionError("Bookmark must be 'master' for deploying")
     if local("hg st", capture=True).strip() != "":
-        x = input("Project dir is not clean, merge to live may fail. Continue anyway? [y/n] ")
+        x = input("Project dir is not clean, continue anyway? [y/n] ")
         if x != "y":
             sys.exit()
 
@@ -586,9 +586,6 @@ def get_non_vcs_sources(target):
 def tag_deploy():
     if getattr(env, 'no_tag', False):
         return
-    with lcd(rel(".")):
-        local('hg update -r live && hg merge -r default && hg commit -m "Merged from default" && hg update -r master', capture=False)
-
     local("hg tag -f deploy-production-$(date --iso-8601=seconds | tr ':' '-' | cut -f 1 -d '+')")
 
 

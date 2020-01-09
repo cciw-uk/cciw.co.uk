@@ -208,8 +208,8 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
              'classes': ['wide'],
              'description': 'If you have ever had an offer to work with children/young people declined, you must declare it below and give details.'}
          ),
-        ('Illnesses',
-            {'fields': ['relevant_illness', 'illness_details'],
+        ('Health',
+            {'fields': ['relevant_illness', 'illness_details', 'dietary_requirements'],
              'classes': ['applicationillness', 'wide']}
          ),
         ('Employment history',
