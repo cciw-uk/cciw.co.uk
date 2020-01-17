@@ -158,6 +158,8 @@ class BookingAccountAdmin(admin.ModelAdmin):
                          'phone_number',
                          'share_phone_number',
                          'email_communication',
+                         'subscribe_to_mailings',
+                         'subscribe_to_newsletter',
                          ]})
         ]
         if '_popup' not in request.GET:
