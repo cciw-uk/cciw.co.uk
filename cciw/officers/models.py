@@ -14,7 +14,7 @@ from cciw.officers.references import first_letter_cap, reference_present_val
 
 REFEREE_NUMBERS = [1, 2]
 
-REFEREE_DATA_FIELDS = ['name', 'address', 'tel', 'mobile', 'email']
+REFEREE_DATA_FIELDS = ['name', 'capacity_known', 'address', 'tel', 'mobile', 'email']
 
 
 class ApplicationManager(models.Manager):
@@ -192,6 +192,8 @@ class Referee(models.Model):
 
     name = RequiredCharField("Name", max_length=NAME_LENGTH,
                              help_text=REFEREE_NAME_HELP_TEXT)
+    capacity_known = RequiredCharField("Capacity known", max_length=255,
+                                       help_text='In what capacity does the referee know you? (see above)')
     address = RequiredAddressField('address')
     tel = models.CharField('telephone', max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
     mobile = models.CharField('mobile', max_length=22, blank=True)

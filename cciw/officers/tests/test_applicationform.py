@@ -77,11 +77,13 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
              'employer2_job': 'x',
              'employer2_leaving': 'x',
              'referee1_name': 'My Referee 1',
+             'referee1_capacity_known': 'Pastor',
              'referee1_address': 'x',
              'referee1_tel': 'x',
              'referee1_mobile': 'x',
              'referee1_email': 'foo1@foo1.com',
              'referee2_name': 'My Referee 2',
+             'referee2_capacity_known': 'Boss',
              'referee2_address': 'x',
              'referee2_tel': 'x',
              'referee2_mobile': 'x',
@@ -316,8 +318,12 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
 
         self.assertEqual(apps[0].referee_set.get(referee_number=1).name,
                          'My Referee 1')
+        self.assertEqual(apps[0].referee_set.get(referee_number=1).capacity_known,
+                         'Pastor')
         self.assertEqual(apps[0].referee_set.get(referee_number=2).name,
                          'My Referee 2')
+        self.assertEqual(apps[0].referee_set.get(referee_number=2).capacity_known,
+                         'Boss')
 
         # There should be two emails in outbox, one to officer, one to
         # leader.  This assumes that there is a leader for the camp,

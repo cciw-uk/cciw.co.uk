@@ -75,6 +75,7 @@ Reason for leaving:
 References
 ==========
 Referee 1:        {{ app.referees.0.name }}
+Capacity known:   {{ app.referees.0.capacity_known }}
 Address:
 {{ app.referees.0.address }}
 Tel:              {{ app.referees.0.tel }}
@@ -82,6 +83,7 @@ Mobile:           {{ app.referees.0.mobile }}
 Email:            {{ app.referees.0.email }}
 
 Referee 2:        {{ app.referees.1.name }}
+Capacity known:   {{ app.referees.1.capacity_known }}
 Address:
 {{ app.referees.1.address }}
 Tel:              {{ app.referees.1.tel }}

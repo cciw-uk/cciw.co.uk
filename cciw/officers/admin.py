@@ -23,7 +23,12 @@ from cciw.utils.views import close_window_response
 officer_autocomplete_widget = lambda: autocomplete.ModelSelect2(url='officer-autocomplete')
 
 
-referee_field = lambda n, f: 'referee{0}_{1}'.format(n, f)
+def referee_field(n, f):
+    """
+    Returns the name of the referee field on Application form
+    for Referee field `f`, Referee number `n`
+    """
+    return 'referee{0}_{1}'.format(n, f)
 
 
 class ApplicationAdminModelForm(forms.ModelForm):
@@ -221,8 +226,11 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
              'description': 'Please tell us about your past and current employers below (if applicable)'}
          ),
         ('References',
-            {'fields': ['referee1_name', 'referee1_address', 'referee1_tel', 'referee1_mobile', 'referee1_email',
-                        'referee2_name', 'referee2_address', 'referee2_tel', 'referee2_mobile', 'referee2_email'],
+            {'fields':
+             [referee_field(n, f)
+              for n in REFEREE_NUMBERS
+              for f in REFEREE_DATA_FIELDS
+              ],
              'classes': ['wide'],
              'description': '''Please give the names and addresses,
              telephones numbers and email addresses of <strong>two</strong> people who know you
