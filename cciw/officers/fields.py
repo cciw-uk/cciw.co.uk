@@ -42,6 +42,9 @@ def required_field(field_class):
     blank=True, but field.formfield() objects have '.required_field = True'
     which is checked later.
     """
+
+    name = "Required" + field_class.__name__
+
     class NewDBField(field_class):
         def __init__(self, *args, **kwargs):
             kwargs['blank'] = True
@@ -52,7 +55,13 @@ def required_field(field_class):
             f.required_field = True
             return f
 
-    NewDBField.__name__ = "Required" + field_class.__name__
+        def deconstruct(self):
+            attname, field_path, posargs, kwargs = super().deconstruct()
+            # Django 2.2 gets field_path wrong for some reason
+            field_path = 'cciw.officers.fields.' + name
+            return attname, field_path, posargs, kwargs
+
+    NewDBField.__name__ = name
     return NewDBField
 
 
