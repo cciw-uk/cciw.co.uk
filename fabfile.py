@@ -24,7 +24,9 @@ join = os.path.join
 rel = lambda *x: os.path.normpath(join(os.path.abspath(os.path.dirname(__file__)), *x))
 
 env.user = 'cciw'
-env.hosts = ['cciw.co.uk']
+if not env.hosts:
+    # env.hosts = ['cciw.co.uk']
+    env.hosts = ['cciw2.digitalocean.com']
 
 env.proj_name = "cciw"
 env.proj_app = "cciw"  # Python module for project
@@ -38,7 +40,7 @@ env.locale = "en_GB.UTF-8"
 env.num_workers = "3"
 
 # Python version
-PYTHON_BIN = "python3.5"
+PYTHON_BIN = "python3.7"
 PYTHON_PREFIX = ""  # e.g. /usr/local  Use "" for automatic
 PYTHON_FULL_PATH = "%s/bin/%s" % (PYTHON_PREFIX, PYTHON_BIN) if PYTHON_PREFIX else PYTHON_BIN
 
@@ -63,10 +65,8 @@ REQS = [
 
     # Command line tools which are used non interactively
     'debian-goodies',  # checkrestart
-    'python-software-properties',  # apt-add-repository
     'software-properties-common',  # "
     'unattended-upgrades',
-    'cron-apt',
 
     'rsync',
     'git',
@@ -79,25 +79,24 @@ REQS = [
     'nmap',
     'silversearcher-ag',
     'git-core',
-    'wajig',
+    'aptitude',
     'ncdu',
     'joe',
     'zsh',
 
     # Databases/servers
-    'postgresql-9.5',
-    'postgresql-contrib-9.5',
+    'postgresql',  # without version numbers, uses the supported version, which is usually fine
+    'postgresql-client',
+    'postgresql-contrib',
     'memcached',
 
     # Daemons
     'supervisor',  # For running uwsgi and php-cgi daemons
-    'pgbouncer',  # For pooling and providing a central point of control of db connections
     'nginx',
 
     # Non-Python stuff
     'npm',
     'nodejs',  # For less css
-    'postgresql-client-9.5',
 
     # Python stuff
     'python',
@@ -119,8 +118,7 @@ REQS = [
     'libturbojpeg',
     'libjpeg8',
     'libjpeg8-dev',
-    'libpng12-0',
-    'libpng12-dev',
+    'libpng-dev',
     'libfreetype6',
     'libfreetype6-dev',
     'zlib1g',
@@ -130,6 +128,11 @@ REQS = [
     'libpcre3-dev',
 
 ]
+
+
+@task
+def print_hostname():
+    run('hostname')
 
 
 # Utilities
@@ -217,8 +220,8 @@ def secure(new_user=env.user):
     Installs system updates, creates new user for future
     usage, and disables password root login via SSH.
     """
-    run("apt-get update -q")
-    run("apt-get upgrade -y -q")
+    run("apt update -q")
+    run("apt upgrade -y -q")
     if not fabtools.user.exists(new_user):
         ssh_keys = [os.path.expandvars("$HOME/.ssh/id_rsa.pub")]
         ssh_keys = list(filter(os.path.exists, ssh_keys))
@@ -312,7 +315,7 @@ def apt(packages):
     """
     Installs one or more system packages via apt.
     """
-    return run("apt-get install -y -q " + packages)
+    return run("apt install -y -q " + packages)
 
 
 # Templates
@@ -771,8 +774,8 @@ def manage_py_command(*commands):
 
 @as_rootuser
 def update_upgrade():
-    fabtools.deb.update_index(quiet=False)
-    fabtools.deb.upgrade(safe=True)
+    run("apt update")
+    run("apt upgrade")
 
 
 # -- DB snapshots --
@@ -940,7 +943,7 @@ def upload_usermedia():
 
 
 @task
-def backup_usermedia():
+def download_usermedia():
     target = Version.current()
     local("rsync -z -r  %s@%s:%s/ %s" % (env.proj_user, env.hosts[0], target.MEDIA_ROOT, LOCAL_USERMEDIA), capture=False)
 
@@ -951,7 +954,7 @@ def backup_usermedia():
 @task
 @as_rootuser
 def setup_certbot():
-    run("apt-get install letsencrypt")
+    run("apt install letsencrypt")
 
 
 @task
@@ -972,6 +975,16 @@ def install_or_renew_ssl_certificate():
     # Cleanup
     run("rmdir {certbot_static_path}/.well-known/".format(
         certbot_static_path=certbot_static_path))
+
+
+@task
+def download_letsencrypt_conf():
+    local("rsync -r -l root@%s:/etc/letsencrypt/ config/letsencrypt/" % env.hosts[0])
+
+
+@task
+def upload_letsencrypt_conf():
+    local("rsync -r -l config/letsencrypt/ root@%s:/etc/letsencrypt/" % env.hosts[0])
 
 
 # ---- ngrok -----

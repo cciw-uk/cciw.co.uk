@@ -10,7 +10,7 @@ actually been using for deployment).
 
 Assuming a Linux/Unix machine, the requirements are:
 
-* Python 3.5
+* Python 3.7
 * Postgres >= 9.5
 * Node
 
@@ -28,9 +28,9 @@ These steps have only been tested on Ubuntu-based Linux installations.
     hg clone ssh://hg@bitbucket.org/cciw/cciw-website src
     cd src
 
-* Make a virtualenv using Python 3.5 e.g. using mkvirtualenv/virtualenv_wrapper::
+* Make a virtualenv using Python 3.7 e.g. using mkvirtualenv/virtualenv_wrapper::
 
-    mkvirtualenv --python=`which python3.5` cciw
+    mkvirtualenv --python=`which python3.7` cciw
 
 * Create an alias for 'cciw.local' that points to localhost, 127.0.0.1. On
   Linux, you do this by adding the following line to /etc/hosts::

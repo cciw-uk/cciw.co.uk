@@ -4,5 +4,6 @@ syntax:glob
 *\.\#*
 *\#
 config/secrets.json
+config/letsencrypt
 TODO.org
 cciw/cciwmain/static/css/camp_colors.less
