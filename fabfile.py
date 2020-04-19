@@ -607,7 +607,7 @@ def create_venv(target):
     if exists(venv_root):
         return
 
-    run("virtualenv --no-site-packages --python=%s %s" % (PYTHON_BIN, venv_root))
+    run("virtualenv --python=%s %s" % (PYTHON_BIN, venv_root))
     run("echo %s > %s/lib/%s/site-packages/projectsource.pth" %
         (target.SRC_ROOT, target.VENV_ROOT, PYTHON_BIN))
 
