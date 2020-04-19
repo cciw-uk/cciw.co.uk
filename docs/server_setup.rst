@@ -23,7 +23,7 @@ steps will need to be changed.
 
 2. Fetch old SSL certificates::
 
-   fab download_letscencrypt_config
+     fab download_letscencrypt_config
 
 3. Create new VM:
 
@@ -35,16 +35,16 @@ steps will need to be changed.
 
    Choose:
 
-   - Ubuntu 18.04.3 (LTS) x64
-   - Starter
-   - $5/month, 1 Gb mem, 25 Gb disk, 1000 Gb transfer
+   - Latest Ubuntu LTS (last time - 18.04.3 (LTS) x64)
+   - Starter plan
+   - Smallest box (last time - $5/month, 1 Gb mem, 25 Gb disk, 1000 Gb transfer)
    - London datacenter
    - IPv6 enabled
    - SSH authentication
      - luke@calvin SSH key selected (will need to upload one if there isn't one configured)
 
    - 1 droplet
-   - Hostname: cciw2
+   - Hostname: 'cciw' plus an incrementing number (last time: cciw2)
 
      Use incrementing numbers for each new VM, to ensure you don't confuse with
      previous one. This is not the same as the public domain name. Substitute
@@ -60,7 +60,7 @@ steps will need to be changed.
    Check you can login with ``ssh root@cciw2.digitalocean.com``
 
 5. Change ``env.hosts`` in fabfile to point to new VM. Remember that from now
-   on it will use the new VM by default.
+   on it will use the new VM by default, unless ``-H`` flag is passed.
 
 6. Upgrade versions of things, preferably to defaults for new distribution
 
@@ -76,7 +76,7 @@ steps will need to be changed.
   If this fails update any dependencies, searching for new packages using
   ``apt search``.
 
-  ::
+  Then::
 
     $ fab upload_letscencrypt_config
     $ fab create_project
@@ -97,4 +97,34 @@ the process works.
 
      fab -H cciw2.digitalocean.com upload_usermedia migrate_upload_db:filename
 
-9. Use /etc/hosts to point www.cciw.co.uk to the new server, to test.
+   This may return some errors, while still being successful. Restart webserver::
+
+     fab -H cciw2.digitalocean.com start_webserver
+
+9. Use your local /etc/hosts to point www.cciw.co.uk to the new server, and test
+   the new site works as expected.
+
+10. If everything works, prepare to do it for real
+
+    - set the TTL to 5 minutes
+    - wait for an hour for DNS to propagate
+
+
+Now we'll repeat some steps, with changes:
+
+11. Stop the old server
+
+12. Repeat step 7 - download media and DB from old server
+
+13. Repeat step 8 - upload media and DB to new server
+
+14. Repeat step 9 - check everything works
+
+15. Switch DNS to the new server in the DigitalOcean control panel. Put DNS TTL
+    back up to 86400
+
+
+Done!
+
+Ensure you remove entries from your local /etc/hosts so that you are seeing what
+everyone else sees.
