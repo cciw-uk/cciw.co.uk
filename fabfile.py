@@ -940,6 +940,7 @@ def upload_usermedia():
     target = Version.current()
     local("rsync -z -r --progress %s/ %s@%s:%s" % (LOCAL_USERMEDIA, env.proj_user, env.hosts[0], target.MEDIA_ROOT), capture=False)
     run("find -L %s -type f -exec chmod ugo+r {} ';'" % target.MEDIA_ROOT)
+    run("find %s -type d -exec chmod ugo+rx {} ';'" % target.MEDIA_ROOT_SHARED)
 
 
 @task
