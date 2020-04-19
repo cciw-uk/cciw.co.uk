@@ -22,8 +22,8 @@ if CHECK_DEPLOY:
     LIVEBOX = True
     DEVBOX = False
 else:
-    DEVBOX = ('webfaction' not in hostname and hostname != 'cciw')
-    LIVEBOX = not DEVBOX
+    LIVEBOX = hostname.startswith('cciw')
+    DEVBOX = not LIVEBOX
 
 
 if LIVEBOX and not CHECK_DEPLOY:
