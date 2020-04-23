@@ -22,6 +22,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.template.defaultfilters import wordwrap
 from django.template.loader import render_to_string
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import cache_control, never_cache
@@ -33,7 +34,6 @@ from cciw.bookings.utils import (addresses_for_mailing_list, camp_bookings_to_sp
                                  camp_sharable_transport_details_to_spreadsheet, payments_to_spreadsheet,
                                  year_bookings_to_spreadsheet)
 from cciw.cciwmain import common
-from cciw.cciwmain.common import TemplateView
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import get_protected_download, is_valid_email, python_to_json
@@ -1318,95 +1318,95 @@ def undo_mark_dbs_sent(request):
     return {'status': 'success'}
 
 
-class PopupEmailAction(TemplateView):
-    def get_messageform_info(self, request):
-        raise NotImplementedError()
+def popup_email_view(request, context, template_name=None, messageform_info=None, send_email=None, messageform_class=None):
+    if request.method == 'POST':
+        if 'send' in request.POST:
+            messageform = messageform_class(request.POST, message_info=messageform_info)
+            # It's impossible for the form to be invalid, so assume valid
+            messageform.is_valid()
+            send_email(wordwrap(messageform.cleaned_data['message'], 70))
+            return reroute_response(request)
+        else:
+            # cancel
+            return reroute_response(request)
 
-    def send_email(self, request, message):
-        raise NotImplementedError()
+    messageform = messageform_class(message_info=messageform_info)
 
-    def handle(self, request):
-        self.context = {}
-        c = {}
-        messageform_info = self.get_messageform_info(request)
-        if request.method == 'POST':
-            if 'send' in request.POST:
-                messageform = self.messageform_class(request.POST, message_info=messageform_info)
-                # It's impossible for the form to be invalid, so assume valid
-                messageform.is_valid()
-                self.send_email(request, wordwrap(messageform.cleaned_data['message'], 70))
-                return reroute_response(request)
-            else:
-                # cancel
-                return reroute_response(request)
-
-        messageform = self.messageform_class(message_info=messageform_info)
-
-        c['messageform'] = messageform
-        c['is_popup'] = True
-        return self.render(c)
+    context['messageform'] = messageform
+    context['is_popup'] = True
+    return TemplateResponse(request, template_name, context)
 
 
-class DbsConsentAlertLeaders(PopupEmailAction):
+@staff_member_required
+@dbs_officer_required
+def dbs_consent_alert_leaders(request):
+    try:
+        app_id = int(request.GET.get('application_id'))
+    except (ValueError, TypeError):
+        raise Http404
+    app = get_object_or_404(Application.objects.filter(id=app_id))
+    officer = officer = app.officer
+    camps = camps_for_application(app)
+    context = {
+        'officer': officer
+    }
+    messageform_info = {
+        'application': app,
+        'officer': officer,
+        'camps': camps,
+        'domain': common.get_current_domain(),
+        'sender': request.user,
+    }
 
-    template_name = 'cciw/officers/dbs_consent_alert_leaders.html'
-    messageform_class = DbsConsentProblemForm
-
-    def get_messageform_info(self, request):
-        try:
-            app_id = int(request.GET.get('application_id'))
-        except (ValueError, TypeError):
-            raise Http404
-        app = get_object_or_404(Application.objects.filter(id=app_id))
-        self.officer = officer = app.officer
-        self.camps = camps = camps_for_application(app)
-        self.context['officer'] = officer
-        return dict(application=app,
-                    officer=officer,
-                    camps=camps,
-                    domain=common.get_current_domain(),
-                    sender=request.user)
-
-    def send_email(self, request, message):
-        send_dbs_consent_alert_leaders_email(message,
-                                             self.officer, self.camps)
-        request.user.dbsactions_performed.create(officer=self.officer,
+    def send_email(message):
+        send_dbs_consent_alert_leaders_email(message, officer, camps)
+        request.user.dbsactions_performed.create(officer=officer,
                                                  action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT)
 
+    return popup_email_view(
+        request,
+        context,
+        template_name='cciw/officers/dbs_consent_alert_leaders.html',
+        messageform_info=messageform_info,
+        messageform_class=DbsConsentProblemForm,
+        send_email=send_email,
+    )
 
-dbs_consent_alert_leaders = staff_member_required(dbs_officer_required(DbsConsentAlertLeaders.as_view()))
 
+@staff_member_required
+@dbs_officer_required
+def request_dbs_form_action(request):
+    try:
+        app_id = int(request.GET.get('application_id'))
+    except (ValueError, TypeError):
+        raise Http404
+    app = get_object_or_404(Application.objects.filter(id=app_id))
+    external_dbs_officer = settings.EXTERNAL_DBS_OFFICER
+    officer = app.officer
+    context = {
+        'officer': officer,
+        'external_dbs_officer': external_dbs_officer,
+    }
+    messageform_info = {
+        'external_dbs_officer': external_dbs_officer,
+        'application': app,
+        'officer': officer,
+        'sender': request.user,
+    }
 
-class RequestDbsFormAction(PopupEmailAction):
-
-    template_name = 'cciw/officers/request_dbs_form_action.html'
-    messageform_class = RequestDbsFormForm
-
-    def get_messageform_info(self, request):
-        try:
-            app_id = int(request.GET.get('application_id'))
-        except (ValueError, TypeError):
-            raise Http404
-        app = get_object_or_404(Application.objects.filter(id=app_id))
-        external_dbs_officer = settings.EXTERNAL_DBS_OFFICER
-        self.officer = officer = app.officer
-
-        # For view:
-        self.context['officer'] = officer
-        self.context['external_dbs_officer'] = external_dbs_officer
-
-        return dict(external_dbs_officer=external_dbs_officer,
-                    application=app,
-                    officer=officer,
-                    sender=request.user)
-
-    def send_email(self, request, message):
-        send_request_for_dbs_form_email(message, self.officer, request.user)
-        request.user.dbsactions_performed.create(officer=self.officer,
+    def send_email(message):
+        send_request_for_dbs_form_email(message, officer, request.user)
+        request.user.dbsactions_performed.create(officer=officer,
                                                  action_type=DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT)
 
-
-request_dbs_form_action = staff_member_required(dbs_officer_required(RequestDbsFormAction.as_view()))
+    return popup_email_view(
+        request,
+        context,
+        template_name='cciw/officers/request_dbs_form_action.html',
+        messageform_info=messageform_info,
+        messageform_class=RequestDbsFormForm,
+        send_email=send_email,
+    )
 
 
 @staff_member_required
