@@ -25,8 +25,8 @@ rel = lambda *x: os.path.normpath(join(os.path.abspath(os.path.dirname(__file__)
 
 env.user = 'cciw'
 if not env.hosts:
-    # env.hosts = ['cciw.co.uk']
-    env.hosts = ['cciw2.digitalocean.com']
+    env.hosts = ['cciw.co.uk']
+    # env.hosts = ['cciw2.digitalocean.com']
 
 env.proj_name = "cciw"
 env.proj_app = "cciw"  # Python module for project
@@ -828,7 +828,7 @@ def make_django_db_filename(target):
 def dump_db(target):
     filename = make_django_db_filename(target)
     db = target.DB
-    run("pg_dump -Fc -U %s -O -o -f %s %s" % (db['USER'], filename, db['NAME']))
+    run("pg_dump -Fc -U %s -O -f %s %s" % (db['USER'], filename, db['NAME']))
     return filename
 
 
