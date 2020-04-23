@@ -1759,13 +1759,6 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
         self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
         self.assertTextPresent("Places were not booked due to modifications made")
 
-    def test_last_tetanus_injection_required(self):
-        booking = self.create_booking({'last_tetanus_injection': None})
-        self.get_url(self.urlname)
-        self.assert_book_button_disabled()
-        self.assertTextPresent(self.LAST_TETANUS_INJECTION_REQUIRED)
-        self.assertIn(booking, Booking.objects.need_approving())
-
 
 class TestListBookingsWT(TestListBookingsBase, WebTestBase):
     pass

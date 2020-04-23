@@ -22,7 +22,7 @@
       {% endif %}
     {% endwith %}
   </div>
-  <h4 class="refereename">From: {{ referee.name }}</h4>
+  <h4 class="refereename">From: {{ referee.name }}{% if referee.capacity_known %} ({{ referee.capacity_known }}){% endif %}</h4>
 
   <div class="referencemode" style="display:none;">{{ mode }}</div>
   <div class="reference">
