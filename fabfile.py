@@ -479,6 +479,9 @@ def deploy():
     setup_mailgun(target)
     delete_old_versions()
 
+    # Push tags created in tag_deploy
+    push_to_central_vcs()
+
 
 @task
 def code_quality_checks():
