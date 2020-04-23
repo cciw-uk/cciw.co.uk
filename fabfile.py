@@ -127,6 +127,9 @@ REQS = [
     # Soft uwsgi requirement (for harakiri alerts)
     'libpcre3-dev',
 
+    # Other
+    'certbot',
+
 ]
 
 
@@ -954,12 +957,6 @@ def download_usermedia():
 
 # --- SSL ---
 
-# This is for Ubuntu 16.04 with nginx
-@task
-@as_rootuser
-def setup_certbot():
-    run("apt install letsencrypt")
-
 
 @task
 @as_rootuser
@@ -976,9 +973,6 @@ def install_or_renew_ssl_certificate():
             domain=env.domains[0],
         ))
     run("service nginx restart")
-    # Cleanup
-    run("rmdir {certbot_static_path}/.well-known/".format(
-        certbot_static_path=certbot_static_path))
 
 
 @task

@@ -123,6 +123,10 @@ Now we'll repeat some steps, with changes:
 15. Switch DNS to the new server in the DigitalOcean control panel. Put DNS TTL
     back up to 86400
 
+16. Make sure letsencrypt is working::
+
+      fab install_or_renew_ssl_certificate
+
 
 Done!
 
