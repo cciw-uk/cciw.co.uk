@@ -983,7 +983,7 @@ class TestEditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     submit_css_selector = '#id_save_btn'
 
     def edit_place(self, booking, expect_code=None):
-        url = reverse('cciw-bookings-edit_place', kwargs={'id': str(booking.id)})
+        url = reverse('cciw-bookings-edit_place', kwargs={'booking_id': str(booking.id)})
         expect_errors = expect_code is not None and str(expect_code).startswith('4')
         action = lambda: self.get_literal_url(url, expect_errors=expect_errors)
         if expect_errors:
@@ -998,7 +998,7 @@ class TestEditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         return super(TestEditPlaceBase, self).submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
-        self.get_url('cciw-bookings-edit_place', id='1')
+        self.get_url('cciw-bookings-edit_place', booking_id='1')
         self.assertUrlsEqual(reverse('cciw-bookings-not_logged_in'))
 
     def test_show_if_owner(self):
@@ -1614,7 +1614,7 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
         self.get_url(self.urlname)
 
         self.submit("[name=edit_%s]" % b.id)
-        self.assertUrlsEqual(reverse('cciw-bookings-edit_place', kwargs={'id': b.id}))
+        self.assertUrlsEqual(reverse('cciw-bookings-edit_place', kwargs={'booking_id': b.id}))
 
     def test_book_ok(self):
         """

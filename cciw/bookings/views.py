@@ -186,6 +186,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404, HttpResponseRedirect
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.crypto import salted_hmac
@@ -202,7 +203,7 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_INFO_COMPLETE, PRICE
                                   book_basket_now, build_paypal_custom_field, early_bird_is_available,
                                   get_early_bird_cutoff_date, is_booking_open, is_booking_open_thisyear)
 from cciw.cciwmain import common
-from cciw.cciwmain.common import AjaxFormValidation, CciwBaseView, get_current_domain
+from cciw.cciwmain.common import ajax_form_validate, get_current_domain
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.utils.views import user_passes_test_improved
@@ -246,56 +247,54 @@ booking_secretary_required = user_passes_test_improved(lambda user:
 
 # Views
 
-class BookingIndex(CciwBaseView):
-    metadata_title = "Booking"
-    template_name = "cciw/bookings/index.html"
+def index(request):
+    ensure_booking_account_attr(request)
+    year = common.get_thisyear()
+    bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
+    context = {
+        'title': 'Booking',
+    }
+    if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath)):
+        context['bookingform'] = bookingform_relpath
+    booking_open = is_booking_open(year)
+    if booking_open:
+        prices = Price.objects.filter(year=year)
+        now = timezone.now()
+        early_bird_available = early_bird_is_available(year, now)
+        context['early_bird_available'] = early_bird_available
+        context['early_bird_date'] = get_early_bird_cutoff_date(year)
+    else:
+        # Show last year's prices
+        prices = Price.objects.filter(year=year - 1)
+        early_bird_available = False
 
-    def handle(self, request):
-        ensure_booking_account_attr(request)
-        year = common.get_thisyear()
-        bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
-        context = {}
-        if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath)):
-            context['bookingform'] = bookingform_relpath
-        booking_open = is_booking_open(year)
-        if booking_open:
-            prices = Price.objects.filter(year=year)
-            now = timezone.now()
-            early_bird_available = early_bird_is_available(year, now)
-            context['early_bird_available'] = early_bird_available
-            context['early_bird_date'] = get_early_bird_cutoff_date(year)
-        else:
-            # Show last year's prices
-            prices = Price.objects.filter(year=year - 1)
-            early_bird_available = False
+    prices = list(prices.filter(price_type__in=[v for v, d in REQUIRED_PRICE_TYPES]))
 
-        prices = list(prices.filter(price_type__in=[v for v, d in REQUIRED_PRICE_TYPES]))
+    def getp(v):
+        try:
+            return [p for p in prices if p.price_type == v][0].price
+        except IndexError:
+            return None
 
-        def getp(v):
-            try:
-                return [p for p in prices if p.price_type == v][0].price
-            except IndexError:
-                return None
+    early_bird_discount = getp(PRICE_EARLY_BIRD_DISCOUNT)
+    price_list = [
+        ('Full price', getp(PRICE_FULL)),
+        ('2nd camper from the same family', getp(PRICE_2ND_CHILD)),
+        ('Subsequent children from the same family', getp(PRICE_3RD_CHILD))
+    ]
+    # Add discounts:
+    price_list = [(caption, p, p - early_bird_discount if early_bird_discount is not None else None)
+                  for caption, p in price_list]
 
-        early_bird_discount = getp(PRICE_EARLY_BIRD_DISCOUNT)
-        price_list = [
-            ('Full price', getp(PRICE_FULL)),
-            ('2nd camper from the same family', getp(PRICE_2ND_CHILD)),
-            ('Subsequent children from the same family', getp(PRICE_3RD_CHILD))
-        ]
-        # Add discounts:
-        price_list = [(caption, p, p - early_bird_discount if early_bird_discount is not None else None)
-                      for caption, p in price_list]
-
-        context.update({
-            'price_list': price_list,
-            'price_deposit': getp(PRICE_DEPOSIT),
-            'price_early_bird_discount': early_bird_discount,
-            'booking_open': booking_open,
-            'any_bookings_possible': any_bookings_possible(common.get_thisyear()),
-            'full_payment_due_time': settings.BOOKING_FULL_PAYMENT_DUE_TIME,
-        })
-        return self.render(context)
+    context.update({
+        'price_list': price_list,
+        'price_deposit': getp(PRICE_DEPOSIT),
+        'price_early_bird_discount': early_bird_discount,
+        'booking_open': booking_open,
+        'any_bookings_possible': any_bookings_possible(common.get_thisyear()),
+        'full_payment_due_time': settings.BOOKING_FULL_PAYMENT_DUE_TIME,
+    })
+    return TemplateResponse(request, 'cciw/bookings/index.html', context)
 
 
 def next_step(account):
@@ -312,40 +311,42 @@ def next_step(account):
         return HttpResponseRedirect(reverse('cciw-bookings-account_details'))
 
 
-class BookingLogInBase(CciwBaseView):
-    metadata_title = "Booking - log in"
-    magic_context = {'stage': 'login'}
-
-
-class BookingStart(BookingLogInBase):
+def start(request):
     form_class = EmailForm
-    template_name = 'cciw/bookings/start.html'
-    magic_context = {'booking_open': is_booking_open_thisyear}
+    account = get_booking_account_from_request(request)
+    if account is not None:
+        return next_step(account)
+    if request.method == "POST":
+        form = form_class(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            send_verify_email(request, email)
+            return HttpResponseRedirect(reverse('cciw-bookings-email_sent'))
+    else:
+        form = form_class()
 
-    def handle(self, request):
-        account = get_booking_account_from_request(request)
-        if account is not None:
-            return next_step(account)
-        if request.method == "POST":
-            form = self.form_class(request.POST)
-            if form.is_valid():
-                email = form.cleaned_data['email']
-                send_verify_email(self.request, email)
-                return HttpResponseRedirect(reverse('cciw-bookings-email_sent'))
-        else:
-            form = self.form_class()
-
-        return self.render({'form': form,
-                            'any_bookings_possible': any_bookings_possible(common.get_thisyear()),
-                            })
-
-
-class BookingEmailSent(BookingLogInBase):
-    template_name = "cciw/bookings/email_sent.html"
+    return TemplateResponse(request, 'cciw/bookings/start.html', {
+        'stage': 'login',
+        'title': 'Booking - log in',
+        'booking_open': is_booking_open_thisyear(),
+        'form': form,
+        'any_bookings_possible': any_bookings_possible(common.get_thisyear()),
+    })
 
 
-class BookingLinkExpiredEmailSent(BookingEmailSent):
-    magic_context = {'link_expired': True}
+def email_sent(request):
+    return TemplateResponse(request, 'cciw/bookings/email_sent.html', {
+        'stage': 'login',
+        'title': 'Booking - log in',
+    })
+
+
+def link_expired_email_sent(request):
+    return TemplateResponse(request, 'cciw/bookings/email_sent.html', {
+        'stage': 'login',
+        'title': 'Booking - log in',
+        'link_expired': True,
+    })
 
 
 @booking_account_required
@@ -372,96 +373,101 @@ def verify_and_continue(request):
         return resp
 
 
-class BookingVerifyEmailFailed(BookingLogInBase):
-    metadata_title = "Booking - account email verification failed"
-    template_name = "cciw/bookings/email_verification_failed.html"
+def verify_email_failed(request):
+    return TemplateResponse(request, 'cciw/bookings/email_verification_failed.html', {
+        'stage': 'login',
+        'title': 'Booking - account email verification failed',
+    })
 
 
-class BookingNotLoggedIn(CciwBaseView):
-    metadata_title = "Booking - not logged in"
-    template_name = "cciw/bookings/not_logged_in.html"
+def not_logged_in(request):
+    return TemplateResponse(request, 'cciw/bookings/not_logged_in.html', {
+        'title': 'Booking - not logged in',
+    })
 
 
-class BookingAccountDetails(CciwBaseView, AjaxFormValidation):
-    metadata_title = "Booking - account details"
+@booking_account_required
+@ajax_form_validate(AccountDetailsForm)
+def account_details(request):
     form_class = AccountDetailsForm
-    template_name = 'cciw/bookings/account_details.html'
-    magic_context = {'stage': 'account'}
 
-    def handle(self, request):
-        if request.method == "POST":
-            form = self.form_class(request.POST, instance=self.request.booking_account)
-            if form.is_valid():
-                form.save()
-                messages.info(self.request, 'Account details updated, thank you.')
-                return next_step(request.booking_account)
-        else:
-            form = self.form_class(instance=self.request.booking_account)
-        return self.render({'form': form})
+    if request.method == "POST":
+        form = form_class(request.POST, instance=request.booking_account)
+        if form.is_valid():
+            form.save()
+            messages.info(request, 'Account details updated, thank you.')
+            return next_step(request.booking_account)
+    else:
+        form = form_class(instance=request.booking_account)
+    return TemplateResponse(request, 'cciw/bookings/account_details.html', {
+        'title': 'Booking - account details',
+        'stage': 'account',
+        'form': form,
+    })
 
 
-class BookingEditAddBase(CciwBaseView, AjaxFormValidation):
-    template_name = 'cciw/bookings/add_place.html'
+@booking_account_required
+@account_details_required
+@ajax_form_validate(AddPlaceForm)
+def add_or_edit_place(request, context, booking_id=None):
     form_class = AddPlaceForm
-    magic_context = {'booking_open': is_booking_open_thisyear,
-                     'stage': 'place'}
+    year = common.get_thisyear()
+    now = timezone.now()
 
-    def handle(self, request, **kwargs):
-        year = common.get_thisyear()
-        now = timezone.now()
+    if request.method == "POST" and not is_booking_open_thisyear():
+        # Redirect to same view, but GET
+        return HttpResponseRedirect(request.get_full_path())
 
-        if request.method == "POST" and not is_booking_open_thisyear():
+    if booking_id is not None:
+        # Edit
+        try:
+            booking = request.booking_account.bookings.get(id=booking_id)
+        except (ValueError, Booking.DoesNotExist):
+            raise Http404
+        if request.method == "POST" and not booking.is_user_editable():
             # Redirect to same view, but GET
             return HttpResponseRedirect(request.get_full_path())
+        new_booking = False
+    else:
+        # Add
+        booking = None
+        new_booking = True
 
-        if 'id' in kwargs:
-            # Edit
-            try:
-                booking = self.request.booking_account.bookings.get(id=int(kwargs['id']))
-            except (ValueError, Booking.DoesNotExist):
-                raise Http404
-            if request.method == "POST" and not booking.is_user_editable():
-                # Redirect to same view, but GET
-                return HttpResponseRedirect(request.get_full_path())
-            new_booking = False
-        else:
-            # Add
-            booking = None
-            new_booking = True
+    if request.method == "POST":
+        form = form_class(request.POST, instance=booking)
+        if form.is_valid():
+            form.instance.account = request.booking_account
+            form.instance.early_bird_discount = False  # We only allow this to be True when booking
+            form.instance.auto_set_amount_due()
+            form.instance.state = BOOKING_INFO_COMPLETE
+            if new_booking:
+                form.instance.created_online = True
+            form.save()
 
-        if request.method == "POST":
-            form = self.form_class(request.POST, instance=booking)
-            if form.is_valid():
-                form.instance.account = self.request.booking_account
-                form.instance.early_bird_discount = False  # We only allow this to be True when booking
-                form.instance.auto_set_amount_due()
-                form.instance.state = BOOKING_INFO_COMPLETE
-                if new_booking:
-                    form.instance.created_online = True
-                form.save()
+            messages.info(request, 'Details for "%s" were saved successfully' % form.instance.name)
+            return HttpResponseRedirect(reverse('cciw-bookings-list_bookings'))
+    else:
+        form = form_class(instance=booking)
 
-                messages.info(self.request, 'Details for "%s" were saved successfully' % form.instance.name)
-                return HttpResponseRedirect(reverse('cciw-bookings-list_bookings'))
-        else:
-            form = self.form_class(instance=booking)
-
-        c = {'form': form,
-             'early_bird_available': early_bird_is_available(year, now),
-             'early_bird_date': get_early_bird_cutoff_date(year),
-             'price_early_bird_discount': lambda: Price.objects.get(year=year, price_type=PRICE_EARLY_BIRD_DISCOUNT).price,
-             }
-        if booking is not None and not booking.is_user_editable():
-            c['read_only'] = True
-        return self.render(c)
+    context.update({
+        'booking_open': is_booking_open_thisyear(),
+        'stage': 'place',
+        'form': form,
+        'early_bird_available': early_bird_is_available(year, now),
+        'early_bird_date': get_early_bird_cutoff_date(year),
+        'price_early_bird_discount': lambda: Price.objects.get(year=year, price_type=PRICE_EARLY_BIRD_DISCOUNT).price,
+        'read_only': booking is not None and not booking.is_user_editable(),
+    })
+    return TemplateResponse(request, 'cciw/bookings/add_place.html', context)
 
 
-class BookingAddPlace(BookingEditAddBase):
-    metadata_title = "Booking - add new camper details"
+def add_place(request):
+    return add_or_edit_place(request, {'title': 'Booking - add new camper details'})
 
 
-class BookingEditPlace(BookingEditAddBase):
-    metadata_title = "Booking - edit camper details"
-    magic_context = {'edit_mode': True}
+def edit_place(request, booking_id):
+    return add_or_edit_place(request, {'title': 'Booking - edit camper details', 'edit_mode': True},
+                             booking_id=booking_id)
 
 
 # Public attributes - i.e. that the account holder is allowed to see
@@ -670,130 +676,127 @@ def make_state_token(bookings):
     return salted_hmac('cciw.bookings.state_token', data.encode('utf-8')).hexdigest()
 
 
-class BookingListBookings(CciwBaseView):
-    metadata_title = "Booking - checkout"
-    template_name = "cciw/bookings/list_bookings.html"
-    magic_context = {'stage': 'list'}
+@booking_account_required
+def list_bookings(request):
+    year = common.get_thisyear()
+    now = timezone.now()
+    bookings = request.booking_account.bookings
+    # NB - use lists here, not querysets, so that both state_token and book_now
+    # functionality apply against same set of bookings.
+    basket_bookings = list(bookings.for_year(year).in_basket())
+    shelf_bookings = list(bookings.for_year(year).on_shelf())
 
-    def handle(self, request):
-        year = common.get_thisyear()
-        now = timezone.now()
-        bookings = request.booking_account.bookings
-        # NB - use lists here, not querysets, so that both state_token and book_now
-        # functionality apply against same set of bookings.
-        basket_bookings = list(bookings.for_year(year).in_basket())
-        shelf_bookings = list(bookings.for_year(year).on_shelf())
+    if request.method == "POST":
+        if 'add_another' in request.POST:
+            return HttpResponseRedirect(reverse('cciw-bookings-add_place'))
 
-        if request.method == "POST":
-            if 'add_another' in request.POST:
-                return HttpResponseRedirect(reverse('cciw-bookings-add_place'))
+        places = basket_bookings + shelf_bookings
 
-            places = basket_bookings + shelf_bookings
+        def shelve(place):
+            place.shelved = True
+            place.save()
+            messages.info(request, 'Place for "%s" moved to shelf' % place.name)
 
-            def shelve(place):
-                place.shelved = True
-                place.save()
-                messages.info(request, 'Place for "%s" moved to shelf' % place.name)
+        def unshelve(place):
+            place.shelved = False
+            place.save()
+            messages.info(request, 'Place for "%s" moved to basket' % place.name)
 
-            def unshelve(place):
-                place.shelved = False
-                place.save()
-                messages.info(request, 'Place for "%s" moved to basket' % place.name)
+        def delete(place):
+            messages.info(request, 'Place for "%s" deleted' % place.name)
+            place.delete()
 
-            def delete(place):
-                messages.info(request, 'Place for "%s" deleted' % place.name)
-                place.delete()
+        def edit(place):
+            return HttpResponseRedirect(reverse('cciw-bookings-edit_place',
+                                                kwargs={'booking_id': str(place.id)}))
 
-            def edit(place):
-                return HttpResponseRedirect(reverse('cciw-bookings-edit_place',
-                                                    kwargs={'id': str(place.id)}))
+        for k in request.POST.keys():
+            # handle shelve and unshelve buttons
+            for r, action in [(r'shelve_(\d+)', shelve),
+                              (r'unshelve_(\d+)', unshelve),
+                              (r'delete_(\d+)', delete),
+                              (r'edit_(\d+)', edit),
+                              ]:
+                m = re.match(r, k)
+                if m is not None:
+                    with contextlib.suppress(
+                            ValueError,  # converting to string
+                            IndexError,  # not in list
+                    ):
+                        b_id = int(m.groups()[0])
+                        place = [p for p in places if p.id == b_id][0]
+                        retval = action(place)
+                        if retval is not None:
+                            return retval
 
-            for k in request.POST.keys():
-                # handle shelve and unshelve buttons
-                for r, action in [(r'shelve_(\d+)', shelve),
-                                  (r'unshelve_(\d+)', unshelve),
-                                  (r'delete_(\d+)', delete),
-                                  (r'edit_(\d+)', edit),
-                                  ]:
-                    m = re.match(r, k)
-                    if m is not None:
-                        with contextlib.suppress(
-                                ValueError,  # converting to string
-                                IndexError,  # not in list
-                        ):
-                            b_id = int(m.groups()[0])
-                            place = [p for p in places if p.id == b_id][0]
-                            retval = action(place)
-                            if retval is not None:
-                                return retval
-
-            if 'book_now' in request.POST:
-                state_token = request.POST.get('state_token', '')
-                if make_state_token(basket_bookings) != state_token:
-                    messages.error(request, "Places were not booked due to modifications made "
-                                   "to the details. Please check the details and try again.")
+        if 'book_now' in request.POST:
+            state_token = request.POST.get('state_token', '')
+            if make_state_token(basket_bookings) != state_token:
+                messages.error(request, "Places were not booked due to modifications made "
+                               "to the details. Please check the details and try again.")
+            else:
+                if book_basket_now(basket_bookings):
+                    messages.info(request, "Places booked!")
+                    return HttpResponseRedirect(reverse('cciw-bookings-pay'))
                 else:
-                    if book_basket_now(basket_bookings):
-                        messages.info(request, "Places booked!")
-                        return HttpResponseRedirect(reverse('cciw-bookings-pay'))
-                    else:
-                        messages.error(request, "These places cannot be booked for the reasons "
-                                       "given below.")
-            # Start over, because things may have changed.
-            return HttpResponseRedirect(request.path)
+                    messages.error(request, "These places cannot be booked for the reasons "
+                                   "given below.")
+        # Start over, because things may have changed.
+        return HttpResponseRedirect(request.path)
 
-        # Now apply business rules and other custom processing
-        total = Decimal('0.00')
-        all_bookable = True
-        all_unbookable = True
-        for l in basket_bookings, shelf_bookings:
-            for b in l:
-                # decorate object with some attributes to make it easier in template
-                b.booking_problems, b.booking_warnings = b.get_booking_problems()
-                b.bookable = len(b.booking_problems) == 0
-                b.manually_approved = b.state == BOOKING_APPROVED
+    # Now apply business rules and other custom processing
+    total = Decimal('0.00')
+    all_bookable = True
+    all_unbookable = True
+    for l in basket_bookings, shelf_bookings:
+        for b in l:
+            # decorate object with some attributes to make it easier in template
+            b.booking_problems, b.booking_warnings = b.get_booking_problems()
+            b.bookable = len(b.booking_problems) == 0
+            b.manually_approved = b.state == BOOKING_APPROVED
 
-                # Where booking.price_type = PRICE_CUSTOM, and state is not approved,
-                # amount_due is meaningless. So we have a new attr, amount_due_normalised
-                if b.price_type == PRICE_CUSTOM and b.state != BOOKING_APPROVED:
-                    b.amount_due_normalised = None
+            # Where booking.price_type = PRICE_CUSTOM, and state is not approved,
+            # amount_due is meaningless. So we have a new attr, amount_due_normalised
+            if b.price_type == PRICE_CUSTOM and b.state != BOOKING_APPROVED:
+                b.amount_due_normalised = None
+            else:
+                b.amount_due_normalised = b.amount_due
+
+            # For basket bookings only:
+            if not b.shelved:
+                if b.bookable:
+                    all_unbookable = False
                 else:
-                    b.amount_due_normalised = b.amount_due
+                    all_bookable = False
 
-                # For basket bookings only:
-                if not b.shelved:
-                    if b.bookable:
-                        all_unbookable = False
-                    else:
-                        all_bookable = False
+                if b.amount_due_normalised is None or total is None:
+                    total = None
+                else:
+                    total = total + b.amount_due_normalised
 
-                    if b.amount_due_normalised is None or total is None:
-                        total = None
-                    else:
-                        total = total + b.amount_due_normalised
+    discounts = defaultdict(lambda: Decimal('0.00'))
+    for b in basket_bookings:
+        for name, amount in b.get_available_discounts(now):
+            discounts[name] += amount
 
-        discounts = defaultdict(lambda: Decimal('0.00'))
-        for b in basket_bookings:
-            for name, amount in b.get_available_discounts(now):
-                discounts[name] += amount
+    if total is not None:
+        total_discount = sum(discounts.values())
+        grand_total = total - total_discount
+    else:
+        grand_total = None
 
-        if total is not None:
-            total_discount = sum(discounts.values())
-            grand_total = total - total_discount
-        else:
-            grand_total = None
-
-        c = {
-            'basket_bookings': basket_bookings,
-            'shelf_bookings': shelf_bookings,
-            'all_bookable': all_bookable,
-            'all_unbookable': all_unbookable,
-            'state_token': make_state_token(basket_bookings),
-            'total': total,
-            'grand_total': grand_total,
-            'discounts_available': discounts.items(),
-        }
-        return self.render(c)
+    return TemplateResponse(request, 'cciw/bookings/list_bookings.html', {
+        'title': 'Booking - checkout',
+        'stage': 'list',
+        'basket_bookings': basket_bookings,
+        'shelf_bookings': shelf_bookings,
+        'all_bookable': all_bookable,
+        'all_unbookable': all_unbookable,
+        'state_token': make_state_token(basket_bookings),
+        'total': total,
+        'grand_total': grand_total,
+        'discounts_available': discounts.items(),
+    })
 
 
 class CustomAmountPayPalForm(PayPalPaymentsForm):
@@ -833,81 +836,79 @@ def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amou
     return form
 
 
-class BookingPayBase(CciwBaseView):
-    magic_context = {'stage': 'pay'}
+@booking_account_required
+def pay(request):
+    acc = request.booking_account
+    balance_due = acc.get_balance(allow_deposits=True)
+    balance_full = acc.get_balance(allow_deposits=False)
+
+    # This view should be accessible even if prices for the current year are
+    # not defined.
+    price_deposit = list(Price.objects.filter(year=common.get_thisyear(), price_type=PRICE_DEPOSIT))
+    if len(price_deposit) == 0:
+        price_deposit = None
+    else:
+        price_deposit = price_deposit[0].price
+
+    domain = get_current_domain()
+    protocol = 'https' if request.is_secure() else 'http'
+
+    return TemplateResponse(request, 'cciw/bookings/pay.html', {
+        'stage': 'pay',
+        'title': 'Booking - pay',
+        'unconfirmed_places': acc.bookings.unconfirmed(),
+        'balance_due': balance_due,
+        'balance_full': balance_full,
+        'account_id': acc.id,
+        'price_deposit': price_deposit,
+        'pending_payment_total': acc.get_pending_payment_total(),
+        'paypal_form': mk_paypal_form(acc, balance_due, protocol, domain),
+        'paypal_form_full': mk_paypal_form(acc, balance_full, protocol, domain),
+        'paypal_form_custom': mk_paypal_form(acc,
+                                             max(0, balance_due),
+                                             protocol, domain,
+                                             min_amount=max(balance_due, 0),
+                                             max_amount=balance_full)
+    })
 
 
-class BookingPay(BookingPayBase):
-    metadata_title = "Booking - pay"
-    template_name = "cciw/bookings/pay.html"
-
-    def handle(self, request):
-        acc = self.request.booking_account
-        balance_due = acc.get_balance(allow_deposits=True)
-        balance_full = acc.get_balance(allow_deposits=False)
-
-        # This view should be accessible even if prices for the current year are
-        # not defined.
-        price_deposit = list(Price.objects.filter(year=common.get_thisyear(), price_type=PRICE_DEPOSIT))
-        if len(price_deposit) == 0:
-            price_deposit = None
-        else:
-            price_deposit = price_deposit[0].price
-
-        domain = get_current_domain()
-        protocol = 'https' if self.request.is_secure() else 'http'
-
-        c = {
-            'unconfirmed_places': acc.bookings.unconfirmed(),
-            'balance_due': balance_due,
-            'balance_full': balance_full,
-            'account_id': acc.id,
-            'price_deposit': price_deposit,
-            'pending_payment_total': acc.get_pending_payment_total(),
-            'paypal_form': mk_paypal_form(acc, balance_due, protocol, domain),
-            'paypal_form_full': mk_paypal_form(acc, balance_full, protocol, domain),
-            'paypal_form_custom': mk_paypal_form(acc,
-                                                 max(0, balance_due),
-                                                 protocol, domain,
-                                                 min_amount=max(balance_due, 0),
-                                                 max_amount=balance_full)
-        }
-        return self.render(c)
+@csrf_exempt  # PayPal will post to this
+def pay_done(request):
+    return TemplateResponse(request, 'cciw/bookings/pay_done.html', {
+        'title': 'Booking - payment complete',
+        'stage': 'pay',
+    })
 
 
-class BookingPayDone(BookingPayBase):
-    metadata_title = "Booking - payment complete"
-    template_name = "cciw/bookings/pay_done.html"
+@csrf_exempt  # PayPal will post to this
+def pay_cancelled(request):
+    return TemplateResponse(request, 'cciw/bookings/pay_cancelled.html', {
+        'title': 'Booking - payment cancelled',
+        'stage': 'pay',
+    })
 
 
-class BookingPayCancelled(BookingPayBase):
-    metadata_title = "Booking - payment cancelled"
-    template_name = "cciw/bookings/pay_cancelled.html"
+@booking_account_required
+def account_overview(request):
+    if 'logout' in request.POST:
+        response = HttpResponseRedirect(reverse('cciw-bookings-index'))
+        unset_booking_account_cookie(response)
+        return response
 
-
-class BookingAccountOverview(CciwBaseView):
-    metadata_title = "Booking - account overview"
-    template_name = 'cciw/bookings/account_overview.html'
-    magic_context = {'stage': 'overview'}
-
-    def handle(self, request):
-        if 'logout' in request.POST:
-            response = HttpResponseRedirect(reverse('cciw-bookings-index'))
-            unset_booking_account_cookie(response)
-            return response
-
-        c = {}
-        acc = self.request.booking_account
-        year = common.get_thisyear()
-        bookings = acc.bookings.for_year(year)
-        c['confirmed_places'] = bookings.confirmed()
-        c['unconfirmed_places'] = bookings.unconfirmed()
-        c['cancelled_places'] = bookings.cancelled()
-        c['basket_or_shelf'] = (bookings.in_basket() | bookings.on_shelf())
-        c['balance_due'] = acc.get_balance(allow_deposits=True)
-        c['balance_full'] = acc.get_balance(allow_deposits=False)
-        c['pending_payment_total'] = acc.get_pending_payment_total()
-        return self.render(c)
+    account = request.booking_account
+    year = common.get_thisyear()
+    bookings = account.bookings.for_year(year)
+    return TemplateResponse(request, 'cciw/bookings/account_overview.html', {
+        'confirmed_places': bookings.confirmed(),
+        'unconfirmed_places': bookings.unconfirmed(),
+        'cancelled_places': bookings.cancelled(),
+        'basket_or_shelf': (bookings.in_basket() | bookings.on_shelf()),
+        'balance_due': account.get_balance(allow_deposits=True),
+        'balance_full': account.get_balance(allow_deposits=False),
+        'pending_payment_total': account.get_pending_payment_total(),
+        'title': 'Booking - account overview',
+        'stage': 'overview',
+    })
 
 
 class BookingAccountAutocomplete(autocomplete.Select2QuerySetView):
@@ -919,19 +920,3 @@ class BookingAccountAutocomplete(autocomplete.Select2QuerySetView):
             return BookingAccount.objects.order_by('name', 'address_post_code').filter(name__icontains=self.q)
         else:
             return BookingAccount.objects.none()
-
-
-index = BookingIndex.as_view()
-start = BookingStart.as_view()
-email_sent = BookingEmailSent.as_view()
-link_expired_email_sent = BookingLinkExpiredEmailSent.as_view()
-verify_email_failed = BookingVerifyEmailFailed.as_view()
-account_details = booking_account_required(BookingAccountDetails.as_view())
-not_logged_in = BookingNotLoggedIn.as_view()
-add_place = booking_account_required(account_details_required(BookingAddPlace.as_view()))
-edit_place = booking_account_required(account_details_required(BookingEditPlace.as_view()))
-list_bookings = booking_account_required(BookingListBookings.as_view())
-pay = booking_account_required(BookingPay.as_view())
-pay_done = csrf_exempt(BookingPayDone.as_view())  # PayPal will post to this, need csrf_exempt
-pay_cancelled = csrf_exempt(BookingPayCancelled.as_view())  # PayPal will post to this
-account_overview = booking_account_required(BookingAccountOverview.as_view())

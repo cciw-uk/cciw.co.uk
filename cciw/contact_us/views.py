@@ -4,10 +4,11 @@ from django.core import mail
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.template.defaultfilters import wordwrap
+from django.template.response import TemplateResponse
 from django.urls import reverse
 
 from cciw.bookings.views import ensure_booking_account_attr
-from cciw.cciwmain.common import AjaxFormValidation, CciwBaseView, get_current_domain
+from cciw.cciwmain.common import ajax_form_validate, get_current_domain
 from cciw.officers.views import cciw_secretary_or_booking_secretary_required
 
 from .forms import (CONTACT_CHOICE_BOOKINGFORM, CONTACT_CHOICE_BOOKINGS, CONTACT_CHOICE_GENERAL, CONTACT_CHOICE_WEBSITE,
@@ -15,57 +16,53 @@ from .forms import (CONTACT_CHOICE_BOOKINGFORM, CONTACT_CHOICE_BOOKINGS, CONTACT
 from .models import Message
 
 
-class ContactUsBase(CciwBaseView):
-    metadata_title = "Contact us"
-
-
-class ContactUsFormView(AjaxFormValidation, ContactUsBase):
+@ajax_form_validate(AjaxContactUsForm)
+def contact_us(request):
     form_class = ContactUsForm
-    ajax_form_class = AjaxContactUsForm
-    template_name = 'cciw/contact_us.html'
+    ensure_booking_account_attr(request)
+    # At module level, use of 'settings' seems to cause problems
+    CONTACT_CHOICE_DESTS = {
+        CONTACT_CHOICE_BOOKINGFORM: settings.BOOKING_FORMS_EMAILS,
+        CONTACT_CHOICE_BOOKINGS: settings.BOOKING_SECRETARY_EMAILS,
+        CONTACT_CHOICE_GENERAL: settings.GENERAL_CONTACT_EMAILS,
+        CONTACT_CHOICE_WEBSITE: settings.WEBMASTER_EMAILS,
+    }
 
-    def handle(self, request):
-        ensure_booking_account_attr(request)
-        # At module level, use of 'settings' seems to cause problems
-        CONTACT_CHOICE_DESTS = {
-            CONTACT_CHOICE_BOOKINGFORM: settings.BOOKING_FORMS_EMAILS,
-            CONTACT_CHOICE_BOOKINGS: settings.BOOKING_SECRETARY_EMAILS,
-            CONTACT_CHOICE_GENERAL: settings.GENERAL_CONTACT_EMAILS,
-            CONTACT_CHOICE_WEBSITE: settings.WEBMASTER_EMAILS,
-        }
-
-        if request.method == "POST":
-            form = self.form_class(request.POST)
-            if form.is_valid():
-                to_emails = CONTACT_CHOICE_DESTS[form.cleaned_data['subject']]
-                booking_account = request.booking_account
-                if booking_account is not None and form.cleaned_data['email'] != booking_account.email:
-                    # They changed the email from the default, so disconnect
-                    # this message from the booking account, to avoid confusion
-                    booking_account = None
-                msg = form.save(commit=False)
-                msg.booking_account = booking_account
-                msg.save()
-                send_contact_us_emails(
-                    to_emails,
-                    msg)
-                return HttpResponseRedirect(reverse('cciw-contact_us-done'))
-        else:
-            form = self.form_class(initial=self.get_initial(request))
-        return self.render({'form': form})
-
-    def get_initial(self, request):
+    if request.method == "POST":
+        form = form_class(request.POST)
+        if form.is_valid():
+            to_emails = CONTACT_CHOICE_DESTS[form.cleaned_data['subject']]
+            booking_account = request.booking_account
+            if booking_account is not None and form.cleaned_data['email'] != booking_account.email:
+                # They changed the email from the default, so disconnect
+                # this message from the booking account, to avoid confusion
+                booking_account = None
+            msg = form.save(commit=False)
+            msg.booking_account = booking_account
+            msg.save()
+            send_contact_us_emails(
+                to_emails,
+                msg)
+            return HttpResponseRedirect(reverse('cciw-contact_us-done'))
+    else:
         initial = {}
         for val, caption in CONTACT_CHOICES:
-            if val in self.request.GET:
+            if val in request.GET:
                 initial['subject'] = val
         if request.booking_account is not None:
             initial['email'] = request.booking_account.email
-        return initial
+        form = form_class(initial=initial)
+
+    return TemplateResponse(request, 'cciw/contact_us.html', {
+        'title': 'Contact us',
+        'form': form,
+    })
 
 
-class ContactUsDone(ContactUsBase):
-    template_name = 'cciw/contact_us_done.html'
+def contact_us_done(request):
+    return TemplateResponse(request, 'cciw/contact_us_done.html', {
+        'title': 'Contact us',
+    })
 
 
 def send_contact_us_emails(to_emails, msg):
@@ -119,7 +116,3 @@ def make_contact_us_view_url(msg):
     return 'https://%(domain)s%(path)s' % dict(
         domain=get_current_domain(),
         path=reverse('cciw-contact_us-view', args=(msg.id,)))
-
-
-contact_us = ContactUsFormView.as_view()
-contact_us_done = ContactUsDone.as_view()
