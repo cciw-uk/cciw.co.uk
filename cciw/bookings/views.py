@@ -913,6 +913,8 @@ def account_overview(request):
     year = common.get_thisyear()
     bookings = account.bookings.for_year(year)
     return TemplateResponse(request, 'cciw/bookings/account_overview.html', {
+        'title': 'Booking - account overview',
+        'stage': BookingStage.OVERVIEW,
         'confirmed_places': bookings.confirmed(),
         'unconfirmed_places': bookings.unconfirmed(),
         'cancelled_places': bookings.cancelled(),
@@ -920,8 +922,6 @@ def account_overview(request):
         'balance_due': account.get_balance(allow_deposits=True),
         'balance_full': account.get_balance(allow_deposits=False),
         'pending_payment_total': account.get_pending_payment_total(),
-        'title': 'Booking - account overview',
-        'stage': BookingStage.OVERVIEW,
     })
 
 
