@@ -670,9 +670,12 @@ def get_expected_amount_due(request):
 
 def make_state_token(bookings):
     # Hash some key data about booking, without which the booking isn't valid.
-    bookings.sort(key=lambda b: b.id)
+    # This is a protection mechanism for the user's benefit, to ensure they
+    # don't accidentally book something significantly different from what they
+    # expect (due to, for example, changing a booking in a different tab). For
+    # this reason we don't need all info.
     data = '|'.join([':'.join(map(str, [b.id, b.camp.id, b.amount_due, b.name, b.price_type, b.state]))
-                     for b in bookings])
+                     for b in sorted(bookings, key=lambda b: b.id)])
     return salted_hmac('cciw.bookings.state_token', data.encode('utf-8')).hexdigest()
 
 
@@ -683,8 +686,8 @@ def list_bookings(request):
     bookings = request.booking_account.bookings
     # NB - use lists here, not querysets, so that both state_token and book_now
     # functionality apply against same set of bookings.
-    basket_bookings = list(bookings.for_year(year).in_basket())
-    shelf_bookings = list(bookings.for_year(year).on_shelf())
+    basket_bookings = list(bookings.for_year(year).in_basket().order_by('id'))
+    shelf_bookings = list(bookings.for_year(year).on_shelf().order_by('id'))
 
     if request.method == "POST":
         if 'add_another' in request.POST:

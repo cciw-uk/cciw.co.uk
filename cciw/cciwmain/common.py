@@ -35,19 +35,6 @@ def ajax_form_validate(form_class):
     return decorator
 
 
-def json_validation_request(request, form):
-    """
-    Returns a JSON validation response for a form, if the request is for JSON
-    validation.
-    """
-
-    if request.GET.get('format') == 'json':
-        return HttpResponse(python_to_json(form.errors),
-                            content_type='text/javascript')
-    else:
-        return None
-
-
 _thisyear = None
 _thisyear_timestamp = None
 
