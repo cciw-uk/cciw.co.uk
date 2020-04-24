@@ -202,12 +202,10 @@ def verify_and_continue(request):
 
     if last_login is not None and (
             (now - last_login) > timedelta(30 * 6)):  # six months
-        resp = HttpResponseRedirect(reverse('cciw-bookings-account_details'))
         messages.info(request, "Welcome back! Please check and update your account details")
-        return resp
+        return HttpResponseRedirect(reverse('cciw-bookings-account_details'))
     else:
-        resp = next_step(account)
-        return resp
+        return next_step(account)
 
 
 def verify_email_failed(request):

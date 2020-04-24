@@ -4,19 +4,9 @@
 {% load compress %}
 
 {% block extraheader %}
-  {% if meta_description %}
-    <meta name="description" content="{{ meta_description }}" />
-  {% else %}
-    {% if homepage %}
-      <meta name="description" content="Details of camps, message boards and photos for the UK charity Christian Camps in Wales" />
-    {% endif %}
-  {% endif %}
-  {% if meta_keywords %}
-    <meta name="keywords" content="{{ meta_keywords }}" />
-  {% else %}
-    {% if homepage %}
-      <meta name="keywords" content="camp, camps, summer camp, Christian, Christian camp, charity" />
-    {% endif %}
+  {% if homepage %}
+    <meta name="description" content="Details of camps and booking for the UK charity Christian Camps in Wales" />
+    <meta name="keywords" content="camp, camps, summer camp, Christian, Christian camp, charity, Wales" />
   {% endif %}
   {{ block.super }}
   {% compress js %}
