@@ -7,7 +7,7 @@
 #    - print booking form yourself
 #    - book online
 
-# Step 1  /booking/start/
+# Step 1 /booking/start/
 #  - enter email address
 #    - must be contact address for person booking
 #      "You may want to add 'noreply@cciw.co.uk' to your known contacts list to
@@ -210,6 +210,17 @@ from cciw.utils.views import user_passes_test_improved
 
 
 # decorators and utilities
+
+
+class BookingStage:
+    LOGIN = 'login'
+    ACCOUNT = 'account'
+    OVERVIEW = 'overview'
+    PLACE = 'place'
+    LIST = 'list'
+    PAY = 'pay'
+
+
 def ensure_booking_account_attr(request):
     if not hasattr(request, 'booking_account'):
         request.booking_account = get_booking_account_from_request(request)
@@ -326,7 +337,7 @@ def start(request):
         form = form_class()
 
     return TemplateResponse(request, 'cciw/bookings/start.html', {
-        'stage': 'login',
+        'stage': BookingStage.LOGIN,
         'title': 'Booking - log in',
         'booking_open': is_booking_open_thisyear(),
         'form': form,
@@ -336,14 +347,14 @@ def start(request):
 
 def email_sent(request):
     return TemplateResponse(request, 'cciw/bookings/email_sent.html', {
-        'stage': 'login',
+        'stage': BookingStage.LOGIN,
         'title': 'Booking - log in',
     })
 
 
 def link_expired_email_sent(request):
     return TemplateResponse(request, 'cciw/bookings/email_sent.html', {
-        'stage': 'login',
+        'stage': BookingStage.LOGIN,
         'title': 'Booking - log in',
         'link_expired': True,
     })
@@ -375,7 +386,7 @@ def verify_and_continue(request):
 
 def verify_email_failed(request):
     return TemplateResponse(request, 'cciw/bookings/email_verification_failed.html', {
-        'stage': 'login',
+        'stage': BookingStage.LOGIN,
         'title': 'Booking - account email verification failed',
     })
 
@@ -401,7 +412,7 @@ def account_details(request):
         form = form_class(instance=request.booking_account)
     return TemplateResponse(request, 'cciw/bookings/account_details.html', {
         'title': 'Booking - account details',
-        'stage': 'account',
+        'stage': BookingStage.ACCOUNT,
         'form': form,
     })
 
@@ -451,7 +462,7 @@ def add_or_edit_place(request, context, booking_id=None):
 
     context.update({
         'booking_open': is_booking_open_thisyear(),
-        'stage': 'place',
+        'stage': BookingStage.PLACE,
         'form': form,
         'early_bird_available': early_bird_is_available(year, now),
         'early_bird_date': get_early_bird_cutoff_date(year),
@@ -790,7 +801,7 @@ def list_bookings(request):
 
     return TemplateResponse(request, 'cciw/bookings/list_bookings.html', {
         'title': 'Booking - checkout',
-        'stage': 'list',
+        'stage': BookingStage.LIST,
         'basket_bookings': basket_bookings,
         'shelf_bookings': shelf_bookings,
         'all_bookable': all_bookable,
@@ -857,7 +868,7 @@ def pay(request):
     protocol = 'https' if request.is_secure() else 'http'
 
     return TemplateResponse(request, 'cciw/bookings/pay.html', {
-        'stage': 'pay',
+        'stage': BookingStage.PAY,
         'title': 'Booking - pay',
         'unconfirmed_places': acc.bookings.unconfirmed(),
         'balance_due': balance_due,
@@ -879,7 +890,7 @@ def pay(request):
 def pay_done(request):
     return TemplateResponse(request, 'cciw/bookings/pay_done.html', {
         'title': 'Booking - payment complete',
-        'stage': 'pay',
+        'stage': BookingStage.PAY,
     })
 
 
@@ -887,7 +898,7 @@ def pay_done(request):
 def pay_cancelled(request):
     return TemplateResponse(request, 'cciw/bookings/pay_cancelled.html', {
         'title': 'Booking - payment cancelled',
-        'stage': 'pay',
+        'stage': BookingStage.PAY,
     })
 
 
@@ -910,7 +921,7 @@ def account_overview(request):
         'balance_full': account.get_balance(allow_deposits=False),
         'pending_payment_total': account.get_pending_payment_total(),
         'title': 'Booking - account overview',
-        'stage': 'overview',
+        'stage': BookingStage.OVERVIEW,
     })
 
 

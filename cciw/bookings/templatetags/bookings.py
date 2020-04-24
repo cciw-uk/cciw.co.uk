@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django import template
 from django.urls import reverse
 
-from cciw.bookings.views import ensure_booking_account_attr
+from cciw.bookings.views import BookingStage, ensure_booking_account_attr
 
 register = template.Library()
 
@@ -22,30 +22,30 @@ def bookingbar(context):
     msg_need_login = 'Must be logged in to access this'
     msg_need_account_details = 'Need account details to access this' if logged_in else 'Must be logged in to access this'
     stages = [
-        ('login', 'Log in', False,
+        (BookingStage.LOGIN, 'Log in', False,
          '',
          'Go to "Overview" and use the "log out" link if you need to log in as someone else'),
 
-        ('account', 'Account details', logged_in,
+        (BookingStage.ACCOUNT, 'Account details', logged_in,
          reverse('cciw-bookings-account_details'),
          msg_need_login),
 
-        ('overview', 'Overview', logged_in,
+        (BookingStage.OVERVIEW, 'Overview', logged_in,
          reverse('cciw-bookings-account_overview'),
          msg_need_login),
 
-        ('place',
-         'Edit camper details' if current_stage == 'place' and 'edit_mode' in context
+        (BookingStage.PLACE,
+         'Edit camper details' if current_stage == BookingStage.PLACE and 'edit_mode' in context
          else 'Add new booking',
          logged_in and has_account_details,
          reverse('cciw-bookings-add_place'),
          msg_need_account_details),
 
-        ('list', 'Checkout', logged_in and has_account_details,
+        (BookingStage.LIST, 'Checkout', logged_in and has_account_details,
          reverse('cciw-bookings-list_bookings'),
          msg_need_account_details),
 
-        ('pay', 'Pay', logged_in and has_account_details,
+        (BookingStage.PAY, 'Pay', logged_in and has_account_details,
          reverse('cciw-bookings-pay'),
          msg_need_account_details),
 
