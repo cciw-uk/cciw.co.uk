@@ -34,7 +34,6 @@ from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.utils.views import user_passes_test_improved
 
-
 # decorators and utilities
 
 
