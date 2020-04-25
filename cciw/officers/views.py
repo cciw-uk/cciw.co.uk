@@ -19,7 +19,7 @@ from django.core import signing
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import wordwrap
 from django.template.loader import render_to_string
 from django.template.response import TemplateResponse
@@ -150,7 +150,7 @@ def index(request):
             c['booking_stats_end_year'] = most_recent_booking_year
             c['booking_stats_start_year'] = most_recent_booking_year - 3
 
-    return render(request, 'cciw/officers/index.html', c)
+    return TemplateResponse(request, 'cciw/officers/index.html', c)
 
 
 @staff_member_required
@@ -180,7 +180,7 @@ def leaders_index(request):
     ctx['stats_start_year'] = 2006  # first year this feature existed
     ctx['show_all'] = show_all
 
-    return render(request, 'cciw/officers/leaders_index.html', ctx)
+    return TemplateResponse(request, 'cciw/officers/leaders_index.html', ctx)
 
 
 @staff_member_required
@@ -227,7 +227,7 @@ def applications(request):
         return HttpResponseRedirect('/admin/officers/application/%s/' %
                                     new_obj.id)
 
-    return render(request, 'cciw/officers/applications.html', c)
+    return TemplateResponse(request, 'cciw/officers/applications.html', c)
 
 
 @staff_member_required
@@ -308,11 +308,11 @@ def view_application(request, application_id=None):
     # NB, this is is called by both normal users and leaders.
     # In the latter case, request.user != app.officer
 
-    return render(request, "cciw/officers/view_application.html",
-                  {'application': application,
-                   'officer': application.officer,
-                   'is_popup': True,
-                   })
+    return TemplateResponse(request, "cciw/officers/view_application.html", {
+        'application': application,
+        'officer': application.officer,
+        'is_popup': True,
+    })
 
 
 def _thisyears_camp_for_leader(user):
@@ -328,11 +328,10 @@ def _thisyears_camp_for_leader(user):
 @never_cache
 def manage_applications(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
-    c = {}
-    c['finished_applications'] = applications_for_camp(camp).order_by('officer__first_name', 'officer__last_name')
-    c['camp'] = camp
-
-    return render(request, 'cciw/officers/manage_applications.html', c)
+    return TemplateResponse(request, 'cciw/officers/manage_applications.html', {
+        'finished_applications': applications_for_camp(camp).order_by('officer__first_name', 'officer__last_name'),
+        'camp': camp,
+    })
 
 
 def _get_camp_or_404(camp_id: CampId):
@@ -472,7 +471,7 @@ def manage_references(request, camp_id: CampId):
             c['referee'] = notrequested[0]
         template_name = 'cciw/officers/manage_reference.html'
 
-    return render(request, template_name, c)
+    return TemplateResponse(request, template_name, c)
 
 
 @staff_member_required
@@ -487,10 +486,10 @@ def officer_history(request, officer_id=None):
                                  .order_by('-date_saved'))
                      ]
 
-    return render(request, "cciw/officers/officer_history.html",
-                  {'officer': officer,
-                   'referee_pairs': referee_pairs,
-                   })
+    return TemplateResponse(request, "cciw/officers/officer_history.html", {
+        'officer': officer,
+        'referee_pairs': referee_pairs,
+    })
 
 
 @staff_member_required
@@ -594,7 +593,7 @@ def request_reference(request, camp_id: CampId):
     c['messageform'] = messageform
     c['editreferenceform'] = editreferenceform
 
-    return render(request, 'cciw/officers/request_reference.html', c)
+    return TemplateResponse(request, 'cciw/officers/request_reference.html', c)
 
 
 @staff_member_required
@@ -609,7 +608,6 @@ def nag_by_officer(request, camp_id: CampId):
     app = referee.application
     officer = app.officer
 
-    c = {}
     messageform_info = dict(referee=referee,
                             officer=officer,
                             sender=request.user,
@@ -630,12 +628,13 @@ def nag_by_officer(request, camp_id: CampId):
 
     messageform = SendNagByOfficerForm(message_info=messageform_info)
 
-    c['referee'] = referee
-    c['app'] = app
-    c['officer'] = officer
-    c['messageform'] = messageform
-    c['is_popup'] = True
-    return render(request, 'cciw/officers/nag_by_officer.html', c)
+    return TemplateResponse(request, 'cciw/officers/nag_by_officer.html', {
+        'referee': referee,
+        'app': app,
+        'officer': officer,
+        'messageform': messageform,
+        'is_popup': True,
+    })
 
 
 def initial_reference_form_data(referee, prev_reference):
@@ -688,7 +687,7 @@ def create_reference_form(request, referee_id, hash, prev_ref_id=""):
                 form = get_initial_reference_form(reference, referee, prev_reference, ReferenceForm)
             c['form'] = form
         c['officer'] = referee.application.officer
-    return render(request, 'cciw/officers/create_reference.html', c)
+    return TemplateResponse(request, 'cciw/officers/create_reference.html', c)
 
 
 def get_initial_reference_form(reference, referee, prev_reference, form_class):
@@ -707,7 +706,7 @@ def get_initial_reference_form(reference, referee, prev_reference, form_class):
 
 
 def create_reference_thanks(request):
-    return render(request, 'cciw/officers/create_reference_thanks.html', {})
+    return TemplateResponse(request, 'cciw/officers/create_reference_thanks.html', {})
 
 
 @staff_member_required
@@ -715,13 +714,12 @@ def create_reference_thanks(request):
 @cache_control(max_age=3600)
 def view_reference(request, reference_id=None):
     reference = get_object_or_404(Reference.objects.filter(id=reference_id))
-    c = {}
-    c['reference'] = reference
-    c['officer'] = reference.referee.application.officer
-    c['referee'] = reference.referee
-    c['is_popup'] = True
-
-    return render(request, "cciw/officers/view_reference_form.html", c)
+    return TemplateResponse(request, "cciw/officers/view_reference_form.html", {
+        'reference': reference,
+        'officer': reference.referee.application.officer,
+        'referee': reference.referee,
+        'is_popup': True,
+    })
 
 
 @staff_member_required
@@ -766,7 +764,7 @@ def officer_list(request, camp_id: CampId):
         return HttpResponse(python_to_json(retval),
                             content_type="text/javascript")
     else:
-        return render(request, "cciw/officers/officer_list.html", c)
+        return TemplateResponse(request, "cciw/officers/officer_list.html", c)
 
 
 @staff_member_required
@@ -824,7 +822,7 @@ def correct_email(request):
         c['message'] = "Your email address has been updated, thanks."
         c['success'] = True
 
-    return render(request, 'cciw/officers/email_update.html', c)
+    return TemplateResponse(request, 'cciw/officers/email_update.html', c)
 
 
 def correct_application(request):
@@ -843,7 +841,7 @@ def correct_application(request):
         c['message'] = "Your application form email address has been updated, thanks."
         c['success'] = True
 
-    return render(request, 'cciw/officers/email_update.html', c)
+    return TemplateResponse(request, 'cciw/officers/email_update.html', c)
 
 
 @staff_member_required
@@ -897,14 +895,14 @@ def create_officer(request):
     else:
         form = CreateOfficerForm()
 
-    c = {'form': form,
-         'duplicate_message': duplicate_message,
-         'existing_users': existing_users,
-         'allow_confirm': allow_confirm,
-         'message': message,
-         'is_popup': True,
-         }
-    return render(request, 'cciw/officers/create_officer.html', c)
+    return TemplateResponse(request, 'cciw/officers/create_officer.html', {
+        'form': form,
+        'duplicate_message': duplicate_message,
+        'existing_users': existing_users,
+        'allow_confirm': allow_confirm,
+        'message': message,
+        'is_popup': True,
+    })
 
 
 @staff_member_required
@@ -964,21 +962,21 @@ def officer_stats(request, year: int):
     if len(camps) == 0:
         raise Http404
 
-    ctx = {
-        'camps': camps,
-        'year': year,
-    }
     charts = []
     for camp in camps:
         df = get_camp_officer_stats(camp)
         df['References ÷ 2'] = df['References'] / 2  # Make it match the height of others
         df.pop('References')
-        charts.append((camp,
-                       pandas_highcharts.core.serialize(df,
-                                                        title="{0} - {1}".format(camp.name, camp.leaders_formatted),
-                                                        output_type='json')))
-    ctx['charts'] = charts
-    return render(request, 'cciw/officers/stats.html', ctx)
+        charts.append((camp, pandas_highcharts.core.serialize(
+            df,
+            title="{0} - {1}".format(camp.name, camp.leaders_formatted),
+            output_type='json'))
+        )
+    return TemplateResponse(request, 'cciw/officers/stats.html', {
+        'camps': camps,
+        'year': year,
+        'charts': charts,
+    })
 
 
 @staff_member_required
@@ -990,17 +988,15 @@ def officer_stats_trend(request, start_year: int, end_year: int):
     for c in data.columns:
         if 'fraction' not in c:
             data.pop(c)
-
     fraction_to_percent(data)
-
-    ctx = {
+    return TemplateResponse(request, 'cciw/officers/stats_trend.html', {
         'start_year': start_year,
         'end_year': end_year,
-        'chart_data': pandas_highcharts.core.serialize(data,
-                                                       title="Officer stats {0} - {1}".format(start_year, end_year),
-                                                       output_type='json')
-    }
-    return render(request, 'cciw/officers/stats_trend.html', ctx)
+        'chart_data': pandas_highcharts.core.serialize(
+            data,
+            title="Officer stats {0} - {1}".format(start_year, end_year),
+            output_type='json'),
+    })
 
 
 def fraction_to_percent(data):
@@ -1064,15 +1060,15 @@ def manage_dbss(request, year: int):
 
     officers_and_dbs_info = get_officers_with_dbs_info_for_camps(camps, officer_id=officer_id)
 
-    c = {'officers_and_dbs_info': officers_and_dbs_info,
-         'camps': camps,
-         'selected_camps': selected_camps,
-         'year': year,
-         'CHECK_TYPE_FORM': DBSCheck.CHECK_TYPE_FORM,
-         'CHECK_TYPE_ONLINE': DBSCheck.CHECK_TYPE_ONLINE,
-         'external_dbs_officer': settings.EXTERNAL_DBS_OFFICER,
-         }
-    return render(request, template_name, c)
+    return TemplateResponse(request, template_name, {
+        'officers_and_dbs_info': officers_and_dbs_info,
+        'camps': camps,
+        'selected_camps': selected_camps,
+        'year': year,
+        'CHECK_TYPE_FORM': DBSCheck.CHECK_TYPE_FORM,
+        'CHECK_TYPE_ONLINE': DBSCheck.CHECK_TYPE_ONLINE,
+        'external_dbs_officer': settings.EXTERNAL_DBS_OFFICER,
+    })
 
 
 def get_officers_with_dbs_info_for_camps(camps, officer_id=None):
@@ -1442,7 +1438,7 @@ def dbs_checked_online(request):
 
 @staff_member_required
 def officer_info(request):
-    return render(request, 'cciw/officers/info.html', {
+    return TemplateResponse(request, 'cciw/officers/info.html', {
         'show_wiki_link': request.user.is_wiki_user,
     })
 
@@ -1516,16 +1512,16 @@ def booking_secretary_reports(request, year: int):
                                               )
                         )
 
-    return render(request, 'cciw/officers/booking_secretary_reports.html',
-                  {'year': year,
-                   'stats_start_year': year - 4,
-                   'camps': camps,
-                   'bookings': outstanding,
-                   'to_approve': to_approve,
-                   'export_start': export_start,
-                   'export_end': export_end,
-                   'export_data_link': export_data_link,
-                   })
+    return TemplateResponse(request, 'cciw/officers/booking_secretary_reports.html', {
+        'year': year,
+        'stats_start_year': year - 4,
+        'camps': camps,
+        'bookings': outstanding,
+        'to_approve': to_approve,
+        'export_start': export_start,
+        'export_end': export_end,
+        'export_data_link': export_data_link,
+    })
 
 
 @booking_secretary_required
@@ -1564,20 +1560,18 @@ def booking_progress_stats(request, start_year: int = None, end_year: int = None
     start_year, end_year, camp_objs, data_dates, data_rel_days = (
         _get_booking_progress_stats_from_params(start_year, end_year, camp_ids, overlay_years=True)
     )
-
-    ctx = {
+    return TemplateResponse(request, 'cciw/officers/booking_progress_stats.html', {
         'start_year': start_year,
         'end_year': end_year,
         'camps': camp_objs,
         'camp_ids': camp_ids,
-        'dates_chart_data': pandas_highcharts.core.serialize(data_dates,
-                                                             title="Bookings by date",
-                                                             output_type='json'),
-        'rel_days_chart_data': pandas_highcharts.core.serialize(data_rel_days,
-                                                                title="Bookings by days relative to start of camp",
-                                                                output_type='json'),
-    }
-    return render(request, 'cciw/officers/booking_progress_stats.html', ctx)
+        'dates_chart_data': pandas_highcharts.core.serialize(data_dates, title="Bookings by date", output_type='json'),
+        'rel_days_chart_data': pandas_highcharts.core.serialize(
+            data_rel_days,
+            title="Bookings by days relative to start of camp",
+            output_type='json',
+        ),
+    })
 
 
 @staff_member_required
@@ -1603,12 +1597,11 @@ def booking_summary_stats(request, start_year, end_year):
     end_year = int(end_year)
     chart_data = get_booking_summary_stats(start_year, end_year)
     chart_data.pop('Total')
-    ctx = {
+    return TemplateResponse(request, 'cciw/officers/booking_summary_stats.html', {
         'start_year': start_year,
         'end_year': end_year,
         'chart_data': pandas_highcharts.core.serialize(chart_data, output_type='json')
-    }
-    return render(request, 'cciw/officers/booking_summary_stats.html', ctx)
+    })
 
 
 @staff_member_required
@@ -1666,18 +1659,15 @@ def booking_ages_stats(request, start_year: int = None, end_year: int = None, ca
             # Not enough - fall back to auto
             colors = []
 
-    ctx = {
+    return TemplateResponse(request, 'cciw/officers/booking_ages_stats.html', {
         'start_year': start_year,
         'end_year': end_year,
         'camps': camps,
         'camp_ids': camp_ids,
-        'chart_data': pandas_highcharts.core.serialize(data,
-                                                       title="Age of campers",
-                                                       output_type='json'),
+        'chart_data': pandas_highcharts.core.serialize(data, title="Age of campers", output_type='json'),
         'colors_data': colors,
         'stack_columns': stack_columns,
-    }
-    return render(request, 'cciw/officers/booking_ages_stats.html', ctx)
+    })
 
 
 @staff_member_required
