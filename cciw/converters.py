@@ -30,7 +30,7 @@ class CampIdConverter:
     @staticmethod
     def to_python(value) -> CampId:
         year, slug = value.split('-', 1)
-        return int(year), slug
+        return CampId(int(year), slug)
 
     @staticmethod
     def to_url(value):
