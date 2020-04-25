@@ -1091,8 +1091,10 @@ def fix_autocomplete_fields(field_names):
                         to_fix.append((field_name, value))
                     else:
                         # Hack needed to cope with autocomplete_light widget and WebTest:
-                        form, field = self._find_form_and_field_by_css_selector(self.last_response,
-                                                                                '[name={0}]'.format(field_name))
+                        form, field, item = self._find_form_and_field_by_css_selector(
+                            self.last_response,
+                            '[name={0}]'.format(field_name),
+                        )
                         # Modify the select widget so that it has the value we need
                         form.fields[field_name][0].options.append((str(value), False, ''))
                         new_fields[field_name] = value

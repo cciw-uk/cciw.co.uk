@@ -1,17 +1,14 @@
 from datetime import date, datetime, timedelta
 
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.utils import timezone
-from django_dynamic_fixture import G
 
 from cciw.accounts.models import (BOOKING_SECRETARY_GROUP_NAME, DBS_OFFICER_GROUP_NAME, REFERENCE_CONTACT_GROUP_NAME,
-                                  SECRETARY_GROUP_NAME, setup_auth_groups)
+                                  SECRETARY_GROUP_NAME, setup_auth_groups, User)
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.officers.models import Application, QualificationType, Reference
 
-User = get_user_model()
 
 OFFICER_USERNAME = 'joebloggs'
 OFFICER_PASSWORD = 'test_normaluser_password'
@@ -58,17 +55,13 @@ class SimpleOfficerSetupMixin(BasicSetupMixin):
     """
     def setUp(self):
         super().setUp()
-        self.officer_user = G(User,
-                              username=OFFICER_USERNAME,
-                              first_name="Joe",
-                              last_name="Bloggs",
-                              is_active=True,
-                              is_superuser=False,
-                              is_staff=True,
-                              email=OFFICER_EMAIL,
-                              permissions=[])
-        self.officer_user.set_password(OFFICER_PASSWORD)
-        self.officer_user.save()
+        self.officer_user = factories.make_officer(
+            username=OFFICER_USERNAME,
+            first_name="Joe",
+            last_name="Bloggs",
+            email=OFFICER_EMAIL,
+            password=OFFICER_PASSWORD
+        )
 
 
 class OfficersSetupMixin(SimpleOfficerSetupMixin):
@@ -78,62 +71,47 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
     def setUp(self):
         super().setUp()
         setup_auth_groups()
-        self.leader_user = G(User,
-                             username=LEADER_USERNAME,
-                             first_name="Dave",
-                             last_name="Stott",
-                             is_active=True,
-                             is_superuser=False,
-                             is_staff=True,
-                             email=LEADER_EMAIL,
-                             permissions=[])
-        self.leader_user.set_password(LEADER_PASSWORD)
-        self.leader_user.save()
+        self.leader_user = factories.make_officer(
+            username=LEADER_USERNAME,
+            first_name="Dave",
+            last_name="Stott",
+            email=LEADER_EMAIL,
+            password=LEADER_PASSWORD,
+        )
 
         # Associate with Person object
         self.default_leader.users.add(self.leader_user)
 
         self.booking_secretary_group = Group.objects.get(name=BOOKING_SECRETARY_GROUP_NAME)
-
-        self.booking_secretary = G(User,
-                                   username=BOOKING_SECRETARY_USERNAME,
-                                   is_active=True,
-                                   is_superuser=False,
-                                   is_staff=True,
-                                   groups=[self.booking_secretary_group])
-        self.booking_secretary.set_password(BOOKING_SECRETARY_PASSWORD)
-        self.booking_secretary.save()
+        self.booking_secretary = factories.make_officer(
+            username=BOOKING_SECRETARY_USERNAME,
+            groups=[self.booking_secretary_group],
+            password=BOOKING_SECRETARY_PASSWORD,
+        )
 
         self.secretary_group = Group.objects.get(name=SECRETARY_GROUP_NAME)
-
-        self.secretary = G(User,
-                           username=SECRETARY_USERNAME,
-                           is_active=True,
-                           is_superuser=False,
-                           is_staff=True,
-                           groups=[self.secretary_group])
-        self.secretary.set_password(SECRETARY_PASSWORD)
-        self.secretary.save()
+        self.secretary = factories.make_officer(
+            username=SECRETARY_USERNAME,
+            groups=[self.secretary_group],
+            password=SECRETARY_PASSWORD,
+        )
 
         self.dbs_officer_group = Group.objects.get(name=DBS_OFFICER_GROUP_NAME)
-
-        self.dbs_officer = G(User,
-                             username=DBSOFFICER_USERNAME,
-                             email=DBSOFFICER_EMAIL,
-                             is_active=True,
-                             is_superuser=False,
-                             is_staff=True,
-                             groups=[self.dbs_officer_group])
-        self.dbs_officer.set_password(DBSOFFICER_PASSWORD)
-        self.dbs_officer.save()
+        self.dbs_officer = factories.make_officer(
+            username=DBSOFFICER_USERNAME,
+            email=DBSOFFICER_EMAIL,
+            groups=[self.dbs_officer_group],
+            password=DBSOFFICER_PASSWORD,
+        )
 
         self.reference_contact_group = Group.objects.get(name=REFERENCE_CONTACT_GROUP_NAME)
-        self.safeguarding_coordinator = G(User,
-                                          username="safeguarder",
-                                          first_name="Safe",
-                                          last_name="Guarder",
-                                          contact_phone_number="01234 567890",
-                                          groups=[self.reference_contact_group])
+        self.safeguarding_coordinator = factories.make_officer(
+            username="safeguarder",
+            first_name="Safe",
+            last_name="Guarder",
+            contact_phone_number="01234 567890",
+            groups=[self.reference_contact_group],
+        )
 
 
 class ExtraOfficersSetupMixin(OfficersSetupMixin):
@@ -146,30 +124,19 @@ class ExtraOfficersSetupMixin(OfficersSetupMixin):
         super().setUp()
 
         self.officer1 = self.officer_user
-        self.officer2 = G(User,
-                          username="petersmith",
-                          first_name="Peter",
-                          last_name="Smith",
-                          is_active=True,
-                          is_superuser=False,
-                          is_staff=True,
-                          last_login="2008-04-23T14:49:25Z",
-                          password="sha1$1b3b9$a8a863f2f021582d972b6e50629c8f8588de7bba",
-                          email="petersmith@somewhere.com",
-                          date_joined="2008-03-21T16:48:46Z"
-                          )
+        self.officer2 = factories.make_officer(
+            username="petersmith",
+            first_name="Peter",
+            last_name="Smith",
+            email="petersmith@somewhere.com",
+        )
 
-        self.officer3 = G(User,
-                          username="fredjones",
-                          first_name="Fred",
-                          last_name="Jones",
-                          is_active=True,
-                          is_superuser=False,
-                          is_staff=True,
-                          last_login="2008-04-23T14:49:25Z",
-                          email="fredjones@somewhere.com",
-                          date_joined="2008-03-21T16:48:46Z"
-                          )
+        self.officer3 = factories.make_officer(
+            username="fredjones",
+            first_name="Fred",
+            last_name="Jones",
+            email="fredjones@somewhere.com",
+        )
 
         self.default_camp_1.invitations.create(officer=self.officer1)
         self.default_camp_1.invitations.create(officer=self.officer2)
@@ -232,7 +199,7 @@ class CreateApplicationMixin(object):
         )
         if overrides:
             fields.update(overrides)
-        application = G(Application, **fields)
+        application = Application.objects.create(**fields)
         for referee_number, ref_overrides in zip([1, 2], [referee1_overrides, referee2_overrides]):
             referee_fields = dict(
                 referee_number=referee_number,
@@ -318,18 +285,18 @@ class RequireApplicationsMixin(DefaultApplicationsMixin):
 class ReferenceHelperMixin(object):
 
     def create_complete_reference(self, referee):
-        return G(Reference,
-                 referee=referee,
-                 referee_name="Referee1 Name",
-                 how_long_known="A long time",
-                 capacity_known="Pastor",
-                 known_offences=False,
-                 capability_children="Wonderful",
-                 character="Almost sinless",
-                 concerns="Perhaps too good for camp",
-                 comments="",
-                 date_created=datetime(2000, 2, 20),
-                 )
+        return Reference.objects.create(
+            referee=referee,
+            referee_name="Referee1 Name",
+            how_long_known="A long time",
+            capacity_known="Pastor",
+            known_offences=False,
+            capability_children="Wonderful",
+            character="Almost sinless",
+            concerns="Perhaps too good for camp",
+            comments="",
+            date_created=datetime(2000, 2, 20),
+        )
 
 
 class CurrentCampsMixin(BasicSetupMixin):
@@ -352,3 +319,51 @@ class ReferenceSetupMixin(ReferenceHelperMixin, set_thisyear(2000), RequireAppli
         self.reference1_1 = self.create_complete_reference(self.application1.referees[0])
         self.application1.referees[1].log_request_made(None, timezone.now())
         self.application2.referees[1].log_request_made(None, timezone.now())
+
+
+class Factories:
+    def __init__(self):
+        self._user_counter = 0
+
+    def make_officer(
+            self,
+            username=None,
+            first_name='Joe',
+            last_name='Bloggs',
+            is_active=True,
+            is_superuser=False,
+            is_staff=True,
+            email=None,
+            password=None,
+            groups=None,
+            contact_phone_number='',
+    ):
+        username = username or self._make_auto_username()
+        email = email or self._make_auto_email(username)
+        user = User.objects.create(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            is_active=is_active,
+            is_superuser=is_superuser,
+            is_staff=is_staff,
+            email=email,
+            contact_phone_number=contact_phone_number,
+        )
+        if password:
+            user.set_password(password)
+            user.save()
+        if groups:
+            user.groups.set(groups)
+        return user
+
+    def _make_auto_username(self):
+        self._user_counter += 1
+        return f'auto_user_{self._user_counter}'
+
+    def _make_auto_email(self, username=None):
+        username = username or self._make_auto_username()
+        return f'{username}@example.com'
+
+
+factories = Factories()
