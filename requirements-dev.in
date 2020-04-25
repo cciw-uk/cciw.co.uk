@@ -3,7 +3,7 @@ django-debug-toolbar==1.7
 django-dynamic-fixture==2.0.0
 django-functest==1.0.3
 django-plainpasswordhasher==0.3
-flake8==3.3.0
+flake8==3.7.9
 hypothesis==3.9.0
 ipython==6.0.0
 lxml==4.4.0
