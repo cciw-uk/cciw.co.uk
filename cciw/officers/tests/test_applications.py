@@ -118,7 +118,7 @@ class PersonalApplicationView(RequireApplicationsMixin, WebTestBase):
                    '#format': 'rtf'})
         self.submit()
         self.assertEqual(self.last_response.content_type, 'text/rtf')
-        self.assertIn(b"\cell Joe Winston Bloggs", self.last_response.content)
+        self.assertIn(b"\\cell Joe Winston Bloggs", self.last_response.content)
 
     def test_view_html(self):
         self.officer_login(OFFICER)
@@ -140,7 +140,7 @@ class PersonalApplicationView(RequireApplicationsMixin, WebTestBase):
         self.assertIn("Joe Winston Bloggs", m.body)
         fname, fdata, ftype = m.attachments[0]
         self.assertEqual(fname, "Application_joebloggs_2001-03-01.rtf")
-        self.assertIn("\cell Joe Winston Bloggs", fdata)
+        self.assertIn("\\cell Joe Winston Bloggs", fdata)
         self.assertEqual(ftype, "text/rtf")
 
 

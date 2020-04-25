@@ -1032,8 +1032,8 @@ def run_ngrok(port=8002):
 
 NGROK_LOG_MATCHERS = {
     NGROK_1: {
-        'url': "\[client\] Tunnel established at ([^ ]*)",
-        'shutdown': "\[controller\] Shutting down",
+        'url': r"\[client\] Tunnel established at ([^ ]*)",
+        'shutdown': r"\[controller\] Shutting down",
     },
     NGROK_2: {
         'url': 'msg="decoded response".* URL:([^ ]*)',

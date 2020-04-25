@@ -1341,7 +1341,7 @@ def build_paypal_custom_field(account):
 
 
 def parse_paypal_custom_field(custom):
-    m = re.match("account:(\d+);", custom)
+    m = re.match(r"account:(\d+);", custom)
     if m is None:
         return None
 
