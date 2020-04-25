@@ -34,6 +34,7 @@ from cciw.bookings.utils import (addresses_for_mailing_list, camp_bookings_to_sp
                                  camp_sharable_transport_details_to_spreadsheet, payments_to_spreadsheet,
                                  year_bookings_to_spreadsheet)
 from cciw.cciwmain import common
+from cciw.cciwmain.common import CampId
 from cciw.cciwmain.decorators import json_response
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import get_protected_download, is_valid_email, python_to_json
@@ -325,7 +326,7 @@ def _thisyears_camp_for_leader(user):
 @staff_member_required
 @camp_admin_required
 @never_cache
-def manage_applications(request, camp_id=None):
+def manage_applications(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     c = {}
     c['finished_applications'] = applications_for_camp(camp).order_by('officer__first_name', 'officer__last_name')
@@ -334,7 +335,7 @@ def manage_applications(request, camp_id=None):
     return render(request, 'cciw/officers/manage_applications.html', c)
 
 
-def _get_camp_or_404(camp_id):
+def _get_camp_or_404(camp_id: CampId):
     year, slug = camp_id
     try:
         return Camp.objects.get(year=year, camp_name__slug=slug)
@@ -399,7 +400,7 @@ def add_previous_references(referee):
 @staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
 @never_cache
-def manage_references(request, camp_id=None):
+def manage_references(request, camp_id: CampId):
     c = {}
 
     # If referee_id is set, we just want to update part of the page.
@@ -494,7 +495,7 @@ def officer_history(request, officer_id=None):
 
 @staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
-def request_reference(request, camp_id=None):
+def request_reference(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     try:
         referee_id = int(request.GET.get('referee_id'))
@@ -598,7 +599,7 @@ def request_reference(request, camp_id=None):
 
 @staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
-def nag_by_officer(request, camp_id=None):
+def nag_by_officer(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     try:
         referee_id = int(request.GET.get('referee_id'))
@@ -725,7 +726,7 @@ def view_reference(request, reference_id=None):
 
 @staff_member_required
 @camp_admin_required
-def officer_list(request, camp_id=None):
+def officer_list(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
 
     c = {}
@@ -771,7 +772,7 @@ def officer_list(request, camp_id=None):
 @staff_member_required
 @camp_admin_required
 @json_response
-def remove_officer(request, camp_id=None):
+def remove_officer(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     officer_id = request.POST['officer_id']
     Invitation.objects.filter(camp=camp.id, officer=int(officer_id)).delete()
@@ -781,7 +782,7 @@ def remove_officer(request, camp_id=None):
 @staff_member_required
 @camp_admin_required
 @json_response
-def add_officers(request, camp_id=None):
+def add_officers(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     for officer_id in request.POST['officer_ids'].split(','):
         try:
@@ -917,7 +918,7 @@ def resend_email(request):
 
 @staff_member_required
 @camp_admin_required
-def export_officer_data(request, camp_id=None):
+def export_officer_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(officer_data_to_spreadsheet(camp, formatter),
@@ -926,7 +927,7 @@ def export_officer_data(request, camp_id=None):
 
 @staff_member_required
 @camp_admin_required
-def export_camper_data(request, camp_id=None):
+def export_camper_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(camp_bookings_to_spreadsheet(camp, formatter),
@@ -935,7 +936,7 @@ def export_camper_data(request, camp_id=None):
 
 @staff_member_required
 @booking_secretary_required
-def export_camper_data_for_year(request, year=None):
+def export_camper_data_for_year(request, year: int):
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(year_bookings_to_spreadsheet(year, formatter),
                                 "CCIW-bookings-%d" % year)
@@ -943,7 +944,7 @@ def export_camper_data_for_year(request, year=None):
 
 @staff_member_required
 @camp_admin_required
-def export_sharable_transport_details(request, camp_id=None):
+def export_sharable_transport_details(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(camp_sharable_transport_details_to_spreadsheet(camp, formatter),
@@ -952,13 +953,13 @@ def export_sharable_transport_details(request, camp_id=None):
 
 @staff_member_required
 @potential_camp_officer_required
-def officer_files(request, path):
+def officer_files(request, path: str):
     return get_protected_download("officers", path)
 
 
 @staff_member_required
 @camp_admin_required
-def officer_stats(request, year=None):
+def officer_stats(request, year: int):
     camps = list(Camp.objects.filter(year=year).order_by('camp_name__slug'))
     if len(camps) == 0:
         raise Http404
@@ -982,7 +983,7 @@ def officer_stats(request, year=None):
 
 @staff_member_required
 @camp_admin_required
-def officer_stats_trend(request, start_year=None, end_year=None):
+def officer_stats_trend(request, start_year: int, end_year: int):
     start_year = int(start_year)
     end_year = int(end_year)
     data = get_camp_officer_stats_trend(start_year, end_year)
@@ -1038,7 +1039,7 @@ def officer_stats_trend_download(request, start_year, end_year):
 @staff_member_required
 @dbs_officer_or_camp_admin_required
 @ensure_csrf_cookie
-def manage_dbss(request, year=None):
+def manage_dbss(request, year: int):
     # We need a lot of information. Try to get it in a few up-front queries
     camps = list(Camp.objects.filter(year=year).order_by('camp_name__slug'))
     if len(camps) == 0:
@@ -1447,7 +1448,7 @@ def officer_info(request):
 
 
 @booking_secretary_required
-def booking_secretary_reports(request, year=None):
+def booking_secretary_reports(request, year: int):
     from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, \
         Price
 
@@ -1559,7 +1560,7 @@ def _get_booking_progress_stats_from_params(start_year, end_year, camp_ids, **kw
 
 @staff_member_required
 @camp_admin_required
-def booking_progress_stats(request, start_year=None, end_year=None, camp_ids=None):
+def booking_progress_stats(request, start_year: int = None, end_year: int = None, camp_ids=None):
     start_year, end_year, camp_objs, data_dates, data_rel_days = (
         _get_booking_progress_stats_from_params(start_year, end_year, camp_ids, overlay_years=True)
     )
@@ -1581,7 +1582,7 @@ def booking_progress_stats(request, start_year=None, end_year=None, camp_ids=Non
 
 @staff_member_required
 @camp_admin_required
-def booking_progress_stats_download(request, start_year=None, end_year=None, camp_ids=None):
+def booking_progress_stats_download(request, start_year: int = None, end_year: int = None, camp_ids=None):
     start_year, end_year, camp_objs, data_dates, data_rel_days = (
         _get_booking_progress_stats_from_params(start_year, end_year, camp_ids, overlay_years=False)
     )
@@ -1634,7 +1635,7 @@ def _get_booking_ages_stats_from_params(start_year, end_year, camp_ids):
 
 @staff_member_required
 @camp_admin_required
-def booking_ages_stats(request, start_year=None, end_year=None, camp_ids=None, single_year=None):
+def booking_ages_stats(request, start_year: int = None, end_year: int = None, camp_ids=None, single_year=None):
     if single_year is not None:
         camps = Camp.objects.filter(year=int(single_year))
         return HttpResponseRedirect(reverse('cciw-officers-booking_ages_stats_custom',
@@ -1681,7 +1682,7 @@ def booking_ages_stats(request, start_year=None, end_year=None, camp_ids=None, s
 
 @staff_member_required
 @camp_admin_required
-def booking_ages_stats_download(request, start_year=None, end_year=None, camp_ids=None):
+def booking_ages_stats_download(request, start_year: int = None, end_year: int = None, camp_ids=None):
     start_year, end_year, camps, data = (
         _get_booking_ages_stats_from_params(start_year, end_year, camp_ids)
     )

@@ -4,6 +4,7 @@ Utility functions and base classes that are common to all views etc.
 import re
 import sys
 import traceback
+import typing
 from datetime import date, timedelta
 from functools import wraps
 
@@ -15,6 +16,11 @@ from django.utils import timezone
 from django.utils.html import format_html_join
 
 from cciw.cciwmain.utils import python_to_json
+
+
+class CampId(typing.NamedTuple):
+    year: int
+    slug: str
 
 
 def ajax_form_validate(form_class):

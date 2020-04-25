@@ -13,8 +13,8 @@ handler404 = 'cciw.cciwmain.views.handler404'
 
 register_converter(converters.FourDigitYearConverter, 'yyyy')
 register_converter(converters.TwoDigitMonthConverter, 'mm')
-register_converter(converters.CampId, 'campid')
-register_converter(converters.CampIdList, 'campidlist')
+register_converter(converters.CampIdConverter, 'campid')
+register_converter(converters.CampIdListConverter, 'campidlist')
 register_converter(converters.OptStr, 'optstr')
 
 
