@@ -36,6 +36,7 @@ class BasicSetupMixin(object):
             menu_link=None,
             html="<p>Booking Secretary,<br/>\r\n      James Bloggs,<br/>\r\n      12 Main Street",
             page_title="")
+        HtmlChunk.objects.create(name="bookingform_post_to", menu_link=None)
 
         self.default_site = Site.objects.create(
             info="Lots of info about this camp site, including: <address>Llys Andreas Camp Site, Wales</address>",

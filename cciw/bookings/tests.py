@@ -7,13 +7,11 @@ from unittest import TestCase, mock
 import vcr
 import xlrd
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.core import mail, signing
 from django.db import models
 from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils import timezone
-from django_dynamic_fixture import G
 from django_functest import FuncBaseMixin
 from hypothesis import example, given
 from hypothesis import strategies as st
@@ -43,7 +41,53 @@ from cciw.utils.tests.base import AtomicChecksMixin, TestBase, disable_logging
 from cciw.utils.tests.db import refresh
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
-User = get_user_model()
+from cciw.accounts.models import User
+
+
+class Factories:
+    def create_booking(
+            self,
+            camp,
+            sex='m',
+            state=BOOKING_INFO_COMPLETE,
+            account=None,
+    ):
+        account = account or self.create_booking_account()
+        return Booking.objects.create(
+            camp=camp,
+            account=account,
+            state=state,
+            sex=sex,
+            date_of_birth=date(date.today().year - 15, 1, 1),
+            price_type=PRICE_FULL,
+            amount_due=100,
+        )
+
+    def create_booking_account(self):
+        return BookingAccount.objects.create(name='A Booker')
+
+    def create_manual_payment(
+            self,
+            account=None,
+    ):
+        return ManualPayment.objects.create(
+            account=account or self.create_booking_account(),
+            amount=1,
+            payment_type=MANUAL_PAYMENT_CHEQUE,
+        )
+
+    def create_refund_payment(
+            self,
+            account=None,
+    ):
+        return RefundPayment.objects.create(
+            account=account or self.create_booking_account(),
+            amount=1,
+            payment_type=MANUAL_PAYMENT_CHEQUE,
+        )
+
+
+factories = Factories()
 
 
 class IpnMock(object):
@@ -372,8 +416,8 @@ class BookingBaseMixin(AtomicChecksMixin):
 
     def setUp(self):
         super().setUp()
-        G(HtmlChunk, name="bookingform_post_to", menu_link=None)
-        G(HtmlChunk, name="booking_secretary_address", menu_link=None)
+        HtmlChunk.objects.get_or_create(name="bookingform_post_to", menu_link=None)
+        HtmlChunk.objects.get_or_create(name="booking_secretary_address", menu_link=None)
 
 
 class CreateIPNMixin(object):
@@ -1421,7 +1465,7 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
 
     def test_no_places_left(self):
         for i in range(0, self.camp.max_campers):
-            G(Booking, sex='m', camp=self.camp, state=BOOKING_BOOKED)
+            factories.create_booking(camp=self.camp, state=BOOKING_BOOKED)
 
         self.create_booking({'sex': 'm'})
         self.get_url(self.urlname)
@@ -1433,7 +1477,7 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
 
     def test_no_male_places_left(self):
         for i in range(0, self.camp.max_male_campers):
-            G(Booking, sex='m', camp=self.camp, state=BOOKING_BOOKED)
+            factories.create_booking(camp=self.camp, sex='m', state=BOOKING_BOOKED)
 
         self.create_booking({'sex': 'm'})
         self.get_url(self.urlname)
@@ -1449,7 +1493,7 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
 
     def test_no_female_places_left(self):
         for i in range(0, self.camp.max_female_campers):
-            G(Booking, sex='f', camp=self.camp, state=BOOKING_BOOKED)
+            factories.create_booking(camp=self.camp, sex='f', state=BOOKING_BOOKED)
 
         self.create_booking({'sex': 'f'})
         self.get_url(self.urlname)
@@ -1458,7 +1502,7 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
 
     def test_not_enough_places_left(self):
         for i in range(0, self.camp.max_campers - 1):
-            G(Booking, sex='m', camp=self.camp, state=BOOKING_BOOKED)
+            factories.create_booking(camp=self.camp, sex='m', state=BOOKING_BOOKED)
 
         self.create_booking({'sex': 'f'})
         self.create_booking({'sex': 'f'})
@@ -1468,7 +1512,7 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
 
     def test_not_enough_male_places_left(self):
         for i in range(0, self.camp.max_male_campers - 1):
-            G(Booking, sex='m', camp=self.camp, state=BOOKING_BOOKED)
+            factories.create_booking(camp=self.camp, sex='m', state=BOOKING_BOOKED)
         self.camp.bookings.update(state=BOOKING_BOOKED)
 
         self.create_booking({'sex': 'm'})
@@ -1479,7 +1523,7 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
 
     def test_not_enough_female_places_left(self):
         for i in range(0, self.camp.max_female_campers - 1):
-            G(Booking, sex='f', camp=self.camp, state=BOOKING_BOOKED)
+            factories.create_booking(camp=self.camp, sex='f', state=BOOKING_BOOKED)
         self.camp.bookings.update(state=BOOKING_BOOKED)
 
         self.create_booking({'sex': 'f'})
@@ -2688,15 +2732,15 @@ class TestBookingModel(CreateBookingModelMixin, TestBase):
 class TestPaymentModels(TestBase):
 
     def test_payment_source_save_bad(self):
-        manual = G(ManualPayment)
-        refund = G(RefundPayment)
+        manual = factories.create_manual_payment()
+        refund = factories.create_refund_payment()
         self.assertRaises(AssertionError,
                           lambda: PaymentSource.objects.create(
                               manual_payment=manual,
                               refund_payment=refund))
 
     def test_payment_source_save_good(self):
-        manual = G(ManualPayment)
+        manual = factories.create_manual_payment()
         PaymentSource.objects.all().delete()
         p = PaymentSource.objects.create(manual_payment=manual)
         self.assertNotEqual(p.id, None)
