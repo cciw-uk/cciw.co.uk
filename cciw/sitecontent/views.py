@@ -1,5 +1,5 @@
 from django.http import Http404
-from django.shortcuts import render
+from django.template.response import TemplateResponse
 
 from cciw.sitecontent.models import MenuLink
 
@@ -20,9 +20,10 @@ def find(request, path, template_name='cciw/chunk_page.html'):
     except IndexError:
         raise Http404()
 
-    c = dict(title=chunk.page_title)
-    c['chunk_html'] = chunk.render(request)
-    return render(request, template_name, c)
+    return TemplateResponse(request, template_name, {
+        'title': chunk.page_title,
+        'chunk_html': chunk.render(request),
+    })
 
 
 def home(request):

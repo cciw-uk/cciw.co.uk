@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core import mail
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import wordwrap
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -103,13 +103,12 @@ On {timestamp}, {name} <{email}> wrote:
            timestamp=msg.timestamp.strftime("%Y-%m-%d %H:%M"),
            quoted_message_body=quoted_message_body,
            email=msg.email)
-    return render(request, 'cciw/officers/view_contact_us_message.html',
-                  {
-                      'message': msg,
-                      'reply_template': reply_template,
-                      'subject': '[CCIW] Contact form reply - message #{0}'.format(msg.id),
-                      'is_popup': True,
-                  })
+    return TemplateResponse(request, 'cciw/officers/view_contact_us_message.html', {
+        'message': msg,
+        'reply_template': reply_template,
+        'subject': '[CCIW] Contact form reply - message #{0}'.format(msg.id),
+        'is_popup': True,
+    })
 
 
 def make_contact_us_view_url(msg):
