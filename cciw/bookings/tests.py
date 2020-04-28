@@ -18,6 +18,7 @@ from hypothesis import strategies as st
 from hypothesis.extra.django import models as djst
 from paypal.standard.ipn.models import PayPalIPN
 
+from cciw.accounts.models import User
 from cciw.bookings.email import EmailVerifyTokenGenerator, VerifyExpired, VerifyFailed, send_payment_reminder_emails
 from cciw.bookings.hooks import paypal_payment_received
 from cciw.bookings.mailchimp import get_status
@@ -40,8 +41,6 @@ from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.base import AtomicChecksMixin, TestBase, disable_logging
 from cciw.utils.tests.db import refresh
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
-
-from cciw.accounts.models import User
 
 
 class Factories:

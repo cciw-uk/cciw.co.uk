@@ -4,11 +4,10 @@ from django.contrib.auth.models import Group
 from django.utils import timezone
 
 from cciw.accounts.models import (BOOKING_SECRETARY_GROUP_NAME, DBS_OFFICER_GROUP_NAME, REFERENCE_CONTACT_GROUP_NAME,
-                                  SECRETARY_GROUP_NAME, setup_auth_groups, User)
+                                  SECRETARY_GROUP_NAME, User, setup_auth_groups)
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.officers.models import Application, QualificationType, Reference
-
 
 OFFICER_USERNAME = 'joebloggs'
 OFFICER_PASSWORD = 'test_normaluser_password'
