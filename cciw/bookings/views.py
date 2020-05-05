@@ -517,54 +517,20 @@ def make_state_token(bookings):
 def list_bookings(request):
     year = common.get_thisyear()
     now = timezone.now()
-    bookings = request.booking_account.bookings
+    bookings = request.booking_account.bookings.for_year(year).order_by('id')
     # NB - use lists here, not querysets, so that both state_token and book_now
     # functionality apply against same set of bookings.
-    basket_bookings = list(bookings.for_year(year).in_basket().order_by('id'))
-    shelf_bookings = list(bookings.for_year(year).on_shelf().order_by('id'))
+    basket_bookings = list(bookings.in_basket())
+    shelf_bookings = list(bookings.on_shelf())
 
     if request.method == "POST":
         if 'add_another' in request.POST:
             return HttpResponseRedirect(reverse('cciw-bookings-add_place'))
 
         places = basket_bookings + shelf_bookings
-
-        def shelve(place):
-            place.shelved = True
-            place.save()
-            messages.info(request, 'Place for "%s" moved to shelf' % place.name)
-
-        def unshelve(place):
-            place.shelved = False
-            place.save()
-            messages.info(request, 'Place for "%s" moved to basket' % place.name)
-
-        def delete(place):
-            messages.info(request, 'Place for "%s" deleted' % place.name)
-            place.delete()
-
-        def edit(place):
-            return HttpResponseRedirect(reverse('cciw-bookings-edit_place',
-                                                kwargs={'booking_id': str(place.id)}))
-
-        for k in request.POST.keys():
-            # handle shelve and unshelve buttons
-            for r, action in [(r'shelve_(\d+)', shelve),
-                              (r'unshelve_(\d+)', unshelve),
-                              (r'delete_(\d+)', delete),
-                              (r'edit_(\d+)', edit),
-                              ]:
-                m = re.match(r, k)
-                if m is not None:
-                    with contextlib.suppress(
-                            ValueError,  # converting to string
-                            IndexError,  # not in list
-                    ):
-                        b_id = int(m.groups()[0])
-                        place = [p for p in places if p.id == b_id][0]
-                        retval = action(place)
-                        if retval is not None:
-                            return retval
+        response = _handle_list_booking_actions(request, places)
+        if response:
+            return response
 
         if 'book_now' in request.POST:
             state_token = request.POST.get('state_token', '')
@@ -634,6 +600,47 @@ def list_bookings(request):
         'grand_total': grand_total,
         'discounts_available': discounts.items(),
     })
+
+
+def _handle_list_booking_actions(request, places):
+
+    def shelve(place):
+        place.shelved = True
+        place.save()
+        messages.info(request, 'Place for "%s" moved to shelf' % place.name)
+
+    def unshelve(place):
+        place.shelved = False
+        place.save()
+        messages.info(request, 'Place for "%s" moved to basket' % place.name)
+
+    def delete(place):
+        messages.info(request, 'Place for "%s" deleted' % place.name)
+        place.delete()
+
+    def edit(place):
+        return HttpResponseRedirect(reverse('cciw-bookings-edit_place',
+                                            kwargs={'booking_id': str(place.id)}))
+
+    for k in request.POST.keys():
+        for r, action in [(r'shelve_(\d+)', shelve),
+                          (r'unshelve_(\d+)', unshelve),
+                          (r'delete_(\d+)', delete),
+                          (r'edit_(\d+)', edit),
+                          ]:
+            m = re.match(r, k)
+            if m is not None:
+                place = None
+                with contextlib.suppress(
+                        ValueError,  # converting to string
+                        IndexError,  # not in list
+                ):
+                    b_id = int(m.groups()[0])
+                    place = [p for p in places if p.id == b_id][0]
+                if place is not None:
+                    retval = action(place)
+                    if retval is not None:
+                        return retval
 
 
 class CustomAmountPayPalForm(PayPalPaymentsForm):
