@@ -1336,12 +1336,8 @@ def popup_email_view(request, context, template_name=None, messageform_info=None
 
 @staff_member_required
 @dbs_officer_required
-def dbs_consent_alert_leaders(request):
-    try:
-        app_id = int(request.GET.get('application_id'))
-    except (ValueError, TypeError):
-        raise Http404
-    app = get_object_or_404(Application.objects.filter(id=app_id))
+def dbs_consent_alert_leaders(request, application_id: int):
+    app = get_object_or_404(Application.objects.filter(id=application_id))
     officer = officer = app.officer
     camps = camps_for_application(app)
     context = {

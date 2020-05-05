@@ -118,11 +118,10 @@
                   <b>Officer does not consent to DBS check</b>
                 </td>
                 <td>
-                  <form action="{% url 'cciw-officers-dbs_consent_alert_leaders' %}"
+                  <form action="{% url 'cciw-officers-dbs_consent_alert_leaders' application_id=dbs_info.application_id %}"
                         method="GET"
                         class="alert-leaders"
                         >
-                    <input type="hidden" name="application_id" value="{{ dbs_info.application_id }}">
                     {% return_to_here %}
                     <button id="id_alert_leaders_{{ officer.id }}">Alert leaders</button>
                   </form>

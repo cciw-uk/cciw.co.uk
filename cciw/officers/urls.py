@@ -35,7 +35,7 @@ urlpatterns = [
     path('leaders/dbss/<yyyy:year>/', views.manage_dbss, name="cciw-officers-manage_dbss"),
     path('leaders/mark-dbs-sent/', views.mark_dbs_sent, name="cciw-officers-mark_dbs_sent"),
     path('leaders/undo-mark-dbs-sent/', views.undo_mark_dbs_sent, name="cciw-officers-undo_mark_dbs_sent"),
-    path('leaders/dbs-consent-alert-leaders/', views.dbs_consent_alert_leaders, name="cciw-officers-dbs_consent_alert_leaders"),
+    path('leaders/dbs-consent-alert-leaders/<int:application_id>/', views.dbs_consent_alert_leaders, name="cciw-officers-dbs_consent_alert_leaders"),
     path('leaders/request-dbs-form-action/', views.request_dbs_form_action, name="cciw-officers-request_dbs_form_action"),
     path('leaders/dbs-checked-online/', views.dbs_checked_online, name="cciw-officers-dbs_checked_online"),
 
