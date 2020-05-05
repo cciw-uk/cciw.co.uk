@@ -237,10 +237,7 @@ def get_application(request):
     except (KeyError, ValueError):
         raise Http404
 
-    try:
-        app = request.user.applications.get(id=application_id)
-    except Application.DoesNotExist:
-        raise Http404
+    app = get_object_or_404(request.user.applications, id=application_id)
 
     format = request.POST.get('format', '')
     if format == 'html':
