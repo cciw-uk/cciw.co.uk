@@ -1368,12 +1368,8 @@ def dbs_consent_alert_leaders(request, application_id: int):
 
 @staff_member_required
 @dbs_officer_required
-def request_dbs_form_action(request):
-    try:
-        app_id = int(request.GET.get('application_id'))
-    except (ValueError, TypeError):
-        raise Http404
-    app = get_object_or_404(Application.objects.filter(id=app_id))
+def request_dbs_form_action(request, application_id: int):
+    app = get_object_or_404(Application.objects.filter(id=application_id))
     external_dbs_officer = settings.EXTERNAL_DBS_OFFICER
     officer = app.officer
     context = {

@@ -56,11 +56,10 @@
                 <td colspan="2">
                 </td>
                 <td>
-                  <form action="{% url 'cciw-officers-request_dbs_form_action' %}"
+                  <form action="{% url 'cciw-officers-request_dbs_form_action' application_id=dbs_info.application_id %}"
                         method="GET"
                         class="request-dbs-form-action"
                         >
-                    <input type="hidden" name="application_id" value="{{ dbs_info.application_id }}">
                     {% return_to_here %}
                     <button id="id_request_form_to_be_sent_{{ officer.id }}">Ask {{ external_dbs_officer.organisation_short }} to send DBS...</button>
                   </form>
