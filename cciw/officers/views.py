@@ -292,11 +292,8 @@ def view_application_redirect(request):
 
 @staff_member_required
 @cache_control(max_age=3600)
-def view_application(request, application_id=None):
-    try:
-        application = Application.objects.get(id=int(application_id))
-    except Application.DoesNotExist:
-        raise Http404
+def view_application(request, application_id: int):
+    application = get_object_or_404(Application, id=application_id)
 
     if application.officer_id != request.user.id and \
             not request.user.can_manage_application_forms:
