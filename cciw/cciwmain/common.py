@@ -137,12 +137,3 @@ def standard_processor(request):
 
 def get_current_domain():
     return Site.objects.get_current().domain
-
-
-def exception_notify_admins(subject):
-    """
-    Send admins notification of an exception that occurred
-    """
-    exc_info = sys.exc_info()
-    message = '\n'.join(traceback.format_exception(*exc_info))
-    mail_admins(subject, message, fail_silently=True)
