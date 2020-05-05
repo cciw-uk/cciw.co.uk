@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.html import format_html
@@ -13,11 +14,9 @@ def index(request, year=None):
     """
     Displays a list of all camps, or all camps in a given year.
     """
-    all_camps = Camp.objects.all()
-    if year is None:
-        camps = all_camps.order_by('-year', 'start_date')
-    else:
-        camps = all_camps.filter(year=year).order_by('-year', 'start_date')
+    camps = Camp.objects.order_by('-year', 'start_date')
+    if year is not None:
+        camps = camps.filter(year=year)
         if len(camps) == 0:
             raise Http404
 
@@ -33,10 +32,7 @@ def detail(request, year, slug):
     """
     from cciw.bookings.models import is_booking_open
 
-    try:
-        camp = Camp.objects.get(year=int(year), camp_name__slug=slug)
-    except Camp.DoesNotExist:
-        raise Http404
+    camp = get_object_or_404(Camp.objects.all(), year=year, camp_name__slug=slug)
 
     return TemplateResponse(request, 'cciw/camps/detail.html', {
         'camp': camp,
