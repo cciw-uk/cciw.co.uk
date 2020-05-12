@@ -6,8 +6,9 @@ from django.urls import reverse
 from django.utils.html import escape, escapejs, format_html
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
-from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO_COMPLETE, AccountTransferPayment,
-                                  Booking, BookingAccount, ManualPayment, Payment, Price, RefundPayment)
+from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO_COMPLETE, BOOKING_STATES,
+                                  AccountTransferPayment, Booking, BookingAccount, ManualPayment, Payment, Price,
+                                  RefundPayment)
 from cciw.cciwmain import common
 from cciw.utils.admin import RerouteResponseAdminMixin
 
@@ -235,6 +236,17 @@ class BookingAdminForm(forms.ModelForm):
         }
 
 
+def make_change_state_action(state, display_name):
+    def change_state(modeladmin, request, queryset):
+        queryset.update(state=state)
+        messages.info(request, f"Changed {queryset.count()} bookings to '{display_name}'")
+
+    change_state.short_description = f"Change to '{display_name}'"
+    change_state.__name__ = f"change_state_{state}"
+
+    return change_state
+
+
 class BookingAdmin(admin.ModelAdmin):
     def camp(obj):
         return obj.camp.slug_name_with_year
@@ -339,6 +351,11 @@ class BookingAdmin(admin.ModelAdmin):
           ['manual_payment_amount',
            'manual_payment_payment_type']}),
     )
+
+    actions = [
+        make_change_state_action(state, display_name)
+        for state, display_name in BOOKING_STATES
+    ]
 
     def get_queryset(self, *args, **kwargs):
         return super().get_queryset(*args, **kwargs).select_related('camp__camp_name')
