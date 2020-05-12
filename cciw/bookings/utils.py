@@ -22,7 +22,8 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
                ('Date of birth', lambda b: b.date_of_birth),
                ('Age on camp', lambda b: b.age_on_camp()),
                ('Address', lambda b: b.get_address_display()),
-               ('Email', lambda b: b.get_contact_email()),
+               ('Email (camper)', lambda b: b.email),
+               ('Email (account)', lambda b: b.account.email if b.account_id else None),
                ('Church', lambda b: b.church),
                ('Dietary requirements', lambda b: b.dietary_requirements),
                ('Booking date', lambda b: b.booked_at),
@@ -135,7 +136,8 @@ def year_bookings_to_spreadsheet(year, spreadsheet):
         ('Sex', lambda b: b.get_sex_display()),
         ('DOB', lambda b: b.date_of_birth),
         ('Age', lambda b: b.age_on_camp()),
-        ('Email', lambda b: b.get_contact_email()),
+        ('Email (camper)', lambda b: b.email),
+        ('Email (account)', lambda b: b.account.email if b.account_id else None),
         ('Date created', lambda b: b.created),
     ]
 
