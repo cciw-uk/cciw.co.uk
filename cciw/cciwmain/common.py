@@ -2,15 +2,12 @@
 Utility functions and base classes that are common to all views etc.
 """
 import re
-import sys
-import traceback
 import typing
 from datetime import date, timedelta
 from functools import wraps
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.mail import mail_admins
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.html import format_html_join
