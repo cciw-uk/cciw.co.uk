@@ -329,9 +329,8 @@ def manage_applications(request, camp_id: CampId):
 
 
 def _get_camp_or_404(camp_id: CampId):
-    year, slug = camp_id
     try:
-        return Camp.objects.get(year=year, camp_name__slug=slug)
+        return Camp.objects.get(year=camp_id.year, camp_name__slug=camp_id.slug)
     except (Camp.DoesNotExist, ValueError):
         raise Http404
 
