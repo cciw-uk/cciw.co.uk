@@ -667,6 +667,18 @@ class Booking(models.Model):
         return "%s %s" % (self.first_name, self.last_name)
 
     # Main business rules here
+    def save_for_account(self, booking_account):
+        """
+        Saves the booking for an account that is creating/editing online
+        """
+        self.account = booking_account
+        self.early_bird_discount = False  # We only allow this to be True when booking
+        self.auto_set_amount_due()
+        self.state = BOOKING_INFO_COMPLETE
+        if self.id is None:
+            self.created_online = True
+        self.save()
+
     @property
     def is_booked(self):
         return self.state == BOOKING_BOOKED

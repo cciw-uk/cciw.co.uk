@@ -261,24 +261,16 @@ def add_or_edit_place(request, context, booking_id=None):
         if request.method == "POST" and not booking.is_user_editable():
             # Redirect to same view, but GET
             return HttpResponseRedirect(request.get_full_path())
-        new_booking = False
     else:
         # Add
         booking = None
-        new_booking = True
 
     if request.method == "POST":
         form = form_class(request.POST, instance=booking)
         if form.is_valid():
-            form.instance.account = request.booking_account
-            form.instance.early_bird_discount = False  # We only allow this to be True when booking
-            form.instance.auto_set_amount_due()
-            form.instance.state = BOOKING_INFO_COMPLETE
-            if new_booking:
-                form.instance.created_online = True
-            form.save()
-
-            messages.info(request, 'Details for "%s" were saved successfully' % form.instance.name)
+            booking: Booking = form.instance
+            booking.save_for_account(request.booking_account)
+            messages.info(request, 'Details for "%s" were saved successfully' % booking.name)
             return HttpResponseRedirect(reverse('cciw-bookings-list_bookings'))
     else:
         form = form_class(instance=booking)
