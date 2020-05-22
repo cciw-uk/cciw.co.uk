@@ -137,10 +137,12 @@ class BookingAccountManagerBase(models.Manager):
         )
         retval = []
         for account in potentials:
-            balance_due = account.get_balance(confirmed_only=True,
-                                              allow_deposits=True)
-            if balance_due > 0:
-                account.balance_due = balance_due
+            confirmed_balance_due = account.get_balance(
+                confirmed_only=True,
+                allow_deposits=True,
+            )
+            if confirmed_balance_due > 0:
+                account.confirmed_balance_due = confirmed_balance_due
                 retval.append(account)
         return retval
 
@@ -279,8 +281,14 @@ class BookingAccount(models.Model):
 
         return total - self.total_received
 
-    def admin_balance(self):
+    def get_balance_full(self):
         return self.get_balance(confirmed_only=False, allow_deposits=False)
+
+    def get_balance_due_now(self):
+        return self.get_balance(confirmed_only=False, allow_deposits=True)
+
+    def admin_balance(self):
+        return self.get_balance_full()
     admin_balance.short_description = 'balance'
     admin_balance = property(admin_balance)
 

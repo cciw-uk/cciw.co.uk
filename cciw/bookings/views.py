@@ -675,8 +675,8 @@ def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amou
 @booking_account_required
 def pay(request):
     acc = request.booking_account
-    balance_due = acc.get_balance(confirmed_only=False, allow_deposits=True)
-    balance_full = acc.get_balance(confirmed_only=False, allow_deposits=False)
+    balance_due_now = acc.get_balance_due_now()
+    balance_full = acc.get_balance_full()
 
     # This view should be accessible even if prices for the current year are
     # not defined.
@@ -693,17 +693,17 @@ def pay(request):
         'stage': BookingStage.PAY,
         'title': 'Booking - pay',
         'unconfirmed_places': acc.bookings.unconfirmed(),
-        'balance_due': balance_due,
+        'balance_due_now': balance_due_now,
         'balance_full': balance_full,
         'account_id': acc.id,
         'price_deposit': price_deposit,
         'pending_payment_total': acc.get_pending_payment_total(),
-        'paypal_form': mk_paypal_form(acc, balance_due, protocol, domain),
+        'paypal_form': mk_paypal_form(acc, balance_due_now, protocol, domain),
         'paypal_form_full': mk_paypal_form(acc, balance_full, protocol, domain),
         'paypal_form_custom': mk_paypal_form(acc,
-                                             max(0, balance_due),
+                                             max(0, balance_due_now),
                                              protocol, domain,
-                                             min_amount=max(balance_due, 0),
+                                             min_amount=max(balance_due_now, 0),
                                              max_amount=balance_full)
     })
 
@@ -741,8 +741,8 @@ def account_overview(request):
         'unconfirmed_places': bookings.unconfirmed(),
         'cancelled_places': bookings.cancelled(),
         'basket_or_shelf': (bookings.in_basket() | bookings.on_shelf()),
-        'balance_due': account.get_balance(confirmed_only=False, allow_deposits=True),
-        'balance_full': account.get_balance(confirmed_only=False, allow_deposits=False),
+        'balance_due_now': account.get_balance_due_now(),
+        'balance_full': account.get_balance_full(),
         'pending_payment_total': account.get_pending_payment_total(),
     })
 
