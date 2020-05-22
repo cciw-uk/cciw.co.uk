@@ -558,13 +558,6 @@ class BookingManagerBase(models.Manager):
     def get_queryset(self):
         return super(BookingManagerBase, self).get_queryset().select_related('camp', 'account')
 
-    def most_recent_booking_year(self):
-        b = self.get_queryset().booked().order_by('-camp__year').select_related('camp').first()
-        if b:
-            return b.camp.year
-        else:
-            return None
-
 
 BookingManager = BookingManagerBase.from_queryset(BookingQuerySet)
 
@@ -1434,6 +1427,14 @@ def process_all_payments():
                     .select_for_update()
                     .filter(processed__isnull=True).order_by('created')):
         process_one_payment(payment)
+
+
+def most_recent_booking_year():
+    booking = Booking.objects.booked().order_by('-camp__year').select_related('camp').first()
+    if booking:
+        return booking.camp.year
+    else:
+        return None
 
 
 from . import hooks  # NOQA isort:skip

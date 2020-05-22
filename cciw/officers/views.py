@@ -28,7 +28,7 @@ from django.utils import timezone
 from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-from cciw.bookings.models import Booking
+from cciw.bookings.models import most_recent_booking_year
 from cciw.bookings.stats import get_booking_ages_stats, get_booking_progress_stats, get_booking_summary_stats
 from cciw.bookings.utils import (addresses_for_mailing_list, camp_bookings_to_spreadsheet,
                                  camp_sharable_transport_details_to_spreadsheet, payments_to_spreadsheet,
@@ -145,10 +145,10 @@ def index(request):
         c['show_booking_secretary_links'] = True
     if user.is_committee_member or user.is_booking_secretary:
         c['show_secretary_and_committee_links'] = True
-        most_recent_booking_year = Booking.objects.most_recent_booking_year()
-        if most_recent_booking_year is not None:
-            c['booking_stats_end_year'] = most_recent_booking_year
-            c['booking_stats_start_year'] = most_recent_booking_year - 3
+        booking_year = most_recent_booking_year()
+        if booking_year is not None:
+            c['booking_stats_end_year'] = booking_year
+            c['booking_stats_start_year'] = booking_year - 3
 
     return TemplateResponse(request, 'cciw/officers/index.html', c)
 
