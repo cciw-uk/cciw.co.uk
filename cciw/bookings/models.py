@@ -511,10 +511,7 @@ class BookingQuerySet(models.QuerySet):
 
             return retval
 
-    def only_deposit_required(self, confirmed_only=None, today=None, from_list=None):
-        if confirmed_only is None:
-            raise ValueError("confirmed_only must be True or False")
-
+    def only_deposit_required(self, *, confirmed_only, today=None, from_list=None):
         if today is None:
             today = date.today()
         cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
