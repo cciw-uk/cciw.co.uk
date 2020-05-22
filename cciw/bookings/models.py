@@ -377,17 +377,17 @@ class BookingAccount(models.Model):
                                   .order_by('booking_expires')
                                   .prefetch_related('camp')
                                   )
-        i = 0
         confirmed_bookings = []
-        while pot > 0 and i < len(candidate_bookings):
-            b = candidate_bookings[i]
-            amount = b.amount_now_due()
+        for booking in candidate_bookings:
+            if pot <= 0:
+                break
+            amount = booking.amount_now_due()
             if amount <= pot:
-                b.confirm()
-                b.save()
-                confirmed_bookings.append(b)
+                booking.confirm()
+                booking.save()
+                confirmed_bookings.append(booking)
                 pot -= amount
-            i += 1
+
         if confirmed_bookings:
             places_confirmed.send(self, bookings=confirmed_bookings, payment_received=True)
 
