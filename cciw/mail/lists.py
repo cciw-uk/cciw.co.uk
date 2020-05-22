@@ -406,17 +406,16 @@ def handle_mail(data, debug=False):
                 # Don't bother sending bounce emails to addresses
                 # we've never seen before. This is highly likely to be spam.
                 continue
-            send_mail(f"[CCIW] Access to mailing list {address} denied",
-                      "You attempted to email the list {0}\n"
-                      "with an email titled \"{1}\".\n"
-                      "\n"
-                      "However, you do not have permission to email this list, \n"
-                      "or the list does not exist. Sorry!".format(
-                          address,
-                          mail['Subject']),
-                      settings.DEFAULT_FROM_EMAIL,
-                      [from_email],
-                      fail_silently=True)
+            send_mail(
+                f"[CCIW] Access to mailing list {address} denied",
+                f"You attempted to email the list {address}\n"
+                f"with an email titled \"{mail['Subject']}\".\n"
+                f"\n"
+                f"However, you do not have permission to email this list, \n"
+                f"or the list does not exist. Sorry!",
+                settings.DEFAULT_FROM_EMAIL,
+                [from_email],
+                fail_silently=True)
         except NoSuchList:
             # addresses can contain anything else on the 'to' line, which
             # can even included valid @cciw.co.uk that we don't know about

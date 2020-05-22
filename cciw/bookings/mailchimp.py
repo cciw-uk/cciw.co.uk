@@ -24,9 +24,8 @@ def _update(booking_account, current_status, desired_status):
                                      "status": desired_status,
                                  })
     else:
-        id = email_to_mailchimp_id(booking_account.email)
-        return mailchimp_request('PATCH', '/lists/{0}/members/{1}'.format(settings.MAILCHIMP_NEWSLETTER_LIST_ID,
-                                                                          id),
+        mailchimp_id = email_to_mailchimp_id(booking_account.email)
+        return mailchimp_request('PATCH', f'/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/{mailchimp_id}',
                                  json={
                                      "status": desired_status,
                                  })
