@@ -36,11 +36,8 @@ def email_to_mailchimp_id(email):
 
 
 def get_status(booking_account):
-    id = email_to_mailchimp_id(booking_account.email)
-    response = mailchimp_request_unchecked('GET',
-                                           '/lists/{0}/members/{1}'.format(
-                                               settings.MAILCHIMP_NEWSLETTER_LIST_ID,
-                                               id))
+    mailchimp_id = email_to_mailchimp_id(booking_account.email)
+    response = mailchimp_request_unchecked('GET', f'/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/{mailchimp_id}')
     if response.status_code == 404:
         return None
 
