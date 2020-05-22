@@ -158,29 +158,21 @@ def index(request):
 def leaders_index(request):
     """Displays a list of links for actions for leaders"""
     user = request.user
-    ctx = {}
     thisyear = common.get_thisyear()
-
     show_all = 'show_all' in request.GET
-    base_qs = Camp.objects.all().include_other_years_info()
-    if show_all:
-        camps = base_qs
-    else:
-        camps = base_qs.filter(id__in=[c.id for c in user.camps_as_admin_or_leader])
-
-    camps = list(camps)
-
-    ctx['current_camps'] = [c for c in camps
-                            if c.year == thisyear]
-    ctx['old_camps'] = [c for c in camps
-                        if c.year < thisyear]
+    camps = Camp.objects.all().include_other_years_info()
+    if not show_all:
+        camps = camps.filter(id__in=[c.id for c in user.camps_as_admin_or_leader])
     last_existing_year = Camp.objects.order_by('-year')[0].year
-    ctx['statsyears'] = list(range(last_existing_year, last_existing_year - 3, -1))
-    ctx['stats_end_year'] = last_existing_year
-    ctx['stats_start_year'] = 2006  # first year this feature existed
-    ctx['show_all'] = show_all
 
-    return TemplateResponse(request, 'cciw/officers/leaders_index.html', ctx)
+    return TemplateResponse(request, 'cciw/officers/leaders_index.html', {
+        'current_camps': [c for c in camps if c.year == thisyear],
+        'old_camps': [c for c in camps if c.year < thisyear],
+        'statsyears': list(range(last_existing_year, last_existing_year - 3, -1)),
+        'stats_end_year': last_existing_year,
+        'stats_start_year': 2006,  # first year this feature existed
+        'show_all': show_all,
+    })
 
 
 @staff_member_required
