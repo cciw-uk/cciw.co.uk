@@ -189,7 +189,7 @@ class Camp(models.Model):
 
     @property
     def camp_ids_for_stats(self):
-        camps = [self, self.previous_camp] if self.previous_camp else [self]
+        camps = [self.previous_camp, self] if self.previous_camp else [self]
         return [c.url_id for c in camps]
 
     @property
