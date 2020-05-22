@@ -39,7 +39,7 @@ django-plainpasswordhasher==0.3  # via -r requirements-dev.in
 django-ranged-response==0.2.0  # via django-simple-captcha
 django-sekizai==0.10.0    # via wiki
 django-simple-captcha==0.5.12  # via -r requirements.in
-django-webtest==1.9.3     # via django-functest
+django-webtest==1.9.7     # via django-functest
 django==3.0.5             # via -r requirements.in, django-anymail, django-appconf, django-classy-tags, django-colorful, django-debug-toolbar, django-functest, django-mailer, django-mptt, django-nyt, django-paypal, django-plainpasswordhasher, django-ranged-response, django-simple-captcha, jsonfield, wiki
 docutils==0.14            # via botocore
 easyprocess==0.2.3        # via pyvirtualdisplay
