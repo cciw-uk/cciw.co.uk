@@ -13,11 +13,11 @@ def forwards(apps, schema):
             Referee.objects.create(
                 application=app,
                 referee_number=i,
-                name=getattr(app, 'referee{0}_name'.format(i)),
-                address=getattr(app, 'referee{0}_address'.format(i)),
-                tel=getattr(app, 'referee{0}_tel'.format(i)),
-                mobile=getattr(app, 'referee{0}_mobile'.format(i)),
-                email=getattr(app, 'referee{0}_email'.format(i)),
+                name=getattr(app, f'referee{i}_name'),
+                address=getattr(app, f'referee{i}_address'),
+                tel=getattr(app, f'referee{i}_tel'),
+                mobile=getattr(app, f'referee{i}_mobile'),
+                email=getattr(app, f'referee{i}_email'),
             )
 
 

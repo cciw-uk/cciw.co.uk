@@ -111,7 +111,7 @@ def close_window_and_update_referee(ref_id):
     HttpResponse that closes the current window, and updates the reference
     in the parent window. Applies to popup from manage_references view.
     """
-    return HttpResponse("""<!DOCTYPE HTML><html><head><title>Close</title><script type="text/javascript">window.opener.refreshReferenceSection(%s); window.close()</script></head><body></body></html>""" % ref_id)
+    return HttpResponse(f"""<!DOCTYPE HTML><html><head><title>Close</title><script type="text/javascript">window.opener.refreshReferenceSection({ref_id}); window.close()</script></head><body></body></html>""")
 
 
 # /officers/
@@ -216,8 +216,7 @@ def applications(request):
             new_obj = Application.objects.create(officer=user,
                                                  full_name=user.full_name)
 
-        return HttpResponseRedirect('/admin/officers/application/%s/' %
-                                    new_obj.id)
+        return HttpResponseRedirect(f'/admin/officers/application/{new_obj.id}/')
 
     return TemplateResponse(request, 'cciw/officers/applications.html', c)
 
@@ -251,15 +250,15 @@ def get_application(request):
         rtf_attachment = (application_rtf_filename(app),
                           application_rtf, 'text/rtf')
 
-        msg = ("""Dear %s,
+        msg = (f"""Dear {request.user.first_name},
 
 Please find attached a copy of the application you requested
  -- in plain text below and an RTF version attached.
 
-""" % request.user.first_name)
+""")
         msg = msg + application_text
 
-        send_mail_with_attachments("[CCIW] Copy of CCiW application - %s" % app.full_name,
+        send_mail_with_attachments(f"[CCIW] Copy of CCiW application - {app.full_name}",
                                    msg, settings.SERVER_EMAIL,
                                    [formatted_email(request.user)],
                                    attachments=[rtf_attachment])
@@ -872,7 +871,7 @@ def create_officer(request):
             if process_form:
                 u = form.save()
                 form = CreateOfficerForm()
-                messages.info(request, "Officer %s has been added and emailed.  You can add another if required, or close this popup to continue." % u.username)
+                messages.info(request, f"Officer {u.username} has been added and emailed.  You can add another if required, or close this popup to continue.")
                 camp_id = request.GET.get('camp_id')
                 if camp_id is not None:
                     Invitation.objects.get_or_create(camp=Camp.objects.get(id=camp_id), officer=u)
@@ -905,7 +904,7 @@ def export_officer_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(officer_data_to_spreadsheet(camp, formatter),
-                                "camp-%s-officers" % camp.slug_name_with_year)
+                                f"camp-{camp.slug_name_with_year}-officers")
 
 
 @staff_member_required
@@ -914,7 +913,7 @@ def export_camper_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(camp_bookings_to_spreadsheet(camp, formatter),
-                                "camp-%s-campers" % camp.slug_name_with_year)
+                                f"camp-{camp.slug_name_with_year}-campers")
 
 
 @staff_member_required
@@ -931,7 +930,7 @@ def export_sharable_transport_details(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(camp_sharable_transport_details_to_spreadsheet(camp, formatter),
-                                "camp-%s-transport-details" % camp.slug_name_with_year)
+                                f"camp-{camp.slug_name_with_year}-transport-details")
 
 
 @staff_member_required
@@ -954,7 +953,7 @@ def officer_stats(request, year: int):
         df.pop('References')
         charts.append((camp, pandas_highcharts.core.serialize(
             df,
-            title="{0} - {1}".format(camp.name, camp.leaders_formatted),
+            title=f"{camp.name} - {camp.leaders_formatted}",
             output_type='json'))
         )
     return TemplateResponse(request, 'cciw/officers/stats.html', {
@@ -979,7 +978,7 @@ def officer_stats_trend(request, start_year: int, end_year: int):
         'end_year': end_year,
         'chart_data': pandas_highcharts.core.serialize(
             data,
-            title="Officer stats {0} - {1}".format(start_year, end_year),
+            title=f"Officer stats {start_year} - {end_year}",
             output_type='json'),
     })
 
@@ -1014,7 +1013,7 @@ def officer_stats_trend_download(request, start_year, end_year):
     formatter.add_sheet_from_dataframe("Officer stats trend",
                                        get_camp_officer_stats_trend(start_year, end_year))
     return spreadsheet_response(formatter,
-                                "officer-stats-trend-{0}-{1}".format(start_year, end_year))
+                                f"officer-stats-trend-{start_year}-{end_year}")
 
 
 @staff_member_required
@@ -1561,9 +1560,9 @@ def booking_progress_stats_download(request, start_year: int = None, end_year: i
     formatter.add_sheet_from_dataframe("Bookings against date", data_dates)
     formatter.add_sheet_from_dataframe("Days relative to start of camp", data_rel_days)
     if camp_ids is not None:
-        filename = "booking-progress-stats-{0}".format("_".join("{0}-{1}".format(y, s) for y, s in camp_ids))
+        filename = f"booking-progress-stats-{'_'.join(str(camp_id) for camp_id in camp_ids)}"
     else:
-        filename = "booking-progress-stats-{0}-{1}".format(start_year, end_year)
+        filename = f"booking-progress-stats-{start_year}-{end_year}"
     return spreadsheet_response(formatter, filename)
 
 
@@ -1590,7 +1589,7 @@ def booking_summary_stats_download(request, start_year, end_year):
     formatter = get_spreadsheet_formatter(request)
     formatter.add_sheet_from_dataframe("Bookings", data)
     return spreadsheet_response(formatter,
-                                "booking-summary-stats-{0}-{1}".format(start_year, end_year))
+                                f"booking-summary-stats-{start_year}-{end_year}")
 
 
 def _get_booking_ages_stats_from_params(start_year, end_year, camp_ids):
@@ -1656,9 +1655,9 @@ def booking_ages_stats_download(request, start_year: int = None, end_year: int =
     formatter = get_spreadsheet_formatter(request)
     formatter.add_sheet_from_dataframe("Age of campers", data)
     if camp_ids is not None:
-        filename = "booking-ages-stats-{0}".format("_".join("{0}-{1}".format(y, s) for y, s in camp_ids))
+        filename = f"booking-ages-stats-{'_'.join(str(camp_id) for camp_id in camp_ids)}"
     else:
-        filename = "booking-ages-stats-{0}-{1}".format(start_year, end_year)
+        filename = f"booking-ages-stats-{start_year}-{end_year}"
     return spreadsheet_response(formatter, filename)
 
 
@@ -1666,20 +1665,20 @@ def booking_ages_stats_download(request, start_year: int = None, end_year: int =
 def brochure_mailing_list(request, year):
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(addresses_for_mailing_list(year, formatter),
-                                "mailing-list-%s" % year)
+                                f"mailing-list-{year}")
 
 
 def spreadsheet_response(formatter, filename):
     response = HttpResponse(formatter.to_bytes(),
                             content_type=formatter.mimetype)
-    response['Content-Disposition'] = "attachment; filename={0}.{1}".format(filename, formatter.file_ext)
+    response['Content-Disposition'] = f"attachment; filename={filename}.{formatter.file_ext}"
     return response
 
 
 class UserAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_result_label(self, user):
-        return "{0} <{1}>".format(user.full_name, user.email)
+        return f"{user.full_name} <{user.email}>"
 
     def get_queryset(self):
         request = self.request

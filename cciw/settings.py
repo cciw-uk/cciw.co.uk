@@ -74,7 +74,7 @@ ROOT_URLCONF = 'cciw.urls'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': 'unix:%s/memcached.sock' % HOME_DIR,
+        'LOCATION': f'unix:{HOME_DIR}/memcached.sock',
         'KEY_PREFIX': 'cciw.co.uk',
     }
 } if LIVEBOX else {
@@ -529,7 +529,7 @@ else:
 
 CAPTCHA_FONT_PATH = os.path.join(BASE_DIR, "cciw", "cciwmain", "static", "fonts", "Jurassic_Park.ttf")
 if not os.path.exists(CAPTCHA_FONT_PATH):
-    raise ValueError("CAPTCHA_FONT_PATH is incorrect - file missing {0}".format(CAPTCHA_FONT_PATH))
+    raise ValueError(f"CAPTCHA_FONT_PATH is incorrect - file missing {CAPTCHA_FONT_PATH}")
 CAPTCHA_FONT_SIZE = 60   # Jurassic Park font is really small for some reason
 CAPTCHA_LETTER_ROTATION = (-30, 30)
 

@@ -88,7 +88,7 @@ class MakeCampsMixin(object):
                                     maximum_age=17,
                                     start_date=date(year, 6, 1),
                                     end_date=date(year, 6, 8))
-            p = Person.objects.create(name="Leader %s" % i)
+            p = Person.objects.create(name=f"Leader {i}")
             c.leaders.add(p)
 
 

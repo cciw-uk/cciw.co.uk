@@ -1,8 +1,8 @@
 """
 Utility functions and base classes that are common to all views etc.
 """
+import attr
 import re
-import typing
 from datetime import date, timedelta
 from functools import wraps
 
@@ -15,9 +15,18 @@ from django.utils.html import format_html_join
 from cciw.cciwmain.utils import python_to_json
 
 
-class CampId(typing.NamedTuple):
+@attr.s(auto_attribs=True)
+class CampId:
     year: int
     slug: str
+
+    def __str__(self):
+        return f"{self.year}-{self.slug}"
+
+    @classmethod
+    def from_url_part(cls, value) -> 'CampId':
+        year, slug = value.split('-', 1)
+        return cls(int(year), slug)
 
 
 def ajax_form_validate(form_class):
@@ -101,7 +110,7 @@ def standard_processor(request):
     # Ugly special casing for 'thisyear' camps
     m = re.match(r'/camps/%s/(\d+)/' % str(thisyear), request.path)
     if m is not None:
-        request_path = '/thisyear/%s/' % m.groups()[0]
+        request_path = f'/thisyear/{m.groups()[0]}/'
     else:
         request_path = request.path
 

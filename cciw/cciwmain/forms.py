@@ -44,7 +44,7 @@ class CciwFormMixin(object):
         bf_errors = self.error_class([escape(error) for error in bf.errors])  # Escape and cache in local variable.
         if bf.is_hidden:
             if bf_errors:
-                top_errors.extend(['(Hidden field %s) %s' % (name, force_text(e)) for e in bf_errors])
+                top_errors.extend([f'(Hidden field {name}) {force_text(e)}' for e in bf_errors])
             hidden_fields.append(str(bf))
         else:
             if bf_errors:
@@ -78,7 +78,7 @@ class CciwFormMixin(object):
                 'field': str(bf),
                 'help_text': help_text,
                 'class': cssclass,
-                'divid': "div_id_%s" % bf.name
+                'divid': f"div_id_{bf.name}"
             })
 
             return ''.join(output)

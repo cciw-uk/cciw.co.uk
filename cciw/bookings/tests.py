@@ -1136,7 +1136,7 @@ def fix_autocomplete_fields(field_names):
                         # Hack needed to cope with autocomplete_light widget and WebTest:
                         form, field, item = self._find_form_and_field_by_css_selector(
                             self.last_response,
-                            '[name={0}]'.format(field_name),
+                            f'[name={field_name}]',
                         )
                         # Modify the select widget so that it has the value we need
                         form.fields[field_name][0].options.append((str(value), False, ''))
@@ -1607,15 +1607,15 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
         self.assertEqual(b.shelved, False)
         self.get_url(self.urlname)
 
-        self.submit("[name=shelve_%s]" % b.id)
+        self.submit(f"[name=shelve_{b.id}]")
 
         # Should be changed
         b2 = acc.bookings.all()[0]
         self.assertEqual(b2.shelved, True)
 
         # Different button should appear
-        self.assertFalse(self.is_element_present("[name=shelve_%s]" % b.id))
-        self.assertTrue(self.is_element_present("[name=unshelve_%s]" % b.id))
+        self.assertFalse(self.is_element_present(f"[name=shelve_{b.id}]"))
+        self.assertTrue(self.is_element_present(f"[name=unshelve_{b.id}]"))
 
         self.assertTextPresent("Shelf")
 
@@ -1627,7 +1627,7 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
         b.save()
 
         self.get_url(self.urlname)
-        self.submit("[name=unshelve_%s]" % b.id)
+        self.submit(f"[name=unshelve_{b.id}]")
 
         # Should be changed
         b2 = acc.bookings.all()[0]
@@ -1643,11 +1643,11 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
         self.get_url(self.urlname)
 
         if self.is_full_browser_test:
-            self.click_expecting_alert("[name=delete_%s]" % b.id)
+            self.click_expecting_alert(f"[name=delete_{b.id}]")
             self.accept_alert()
             self.wait_until_loaded('body')
         else:
-            self.submit("[name=delete_%s]" % b.id)
+            self.submit(f"[name=delete_{b.id}]")
 
         # Should be gone
         self.assertEqual(0, acc.bookings.count())
@@ -1658,7 +1658,7 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
         b = acc.bookings.all()[0]
         self.get_url(self.urlname)
 
-        self.submit("[name=edit_%s]" % b.id)
+        self.submit(f"[name=edit_{b.id}]")
         self.assertUrlsEqual(reverse('cciw-bookings-edit_place', kwargs={'booking_id': b.id}))
 
     def test_book_ok(self):
@@ -1833,7 +1833,7 @@ class TestPayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
         # 2 deposits
         expected_price = 2 * self.price_deposit
-        self.assertTextPresent('£%s' % expected_price)
+        self.assertTextPresent(f'£{expected_price}')
 
         # Move forward to after the time when just deposits are allowed:
         Camp.objects.update(start_date=date.today() + timedelta(10))
@@ -1842,7 +1842,7 @@ class TestPayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
         # 2 full price
         expected_price = 2 * self.price_full
-        self.assertTextPresent('£%s' % expected_price)
+        self.assertTextPresent(f'£{expected_price}')
 
 
 class TestPayWT(TestPayBase, WebTestBase):

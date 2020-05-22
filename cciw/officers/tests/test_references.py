@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core import mail
 from django.urls import reverse
 
+from cciw.cciwmain.common import CampId
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application, ReferenceAction
 from cciw.officers.tests.base import ReferenceSetupMixin
@@ -16,7 +17,7 @@ class ReferencesPage(ReferenceSetupMixin, WebTestBase):
     def test_page_ok(self):
         # Value of this test lies in the test data.
         self.officer_login(LEADER)
-        self.get_url("cciw-officers-manage_references", camp_id=(2000, "blue"))
+        self.get_url("cciw-officers-manage_references", camp_id=CampId(2000, "blue"))
         self.assertCode(200)
         self.assertTextPresent('For camp 2000-blue')
         self.assertTextAbsent('referee1@email.co.uk')  # Received
@@ -25,7 +26,7 @@ class ReferencesPage(ReferenceSetupMixin, WebTestBase):
         self.assertTextPresent('referee4@email.co.uk')
 
     def test_page_anonymous_denied(self):
-        self.get_literal_url(reverse("cciw-officers-manage_references", kwargs=dict(camp_id=(2000, "blue"))),
+        self.get_literal_url(reverse("cciw-officers-manage_references", kwargs=dict(camp_id=CampId(2000, "blue"))),
                              auto_follow=False)
         self.assertCode(302)
         self.auto_follow()
@@ -33,7 +34,7 @@ class ReferencesPage(ReferenceSetupMixin, WebTestBase):
 
     def test_page_officers_denied(self):
         self.officer_login(OFFICER)
-        self.get_literal_url(reverse("cciw-officers-manage_references", kwargs=dict(camp_id=(2000, "blue"))),
+        self.get_literal_url(reverse("cciw-officers-manage_references", kwargs=dict(camp_id=CampId(2000, "blue"))),
                              expect_errors=[403])
         self.assertCode(403)
 
@@ -53,7 +54,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         referee = app.referees[0]
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
-                                     kwargs=dict(camp_id=(2000, "blue"))) +
+                                     kwargs=dict(camp_id=CampId(2000, "blue"))) +
                              "?referee_id=%d" % referee.id)
         self.assertCode(200)
         self.assertTextAbsent("No email address")
@@ -74,7 +75,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         referee = app.referees[1]
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
-                                     kwargs=dict(camp_id=(2000, "blue"))) +
+                                     kwargs=dict(camp_id=CampId(2000, "blue"))) +
                              "?referee_id=%d" % referee.id)
         self.assertCode(200)
         self.assertTextPresent("No email address")
@@ -101,7 +102,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         referee = app.referees[0]
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
-                                     kwargs=dict(camp_id=(2000, "blue"))) +
+                                     kwargs=dict(camp_id=CampId(2000, "blue"))) +
                              "?referee_id=%d" % referee.id)
         self.assertCode(200)
         self.submit('#id_request_reference_send [name=cancel]')
@@ -115,7 +116,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         referee = app.referees[0]
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
-                                     kwargs=dict(camp_id=(2000, "blue"))) +
+                                     kwargs=dict(camp_id=CampId(2000, "blue"))) +
                              "?referee_id=%d" % referee.id)
         self.assertCode(200)
         self.fill_by_name({'message': 'I removed the link! Haha'})
@@ -135,7 +136,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         assert referee.previous_reference is not None
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
-                                     kwargs=dict(camp_id=(2001, "blue"))) +
+                                     kwargs=dict(camp_id=CampId(2001, "blue"))) +
                              "?referee_id=%d&update=1&prev_ref_id=%d" %
                              (referee.id, referee.previous_reference.id))
         self.assertCode(200)
@@ -168,7 +169,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         assert referee.possible_previous_references[0].referee_name == "Referee1 Name"
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
-                                     kwargs=dict(camp_id=(2001, "blue"))) +
+                                     kwargs=dict(camp_id=CampId(2001, "blue"))) +
                              "?referee_id=%d&update=1&prev_ref_id=%d" %
                              (referee.id, referee.possible_previous_references[0].id))
         self.assertCode(200)
@@ -184,7 +185,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         referee = app.referees[0]
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
-                                     kwargs=dict(camp_id=(2000, "blue"))) +
+                                     kwargs=dict(camp_id=CampId(2000, "blue"))) +
                              "?referee_id=%d" % referee.id)
         self.assertCode(200)
         self.fill_by_name({'how_long_known': "10 years",
@@ -206,7 +207,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         referee = app.referees[0]
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-nag_by_officer",
-                                     kwargs=dict(camp_id=(2000, "blue"))) +
+                                     kwargs=dict(camp_id=CampId(2000, "blue"))) +
                              "?referee_id=%d" % referee.id)
         self.assertCode(200)
         self.assertTextPresent("to nag their referee")

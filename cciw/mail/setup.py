@@ -29,9 +29,9 @@ def setup_mailgun_routes():
 
     for e in EMAIL_LISTS:
         pattern = limit_pattern(e.address_matcher.pattern)
-        expression = """match_recipient('{0}')""".format(pattern)
+        expression = f"""match_recipient('{pattern}')"""
         forwarding_url = "https://" + settings.PRODUCTION_DOMAIN + reverse("cciw-mailgun-incoming")
-        actions = ["""forward("{0}")""".format(forwarding_url),
+        actions = [f"""forward("{forwarding_url}")""",
                    "stop()"]
         update_or_create(e.name, expression, actions, priority=5)
 

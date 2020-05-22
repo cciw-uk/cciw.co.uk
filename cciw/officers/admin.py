@@ -28,7 +28,7 @@ def referee_field(n, f):
     Returns the name of the referee field on Application form
     for Referee field `f`, Referee number `n`
     """
-    return 'referee{0}_{1}'.format(n, f)
+    return f'referee{n}_{f}'
 
 
 class ApplicationAdminModelForm(forms.ModelForm):
@@ -56,7 +56,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
                 # else's.
                 initial['officer'] = user
                 # Fill out officer name
-                initial['full_name'] = "%s %s" % (user.first_name, user.last_name)
+                initial['full_name'] = f"{user.first_name} {user.last_name}"
                 initial['address_email'] = user.email
 
         else:
@@ -131,7 +131,7 @@ for f in REFEREE_DATA_FIELDS:
     for n in REFEREE_NUMBERS:
         field = Referee._meta.get_field(f).formfield()
         if f == 'name':
-            field.label = "Referee {0} name".format(n)
+            field.label = f"Referee {n} name"
         ApplicationAdminModelForm.base_fields[referee_field(n, f)] = field
 
 

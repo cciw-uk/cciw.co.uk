@@ -84,12 +84,12 @@ def send_officer_email(officer, application, application_text, rtf_attachment):
 
     # Email to the officer
     user_email = formatted_email(application.officer)
-    user_msg = ("""%s,
+    user_msg = (f"""{application.officer.first_name},
 
 For your records, here is a copy of the application you have submitted
 to CCiW. It is also attached to this email as an RTF file.
 
-""" % application.officer.first_name) + application_text
+""") + application_text
 
     if user_email is not None:
         send_mail_with_attachments(subject, user_msg, settings.SERVER_EMAIL,
@@ -97,7 +97,7 @@ to CCiW. It is also attached to this email as an RTF file.
 
 
 def send_leader_email(leader_emails, application):
-    subject = "[CCIW] Application form from %s" % application.full_name
+    subject = f"[CCIW] Application form from {application.full_name}"
     url = 'https://%(domain)s%(path)s' % dict(
         domain=common.get_current_domain(),
         path=reverse('cciw-officers-view_application',
@@ -169,7 +169,7 @@ This was an automated response by the CCiW website.
 
 
 def make_ref_form_url_hash(referee_id, prev_ref_id):
-    return salted_hmac("cciw.officers.create_reference_form", "%s:%s" % (referee_id, prev_ref_id)).hexdigest()[::2]
+    return salted_hmac("cciw.officers.create_reference_form", f"{referee_id}:{prev_ref_id}").hexdigest()[::2]
 
 
 def make_ref_form_url(referee_id, prev_ref_id):
@@ -184,7 +184,7 @@ def make_ref_form_url(referee_id, prev_ref_id):
 
 def send_reference_request_email(message, referee, sending_officer, camp):
     officer = referee.application.officer
-    EmailMessage(subject="[CCIW] Reference for {0}".format(officer.full_name),
+    EmailMessage(subject=f"[CCIW] Reference for {officer.full_name}",
                  body=message,
                  from_email=settings.WEBMASTER_FROM_EMAIL,
                  to=[referee.email],
@@ -206,13 +206,12 @@ def send_leaders_reference_email(reference):
     view_reference_url = "https://%s%s" % (common.get_current_domain(),
                                            reverse('cciw-officers-view_reference',
                                                    kwargs=dict(reference_id=reference.id)))
-    subject = "[CCIW] Reference form for {0} from {1}".format(officer.full_name, referee.name)
-    body = ("""The following reference form has been submitted via the
-CCiW website for officer {0}.
+    subject = f"[CCIW] Reference form for {officer.full_name} from {referee.name}"
+    body = f"""The following reference form has been submitted via the
+CCiW website for officer {officer.full_name}.
 
-{1}
-""".format(officer.full_name, view_reference_url)
-    )
+{view_reference_url}
+"""
 
     leader_email_groups = admin_emails_for_application(app)
     for camp, leader_emails in leader_email_groups:
@@ -221,7 +220,7 @@ CCiW website for officer {0}.
 
 
 def send_nag_by_officer(message, officer, referee, sending_officer):
-    EmailMessage(subject="[CCIW] Need reference from %s" % referee.name,
+    EmailMessage(subject=f"[CCIW] Need reference from {referee.name}",
                  body=message,
                  from_email=settings.DEFAULT_FROM_EMAIL,
                  to=[officer.email],
@@ -235,7 +234,7 @@ def send_dbs_consent_alert_leaders_email(message, officer, camps):
     emails = []
     for c in camps:
         emails.extend(admin_emails_for_camp(c))
-    send_mail("[CCIW] DBS consent problem for {0}".format(officer.full_name),
+    send_mail(f"[CCIW] DBS consent problem for {officer.full_name}",
               message,
               settings.DEFAULT_FROM_EMAIL,
               emails,
@@ -243,7 +242,7 @@ def send_dbs_consent_alert_leaders_email(message, officer, camps):
 
 
 def send_request_for_dbs_form_email(message, officer, sending_officer):
-    EmailMessage(subject="[CCIW] DBS form needed for {0}".format(officer.full_name),
+    EmailMessage(subject=f"[CCIW] DBS form needed for {officer.full_name}",
                  body=message,
                  from_email=settings.DEFAULT_FROM_EMAIL,
                  to=[settings.EXTERNAL_DBS_OFFICER['email']],
@@ -278,11 +277,11 @@ def forward_with_text(email_addresses, subject, text, original_message):
 
 
 def forward_bounce_to(email_addresses, bounced_email_address, original_message, camp):
-    forward_body = """
-A reference request (see attached), sent to {email} was not received.
+    forward_body = f"""
+A reference request (see attached), sent to {bounced_email_address} was not received.
 
 Please find a correct email address for this referee.
-""".format(email=bounced_email_address)
+"""
 
     if camp is not None:
         forward_body += """
@@ -295,6 +294,6 @@ Use the following link to manage this reference:
            "?ref_email=" + urlquote(bounced_email_address))
 
     forward_with_text(email_addresses,
-                      "[CCIW] Reference request to {0} bounced.".format(bounced_email_address),
+                      f"[CCIW] Reference request to {bounced_email_address} bounced.",
                       forward_body,
                       original_message)

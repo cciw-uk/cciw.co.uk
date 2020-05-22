@@ -66,7 +66,7 @@ class ReadOnlyInline(object):
             changed_objects = ()
             deleted_objects = ()
 
-        ReadOnlyFormset.__name__ = 'ReadOnly({0})'.format(FormSet.__name__)
+        ReadOnlyFormset.__name__ = f'ReadOnly({FormSet.__name__})'
         return ReadOnlyFormset
 
 

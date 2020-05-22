@@ -12,7 +12,7 @@ def forwards(apps, schema):
     for r in list(Reference.objects.filter(received=True, _reference_form__isnull=True)):
         rf = ReferenceForm(
             reference_info=r,
-            referee_name=getattr(r.application, 'referee{0}_name'.format(r.referee_number)),
+            referee_name=getattr(r.application, f'referee{r.referee_number}_name'),
             inaccurate=True,  # date and other fields which are all empty
             date_created=r.application.date_submitted)  # inaccurate date
         rf.save()

@@ -108,7 +108,7 @@ class Price(models.Model):
         unique_together = [('year', 'price_type')]
 
     def __str__(self):
-        return "%s %s - %s" % (self.get_price_type_display(), self.year, self.price)
+        return f"{self.get_price_type_display()} {self.year} - {self.price}"
 
     @classmethod
     def get_deposit_prices(cls, years=None):
@@ -657,12 +657,11 @@ class Booking(models.Model):
     # Methods
 
     def __str__(self):
-        return "%s, %s, %s" % (self.name, self.camp.slug_name_with_year,
-                               self.account)
+        return f"{self.name}, {self.camp.slug_name_with_year}, {self.account}"
 
     @property
     def name(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return f"{self.first_name} {self.last_name}"
 
     # Main business rules here
     def save_for_account(self, booking_account):
@@ -932,7 +931,7 @@ class Booking(models.Model):
         if places_available:
             for sex_const, sex_label, places_left_for_sex in SEXES:
                 if self.sex == sex_const and places_left_for_sex <= 0:
-                    errors.append("There are no places left for {0} on this camp.".format(sex_label))
+                    errors.append(f"There are no places left for {sex_label} on this camp.")
                     places_available = False
                     break
 
@@ -964,7 +963,7 @@ class Booking(models.Model):
         if booking_sec and self.price_type != PRICE_CUSTOM:
             expected_amount = self.expected_amount_due()
             if self.amount_due != expected_amount:
-                errors.append("The 'amount due' is not the expected value of £%s." % expected_amount)
+                errors.append(f"The 'amount due' is not the expected value of £{expected_amount}.")
 
         if booking_sec and not self.created_online:
             if self.early_bird_discount:
@@ -1238,7 +1237,7 @@ class ManualPayment(ManualPaymentBase):
         base_manager_name = 'objects'
 
     def __str__(self):
-        return "Manual payment of £%s from %s" % (self.amount, self.account)
+        return f"Manual payment of £{self.amount} from {self.account}"
 
 
 class RefundPayment(ManualPaymentBase):
@@ -1252,7 +1251,7 @@ class RefundPayment(ManualPaymentBase):
         base_manager_name = 'objects'
 
     def __str__(self):
-        return "Refund payment of £%s to %s" % (self.amount, self.account)
+        return f"Refund payment of £{self.amount} to {self.account}"
 
 
 class AccountTransferPayment(NoEditMixin, models.Model):
@@ -1318,10 +1317,10 @@ class PaymentSource(models.Model):
         elif self.ipn_payment_id is not None:
             return "PayPal"
         else:
-            raise ValueError("No related object for PaymentSource {0}".format(self.id))
+            raise ValueError(f"No related object for PaymentSource {self.id}")
 
     def _assert_one_source(self):
-        attrs = ['{}_id'.format(a) for a in self.MODEL_MAP.values()]
+        attrs = [f'{a}_id' for a in self.MODEL_MAP.values()]
         if not [getattr(self, a) for a in attrs].count(None) == len(attrs) - 1:
             raise AssertionError("PaymentSource must have exactly one payment FK set")
 
@@ -1332,7 +1331,7 @@ class PaymentSource(models.Model):
         """
         source_cls = source_instance.__class__
         if source_cls not in cls.MODEL_MAP:
-            raise AssertionError("Can't create PaymentSource for {0}".format(source_cls))
+            raise AssertionError(f"Can't create PaymentSource for {source_cls}")
         attr_name_for_model = cls.MODEL_MAP[source_cls]
         return cls.objects.create(**{attr_name_for_model: source_instance})
 

@@ -33,9 +33,9 @@ def forwards(apps, schema_editor):
                 item = m.objects.get(id=origin_id)
                 kwargs[a] = item
             except m.DoesNotExist:
-                print("Missing {0} {1} for Payment {2}".format(name, origin_id, p.id))
+                print(f"Missing {name} {origin_id} for Payment {p.id}")
         else:
-            raise AssertionError("Unexpected type {0} for Payment {1}".format(name, p.id))
+            raise AssertionError(f"Unexpected type {name} for Payment {p.id}")
 
         if kwargs:
             source = PaymentSource.objects.create(**kwargs)

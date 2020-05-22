@@ -210,7 +210,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         with mock.patch('cciw.mail.lists.send_mime_message') as m_s:
             def sendmail(to_address, from_address, mail_bytes):
                 if to_address.endswith("@faildomain.com"):
-                    raise Exception("We don't like {0}!".format(to_address))
+                    raise Exception(f"We don't like {to_address}!")
                 # Otherwise succeed silently
             m_s.side_effect = sendmail
 
@@ -331,7 +331,7 @@ def send_queued_mail():
         mailer.engine.send_all()
     len_outbox_end = len(mail.outbox)
     assert len_outbox_start + sent_count == len_outbox_end, \
-        "Expected {0} + {1} == {2}".format(len_outbox_start, sent_count, len_outbox_end)
+        f"Expected {len_outbox_start} + {sent_count} == {len_outbox_end}"
     sent = mail.outbox[len_outbox_start:]
     mail.outbox[len_outbox_start:] = []
     assert len(mail.outbox) == len_outbox_start
@@ -350,8 +350,7 @@ class TestMailBackend(LocMemEmailBackend):
         for m in messages:
             if (not m.subject.startswith('[CCIW]') and
                     b' via <noreply@cciw.co.uk>' not in m.message().as_bytes()):
-                raise AssertionError("Email with subject \"{0}\" should start with [CCIW]"
-                                     .format(m.subject))
+                raise AssertionError(f"Email with subject \"{m.subject}\" should start with [CCIW]")
 
         return super(TestMailBackend, self).send_messages(messages)
 

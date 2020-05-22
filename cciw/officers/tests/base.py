@@ -202,10 +202,10 @@ class CreateApplicationMixin(object):
         for referee_number, ref_overrides in zip([1, 2], [referee1_overrides, referee2_overrides]):
             referee_fields = dict(
                 referee_number=referee_number,
-                address="Referee {0} Address\r\nLine 2".format(referee_number),
-                email="referee{0}@email.co.uk".format(referee_number),
+                address=f"Referee {referee_number} Address\r\nLine 2",
+                email=f"referee{referee_number}@email.co.uk",
                 mobile="",
-                name="Referee{0} Name".format(referee_number),
+                name=f"Referee{referee_number} Name",
                 tel="01222 666666",
             )
             if ref_overrides:

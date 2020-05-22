@@ -20,7 +20,7 @@ class MenuLink(models.Model):
                                     related_name="child_links")
 
     def __str__(self):
-        return "%s [%s]" % (self.url, standard_subs(self.title))
+        return f"{self.url} [{standard_subs(self.title)}]"
 
     def get_visible_children(self, request):
         """Gets a list of child menu links that should be visible given the current url"""

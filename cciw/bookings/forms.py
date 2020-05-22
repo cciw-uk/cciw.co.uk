@@ -58,7 +58,7 @@ class FixPriceMixin(object):
 
         for i, (price_type, label) in enumerate(price_choices):
             if price_type in prices:
-                caption = price_choices[i][1] + " - £%s" % prices[price_type]
+                caption = price_choices[i][1] + f" - £{prices[price_type]}"
                 price_choices[i] = (price_choices[i][0], caption)
         self.fields['price_type'].choices = price_choices
 

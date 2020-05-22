@@ -47,7 +47,7 @@ class TestExport(DefaultApplicationsMixin, TestBase):
         self.assertEqual(Application.objects.all().count(), 0)
 
         for i, inv in enumerate(c.invitations.all()):
-            inv.notes = "Some notes %s" % i
+            inv.notes = f"Some notes {i}"
             inv.save()
 
         workbook = officer_data_to_spreadsheet(c, ExcelFormatter()).to_bytes()
@@ -138,16 +138,16 @@ class TestSlackers(BasicSetupMixin, ReferenceHelperMixin, TestBase):
 class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
 
     def add_button_selector(self, officer):
-        return '[data-officer-id="{0}"] [data-add-button]'.format(officer.id)
+        return f'[data-officer-id="{officer.id}"] [data-add-button]'
 
     def remove_button_selector(self, officer):
-        return '[data-officer-id="{0}"] [data-remove-button]'.format(officer.id)
+        return f'[data-officer-id="{officer.id}"] [data-remove-button]'
 
     def edit_button_selector(self, officer):
-        return '[data-officer-id="{0}"] [data-edit-button]'.format(officer.id)
+        return f'[data-officer-id="{officer.id}"] [data-edit-button]'
 
     def resend_email_button_selector(self, officer):
-        return '[data-officer-id="{0}"] [data-email-button]'.format(officer.id)
+        return f'[data-officer-id="{officer.id}"] [data-email-button]'
 
     def test_add(self):
         camp = self.default_camp_1
@@ -291,7 +291,7 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
 
     def get_page(self):
         self.get_literal_url(reverse('cciw-officers-create_officer') +
-                             "?camp_id={0}".format(self.default_camp_1.id))
+                             f"?camp_id={self.default_camp_1.id}")
 
     def create_officer(self, *args):
         create_officer(*args)

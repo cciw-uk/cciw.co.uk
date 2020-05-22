@@ -113,4 +113,4 @@ def _application_filename_stem(app):
         submitted = ''
     else:
         submitted = '_' + app.date_saved.strftime('%Y-%m-%d')
-    return 'Application_%s%s' % (app.officer.username, submitted)
+    return f'Application_{app.officer.username}{submitted}'

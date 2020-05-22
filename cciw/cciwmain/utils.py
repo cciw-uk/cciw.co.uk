@@ -65,7 +65,7 @@ def make_content_disposition_safe_filename(filename):
 def get_protected_download(folder, filename):
 
     response = HttpResponse()
-    response['Content-Disposition'] = 'attachment; filename="{0}"'.format(make_content_disposition_safe_filename(filename))
+    response['Content-Disposition'] = f'attachment; filename="{make_content_disposition_safe_filename(filename)}"'
     # Using X-Accel-Redirect means:
     # 1. nginx does the heavy lifting of data
     # 2. we can add document permissions if we want to.

@@ -18,7 +18,7 @@ def update_newsletter_subscription(booking_account):
 
 def _update(booking_account, current_status, desired_status):
     if current_status is None:
-        return mailchimp_request('POST', '/lists/{0}/members/'.format(settings.MAILCHIMP_NEWSLETTER_LIST_ID),
+        return mailchimp_request('POST', f'/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/',
                                  json={
                                      "email_address": booking_account.email,
                                      "status": desired_status,

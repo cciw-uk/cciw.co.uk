@@ -40,15 +40,15 @@ from .smtp import send_mime_message
 
 # See also below for changes to format
 def address_for_camp_officers(camp):
-    return "camp-%s-officers@cciw.co.uk" % camp.slug_name_with_year
+    return f"camp-{camp.slug_name_with_year}-officers@cciw.co.uk"
 
 
 def address_for_camp_slackers(camp):
-    return "camp-%s-slackers@cciw.co.uk" % camp.slug_name_with_year
+    return f"camp-{camp.slug_name_with_year}-slackers@cciw.co.uk"
 
 
 def address_for_camp_leaders(camp):
-    return "camp-%s-leaders@cciw.co.uk" % camp.slug_name_with_year
+    return f"camp-{camp.slug_name_with_year}-leaders@cciw.co.uk"
 
 
 def address_for_camp_leaders_year(year):
@@ -83,7 +83,7 @@ def _get_camp(year=None, slug=None):
     try:
         return _get_camps(year=year, slug=slug).get()
     except Camp.DoesNotExist:
-        raise NoSuchList("year=%r camp=%r" % (year, slug))
+        raise NoSuchList(f"year={year!r} camp={slug!r}")
 
 
 def _camp_officers(year=None, slug=None):
@@ -271,7 +271,7 @@ def forward_email_to_list(mail, email_list, debug=False):
 
     if email_list.list_reply:
         mail['Sender'] = email_list.address
-        mail['List-Post'] = '<mailto:{0}>'.format(email_list.address)
+        mail['List-Post'] = f'<mailto:{email_list.address}>'
     else:
         mail['Sender'] = settings.SERVER_EMAIL
     del mail['From']
@@ -344,7 +344,7 @@ def forward_email_to_list(mail, email_list, debug=False):
         # Attempt to report problem
         try:
             address_messages = [
-                "{0}: {1}".format(address, str(e))
+                f"{address}: {str(e)}"
                 for address, e in errors
             ]
             msg = """
@@ -355,7 +355,7 @@ There were problems with the following addresses:
 
 {2}
 """.format(email_list.address, mail['Subject'], '\n'.join(address_messages))
-            send_mail("[CCIW] Error with email to list {0}".format(email_list.address),
+            send_mail(f"[CCIW] Error with email to list {email_list.address}",
                       msg,
                       settings.DEFAULT_FROM_EMAIL,
                       [orig_from_addr],
@@ -406,7 +406,7 @@ def handle_mail(data, debug=False):
                 # Don't bother sending bounce emails to addresses
                 # we've never seen before. This is highly likely to be spam.
                 continue
-            send_mail("[CCIW] Access to mailing list {0} denied".format(address),
+            send_mail(f"[CCIW] Access to mailing list {address} denied",
                       "You attempted to email the list {0}\n"
                       "with an email titled \"{1}\".\n"
                       "\n"
