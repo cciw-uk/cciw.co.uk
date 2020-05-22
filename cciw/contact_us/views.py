@@ -106,7 +106,7 @@ On {timestamp}, {name} <{email}> wrote:
     return TemplateResponse(request, 'cciw/officers/view_contact_us_message.html', {
         'message': msg,
         'reply_template': reply_template,
-        'subject': '[CCIW] Contact form reply - message #{0}'.format(msg.id),
+        'subject': f'[CCIW] Contact form reply - message #{msg.id}',
         'is_popup': True,
     })
 

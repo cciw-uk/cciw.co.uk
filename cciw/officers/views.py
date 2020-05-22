@@ -28,7 +28,7 @@ from django.utils import timezone
 from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-from cciw.bookings.models import Booking
+from cciw.bookings.models import most_recent_booking_year
 from cciw.bookings.stats import get_booking_ages_stats, get_booking_progress_stats, get_booking_summary_stats
 from cciw.bookings.utils import (addresses_for_mailing_list, camp_bookings_to_spreadsheet,
                                  camp_sharable_transport_details_to_spreadsheet, payments_to_spreadsheet,
@@ -111,7 +111,7 @@ def close_window_and_update_referee(ref_id):
     HttpResponse that closes the current window, and updates the reference
     in the parent window. Applies to popup from manage_references view.
     """
-    return HttpResponse("""<!DOCTYPE HTML><html><head><title>Close</title><script type="text/javascript">window.opener.refreshReferenceSection(%s); window.close()</script></head><body></body></html>""" % ref_id)
+    return HttpResponse(f"""<!DOCTYPE HTML><html><head><title>Close</title><script type="text/javascript">window.opener.refreshReferenceSection({ref_id}); window.close()</script></head><body></body></html>""")
 
 
 # /officers/
@@ -145,10 +145,10 @@ def index(request):
         c['show_booking_secretary_links'] = True
     if user.is_committee_member or user.is_booking_secretary:
         c['show_secretary_and_committee_links'] = True
-        most_recent_booking_year = Booking.objects.most_recent_booking_year()
-        if most_recent_booking_year is not None:
-            c['booking_stats_end_year'] = most_recent_booking_year
-            c['booking_stats_start_year'] = most_recent_booking_year - 3
+        booking_year = most_recent_booking_year()
+        if booking_year is not None:
+            c['booking_stats_end_year'] = booking_year
+            c['booking_stats_start_year'] = booking_year - 3
 
     return TemplateResponse(request, 'cciw/officers/index.html', c)
 
@@ -158,29 +158,21 @@ def index(request):
 def leaders_index(request):
     """Displays a list of links for actions for leaders"""
     user = request.user
-    ctx = {}
     thisyear = common.get_thisyear()
-
     show_all = 'show_all' in request.GET
-    base_qs = Camp.objects.all().include_other_years_info()
-    if show_all:
-        camps = base_qs
-    else:
-        camps = base_qs.filter(id__in=[c.id for c in user.camps_as_admin_or_leader])
-
-    camps = list(camps)
-
-    ctx['current_camps'] = [c for c in camps
-                            if c.year == thisyear]
-    ctx['old_camps'] = [c for c in camps
-                        if c.year < thisyear]
+    camps = Camp.objects.all().include_other_years_info()
+    if not show_all:
+        camps = camps.filter(id__in=[c.id for c in user.camps_as_admin_or_leader])
     last_existing_year = Camp.objects.order_by('-year')[0].year
-    ctx['statsyears'] = list(range(last_existing_year, last_existing_year - 3, -1))
-    ctx['stats_end_year'] = last_existing_year
-    ctx['stats_start_year'] = 2006  # first year this feature existed
-    ctx['show_all'] = show_all
 
-    return TemplateResponse(request, 'cciw/officers/leaders_index.html', ctx)
+    return TemplateResponse(request, 'cciw/officers/leaders_index.html', {
+        'current_camps': [c for c in camps if c.year == thisyear],
+        'old_camps': [c for c in camps if c.year < thisyear],
+        'statsyears': list(range(last_existing_year, last_existing_year - 3, -1)),
+        'stats_end_year': last_existing_year,
+        'stats_start_year': 2006,  # first year this feature existed
+        'show_all': show_all,
+    })
 
 
 @staff_member_required
@@ -224,8 +216,7 @@ def applications(request):
             new_obj = Application.objects.create(officer=user,
                                                  full_name=user.full_name)
 
-        return HttpResponseRedirect('/admin/officers/application/%s/' %
-                                    new_obj.id)
+        return HttpResponseRedirect(f'/admin/officers/application/{new_obj.id}/')
 
     return TemplateResponse(request, 'cciw/officers/applications.html', c)
 
@@ -259,15 +250,15 @@ def get_application(request):
         rtf_attachment = (application_rtf_filename(app),
                           application_rtf, 'text/rtf')
 
-        msg = ("""Dear %s,
+        msg = (f"""Dear {request.user.first_name},
 
 Please find attached a copy of the application you requested
  -- in plain text below and an RTF version attached.
 
-""" % request.user.first_name)
+""")
         msg = msg + application_text
 
-        send_mail_with_attachments("[CCIW] Copy of CCiW application - %s" % app.full_name,
+        send_mail_with_attachments(f"[CCIW] Copy of CCiW application - {app.full_name}",
                                    msg, settings.SERVER_EMAIL,
                                    [formatted_email(request.user)],
                                    attachments=[rtf_attachment])
@@ -880,7 +871,7 @@ def create_officer(request):
             if process_form:
                 u = form.save()
                 form = CreateOfficerForm()
-                messages.info(request, "Officer %s has been added and emailed.  You can add another if required, or close this popup to continue." % u.username)
+                messages.info(request, f"Officer {u.username} has been added and emailed.  You can add another if required, or close this popup to continue.")
                 camp_id = request.GET.get('camp_id')
                 if camp_id is not None:
                     Invitation.objects.get_or_create(camp=Camp.objects.get(id=camp_id), officer=u)
@@ -913,7 +904,7 @@ def export_officer_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(officer_data_to_spreadsheet(camp, formatter),
-                                "camp-%s-officers" % camp.slug_name_with_year)
+                                f"camp-{camp.url_id}-officers")
 
 
 @staff_member_required
@@ -922,7 +913,7 @@ def export_camper_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(camp_bookings_to_spreadsheet(camp, formatter),
-                                "camp-%s-campers" % camp.slug_name_with_year)
+                                f"camp-{camp.url_id}-campers")
 
 
 @staff_member_required
@@ -939,7 +930,7 @@ def export_sharable_transport_details(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(camp_sharable_transport_details_to_spreadsheet(camp, formatter),
-                                "camp-%s-transport-details" % camp.slug_name_with_year)
+                                f"camp-{camp.url_id}-transport-details")
 
 
 @staff_member_required
@@ -962,7 +953,7 @@ def officer_stats(request, year: int):
         df.pop('References')
         charts.append((camp, pandas_highcharts.core.serialize(
             df,
-            title="{0} - {1}".format(camp.name, camp.leaders_formatted),
+            title=f"{camp.name} - {camp.leaders_formatted}",
             output_type='json'))
         )
     return TemplateResponse(request, 'cciw/officers/stats.html', {
@@ -987,7 +978,7 @@ def officer_stats_trend(request, start_year: int, end_year: int):
         'end_year': end_year,
         'chart_data': pandas_highcharts.core.serialize(
             data,
-            title="Officer stats {0} - {1}".format(start_year, end_year),
+            title=f"Officer stats {start_year} - {end_year}",
             output_type='json'),
     })
 
@@ -1007,7 +998,7 @@ def officer_stats_download(request, year):
     camps = list(Camp.objects.filter(year=year).order_by('camp_name__slug'))
     formatter = get_spreadsheet_formatter(request)
     for camp in camps:
-        formatter.add_sheet_from_dataframe(camp.slug_name_with_year,
+        formatter.add_sheet_from_dataframe(str(camp.url_id),
                                            get_camp_officer_stats(camp))
     return spreadsheet_response(formatter,
                                 "officer-stats-%d" % year)
@@ -1022,7 +1013,7 @@ def officer_stats_trend_download(request, start_year, end_year):
     formatter.add_sheet_from_dataframe("Officer stats trend",
                                        get_camp_officer_stats_trend(start_year, end_year))
     return spreadsheet_response(formatter,
-                                "officer-stats-trend-{0}-{1}".format(start_year, end_year))
+                                f"officer-stats-trend-{start_year}-{end_year}")
 
 
 @staff_member_required
@@ -1569,9 +1560,9 @@ def booking_progress_stats_download(request, start_year: int = None, end_year: i
     formatter.add_sheet_from_dataframe("Bookings against date", data_dates)
     formatter.add_sheet_from_dataframe("Days relative to start of camp", data_rel_days)
     if camp_ids is not None:
-        filename = "booking-progress-stats-{0}".format("_".join("{0}-{1}".format(y, s) for y, s in camp_ids))
+        filename = f"booking-progress-stats-{'_'.join(str(camp_id) for camp_id in camp_ids)}"
     else:
-        filename = "booking-progress-stats-{0}-{1}".format(start_year, end_year)
+        filename = f"booking-progress-stats-{start_year}-{end_year}"
     return spreadsheet_response(formatter, filename)
 
 
@@ -1598,7 +1589,7 @@ def booking_summary_stats_download(request, start_year, end_year):
     formatter = get_spreadsheet_formatter(request)
     formatter.add_sheet_from_dataframe("Bookings", data)
     return spreadsheet_response(formatter,
-                                "booking-summary-stats-{0}-{1}".format(start_year, end_year))
+                                f"booking-summary-stats-{start_year}-{end_year}")
 
 
 def _get_booking_ages_stats_from_params(start_year, end_year, camp_ids):
@@ -1638,7 +1629,7 @@ def booking_ages_stats(request, start_year: int = None, end_year: int = None, ca
     colors = []
     if camps:
         colors = [color for (title, color) in
-                  sorted([(c.slug_name_with_year, c.camp_name.color)
+                  sorted([(str(c.url_id), c.camp_name.color)
                           for c in camps])]
         if len(set(colors)) != len(colors):
             # Not enough - fall back to auto
@@ -1664,9 +1655,9 @@ def booking_ages_stats_download(request, start_year: int = None, end_year: int =
     formatter = get_spreadsheet_formatter(request)
     formatter.add_sheet_from_dataframe("Age of campers", data)
     if camp_ids is not None:
-        filename = "booking-ages-stats-{0}".format("_".join("{0}-{1}".format(y, s) for y, s in camp_ids))
+        filename = f"booking-ages-stats-{'_'.join(str(camp_id) for camp_id in camp_ids)}"
     else:
-        filename = "booking-ages-stats-{0}-{1}".format(start_year, end_year)
+        filename = f"booking-ages-stats-{start_year}-{end_year}"
     return spreadsheet_response(formatter, filename)
 
 
@@ -1674,20 +1665,20 @@ def booking_ages_stats_download(request, start_year: int = None, end_year: int =
 def brochure_mailing_list(request, year):
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(addresses_for_mailing_list(year, formatter),
-                                "mailing-list-%s" % year)
+                                f"mailing-list-{year}")
 
 
 def spreadsheet_response(formatter, filename):
     response = HttpResponse(formatter.to_bytes(),
                             content_type=formatter.mimetype)
-    response['Content-Disposition'] = "attachment; filename={0}.{1}".format(filename, formatter.file_ext)
+    response['Content-Disposition'] = f"attachment; filename={filename}.{formatter.file_ext}"
     return response
 
 
 class UserAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_result_label(self, user):
-        return "{0} <{1}>".format(user.full_name, user.email)
+        return f"{user.full_name} <{user.email}>"
 
     def get_queryset(self):
         request = self.request

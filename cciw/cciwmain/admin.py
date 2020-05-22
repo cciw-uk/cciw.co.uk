@@ -24,7 +24,7 @@ def rename_app_list(func):
         if title is not None:
             app_label = title.split(' ')[0]
             if app_label in m:
-                response.context_data['title'] = "%s administration" % m[app_label]
+                response.context_data['title'] = f"{m[app_label]} administration"
         return response
     return _wrapper
 

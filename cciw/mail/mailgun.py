@@ -72,7 +72,7 @@ def create_route(description, expression, actions, priority=None):
 def update_route(id, description, expression, actions, priority=None):
     if priority is None:
         priority = 0
-    return api_request('/routes/{0}'.format(id),
+    return api_request(f'/routes/{id}',
                        method='put',
                        data=dict(description=description,
                                  expression=expression,

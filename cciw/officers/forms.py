@@ -99,7 +99,7 @@ class SendReferenceRequestForm(SendMessageForm):
         cleaned_data = self.cleaned_data
         url = self.message_info['url']
         if url not in cleaned_data.setdefault('message', ''):
-            errmsg = "You removed the link %s from the message.  This link is needed for the referee to be able to submit their reference" % url
+            errmsg = f"You removed the link {url} from the message.  This link is needed for the referee to be able to submit their reference"
             self._errors.setdefault('message', self.error_class([])).append(errmsg)
             del cleaned_data['message']
         return cleaned_data
@@ -139,8 +139,7 @@ class ReferenceForm(StripStringsMixin, forms.ModelForm):
         if reference_contact_users:
             contact_message = (" If you would prefer to discuss your concerns on the telephone "
                                "and in confidence, please contact: " +
-                               " or ".join("{0} on {1}".format(user.full_name,
-                                                               user.contact_phone_number)
+                               " or ".join(f"{user.full_name} on {user.contact_phone_number}"
                                            for user in reference_contact_users))
             self.fields['concerns'].label += contact_message
 

@@ -66,7 +66,7 @@ class ReadOnlyInline(object):
             changed_objects = ()
             deleted_objects = ()
 
-        ReadOnlyFormset.__name__ = 'ReadOnly({0})'.format(FormSet.__name__)
+        ReadOnlyFormset.__name__ = f'ReadOnly({FormSet.__name__})'
         return ReadOnlyFormset
 
 
@@ -248,8 +248,8 @@ def make_change_state_action(state, display_name):
 
 
 class BookingAdmin(admin.ModelAdmin):
-    def camp(obj):
-        return obj.camp.slug_name_with_year
+    def camp(booking):
+        return str(booking.camp.url_id)
     camp.admin_order_field = 'camp__year'
 
     def confirmed(obj):

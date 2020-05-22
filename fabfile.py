@@ -42,7 +42,7 @@ env.num_workers = "3"
 # Python version
 PYTHON_BIN = "python3.7"
 PYTHON_PREFIX = ""  # e.g. /usr/local  Use "" for automatic
-PYTHON_FULL_PATH = "%s/bin/%s" % (PYTHON_PREFIX, PYTHON_BIN) if PYTHON_PREFIX else PYTHON_BIN
+PYTHON_FULL_PATH = f"{PYTHON_PREFIX}/bin/{PYTHON_BIN}" if PYTHON_PREFIX else PYTHON_BIN
 
 
 LOCAL_DB_BACKUPS = rel("..", "db_backups")
@@ -55,7 +55,7 @@ NON_VCS_SOURCES = [
 ]
 SECRETS_FILE = rel(".", SECRETS_FILE_REL)
 
-WEBAPPS_ROOT = "/home/%s/webapps" % env.proj_user
+WEBAPPS_ROOT = f"/home/{env.proj_user}/webapps"
 
 CURRENT_VERSION = 'current'
 
@@ -144,7 +144,7 @@ as_rootuser = with_settings(user='root')
 
 
 def virtualenv(venv):
-    return prefix('source %s/bin/activate' % venv)
+    return prefix(f'source {venv}/bin/activate')
 
 
 @contextmanager
@@ -197,11 +197,11 @@ class Version(object):
         for d in [self.PROJECT_ROOT,
                   self.MEDIA_ROOT_SHARED]:
             if not exists(d):
-                run("mkdir -p %s" % d)
+                run(f"mkdir -p {d}")
         links = [(self.MEDIA_ROOT, self.MEDIA_ROOT_SHARED)]
         for l, dest in links:
             if not exists(l):
-                run("ln -s %s %s" % (dest, l))
+                run(f"ln -s {dest} {l}")
 
         # Perms for usermedia
         run("find %s -type d -exec chmod ugo+rx {} ';'" % self.MEDIA_ROOT_SHARED)
@@ -243,7 +243,7 @@ def provision():
     _install_system()
     _install_locales()
     _fix_startup_services()
-    run("mkdir -p /home/%s/logs" % env.proj_user)
+    run(f"mkdir -p /home/{env.proj_user}/logs")
 
 
 @as_rootuser
@@ -280,8 +280,8 @@ def _ssl_dhparam():
     if not exists(dhparams):
         d = os.path.dirname(dhparams)
         if not exists(d):
-            run("mkdir -p {0}".format(d))
-        run("openssl dhparam -out {0} 2048".format(dhparams))
+            run(f"mkdir -p {d}")
+        run(f"openssl dhparam -out {dhparams} 2048")
 
 
 def _install_python_minimum():
@@ -294,8 +294,8 @@ def _install_locales():
     locale = env.locale.replace("UTF-8", "utf8")
     with hide("stdout"):
         if locale not in run("locale -a"):
-            run("locale-gen %s" % env.locale)
-            run("update-locale %s" % env.locale)
+            run(f"locale-gen {env.locale}")
+            run(f"update-locale {env.locale}")
             run("service postgresql restart")
 
 
@@ -304,13 +304,13 @@ def _fix_startup_services():
     for service in ["supervisor",
                     "postgresql",
                     ]:
-        run("update-rc.d %s defaults" % service)
-        run("service %s start" % service)
+        run(f"update-rc.d {service} defaults")
+        run(f"service {service} start")
 
     for service in ['memcached',  # We use our own instance
                     ]:
-        run("update-rc.d %s disable" % service)
-        run("service %s stop" % service)
+        run(f"update-rc.d {service} disable")
+        run(f"service {service} stop")
 
 
 @as_rootuser
@@ -387,7 +387,7 @@ def upload_template_and_reload(name, target):
     remote_data = ""
     if exists(remote_path):
         with hide("stdout"):
-            remote_data = run("cat %s" % remote_path)
+            remote_data = run(f"cat {remote_path}")
     env_data = env.copy()
     env_data.update(target.__dict__)
     with open(local_path, "r") as f:
@@ -398,9 +398,9 @@ def upload_template_and_reload(name, target):
         return
     upload_template(local_path, remote_path, env_data, backup=False)
     if owner:
-        run("chown %s %s" % (owner, remote_path))
+        run(f"chown {owner} {remote_path}")
     if mode:
-        run("chmod %s %s" % (mode, remote_path))
+        run(f"chmod {mode} {remote_path}")
     if reload_command:
         run(reload_command)
 
@@ -432,7 +432,7 @@ def create_databases():
 def pg_run(cmd, run_as_postgres):
     with cd("/"):  # suppress "could not change directory" warnings
         if run_as_postgres:
-            return run("sudo -u postgres %s" % cmd)
+            return run(f"sudo -u postgres {cmd}")
         else:
             return run(cmd)
 
@@ -440,7 +440,7 @@ def pg_run(cmd, run_as_postgres):
 def pg_local(cmd, run_as_postgres, capture=False):
     with lcd("/"):  # suppress "could not change directory" warnings
         if run_as_postgres:
-            retval = local("sudo -u postgres %s" % cmd, capture=capture)
+            retval = local(f"sudo -u postgres {cmd}", capture=capture)
         else:
             retval = local(cmd, capture=capture)
     if capture:
@@ -556,8 +556,7 @@ def push_sources(target):
             # For speed, clone the 'current' repo which will be very similar to
             # what we are pushing. This will also be fast due to 'hg clone'
             # using hard links
-            run("hg clone %s %s" % (previous_src_root,
-                                    target_src_root))
+            run(f"hg clone {previous_src_root} {target_src_root}")
         else:
             with cd(target_src_root):
                 run("hg init")
@@ -568,7 +567,7 @@ def push_sources(target):
                path=target_src_root,
                ))
     with cd(target_src_root):
-        run("hg update -r %s" % target.version)
+        run(f"hg update -r {target.version}")
 
     # Also need to sync files that are not in main sources VCS repo.
     push_non_vcs_sources(target)
@@ -580,7 +579,7 @@ def push_non_vcs_sources(target):
     Push non-VCS sources to server
     """
     for s in NON_VCS_SOURCES:
-        local("rsync %s %s@%s:%s/%s" % (s, env.proj_user, env.hosts[0], target.SRC_ROOT, s))
+        local(f"rsync {s} {env.proj_user}@{env.hosts[0]}:{target.SRC_ROOT}/{s}")
 
 
 @task
@@ -589,7 +588,7 @@ def get_non_vcs_sources(target):
     Pull non-VCS sources (including secrets.json) from server
     """
     for s in NON_VCS_SOURCES:
-        local("rsync %s@%s:%s/%s %s" % (env.proj_user, env.hosts[0], target.SRC_ROOT, s, s))
+        local(f"rsync {env.proj_user}@{env.hosts[0]}:{target.SRC_ROOT}/{s} {s}")
 
 
 def tag_deploy():
@@ -600,7 +599,7 @@ def tag_deploy():
 
 def ensure_src_dir(target):
     if not exists(target.SRC_ROOT):
-        run("mkdir -p %s" % target.SRC_ROOT)
+        run(f"mkdir -p {target.SRC_ROOT}")
 
 
 def push_secrets(target):
@@ -613,7 +612,7 @@ def create_venv(target):
     if exists(venv_root):
         return
 
-    run("virtualenv --python=%s %s" % (PYTHON_BIN, venv_root))
+    run(f"virtualenv --python={PYTHON_BIN} {venv_root}")
     run("echo %s > %s/lib/%s/site-packages/projectsource.pth" %
         (target.SRC_ROOT, target.VENV_ROOT, PYTHON_BIN))
 
@@ -652,10 +651,10 @@ def build_static(target):
         run("./manage.py collectstatic -v 0 --noinput")
 
     # This is needed for certbot/letsencrypt:
-    run("mkdir -p {0}/root".format(target.STATIC_ROOT))
+    run(f"mkdir -p {target.STATIC_ROOT}/root")
 
     # Permissions
-    run("chmod -R ugo+r %s" % target.STATIC_ROOT)
+    run(f"chmod -R ugo+r {target.STATIC_ROOT}")
 
 
 def update_database(target):
@@ -666,7 +665,7 @@ def update_database(target):
             args = "--fake"
         else:
             args = "--fake-initial"
-        run("./manage.py migrate --noinput %s" % args)
+        run(f"./manage.py migrate --noinput {args}")
         run("./manage.py setup_auth_groups")
 
 
@@ -678,15 +677,15 @@ def setup_mailgun(target):
 def copy_protected_downloads(target):
     rsync_dir(LOCAL_SECURE_DOWNLOAD_ROOT,
               target.SECURE_DOWNLOAD_ROOT)
-    run("chmod -R ugo+r %s" % target.SECURE_DOWNLOAD_ROOT)
-    run("find %s -type d | xargs chmod ugo+rx" % target.SECURE_DOWNLOAD_ROOT)
+    run(f"chmod -R ugo+r {target.SECURE_DOWNLOAD_ROOT}")
+    run(f"find {target.SECURE_DOWNLOAD_ROOT} -type d | xargs chmod ugo+rx")
 
 
 def rsync_dir(local_dir, dest_dir):
     # clean first
     with settings(warn_only=True):
-        local("find -L %s -name '*.pyc' | xargs rm || true" % local_dir, capture=True)
-    local("rsync -z -r -L --delete --exclude='_build' --exclude='.hg' --exclude='.git' --exclude='.svn' --delete-excluded %s/ %s@%s:%s" % (local_dir, env.proj_user, env.hosts[0], dest_dir), capture=False)
+        local(f"find -L {local_dir} -name '*.pyc' | xargs rm || true", capture=True)
+    local(f"rsync -z -r -L --delete --exclude='_build' --exclude='.hg' --exclude='.git' --exclude='.svn' --delete-excluded {local_dir}/ {env.proj_user}@{env.hosts[0]}:{dest_dir}", capture=False)
 
 
 def get_target_current_version(target):
@@ -696,9 +695,7 @@ def get_target_current_version(target):
 def make_target_current(target):
     # Switches synlink for 'current' to point to 'target.PROJECT_ROOT'
     current_target = get_target_current_version(target)
-    run("ln -snf %s %s" %
-        (target.PROJECT_ROOT,
-         current_target.PROJECT_ROOT))
+    run(f"ln -snf {target.PROJECT_ROOT} {current_target.PROJECT_ROOT}")
 
 
 def get_current_hg_ref():
@@ -718,7 +715,7 @@ def fake_migrations():
 def delete_old_versions():
     with cd(Version.VERSIONS_ROOT):
         commitref_glob = "?" * 12
-        run("ls -dtr %s | head -n -4 | xargs rm -rf" % commitref_glob)
+        run(f"ls -dtr {commitref_glob} | head -n -4 | xargs rm -rf")
 
 
 # --- Managing running system ---
@@ -729,7 +726,7 @@ def stop_webserver():
     """
     Stop the webserver that is running the Django instance
     """
-    supervisorctl("stop %s_uwsgi" % env.proj_name)
+    supervisorctl(f"stop {env.proj_name}_uwsgi")
 
 
 @task
@@ -737,7 +734,7 @@ def start_webserver():
     """
     Starts the webserver that is running the Django instance
     """
-    supervisorctl("start %s_uwsgi" % env.proj_name)
+    supervisorctl(f"start {env.proj_name}_uwsgi")
 
 
 @task
@@ -746,9 +743,9 @@ def restart_webserver():
     """
     Gracefully restarts the webserver that is running the Django instance
     """
-    pidfile = "/tmp/%s_uwsgi.pid" % env.proj_name
+    pidfile = f"/tmp/{env.proj_name}_uwsgi.pid"
     if exists(pidfile):
-        output = run("kill -HUP `cat %s`" % pidfile, warn_only=True)
+        output = run(f"kill -HUP `cat {pidfile}`", warn_only=True)
         if output.failed:
             start_webserver()
     else:
@@ -799,7 +796,7 @@ def get_and_load_production_db():
 @task
 def get_live_db():
     filename = dump_db(Version.current())
-    local("mkdir -p %s" % LOCAL_DB_BACKUPS)
+    local(f"mkdir -p {LOCAL_DB_BACKUPS}")
     return list(get(filename, local_path=LOCAL_DB_BACKUPS + "/%(basename)s"))[0]
 
 
@@ -825,27 +822,27 @@ def local_restore_from_dump(filename):
 
 
 def make_django_db_filename(target):
-    return "/home/%s/db-%s.django.%s.pgdump" % (env.user, target.DB['NAME'], datetime.now().strftime("%Y-%m-%d_%H.%M.%S"))
+    return f"/home/{env.user}/db-{target.DB['NAME']}.django.{datetime.now().strftime('%Y-%m-%d_%H.%M.%S')}.pgdump"
 
 
 def dump_db(target):
     filename = make_django_db_filename(target)
     db = target.DB
-    run("pg_dump -Fc -U %s -O -f %s %s" % (db['USER'], filename, db['NAME']))
+    run(f"pg_dump -Fc -U {db['USER']} -O -f {filename} {db['NAME']}")
     return filename
 
 
 def pg_restore_cmds(db, filename, clean=False):
     return [
         (False,
-         "pg_restore -h localhost -O -U %s %s -d %s %s" % (db['USER'], " -c " if clean else "", db['NAME'], filename)),
+         f"pg_restore -h localhost -O -U {db['USER']} {' -c ' if clean else ''} -d {db['NAME']} {filename}"),
     ]
 
 
 def db_create_user_commands(db):
     return [
         (True,
-         """psql -U postgres -d template1 -c "CREATE USER %s WITH PASSWORD '%s';" """ % (db['USER'], db['PASSWORD'])),
+         f"psql -U postgres -d template1 -c \"CREATE USER {db['USER']} WITH PASSWORD '{db['PASSWORD']}';\" "),
     ]
 
 
@@ -873,10 +870,10 @@ def db_create_commands(db):
          """ " """ % (db['NAME'], env.locale, env.locale)),
 
         (True,
-         """psql -U postgres -d template1 -c "GRANT ALL ON DATABASE %s TO %s;" """ % (db['NAME'], db['USER'])),
+         f"psql -U postgres -d template1 -c \"GRANT ALL ON DATABASE {db['NAME']} TO {db['USER']};\" "),
 
         (True,
-         """psql -U postgres -d template1 -c "ALTER USER %s CREATEDB;" """ % db['USER']),
+         f"psql -U postgres -d template1 -c \"ALTER USER {db['USER']} CREATEDB;\" "),
 
     ]
 
@@ -884,7 +881,7 @@ def db_create_commands(db):
 def db_drop_database_commands(db):
     return [
         (True,
-         """psql -U postgres -d template1 -c "DROP DATABASE IF EXISTS %s;" """ % db['NAME']),
+         f"psql -U postgres -d template1 -c \"DROP DATABASE IF EXISTS {db['NAME']};\" "),
 
     ]
 
@@ -930,7 +927,7 @@ def db_restore(db, filename):
 def migrate_upload_db(local_filename):
     stop_all()
     local_filename = os.path.normpath(os.path.abspath(local_filename))
-    remote_filename = "/home/%s/%s" % (env.proj_user, os.path.basename(local_filename))
+    remote_filename = f"/home/{env.proj_user}/{os.path.basename(local_filename)}"
     put(local_filename, remote_filename)
     target = Version.current()
     db_restore(target.DB, remote_filename)
@@ -944,7 +941,7 @@ def upload_usermedia():
     Upload locally stored usermedia (e.g. booking forms) to the live site.
     """
     target = Version.current()
-    local("rsync -z -r --progress %s/ %s@%s:%s" % (LOCAL_USERMEDIA, env.proj_user, env.hosts[0], target.MEDIA_ROOT), capture=False)
+    local(f"rsync -z -r --progress {LOCAL_USERMEDIA}/ {env.proj_user}@{env.hosts[0]}:{target.MEDIA_ROOT}", capture=False)
     run("find -L %s -type f -exec chmod ugo+r {} ';'" % target.MEDIA_ROOT)
     run("find %s -type d -exec chmod ugo+rx {} ';'" % target.MEDIA_ROOT_SHARED)
 
@@ -952,7 +949,7 @@ def upload_usermedia():
 @task
 def download_usermedia():
     target = Version.current()
-    local("rsync -z -r  %s@%s:%s/ %s" % (env.proj_user, env.hosts[0], target.MEDIA_ROOT, LOCAL_USERMEDIA), capture=False)
+    local(f"rsync -z -r  {env.proj_user}@{env.hosts[0]}:{target.MEDIA_ROOT}/ {LOCAL_USERMEDIA}", capture=False)
 
 
 # --- SSL ---
@@ -963,26 +960,19 @@ def download_usermedia():
 def install_or_renew_ssl_certificate():
     version = Version.current()
     certbot_static_path = version.STATIC_ROOT + "/root"
-    run("test -d {certbot_static_path} || mkdir {certbot_static_path}".format(
-        certbot_static_path=certbot_static_path))
-
-    run("letsencrypt certonly --webroot"
-        " -w {certbot_static_path}"
-        " -d {domain}".format(
-            certbot_static_path=certbot_static_path,
-            domain=env.domains[0],
-        ))
+    run(f"test -d {certbot_static_path} || mkdir {certbot_static_path}")
+    run(f"letsencrypt certonly --webroot -w {certbot_static_path} -d {env.domains[0]}")
     run("service nginx restart")
 
 
 @task
 def download_letsencrypt_conf():
-    local("rsync -r -l root@%s:/etc/letsencrypt/ config/letsencrypt/" % env.hosts[0])
+    local(f"rsync -r -l root@{env.hosts[0]}:/etc/letsencrypt/ config/letsencrypt/")
 
 
 @task
 def upload_letsencrypt_conf():
-    local("rsync -r -l config/letsencrypt/ root@%s:/etc/letsencrypt/" % env.hosts[0])
+    local(f"rsync -r -l config/letsencrypt/ root@{env.hosts[0]}:/etc/letsencrypt/")
 
 
 # ---- ngrok -----
@@ -1019,13 +1009,13 @@ def run_ngrok(port=8002):
 
     # launch fab in separate process in background.
     os.spawnv(os.P_NOWAIT,
-              "/bin/sh", ["sh", "-c", "fab ngrok_helper:{0} > /dev/null 2> /dev/null".format(log_filename)])
+              "/bin/sh", ["sh", "-c", f"fab ngrok_helper:{log_filename} > /dev/null 2> /dev/null"])
 
     # Now launch ngrok, replacing current process
     ngrokpath = _get_path("ngrok")
 
     if get_ngrok_version() == NGROK_1:
-        os.execv(ngrokpath, ["ngrok", "--log=%s" % log_filename, str(port)])
+        os.execv(ngrokpath, ["ngrok", f"--log={log_filename}", str(port)])
     else:
         os.execv(ngrokpath, ["ngrok", "http", str(port), "--log-level", "debug", "--log", log_filename])
 
@@ -1085,7 +1075,7 @@ def initial_dev_setup():
     if 'VIRTUAL_ENV' not in os.environ:
         raise AssertionError("You need to set up a virtualenv before using this")
     if not os.path.exists(LOCAL_SECURE_DOWNLOAD_ROOT):
-        local("mkdir -p %s" % LOCAL_SECURE_DOWNLOAD_ROOT)
+        local(f"mkdir -p {LOCAL_SECURE_DOWNLOAD_ROOT}")
     if not os.path.exists("../logs"):
         local("mkdir ../logs")
     _install_deps_local()

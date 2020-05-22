@@ -43,11 +43,11 @@ def fix_empty_values(apps, schema_editor):
             norm_val = re.sub(r"[\/\\\.\-]*$", "", val.strip()).lower()
             if ((norm_val in BAD_EMPTY_VALS) or
                 (norm_val == "" and val != "")):
-                print("Booking: {0} - discarding {1} value {2}".format(booking.id, field, repr(val)))
+                print(f"Booking: {booking.id} - discarding {field} value {repr(val)}")
                 setattr(booking, field, "")
                 dirty = True
         if dirty:
-            print("Saving booking {0}".format(booking.id))
+            print(f"Saving booking {booking.id}")
             booking.save()
 
 

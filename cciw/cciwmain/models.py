@@ -1,6 +1,7 @@
 import os.path
 from datetime import date
 
+
 from colorful.fields import RGBColorField
 from django.conf import settings
 from django.db import models
@@ -8,6 +9,8 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.html import format_html
+
+from .common import CampId
 
 
 class Site(models.Model):
@@ -129,7 +132,7 @@ class Camp(models.Model):
             leaders.append(chaplain)
 
         leadertext = self._format_leaders(leaders)
-        return "%s (%s)" % (self.slug_name_with_year, leadertext)
+        return f"{self.url_id} ({leadertext})"
 
     @cached_property
     def previous_camp(self):
@@ -178,19 +181,15 @@ class Camp(models.Model):
         return self.camp_name.slug
 
     @property
-    def slug_name_with_year(self):
-        return "%s-%s" % (self.year, self.slug_name)
-
-    @property
     def url_id(self):
         """
         'camp_id' used in URLs
         """
-        return (self.year, self.slug_name)
+        return CampId(self.year, self.slug_name)
 
     @property
     def camp_ids_for_stats(self):
-        camps = [self, self.previous_camp] if self.previous_camp else [self]
+        camps = [self.previous_camp, self] if self.previous_camp else [self]
         return [c.url_id for c in camps]
 
     @property
@@ -199,7 +198,7 @@ class Camp(models.Model):
 
     @property
     def bracketted_old_name(self):
-        return (" (Camp {0})".format(self.old_name) if self.old_name else "")
+        return (f" (Camp {self.old_name})" if self.old_name else "")
 
     @property
     def nice_dates(self):

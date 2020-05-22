@@ -192,7 +192,7 @@ def addresses_for_mailing_list(year, spreadsheet):
     rows = []
     domain = get_current_site(None).domain
 
-    link_start = "https://{}".format(domain)
+    link_start = f"https://{domain}"
 
     for account, acc_bookings in groupby(bookings, lambda b: b.account):
         if not account.include_in_mailings:

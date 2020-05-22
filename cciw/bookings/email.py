@@ -148,7 +148,7 @@ def send_places_confirmed_email(bookings, **kwargs):
                 'camp': booking.camp,
             }
             body = loader.render_to_string('cciw/bookings/late_place_confirmed_email.txt', c)
-            subject = "[CCIW] Late booking: %s" % booking.name
+            subject = f"[CCIW] Late booking: {booking.name}"
 
             queued_mail.send_mail(subject, body, settings.SERVER_EMAIL,
                                   admin_emails_for_camp(booking.camp))

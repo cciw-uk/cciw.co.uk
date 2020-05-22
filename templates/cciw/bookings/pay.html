@@ -34,9 +34,9 @@
 
     {% include "cciw/bookings/pending_payment_notice.html" %}
 
-    {% if balance_full != balance_due %}
+    {% if balance_full != balance_due_now %}
 
-      {% if balance_due > 0 %}
+      {% if balance_due_now > 0 %}
 
         <p>You do not yet have to pay the full amount — at this point you only have to
           pay the deposits to confirm your place. Choose from the options below:</p>
@@ -57,10 +57,10 @@
     <div class="payboxes">
 
       {# Minimum/deposits #}
-      {% if balance_full != balance_due and balance_due > 0 %}
+      {% if balance_full != balance_due_now and balance_due_now > 0 %}
         <div class="paybox">
           <h3>Pay minimum</h3>
-          <p><b>Amount: £{{ balance_due }}</b></p>
+          <p><b>Amount: £{{ balance_due_now }}</b></p>
           {{ paypal_form.render }}
         </div>
       {% endif %}
@@ -73,7 +73,7 @@
       </div>
 
       {# Custom #}
-      {% if balance_due < balance_full %}
+      {% if balance_due_now < balance_full %}
         <div class="paybox">
           <h3>Pay other amount</h3>
           {{ paypal_form_custom.render }}

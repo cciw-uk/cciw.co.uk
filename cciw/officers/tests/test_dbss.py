@@ -225,7 +225,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
                          DBSOFFICER[0])
 
         if self.is_full_browser_test:
-            self.assertElementText('#id_last_dbs_form_sent_{0}'.format(officer.id),
+            self.assertElementText(f'#id_last_dbs_form_sent_{officer.id}',
                                    'Just now')
 
         if self.is_full_browser_test:
@@ -241,7 +241,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
         self.assertTextPresent('Officer does not consent')
-        self.assertEqual(self.get_element_text('#id_last_leader_alert_sent_{0}'.format(self.officer_user.id)).strip(),
+        self.assertEqual(self.get_element_text(f'#id_last_leader_alert_sent_{self.officer_user.id}').strip(),
                          'No record')
         self.click_alert_leaders_button(self.officer_user)
         self.assertTextPresent("Report DBS problem to leaders")
@@ -262,7 +262,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.handle_closed_window()
         self.assertUrlsEqual(url)
 
-        self.assertEqual(self.get_element_text('#id_last_leader_alert_sent_{0}'.format(self.officer_user.id)).strip().replace('\u00A0', ' '),
+        self.assertEqual(self.get_element_text(f'#id_last_leader_alert_sent_{self.officer_user.id}').strip().replace('\u00A0', ' '),
                          "0 minutes ago")
 
     def test_request_dbs_form_sent(self):
@@ -270,7 +270,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
-        self.assertEqual(self.get_element_text('#id_last_form_request_sent_{0}'.format(self.officer_user.id)).strip(),
+        self.assertEqual(self.get_element_text(f'#id_last_form_request_sent_{self.officer_user.id}').strip(),
                          'No record')
         self.click_request_dbs_form_button(self.officer_user)
         self.assertTextPresent("Ask for DBS form to be sent to {0} {1}".format(self.officer_user.first_name,
@@ -290,7 +290,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.handle_closed_window()
         self.assertUrlsEqual(url)
 
-        self.assertEqual(self.get_element_text('#id_last_form_request_sent_{0}'.format(self.officer_user.id)).strip().replace('\u00A0', ' '),
+        self.assertEqual(self.get_element_text(f'#id_last_form_request_sent_{self.officer_user.id}').strip().replace('\u00A0', ' '),
                          "0 minutes ago")
 
     def test_register_received_dbs(self):
@@ -361,13 +361,13 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.submit(self.register_received_button_selector(officer))
 
     def register_received_button_selector(self, officer):
-        return '#id_register_received_dbs_{0}'.format(officer.id)
+        return f'#id_register_received_dbs_{officer.id}'
 
     def click_dbs_checked_online_button(self, officer):
         self.submit(self.dbs_checked_online_button_selector(officer))
 
     def dbs_checked_online_button_selector(self, officer):
-        return '#id_dbs_checked_online_{0}'.format(officer.id)
+        return f'#id_dbs_checked_online_{officer.id}'
 
 
 class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):
@@ -378,16 +378,16 @@ class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):
         pass
 
     def click_dbs_sent_button(self, officer):
-        self.submit('#id_send_{0}'.format(officer.id))
+        self.submit(f'#id_send_{officer.id}')
 
     def click_dbs_sent_undo_button(self, officer):
         raise NotImplementedError()
 
     def click_alert_leaders_button(self, officer):
-        self.submit('#id_alert_leaders_{0}'.format(officer.id))
+        self.submit(f'#id_alert_leaders_{officer.id}')
 
     def click_request_dbs_form_button(self, officer):
-        self.submit('#id_request_form_to_be_sent_{0}'.format(officer.id))
+        self.submit(f'#id_request_form_to_be_sent_{officer.id}')
 
 
 class ManageDbsPageSL(ManageDbsPageBase, SeleniumBase):
@@ -400,20 +400,20 @@ class ManageDbsPageSL(ManageDbsPageBase, SeleniumBase):
         self.wait_for_ajax()
 
     def click_dbs_sent_button(self, officer):
-        self.click('#id_send_{0}'.format(officer.id))
+        self.click(f'#id_send_{officer.id}')
         self.wait_for_ajax()
 
     def click_dbs_sent_undo_button(self, officer):
-        self.click('#id_undo_{0}'.format(officer.id))
+        self.click(f'#id_undo_{officer.id}')
         self.wait_for_ajax()
 
     def click_alert_leaders_button(self, officer):
-        self.click('#id_alert_leaders_{0}'.format(officer.id))
+        self.click(f'#id_alert_leaders_{officer.id}')
         self.switch_window()
         self.wait_until_loaded('body')
 
     def click_request_dbs_form_button(self, officer):
-        self.click('#id_request_form_to_be_sent_{0}'.format(officer.id))
+        self.click(f'#id_request_form_to_be_sent_{officer.id}')
         self.switch_window()
         self.wait_until_loaded('body')
 

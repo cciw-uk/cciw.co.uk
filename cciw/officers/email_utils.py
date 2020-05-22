@@ -24,6 +24,6 @@ def formatted_email(user):
     if len(email) == 0:
         return None
     elif len(name) > 0:
-        return '"%s" <%s>' % (name, email)
+        return f'"{name}" <{email}>'
     else:
         return email

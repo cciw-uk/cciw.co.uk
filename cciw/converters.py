@@ -25,21 +25,21 @@ class TwoDigitMonthConverter:
 
 
 class CampIdConverter:
+    # See also CampId.__str__
     regex = r'\d{4}-[^/]+'
 
     @staticmethod
     def to_python(value) -> CampId:
         year, slug = value.split('-', 1)
-        return CampId(int(year), slug)
+        return CampId(year, slug)
 
     @staticmethod
-    def to_url(value):
-        year, slug = value
-        return "{0}-{1}".format(year, slug)
+    def to_url(value: CampId):
+        return str(value)
 
 
 class CampIdListConverter:
-    regex = r'{0}(,{1})*'.format(CampIdConverter.regex, CampIdConverter.regex)
+    regex = f'{CampIdConverter.regex}(,{CampIdConverter.regex})*'
 
     def to_python(self, value) -> typing.List[CampId]:
         return [

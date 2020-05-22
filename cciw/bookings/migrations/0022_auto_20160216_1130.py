@@ -27,7 +27,7 @@ def forwards(apps, schema):
             model = models[item['Model']]
             part = item['Part']
             id = item['id']
-            print("Fixing {0}:{1}:{2}".format(model.__name__, id, part))
+            print(f"Fixing {model.__name__}:{id}:{part}")
             if part == 'address':
                 prefix = 'address_'
             elif part == 'contact_address':
@@ -50,7 +50,7 @@ def forwards(apps, schema):
                 id=id
             ).update(**field_d)
             c += 1
-    print("Migrated {0} records".format(c))
+    print(f"Migrated {c} records")
 
 
 def backwards(apps, schema):

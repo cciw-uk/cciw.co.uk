@@ -108,7 +108,7 @@ class Price(models.Model):
         unique_together = [('year', 'price_type')]
 
     def __str__(self):
-        return "%s %s - %s" % (self.get_price_type_display(), self.year, self.price)
+        return f"{self.get_price_type_display()} {self.year} - {self.price}"
 
     @classmethod
     def get_deposit_prices(cls, years=None):
@@ -137,10 +137,12 @@ class BookingAccountManagerBase(models.Manager):
         )
         retval = []
         for account in potentials:
-            balance_due = account.get_balance(confirmed_only=True,
-                                              allow_deposits=True)
-            if balance_due > 0:
-                account.balance_due = balance_due
+            confirmed_balance_due = account.get_balance(
+                confirmed_only=True,
+                allow_deposits=True,
+            )
+            if confirmed_balance_due > 0:
+                account.confirmed_balance_due = confirmed_balance_due
                 retval.append(account)
         return retval
 
@@ -221,7 +223,7 @@ class BookingAccount(models.Model):
 
     # Business methods:
 
-    def get_balance(self, confirmed_only=False, allow_deposits=False, deposit_price_dict=None):
+    def get_balance(self, *, confirmed_only, allow_deposits, deposit_price_dict=None):
         """
         Gets the balance to pay on the account.
         If confirmed_only=True, then only bookings that are confirmed
@@ -279,8 +281,14 @@ class BookingAccount(models.Model):
 
         return total - self.total_received
 
-    def admin_balance(self):
+    def get_balance_full(self):
         return self.get_balance(confirmed_only=False, allow_deposits=False)
+
+    def get_balance_due_now(self):
+        return self.get_balance(confirmed_only=False, allow_deposits=True)
+
+    def admin_balance(self):
+        return self.get_balance_full()
     admin_balance.short_description = 'balance'
     admin_balance = property(admin_balance)
 
@@ -377,17 +385,17 @@ class BookingAccount(models.Model):
                                   .order_by('booking_expires')
                                   .prefetch_related('camp')
                                   )
-        i = 0
         confirmed_bookings = []
-        while pot > 0 and i < len(candidate_bookings):
-            b = candidate_bookings[i]
-            amount = b.amount_now_due()
+        for booking in candidate_bookings:
+            if pot <= 0:
+                break
+            amount = booking.amount_now_due()
             if amount <= pot:
-                b.confirm()
-                b.save()
-                confirmed_bookings.append(b)
+                booking.confirm()
+                booking.save()
+                confirmed_bookings.append(booking)
                 pot -= amount
-            i += 1
+
         if confirmed_bookings:
             places_confirmed.send(self, bookings=confirmed_bookings, payment_received=True)
 
@@ -462,7 +470,7 @@ class BookingQuerySet(models.QuerySet):
         return self.filter(state=BOOKING_BOOKED,
                            booking_expires__isnull=False)
 
-    def payable(self, confirmed_only=None, allow_deposits=None, today=None, from_list=None):
+    def payable(self, *, confirmed_only, allow_deposits, today=None, from_list=None):
         """
         Returns bookings for which payment is due.
         If confirmed_only is True, unconfirmed places are excluded.
@@ -511,15 +519,12 @@ class BookingQuerySet(models.QuerySet):
 
             return retval
 
-    def only_deposit_required(self, confirmed_only=None, today=None, from_list=None):
-        if confirmed_only is None:
-            raise ValueError("confirmed_only must be True or False")
-
+    def only_deposit_required(self, *, confirmed_only, today=None, from_list=None):
         if today is None:
             today = date.today()
         cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
 
-        retval = self.payable(confirmed_only, False, today=today, from_list=from_list)
+        retval = self.payable(confirmed_only=confirmed_only, allow_deposits=False, today=today, from_list=from_list)
         if isinstance(retval, list):
             return [b for b in retval if b.camp.start_date > cutoff]
         else:
@@ -552,13 +557,6 @@ class BookingManagerBase(models.Manager):
 
     def get_queryset(self):
         return super(BookingManagerBase, self).get_queryset().select_related('camp', 'account')
-
-    def most_recent_booking_year(self):
-        b = self.get_queryset().booked().order_by('-camp__year').select_related('camp').first()
-        if b:
-            return b.camp.year
-        else:
-            return None
 
 
 BookingManager = BookingManagerBase.from_queryset(BookingQuerySet)
@@ -659,14 +657,25 @@ class Booking(models.Model):
     # Methods
 
     def __str__(self):
-        return "%s, %s, %s" % (self.name, self.camp.slug_name_with_year,
-                               self.account)
+        return f"{self.name}, {self.camp.url_id}, {self.account}"
 
     @property
     def name(self):
-        return "%s %s" % (self.first_name, self.last_name)
+        return f"{self.first_name} {self.last_name}"
 
     # Main business rules here
+    def save_for_account(self, booking_account):
+        """
+        Saves the booking for an account that is creating/editing online
+        """
+        self.account = booking_account
+        self.early_bird_discount = False  # We only allow this to be True when booking
+        self.auto_set_amount_due()
+        self.state = BOOKING_INFO_COMPLETE
+        if self.id is None:
+            self.created_online = True
+        self.save()
+
     @property
     def is_booked(self):
         return self.state == BOOKING_BOOKED
@@ -922,7 +931,7 @@ class Booking(models.Model):
         if places_available:
             for sex_const, sex_label, places_left_for_sex in SEXES:
                 if self.sex == sex_const and places_left_for_sex <= 0:
-                    errors.append("There are no places left for {0} on this camp.".format(sex_label))
+                    errors.append(f"There are no places left for {sex_label} on this camp.")
                     places_available = False
                     break
 
@@ -954,7 +963,7 @@ class Booking(models.Model):
         if booking_sec and self.price_type != PRICE_CUSTOM:
             expected_amount = self.expected_amount_due()
             if self.amount_due != expected_amount:
-                errors.append("The 'amount due' is not the expected value of £%s." % expected_amount)
+                errors.append(f"The 'amount due' is not the expected value of £{expected_amount}.")
 
         if booking_sec and not self.created_online:
             if self.early_bird_discount:
@@ -1228,7 +1237,7 @@ class ManualPayment(ManualPaymentBase):
         base_manager_name = 'objects'
 
     def __str__(self):
-        return "Manual payment of £%s from %s" % (self.amount, self.account)
+        return f"Manual payment of £{self.amount} from {self.account}"
 
 
 class RefundPayment(ManualPaymentBase):
@@ -1242,7 +1251,7 @@ class RefundPayment(ManualPaymentBase):
         base_manager_name = 'objects'
 
     def __str__(self):
-        return "Refund payment of £%s to %s" % (self.amount, self.account)
+        return f"Refund payment of £{self.amount} to {self.account}"
 
 
 class AccountTransferPayment(NoEditMixin, models.Model):
@@ -1308,10 +1317,10 @@ class PaymentSource(models.Model):
         elif self.ipn_payment_id is not None:
             return "PayPal"
         else:
-            raise ValueError("No related object for PaymentSource {0}".format(self.id))
+            raise ValueError(f"No related object for PaymentSource {self.id}")
 
     def _assert_one_source(self):
-        attrs = ['{}_id'.format(a) for a in self.MODEL_MAP.values()]
+        attrs = [f'{a}_id' for a in self.MODEL_MAP.values()]
         if not [getattr(self, a) for a in attrs].count(None) == len(attrs) - 1:
             raise AssertionError("PaymentSource must have exactly one payment FK set")
 
@@ -1322,7 +1331,7 @@ class PaymentSource(models.Model):
         """
         source_cls = source_instance.__class__
         if source_cls not in cls.MODEL_MAP:
-            raise AssertionError("Can't create PaymentSource for {0}".format(source_cls))
+            raise AssertionError(f"Can't create PaymentSource for {source_cls}")
         attr_name_for_model = cls.MODEL_MAP[source_cls]
         return cls.objects.create(**{attr_name_for_model: source_instance})
 
@@ -1417,6 +1426,14 @@ def process_all_payments():
                     .select_for_update()
                     .filter(processed__isnull=True).order_by('created')):
         process_one_payment(payment)
+
+
+def most_recent_booking_year():
+    booking = Booking.objects.booked().order_by('-camp__year').select_related('camp').first()
+    if booking:
+        return booking.camp.year
+    else:
+        return None
 
 
 from . import hooks  # NOQA isort:skip

@@ -23,11 +23,11 @@ from paypal.standard.forms import PayPalPaymentsForm
 from cciw.bookings.email import send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
 from cciw.bookings.middleware import get_booking_account_from_request, unset_booking_account_cookie
-from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_INFO_COMPLETE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
-                                  PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
-                                  REQUIRED_PRICE_TYPES, Booking, BookingAccount, Price, any_bookings_possible,
-                                  book_basket_now, build_paypal_custom_field, early_bird_is_available,
-                                  get_early_bird_cutoff_date, is_booking_open, is_booking_open_thisyear)
+from cciw.bookings.models import (BOOKING_APPROVED, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_DEPOSIT,
+                                  PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL, REQUIRED_PRICE_TYPES, Booking, BookingAccount,
+                                  Price, any_bookings_possible, book_basket_now, build_paypal_custom_field,
+                                  early_bird_is_available, get_early_bird_cutoff_date, is_booking_open,
+                                  is_booking_open_thisyear)
 from cciw.cciwmain import common
 from cciw.cciwmain.common import ajax_form_validate, get_current_domain
 from cciw.cciwmain.decorators import json_response
@@ -86,11 +86,11 @@ booking_secretary_required = user_passes_test_improved(lambda user:
 def index(request):
     ensure_booking_account_attr(request)
     year = common.get_thisyear()
-    bookingform_relpath = "%s/booking_form_%s.pdf" % (settings.BOOKINGFORMDIR, year)
+    bookingform_relpath = f"{settings.BOOKINGFORMDIR}/booking_form_{year}.pdf"
     context = {
         'title': 'Booking',
     }
-    if os.path.isfile("%s/%s" % (settings.MEDIA_ROOT, bookingform_relpath)):
+    if os.path.isfile(f"{settings.MEDIA_ROOT}/{bookingform_relpath}"):
         context['bookingform'] = bookingform_relpath
     booking_open = is_booking_open(year)
     if booking_open:
@@ -261,24 +261,16 @@ def add_or_edit_place(request, context, booking_id=None):
         if request.method == "POST" and not booking.is_user_editable():
             # Redirect to same view, but GET
             return HttpResponseRedirect(request.get_full_path())
-        new_booking = False
     else:
         # Add
         booking = None
-        new_booking = True
 
     if request.method == "POST":
         form = form_class(request.POST, instance=booking)
         if form.is_valid():
-            form.instance.account = request.booking_account
-            form.instance.early_bird_discount = False  # We only allow this to be True when booking
-            form.instance.auto_set_amount_due()
-            form.instance.state = BOOKING_INFO_COMPLETE
-            if new_booking:
-                form.instance.created_online = True
-            form.save()
-
-            messages.info(request, 'Details for "%s" were saved successfully' % form.instance.name)
+            booking: Booking = form.instance
+            booking.save_for_account(request.booking_account)
+            messages.info(request, f'Details for "{booking.name}" were saved successfully')
             return HttpResponseRedirect(reverse('cciw-bookings-list_bookings'))
     else:
         form = form_class(instance=booking)
@@ -607,15 +599,15 @@ def _handle_list_booking_actions(request, places):
     def shelve(place):
         place.shelved = True
         place.save()
-        messages.info(request, 'Place for "%s" moved to shelf' % place.name)
+        messages.info(request, f'Place for "{place.name}" moved to shelf')
 
     def unshelve(place):
         place.shelved = False
         place.save()
-        messages.info(request, 'Place for "%s" moved to basket' % place.name)
+        messages.info(request, f'Place for "{place.name}" moved to basket')
 
     def delete(place):
-        messages.info(request, 'Place for "%s" deleted' % place.name)
+        messages.info(request, f'Place for "{place.name}" deleted')
         place.delete()
 
     def edit(place):
@@ -655,9 +647,9 @@ def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amou
         "item_name": "Camp place booking",
         "invoice": "%s-%s-%s" % (account.id, balance,
                                  timezone.now()),  # We don't need this, but must be unique
-        "notify_url": "%s://%s%s" % (protocol, domain, reverse('paypal-ipn')),
-        "return": "%s://%s%s" % (protocol, domain, reverse('cciw-bookings-pay_done')),
-        "cancel_return": "%s://%s%s" % (protocol, domain, reverse('cciw-bookings-pay_cancelled')),
+        "notify_url": f"{protocol}://{domain}{reverse('paypal-ipn')}",
+        "return": f"{protocol}://{domain}{reverse('cciw-bookings-pay_done')}",
+        "cancel_return": f"{protocol}://{domain}{reverse('cciw-bookings-pay_cancelled')}",
         "custom": build_paypal_custom_field(account),
         "currency_code": "GBP",
         "no_note": "1",
@@ -683,8 +675,8 @@ def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amou
 @booking_account_required
 def pay(request):
     acc = request.booking_account
-    balance_due = acc.get_balance(allow_deposits=True)
-    balance_full = acc.get_balance(allow_deposits=False)
+    balance_due_now = acc.get_balance_due_now()
+    balance_full = acc.get_balance_full()
 
     # This view should be accessible even if prices for the current year are
     # not defined.
@@ -701,17 +693,17 @@ def pay(request):
         'stage': BookingStage.PAY,
         'title': 'Booking - pay',
         'unconfirmed_places': acc.bookings.unconfirmed(),
-        'balance_due': balance_due,
+        'balance_due_now': balance_due_now,
         'balance_full': balance_full,
         'account_id': acc.id,
         'price_deposit': price_deposit,
         'pending_payment_total': acc.get_pending_payment_total(),
-        'paypal_form': mk_paypal_form(acc, balance_due, protocol, domain),
+        'paypal_form': mk_paypal_form(acc, balance_due_now, protocol, domain),
         'paypal_form_full': mk_paypal_form(acc, balance_full, protocol, domain),
         'paypal_form_custom': mk_paypal_form(acc,
-                                             max(0, balance_due),
+                                             max(0, balance_due_now),
                                              protocol, domain,
-                                             min_amount=max(balance_due, 0),
+                                             min_amount=max(balance_due_now, 0),
                                              max_amount=balance_full)
     })
 
@@ -749,8 +741,8 @@ def account_overview(request):
         'unconfirmed_places': bookings.unconfirmed(),
         'cancelled_places': bookings.cancelled(),
         'basket_or_shelf': (bookings.in_basket() | bookings.on_shelf()),
-        'balance_due': account.get_balance(allow_deposits=True),
-        'balance_full': account.get_balance(allow_deposits=False),
+        'balance_due_now': account.get_balance_due_now(),
+        'balance_full': account.get_balance_full(),
         'pending_payment_total': account.get_pending_payment_total(),
     })
 

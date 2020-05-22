@@ -21,5 +21,5 @@ def cciw_form_field(form, field_name, label):
 @register.simple_tag(takes_context=True)
 def return_to_here(context):
     request = context['request']
-    return format_html('<input type="hidden" name="_return_to" value="{0}" />'
-                       .format(request.get_full_path()))
+    return format_html('<input type="hidden" name="_return_to" value="{0}" />',
+                       request.get_full_path())

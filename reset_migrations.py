@@ -133,7 +133,7 @@ def make_new_migrations(app_migration_modules):
 def rename_migrations(app_migration_modules, new_app_migrations):
 
     # Many need to be renamed to avoid clashes with the hidden migrations
-    new_name_stem = "squashed_{0}".format(datetime.now().strftime("%Y%m%d"))
+    new_name_stem = f"squashed_{datetime.now().strftime('%Y%m%d')}"
 
     migration_name_changes = {}
     for app, migration_mod in app_migration_modules.items():
@@ -141,7 +141,7 @@ def rename_migrations(app_migration_modules, new_app_migrations):
 
         for filename in new_app_migrations[app]:
             f_start, f_end = filename.split('_', 1)
-            new_filename = "{0}_{1}_{2}".format(f_start, new_name_stem, f_end)
+            new_filename = f"{f_start}_{new_name_stem}_{f_end}"
             old_migration_name = filename.replace(".py", "")
             new_migration_name = new_filename.replace(".py", "")
             migration_name_changes[(app, old_migration_name)] = (app, new_migration_name)
@@ -210,8 +210,8 @@ def fix_renamed_dependencies(migration_contents, migration_name_changes):
         for (from_app, from_name), (to_app, to_name) in migration_name_changes.items():
             from_app_name = from_app.split('.')[-1]
             to_app_name = to_app.split('.')[-1]
-            needle = "('{0}', '{1}'),".format(from_app_name, from_name).encode('utf-8')
-            replacement = "('{0}', '{1}'),".format(to_app_name, to_name).encode('utf-8')
+            needle = f"('{from_app_name}', '{from_name}'),".encode('utf-8')
+            replacement = f"('{to_app_name}', '{to_name}'),".encode('utf-8')
             if line.endswith(needle):
                 line = line[0:-len(needle)] + replacement
         out.append(line)
@@ -222,7 +222,7 @@ def unhide_hidden_migrations(hidden_migrations):
     # Unhide the hidden migrations
     for f, f_hidden in hidden_migrations:
         if os.path.exists(f):
-            raise Exception("File {0} unexpectedly present".format(f))
+            raise Exception(f"File {f} unexpectedly present")
         os.rename(f_hidden, f)
 
 

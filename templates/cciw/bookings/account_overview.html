@@ -127,8 +127,8 @@
         </div>
         <div class="actioninfo">
           <p>Your total balance is: £{{ balance_full }}</p>
-          {% if balance_due != balance_full %}
-            <p>Balance currently due: £{{ balance_due }}</p>
+          {% if balance_due_now != balance_full %}
+            <p>Balance currently due: £{{ balance_due_now }}</p>
           {% endif %}
         </div>
       </div>

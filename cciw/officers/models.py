@@ -139,7 +139,7 @@ class Application(models.Model):
                          self.date_saved.strftime("%Y-%m-%d"))
         else:
             submitted = "incomplete"
-        return "Application from %s (%s)" % (self.full_name, submitted)
+        return f"Application from {self.full_name} ({submitted})"
 
     def _referee(self, num):
         if hasattr(self, '_prefetched_objects_cache'):
@@ -200,7 +200,7 @@ class Referee(models.Model):
     email = models.EmailField('email', blank=True)
 
     def __str__(self):
-        return "{0} for {1}".format(self.name, self.application.officer.username)
+        return f"{self.name} for {self.application.officer.username}"
 
     log_datetime_format = "%Y-%m-%d %H:%M:%S"
 
@@ -291,7 +291,7 @@ class ReferenceAction(models.Model):
         ordering = [('created')]
 
     def __repr__(self):
-        return "<ReferenceAction {0} {1} | {2}>".format(self.action_type, self.created, self.referee)
+        return f"<ReferenceAction {self.action_type} {self.created} | {self.referee}>"
 
 
 def empty_reference(reference):
@@ -336,7 +336,7 @@ class Reference(models.Model):
 
     def __str__(self):
         officer = self.referee.application.officer
-        return "Reference form for {0} by {1}".format(officer.full_name, self.referee_name)
+        return f"Reference form for {officer.full_name} by {self.referee_name}"
 
     def save(self, *args, **kwargs):
         retval = super(Reference, self).save(*args, **kwargs)
@@ -374,7 +374,7 @@ class Qualification(models.Model):
     date_issued = models.DateField()
 
     def __str__(self):
-        return "{0} qualification for {1}".format(self.type, self.application.officer)
+        return f"{self.type} qualification for {self.application.officer}"
 
     def copy(self, **kwargs):
         q = Qualification()
@@ -416,7 +416,7 @@ class Invitation(models.Model):
         base_manager_name = 'objects'
 
     def __str__(self):
-        return "{0} — camp {1}".format(self.officer.full_name, self.camp)
+        return f"{self.officer.full_name} — camp {self.camp}"
 
 
 # CRBs/DBSs - Criminal Records Bureau/Disclosure and Barring Service

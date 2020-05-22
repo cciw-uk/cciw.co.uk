@@ -18,15 +18,14 @@ def update_newsletter_subscription(booking_account):
 
 def _update(booking_account, current_status, desired_status):
     if current_status is None:
-        return mailchimp_request('POST', '/lists/{0}/members/'.format(settings.MAILCHIMP_NEWSLETTER_LIST_ID),
+        return mailchimp_request('POST', f'/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/',
                                  json={
                                      "email_address": booking_account.email,
                                      "status": desired_status,
                                  })
     else:
-        id = email_to_mailchimp_id(booking_account.email)
-        return mailchimp_request('PATCH', '/lists/{0}/members/{1}'.format(settings.MAILCHIMP_NEWSLETTER_LIST_ID,
-                                                                          id),
+        mailchimp_id = email_to_mailchimp_id(booking_account.email)
+        return mailchimp_request('PATCH', f'/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/{mailchimp_id}',
                                  json={
                                      "status": desired_status,
                                  })
@@ -37,11 +36,8 @@ def email_to_mailchimp_id(email):
 
 
 def get_status(booking_account):
-    id = email_to_mailchimp_id(booking_account.email)
-    response = mailchimp_request_unchecked('GET',
-                                           '/lists/{0}/members/{1}'.format(
-                                               settings.MAILCHIMP_NEWSLETTER_LIST_ID,
-                                               id))
+    mailchimp_id = email_to_mailchimp_id(booking_account.email)
+    response = mailchimp_request_unchecked('GET', f'/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/{mailchimp_id}')
     if response.status_code == 404:
         return None
 

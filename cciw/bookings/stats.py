@@ -15,7 +15,7 @@ def get_booking_progress_stats(start_year=None, end_year=None, camps=None, overl
     if camps:
         items = camps
         query_filter = lambda qs, camp: qs.filter(camp=camp)
-        labeller = lambda camp: camp.slug_name_with_year
+        labeller = lambda camp: str(camp.url_id)
         last_year = max([c.year for c in camps])
     else:
         items = range(start_year, end_year + 1)
@@ -90,7 +90,7 @@ def get_booking_ages_stats(start_year=None, end_year=None, camps=None, include_t
     if camps:
         items = camps
         query_filter = lambda qs, camp: qs.filter(camp=camp)
-        labeller = lambda camp: camp.slug_name_with_year
+        labeller = lambda camp: str(camp.url_id)
     else:
         items = range(start_year, end_year + 1)
         query_filter = lambda qs, year: qs.filter(camp__year=year)
