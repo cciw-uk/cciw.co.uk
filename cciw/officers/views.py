@@ -904,7 +904,7 @@ def export_officer_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(officer_data_to_spreadsheet(camp, formatter),
-                                f"camp-{camp.slug_name_with_year}-officers")
+                                f"camp-{camp.url_id}-officers")
 
 
 @staff_member_required
@@ -913,7 +913,7 @@ def export_camper_data(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(camp_bookings_to_spreadsheet(camp, formatter),
-                                f"camp-{camp.slug_name_with_year}-campers")
+                                f"camp-{camp.url_id}-campers")
 
 
 @staff_member_required
@@ -930,7 +930,7 @@ def export_sharable_transport_details(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(camp_sharable_transport_details_to_spreadsheet(camp, formatter),
-                                f"camp-{camp.slug_name_with_year}-transport-details")
+                                f"camp-{camp.url_id}-transport-details")
 
 
 @staff_member_required
@@ -998,7 +998,7 @@ def officer_stats_download(request, year):
     camps = list(Camp.objects.filter(year=year).order_by('camp_name__slug'))
     formatter = get_spreadsheet_formatter(request)
     for camp in camps:
-        formatter.add_sheet_from_dataframe(camp.slug_name_with_year,
+        formatter.add_sheet_from_dataframe(str(camp.url_id),
                                            get_camp_officer_stats(camp))
     return spreadsheet_response(formatter,
                                 "officer-stats-%d" % year)
@@ -1629,7 +1629,7 @@ def booking_ages_stats(request, start_year: int = None, end_year: int = None, ca
     colors = []
     if camps:
         colors = [color for (title, color) in
-                  sorted([(c.slug_name_with_year, c.camp_name.color)
+                  sorted([(str(c.url_id), c.camp_name.color)
                           for c in camps])]
         if len(set(colors)) != len(colors):
             # Not enough - fall back to auto

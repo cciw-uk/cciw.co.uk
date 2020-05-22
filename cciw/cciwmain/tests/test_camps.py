@@ -63,7 +63,7 @@ class CampModel(TestBase):
     def test_names(self):
         self.assertEqual(self.camp.name, "Blue")
         self.assertEqual(self.camp.slug_name, "blue")
-        self.assertEqual(self.camp.slug_name_with_year, "2013-blue")
+        self.assertEqual(str(self.camp.url_id), "2013-blue")
 
     def test_previous_and_next(self):
         self.assertEqual(self.camp_2.previous_camp, self.camp)

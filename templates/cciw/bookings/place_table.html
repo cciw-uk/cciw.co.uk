@@ -13,7 +13,7 @@
       <td data-label="Camp">
         <span class="with-camp-colors-{{ booking.camp.slug_name }}">
           <a href="{{ booking.camp.get_absolute_url }}">
-            {{ booking.camp.slug_name_with_year }}
+            {{ booking.camp.url_id }}
           </a>
         </span>
         &nbsp;({{ booking.camp.leaders_formatted }})

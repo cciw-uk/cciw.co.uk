@@ -40,15 +40,15 @@ from .smtp import send_mime_message
 
 # See also below for changes to format
 def address_for_camp_officers(camp):
-    return f"camp-{camp.slug_name_with_year}-officers@cciw.co.uk"
+    return f"camp-{camp.url_id}-officers@cciw.co.uk"
 
 
 def address_for_camp_slackers(camp):
-    return f"camp-{camp.slug_name_with_year}-slackers@cciw.co.uk"
+    return f"camp-{camp.url_id}-slackers@cciw.co.uk"
 
 
 def address_for_camp_leaders(camp):
-    return f"camp-{camp.slug_name_with_year}-leaders@cciw.co.uk"
+    return f"camp-{camp.url_id}-leaders@cciw.co.uk"
 
 
 def address_for_camp_leaders_year(year):

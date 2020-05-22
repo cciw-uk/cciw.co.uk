@@ -248,8 +248,8 @@ def make_change_state_action(state, display_name):
 
 
 class BookingAdmin(admin.ModelAdmin):
-    def camp(obj):
-        return obj.camp.slug_name_with_year
+    def camp(booking):
+        return str(booking.camp.url_id)
     camp.admin_order_field = 'camp__year'
 
     def confirmed(obj):

@@ -189,7 +189,7 @@ def send_reference_request_email(message, referee, sending_officer, camp):
                  from_email=settings.WEBMASTER_FROM_EMAIL,
                  to=[referee.email],
                  headers={'Reply-To': sending_officer.email,
-                          X_CCIW_CAMP: camp.slug_name_with_year,
+                          X_CCIW_CAMP: str(camp.url_id),
                           X_CCIW_ACTION: X_REFERENCE_REQUEST,
                           }).send()
 

@@ -657,7 +657,7 @@ class Booking(models.Model):
     # Methods
 
     def __str__(self):
-        return f"{self.name}, {self.camp.slug_name_with_year}, {self.account}"
+        return f"{self.name}, {self.camp.url_id}, {self.account}"
 
     @property
     def name(self):

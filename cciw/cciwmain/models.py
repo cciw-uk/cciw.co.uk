@@ -132,7 +132,7 @@ class Camp(models.Model):
             leaders.append(chaplain)
 
         leadertext = self._format_leaders(leaders)
-        return f"{self.slug_name_with_year} ({leadertext})"
+        return f"{self.url_id} ({leadertext})"
 
     @cached_property
     def previous_camp(self):
@@ -179,10 +179,6 @@ class Camp(models.Model):
     @property
     def slug_name(self):
         return self.camp_name.slug
-
-    @property
-    def slug_name_with_year(self):
-        return f"{self.year}-{self.slug_name}"
 
     @property
     def url_id(self):
