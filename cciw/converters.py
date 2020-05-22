@@ -25,11 +25,13 @@ class TwoDigitMonthConverter:
 
 
 class CampIdConverter:
+    # See also CampId.__str__
     regex = r'\d{4}-[^/]+'
 
     @staticmethod
     def to_python(value) -> CampId:
-        return CampId.from_url_part(value)
+        year, slug = value.split('-', 1)
+        return CampId(year, slug)
 
     @staticmethod
     def to_url(value: CampId):

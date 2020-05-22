@@ -21,12 +21,9 @@ class CampId:
     slug: str
 
     def __str__(self):
+        # This has to be the inverse of CampIdConverter.to_python and match
+        # CampIdConverter.regex
         return f"{self.year}-{self.slug}"
-
-    @classmethod
-    def from_url_part(cls, value) -> 'CampId':
-        year, slug = value.split('-', 1)
-        return cls(int(year), slug)
 
 
 def ajax_form_validate(form_class):
