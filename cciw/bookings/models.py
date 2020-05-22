@@ -221,7 +221,7 @@ class BookingAccount(models.Model):
 
     # Business methods:
 
-    def get_balance(self, confirmed_only=False, allow_deposits=False, deposit_price_dict=None):
+    def get_balance(self, *, confirmed_only, allow_deposits, deposit_price_dict=None):
         """
         Gets the balance to pay on the account.
         If confirmed_only=True, then only bookings that are confirmed
@@ -462,7 +462,7 @@ class BookingQuerySet(models.QuerySet):
         return self.filter(state=BOOKING_BOOKED,
                            booking_expires__isnull=False)
 
-    def payable(self, confirmed_only=None, allow_deposits=None, today=None, from_list=None):
+    def payable(self, *, confirmed_only, allow_deposits, today=None, from_list=None):
         """
         Returns bookings for which payment is due.
         If confirmed_only is True, unconfirmed places are excluded.
@@ -516,7 +516,7 @@ class BookingQuerySet(models.QuerySet):
             today = date.today()
         cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
 
-        retval = self.payable(confirmed_only, False, today=today, from_list=from_list)
+        retval = self.payable(confirmed_only=confirmed_only, allow_deposits=False, today=today, from_list=from_list)
         if isinstance(retval, list):
             return [b for b in retval if b.camp.start_date > cutoff]
         else:

@@ -675,8 +675,8 @@ def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amou
 @booking_account_required
 def pay(request):
     acc = request.booking_account
-    balance_due = acc.get_balance(allow_deposits=True)
-    balance_full = acc.get_balance(allow_deposits=False)
+    balance_due = acc.get_balance(confirmed_only=False, allow_deposits=True)
+    balance_full = acc.get_balance(confirmed_only=False, allow_deposits=False)
 
     # This view should be accessible even if prices for the current year are
     # not defined.
@@ -741,8 +741,8 @@ def account_overview(request):
         'unconfirmed_places': bookings.unconfirmed(),
         'cancelled_places': bookings.cancelled(),
         'basket_or_shelf': (bookings.in_basket() | bookings.on_shelf()),
-        'balance_due': account.get_balance(allow_deposits=True),
-        'balance_full': account.get_balance(allow_deposits=False),
+        'balance_due': account.get_balance(confirmed_only=False, allow_deposits=True),
+        'balance_full': account.get_balance(confirmed_only=False, allow_deposits=False),
         'pending_payment_total': account.get_pending_payment_total(),
     })
 

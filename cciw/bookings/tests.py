@@ -486,11 +486,11 @@ class TestBookingModels(CreateBookingModelMixin, AtomicChecksMixin, TestBase):
 
         acc = self.get_account()
         # balance should be zero
-        self.assertEqual(acc.get_balance(allow_deposits=True), Decimal('0.00'))
+        self.assertEqual(acc.get_balance(confirmed_only=False, allow_deposits=True), Decimal('0.00'))
         self.assertEqual(acc.get_balance(confirmed_only=True, allow_deposits=True), Decimal('0.00'))
 
         # But for full amount, they still owe 80 (full price minus deposit)
-        self.assertEqual(acc.get_balance(allow_deposits=False), Decimal('80.00'))
+        self.assertEqual(acc.get_balance(confirmed_only=False, allow_deposits=False), Decimal('80.00'))
 
         # Test some model methods:
         self.assertEqual(len(acc.bookings.only_deposit_required(confirmed_only=False)),
@@ -704,7 +704,7 @@ class TestPaymentReminderEmails(CreateBookingModelMixin, BookingBaseMixin, WebTe
         url, path, querydata = read_email_url(m, "https://.*/booking/p.*")
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse('cciw-bookings-pay'))
-        self.assertTextPresent(booking.account.get_balance())
+        self.assertTextPresent(booking.account.get_balance(confirmed_only=False, allow_deposits=False))
 
     def test_payment_reminder_email_link_expired(self):
         self._create_booking()
@@ -2019,7 +2019,7 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
 
         mail.outbox = []
-        acc.receive_payment(acc.get_balance())
+        acc.receive_payment(acc.get_balance(confirmed_only=False, allow_deposits=False))
 
         mails = send_queued_mail()
         self.assertEqual(len(mails), 1)
@@ -2538,7 +2538,7 @@ class TestCancel(CreateBookingModelMixin, TestBase):
         booking.save()
 
         acc = self.get_account()
-        self.assertEqual(acc.get_balance(), booking.amount_due)
+        self.assertEqual(acc.get_balance(confirmed_only=False, allow_deposits=False), booking.amount_due)
 
 
 class TestCancelFullRefund(CreateBookingModelMixin, TestBase):
@@ -2563,7 +2563,7 @@ class TestCancelFullRefund(CreateBookingModelMixin, TestBase):
         booking.save()
 
         acc = self.get_account()
-        self.assertEqual(acc.get_balance(), booking.amount_due)
+        self.assertEqual(acc.get_balance(confirmed_only=False, allow_deposits=False), booking.amount_due)
 
 
 class TestEarlyBird(CreateBookingModelMixin, TestBase):
