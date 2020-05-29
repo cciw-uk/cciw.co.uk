@@ -11,19 +11,19 @@ from .signals import places_confirmed
 # == Payments ==
 
 
-def unrecognised_payment(sender=None, **kwargs):
-    send_unrecognised_payment_email(sender)
+def unrecognised_payment(sender=None, reason='Invalid IPN', **kwargs):
+    send_unrecognised_payment_email(sender, reason=reason)
 
 
 def paypal_payment_received(sender, **kwargs):
     ipn_obj = sender
     if ipn_obj.business != settings.PAYPAL_RECEIVER_EMAIL:
-        unrecognised_payment(ipn_obj)
+        unrecognised_payment(ipn_obj, 'Incorrect receiver email')
         return
 
     account = parse_paypal_custom_field(ipn_obj.custom)
     if account is None:
-        unrecognised_payment(ipn_obj)
+        unrecognised_payment(ipn_obj, 'No associated account')
         return
 
     if ipn_obj.payment_status == "Pending":
@@ -32,7 +32,7 @@ def paypal_payment_received(sender, **kwargs):
 
     if (ipn_obj.payment_status not in
             ['Completed', 'Canceled_Reversal', 'Refunded']):
-        unrecognised_payment(ipn_obj)
+        unrecognised_payment(ipn_obj, f'Unrecognised payment status {ipn_obj.payment_status}')
         return
 
     send_payment(ipn_obj.mc_gross, account, ipn_obj)

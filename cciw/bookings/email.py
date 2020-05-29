@@ -88,10 +88,11 @@ def send_verify_email(request, booking_account_email,
     mail.send_mail(subject, body, settings.SERVER_EMAIL, [booking_account_email])
 
 
-def send_unrecognised_payment_email(ipn_obj):
+def send_unrecognised_payment_email(ipn_obj, reason=None):
     c = {
         'domain': common.get_current_domain(),
         'ipn_obj': ipn_obj,
+        'reason': reason,
     }
 
     body = loader.render_to_string("cciw/bookings/unrecognised_payment_email.txt", c)

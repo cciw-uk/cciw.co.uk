@@ -1,6 +1,9 @@
 {% autoescape off %}
-An unrecognised or flagged payment was received from Paypal. Please
-check it at:
+An unrecognised or flagged payment was received from Paypal.
+{% if reason %}
+Problem with payment: {{ reason }}
+{% endif %}
+Please check it at:
 
 https://{{ domain }}{% url 'admin:ipn_paypalipn_change' ipn_obj.id %}
 

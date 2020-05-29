@@ -20,7 +20,7 @@ from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.accounts.models import User
 from cciw.bookings.email import EmailVerifyTokenGenerator, VerifyExpired, VerifyFailed, send_payment_reminder_emails
-from cciw.bookings.hooks import paypal_payment_received
+from cciw.bookings.hooks import paypal_payment_received, unrecognised_payment
 from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
@@ -1947,7 +1947,8 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         paypal_payment_received(ipn_1)
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertTrue('/admin/ipn/paypal' in mail.outbox[0].body)
+        self.assertIn('/admin/ipn/paypal', mail.outbox[0].body)
+        self.assertIn('No associated account', mail.outbox[0].body)
 
     def test_email_for_bad_payment_2(self):
         account = BookingAccount(id=1234567)  # bad ID, not in DB
@@ -1961,7 +1962,21 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         paypal_payment_received(ipn_1)
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertTrue('/admin/ipn/paypal' in mail.outbox[0].body)
+        self.assertIn('/admin/ipn/paypal', mail.outbox[0].body)
+        self.assertIn('No associated account', mail.outbox[0].body)
+
+    def test_email_for_bad_payment_3(self):
+        ipn_1 = IpnMock()
+        ipn_1.id = 123
+        ipn_1.mc_gross = Decimal('1.00')
+
+        mail.outbox = []
+        self.assertEqual(len(mail.outbox), 0)
+        unrecognised_payment(ipn_1)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('/admin/ipn/paypal', mail.outbox[0].body)
+        self.assertIn('Invalid IPN', mail.outbox[0].body)
 
     def test_receive_payment_handler(self):
         # Use the actual signal handler, check the good path.
