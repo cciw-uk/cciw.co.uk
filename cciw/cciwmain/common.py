@@ -1,11 +1,11 @@
 """
 Utility functions and base classes that are common to all views etc.
 """
-import attr
 import re
 from datetime import date, timedelta
 from functools import wraps
 
+import attr
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import HttpResponse

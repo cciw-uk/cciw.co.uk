@@ -1,7 +1,6 @@
 import os.path
 from datetime import date
 
-
 from colorful.fields import RGBColorField
 from django.conf import settings
 from django.db import models
