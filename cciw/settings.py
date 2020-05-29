@@ -94,9 +94,9 @@ LOGIN_URL = "/officers/"
 ALLOWED_HOSTS = [".cciw.co.uk", "cciw.local"]
 
 INSTALLED_APPS = [
-    # 3rd party (that probably need to come first??)
+    # 3rd party
     'dal',
-    'dal_select2',
+    'dal_select2',  # dal and dal_select2 need to come before contrib.admin
     'django.contrib.auth',
     'django.contrib.admin',
     'django.contrib.contenttypes',
