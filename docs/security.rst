@@ -5,7 +5,7 @@ The CCiW website database stores personal information of various kinds. Because
 of this, having a secure site is a very high priority.
 
 In addition, this repo, including this documentation, is publicly readable (on
-BitBucket and possible elsewhere). This imposes further constraints on personal
+VCS hosting and possibly elsewhere). This imposes further constraints on personal
 information.
 
 A longer document on the security procedures observed by CCiW is available

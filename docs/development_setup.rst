@@ -25,7 +25,7 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
 * Within a directory of your choice, checkout the CCiW source code into a folder 'src'::
 
-    hg clone ssh://hg@bitbucket.org/cciw/cciw-website src
+    hg clone ssh://cciw@cciw.co.uk/repos/cciw-website src
     cd src
 
 * Make a virtualenv using Python 3.7 e.g. using mkvirtualenv/virtualenv_wrapper::
