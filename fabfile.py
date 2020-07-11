@@ -795,6 +795,16 @@ def get_and_load_production_db():
 
 @task
 def get_live_db():
+    print('''
+IMPORTANT:
+
+It is against CCIW policy to store live data on developers machines due to
+privacy and security issues. If this is done, it must only ever be a temporary
+measure for debugging an issue that cannot be done any other way, and the data
+must be deleted immediately after.
+''')
+    if input('Are you sue you want to continue? (y/n) ').strip() != 'y':
+        raise SystemExit()
     filename = dump_db(Version.current())
     local(f"mkdir -p {LOCAL_DB_BACKUPS}")
     return list(get(filename, local_path=LOCAL_DB_BACKUPS + "/%(basename)s"))[0]
@@ -1081,7 +1091,7 @@ def initial_dev_setup():
     _install_deps_local()
     target = Version.current()
     get_non_vcs_sources(target)
-    get_and_load_production_db()
+    # TODO: get_and_load_dev_db()
 
 
 def _install_deps_local():
