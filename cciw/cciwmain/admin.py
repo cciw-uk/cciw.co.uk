@@ -80,6 +80,9 @@ class CampAdmin(admin.ModelAdmin):
           'description': '<div>Options for managing applications. Officer lists are managed <a href="/officers/leaders/">elsewhere</a>, not here.</div>',
           }
          ),
+        ('Extra',
+         {'fields': ('special_info_html',)}
+         ),
     )
     ordering = ('-year', 'start_date')
     readonly_fields = ['old_name']

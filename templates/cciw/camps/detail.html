@@ -2,6 +2,11 @@
 
 {% block content %}
   <h2 class="with-camp-colors-{{ camp.slug_name }}">Information</h2>
+
+  {% if camp.special_info_html %}
+    {{ camp.special_info_html|safe }}
+  {% endif %}
+
   <table class="sideheaders">
     <tr>
       <th scope="row">Location:</th>
@@ -95,4 +100,5 @@
       </tr>
     {% endif %}
   </table>
+
 {% endblock %}

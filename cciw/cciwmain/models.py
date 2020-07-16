@@ -106,6 +106,9 @@ class Camp(models.Model):
 
     officers = models.ManyToManyField(settings.AUTH_USER_MODEL, through='officers.Invitation')
 
+    special_info_html = models.TextField(verbose_name='Special information', default='',
+                                         help_text='HTML, displayed at the top of the camp details page')
+
     objects = CampManager.from_queryset(CampQuerySet)()
 
     class Meta:
