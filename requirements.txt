@@ -8,7 +8,7 @@ asgiref==3.2.7            # via django
 attrs==19.3.0             # via -r requirements.in
 bcrypt==3.1.7             # via paramiko
 beautifulsoup4==4.8.0     # via -r requirements-dev.in, webtest
-bleach==3.1.4             # via wiki
+bleach==3.1.5             # via wiki
 boto3==1.4.7              # via -r requirements.in
 botocore==1.7.48          # via boto3, s3transfer
 certifi==2018.10.15       # via requests
@@ -65,6 +65,7 @@ mccabe==0.6.1             # via -r requirements-dev.in, flake8
 nodeenv==1.3.3            # via -r requirements.in
 numpy==1.18.2             # via -r requirements.in, pandas
 orderedmultidict==1.0.1   # via furl
+packaging==20.4           # via bleach
 pandas-highcharts==0.5.2  # via -r requirements.in
 pandas==1.0.3             # via -r requirements.in, pandas-highcharts
 paramiko==2.7.1           # via fabric3
@@ -82,6 +83,7 @@ pycparser==2.18           # via cffi
 pyflakes==2.1.1           # via flake8
 pygments==2.2.0           # via ipython
 pynacl==1.3.0             # via paramiko
+pyparsing==2.4.7          # via packaging
 pyquery==1.4.1            # via -r requirements-dev.in, django-functest
 python-dateutil==2.8.1    # via -r requirements.in, botocore, pandas
 python3-memcached==1.51   # via -r requirements.in
@@ -95,7 +97,7 @@ rjsmin==1.1.0             # via -r requirements.in, django-compressor
 s3transfer==0.1.13        # via boto3
 selenium==3.14.1          # via -r requirements-dev.in, django-functest
 simplegeneric==0.8.1      # via ipython
-six==1.14.0               # via bcrypt, bleach, cryptography, django-anymail, django-autocomplete-light, django-compressor, django-functest, django-mailer, django-paypal, django-simple-captcha, fabric3, furl, orderedmultidict, pip-tools, prompt-toolkit, pynacl, python-dateutil, traitlets, vcrpy, webtest
+six==1.14.0               # via bcrypt, bleach, cryptography, django-anymail, django-autocomplete-light, django-compressor, django-functest, django-mailer, django-paypal, django-simple-captcha, fabric3, furl, orderedmultidict, packaging, pip-tools, prompt-toolkit, pynacl, python-dateutil, traitlets, vcrpy, webtest
 sorl-thumbnail==12.6.3    # via -r requirements.in, wiki
 soupsieve==1.9.2          # via beautifulsoup4
 sqlparse==0.2.4           # via django, django-debug-toolbar
@@ -108,7 +110,7 @@ wcwidth==0.1.7            # via prompt-toolkit
 webencodings==0.5.1       # via bleach
 webob==1.8.1              # via webtest
 webtest==2.0.29           # via django-webtest
-wiki==0.6b2               # via -r requirements.in
+wiki==0.6                 # via -r requirements.in
 wrapt==1.10.11            # via vcrpy
 xlrd==1.2.0               # via -r requirements.in
 xlwt==1.3.0               # via -r requirements.in
