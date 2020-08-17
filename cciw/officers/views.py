@@ -461,8 +461,8 @@ def manage_references(request, camp_id: CampId):
 @staff_member_required
 @camp_admin_required  # we don't care which camp they are admin for.
 @cache_control(max_age=3600)
-def officer_history(request, officer_id=None):
-    officer = get_object_or_404(User.objects.filter(id=int(officer_id)))
+def officer_history(request, officer_id: int):
+    officer = get_object_or_404(User.objects.filter(id=officer_id))
     referee_pairs = [app.referees
                      for app in (officer.applications.all()
                                  .prefetch_related('referee_set',
@@ -696,7 +696,7 @@ def create_reference_thanks(request):
 @staff_member_required
 @camp_admin_required
 @cache_control(max_age=3600)
-def view_reference(request, reference_id=None):
+def view_reference(request, reference_id: int):
     reference = get_object_or_404(Reference.objects.filter(id=reference_id))
     return TemplateResponse(request, "cciw/officers/view_reference_form.html", {
         'reference': reference,
@@ -998,7 +998,7 @@ def fraction_to_percent(data):
 
 @staff_member_required
 @camp_admin_required
-def officer_stats_download(request, year):
+def officer_stats_download(request, year: int):
     camps = list(Camp.objects.filter(year=year).order_by('camp_name__slug'))
     formatter = get_spreadsheet_formatter(request)
     for camp in camps:
@@ -1010,9 +1010,7 @@ def officer_stats_download(request, year):
 
 @staff_member_required
 @camp_admin_required
-def officer_stats_trend_download(request, start_year, end_year):
-    start_year = int(start_year)
-    end_year = int(end_year)
+def officer_stats_trend_download(request, start_year: int, end_year: int):
     formatter = get_spreadsheet_formatter(request)
     formatter.add_sheet_from_dataframe("Officer stats trend",
                                        get_camp_officer_stats_trend(start_year, end_year))
@@ -1059,7 +1057,7 @@ def manage_dbss(request, year: int):
     })
 
 
-def get_officers_with_dbs_info_for_camps(camps, officer_id=None):
+def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None):
     """
     Get needed DBS officer info for the given set of camps,
     return a list of two tuples, [(officer, dbs_info)]
