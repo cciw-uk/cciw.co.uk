@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 import operator
+import typing
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from functools import reduce
@@ -130,27 +130,27 @@ def index(request):
             return HttpResponseRedirect(redirect_to)
 
     user = request.user
-    c = {}
-    c['thisyear'] = common.get_thisyear()
-    c['lastyear'] = c['thisyear'] - 1
+    context = {}
+    context['thisyear'] = common.get_thisyear()
+    context['lastyear'] = context['thisyear'] - 1
     if user.is_camp_admin:
-        c['show_leader_links'] = True
-        c['show_admin_link'] = True
+        context['show_leader_links'] = True
+        context['show_admin_link'] = True
     if user.is_cciw_secretary:
-        c['show_secretary_links'] = True
-        c['show_admin_link'] = True
+        context['show_secretary_links'] = True
+        context['show_admin_link'] = True
     if user.is_dbs_officer or user.is_camp_admin:
-        c['show_dbs_officer_links'] = True
+        context['show_dbs_officer_links'] = True
     if user.is_booking_secretary:
-        c['show_booking_secretary_links'] = True
+        context['show_booking_secretary_links'] = True
     if user.is_committee_member or user.is_booking_secretary:
-        c['show_secretary_and_committee_links'] = True
+        context['show_secretary_and_committee_links'] = True
         booking_year = most_recent_booking_year()
         if booking_year is not None:
-            c['booking_stats_end_year'] = booking_year
-            c['booking_stats_start_year'] = booking_year - 3
+            context['booking_stats_end_year'] = booking_year
+            context['booking_stats_start_year'] = booking_year - 3
 
-    return TemplateResponse(request, 'cciw/officers/index.html', c)
+    return TemplateResponse(request, 'cciw/officers/index.html', context)
 
 
 @staff_member_required
@@ -180,7 +180,7 @@ def leaders_index(request):
 def applications(request):
     """Displays a list of tasks related to applications."""
     user = request.user
-    c = {
+    context = {
         'camps': [i.camp for i in user.invitations.filter(camp__year=common.get_thisyear())]
     }
 
@@ -196,10 +196,10 @@ def applications(request):
     has_thisyears_app = thisyears_applications(user).exists()
     has_completed_app = thisyears_applications(user).filter(finished=True).exists()
 
-    c['finished_applications'] = finished_applications
-    c['unfinished_applications'] = unfinished_applications
-    c['has_thisyears_app'] = has_thisyears_app
-    c['has_completed_app'] = has_completed_app
+    context['finished_applications'] = finished_applications
+    context['unfinished_applications'] = unfinished_applications
+    context['has_thisyears_app'] = has_thisyears_app
+    context['has_completed_app'] = has_completed_app
 
     if not has_completed_app and unfinished_applications and 'edit' in request.POST:
         # Edit existing application.
@@ -218,7 +218,7 @@ def applications(request):
 
         return HttpResponseRedirect(f'/admin/officers/application/{new_obj.id}/')
 
-    return TemplateResponse(request, 'cciw/officers/applications.html', c)
+    return TemplateResponse(request, 'cciw/officers/applications.html', context)
 
 
 @staff_member_required
@@ -384,7 +384,7 @@ def add_previous_references(referee):
 @camp_admin_required  # we don't care which camp they are admin for.
 @never_cache
 def manage_references(request, camp_id: CampId):
-    c = {}
+    context = {}
 
     # If referee_id is set, we just want to update part of the page.
     referee_id = request.GET.get('referee_id')
@@ -396,9 +396,9 @@ def manage_references(request, camp_id: CampId):
         except (ValueError, User.DoesNotExist):
             raise Http404
 
-    c['officer'] = officer
+    context['officer'] = officer
     camp = _get_camp_or_404(camp_id)
-    c['camp'] = camp
+    context['camp'] = camp
 
     if referee_id is None:
         apps = applications_for_camp(camp, officer_ids=[officer_id] if officer is not None else None)
@@ -423,7 +423,7 @@ def manage_references(request, camp_id: CampId):
     all_referees = list(referees)
     if 'ref_email' in request.GET:
         ref_email = request.GET['ref_email']
-        c['ref_email_search'] = ref_email
+        context['ref_email_search'] = ref_email
         all_referees = [r for r in all_referees if r.email.lower() == ref_email.lower()]
     else:
         ref_email = None
@@ -439,23 +439,23 @@ def manage_references(request, camp_id: CampId):
         add_previous_references(referee)
 
     if referee_id is None:
-        c['notrequested'] = notrequested
-        c['requested'] = requested
-        c['received'] = received
+        context['notrequested'] = notrequested
+        context['requested'] = requested
+        context['received'] = received
         template_name = 'cciw/officers/manage_references.html'
     else:
         if received:
-            c['mode'] = 'received'
-            c['referee'] = received[0]
+            context['mode'] = 'received'
+            context['referee'] = received[0]
         elif requested:
-            c['mode'] = 'requested'
-            c['referee'] = requested[0]
+            context['mode'] = 'requested'
+            context['referee'] = requested[0]
         else:
-            c['mode'] = 'notrequested'
-            c['referee'] = notrequested[0]
+            context['mode'] = 'notrequested'
+            context['referee'] = notrequested[0]
         template_name = 'cciw/officers/manage_reference.html'
 
-    return TemplateResponse(request, template_name, c)
+    return TemplateResponse(request, template_name, context)
 
 
 @staff_member_required
@@ -487,7 +487,7 @@ def request_reference(request, camp_id: CampId):
     referee = get_object_or_404(Referee.objects.filter(id=referee_id))
     app = referee.application
 
-    c = {}
+    context = {}
 
     emailform = None
 
@@ -512,14 +512,14 @@ def request_reference(request, camp_id: CampId):
                 # true, we close the page and update the parent page, in case
                 # the parent is out of date.
                 return close_window_and_update_referee(referee_id)
-            c['known_email_address'] = True
+            context['known_email_address'] = True
             prev_reference = referee.previous_reference
         else:
             # Get old referee data
             prev_references = [r for r in referee.possible_previous_references if r.id == prev_ref_id]
             assert len(prev_references) == 1
             prev_reference = prev_references[0]
-            c['old_referee'] = prev_reference.referee
+            context['old_referee'] = prev_reference.referee
         url = make_ref_form_url(referee.id, prev_ref_id)
     else:
         url = make_ref_form_url(referee.id, None)
@@ -537,14 +537,14 @@ def request_reference(request, camp_id: CampId):
 
     if request.method == 'POST':
         if 'send' in request.POST:
-            c['show_messageform'] = True
+            context['show_messageform'] = True
             messageform = SendReferenceRequestForm(request.POST, message_info=messageform_info)
             if messageform.is_valid():
                 send_reference_request_email(wordwrap(messageform.cleaned_data['message'], 70), referee, request.user, camp)
                 referee.log_request_made(request.user, timezone.now())
                 return close_window_and_update_referee(referee_id)
         elif 'save' in request.POST:
-            c['show_editreferenceform'] = True
+            context['show_editreferenceform'] = True
             reference = referee.reference if hasattr(referee, 'reference') else None
             editreferenceform = AdminReferenceForm(request.POST, instance=reference)
             if editreferenceform.is_valid():
@@ -567,17 +567,17 @@ def request_reference(request, camp_id: CampId):
                                                        AdminReferenceForm)
 
     if not is_valid_email(referee.email.strip()):
-        c['bad_email'] = True
-    c['is_popup'] = True
-    c['already_requested'] = referee.reference_was_requested()
-    c['referee'] = referee
-    c['app'] = app
-    c['is_update'] = update
-    c['emailform'] = emailform
-    c['messageform'] = messageform
-    c['editreferenceform'] = editreferenceform
+        context['bad_email'] = True
+    context['is_popup'] = True
+    context['already_requested'] = referee.reference_was_requested()
+    context['referee'] = referee
+    context['app'] = app
+    context['is_update'] = update
+    context['emailform'] = emailform
+    context['messageform'] = messageform
+    context['editreferenceform'] = editreferenceform
 
-    return TemplateResponse(request, 'cciw/officers/request_reference.html', c)
+    return TemplateResponse(request, 'cciw/officers/request_reference.html', context)
 
 
 @staff_member_required
@@ -641,9 +641,9 @@ def create_reference_form(request, referee_id, hash, prev_ref_id=""):
     """
     View for allowing referee to submit reference (create the Reference object)
     """
-    c = {}
+    context = {}
     if hash != make_ref_form_url_hash(referee_id, prev_ref_id):
-        c['incorrect_url'] = True
+        context['incorrect_url'] = True
     else:
         referee = get_object_or_404(Referee.objects.filter(id=int(referee_id)))
         prev_reference = None
@@ -651,16 +651,16 @@ def create_reference_form(request, referee_id, hash, prev_ref_id=""):
             prev_reference = get_object_or_404(Reference.objects.filter(id=int(prev_ref_id)))
 
         if prev_reference is not None:
-            c['update'] = True
-            c['last_form_date'] = prev_reference.date_created if not prev_reference.inaccurate else None
-            c['last_empty'] = empty_reference(prev_reference)
+            context['update'] = True
+            context['last_form_date'] = prev_reference.date_created if not prev_reference.inaccurate else None
+            context['last_empty'] = empty_reference(prev_reference)
 
         reference = referee.reference if hasattr(referee, 'reference') else None
 
         if reference is not None and not empty_reference(reference):
             # It's possible that empty references have been created in the past,
             # so ensure that these don't stop people filling out form.
-            c['already_submitted'] = True
+            context['already_submitted'] = True
         else:
             if request.method == 'POST':
                 form = ReferenceForm(request.POST, instance=reference)
@@ -669,9 +669,9 @@ def create_reference_form(request, referee_id, hash, prev_ref_id=""):
                     return HttpResponseRedirect(reverse('cciw-officers-create_reference_thanks'))
             else:
                 form = get_initial_reference_form(reference, referee, prev_reference, ReferenceForm)
-            c['form'] = form
-        c['officer'] = referee.application.officer
-    return TemplateResponse(request, 'cciw/officers/create_reference.html', c)
+            context['form'] = form
+        context['officer'] = referee.application.officer
+    return TemplateResponse(request, 'cciw/officers/create_reference.html', context)
 
 
 def get_initial_reference_form(reference, referee, prev_reference, form_class):
@@ -711,15 +711,15 @@ def view_reference(request, reference_id=None):
 def officer_list(request, camp_id: CampId):
     camp = _get_camp_or_404(camp_id)
 
-    c = {}
-    c['camp'] = camp
+    context = {}
+    context['camp'] = camp
     invitation_list = camp.invitations.all()
     officer_list_ids = set(i.officer_id for i in invitation_list)
-    c['invitations'] = invitation_list
-    c['officers_noapplicationform'] = camp_slacker_list(camp)
-    c['address_all'] = address_for_camp_officers(camp)
-    c['address_noapplicationform'] = address_for_camp_slackers(camp)
-    c['officers_serious_slackers'] = camp_serious_slacker_list(camp)
+    context['invitations'] = invitation_list
+    context['officers_noapplicationform'] = camp_slacker_list(camp)
+    context['address_all'] = address_for_camp_officers(camp)
+    context['address_noapplicationform'] = address_for_camp_slackers(camp)
+    context['officers_serious_slackers'] = camp_serious_slacker_list(camp)
 
     # List for select
     available_officers = list(User.objects.filter(is_staff=True).order_by('first_name', 'last_name', 'email'))
@@ -735,7 +735,7 @@ def officer_list(request, camp_id: CampId):
     # there is no need to do this filtering in the database.
     available_officers = [u for u in available_officers if u.id not in officer_list_ids]
     available_officers.sort(key=lambda u: not getattr(u, 'on_previous_camp', False))
-    c['available_officers'] = available_officers
+    context['available_officers'] = available_officers
 
     # Different templates allow us to render just parts of the page, for AJAX calls
     if 'sections' in request.GET:
@@ -744,11 +744,11 @@ def officer_list(request, camp_id: CampId):
                   ("noapplicationform", "cciw/officers/officer_list_noapplicationform.html")]
         retval = {}
         for section, tname in tnames:
-            retval[section] = render_to_string(tname, c, request=request)
+            retval[section] = render_to_string(tname, context, request=request)
         return HttpResponse(python_to_json(retval),
                             content_type="text/javascript")
     else:
-        return TemplateResponse(request, "cciw/officers/officer_list.html", c)
+        return TemplateResponse(request, "cciw/officers/officer_list.html", context)
 
 
 @staff_member_required
@@ -791,41 +791,45 @@ def update_officer(request):
 
 
 def correct_email(request):
-    c = {}
+    context = {}
     try:
         username, new_email = signing.loads(request.GET.get('t', ''),
                                             salt="cciw-officers-correct_email",
                                             max_age=60 * 60 * 24 * 10)  # 10 days
     except signing.BadSignature:
-        c['message'] = ("The URL was invalid. Please ensure you copied the URL from the email correctly, "
-                        "or contact the webmaster if you are having difficulties")
+        context['message'] = (
+            "The URL was invalid. Please ensure you copied the URL from the email correctly, "
+            "or contact the webmaster if you are having difficulties"
+        )
     else:
         u = get_object_or_404(User.objects.filter(username=username))
         u.email = new_email
         u.save()
-        c['message'] = "Your email address has been updated, thanks."
-        c['success'] = True
+        context['message'] = "Your email address has been updated, thanks."
+        context['success'] = True
 
-    return TemplateResponse(request, 'cciw/officers/email_update.html', c)
+    return TemplateResponse(request, 'cciw/officers/email_update.html', context)
 
 
 def correct_application(request):
-    c = {}
+    context = {}
     try:
         application_id, email = signing.loads(request.GET.get('t', ''),
                                               salt="cciw-officers-correct_application",
                                               max_age=60 * 60 * 24 * 10)  # 10 days
     except signing.BadSignature:
-        c['message'] = ("The URL was invalid. Please ensure you copied the URL from the email correctly, "
-                        "or contact the webmaster if you are having difficulties.")
+        context['message'] = (
+            "The URL was invalid. Please ensure you copied the URL from the email correctly, "
+            "or contact the webmaster if you are having difficulties."
+        )
     else:
         application = get_object_or_404(Application.objects.filter(id=application_id))
         application.address_email = email
         application.save()
-        c['message'] = "Your application form email address has been updated, thanks."
-        c['success'] = True
+        context['message'] = "Your application form email address has been updated, thanks."
+        context['success'] = True
 
-    return TemplateResponse(request, 'cciw/officers/email_update.html', c)
+    return TemplateResponse(request, 'cciw/officers/email_update.html', context)
 
 
 @staff_member_required
@@ -1568,9 +1572,7 @@ def booking_progress_stats_download(request, start_year: int = None, end_year: i
 
 @staff_member_required
 @secretary_or_committee_required
-def booking_summary_stats(request, start_year, end_year):
-    start_year = int(start_year)
-    end_year = int(end_year)
+def booking_summary_stats(request, start_year: int, end_year: int):
     chart_data = get_booking_summary_stats(start_year, end_year)
     chart_data.pop('Total')
     return TemplateResponse(request, 'cciw/officers/booking_summary_stats.html', {
@@ -1582,9 +1584,7 @@ def booking_summary_stats(request, start_year, end_year):
 
 @staff_member_required
 @secretary_or_committee_required
-def booking_summary_stats_download(request, start_year, end_year):
-    start_year = int(start_year)
-    end_year = int(end_year)
+def booking_summary_stats_download(request, start_year: int, end_year: int):
     data = get_booking_summary_stats(start_year, end_year)
     formatter = get_spreadsheet_formatter(request)
     formatter.add_sheet_from_dataframe("Bookings", data)
@@ -1648,7 +1648,10 @@ def booking_ages_stats(request, start_year: int = None, end_year: int = None, ca
 
 @staff_member_required
 @camp_admin_required
-def booking_ages_stats_download(request, start_year: int = None, end_year: int = None, camp_ids=None):
+def booking_ages_stats_download(request,
+                                start_year: int = None,
+                                end_year: int = None,
+                                camp_ids: typing.List[CampId] = None):
     start_year, end_year, camps, data = (
         _get_booking_ages_stats_from_params(start_year, end_year, camp_ids)
     )
@@ -1662,7 +1665,7 @@ def booking_ages_stats_download(request, start_year: int = None, end_year: int =
 
 
 @cciw_secretary_or_booking_secretary_required
-def brochure_mailing_list(request, year):
+def brochure_mailing_list(request, year: int):
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(addresses_for_mailing_list(year, formatter),
                                 f"mailing-list-{year}")

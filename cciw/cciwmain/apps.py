@@ -100,7 +100,7 @@ def check_url_args_match(url_pattern: URLPattern):
                 ))
             elif expected_type != found_type:
                 errors.append(Error(
-                    f'For parameter `{name}`, annotated type `{found_type.__name__}` does not match expected `{expected_type.__name__}` from urlconf',
+                    f'For parameter `{name}`, annotated type `{repr(found_type)}` does not match expected `{repr(expected_type)}` from urlconf',
                     obj=url_pattern,
                     id='urlchecker.E002',
                 ))
