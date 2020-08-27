@@ -10,7 +10,7 @@ from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 
 
-def index(request, year=None):
+def index(request, year: int = None):
     """
     Displays a list of all camps, or all camps in a given year.
     """
@@ -26,7 +26,7 @@ def index(request, year=None):
     })
 
 
-def detail(request, year, slug):
+def detail(request, year: int, slug: str):
     """
     Shows details of a specific camp.
     """
