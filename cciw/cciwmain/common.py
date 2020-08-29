@@ -132,7 +132,6 @@ def standard_processor(request):
             return links_cache
 
     context['menulinks'] = get_links
-    context['GOOGLE_ANALYTICS_ACCOUNT'] = getattr(settings, 'GOOGLE_ANALYTICS_ACCOUNT', '')
     context['PRODUCTION'] = settings.LIVEBOX
 
     return context

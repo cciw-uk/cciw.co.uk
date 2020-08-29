@@ -521,12 +521,6 @@ if LIVEBOX:
 else:
     RAVEN_CONFIG = {}
 
-# Google analytics
-if LIVEBOX:
-    GOOGLE_ANALYTICS_ACCOUNT = SECRETS['GOOGLE_ANALYTICS_ACCOUNT']
-else:
-    GOOGLE_ANALYTICS_ACCOUNT = ''
-
 CAPTCHA_FONT_PATH = os.path.join(BASE_DIR, "cciw", "cciwmain", "static", "fonts", "Jurassic_Park.ttf")
 if not os.path.exists(CAPTCHA_FONT_PATH):
     raise ValueError(f"CAPTCHA_FONT_PATH is incorrect - file missing {CAPTCHA_FONT_PATH}")
