@@ -38,3 +38,4 @@ xlrd==1.2.0
 xlwt==1.3.0
 django-simple-captcha==0.5.12
 sorl-thumbnail>=12.5
+mercurial==5.5.1

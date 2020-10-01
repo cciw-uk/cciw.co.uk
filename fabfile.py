@@ -343,6 +343,18 @@ TEMPLATES = {
         "owner": "root",
         "mode": "600",
     },
+    "hgweb.wsgi": {
+        "system": False,
+        "local_path": "config/hgweb.wsgi",
+        "remote_path": "/home/%(proj_name)s/repos/hgweb.wsgi",
+        # reload command needs to be run as root, won't work here
+    },
+    "hgweb.config": {
+        "system": False,
+        "local_path": "config/hgweb.config",
+        "remote_path": "/home/%(proj_name)s/repos/hgweb.config",
+        # reload command needs to be run as root, won't work here
+    },
 }
 
 
