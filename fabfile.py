@@ -485,6 +485,7 @@ def deploy():
     create_venv(target)
     install_requirements(target)
     build_static(target)
+    upload_project_templates(target)
     update_database(target)
     make_target_current(target)
     deploy_system()
@@ -667,6 +668,12 @@ def build_static(target):
 
     # Permissions
     run(f"chmod -R ugo+r {target.STATIC_ROOT}")
+
+
+def upload_project_templates(target):
+    target = Version.current()
+    for name in get_project_templates():
+        upload_template_and_reload(name, target)
 
 
 def update_database(target):
