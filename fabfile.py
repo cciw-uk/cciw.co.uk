@@ -1110,7 +1110,6 @@ def initial_dev_setup():
     _install_deps_local()
     target = Version.current()
     get_non_vcs_sources(target)
-    # TODO: get_and_load_dev_db()
 
 
 def _install_deps_local():

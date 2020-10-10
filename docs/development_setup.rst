@@ -11,7 +11,7 @@ actually been using for deployment).
 Assuming a Linux/Unix machine, the requirements are:
 
 * Python 3.7
-* Postgres >= 9.5
+* Postgres 11
 * Node
 
 For tests, see also:
@@ -37,11 +37,19 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
     127.0.0.1          cciw.local
 
-* Install the requirements and a copy of the production DB using the fabfile::
+* Install the requirements using the fabfile::
 
     pip install fabric3 fabtools3
     fab initial_dev_setup
 
+* Populate the DB::
+
+    ./manage.py migrate
+    ./manage.py loaddata fixtures/dev_db.json
+
+  The dev_fb fixture includes one admin user (username 'admin', password
+  'admin') and a snapshot of public data from the production database, but no
+  private data.
 
 * Run the development server::
 

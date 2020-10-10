@@ -277,7 +277,7 @@ else:
     DB_NAME = 'cciw'
     DB_USER = 'cciw'
     DB_PASSWORD = 'foo'  # Need to sync with Vagrantfile
-    DB_PORT = '5432'
+    DB_PORT = '5433'
 
 
 DATABASES = {
