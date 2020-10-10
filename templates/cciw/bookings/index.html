@@ -51,14 +51,16 @@
 
   {% endif %}
 
-  <p>The above prices cover <b>food</b> and <b>all whole-camp activities</b>.
-    Transport to and from camp is not included. On some camps there may be the
-    option to do an additional activity from an external provider (e.g.
-    paintballing, rock-climbing), and these cost extra. Campers should bring
-    money to cover these if they want to do them, along with any pocket money
-    for spending in the camp tuck shop, book shop or in local towns or shops
-    they might visit.
-  </p>
+  {% if booking_open or price_list %}
+    <p>The above prices cover <b>food</b> and <b>all whole-camp activities</b>.
+      Transport to and from camp is not included. On some camps there may be the
+      option to do an additional activity from an external provider (e.g.
+      paintballing, rock-climbing), and these cost extra. Campers should bring
+      money to cover these if they want to do them, along with any pocket money
+      for spending in the camp tuck shop, book shop or in local towns or shops
+      they might visit.
+    </p>
+  {% endif %}
 
   <h2>Booking</h2>
 

@@ -118,6 +118,8 @@ def index(request):
         ('2nd camper from the same family', getp(PRICE_2ND_CHILD)),
         ('Subsequent children from the same family', getp(PRICE_3RD_CHILD))
     ]
+    if any(p is None for caption, p in price_list):
+        price_list = []
     # Add discounts:
     price_list = [(caption, p, p - early_bird_discount if early_bird_discount is not None else None)
                   for caption, p in price_list]
