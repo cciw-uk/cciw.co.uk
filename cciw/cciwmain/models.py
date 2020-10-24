@@ -139,7 +139,7 @@ class Camp(models.Model):
 
     @cached_property
     def previous_camp(self):
-        if getattr(self, '_camp_name_cache', None) is not None:
+        if self._state.fields_cache.get('camp_name', None) is not None:
             camp_name = self.camp_name
             if hasattr(camp_name, '_prefetched_objects_cache'):
                 other_camps = camp_name._prefetched_objects_cache.get('camps', None)

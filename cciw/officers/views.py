@@ -1457,12 +1457,12 @@ def booking_secretary_reports(request, year: int):
     #
     # People in group 2b) possibly need to be chased. They are not highlighted here - TODO
 
-    bookings = bookings.order_by('account__name', 'first_name', 'last_name')
-    bookings = list(bookings.prefetch_related('camp',
-                                              'account',
-                                              'account__bookings',
-                                              'account__bookings__camp',
-                                              ))
+    bookings = bookings.order_by('account__name', 'account__id', 'first_name', 'last_name')
+    bookings = list(
+        bookings
+        .select_related('camp__camp_name', 'account')
+        .prefetch_related('account__bookings__camp')
+    )
 
     counts = defaultdict(int)
     for b in bookings:

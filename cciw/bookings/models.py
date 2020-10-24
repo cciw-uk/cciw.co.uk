@@ -556,7 +556,10 @@ class BookingQuerySet(models.QuerySet):
 class BookingManagerBase(models.Manager):
 
     def get_queryset(self):
-        return super(BookingManagerBase, self).get_queryset().select_related('camp', 'account')
+        return super(BookingManagerBase, self).get_queryset().select_related(
+            'camp',
+            'account'
+        )
 
 
 BookingManager = BookingManagerBase.from_queryset(BookingQuerySet)
