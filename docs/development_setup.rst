@@ -32,6 +32,10 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
     mkvirtualenv --python=`which python3.7` cciw
 
+  Add project path to the venv::
+
+    pwd > $VIRTUAL_ENV/lib/python3.7/site-packages/project.pth
+
 * Create an alias for 'cciw.local' that points to localhost, 127.0.0.1. On
   Linux, you do this by adding the following line to /etc/hosts::
 

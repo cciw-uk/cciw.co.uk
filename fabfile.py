@@ -59,6 +59,8 @@ WEBAPPS_ROOT = f"/home/{env.proj_user}/webapps"
 
 CURRENT_VERSION = 'current'
 
+os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
+
 REQS = [
     # Daemons
     'ufw',
@@ -831,12 +833,9 @@ must be deleted immediately after.
 
 @task
 def local_restore_from_dump(filename):
-    db = {}
-    db['NAME'] = 'cciw'
-    db['USER'] = 'cciw'
-    db['PASSWORD'] = 'foo'
-    db['HOST'] = '127.0.0.1'
-    db['PORT'] = '5432'
+    _local_django_setup()
+    from django.conf import settings
+    db = settings.DATABASES['default']
 
     filename = os.path.abspath(filename)
     with shell_env(**pg_environ(db)):
@@ -871,13 +870,12 @@ def pg_restore_cmds(db, filename, clean=False):
 def db_create_user_commands(db):
     return [
         (True,
-         f"psql -U postgres -d template1 -c \"CREATE USER {db['USER']} WITH PASSWORD '{db['PASSWORD']}';\" "),
+         f"psql -p {db['PORT']} -U postgres -d template1 -c \"CREATE USER {db['USER']} WITH PASSWORD '{db['PASSWORD']}';\" "),
     ]
 
 
 def db_check_user_exists_command(db):
-    return ("""psql -U postgres -d postgres -t -c "SELECT COUNT(*) FROM pg_user WHERE usename='%s';" """
-            % db['USER'])
+    return (f"""psql -p {db['PORT']} -U postgres -d postgres -t -c "SELECT COUNT(*) FROM pg_user WHERE usename='{db["USER"]}';" """)
 
 
 def db_check_user_exists_local(db):
@@ -893,16 +891,16 @@ def db_check_user_exists_remote(db):
 def db_create_commands(db):
     return [
         (True,
-         """ psql -U postgres -d template1 -c " """
+         """ psql -p %s -U postgres -d template1 -c " """
          """ CREATE DATABASE %s """
          """ TEMPLATE = template0 ENCODING = 'UTF8' LC_CTYPE = '%s' LC_COLLATE = '%s';"""
-         """ " """ % (db['NAME'], env.locale, env.locale)),
+         """ " """ % (db['PORT'], db['NAME'], env.locale, env.locale)),
 
         (True,
-         f"psql -U postgres -d template1 -c \"GRANT ALL ON DATABASE {db['NAME']} TO {db['USER']};\" "),
+         f"psql -p {db['PORT']} -U postgres -d template1 -c \"GRANT ALL ON DATABASE {db['NAME']} TO {db['USER']};\" "),
 
         (True,
-         f"psql -U postgres -d template1 -c \"ALTER USER {db['USER']} CREATEDB;\" "),
+         f"psql -p {db['PORT']} -U postgres -d template1 -c \"ALTER USER {db['USER']} CREATEDB;\" "),
 
     ]
 
@@ -910,7 +908,7 @@ def db_create_commands(db):
 def db_drop_database_commands(db):
     return [
         (True,
-         f"psql -U postgres -d template1 -c \"DROP DATABASE IF EXISTS {db['NAME']};\" "),
+         f"psql -p {db['PORT']} -U postgres -d template1 -c \"DROP DATABASE IF EXISTS {db['NAME']};\" "),
 
     ]
 
@@ -1028,7 +1026,6 @@ def run_ngrok(port=8002):
     # URL, so we spawn another fab task that monitors a log file
 
     # Check that this works first, so that set_site_from_url doesn't fail silently
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
     import django
     django.setup()
 
@@ -1093,7 +1090,6 @@ def set_site_from_url(url):
 
 
 def _local_django_setup():
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
     import django
     django.setup()
 
