@@ -55,6 +55,8 @@ These steps have only been tested on Ubuntu-based Linux installations.
   'admin') and a snapshot of public data from the production database, but no
   private data.
 
+  A larger example DB is available on request.
+
 * Run the development server::
 
     $ ./manage.py runserver 8000
