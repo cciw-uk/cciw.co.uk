@@ -1,5 +1,5 @@
 from django.forms.forms import BoundField
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.html import escape, mark_safe
 
 
@@ -44,17 +44,17 @@ class CciwFormMixin(object):
         bf_errors = self.error_class([escape(error) for error in bf.errors])  # Escape and cache in local variable.
         if bf.is_hidden:
             if bf_errors:
-                top_errors.extend([f'(Hidden field {name}) {force_text(e)}' for e in bf_errors])
+                top_errors.extend([f'(Hidden field {name}) {force_str(e)}' for e in bf_errors])
             hidden_fields.append(str(bf))
         else:
             if bf_errors:
-                errors_html = self.errors_template % force_text(bf_errors)
+                errors_html = self.errors_template % force_str(bf_errors)
                 cssclass = self.div_error_class
             else:
                 errors_html = ''
                 cssclass = self.div_normal_class
             if label_text is None and bf.label:
-                label_text = escape(force_text(bf.label))
+                label_text = escape(force_str(bf.label))
             if label_text is not None:
                 # Only add the suffix if the label does not end in
                 # punctuation.
@@ -69,12 +69,12 @@ class CciwFormMixin(object):
             else:
                 label = ''
             if field.help_text:
-                help_text = self.help_text_html_template % force_text(field.help_text)
+                help_text = self.help_text_html_template % force_str(field.help_text)
             else:
                 help_text = ''
             output.append(self.normal_row_template % {
                 'errors_html': errors_html,
-                'label': force_text(label),
+                'label': force_str(label),
                 'field': str(bf),
                 'help_text': help_text,
                 'class': cssclass,
