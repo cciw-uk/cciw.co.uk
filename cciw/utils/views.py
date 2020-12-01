@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.views import redirect_to_login
 from django.http import Http404, HttpResponse, HttpResponseForbidden, HttpResponseRedirect
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from cciw.utils.spreadsheet import ExcelFormatter, OdsFormatter
 
@@ -35,7 +35,7 @@ def reroute_response(request, default_to_close=True):
     # if we have a safe return to URL, do a redirect
     if '_return_to' in request.GET:
         url = request.GET['_return_to']
-        if is_safe_url(url, settings.ALLOWED_HOSTS):
+        if url_has_allowed_host_and_scheme(url, settings.ALLOWED_HOSTS):
             return HttpResponseRedirect(url)
 
     # Otherwise close the window
