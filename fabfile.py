@@ -286,7 +286,7 @@ def _ssl_dhparam():
 
 
 def _install_python_minimum():
-    run("pip install -U pip virtualenv wheel virtualenvwrapper mercurial")
+    run("pip install -U pip virtualenv wheel virtualenvwrapper")
 
 
 @as_rootuser

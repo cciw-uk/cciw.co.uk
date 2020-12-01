@@ -22,9 +22,9 @@ explanation of the rationale here.
 Version control
 ---------------
 
-Mercurial is used for VCS. Features and fixes should be developed off the
-'default' named branch, using bookmarks if necessary. These are merged to the
-'live' named branch as part of the deployment process.
+Git is used for VCS. Features and fixes should be developed in branches taken
+off the 'master' branch. These are merged to the 'master' branch as part of the
+deployment process.
 
 Tests
 -----
