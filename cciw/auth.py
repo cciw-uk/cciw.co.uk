@@ -6,15 +6,32 @@ class CciwAuthBackend(ModelBackend):
         """
         Returns True if user_obj has any permissions in the given app_label.
         """
-        # This makes /admin/officers/ return something for camp admins, rather
-        # than a 403, and /admin/ return something rather than a message saying
-        # there is nothing they can edit. This is necessary because, for
-        # security reasons, we don't actually make camp admins/leaders part of a
-        # specific group with permissions, but add overrides
-        # (CampAdminPermissionMixin and other 'has_change_permission' methods)
-        # to give specific permission to admin screens if the user is a camp
-        # admin for a current camp. Doing it this way means we don't have to
-        # remember to remove people from groups, it is all automatic.
+        # Our permission mechanisms for CCiW staff work like this:
+        #
+        # * We don't give normal Django admin permissions to users on an individual 
+        #   basis
+        # 
+        # * We don't use membership of normal Django 'Group' for most users
+        #   and for most roles (exceptions are in config/groups.yaml)
+        #
+        # * Instead, for many roles we dynamically work out a current "role"
+        #   e.g. "camp leader" or "camp admin" - this means we don't need
+        #   to remember to remove people from statically defined groups.
+        #
+        # To implement this, we use CampAdminPermissionMixin and override
+        # other 'has_change_permission' methods, so we can allow specific people
+        # access to specific modules, so that they can manage application forms,
+        # for example, or view their own.
+        # 
+        # The consequence of this is that many users appear to have no
+        # admin permissions at all, or no permissions to a certain 'app' like
+        # the 'officers' app. Because of this, for these users, due to the
+        # assumptions made by Django admin, access to
+        # /admin/ or /admin/officers/ would normally result in a 403.
+        # or a page saying there is nothing they can edit.
+        #
+        # This class overrides that behaviour so that it applies our logic,
+        # then fallbacks to normal logic if our exceptions don't apply.
         if user_obj.is_staff:
             if app_label == 'officers':
                 if user_obj.can_manage_application_forms:
