@@ -51,11 +51,12 @@ laws and fit CCiW's way of working.
 For more information on these legal issues, please see:
 
 * The ICO's `Guide to Data Protection
-<https://ico.org.uk/for-organisations/guide-to-data-protection/>`_
+  <https://ico.org.uk/for-organisations/guide-to-data-protection/>`_
 * `The GDPR legislaton <https://gdpr.eu/tag/gdpr/>`_
-* If you further questions consult with the CCiW committee.
+* If you have further questions consult with the CCiW committee.
 
-The following sections form part of our data protection policies.
+The following sections form part of our current approach to data protection. See
+also the relevant parts of the CCiW handbook.
 
 Storage of sensitive information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
