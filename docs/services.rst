@@ -2,7 +2,7 @@ Third party services
 ====================
 
 Private access details concerning these services are found in the external
-password store.
+"CCiW website access information" document.
 
 PayPal
 ------
@@ -60,7 +60,8 @@ control panel.
 Amazon AWS
 ----------
 
-This uses a dedicated Amazon AWS account.
+This uses a dedicated Amazon AWS account, as described in "CCiW website access
+information".
 
 
 S3 Backups
@@ -68,7 +69,7 @@ S3 Backups
 
 An S3 bucket for backups is configured with the following properties:
 
-* Located S3 service
+* Region: EU West 2 (London)
 * Created bucket with following settings
   * name: (see secrets.json)
   * Block all public access: enabled
@@ -80,7 +81,46 @@ An S3 bucket for backups is configured with the following properties:
     * Scope: "This rule applies to all objects in the bucket"
     * Action: "Expire current versions of objects"
       * Number of days after object creation: 30
+    * Action: "Delete expired delete markers or incomplete multipart uploads"
+      * Delete incomplete multipart uploads: checked
+      * Numbers of days: 30
 
 Note that the lifecycle policy is an important part of our data retention and
 data privacy policy - old data that we want to delete will be expunged from our
 backups as well as our main database once the backup is automatically deleted.
+
+SES Simple Email Service
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+SES was set up as follows:
+
+Using the main account, added 'cciw.co.uk' as a verified domain.
+
+* Verify a new domain ->
+
+  * Domain: cciw.co.uk
+  * Generate DKIM Settings: enabled
+
+* Added domain verification records in DNS (DigitalOcean) as per instructions.
+
+* Under "SMTP settings"
+
+  * In secrets.json, "SMTP_HOST" and "SMTP_PORT" set from data given
+
+  * Created new user for SES sending.
+
+    * Made note of auth settings - copied to password store and to secrets.json as
+      "SMTP_USERNAME" and "SMTP_PASSWORD".
+
+* Under 'Email addresses', added web master personal email address to test
+  sending.
+
+* Under 'Domains', selected 'cciw.co.uk' and sent test email.
+
+* Under 'Sending statistics', chose 'Edit your account details' to ask Amazon to
+  enable production usage.
+
+
+Receiving
+~~~~~~~~~
+
