@@ -1,6 +1,9 @@
 Third party services
 ====================
 
+Private access details concerning these services are found in the external
+password store.
+
 PayPal
 ------
 
@@ -53,3 +56,31 @@ Mailgun
 This is used for sending and receiving email. Some email addresses, that don't
 need integration with other features, are configured manually using Mailgun's
 control panel.
+
+Amazon AWS
+----------
+
+This uses a dedicated Amazon AWS account.
+
+
+S3 Backups
+~~~~~~~~~~
+
+An S3 bucket for backups is configured with the following properties:
+
+* Located S3 service
+* Created bucket with following settings
+  * name: (see secrets.json)
+  * Block all public access: enabled
+  * Bucket versioning: disabled
+  * Server side encryption: enabled
+    * Amazon S3 key
+  * Lifecycle rule:
+    * Name: "Delete after 30 days"
+    * Scope: "This rule applies to all objects in the bucket"
+    * Action: "Expire current versions of objects"
+      * Number of days after object creation: 30
+
+Note that the lifecycle policy is an important part of our data retention and
+data privacy policy - old data that we want to delete will be expunged from our
+backups as well as our main database once the backup is automatically deleted.
