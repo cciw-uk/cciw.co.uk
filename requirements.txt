@@ -31,7 +31,7 @@ django-countries==6.1.2   # via -r requirements.in
 django-debug-toolbar==2.2  # via -r requirements-dev.in
 django-functest==1.0.4    # via -r requirements-dev.in
 django-js-asset==1.1.0    # via django-mptt
-django-mailer==2.0        # via -r requirements.in
+django-mailer==2.1        # via -r requirements.in
 django-mptt==0.11.0       # via wiki
 django-nyt==1.1.5         # via wiki
 django-paypal==1.0.0      # via -r requirements.in
@@ -111,7 +111,7 @@ wcwidth==0.1.7            # via prompt-toolkit
 webencodings==0.5.1       # via bleach
 webob==1.8.1              # via webtest
 webtest==2.0.29           # via django-webtest
-wiki==0.6                 # via -r requirements.in
+wiki==0.7                 # via -r requirements.in
 wrapt==1.10.11            # via vcrpy
 xlrd==1.2.0               # via -r requirements.in
 xlwt==1.3.0               # via -r requirements.in
