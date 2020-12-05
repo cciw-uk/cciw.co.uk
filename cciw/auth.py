@@ -8,9 +8,9 @@ class CciwAuthBackend(ModelBackend):
         """
         # Our permission mechanisms for CCiW staff work like this:
         #
-        # * We don't give normal Django admin permissions to users on an individual 
+        # * We don't give normal Django admin permissions to users on an individual
         #   basis
-        # 
+        #
         # * We don't use membership of normal Django 'Group' for most users
         #   and for most roles (exceptions are in config/groups.yaml)
         #
@@ -22,7 +22,7 @@ class CciwAuthBackend(ModelBackend):
         # other 'has_change_permission' methods, so we can allow specific people
         # access to specific modules, so that they can manage application forms,
         # for example, or view their own.
-        # 
+        #
         # The consequence of this is that many users appear to have no
         # admin permissions at all, or no permissions to a certain 'app' like
         # the 'officers' app. Because of this, for these users, due to the
