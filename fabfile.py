@@ -564,7 +564,7 @@ def push_sources(target):
                path=target_src_root,
                ))
     with cd(target_src_root):
-        run(f"git checkout {target.version}")
+        run(f"git reset --hard {target.version}")
 
     # Also need to sync files that are not in main sources VCS repo.
     push_non_vcs_sources(target)
