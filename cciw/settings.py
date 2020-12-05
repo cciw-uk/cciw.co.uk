@@ -154,12 +154,34 @@ SILENCED_SYSTEM_CHECKS = [
     'urlchecker.W003',
 ]
 
+# == AUTH ==
+
 AUTH_USER_MODEL = "accounts.User"
 
 AUTHENTICATION_BACKENDS = [
     'cciw.auth.CciwAuthBackend',
 ]
 
+AUTH_PASSWORD_VALIDATORS = [
+    # See https://pages.nist.gov/800-63-3/sp800-63b.html#sec5
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        }
+    },
+    {
+        'NAME': 'pwned_passwords_django.validators.PwnedPasswordsValidator',
+    },
+]
+
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.SHA1PasswordHasher',
+]
+
+
+# == LOGGING ==
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -298,10 +320,6 @@ if LIVEBOX:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-PASSWORD_HASHERS = (
-    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
-    'django.contrib.auth.hashers.SHA1PasswordHasher',
-)
 
 # == TEMPLATES ==
 

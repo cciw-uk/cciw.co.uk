@@ -40,7 +40,7 @@ django-ranged-response==0.2.0  # via django-simple-captcha
 django-sekizai==0.10.0    # via wiki
 django-simple-captcha==0.5.12  # via -r requirements.in
 django-webtest==1.9.7     # via django-functest
-django==3.0.6             # via -r requirements.in, django-anymail, django-appconf, django-classy-tags, django-colorful, django-debug-toolbar, django-functest, django-mailer, django-mptt, django-nyt, django-paypal, django-plainpasswordhasher, django-ranged-response, django-simple-captcha, jsonfield, wiki
+django==3.0.6             # via -r requirements.in, django-anymail, django-appconf, django-classy-tags, django-colorful, django-debug-toolbar, django-functest, django-mailer, django-mptt, django-nyt, django-paypal, django-plainpasswordhasher, django-ranged-response, django-simple-captcha, jsonfield, pwned-passwords-django, wiki
 docutils==0.14            # via botocore
 easyprocess==0.2.3        # via pyvirtualdisplay
 entrypoints==0.3          # via flake8
@@ -78,6 +78,7 @@ prompt-toolkit==1.0.15    # via ipython
 psutil==5.6.7             # via -r requirements.in
 psycopg2-binary==2.8.5    # via -r requirements.in
 ptyprocess==0.5.2         # via pexpect
+pwned-passwords-django==1.4.1  # via -r requirements.in
 pycodestyle==2.5.0        # via flake8
 pycparser==2.18           # via cffi
 pyflakes==2.1.1           # via flake8
@@ -92,7 +93,7 @@ pyvirtualdisplay==0.2.1   # via django-functest
 pyyaml==5.1.2             # via -r requirements.in, vcrpy
 raven==6.10.0             # via -r requirements.in
 rcssmin==1.0.6            # via -r requirements.in, django-compressor
-requests==2.22.0          # via -r requirements.in, django-anymail, django-paypal
+requests==2.22.0          # via -r requirements.in, django-anymail, django-paypal, pwned-passwords-django
 rjsmin==1.1.0             # via -r requirements.in, django-compressor
 s3transfer==0.1.13        # via boto3
 selenium==3.14.1          # via -r requirements-dev.in, django-functest
