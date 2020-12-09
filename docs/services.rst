@@ -71,17 +71,23 @@ An S3 bucket for backups is configured with the following properties:
 
 * Region: EU West 2 (London)
 * Created bucket with following settings
+
   * name: (see secrets.json)
   * Block all public access: enabled
   * Bucket versioning: disabled
   * Server side encryption: enabled
+
     * Amazon S3 key
   * Lifecycle rule:
+
     * Name: "Delete after 30 days"
     * Scope: "This rule applies to all objects in the bucket"
     * Action: "Expire current versions of objects"
+
       * Number of days after object creation: 30
+
     * Action: "Delete expired delete markers or incomplete multipart uploads"
+
       * Delete incomplete multipart uploads: checked
       * Numbers of days: 30
 
@@ -112,6 +118,8 @@ Using the main account, added 'cciw.co.uk' as a verified domain.
     * Made note of auth settings - copied to password store and to secrets.json as
       "SMTP_USERNAME" and "SMTP_PASSWORD".
 
+    * Also make note of MX record needed (inbound SMTP server)
+
 * Under 'Email addresses', added web master personal email address to test
   sending.
 
@@ -120,7 +128,156 @@ Using the main account, added 'cciw.co.uk' as a verified domain.
 * Under 'Sending statistics', chose 'Edit your account details' to ask Amazon to
   enable production usage.
 
+This was done for both eu-west-2 (London) and eu-west-1 (Ireland), because
+eu-west-2 doesn't have support for inbound email (yet).
+
 
 Receiving
 ~~~~~~~~~
 
+Based on this guide:
+
+https://aws.amazon.com/blogs/messaging-and-targeting/forward-incoming-email-to-an-external-destination/
+
+* In Amazon S3, a bucket was created to store incoming mail temporarily with following settings
+
+  * Region: EU West 1 (Ireland)
+  * Name: (see secrets.json)
+  * Block all public access: enabled
+  * Bucket versioning: disabled
+  * Server side encryption: enabled
+
+    * Amazon S3 key
+
+  * Lifecycle rule:
+
+    * Name: "Delete after 5 days"
+    * Scope: "This rule applies to all objects in the bucket"
+    * Action: "Expire current versions of objects"
+
+      * Number of days after object creation: 5
+
+    * Action: "Delete expired delete markers or incomplete multipart uploads"
+
+      * Delete incomplete multipart uploads: checked
+      * Numbers of days: 5
+
+* Added the following bucket policy to the bucket::
+
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "AllowSESPuts",
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "ses.amazonaws.com"
+                },
+                "Action": "s3:PutObject",
+                "Resource": "arn:aws:s3:::<BUCKET_NAME>/*",
+                "Condition": {
+                    "StringEquals": {
+                        "aws:Referer": "<USER_ID>"
+                    }
+                }
+            }
+        ]
+    }
+
+  with ``<BUCKET_NAME>`` and ``<USER_ID>`` replaced by values
+  from the secrets.json
+
+* Added IAM policy with following contents::
+
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "VisualEditor0",
+                "Effect": "Allow",
+                "Action": [
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup",
+                    "logs:PutLogEvents"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Sid": "VisualEditor1",
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject",
+                    "ses:SendRawEmail"
+                ],
+                "Resource": [
+                    "arn:aws:s3:::<BUCKET_NAME>/*",
+                    "arn:aws:ses:<REGION_NAME>:<USER_ID>:identity/*"
+                ]
+            }
+        ]
+    }
+
+  with ``<BUCKET_NAME>``, ``<REGION_NAME>`` and ``<USER_ID>`` replaced by values
+  from the secrets.json
+
+  Named: incoming-mail-handler
+
+* Created IAM role, choosing 'Lambda' on first screen, attaching the above
+  policy, and named: incoming-mail-handler
+
+* Created new Lambda:
+
+  * Name: forwardEmail
+  * Runtime: Python 3.7
+  * Execution role: incoming-mail-handler
+  * Contents: lambda_forwardEmail.py
+  * Environment variables:
+
+    * MailS3Bucket: <BUCKET_NAME>
+    * MailS3Prefix: ''
+    * MailSender: website@cciw.co.uk
+    * MailRecipient: <personal email address of webmaster>
+    * Region: <REGION_NAME>
+
+
+  * Basic settings:
+    * Timeout: 30 seconds
+
+* Created ruleset:
+
+  * Recipients:
+
+    * webmaster@cciw.co.uk
+    * webmaster@mailtest.cciw.co.uk
+
+  * Actions:
+
+    * S3
+
+      * Bucket: <BUCKET_NAME>
+      * Key prefix: <empty>
+
+    * Lambda:
+
+      * Name: forwardEmail
+      * Invocation type: Event
+      * SNS Topic: <None>
+
+  * Name: webmaster-forward
+
+  * Enabled
+  * Enable spam and virus checking: enabled
+
+  * Added necessary permissions
+
+  * Result after testing: it doesn't forward very nicely - it puts the whole
+    body as an attachment. We want more control. Going to implement
+    this with a post to cciw.co.uk web app instead.
+
+When setting this up and debugging, instead of adding an MX record for
+``cciw.co.uk``, you can add one for ``mailtest.cciw.co.uk`` and use
+addresses like ``webmaster@mailtest.cciw.co.uk``.
+
+TODO:
+  - could use bucket + lambda function for forwarding to some fixed addresses
+  - could use bucket + SNS for notifying website
