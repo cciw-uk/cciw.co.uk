@@ -17,7 +17,7 @@ from cciw.utils.functional import partition
 from cciw.utils.tests.base import TestBase
 
 from . import views
-from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
+from .lists import MailAccessDenied, NoSuchGroup, extract_email_addresses, find_list, handle_mail, mangle_from_address
 from .test_data import (MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_FOR_REFERENCE,
@@ -53,9 +53,9 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                             email="joe@gmail.com")
 
     def test_invalid_list(self):
-        self.assertRaises(NoSuchList,
+        self.assertRaises(NoSuchGroup,
                           lambda: find_list('everyone@cciw.co.uk', 'joe@random.com'))
-        self.assertRaises(NoSuchList,
+        self.assertRaises(NoSuchGroup,
                           lambda: find_list('x-camp-2000-blue-officers@cciw.co.uk', 'joe@random.com'))
 
     def test_officer_list(self):

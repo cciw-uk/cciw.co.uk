@@ -63,7 +63,7 @@ def extract_email_addresses(email_line):
     return email_extract_re.findall(email_line)
 
 
-class NoSuchList(ValueError):
+class NoSuchGroup(ValueError):
     pass
 
 
@@ -83,7 +83,7 @@ def _get_camp(year=None, slug=None):
     try:
         return _get_camps(year=year, slug=slug).get()
     except Camp.DoesNotExist:
-        raise NoSuchList(f"year={year!r} camp={slug!r}")
+        raise NoSuchGroup(f"year={year!r} camp={slug!r}")
 
 
 def _camp_officers(year=None, slug=None):
@@ -165,24 +165,12 @@ def _mail_debug_users():
     return User.objects.filter(is_superuser=True)
 
 
-# Mailing list names are used as keys when updating Routes on Mailgun. Regexes
-# are used here and in Mailgun routes.
-
-# See also above functions which generate these email addresses.
-
-CAMP_OFFICERS_LIST = "Camp officers"
-CAMP_SLACKERS_LIST = "Camp slackers"
-CAMP_LEADERS_LIST = "Camp leaders"
-CAMP_LEADERS_FOR_YEAR_LIST = "Camp leaders for year"
-CAMP_DEBUG = "Debug"
-COMMITTEE = "Committee"
-WEBMASTERS = "Webmasters"
-
-
 @attr.s
-class EmailListGroup(object):
+class GroupDefinition(object):
+    # Mailing list names are used as keys when updating Routes on Mailgun.
     name = attr.ib()
-    address_matcher = attr.ib()
+    # address regex is used here and in Mailgun routes.
+    address = attr.ib()
     get_members = attr.ib()
     has_permission = attr.ib()
     list_reply = attr.ib()
@@ -195,13 +183,18 @@ class EmailListGroup(object):
         If no match, returns None
         If the from_address doesn't have permission, raises MailAccessDenied
         """
-        m = self.address_matcher.match(address)
+        regex = re.compile(self.address + self.domain_part(), re.IGNORECASE)
+        m = regex.match(address)
         if m is None:
             return None
         captures = m.groupdict()
         if not self.has_permission(from_address, **captures):
             raise MailAccessDenied()
         return EmailList(address, self.get_members(**captures), self.list_reply)
+
+    def domain_part(self):
+        return '@(' + '|'.join(re.escape(domain)
+                               for domain in settings.INCOMING_MAIL_DOMAINS) + ')$'
 
 
 @attr.s
@@ -211,59 +204,82 @@ class EmailList(object):
     list_reply = attr.ib()
 
 
-EMAIL_LISTS = [
-    EmailListGroup(
-        CAMP_OFFICERS_LIST,
-        re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-officers@cciw\.co\.uk$", re.IGNORECASE),
-        _camp_officers,
-        _is_camp_leader_or_admin,
-        False),
-    EmailListGroup(
-        CAMP_SLACKERS_LIST,
-        re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-slackers@cciw\.co\.uk$", re.IGNORECASE),
-        _camp_slackers,
-        _is_camp_leader_or_admin,
-        False),
-    EmailListGroup(
-        CAMP_LEADERS_LIST,
-        re.compile(r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders@cciw\.co\.uk$", re.IGNORECASE),
-        _camp_leaders,
-        _is_camp_leader_or_admin_or_dbs_officer_or_superuser,
-        False),
-    EmailListGroup(
-        CAMP_LEADERS_FOR_YEAR_LIST,
-        re.compile(r"^camps-(?P<year>\d{4})-leaders@cciw\.co\.uk$", re.IGNORECASE),
-        _camp_leaders,
-        _is_camp_leader_or_admin_or_dbs_officer_or_superuser,
-        True),
-    EmailListGroup(
-        CAMP_DEBUG,
-        re.compile(r"^camp-debug@cciw\.co\.uk$"),
-        _mail_debug_users,
-        lambda email: True,
-        True),
-    EmailListGroup(
-        COMMITTEE,
-        re.compile(r"^committee@cciw\.co\.uk$"),
-        _committee_users,
-        _is_in_committee_or_superuser,
-        True),
-    EmailListGroup(
-        WEBMASTERS,
-        re.compile(r"webmaster@cciw\.co\.uk|noreply@cciw\.co\.uk"),
-        _webmasters,
-        lambda email: True,  # Need to allow all temporarily to confirm address with SES
-        False,
-    ),
+# See also above functions which generate these email addresses.
+
+
+CAMP_OFFICERS_GROUP = GroupDefinition(
+    "Camp officers",
+    r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-officers",
+    _camp_officers,
+    _is_camp_leader_or_admin,
+    False,
+)
+
+CAMP_SLACKERS_GROUP = GroupDefinition(
+    "Camp slackers",
+    r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-slackers",
+    _camp_slackers,
+    _is_camp_leader_or_admin,
+    False,
+)
+
+CAMP_LEADERS_GROUP = GroupDefinition(
+    "Camp leaders",
+    r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders",
+    _camp_leaders,
+    _is_camp_leader_or_admin_or_dbs_officer_or_superuser,
+    False,
+)
+
+CAMP_LEADERS_FOR_YEAR_GROUP = GroupDefinition(
+    "Camp leaders for year",
+    r"^camps-(?P<year>\d{4})-leaders",
+    _camp_leaders,
+    _is_camp_leader_or_admin_or_dbs_officer_or_superuser,
+    True,
+)
+
+DEBUG_GROUP = GroupDefinition(
+    "Debug",
+    r"^camp-debug",
+    _mail_debug_users,
+    lambda email: True,
+    True
+)
+
+COMMITTEE_GROUP = GroupDefinition(
+    "Committee",
+    r"^committee",
+    _committee_users,
+    _is_in_committee_or_superuser,
+    True,
+)
+
+WEBMASTERS_GROUP = GroupDefinition(
+    "Webmasters",
+    r"^(webmaster|noreply)",
+    _webmasters,
+    lambda email: True,  # Need to allow all temporarily to confirm address with SES
+    False,
+)
+
+EMAIL_GROUPS = [
+    CAMP_OFFICERS_GROUP,
+    CAMP_SLACKERS_GROUP,
+    CAMP_LEADERS_GROUP,
+    CAMP_LEADERS_FOR_YEAR_GROUP,
+    DEBUG_GROUP,
+    COMMITTEE_GROUP,
+    WEBMASTERS_GROUP,
 ]
 
 
 def find_list(address, from_addr):
-    for e in EMAIL_LISTS:
+    for e in EMAIL_GROUPS:
         m = e.match(address, from_addr)
         if m is not None:
             return m
-    raise NoSuchList()
+    raise NoSuchGroup()
 
 
 def forward_email_to_list(mail, email_list, debug=False):
@@ -416,7 +432,7 @@ def handle_mail(data, debug=False):
                 settings.DEFAULT_FROM_EMAIL,
                 [from_email],
                 fail_silently=True)
-        except NoSuchList:
+        except NoSuchGroup:
             # addresses can contain anything else on the 'to' line, which
             # can even included valid @cciw.co.uk that we don't know about
             # (e.g. other mailboxes).  So if we don't recognise the
