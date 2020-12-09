@@ -285,6 +285,14 @@ LOGGING = {
     },
 }
 
+if DEVBOX:
+    LOGGING['loggers']['cciw.aws'] = {
+        'level': 'INFO',
+        'handlers': ['console'],
+        'propagate': False,
+    }
+
+
 # For large attachments to emails sent through mailgun endpoint:
 DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024
 
@@ -410,6 +418,9 @@ if TESTS_RUNNING:
     MAILER_EMAIL_BACKEND = EMAIL_BACKEND
 
 EMAIL_ENCRYPTION_PUBLIC_KEYS = SECRETS["EMAIL_ENCRYPTION_PUBLIC_KEYS"]
+
+# == AWS ==
+AWS_INCOMING_MAIL = SECRETS["AWS"]["INCOMING_MAIL"]
 
 # == MAILING LISTS ==
 

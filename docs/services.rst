@@ -61,7 +61,7 @@ Amazon AWS
 ----------
 
 This uses a dedicated Amazon AWS account, as described in "CCiW website access
-information".
+information". IAM roles are described in that document.
 
 
 S3 Backups
@@ -222,26 +222,9 @@ https://aws.amazon.com/blogs/messaging-and-targeting/forward-incoming-email-to-a
 
   Named: incoming-mail-handler
 
-* Created IAM role, choosing 'Lambda' on first screen, attaching the above
-  policy, and named: incoming-mail-handler
+  This role can be used for Lambda functions, and also for
+  our own mail handing.
 
-* Created new Lambda:
-
-  * Name: forwardEmail
-  * Runtime: Python 3.7
-  * Execution role: incoming-mail-handler
-  * Contents: lambda_forwardEmail.py
-  * Environment variables:
-
-    * MailS3Bucket: <BUCKET_NAME>
-    * MailS3Prefix: ''
-    * MailSender: website@cciw.co.uk
-    * MailRecipient: <personal email address of webmaster>
-    * Region: <REGION_NAME>
-
-
-  * Basic settings:
-    * Timeout: 30 seconds
 
 * Created ruleset:
 
@@ -256,12 +239,12 @@ https://aws.amazon.com/blogs/messaging-and-targeting/forward-incoming-email-to-a
 
       * Bucket: <BUCKET_NAME>
       * Key prefix: <empty>
+      * SNS topic:
 
-    * Lambda:
+        * Create New Topic:
 
-      * Name: forwardEmail
-      * Invocation type: Event
-      * SNS Topic: <None>
+          * Topic Name: ses-incoming-notification
+          * Display Name: SES incoming notification
 
   * Name: webmaster-forward
 
@@ -270,14 +253,30 @@ https://aws.amazon.com/blogs/messaging-and-targeting/forward-incoming-email-to-a
 
   * Added necessary permissions
 
-  * Result after testing: it doesn't forward very nicely - it puts the whole
-    body as an attachment. We want more control. Going to implement
-    this with a post to cciw.co.uk web app instead.
 
-When setting this up and debugging, instead of adding an MX record for
-``cciw.co.uk``, you can add one for ``mailtest.cciw.co.uk`` and use
-addresses like ``webmaster@mailtest.cciw.co.uk``.
+* In Amazon SNS, for topic ses-incoming-notification:
 
-TODO:
-  - could use bucket + lambda function for forwarding to some fixed addresses
-  - could use bucket + SNS for notifying website
+  * Created subscription:
+
+    * Protocol: HTTPS
+    * Endpoint: https://www.cciw.co.uk/mail/ses-incoming-notification/
+    * Enable raw message delivery: disabled
+    * Use the default delivery retry policy: enabled
+
+  * Chose 'Request confirmation' to send confirmation request to endpoint. This
+    was initially done for development (see below), later for live endpoint.
+
+
+When setting this up and debugging:
+
+* instead of adding an MX record for ``cciw.co.uk``, you can add one for
+  ``mailtest.cciw.co.uk`` and use addresses like
+  ``webmaster@mailtest.cciw.co.uk``.
+
+* for testing the subscription and the handler, use ngrok, and set up a
+  subscription that posts to the ngrok address instead of the live one (which
+  might not be deployed yet)
+
+* if you want to test real email sending from a development machine, be sure to
+  change cciw/settings.py so that you are using the real SMTP server
+  EMAIL_BACKEND and not the dummy 'console'.

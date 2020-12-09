@@ -374,7 +374,7 @@ def mangle_from_address(address):
 
 
 def handle_mail_async(data):
-    fd, name = tempfile.mkstemp(prefix="mailgun-incoming-")
+    fd, name = tempfile.mkstemp(prefix="mail-incoming-")
     os.write(fd, data)
     os.close(fd)
     manage_py_path = os.path.join(settings.PROJECT_ROOT, "manage.py")
