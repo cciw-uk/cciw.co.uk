@@ -91,7 +91,10 @@ USE_TZ = True
 
 LOGIN_URL = "/officers/"
 
-ALLOWED_HOSTS = [".cciw.co.uk", "cciw.local"]
+ALLOWED_HOSTS = [".cciw.co.uk"]
+
+if DEVBOX:
+    ALLOWED_HOSTS.extend(["cciw.local", ".ngrok.io"])
 
 INSTALLED_APPS = [
     # 3rd party
