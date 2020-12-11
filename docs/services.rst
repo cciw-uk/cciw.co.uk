@@ -9,7 +9,8 @@ PayPal
 
 PayPal is integrated using IPN.
 
-To test in development, you will need to use ``fab run_ngrok``.
+To test in development, you will need to use ngrok, e.g. using ``fab
+run_ngrok``.
 
 
 Accounts
@@ -60,12 +61,12 @@ control panel.
 Amazon AWS
 ----------
 
-This uses a dedicated Amazon AWS account, as described in "CCiW website access
-information". IAM roles are described in that document.
+All AWS services are part of a dedicated Amazon AWS account, as described in
+"CCiW website access information". IAM roles are described in that document.
+Individual services described below.
 
-
-S3 Backups
-~~~~~~~~~~
+Amazon S3 Backups
+-----------------
 
 An S3 bucket for backups is configured with the following properties:
 
@@ -78,6 +79,7 @@ An S3 bucket for backups is configured with the following properties:
   * Server side encryption: enabled
 
     * Amazon S3 key
+
   * Lifecycle rule:
 
     * Name: "Delete after 30 days"
@@ -96,7 +98,39 @@ data privacy policy - old data that we want to delete will be expunged from our
 backups as well as our main database once the backup is automatically deleted.
 
 SES Simple Email Service
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
+
+SES is used for sending and receiving email. The overall architecture is:
+
+Sending:
+
+* The Django app sends mail via a normal SMTP connection to Amazon SES.
+* We get bounce notifications (used in some cases to notify leaders of incorrect
+  email addresses), as follows:
+
+  * Bounces are sent to a Amazon SNS topic by SES.
+  * There is a subscription to that topic for an endpoint on the web app,
+    which handles the bounce.
+
+Receiving:
+
+* In DNS (currently managed by DigitalOcean), we have an MX record pointing
+  mail to Amazon SES servers (settings provided by Amazon)
+
+* In SES, we have a "rule set" that matches various email addresses and
+  directs the emails to an action that:
+
+  * Stores the emails in S3
+  * Sends a notification via an SNS topic.
+
+* We have a subscription to that SNS topic that posts to an endpoint on our web
+  app. This endpoint (part of the app) finally handles the mail.
+
+  * Which normally involves sending out other emails, but could be anything.
+
+
+Sending setup
+~~~~~~~~~~~~~
 
 SES was set up as follows:
 
@@ -128,18 +162,62 @@ Using the main account, added 'cciw.co.uk' as a verified domain.
 * Under 'Sending statistics', chose 'Edit your account details' to ask Amazon to
   enable production usage.
 
-This was done for both eu-west-2 (London) and eu-west-1 (Ireland), because
-eu-west-2 doesn't have support for inbound email (yet).
+This was done for both eu-west-2 (London) and eu-west-1 (Ireland). Because
+eu-west-2 doesn't have support for inbound email (yet), we use eu-west-1 only
+(both send and receive).
 
+Bounce notification
+~~~~~~~~~~~~~~~~~~~
+
+Some guides that have helpful info:
+
+* https://aws.amazon.com/premiumsupport/knowledge-center/ses-bounce-notifications-sns/
+
+Actions:
+
+* In Amazon SNS, created topic:
+
+  * Region: eu-west-1 (Ireland)
+  * Type: Standard
+  * Name: ses-bounces
+  * Display name: SES bounces
+
+* Added subscription to the topic:
+
+  * Protocol: HTTPS
+  * Endpoint: https://www.cciw.co.uk/mail/ses-bounce/
+  * Enable raw message delivery: disabled
+  * Use the default delivery retry policy: enabled
+  * Confirmed subscription using 'Request confirmation'
+
+* In Amazon SES, under 'Domains' -> cciw.co.uk -> Notifications -> Edit configuration:
+
+  * SNS Topic Configuration:
+
+    * Bounces:
+
+      * Topic: ses-bounces
+      * Include original headers: enabled
+
+  * Email feedback forwarding: enabled
+
+
+* Testing: https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-simulator.html
+
+  
 
 Receiving
 ~~~~~~~~~
 
-Based on this guide:
+With information from the following guides (but adapted):
 
-https://aws.amazon.com/blogs/messaging-and-targeting/forward-incoming-email-to-an-external-destination/
+* https://aws.amazon.com/blogs/messaging-and-targeting/forward-incoming-email-to-an-external-destination/
 
-* In Amazon S3, a bucket was created to store incoming mail temporarily with following settings
+* https://docs.aws.amazon.com/sns/latest/dg/sns-subscribe-https-s-endpoints-to-topic.html
+
+Actions:
+
+* In Amazon S3, a bucket was created to store incoming mail temporarily with following settings:
 
   * Region: EU West 1 (Ireland)
   * Name: (see secrets.json)
@@ -267,16 +345,38 @@ https://aws.amazon.com/blogs/messaging-and-targeting/forward-incoming-email-to-a
     was initially done for development (see below), later for live endpoint.
 
 
-When setting this up and debugging:
+Development
+~~~~~~~~~~~
 
-* instead of adding an MX record for ``cciw.co.uk``, you can add one for
-  ``mailtest.cciw.co.uk`` and use addresses like
-  ``webmaster@mailtest.cciw.co.uk``.
+The above actions/configuration represents the final, production config. When
+setting this up, it can help to do so from a development machine using test
+values, especially if there is an existing setup that you are trying not to
+disturb.
 
-* for testing the subscription and the handler, use ngrok, and set up a
-  subscription that posts to the ngrok address instead of the live one (which
-  might not be deployed yet)
+Here is how to do that:
 
-* if you want to test real email sending from a development machine, be sure to
-  change cciw/settings.py so that you are using the real SMTP server
-  EMAIL_BACKEND and not the dummy 'console'.
+* For sending SES email, you don't need to worry - you can send from
+  ``@cciw.co.uk`` addresses from multiple different SMTP servers at the same
+  time. When adding DNS records necessary for confirmation, simply add the new
+  ones while leaving the old ones in place - they don't clash.
+
+* For receiving, instead of adding an MX record for ``cciw.co.uk``, you can add
+  one for ``mailtest.cciw.co.uk``, leaving the active cciw.co.uk record as it is
+  until the end.
+
+* When creating rule sets for receiving email and matching emails, use addresses
+  like ``webmaster@mailtest.cciw.co.uk``.
+
+* For testing the SNS subscription and the web app handler, use ngrok, and set
+  up an HTTPS subscription that posts to the ngrok address instead of the live
+  one (which might not be deployed yet)
+
+* If you want to test real email sending from a development machine, be sure to
+  change ``cciw/settings.py`` so that you are using the real SMTP server
+  ``EMAIL_BACKEND`` and not the dummy 'console' one.
+
+* 'HTTPS endpoint' subscriptions to SNS topics have to be confirmed before they
+  can be used. The ``@confirm_sns_subscriptions`` decorator does this
+  automatically, assuming the endpoint is available (e.g. via ngrok if
+  developing, or live on the production site). You may need to manually choose
+  'Request confirmation' to trigger this.

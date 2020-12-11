@@ -82,3 +82,32 @@ def ses_incoming_notification(request):
     data = download_ses_message_from_s3(message_id)
     handle_mail_async(data)
     return HttpResponse('OK!')
+
+
+@csrf_exempt
+@ensure_from_aws_sns
+@confirm_sns_subscriptions
+def ses_bounce_notification(request):
+    message = json.loads(json.loads(request.body)['Message'])
+    message_headers = CaseInsensitiveDict({
+        h['name']: h['value']
+        for h in
+        message['mail']['headers']
+    })
+
+    cciw_action = message_headers.get(X_CCIW_ACTION, '')
+    reply_to = message_headers.get('Reply-To',
+                                   message_headers['From'])
+    recipient = message_headers['To']
+
+    if cciw_action == X_REFERENCE_REQUEST:
+        camp_name = message_headers.get(X_CCIW_CAMP, '')
+        handle_reference_bounce(recipient, reply_to, None, camp_name)
+
+    return HttpResponse('OK!')
+
+
+# TODO - need equivalent of setup_mailgun_routes for SES,
+#        to create rules for our mailing lists
+# TODO - mechanism for other abitrary email
+#        addresses (DB). Fill in from mailgun_routes.json

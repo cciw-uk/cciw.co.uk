@@ -265,14 +265,18 @@ def handle_reference_bounce(bounced_email_address, reply_to, original_message, c
 
 
 def forward_with_text(email_addresses, subject, text, original_message):
-    rfcmessage = MIMEBase("message", "rfc822")
-    rfcmessage.attach(original_message)
+    if original_message is not None:
+        rfcmessage = MIMEBase("message", "rfc822")
+        rfcmessage.attach(original_message)
+        attachments = [rfcmessage]
+    else:
+        attachments = None
 
     forward = EmailMessage(subject=subject,
                            body=text,
                            from_email=settings.DEFAULT_FROM_EMAIL,
                            to=email_addresses,
-                           attachments=[rfcmessage])
+                           attachments=attachments)
     forward.send()
 
 

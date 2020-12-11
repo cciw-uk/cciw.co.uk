@@ -110,8 +110,7 @@ def confirm_sns_subscriptions(view_func):
         if msg_type == SNS_MESSAGE_TYPE_SUB_NOTIFICATION:
             subscribe_url = json.loads(request.body)["SubscribeURL"]
             logger.info(f'Accessing {subscribe_url}')
-            d = requests.get(subscribe_url)
-            logger.info(f'Contents: {d.content.encode("utf-8")}')
+            requests.get(subscribe_url)
             return HttpResponse('Subscribed')
         else:
             return view_func(request)
