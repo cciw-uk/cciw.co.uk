@@ -551,6 +551,8 @@ def push_sources(target):
             # For speed, clone the 'current' repo which will be very similar to
             # what we are pushing.
             run(f"git clone {previous_src_root} {target_src_root}")
+            with cd(target_src_root):
+                run("git checkout master || git checkout -b master")
         else:
             with cd(target_src_root):
                 run("git init")
