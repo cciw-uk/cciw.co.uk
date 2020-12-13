@@ -497,7 +497,7 @@ def code_quality_checks():
         return
     local("flake8 .")
     local("isort -c")
-    local("./runtests.py -f --nokeepdb --noinput")
+    local("pytest -m 'not selenium'")
 
 
 @task

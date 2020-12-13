@@ -18,13 +18,16 @@ to deploy.
 Tests
 -----
 
-Tests can be run like so::
+Tests can be run with pytest::
 
-  $ ./runtests.py
+  $ pytest
 
-or::
+Exclude slow and flaky Selenium tests like this::
 
-  $ ./runtests.py cciw.bookings.tests.SomeSpecificTest
+  $ pytest -m 'not selenium'
+
+See `pytest docs <https://docs.pytest.org/en/latest/>`_ for more info.
+
 
 Other
 -----
