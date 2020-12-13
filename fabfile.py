@@ -582,10 +582,11 @@ def push_non_vcs_sources(target):
 
 
 @task
-def get_non_vcs_sources(target):
+def get_non_vcs_sources():
     """
     Pull non-VCS sources (including secrets.json) from server
     """
+    target = Version.current()
     for s in NON_VCS_SOURCES:
         local(f"rsync {env.proj_user}@{env.hosts[0]}:{target.SRC_ROOT}/{s} {s}")
 
@@ -1084,8 +1085,7 @@ def initial_dev_setup():
     if not os.path.exists("../logs"):
         local("mkdir ../logs")
     _install_deps_local()
-    target = Version.current()
-    get_non_vcs_sources(target)
+    get_non_vcs_sources()
 
 
 def _install_deps_local():
