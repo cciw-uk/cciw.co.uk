@@ -518,12 +518,12 @@ class TestBookingIndex(BookingBaseMixin, CreatePricesMixin, CreateCampMixin, Web
         self.assertTextPresent("£20")  # Deposit price
 
 
-class TestBookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
+class BookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     urlname = 'cciw-bookings-start'
 
     def submit(self, css_selector='[type=submit]'):
-        return super(TestBookingStartBase, self).submit(css_selector)
+        return super(BookingStartBase, self).submit(css_selector)
 
     def test_show_form(self):
         self.get_url(self.urlname)
@@ -575,18 +575,18 @@ class TestBookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
         self.assertUrlsEqual(reverse('cciw-bookings-account_overview'))
 
 
-class TestBookingStartWT(TestBookingStartBase, WebTestBase):
+class TestBookingStartWT(BookingStartBase, WebTestBase):
     pass
 
 
-class TestBookingStartSL(TestBookingStartBase, SeleniumBase):
+class TestBookingStartSL(BookingStartBase, SeleniumBase):
     pass
 
 
-class TestBookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
+class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
 
     def submit(self, css_selector='[type=submit]'):
-        return super(TestBookingVerifyBase, self).submit(css_selector)
+        return super(BookingVerifyBase, self).submit(css_selector)
 
     def _read_email_verify_email(self, email):
         return read_email_url(email, "https://.*/booking/v/.*")
@@ -674,11 +674,11 @@ class TestBookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         self.assertTextPresent("failed")
 
 
-class TestBookingVerifyWT(TestBookingVerifyBase, WebTestBase):
+class TestBookingVerifyWT(BookingVerifyBase, WebTestBase):
     pass
 
 
-class TestBookingVerifySL(TestBookingVerifyBase, SeleniumBase):
+class TestBookingVerifySL(BookingVerifyBase, SeleniumBase):
     pass
 
 
@@ -726,13 +726,13 @@ class TestPaymentReminderEmails(CreateBookingModelMixin, BookingBaseMixin, WebTe
         self.assertUrlsEqual(reverse('cciw-bookings-pay'))
 
 
-class TestAccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
+class AccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
 
     urlname = 'cciw-bookings-account_details'
     submit_css_selector = '[type=submit]'
 
     def submit(self, css_selector=submit_css_selector):
-        return super(TestAccountDetailsBase, self).submit(css_selector)
+        return super(AccountDetailsBase, self).submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
         self.get_url(self.urlname)
@@ -835,15 +835,15 @@ class TestAccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         self.assertEqual(get_status(acc), "unsubscribed")
 
 
-class TestAccountDetailsWT(TestAccountDetailsBase, WebTestBase):
+class TestAccountDetailsWT(AccountDetailsBase, WebTestBase):
     pass
 
 
-class TestAccountDetailsSL(TestAccountDetailsBase, SeleniumBase):
+class TestAccountDetailsSL(AccountDetailsBase, SeleniumBase):
     pass
 
 
-class TestAddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
+class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     urlname = 'cciw-bookings-add_place'
 
@@ -852,7 +852,7 @@ class TestAddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     submit_css_selector = SAVE_BTN
 
     def submit(self, css_selector=submit_css_selector):
-        return super(TestAddPlaceBase, self).submit(css_selector)
+        return super(AddPlaceBase, self).submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
         self.get_url(self.urlname)
@@ -921,11 +921,11 @@ class TestAddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertEqual(b.created_online, True)
 
 
-class TestAddPlaceWT(TestAddPlaceBase, WebTestBase):
+class TestAddPlaceWT(AddPlaceBase, WebTestBase):
     pass
 
 
-class TestAddPlaceSL(TestAddPlaceBase, SeleniumBase):
+class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
 
     def _use_existing_start(self):
         self.login()
@@ -1019,7 +1019,7 @@ class TestAddPlaceSL(TestAddPlaceBase, SeleniumBase):
                            '#id_contact_post_code': 'XYZ'})
 
 
-class TestEditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
+class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     # Most functionality is shared with the 'add' form, so doesn't need testing separately.
 
@@ -1038,7 +1038,7 @@ class TestEditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
             self.assertCode(expect_code)
 
     def submit(self, css_selector=submit_css_selector):
-        return super(TestEditPlaceBase, self).submit(css_selector)
+        return super(EditPlaceBase, self).submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
         self.get_url('cciw-bookings-edit_place', booking_id='1')
@@ -1114,11 +1114,11 @@ class TestEditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
             self.assertNotEqual(acc.bookings.get().first_name, "A New Name")
 
 
-class TestEditPlaceWT(TestEditPlaceBase, WebTestBase):
+class TestEditPlaceWT(EditPlaceBase, WebTestBase):
     pass
 
 
-class TestEditPlaceSL(TestEditPlaceBase, SeleniumBase):
+class TestEditPlaceSL(EditPlaceBase, SeleniumBase):
     pass
 
 
@@ -1156,8 +1156,8 @@ def fix_autocomplete_fields(field_names):
     return FixAutocompleteFieldMixin
 
 
-class TestEditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account']),
-                             OfficersSetupMixin, CreateBookingWebMixin, FuncBaseMixin):
+class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account']),
+                         OfficersSetupMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_approve(self):
         self.create_booking({'price_type': PRICE_CUSTOM})
@@ -1201,15 +1201,15 @@ class TestEditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account
         self.assertEqual(mp.amount, Decimal('100'))
 
 
-class TestEditPlaceAdminWT(TestEditPlaceAdminBase, WebTestBase):
+class TestEditPlaceAdminWT(EditPlaceAdminBase, WebTestBase):
     pass
 
 
-class TestEditPlaceAdminSL(TestEditPlaceAdminBase, SeleniumBase):
+class TestEditPlaceAdminSL(EditPlaceAdminBase, SeleniumBase):
     pass
 
 
-class TestEditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreateBookingModelMixin, FuncBaseMixin):
+class EditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreateBookingModelMixin, FuncBaseMixin):
     def test_create(self):
         self.officer_login(BOOKING_SECRETARY)
         self.get_url("admin:bookings_bookingaccount_add")
@@ -1244,16 +1244,16 @@ class TestEditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreateBooki
         self.assertEqual(account.name, 'Mr New Name')
 
 
-class TestEditAccountAdminWT(TestEditAccountAdminBase, WebTestBase):
+class TestEditAccountAdminWT(EditAccountAdminBase, WebTestBase):
     pass
 
 
-class TestEditAccountAdminSL(TestEditAccountAdminBase, SeleniumBase):
+class TestEditAccountAdminSL(EditAccountAdminBase, SeleniumBase):
     pass
 
 
-class TestEditPaymentAdminBase(fix_autocomplete_fields(['account']), BookingBaseMixin,
-                               OfficersSetupMixin, CreateBookingModelMixin, FuncBaseMixin):
+class EditPaymentAdminBase(fix_autocomplete_fields(['account']), BookingBaseMixin,
+                           OfficersSetupMixin, CreateBookingModelMixin, FuncBaseMixin):
     def test_add_manual_payment(self):
         self.create_booking()
         self.officer_login(BOOKING_SECRETARY)
@@ -1271,17 +1271,17 @@ class TestEditPaymentAdminBase(fix_autocomplete_fields(['account']), BookingBase
         self.assertEqual(account.total_received, Decimal('12'))
 
 
-class TestEditPaymentAdminWT(TestEditPaymentAdminBase, WebTestBase):
+class TestEditPaymentAdminWT(EditPaymentAdminBase, WebTestBase):
     pass
 
 
-class TestEditPaymentAdminSL(TestEditPaymentAdminBase, SeleniumBase):
+class TestEditPaymentAdminSL(EditPaymentAdminBase, SeleniumBase):
     pass
 
 
-class TestAccountTransferBase(fix_autocomplete_fields(['from_account', 'to_account']),
-                              AtomicChecksMixin,
-                              OfficersSetupMixin, FuncBaseMixin):
+class AccountTransferBase(fix_autocomplete_fields(['from_account', 'to_account']),
+                          AtomicChecksMixin,
+                          OfficersSetupMixin, FuncBaseMixin):
     def test_add_account_transfer(self):
 
         account_1 = BookingAccount.objects.create(email="account1@gmail.com", name="Joe")
@@ -1325,15 +1325,15 @@ class TestAccountTransferBase(fix_autocomplete_fields(['from_account', 'to_accou
         self.assertEqual(account_2.total_received, Decimal('0.00'))
 
 
-class TestAccountTransferWT(TestAccountTransferBase, WebTestBase):
+class TestAccountTransferWT(AccountTransferBase, WebTestBase):
     pass
 
 
-class TestAccountTransferSL(TestAccountTransferBase, SeleniumBase):
+class TestAccountTransferSL(AccountTransferBase, SeleniumBase):
     pass
 
 
-class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
+class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     # This includes tests for most of the business logic
 
     urlname = 'cciw-bookings-list_bookings'
@@ -1805,15 +1805,15 @@ class TestListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixi
         self.assertTextPresent("Places were not booked due to modifications made")
 
 
-class TestListBookingsWT(TestListBookingsBase, WebTestBase):
+class TestListBookingsWT(ListBookingsBase, WebTestBase):
     pass
 
 
-class TestListBookingsSL(TestListBookingsBase, SeleniumBase):
+class TestListBookingsSL(ListBookingsBase, SeleniumBase):
     pass
 
 
-class TestPayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
+class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     url = reverse('cciw-bookings-list_bookings')
 
@@ -1845,11 +1845,11 @@ class TestPayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent(f'£{expected_price}')
 
 
-class TestPayWT(TestPayBase, WebTestBase):
+class TestPayWT(PayBase, WebTestBase):
     pass
 
 
-class TestPaySL(TestPayBase, SeleniumBase):
+class TestPaySL(PayBase, SeleniumBase):
     pass
 
 
@@ -2295,7 +2295,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
                       j['problems'])
 
 
-class TestAccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
+class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     urlname = 'cciw-bookings-account_overview'
 
@@ -2343,15 +2343,15 @@ class TestAccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseM
         self.assertTextPresent("£20")
 
 
-class TestAccountOverviewWT(TestAccountOverviewBase, WebTestBase):
+class TestAccountOverviewWT(AccountOverviewBase, WebTestBase):
     pass
 
 
-class TestAccountOverviewSL(TestAccountOverviewBase, SeleniumBase):
+class TestAccountOverviewSL(AccountOverviewBase, SeleniumBase):
     pass
 
 
-class TestLogOutBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
+class LogOutBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
 
     def test_logout(self):
         self.login()
@@ -2364,11 +2364,11 @@ class TestLogOutBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         self.assertUrlsEqual(reverse('cciw-bookings-not_logged_in'))
 
 
-class TestLogOutWT(TestLogOutBase, WebTestBase):
+class TestLogOutWT(LogOutBase, WebTestBase):
     pass
 
 
-class TestLogOutSL(TestLogOutBase, SeleniumBase):
+class TestLogOutSL(LogOutBase, SeleniumBase):
     pass
 
 
