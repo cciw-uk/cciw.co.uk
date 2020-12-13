@@ -46,6 +46,8 @@ These steps have only been tested on Ubuntu-based Linux installations.
     pip install fabric3 fabtools3
     fab initial_dev_setup
 
+* Make any local changes needed in ``cciw/settings_local.py``.
+
 * Populate the DB::
 
     ./manage.py migrate

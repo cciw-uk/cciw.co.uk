@@ -309,7 +309,7 @@ if LIVEBOX:
 else:
     DB_NAME = 'cciw'
     DB_USER = 'cciw'
-    DB_PASSWORD = 'foo'  # Need to sync with Vagrantfile
+    DB_PASSWORD = 'foo'
     DB_PORT = '5433'
 
 

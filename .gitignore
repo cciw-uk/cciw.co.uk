@@ -8,3 +8,4 @@ config/letsencrypt
 TODO.org
 cciw/cciwmain/static/css/camp_colors.less
 .hypothesis
+settings_local.py

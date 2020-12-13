@@ -1078,6 +1078,7 @@ def _local_django_setup():
 # --- developer setup ---
 @task
 def initial_dev_setup():
+    local('cp cciw/settings_local_example.py cciw/settings_local.py')
     if 'VIRTUAL_ENV' not in os.environ:
         raise AssertionError("You need to set up a virtualenv before using this")
     if not os.path.exists(LOCAL_SECURE_DOWNLOAD_ROOT):

@@ -2,8 +2,8 @@
 import faulthandler
 import signal
 
-from cciw.settings import *  # NOQA
-from cciw.settings import DATABASES, INSTALLED_APPS, MIDDLEWARE, basedir
+from cciw.settings_local import *  # NOQA
+from cciw.settings_local import DATABASES, INSTALLED_APPS, MIDDLEWARE, basedir
 
 DATABASES['default']['CONN_MAX_AGE'] = 0  # fix some deadlocks with DB flushing
 
