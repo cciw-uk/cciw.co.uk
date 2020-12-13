@@ -3,7 +3,7 @@ import faulthandler
 import signal
 
 from cciw.settings_local import *  # NOQA
-from cciw.settings_local import DATABASES, INSTALLED_APPS, MIDDLEWARE, basedir
+from cciw.settings_local import DATABASES, INSTALLED_APPS, MIDDLEWARE
 
 DATABASES['default']['CONN_MAX_AGE'] = 0  # fix some deadlocks with DB flushing
 
@@ -26,8 +26,6 @@ INSTALLED_APPS = list(filter(lambda x: x not in [
 ], INSTALLED_APPS))
 
 SEND_BROKEN_LINK_EMAILS = False
-
-TEST_DIR = basedir + r'/cciw/cciwmain/tests'
 
 ALLOWED_HOSTS = [
     'localhost',

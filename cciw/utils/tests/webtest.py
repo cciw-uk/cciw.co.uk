@@ -3,6 +3,7 @@ import time
 import unittest
 from urllib.parse import urlparse
 
+import pytest
 from compressor.filters import CompilerFilter
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test.utils import override_settings
@@ -90,6 +91,7 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
         return pq.find(css_selector)[0].text_content()
 
 
+@pytest.mark.selenium
 @unittest.skipIf(os.environ.get('SKIP_SELENIUM_TESTS'), "Skipping Selenium tests")
 class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseMixin, MultiThreadedLiveServerMixin, StaticLiveServerTestCase):
     """

@@ -4,8 +4,9 @@
 #
 #    pip-compile --output-file=requirements.txt requirements-dev.in requirements.in
 #
+apipkg==1.5               # via execnet
 asgiref==3.2.7            # via django
-attrs==19.3.0             # via -r requirements.in
+attrs==19.3.0             # via -r requirements.in, pytest
 bcrypt==3.1.7             # via paramiko
 beautifulsoup4==4.8.0     # via -r requirements-dev.in, webtest
 bleach==3.1.5             # via wiki
@@ -44,6 +45,7 @@ django==3.0.6             # via -r requirements.in, django-anymail, django-appco
 docutils==0.14            # via botocore
 easyprocess==0.2.3        # via pyvirtualdisplay
 entrypoints==0.3          # via flake8
+execnet==1.7.1            # via pytest-xdist
 ezodf2==0.2.10            # via -r requirements.in
 fabric3==1.14.post1       # via -r requirements.in, fabtools3
 fabtools3==0.19.0         # via -r requirements.in
@@ -52,6 +54,8 @@ frozendict==1.0           # via -r requirements.in
 furl==2.1.0               # via -r requirements.in, django-functest
 hypothesis==3.9.0         # via -r requirements-dev.in
 idna==2.6                 # via requests
+importlib-metadata==3.1.1  # via pluggy, pytest
+iniconfig==1.1.1          # via pytest
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.0.0            # via -r requirements-dev.in, pandas-highcharts
 isort==4.3.21             # via -r requirements-dev.in
@@ -65,7 +69,7 @@ mccabe==0.6.1             # via -r requirements-dev.in, flake8
 nodeenv==1.3.3            # via -r requirements.in
 numpy==1.18.2             # via -r requirements.in, pandas
 orderedmultidict==1.0.1   # via furl
-packaging==20.4           # via bleach
+packaging==20.4           # via bleach, pytest
 pandas-highcharts==0.5.2  # via -r requirements.in
 pandas==1.0.3             # via -r requirements.in, pandas-highcharts
 paramiko==2.7.1           # via fabric3
@@ -74,11 +78,13 @@ pexpect==4.5.0            # via ipython
 pickleshare==0.7.4        # via ipython
 pillow==8.0.1             # via django-simple-captcha, wiki
 pip-tools==5.3.1          # via -r requirements.in
+pluggy==0.13.1            # via pytest
 prompt-toolkit==1.0.15    # via ipython
-psutil==5.6.7             # via -r requirements.in
+psutil==5.6.7             # via -r requirements.in, pytest-xdist
 psycopg2-binary==2.8.5    # via -r requirements.in
 ptyprocess==0.5.2         # via pexpect
 pwned-passwords-django==1.4.1  # via -r requirements.in
+py==1.10.0                # via pytest, pytest-forked
 pycodestyle==2.5.0        # via flake8
 pycparser==2.18           # via cffi
 pyflakes==2.1.1           # via flake8
@@ -86,6 +92,10 @@ pygments==2.2.0           # via ipython
 pynacl==1.3.0             # via paramiko
 pyparsing==2.4.7          # via packaging
 pyquery==1.4.1            # via -r requirements-dev.in, django-functest
+pytest-django==4.1.0      # via -r requirements-dev.in
+pytest-forked==1.3.0      # via pytest-xdist
+pytest-xdist[psutil]==2.1.0  # via -r requirements-dev.in
+pytest==6.2.0             # via -r requirements-dev.in, pytest-django, pytest-forked, pytest-xdist
 python-dateutil==2.8.1    # via -r requirements.in, botocore, pandas
 python3-memcached==1.51   # via -r requirements.in
 pytz==2019.3              # via -r requirements.in, django, django-paypal, pandas
@@ -102,6 +112,7 @@ six==1.14.0               # via bcrypt, bleach, cryptography, django-anymail, dj
 sorl-thumbnail==12.6.3    # via -r requirements.in, wiki
 soupsieve==1.9.2          # via beautifulsoup4
 sqlparse==0.2.4           # via django, django-debug-toolbar
+toml==0.10.2              # via pytest
 traitlets==4.3.2          # via ipython
 urllib3==1.24             # via requests, selenium
 uwsgi==2.0.15             # via -r requirements.in
@@ -115,6 +126,7 @@ wiki==0.7                 # via -r requirements.in
 wrapt==1.10.11            # via vcrpy
 xlrd==1.2.0               # via -r requirements.in
 xlwt==1.3.0               # via -r requirements.in
+zipp==3.4.0               # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
