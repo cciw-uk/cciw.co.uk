@@ -7,19 +7,17 @@
 # Thanks to https://gist.github.com/amertkara/e294562759ff2755486e
 
 import json
-import requests
+import logging
 from base64 import b64decode
 from functools import lru_cache, wraps
 
 import furl
-from django.http import HttpResponse
-
+import requests
 from cryptography import x509
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives import hashes
 from cryptography.exceptions import InvalidSignature
-
-import logging
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 

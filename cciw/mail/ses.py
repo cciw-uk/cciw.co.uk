@@ -1,6 +1,7 @@
+import io
+
 import boto3
 from django.conf import settings
-import io
 
 
 def download_ses_message_from_s3(message_id):
