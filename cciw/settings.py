@@ -310,7 +310,7 @@ else:
     DB_NAME = 'cciw'
     DB_USER = 'cciw'
     DB_PASSWORD = 'foo'
-    DB_PORT = '5433'
+    DB_PORT = '5432'
 
 
 DATABASES = {
