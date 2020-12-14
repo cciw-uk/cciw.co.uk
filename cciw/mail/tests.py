@@ -337,6 +337,7 @@ def send_queued_mail():
 
 
 class TestMailBackend(LocMemEmailBackend):
+    __test__ = False
 
     def send_messages(self, messages):
         # Transaction check

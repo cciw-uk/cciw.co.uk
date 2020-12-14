@@ -1,6 +1,7 @@
 import contextlib
 import logging
 from email.mime.base import MIMEBase
+from urllib.parse import quote as urlquote
 
 from django.conf import settings
 from django.contrib import messages
@@ -8,7 +9,6 @@ from django.core import signing
 from django.core.mail import EmailMessage, send_mail
 from django.urls import reverse
 from django.utils.crypto import salted_hmac
-from django.utils.http import urlquote
 
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
