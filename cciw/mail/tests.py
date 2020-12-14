@@ -12,12 +12,13 @@ from mailer.models import Message
 from requests.exceptions import ConnectionError
 
 from cciw.accounts.models import COMMITTEE_GROUP_NAME
+from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
 from cciw.utils.functional import partition
 from cciw.utils.tests.base import TestBase
 
 from . import views
-from .lists import MailAccessDenied, NoSuchGroup, extract_email_addresses, find_list, handle_mail, mangle_from_address
+from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
 from .test_data import (MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_FOR_REFERENCE,
@@ -34,7 +35,7 @@ def partition_mailing_list_rejections(messages):
     return partition(lambda m: re.match(r'\[CCIW\] Access to mailing list .* denied', m.subject), messages)
 
 
-class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
+class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
     # Tests for mailing list sending. Note that because we are forwarding on raw
     # MIME objects with minimal changes, we are using
     # cciw.mail.smtp.RawEmailMessage, and that means we have to test most things
@@ -53,10 +54,12 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
                             email="joe@gmail.com")
 
     def test_invalid_list(self):
-        self.assertRaises(NoSuchGroup,
+        self.assertRaises(NoSuchList,
                           lambda: find_list('everyone@mailtest.cciw.co.uk', 'joe@random.com'))
-        self.assertRaises(NoSuchGroup,
+        self.assertRaises(NoSuchList,
                           lambda: find_list('x-camp-2000-blue-officers@mailtest.cciw.co.uk', 'joe@random.com'))
+        self.assertRaises(NoSuchList,
+                          lambda: find_list('camp-2000-neon-officers@mailtest.cciw.co.uk', 'joe@random.com'))
 
     def test_officer_list(self):
         self.assertRaises(MailAccessDenied,
@@ -69,12 +72,12 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
 
         officer_list = find_list('camp-2000-blue-officers@mailtest.cciw.co.uk', 'LEADER@SOMEWHERE.COM')
 
-        self.assertEqual([u.username for u in officer_list.members],
+        self.assertEqual([u.username for u in officer_list.get_members()],
                          ["fredjones", "joebloggs", "petersmith"])
 
     def test_debug_list(self):
         self.assertEqual(sorted([u.email for u in
-                                 find_list('camp-debug@mailtest.cciw.co.uk', 'anyone@gmail.com').members]),
+                                 find_list('camp-debug@mailtest.cciw.co.uk', 'anyone@gmail.com').get_members()]),
                          ['admin1@admin.com', 'admin2@admin.com'])
 
     def test_leader_list(self):
@@ -98,12 +101,12 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
 
         # Contents
         members = set(find_list('camps-2000-leaders@mailtest.cciw.co.uk',
-                                leader_user.email).members)
-        self.assertEqual(members,
-                         {self.leader_user})
+                                leader_user.email).get_members())
+        assert members == {self.leader_user}
 
-        self.assertEqual(l1, l2)
-        self.assertEqual(l1, l3)
+        for l in [l1, l2, l3]:
+            assert l.get_members() == members
+            assert l.address == 'camp-2000-blue-leaders@mailtest.cciw.co.uk'
 
     def test_handle_debug_list(self):
         handle_mail(MSG_DEBUG_LIST)
@@ -190,12 +193,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         handle_mail(msg)
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
         self.assertEqual(len(sent_messages), 0)
-        self.assertEqual(len(rejections), 1)
-        error_email = rejections[0]
-        self.assertIn('camp-1990-blue-officers@mailtest.cciw.co.uk',
-                      error_email.body)
-        self.assertIn('list does not exist',
-                      error_email.body)
+        self.assertEqual(len(rejections), 0)
 
     def test_handle_partial_sending_failure(self):
         """

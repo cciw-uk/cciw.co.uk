@@ -109,5 +109,6 @@ def ses_bounce_notification(request):
 
 # TODO - need equivalent of setup_mailgun_routes for SES,
 #        to create rules for our mailing lists
+# TODO - need to re-setup rules each time new camps are added.
 # TODO - mechanism for other abitrary email
 #        addresses (DB). Fill in from mailgun_routes.json
