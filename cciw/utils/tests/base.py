@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.test.utils import TestContextDecorator
 
 
-class TestBaseMixin(object):
+class TestBaseMixin:
 
     def setUp(self):
         super().setUp()
