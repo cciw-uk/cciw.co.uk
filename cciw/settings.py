@@ -24,6 +24,7 @@ if CHECK_DEPLOY:
 else:
     LIVEBOX = hostname.startswith('cciw')
     DEVBOX = not LIVEBOX
+TESTS_RUNNING = False
 
 
 if LIVEBOX and not CHECK_DEPLOY:
@@ -41,7 +42,6 @@ else:
     SECRET_KEY = SECRETS['PRODUCTION_SECRET_KEY']
 
 WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
-TESTS_RUNNING = 'test' in sys.argv
 
 # == MISC ==
 
@@ -412,11 +412,6 @@ ANYMAIL = {
     "MAILGUN_API_KEY": MAILGUN_API_KEY,
 }
 
-if TESTS_RUNNING:
-    # This doesn't seem to take effect, see TestBaseMixin
-    EMAIL_BACKEND = "cciw.mail.tests.TestMailBackend"
-    MAILER_EMAIL_BACKEND = EMAIL_BACKEND
-
 EMAIL_ENCRYPTION_PUBLIC_KEYS = SECRETS["EMAIL_ENCRYPTION_PUBLIC_KEYS"]
 
 INCOMING_MAIL_DOMAINS = ['cciw.co.uk']
@@ -557,6 +552,3 @@ if not os.path.exists(CAPTCHA_FONT_PATH):
     raise ValueError(f"CAPTCHA_FONT_PATH is incorrect - file missing {CAPTCHA_FONT_PATH}")
 CAPTCHA_FONT_SIZE = 60   # Jurassic Park font is really small for some reason
 CAPTCHA_LETTER_ROTATION = (-30, 30)
-
-if TESTS_RUNNING:
-    CAPTCHA_TEST_MODE = True

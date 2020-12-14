@@ -20,9 +20,6 @@ CONTACT_CHOICES = [
 
 class ContactUsForm(CciwFormMixin, forms.ModelForm):
     subject = forms.ChoiceField(label="Subject", choices=CONTACT_CHOICES)
-
-    # Disable CAPTCHA for now, doesn't seem to be working properly
-    # (blocks completely if you get it wrong once).
     cx = CaptchaField(label="Captcha",
                       help_text="To show you are not a spam-bot please enter the text you see above")
 

@@ -47,3 +47,7 @@ MIGRATION_MODULES = DisableMigrations()
 # If the process receives signal SIGUSR1, dump a traceback
 faulthandler.enable()
 faulthandler.register(signal.SIGUSR1)
+
+CAPTCHA_TEST_MODE = True
+
+TESTS_RUNNING = True
