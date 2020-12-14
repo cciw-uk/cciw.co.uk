@@ -414,9 +414,12 @@ ANYMAIL = {
 
 EMAIL_ENCRYPTION_PUBLIC_KEYS = SECRETS["EMAIL_ENCRYPTION_PUBLIC_KEYS"]
 
-INCOMING_MAIL_DOMAINS = ['cciw.co.uk']
-if DEVBOX:
-    INCOMING_MAIL_DOMAINS.append('mailtest.cciw.co.uk')
+if LIVEBOX:
+    INCOMING_MAIL_DOMAIN = 'cciw.co.uk'
+else:
+    # This separate domain makes development testing of AWS mail handling
+    # easier:
+    INCOMING_MAIL_DOMAIN = 'mailtest.cciw.co.uk'
 
 # == AWS ==
 AWS_INCOMING_MAIL = SECRETS["AWS"]["INCOMING_MAIL"]

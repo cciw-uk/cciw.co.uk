@@ -183,7 +183,7 @@ class GroupDefinition(object):
         If no match, returns None
         If the from_address doesn't have permission, raises MailAccessDenied
         """
-        regex = re.compile(self.address + self.domain_part(), re.IGNORECASE)
+        regex = re.compile(self.full_address_regex, re.IGNORECASE)
         m = regex.match(address)
         if m is None:
             return None
@@ -192,9 +192,13 @@ class GroupDefinition(object):
             raise MailAccessDenied()
         return EmailList(address, self.get_members(**captures), self.list_reply)
 
-    def domain_part(self):
-        return '@(' + '|'.join(re.escape(domain)
-                               for domain in settings.INCOMING_MAIL_DOMAINS) + ')$'
+    @property
+    def domain(self):
+        return re.escape(settings.INCOMING_MAIL_DOMAIN)
+
+    @property
+    def full_address_regex(self):
+        return '^' + self.address + '@' + self.domain + '$'
 
 
 @attr.s
@@ -209,7 +213,7 @@ class EmailList(object):
 
 CAMP_OFFICERS_GROUP = GroupDefinition(
     "Camp officers",
-    r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-officers",
+    r"camp-(?P<year>\d{4})-(?P<slug>[^/]+)-officers",
     _camp_officers,
     _is_camp_leader_or_admin,
     False,
@@ -217,7 +221,7 @@ CAMP_OFFICERS_GROUP = GroupDefinition(
 
 CAMP_SLACKERS_GROUP = GroupDefinition(
     "Camp slackers",
-    r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-slackers",
+    r"camp-(?P<year>\d{4})-(?P<slug>[^/]+)-slackers",
     _camp_slackers,
     _is_camp_leader_or_admin,
     False,
@@ -225,7 +229,7 @@ CAMP_SLACKERS_GROUP = GroupDefinition(
 
 CAMP_LEADERS_GROUP = GroupDefinition(
     "Camp leaders",
-    r"^camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders",
+    r"camp-(?P<year>\d{4})-(?P<slug>[^/]+)-leaders",
     _camp_leaders,
     _is_camp_leader_or_admin_or_dbs_officer_or_superuser,
     False,
@@ -233,7 +237,7 @@ CAMP_LEADERS_GROUP = GroupDefinition(
 
 CAMP_LEADERS_FOR_YEAR_GROUP = GroupDefinition(
     "Camp leaders for year",
-    r"^camps-(?P<year>\d{4})-leaders",
+    r"camps-(?P<year>\d{4})-leaders",
     _camp_leaders,
     _is_camp_leader_or_admin_or_dbs_officer_or_superuser,
     True,
@@ -241,7 +245,7 @@ CAMP_LEADERS_FOR_YEAR_GROUP = GroupDefinition(
 
 DEBUG_GROUP = GroupDefinition(
     "Debug",
-    r"^camp-debug",
+    r"camp-debug",
     _mail_debug_users,
     lambda email: True,
     True
@@ -249,7 +253,7 @@ DEBUG_GROUP = GroupDefinition(
 
 COMMITTEE_GROUP = GroupDefinition(
     "Committee",
-    r"^committee",
+    r"committee",
     _committee_users,
     _is_in_committee_or_superuser,
     True,
@@ -257,7 +261,7 @@ COMMITTEE_GROUP = GroupDefinition(
 
 WEBMASTERS_GROUP = GroupDefinition(
     "Webmasters",
-    r"^(webmaster|noreply)",
+    r"(webmaster|noreply)",
     _webmasters,
     lambda email: True,  # Need to allow all temporarily to confirm address with SES
     False,

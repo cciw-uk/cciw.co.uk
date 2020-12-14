@@ -54,27 +54,27 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
 
     def test_invalid_list(self):
         self.assertRaises(NoSuchGroup,
-                          lambda: find_list('everyone@cciw.co.uk', 'joe@random.com'))
+                          lambda: find_list('everyone@mailtest.cciw.co.uk', 'joe@random.com'))
         self.assertRaises(NoSuchGroup,
-                          lambda: find_list('x-camp-2000-blue-officers@cciw.co.uk', 'joe@random.com'))
+                          lambda: find_list('x-camp-2000-blue-officers@mailtest.cciw.co.uk', 'joe@random.com'))
 
     def test_officer_list(self):
         self.assertRaises(MailAccessDenied,
-                          lambda: find_list('camp-2000-blue-officers@cciw.co.uk',
+                          lambda: find_list('camp-2000-blue-officers@mailtest.cciw.co.uk',
                                             'joe@random.com'))
 
         self.assertRaises(MailAccessDenied,
-                          lambda: find_list('camp-2000-blue-officers@cciw.co.uk',
+                          lambda: find_list('camp-2000-blue-officers@mailtest.cciw.co.uk',
                                             self.officer1.email))
 
-        officer_list = find_list('camp-2000-blue-officers@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
+        officer_list = find_list('camp-2000-blue-officers@mailtest.cciw.co.uk', 'LEADER@SOMEWHERE.COM')
 
         self.assertEqual([u.username for u in officer_list.members],
                          ["fredjones", "joebloggs", "petersmith"])
 
     def test_debug_list(self):
         self.assertEqual(sorted([u.email for u in
-                                 find_list('camp-debug@cciw.co.uk', 'anyone@gmail.com').members]),
+                                 find_list('camp-debug@mailtest.cciw.co.uk', 'anyone@gmail.com').members]),
                          ['admin1@admin.com', 'admin2@admin.com'])
 
     def test_leader_list(self):
@@ -84,20 +84,20 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
 
         # Officer/non-privileged
         self.assertRaises(MailAccessDenied,
-                          lambda: find_list('camps-2000-leaders@cciw.co.uk',
+                          lambda: find_list('camps-2000-leaders@mailtest.cciw.co.uk',
                                             self.officer1.email))
 
         # superuser:
-        l1 = find_list('camp-2000-blue-leaders@cciw.co.uk', 'ADMIN1@ADMIN.COM')
+        l1 = find_list('camp-2000-blue-leaders@mailtest.cciw.co.uk', 'ADMIN1@ADMIN.COM')
 
         # leader:
-        l2 = find_list('camp-2000-blue-leaders@cciw.co.uk', 'LEADER@SOMEWHERE.COM')
+        l2 = find_list('camp-2000-blue-leaders@mailtest.cciw.co.uk', 'LEADER@SOMEWHERE.COM')
 
         # DBS officer
-        l3 = find_list('camp-2000-blue-leaders@cciw.co.uk', 'DBSOFFICER@somewhere.com')
+        l3 = find_list('camp-2000-blue-leaders@mailtest.cciw.co.uk', 'DBSOFFICER@somewhere.com')
 
         # Contents
-        members = set(find_list('camps-2000-leaders@cciw.co.uk',
+        members = set(find_list('camps-2000-leaders@mailtest.cciw.co.uk',
                                 leader_user.email).members)
         self.assertEqual(members,
                          {self.leader_user})
@@ -146,9 +146,9 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         self.assertEqual(sent_to_addresses,
                          ["a.man@example.com",
                           "a.woman@example.com"])
-        self.assertTrue(all(b"Sender: committee@cciw.co.uk" in m
+        self.assertTrue(all(b"Sender: committee@mailtest.cciw.co.uk" in m
                             for m in sent_messages_bytes))
-        self.assertTrue(all(b"List-Post: <mailto:committee@cciw.co.uk>" in m
+        self.assertTrue(all(b"List-Post: <mailto:committee@mailtest.cciw.co.uk>" in m
                             for m in sent_messages_bytes))
 
     def test_handle_officer_list(self):
@@ -185,14 +185,14 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
             self.assertRaises(Exception, handle_mail, MSG_DEBUG_LIST)
 
     def test_handle_invalid_list(self):
-        msg = MSG_DEBUG_LIST.replace(b'camp-debug@cciw.co.uk',
-                                     b'camp-1990-blue-officers@cciw.co.uk')
+        msg = MSG_DEBUG_LIST.replace(b'camp-debug@mailtest.cciw.co.uk',
+                                     b'camp-1990-blue-officers@mailtest.cciw.co.uk')
         handle_mail(msg)
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
         self.assertEqual(len(sent_messages), 0)
         self.assertEqual(len(rejections), 1)
         error_email = rejections[0]
-        self.assertIn('camp-1990-blue-officers@cciw.co.uk',
+        self.assertIn('camp-1990-blue-officers@mailtest.cciw.co.uk',
                       error_email.body)
         self.assertIn('list does not exist',
                       error_email.body)
@@ -224,7 +224,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         self.assertIn("admin1@faildomain.com",
                       error_email.body)
         self.assertEqual(error_email.subject,
-                         "[CCIW] Error with email to list camp-debug@cciw.co.uk")
+                         "[CCIW] Error with email to list camp-debug@mailtest.cciw.co.uk")
         self.assertEqual(error_email.to,
                          ["Joe <joe@gmail.com>"])
 
@@ -235,7 +235,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, TestBase):
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
         self.assertEqual(sent_messages, [])
         self.assertEqual(len(rejections), 1)
-        self.assertEqual(rejections[0].subject, "[CCIW] Access to mailing list camp-2000-blue-officers@cciw.co.uk denied")
+        self.assertEqual(rejections[0].subject, "[CCIW] Access to mailing list camp-2000-blue-officers@mailtest.cciw.co.uk denied")
         self.assertIn("you do not have permission", rejections[0].body)
 
     def test_handle_mail_permission_denied_for_unknown(self):
@@ -361,7 +361,7 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Subject: Test
 From: Joe <joe@gmail.com>
-To: Someone <someone@gmail.com>, camp-debug@cciw.co.uk, "Someone Else" <else@gmail.com>
+To: Someone <someone@gmail.com>, camp-debug@mailtest.cciw.co.uk, "Someone Else" <else@gmail.com>
 Date: Sun, 28 Feb 2016 22:32:03 -0000
 Message-ID: <56CCDE2E.9030103@gmail.com>
 
@@ -369,14 +369,14 @@ Test message
 """)
 
 MSG_COMMITTEE_LIST = (MSG_DEBUG_LIST
-                      .replace(b'camp-debug@cciw.co.uk', b'committee@cciw.co.uk')
+                      .replace(b'camp-debug@mailtest.cciw.co.uk', b'committee@mailtest.cciw.co.uk')
                       .replace(b'joe@gmail.com', b'a.woman@example.com')
                       )
 
 MSG_OFFICER_LIST = emailify("""
 MIME-Version: 1.0
 Date: Thu, 30 Jul 2015 10:39:10 +0100
-To: "Camp 1 officers" <camp-2000-blue-officers@cciw.co.uk>
+To: "Camp 1 officers" <camp-2000-blue-officers@mailtest.cciw.co.uk>
 Subject: Minibus Drivers
 Content-Type: text/plain; charset="us-ascii"
 From: Dave Stott <leader@somewhere.com>
