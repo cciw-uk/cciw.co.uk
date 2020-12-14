@@ -32,6 +32,8 @@ See `pytest docs <https://docs.pytest.org/en/latest/>`_ for more info.
 Tips
 ~~~~
 
+* Use ``--show-browser`` with Selenium tests to display the browser.
+
 * put ``fsync = off`` and ``synchronous_commit = off`` in your postgresql.conf
   for large speedups when running tests.
 
