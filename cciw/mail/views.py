@@ -91,8 +91,7 @@ def ses_bounce_notification(request):
     message = json.loads(json.loads(request.body)['Message'])
     message_headers = CaseInsensitiveDict({
         h['name']: h['value']
-        for h in
-        message['mail']['headers']
+        for h in message['mail']['headers']
     })
 
     cciw_action = message_headers.get(X_CCIW_ACTION, '')

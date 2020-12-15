@@ -260,7 +260,6 @@ def handle_reference_bounce(bounced_email_address, reply_to, original_message, c
             camp_year, camp_slug = camp_name.split("-")
             camp = Camp.objects.get(year=int(camp_year),
                                     camp_name__slug=camp_slug)
-
     forward_bounce_to([reply_to], bounced_email_address, original_message, camp)
 
 

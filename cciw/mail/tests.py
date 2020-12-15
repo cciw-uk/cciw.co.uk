@@ -19,10 +19,9 @@ from cciw.utils.tests.base import TestBase
 
 from . import views
 from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
-from .test_data import (AWS_SNS_NOTIFICATION, MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
+from .test_data import (AWS_BOUNCE_NOTIFICATION, AWS_SNS_NOTIFICATION, MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE,
-                        MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_FOR_REFERENCE,
-                        MAILGUN_EXAMPLE_POST_DATA_FOR_MIME_ENDPOINT)
+                        MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_FOR_REFERENCE)
 
 User = get_user_model()
 
@@ -258,20 +257,26 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         self.assertEqual(m3.call_count, 1)
         self.assertEqual(m3.call_args[0][0], b'fake_data')
 
-    def test_mailgun_incoming_bad_sig(self):
-        data = MAILGUN_EXAMPLE_POST_DATA_FOR_MIME_ENDPOINT
-        sig = b"d1551e3de499c753ab801d81dea14f378dbb9c369b393a16c50e50e374eceb9d"
-        assert sig in data
-        # one char different:
-        data = data.replace(sig, b"d1551e3de499c753ab801d81dea14f378dbb9c369b393a16c50e50e374eceb9e")
+    # TODO it would be nice to have tests for cciw/aws.py functions,
+    # to ensure no regressions.
 
-        rf = RequestFactory()
-        request = rf.post('/', data=data,
-                          content_type='application/x-www-form-urlencoded')
-        with mock.patch('cciw.mail.views.handle_mail_async') as m:
-            response = views.mailgun_incoming(request)
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(m.call_count, 0)
+    def test_ses_bounce_for_reference(self):
+        request = make_plain_text_request(
+            '/', AWS_BOUNCE_NOTIFICATION['body'], AWS_BOUNCE_NOTIFICATION['headers'])
+        with mock.patch('cciw.aws.verify_sns_notification') as m1:
+            m1.side_effect = [True]  # fake verify
+            response = views.ses_bounce_notification(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(m1.call_count, 1)
+
+        self.assertEqual(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertEqual(m.to, ["a.camp.leader@example.com"])
+        self.assertIn("was not received", m.body)
+        self.assertIn("sent to a.referrer@example.com", m.body)
+        self.assertIn("Use the following link", m.body)
+        self.assertEqual(response.status_code, 200)
 
     def test_mailgun_bounce(self):
         rf = RequestFactory()
