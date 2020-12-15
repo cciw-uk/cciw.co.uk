@@ -19,7 +19,7 @@ from cciw.utils.tests.base import TestBase
 
 from . import views
 from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
-from .test_data import (MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
+from .test_data import (AWS_SNS_NOTIFICATION, MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_FOR_REFERENCE,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_MIME_ENDPOINT)
@@ -241,16 +241,22 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         handle_mail(bad_mail)
         self.assertEqual(len(mail.outbox), 0)
 
-    def test_mailgun_incoming(self):
-        rf = RequestFactory()
-        request = rf.post('/', data=MAILGUN_EXAMPLE_POST_DATA_FOR_MIME_ENDPOINT,
-                          content_type='application/x-www-form-urlencoded')
-        with mock.patch('cciw.mail.views.handle_mail_async') as m:
-            response = views.mailgun_incoming(request)
+    def test_ses_incoming(self):
+        request = make_plain_text_request(
+            '/', AWS_SNS_NOTIFICATION['body'], AWS_SNS_NOTIFICATION['headers'])
+        with mock.patch('cciw.aws.verify_sns_notification') as m1, \
+                mock.patch('cciw.mail.views.download_ses_message_from_s3') as m2, \
+                mock.patch('cciw.mail.views.handle_mail_async') as m3:
+            m1.side_effect = [True]  # fake verify
+            m2.side_effect = [b'fake_data']
+            response = views.ses_incoming_notification(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(m.call_count, 1)
-        self.assertEqual(type(m.call_args[0][0]), bytes)
+        self.assertEqual(m1.call_count, 1)
+        self.assertEqual(m2.call_count, 1)
+        self.assertEqual(m2.call_args[0][0], '2c9c57fhmj03rtht1mcq6gvpg9hijo77ju218ag1')
+        self.assertEqual(m3.call_count, 1)
+        self.assertEqual(m3.call_args[0][0], b'fake_data')
 
     def test_mailgun_incoming_bad_sig(self):
         data = MAILGUN_EXAMPLE_POST_DATA_FOR_MIME_ENDPOINT
@@ -397,3 +403,15 @@ Message-ID: <56CCDE2E.9030103@gmail.com>
 
 Test message
 """)
+
+
+def make_plain_text_request(path, body, headers):
+    mangled_headers = {
+        'HTTP_' + name.replace('-', '_').upper(): value
+        for name, value in headers.items()
+    }
+    return RequestFactory().generic(
+        'POST', path, data=body,
+        content_type='text/plain; charset=UTF-8',
+        **mangled_headers
+    )
