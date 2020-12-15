@@ -481,7 +481,7 @@ def deploy():
     restart_all()
     tag_deploy()  # Once 'current' symlink is switched and services are restarted
     copy_protected_downloads(target)
-    setup_mailgun(target)
+    setup_email_routes(target)
     delete_old_versions()
 
     # Push tags created in tag_deploy
@@ -675,9 +675,9 @@ def update_database(target):
         run("./manage.py setup_auth_groups")
 
 
-def setup_mailgun(target):
+def setup_email_routes(target):
     with django_project(target):
-        run("./manage.py setup_mailgun")
+        run("./manage.py setup_ses_routes")
 
 
 def copy_protected_downloads(target):

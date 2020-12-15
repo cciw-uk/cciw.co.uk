@@ -33,3 +33,28 @@ headers:
 body:
 b'{\n  "Type" : "Notification",\n  "MessageId" : "bf5991d9-9f94-5bbf-af30-c99758486554",\n  "TopicArn" : "arn:aws:sns:eu-west-1:319777369186:ses-bounces",\n  "Message" : "{\\"notificationType\\":\\"Bounce\\",\\"bounce\\":{\\"feedbackId\\":\\"010201765723ea4a-97e6a38a-da36-47c9-b447-bc76b838c0c2-000000\\",\\"bounceType\\":\\"Permanent\\",\\"bounceSubType\\":\\"General\\",\\"bouncedRecipients\\":[{\\"emailAddress\\":\\"bounce@simulator.amazonses.com\\",\\"action\\":\\"failed\\",\\"status\\":\\"5.1.1\\",\\"diagnosticCode\\":\\"smtp; 550 5.1.1 user unknown\\"}],\\"timestamp\\":\\"2020-12-12T13:29:00.000Z\\",\\"remoteMtaIp\\":\\"3.218.174.122\\",\\"reportingMTA\\":\\"dsn; a7-17.smtp-out.eu-west-1.amazonses.com\\"},\\"mail\\":{\\"timestamp\\":\\"2020-12-12T13:28:58.951Z\\",\\"source\\":\\"webmaster@cciw.co.uk\\",\\"sourceArn\\":\\"arn:aws:ses:eu-west-1:319777369186:identity/cciw.co.uk\\",\\"sourceIp\\":\\"85.153.236.111\\",\\"sendingAccountId\\":\\"319777369186\\",\\"messageId\\":\\"010201765723e547-6322af43-456a-45cb-aa18-05ab53ff52ee-000000\\",\\"destination\\":[\\"bounce@simulator.amazonses.com\\"],\\"headersTruncated\\":false,\\"headers\\":[{\\"name\\":\\"Received\\",\\"value\\":\\"from bunyan ([85.153.236.111]) by email-smtp.amazonaws.com with SMTP (SimpleEmailService-d-TK1K3UJR7) id eA7YseB1P5MKA1YsAa16 for bounce@simulator.amazonses.com; Sat, 12 Dec 2020 13:28:58 +0000 (UTC)\\"},{\\"name\\":\\"Content-Type\\",\\"value\\":\\"text/plain; charset=\\\\\\"utf-8\\\\\\"\\"},{\\"name\\":\\"MIME-Version\\",\\"value\\":\\"1.0\\"},{\\"name\\":\\"Content-Transfer-Encoding\\",\\"value\\":\\"7bit\\"},{\\"name\\":\\"Subject\\",\\"value\\":\\"[CCIW] Reference for Roy Armstrong\\"},{\\"name\\":\\"From\\",\\"value\\":\\"webmaster@cciw.co.uk\\"},{\\"name\\":\\"To\\",\\"value\\":\\"bounce@simulator.amazonses.com\\"},{\\"name\\":\\"Date\\",\\"value\\":\\"Sat, 12 Dec 2020 13:28:58 -0000\\"},{\\"name\\":\\"Message-ID\\",\\"value\\":\\"<160777973839.803843.6703080364289671170@bunyan>\\"},{\\"name\\":\\"Reply-To\\",\\"value\\":\\"alice@example.com\\"},{\\"name\\":\\"X-CCIW-Camp\\",\\"value\\":\\"2020-blue\\"},{\\"name\\":\\"X-CCIW-Action\\",\\"value\\":\\"ReferenceRequest\\"}],\\"commonHeaders\\":{\\"from\\":[\\"webmaster@cciw.co.uk\\"],\\"replyTo\\":[\\"alice@example.com\\"],\\"date\\":\\"Sat, 12 Dec 2020 13:28:58 -0000\\",\\"to\\":[\\"bounce@simulator.amazonses.com\\"],\\"messageId\\":\\"<160777973839.803843.6703080364289671170@bunyan>\\",\\"subject\\":\\"[CCIW] Reference for Roy Armstrong\\"}}}",\n  "Timestamp" : "2020-12-12T13:29:00.409Z",\n  "SignatureVersion" : "1",\n  "Signature" : "fp/ladNgk9bI4s8zK7uCV4r8xpBDX1EBc1A/OjbiS/4AuDDqc6EmBsj/P/tYXU1Py2Qe3ih1HVxP2IEZtjl6qnoUixUh8KjGQfTD2Als0m/VgIIFfikwgn6UEpPbVIF4E9QmrgBmeUHnC5i8m7YSmw4zQLll9fccmkZjmMEjRAFa7SWaClFTcvWPK1KlK/sjiwi/ger+ZFz5M73V9HLfzT/pEbuCpr3++hXlh5QK2mLk8ANy7Nu+chl/4c7hl5DBZITZn4c1w09qsgIbUsZh/QUhrkFzxc5aQaRbODSiqfGWvvLHmzLGtJSV+7afWgi22zsMHDBMJml4u31rwiSdvg==",\n  "SigningCertURL" : "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-010a507c1833636cd94bdb98bd93083a.pem",\n  "UnsubscribeURL" : "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-1:319777369186:ses-bounces:a4995c81-f8b5-4879-8747-3897967e333e"\n}'
 """
+
+
+"""
+ses_api.describe_active_receipt_rule_set() response:
+
+{'Metadata': {'CreatedTimestamp': datetime.datetime(2020, 12, 8, 21, 18, 31, 379000, tzinfo=tzutc()),
+  'Name': 'default-rule-set'},
+ 'ResponseMetadata': {'HTTPHeaders': {'content-length': '1172',
+   'content-type': 'text/xml',
+   'date': 'Tue, 15 Dec 2020 10:01:09 GMT',
+   'x-amzn-requestid': 'e12f91f1-a354-4b15-8b9b-34328722bbd3'},
+  'HTTPStatusCode': 200,
+  'RequestId': 'e12f91f1-a354-4b15-8b9b-34328722bbd3',
+  'RetryAttempts': 0},
+ 'Rules': [{'Actions': [{'S3Action': {'BucketName': 'cciw-incoming-mail',
+      'ObjectKeyPrefix': '',
+      'TopicArn': 'arn:aws:sns:eu-west-1:319777369186:ses-incoming-notification'}}],
+   'Enabled': True,
+   'Name': 'webmaster-forward',
+   'Recipients': ['camp-debug@mailtest.cciw.co.uk',
+    'webmaster@cciw.co.uk',
+    'webmaster@mailtest.cciw.co.uk'],
+   'ScanEnabled': True,
+   'TlsPolicy': 'Optional'}]}
+"""

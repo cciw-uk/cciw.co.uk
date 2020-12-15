@@ -1,71 +1,70 @@
 from django.conf import settings
-from django.urls import reverse
+from django.utils import timezone
 
-from .lists import EMAIL_LISTS
-from .mailgun import create_route, create_webhook, list_routes, update_route, update_webhook
+from .lists import get_all_lists
+from .ses import get_active_ruleset_info, RuleSet, save_ruleset, make_ruleset_active, S3Action, Rule
 
-# See https://mailgun.com/app/routes
-
-
-# In addition to the ones created here, which are routed through the website,
-# there are simple forwarding addresses set up with the mailgun control panel.
-def setup_mailgun_routes():
-    existing_routes = list_routes()['items']
-    existing_d = {i['description']: i for i in existing_routes}
-
-    def update_or_create(name, expression, actions, priority=None):
-        if name in existing_d:
-            route = existing_d[name]
-            update_route(route['id'],
-                         name,
-                         expression,
-                         actions,
-                         priority=priority)
-        else:
-            create_route(name,
-                         expression,
-                         actions,
-                         priority=priority)
-
-    for e in EMAIL_LISTS:
-        pattern = limit_pattern(e.full_address_regex)
-        expression = f"""match_recipient('{pattern}')"""
-        forwarding_url = "https://" + settings.PRODUCTION_DOMAIN + reverse("cciw-mailgun-incoming")
-        actions = [f"""forward("{forwarding_url}")""",
-                   "stop()"]
-        update_or_create(e.name, expression, actions, priority=5)
-
-    # Temporarily disabled the following - possibly mailgun's incoming
-    # spam filter will deal with this
-    # # Some incoming spam from @cciw.co.uk addresses. There is virtually no
-    # # reason for a valid person to be using an @cciw.co.uk address, so we block
-    # # this by adding a high priority rule.
-    # update_or_create("From CCiW domain blocker",
-    #                  r"""match_header("from", "@cciw\.co\.uk")""",
-    #                  ["stop()"],
-    #                  priority=0)
+# Some one time AWS/SNS/SES things were set up manually, as described in docs/services.rst
+# The remainder is done here.
 
 
-def setup_mailgun_webhooks():
-    base_url = "https://" + settings.PRODUCTION_DOMAIN
-    urls = [
-        ('bounce', 'cciw-mailgun-bounce'),
-    ]
+def setup_ses_routes():
+    """
+    Setup Amazon SES rule sets
+    """
+    # We want to enable testing in development, both of:
+    # - this function, which sets up rule sets
+    # - incoming email handling, which we want to be able
+    #   to route to our development machine (via ngrok)
+    #   without interfering with production rules.
+    #
+    # We also don't want to disrupt production rules
+    # by temporarily having a broken set of rules.
+    #
+    # And we do need to clear out old rules (e.g. for old camps) and certain
+    # points.
+    #
+    # Therefore, we have the following strategy:
+    #
+    # - Create a new ruleset which is a copy of the active one.
+    # - Collect and examine all the existing rules within it
+    # - Remove all rules relating to our current INCOMING_MAIL_DOMAIN,
+    #   and keep everything else.
+    # - Add new rules for INCOMING_MAIL_DOMAIN.
+    # - Replace old active rule set with the new one we just created.
 
-    for webhook_name, named_url in urls:
-        webhook_url = base_url + reverse(named_url)
-        try:
-            create_webhook(webhook_name, webhook_url)
-        except Exception:
-            update_webhook(webhook_name, webhook_url)
+    active_ruleset = get_active_ruleset_info()
+    new_ruleset = RuleSet(name=timezone.now().strftime('Standard %Y-%m-%d %H%M%S'))
+    our_domain = settings.INCOMING_MAIL_DOMAIN
+    new_ruleset = _copy_other_domain_rules(active_ruleset, new_ruleset, our_domain)
+    new_ruleset = _create_new_rules(new_ruleset, our_domain)
+    save_ruleset(new_ruleset)
+    make_ruleset_active(new_ruleset)
 
 
-def limit_pattern(pattern):
-    # Fix up the pattern a bit to avoid it matching some old addresses (which
-    # have leaked and are being spammed).
+def _copy_other_domain_rules(old_ruleset, new_ruleset, domain):
+    for rule in old_ruleset.rules:
+        if not all(recipient.endswith('@' + domain)
+                   for recipient in rule.recipients):
+            new_ruleset.rules.append(rule)
 
-    # Slugs do not start with digits. Fixing this means we no longer match
-    # camp-2012-1-officers etc., which helps.
-    pattern = pattern.replace("?P<slug>",
-                              "?P<slug>[^1-9]")
-    return pattern
+    return new_ruleset
+
+
+def _create_new_rules(ruleset, domain):
+    AWS_INCOMING_MAIL = settings.AWS_INCOMING_MAIL
+    recipients = [email_list.address for email_list in get_all_lists()]
+    ruleset.rules.append(Rule(
+        name=f"Email lists for {domain}",
+        recipients=recipients,
+        actions=[
+            S3Action(
+                bucket_name=AWS_INCOMING_MAIL['BUCKET_NAME'],
+                topic_arn=AWS_INCOMING_MAIL['TOPIC_ARN']
+            )
+        ],
+        enabled=True,
+        scan_enabled=True,
+        tls_policy='Optional',
+    ))
+    return ruleset

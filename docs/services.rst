@@ -300,8 +300,7 @@ Actions:
 
   Named: incoming-mail-handler
 
-  This role can be used for Lambda functions, and also for
-  our own mail handing.
+  This role can be used for Lambda functions, and also for our own mail handing.
 
 
 * Created ruleset:
@@ -323,6 +322,7 @@ Actions:
 
           * Topic Name: ses-incoming-notification
           * Display Name: SES incoming notification
+          * Copied notification ARN to secrets.json
 
   * Name: webmaster-forward
 
@@ -331,6 +331,9 @@ Actions:
 
   * Added necessary permissions
 
+
+* This ruleset and all rules was later recreated via a script, but it is easiest
+  to setup notification using the console.
 
 * In Amazon SNS, for topic ses-incoming-notification:
 
