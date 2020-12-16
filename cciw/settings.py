@@ -1,4 +1,3 @@
-# flake8: noqa
 # isort:skip_file
 
 # Settings file
@@ -285,7 +284,7 @@ LOGGING = {
             'handlers': ['file'],
             'propagate': False,
         },
-        'paypal' : {
+        'paypal': {
             'level': 'DEBUG',
             'handlers': ['paypal_debug'],
             'propagate': False,
@@ -451,20 +450,20 @@ SECURE_DOWNLOAD_URL_BASE = "/protected/"  # See nginx conf
 # == MIDDLEWARE ==
 
 _MIDDLEWARE = [
-    (LIVEBOX,    "cciw.middleware.http.webfaction_fixes"),
+    (LIVEBOX, "cciw.middleware.http.webfaction_fixes"),
     (True, 'django.middleware.security.SecurityMiddleware'),
-    (True,       "django.middleware.gzip.GZipMiddleware"),
+    (True, "django.middleware.gzip.GZipMiddleware"),
     (DEVBOX and DEBUG, "debug_toolbar.middleware.DebugToolbarMiddleware"),
-    (True,       "django.contrib.sessions.middleware.SessionMiddleware"),
-    (True,       "django.middleware.common.CommonMiddleware"),
-    (True,       'django.middleware.csrf.CsrfViewMiddleware'),
+    (True, "django.contrib.sessions.middleware.SessionMiddleware"),
+    (True, "django.middleware.common.CommonMiddleware"),
+    (True, 'django.middleware.csrf.CsrfViewMiddleware'),
     (DEVBOX and DEBUG, "cciw.middleware.debug.debug_middleware"),
-    (True,       "django.contrib.auth.middleware.AuthenticationMiddleware"),
-    (True,       "django.contrib.messages.middleware.MessageMiddleware"),
-    (True,       'django.middleware.clickjacking.XFrameOptionsMiddleware'),
-    (True,       "cciw.middleware.auth.private_wiki"),
-    (True,       "cciw.bookings.middleware.booking_token_login"),
-    (True,       "cciw.middleware.threadlocals.thread_locals"),
+    (True, "django.contrib.auth.middleware.AuthenticationMiddleware"),
+    (True, "django.contrib.messages.middleware.MessageMiddleware"),
+    (True, 'django.middleware.clickjacking.XFrameOptionsMiddleware'),
+    (True, "cciw.middleware.auth.private_wiki"),
+    (True, "cciw.bookings.middleware.booking_token_login"),
+    (True, "cciw.middleware.threadlocals.thread_locals"),
 ]
 
 MIDDLEWARE = tuple([val for (test, val) in _MIDDLEWARE if test])
