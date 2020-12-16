@@ -37,6 +37,7 @@ from cciw.officers.utils import camp_officer_list, camp_slacker_list
 from .models import EmailForward
 from .smtp import send_mime_message
 
+
 # Externally used functions:
 
 def find_list(address, from_addr):
