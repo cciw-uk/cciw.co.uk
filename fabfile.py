@@ -571,6 +571,10 @@ def push_sources(target):
     # Also need to sync files that are not in main sources VCS repo.
     push_non_vcs_sources(target)
 
+    # Need settings file
+    with cd(target_src_root):
+        run('cp cciw/settings_local_example.py cciw/settings_local.py')
+
 
 @task
 def push_non_vcs_sources(target):
