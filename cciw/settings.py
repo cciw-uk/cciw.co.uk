@@ -245,6 +245,14 @@ LOGGING = {
             'maxBytes': 1000000,
             'backupCount': 5,
         },
+        'aws_debug': {
+            'level': 'DEBUG',
+            'class': 'cloghandler.ConcurrentRotatingFileHandler',
+            'formatter': 'verbose',
+            'filename': os.path.join(LOG_DIR, 'aws_debug_cciw_django.log'),
+            'maxBytes': 1000000,
+            'backupCount': 5,
+        },
     },
 
     'loggers': {
@@ -280,6 +288,11 @@ LOGGING = {
         'paypal' : {
             'level': 'DEBUG',
             'handlers': ['paypal_debug'],
+            'propagate': False,
+        },
+        'cciw.aws': {
+            'level': 'DEBUG',
+            'handlers': ['aws_debug'],
             'propagate': False,
         },
     },

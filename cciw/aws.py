@@ -65,6 +65,7 @@ def verify_sns_notification(request):
 
     signing_cert_url = content["SigningCertURL"]
     if not furl.furl(signing_cert_url).host.endswith('.amazonaws.com'):
+        logger.info('Ignoring cert URL %s', signing_cert_url)
         return False
 
     msg_type = request.headers.get("X-Amz-Sns-Message-Type", None)
@@ -74,6 +75,7 @@ def verify_sns_notification(request):
     elif msg_type == SNS_MESSAGE_TYPE_NOTIFICATION:
         canonical_message = canonical_message_builder(content, canonical_notification_format)
     else:
+        logger.info('Invalid Message Type %s', msg_type)
         raise ValueError(f"Message Type {msg_type} is not recognized")
 
     # Load the certificate and extract the public key
@@ -83,6 +85,7 @@ def verify_sns_notification(request):
         pubkey.verify(decoded_signature, canonical_message, padding.PKCS1v15(), hashes.SHA1())
         return True
     except InvalidSignature:
+        logger.info('Invalid SNS signature %s', decoded_signature)
         return False
 
 
