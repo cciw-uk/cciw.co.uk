@@ -58,7 +58,7 @@ WEBAPPS_ROOT = f"/home/{env.proj_user}/webapps"
 
 CURRENT_VERSION = 'current'
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings_local'
 
 REQS = [
     # Daemons
