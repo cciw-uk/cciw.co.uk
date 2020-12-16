@@ -496,7 +496,7 @@ def code_quality_checks():
     if getattr(env, 'skip_code_quality_checks', False):
         return
     local("flake8 .")
-    local("isort -c")
+    local("isort -c .")
     local("pytest -m 'not selenium'")
 
 

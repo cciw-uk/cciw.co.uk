@@ -5,10 +5,9 @@ from django.db import migrations
 
 
 def populate_created_online(apps, schema_editor):
+    import django
     from django.contrib.admin.models import ADDITION
     from django.contrib.admin.options import get_content_type_for_model
-
-    import django
     if django.VERSION >= (1, 8):
         # This migration is broken in 1.8. However, it's not needed any more
         # and only runs in tests, so just disable it.

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import pytz
 from datetime import datetime
+
+import pytz
 from django.db import migrations
 from django.utils import timezone
-
 
 PAYPAL_DATE_FORMATS = [
     "%H:%M:%S %b. %d, %Y PST",

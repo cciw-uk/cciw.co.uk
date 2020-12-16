@@ -39,7 +39,6 @@ from .smtp import send_mime_message
 
 
 # Externally used functions:
-
 def find_list(address, from_addr):
     for email_list in get_all_lists():
         if email_list.matches(address, from_addr):

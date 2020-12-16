@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models, migrations
-from django.conf import settings
-import cciw.officers.fields
 import datetime
+
+from django.conf import settings
+from django.db import migrations, models
+
+import cciw.officers.fields
 
 
 class Migration(migrations.Migration):
