@@ -43,16 +43,9 @@ def canonical_message_builder(content, fields):
 
 
 def verify_sns_notification(request):
-    """ Takes a notification request from Amazon push service SNS and verifies the origin of the notification.
-        Kudos to Artur Rodrigues for suggesting M2Crypto: http://goo.gl/KAgPPc
-        Args:
-            request (HTTPRequest): The request object that is passed to the view function
-        Returns (bool):
-            True if he message passes the verification, False otherwise
-        Raises:
-            ValueError: If the body of the response couldn't be parsed
-            M2CryptoError: If an error raises during the verification process
-            URLError: If the SigningCertURL couldn't be opened
+    """
+    Takes a notification request from Amazon push service SNS and verifies the origin of the notification.
+    Returns True if the message passes the verification, False otherwise
     """
     cert = None
     pubkey = None
@@ -60,7 +53,12 @@ def verify_sns_notification(request):
     canonical_sub_unsub_format = ["Message", "MessageId", "SubscribeURL", "Timestamp", "Token", "TopicArn", "Type"]
     canonical_notification_format = ["Message", "MessageId", "Subject", "Timestamp", "TopicArn", "Type"]
 
-    content = json.loads(request.body)
+    try:
+        content = json.loads(request.body)
+    except json.JSONDecodeError:
+        logger.info('No valid JSON content')
+        return False
+
     decoded_signature = b64decode(content["Signature"])
 
     signing_cert_url = content["SigningCertURL"]
@@ -100,7 +98,7 @@ def ensure_from_aws_sns(view_func):
     @wraps(view_func)
     def wrapper(request):
         if not verify_sns_notification(request):
-            return HttpResponse('Invalid signature', status=400)
+            return HttpResponse('Invalid or missing signature', status=400)
         return view_func(request)
     return wrapper
 
