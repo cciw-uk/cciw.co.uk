@@ -11,23 +11,23 @@
 /*global jQuery, HighchartsAdapter */
 
 (function (Highcharts) {
-	
+
 	// Utilities
 	var each = Highcharts.each,
 		pick = Highcharts.pick,
 		inArray = HighchartsAdapter.inArray,
 		splat = Highcharts.splat,
 		SeriesBuilder;
-	
-	
+
+
 	// The Data constructor
 	var Data = function (dataOptions, chartOptions) {
 		this.init(dataOptions, chartOptions);
 	};
-	
+
 	// Set the prototype properties
 	Highcharts.extend(Data.prototype, {
-		
+
 	/**
 	 * Initialize the Data object with the given options
 	 */
@@ -53,18 +53,18 @@
 
 			// Parse a CSV string if options.csv is given
 			this.parseCSV();
-			
+
 			// Parse a HTML table if options.table is given
 			this.parseTable();
 
-			// Parse a Google Spreadsheet 
-			this.parseGoogleSpreadsheet();	
+			// Parse a Google Spreadsheet
+			this.parseGoogleSpreadsheet();
 		}
 
 	},
 
 	/**
-	 * Get the column distribution. For example, a line series takes a single column for 
+	 * Get the column distribution. For example, a line series takes a single column for
 	 * Y values. A range series takes two columns for low and high values respectively,
 	 * and an OHLC series takes four columns.
 	 */
@@ -151,7 +151,7 @@
 	 * continue with other operations.
 	 */
 	dataFound: function () {
-		
+
 		if (this.options.switchRowsAndColumns) {
 			this.columns = this.rowsToColumns(this.columns);
 		}
@@ -161,16 +161,16 @@
 
 		// Interpret the values into right types
 		this.parseTypes();
-		
+
 		// Handle columns if a handleColumns callback is given
 		if (this.parsed() !== false) {
-		
+
 			// Complete if a complete callback is given
 			this.complete();
 		}
-		
+
 	},
-	
+
 	/**
 	 * Parse a CSV input string
 	 */
@@ -186,30 +186,30 @@
 			itemDelimiter,
 			lines,
 			activeRowNo = 0;
-			
+
 		if (csv) {
-			
+
 			lines = csv
 				.replace(/\r\n/g, "\n") // Unix
 				.replace(/\r/g, "\n") // Mac
 				.split(options.lineDelimiter || "\n");
 
 			itemDelimiter = options.itemDelimiter || (csv.indexOf('\t') !== -1 ? '\t' : ',');
-			
+
 			each(lines, function (line, rowNo) {
 				var trimmed = self.trim(line),
 					isComment = trimmed.indexOf('#') === 0,
 					isBlank = trimmed === '',
 					items;
-				
+
 				if (rowNo >= startRow && rowNo <= endRow && !isComment && !isBlank) {
 					items = line.split(itemDelimiter);
 					each(items, function (item, colNo) {
 						if (colNo >= startColumn && colNo <= endColumn) {
 							if (!columns[colNo - startColumn]) {
-								columns[colNo - startColumn] = [];					
+								columns[colNo - startColumn] = [];
 							}
-							
+
 							columns[colNo - startColumn][activeRowNo] = item;
 						}
 					});
@@ -220,7 +220,7 @@
 			this.dataFound();
 		}
 	},
-	
+
 	/**
 	 * Parse a HTML table
 	 */
@@ -234,19 +234,19 @@
 			endColumn = options.endColumn || Number.MAX_VALUE;
 
 		if (table) {
-			
+
 			if (typeof table === 'string') {
 				table = document.getElementById(table);
 			}
-			
+
 			each(table.getElementsByTagName('tr'), function (tr, rowNo) {
 				if (rowNo >= startRow && rowNo <= endRow) {
 					each(tr.children, function (item, colNo) {
 						if ((item.tagName === 'TD' || item.tagName === 'TH') && colNo >= startColumn && colNo <= endColumn) {
 							if (!columns[colNo - startColumn]) {
-								columns[colNo - startColumn] = [];					
+								columns[colNo - startColumn] = [];
 							}
-							
+
 							columns[colNo - startColumn][rowNo - startRow] = item.innerHTML;
 						}
 					});
@@ -273,8 +273,8 @@
 
 		if (googleSpreadsheetKey) {
 			jQuery.ajax({
-				dataType: 'json', 
-				url: 'https://spreadsheets.google.com/feeds/cells/' + 
+				dataType: 'json',
+				url: 'https://spreadsheets.google.com/feeds/cells/' +
 				  googleSpreadsheetKey + '/' + (options.googleSpreadsheetWorksheet || 'od6') +
 					  '/public/values?alt=json-in-script&callback=?',
 				error: options.error,
@@ -286,15 +286,15 @@
 						colCount = 0,
 						rowCount = 0,
 						i;
-				
-					// First, find the total number of columns and rows that 
+
+					// First, find the total number of columns and rows that
 					// are actually filled with data
 					for (i = 0; i < cellCount; i++) {
 						cell = cells[i];
 						colCount = Math.max(colCount, cell.gs$cell.col);
-						rowCount = Math.max(rowCount, cell.gs$cell.row);			
+						rowCount = Math.max(rowCount, cell.gs$cell.row);
 					}
-				
+
 					// Set up arrays containing the column data
 					for (i = 0; i < colCount; i++) {
 						if (i >= startColumn && i <= endColumn) {
@@ -305,7 +305,7 @@
 							columns[i - startColumn].length = Math.min(rowCount, endRow - startRow);
 						}
 					}
-					
+
 					// Loop over the cells and assign the value to the right
 					// place in the column arrays
 					for (i = 0; i < cellCount; i++) {
@@ -325,7 +325,7 @@
 			});
 		}
 	},
-	
+
 	/**
 	 * Trim a string from whitespace
 	 */
@@ -334,7 +334,7 @@
 			str = str.replace(/^\s+|\s+$/g, '');
 
 			// Clear white space insdie the string, like thousands separators
-			if (inside && /^[0-9\s]+$/.test(str)) { 
+			if (inside && /^[0-9\s]+$/.test(str)) {
 				str = str.replace(/\s/g, '');
 			}
 
@@ -344,7 +344,7 @@
 		}
 		return str;
 	},
-	
+
 	/**
 	 * Parse numeric cells in to number types and date types in to true dates.
 	 */
@@ -363,7 +363,7 @@
 	 */
 	parseColumn: function (column, col) {
 		var rawColumns = this.rawColumns,
-			columns = this.columns, 
+			columns = this.columns,
 			row = column.length,
 			val,
 			floatVal,
@@ -379,13 +379,13 @@
 			columnTypes = this.options.columnTypes || [],
 			columnType = columnTypes[col],
 			forceCategory = isXColumn && ((chartOptions && chartOptions.xAxis && splat(chartOptions.xAxis)[0].type === 'category') || columnType === 'string');
-		
+
 		if (!rawColumns[col]) {
 			rawColumns[col] = [];
 		}
 		while (row--) {
 			val = backup[row] || column[row];
-			
+
 			trimVal = this.trim(val);
 			trimInsideVal = this.trim(val, true);
 			floatVal = parseFloat(trimInsideVal);
@@ -394,15 +394,15 @@
 			if (rawColumns[col][row] === undefined) {
 				rawColumns[col][row] = trimVal;
 			}
-			
+
 			// Disable number or date parsing by setting the X axis type to category
 			if (forceCategory || (row === 0 && firstRowAsNames)) {
 				column[row] = trimVal;
 
 			} else if (+trimInsideVal === floatVal) { // is numeric
-			
+
 				column[row] = floatVal;
-				
+
 				// If the number is greater than milliseconds in a year, assume datetime
 				if (floatVal > 365 * 24 * 3600 * 1000 && columnType !== 'float') {
 					column.isDatetime = true;
@@ -413,17 +413,17 @@
 				if (column[row + 1] !== undefined) {
 					descending = floatVal > column[row + 1];
 				}
-			
+
 			// String, continue to determine if it is a date string or really a string
 			} else {
 				dateVal = this.parseDate(val);
 				// Only allow parsing of dates if this column is an x-column
 				if (isXColumn && typeof dateVal === 'number' && !isNaN(dateVal) && columnType !== 'float') { // is date
-					backup[row] = val; 
+					backup[row] = val;
 					column[row] = dateVal;
 					column.isDatetime = true;
 
-					// Check if the dates are uniformly descending or ascending. If they 
+					// Check if the dates are uniformly descending or ascending. If they
 					// are not, chances are that they are a different time format, so check
 					// for alternative.
 					if (column[row + 1] !== undefined) {
@@ -439,7 +439,7 @@
 						}
 						descending = diff;
 					}
-				
+
 				} else { // string
 					column[row] = trimVal === '' ? null : trimVal;
 					if (row !== 0 && (column.isDatetime || column.isNumeric)) {
@@ -450,14 +450,14 @@
 		}
 
 		// If strings are intermixed with numbers or dates in a parsed column, it is an indication
-		// that parsing went wrong or the data was not intended to display as numbers or dates and 
-		// parsing is too aggressive. Fall back to categories. Demonstrated in the 
+		// that parsing went wrong or the data was not intended to display as numbers or dates and
+		// parsing is too aggressive. Fall back to categories. Demonstrated in the
 		// highcharts/demo/column-drilldown sample.
 		if (isXColumn && column.mixed) {
 			columns[col] = rawColumns[col];
 		}
 
-		// If the 0 column is date or number and descending, reverse all columns. 
+		// If the 0 column is date or number and descending, reverse all columns.
 		if (isXColumn && descending && this.options.sort) {
 			for (col = 0; col < columns.length; col++) {
 				columns[col].reverse();
@@ -467,7 +467,7 @@
 			}
 		}
 	},
-	
+
 	/**
 	 * A collection of available date formats, extendable from the outside to support
 	 * custom date formats.
@@ -506,7 +506,7 @@
 			}
 		}
 	},
-	
+
 	/**
 	 * Parse a date and return it as a number. Overridable through options.parseDate.
 	 */
@@ -520,7 +520,7 @@
 
 		if (parseDate) {
 			ret = parseDate(val);
-		
+
 		} else if (typeof val === 'string') {
 			// Auto-detect the date format the first time
 			if (!dateFormat) {
@@ -542,14 +542,14 @@
 					ret = format.parser(match);
 				}
 			}
-			// Fall back to Date.parse		
+			// Fall back to Date.parse
 			if (!match) {
 				match = Date.parse(val);
 				// External tools like Date.js and MooTools extend Date object and
 				// returns a date.
 				if (typeof match === 'object' && match !== null && match.getTime) {
 					ret = match.getTime() - match.getTimezoneOffset() * 60000;
-				
+
 				// Timestamp
 				} else if (typeof match === 'number' && !isNaN(match)) {
 					ret = match - (new Date(match)).getTimezoneOffset() * 60000;
@@ -558,7 +558,7 @@
 		}
 		return ret;
 	},
-	
+
 	/**
 	 * Reorganize rows into columns
 	 */
@@ -584,7 +584,7 @@
 		}
 		return columns;
 	},
-	
+
 	/**
 	 * A hook for working directly on the parsed columns
 	 */
@@ -624,13 +624,13 @@
 
 		return freeIndexValues;
 	},
-	
+
 	/**
-	 * If a complete callback function is provided in the options, interpret the 
+	 * If a complete callback function is provided in the options, interpret the
 	 * columns into a Highcharts options object.
 	 */
 	complete: function () {
-		
+
 		var columns = this.columns,
 			xColumns = [],
 			type,
@@ -657,7 +657,7 @@
 					columns[i].name = columns[i].shift();
 				}
 			}
-			
+
 			// Use the next columns for series
 			series = [];
 			freeIndexes = this.getFreeIndexes(columns.length, this.valueCount.seriesBuilders);
@@ -676,7 +676,7 @@
 			while (freeIndexes.length > 0) {
 				builder = new SeriesBuilder();
 				builder.addColumnReader(0, 'x');
-				
+
 				// Mark index as used (not free)
 				index = inArray(0, freeIndexes);
 				if (index !== -1) {
@@ -750,7 +750,7 @@
 					type: type
 				};
 			}
-			
+
 			if (options.complete) {
 				options.complete(chartOptions);
 			}
@@ -763,7 +763,7 @@
 		}
 	}
 	});
-	
+
 	// Register the Data prototype and data function on Highcharts
 	Highcharts.Data = Data;
 	Highcharts.data = function (options, chartOptions) {
@@ -780,7 +780,7 @@
 
 				afterComplete: function (dataOptions) {
 					var i, series;
-					
+
 					// Merge series configs
 					if (userOptions.hasOwnProperty('series')) {
 						if (typeof userOptions.series === 'object') {
@@ -811,7 +811,7 @@
 	 * Ex: A series builder can be constructed to read column 3 as 'x' and
 	 * column 7 and 8 as 'y1' and 'y2'.
 	 * The output would then be points/rows of the form {x: 11, y1: 22, y2: 33}
-	 * 
+	 *
 	 * The name of the builder is taken from the second column. In the above
 	 * example it would be the column with index 7.
 	 * @constructor
@@ -872,7 +872,7 @@
 			if (pointIsArray) {
 				point.push(value);
 			} else {
-				point[reader.configName] = value; 
+				point[reader.configName] = value;
 			}
 		});
 
@@ -903,7 +903,7 @@
 	 */
 	SeriesBuilder.prototype.addColumnReader = function (columnIndex, configName) {
 		this.readers.push({
-			columnIndex: columnIndex, 
+			columnIndex: columnIndex,
 			configName: configName
 		});
 
@@ -921,7 +921,7 @@
 		var i,
 			referencedColumnIndexes = [],
 			columnReader;
-		
+
 		for (i = 0; i < this.readers.length; i = i + 1) {
 			columnReader = this.readers[i];
 			if (columnReader.columnIndex !== undefined) {

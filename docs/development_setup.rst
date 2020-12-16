@@ -63,4 +63,8 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
     $ ./manage.py runserver 8000
 
-Now you should be able to browse the site on http://cciw.local:8000/
+  Now you should be able to browse the site on http://cciw.local:8000/
+
+* Technically optional, but very helpful - add precommit::
+
+    $ pre-commit install

@@ -66,7 +66,7 @@
 				stop.color = H.Color(stop[1]);
 			});
 		},
-		/** 
+		/**
 		 * Translate from a value to a color
 		 */
 		toColor: function (value, point) {
@@ -91,7 +91,7 @@
 							point.dataClass = i;
 						}
 						break;
-					}   
+					}
 				}
 
 			} else {
@@ -111,9 +111,9 @@
 
 				// The position within the gradient
 				pos = 1 - (to[0] - pos) / ((to[0] - from[0]) || 1);
-				
+
 				color = this.tweenColors(
-					from.color, 
+					from.color,
 					to.color,
 					pos
 				);
@@ -139,10 +139,10 @@
 				from = from.rgba;
 				to = to.rgba;
 				hasAlpha = (to[3] !== 1 || from[3] !== 1);
-				ret = (hasAlpha ? 'rgba(' : 'rgb(') + 
-					Math.round(to[0] + (from[0] - to[0]) * (1 - pos)) + ',' + 
-					Math.round(to[1] + (from[1] - to[1]) * (1 - pos)) + ',' + 
-					Math.round(to[2] + (from[2] - to[2]) * (1 - pos)) + 
+				ret = (hasAlpha ? 'rgba(' : 'rgb(') +
+					Math.round(to[0] + (from[0] - to[0]) * (1 - pos)) + ',' +
+					Math.round(to[1] + (from[1] - to[1]) * (1 - pos)) + ',' +
+					Math.round(to[2] + (from[2] - to[2]) * (1 - pos)) +
 					(hasAlpha ? (',' + (to[3] + (from[3] - to[3]) * (1 - pos))) : '') + ')';
 			}
 			return ret;
@@ -242,7 +242,7 @@
 					if (d) {
 						shapeArgs.d = d; // animate alters it
 					}
-				} else {					
+				} else {
 					point.graphic = renderer.arc(shapeArgs)
 						.attr({
 							stroke: options.borderColor || 'none',

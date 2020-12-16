@@ -6,7 +6,7 @@
  *
  * Author: Torstein Honsi
  *
- * 
+ *
  * Development plan
  * - Column range.
  * - Heatmap.
@@ -19,8 +19,8 @@
  * - Cache full-size image so we don't have to redraw on hide/show and zoom up. But k-d-tree still
  *   needs to be built.
  * - Test IE9 and IE10.
- * - Stacking is not perhaps not correct since it doesn't use the translation given in 
- *   the translate method. If this gets to complicated, a possible way out would be to 
+ * - Stacking is not perhaps not correct since it doesn't use the translation given in
+ *   the translate method. If this gets to complicated, a possible way out would be to
  *   have a simplified renderCanvas method that simply draws the areaPath on a canvas.
  *
  * If this module is taken in as part of the core
@@ -34,12 +34,12 @@
  * - Columns are always one pixel wide. Don't set the threshold too low.
  *
  * Optimizing tips for users
- * - For scatter plots, use a marker.radius of 1 or less. It results in a rectangle being drawn, which is 
+ * - For scatter plots, use a marker.radius of 1 or less. It results in a rectangle being drawn, which is
  *   considerably faster than a circle.
  * - Set extremes (min, max) explicitly on the axes in order for Highcharts to avoid computing extremes.
  * - Set enableMouseTracking to false on the series to improve total rendering time.
  * - The default threshold is set based on one series. If you have multiple, dense series, the combined
- *   number of points drawn gets higher, and you may want to set the threshold lower in order to 
+ *   number of points drawn gets higher, and you may want to set the threshold lower in order to
  *   use optimizations.
  */
 /*global document, Highcharts, HighchartsAdapter, setTimeout */
@@ -176,7 +176,7 @@
         },
 
         /**
-         * Create a hidden canvas to draw the graph on. The contents is later copied over 
+         * Create a hidden canvas to draw the graph on. The contents is later copied over
          * to an SVG image element.
          */
         getContext: function () {
@@ -201,7 +201,7 @@
             return this.ctx;
         },
 
-        /** 
+        /**
          * Draw the canvas image inside an SVG image
          */
         canvasToSVG: function () {
@@ -305,7 +305,7 @@
 
                 addKDPoint = function (clientX, plotY, i) {
 
-                    // The k-d tree requires series points. Reduce the amount of points, since the time to build the 
+                    // The k-d tree requires series points. Reduce the amount of points, since the time to build the
                     // tree increases exponentially.
                     if (enableMouseTracking && !pointTaken[clientX + ',' + plotY]) {
                         points.push({
@@ -340,7 +340,7 @@
 
             points = this.points = [];
             ctx = this.getContext();
-            series.buildKDTree = noop; // Do not start building while drawing 
+            series.buildKDTree = noop; // Do not start building while drawing
 
             // Display a loading indicator
             if (rawData.length > 99999) {
@@ -487,7 +487,7 @@
                     chart.loadingShown = loadingShown - 1;
                 }
 
-                // Pass tests in Pointer. 
+                // Pass tests in Pointer.
                 // TODO: Replace this with a single property, and replace when zooming in
                 // below boostThreshold.
                 series.directTouch = false;

@@ -204,7 +204,7 @@ Actions:
 
 * Testing: https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-simulator.html
 
-  
+
 
 Receiving
 ~~~~~~~~~

@@ -87,7 +87,7 @@ function augment(obj) {
 
 				// handle old IE implementation
 				} else if (el.attachEvent) {
-					
+
 					wrappedFn = function (e) {
 						e.target = e.srcElement || window; // #2820
 						fn.call(el, e);
@@ -150,7 +150,7 @@ function augment(obj) {
 				preventDefault = function () {
 					args.defaultPrevented = true;
 				};
-				
+
 				for (i = 0; i < len; i++) {
 					fn = events[i];
 
@@ -168,9 +168,9 @@ function augment(obj) {
 					if (!args.type) {
 						args.type = name;
 					}
-					
 
-					
+
+
 					// If the event handler return false, prevent the default handler from executing
 					if (fn.call(this, args) === false) {
 						args.preventDefault();
@@ -192,7 +192,7 @@ return {
 	init: function (pathAnim) {
 
 		/**
-		 * Compatibility section to add support for legacy IE. This can be removed if old IE 
+		 * Compatibility section to add support for legacy IE. This can be removed if old IE
 		 * support is not needed.
 		 */
 		if (!doc.defaultView) {
@@ -208,15 +208,15 @@ return {
 					val = el.currentStyle[prop.replace(/\-(\w)/g, function (a, b) { return b.toUpperCase(); })];
 					if (prop === 'filter') {
 						val = val.replace(
-							/alpha\(opacity=([0-9]+)\)/, 
-							function (a, b) { 
-								return b / 100; 
+							/alpha\(opacity=([0-9]+)\)/,
+							function (a, b) {
+								return b / 100;
 							}
 						);
 					}
 					/*jslint unparam: false*/
 					return val === '' ? 1 : val;
-				} 
+				}
 			};
 			this.adapterRun = function (elem, method) {
 				var alias = { width: 'clientWidth', height: 'clientHeight' }[method];
@@ -230,7 +230,7 @@ return {
 
 		if (!Array.prototype.forEach) {
 			this.each = function (arr, fn) { // legacy
-				var i = 0, 
+				var i = 0,
 					len = arr.length;
 				for (; i < len; i++) {
 					if (fn.call(arr[i], arr[i], i, arr) === false) {
@@ -242,12 +242,12 @@ return {
 
 		if (!Array.prototype.indexOf) {
 			this.inArray = function (item, arr) {
-				var len, 
+				var len,
 					i = 0;
 
 				if (arr) {
 					len = arr.length;
-					
+
 					for (; i < len; i++) {
 						if (arr[i] === item) {
 							return i;
@@ -287,7 +287,7 @@ return {
 			this.prop = prop;
 		};
 		Fx.prototype = {
-			
+
 			update: function () {
 				var styles,
 					paths = this.paths,
@@ -314,7 +314,7 @@ return {
 					styles[this.prop] = this.now + this.unit;
 					Highcharts.css(elem, styles);
 				}
-				
+
 				if (this.options.step) {
 					this.options.step.call(this.elem, this.now, this);
 				}
@@ -338,7 +338,7 @@ return {
 
 				if (t() && timers.push(t) === 1) {
 					timerId = setInterval(function () {
-						
+
 						for (i = 0; i < timers.length; i++) {
 							if (!timers[i]()) {
 								timers.splice(i--, 1);
@@ -351,7 +351,7 @@ return {
 					}, 13);
 				}
 			},
-			
+
 			step: function (gotoEnd) {
 				var t = +new Date(),
 					ret,
@@ -359,7 +359,7 @@ return {
 					options = this.options,
 					elem = this.elem,
 					i;
-				
+
 				if (elem.stopAnimation || (elem.attr && !elem.element)) { // #2616, element including flag is destroyed
 					ret = false;
 
@@ -423,11 +423,11 @@ return {
 			}
 			opt.easing = Math[opt.easing] || Math.easeInOutSine;
 			opt.curAnim = Highcharts.extend({}, prop);
-			
+
 			for (name in prop) {
 				fx = new Fx(el, opt, name);
 				end = null;
-				
+
 				if (name === 'd') {
 					fx.paths = pathAnim.init(
 						el,
@@ -445,7 +445,7 @@ return {
 						unit = PX;
 					}
 				}
-	
+
 				if (!end) {
 					end = prop[name];
 				}
@@ -453,7 +453,7 @@ return {
 					end = end.replace(/px/g, ''); // #4351
 				}
 				fx.custom(start, end, unit);
-			}	
+			}
 		};
 	},
 

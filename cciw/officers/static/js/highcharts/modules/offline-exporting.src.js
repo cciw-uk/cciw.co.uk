@@ -149,7 +149,7 @@ Highcharts.Chart.prototype.exportChartLocal = function (exportingOptions, chartO
 				}
 			} else {
 				// PNG download - create bitmap from SVG
-				
+
 				// First, try to get PNG by rendering on canvas
 				svgurl = svgToDataUrl(svg);
 				imageToDataUrl(svgurl, { /* args */ }, function (imageURL) {
@@ -240,7 +240,7 @@ Highcharts.Chart.prototype.exportChartLocal = function (exportingOptions, chartO
 				embeddedSuccess,
 				// Tainted canvas
 				fallbackToExportServer,
-				// No canvas support 
+				// No canvas support
 				fallbackToExportServer,
 				// Failed to load source
 				fallbackToExportServer

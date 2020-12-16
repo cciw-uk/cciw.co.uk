@@ -26,7 +26,7 @@ Youth work experience:
 ----------------------
 {{ app.youth_experience|wordwrap:70 }}
 
-Have you ever had an offer to work 
+Have you ever had an offer to work
 with children/young people declined?    {{ app.youth_work_declined|yesno:"YES,NO,-" }}
 
 Details:
@@ -40,8 +40,8 @@ Qualifications
 ----------------------------------------------------------------------
 Health
 ======
-Do you suffer or have you suffered from 
-any illness which may directly affect 
+Do you suffer or have you suffered from
+any illness which may directly affect
 your work with children/young people?   {{ app.relevant_illness|yesno:"YES,NO,-" }}
 
 Details:
@@ -92,7 +92,7 @@ Email:            {{ app.referees.1.email }}
 ----------------------------------------------------------------------
 Declarations
 ============
-Have you ever been charged 
+Have you ever been charged
 with or convicted of a criminal
 offence or are the subject of
 criminal proceedings?                   {{ app.crime_declaration|yesno:"YES,NO,-" }}
@@ -102,25 +102,25 @@ Details:
 {{ app.crime_details|wordwrap:70 }}
 
 Have you ever been involved in court
-proceedings concerning a child for 
+proceedings concerning a child for
 whom you have parental responsibility?  {{ app.court_declaration|yesno:"YES,NO,-" }}
 
 Details:
 --------
 {{ app.court_details|wordwrap:70 }}
 
-Has there ever been any cause for 
-concern  regarding your conduct with 
+Has there ever been any cause for
+concern  regarding your conduct with
 children/young people?                  {{ app.concern_declaration|yesno:"YES,NO,-" }}
 
 Details:
 --------
 {{ app.concern_details|wordwrap:70 }}
 
-To your knowledge have you ever had 
-any allegation made against you 
-concerning children/young people which 
-has been reported to and investigated 
+To your knowledge have you ever had
+any allegation made against you
+concerning children/young people which
+has been reported to and investigated
 by Social Services and /or the Police?  {{ app.allegation_declaration|yesno:"YES,NO,-" }}
 
 DBS number:                             {{ app.dbs_number }}

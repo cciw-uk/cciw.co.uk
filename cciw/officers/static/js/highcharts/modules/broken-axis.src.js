@@ -1,13 +1,13 @@
 /**
  * Highcharts JS v4.1.8 (2015-08-20)
  * Highcharts Broken Axis module
- * 
+ *
  * Author: Stephane Vanraes, Torstein Honsi
  * License: www.highcharts.com/license
  */
 
 /*global HighchartsAdapter*/
-(function (H) {	
+(function (H) {
 
 	"use strict";
 
@@ -46,8 +46,8 @@
 				keep,
 				ret;
 
-			
-			if (i) { 
+
+			if (i) {
 
 				while (i--) {
 					if (this.isInBreak(breaks[i], val)) {
@@ -70,7 +70,7 @@
 
 	wrap(Axis.prototype, 'setTickPositions', function (proceed) {
 		proceed.apply(this, Array.prototype.slice.call(arguments, 1));
-		
+
 		if (this.options.breaks) {
 			var axis = this,
 				tickPositions = this.tickPositions,
@@ -78,7 +78,7 @@
 				newPositions = [],
 				i;
 
-			if (info && info.totalRange >= axis.closestPointRange) { 
+			if (info && info.totalRange >= axis.closestPointRange) {
 				return;
 			}
 
@@ -92,7 +92,7 @@
 			this.tickPositions.info = info;
 		}
 	});
-	
+
 	wrap(Axis.prototype, 'init', function (proceed, chart, userOptions) {
 		// Force Axis to be not-ordinal when breaks are defined
 		if (userOptions.breaks && userOptions.breaks.length) {
@@ -104,7 +104,7 @@
 		if (this.options.breaks) {
 
 			var axis = this;
-			
+
 			axis.doPostTranslate = true;
 
 			this.val2lin = function (val) {
@@ -126,7 +126,7 @@
 
 				return nval;
 			};
-			
+
 			this.lin2val = function (val) {
 				var nval = val,
 					brk,
@@ -149,7 +149,7 @@
 				// If trying to set extremes inside a break, extend it to before and after the break ( #3857 )
 				while (this.isInAnyBreak(newMin)) {
 					newMin -= this.closestPointRange;
-				}				
+				}
 				while (this.isInAnyBreak(newMax)) {
 					newMax -= this.closestPointRange;
 				}
@@ -162,7 +162,7 @@
 				var breaks = axis.options.breaks,
 					breakArrayT = [],	// Temporary one
 					breakArray = [],
-					length = 0, 
+					length = 0,
 					inBrk,
 					repeat,
 					brk,
@@ -217,7 +217,7 @@
 						return a.value - b.value;
 					}
 				});
-				
+
 				// Simplify the breaks
 				inBrk = 0;
 				start = min;
@@ -242,7 +242,7 @@
 				axis.breakArray = breakArray;
 
 				fireEvent(axis, 'afterBreaks');
-				
+
 				axis.transA *= ((max - axis.min) / (max - min - length));
 
 				axis.min = min;
@@ -303,11 +303,11 @@
 				brk = breaks[j];
 				eventName = false;
 
-				if ((threshold < brk.from && y > brk.to) || (threshold > brk.from && y < brk.from)) { 
+				if ((threshold < brk.from && y > brk.to) || (threshold > brk.from && y < brk.from)) {
 						eventName = 'pointBreak';
 				} else if ((threshold < brk.from && y > brk.from && y < brk.to) || (threshold > brk.from && y > brk.to && y < brk.from)) { // point falls inside the break
 						eventName = 'pointInBreak'; // docs
-				} 
+				}
 				if (eventName) {
 					fireEvent(yAxis, eventName, {point: point, brk: brk});
 				}
