@@ -83,6 +83,7 @@ def verify_sns_notification(request):
     pubkey = cert.public_key()
     try:
         pubkey.verify(decoded_signature, canonical_message, padding.PKCS1v15(), hashes.SHA1())
+        logger.info('Valid SNS signature %s with SigningCertURL %s', decoded_signature, signing_cert_url)
         return True
     except InvalidSignature:
         logger.info('Invalid SNS signature %s', decoded_signature)
