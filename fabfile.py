@@ -716,7 +716,7 @@ def fake_migrations():
 @task
 def delete_old_versions():
     with cd(Version.VERSIONS_ROOT):
-        commitref_glob = "?" * 12
+        commitref_glob = "?" * 40
         run(f"ls -dtr {commitref_glob} | head -n -4 | xargs rm -rf")
 
 
