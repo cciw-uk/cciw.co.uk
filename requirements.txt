@@ -106,7 +106,6 @@ python3-memcached==1.51   # via -r requirements.in
 pytz==2019.3              # via -r requirements.in, django, django-paypal, pandas
 pyvirtualdisplay==0.2.1   # via django-functest
 pyyaml==5.1.2             # via -r requirements.in, pre-commit, vcrpy
-raven==6.10.0             # via -r requirements.in
 rcssmin==1.0.6            # via -r requirements.in, django-compressor
 requests==2.22.0          # via -r requirements.in, django-anymail, django-paypal, pwned-passwords-django
 rjsmin==1.1.0             # via -r requirements.in, django-compressor

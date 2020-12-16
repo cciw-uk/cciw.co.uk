@@ -130,7 +130,6 @@ INSTALLED_APPS = [
     'django_nyt',
     'compressor',
     'django_countries',
-    'raven.contrib.django.raven_compat',
     'anymail',
     'mailer',
     'captcha',
@@ -187,12 +186,6 @@ PASSWORD_HASHERS = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
-
-    'root': {
-        'level': 'WARNING',
-        'handlers': ['sentry'],
-    },
-
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
@@ -218,10 +211,6 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'django.server',
-        },
-        'sentry': {
-            'level': 'ERROR',
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         },
         'console': {
             'level': 'INFO',
@@ -267,16 +256,6 @@ LOGGING = {
         'django.server': {
             'handlers': ['django.server'],
             'level': 'INFO',
-            'propagate': False,
-        },
-        'raven': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        'sentry.errors': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
             'propagate': False,
         },
         'cciw.mail.mailgun': {
@@ -560,12 +539,19 @@ else:
 
 PAYPAL_BUY_BUTTON_IMAGE = "https://www.paypalobjects.com/en_US/GB/i/btn/btn_buynowCC_LG.gif"
 
-# Raven
+# Sentry
 if LIVEBOX:
-    RAVEN_CONFIG = SECRETS['PRODUCTION_RAVEN_CONFIG']
-else:
-    RAVEN_CONFIG = {}
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
 
+    sentry_sdk.init(
+        dsn=SECRETS['PRODUCTION_SENTRY_CONFIG']['dsn'],
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=0.01,
+        send_default_pii=True
+    )
+
+# Captcha
 CAPTCHA_FONT_PATH = os.path.join(BASE_DIR, "cciw", "cciwmain", "static", "fonts", "Jurassic_Park.ttf")
 if not os.path.exists(CAPTCHA_FONT_PATH):
     raise ValueError(f"CAPTCHA_FONT_PATH is incorrect - file missing {CAPTCHA_FONT_PATH}")
