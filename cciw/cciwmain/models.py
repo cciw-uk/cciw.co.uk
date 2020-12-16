@@ -165,9 +165,9 @@ class Camp(models.Model):
                 .order_by('year')
                 .first())
 
-    def _format_leaders(self, ls):
-        if len(ls) > 0:
-            return ", ".join(str(l) for l in ls)
+    def _format_leaders(self, leaders):
+        if len(leaders) > 0:
+            return ", ".join(str(leader) for leader in leaders)
         else:
             return ""
 

@@ -104,9 +104,9 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
                                 leader_user.email).get_members())
         assert members == {self.leader_user}
 
-        for l in [l1, l2, l3]:
-            assert l.get_members() == members
-            assert l.address == 'camp-2000-blue-leaders@mailtest.cciw.co.uk'
+        for email_list in [l1, l2, l3]:
+            assert email_list.get_members() == members
+            assert email_list.address == 'camp-2000-blue-leaders@mailtest.cciw.co.uk'
 
     def test_handle_debug_list(self):
         handle_mail(MSG_DEBUG_LIST)

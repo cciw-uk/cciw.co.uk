@@ -81,7 +81,7 @@ standard_subs.is_safe = True  # noqa:305 provided our substitutions don't introd
 
 
 def create_breadcrumb(links):
-    return format_html_join(" :: ", "{0}", ((l,) for l in links))
+    return format_html_join(" :: ", "{0}", ((link,) for link in links))
 
 
 def standard_processor(request):
@@ -120,15 +120,15 @@ def standard_processor(request):
         if len(links_cache) > 0:
             return links_cache
         else:
-            for l in MenuLink.objects.filter(parent_item__isnull=True, visible=True):
-                l.title = standard_subs(l.title)
-                l.is_current_page = False
-                l.is_current_section = False
-                if l.url == request_path:
-                    l.is_current_page = True
-                elif request_path.startswith(l.url) and l.url != '/':
-                    l.is_current_section = True
-                links_cache.append(l)
+            for link in MenuLink.objects.filter(parent_item__isnull=True, visible=True):
+                link.title = standard_subs(link.title)
+                link.is_current_page = False
+                link.is_current_section = False
+                if link.url == request_path:
+                    link.is_current_page = True
+                elif request_path.startswith(link.url) and link.url != '/':
+                    link.is_current_section = True
+                links_cache.append(link)
             return links_cache
 
     context['menulinks'] = get_links

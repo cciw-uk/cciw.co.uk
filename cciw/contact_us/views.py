@@ -91,7 +91,7 @@ the link to view it:
 @staff_member_required
 def view_message(request, message_id):
     msg = get_object_or_404(Message.objects.filter(id=int(message_id)))
-    quoted_message_body = "\n".join(["> " + l for l in wordwrap(msg.message, 70).split("\n")])
+    quoted_message_body = "\n".join(["> " + line for line in wordwrap(msg.message, 70).split("\n")])
     reply_template = """Dear {name},
 
 

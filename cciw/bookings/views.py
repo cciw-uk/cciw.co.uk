@@ -545,8 +545,8 @@ def list_bookings(request):
     total = Decimal('0.00')
     all_bookable = True
     all_unbookable = True
-    for l in basket_bookings, shelf_bookings:
-        for b in l:
+    for booking_list in basket_bookings, shelf_bookings:
+        for b in booking_list:
             # decorate object with some attributes to make it easier in template
             b.booking_problems, b.booking_warnings = b.get_booking_problems()
             b.bookable = len(b.booking_problems) == 0

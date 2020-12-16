@@ -200,9 +200,9 @@ class Version(object):
             if not exists(d):
                 run(f"mkdir -p {d}")
         links = [(self.MEDIA_ROOT, self.MEDIA_ROOT_SHARED)]
-        for l, dest in links:
-            if not exists(l):
-                run(f"ln -s {dest} {l}")
+        for link, dest in links:
+            if not exists(link):
+                run(f"ln -s {dest} {link}")
 
         # Perms for usermedia
         run("find %s -type d -exec chmod ugo+rx {} ';'" % self.MEDIA_ROOT_SHARED)
