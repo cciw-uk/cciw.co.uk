@@ -102,12 +102,12 @@ class MailAccessDenied(ValueError):
 #   stop them having to do lots of the same DB queries over and over.
 
 
-@attr.s
+@attr.s(auto_attribs=True)
 class EmailList(object):
-    local_address = attr.ib()
-    get_members = attr.ib()
-    has_permission = attr.ib()
-    list_reply = attr.ib()
+    local_address: str
+    get_members: Callable[[], List[User]]
+    has_permission: Callable[[], bool]
+    list_reply: bool
 
     @property
     def address(self):
