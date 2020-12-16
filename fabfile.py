@@ -623,18 +623,6 @@ def install_requirements(target):
     if getattr(env, 'no_installs', False):
         return
 
-    # For speed and to avoid over-dependence on the network, we copy 'src'
-    # directory from previous virtualenv. This does not install those packages
-    # (no .egg-link files), but it makes VCS checkout installs much faster.
-    # Other installs are kept fast due to the pip wheel cache.
-    previous_target = get_target_current_version(target)
-    target_venv_vcs_root = os.path.join(target.VENV_ROOT, 'src')
-    previous_venv_vcs_root = os.path.join(previous_target.VENV_ROOT, 'src')
-    if exists(previous_venv_vcs_root):
-        run("rsync -a '--exclude=*.pyc' %s/ %s" %
-            (previous_venv_vcs_root,
-             target_venv_vcs_root))
-
     with django_project(target):
         _install_deps_with(run)
 
