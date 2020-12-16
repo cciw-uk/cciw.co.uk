@@ -29,7 +29,7 @@ def server_startup(sender, **kwargs):
 request_started.connect(server_startup)
 
 
-def recreate_ses_routes(sender, created=None, **kwargs):
+def recreate_ses_routes_for_camp_creation(sender, created=None, **kwargs):
     if not settings.RECREATE_ROUTES_AUTOMATICALLY:
         return
     if created:
@@ -37,4 +37,4 @@ def recreate_ses_routes(sender, created=None, **kwargs):
         setup_ses_routes()
 
 
-post_save.connect(recreate_ses_routes, sender=Camp)
+post_save.connect(recreate_ses_routes_for_camp_creation, sender=Camp)

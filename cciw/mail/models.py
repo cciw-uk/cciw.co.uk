@@ -16,3 +16,7 @@ class EmailForward(models.Model):
 
     def __str__(self):
         return f'Forward {self.address} to {", ".join(u.email for u in self.recipients.all())}'
+
+
+
+from . import hooks  # noqa
