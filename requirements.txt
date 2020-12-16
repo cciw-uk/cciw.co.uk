@@ -13,7 +13,7 @@ beautifulsoup4==4.8.0     # via -r requirements-dev.in, webtest
 bleach==3.1.5             # via wiki
 boto3==1.4.7              # via -r requirements.in
 botocore==1.7.48          # via boto3, s3transfer
-certifi==2018.10.15       # via requests
+certifi==2018.10.15       # via requests, sentry-sdk
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 cfgv==3.2.0               # via pre-commit
 chardet==3.0.4            # via requests
@@ -111,6 +111,7 @@ requests==2.22.0          # via -r requirements.in, django-anymail, django-paypa
 rjsmin==1.1.0             # via -r requirements.in, django-compressor
 s3transfer==0.1.13        # via boto3
 selenium==3.14.1          # via -r requirements-dev.in, django-functest
+sentry_sdk==0.19.5        # via -r requirements.in
 simplegeneric==0.8.1      # via ipython
 six==1.14.0               # via bcrypt, bleach, cryptography, django-anymail, django-autocomplete-light, django-compressor, django-functest, django-mailer, django-paypal, django-simple-captcha, fabric3, furl, orderedmultidict, packaging, pip-tools, prompt-toolkit, pynacl, python-dateutil, traitlets, vcrpy, virtualenv, webtest
 sorl-thumbnail==12.7.0    # via -r requirements.in, wiki
@@ -118,7 +119,7 @@ soupsieve==1.9.2          # via beautifulsoup4
 sqlparse==0.2.4           # via django, django-debug-toolbar
 toml==0.10.2              # via pre-commit, pytest
 traitlets==4.3.2          # via ipython
-urllib3==1.24             # via requests, selenium
+urllib3==1.24             # via requests, selenium, sentry-sdk
 uwsgi==2.0.15             # via -r requirements.in
 vcrpy==1.10.2             # via -r requirements-dev.in
 virtualenv==20.2.2        # via pre-commit
