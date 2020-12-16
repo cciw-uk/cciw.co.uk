@@ -336,6 +336,11 @@ def is_superuser(email_address):
 
 def forward_email_to_list(mail, email_list: EmailList, debug=False):
     orig_from_addr = mail['From']
+    if 'Reply-To' in mail:
+        reply_to = mail['Reply-To']
+        del mail['Reply-To']
+    else:
+        reply_to = orig_from_addr
 
     if email_list.list_reply:
         mail['Sender'] = email_list.address
@@ -346,7 +351,7 @@ def forward_email_to_list(mail, email_list: EmailList, debug=False):
     mail['From'] = mangle_from_address(orig_from_addr)
     mail['X-Original-From'] = orig_from_addr
     mail['Return-Path'] = settings.SERVER_EMAIL
-    mail['Reply-To'] = orig_from_addr
+    mail['Reply-To'] = reply_to
 
     # Various headers seem to cause problems. We whitelist the ones
     # that are OK:
