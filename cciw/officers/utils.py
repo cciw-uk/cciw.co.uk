@@ -33,7 +33,7 @@ def camp_serious_slacker_list(camp):
     # the logic exactly.
 
     from cciw.cciwmain.models import Camp
-    from cciw.officers.models import Invitation, Application, Reference, DBSCheck
+    from cciw.officers.models import Application, DBSCheck, Invitation, Reference
 
     officers = [i.officer for i in camp.invitations.all()]
     # We need to allow applications/references for the current year to 'fix' a

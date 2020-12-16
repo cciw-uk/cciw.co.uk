@@ -40,8 +40,8 @@ urlpatterns = [
 ]
 
 if settings.DEVBOX:
-    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
     import debug_toolbar
+    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
     urlpatterns += [
         path('usermedia/<path:path>', django.views.static.serve,
              {'document_root': settings.MEDIA_ROOT}),

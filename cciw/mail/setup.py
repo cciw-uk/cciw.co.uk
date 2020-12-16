@@ -2,7 +2,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from .lists import get_all_lists
-from .ses import get_active_ruleset_info, RuleSet, save_ruleset, make_ruleset_active, S3Action, Rule
+from .ses import Rule, RuleSet, S3Action, get_active_ruleset_info, make_ruleset_active, save_ruleset
 
 # Some one time AWS/SNS/SES things were set up manually, as described in docs/services.rst
 # The remainder is done here.

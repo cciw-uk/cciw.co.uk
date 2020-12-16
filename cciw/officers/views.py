@@ -1423,8 +1423,7 @@ def officer_info(request):
 
 @booking_secretary_required
 def booking_secretary_reports(request, year: int):
-    from cciw.bookings.models import SEX_MALE, SEX_FEMALE, Booking, \
-        Price
+    from cciw.bookings.models import SEX_FEMALE, SEX_MALE, Booking, Price
 
     # 1. Camps and their booking levels.
 

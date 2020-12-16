@@ -3,8 +3,8 @@ from django.contrib.auth import login
 
 def debug_middleware(get_response):
     def middleware(request):
-        from cciw.bookings.models import BookingAccount
         from cciw.bookings.middleware import set_booking_account_cookie
+        from cciw.bookings.models import BookingAccount
 
         if 'as' in request.GET:
             from django.contrib.auth import get_user_model

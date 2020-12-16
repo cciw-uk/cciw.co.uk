@@ -1064,8 +1064,9 @@ def _get_path(program_name):
 @task
 def set_site_from_url(url):
     _local_django_setup()
-    from django.contrib.sites.models import Site
     from urllib.parse import urlparse
+
+    from django.contrib.sites.models import Site
     parts = urlparse(url)
     Site.objects.all().update(domain=parts.netloc)
 
