@@ -104,7 +104,3 @@ def ses_bounce_notification(request):
         handle_reference_bounce(recipient, reply_to, None, camp_name)
 
     return HttpResponse('OK!')
-
-
-# TODO - mechanism for other abitrary email
-#        addresses (DB). Fill in from mailgun_routes.json

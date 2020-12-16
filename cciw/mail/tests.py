@@ -13,12 +13,13 @@ from requests.exceptions import ConnectionError
 
 from cciw.accounts.models import COMMITTEE_GROUP_NAME
 from cciw.cciwmain.tests.utils import set_thisyear
-from cciw.officers.tests.base import ExtraOfficersSetupMixin
+from cciw.officers.tests.base import ExtraOfficersSetupMixin, factories
 from cciw.utils.functional import partition
 from cciw.utils.tests.base import TestBase
 
 from . import views
 from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
+from .models import EmailForward
 from .test_data import (AWS_BOUNCE_NOTIFICATION, AWS_SNS_NOTIFICATION, MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE,
                         MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_FOR_REFERENCE)
@@ -169,6 +170,32 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         self.assertTrue(all(b"Sender: CCIW website <noreply@cciw.co.uk>" in m
                             for m in sent_messages_bytes))
         self.assertTrue(any(True for m in mail.outbox if '"Fred Jones" <fredjones@somewhere.com>' in m.to))
+
+    def test_email_forward(self):
+        msg = MSG_DEBUG_LIST.replace(b'camp-debug@mailtest.cciw.co.uk',
+                                     b'custom.forward@mailtest.cciw.co.uk')
+
+        # Without EmailForward defined, mail just gets ignored (it should be bounced
+        # at AWS level anyway)
+        handle_mail(msg)
+
+        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+        assert rejections == []
+        assert sent_messages == []
+
+        make_email_forward(address='custom.forward@mailtest.cciw.co.uk',
+                           recipients=[factories.make_officer(first_name='Alice', last_name='Brown', email='alice@example.com'),
+                                       factories.make_officer(first_name='Bob', last_name='Smith', email='bob@example.com')])
+        handle_mail(msg)
+
+        # Now we should get it forwarded as expected
+        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+        assert rejections == []
+        assert len(sent_messages) == 2
+        assert sorted(address for m in sent_messages for address in m.to) == [
+            '"Alice Brown" <alice@example.com>',
+            '"Bob Smith" <bob@example.com>'
+        ]
 
     def test_extract(self):
         self.assertEqual(extract_email_addresses('Some Guy <A.Body@example.com>'),
@@ -420,3 +447,9 @@ def make_plain_text_request(path, body, headers):
         content_type='text/plain; charset=UTF-8',
         **mangled_headers
     )
+
+
+def make_email_forward(address, recipients):
+    forward = EmailForward.objects.create(address=address)
+    forward.recipients.set(recipients)
+    return forward
