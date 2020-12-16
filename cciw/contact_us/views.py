@@ -70,13 +70,13 @@ def send_contact_us_emails(to_emails, msg):
     # it in an email (to protect our email server's spam reputation).
     # Instead we send a link to a page that will show the message.
 
-    body = """
+    body = f"""
 A message has been sent on the CCiW website feedback form, follow
 the link to view it:
 
-%(url)s
+{make_contact_us_view_url(msg)}
 
-""" % dict(url=make_contact_us_view_url(msg))
+"""
 
     email = mail.EmailMessage(
         subject="[CCIW] Website feedback",

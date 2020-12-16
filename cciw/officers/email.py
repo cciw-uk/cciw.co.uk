@@ -102,12 +102,12 @@ def send_leader_email(leader_emails, application):
         domain=common.get_current_domain(),
         path=reverse('cciw-officers-view_application',
                      kwargs=dict(application_id=application.id)))
-    body = """The following application form has been submitted via the
+    body = f"""The following application form has been submitted via the
 CCiW website:
 
-%(url)s
+{url}
 
-""" % dict(url=url)
+"""
 
     send_mail(subject, body, settings.SERVER_EMAIL, leader_emails)
 

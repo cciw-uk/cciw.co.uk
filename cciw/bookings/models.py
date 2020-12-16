@@ -1349,7 +1349,7 @@ def send_payment(amount, to_account, from_obj):
 
 
 def build_paypal_custom_field(account):
-    return "account:%s;" % str(account.id)
+    return f"account:{account.id};"
 
 
 def parse_paypal_custom_field(custom):

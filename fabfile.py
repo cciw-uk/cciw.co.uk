@@ -767,14 +767,14 @@ def stop_all():
 @task
 @as_rootuser
 def supervisorctl(*commands):
-    run("supervisorctl %s" % " ".join(commands))
+    run(f"supervisorctl {' '.join(commands)}")
 
 
 @task
 def manage_py_command(*commands):
     target = Version.current()
     with django_project(target):
-        run("./manage.py %s" % ' '.join(commands))
+        run(f"./manage.py {' '.join(commands)}")
 
 
 @as_rootuser
