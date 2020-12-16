@@ -58,8 +58,6 @@ WEBAPPS_ROOT = f"/home/{env.proj_user}/webapps"
 
 CURRENT_VERSION = 'current'
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings_local'
-
 REQS = [
     # Daemons
     'ufw',
@@ -1076,6 +1074,7 @@ def set_site_from_url(url):
 
 
 def _local_django_setup():
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings_local'
     import django
     django.setup()
 
