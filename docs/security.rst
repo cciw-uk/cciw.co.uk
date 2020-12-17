@@ -74,9 +74,6 @@ Storage of sensitive information
   * In the database, usually making these values editable via the Django admin
     by people with appropriate permission levels.
 
-  * In 3rd party services - for example, you might send emails to a
-    ``@cciw.co.uk`` alias and configure the recipients manually in Mailgun.
-
   * In ``secrets.json`` as a last resort.
 
 * Camper data and officer data that are supplied as part of booking and

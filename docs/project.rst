@@ -11,7 +11,7 @@ We use:
 
 * nginx as main webserver
 * postgresql as database
-* mailgun for mail services
+* AWS SES for mail services
 
 We currently have no need for async tasks, but do have a crontab for a few
 scheduled background tasks.

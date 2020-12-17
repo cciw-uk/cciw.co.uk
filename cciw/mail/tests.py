@@ -20,9 +20,7 @@ from cciw.utils.tests.base import TestBase
 from . import views
 from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
 from .models import EmailForward
-from .test_data import (AWS_BOUNCE_NOTIFICATION, AWS_SNS_NOTIFICATION, MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
-                        MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE,
-                        MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_FOR_REFERENCE)
+from .test_data import AWS_BOUNCE_NOTIFICATION, AWS_SNS_NOTIFICATION
 
 User = get_user_model()
 
@@ -204,8 +202,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
     def test_handle_mail_exception(self):
         """
         Test that if an error always occurs trying to send, handle_mail raises
-        Exception. (This means that mailgun_incoming will return
-        a 500, and Mailgun will attempt to POST again)
+        Exception. (This means that we will get error logs about it.)
         """
         with mock.patch('cciw.mail.lists.send_mime_message') as m_s:
             def connection_error():
@@ -305,35 +302,6 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         self.assertIn("Use the following link", m.body)
         self.assertEqual(response.status_code, 200)
 
-    def test_mailgun_bounce(self):
-        rf = RequestFactory()
-        request = rf.post('/', data=MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT,
-                          content_type=MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE)
-        with mock.patch('cciw.officers.email.handle_reference_bounce') as m:
-            response = views.mailgun_bounce_notification(request)
-        self.assertEqual(m.call_count, 0)
-        self.assertEqual(response.status_code, 200)
-
-    def test_mailgun_bounce_for_reference(self):
-        rf = RequestFactory()
-        request = rf.post('/', data=MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_FOR_REFERENCE,
-                          content_type=MAILGUN_EXAMPLE_POST_DATA_FOR_BOUNCE_ENDPOINT_CONTENT_TYPE)
-        response = views.mailgun_bounce_notification(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(mail.outbox), 1)
-        m = mail.outbox[0]
-        self.assertEqual(m.to, ["joe.bloggs@hotmail.com"])
-        self.assertIn("was not received", m.body)
-        self.assertIn("sent to bobjones@xgmail.com", m.body)
-        self.assertIn("Use the following link", m.body)
-
-        # Check that we can serialise
-        m.message().as_bytes()
-
-        # Check the attachment
-        attachment = m.attachments[0]
-        self.assertIn(b'Hi Bob, Please do a reference.', attachment.as_bytes())
-
     def test_mangle_from_address(self):
         self.assertEqual(mangle_from_address("foo@bar.com"),
                          "foo(at)bar.com via <noreply@cciw.co.uk>")
@@ -421,19 +389,6 @@ Content-Type: text/plain; charset=utf-8
 
 This is a message!
 
-""")
-
-MSG_MAILGUN_TEST = emailify("""
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Subject: Test
-From: noreply@cciw.co.uk
-To: someone@gmail.com
-Date: Sun, 28 Feb 2016 22:32:03 -0000
-Message-ID: <56CCDE2E.9030103@gmail.com>
-
-Test message
 """)
 
 

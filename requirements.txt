@@ -25,7 +25,6 @@ cssselect==1.0.3          # via pyquery
 datedelta==1.3            # via -r requirements.in
 decorator==4.3.0          # via ipython, traitlets
 distlib==0.3.1            # via virtualenv
-django-anymail==7.0.0     # via -r requirements.in
 django-appconf==1.0.4     # via django-compressor
 django-autocomplete-light==3.5.0  # via -r requirements.in
 django-classy-tags==2.0.0  # via django-sekizai
@@ -44,7 +43,7 @@ django-ranged-response==0.2.0  # via django-simple-captcha
 django-sekizai==2.0.0     # via wiki
 django-simple-captcha==0.5.13  # via -r requirements.in
 django-webtest==1.9.7     # via django-functest
-django==3.0.6             # via -r requirements.in, django-anymail, django-appconf, django-classy-tags, django-colorful, django-debug-toolbar, django-functest, django-mailer, django-mptt, django-nyt, django-paypal, django-plainpasswordhasher, django-ranged-response, django-sekizai, django-simple-captcha, jsonfield, pwned-passwords-django, wiki
+django==3.0.6             # via -r requirements.in, django-appconf, django-classy-tags, django-colorful, django-debug-toolbar, django-functest, django-mailer, django-mptt, django-nyt, django-paypal, django-plainpasswordhasher, django-ranged-response, django-sekizai, django-simple-captcha, jsonfield, pwned-passwords-django, wiki
 docutils==0.14            # via botocore
 easyprocess==0.2.3        # via pyvirtualdisplay
 execnet==1.7.1            # via pytest-xdist
@@ -107,13 +106,13 @@ pytz==2019.3              # via -r requirements.in, django, django-paypal, panda
 pyvirtualdisplay==0.2.1   # via django-functest
 pyyaml==5.1.2             # via -r requirements.in, pre-commit, vcrpy
 rcssmin==1.0.6            # via -r requirements.in, django-compressor
-requests==2.22.0          # via -r requirements.in, django-anymail, django-paypal, pwned-passwords-django
+requests==2.22.0          # via -r requirements.in, django-paypal, pwned-passwords-django
 rjsmin==1.1.0             # via -r requirements.in, django-compressor
 s3transfer==0.1.13        # via boto3
 selenium==3.14.1          # via -r requirements-dev.in, django-functest
 sentry_sdk==0.19.5        # via -r requirements.in
 simplegeneric==0.8.1      # via ipython
-six==1.14.0               # via bcrypt, bleach, cryptography, django-anymail, django-autocomplete-light, django-compressor, django-functest, django-mailer, django-paypal, django-simple-captcha, fabric3, furl, orderedmultidict, packaging, pip-tools, prompt-toolkit, pynacl, python-dateutil, traitlets, vcrpy, virtualenv, webtest
+six==1.14.0               # via bcrypt, bleach, cryptography, django-autocomplete-light, django-compressor, django-functest, django-mailer, django-paypal, django-simple-captcha, fabric3, furl, orderedmultidict, packaging, pip-tools, prompt-toolkit, pynacl, python-dateutil, traitlets, vcrpy, virtualenv, webtest
 sorl-thumbnail==12.7.0    # via -r requirements.in, wiki
 soupsieve==1.9.2          # via beautifulsoup4
 sqlparse==0.2.4           # via django, django-debug-toolbar

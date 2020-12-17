@@ -130,7 +130,6 @@ INSTALLED_APPS = [
     'django_nyt',
     'compressor',
     'django_countries',
-    'anymail',
     'mailer',
     'captcha',
 ]
@@ -258,11 +257,6 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
-        'cciw.mail.mailgun': {
-            'level': 'INFO',
-            'handlers': ['file'],
-            'propagate': False,
-        },
         'paypal': {
             'level': 'DEBUG',
             'handlers': ['paypal_debug'],
@@ -282,10 +276,6 @@ if DEVBOX:
         'handlers': ['console'],
         'propagate': False,
     }
-
-
-# For large attachments to emails sent through mailgun endpoint:
-DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024
 
 
 PASSWORD_RESET_TIMEOUT_DAYS = 7
@@ -353,24 +343,10 @@ TEMPLATES = [
 
 # == EMAIL ==
 
-# Try to ensure we don't send mail via Mailgun when testing.
+# Try to ensure we don't send real mail when testing.
 
 # First step: set EMAIL_BACKEND correctly. This deals with mail sent via
 # django's send_mail.
-
-# However, we also use Mailgun API directly for some tasks (some sending and all
-# receiving). So we patch up outgoing emails in cciw.mail.mailgun to use the
-# sandbox domain when in development/testing.
-
-MAILGUN_API_KEY = SECRETS['MAILGUN_API_KEY']
-if LIVEBOX:
-    MAILGUN_DOMAIN = "cciw.co.uk"
-else:
-    MAILGUN_DOMAIN = SECRETS['MAILGUN_SANDBOX_DOMAIN']
-
-# This address has to be set up as an authorized recipient for the sandbox
-# account:
-MAILGUN_TEST_RECEIVER = SECRETS['MAILGUN_TEST_RECEIVER']
 
 
 EMAIL_RECIPIENTS = SECRETS["EMAIL_RECIPIENTS"]
@@ -383,7 +359,7 @@ ADMINS = [
 
 
 if LIVEBOX:
-    # We currently send using SMTP (amazon SES), while we receive using mailgun
+    # We currently send using SMTP (amazon SES)
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = SECRETS["SMTP_HOST"]
     EMAIL_PORT = SECRETS["SMTP_PORT"]
@@ -398,10 +374,6 @@ else:
 # usally aliased as queued_mail.send_mail. We also can test this is being used
 # e.g. in TestBaseMixin
 MAILER_EMAIL_BACKEND = EMAIL_BACKEND
-
-ANYMAIL = {
-    "MAILGUN_API_KEY": MAILGUN_API_KEY,
-}
 
 EMAIL_ENCRYPTION_PUBLIC_KEYS = SECRETS["EMAIL_ENCRYPTION_PUBLIC_KEYS"]
 

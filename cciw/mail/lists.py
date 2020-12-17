@@ -1,17 +1,9 @@
 # MAILING LIST FUNCTIONALITY
 
-# It would be possible to use Mailgun's "Mailing list" functionality for this.
-# However, keeping the lists up to date would be tricky - they can change whenever:
-#
-# * officer email addresses are changed, including 'update()' methods which don't
-#   generate 'post_save' signals
-# * application forms are received
-# * officers are added/removed from camp invitation lists
-# * camps are created
-# * probably other events...
-#
-# So it is easier to redirect mail to the website and do the mailing list
-# functionality ourselves.
+# We provide various group lists e.g. camp-2010-blue-officers@cciw.co.uk and
+# other forwarding addresses. This module provides the functionality for
+# defining all these addresses (which get registered with AWS SES in the `setup`
+# module), and routing incoming mail to them.
 
 import email
 import itertools
