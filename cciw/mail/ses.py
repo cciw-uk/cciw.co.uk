@@ -83,7 +83,7 @@ class Rule:
     tls_policy: str = 'Optional'
 
     def __attrs_post_init__(self):
-        self.name = clean_name(self.name)
+        self.name = _clean_name(self.name)
 
     @classmethod
     def from_api(cls, data):
@@ -119,7 +119,7 @@ class RuleSet:
     rules: List[Rule] = attr.Factory(list)
 
     def __attrs_post_init__(self):
-        self.name = clean_name(self.name)
+        self.name = _clean_name(self.name)
 
     @classmethod
     def from_api(cls, data):
@@ -141,7 +141,7 @@ def save_ruleset(ruleset: RuleSet):
     ses_api = get_ses_api()
     # https://docs.aws.amazon.com/ses/latest/APIReference/API_CreateReceiptRuleSet.html
     rule_set_response = ses_api.create_receipt_rule_set(RuleSetName=ruleset.name)
-    assert_200(rule_set_response)
+    _assert_200(rule_set_response)
 
     for i, rule in enumerate(ruleset.rules):
         if i > 0:
@@ -157,7 +157,7 @@ def save_ruleset(ruleset: RuleSet):
             args.update(dict(After=previous_rule.name))
 
         rule_response = ses_api.create_receipt_rule(**args)
-        assert_200(rule_response)
+        _assert_200(rule_response)
 
 
 def make_ruleset_active(ruleset: RuleSet):
@@ -165,9 +165,9 @@ def make_ruleset_active(ruleset: RuleSet):
     ses_api.set_active_receipt_rule_set(RuleSetName=ruleset.name)
 
 
-def assert_200(api_data):
+def _assert_200(api_data):
     assert api_data['ResponseMetadata']['HTTPStatusCode'] == 200
 
 
-def clean_name(name):
+def _clean_name(name):
     return re.subn('[^a-zA-Z0-9_-]', '_', name)[0]
