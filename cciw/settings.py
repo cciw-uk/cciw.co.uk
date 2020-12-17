@@ -416,8 +416,15 @@ else:
 RECREATE_ROUTES_AUTOMATICALLY = LIVEBOX
 
 # == AWS ==
-AWS_INCOMING_MAIL = SECRETS["AWS"]["INCOMING_MAIL"]
-AWS_CONFIG_USER = SECRETS["AWS"]["CONFIG"]
+if LIVEBOX:
+    AWS_INCOMING_MAIL = SECRETS["AWS"]["INCOMING_MAIL"]
+    AWS_CONFIG_USER = SECRETS["AWS"]["CONFIG"]
+else:
+    # Protect ourselves from accidentally using production AWS details in
+    # development. When working on the SES integration code in development this
+    # can be changed to same as above.
+    AWS_INCOMING_MAIL = {}
+    AWS_CONFIG_USER = {}
 
 # == MAILING LISTS ==
 
