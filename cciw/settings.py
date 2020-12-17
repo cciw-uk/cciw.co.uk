@@ -40,7 +40,6 @@ else:
     # downloaded session database if needed.
     SECRET_KEY = SECRETS['PRODUCTION_SECRET_KEY']
 
-WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
 
 # == MISC ==
 
@@ -104,6 +103,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
 
     # Ours
     'cciw.accounts',
@@ -134,12 +134,6 @@ INSTALLED_APPS = [
     'mailer',
     'captcha',
 ]
-
-if not (LIVEBOX and WEBSERVER_RUNNING):
-    # Don't want the memory overhead of these if we are serving requests
-    INSTALLED_APPS += [
-        'django.contrib.staticfiles',
-    ]
 
 if DEVBOX and DEBUG:
     INSTALLED_APPS += [
