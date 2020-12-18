@@ -326,24 +326,27 @@ def is_superuser(email_address):
 
 # Handling incoming mail
 
+def _set_mail_header(mail, header, value):
+    # Unlike mail[header], this removes existing values. This can be important
+    # when duplicate headers are not allowed (and this can cause email sending
+    # to fail)
+    if header in mail:
+        del mail[header]
+    mail[header] = value
+
+
 def forward_email_to_list(mail, email_list: EmailList):
     orig_from_addr = mail['From']
-    if 'Reply-To' in mail:
-        reply_to = mail['Reply-To']
-        del mail['Reply-To']
-    else:
-        reply_to = orig_from_addr
-
+    reply_to = mail.get('Reply-To', orig_from_addr)
     if email_list.list_reply:
-        mail['Sender'] = email_list.address
-        mail['List-Post'] = f'<mailto:{email_list.address}>'
+        _set_mail_header(mail, 'Sender', email_list.address)
+        _set_mail_header(mail, 'List-Post', f'<mailto:{email_list.address}>')
     else:
-        mail['Sender'] = settings.SERVER_EMAIL
-    del mail['From']
-    mail['From'] = mangle_from_address(orig_from_addr)
-    mail['X-Original-From'] = orig_from_addr
-    mail['Return-Path'] = settings.SERVER_EMAIL
-    mail['Reply-To'] = reply_to
+        _set_mail_header(mail, 'Sender', settings.SERVER_EMAIL)
+    _set_mail_header(mail, 'From', mangle_from_address(orig_from_addr))
+    _set_mail_header(mail, 'X-Original-From', orig_from_addr)
+    _set_mail_header(mail, 'Return-Path', settings.SERVER_EMAIL)
+    _set_mail_header(mail, 'Reply-To', reply_to)
 
     # Various headers seem to cause problems. We whitelist the ones
     # that are OK:
@@ -376,11 +379,9 @@ def forward_email_to_list(mail, email_list: EmailList):
     messages_to_send = []
     for user in email_list.get_members():
         addr = formatted_email(user)
-        del mail['To']
-        mail['To'] = addr
+        _set_mail_header(mail, 'To', addr)
         # Need new message ID, or some mail servers will only send one
-        del mail['Message-ID']
-        mail['Message-ID'] = make_msgid()
+        _set_mail_header(mail, 'Message-ID', make_msgid())
         mail_as_bytes = force_bytes(mail.as_string())
         from_address = mail['From']
         messages_to_send.append(
