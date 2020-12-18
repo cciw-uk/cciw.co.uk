@@ -7,6 +7,7 @@
 
 import email
 import itertools
+import logging
 import os
 import re
 import tempfile
@@ -28,6 +29,8 @@ from cciw.officers.utils import camp_officer_list, camp_slacker_list
 
 from .models import EmailForward
 from .smtp import send_mime_message
+
+logger = logging.getLogger(__name__)
 
 
 # Externally used functions:
@@ -454,6 +457,13 @@ def handle_mail(data):
         addresses = [to]
     else:
         addresses = set([a.lower() for a in extract_email_addresses(to)])
+
+    if mail.get('X-SES-Spam-Verdict', '') == 'FAIL':
+        logger.info('Discarding spam, message-id %s', mail.get('Message-ID', '<unknown>'))
+        return
+    if mail.get('X-SES-Virus-Verdict', '') == 'FAIL':
+        logger.info('Discarding virus, message-id %s', mail.get('Message-ID', '<unknown>'))
+        return
 
     from_email = extract_email_addresses(mail['From'])[0]
 

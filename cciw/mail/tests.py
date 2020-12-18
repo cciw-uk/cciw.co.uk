@@ -195,6 +195,17 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
             '"Bob Smith" <bob@example.com>'
         ]
 
+    def test_spam_and_virus_checking(self):
+        for header in [b'X-SES-Spam-Verdict: FAIL',
+                       b'X-SES-Virus-Verdict: FAIL']:
+            # insert header:
+            msg = MSG_DEBUG_LIST.replace(b'Subject: Test',
+                                         header + b'\r\n' + b'Subject: Test')
+            handle_mail(msg)
+            rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+            assert rejections == []
+            assert sent_messages == []
+
     def test_extract(self):
         self.assertEqual(extract_email_addresses('Some Guy <A.Body@example.com>'),
                          ['A.Body@example.com'])
