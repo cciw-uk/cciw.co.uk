@@ -7,9 +7,8 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 
 from cciw.cciwmain.models import Camp
-from cciw.officers.fields import (AddressField, RequiredAddressField, RequiredCharField, RequiredDateField,
-                                  RequiredEmailField, RequiredExplicitBooleanField, RequiredTextField,
-                                  RequiredYyyyMmField, YyyyMmField)
+from cciw.officers.fields import (RequiredAddressField, RequiredCharField, RequiredDateField, RequiredEmailField,
+                                  RequiredExplicitBooleanField, RequiredTextField)
 from cciw.officers.references import first_letter_cap, reference_present_val
 
 REFEREE_NUMBERS = [1, 2]
@@ -33,7 +32,6 @@ class Application(models.Model):
                                 blank=True,
                                 related_name='applications')  # blank=True to get the admin to work
     full_name = RequiredCharField('full name', max_length=NAME_LENGTH)
-    full_maiden_name = models.CharField('full maiden name', max_length=NAME_LENGTH, blank=True, help_text="Name before getting married.")
     birth_date = RequiredDateField('date of birth', null=True, default=None)
     birth_place = RequiredCharField('place of birth', max_length=60)
     address_firstline = RequiredCharField('address', max_length=40)
@@ -44,15 +42,6 @@ class Application(models.Model):
     address_tel = RequiredCharField('telephone', max_length=22, blank=True)  # +44-(0)1224-XXXX-XXXX
     address_mobile = models.CharField('mobile', max_length=22, blank=True)
     address_email = RequiredEmailField('email')
-    address_since = RequiredYyyyMmField('resident at address since')
-
-    address2_from = YyyyMmField('resident at address from', blank=True)
-    address2_to = YyyyMmField('resident at address until', blank=True)
-    address2_address = AddressField('address', blank=True)
-
-    address3_from = YyyyMmField('resident at address from', blank=True)
-    address3_to = YyyyMmField('resident at address until', blank=True)
-    address3_address = AddressField('address', blank=True)
 
     christian_experience = RequiredTextField('christian experience')
     youth_experience = RequiredTextField('youth work experience')
@@ -64,18 +53,6 @@ class Application(models.Model):
             illness which may directly affect your work with children/young people?''')
     illness_details = models.TextField('illness details', blank=True)
     dietary_requirements = models.TextField('dietary requirements (if any)', blank=True)
-
-    employer1_name = models.CharField("1. Employer's name and address", max_length=NAME_LENGTH, blank=True)
-    employer1_from = YyyyMmField("Employed from", blank=True)
-    employer1_to = YyyyMmField("Employed until", blank=True)
-    employer1_job = models.CharField("Job description", max_length=60, blank=True)
-    employer1_leaving = models.CharField("Reason for leaving", max_length=150, blank=True)
-
-    employer2_name = models.CharField("2. Employer's name and address", max_length=NAME_LENGTH, blank=True)
-    employer2_from = YyyyMmField("Employed from", blank=True)
-    employer2_to = YyyyMmField("Employed until", blank=True)
-    employer2_job = models.CharField("Job description", max_length=60, blank=True)
-    employer2_leaving = models.CharField("Reason for leaving", max_length=150, blank=True)
 
     crime_declaration = RequiredExplicitBooleanField(
         """Have you ever been charged with or convicted """

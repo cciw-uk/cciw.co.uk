@@ -7,14 +7,12 @@
 {\par {\ul Personal info}}
 \par
 {\trowd \intbl\cellx2000\cellx9000 {Name:            \cell {{ app.full_name|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Maiden name:     \cell {{ app.full_maiden_name|rtfescape }}\cell}\row}
 {\trowd \intbl\cellx2000\cellx9000 {Date of birth:   \cell {{ app.birth_date|rtfescape }}\cell}\row}
 {\trowd \intbl\cellx2000\cellx9000 {Place of birth:  \cell {{ app.birth_place|rtfescape }}\cell}\row}
 {\trowd \intbl\cellx2000\cellx9000 {Address:         \cell {{ app.address_firstline|rtfescape }} \line {{ app.address_town|rtfescape }} \line {{ app.address_county|rtfescape }} \line {{ app.address_postcode|rtfescape }} \line {{ app.address_country|rtfescape }}\cell}\row}
 {\trowd \intbl\cellx2000\cellx9000 {Tel:             \cell {{ app.address_tel|rtfescape }}\cell}\row}
 {\trowd \intbl\cellx2000\cellx9000 {Mobile:          \cell {{ app.address_mobile|rtfescape }}\cell}\row}
 {\trowd \intbl\cellx2000\cellx9000 {Email:           \cell {{ app.address_email|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx3000\cellx9000 {At this address since: \cell {{ app.address_since|rtfescape }}\cell}\row}
 
 {\par \brdrt \brdrhair {\ul Statements}}
 {\par {\b Christian experience}}
@@ -55,29 +53,6 @@
 {\par Dietary requirements: }
 {\par {{ app.dietary_requirements|rtfescape|rtflinebreaks }}}
 \line
-
-{\par \brdrt \brdrhair {\ul Employment history}}
-{% if app.employer1_name %}{\par Employer 1}
-\par
-{\trowd \intbl\cellx2000\cellx9000 {Name:             \cell {{ app.employer1_name|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {From:             \cell {{ app.employer1_from|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Til:              \cell {{ app.employer1_to|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Job description:  \cell {{ app.employer1_job|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Reason for leaving:\cell
-  {{ app.employer1_leaving|rtfescape|rtflinebreaks }}\cell}\row}
-{% endif %}
-
-{% if app.employer2_name %}{\par Employer 2}
-\par
-{\trowd \intbl\cellx2000\cellx9000 {Name:             \cell {{ app.employer2_name|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {From:             \cell {{ app.employer2_from|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Til:              \cell {{ app.employer2_to|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Job description:  \cell {{ app.employer2_job|rtfescape }}\cell}\row}
-{\trowd \intbl\cellx2000\cellx9000 {Reason for leaving:\cell
-  {{ app.employer2_leaving|rtfescape|rtflinebreaks }}\cell}\row}
-
-{% endif %}
-
 
 {\par \brdrt \brdrhair {\ul References}}
 \par

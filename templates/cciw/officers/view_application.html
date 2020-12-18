@@ -14,10 +14,6 @@
     <td>{{ application.full_name }}</td>
   </tr>
   <tr>
-    <th>Maiden name:</th>
-    <td>{{ application.full_maiden_name }}</td>
-  </tr>
-  <tr>
     <th>Date of birth:</th>
     <td>{{ application.birth_date|date:"Y-m-d" }}</td>
   </tr>
@@ -47,11 +43,6 @@
     <th>Email:</th>
     <td>{{ application.address_email }}</td>
   </tr>
-  <tr>
-    <th>At this address since:</th>
-    <td>{{ application.address_since }}</td>
-  </tr>
-
 </table>
 
 <h2>Statements</h2>
@@ -120,62 +111,6 @@
 <div class="application-statement">
   {{ application.dietary_requirements|linebreaksbr }}
 </div>
-
-<h2>Employment history</h2>
-
-{% if application.employer1_name %}
-  <p>Employer 1</p>
-
-  <table>
-    <tr>
-      <th>Name:</th>
-      <td>{{ application.employer1_name }}</td>
-    </tr>
-    <tr>
-      <th>From:</th>
-      <td>{{ application.employer1_from }}</td>
-    </tr>
-    <tr>
-      <th>Until:</th>
-      <td>{{ application.employer1_to }}</td>
-    </tr>
-    <tr>
-      <th>Job description:</th>
-      <td>{{ application.employer1_job }}</td>
-    </tr>
-    <tr>
-      <th>Reason for leaving:</th>
-      <td>{{ application.employer1_leaving|linebreaksbr }}</td>
-    </tr>
-  </table>
-{% endif %}
-
-{% if application.employer2_name %}
-  <p>Employer 2</p>
-
-  <table>
-    <tr>
-      <th>Name:</th>
-      <td>{{ application.employer2_name }}</td>
-    </tr>
-    <tr>
-      <th>From:</th>
-      <td>{{ application.employer2_from }}</td>
-    </tr>
-    <tr>
-      <th>Until:</th>
-      <td>{{ application.employer2_to }}</td>
-    </tr>
-    <tr>
-      <th>Job description:</th>
-      <td>{{ application.employer2_job }}</td>
-    </tr>
-    <tr>
-      <th>Reason for leaving:</th>
-      <td>{{ application.employer2_leaving|linebreaksbr }}</td>
-    </tr>
-  </table>
-{% endif %}
 
 <h2>References</h2>
 

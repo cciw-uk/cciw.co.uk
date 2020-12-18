@@ -2,7 +2,6 @@
 Personal info
 =============
 Name:             {{ app.full_name }}
-Maiden name:      {{ app.full_maiden_name }}
 Date of birth:    {{ app.birth_date|date:"Y-m-d" }}
 Place of birth:   {{ app.birth_place }}
 Address:          {{ app.address_firstline }}
@@ -13,7 +12,6 @@ Address:          {{ app.address_firstline }}
 Tel:              {{ app.address_tel }}
 Mobile:           {{ app.address_mobile }}
 Email:            {{ app.address_email }}
-At this address since: {{ app.address_since }}
 
 ----------------------------------------------------------------------
 Statements
@@ -51,26 +49,6 @@ Details:
 Dietary requirements:
 {{ app.dietary_requirements|wordwrap:70 }}
 
-----------------------------------------------------------------------
-Employment history
-==================
-{% if app.employer1_name %}Employer 1
-Name:             {{ app.employer1_name }}
-From:             {{ app.employer1_from }}
-Til:              {{ app.employer1_to }}
-Job description:  {{ app.employer1_job }}
-Reason for leaving:
-  {{ app.employer1_leaving|wordwrap:70 }}
-{% endif %}
-
-{% if app.employer2_name %}Employer 2
-Name:             {{ app.employer2_name }}
-From:             {{ app.employer2_from }}
-Til:              {{ app.employer2_to }}
-Job description:  {{ app.employer2_job }}
-Reason for leaving:
-  {{ app.employer2_leaving|wordwrap:70 }}
-{% endif %}
 ----------------------------------------------------------------------
 References
 ==========

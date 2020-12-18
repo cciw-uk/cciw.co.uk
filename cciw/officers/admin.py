@@ -182,13 +182,13 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
 
     camp_officer_application_fieldsets = [
         ('Personal info',
-            {'fields': ['full_name', 'full_maiden_name', 'birth_date', 'birth_place'],
+            {'fields': ['full_name', 'birth_date', 'birth_place'],
              'classes': ['applicationpersonal', 'wide']}
          ),
         ('Address',
             {'fields': ['address_firstline', 'address_town', 'address_county',
                         'address_postcode', 'address_country', 'address_tel',
-                        'address_mobile', 'address_since', 'address_email'],
+                        'address_mobile', 'address_email'],
              'classes': ['wide'],
              'description': "We will use this information to send you information about camp, "
                             "and for other necessary purposes such as DBS checks."
@@ -216,14 +216,6 @@ class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
         ('Health',
             {'fields': ['relevant_illness', 'illness_details', 'dietary_requirements'],
              'classes': ['applicationillness', 'wide']}
-         ),
-        ('Employment history',
-            {'fields': ['employer1_name', 'employer1_from', 'employer1_to',
-                        'employer1_job', 'employer1_leaving', 'employer2_name',
-                        'employer2_from', 'employer2_to', 'employer2_job',
-                        'employer2_leaving'],
-             'classes': ['wide'],
-             'description': 'Please tell us about your past and current employers below (if applicable)'}
          ),
         ('References',
             {'fields':

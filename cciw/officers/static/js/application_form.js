@@ -40,7 +40,7 @@ $(document).ready(function () {
         });
     };
 
-    var CHECK_BLOCK_CAPITAL_FIELDS = '#id_full_name, #id_full_maiden_name, #id_birth_place, #id_address_firstline, #id_address_town, #id_address_county, #id_address_country, #id_employer1_name, #id_employer2_name, #id_employer1_job, #id_employer2_job, #id_employer1_leaving, #id_employer2_leaving, #id_referee1_name, #id_referee2_name, #id_referee1_address, #id_referee2_address, #id_christian_experience, #id_youth_experience';
+    var CHECK_BLOCK_CAPITAL_FIELDS = '#id_full_name, #id_birth_place, #id_address_firstline, #id_address_town, #id_address_county, #id_address_country, #id_referee1_name, #id_referee2_name, #id_referee1_address, #id_referee2_address, #id_christian_experience, #id_youth_experience';
 
     addValidator(CHECK_BLOCK_CAPITAL_FIELDS, function ($field, val) {
         if (val.trim().length > 0) {
