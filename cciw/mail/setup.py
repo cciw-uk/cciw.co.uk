@@ -2,7 +2,8 @@ from django.conf import settings
 from django.utils import timezone
 
 from .lists import get_all_lists
-from .ses import Rule, RuleSet, S3Action, get_active_ruleset_info, make_ruleset_active, save_ruleset
+from .ses import (Rule, RuleSet, S3Action, delete_ruleset, get_active_ruleset_info, get_all_rulesets,
+                  make_ruleset_active, save_ruleset)
 
 # Some one time AWS/SNS/SES things were set up manually, as described in docs/services.rst
 # The remainder is done here.
@@ -14,24 +15,18 @@ def setup_ses_routes():
     """
     # We want to enable testing in development, both of:
     # - this function, which sets up rule sets
+    #
     # - incoming email handling, which we want to be able
     #   to route to our development machine (via ngrok)
     #   without interfering with production rules.
     #
-    # We also don't want to disrupt production rules
-    # by temporarily having a broken set of rules.
+    # We also don't want to disrupt production by temporarily having a broken
+    # set of rules.
     #
-    # And we do need to clear out old rules (e.g. for old camps) and certain
-    # points.
+    # And we do need to clear out old rules (e.g. for old camps),
+    # and old rulesets
     #
-    # Therefore, we have the following strategy:
-    #
-    # - Create a new ruleset which is a copy of the active one.
-    # - Collect and examine all the existing rules within it
-    # - Remove all rules relating to our current INCOMING_MAIL_DOMAIN,
-    #   and keep everything else.
-    # - Add new rules for INCOMING_MAIL_DOMAIN.
-    # - Replace old active rule set with the new one we just created.
+    # The following process is designed with these things in mind.
 
     active_ruleset = get_active_ruleset_info()
     new_ruleset = RuleSet(name=timezone.now().strftime('Standard %Y-%m-%d %H%M%S'))
@@ -40,6 +35,7 @@ def setup_ses_routes():
     new_ruleset = _create_new_rules(new_ruleset, our_domain)
     save_ruleset(new_ruleset)
     make_ruleset_active(new_ruleset)
+    _cleanup_old_rulesets(new_ruleset)
 
 
 def _copy_other_domain_rules(old_ruleset, new_ruleset, domain):
@@ -68,3 +64,16 @@ def _create_new_rules(ruleset, domain):
         tls_policy='Optional',
     ))
     return ruleset
+
+
+def _cleanup_old_rulesets(active_ruleset):
+    all_rulesets = get_all_rulesets()
+    old_rulesets = [
+        ruleset for ruleset in all_rulesets
+        if ruleset.name != active_ruleset
+    ]
+    old_rulesets.sort(key=lambda r: r.created_timestamp, reverse=True)
+    for ruleset in old_rulesets[10:]:
+        # We leave a few old ones behind for debugging,
+        # and so we can easily restore something if needed.
+        delete_ruleset(ruleset)

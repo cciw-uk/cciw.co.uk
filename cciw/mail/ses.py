@@ -2,6 +2,7 @@
 import io
 import re
 import warnings
+from datetime import datetime
 from typing import List
 
 import attr
@@ -83,7 +84,7 @@ class Rule:
     tls_policy: str = 'Optional'
 
     def __attrs_post_init__(self):
-        self.name = clean_name(self.name)
+        self.name = _clean_name(self.name)
 
     @classmethod
     def from_api(cls, data):
@@ -113,23 +114,57 @@ class Rule:
         }
 
 
+class Missing:
+    """
+    Sentinel object used to indicate attributes of an object that were not
+    populated (e.g. when created from an API that didn't supply all details)
+    """
+    # This is to help avoid data loss bugs if a partially populated
+    # object mistakenly gets passed back to the wrong API - hopefully
+    # we'll get an error when we try to serialize.
+    def __bool__(self):
+        self._raise()
+
+    def __eq__(self, other):
+        self._raise()
+
+    def _raise(self):
+        raise ValueError('The only valid thing to do with me is `is Missing`')
+
+    def __repr__(self):
+        return 'Missing'
+
+
+Missing = Missing()
+
+
 @attr.s(auto_attribs=True)
 class RuleSet:
     name: str
+    created_timestamp: datetime = Missing
     rules: List[Rule] = attr.Factory(list)
 
     def __attrs_post_init__(self):
-        self.name = clean_name(self.name)
+        self.name = _clean_name(self.name)
 
     @classmethod
     def from_api(cls, data):
         return cls(
             name=data['Metadata']['Name'],
+            created_timestamp=data['Metadata']['CreatedTimestamp'],
             rules=[
                 Rule.from_api(item)
                 for item in data['Rules']
-            ]
+            ] if 'Rules' in data else Missing,
         )
+
+    @classmethod
+    def from_list_api(cls, data):
+        rulesets = data['RuleSets']
+        return [cls(name=ruleset['Name'],
+                    created_timestamp=ruleset['CreatedTimestamp'],
+                    rules=Missing)
+                for ruleset in rulesets]
 
 
 def get_active_ruleset_info():
@@ -137,11 +172,16 @@ def get_active_ruleset_info():
     return RuleSet.from_api(ses_api.describe_active_receipt_rule_set())
 
 
+def get_all_rulesets():
+    ses_api = get_ses_api()
+    return RuleSet.from_list_api(ses_api.list_receipt_rule_sets())
+
+
 def save_ruleset(ruleset: RuleSet):
     ses_api = get_ses_api()
     # https://docs.aws.amazon.com/ses/latest/APIReference/API_CreateReceiptRuleSet.html
     rule_set_response = ses_api.create_receipt_rule_set(RuleSetName=ruleset.name)
-    assert_200(rule_set_response)
+    _assert_200(rule_set_response)
 
     for i, rule in enumerate(ruleset.rules):
         if i > 0:
@@ -157,7 +197,7 @@ def save_ruleset(ruleset: RuleSet):
             args.update(dict(After=previous_rule.name))
 
         rule_response = ses_api.create_receipt_rule(**args)
-        assert_200(rule_response)
+        _assert_200(rule_response)
 
 
 def make_ruleset_active(ruleset: RuleSet):
@@ -165,9 +205,14 @@ def make_ruleset_active(ruleset: RuleSet):
     ses_api.set_active_receipt_rule_set(RuleSetName=ruleset.name)
 
 
-def assert_200(api_data):
+def delete_ruleset(ruleset: RuleSet):
+    ses_api = get_ses_api()
+    ses_api.delete_receipt_rule_set(RuleSetName=ruleset.name)
+
+
+def _assert_200(api_data):
     assert api_data['ResponseMetadata']['HTTPStatusCode'] == 200
 
 
-def clean_name(name):
+def _clean_name(name):
     return re.subn('[^a-zA-Z0-9_-]', '_', name)[0]

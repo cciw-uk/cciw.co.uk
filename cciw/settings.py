@@ -40,7 +40,6 @@ else:
     # downloaded session database if needed.
     SECRET_KEY = SECRETS['PRODUCTION_SECRET_KEY']
 
-WEBSERVER_RUNNING = 'mod_wsgi' in sys.argv
 
 # == MISC ==
 
@@ -104,6 +103,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
 
     # Ours
     'cciw.accounts',
@@ -133,12 +133,6 @@ INSTALLED_APPS = [
     'mailer',
     'captcha',
 ]
-
-if not (LIVEBOX and WEBSERVER_RUNNING):
-    # Don't want the memory overhead of these if we are serving requests
-    INSTALLED_APPS += [
-        'django.contrib.staticfiles',
-    ]
 
 if DEVBOX and DEBUG:
     INSTALLED_APPS += [
@@ -388,8 +382,15 @@ else:
 RECREATE_ROUTES_AUTOMATICALLY = LIVEBOX
 
 # == AWS ==
-AWS_INCOMING_MAIL = SECRETS["AWS"]["INCOMING_MAIL"]
-AWS_CONFIG_USER = SECRETS["AWS"]["CONFIG"]
+if LIVEBOX:
+    AWS_INCOMING_MAIL = SECRETS["AWS"]["INCOMING_MAIL"]
+    AWS_CONFIG_USER = SECRETS["AWS"]["CONFIG"]
+else:
+    # Protect ourselves from accidentally using production AWS details in
+    # development. When working on the SES integration code in development this
+    # can be changed to same as above.
+    AWS_INCOMING_MAIL = {}
+    AWS_CONFIG_USER = {}
 
 # == MAILING LISTS ==
 
