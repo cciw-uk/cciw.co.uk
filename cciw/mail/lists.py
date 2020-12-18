@@ -1,17 +1,9 @@
 # MAILING LIST FUNCTIONALITY
 
-# It would be possible to use Mailgun's "Mailing list" functionality for this.
-# However, keeping the lists up to date would be tricky - they can change whenever:
-#
-# * officer email addresses are changed, including 'update()' methods which don't
-#   generate 'post_save' signals
-# * application forms are received
-# * officers are added/removed from camp invitation lists
-# * camps are created
-# * probably other events...
-#
-# So it is easier to redirect mail to the website and do the mailing list
-# functionality ourselves.
+# We provide various group lists e.g. camp-2010-blue-officers@cciw.co.uk and
+# other forwarding addresses. This module provides the functionality for
+# defining all these addresses (which get registered with AWS SES in the `setup`
+# module), and routing incoming mail to them.
 
 import email
 import itertools
@@ -334,7 +326,7 @@ def is_superuser(email_address):
 
 # Handling incoming mail
 
-def forward_email_to_list(mail, email_list: EmailList, debug=False):
+def forward_email_to_list(mail, email_list: EmailList):
     orig_from_addr = mail['From']
     if 'Reply-To' in mail:
         reply_to = mail['Reply-To']
@@ -378,7 +370,8 @@ def forward_email_to_list(mail, email_list: EmailList, debug=False):
 
     # First, do as much work as possible before doing anything
     # with side effects. That way if an error occurs early,
-    # re-trying won't re-send emails that were already sent.
+    # we reduce the possibility of having sent some of the emails
+    # but not others.
 
     messages_to_send = []
     for user in email_list.get_members():
@@ -399,28 +392,26 @@ def forward_email_to_list(mail, email_list: EmailList, debug=False):
 
     errors = []
     for to_addr, from_address, mail_as_bytes in messages_to_send:
-        if debug:
-            with open(".mailing_list_log", "ab") as f:
-                f.write(mail_as_bytes)
         try:
             send_mime_message(to_addr, from_address, mail_as_bytes)
         except Exception as e:
             errors.append((addr, e))
 
     if len(errors) == len(messages_to_send):
-        # Probably a temporary error. By re-raising the last error, we cancel
-        # everything, and can retry the whole email, because AWS will
-        # re-attempt if we return 500 from the handler.
+        # Probably a temporary network error, but possibly something more
+        # serious, and maybe email is down completely. In that case, there is no
+        # point trying to notify by email (as below). Instead we re-raise the
+        # last error, which will send errors to Sentry, which hopefully should
+        # notify us.
         raise errors[-1][1]
 
     if errors:
         # Attempt to report problem
-        try:
-            address_messages = [
-                f"{address}: {str(e)}"
-                for address, e in errors
-            ]
-            msg = """
+        address_messages = [
+            f"{address}: {str(e)}"
+            for address, e in errors
+        ]
+        msg = """
 You attempted to email the list {0}
 with an email title "{1}".
 
@@ -428,16 +419,11 @@ There were problems with the following addresses:
 
 {2}
 """.format(email_list.address, mail['Subject'], '\n'.join(address_messages))
-            send_mail(f"[CCIW] Error with email to list {email_list.address}",
-                      msg,
-                      settings.DEFAULT_FROM_EMAIL,
-                      [orig_from_addr],
-                      fail_silently=True)
-        except Exception:
-            # Don't raise any exceptions here, because doing so will cause the
-            # whole email sending to fail and therefore be retried, despite the
-            # fact that we've sent the email successfully to some users.
-            pass
+        send_mail(f"[CCIW] Error with email to list {email_list.address}",
+                  msg,
+                  settings.DEFAULT_FROM_EMAIL,
+                  [orig_from_addr],
+                  fail_silently=True)
 
 
 def mangle_from_address(address):
@@ -454,7 +440,7 @@ def handle_mail_async(data):
     os.spawnlp(os.P_NOWAIT, "nohup", "nohup", manage_py_path, "handle_message", name)
 
 
-def handle_mail(data, debug=False):
+def handle_mail(data):
     """
     Forwards an email to the correct list of people.
     data is RFC822 formatted bytes
@@ -473,7 +459,7 @@ def handle_mail(data, debug=False):
     for address in addresses:
         try:
             email_list = find_list(address, from_email)
-            forward_email_to_list(mail, email_list, debug=debug)
+            forward_email_to_list(mail, email_list)
         except MailAccessDenied:
             if not known_officer_email_address(from_email):
                 # Don't bother sending bounce emails to addresses

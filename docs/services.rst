@@ -51,13 +51,6 @@ These accounts can be used to log in on https://www.sandbox.paypal.com/
 NB. The inclusion of these passwords in this public repo is not a security
 consideration, since they are only sandbox passwords.
 
-Mailgun
--------
-
-This is used for sending and receiving email. Some email addresses, that don't
-need integration with other features, are configured manually using Mailgun's
-control panel.
-
 Amazon AWS
 ----------
 
