@@ -1,9 +1,9 @@
 $(document).ready(function() {
     "use strict";
-    $('form.dbs-form-sent').each(function (i, elem) {
+    $('form.dbs-form-sent').each(function(i, elem) {
         var $form = $(this);
         var officerId = $form.find('input[name=officer_id]').val();
-        $form.submit(function (ev) {
+        $form.submit(function(ev) {
             ev.preventDefault();
             jQuery.ajax({
                 type: "POST",
@@ -60,19 +60,19 @@ $(document).ready(function() {
     $('#id_officer_table').on(
         'submit',
         'form.alert-leaders, form.register-received-dbs, form.dbs-checked-online, form.request-dbs-form-action',
-        function (ev) {
+        function(ev) {
             ev.preventDefault();
             var $form = $(this);
             var data = $form.serialize();
             var url = $form.attr('action');
             var newWindow =
                 cciw.openTemporaryWindow(url + '?' + data,
-                                         '_blank',
-                                         "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+                    '_blank',
+                    "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
 
             // Refresh the row when the child window is closed.
             var intervalId;
-            var checkClosed = function () {
+            var checkClosed = function() {
                 if (newWindow.closed) {
                     window.clearInterval(intervalId);
                     refreshRow($form.closest('tr.officer_dbs_row'));
@@ -81,14 +81,14 @@ $(document).ready(function() {
             intervalId = window.setInterval(checkClosed, 200);
         });
 
-    function refreshRow ($row) {
+    function refreshRow($row) {
         var officerId = $row.attr('data-officer-id');
         jQuery.ajax({
             type: 'GET',
             url: $('#id_officer_table').attr('data-url'),
-            data: {'officer_id': officerId},
+            data: { 'officer_id': officerId },
             dataType: 'text',
-            success: function (data, textStatus, xhr) {
+            success: function(data, textStatus, xhr) {
                 $row.replaceWith(jQuery(data));
             }
         });
@@ -122,9 +122,9 @@ $(document).ready(function() {
                 url = '?camp=0';
             } else {
                 url = "?" + $.map(selectedCamps,
-                                  function(c) { return ("camp=" + c); }).join("&");
+                    function(c) { return ("camp=" + c); }).join("&");
             }
-            history.pushState({selectedCamps:selectedCamps}, '', url);
+            history.pushState({ selectedCamps: selectedCamps }, '', url);
         } else {
             $('#id_campselector input[type=submit]').removeAttr('disabled');
         }

@@ -1,8 +1,8 @@
-$(document).ready(function () {
+$(document).ready(function() {
     // Various silly things that people do. These are almost certainly
     // errors, but we can't be sure, so just do warnings with Javascript.
 
-    var checkField = function ($field) {
+    var checkField = function($field) {
         var val = $field.val();
         var errors = [];
         var validators = $field[0].validators || [];
@@ -10,7 +10,7 @@ $(document).ready(function () {
             return;
         }
 
-        $.each(validators, function (idx, validator) {
+        $.each(validators, function(idx, validator) {
             var msg = validator($field, val);
             if (msg) {
                 errors.push(msg)
@@ -31,8 +31,8 @@ $(document).ready(function () {
     };
 
 
-    var addValidator = function (field_selectors, validator) {
-        $(field_selectors).each(function (idx, elem) {
+    var addValidator = function(field_selectors, validator) {
+        $(field_selectors).each(function(idx, elem) {
             if (elem.validators === undefined) {
                 elem.validators = [];
             }
@@ -42,7 +42,7 @@ $(document).ready(function () {
 
     var CHECK_BLOCK_CAPITAL_FIELDS = '#id_full_name, #id_birth_place, #id_address_firstline, #id_address_town, #id_address_county, #id_address_country, #id_referee1_name, #id_referee2_name, #id_referee1_address, #id_referee2_address, #id_christian_experience, #id_youth_experience';
 
-    addValidator(CHECK_BLOCK_CAPITAL_FIELDS, function ($field, val) {
+    addValidator(CHECK_BLOCK_CAPITAL_FIELDS, function($field, val) {
         if (val.trim().length > 0) {
             if (val.trim() == "N/A") {
                 return null;
@@ -63,7 +63,7 @@ $(document).ready(function () {
     var CHECK_TITLE_FIELDS = REFEREE_NAME_FIELDS;
 
     var TITLES = ["dr", "rev", "reverend", "pastor", "mr", "ms", "mrs", "prof"];  // See also close_enough_referee_match
-    addValidator(CHECK_TITLE_FIELDS, function ($field, val) {
+    addValidator(CHECK_TITLE_FIELDS, function($field, val) {
         if (val.trim().length > 0) {
             var firstWord = val.trim().split(/ /)[0].toLowerCase().replace(".", "");
             if (TITLES.indexOf(firstWord) != -1) {
@@ -73,36 +73,36 @@ $(document).ready(function () {
         return null;
     });
 
-    addValidator(REFEREE_NAME_FIELDS, function ($field, val) {
+    addValidator(REFEREE_NAME_FIELDS, function($field, val) {
         if (val.match(/[\[\]\(\),]/)) {
             return "Please only include the name in this field."
         }
         return null;
     });
 
-    addValidator('#id_full_name', function ($field, val) {
+    addValidator('#id_full_name', function($field, val) {
         if (val.trim().match(/ /) === null) {
             return "Please include your full name here, not just your first name.";
         }
     })
 
     var NA_SYNONYMS = ["N/A", "NOT APPLICABLE"];
-    addValidator('input, textarea', function ($field, val) {
+    addValidator('input, textarea', function($field, val) {
         if (NA_SYNONYMS.indexOf(val.trim().toUpperCase()) !== -1) {
             return "Please leave blank if there is nothing applicable for this field."
         }
     });
 
 
-    $("input, textarea").each(function (idx, elem) {
+    $("input, textarea").each(function(idx, elem) {
         if (elem.validators !== undefined) {
             var $field = $(elem);
             checkField($field);
-            $field.on('change', function (ev) { checkField($field); });
+            $field.on('change', function(ev) { checkField($field); });
         }
     });
 
-    var setSaveAndContinueBtn = function () {
+    var setSaveAndContinueBtn = function() {
         $('input[name=_continue]').toggle(!$('input#id_finished').is(':checked'))
     };
 
