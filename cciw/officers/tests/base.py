@@ -1,10 +1,9 @@
 from datetime import date, datetime, timedelta
 
-from django.contrib.auth.models import Group
 from django.utils import timezone
 
-from cciw.accounts.models import (BOOKING_SECRETARY_GROUP_NAME, DBS_OFFICER_GROUP_NAME, REFERENCE_CONTACT_GROUP_NAME,
-                                  SECRETARY_GROUP_NAME, User, setup_auth_groups)
+from cciw.accounts.models import (BOOKING_SECRETARY_ROLE_NAME, DBS_OFFICER_ROLE_NAME, REFERENCE_CONTACT_ROLE_NAME,
+                                  SECRETARY_ROLE_NAME, Role, User, setup_auth_roles)
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.officers.models import Application, QualificationType, Reference
@@ -69,7 +68,7 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
     """
     def setUp(self):
         super().setUp()
-        setup_auth_groups()
+        setup_auth_roles()
         self.leader_user = factories.make_officer(
             username=LEADER_USERNAME,
             first_name="Dave",
@@ -81,35 +80,35 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
         # Associate with Person object
         self.default_leader.users.add(self.leader_user)
 
-        self.booking_secretary_group = Group.objects.get(name=BOOKING_SECRETARY_GROUP_NAME)
+        self.booking_secretary_role = Role.objects.get(name=BOOKING_SECRETARY_ROLE_NAME)
         self.booking_secretary = factories.make_officer(
             username=BOOKING_SECRETARY_USERNAME,
-            groups=[self.booking_secretary_group],
+            roles=[self.booking_secretary_role],
             password=BOOKING_SECRETARY_PASSWORD,
         )
 
-        self.secretary_group = Group.objects.get(name=SECRETARY_GROUP_NAME)
+        self.secretary_role = Role.objects.get(name=SECRETARY_ROLE_NAME)
         self.secretary = factories.make_officer(
             username=SECRETARY_USERNAME,
-            groups=[self.secretary_group],
+            roles=[self.secretary_role],
             password=SECRETARY_PASSWORD,
         )
 
-        self.dbs_officer_group = Group.objects.get(name=DBS_OFFICER_GROUP_NAME)
+        self.dbs_officer_group = Role.objects.get(name=DBS_OFFICER_ROLE_NAME)
         self.dbs_officer = factories.make_officer(
             username=DBSOFFICER_USERNAME,
             email=DBSOFFICER_EMAIL,
-            groups=[self.dbs_officer_group],
+            roles=[self.dbs_officer_group],
             password=DBSOFFICER_PASSWORD,
         )
 
-        self.reference_contact_group = Group.objects.get(name=REFERENCE_CONTACT_GROUP_NAME)
+        self.reference_contact_group = Role.objects.get(name=REFERENCE_CONTACT_ROLE_NAME)
         self.safeguarding_coordinator = factories.make_officer(
             username="safeguarder",
             first_name="Safe",
             last_name="Guarder",
             contact_phone_number="01234 567890",
-            groups=[self.reference_contact_group],
+            roles=[self.reference_contact_group],
         )
 
 
@@ -316,7 +315,7 @@ class Factories:
             is_staff=True,
             email=None,
             password=None,
-            groups=None,
+            roles=None,
             contact_phone_number='',
     ):
         username = username or self._make_auto_username()
@@ -334,8 +333,8 @@ class Factories:
         if password:
             user.set_password(password)
             user.save()
-        if groups:
-            user.groups.set(groups)
+        if roles:
+            user.roles.set(roles)
         return user
 
     def _make_auto_username(self):

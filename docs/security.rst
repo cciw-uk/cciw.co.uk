@@ -91,7 +91,7 @@ Access to information
 
   * permission related methods on the ``User`` model in `</cciw/accounts/models.py>`_
   * permission decorators on views in `</cciw/officers/views.py>`_
-  * definitions of group permissions in `</config/groups.yaml>`_
+  * definitions of group permissions in `</config/static_roles.yaml>`_
   * other functions in `</cciw/auth.py>`_
 
 * As much as possible, privileged access roles should be determined dynamically,
@@ -107,7 +107,7 @@ Access to information
 * If dynamic roles are not possible, we can create groups for additional
   permissions. We don't add individual permissions to User accounts. We do not
   manually add permissions to groups via the database or Django admin interface
-  either, but instead edit `</config/groups.yaml>`_.
+  either, but instead edit `</config/static_roles.yaml>`_.
 
 * Privileged access must be limited in time - for example, being a leader one
   year does not mean a person should have higher access in subsequent years.

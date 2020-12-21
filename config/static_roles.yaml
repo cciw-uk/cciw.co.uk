@@ -28,7 +28,7 @@
 # The contents need to be agreed with the CCiW committee, as per the "CCiW
 # website security procedures" document.
 #
-# The names of the groups need to be synced with /cciw/accounts/models.py
+# The names of the roles need to be synced with /cciw/accounts/models.py
 #
 # Format of permissions is: app name,model name,permission code name
 #
@@ -37,7 +37,7 @@
 # Django has no 'view' permission. By giving 'change' permission, we give a user
 # 'view' permission as well.
 
-Groups:
+Roles:
   Wiki users:
     # Wiki users don't need permissions, it is just a marker group
     Permissions: []

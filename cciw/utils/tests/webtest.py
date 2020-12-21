@@ -75,6 +75,10 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
     """
     Base class for integration tests that need more than Django's test Client.
     """
+    # disable django-webtest's monkey business which doesn't work with our auth
+    # backend:
+    setup_auth = False
+
     def assertCode(self, status_code):
         self.assertEqual(self.last_response.status_code, status_code)
 

@@ -663,7 +663,7 @@ def update_database(target):
         else:
             args = "--fake-initial"
         run(f"./manage.py migrate --noinput {args}")
-        run("./manage.py setup_auth_groups")
+        run("./manage.py setup_auth_roles")
 
 
 def setup_email_routes(target):

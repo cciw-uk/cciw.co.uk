@@ -5,8 +5,6 @@ from dal import autocomplete
 from django import forms
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.auth.admin import GroupAdmin
-from django.contrib.auth.models import Group
 from django.forms.utils import ErrorList
 from django.urls import reverse
 from django.utils.html import format_html
@@ -530,24 +528,3 @@ admin.site.register(Reference, ReferenceAdmin)
 admin.site.register(DBSCheck, DBSCheckAdmin)
 admin.site.register(DBSActionLog, DBSActionLogAdmin)
 admin.site.register(QualificationType)
-
-
-# Hack the Group admin so that we can edit users belonging to a group
-Membership = Group.user_set.through
-
-
-class MembershipAdminForm(forms.ModelForm):
-
-    class Meta:
-        widgets = {
-            'user': officer_autocomplete_widget(),
-        }
-
-
-class MembershipInline(admin.TabularInline):
-    model = Membership
-    form = MembershipAdminForm
-    extra = 0
-
-
-GroupAdmin.inlines = list(GroupAdmin.inlines) + [MembershipInline]

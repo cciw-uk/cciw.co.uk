@@ -18,8 +18,8 @@ from django.conf import settings
 from django.core.mail import make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
-from cciw.accounts.models import (COMMITTEE_GROUP_NAME, DBS_OFFICER_GROUP_NAME, User, get_camp_admin_group_users,
-                                  get_group_users)
+from cciw.accounts.models import (COMMITTEE_ROLE_NAME, DBS_OFFICER_ROLE_NAME, User, get_camp_admin_role_users,
+                                  get_role_email_recipients, get_role_users)
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
@@ -229,7 +229,7 @@ def debug_list_generator(current_camps):
 def committee_list_generator(current_camps):
 
     def get_members():
-        return get_group_users(COMMITTEE_GROUP_NAME)
+        return get_role_email_recipients(COMMITTEE_ROLE_NAME)
 
     def has_permission(email_address):
         return is_in_committee_or_superuser(email_address)
@@ -283,7 +283,7 @@ def get_webmasters():
 
 
 def is_in_committee_or_superuser(email_address):
-    return (get_group_users(COMMITTEE_GROUP_NAME).filter(email__iexact=email_address).exists() or
+    return (get_role_users(COMMITTEE_ROLE_NAME).filter(email__iexact=email_address).exists() or
             is_superuser(email_address))
 
 
@@ -311,10 +311,10 @@ def is_camp_leader_or_admin_or_dbs_officer_or_superuser(email_address, camps):
     if is_camp_leader_or_admin(email_address, camps):
         return True
 
-    if email_match(email_address, get_camp_admin_group_users()):
+    if email_match(email_address, get_camp_admin_role_users()):
         return True
 
-    if get_group_users(DBS_OFFICER_GROUP_NAME).filter(email__iexact=email_address).exists():
+    if get_role_users(DBS_OFFICER_ROLE_NAME).filter(email__iexact=email_address).exists():
         return True
 
     if is_superuser(email_address):

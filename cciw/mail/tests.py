@@ -2,8 +2,6 @@ import re
 from unittest import mock
 
 import mailer.engine
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.mail.backends.locmem import EmailBackend as LocMemEmailBackend
 from django.test.client import RequestFactory
@@ -11,7 +9,7 @@ from django.test.utils import override_settings
 from mailer.models import Message
 from requests.exceptions import ConnectionError
 
-from cciw.accounts.models import COMMITTEE_GROUP_NAME
+from cciw.accounts.models import COMMITTEE_ROLE_NAME, Role, User
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.officers.tests.base import ExtraOfficersSetupMixin, factories
 from cciw.utils.functional import partition
@@ -21,8 +19,6 @@ from . import views
 from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
 from .models import EmailForward
 from .test_data import AWS_BOUNCE_NOTIFICATION, AWS_SNS_NOTIFICATION
-
-User = get_user_model()
 
 
 def b(s):
@@ -122,13 +118,14 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
                             for m in sent_messages_bytes))
 
     def test_handle_committee_list(self):
-        committee, _ = Group.objects.get_or_create(name=COMMITTEE_GROUP_NAME)
-        committee.user_set.create(
-            username="aman1",
-            email="a.man@example.com")
-        committee.user_set.create(
-            username="awoman1",
-            email="a.woman@example.com")
+        committee, _ = Role.objects.get_or_create(name=COMMITTEE_ROLE_NAME)
+        for name, email in [('aman1', 'a.man@example.com'),
+                            ('awoman1', 'a.woman@example.com')]:
+            committee.members.create(
+                username=name,
+                email=email,
+            )
+            committee.email_recipients.set(committee.members.all())
 
         # Email address without permission
         msg = MSG_COMMITTEE_LIST.replace(b'a.woman@example.com', b'joe@gmail.com')
@@ -234,7 +231,6 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         Test what happens when there are SMTP errors with some recipients,
         but not all.
         """
-        User = get_user_model()
         User.objects.create(username="admin3",
                             email="admin1@faildomain.com",
                             is_superuser=True)
