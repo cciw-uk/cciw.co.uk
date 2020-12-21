@@ -18,7 +18,7 @@ from django.conf import settings
 from django.core.mail import make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
-from cciw.accounts.models import (COMMITTEE_ROLE_NAME, DBS_OFFICER_ROLE_NAME, User, get_camp_admin_role_users,
+from cciw.accounts.models import (COMMITTEE_ROLE_NAME, DBS_OFFICER_ROLE_NAME, Role, User, get_camp_admin_role_users,
                                   get_role_email_recipients, get_role_users)
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
@@ -27,7 +27,6 @@ from cciw.officers.email_utils import formatted_email
 from cciw.officers.models import Application
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 
-from .models import EmailForward
 from .smtp import send_mime_message
 
 logger = logging.getLogger(__name__)
@@ -226,22 +225,6 @@ def debug_list_generator(current_camps):
     )]
 
 
-def committee_list_generator(current_camps):
-
-    def get_members():
-        return get_role_email_recipients(COMMITTEE_ROLE_NAME)
-
-    def has_permission(email_address):
-        return is_in_committee_or_superuser(email_address)
-
-    return [EmailList(
-        local_address='committee',
-        get_members=get_members,
-        has_permission=has_permission,
-        list_reply=True,
-    )]
-
-
 def webmaster_list_generator(current_camps):
     return [EmailList(
         local_address='webmaster',
@@ -251,16 +234,23 @@ def webmaster_list_generator(current_camps):
     )]
 
 
-def email_forwards_generator(current_camps):
-    for forward in EmailForward.objects.active():
-        local_address, domain = forward.address.rsplit('@', 1)
+def roles_list_generator(current_camps):
+    for role in Role.objects.with_address():
+        local_address, domain = role.email.rsplit('@', 1)
         if domain != settings.INCOMING_MAIL_DOMAIN:
             continue
+
+        def has_permission(email_address, role=role):
+            if role.allow_emails_from_public:
+                return True
+            else:
+                return get_role_email_recipients(COMMITTEE_ROLE_NAME).filter(email__iexact=email_address).exists() or is_superuser(email_address)
+
         yield EmailList(
             local_address=local_address,
-            get_members=lambda forward=forward: forward.recipients.all(),
-            has_permission=lambda email_address: True,
-            list_reply=False
+            get_members=lambda role=role: role.email_recipients.all(),
+            has_permission=has_permission,
+            list_reply=not role.allow_emails_from_public
         )
 
 
@@ -270,9 +260,8 @@ GENERATORS = [
     camp_leaders_list_generator,
     camp_leaders_for_year_list_generator,
     debug_list_generator,
-    committee_list_generator,
     webmaster_list_generator,
-    email_forwards_generator,
+    roles_list_generator,
 ]
 
 

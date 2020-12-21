@@ -329,7 +329,7 @@ class User(AbstractBaseUser):
 
 class RoleQuerySet(models.QuerySet):
     def with_address(self):
-        return self.exclude(email_address='')
+        return self.exclude(email='')
 
 
 class RoleManager(models.Manager.from_queryset(RoleQuerySet)):
@@ -370,6 +370,7 @@ class Role(models.Model):
     email_recipients = models.ManyToManyField(User, related_name='roles_as_email_recipient',
                                               help_text='Users who will be emailed for email sent to the role '
                                               'email address. Usually the same as "members", or a subset')
+    allow_emails_from_public = models.BooleanField(default=False)
 
     objects = RoleManager()
 
@@ -406,3 +407,6 @@ def setup_auth_roles():
             perms.append(get_or_create_perm(*parts))
         with transaction.atomic():
             role.permissions.set(perms)
+
+
+from . import hooks  # noqa

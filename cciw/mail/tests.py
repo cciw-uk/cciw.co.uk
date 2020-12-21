@@ -11,13 +11,12 @@ from requests.exceptions import ConnectionError
 
 from cciw.accounts.models import COMMITTEE_ROLE_NAME, Role, User
 from cciw.cciwmain.tests.utils import set_thisyear
-from cciw.officers.tests.base import ExtraOfficersSetupMixin, factories
+from cciw.officers.tests.base import ExtraOfficersSetupMixin
 from cciw.utils.functional import partition
 from cciw.utils.tests.base import TestBase
 
 from . import views
 from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
-from .models import EmailForward
 from .test_data import AWS_BOUNCE_NOTIFICATION, AWS_SNS_NOTIFICATION
 
 
@@ -117,15 +116,17 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         self.assertTrue(all(b"Subject: Test" in m
                             for m in sent_messages_bytes))
 
-    def test_handle_committee_list(self):
+    def test_handle_role_list(self):
         committee, _ = Role.objects.get_or_create(name=COMMITTEE_ROLE_NAME)
+        committee.allow_emails_from_public = False
+        committee.email = 'committee@mailtest.cciw.co.uk'
+        committee.save()
         for name, email in [('aman1', 'a.man@example.com'),
                             ('awoman1', 'a.woman@example.com')]:
-            committee.members.create(
+            committee.email_recipients.create(
                 username=name,
                 email=email,
             )
-            committee.email_recipients.set(committee.members.all())
 
         # Email address without permission
         msg = MSG_COMMITTEE_LIST.replace(b'a.woman@example.com', b'joe@gmail.com')
@@ -135,7 +136,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         self.assertEqual(len(rejections), 1)
         self.assertEqual(len(sent_messages), 0)
 
-        # Email address without permission
+        # Email address with permission
         handle_mail(MSG_COMMITTEE_LIST)
 
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
@@ -148,6 +149,31 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
                             for m in sent_messages_bytes))
         self.assertTrue(all(b"List-Post: <mailto:committee@mailtest.cciw.co.uk>" in m
                             for m in sent_messages_bytes))
+
+    def test_handle_public_role_list(self):
+        role = Role.objects.create(
+            name='Some role',
+            email='myrole@mailtest.cciw.co.uk',
+            allow_emails_from_public=True,
+        )
+        role.email_recipients.create(
+            username='test1',
+            email='test1@example.com'
+        )
+
+        # Email address without permission
+        msg = MSG_COMMITTEE_LIST.replace(b'committee@mailtest', b'myrole@mailtest')
+        handle_mail(msg)
+
+        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+        self.assertEqual(len(rejections), 0)
+        self.assertEqual(len(sent_messages), 1)
+        sent_to_addresses = list(sorted([address for m in sent_messages for address in m.recipients()]))
+        self.assertEqual(sent_to_addresses, ['test1@example.com'])
+
+        sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
+        self.assertFalse(any(b"List-Post: <mailto:myrole@mailtest.cciw.co.uk>" in m
+                             for m in sent_messages_bytes))
 
     def test_handle_officer_list(self):
         handle_mail(MSG_OFFICER_LIST)
@@ -165,32 +191,6 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         self.assertTrue(all(b"Sender: CCIW website <noreply@cciw.co.uk>" in m
                             for m in sent_messages_bytes))
         self.assertTrue(any(True for m in mail.outbox if '"Fred Jones" <fredjones@somewhere.com>' in m.to))
-
-    def test_email_forward(self):
-        msg = MSG_DEBUG_LIST.replace(b'camp-debug@mailtest.cciw.co.uk',
-                                     b'custom.forward@mailtest.cciw.co.uk')
-
-        # Without EmailForward defined, mail just gets ignored (it should be bounced
-        # at AWS level anyway)
-        handle_mail(msg)
-
-        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
-        assert rejections == []
-        assert sent_messages == []
-
-        make_email_forward(address='custom.forward@mailtest.cciw.co.uk',
-                           recipients=[factories.make_officer(first_name='Alice', last_name='Brown', email='alice@example.com'),
-                                       factories.make_officer(first_name='Bob', last_name='Smith', email='bob@example.com')])
-        handle_mail(msg)
-
-        # Now we should get it forwarded as expected
-        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
-        assert rejections == []
-        assert len(sent_messages) == 2
-        assert sorted(address for m in sent_messages for address in m.to) == [
-            '"Alice Brown" <alice@example.com>',
-            '"Bob Smith" <bob@example.com>'
-        ]
 
     def test_spam_and_virus_checking(self):
         for header in [b'X-SES-Spam-Verdict: FAIL',
@@ -409,9 +409,3 @@ def make_plain_text_request(path, body, headers):
         content_type='text/plain; charset=UTF-8',
         **mangled_headers
     )
-
-
-def make_email_forward(address, recipients):
-    forward = EmailForward.objects.create(address=address)
-    forward.recipients.set(recipients)
-    return forward
