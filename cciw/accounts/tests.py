@@ -47,3 +47,8 @@ class TestUserModel(OfficersSetupMixin, TestBase):
             # Testing multiple different roles requires just one query
             self.assertFalse(self.officer_user.is_booking_secretary)
             self.assertFalse(self.officer_user.is_committee_member)
+
+    def test_has_perm(self):
+        # Depends on static_roles.yaml
+        assert self.booking_secretary.has_perm('bookings.add_booking')
+        assert not self.officer_user.has_perm('bookings.add_booking')
