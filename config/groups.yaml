@@ -1,22 +1,39 @@
-# This file defines various important groups and the permissions to be given to
-# them in the Django admin. These permissions are stored in the DB itself, and
-# control only the general Django admin (which allows users to add/change/delete
-# records of different types). Other permissions for the different groups are
-# specified directly in the source code in various ways.
-
+# This file defines various important roles and the permissions to be given to
+# them in the 'admin' section of the website.
+#
+# Roles work in two ways:
+#
+# - We have statically defined roles, defined in the this file. People are added
+#   to these roles by a superuser, using the admin section.
+#
+# - We also have 'dynamic' roles which are calculated automatically using other
+#   data in the database. For example, via the links between the 'Camp',
+#   'Person' and 'User' table, we know which logged in 'Users' are leaders for
+#   camps, and which are leaders for current camps. These are 'current leaders'.
+#   Permissions work in two ways:
+#
+# - The permissions defined in this file that allow certain roles to view/edit
+#   various database tables via the 'admin' section. of the website.
+#
+# - Certain other pages (e.g. booking reports) are limited to certain roles
+#   (dynamic or static). These are hard coded in the relevant parts of the
+#   source code.
+#
+# So this file covers only part of our permissions mechanism.
+#
 # This file is used by automated tests, and is applied to the production
 # database as part of the deployment procedure, ensuring that each group exists
 # and has all and only the permissions specified here.
-
+#
 # The contents need to be agreed with the CCiW committee, as per the "CCiW
 # website security procedures" document.
-
+#
 # The names of the groups need to be synced with /cciw/accounts/models.py
-
+#
 # Format of permissions is: app name,model name,permission code name
-
+#
 # See https://docs.djangoproject.com/en/1.11/topics/auth/default/#permissions-and-authorization
-
+#
 # Django has no 'view' permission. By giving 'change' permission, we give a user
 # 'view' permission as well.
 
