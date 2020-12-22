@@ -2,18 +2,16 @@
 from datetime import date
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.core import mail
 from django.urls import reverse
 
+from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.officers.models import Application
 from cciw.officers.tests.base import (LEADER, OFFICER, OFFICER_EMAIL, CurrentCampsMixin, OfficersSetupMixin,
                                       RequireQualificationTypesMixin)
 from cciw.utils.tests.webtest import WebTestBase
-
-User = get_user_model()
 
 
 class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualificationTypesMixin, WebTestBase):

@@ -7,8 +7,7 @@ def debug_middleware(get_response):
         from cciw.bookings.models import BookingAccount
 
         if 'as' in request.GET:
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
+            from cciw.accounts.models import User
             user = User.objects.get(username=request.GET['as'])
             user.backend = 'cciw.auth.CciwAuthBackend'  # fake a call to authenticate
             login(request, user)

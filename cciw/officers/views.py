@@ -13,7 +13,7 @@ from dal import autocomplete
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
+from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.views import PasswordResetView
 from django.core import signing
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
@@ -28,6 +28,7 @@ from django.utils import timezone
 from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
 
+from cciw.accounts.models import User
 from cciw.bookings.models import most_recent_booking_year
 from cciw.bookings.stats import get_booking_ages_stats, get_booking_progress_stats, get_booking_summary_stats
 from cciw.bookings.utils import (addresses_for_mailing_list, camp_bookings_to_spreadsheet,
@@ -53,8 +54,6 @@ from .models import (Application, DBSActionLog, DBSCheck, Invitation, Referee, R
                      empty_reference)
 from .stats import get_camp_officer_stats, get_camp_officer_stats_trend
 from .utils import camp_serious_slacker_list, camp_slacker_list, officer_data_to_spreadsheet
-
-User = get_user_model()
 
 EXPORT_PAYMENT_DATE_FORMAT = '%Y-%m-%d'
 

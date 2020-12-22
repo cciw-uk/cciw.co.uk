@@ -1,18 +1,15 @@
 from datetime import date
 
 from django import forms
-from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import PasswordResetForm
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from cciw.accounts.models import get_reference_contact_users
+from cciw.accounts.models import User, get_reference_contact_users
 from cciw.officers import create
 from cciw.officers.email import send_leaders_reference_email
 from cciw.officers.models import Invitation, Reference
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
-
-User = get_user_model()
 
 
 class StripStringsMixin(object):

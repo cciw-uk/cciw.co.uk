@@ -3,10 +3,10 @@ from datetime import timedelta
 
 import xlrd
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.core import mail
 from django.urls import reverse
 
+from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers.create import create_officer
@@ -18,8 +18,6 @@ from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
 from .base import LEADER, CurrentCampsMixin, OfficersSetupMixin
-
-User = get_user_model()
 
 
 class TestCreate(TestBase):

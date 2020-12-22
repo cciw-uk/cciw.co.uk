@@ -1,9 +1,9 @@
 from datetime import date, timedelta
 
-from django.contrib.auth import get_user_model
 from django.core import mail
 from django.urls import reverse
 
+from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp, CampName, Site
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers import applications
@@ -12,8 +12,6 @@ from cciw.officers.tests.base import (OFFICER, OFFICER_PASSWORD, OFFICER_USERNAM
                                       OfficersSetupMixin, RequireApplicationsMixin, RequireQualificationTypesMixin)
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import WebTestBase
-
-User = get_user_model()
 
 
 class ApplicationModel(RequireApplicationsMixin, TestBase):
