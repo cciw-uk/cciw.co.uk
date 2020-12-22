@@ -36,8 +36,7 @@
 #      table: a name of a database table
 #      permission: 'add', 'view', 'change', or 'delete'
 #
-# See https://docs.djangoproject.com/en/1.11/topics/auth/default/#permissions-and-authorization
-#
+# Where 'change' permission is present, 'view' is implied.
 
 Roles:
   Wiki users:
@@ -45,11 +44,9 @@ Roles:
     Permissions: []
   Secretaries:
     Permissions:
-      # Need to be able to view officer applications, other small edits
-      - officers/application/change
-      - officers/qualificationtype/add
-      - officers/qualificationtype/change
-      - officers/qualificationtype/delete
+      # Need to be able to view officer applications
+      - officers/application/view
+      - officers/qualificationtype/view
   Booking secretaries:
     Permissions:
       # Need to be able to add and change bookings and their accounts
@@ -70,7 +67,7 @@ Roles:
       - bookings/refundpayment/change
       - bookings/refundpayment/delete
       # In order to view payment inlines, need this:
-      - bookings/payment/change
+      - bookings/payment/view
       # Helpful for them to be able to manage prices
       - bookings/price/add
       - bookings/price/change
