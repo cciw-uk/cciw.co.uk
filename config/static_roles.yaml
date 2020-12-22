@@ -41,9 +41,6 @@
 # need to be specified.
 
 Roles:
-  Wiki users:
-    # Wiki users don't need permissions, it is just a marker group
-    Permissions: []
   Secretaries:
     Permissions:
       # Need to be able to view officer applications
@@ -126,5 +123,8 @@ Roles:
       - sitecontent/menulink/change
       - sitecontent/menulink/delete
   Safeguarding co-ordinators:
-    # No permisssions needed, just a marker group for other purposes.
+    # No admin permisssions needed
+    Permissions: []
+  Wiki users:
+    # No admin permisssions needed
     Permissions: []
