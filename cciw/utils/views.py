@@ -53,8 +53,9 @@ def user_passes_test_improved(test_func, login_url=None, redirect_field_name=RED
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
-            if request.user.is_authenticated:
-                if test_func(request.user):
+            user = request.user
+            if user.is_authenticated:
+                if user.is_superuser or test_func(user):
                     return view_func(request, *args, **kwargs)
                 else:
                     return HttpResponseForbidden("<h1>Access denied</h1>")
