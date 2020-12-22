@@ -115,7 +115,7 @@ class CampAdmin(admin.ModelAdmin):
         if request.user.has_perm('cciwmain.change_camp'):
             return qs
         else:
-            return qs.filter(id__in=[c.id for c in request.user.editable_camps])
+            return qs.filter(id__in=[c.id for c in request.user.viewable_camps])
 
     def has_change_permission(self, request, obj=None):
         if obj is None:
@@ -125,6 +125,15 @@ class CampAdmin(admin.ModelAdmin):
             if request.user.can_edit_camp(obj):
                 return True
         return super(CampAdmin, self).has_change_permission(request, obj=obj)
+
+    def has_view_permission(self, request, obj=None):
+        if obj is None:
+            if request.user.can_edit_any_camps:
+                return True
+        else:
+            if request.user.can_view_camp(obj):
+                return True
+        return super(CampAdmin, self).has_view_permission(request, obj=obj)
 
 
 admin.site.register(Site, SiteAdmin)

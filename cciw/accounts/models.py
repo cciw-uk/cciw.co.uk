@@ -266,27 +266,53 @@ class User(AbstractBaseUser):
             return True
         return False
 
+    # These methods control permissions in admin
+    def can_view_any_camps(self):
+        if self.has_perm('cciwmain.view_camp'):
+            return True
+        # They only get view permissions for old camps when they also have
+        # edit permissions for at least one camp. i.e. current leaders
+        # can view old info, past leaders can't
+        if self.viewable_camps and self.editable_camps:
+            return True
+        return False
+
+    def can_view_camp(self, camp):
+        # NB also viewable_camps
+        if self.has_perm('cciwmain.view_camp'):
+            return True
+
+        if (self.can_view_any_camps and camp in self.viewable_camps):
+            return True
+        return False
+
+    @cached_property
+    def viewable_camps(self):
+        return self.camps_as_admin_or_leader
+
     @cached_property
     def can_edit_any_camps(self):
         if self.has_perm('cciwmain.change_camp'):
             return True
-        # NB - only *current* camp leaders can edit any camp.
-        # (past camp leaders are not assumed as responsible)
-        if self.current_camps_as_admin_or_leader:
+        if self.editable_camps:
             return True
         return False
 
     def can_edit_camp(self, camp):
-        # NB also editable_camps
         if self.has_perm('cciwmain.change_camp'):
             return True
 
-        # We only allow current camps to be edited by
-        # camp leaders, to avoid confusion and mistakes
         if (self.can_edit_any_camps and
-                camp in self.current_camps_as_admin_or_leader):
+                camp in self.editable_camps):
             return True
         return False
+
+    @cached_property
+    def editable_camps(self):
+        # We only allow current camps to be edited by
+        # camp leaders, to avoid confusion and mistakes,
+        # and avoid old leaders having access indefinitely
+        return self.current_camps_as_admin_or_leader
 
     @cached_property
     def camps_as_admin_or_leader(self):
@@ -312,12 +338,9 @@ class User(AbstractBaseUser):
     def current_camps_as_admin_or_leader(self):
         from cciw.cciwmain import common
 
+        # re-use cached camps_as_admin_or_leader here.
         return [c for c in self.camps_as_admin_or_leader
                 if c.year == common.get_thisyear()]
-
-    @cached_property
-    def editable_camps(self):
-        return self.current_camps_as_admin_or_leader
 
     @cached_property
     def can_search_officer_names(self):
