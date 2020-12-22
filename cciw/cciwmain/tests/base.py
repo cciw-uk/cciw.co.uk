@@ -45,8 +45,8 @@ class BasicSetupMixin(object):
             short_name="Llys Andreas")
 
         self.default_leader = Person.objects.create(
-            info="Dave and Rebecca are members of Grace Baptist Church, Southport.  Dave has been a leader or assistant leader on many camps (EMW, CCiW and church camps).",
-            name="Dave & Rebecca Stott")
+            info="Kevin and Tracey are members of Generic Baptist Church, London.  Kevin has been a leader or assistant leader on many camps (EMW, CCiW and church camps).",
+            name="Kevin & Tracey Smith")
 
         camp_name, _ = CampName.objects.get_or_create(
             name="Blue",

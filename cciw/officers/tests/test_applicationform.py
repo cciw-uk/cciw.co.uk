@@ -107,7 +107,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
     def _assert_finished_successful(self):
         self.assertNamedUrl("cciw-officers-applications")
 
-        self.assertTextPresent("The leaders (Dave & Rebecca Stott) have been notified of the completed application form by email.")
+        self.assertTextPresent("The leaders (Kevin & Tracey Smith) have been notified of the completed application form by email.")
 
     def _save(self):
         self.submit('[name=_save]')

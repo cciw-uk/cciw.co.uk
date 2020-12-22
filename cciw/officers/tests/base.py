@@ -14,7 +14,7 @@ OFFICER_EMAIL = "joebloggs@somewhere.com"
 OFFICER = (OFFICER_USERNAME, OFFICER_PASSWORD)
 
 
-LEADER_USERNAME = 'davestott'
+LEADER_USERNAME = 'kevinsmith'
 LEADER_PASSWORD = 'test_normaluser_password'
 LEADER_EMAIL = 'leader@somewhere.com'
 LEADER = (LEADER_USERNAME, LEADER_PASSWORD)
@@ -71,8 +71,8 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
         setup_auth_roles()
         self.leader_user = factories.make_officer(
             username=LEADER_USERNAME,
-            first_name="Dave",
-            last_name="Stott",
+            first_name="Kevin",
+            last_name="Smith",
             email=LEADER_EMAIL,
             password=LEADER_PASSWORD,
         )

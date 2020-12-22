@@ -184,9 +184,9 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
 
         sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
 
-        self.assertTrue(all(b'\nX-Original-From: Dave Stott <leader@somewhere.com>' in m
+        self.assertTrue(all(b'\nX-Original-From: Kevin Smith <leader@somewhere.com>' in m
                             for m in sent_messages_bytes))
-        self.assertTrue(all(m.from_email == 'Dave Stott leader(at)somewhere.com via <noreply@cciw.co.uk>'
+        self.assertTrue(all(m.from_email == 'Kevin Smith leader(at)somewhere.com via <noreply@cciw.co.uk>'
                             for m in sent_messages))
         self.assertTrue(all(b"Sender: CCIW website <noreply@cciw.co.uk>" in m
                             for m in sent_messages_bytes))
@@ -391,7 +391,7 @@ Date: Thu, 30 Jul 2015 10:39:10 +0100
 To: "Camp 1 officers" <camp-2000-blue-officers@mailtest.cciw.co.uk>
 Subject: Minibus Drivers
 Content-Type: text/plain; charset="us-ascii"
-From: Dave Stott <leader@somewhere.com>
+From: Kevin Smith <leader@somewhere.com>
 Content-Type: text/plain; charset=utf-8
 
 This is a message!
