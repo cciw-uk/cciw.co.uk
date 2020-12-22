@@ -151,6 +151,7 @@ into our processes themselves:
 
 * Whenever sensitive data is about to be downloaded, we display short,
   digestible information regarding CCiW's policy on its use and disposal.
+  ``STATUS:TODO``
 
 * We do **not** attempt to ensure compliance by use of checkboxes that ask
   people if they have read a data protection policy, because we know that
@@ -161,13 +162,13 @@ into our processes themselves:
   distribution (as is needed for some purposes), we include cover sheets that
   remind users of data protection responsibilities, and remind leaders to
   briefly train other people who will receive the data (such as officers)
-  regarding these principles.
+  regarding these principles. ``STATUS:TODO``
 
 * After the end of camps, we send reminders to relevant people who have
-  downloaded sensitive data, prompting them to delete them.
+  downloaded sensitive data, prompting them to delete them. ``STATUS:TODO``
 
 
 Backups
 ~~~~~~~
 
-TODO
+``STATUS:TODO``
