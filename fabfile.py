@@ -253,6 +253,7 @@ def _install_system():
     _add_swap()
     _install_python_minimum()
     _ssl_dhparam()
+    run("apt remove snapd")
 
 
 @as_rootuser
