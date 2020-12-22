@@ -576,10 +576,12 @@ def push_sources(target):
 
 
 @task
-def push_non_vcs_sources(target):
+def push_non_vcs_sources(target=None):
     """
     Push non-VCS sources to server
     """
+    if target is None:
+        target = Version.current()
     for s in NON_VCS_SOURCES:
         local(f"rsync {s} {env.proj_user}@{env.hosts[0]}:{target.SRC_ROOT}/{s}")
 
