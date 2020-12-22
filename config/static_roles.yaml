@@ -9,15 +9,16 @@
 # - We also have 'dynamic' roles which are calculated automatically using other
 #   data in the database. For example, via the links between the 'Camp',
 #   'Person' and 'User' table, we know which logged in 'Users' are leaders for
-#   camps, and which are leaders for current camps. These are 'current leaders'.
-#   Permissions work in two ways:
+#   camps, and which are leaders for current camps. These are 'current leaders',
+#
+# Permissions work in two ways:
 #
 # - The permissions defined in this file that allow certain roles to view/edit
-#   various database tables via the 'admin' section. of the website.
+#   various database tables via the 'admin' section of the website.
 #
-# - Certain other pages (e.g. booking reports) are limited to certain roles
-#   (dynamic or static). These are hard coded in the relevant parts of the
-#   source code.
+# - Certain other pages (e.g. booking reports, leaders functionality) are
+#   limited to certain roles (dynamic or static). These are hard-coded in the
+#   relevant parts of the source code.
 #
 # So this file covers only part of our permissions mechanism.
 #
@@ -31,12 +32,13 @@
 # The names of the roles need to be synced with /cciw/accounts/models.py
 #
 # Format of permissions is: app name/table name/permission
-#    where
+#    where:
 #      app name: refers to a sub section of the website (officers, bookings etc)
 #      table: a name of a database table
 #      permission: 'add', 'view', 'change', or 'delete'
 #
-# Where 'change' permission is present, 'view' is implied.
+# Where 'change' permission is present, 'view' is implied and doesn't
+# need to be specified.
 
 Roles:
   Wiki users:
