@@ -174,6 +174,7 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.SHA1PasswordHasher',
 ]
 
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # == LOGGING ==
 LOGGING = {
