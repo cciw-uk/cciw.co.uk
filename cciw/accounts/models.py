@@ -391,6 +391,7 @@ class Role(models.Model):
     # Email related
     email = models.EmailField(help_text="Email address including domain", blank=True)
     email_recipients = models.ManyToManyField(User, related_name='roles_as_email_recipient',
+                                              blank=True,
                                               help_text='Users who will be emailed for email sent to the role '
                                               'email address. Usually the same as "members", or a subset')
     allow_emails_from_public = models.BooleanField(default=False)

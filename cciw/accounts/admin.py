@@ -29,7 +29,7 @@ class MyUserAdmin(UserAdmin):
 class RoleAdmin(admin.ModelAdmin):
     search_fields = ['name']
     ordering = ['name']
-    fields = ['name', 'members', 'email', 'email_recipients']
+    fields = ['name', 'members', 'email', 'email_recipients', 'allow_emails_from_public']
     filter_horizontal = ['members', 'email_recipients']
 
 
