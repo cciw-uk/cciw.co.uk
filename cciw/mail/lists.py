@@ -271,11 +271,6 @@ def get_webmasters():
     return User.objects.filter(is_superuser=True)
 
 
-def is_in_committee_or_superuser(email_address):
-    return (get_role_users(COMMITTEE_ROLE_NAME).filter(email__iexact=email_address).exists() or
-            is_superuser(email_address))
-
-
 def get_leaders_for_camp(camp):
     retval = set()
     for p in camp.leaders.all().prefetch_related('users'):
