@@ -104,10 +104,8 @@ Access to information
   (Due to ``Person`` records sometimes being a married couple, the relationship
   with ``User`` is not a one-to-one, but many-to-many).
 
-* If dynamic roles are not possible, we can create groups for additional
-  permissions. We don't add individual permissions to User accounts. We do not
-  manually add permissions to groups via the database or Django admin interface
-  either, but instead edit `</config/static_roles.yaml>`_.
+* If dynamic roles are not possible, we can create static roles for additional
+  permissions, which is managed by `</config/static_roles.yaml>`_.
 
 * Privileged access must be limited in time - for example, being a leader one
   year does not mean a person should have higher access in subsequent years.
@@ -132,7 +130,9 @@ We therefore design our processes with these things in mind:
 
 * The machine that runs the CCiW website and database is by far the easiest
   machine to secure. The easiest way to ensure compliance is to centralise the
-  processing of sensitive information to that machine.
+  processing of sensitive information to that machine. For this reason, the web
+  master has special responsibility regarding understanding and implementing
+  data protection processes.
 
 * We do not provide means to download sensitive data unless necessary, and
   should design processes to minimise the need for any sensitive data to be held
