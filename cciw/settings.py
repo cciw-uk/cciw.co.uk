@@ -528,8 +528,9 @@ if LIVEBOX:
     )
 
 # Captcha
-CAPTCHA_FONT_PATH = os.path.join(BASE_DIR, "cciw", "cciwmain", "static", "fonts", "Jurassic_Park.ttf")
+CAPTCHA_FONT_PATH = os.path.join(BASE_DIR, "cciw", "cciwmain", "static", "fonts", "GloriaHallelujah-Regular.ttf")
+
 if not os.path.exists(CAPTCHA_FONT_PATH):
     raise ValueError(f"CAPTCHA_FONT_PATH is incorrect - file missing {CAPTCHA_FONT_PATH}")
-CAPTCHA_FONT_SIZE = 60   # Jurassic Park font is really small for some reason
+CAPTCHA_FONT_SIZE = 25
 CAPTCHA_LETTER_ROTATION = (-30, 30)
