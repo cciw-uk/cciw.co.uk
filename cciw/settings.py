@@ -528,7 +528,7 @@ if LIVEBOX:
     )
 
 # Captcha
-CAPTCHA_FONT_PATH = os.path.join(BASE_DIR, "cciw", "cciwmain", "static", "fonts", "GloriaHallelujah-Regular.ttf")
+CAPTCHA_FONT_PATH = os.path.join(BASE_DIR, "cciw", "cciwmain", "static", "fonts", "PressStart2P-Regular.ttf")
 
 if not os.path.exists(CAPTCHA_FONT_PATH):
     raise ValueError(f"CAPTCHA_FONT_PATH is incorrect - file missing {CAPTCHA_FONT_PATH}")
