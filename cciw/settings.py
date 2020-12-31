@@ -4,6 +4,7 @@
 import json
 import os
 import socket
+import subprocess
 import sys
 
 hostname = socket.gethostname()
@@ -520,11 +521,15 @@ if LIVEBOX:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
+    version = subprocess.check_output(['git', '-C', BASE_DIR, 'rev-parse', 'HEAD']).strip().decode('utf-8')
+    release = "cciw@" + version
+
     sentry_sdk.init(
         dsn=SECRETS['PRODUCTION_SENTRY_CONFIG']['dsn'],
         integrations=[DjangoIntegration()],
         traces_sample_rate=0.01,
-        send_default_pii=True
+        send_default_pii=True,
+        release=release,
     )
 
 # Captcha
