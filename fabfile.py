@@ -782,7 +782,7 @@ def update_upgrade():
 
 @task
 def create_sentry_release(version, last_commit):
-    local(f'sentry-cli releases --org cciw new -p production {version}')
+    local(f'sentry-cli releases --org cciw new -p cciw-website {version}')
     local(f'sentry-cli releases --org cciw set-commits {version} --auto')
     local(f'sentry-cli releases --org cciw finalize {version}')
 
