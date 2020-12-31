@@ -315,6 +315,13 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         self.assertEqual(mangle_from_address("Mr Foo <foo@bar.com>"),
                          "Mr Foo foo(at)bar.com via <noreply@cciw.co.uk>")
 
+    def test_invalid_characters(self):
+        bad_mail = MSG_BAD_CHARACTERS
+        handle_mail(bad_mail)
+        rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
+        self.assertEqual(sent_messages, [])
+        self.assertEqual(rejections, [])
+
 
 def emailify(msg):
     return msg.strip().replace("\n", "\r\n").encode('utf-8')
@@ -397,6 +404,38 @@ Content-Type: text/plain; charset=utf-8
 This is a message!
 
 """)
+
+
+MSG_BAD_CHARACTERS = b"""From: "spammer" <spammer@example.com>
+To: Someone <camp-debug@mailtest.cciw.co.uk>
+Subject: Spam!
+Date: Wed, 30 Dec 2020 05:27:50 +0300
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+\tboundary="----=_NextPart_000_0008_TS7XG54W.442UQQSC"
+Content-Language: en-us
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0008_TS7XG54W.442UQQSC
+Content-Type: text/plain;
+\tcharset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+Hello
+\xa0
+\xa0
+https://spam.com/3pvXIsK
+\xa0
+
+------=_NextPart_000_0008_TS7XG54W.442UQQSC
+Content-Type: text/html;
+\tcharset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html>Spam!</html>
+------=_NextPart_000_0008_TS7XG54W.442UQQSC--
+""".replace(b'\n', b'\r\n')
 
 
 def make_plain_text_request(path, body, headers):

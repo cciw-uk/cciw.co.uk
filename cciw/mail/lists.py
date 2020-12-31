@@ -369,7 +369,11 @@ def forward_email_to_list(mail, email_list: EmailList):
         _set_mail_header(mail, 'To', addr)
         # Need new message ID, or some mail servers will only send one
         _set_mail_header(mail, 'Message-ID', make_msgid())
-        mail_as_bytes = force_bytes(mail.as_string())
+        try:
+            mail_as_bytes = force_bytes(mail.as_string())
+        except UnicodeEncodeError:
+            # Can happen for bad mail, usually spammers
+            continue
         from_address = mail['From']
         messages_to_send.append(
             (addr, from_address, mail_as_bytes)
