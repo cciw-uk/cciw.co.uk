@@ -176,6 +176,9 @@ task. These backups have a short expiration date of 30 days, in order to be able
 to comply with our data retention policy without having to delete or modify
 backups. See also `<services.rst>`_.
 
+We also have whole machine backups from our hosting provider, which also go back
+at most 30 days.
+
 Architecture and encryption
 ---------------------------
 
