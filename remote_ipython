@@ -1,0 +1,2 @@
+#!/bin/sh
+ssh -t cciw@cciw.co.uk /home/cciw/webapps/cciw/versions/current/venv/bin/python /home/cciw/webapps/cciw/versions/current/src/manage.py shell
