@@ -28,6 +28,9 @@ These steps have only been tested on Ubuntu-based Linux installations.
     git clone git@gitlab.com:cciw/cciw.co.uk.git src
     cd src
 
+   Edit your ``.git/config`` and ensure the gitlab remote is called ``origin``
+   - this is needed for deploying.
+
 * Make a virtualenv using Python 3.7 e.g. using mkvirtualenv/virtualenv_wrapper::
 
     mkvirtualenv --python=`which python3.7` cciw
@@ -68,3 +71,24 @@ These steps have only been tested on Ubuntu-based Linux installations.
 * Technically optional, but very helpful - add precommit::
 
     $ pre-commit install
+
+
+To be able to deploy, you need the following:
+
+
+* Get secrets.json::
+
+    $ fab get_non_vcs_sources
+
+  This requires access to the production server.
+
+* For Sentry release integration after deployment, install ``sentry-cli`` into
+  $VIRTUAL_ENV/bin, or elsewhere, as per `installation docs
+  <https://docs.sentry.io/product/cli/installation/>`_.
+
+  As described in the `auth docs
+  <https://docs.sentry.io/product/cli/configuration/>`_, get a token from
+  sentry.io, and put into ~/.sentryclirc, or into an environment variable.
+
+  If you have more than one thing using sentry-cli, environment variables are
+  better. They can be put into ``postactivate`` script of the virtualenv.
