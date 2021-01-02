@@ -485,6 +485,9 @@ def deploy():
 
     # Push tags created in tag_deploy
     push_to_central_vcs()
+    # See also logic in settings.py for creating release name
+    release = "cciw@" + target.version
+    create_sentry_release(release, target.version)
 
 
 @task
@@ -776,6 +779,12 @@ def update_upgrade():
     run("apt update")
     run("apt upgrade")
 
+
+@task
+def create_sentry_release(version, last_commit):
+    local(f'sentry-cli releases --org cciw new -p cciw-website {version}')
+    local(f'sentry-cli releases --org cciw set-commits {version} --auto')
+    local(f'sentry-cli releases --org cciw finalize {version}')
 
 # -- DB snapshots --
 
