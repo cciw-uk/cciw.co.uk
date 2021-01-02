@@ -38,8 +38,8 @@ following points must be observed:
   security related features, rather than "roll our own". In particular we should
   use Django's security features wherever appropriate.
 
-* Architecture - TODO
-
+* We prefer a simple architecture that is easy to understand and therefore easy
+  to secure - more below.
 
 Data protection and privacy
 ---------------------------
@@ -86,8 +86,8 @@ Storage of sensitive information
 Access to information
 ~~~~~~~~~~~~~~~~~~~~~
 
-* Access to all officer functionality must be controlled on a "need to know
-  basis". The primary places where these are controlled are:
+* Access to all officer functionality must be controlled on a "need to know"
+  basis. The primary places where these are controlled are:
 
   * permission related methods on the ``User`` model in `</cciw/accounts/models.py>`_
   * permission decorators on views in `</cciw/officers/views.py>`_
@@ -171,4 +171,28 @@ into our processes themselves:
 Backups
 ~~~~~~~
 
-``STATUS:TODO``
+Our production database is backed up by ``backup_s3.py``, using a scheduled
+task. These backups have a short expiration date of 30 days, in order to be able
+to comply with our data retention policy without having to delete or modify
+backups. See also `<services.rst>`_.
+
+Architecture and encryption
+---------------------------
+
+For better security, we prefer to keep things as simple as possible. Since the
+application is very small, and can be easily served by a single machine, we have
+a single Virtual Private Server which hosts both the database and the web
+servers. This allows us to avoid the complexities of things like AWS services or
+other systems where there are many policies regarding security that can easily
+be misconfigured. It also means we can keep our database locked down to only
+accept localhost connections.
+
+For a simple configuration like this, there is little to zero benefit from some
+security mechanisms such as "encrypted at rest" databases. (Since the decryption
+key has to be on the same machine as the database, if the database machine is
+compromised then the key will also be compromised). Since adding these would
+only increase complexity, and also the possibility of accidental data loss, we
+are currently do not encrypt data at rest.
+
+We do use encryption at rest for any 3rd party services that we use e.g. Amazon
+S3.

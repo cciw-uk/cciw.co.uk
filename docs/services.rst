@@ -56,7 +56,7 @@ Amazon AWS
 
 All AWS services are part of a dedicated Amazon AWS account, as described in
 "CCiW website access information". IAM roles are described in that document.
-Individual services described below.
+Individual services are described below.
 
 Amazon S3 Backups
 -----------------
@@ -146,7 +146,7 @@ Using the main account, added 'cciw.co.uk' as a verified domain.
     * Made note of auth settings - copied to password store and to secrets.json as
       "SMTP_USERNAME" and "SMTP_PASSWORD".
 
-    * Also make note of MX record needed (inbound SMTP server)
+    * Also made note of MX record needed (inbound SMTP server)
 
 * Under 'Email addresses', added web master personal email address to test
   sending.
@@ -257,7 +257,7 @@ Actions:
     }
 
   with ``<BUCKET_NAME>`` and ``<USER_ID>`` replaced by values
-  from the secrets.json
+  from secrets.json
 
 * Added IAM policy with following contents::
 
@@ -326,8 +326,8 @@ Actions:
   * Added necessary permissions
 
 
-* This ruleset and all rules was later recreated via a script, but it is easiest
-  to setup notification using the console.
+* This ruleset and all rules were later recreated via a script, but it is easiest
+  to setup notifications using the console.
 
 * In Amazon SNS, for topic ses-incoming-notification:
 
@@ -345,7 +345,7 @@ Actions:
 Development
 ~~~~~~~~~~~
 
-The above actions/configuration represents the final, production config. When
+The above actions and configuration represent the final, production config. When
 setting this up, it can help to do so from a development machine using test
 values, especially if there is an existing setup that you are trying not to
 disturb.
@@ -365,8 +365,9 @@ Here is how to do that:
   like ``webmaster@mailtest.cciw.co.uk``.
 
 * For testing the SNS subscription and the web app handler, use ngrok, and set
-  up an HTTPS subscription that posts to the ngrok address instead of the live
-  one (which might not be deployed yet)
+  up an HTTPS subscription to the SNS topic that posts to the ngrok address of
+  your development server instead of the live one (which might not be deployed
+  yet).
 
 * If you want to test real email sending from a development machine, be sure to
   change ``cciw/settings.py`` so that you are using the real SMTP server
