@@ -39,7 +39,7 @@ def canonical_message_builder(content, fields):
         field + "\n" + content[field] + "\n"
         for field in sorted(fields)
         if field in content
-    ).encode('ascii')
+    ).encode('uft-8')
 
 
 def verify_sns_notification(request):
@@ -84,7 +84,7 @@ def verify_sns_notification(request):
         logger.info('Valid SNS signature %s with SigningCertURL %s', decoded_signature, signing_cert_url)
         return True
     except InvalidSignature:
-        logger.info('Invalid SNS signature %s', decoded_signature)
+        logger.warn('Invalid SNS sig, decoded_signature=%s, content=%s', decoded_signature, content)
         return False
 
 
