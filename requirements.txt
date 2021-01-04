@@ -113,7 +113,7 @@ s3transfer==0.1.13        # via boto3
 selenium==3.141.0         # via -r requirements-dev.in, django-functest
 sentry_sdk==0.19.5        # via -r requirements.in
 simplegeneric==0.8.1      # via ipython
-six==1.14.0               # via bcrypt, bleach, cryptography, django-autocomplete-light, django-compressor, django-functest, django-mailer, django-paypal, django-simple-captcha, fabric3, furl, orderedmultidict, packaging, pip-tools, prompt-toolkit, pynacl, python-dateutil, traitlets, vcrpy, virtualenv, webtest
+six==1.15.0               # via bcrypt, bleach, cryptography, django-autocomplete-light, django-compressor, django-functest, django-mailer, django-paypal, django-simple-captcha, fabric3, furl, orderedmultidict, packaging, pip-tools, prompt-toolkit, pynacl, python-dateutil, traitlets, vcrpy, virtualenv, webtest
 sorl-thumbnail==12.7.0    # via -r requirements.in, wiki
 soupsieve==1.9.2          # via beautifulsoup4
 sqlparse==0.2.4           # via django, django-debug-toolbar
