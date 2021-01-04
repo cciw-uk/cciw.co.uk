@@ -44,7 +44,7 @@ following points must be observed:
 Data protection and privacy
 ---------------------------
 
-The web master is responsible for understanding relevant data protection and
+The webmasters are responsible for understanding relevant data protection and
 privacy laws, including GDPR, and implementing processes that abide by relevant
 laws and fit CCiW's way of working.
 
@@ -110,6 +110,16 @@ Access to information
 * Privileged access must be limited in time - for example, being a leader one
   year does not mean a person should have higher access in subsequent years.
 
+* Webmasters have access to all information in the database, which is
+  appropriate given the small size of our organisation and the difficulty
+  of designing an architecture in which the webmasters could deploy code,
+  access backups etc. but not access all the data itself.
+
+  Note, however, that the webmasters must abide by the same "need to know"
+  principle when viewing data, and it is illegal to use any data except for the
+  purposes that CCiW have agreed, as laid out in `GDPR Article 32 paragraph 4
+  <https://gdpr-info.eu/art-32-gdpr/>`_.
+
 Distribution of information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -130,17 +140,31 @@ We therefore design our processes with these things in mind:
 
 * The machine that runs the CCiW website and database is by far the easiest
   machine to secure. The easiest way to ensure compliance is to centralise the
-  processing of sensitive information to that machine. For this reason, the web
-  master has special responsibility regarding understanding and implementing
-  data protection processes.
+  processing of sensitive information to that machine. For this reason, the
+  webmasters have special responsibility regarding understanding and
+  implementing data protection processes.
 
 * We do not provide means to download sensitive data unless necessary, and
   should design processes to minimise the need for any sensitive data to be held
   on volunteer machines.
 
 * The website should never email sensitive data, and we do not allow sensitive
-  data to be emailed between different members of staff, because it is often too
+  data to be emailed between different volunteers, because it is often too
   difficult to ensure that data held in email accounts is disposed of properly.
+
+
+Third party services
+~~~~~~~~~~~~~~~~~~~~
+
+We should be very careful about integrating 3rd party services. This means:
+
+* avoiding the use of 3rd parties unless necessary
+* choosing reliable, proven companies who have appropriate privacy policies
+* minimising the data we send to them
+* avoiding integration via Javascript that is not under our control, because
+  flaws in these can easily open us up to many types of attacks.
+
+See `GDPR Article 28 <https://gdpr-info.eu/art-28-gdpr/>`_ for more information.
 
 Ensuring compliance and training
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -195,7 +219,7 @@ security mechanisms such as "encrypted at rest" databases. (Since the decryption
 key has to be on the same machine as the database, if the database machine is
 compromised then the key will also be compromised). Since adding these would
 only increase complexity, and also the possibility of accidental data loss, we
-are currently do not encrypt data at rest.
+currently do not encrypt data at rest.
 
-We do use encryption at rest for any 3rd party services that we use e.g. Amazon
-S3.
+We do use encryption at rest for any 3rd party services that we use e.g.
+database backups on Amazon S3.
