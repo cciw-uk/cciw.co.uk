@@ -39,7 +39,7 @@ def canonical_message_builder(content, fields):
         field + "\n" + content[field] + "\n"
         for field in sorted(fields)
         if field in content
-    ).encode('uft-8')
+    ).encode('utf-8')
 
 
 def verify_sns_notification(request):
