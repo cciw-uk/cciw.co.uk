@@ -23,7 +23,7 @@ def ses_incoming_notification(request):
     # with timeouts - e.g. a 5 Mb attachment that gets sent to 30 people has to
     # be sent 30 times. So we save and deal with it asynchronously.
     data = download_ses_message_from_s3(message_id)
-    handle_mail_async(data)
+    handle_mail_async(data, message_id=message_id)
     return HttpResponse('OK!')
 
 

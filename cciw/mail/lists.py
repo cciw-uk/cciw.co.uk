@@ -427,8 +427,11 @@ def mangle_from_address(address):
 INCOMING_MAIL_TEMPFILE_PREFIX = "mail-incoming-"
 
 
-def handle_mail_async(data):
-    fd, name = tempfile.mkstemp(prefix=INCOMING_MAIL_TEMPFILE_PREFIX)
+def handle_mail_async(data, message_id=None):
+    prefix = INCOMING_MAIL_TEMPFILE_PREFIX
+    if message_id is not None:
+        prefix += message_id + '-'  # helps debugging
+    fd, name = tempfile.mkstemp(prefix=prefix)
     os.write(fd, data)
     os.close(fd)
     manage_py_path = os.path.join(settings.PROJECT_ROOT, "manage.py")
