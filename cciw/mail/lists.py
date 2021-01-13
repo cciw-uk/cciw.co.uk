@@ -435,6 +435,8 @@ def handle_mail_async(data, message_id=None):
     os.write(fd, data)
     os.close(fd)
     manage_py_path = os.path.join(settings.PROJECT_ROOT, "manage.py")
+    # Poor man's async - use spawnlp which returns instantly.
+    # Indirectly calls handle_mail below.
     os.spawnlp(os.P_NOWAIT, "nohup", "nohup", manage_py_path, "handle_message", name)
 
 
