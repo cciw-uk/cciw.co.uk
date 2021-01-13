@@ -447,7 +447,9 @@ def handle_mail(data):
     """
     mail = email.message_from_bytes(data)
     to = mail['To']
-    assert to is not None, "Message did not have 'To' field set, cannot send email"
+    if to is None:
+        # Some spam is like this.
+        return
 
     if is_valid_email(to):
         addresses = [to]
