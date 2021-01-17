@@ -1,5 +1,5 @@
 ConcurrentLogHandler==0.9.1
-Django==3.0.6
+Django==3.1.5
 PyYAML==5.1.2
 attrs==19.3.0
 boto3==1.4.7
@@ -31,7 +31,7 @@ rcssmin==1.0.6
 requests==2.22.0
 rjsmin==1.1.0
 uwsgi==2.0.15
-wiki==0.7
+wiki==0.7.3
 xlrd==1.2.0
 xlwt==1.3.0
 django-simple-captcha==0.5.13
