@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from cciw.accounts.models import BOOKING_SECRETARY_ROLE_NAME, CAMP_ADMIN_ROLES, SECRETARY_ROLE_NAME, user_has_role
 from cciw.officers.tests.base import OFFICER, OfficersSetupMixin
 from cciw.utils.tests.base import TestBase
@@ -55,17 +57,40 @@ class TestUserModel(OfficersSetupMixin, TestBase):
         assert not self.officer_user.has_perm('bookings.add_booking')
 
 
-class TestSetPassword(OfficersSetupMixin, WebTestBase):
+class PwnPasswordPatcherMixin:
+    PWNED_PASSWORDS = [
+        'pwnedpassword'
+    ]
+
+    def setUp(self):
+        super().setUp()
+        self.pwned_password_patcher = patch(
+            'pwned_passwords_django.api.pwned_password',
+            new=self.pwned_password
+        )
+        self.pwned_password_patcher.start()
+
+    def tearDown(self):
+        self.pwned_password_patcher.stop()
+        super().tearDown()
+
+    def pwned_password(self, password):
+        return password in self.PWNED_PASSWORDS
+
+
+class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
+
     def test_disallow_too_common(self):
         self.officer_login(OFFICER)
         self.get_url('admin:password_change')
+        new_password = self.PWNED_PASSWORDS[0]
         self.fill({
             '#id_old_password': OFFICER[1],
-            '#id_new_password1': 'password',
-            '#id_new_password2': 'password',
+            '#id_new_password1': new_password,
+            '#id_new_password2': new_password,
         })
         self.submit('[type=submit]')
-        self.assertTextPresent('Your password can’t be a commonly used password.')
+        self.assertTextPresent('This password is too common.')
 
     def test_allow_good_password(self):
         self.officer_login(OFFICER)
