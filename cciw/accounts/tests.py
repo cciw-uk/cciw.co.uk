@@ -1,6 +1,7 @@
 from cciw.accounts.models import BOOKING_SECRETARY_ROLE_NAME, CAMP_ADMIN_ROLES, SECRETARY_ROLE_NAME, user_has_role
-from cciw.officers.tests.base import OfficersSetupMixin
+from cciw.officers.tests.base import OFFICER, OfficersSetupMixin
 from cciw.utils.tests.base import TestBase
+from cciw.utils.tests.webtest import WebTestBase
 
 
 class TestUserModel(OfficersSetupMixin, TestBase):
@@ -52,3 +53,31 @@ class TestUserModel(OfficersSetupMixin, TestBase):
         # Depends on static_roles.yaml
         assert self.booking_secretary.has_perm('bookings.add_booking')
         assert not self.officer_user.has_perm('bookings.add_booking')
+
+
+class TestSetPassword(OfficersSetupMixin, WebTestBase):
+    def test_disallow_too_common(self):
+        self.officer_login(OFFICER)
+        self.get_url('admin:password_change')
+        self.fill({
+            '#id_old_password': OFFICER[1],
+            '#id_new_password1': 'password',
+            '#id_new_password2': 'password',
+        })
+        self.submit('[type=submit]')
+        self.assertTextPresent('Your password can’t be a commonly used password.')
+
+    def test_allow_good_password(self):
+        self.officer_login(OFFICER)
+        self.get_url('admin:password_change')
+        new_password = 'Jo6Ohmieooque5A'
+        self.fill({
+            '#id_old_password': OFFICER[1],
+            '#id_new_password1': new_password,
+            '#id_new_password2': new_password,
+        })
+        self.submit('[type=submit]')
+        self.assertTextPresent('Your password was changed')
+        user = self.officer_user
+        user.refresh_from_db()
+        assert user.check_password(new_password)
