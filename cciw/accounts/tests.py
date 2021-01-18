@@ -1,5 +1,8 @@
 from unittest.mock import patch
 
+from django.urls import reverse
+from furl import furl
+
 from cciw.accounts.models import BOOKING_SECRETARY_ROLE_NAME, CAMP_ADMIN_ROLES, SECRETARY_ROLE_NAME, user_has_role
 from cciw.officers.tests.base import OFFICER, OfficersSetupMixin
 from cciw.utils.tests.base import TestBase
@@ -69,16 +72,20 @@ class PwnPasswordPatcherMixin:
             new=self.pwned_password
         )
         self.pwned_password_patcher.start()
+        self.pwned_password_call_count = 0
 
     def tearDown(self):
         self.pwned_password_patcher.stop()
         super().tearDown()
 
     def pwned_password(self, password):
+        self.pwned_password_call_count += 1
         return password in self.PWNED_PASSWORDS
 
 
 class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
+
+    good_password = 'Jo6Ohmieooque5A'
 
     def test_disallow_too_common(self):
         self.officer_login(OFFICER)
@@ -95,7 +102,7 @@ class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
     def test_allow_good_password(self):
         self.officer_login(OFFICER)
         self.get_url('admin:password_change')
-        new_password = 'Jo6Ohmieooque5A'
+        new_password = self.good_password
         self.fill({
             '#id_old_password': OFFICER[1],
             '#id_new_password1': new_password,
@@ -106,3 +113,74 @@ class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
         user = self.officer_user
         user.refresh_from_db()
         assert user.check_password(new_password)
+
+    def test_handle_unvalidated_bad_password(self):
+        # When we log in, if the password doesn't pass new validation checks,
+        # we should require them to set their password.
+        user = self.officer_user
+        user.password_validators_used = ''
+        bad_password = self.PWNED_PASSWORDS[0]
+        user.set_password(bad_password)
+        user.save()
+
+        self.get_url('cciw-officers-index')
+        # We get redirected to login
+        self.assertTextPresent('Password:')
+        self.fill({
+            '#id_username': OFFICER[0],
+            '#id_password': OFFICER[1],
+        })
+        self.submit('[type=submit]')
+
+        assert self.pwned_password_call_count == 1
+        user.refresh_from_db()
+
+        # We should be redirected to set password page:
+        assert furl(self.current_url).path == reverse('admin:password_change')
+
+        new_password = self.good_password
+        self.fill({
+            '#id_old_password': bad_password,
+            '#id_new_password1': new_password,
+            '#id_new_password2': new_password,
+        })
+        self.submit('[type=submit]')
+
+        assert self.pwned_password_call_count == 2
+        user.refresh_from_db()
+
+        assert user.check_password(new_password)
+        assert user.password_validators_used != ''
+
+        # finally should get back to where we were going
+        assert furl(self.current_url).path == reverse('cciw-officers-index')
+
+    def test_handle_unvalidated_good_password(self):
+        # When we log in, if their password hasn't been checked, and it does
+        # pass new validation checks, we shouldn't require them to set password
+        # again.
+        user = self.officer_user
+        user.password_validators_used = ''
+        user.save()
+
+        self.get_url('cciw-officers-index')
+        self.fill({
+            '#id_username': OFFICER[0],
+            '#id_password': OFFICER[1],
+        })
+        self.submit('[type=submit]')
+        assert self.pwned_password_call_count == 1
+
+        assert furl(self.current_url).path == reverse('cciw-officers-index')
+
+    def test_handle_validated_password(self):
+        # When we log in, if their password has already been checked, we
+        # shouldn't check it again.
+        self.get_url('cciw-officers-index')
+        self.fill({
+            '#id_username': OFFICER[0],
+            '#id_password': OFFICER[1],
+        })
+        self.submit('[type=submit]')
+        assert furl(self.current_url).path == reverse('cciw-officers-index')
+        assert self.pwned_password_call_count == 0
