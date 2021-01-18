@@ -100,7 +100,7 @@ INSTALLED_APPS = [
     'dal',
     'dal_select2',  # dal and dal_select2 need to come before contrib.admin
     'django.contrib.auth',
-    'django.contrib.admin',
+    'cciw.apps.CciwAdminConfig',  # admin replacement
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
