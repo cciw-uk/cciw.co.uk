@@ -4,9 +4,10 @@ from urllib.parse import urlparse
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.contrib.auth.views import redirect_to_login
 from django.http import Http404, HttpResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
+from furl import furl
 
 from cciw.utils.spreadsheet import ExcelFormatter, OdsFormatter
 
@@ -45,7 +46,7 @@ def reroute_response(request, default_to_close=True):
         return None
 
 
-def user_passes_test_improved(test_func, login_url=None, redirect_field_name=REDIRECT_FIELD_NAME):
+def user_passes_test_improved(test_func):
     """
     Like user_passes_test, but doesn't redirect user to login screen if they are
     already logged in.
@@ -62,18 +63,42 @@ def user_passes_test_improved(test_func, login_url=None, redirect_field_name=RED
 
             # All unauthenticated users are blocked access, and redirected to
             # login.
-            path = request.build_absolute_uri()
-            # If the login url is the same scheme and net location then just
-            # use the path as the "next" url.
-            login_scheme, login_netloc = urlparse(login_url or
-                                                  settings.LOGIN_URL)[:2]
-            current_scheme, current_netloc = urlparse(path)[:2]
-            if ((not login_scheme or login_scheme == current_scheme) and
-                    (not login_netloc or login_netloc == current_netloc)):
-                path = request.get_full_path()
-            return redirect_to_login(path, login_url, redirect_field_name)
+            return redirect_to_login_with_next(request)
         return _wrapped_view
     return decorator
+
+
+def redirect_to_login_with_next(request):
+    login_url = settings.LOGIN_URL
+    path = get_current_url_for_redirection(request, login_url)
+    return redirect_to_url_with_next(path, login_url, REDIRECT_FIELD_NAME)
+
+
+def redirect_to_password_change_with_next(request):
+    password_change_url = reverse('admin:password_change')
+    if furl(request.build_absolute_uri()).path == password_change_url:
+        return None  # loop breaker
+    path = get_current_url_for_redirection(request, password_change_url)
+    return redirect_to_url_with_next(path, password_change_url, REDIRECT_FIELD_NAME)
+
+
+def get_current_url_for_redirection(request, redirect_url):
+    url = request.build_absolute_uri()
+    # If the url is the same scheme and net location then just
+    # use the path as the "next" url.
+    login_scheme, login_netloc = urlparse(redirect_url)[:2]
+    current_scheme, current_netloc = urlparse(url)[:2]
+    if ((not login_scheme or login_scheme == current_scheme) and
+            (not login_netloc or login_netloc == current_netloc)):
+        url = request.get_full_path()
+    # Otherwise we need to include scheme and location
+    return url
+
+
+def redirect_to_url_with_next(next_url, url, redirect_field_name):
+    f = furl(url)
+    f.args[redirect_field_name] = next_url
+    return HttpResponseRedirect(f.url)
 
 
 formatters = {

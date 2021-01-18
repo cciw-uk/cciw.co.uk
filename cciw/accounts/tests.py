@@ -102,6 +102,7 @@ class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
     def test_allow_good_password(self):
         self.officer_login(OFFICER)
         self.get_url('admin:password_change')
+        self.assertTextPresent("Use a password manager")
         new_password = self.good_password
         self.fill({
             '#id_old_password': OFFICER[1],
@@ -118,9 +119,9 @@ class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
         # When we log in, if the password doesn't pass new validation checks,
         # we should require them to set their password.
         user = self.officer_user
-        user.password_validators_used = ''
         bad_password = self.PWNED_PASSWORDS[0]
         user.set_password(bad_password)
+        user.mark_password_validation_not_done()
         user.save()
 
         self.get_url('cciw-officers-index')
@@ -128,7 +129,7 @@ class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
         self.assertTextPresent('Password:')
         self.fill({
             '#id_username': OFFICER[0],
-            '#id_password': OFFICER[1],
+            '#id_password': bad_password,
         })
         self.submit('[type=submit]')
 
@@ -137,6 +138,11 @@ class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
 
         # We should be redirected to set password page:
         assert furl(self.current_url).path == reverse('admin:password_change')
+
+        # And there should be a specific reason
+        self.assertTextPresent("Your current password doesn't meet our updated requirements")
+        self.assertTextPresent("it may have been found on a list of compromised passwords.")
+        self.assertTextPresent("Please choose a different password.")
 
         new_password = self.good_password
         self.fill({
@@ -150,7 +156,7 @@ class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
         user.refresh_from_db()
 
         assert user.check_password(new_password)
-        assert user.password_validators_used != ''
+        assert not user.password_validation_needs_checking()
 
         # finally should get back to where we were going
         assert furl(self.current_url).path == reverse('cciw-officers-index')
@@ -160,7 +166,7 @@ class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
         # pass new validation checks, we shouldn't require them to set password
         # again.
         user = self.officer_user
-        user.password_validators_used = ''
+        user.mark_password_validation_not_done()
         user.save()
 
         self.get_url('cciw-officers-index')
@@ -172,10 +178,13 @@ class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
         assert self.pwned_password_call_count == 1
 
         assert furl(self.current_url).path == reverse('cciw-officers-index')
+        user.refresh_from_db()
+        assert not user.password_validation_needs_checking()
 
     def test_handle_validated_password(self):
         # When we log in, if their password has already been checked, we
         # shouldn't check it again.
+        user = self.officer_user
         self.get_url('cciw-officers-index')
         self.fill({
             '#id_username': OFFICER[0],
@@ -184,3 +193,5 @@ class TestSetPassword(OfficersSetupMixin, PwnPasswordPatcherMixin, WebTestBase):
         self.submit('[type=submit]')
         assert furl(self.current_url).path == reverse('cciw-officers-index')
         assert self.pwned_password_call_count == 0
+        user.refresh_from_db()
+        assert not user.password_validation_needs_checking()

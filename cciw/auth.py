@@ -1,4 +1,6 @@
+from django.contrib.auth import password_validation
 from django.contrib.auth.models import Permission
+from django.core.exceptions import ValidationError
 
 from cciw.accounts.models import User
 
@@ -7,6 +9,10 @@ class CciwAuthBackend:
     # This is similar to django.contrib.auth.backends.ModelBackend,
     # but based on our 'Role' instead of 'Group'. In addition, we also
     # drop "user permissions" (all permissions are defined at Role level).
+
+    # We also include logic to check password against validators,
+    # so that adding new validators causes people to change their
+    # password after they login, if their password needs it.
 
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None or password is None:
@@ -19,6 +25,7 @@ class CciwAuthBackend:
             User().set_password(password)
         else:
             if user.check_password(password) and self.user_can_authenticate(user):
+                self.check_password_validation(user, password)
                 return user
 
     def get_user(self, user_id):
@@ -92,3 +99,15 @@ class CciwAuthBackend:
             perm[:perm.index('.')] == app_label
             for perm in self.get_all_permissions(user_obj)
         )
+
+    def check_password_validation(self, user, password):
+        if not user.password_validation_needs_checking():
+            return
+
+        try:
+            password_validation.validate_password(password, user=user)
+        except ValidationError:
+            user.mark_bad_password()
+        else:
+            user.clear_bad_password()
+        user.save()

@@ -118,6 +118,9 @@ class User(AbstractBaseUser):
                                             blank=True,
                                             help_text="Required only for staff like CPO who need to be contacted.")
 
+    bad_password = models.BooleanField(default=False)
+    password_validators_used = models.TextField(blank=True)
+
     objects = UserManager()
 
     EMAIL_FIELD = 'email'
@@ -209,6 +212,32 @@ class User(AbstractBaseUser):
             except PermissionDenied:
                 return False
         return False
+
+    # Login/password related
+
+    def mark_password_validation_done(self):
+        self.password_validators_used = _current_password_validators_as_string()
+
+    def mark_password_validation_not_done(self):
+        self.password_validators_used = ''
+
+    def password_validation_needs_checking(self):
+        return self.password_validators_used != _current_password_validators_as_string()
+
+    def set_password(self, password):
+        retval = super().set_password(password)
+        # To avoid getting stuck on set password page,
+        # we have to clear this flag
+        self.clear_bad_password()
+        return retval
+
+    def mark_bad_password(self):
+        self.bad_password = True
+        self.mark_password_validation_done()
+
+    def clear_bad_password(self):
+        self.bad_password = False
+        self.mark_password_validation_done()
 
     # Helpers for roles
     @cached_property
@@ -433,5 +462,19 @@ def setup_auth_roles():
         with transaction.atomic():
             role.permissions.set(perms)
 
+
+def _current_password_validators_as_string():
+    # Simple stringification that can handle AUTH_PASSWORD_VALIDATORS including
+    # options. Applies canoninical ordering of dict keys for determinism.
+    def val_to_str(val):
+        if isinstance(val, dict):
+            return '{' + ','.join(f'{k!r}:{val_to_str(v)}' for k, v in sorted(val.items())) + '}'
+        elif isinstance(val, (str, int)):
+            return repr(val)
+        elif isinstance(val, list):
+            return '[' + ','.join(f'{val_to_str(v)}' for v in val) + ']'
+        else:
+            raise AssertionError("Can't handle {type(val)}")
+    return val_to_str(settings.AUTH_PASSWORD_VALIDATORS)
 
 from . import hooks  # noqa

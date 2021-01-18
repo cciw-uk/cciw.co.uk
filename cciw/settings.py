@@ -417,6 +417,7 @@ _MIDDLEWARE = [
     (True, "django.contrib.auth.middleware.AuthenticationMiddleware"),
     (True, "django.contrib.messages.middleware.MessageMiddleware"),
     (True, 'django.middleware.clickjacking.XFrameOptionsMiddleware'),
+    (True, "cciw.middleware.auth.bad_password_checks"),
     (True, "cciw.middleware.auth.private_wiki"),
     (True, "cciw.bookings.middleware.booking_token_login"),
     (True, "cciw.middleware.threadlocals.thread_locals"),
