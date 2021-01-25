@@ -334,6 +334,7 @@ def forward_email_to_list(mail, email_list: EmailList):
     _set_mail_header(mail, 'X-Original-From', orig_from_addr)
     _set_mail_header(mail, 'Return-Path', settings.SERVER_EMAIL)
     _set_mail_header(mail, 'Reply-To', reply_to)
+    _set_mail_header(mail, 'X-Original-To', email_list.address)
 
     # Various headers seem to cause problems. We whitelist the ones
     # that are OK:
@@ -352,6 +353,8 @@ def forward_email_to_list(mail, email_list: EmailList):
         'x-original-from',
         'disposition-notification-to',
         'return-receipt-to',
+        'return-path',
+        'x-original-to',
     ]
     mail._headers = [(name, val) for name, val in mail._headers
                      if name.lower() in good_headers]
