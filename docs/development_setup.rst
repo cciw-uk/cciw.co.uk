@@ -28,8 +28,8 @@ These steps have only been tested on Ubuntu-based Linux installations.
     git clone git@gitlab.com:cciw/cciw.co.uk.git src
     cd src
 
-   Edit your ``.git/config`` and ensure the gitlab remote is called ``origin``
-   - this is needed for deploying.
+  Edit your ``.git/config`` and ensure the gitlab remote is called ``origin``
+  - this is needed for deploying.
 
 * Make a virtualenv using Python 3.7 e.g. using mkvirtualenv/virtualenv_wrapper::
 

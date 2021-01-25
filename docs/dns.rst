@@ -15,7 +15,7 @@ NS                                       ns2.digitalocean.com.
 NS                                       ns3.digitalocean.com.
 ===== ================================== =================================
 
-Further records added as per instructions for various services in :doc:`services.rst`
+Further records added as per instructions for various services in `<services.rst>`_.
 
 Most recent Zone file:
 
