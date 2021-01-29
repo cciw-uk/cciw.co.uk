@@ -3,7 +3,7 @@ from django.contrib import admin
 
 class ExplicitBooleanFieldSelect(admin.widgets.AdminRadioSelect):
     """
-    A Radio select widget intended to be used with NullBooleanField.
+    A Radio select widget intended to be used with a nullable BooleanField.
     """
     def __init__(self, attrs=None):
         if attrs is None:

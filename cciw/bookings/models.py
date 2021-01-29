@@ -180,8 +180,8 @@ class BookingAccount(models.Model):
                                              "to other parents to help organise transport",
                                              blank=True, default=False)
     email_communication = models.BooleanField("Receive all communication from CCiW by email where possible", blank=True, default=True)
-    subscribe_to_mailings = models.NullBooleanField("Receive mailings about future camps",
-                                                    default=None, blank=True)
+    subscribe_to_mailings = models.BooleanField("Receive mailings about future camps",
+                                                default=None, blank=True, null=True)
     subscribe_to_newsletter = models.BooleanField("Subscribe to email newsletter", default=False,
                                                   help_text=MAILCHIMP_NOTICE)
     total_received = models.DecimalField(default=Decimal('0.00'), decimal_places=2, max_digits=10)

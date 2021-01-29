@@ -21,15 +21,11 @@ class AddressField(models.TextField):
         return super(AddressField, self).__init__(*args, **kwargs)
 
 
-class ExplicitBooleanField(models.NullBooleanField):
+class ExplicitBooleanField(models.BooleanField):
     def __init__(self, *args, **kwargs):
         kwargs['default'] = None
+        kwargs['null'] = True
         super(ExplicitBooleanField, self).__init__(*args, **kwargs)
-
-    def _has_changed(self, initial, data):
-        # Sometimes data or initial could be None or '' which should be the
-        # same thing as False.
-        return bool(initial) != bool(data)
 
 
 def required_field(field_class):

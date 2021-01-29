@@ -459,7 +459,7 @@ class DBSCheck(models.Model):
                                              help_text="Uncheck if the applicant could not be accepted "
                                              "on the basis of this DBS check")
 
-    registered_with_dbs_update = models.NullBooleanField("registered with DBS update service")
+    registered_with_dbs_update = models.BooleanField("registered with DBS update service", null=True)
 
     objects = DBSCheckManager()
 

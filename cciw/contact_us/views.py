@@ -89,7 +89,7 @@ the link to view it:
 
 @cciw_secretary_or_booking_secretary_required
 @staff_member_required
-def view_message(request, message_id):
+def view_message(request, *, message_id: int):
     msg = get_object_or_404(Message.objects.filter(id=int(message_id)))
     quoted_message_body = "\n".join(["> " + line for line in wordwrap(msg.message, 70).split("\n")])
     reply_template = """Dear {name},
