@@ -39,3 +39,4 @@ sorl-thumbnail==12.7.0
 pwned-passwords-django==1.4.1
 sentry_sdk==0.19.5
 cryptography==3.3.1
+pywatchman==1.4.1

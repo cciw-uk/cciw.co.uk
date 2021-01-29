@@ -286,6 +286,8 @@ pytz==2019.3
     #   pandas
 pyvirtualdisplay==0.2.1
     # via django-functest
+pywatchman==1.4.1
+    # via -r requirements.in
 pyyaml==5.1.2
     # via
     #   -r requirements.in
