@@ -115,6 +115,8 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
                             for m in sent_messages_bytes))
         self.assertTrue(all(b"Subject: Test" in m
                             for m in sent_messages_bytes))
+        self.assertTrue(all(b"X-Original-To: camp-debug@mailtest.cciw.co.uk" in m
+                            for m in sent_messages_bytes))
 
     def test_handle_role_list(self):
         committee, _ = Role.objects.get_or_create(name=COMMITTEE_ROLE_NAME)
