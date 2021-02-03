@@ -276,7 +276,7 @@ python-dateutil==2.8.1
     #   -r requirements.in
     #   botocore
     #   pandas
-python3-memcached==1.51
+python-memcached==1.59
     # via -r requirements.in
 pytz==2019.3
     # via
@@ -334,6 +334,7 @@ six==1.15.0
     #   prompt-toolkit
     #   pynacl
     #   python-dateutil
+    #   python-memcached
     #   traitlets
     #   vcrpy
     #   virtualenv
