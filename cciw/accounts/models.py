@@ -176,6 +176,17 @@ class User(AbstractBaseUser):
         if self.is_active and self.is_superuser:
             return True
 
+        if perm == "wiki.moderate" and self.is_active and self.is_wiki_user:
+            # There is some code in django-wiki that:
+            # 1. checks for this permission
+            #
+            # 2. if it fails goes on to do a query that fails for us,
+            #    due to the fact that we have 'Role' and not 'Group', and the
+            #    different schema.
+            #
+            # So we avoid the bug by shortcutting here
+            return True
+
         # Otherwise we need to check the backends.
         for backend in auth.get_backends():
             if not hasattr(backend, 'has_perm'):
