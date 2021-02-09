@@ -44,7 +44,7 @@ from cciw.utils.views import get_spreadsheet_formatter, reroute_response, user_p
 
 from . import create
 from .applications import (application_rtf_filename, application_to_rtf, application_to_text, application_txt_filename,
-                           applications_for_camp, camps_for_application, thisyears_applications)
+                           applications_for_camp, applications_for_camps, camps_for_application, thisyears_applications)
 from .email import (make_ref_form_url, make_ref_form_url_hash, send_dbs_consent_alert_leaders_email,
                     send_nag_by_officer, send_reference_request_email, send_request_for_dbs_form_email)
 from .email_utils import formatted_email, send_mail_with_attachments
@@ -1064,22 +1064,21 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None):
     # Some of this logic could be put onto specific models. However, we only
     # ever need this info in bulk for specific views, and efficient data access
     # patterns look completely different for the bulk case. So we use this
-    # utility functions.
+    # utility function.
     # We need all the officers, and we need to know which camp(s) they belong
     # to. Even if we have only selected one camp, it might be nice to know if
     # they are on other camps. So we get data for all camps, and filter later.
     # We also want to be able to do filtering by javascript in the frontend.
     now = timezone.now()
 
+    camp_invitations = Invitation.objects.filter(camp__in=camps).select_related('officer', 'camp__camp_name')
     if officer_id is not None:
-        camps_officers = [[i.officer for i in c.invitations.all().filter(officer__id=officer_id)]
-                          for c in camps]
-    else:
-        camps_officers = [[i.officer for i in c.invitations.all()] for c in camps]
+        camp_invitations = camp_invitations.filter(officer__id=officer_id)
+    camp_invitations = list(camp_invitations)
 
-    all_officers = reduce(operator.or_, map(set, camps_officers))
-    all_officers = sorted(all_officers, key=lambda o: (o.first_name, o.last_name))
-    apps = list(reduce(operator.or_, map(applications_for_camp, camps)))
+    all_officers = list(set(i.officer for i in camp_invitations))
+    all_officers.sort(key=lambda o: (o.first_name, o.last_name))
+    apps = list(applications_for_camps(camps))
     recent_dbs_officer_ids = set(reduce(operator.or_,
                                         [DBSCheck.objects.get_for_camp(c, include_late=True)
                                          for c in camps])
@@ -1115,9 +1114,12 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None):
     # - if they have an up to date DBS
     # - when the last DBS form was sent to officer
     # - when the last alert was sent to leader
-    officer_ids = dict([(camp.id, set([o.id for o in officers]))
-                        for camp, officers in zip(camps, camps_officers)])
-    officer_apps = dict([(a.officer_id, a) for a in apps])
+
+    officers_camps = defaultdict(list)
+    for invitation in camp_invitations:
+        officers_camps[invitation.officer_id].append(invitation.camp)
+
+    officer_apps = {a.officer_id: a for a in apps}
 
     def logs_to_dict(logs):
         # NB: order_by('timestamp') above means that requests sent later will overwrite
@@ -1130,10 +1132,7 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None):
 
     retval = []
     for o in all_officers:
-        officer_camps = []
-        for c in camps:
-            if o.id in officer_ids[c.id]:
-                officer_camps.append(c)
+        officer_camps = officers_camps[o.id]
         app = officer_apps.get(o.id, None)
         dbs_info = DbsInfo(
             camps=officer_camps,

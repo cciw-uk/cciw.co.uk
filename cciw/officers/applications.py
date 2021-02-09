@@ -4,7 +4,7 @@ from django.template import loader
 
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
-from cciw.officers.models import Application
+from cciw.officers.models import Application, Invitation
 
 # To enable Applications to be shared between camps, and in some cases to belong
 # to no camps, there is no direct connection between a Camp and an Application.
@@ -73,17 +73,30 @@ def applications_for_camp(camp, officer_ids=None):
     """
     Returns the applications that are relevant for a camp.
     """
-    # Use invitations to work out which officers we care about
+    return applications_for_camps([camp], officer_ids=officer_ids)
+
+
+def applications_for_camps(camps, officer_ids=None):
+    """
+    Returns the applications that are relevant for a list of camps.
+    """
+    if not camps:
+        return []
+    if not all(camp.year == camps[0].year for camp in camps):
+        raise AssertionError("This function can only be used if all camps in the same year")
+
     if officer_ids is None:
-        officer_ids = camp.invitations.values_list('officer_id', flat=True)
+        # Use invitations to work out which officers we care about
+        invitations = Invitation.objects.filter(camp__in=camps)
+        officer_ids = invitations.values_list('officer_id', flat=True)
     apps = Application.objects.filter(finished=True,
                                       officer__in=officer_ids)
 
-    apps = apps.filter(date_saved__lte=camp.start_date,
-                       date_saved__gt=camp.start_date - timedelta(365))
+    earliest_date = min(camp.start_date for camp in camps) - timedelta(365)
+    latest_date = max(camp.start_date for camp in camps)
+    apps = apps.filter(date_saved__lte=latest_date, date_saved__gt=earliest_date)
 
-    previous_years_last_camp = Camp.objects.filter(year=camp.year - 1)\
-        .order_by('-end_date').first()
+    previous_years_last_camp = Camp.objects.filter(year=camps[0].year - 1).order_by('-end_date').first()
     if previous_years_last_camp is not None:
         # We have some previous camps
         apps = apps.filter(date_saved__gt=previous_years_last_camp.end_date)
