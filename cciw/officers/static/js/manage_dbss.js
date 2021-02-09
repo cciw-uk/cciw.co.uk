@@ -133,15 +133,10 @@ $(document).ready(function() {
     function updateVisibleRows(selectedCamps) {
         // Now go through all rows
         $('#id_officer_table tr.officer_dbs_row').each(function(idx, elem) {
-            var show = false;
             var tr = $(elem);
-            $.each(tr.data('camps'), function(idx, val) {
-                if ($.inArray(val, selectedCamps) != -1) {
-                    show = true;
-                    return false;
-                }
-            });
-            if (show) {
+            var rowCamps = tr.data('camps');
+            var shouldShow = selectedCamps.some(item => rowCamps.includes(item));
+            if (shouldShow) {
                 tr.show();
             } else {
                 tr.hide();
@@ -151,7 +146,7 @@ $(document).ready(function() {
 
     function updateCheckBoxes(selectedCamps) {
         $('#id_campselector input[type=checkbox]').each(function(idx, elem) {
-            elem.checked = ($.inArray(elem.value, selectedCamps) != -1);
+            elem.checked = selectedCamps.includes(elem.value);
         });
     }
 
