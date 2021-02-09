@@ -63,7 +63,7 @@ def email_officer(user, update=False, token_generator=default_token_generator):
                            {'username': user.username,
                             'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                             'token': token_generator.make_token(user),
-                            'PASSWORD_RESET_TIMEOUT_DAYS': settings.PASSWORD_RESET_TIMEOUT_DAYS,
+                            'PASSWORD_RESET_TIMEOUT_DAYS': settings.PASSWORD_RESET_TIMEOUT / (24 * 3600),
                             'first_name': user.first_name,
                             'webmasteremail': settings.WEBMASTER_FROM_EMAIL,
                             'domain': common.get_current_domain(),
