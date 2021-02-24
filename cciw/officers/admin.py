@@ -275,7 +275,7 @@ service</b>. This will save you and everyone else a lot of time in subsequent
 years. You will receive an e-mail from DBS with a reference number and at the
 bottom of the e-mail are details of signing up for the update service. THIS MUST
 BE DONE WITHIN 19 DAYS of the issue of the DBS. Otherwise after 3 years you will
-have to fill in another DBS.</p> """, settings.EXTERNAL_DBS_OFFICER['organisation_long'])}
+have to fill in another DBS form.</p> """, settings.EXTERNAL_DBS_OFFICER['organisation_long'])}
          ),
         ("Confirmation",
             {'fields': ('finished',),
