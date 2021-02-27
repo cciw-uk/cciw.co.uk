@@ -1279,7 +1279,7 @@ def mark_dbs_sent(request):
     officer = User.objects.get(id=officer_id)
     c = request.user.dbsactions_performed.create(officer=officer,
                                                  action_type=DBSActionLog.ACTION_FORM_SENT)
-    accept = [a.strip() for a in request.META.get('HTTP_ACCEPT', '').split(',')]
+    accept = [a.strip() for a in request.headers.get('Accept', '').split(',')]
 
     if 'application/json' in accept:
         return {'status': 'success',
@@ -1287,7 +1287,7 @@ def mark_dbs_sent(request):
                 }
     else:
         # This path really only exists to support WebBrowser tests
-        return HttpResponseRedirect(request.META['HTTP_REFERER'])
+        return HttpResponseRedirect(request.headers['Referer'])
 
 
 @staff_member_required
