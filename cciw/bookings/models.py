@@ -616,7 +616,7 @@ class Booking(models.Model):
 
     # Medical details - from user
     medical_card_number = models.CharField("NHS number", max_length=100)  # no idea how long it should be
-    last_tetanus_injection = models.DateField(null=True, blank=True)
+    last_tetanus_injection_date = models.DateField(null=True, blank=True)
     allergies = models.TextField(blank=True)
     regular_medication_required = models.TextField(blank=True)
     illnesses = models.TextField("Medical conditions", blank=True)

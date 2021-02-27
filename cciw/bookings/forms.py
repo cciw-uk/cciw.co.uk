@@ -129,7 +129,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
             'gp_post_code',
             'gp_phone_number',
             'medical_card_number',
-            'last_tetanus_injection',
+            'last_tetanus_injection_date',
             'allergies',
             'regular_medication_required',
             'illnesses',
@@ -147,5 +147,5 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
 AddPlaceForm.base_fields['agreement'].required = True
 AddPlaceForm.base_fields['date_of_birth'].widget.attrs['placeholder'] = 'YYYY-MM-DD'
 AddPlaceForm.base_fields['date_of_birth'].help_text = '(YYYY-MM-DD)'
-AddPlaceForm.base_fields['last_tetanus_injection'].widget.attrs['placeholder'] = 'YYYY-MM-DD'
-AddPlaceForm.base_fields['last_tetanus_injection'].help_text = '(YYYY-MM-DD)'
+AddPlaceForm.base_fields['last_tetanus_injection_date'].widget.attrs['placeholder'] = 'YYYY-MM-DD'
+AddPlaceForm.base_fields['last_tetanus_injection_date'].help_text = '(YYYY-MM-DD)'

@@ -331,7 +331,7 @@ BOOKING_PLACE_PUBLIC_ATTRS = [
     'gp_post_code',
     'gp_phone_number',
     'medical_card_number',
-    'last_tetanus_injection',
+    'last_tetanus_injection_date',
     'allergies',
     'regular_medication_required',
     'learning_difficulties',

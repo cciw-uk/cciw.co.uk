@@ -320,7 +320,7 @@ class BookingAdmin(admin.ModelAdmin):
         ('Medical details',
          {'fields':
           ['medical_card_number',
-           'last_tetanus_injection',
+           'last_tetanus_injection_date',
            'allergies',
            'regular_medication_required',
            'illnesses',

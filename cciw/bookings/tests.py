@@ -259,7 +259,7 @@ class PlaceDetailsMixin(CreateCampMixin):
             'medical_card_number': 'asdfasdf',
             'agreement': True,
             'price_type': '0',
-            'last_tetanus_injection': '%d-02-03' % (self.camp.year - 5),
+            'last_tetanus_injection_date': '%d-02-03' % (self.camp.year - 5),
         }
 
     def setUp(self):
@@ -355,7 +355,7 @@ class BookingBaseMixin(AtomicChecksMixin):
     NO_PLACES_LEFT_FOR_BOYS = "There are no places left for boys"
     NO_PLACES_LEFT_FOR_GIRLS = "There are no places left for girls"
     PRICES_NOT_SET = "prices have not been set"
-    LAST_TETANUS_INJECTION_REQUIRED = "last tetanus injection"
+    LAST_TETANUS_INJECTION_DATE_REQUIRED = "last tetanus injection"
 
     def setUp(self):
         super().setUp()

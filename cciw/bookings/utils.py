@@ -48,7 +48,7 @@ def camp_bookings_to_spreadsheet(camp, spreadsheet):
          ('GP address', lambda b: b.get_gp_address_display()),
          ('GP phone number', lambda b: b.gp_phone_number),
          ('NHS number', lambda b: b.medical_card_number),
-         ('Last tetanus injection', lambda b: b.last_tetanus_injection),
+         ('Last tetanus injection', lambda b: b.last_tetanus_injection_date),
          ('Allergies', lambda b: b.allergies),
          ('Medication', lambda b: b.regular_medication_required),
          ('Illnesses', lambda b: b.illnesses),
