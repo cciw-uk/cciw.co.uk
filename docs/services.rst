@@ -195,9 +195,7 @@ Actions:
 
   * Email feedback forwarding: enabled
 
-
 * Testing: https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-simulator.html
-
 
 
 Receiving
@@ -377,4 +375,4 @@ Here is how to do that:
   can be used. The ``@confirm_sns_subscriptions`` decorator does this
   automatically, assuming the endpoint is available (e.g. via ngrok if
   developing, or live on the production site). You may need to manually choose
-  'Request confirmation' to trigger this.
+  'Request confirmation' in the AWS console to trigger this.

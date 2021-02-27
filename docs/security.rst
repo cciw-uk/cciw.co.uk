@@ -38,8 +38,17 @@ following points must be observed:
   security related features, rather than "roll our own". In particular we should
   use Django's security features wherever appropriate.
 
+* The webmaster must understand the security risks relevant to developing web
+  sites, such as those listed in the `OWASP Top Ten
+  <https://owasp.org/www-project-top-ten/>`_, and know how to design systems
+  securely with these risks in mind.
+
 * We prefer a simple architecture that is easy to understand and therefore easy
   to secure - more below.
+
+* It is the webmaster's responsibility to ensure that all software in the CCiW
+  website and necessary development tools are kept up to date with relevant
+  security patches.
 
 Data protection and privacy
 ---------------------------
@@ -53,7 +62,14 @@ For more information on these legal issues, please see:
 * The ICO's `Guide to Data Protection
   <https://ico.org.uk/for-organisations/guide-to-data-protection/>`_
 * `The GDPR legislaton <https://gdpr.eu/tag/gdpr/>`_
+* The 'Decision and actions' document from February 2021 which provides
+  a lot of the thinking behind the policies implemented here.
 * If you have further questions consult with the CCiW committee.
+
+If you are thinking of making significant changes or additions to CCiW
+functionality, please see the helpful ICO document `Data Protection by design
+and default
+<https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/accountability-and-governance/data-protection-by-design-and-default/>`_.
 
 The following sections form part of our current approach to data protection. See
 also the relevant parts of the CCiW handbook.
@@ -203,6 +219,10 @@ backups. See also `<services.rst>`_.
 We also have whole machine backups from our hosting provider, which also go back
 at most 30 days.
 
+It needs to be remembered that backups are a potential security hazard, as they
+offer another route to gaining access to our database, and backup processes must
+be designed with this in mind.
+
 Data breaches
 ~~~~~~~~~~~~~
 
@@ -236,4 +256,5 @@ only increase complexity, and also the possibility of accidental data loss, we
 currently do not encrypt data at rest.
 
 We do use encryption at rest for any 3rd party services that we use e.g.
-database backups on Amazon S3.
+database backups on Amazon S3. Amazon S3 itself manages the encryption key for
+us.

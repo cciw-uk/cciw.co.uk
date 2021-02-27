@@ -132,3 +132,11 @@ Done!
 
 Ensure you remove entries from your local /etc/hosts so that you are seeing what
 everyone else sees.
+
+
+Upgrading
+---------
+
+Instead you may opt to upgrade a server in place, with an easier upgrade route
+but potentially more downtime if something goes wrong. Use
+``do-release-upgrade`` and follow prompts.
