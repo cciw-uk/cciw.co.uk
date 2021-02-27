@@ -99,17 +99,14 @@ REQS = [
 
     # Python stuff
     'python',
-    'python-pip',
-    'python-virtualenv',
-    'python-setuptools',
-    'python3.9-pyvenv',
+    'python3',
+    'python3.9',
+    'python3.9-venv',
 
     # For building Python extensions
     'build-essential',
     'python-dev',
-    'python3',
     'python3-dev',
-    'python3.9',
     'python3.9-dev',
     'libpq-dev',  # For psycopg2
     'libxml2-dev',  # For lxml/uwsgi
