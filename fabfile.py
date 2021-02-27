@@ -466,6 +466,7 @@ def deploy():
     Deploy project.
     """
     check_branch()
+    deploy_checks()
     code_quality_checks()
     push_to_central_vcs()
     target = create_target()
@@ -488,6 +489,11 @@ def deploy():
     # See also logic in settings.py for creating release name
     release = "cciw@" + target.version
     create_sentry_release(release, target.version)
+
+
+@task
+def deploy_checks():
+    local("./manage.py check --deploy")
 
 
 @task

@@ -468,6 +468,7 @@ BOOKINGFORMDIR = "downloads"
 ESV_KEY = 'IP'
 DBS_VALID_FOR = 365 * 3  # We consider a DBS check valid for 3 years
 ROLES_CONFIG_FILE = os.path.join(basedir, 'config', 'static_roles.yaml')
+DATA_RETENTION_CONFIG_FILE = os.path.join(basedir, 'config', 'data_retention.yaml')
 
 # Referenced from style.less
 COLORS_LESS_DIR = "cciw/cciwmain/static/"

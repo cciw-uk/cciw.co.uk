@@ -1,0 +1,554 @@
+# Data rentention policy
+# ----------------------
+
+# About this document
+# ~~~~~~~~~~~~~~~~~~~
+
+# This is CCiW's official policy on how long we keep personal data in our
+# database, and which data can be deleted at the request of the "data subject"
+# (the person the data is about).
+
+# The format of this document is unusual because this document is both a human-
+# readable document and a machine-readable file that is automatically read and
+# applied by our software that handles data rentention. Lines beginning with a
+# '#' like this one are 'comments' that are skipped by the software that reads
+# it. The remainder is definitions and instructions that are interpreted and
+# applied by the software.
+
+# This format has some disadvantages - it is slightly unusual and harder to
+# understand at first - but it also has a lot of advantages:
+
+# - This actually is the data retention policy. Many organisations "data
+#   retention policy" is in fact what their policy is supposed to be, and what
+#   actually happens could be completely different.
+
+# - There is no possibility of the committee updating a policy document but
+#   failing to communicate that to the web developers, because there is only a
+#   single policy document.
+
+# - This document is checked for exhaustiveness. If we add a new table or column
+#   in the database, but don't add a retention policy for it here, our automated
+#   checks will spot this and force us to define a policy.
+
+# Changes to this document:
+
+#   Where there are implications for the privacy/retention of personal data,
+#   changes must only be done with the permission of the CCiW committee, and in
+#   conformance with GDPR and other data protection laws.
+
+# --- Structure and contents ---
+#
+# We have the following groups of data:
+#
+# - Camper and officer data to keep forever
+# - Deletable camper and parent booking data
+# - Deletable officer data
+# - Temporay data
+# - Non-personal data
+
+# For each group, we start by defining the rules that will be applied, then by
+# listing the tables and columns it applies to.
+
+# --- Group: Camper and officer data to keep forever ---
+
+# The CCiW committee have decided that there is some of data that we will keep
+# forever. The main purposes for this are:
+
+# - future legal defence needs for criminal or civil cases
+#
+# - being able to cooperate fully and helpfully with any criminal investigations
+#   into allegations of abuse that happened on camp
+#
+# - being able to defend the good reputation of CCiW
+
+# For these reasons, we need our records to have:
+
+# - complete lists of campers on each camp (with enough names to be able to
+#   identify campers)
+#
+# - complete lists of officers on each camp
+#
+# - information about what medical information parents supplied (needed e.g. for
+#   accusations of medical negligence)
+#
+# - most officer application form data and all reference data
+#
+# - records showing our due diligence regarding DBS checks etc.
+
+# As per exceptions allowed in GDPR for these purposes, this policy overrides
+# "right to erasure" of data subjects.
+
+- rules:
+    keep: forever
+    deletable on request from data subject: no
+
+  tables:
+    - name: bookings.BookingAccount  # This table stores info about the person making the booking
+      columns:
+      - name  # full name of the person
+
+    - name: bookings.Booking  # This table stores the rest of the booking information
+      columns:
+      - first_name  # of the camper
+      - last_name
+      - sex
+
+      - camp
+
+      # Medical and dietary information:
+      - dietary_requirements
+      - medical_card_number
+      - last_tetanus_injection_date
+      - allergies
+      - regular_medication_required
+      - illnesses
+      - can_swim_25m
+      - learning_difficulties
+      - serious_illness
+
+    - name: accounts.User  # These users are officers/leaders/other CCiW volunteers
+      columns:
+      - username
+      - first_name
+      - last_name
+
+    - name: officers.Invitation  # This stores the link between officers and camps i.e. the officer list
+      columns: all
+
+    - name: officers.Application  # Data entered by officer on application form
+      columns:
+      - full_name
+      - christian_experience
+      - youth_experience
+      - youth_work_declined
+      - youth_work_declined_details
+      - relevant_illness
+      - illness_details
+      - dietary_requirements
+      - crime_declaration
+      - crime_details
+      - court_declaration
+      - court_details
+      - concern_declaration
+      - concern_details
+      - allegation_declaration
+      - dbs_number
+      - dbs_check_consent
+      - finished
+
+    - name: officers.Qualification  # Qualification list that is part of application form
+      columns: all
+
+    - name: officers.Referee  # Referee data entered on the application form
+      columns:
+      - referee_number
+      - name
+      - capacity_known
+      - address
+      - tel
+      - mobile
+      - email
+
+    - name: officers.Reference  # Actual reference entered by referee
+      columns: all
+
+    - name: officers.DBSCheck
+      columns:
+      - dbs_number
+      - check_type
+      - completed
+      - requested_by
+      - other_organisation
+      - applicant_accepted
+      - registered_with_dbs_update
+
+# --- Group: Deletable camper and parent booking data ---
+
+# It is useful for campers/parents if we keep booking data for several years,
+# since this will massively speed up the process of them filling in booking
+# forms in subsequent years. But we will delete earlier if requested. We also
+# check that information is not needed for business reasons (e.g. chasing
+# payment) before deleting.
+
+- rules:
+    keep: 5 years
+    deletable on request from data subject: yes
+
+  tables:
+    - name: bookings.BookingAccount
+      columns:
+      - email
+      - address_line1
+      - address_line2
+      - address_city
+      - address_county
+      - address_country
+      - address_post_code
+      - phone_number
+      - share_phone_number
+      - email_communication
+      - subscribe_to_mailings
+      - subscribe_to_newsletter
+
+    - name: bookings.Booking
+      columns:
+      - date_of_birth
+      - address_line1
+      - address_line2
+      - address_city
+      - address_county
+      - address_country
+      - address_post_code
+      - phone_number
+      - email
+      - church
+      - contact_name
+      - contact_line1
+      - contact_line2
+      - contact_city
+      - contact_county
+      - contact_country
+      - contact_post_code
+      - contact_phone_number
+      - gp_name
+      - gp_line1
+      - gp_line2
+      - gp_city
+      - gp_county
+      - gp_country
+      - gp_post_code
+      - gp_phone_number
+
+      deletion methods:
+        # It is useful for our statistics and records to know the approx age of
+        # campers on camp. So we here configure a custom deletion method that
+        # chooses a date of birth that will preserves the calculated "age on
+        # camp".
+        date_of_birth: preserve_age_on_camp
+
+    - name: ipn.PayPalIPN
+      # This contains all the data PayPal send to us about a payment,
+      # some of which are address details that we can remove
+      columns:
+      # Many of these names are badly chosen (by PayPal)
+      - payer_business_name
+      - payer_email
+      - address_country
+      - address_city
+      - address_country_code
+      - address_name
+      - address_state
+      - address_status
+      - address_street
+      - address_zip
+      - contact_phone
+
+
+# --- Group: Deleteable officer data ----
+
+# It is usually most useful for us to keep officer data indefinitely, because
+# this avoids officers needing to re-enter data. However, with exceptions noted
+# above, we can observe "right to erasure" for some officer data:
+
+- rules:
+    keep: forever  # by default, i.e. indefinitely
+    deletable on request from data subject: yes
+
+  tables:
+    - name: accounts.User
+      columns:
+      - password
+      - contact_phone_number
+
+    - name: officers.Application
+      columns:
+      - birth_date
+      - birth_place
+      - address_firstline
+      - address_town
+      - address_county
+      - address_postcode
+      - address_country
+      - address_tel
+      - address_mobile
+      - address_email
+
+# --- Group: temporary data ---
+
+# Various pieces of data that we don't need forever, and could contain personal
+# data.
+
+- rules:
+    keep: 1 year
+    deletable on request from data subject: no  # It is not directly linked to any data subject
+
+  tables:
+    # Outgoing emails:
+    - name: mailer.Message
+      columns: all
+    - name: mailer.MessageLog
+      columns: all
+    # Incoming mails from "contact us" page:
+    - name: contact_us.Message
+      columns:
+      - email
+      - name
+      - message
+      - timestamp
+
+
+# --- Group: Non-personal data ---
+
+# For exhaustiveness, we also include retention policy for non-personal data.
+# This includes:
+
+# - data related to bookings and officers that is not entered by the user themselves,
+#   but is internal book-keeping data (first section)
+#
+# - many other tables of data for various business purposes
+
+- rules:
+    keep: forever
+    deletable on request from data subject: no
+
+  tables:
+    # -- Related to personal data, but data that is managed internally --
+    - name: bookings.BookingAccount
+      columns:
+      - total_received
+      - first_login
+      - last_login
+      - last_payment_reminder
+
+    - name: bookings.Booking
+      columns:
+      - south_wales_transport
+      - agreement
+      - price_type
+      - early_bird_discount
+      - booked_at
+      - amount_due
+      - shelved
+      - state
+      - created
+      - booking_expires
+      - created_online
+
+    - name: accounts.User
+      columns:
+      - last_login
+      - email
+      - is_staff
+      - is_active
+      - date_joined
+      - is_superuser
+      - bad_password
+      - password_validators_used
+
+    # This table contains information displayed publicly on the website relating
+    # to leaders/chaplains on camps.
+    - name: cciwmain.Person
+      columns:
+      - name
+      - info
+      - users
+
+    - name: officers.Application
+      columns:
+      - date_saved
+
+    # -- Entirely non-personal data --
+
+    # Our tables
+    - name: accounts.Role
+      columns: all
+    - name: bookings.Price
+      columns: all
+    - name: bookings.Payment
+      columns: all
+    - name: bookings.ManualPayment
+      columns: all
+    - name: bookings.RefundPayment
+      columns: all
+    - name: bookings.AccountTransferPayment
+      columns: all
+    - name: cciwmain.Site
+      columns: all
+    - name: cciwmain.CampName
+      columns: all
+    - name: cciwmain.Camp
+      columns: all
+    - name: sitecontent.MenuLink
+      columns: all
+    - name: sitecontent.HtmlChunk
+      columns: all
+    - name: officers.QualificationType
+      columns: all
+    - name: officers.ReferenceAction
+      columns: all
+    - name: officers.DBSActionLog
+      columns: all
+    - name: ipn.PayPalIPN
+      columns:
+      # Column names here are often confusing, this is due
+      # to choices by PayPal, not us :-(
+      - business  # email address of the person being paid
+      - charset
+      - custom  # contains custom data that links to BookingAccount
+      - notify_version
+      - parent_txn_id
+      - receiver_email
+      - receiver_id
+      - residence_country
+      - test_ipn
+      - txn_id
+      - txn_type
+      - verify_sign
+      - first_name
+      - last_name
+      - payer_id
+      - auth_amount
+      - auth_exp
+      - auth_id
+      - auth_status
+      - exchange_rate
+      - invoice
+      - item_name
+      - item_number
+      - mc_currency
+      - mc_fee
+      - mc_gross
+      - mc_handling
+      - mc_shipping
+      - memo
+      - num_cart_items
+      - option_name1
+      - option_name2
+      - option_selection1
+      - option_selection2
+      - payer_status
+      - payment_date
+      - payment_gross
+      - payment_status
+      - payment_type
+      - pending_reason
+      - protection_eligibility
+      - quantity
+      - reason_code
+      - remaining_settle
+      - settle_amount
+      - settle_currency
+      - shipping
+      - shipping_method
+      - tax
+      - transaction_entity
+      - auction_buyer_id
+      - auction_closing_date
+      - auction_multi_item
+      - for_auction
+      - amount
+      - amount_per_cycle
+      - initial_payment_amount
+      - next_payment_date
+      - outstanding_balance
+      - payment_cycle
+      - period_type
+      - product_name
+      - product_type
+      - profile_status
+      - recurring_payment_id
+      - rp_invoice_id
+      - time_created
+      - amount1
+      - amount2
+      - amount3
+      - mc_amount1
+      - mc_amount2
+      - mc_amount3
+      - password
+      - period1
+      - period2
+      - period3
+      - reattempt
+      - recur_times
+      - recurring
+      - retry_at
+      - subscr_date
+      - subscr_effective
+      - subscr_id
+      - username
+      - mp_id
+      - case_creation_date
+      - case_id
+      - case_type
+      - receipt_id
+      - currency_code
+      - handling_amount
+      - transaction_subject
+      - ipaddress
+      - flag
+      - flag_code
+      - flag_info
+      - query
+      - response
+      - created_at
+      - updated_at
+      - from_view
+    # Core django tables
+    - name: admin.LogEntry
+      columns: all
+    - name: auth.Permission
+      columns: all
+    - name: auth.Group
+      columns: all
+    - name: contenttypes.ContentType
+      columns: all
+    - name: sessions.Session
+      columns: all
+    - name: sites.Site
+      columns: all
+    # Wiki related tables
+    - name: thumbnail.KVStore
+      columns: all
+    - name: wiki.Article
+      columns: all
+    - name: wiki.ArticleForObject
+      columns: all
+    - name: wiki.ArticleRevision
+      columns: all
+    - name: wiki.ArticlePlugin
+      columns: all
+    - name: wiki.ReusablePlugin
+      columns: all
+    - name: wiki.SimplePlugin
+      columns: all
+    - name: wiki.RevisionPlugin
+      columns: all
+    - name: wiki.RevisionPluginRevision
+      columns: all
+    - name: wiki.URLPath
+      columns: all
+    - name: wiki_attachments.Attachment
+      columns: all
+    - name: wiki_attachments.AttachmentRevision
+      columns: all
+    - name: wiki_notifications.ArticleSubscription
+      columns: all
+    - name: wiki_images.Image
+      columns: all
+    - name: wiki_images.ImageRevision
+      columns: all
+    - name: django_nyt.NotificationType
+      columns: all
+    - name: django_nyt.Settings
+      columns: all
+    - name: django_nyt.Subscription
+      columns: all
+    - name: django_nyt.Notification
+      columns: all
+    # Outgoing emails
+    - name: mailer.DontSendEntry
+      columns: all
+    # Other
+    - name: captcha.CaptchaStore
+      columns: all
