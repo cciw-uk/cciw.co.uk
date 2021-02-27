@@ -353,7 +353,7 @@ urllib3==1.24
     #   requests
     #   selenium
     #   sentry-sdk
-uwsgi==2.0.15
+uwsgi==2.0.19.1
     # via -r requirements.in
 vcrpy==1.10.2
     # via -r requirements-dev.in
