@@ -406,7 +406,6 @@ SECURE_DOWNLOAD_URL_BASE = "/protected/"  # See nginx conf
 # == MIDDLEWARE ==
 
 _MIDDLEWARE = [
-    (LIVEBOX, "cciw.middleware.http.webfaction_fixes"),
     (True, 'django.middleware.security.SecurityMiddleware'),
     (True, "django.middleware.gzip.GZipMiddleware"),
     (DEVBOX and DEBUG, "debug_toolbar.middleware.DebugToolbarMiddleware"),
