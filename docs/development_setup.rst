@@ -6,12 +6,12 @@ Using local machine
 
 (Ideally we would include a Vagrant/Docker setup, but these always seem to be
 more trouble than they are worth, they always get out of date if they are not
-actually been using for deployment).
+actually being using for deployment).
 
 Assuming a Linux/Unix machine, the requirements are:
 
-* Python 3.7
-* Postgres 11
+* Python 3.9
+* Postgres 12
 * Node
 
 For tests, see also:
@@ -31,7 +31,7 @@ These steps have only been tested on Ubuntu-based Linux installations.
   Edit your ``.git/config`` and ensure the gitlab remote is called ``origin``
   - this is needed for deploying.
 
-* Make a virtualenv using Python 3.7 e.g. using mkvirtualenv/virtualenv_wrapper::
+* Make a virtualenv using Python 3.9 e.g. using mkvirtualenv/virtualenv_wrapper::
 
     mkvirtualenv --python=`which python3.9` cciw
 
