@@ -33,11 +33,11 @@ These steps have only been tested on Ubuntu-based Linux installations.
 
 * Make a virtualenv using Python 3.7 e.g. using mkvirtualenv/virtualenv_wrapper::
 
-    mkvirtualenv --python=`which python3.7` cciw
+    mkvirtualenv --python=`which python3.9` cciw
 
   Add project path to the venv::
 
-    pwd > $VIRTUAL_ENV/lib/python3.7/site-packages/project.pth
+    pwd > $VIRTUAL_ENV/lib/python3.9/site-packages/project.pth
 
 * Create an alias for 'cciw.local' that points to localhost, 127.0.0.1. On
   Linux, you do this by adding the following line to /etc/hosts::
@@ -56,7 +56,7 @@ These steps have only been tested on Ubuntu-based Linux installations.
     ./manage.py migrate
     ./manage.py loaddata fixtures/dev_db.json
 
-  The dev_fb fixture includes one admin user (username 'admin', password
+  The dev_db fixture includes one admin user (username 'admin', password
   'admin') and a snapshot of public data from the production database, but no
   private data.
 

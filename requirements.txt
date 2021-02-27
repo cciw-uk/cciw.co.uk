@@ -13,6 +13,7 @@ asgiref==3.3.1
 attrs==19.3.0
     # via
     #   -r requirements.in
+    #   hypothesis
     #   pytest
 bcrypt==3.1.7
     # via paramiko
@@ -142,7 +143,7 @@ furl==2.1.0
     # via
     #   -r requirements.in
     #   django-functest
-hypothesis==3.9.0
+hypothesis==6.3.3
     # via -r requirements-dev.in
 identify==1.5.10
     # via pre-commit
@@ -336,6 +337,8 @@ sorl-thumbnail==12.7.0
     # via
     #   -r requirements.in
     #   wiki
+sortedcontainers==2.3.0
+    # via hypothesis
 soupsieve==1.9.2
     # via beautifulsoup4
 sqlparse==0.2.4

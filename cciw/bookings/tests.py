@@ -15,7 +15,6 @@ from django.utils import timezone
 from django_functest import FuncBaseMixin
 from hypothesis import example, given
 from hypothesis import strategies as st
-from hypothesis.extra.django import models as djst
 from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.accounts.models import User
@@ -2706,19 +2705,19 @@ class TestPaymentModels(TestBase):
 
 
 class TestEmailVerifyTokenGenerator(TestCase):
-    @given(djst.emails)
+    @given(st.emails())
     def test_decode_inverts_encode(self, email):
         v = EmailVerifyTokenGenerator()
         self.assertEqual(v.email_for_token(v.token_for_email(email)),
                          email)
 
-    @given(djst.emails)
+    @given(st.emails())
     def test_truncated_returns_invalid(self, email):
         v = EmailVerifyTokenGenerator()
         self.assertEqual(v.email_for_token(v.token_for_email(email)[2:]),
                          VerifyFailed)
 
-    @given(djst.emails)
+    @given(st.emails())
     def test_expired_returns_expired(self, email):
         v = EmailVerifyTokenGenerator()
         self.assertEqual(v.email_for_token(v.token_for_email(email),
