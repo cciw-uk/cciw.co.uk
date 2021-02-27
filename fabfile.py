@@ -39,7 +39,7 @@ env.locale = "en_GB.UTF-8"
 env.num_workers = "3"
 
 # Python version
-PYTHON_BIN = "python3.7"
+PYTHON_BIN = "python3.9"
 PYTHON_PREFIX = ""  # e.g. /usr/local  Use "" for automatic
 PYTHON_FULL_PATH = f"{PYTHON_PREFIX}/bin/{PYTHON_BIN}" if PYTHON_PREFIX else PYTHON_BIN
 
@@ -102,12 +102,15 @@ REQS = [
     'python-pip',
     'python-virtualenv',
     'python-setuptools',
+    'python3.9-pyvenv',
 
     # For building Python extensions
     'build-essential',
     'python-dev',
     'python3',
     'python3-dev',
+    'python3.9',
+    'python3.9-dev',
     'libpq-dev',  # For psycopg2
     'libxml2-dev',  # For lxml/uwsgi
     'libxslt-dev',  # For lxml/uwsgi
