@@ -55,9 +55,11 @@ Data protection and privacy
 
 The webmasters are responsible for understanding relevant data protection and
 privacy laws, including GDPR, and implementing processes that abide by relevant
-laws and fit CCiW's way of working.
+laws and fit CCiW's way of working. Processes should be designed and changed
+with agreement from the CCiW trustees, and in communication with the other
+relevant volunteers, especially the DBS Officers and the Booking Secretary.
 
-For more information on these legal issues, please see:
+For more information on the legal issues, please see:
 
 * The ICO's `Guide to Data Protection
   <https://ico.org.uk/for-organisations/guide-to-data-protection/>`_
@@ -96,8 +98,9 @@ Storage of sensitive information
   application forms are stored in the database.
 
 * Retention of all personal data must be done in accord with the relevant data
-  protection laws. This is automated by TODO, using the official data retention
-  policy that is part of the source code. See also backup policy (below).
+  protection laws. This is automated by ``cciw/data_retention.py``, using the
+  official data retention policy that is part of the source code. See also
+  backup policy (below).
 
 Access to information
 ~~~~~~~~~~~~~~~~~~~~~
@@ -191,7 +194,7 @@ into our processes themselves:
 
 * Whenever sensitive data is about to be downloaded, we display short,
   digestible information regarding CCiW's policy on its use and disposal.
-  ``STATUS:TODO``
+  **TODO**
 
 * We do **not** attempt to ensure compliance by use of checkboxes that ask
   people if they have read a data protection policy, because we know that
@@ -202,10 +205,10 @@ into our processes themselves:
   distribution (as is needed for some purposes), we include cover sheets that
   remind users of data protection responsibilities, and remind leaders to
   briefly train other people who will receive the data (such as officers)
-  regarding these principles. ``STATUS:TODO``
+  regarding these principles. **TODO**
 
 * After the end of camps, we send reminders to relevant people who have
-  downloaded sensitive data, prompting them to delete them. ``STATUS:TODO``
+  downloaded sensitive data, prompting them to delete them. **TODO**
 
 
 Backups
@@ -226,15 +229,51 @@ be designed with this in mind.
 Data breaches
 ~~~~~~~~~~~~~
 
-``STATUS:TODO``
-https://ico.org.uk/for-organisations/guide-to-dp/guide-to-the-uk-gdpr/personal-data-breaches/
+In the case of a data breach (such as our database being hacked,
+access being given to the wrong people, or sent to the wrong person), you should:
 
-https://ico.org.uk/for-organisations/report-a-breach/personal-data-breach/personal-data-breach-examples/
+* attempt to contain the breach if possible - for example, by contacting the
+  person to whom the information was wrongly passed on and asking them to erase
+  it and not pass it on further, or taking immediate action to secure the website.
 
-https://ico.org.uk/for-organisations/report-a-breach/personal-data-breach-assessment/
+* inform the CCiW chairperson, and decide together what further action should be
+  taken, including whether to report to the data subjects and ICO. If we do need
+  to report to ICO, it has to be done within strict time limits (72 hours), so
+  this action needs to be taken promptly.
 
-TODO we should have a Google Docs document where we list any data breaches,
-steps taken etc.
+  See:
+
+  * `ICO on personal data breaches
+    <https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/personal-data-breaches/>`_
+
+  To decide whether to report to the ICO, see `ICO's Report a breach
+  <https://ico.org.uk/for-organisations/report-a-breach/>`_
+
+* record the incident in
+  https://docs.google.com/document/d/1KFTIin9xxb0aN9lXtKRLk5q6aEw0DXOmCHamNT7s5Sw/edit#
+
+Data rights
+~~~~~~~~~~~
+
+The GDPR gives data subjects various rights regarding their data, and the CCiW
+webmaster is usually the person responsible for providing those facilities, either
+by features built into the website functionality, or by more manual processes.
+
+These rights are dealt with `Chapter 3 of the GDPR
+<https://gdpr-info.eu/chapter-3/>`_, and it is the responsibility of the
+webmaster to understand these laws, including the need to be sure of the
+identity of the person asking, the need for timely responses, and the right to
+require a fee for processing in some cases (which should be agreed with the CCiW
+trustees).
+
+Note that there are also limitations to these data rights, and it is important
+that requests are not dealt with in a way that compromises CCiW's obligations in
+other areas. Where there are doubts, the trustees should be consulted, and it is
+usually best to encode the decisions into tested automated functionality to
+reduce human error. This functionality may grow as necessary as more requests
+of this nature are dealt with.
+
+**TODO** Details of what we don't provide, to be agreed.
 
 
 Architecture and encryption

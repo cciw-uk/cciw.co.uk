@@ -26,9 +26,10 @@
 #   failing to communicate that to the web developers, because there is only a
 #   single policy document.
 
-# - This document is checked for exhaustiveness. If we add a new table or column
-#   in the database, but don't add a retention policy for it here, our automated
-#   checks will spot this and force us to define a policy.
+# - This document is automatically checked for validity and completeness. If we
+#   add a new table or column in the database, but don't add a retention policy
+#   for it here, our automated checks will spot this and force us to define a
+#   policy.
 
 # Changes to this document:
 
