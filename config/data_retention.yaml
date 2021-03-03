@@ -44,7 +44,7 @@
 # - Camper and officer data to keep forever
 # - Deletable camper and parent booking data
 # - Deletable officer data
-# - Temporay data
+# - Temporary data
 # - Non-personal data
 
 # For each group, we start by defining the rules that will be applied, then by
