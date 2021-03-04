@@ -518,7 +518,7 @@ else:
 PAYPAL_BUY_BUTTON_IMAGE = "https://www.paypalobjects.com/en_US/GB/i/btn/btn_buynowCC_LG.gif"
 
 # Sentry
-if LIVEBOX:
+if LIVEBOX and not CHECK_DEPLOY:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
