@@ -120,9 +120,10 @@ class Policy:
 def get_data_retention_policy_issues(policy: Optional[Policy] = None):
     if policy is None:
         policy = load_data_retention_policy()
-    exhaustiveness_errors = _check_exhaustiveness(policy)
-    # TODO - check DELETABLE_RECORDS for all models.
-    return exhaustiveness_errors
+    return (
+        _check_exhaustiveness(policy) +
+        _check_deletable_records(policy)
+    )
 
 
 def load_data_retention_policy() -> Policy:
@@ -194,7 +195,7 @@ def load_data_retention_policy() -> Policy:
     )
 
 
-def _check_exhaustiveness(policy: Policy):
+def _check_exhaustiveness(policy: Policy) -> list[Error]:
     all_models = apps.get_models()
     defined_fields = set()
     dupes = []
@@ -240,6 +241,32 @@ def _check_exhaustiveness(policy: Policy):
             id='dataretention.E002',
         ))
 
+    return issues
+
+
+def _check_deletable_records(policy: Policy) -> list[Error]:
+    seen_models = set()
+    issues = []
+    if True:
+        # TODO - remove this when we are ready to deploy data retention for
+        # real.
+        return issues
+    for group in policy.groups:
+        if group.rules.delete_after is None and not group.rules.deletable_on_request:
+            # Don't need deletion method
+            continue
+
+        for model_detail in group.models:
+            model = model_detail.model
+            if model in seen_models:
+                continue
+            seen_models.add(model)
+            if model not in DELETABLE_RECORDS:
+                issues.append(Error(
+                    f'No method for defined to obtain deletable records for {model.__name__}',
+                    obj=policy.source,
+                    id='dataretention.E003'
+                ))
     return issues
 
 
