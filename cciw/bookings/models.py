@@ -223,7 +223,7 @@ class BookingAccount(models.Model):
 
     # Business methods:
 
-    def get_balance(self, *, confirmed_only, allow_deposits, deposit_price_dict=None):
+    def get_balance(self, *, confirmed_only: bool, allow_deposits: bool, deposit_price_dict=None):
         """
         Gets the balance to pay on the account.
         If confirmed_only=True, then only bookings that are confirmed
@@ -234,22 +234,21 @@ class BookingAccount(models.Model):
         As an optimisation, a dictionary {year:price in GBP} can be passed in deposit_price_dict.
         """
         today = date.today()
-        # bookings_list and use of _prefetched_objects_cache is necessary to
-        # support the booking_secretary_reports view. The two code paths should
-        # be equivalent, and must be kept in sync. This also propagates into
-        # BookingManager.payable
+        # Use of _prefetched_objects_cache is necessary to support the
+        # booking_secretary_reports view efficiently
 
         def _get_deposit_prices(bookings):
             return Price.get_deposit_prices([b.camp.year for b in bookings])
 
         if hasattr(self, '_prefetched_objects_cache') and 'bookings' in self._prefetched_objects_cache:
-            bookings_list = self._prefetched_objects_cache['bookings']
+            payable_bookings = [
+                booking for booking in self._prefetched_objects_cache['bookings']
+                if booking.is_payable(confirmed_only=confirmed_only)
+            ]
         else:
-            bookings_list = None
+            payable_bookings = list(self.bookings.payable(confirmed_only=confirmed_only))
 
         total = Decimal('0.00')
-        payable_bookings = list(self.bookings.payable(confirmed_only=confirmed_only,
-                                                      from_list=bookings_list))
         if deposit_price_dict is None:
             deposit_price_dict = _get_deposit_prices(payable_bookings)
         for booking in payable_bookings:
@@ -449,36 +448,21 @@ class BookingQuerySet(models.QuerySet):
         return self.filter(state=BOOKING_BOOKED,
                            booking_expires__isnull=False)
 
-    def payable(self, *, confirmed_only: bool, from_list=None):
+    def payable(self, *, confirmed_only: bool):
         """
         Returns bookings for which payment is expected.
         If confirmed_only is True, unconfirmed places are excluded.
-
-        If from_list is passed, the logic will use the already fetched
-        list of bookings, instead of creating a QuerySet
         """
-        # 'Full refund' cancelled bookings do not have payment due, but the
+        # See also:
+        #   Booking.is_payable()
+
+        # Also booking_secretary_reports has overlapping logic.
+
+        # 'Full refund' cancelled bookings do not have payment expected, but the
         # others do.
-        # Logic duplicated in booking_secretary_reports.
-        if from_list is not None:
-            # This path is an optimization for the case where
-            # we already have a list in memory, in 'from_list'.
-            # The logic is the same as for the QuerySet case below.
-            bookings = from_list
-            cancelled = [b for b in bookings if b.state in [BOOKING_CANCELLED,
-                                                            BOOKING_CANCELLED_HALF_REFUND]]
-            if confirmed_only:
-                retval = cancelled + [b for b in bookings if b.is_confirmed]
-            else:
-                retval = cancelled + [b for b in bookings if b.is_booked]
-
-            return retval
-        else:
-            cancelled = self.filter(state__in=[BOOKING_CANCELLED,
-                                               BOOKING_CANCELLED_HALF_REFUND])
-            retval = cancelled | (self.confirmed() if confirmed_only else self.booked())
-
-            return retval
+        return (self.filter(state__in=[BOOKING_CANCELLED,
+                                       BOOKING_CANCELLED_HALF_REFUND]) |
+                (self.confirmed() if confirmed_only else self.booked()))
 
     def cancelled(self):
         return self.filter(state__in=[BOOKING_CANCELLED,
@@ -628,6 +612,12 @@ class Booking(models.Model):
         if self.id is None:
             self.created_online = True
         self.save()
+
+    def is_payable(self, *, confirmed_only: bool):
+        # See also BookingQuerySet.payable()
+        return (self.state in [BOOKING_CANCELLED,
+                               BOOKING_CANCELLED_HALF_REFUND] or
+                (self.is_confirmed if confirmed_only else self.is_booked))
 
     @property
     def is_booked(self):
