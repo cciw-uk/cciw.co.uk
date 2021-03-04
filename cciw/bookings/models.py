@@ -234,50 +234,28 @@ class BookingAccount(models.Model):
         As an optimisation, a dictionary {year:price in GBP} can be passed in deposit_price_dict.
         """
         today = date.today()
-        # If allow_deposits, we only do the sum over bookings that require full
-        # amount, then get the required deposit amounts in a separate step.
-
         # bookings_list and use of _prefetched_objects_cache is necessary to
         # support the booking_secretary_reports view. The two code paths should
         # be equivalent, and must be kept in sync. This also propagates into
-        # BookingManager.payable and BookingManager.only_deposit_required.
+        # BookingManager.payable
+
+        def _get_deposit_prices(bookings):
+            return Price.get_deposit_prices([b.camp.year for b in bookings])
 
         if hasattr(self, '_prefetched_objects_cache') and 'bookings' in self._prefetched_objects_cache:
             bookings_list = self._prefetched_objects_cache['bookings']
         else:
             bookings_list = None
 
-        if bookings_list is not None:
-            total = Decimal('0.00')
-            payable_bookings = self.bookings.payable(confirmed_only=confirmed_only,
-                                                     allow_deposits=allow_deposits,
-                                                     today=today,
-                                                     from_list=bookings_list)
-            assert type(payable_bookings) == list
-            for item in payable_bookings:
-                total += item.amount_due
-        else:
-            total = self.bookings.payable(confirmed_only=confirmed_only,
-                                          allow_deposits=allow_deposits,
-                                          today=today).aggregate(models.Sum('amount_due'))['amount_due__sum']
-        if total is None:
-            total = Decimal('0.00')
-
-        if allow_deposits:
-            # Need to add in the cost of deposits.
-            if bookings_list is not None:
-                extra_bookings = self.bookings.only_deposit_required(confirmed_only=confirmed_only,
-                                                                     today=today,
-                                                                     from_list=bookings_list)
-            else:
-                extra_bookings = list(self.bookings.only_deposit_required(confirmed_only=confirmed_only,
-                                                                          today=today))
-            # Need to use the deposit price for each.
-            if deposit_price_dict is None:
-                deposit_price_dict = Price.get_deposit_prices([b.camp.year for b in extra_bookings])
-            for b in extra_bookings:
-                total += min(b.amount_due,
-                             deposit_price_dict[b.camp.year])
+        total = Decimal('0.00')
+        payable_bookings = list(self.bookings.payable(confirmed_only=confirmed_only,
+                                                      from_list=bookings_list))
+        if deposit_price_dict is None:
+            deposit_price_dict = _get_deposit_prices(payable_bookings)
+        for booking in payable_bookings:
+            total += booking.amount_now_due(today,
+                                            allow_deposits=allow_deposits,
+                                            deposit_price_dict=deposit_price_dict)
 
         return total - self.total_received
 
@@ -386,10 +364,11 @@ class BookingAccount(models.Model):
                                   .prefetch_related('camp')
                                   )
         confirmed_bookings = []
+        today = date.today()
         for booking in candidate_bookings:
             if pot <= 0:
                 break
-            amount = booking.amount_now_due()
+            amount = booking.amount_now_due(today, allow_deposits=True)
             if amount <= pot:
                 booking.confirm()
                 booking.save()
@@ -470,29 +449,17 @@ class BookingQuerySet(models.QuerySet):
         return self.filter(state=BOOKING_BOOKED,
                            booking_expires__isnull=False)
 
-    def payable(self, *, confirmed_only, allow_deposits, today=None, from_list=None):
+    def payable(self, *, confirmed_only: bool, from_list=None):
         """
-        Returns bookings for which payment is due.
+        Returns bookings for which payment is expected.
         If confirmed_only is True, unconfirmed places are excluded.
-        If allow_deposits is True, places which require only the deposit
-        at this point in time are excluded.
 
         If from_list is passed, the logic will use the already fetched
-        list of bookings, instead of creating use a QuerySet.
+        list of bookings, instead of creating a QuerySet
         """
-        if confirmed_only is None:
-            raise ValueError("confirmed_only must be True or False")
-        if allow_deposits is None:
-            raise ValueError("allow_deposits must be True or False")
-
         # 'Full refund' cancelled bookings do not have payment due, but the
         # others do.
         # Logic duplicated in booking_secretary_reports.
-        if allow_deposits:
-            if today is None:
-                today = date.today()
-            cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
-
         if from_list is not None:
             # This path is an optimization for the case where
             # we already have a list in memory, in 'from_list'.
@@ -505,30 +472,13 @@ class BookingQuerySet(models.QuerySet):
             else:
                 retval = cancelled + [b for b in bookings if b.is_booked]
 
-            if allow_deposits:
-                retval = [b for b in retval if not (b.camp.start_date > cutoff)]
-
             return retval
         else:
             cancelled = self.filter(state__in=[BOOKING_CANCELLED,
                                                BOOKING_CANCELLED_HALF_REFUND])
             retval = cancelled | (self.confirmed() if confirmed_only else self.booked())
 
-            if allow_deposits:
-                retval = retval.exclude(camp__start_date__gt=cutoff)
-
             return retval
-
-    def only_deposit_required(self, *, confirmed_only, today=None, from_list=None):
-        if today is None:
-            today = date.today()
-        cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
-
-        retval = self.payable(confirmed_only=confirmed_only, allow_deposits=False, today=today, from_list=from_list)
-        if isinstance(retval, list):
-            return [b for b in retval if b.camp.start_date > cutoff]
-        else:
-            return retval.filter(camp__start_date__gt=cutoff)
 
     def cancelled(self):
         return self.filter(state__in=[BOOKING_CANCELLED,
@@ -726,13 +676,17 @@ class Booking(models.Model):
         else:
             self.amount_due = amount
 
-    def amount_now_due(self):
-        # Amount due, taking into account the fact that only a deposit might be due.
-        cutoff = date.today() + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
-        if self.camp.start_date > cutoff:
-            p = Price.objects.get(price_type=PRICE_DEPOSIT, year=self.camp.year).price
-            if p < self.amount_due:
-                return p
+    def amount_now_due(self, today: date, *, allow_deposits, deposit_price_dict=None):
+        # Amount due,
+        # If allow_deposits=True, we take into account the fact that only a deposit might be due.
+        # Otherwise we ignore deposits
+        cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
+        if allow_deposits and self.camp.start_date > cutoff:
+            if deposit_price_dict is None:
+                deposit_price = Price.objects.get(price_type=PRICE_DEPOSIT, year=self.camp.year).price
+            else:
+                deposit_price = deposit_price_dict[self.camp.year]
+            return min(deposit_price, self.amount_due)
         return self.amount_due
 
     def can_have_early_bird_discount(self, booked_at=None):

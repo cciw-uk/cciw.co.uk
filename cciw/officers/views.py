@@ -1441,7 +1441,7 @@ def booking_secretary_reports(request, year: int):
     bookings = Booking.objects.filter(camp__year__exact=year)
     # We need to include 'full refund' cancelled bookings in case they overpaid,
     # as well as all 'payable' bookings.
-    bookings = bookings.payable(confirmed_only=True, allow_deposits=False) | bookings.cancelled()
+    bookings = bookings.payable(confirmed_only=True) | bookings.cancelled()
 
     # 3 concerns:
     # 1) people who have overpaid. This must be calculated with respect to the total amount due

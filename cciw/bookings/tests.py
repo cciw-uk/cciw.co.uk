@@ -431,7 +431,7 @@ class TestBookingModels(CreateBookingModelMixin, AtomicChecksMixin, TestBase):
         acc = self.get_account()
         # balance should be zero
         deposit_price_dict = Price.get_deposit_prices([b.camp.year])
-        with self.assertNumQueries(0 if getattr(self, 'use_prefetch_related_for_get_account', False) else 4):
+        with self.assertNumQueries(0 if getattr(self, 'use_prefetch_related_for_get_account', False) else 2):
             self.assertEqual(acc.get_balance(
                 confirmed_only=False,
                 allow_deposits=True,
@@ -447,10 +447,8 @@ class TestBookingModels(CreateBookingModelMixin, AtomicChecksMixin, TestBase):
         self.assertEqual(acc.get_balance_full(), Decimal('80.00'))
 
         # Test some model methods:
-        self.assertEqual(len(acc.bookings.only_deposit_required(confirmed_only=False)),
+        self.assertEqual(len(acc.bookings.payable(confirmed_only=False)),
                          1)
-        self.assertEqual(len(acc.bookings.payable(confirmed_only=False, allow_deposits=True)),
-                         0)
 
     def test_get_balance_opts(self):
         # Tests that the other code paths in get_balance/BookingManager.payable
