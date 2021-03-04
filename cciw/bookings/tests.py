@@ -392,7 +392,7 @@ class CreateIPNMixin(object):
 
 class TestBookingModels(CreateBookingModelMixin, AtomicChecksMixin, TestBase):
 
-    def get_account(self):
+    def get_account(self) -> BookingAccount:
         if BookingAccount.objects.filter(email=self.email).count() == 0:
             BookingAccount.objects.create(email=self.email)
 
@@ -430,8 +430,18 @@ class TestBookingModels(CreateBookingModelMixin, AtomicChecksMixin, TestBase):
 
         acc = self.get_account()
         # balance should be zero
-        self.assertEqual(acc.get_balance(confirmed_only=False, allow_deposits=True), Decimal('0.00'))
-        self.assertEqual(acc.get_balance(confirmed_only=True, allow_deposits=True), Decimal('0.00'))
+        deposit_price_dict = Price.get_deposit_prices([b.camp.year])
+        with self.assertNumQueries(0 if getattr(self, 'use_prefetch_related_for_get_account', False) else 4):
+            self.assertEqual(acc.get_balance(
+                confirmed_only=False,
+                allow_deposits=True,
+                deposit_price_dict=deposit_price_dict,
+            ), Decimal('0.00'))
+            self.assertEqual(acc.get_balance(
+                confirmed_only=True,
+                allow_deposits=True,
+                deposit_price_dict=deposit_price_dict,
+            ), Decimal('0.00'))
 
         # But for full amount, they still owe 80 (full price minus deposit)
         self.assertEqual(acc.get_balance_full(), Decimal('80.00'))
