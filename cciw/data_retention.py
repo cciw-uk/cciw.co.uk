@@ -1,6 +1,6 @@
 # See config/data_retention.yaml
 import dataclasses
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Optional
 
 import parsy
@@ -12,8 +12,10 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.checks import Error
 from django.db import models
 from django.db.models.fields import Field
+from django.utils import timezone
 
 from cciw.bookings.models import Booking
+from cciw.contact_us.models import Message
 
 
 class DataclassConfig:
@@ -40,23 +42,35 @@ class ModelDetail:
     model: type  # Model subclass
     fields: list[Field]
     deletion_methods: dict[Field, DeletionMethod] = dataclasses.field(default_factory=dict)
+    delete_row: bool = False
 
     @classmethod
     def build(cls, *,
               name: str,
               field_names: Optional[list[str]] = None,
               all_fields: bool = False,
-              deletion_method_names: Optional[dict[str, str]] = None
+              deletion_method_names: Optional[dict[str, str]] = None,
+              delete_row: bool = False,
               ):
         model = apps.get_model(name)
         field_list = model._meta.get_fields()
         field_dict = {f.name: f for f in field_list}
+        if delete_row:
+            if field_names is not None:
+                raise ValueError("If 'delete_row' is used, no columns should be specified.")
+            if all_fields:
+                raise ValueError("No need to specify all column if 'delete_row' is used.")
+            if deletion_method_names:
+                raise ValueError("If 'delete_row' is used, no deletion methods should be specified.")
+            # We satisfy exhaustiveness checks easier with this:
+            fields = [f for f in field_list if _field_requires_privacy_policy(f)]
+
         if deletion_method_names is None:
             deletion_method_names = {}
         if all_fields:
             assert field_names is None
             fields = [f for f in field_list if _field_requires_privacy_policy(f)]
-        else:
+        elif not delete_row:
             assert field_names is not None
             fields = []
             for f in field_names:
@@ -71,12 +85,20 @@ class ModelDetail:
             except KeyError:
                 raise ValueError(f'Deletion method "{method_name}" not found')
             deletion_methods[field_dict[field_name]] = deletion_method
-        return cls(model=model, fields=fields)
+        return cls(
+            model=model,
+            fields=fields,
+            deletion_methods=deletion_methods,
+            delete_row=delete_row,
+        )
 
 
 @dataclass
 class Rules:
-    keep: Optional[timedelta]
+    # We use 'keep' in YAML, with 'forever' as a special value, for human readability.
+    # To avoid ambiguity with `keep == None`, we use the name `delete_after`
+    # in code, so we have `delete_after == None` meaning keep forever.
+    delete_after: Optional[timedelta]
     deletable_on_request: bool
 
 
@@ -92,40 +114,84 @@ class Policy:
     groups: list[Group]
 
 
-class PreserveAgeOnCamp(DeletionMethod):
-    def allowed_for_model(self, model):
-        return model == Booking
-
-
-# TODO probably want other deletion methods implemented in similar ways?
-# Need to design how this will work
-
-DELETION_METHODS = {
-    'preserve_age_on_camp': PreserveAgeOnCamp(),
-}
-
-
-def apply_data_retention():
-    policy = load_data_retention_policy()
-    issues = get_data_retention_policy_issues(policy)
-    if issues:
-        raise AssertionError("Invalid data retention policy, aborting")
-    # TODO the rest
-    # We need:
-    # - mechanisms for working out how to know how "old" data is for
-    #   every model, and whether data is still needed for business purposes.
-    #   (if we don't have it for a model, we should validate that when
-    #   loading the policy).
-    # - mechanisms to apply different kind of deletions, depending on field,
-    #   plus custom deletion mechanisms.
-    raise NotImplementedError()
+# --- Parsing and checking ---
 
 
 def get_data_retention_policy_issues(policy: Optional[Policy] = None):
     if policy is None:
         policy = load_data_retention_policy()
     exhaustiveness_errors = _check_exhaustiveness(policy)
+    # TODO - check DELETABLE_RECORDS for all models.
     return exhaustiveness_errors
+
+
+def load_data_retention_policy() -> Policy:
+    """
+    Loads data_retention.yaml
+    """
+    # This method parses (and validates) data_retention.yaml, and also converts
+    # from more "human readable" names like "tables", "columns" etc. into the
+    # kind of things we actually want to use from code ("model", "fields").
+
+    # A lot of complexity here is trying to keep the YAML human readable
+    # and not redundant, and making sure we validate lots of possible errors.
+
+    # File format/validation errors are allowed to propogate
+    filename = settings.DATA_RETENTION_CONFIG_FILE
+    policy_yaml = yaml.load(open(filename), Loader=yaml.SafeLoader)
+    groups = []
+    for yaml_group in policy_yaml:
+        yaml_rules = yaml_group.pop('rules')
+        delete_after = parse_keep(yaml_rules.pop('keep'))
+        deletable_on_request = yaml_rules.pop('deletable on request from data subject')
+        if yaml_rules:
+            raise ValueError(f'Unexpected keys in "rules" entry: {", ".join(yaml_rules.keys())}')
+
+        yaml_tables = yaml_group.pop('tables')
+        models = []
+        for yaml_table in yaml_tables:
+            yaml_model_name = yaml_table.pop('name')
+            yaml_columns = yaml_table.pop('columns', None)
+            yaml_deletion_methods = yaml_table.pop('deletion methods', {})
+            if yaml_columns == 'all':
+                if 'delete row' in yaml_table:
+                    raise ValueError('You should specify either "columns: all" or "delete row", not both')
+                model_detail = ModelDetail.build(
+                    name=yaml_model_name,
+                    all_fields=True,
+                    deletion_method_names=yaml_deletion_methods
+                )
+            else:
+                yaml_delete_row = yaml_table.pop('delete row', False)
+                if yaml_delete_row:
+                    if yaml_columns is not None:
+                        raise ValueError('You should specify either "columns" or "delete row: yes", not both')
+                model_detail = ModelDetail.build(
+                    name=yaml_model_name,
+                    field_names=yaml_columns,
+                    deletion_method_names=yaml_deletion_methods,
+                    delete_row=yaml_delete_row,
+                )
+            models.append(model_detail)
+            if yaml_table:
+                raise ValueError(f'Unexpected keys in "tables" entry: {", ".join(yaml_table.keys())}')
+
+        groups.append(
+            Group(
+                rules=Rules(
+                    delete_after=delete_after,
+                    deletable_on_request=deletable_on_request,
+                ),
+                models=models
+            )
+        )
+        if yaml_group:
+            raise ValueError(f'Unexpected keys in group entry: {", ".join(yaml_group.keys())}')
+
+    return Policy(
+        source=filename,
+        groups=groups
+    )
 
 
 def _check_exhaustiveness(policy: Policy):
@@ -188,65 +254,6 @@ def _field_requires_privacy_policy(field: Field):
     return True
 
 
-def load_data_retention_policy() -> Policy:
-    """
-    Loads data_retention.yaml
-    """
-    # This method parses (and validates) data_retention.yaml, and also converts
-    # from more "human readable" names like "tables", "columns" etc. into the
-    # kind of things we actually want to use from code ("model", "fields").
-
-    # File format/validation errors are allowed to propogate
-    filename = settings.DATA_RETENTION_CONFIG_FILE
-    policy_yaml = yaml.load(open(filename), Loader=yaml.SafeLoader)
-    groups = []
-    for yaml_group in policy_yaml:
-        yaml_rules = yaml_group.pop('rules')
-        keep = parse_keep(yaml_rules.pop('keep'))
-        deletable_on_request = yaml_rules.pop('deletable on request from data subject')
-        if yaml_rules:
-            raise ValueError(f'Unexpected keys in "rules" entry: {", ".join(yaml_rules.keys())}')
-
-        yaml_tables = yaml_group.pop('tables')
-        models = []
-        for yaml_table in yaml_tables:
-            yaml_model_name = yaml_table.pop('name')
-            yaml_columns = yaml_table.pop('columns')
-            yaml_deletion_methods = yaml_table.pop('deletion methods', {})
-            if yaml_columns == 'all':
-                model_detail = ModelDetail.build(
-                    name=yaml_model_name,
-                    all_fields=True,
-                    deletion_method_names=yaml_deletion_methods
-                )
-            else:
-                model_detail = ModelDetail.build(
-                    name=yaml_model_name,
-                    field_names=yaml_columns,
-                    deletion_method_names=yaml_deletion_methods,
-                )
-            models.append(model_detail)
-            if yaml_table:
-                raise ValueError(f'Unexpected keys in "tables" entry: {", ".join(yaml_table.keys())}')
-
-        groups.append(
-            Group(
-                rules=Rules(
-                    keep=keep,
-                    deletable_on_request=deletable_on_request,
-                ),
-                models=models
-            )
-        )
-        if yaml_group:
-            raise ValueError(f'Unexpected keys in group entry: {", ".join(yaml_group.keys())}')
-
-    return Policy(
-        source=filename,
-        groups=groups
-    )
-
-
 forever = parsy.string('forever').result(None)
 years = (parsy.regex(r'\d+').map(int) << parsy.regex(" years?")).map(
     lambda y: timedelta(days=365 * y)
@@ -262,3 +269,71 @@ def parse_keep(keep_value: str) -> Optional[timedelta]:
         return keep_parser.parse(keep_value)
     except parsy.ParseError:
         raise ValueError(f'Invalid value {keep_value} for "keep" field.')
+
+
+# --- Applying ---
+
+
+def apply_data_retention(policy=None, ignore_missing_models=False):
+    if policy is None:
+        policy = load_data_retention_policy()
+    issues = get_data_retention_policy_issues(policy)
+    if issues:
+        if ignore_missing_models:
+            # Easier testing
+            issues = [issue for issue in issues if 'Missing models' not in issue.msg]
+        if issues:
+            raise AssertionError("Invalid data retention policy, aborting", issues)
+    # TODO the rest
+    # We need:
+    # - mechanisms for working out how to know how "old" data is for
+    #   every model, and whether data is still needed for business purposes.
+    #   (if we don't have it for a model, we should validate that when
+    #   loading the policy).
+    # - mechanisms to apply different kind of deletions, depending on field,
+    #   plus custom deletion mechanisms.
+
+    now = timezone.now()
+    retval = []
+    for group in policy.groups:
+        for model_detail in group.models:
+            retval.append(apply_data_retention_single_model(now, rules=group.rules, model_detail=model_detail))
+    return retval
+
+
+def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_detail: ModelDetail):
+    if rules.delete_after is None:
+        return []
+
+    delete_before_date = now - rules.delete_after
+    # TODO probably want separate method for manual erasure requests,
+    # need to be careful about things that are still needed and
+    # how to respect `delete_after`
+    deletable_records = get_deletable(delete_before_date, model_detail.model)
+    if model_detail.delete_row:
+        retval = deletable_records.delete()
+    else:
+        raise NotImplementedError()
+    return retval
+
+
+def get_deletable(before_date, model: type):
+    return DELETABLE_RECORDS[model](before_date)
+
+# --- Model specific knowledge ---
+
+
+class PreserveAgeOnCamp(DeletionMethod):
+    def allowed_for_model(self, model):
+        return model == Booking
+
+
+DELETABLE_RECORDS = {
+    Message: lambda before_date: Message.objects.filter(timestamp__lt=before_date),
+}
+# TODO probably want other deletion methods implemented in similar ways?
+# Need to design how this will work
+
+DELETION_METHODS = {
+    'preserve_age_on_camp': PreserveAgeOnCamp(),
+}

@@ -16,3 +16,4 @@ pytest-cov==2.10.1
 pytest-django==4.1.0
 pytest-xdist[psutil]==2.1.0
 pre-commit==2.9.3
+time-machine==2.1.0

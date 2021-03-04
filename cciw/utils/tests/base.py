@@ -23,10 +23,18 @@ class AtomicChecksMixin(object):
     def setUp(self):
         super().setUp()
         # We want to ensure that inside transactions we don't send mail using
-        # the normal method (which uses an HTTP API), or anything else that does
-        # something that could fail depending on random network failures. We
-        # instead should use 'queued_mail' for mail, which stores something on
-        # the DB and therefore participates in transactions.
+        # the normal method (which uses an HTTP API), for two reasons:
+        #
+        # - random network failures would throw exceptions and probably cause
+        #   the transaction to be rolled back, which normally we want to avoid.
+        #   For example, email failure shouldn't stop places being booked.
+        #
+        # - if the transaction is rolled back for some other reason, we don't
+        #   want the related email to be sent e.g. we don't want to send
+        #   "your place has been booked" if in the end it wasn't.
+
+        # So, instead should use 'queued_mail' for mail, which stores something
+        # on the DB and therefore participates in transactions.
 
         # Currently, we only enforce this within some parts of the code base
         # (bookings), so this mixin is not a part of TestBaseMixin.

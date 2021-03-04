@@ -37,6 +37,20 @@
 #   changes must only be done with the permission of the CCiW committee, and in
 #   conformance with GDPR and other data protection laws.
 
+# --- Deletion mechanisms ---
+#
+# There are different ways we could delete data from a database.
+#
+# - blanking out details, e.g. replace text with `[deleted]`. This enables us to
+#   keep some details in a row, while removing others, and is usually the
+#   preferred method.
+#
+# - removing entire rows of data. This generally makes it harder to keep stats
+#   like "number of campers on each camp", and we usually prefer not to do this.
+#
+# - other more complicated methods, discussed as needed.
+#
+
 # --- Structure and contents ---
 #
 # We have the following groups of data:
@@ -286,16 +300,12 @@
   tables:
     # Outgoing emails:
     - name: mailer.Message
-      columns: all
+      delete row: yes  # Delete entire rows, rather than just blanking out details.
     - name: mailer.MessageLog
-      columns: all
+      delete row: yes
     # Incoming mails from "contact us" page:
     - name: contact_us.Message
-      columns:
-      - email
-      - name
-      - message
-      - timestamp
+      delete row: yes
 
 
 # --- Group: Non-personal data ---
