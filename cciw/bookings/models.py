@@ -32,25 +32,30 @@ class Sex(models.TextChoices):
     FEMALE = 'f', 'Female'
 
 
-# Price types that can be selected for a booking
-PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT = range(0, 7)
-BOOKING_PLACE_PRICE_TYPES = [
-    (PRICE_FULL, 'Full price'),
-    (PRICE_2ND_CHILD, '2nd child discount'),
-    (PRICE_3RD_CHILD, '3rd child discount'),
-    (PRICE_CUSTOM, 'Custom discount'),
-]
+# Price types that can be selected in a booking or appear in Prices table.
+class PriceType(models.IntegerChoices):
+    FULL = 0, 'Full price'
+    SECOND_CHILD = 1, '2nd child discount'
+    THIRD_CHILD = 2, '3rd child discount'
+    CUSTOM = 3, 'Custom discount'
+    SOUTH_WALES_TRANSPORT = 4, 'South wales transport surcharge (pre 2015)'
+    DEPOSIT = 5, 'Deposit'
+    EARLY_BIRD_DISCOUNT = 6, 'Early bird discount'
+
+
+BOOKING_PLACE_PRICE_TYPES = [PriceType.FULL, PriceType.SECOND_CHILD, PriceType.THIRD_CHILD, PriceType.CUSTOM]
 
 # Price types that are used by Price model
-VALUED_PRICE_TYPES = [(v, d) for (v, d) in BOOKING_PLACE_PRICE_TYPES if v is not PRICE_CUSTOM] + \
-    [(PRICE_SOUTH_WALES_TRANSPORT, 'South wales transport surcharge (pre 2015)'),
-     (PRICE_DEPOSIT, 'Deposit'),
-     (PRICE_EARLY_BIRD_DISCOUNT, 'Early bird discount'),
-     ]
+VALUED_PRICE_TYPES = (
+    [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceType.CUSTOM] +
+    [PriceType.SOUTH_WALES_TRANSPORT, PriceType.DEPOSIT, PriceType.EARLY_BIRD_DISCOUNT]
+)
 
+
+# Prices required to open bookings.
 # From 2015 onwards, we don't have South Wales transport. But we might
 # want to keep info about prices etc. for a few years.
-REQUIRED_PRICE_TYPES = [(v, d) for (v, d) in VALUED_PRICE_TYPES if v != PRICE_SOUTH_WALES_TRANSPORT]
+REQUIRED_PRICE_TYPES = [v for v in VALUED_PRICE_TYPES if v != PriceType.SOUTH_WALES_TRANSPORT]
 
 
 BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_HALF_REFUND, BOOKING_CANCELLED_FULL_REFUND, = range(0, 6)
@@ -94,12 +99,12 @@ class NoEditMixin(object):
 class PriceQuerySet(models.QuerySet):
 
     def required_for_booking(self):
-        return self.filter(price_type__in=[v for v, d in REQUIRED_PRICE_TYPES])
+        return self.filter(price_type__in=REQUIRED_PRICE_TYPES)
 
 
 class Price(models.Model):
     year = models.PositiveSmallIntegerField()
-    price_type = models.PositiveSmallIntegerField(choices=VALUED_PRICE_TYPES)
+    price_type = models.PositiveSmallIntegerField(choices=[(pt, pt.label) for pt in VALUED_PRICE_TYPES])
     price = models.DecimalField(decimal_places=2, max_digits=10)
 
     objects = models.Manager.from_queryset(PriceQuerySet)()
@@ -112,7 +117,7 @@ class Price(models.Model):
 
     @classmethod
     def get_deposit_prices(cls, years=None):
-        q = Price.objects.filter(price_type=PRICE_DEPOSIT)
+        q = Price.objects.filter(price_type=PriceType.DEPOSIT)
         if years is not None:
             q = q.filter(year__in=set(years))
         return {p.year: p.price for p in q}
@@ -135,7 +140,7 @@ class PriceChecker:
         # Try to get everything we think we'll need in a single query,
         # and cache for later.
         years = set(self._expected_years + [year])
-        prices = Price.objects.filter(price_type=PRICE_DEPOSIT).filter(year__in=years)
+        prices = Price.objects.filter(price_type=PriceType.DEPOSIT).filter(year__in=years)
         self._deposit_prices.update({p.year: p.price for p in prices})
 
     def get_deposit_price(self, year):
@@ -500,7 +505,7 @@ class BookingQuerySet(models.QuerySet):
     def need_approving(self):
         # See also Booking.approval_reasons()
         qs = self.filter(state=BOOKING_INFO_COMPLETE).select_related('camp')
-        qs_custom_price = qs.filter(price_type=PRICE_CUSTOM)
+        qs_custom_price = qs.filter(price_type=PriceType.CUSTOM)
         qs_serious_illness = qs.filter(serious_illness=True)
         # See also Booking.age_on_camp()
         qs_too_young = qs.extra(where=[
@@ -591,7 +596,7 @@ class Booking(models.Model):
     agreement = models.BooleanField(default=False)
 
     # Price - partly from user (must fit business rules)
-    price_type = models.PositiveSmallIntegerField(choices=BOOKING_PLACE_PRICE_TYPES)
+    price_type = models.PositiveSmallIntegerField(choices=[(pt, pt.label) for pt in BOOKING_PLACE_PRICE_TYPES])
     early_bird_discount = models.BooleanField(default=False, help_text="Online bookings only")
     booked_at = models.DateTimeField(null=True, blank=True, help_text="Online bookings only")
     amount_due = models.DecimalField(decimal_places=2, max_digits=10)
@@ -656,11 +661,11 @@ class Booking(models.Model):
         return self.is_booked and self.booking_expires is None
 
     def expected_amount_due(self):
-        if self.price_type == PRICE_CUSTOM:
+        if self.price_type == PriceType.CUSTOM:
             return None
         if self.state == BOOKING_CANCELLED:
             return Price.objects.get(year=self.camp.year,
-                                     price_type=PRICE_DEPOSIT).price
+                                     price_type=PriceType.DEPOSIT).price
         elif self.state == BOOKING_CANCELLED_FULL_REFUND:
             return Decimal('0.00')
         else:
@@ -669,11 +674,11 @@ class Booking(models.Model):
             # For booking 2015 and later, this is not needed, but it kept in
             # case we need to query the expected amount due for older bookings.
             if self.south_wales_transport:
-                amount += Price.objects.get(price_type=PRICE_SOUTH_WALES_TRANSPORT,
+                amount += Price.objects.get(price_type=PriceType.SOUTH_WALES_TRANSPORT,
                                             year=self.camp.year).price
 
             if self.early_bird_discount:
-                amount -= Price.objects.get(price_type=PRICE_EARLY_BIRD_DISCOUNT,
+                amount -= Price.objects.get(price_type=PriceType.EARLY_BIRD_DISCOUNT,
                                             year=self.camp.year).price
 
             # For booking 2015 and later, there are no half refunds,
@@ -687,7 +692,7 @@ class Booking(models.Model):
     def auto_set_amount_due(self):
         amount = self.expected_amount_due()
         if amount is None:
-            # This happens for PRICE_CUSTOM
+            # This happens for PriceType.CUSTOM
             if self.amount_due is None:
                 self.amount_due = Decimal('0.00')
             # Otherwise - should leave as it was.
@@ -707,7 +712,7 @@ class Booking(models.Model):
     def can_have_early_bird_discount(self, booked_at=None):
         if booked_at is None:
             booked_at = self.booked_at
-        if self.price_type == PRICE_CUSTOM:
+        if self.price_type == PriceType.CUSTOM:
             return False
         else:
             return early_bird_is_available(self.camp.year, booked_at)
@@ -716,9 +721,9 @@ class Booking(models.Model):
         """
         Returns the discount that was missed due to failing to book early.
         """
-        if self.early_bird_discount or self.price_type == PRICE_CUSTOM:
+        if self.early_bird_discount or self.price_type == PriceType.CUSTOM:
             return Decimal(0)  # Got the discount, or it wasn't available.
-        return Price.objects.get(price_type=PRICE_EARLY_BIRD_DISCOUNT,
+        return Price.objects.get(price_type=PriceType.EARLY_BIRD_DISCOUNT,
                                  year=self.camp.year).price
 
     def age_on_camp(self):
@@ -756,7 +761,7 @@ class Booking(models.Model):
         if self.can_have_early_bird_discount(booked_at=now):
             retval.append(("Early bird discount if booked now",
                            Price.objects.get(year=self.camp.year,
-                                             price_type=PRICE_EARLY_BIRD_DISCOUNT).price))
+                                             price_type=PriceType.EARLY_BIRD_DISCOUNT).price))
         return retval
 
     def get_booking_problems(self, booking_sec=False):
@@ -781,7 +786,7 @@ class Booking(models.Model):
         errors = []
 
         # Custom price - not auto bookable
-        if self.price_type == PRICE_CUSTOM:
+        if self.price_type == PriceType.CUSTOM:
             errors.append("A custom discount needs to be arranged by the booking secretary")
 
         relevant_bookings = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
@@ -845,25 +850,25 @@ class Booking(models.Model):
         #
         # This is not exactly correct, but allows all legitimate discounts.
 
-        if self.price_type == PRICE_2ND_CHILD:
+        if self.price_type == PriceType.SECOND_CHILD:
             if not (relevant_bookings_excluding_self
-                    .filter(price_type=PRICE_FULL)
+                    .filter(price_type=PriceType.FULL)
                     ).exists():
                 errors.append("You cannot use a 2nd child discount unless you have "
                               "another child at full price. Please edit the place details "
                               "and choose an appropriate price type.")
 
-        if self.price_type == PRICE_3RD_CHILD:
-            qs = (relevant_bookings_excluding_self.filter(price_type=PRICE_FULL) |
-                  relevant_bookings_excluding_self.filter(price_type=PRICE_2ND_CHILD))
+        if self.price_type == PriceType.THIRD_CHILD:
+            qs = (relevant_bookings_excluding_self.filter(price_type=PriceType.FULL) |
+                  relevant_bookings_excluding_self.filter(price_type=PriceType.SECOND_CHILD))
             if qs.count() < 2:
                 errors.append("You cannot use a 3rd child discount unless you have "
                               "two other children without this discount. Please edit the "
                               "place details and choose an appropriate price type.")
 
-        if self.price_type in [PRICE_2ND_CHILD, PRICE_3RD_CHILD]:
+        if self.price_type in [PriceType.SECOND_CHILD, PriceType.THIRD_CHILD]:
             qs = relevant_bookings_limited_to_self
-            qs = qs.filter(price_type=PRICE_2ND_CHILD) | qs.filter(price_type=PRICE_3RD_CHILD)
+            qs = qs.filter(price_type=PriceType.SECOND_CHILD) | qs.filter(price_type=PriceType.THIRD_CHILD)
             if qs.count() > 1:
                 errors.append("If a camper goes on multiple camps, only one place may use a 2nd/3rd child discount.")
 
@@ -932,7 +937,7 @@ class Booking(models.Model):
         if self.south_wales_transport and not self.camp.south_wales_transport_available:
             errors.append("Transport from South Wales is not available for this camp, or all places have been taken already.")
 
-        if booking_sec and self.price_type != PRICE_CUSTOM:
+        if booking_sec and self.price_type != PriceType.CUSTOM:
             expected_amount = self.expected_amount_due()
             if self.amount_due != expected_amount:
                 errors.append(f"The 'amount due' is not the expected value of £{expected_amount}.")
@@ -966,8 +971,8 @@ class Booking(models.Model):
 
         relevant_bookings = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
 
-        if self.price_type == PRICE_FULL:
-            full_pricers = relevant_bookings.filter(price_type=PRICE_FULL)
+        if self.price_type == PriceType.FULL:
+            full_pricers = relevant_bookings.filter(price_type=PriceType.FULL)
             names = sorted(set([b.name for b in full_pricers]))
             if len(names) > 1:
                 pretty_names = ', '.join(names[1:]) + " and " + names[0]
@@ -981,8 +986,8 @@ class Booking(models.Model):
 
                 warnings.append(warning)
 
-        if self.price_type == PRICE_2ND_CHILD:
-            second_childers = relevant_bookings.filter(price_type=PRICE_2ND_CHILD)
+        if self.price_type == PriceType.SECOND_CHILD:
+            second_childers = relevant_bookings.filter(price_type=PriceType.SECOND_CHILD)
             names = sorted(set([b.name for b in second_childers]))
             if len(names) > 1:
                 pretty_names = ', '.join(names[1:]) + " and " + names[0]
@@ -1013,7 +1018,7 @@ class Booking(models.Model):
         return self.state == BOOKING_INFO_COMPLETE
 
     def is_custom_discount(self):
-        return self.price_type == PRICE_CUSTOM
+        return self.price_type == PriceType.CUSTOM
 
     def get_contact_email(self):
         if self.email:

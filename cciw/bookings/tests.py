@@ -24,11 +24,9 @@ from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
 from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND,
-                                  BOOKING_INFO_COMPLETE, MANUAL_PAYMENT_CHEQUE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
-                                  PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
-                                  AccountTransferPayment, Booking, BookingAccount, ManualPayment, Payment,
-                                  PaymentSource, Price, PriceChecker, RefundPayment, book_basket_now,
-                                  build_paypal_custom_field, expire_bookings)
+                                  BOOKING_INFO_COMPLETE, MANUAL_PAYMENT_CHEQUE, AccountTransferPayment, Booking,
+                                  BookingAccount, ManualPayment, Payment, PaymentSource, Price, PriceChecker, PriceType,
+                                  RefundPayment, book_basket_now, build_paypal_custom_field, expire_bookings)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
@@ -57,7 +55,7 @@ class Factories:
             state=state,
             sex=sex,
             date_of_birth=date(date.today().year - 15, 1, 1),
-            price_type=PRICE_FULL,
+            price_type=PriceType.FULL,
             amount_due=100,
         )
 
@@ -163,19 +161,19 @@ class CreatePricesMixin(object):
     def add_prices(self):
         year = self.camp.year
         self.price_full = Price.objects.get_or_create(year=year,
-                                                      price_type=PRICE_FULL,
+                                                      price_type=PriceType.FULL,
                                                       price=Decimal('100'))[0].price
         self.price_2nd_child = Price.objects.get_or_create(year=year,
-                                                           price_type=PRICE_2ND_CHILD,
+                                                           price_type=PriceType.SECOND_CHILD,
                                                            price=Decimal('75'))[0].price
         self.price_3rd_child = Price.objects.get_or_create(year=year,
-                                                           price_type=PRICE_3RD_CHILD,
+                                                           price_type=PriceType.THIRD_CHILD,
                                                            price=Decimal('50'))[0].price
         self.price_deposit = Price.objects.get_or_create(year=year,
-                                                         price_type=PRICE_DEPOSIT,
+                                                         price_type=PriceType.DEPOSIT,
                                                          price=Decimal('20'))[0].price
         self.price_early_bird_discount = Price.objects.get_or_create(year=year,
-                                                                     price_type=PRICE_EARLY_BIRD_DISCOUNT,
+                                                                     price_type=PriceType.EARLY_BIRD_DISCOUNT,
                                                                      price=Decimal('10'))[0].price
 
     def setUp(self):
@@ -1113,7 +1111,7 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account']),
                          OfficersSetupMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_approve(self):
-        self.create_booking({'price_type': PRICE_CUSTOM})
+        self.create_booking({'price_type': PriceType.CUSTOM})
         acc = self.get_account()
         b = acc.bookings.all()[0]
 
@@ -1320,7 +1318,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assert_book_button_enabled()
 
     def test_handle_custom_price(self):
-        self.create_booking({'price_type': PRICE_CUSTOM})
+        self.create_booking({'price_type': PriceType.CUSTOM})
         self.get_url(self.urlname)
 
         self.assertTextPresent("Camp Blue")
@@ -1331,14 +1329,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent("This place cannot be booked for the reasons described above")
 
     def test_2nd_child_discount_allowed(self):
-        self.create_booking({'price_type': PRICE_2ND_CHILD})
+        self.create_booking({'price_type': PriceType.SECOND_CHILD})
 
         self.get_url(self.urlname)
         self.assertTextPresent(self.CANNOT_USE_2ND_CHILD)
         self.assert_book_button_disabled()
 
         # 2 places, both at 2nd child discount, is not allowed.
-        self.create_booking({'price_type': PRICE_2ND_CHILD})
+        self.create_booking({'price_type': PriceType.SECOND_CHILD})
 
         self.get_url(self.urlname)
         self.assertTextPresent(self.CANNOT_USE_2ND_CHILD)
@@ -1353,22 +1351,22 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         acc = self.get_account()
         acc.bookings.update(state=BOOKING_BOOKED)
 
-        self.create_booking({'price_type': PRICE_2ND_CHILD,
+        self.create_booking({'price_type': PriceType.SECOND_CHILD,
                              'first_name': 'Mary'})
 
         self.get_url(self.urlname)
         self.assert_book_button_enabled()
 
     def test_3rd_child_discount_allowed(self):
-        self.create_booking({'price_type': PRICE_FULL})
-        self.create_booking({'price_type': PRICE_3RD_CHILD})
+        self.create_booking({'price_type': PriceType.FULL})
+        self.create_booking({'price_type': PriceType.THIRD_CHILD})
 
         self.get_url(self.urlname)
         self.assertTextPresent("You cannot use a 3rd child discount")
         self.assert_book_button_disabled()
 
         # 3 places, with 2 at 3rd child discount, is not allowed.
-        self.create_booking({'price_type': PRICE_3RD_CHILD})
+        self.create_booking({'price_type': PriceType.THIRD_CHILD})
 
         self.get_url(self.urlname)
         self.assertTextPresent("You cannot use a 3rd child discount")
@@ -1495,10 +1493,10 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_handle_two_problem_bookings(self):
         # Test the error we get for more than one problem booking
-        self.create_booking({'price_type': PRICE_CUSTOM})
+        self.create_booking({'price_type': PriceType.CUSTOM})
         self.create_booking({'first_name': 'Another',
                              'last_name': 'Child',
-                             'price_type': PRICE_CUSTOM})
+                             'price_type': PriceType.CUSTOM})
         self.get_url(self.urlname)
 
         self.assertTextPresent("Camp Blue")
@@ -1513,7 +1511,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking()  # bookable
         self.create_booking({'first_name': 'Another',
                              'last_name': 'Child',
-                             'price_type': PRICE_CUSTOM})  # not bookable
+                             'price_type': PriceType.CUSTOM})  # not bookable
         self.get_url(self.urlname)
         self.assert_book_button_disabled()
         self.assertTextPresent("One or more of the places cannot be booked")
@@ -1530,9 +1528,9 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking()  # bookable
         self.create_booking({'first_name': 'Another',
                              'last_name': 'Child',
-                             'price_type': PRICE_CUSTOM})  # not bookable
-        Booking.objects.filter(price_type=PRICE_CUSTOM).update(state=BOOKING_APPROVED,
-                                                               amount_due=Decimal('0.01'))
+                             'price_type': PriceType.CUSTOM})  # not bookable
+        Booking.objects.filter(price_type=PriceType.CUSTOM).update(state=BOOKING_APPROVED,
+                                                                   amount_due=Decimal('0.01'))
         self.get_url(self.urlname)
 
         self.assertTextPresent("Camp Blue")
@@ -1685,10 +1683,10 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking()
         self.create_booking({'first_name': 'Mary',
                              'last_name': 'Bloggs',
-                             'price_type': PRICE_2ND_CHILD})
+                             'price_type': PriceType.SECOND_CHILD})
         self.create_booking({'first_name': 'Peter',
                              'last_name': 'Bloggs',
-                             'price_type': PRICE_2ND_CHILD})
+                             'price_type': PriceType.SECOND_CHILD})
 
         self.get_url(self.urlname)
         self.assertTextPresent(self.MULTIPLE_2ND_CHILD_WARNING)
@@ -1699,7 +1697,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
         self.create_booking({'first_name': 'Zac',
                              'last_name': 'Bloggs',
-                             'price_type': PRICE_2ND_CHILD})
+                             'price_type': PriceType.SECOND_CHILD})
         self.get_url(self.urlname)
         self.assertTextPresent("2 are eligible")
 
@@ -1714,7 +1712,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     def test_error_for_2nd_child_discount_for_same_camper(self):
         self.create_booking()
         self.create_booking({'camp': self.camp_2,
-                             'price_type': PRICE_2ND_CHILD})
+                             'price_type': PriceType.SECOND_CHILD})
 
         self.get_url(self.urlname)
         self.assertTextPresent(self.CANNOT_USE_2ND_CHILD)
@@ -1727,10 +1725,10 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
         # Mary x2
         self.create_booking({'first_name': 'Mary',
-                             'price_type': PRICE_2ND_CHILD})
+                             'price_type': PriceType.SECOND_CHILD})
         self.create_booking({'first_name': 'Mary',
                              'camp': self.camp_2,
-                             'price_type': PRICE_2ND_CHILD})
+                             'price_type': PriceType.SECOND_CHILD})
 
         self.get_url(self.urlname)
         self.assertTextPresent(self.CANNOT_USE_MULTIPLE_DISCOUNT_FOR_ONE_CAMPER)
@@ -1867,7 +1865,7 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         # Need to move into region where deposits are not allowed.
         Camp.objects.update(start_date=date.today() + timedelta(days=20))
         self.create_booking()
-        self.create_booking({'price_type': PRICE_2ND_CHILD,
+        self.create_booking({'price_type': PriceType.SECOND_CHILD,
                              'first_name': 'Mary'})
         acc = self.get_account()
         book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
@@ -1881,13 +1879,13 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         self.assertEqual(acc.total_received, p)
 
         # Check we updated the one we had enough funds for
-        self.assertTrue(acc.bookings.filter(price_type=PRICE_2ND_CHILD)[0].booking_expires is None)
+        self.assertTrue(acc.bookings.filter(price_type=PriceType.SECOND_CHILD)[0].booking_expires is None)
         # but not the one which was too much.
-        self.assertTrue(acc.bookings.filter(price_type=PRICE_FULL)[0].booking_expires is not None)
+        self.assertTrue(acc.bookings.filter(price_type=PriceType.FULL)[0].booking_expires is not None)
 
         # We can rectify it with a payment of the rest
         acc.receive_payment((self.price_full + self.price_2nd_child) - p)
-        self.assertTrue(acc.bookings.filter(price_type=PRICE_FULL)[0].booking_expires is None)
+        self.assertTrue(acc.bookings.filter(price_type=PriceType.FULL)[0].booking_expires is None)
 
     def test_email_for_bad_payment_1(self):
         ipn_1 = IpnMock()
@@ -2177,7 +2175,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         data['account'] = str(acc1.id)
         data['state'] = BOOKING_APPROVED
         data['amount_due'] = '100.00'
-        data['price_type'] = PRICE_CUSTOM
+        data['price_type'] = PriceType.CUSTOM
         j = self._booking_problems_json(data)
         self.assertEqual(j['valid'], True)
         self.assertTrue("A custom discount needs to be arranged by the booking secretary" in
@@ -2197,7 +2195,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         data['account'] = str(acc1.id)
         data['state'] = BOOKING_BOOKED
         data['amount_due'] = '0.00'
-        data['price_type'] = PRICE_FULL
+        data['price_type'] = PriceType.FULL
         j = self._booking_problems_json(data)
         self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £%s"
                                          % self.price_full)
@@ -2217,7 +2215,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         data['account'] = str(acc1.id)
         data['state'] = BOOKING_CANCELLED
         data['amount_due'] = '0.00'
-        data['price_type'] = PRICE_FULL
+        data['price_type'] = PriceType.FULL
         j = self._booking_problems_json(data)
         self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £%s"
                                          % self.price_deposit)
@@ -2226,7 +2224,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         # Check 'full refund' cancellation.
         data['state'] = BOOKING_CANCELLED_FULL_REFUND
         data['amount_due'] = '20.00'
-        data['price_type'] = PRICE_FULL
+        data['price_type'] = PriceType.FULL
         j = self._booking_problems_json(data)
         self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £0.00")
                             for p in j['problems']))

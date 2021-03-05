@@ -23,11 +23,10 @@ from paypal.standard.forms import PayPalPaymentsForm
 from cciw.bookings.email import send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
 from cciw.bookings.middleware import get_booking_account_from_request, unset_booking_account_cookie
-from cciw.bookings.models import (BOOKING_APPROVED, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_DEPOSIT,
-                                  PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL, REQUIRED_PRICE_TYPES, Booking, BookingAccount,
-                                  Price, PriceChecker, any_bookings_possible, book_basket_now,
-                                  build_paypal_custom_field, early_bird_is_available, get_early_bird_cutoff_date,
-                                  is_booking_open, is_booking_open_thisyear)
+from cciw.bookings.models import (BOOKING_APPROVED, REQUIRED_PRICE_TYPES, Booking, BookingAccount, Price, PriceChecker,
+                                  PriceType, any_bookings_possible, book_basket_now, build_paypal_custom_field,
+                                  early_bird_is_available, get_early_bird_cutoff_date, is_booking_open,
+                                  is_booking_open_thisyear)
 from cciw.cciwmain import common
 from cciw.cciwmain.common import ajax_form_validate, get_current_domain
 from cciw.cciwmain.decorators import json_response
@@ -104,7 +103,7 @@ def index(request):
         prices = Price.objects.filter(year=year - 1)
         early_bird_available = False
 
-    prices = list(prices.filter(price_type__in=[v for v, d in REQUIRED_PRICE_TYPES]))
+    prices = list(prices.filter(price_type__in=REQUIRED_PRICE_TYPES))
 
     def getp(v):
         try:
@@ -112,11 +111,11 @@ def index(request):
         except IndexError:
             return None
 
-    early_bird_discount = getp(PRICE_EARLY_BIRD_DISCOUNT)
+    early_bird_discount = getp(PriceType.EARLY_BIRD_DISCOUNT)
     price_list = [
-        ('Full price', getp(PRICE_FULL)),
-        ('2nd camper from the same family', getp(PRICE_2ND_CHILD)),
-        ('Subsequent children from the same family', getp(PRICE_3RD_CHILD))
+        ('Full price', getp(PriceType.FULL)),
+        ('2nd camper from the same family', getp(PriceType.SECOND_CHILD)),
+        ('Subsequent children from the same family', getp(PriceType.THIRD_CHILD))
     ]
     if any(p is None for caption, p in price_list):
         price_list = []
@@ -126,7 +125,7 @@ def index(request):
 
     context.update({
         'price_list': price_list,
-        'price_deposit': getp(PRICE_DEPOSIT),
+        'price_deposit': getp(PriceType.DEPOSIT),
         'price_early_bird_discount': early_bird_discount,
         'booking_open': booking_open,
         'any_bookings_possible': any_bookings_possible(common.get_thisyear()),
@@ -283,7 +282,7 @@ def add_or_edit_place(request, context, booking_id=None):
         'form': form,
         'early_bird_available': early_bird_is_available(year, now),
         'early_bird_date': get_early_bird_cutoff_date(year),
-        'price_early_bird_discount': lambda: Price.objects.get(year=year, price_type=PRICE_EARLY_BIRD_DISCOUNT).price,
+        'price_early_bird_discount': lambda: Price.objects.get(year=year, price_type=PriceType.EARLY_BIRD_DISCOUNT).price,
         'read_only': booking is not None and not booking.is_user_editable(),
     })
     return TemplateResponse(request, 'cciw/bookings/add_place.html', context)
@@ -552,9 +551,9 @@ def list_bookings(request):
             b.bookable = len(b.booking_problems) == 0
             b.manually_approved = b.state == BOOKING_APPROVED
 
-            # Where booking.price_type = PRICE_CUSTOM, and state is not approved,
+            # Where booking.price_type = PriceType.CUSTOM, and state is not approved,
             # amount_due is meaningless. So we have a new attr, amount_due_normalised
-            if b.price_type == PRICE_CUSTOM and b.state != BOOKING_APPROVED:
+            if b.price_type == PriceType.CUSTOM and b.state != BOOKING_APPROVED:
                 b.amount_due_normalised = None
             else:
                 b.amount_due_normalised = b.amount_due
