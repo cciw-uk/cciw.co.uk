@@ -58,15 +58,14 @@ VALUED_PRICE_TYPES = (
 REQUIRED_PRICE_TYPES = [v for v in VALUED_PRICE_TYPES if v != PriceType.SOUTH_WALES_TRANSPORT]
 
 
-BOOKING_INFO_COMPLETE, BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_HALF_REFUND, BOOKING_CANCELLED_FULL_REFUND, = range(0, 6)
-BOOKING_STATES = [
-    (BOOKING_INFO_COMPLETE, 'Information complete'),
-    (BOOKING_APPROVED, 'Manually approved'),
-    (BOOKING_BOOKED, 'Booked'),
-    (BOOKING_CANCELLED, 'Cancelled - deposit kept'),
-    (BOOKING_CANCELLED_HALF_REFUND, 'Cancelled - half refund (pre 2015 only)'),
-    (BOOKING_CANCELLED_FULL_REFUND, 'Cancelled - full refund'),
-]
+class BookingState(models.IntegerChoices):
+    INFO_COMPLETE = 0, 'Information complete'
+    APPROVED = 1, 'Manually approved'
+    BOOKED = 2, 'Booked'
+    CANCELLED_DEPOSIT_KEPT = 3, 'Cancelled - deposit kept'
+    CANCELLED_HALF_REFUND = 4, 'Cancelled - half refund (pre 2015 only)'
+    CANCELLED_FULL_REFUND = 5, 'Cancelled - full refund'
+
 
 MANUAL_PAYMENT_CHEQUE, MANUAL_PAYMENT_CASH, MANUAL_PAYMENT_ECHEQUE, MANUAL_PAYMENT_BACS = range(0, 4)
 
@@ -465,20 +464,20 @@ class BookingQuerySet(models.QuerySet):
 
     def _ready_to_book(self, shelved):
         qs = self.filter(shelved=shelved)
-        return qs.filter(state=BOOKING_INFO_COMPLETE) | qs.filter(state=BOOKING_APPROVED)
+        return qs.filter(state=BookingState.INFO_COMPLETE) | qs.filter(state=BookingState.APPROVED)
 
     def booked(self):
-        return self.filter(state=BOOKING_BOOKED)
+        return self.filter(state=BookingState.BOOKED)
 
     def in_basket_or_booked(self):
         return self.in_basket() | self.booked()
 
     def confirmed(self):
-        return self.filter(state=BOOKING_BOOKED,
+        return self.filter(state=BookingState.BOOKED,
                            booking_expires__isnull=True)
 
     def unconfirmed(self):
-        return self.filter(state=BOOKING_BOOKED,
+        return self.filter(state=BookingState.BOOKED,
                            booking_expires__isnull=False)
 
     def payable(self, *, confirmed_only: bool):
@@ -493,18 +492,18 @@ class BookingQuerySet(models.QuerySet):
 
         # 'Full refund' cancelled bookings do not have payment expected, but the
         # others do.
-        return (self.filter(state__in=[BOOKING_CANCELLED,
-                                       BOOKING_CANCELLED_HALF_REFUND]) |
+        return (self.filter(state__in=[BookingState.CANCELLED_DEPOSIT_KEPT,
+                                       BookingState.CANCELLED_HALF_REFUND]) |
                 (self.confirmed() if confirmed_only else self.booked()))
 
     def cancelled(self):
-        return self.filter(state__in=[BOOKING_CANCELLED,
-                                      BOOKING_CANCELLED_HALF_REFUND,
-                                      BOOKING_CANCELLED_FULL_REFUND])
+        return self.filter(state__in=[BookingState.CANCELLED_DEPOSIT_KEPT,
+                                      BookingState.CANCELLED_HALF_REFUND,
+                                      BookingState.CANCELLED_FULL_REFUND])
 
     def need_approving(self):
         # See also Booking.approval_reasons()
-        qs = self.filter(state=BOOKING_INFO_COMPLETE).select_related('camp')
+        qs = self.filter(state=BookingState.INFO_COMPLETE).select_related('camp')
         qs_custom_price = qs.filter(price_type=PriceType.CUSTOM)
         qs_serious_illness = qs.filter(serious_illness=True)
         # See also Booking.age_on_camp()
@@ -606,7 +605,7 @@ class Booking(models.Model):
                                   help_text="Used by user to put on 'shelf'")
 
     # State - internal
-    state = models.IntegerField(choices=BOOKING_STATES,
+    state = models.IntegerField(choices=BookingState.choices,
                                 help_text=mark_safe(
                                     "<ul>"
                                     "<li>To book, set to 'Booked' <b>and</b> ensure 'Booking expires' is empty</li>"
@@ -641,20 +640,20 @@ class Booking(models.Model):
         self.account = booking_account
         self.early_bird_discount = False  # We only allow this to be True when booking
         self.auto_set_amount_due()
-        self.state = BOOKING_INFO_COMPLETE
+        self.state = BookingState.INFO_COMPLETE
         if self.id is None:
             self.created_online = True
         self.save()
 
     def is_payable(self, *, confirmed_only: bool):
         # See also BookingQuerySet.payable()
-        return (self.state in [BOOKING_CANCELLED,
-                               BOOKING_CANCELLED_HALF_REFUND] or
+        return (self.state in [BookingState.CANCELLED_DEPOSIT_KEPT,
+                               BookingState.CANCELLED_HALF_REFUND] or
                 (self.is_confirmed if confirmed_only else self.is_booked))
 
     @property
     def is_booked(self):
-        return self.state == BOOKING_BOOKED
+        return self.state == BookingState.BOOKED
 
     @property
     def is_confirmed(self):
@@ -663,10 +662,10 @@ class Booking(models.Model):
     def expected_amount_due(self):
         if self.price_type == PriceType.CUSTOM:
             return None
-        if self.state == BOOKING_CANCELLED:
+        if self.state == BookingState.CANCELLED_DEPOSIT_KEPT:
             return Price.objects.get(year=self.camp.year,
                                      price_type=PriceType.DEPOSIT).price
-        elif self.state == BOOKING_CANCELLED_FULL_REFUND:
+        elif self.state == BookingState.CANCELLED_FULL_REFUND:
             return Decimal('0.00')
         else:
             amount = Price.objects.get(year=self.camp.year,
@@ -684,7 +683,7 @@ class Booking(models.Model):
             # For booking 2015 and later, there are no half refunds,
             # but this is kept in in case we need to query the expected amount due for older
             # bookings.
-            if self.state == BOOKING_CANCELLED_HALF_REFUND:
+            if self.state == BookingState.CANCELLED_HALF_REFUND:
                 amount = amount / 2
 
             return amount
@@ -776,7 +775,7 @@ class Booking(models.Model):
         If booking_sec=True, it shows the problems as they should be seen by the
         booking secretary.
         """
-        if self.state == BOOKING_APPROVED and not booking_sec:
+        if self.state == BookingState.APPROVED and not booking_sec:
             return ([], [])
 
         return (self.get_booking_errors(booking_sec=booking_sec),
@@ -1009,13 +1008,13 @@ class Booking(models.Model):
 
     def expire(self):
         self.booking_expires = None
-        self.state = BOOKING_INFO_COMPLETE
+        self.state = BookingState.INFO_COMPLETE
         self.early_bird_discount = False
         self.booked_at = None
         self.auto_set_amount_due()
 
     def is_user_editable(self):
-        return self.state == BOOKING_INFO_COMPLETE
+        return self.state == BookingState.INFO_COMPLETE
 
     def is_custom_discount(self):
         return self.price_type == PriceType.CUSTOM
@@ -1083,7 +1082,7 @@ def book_basket_now(bookings):
         # rather than in the Booking model.
         b.early_bird_discount = b.can_have_early_bird_discount()
         b.auto_set_amount_due()
-        b.state = BOOKING_BOOKED
+        b.state = BookingState.BOOKED
         b.booking_expires = now + timedelta(1)  # 24 hours
         b.save()
 

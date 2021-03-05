@@ -23,10 +23,9 @@ from cciw.bookings.hooks import paypal_payment_received, unrecognised_payment
 from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
-from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANCELLED, BOOKING_CANCELLED_FULL_REFUND,
-                                  BOOKING_INFO_COMPLETE, MANUAL_PAYMENT_CHEQUE, AccountTransferPayment, Booking,
-                                  BookingAccount, ManualPayment, Payment, PaymentSource, Price, PriceChecker, PriceType,
-                                  RefundPayment, book_basket_now, build_paypal_custom_field, expire_bookings)
+from cciw.bookings.models import (MANUAL_PAYMENT_CHEQUE, AccountTransferPayment, Booking, BookingAccount, BookingState,
+                                  ManualPayment, Payment, PaymentSource, Price, PriceChecker, PriceType, RefundPayment,
+                                  book_basket_now, build_paypal_custom_field, expire_bookings)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
@@ -45,7 +44,7 @@ class Factories:
             self,
             camp,
             sex='m',
-            state=BOOKING_INFO_COMPLETE,
+            state=BookingState.INFO_COMPLETE,
             account=None,
     ):
         account = account or self.create_booking_account()
@@ -275,7 +274,7 @@ class CreateBookingModelMixin(CreatePricesMixin, PlaceDetailsMixin):
         self.add_prices()
         data = self.place_details.copy()
         data['account'] = self.get_account()
-        data['state'] = BOOKING_INFO_COMPLETE
+        data['state'] = BookingState.INFO_COMPLETE
         data['amount_due'] = Decimal('0.00')
         if extra:
             data.update(extra)
@@ -423,7 +422,7 @@ class TestBookingModels(CreateBookingModelMixin, AtomicChecksMixin, TestBase):
         # Place should be booked AND should not expire
         acc = self.get_account()
         b = acc.bookings.all()[0]
-        self.assertEqual(b.state, BOOKING_BOOKED)
+        self.assertEqual(b.state, BookingState.BOOKED)
         self.assertEqual(b.booking_expires, None)
 
         acc = self.get_account()
@@ -1029,13 +1028,13 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     def test_edit_booked(self):
         """
         Test we can't edit a booking when it is already booked.
-        (or anything but BOOKING_INFO_COMPLETE)
+        (or anything but BookingState.INFO_COMPLETE)
         """
         self.create_booking()
         acc = self.get_account()
         b = acc.bookings.get()
 
-        for state in [BOOKING_APPROVED, BOOKING_BOOKED]:
+        for state in [BookingState.APPROVED, BookingState.BOOKED]:
             b.state = state
             b.save()
 
@@ -1048,7 +1047,7 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
             # Attempt a post.
 
             # First, load a page with a working submit button:
-            b.state = BOOKING_INFO_COMPLETE
+            b.state = BookingState.INFO_COMPLETE
             b.save()
             self.edit_place(b)
 
@@ -1117,7 +1116,7 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account']),
 
         self.officer_login(BOOKING_SECRETARY)
         self.get_url("admin:bookings_booking_change", b.id)
-        self.fill_by_name({'state': BOOKING_APPROVED})
+        self.fill_by_name({'state': BookingState.APPROVED})
         self.submit('[name=_save]')
         self.assertTextPresent("An email has been sent")
         mails = send_queued_mail()
@@ -1135,7 +1134,7 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account']),
         fields = self.place_details.copy()
         fields.update({
             'account': account.id,
-            'state': BOOKING_BOOKED,
+            'state': BookingState.BOOKED,
             'amount_due': '130.00',
             'manual_payment_amount': '100',
             'manual_payment_payment_type': str(MANUAL_PAYMENT_CHEQUE),
@@ -1349,7 +1348,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         """
         self.create_booking()
         acc = self.get_account()
-        acc.bookings.update(state=BOOKING_BOOKED)
+        acc.bookings.update(state=BookingState.BOOKED)
 
         self.create_booking({'price_type': PriceType.SECOND_CHILD,
                              'first_name': 'Mary'})
@@ -1415,7 +1414,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_no_places_left(self):
         for i in range(0, self.camp.max_campers):
-            factories.create_booking(camp=self.camp, state=BOOKING_BOOKED)
+            factories.create_booking(camp=self.camp, state=BookingState.BOOKED)
 
         self.create_booking({'sex': 'm'})
         self.get_url(self.urlname)
@@ -1427,7 +1426,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_no_male_places_left(self):
         for i in range(0, self.camp.max_male_campers):
-            factories.create_booking(camp=self.camp, sex='m', state=BOOKING_BOOKED)
+            factories.create_booking(camp=self.camp, sex='m', state=BookingState.BOOKED)
 
         self.create_booking({'sex': 'm'})
         self.get_url(self.urlname)
@@ -1435,7 +1434,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assert_book_button_disabled()
 
         # Check that we can still book female places
-        Booking.objects.filter(state=BOOKING_INFO_COMPLETE).delete()
+        Booking.objects.filter(state=BookingState.INFO_COMPLETE).delete()
         self.create_booking({'sex': 'f'})
         self.get_url(self.urlname)
         self.assertTextAbsent(self.NO_PLACES_LEFT)
@@ -1443,7 +1442,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_no_female_places_left(self):
         for i in range(0, self.camp.max_female_campers):
-            factories.create_booking(camp=self.camp, sex='f', state=BOOKING_BOOKED)
+            factories.create_booking(camp=self.camp, sex='f', state=BookingState.BOOKED)
 
         self.create_booking({'sex': 'f'})
         self.get_url(self.urlname)
@@ -1452,7 +1451,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_not_enough_places_left(self):
         for i in range(0, self.camp.max_campers - 1):
-            factories.create_booking(camp=self.camp, sex='m', state=BOOKING_BOOKED)
+            factories.create_booking(camp=self.camp, sex='m', state=BookingState.BOOKED)
 
         self.create_booking({'sex': 'f'})
         self.create_booking({'sex': 'f'})
@@ -1462,8 +1461,8 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_not_enough_male_places_left(self):
         for i in range(0, self.camp.max_male_campers - 1):
-            factories.create_booking(camp=self.camp, sex='m', state=BOOKING_BOOKED)
-        self.camp.bookings.update(state=BOOKING_BOOKED)
+            factories.create_booking(camp=self.camp, sex='m', state=BookingState.BOOKED)
+        self.camp.bookings.update(state=BookingState.BOOKED)
 
         self.create_booking({'sex': 'm'})
         self.create_booking({'sex': 'm'})
@@ -1473,8 +1472,8 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_not_enough_female_places_left(self):
         for i in range(0, self.camp.max_female_campers - 1):
-            factories.create_booking(camp=self.camp, sex='f', state=BOOKING_BOOKED)
-        self.camp.bookings.update(state=BOOKING_BOOKED)
+            factories.create_booking(camp=self.camp, sex='f', state=BookingState.BOOKED)
+        self.camp.bookings.update(state=BookingState.BOOKED)
 
         self.create_booking({'sex': 'f'})
         self.create_booking({'sex': 'f'})
@@ -1529,7 +1528,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking({'first_name': 'Another',
                              'last_name': 'Child',
                              'price_type': PriceType.CUSTOM})  # not bookable
-        Booking.objects.filter(price_type=PriceType.CUSTOM).update(state=BOOKING_APPROVED,
+        Booking.objects.filter(price_type=PriceType.CUSTOM).update(state=BookingState.APPROVED,
                                                                    amount_due=Decimal('0.01'))
         self.get_url(self.urlname)
 
@@ -1621,7 +1620,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit('[name=book_now]')
         acc = self.get_account()
         b = acc.bookings.all()[0]
-        self.assertEqual(b.state, BOOKING_BOOKED)
+        self.assertEqual(b.state, BookingState.BOOKED)
         self.assertUrlsEqual(reverse('cciw-bookings-pay'))
 
     def test_book_unbookable(self):
@@ -1635,7 +1634,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit('[name=book_now]')
         acc = self.get_account()
         b = acc.bookings.all()[0]
-        self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
+        self.assertEqual(b.state, BookingState.INFO_COMPLETE)
         self.assertTextPresent("These places cannot be booked")
 
     def test_book_one_unbookable(self):
@@ -1650,7 +1649,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit('[name=book_now]')
         acc = self.get_account()
         for b in acc.bookings.all():
-            self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
+            self.assertEqual(b.state, BookingState.INFO_COMPLETE)
         self.assertTextPresent("These places cannot be booked")
 
     def test_same_name_same_camp(self):
@@ -1752,7 +1751,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit('[name=book_now]')
         # Should not be modified
         b = acc.bookings.all()[0]
-        self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
+        self.assertEqual(b.state, BookingState.INFO_COMPLETE)
         self.assertTextPresent("Places were not booked due to modifications made")
 
 
@@ -1778,7 +1777,7 @@ class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking()
         self.create_booking()
         acc = self.get_account()
-        acc.bookings.all().update(state=BOOKING_BOOKED)
+        acc.bookings.all().update(state=BookingState.BOOKED)
 
         self.get_url('cciw-bookings-pay')
 
@@ -2173,7 +2172,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
 
         data = self._initial_place_details()
         data['account'] = str(acc1.id)
-        data['state'] = BOOKING_APPROVED
+        data['state'] = BookingState.APPROVED
         data['amount_due'] = '100.00'
         data['price_type'] = PriceType.CUSTOM
         j = self._booking_problems_json(data)
@@ -2193,7 +2192,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
 
         data = self._initial_place_details()
         data['account'] = str(acc1.id)
-        data['state'] = BOOKING_BOOKED
+        data['state'] = BookingState.BOOKED
         data['amount_due'] = '0.00'
         data['price_type'] = PriceType.FULL
         j = self._booking_problems_json(data)
@@ -2213,7 +2212,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
 
         data = self._initial_place_details()
         data['account'] = str(acc1.id)
-        data['state'] = BOOKING_CANCELLED
+        data['state'] = BookingState.CANCELLED_DEPOSIT_KEPT
         data['amount_due'] = '0.00'
         data['price_type'] = PriceType.FULL
         j = self._booking_problems_json(data)
@@ -2222,7 +2221,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
                             for p in j['problems']))
 
         # Check 'full refund' cancellation.
-        data['state'] = BOOKING_CANCELLED_FULL_REFUND
+        data['state'] = BookingState.CANCELLED_FULL_REFUND
         data['amount_due'] = '20.00'
         data['price_type'] = PriceType.FULL
         j = self._booking_problems_json(data)
@@ -2239,7 +2238,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         data = self._initial_place_details()
         data['early_bird_discount'] = '1'
         data['account'] = str(acc1.id)
-        data['state'] = BOOKING_BOOKED
+        data['state'] = BookingState.BOOKED
         data['amount_due'] = '90.00'
         j = self._booking_problems_json(data)
         self.assertIn("The early bird discount is only allowed for bookings created online.",
@@ -2270,7 +2269,7 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
         self.create_booking({'first_name': '4th',
                              'last_name': 'child'})
         b = acc.bookings.get(first_name='4th', last_name='child')
-        b.state = BOOKING_CANCELLED
+        b.state = BookingState.CANCELLED_DEPOSIT_KEPT
         b.auto_set_amount_due()
         b.save()
 
@@ -2358,7 +2357,7 @@ class TestExpireBookingsCommand(CreateBookingModelMixin, TestBase):
 
         b = acc.bookings.all()[0]
         self.assertNotEqual(b.booking_expires, None)
-        self.assertEqual(b.state, BOOKING_BOOKED)
+        self.assertEqual(b.state, BookingState.BOOKED)
 
     def test_expires(self):
         """
@@ -2381,7 +2380,7 @@ class TestExpireBookingsCommand(CreateBookingModelMixin, TestBase):
 
         b = acc.bookings.all()[0]
         self.assertEqual(b.booking_expires, None)
-        self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
+        self.assertEqual(b.state, BookingState.INFO_COMPLETE)
 
     def test_grouping(self):
         """
@@ -2408,7 +2407,7 @@ class TestExpireBookingsCommand(CreateBookingModelMixin, TestBase):
 
         for b in acc.bookings.all():
             self.assertEqual(b.booking_expires, None)
-            self.assertEqual(b.state, BOOKING_INFO_COMPLETE)
+            self.assertEqual(b.state, BookingState.INFO_COMPLETE)
 
 
 class TestManualPayment(TestBase):
@@ -2492,14 +2491,14 @@ class TestCancel(CreateBookingModelMixin, TestBase):
         self.create_booking()
         acc = self.get_account()
         booking = acc.bookings.all()[0]
-        booking.state = BOOKING_CANCELLED
+        booking.state = BookingState.CANCELLED_DEPOSIT_KEPT
         self.assertEqual(booking.expected_amount_due(), self.price_deposit)
 
     def test_account_amount_due(self):
         self.create_booking()
         acc = self.get_account()
         booking = acc.bookings.all()[0]
-        booking.state = BOOKING_CANCELLED
+        booking.state = BookingState.CANCELLED_DEPOSIT_KEPT
         booking.auto_set_amount_due()
         booking.save()
 
@@ -2517,14 +2516,14 @@ class TestCancelFullRefund(CreateBookingModelMixin, TestBase):
         self.create_booking()
         acc = self.get_account()
         booking = acc.bookings.all()[0]
-        booking.state = BOOKING_CANCELLED_FULL_REFUND
+        booking.state = BookingState.CANCELLED_FULL_REFUND
         self.assertEqual(booking.expected_amount_due(), Decimal('0.00'))
 
     def test_account_amount_due(self):
         self.create_booking()
         acc = self.get_account()
         booking = acc.bookings.all()[0]
-        booking.state = BOOKING_CANCELLED_FULL_REFUND
+        booking.state = BookingState.CANCELLED_FULL_REFUND
         booking.auto_set_amount_due()
         booking.save()
 
@@ -2596,7 +2595,7 @@ class TestExportPlaces(CreateBookingModelMixin, TestBase):
     def test_summary(self):
         self.create_booking()
         acc = self.get_account()
-        acc.bookings.update(state=BOOKING_BOOKED)
+        acc.bookings.update(state=BookingState.BOOKED)
 
         workbook = camp_bookings_to_spreadsheet(self.camp, ExcelFormatter()).to_bytes()
         wkbk = xlrd.open_workbook(file_contents=workbook)
@@ -2611,7 +2610,7 @@ class TestExportPlaces(CreateBookingModelMixin, TestBase):
         self.create_booking({'date_of_birth': dob.isoformat()})
 
         acc = self.get_account()
-        acc.bookings.update(state=BOOKING_BOOKED)
+        acc.bookings.update(state=BookingState.BOOKED)
 
         workbook = camp_bookings_to_spreadsheet(self.camp, ExcelFormatter()).to_bytes()
         wkbk = xlrd.open_workbook(file_contents=workbook)

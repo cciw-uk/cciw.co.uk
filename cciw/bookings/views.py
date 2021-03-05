@@ -23,7 +23,7 @@ from paypal.standard.forms import PayPalPaymentsForm
 from cciw.bookings.email import send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
 from cciw.bookings.middleware import get_booking_account_from_request, unset_booking_account_cookie
-from cciw.bookings.models import (BOOKING_APPROVED, REQUIRED_PRICE_TYPES, Booking, BookingAccount, Price, PriceChecker,
+from cciw.bookings.models import (REQUIRED_PRICE_TYPES, Booking, BookingAccount, BookingState, Price, PriceChecker,
                                   PriceType, any_bookings_possible, book_basket_now, build_paypal_custom_field,
                                   early_bird_is_available, get_early_bird_cutoff_date, is_booking_open,
                                   is_booking_open_thisyear)
@@ -549,11 +549,11 @@ def list_bookings(request):
             # decorate object with some attributes to make it easier in template
             b.booking_problems, b.booking_warnings = b.get_booking_problems()
             b.bookable = len(b.booking_problems) == 0
-            b.manually_approved = b.state == BOOKING_APPROVED
+            b.manually_approved = b.state == BookingState.APPROVED
 
             # Where booking.price_type = PriceType.CUSTOM, and state is not approved,
             # amount_due is meaningless. So we have a new attr, amount_due_normalised
-            if b.price_type == PriceType.CUSTOM and b.state != BOOKING_APPROVED:
+            if b.price_type == PriceType.CUSTOM and b.state != BookingState.APPROVED:
                 b.amount_due_normalised = None
             else:
                 b.amount_due_normalised = b.amount_due

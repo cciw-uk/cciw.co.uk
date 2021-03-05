@@ -6,9 +6,8 @@ from django.urls import reverse
 from django.utils.html import escape, escapejs, format_html
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
-from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_INFO_COMPLETE, BOOKING_STATES,
-                                  AccountTransferPayment, Booking, BookingAccount, ManualPayment, Payment, Price,
-                                  RefundPayment)
+from cciw.bookings.models import (AccountTransferPayment, Booking, BookingAccount, BookingState, ManualPayment, Payment,
+                                  Price, RefundPayment)
 from cciw.cciwmain import common
 from cciw.utils.admin import RerouteResponseAdminMixin
 
@@ -353,8 +352,8 @@ class BookingAdmin(admin.ModelAdmin):
     )
 
     actions = [
-        make_change_state_action(state, display_name)
-        for state, display_name in BOOKING_STATES
+        make_change_state_action(bs, lbl)
+        for bs, lbl in BookingState.choices
     ]
 
     def get_queryset(self, *args, **kwargs):
@@ -376,12 +375,12 @@ class BookingAdmin(admin.ModelAdmin):
                 amount=manual_amount,
                 payment_type=int(form.cleaned_data['manual_payment_payment_type']))
 
-        if old_state == BOOKING_INFO_COMPLETE and obj.state == BOOKING_APPROVED:
+        if old_state == BookingState.INFO_COMPLETE and obj.state == BookingState.APPROVED:
             email_sent = send_booking_approved_mail(obj)
             if email_sent:
                 messages.info(request, "An email has been sent to %s telling "
                               "them the place has been approved." % (obj.account.email))
-        if old_state != obj.state and obj.state == BOOKING_BOOKED:
+        if old_state != obj.state and obj.state == BookingState.BOOKED:
             email_sent = send_booking_confirmed_mail(obj)
             if email_sent:
                 messages.info(request, "A confirmation email has been sent to %s "
