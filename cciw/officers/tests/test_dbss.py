@@ -327,7 +327,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.officer_user.dbs_checks.create(
             dbs_number="00123400001",
             completed=date(1990, 1, 1),
-            requested_by=DBSCheck.REQUESTED_BY_CCIW,
+            requested_by=DBSCheck.RequestedBy.CCIW,
             check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
         )
@@ -349,7 +349,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.assertEqual(dbs_check.dbs_number, '00123400001')
         self.assertEqual(dbs_check.check_type, DBSCheck.CheckType.ONLINE)
         self.assertEqual(dbs_check.completed, today)
-        self.assertEqual(dbs_check.requested_by, DBSCheck.REQUESTED_BY_CCIW)
+        self.assertEqual(dbs_check.requested_by, DBSCheck.RequestedBy.CCIW)
         self.assertEqual(dbs_check.registered_with_dbs_update, True)
 
         self.handle_closed_window()

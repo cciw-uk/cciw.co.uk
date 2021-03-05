@@ -419,14 +419,10 @@ class DBSCheckManager(models.Manager):
 
 
 class DBSCheck(models.Model):
-    REQUESTED_BY_CCIW = 'CCIW'
-    REQUESTED_BY_OTHER = 'other'
-    REQUESTED_BY_UKNOWN = 'unknown'
-    REQUESTED_BY_CHOICES = [
-        (REQUESTED_BY_CCIW, 'CCiW'),
-        (REQUESTED_BY_OTHER, 'Other organisation'),
-        (REQUESTED_BY_UKNOWN, 'Unknown'),
-    ]
+    class RequestedBy(models.TextChoices):
+        CCIW = 'CCIW', 'CCiW'
+        OTHER = 'other', 'Other organisation'
+        UNKNOWN = 'unknown', 'Unknown'
 
     class CheckType(models.TextChoices):
         FORM = 'form', 'Full form'
@@ -441,8 +437,8 @@ class DBSCheck(models.Model):
                                   default=CheckType.FORM)
     completed = models.DateField("Date of issue/check",
                                  help_text="For full forms, use the date of issue. For online checks, use the date of the check")
-    requested_by = models.CharField(max_length=20, choices=REQUESTED_BY_CHOICES,
-                                    default=REQUESTED_BY_UKNOWN,
+    requested_by = models.CharField(max_length=20, choices=RequestedBy.choices,
+                                    default=RequestedBy.UNKNOWN,
                                     help_text="The organisation that asked for this DBS to be done, "
                                     "normally CCiW.")
     other_organisation = models.CharField(max_length=255, blank=True,
