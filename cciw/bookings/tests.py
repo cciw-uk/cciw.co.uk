@@ -23,9 +23,9 @@ from cciw.bookings.hooks import paypal_payment_received, unrecognised_payment
 from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
-from cciw.bookings.models import (MANUAL_PAYMENT_CHEQUE, AccountTransferPayment, Booking, BookingAccount, BookingState,
-                                  ManualPayment, Payment, PaymentSource, Price, PriceChecker, PriceType, RefundPayment,
-                                  book_basket_now, build_paypal_custom_field, expire_bookings)
+from cciw.bookings.models import (AccountTransferPayment, Booking, BookingAccount, BookingState, ManualPayment,
+                                  ManualPaymentType, Payment, PaymentSource, Price, PriceChecker, PriceType,
+                                  RefundPayment, book_basket_now, build_paypal_custom_field, expire_bookings)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
@@ -68,7 +68,7 @@ class Factories:
         return ManualPayment.objects.create(
             account=account or self.create_booking_account(),
             amount=1,
-            payment_type=MANUAL_PAYMENT_CHEQUE,
+            payment_type=ManualPaymentType.CHEQUE,
         )
 
     def create_refund_payment(
@@ -78,7 +78,7 @@ class Factories:
         return RefundPayment.objects.create(
             account=account or self.create_booking_account(),
             amount=1,
-            payment_type=MANUAL_PAYMENT_CHEQUE,
+            payment_type=ManualPaymentType.CHEQUE,
         )
 
 
@@ -1137,7 +1137,7 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account']),
             'state': BookingState.BOOKED,
             'amount_due': '130.00',
             'manual_payment_amount': '100',
-            'manual_payment_payment_type': str(MANUAL_PAYMENT_CHEQUE),
+            'manual_payment_payment_type': str(ManualPaymentType.CHEQUE),
         })
         self.fill_by_name(fields)
         self.submit('[name=_save]')
@@ -1147,7 +1147,7 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account']),
         self.assertEqual(booking.created_online, False)
         self.assertEqual(booking.account.manual_payments.count(), 1)
         mp = booking.account.manual_payments.get()
-        self.assertEqual(mp.payment_type, MANUAL_PAYMENT_CHEQUE)
+        self.assertEqual(mp.payment_type, ManualPaymentType.CHEQUE)
         self.assertEqual(mp.amount, Decimal('100'))
 
 
@@ -1180,7 +1180,7 @@ class EditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreateBookingMo
         )
         account.manual_payments.create(
             amount=Decimal('10.00'),
-            payment_type=MANUAL_PAYMENT_CHEQUE,
+            payment_type=ManualPaymentType.CHEQUE,
         )
         self.assertEqual(account.payments.count(), 1)
         self.officer_login(BOOKING_SECRETARY)

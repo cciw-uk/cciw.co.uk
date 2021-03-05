@@ -67,14 +67,11 @@ class BookingState(models.IntegerChoices):
     CANCELLED_FULL_REFUND = 5, 'Cancelled - full refund'
 
 
-MANUAL_PAYMENT_CHEQUE, MANUAL_PAYMENT_CASH, MANUAL_PAYMENT_ECHEQUE, MANUAL_PAYMENT_BACS = range(0, 4)
-
-MANUAL_PAYMENT_CHOICES = [
-    (MANUAL_PAYMENT_CHEQUE, "Cheque"),
-    (MANUAL_PAYMENT_CASH, "Cash"),
-    (MANUAL_PAYMENT_ECHEQUE, "e-Cheque"),
-    (MANUAL_PAYMENT_BACS, "Bank transfer"),
-]
+class ManualPaymentType(models.IntegerChoices):
+    CHEQUE = 0, 'Cheque'
+    CASH = 1, 'Cash'
+    ECHEQUE = 2, 'e-Cheque'
+    BACS = 3, 'Bank transfer'
 
 
 class NoEditMixin(object):
@@ -1196,8 +1193,8 @@ class ManualPaymentManager(models.Manager):
 class ManualPaymentBase(NoEditMixin, models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     created = models.DateTimeField(default=timezone.now)
-    payment_type = models.PositiveSmallIntegerField(choices=MANUAL_PAYMENT_CHOICES,
-                                                    default=MANUAL_PAYMENT_CHEQUE)
+    payment_type = models.PositiveSmallIntegerField(choices=ManualPaymentType.choices,
+                                                    default=ManualPaymentType.CHEQUE)
 
     class Meta:
         abstract = True
