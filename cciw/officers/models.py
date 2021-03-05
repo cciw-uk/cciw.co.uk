@@ -199,34 +199,34 @@ class Referee(models.Model):
         if hasattr(self, '_prefetched_objects_cache'):
             if 'actions' in self._prefetched_objects_cache:
                 actions = [a for a in self._prefetched_objects_cache['actions']
-                           if a.action_type == ReferenceAction.REFERENCE_REQUESTED]
+                           if a.action_type == ReferenceAction.ActionType.REQUESTED]
                 if actions:
                     last = sorted(actions, key=lambda a: a.created)[-1]
                 else:
                     last = None
         else:
-            last = self.actions.filter(action_type=ReferenceAction.REFERENCE_REQUESTED).order_by('created').last()
+            last = self.actions.filter(action_type=ReferenceAction.ActionType.REQUESTED).order_by('created').last()
         if last:
             return last.created
         else:
             return None
 
     def log_reference_received(self, dt):
-        self.actions.create(action_type=ReferenceAction.REFERENCE_RECEIVED,
+        self.actions.create(action_type=ReferenceAction.ActionType.RECEIVED,
                             created=dt)
 
     def log_reference_filled_in(self, user, dt):
-        self.actions.create(action_type=ReferenceAction.REFERENCE_FILLED_IN,
+        self.actions.create(action_type=ReferenceAction.ActionType.FILLED_IN,
                             created=dt,
                             user=user)
 
     def log_request_made(self, user, dt):
-        self.actions.create(action_type=ReferenceAction.REFERENCE_REQUESTED,
+        self.actions.create(action_type=ReferenceAction.ActionType.REQUESTED,
                             created=dt,
                             user=user)
 
     def log_nag_made(self, user, dt):
-        self.actions.create(action_type=ReferenceAction.REFERENCE_NAG,
+        self.actions.create(action_type=ReferenceAction.ActionType.NAG,
                             created=dt,
                             user=user)
 
@@ -239,22 +239,17 @@ class Referee(models.Model):
 
 
 class ReferenceAction(models.Model):
-    REFERENCE_REQUESTED = "requested"
-    REFERENCE_RECEIVED = "received"
-    REFERENCE_FILLED_IN = "filledin"
-    REFERENCE_NAG = "nag"
+    class ActionType(models.TextChoices):
+        REQUESTED = "requested", "Reference requested"
+        RECEIVED = "received", "Reference received"
+        FILLED_IN = "filledin", "Reference filled in manually"
+        NAG = "nag", "Applicant nagged"
 
-    ACTION_CHOICES = [
-        (REFERENCE_REQUESTED, "Reference requested"),
-        (REFERENCE_RECEIVED, "Reference received"),
-        (REFERENCE_FILLED_IN, "Reference filled in manually"),
-        (REFERENCE_NAG, "Applicant nagged"),
-    ]
     referee = models.ForeignKey(Referee,
                                 on_delete=models.CASCADE,
                                 related_name="actions")
     created = models.DateTimeField(default=timezone.now)
-    action_type = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    action_type = models.CharField(max_length=20, choices=ActionType.choices)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE,
                              null=True)

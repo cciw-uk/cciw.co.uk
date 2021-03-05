@@ -215,7 +215,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         msgs = [e for e in mail.outbox if "Need reference from" in e.subject]
         self.assertEqual(len(msgs), 1)
         self.assertEqual(msgs[0].extra_headers.get('Reply-To', ''), LEADER_EMAIL)
-        self.assertEqual(referee.actions.filter(action_type=ReferenceAction.REFERENCE_NAG).count(), 1)
+        self.assertEqual(referee.actions.filter(action_type=ReferenceAction.ActionType.NAG).count(), 1)
 
 
 def make_local_url(url):
