@@ -25,9 +25,9 @@ from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
 from cciw.bookings.middleware import get_booking_account_from_request, unset_booking_account_cookie
 from cciw.bookings.models import (BOOKING_APPROVED, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_DEPOSIT,
                                   PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL, REQUIRED_PRICE_TYPES, Booking, BookingAccount,
-                                  Price, any_bookings_possible, book_basket_now, build_paypal_custom_field,
-                                  early_bird_is_available, get_early_bird_cutoff_date, is_booking_open,
-                                  is_booking_open_thisyear)
+                                  Price, PriceChecker, any_bookings_possible, book_basket_now,
+                                  build_paypal_custom_field, early_bird_is_available, get_early_bird_cutoff_date,
+                                  is_booking_open, is_booking_open_thisyear)
 from cciw.cciwmain import common
 from cciw.cciwmain.common import ajax_form_validate, get_current_domain
 from cciw.cciwmain.decorators import json_response
@@ -676,17 +676,18 @@ def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amou
 
 @booking_account_required
 def pay(request):
-    acc = request.booking_account
-    balance_due_now = acc.get_balance_due_now()
-    balance_full = acc.get_balance_full()
+    acc: BookingAccount = request.booking_account
+    this_year = common.get_thisyear()
+    price_checker = PriceChecker(expected_years=[b.camp.year for b in acc.bookings.all()] + [this_year])
+    balance_due_now = acc.get_balance_due_now(price_checker=price_checker)
+    balance_full = acc.get_balance_full(price_checker=price_checker)
 
-    # This view should be accessible even if prices for the current year are
-    # not defined.
-    price_deposit = list(Price.objects.filter(year=common.get_thisyear(), price_type=PRICE_DEPOSIT))
-    if len(price_deposit) == 0:
+    try:
+        price_deposit = price_checker.get_deposit_price(this_year)
+    except LookupError:
+        # This view should be accessible even if prices for the current year are not
+        # defined, because people with debts from previous years may need to pay.
         price_deposit = None
-    else:
-        price_deposit = price_deposit[0].price
 
     domain = get_current_domain()
     protocol = 'https' if request.is_secure() else 'http'
@@ -733,9 +734,10 @@ def account_overview(request):
         unset_booking_account_cookie(response)
         return response
 
-    account = request.booking_account
+    account: BookingAccount = request.booking_account
     year = common.get_thisyear()
     bookings = account.bookings.for_year(year)
+    price_checker = PriceChecker(expected_years=[b.camp.year for b in bookings])
     return TemplateResponse(request, 'cciw/bookings/account_overview.html', {
         'title': 'Booking - account overview',
         'stage': BookingStage.OVERVIEW,
@@ -743,8 +745,8 @@ def account_overview(request):
         'unconfirmed_places': bookings.unconfirmed(),
         'cancelled_places': bookings.cancelled(),
         'basket_or_shelf': (bookings.in_basket() | bookings.on_shelf()),
-        'balance_due_now': account.get_balance_due_now(),
-        'balance_full': account.get_balance_full(),
+        'balance_due_now': account.get_balance_due_now(price_checker=price_checker),
+        'balance_full': account.get_balance_full(price_checker=price_checker),
         'pending_payment_total': account.get_pending_payment_total(),
     })
 

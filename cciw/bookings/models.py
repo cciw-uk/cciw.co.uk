@@ -2,6 +2,7 @@
 import re
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+from typing import Optional
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
@@ -118,6 +119,31 @@ class Price(models.Model):
         return {p.year: p.price for p in q}
 
 
+class PriceChecker:
+    """
+    Utility that looks up prices, with caching to reduce queries
+    """
+    # We don't look up prices immediately, but lazily, because there are
+    # quite a few paths that don't need the deposit price at all,
+    # and they can happen in a loop e.g. BookingAccount.get_balance_full()
+    def __init__(self, expected_years=None):
+        self._deposit_prices = {}
+        self._expected_years = expected_years or []
+
+    def _fetch_deposit_prices(self, year):
+        if year in self._deposit_prices:
+            return
+        # Try to get everything we think we'll need in a single query,
+        # and cache for later.
+        years = set(self._expected_years + [year])
+        prices = Price.objects.filter(price_type=PRICE_DEPOSIT).filter(year__in=years)
+        self._deposit_prices.update({p.year: p.price for p in prices})
+
+    def get_deposit_price(self, year):
+        self._fetch_deposit_prices(year)
+        return self._deposit_prices[year]
+
+
 class BookingAccountQuerySet(models.QuerySet):
     pass
 
@@ -126,7 +152,7 @@ class BookingAccountManagerBase(models.Manager):
     def payments_due(self):
         """
         Returns a list of accounts that owe money.
-        Account objects are annotated with attribute 'balance_due' as a Decimal
+        Account objects are annotated with attribute 'confirmed_balance_due' as a Decimal
         """
         # To limit the size of queries, we do a SQL query for people who might
         # owe money.
@@ -136,10 +162,12 @@ class BookingAccountManagerBase(models.Manager):
             .exclude(total_amount_due=models.F('total_received'))
         )
         retval = []
+        price_checker = PriceChecker()
         for account in potentials:
             confirmed_balance_due = account.get_balance(
                 confirmed_only=True,
                 allow_deposits=True,
+                price_checker=price_checker,
             )
             if confirmed_balance_due > 0:
                 account.confirmed_balance_due = confirmed_balance_due
@@ -223,7 +251,7 @@ class BookingAccount(models.Model):
 
     # Business methods:
 
-    def get_balance(self, *, confirmed_only: bool, allow_deposits: bool, deposit_price_dict=None):
+    def get_balance(self, *, confirmed_only: bool, allow_deposits: bool, price_checker: PriceChecker):
         """
         Gets the balance to pay on the account.
         If confirmed_only=True, then only bookings that are confirmed
@@ -231,15 +259,13 @@ class BookingAccount(models.Model):
         If allow_deposits=True, then bookings that only require deposits
         at this point in time will only count for the deposit amount.
 
-        As an optimisation, a dictionary {year:price in GBP} can be passed in deposit_price_dict.
+        price_checker is used to look up deposit prices when needed,
+        and it is a non-optional argument to encourage the most efficient
+        usage patterns, even though it isn't needed for every path.
         """
         today = date.today()
         # Use of _prefetched_objects_cache is necessary to support the
         # booking_secretary_reports view efficiently
-
-        def _get_deposit_prices(bookings):
-            return Price.get_deposit_prices([b.camp.year for b in bookings])
-
         if hasattr(self, '_prefetched_objects_cache') and 'bookings' in self._prefetched_objects_cache:
             payable_bookings = [
                 booking for booking in self._prefetched_objects_cache['bookings']
@@ -249,20 +275,19 @@ class BookingAccount(models.Model):
             payable_bookings = list(self.bookings.payable(confirmed_only=confirmed_only))
 
         total = Decimal('0.00')
-        if deposit_price_dict is None:
-            deposit_price_dict = _get_deposit_prices(payable_bookings)
         for booking in payable_bookings:
             total += booking.amount_now_due(today,
                                             allow_deposits=allow_deposits,
-                                            deposit_price_dict=deposit_price_dict)
+                                            price_checker=price_checker)
 
         return total - self.total_received
 
-    def get_balance_full(self):
-        return self.get_balance(confirmed_only=False, allow_deposits=False)
+    def get_balance_full(self, *, price_checker: Optional[PriceChecker] = None):
+        return self.get_balance(confirmed_only=False, allow_deposits=False,
+                                price_checker=price_checker or PriceChecker())
 
-    def get_balance_due_now(self):
-        return self.get_balance(confirmed_only=False, allow_deposits=True)
+    def get_balance_due_now(self, *, price_checker: PriceChecker):
+        return self.get_balance(confirmed_only=False, allow_deposits=True, price_checker=price_checker)
 
     def admin_balance(self):
         return self.get_balance_full()
@@ -351,23 +376,27 @@ class BookingAccount(models.Model):
         Distribute any money in the account to mark unconfirmed places as
         confirmed.
         """
+        # To satisfy PriceChecker performance requirements it's easier
+        # to get all bookings up front:
+        all_account_bookings = list(self.bookings.all().select_related('camp'))
+
+        # Bookings we might want to confirm.
+        # Order by booking_expires ascending i.e. earliest first.
+        candidate_bookings = sorted([b for b in all_account_bookings if not b.is_confirmed],
+                                    key=lambda b: b.booking_expires)
+        price_checker = PriceChecker(expected_years=[b.camp.year for b in all_account_bookings])
+        confirmed_bookings = []
         # In order to distribute funds, need to take into account the total
-        # amount in the account that is not covered by confirmed places
-        existing_balance = self.get_balance(confirmed_only=True, allow_deposits=True)
+        # amount in the account that is not required by already confirmed places
+        existing_balance = self.get_balance(confirmed_only=True, allow_deposits=True, price_checker=price_checker)
         # The 'pot' is the amount we have as excess and can use to mark places
         # as confirmed.
         pot = -existing_balance
-        # Order by booking_expires ascending i.e. earliest first
-        candidate_bookings = list(self.bookings.unconfirmed()
-                                  .order_by('booking_expires')
-                                  .prefetch_related('camp')
-                                  )
-        confirmed_bookings = []
         today = date.today()
         for booking in candidate_bookings:
             if pot <= 0:
                 break
-            amount = booking.amount_now_due(today, allow_deposits=True)
+            amount = booking.amount_now_due(today, allow_deposits=True, price_checker=price_checker)
             if amount <= pot:
                 booking.confirm()
                 booking.save()
@@ -666,16 +695,13 @@ class Booking(models.Model):
         else:
             self.amount_due = amount
 
-    def amount_now_due(self, today: date, *, allow_deposits, deposit_price_dict=None):
-        # Amount due,
-        # If allow_deposits=True, we take into account the fact that only a deposit might be due.
-        # Otherwise we ignore deposits
+    def amount_now_due(self, today: date, *, allow_deposits, price_checker: PriceChecker):
+        # Amount due at this point of time. If allow_deposits=True, we take into
+        # account the fact that only a deposit might be due. Otherwise we ignore
+        # deposits (which means that the current date is also ignored)
         cutoff = today + timedelta(days=settings.BOOKING_FULL_PAYMENT_DUE_DAYS)
         if allow_deposits and self.camp.start_date > cutoff:
-            if deposit_price_dict is None:
-                deposit_price = Price.objects.get(price_type=PRICE_DEPOSIT, year=self.camp.year).price
-            else:
-                deposit_price = deposit_price_dict[self.camp.year]
+            deposit_price = price_checker.get_deposit_price(self.camp.year)
             return min(deposit_price, self.amount_due)
         return self.amount_due
 

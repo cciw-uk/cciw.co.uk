@@ -27,8 +27,8 @@ from cciw.bookings.models import (BOOKING_APPROVED, BOOKING_BOOKED, BOOKING_CANC
                                   BOOKING_INFO_COMPLETE, MANUAL_PAYMENT_CHEQUE, PRICE_2ND_CHILD, PRICE_3RD_CHILD,
                                   PRICE_CUSTOM, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT, PRICE_FULL,
                                   AccountTransferPayment, Booking, BookingAccount, ManualPayment, Payment,
-                                  PaymentSource, Price, RefundPayment, book_basket_now, build_paypal_custom_field,
-                                  expire_bookings)
+                                  PaymentSource, Price, PriceChecker, RefundPayment, book_basket_now,
+                                  build_paypal_custom_field, expire_bookings)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
@@ -430,17 +430,18 @@ class TestBookingModels(CreateBookingModelMixin, AtomicChecksMixin, TestBase):
 
         acc = self.get_account()
         # balance should be zero
-        deposit_price_dict = Price.get_deposit_prices([b.camp.year])
+        price_checker = PriceChecker()
+        price_checker._fetch_deposit_prices(b.camp.year)  # Force evaluation to check for zero queries later.
         with self.assertNumQueries(0 if getattr(self, 'use_prefetch_related_for_get_account', False) else 2):
             self.assertEqual(acc.get_balance(
                 confirmed_only=False,
                 allow_deposits=True,
-                deposit_price_dict=deposit_price_dict,
+                price_checker=price_checker,
             ), Decimal('0.00'))
             self.assertEqual(acc.get_balance(
                 confirmed_only=True,
                 allow_deposits=True,
-                deposit_price_dict=deposit_price_dict,
+                price_checker=price_checker,
             ), Decimal('0.00'))
 
         # But for full amount, they still owe 80 (full price minus deposit)
@@ -656,7 +657,7 @@ class TestPaymentReminderEmails(CreateBookingModelMixin, BookingBaseMixin, WebTe
         url, path, querydata = read_email_url(m, "https://.*/booking/p.*")
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse('cciw-bookings-pay'))
-        self.assertTextPresent(booking.account.get_balance_due_now())
+        self.assertTextPresent(booking.account.get_balance_due_now(price_checker=PriceChecker()))
 
     def test_payment_reminder_email_link_expired(self):
         self._create_booking()

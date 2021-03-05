@@ -29,7 +29,7 @@ from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from cciw.accounts.models import User
-from cciw.bookings.models import most_recent_booking_year
+from cciw.bookings.models import PriceChecker, most_recent_booking_year
 from cciw.bookings.stats import get_booking_ages_stats, get_booking_progress_stats, get_booking_summary_stats
 from cciw.bookings.utils import (addresses_for_mailing_list, camp_bookings_to_spreadsheet,
                                  camp_sharable_transport_details_to_spreadsheet, payments_to_spreadsheet,
@@ -1421,7 +1421,7 @@ def officer_info(request):
 
 @booking_secretary_required
 def booking_secretary_reports(request, year: int):
-    from cciw.bookings.models import SEX_FEMALE, SEX_MALE, Booking, Price
+    from cciw.bookings.models import SEX_FEMALE, SEX_MALE, Booking
 
     # 1. Camps and their booking levels.
 
@@ -1465,16 +1465,17 @@ def booking_secretary_reports(request, year: int):
     for b in bookings:
         counts[b.account_id] += 1
 
-    deposit_prices = Price.get_deposit_prices()
+    price_checker = PriceChecker(expected_years=[b.camp.year for b in bookings])
     outstanding = []
     for b in bookings:
         b.count_for_account = counts[b.account_id]
         if not hasattr(b.account, 'calculated_balance'):
             b.account.calculated_balance = b.account.get_balance(confirmed_only=True,
-                                                                 allow_deposits=False)
+                                                                 allow_deposits=False,
+                                                                 price_checker=price_checker)
             b.account.calculated_balance_due = b.account.get_balance(confirmed_only=True,
                                                                      allow_deposits=True,
-                                                                     deposit_price_dict=deposit_prices)
+                                                                     price_checker=price_checker)
 
             if b.account.calculated_balance_due > 0 or b.account.calculated_balance < 0:
                 outstanding.append(b)
