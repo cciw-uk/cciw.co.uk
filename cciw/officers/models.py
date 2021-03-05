@@ -428,20 +428,17 @@ class DBSCheck(models.Model):
         (REQUESTED_BY_UKNOWN, 'Unknown'),
     ]
 
-    CHECK_TYPE_FORM = 'form'
-    CHECK_TYPE_ONLINE = 'online'
-    CHECK_TYPE_CHOICES = [
-        (CHECK_TYPE_FORM, 'Full form'),
-        (CHECK_TYPE_ONLINE, 'Online check'),
-    ]
+    class CheckType(models.TextChoices):
+        FORM = 'form', 'Full form'
+        ONLINE = 'online', 'Online check'
 
     officer = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 on_delete=models.CASCADE,
                                 related_name='dbs_checks')
     dbs_number = models.CharField("Disclosure number", max_length=20)
     check_type = models.CharField("check type", max_length=20,
-                                  choices=CHECK_TYPE_CHOICES,
-                                  default=CHECK_TYPE_FORM)
+                                  choices=CheckType.choices,
+                                  default=CheckType.FORM)
     completed = models.DateField("Date of issue/check",
                                  help_text="For full forms, use the date of issue. For online checks, use the date of the check")
     requested_by = models.CharField(max_length=20, choices=REQUESTED_BY_CHOICES,

@@ -159,7 +159,7 @@
                     class="register-received-dbs"
                     >
                 <input type="hidden" name="officer" value="{{ officer.id }}">
-                <input type="hidden" name="check_type" value="{{ CHECK_TYPE_FORM }}">
+                <input type="hidden" name="check_type" value="{{ CheckType.FORM }}">
                 {% return_to_here %}
                 <button id="id_register_received_dbs_{{ officer.id }}">DBS received ...</button>
               </form>

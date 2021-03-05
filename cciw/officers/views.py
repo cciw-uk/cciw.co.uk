@@ -1050,8 +1050,7 @@ def manage_dbss(request, year: int):
         'camps': camps,
         'selected_camps': selected_camps,
         'year': year,
-        'CHECK_TYPE_FORM': DBSCheck.CHECK_TYPE_FORM,
-        'CHECK_TYPE_ONLINE': DBSCheck.CHECK_TYPE_ONLINE,
+        'CheckType': DBSCheck.CheckType,
         'external_dbs_officer': settings.EXTERNAL_DBS_OFFICER,
     })
 
@@ -1184,9 +1183,9 @@ def get_update_service_dbs_numbers(officers):
         # Most recent last means most recent wins in the case of duplicates.
         # For online check, we count 'bad' (we saw something bad on
         # an update), but only count 'good' for the full form.
-        if dbs_check.check_type == DBSCheck.CHECK_TYPE_FORM:
+        if dbs_check.check_type == DBSCheck.CheckType.FORM:
             applicant_accepted_dict[dbs_number] = dbs_check.applicant_accepted
-        elif dbs_check.check_type == DBSCheck.CHECK_TYPE_ONLINE and not dbs_check.applicant_accepted:
+        elif dbs_check.check_type == DBSCheck.CheckType.ONLINE and not dbs_check.applicant_accepted:
             applicant_accepted_dict[dbs_number] = dbs_check.applicant_accepted
 
         if dbs_check.registered_with_dbs_update:
@@ -1397,7 +1396,7 @@ def dbs_checked_online(request):
         'dbs_number': dbs_number,
         'registered_with_dbs_update': '2',  # = Yes
         'completed': date.today().strftime('%Y-%m-%d'),
-        'check_type': DBSCheck.CHECK_TYPE_ONLINE,
+        'check_type': DBSCheck.CheckType.ONLINE,
     }
     if '_temporary_window' in request.GET:
         params['_temporary_window'] = request.GET['_temporary_window']

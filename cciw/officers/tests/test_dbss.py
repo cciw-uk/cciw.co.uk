@@ -91,7 +91,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.officer_user.dbs_checks.create(
             completed=application.date_saved - timedelta(365 * 10),
             dbs_number='001234',
-            check_type=DBSCheck.CHECK_TYPE_FORM,
+            check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
             applicant_accepted=True,
         )
@@ -110,7 +110,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.officer_user.dbs_checks.create(
             completed=application.date_saved - timedelta(365 * 10),
             dbs_number='00123',
-            check_type=DBSCheck.CHECK_TYPE_FORM,
+            check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=None,
             applicant_accepted=True,
         )
@@ -126,7 +126,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.officer_user.dbs_checks.create(
             completed=application.date_saved - timedelta(days=10),
             dbs_number='00123',
-            check_type=DBSCheck.CHECK_TYPE_FORM,
+            check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
             applicant_accepted=False,
         )
@@ -139,7 +139,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.officer_user.dbs_checks.create(
             completed=application.date_saved - timedelta(days=365 * 10),
             dbs_number='00123',
-            check_type=DBSCheck.CHECK_TYPE_FORM,
+            check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
             applicant_accepted=False,
         )
@@ -152,7 +152,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.officer_user.dbs_checks.create(
             completed=application.date_saved - timedelta(365 * 10),
             dbs_number='00123',
-            check_type=DBSCheck.CHECK_TYPE_FORM,
+            check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
             applicant_accepted=False,
         )
@@ -168,7 +168,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.officer_user.dbs_checks.create(
             completed=application.date_saved - timedelta(365 * 10),
             dbs_number='00456',
-            check_type=DBSCheck.CHECK_TYPE_FORM,
+            check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
         )
         officer, dbs_info = self.get_officer_with_dbs_info()
@@ -328,7 +328,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
             dbs_number="00123400001",
             completed=date(1990, 1, 1),
             requested_by=DBSCheck.REQUESTED_BY_CCIW,
-            check_type=DBSCheck.CHECK_TYPE_FORM,
+            check_type=DBSCheck.CheckType.FORM,
             registered_with_dbs_update=True,
         )
         today = date.today()
@@ -347,7 +347,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
 
         # Should have copied other info from old DBS check automatically.
         self.assertEqual(dbs_check.dbs_number, '00123400001')
-        self.assertEqual(dbs_check.check_type, DBSCheck.CHECK_TYPE_ONLINE)
+        self.assertEqual(dbs_check.check_type, DBSCheck.CheckType.ONLINE)
         self.assertEqual(dbs_check.completed, today)
         self.assertEqual(dbs_check.requested_by, DBSCheck.REQUESTED_BY_CCIW)
         self.assertEqual(dbs_check.registered_with_dbs_update, True)
