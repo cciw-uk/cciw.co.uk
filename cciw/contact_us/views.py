@@ -11,8 +11,7 @@ from cciw.bookings.views import ensure_booking_account_attr
 from cciw.cciwmain.common import ajax_form_validate, get_current_domain
 from cciw.officers.views import cciw_secretary_or_booking_secretary_required
 
-from .forms import (CONTACT_CHOICE_BOOKINGFORM, CONTACT_CHOICE_BOOKINGS, CONTACT_CHOICE_GENERAL, CONTACT_CHOICE_WEBSITE,
-                    CONTACT_CHOICES, AjaxContactUsForm, ContactUsForm)
+from .forms import AjaxContactUsForm, ContactType, ContactUsForm
 from .models import Message
 
 
@@ -22,10 +21,10 @@ def contact_us(request):
     ensure_booking_account_attr(request)
     # At module level, use of 'settings' seems to cause problems
     CONTACT_CHOICE_DESTS = {
-        CONTACT_CHOICE_BOOKINGFORM: settings.BOOKING_FORMS_EMAILS,
-        CONTACT_CHOICE_BOOKINGS: settings.BOOKING_SECRETARY_EMAILS,
-        CONTACT_CHOICE_GENERAL: settings.GENERAL_CONTACT_EMAILS,
-        CONTACT_CHOICE_WEBSITE: settings.WEBMASTER_EMAILS,
+        ContactType.BOOKINGFORM: settings.BOOKING_FORMS_EMAILS,
+        ContactType.BOOKINGS: settings.BOOKING_SECRETARY_EMAILS,
+        ContactType.GENERAL: settings.GENERAL_CONTACT_EMAILS,
+        ContactType.GENERAL: settings.WEBMASTER_EMAILS,
     }
 
     if request.method == "POST":
@@ -46,7 +45,7 @@ def contact_us(request):
             return HttpResponseRedirect(reverse('cciw-contact_us-done'))
     else:
         initial = {}
-        for val, caption in CONTACT_CHOICES:
+        for val, caption in ContactType.choices:
             if val in request.GET:
                 initial['subject'] = val
         if request.booking_account is not None:
