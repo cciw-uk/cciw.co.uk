@@ -1425,10 +1425,11 @@ def booking_secretary_reports(request, year: int):
 
     # 1. Camps and their booking levels.
 
-    camps = Camp.objects.filter(year=year).prefetch_related('bookings')
+    camps = Camp.objects.filter(year=year).prefetch_related(Prefetch('bookings',
+                                                                     queryset=Booking.objects.booked(),
+                                                                     to_attr='booked_places'))
     # Do some filtering in Python to avoid multiple db hits
     for c in camps:
-        c.booked_places = [b for b in c.bookings.booked()]
         c.confirmed_bookings = [b for b in c.booked_places if b.is_confirmed]
         c.confirmed_bookings_boys = [b for b in c.confirmed_bookings if b.sex == SEX_MALE]
         c.confirmed_bookings_girls = [b for b in c.confirmed_bookings if b.sex == SEX_FEMALE]
