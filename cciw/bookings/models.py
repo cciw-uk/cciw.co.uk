@@ -27,11 +27,10 @@ from .signals import places_confirmed
 # cciw.officers.views.booking_secretary_reports for performance reasons.
 
 
-SEX_MALE, SEX_FEMALE = 'm', 'f'
-SEXES = [
-    (SEX_MALE, 'Male'),
-    (SEX_FEMALE, 'Female'),
-]
+class Sex(models.TextChoices):
+    MALE = 'm', 'Male'
+    FEMALE = 'f', 'Female'
+
 
 # Price types that can be selected for a booking
 PRICE_FULL, PRICE_2ND_CHILD, PRICE_3RD_CHILD, PRICE_CUSTOM, PRICE_SOUTH_WALES_TRANSPORT, PRICE_DEPOSIT, PRICE_EARLY_BIRD_DISCOUNT = range(0, 7)
@@ -539,7 +538,7 @@ class Booking(models.Model):
                              related_name='bookings')
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    sex = models.CharField(max_length=1, choices=SEXES)
+    sex = models.CharField(max_length=1, choices=Sex.choices)
     date_of_birth = models.DateField()
     address_line1 = models.CharField("address line 1", max_length=255)
     address_line2 = models.CharField("address line 2", max_length=255, blank=True)
@@ -897,8 +896,8 @@ class Booking(models.Model):
             places_available = False
 
         SEXES = [
-            (SEX_MALE, 'boys', places_left_male),
-            (SEX_FEMALE, 'girls', places_left_female),
+            (Sex.MALE, 'boys', places_left_male),
+            (Sex.FEMALE, 'girls', places_left_female),
         ]
 
         if places_available:
@@ -1122,6 +1121,8 @@ def is_booking_open(year):
 
 is_booking_open_thisyear = lambda: is_booking_open(common.get_thisyear())
 
+
+# --- Payments ---
 
 class PaymentManager(models.Manager):
 

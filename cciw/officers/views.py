@@ -1421,7 +1421,7 @@ def officer_info(request):
 
 @booking_secretary_required
 def booking_secretary_reports(request, year: int):
-    from cciw.bookings.models import SEX_FEMALE, SEX_MALE, Booking
+    from cciw.bookings.models import Booking, Sex
 
     # 1. Camps and their booking levels.
 
@@ -1431,8 +1431,8 @@ def booking_secretary_reports(request, year: int):
     # Do some filtering in Python to avoid multiple db hits
     for c in camps:
         c.confirmed_bookings = [b for b in c.booked_places if b.is_confirmed]
-        c.confirmed_bookings_boys = [b for b in c.confirmed_bookings if b.sex == SEX_MALE]
-        c.confirmed_bookings_girls = [b for b in c.confirmed_bookings if b.sex == SEX_FEMALE]
+        c.confirmed_bookings_boys = [b for b in c.confirmed_bookings if b.sex == Sex.MALE]
+        c.confirmed_bookings_girls = [b for b in c.confirmed_bookings if b.sex == Sex.FEMALE]
 
     # 2. Online bookings needing attention
     to_approve = Booking.objects.need_approving().filter(camp__year__exact=year)

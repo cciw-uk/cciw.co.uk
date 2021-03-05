@@ -232,14 +232,14 @@ class Camp(models.Model):
         Return 3 tuple containing (places left, places left for boys, places left for girls).
         Note that the first isn't necessarily the sum of 2nd and 3rd.
         """
-        from cciw.bookings.models import SEX_FEMALE, SEX_MALE
+        from cciw.bookings.models import Sex
         females_booked = 0
         males_booked = 0
         q = self.bookings.booked().values_list('sex').annotate(count=models.Count("id")).order_by()
         for (s, c) in q:
-            if s == SEX_MALE:
+            if s == Sex.MALE:
                 males_booked = c
-            elif s == SEX_FEMALE:
+            elif s == Sex.FEMALE:
                 females_booked = c
         total_booked = males_booked + females_booked
         # negative numbers of places available is confusing for our purposes, so use max
