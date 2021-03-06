@@ -2196,8 +2196,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         data['amount_due'] = '0.00'
         data['price_type'] = PriceType.FULL
         j = self._booking_problems_json(data)
-        self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £%s"
-                                         % self.price_full)
+        self.assertTrue(any(p.startswith(f"The 'amount due' is not the expected value of £{self.price_full}")
                             for p in j['problems']))
 
     def test_booking_problems_deposit_check(self):
@@ -2216,8 +2215,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         data['amount_due'] = '0.00'
         data['price_type'] = PriceType.FULL
         j = self._booking_problems_json(data)
-        self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £%s"
-                                         % self.price_deposit)
+        self.assertTrue(any(p.startswith(f"The 'amount due' is not the expected value of £{self.price_deposit}")
                             for p in j['problems']))
 
         # Check 'full refund' cancellation.

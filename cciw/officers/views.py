@@ -237,13 +237,11 @@ def get_application(request):
                                             kwargs=dict(application_id=application_id)))
     elif format == 'txt':
         resp = HttpResponse(application_to_text(app), content_type="text/plain")
-        resp['Content-Disposition'] = 'attachment; filename=%s;' % \
-                                      application_txt_filename(app)
+        resp['Content-Disposition'] = f'attachment; filename={application_txt_filename(app)}'
         return resp
     elif format == 'rtf':
         resp = HttpResponse(application_to_rtf(app), content_type="text/rtf")
-        resp['Content-Disposition'] = 'attachment; filename=%s;' % \
-                                      application_rtf_filename(app)
+        resp['Content-Disposition'] = f'attachment; filename={application_rtf_filename(app)}'
         return resp
     elif format == 'send':
         application_text = application_to_text(app)
@@ -858,15 +856,14 @@ def create_officer(request):
                         duplicate_message = "A user with that first name and last name " + \
                                             "already exists:"
                     else:
-                        duplicate_message = ("%d users with that first name and last name " +
-                                             "already exist:") % len(existing_users)
+                        duplicate_message = (f"{len(existing_users)} users with that first name and last name already exist:")
                 elif len(same_email_users):
                     existing_users = same_email_users
                     if len(existing_users) == 1:
                         duplicate_message = "A user with that email address already exists:"
                     else:
-                        duplicate_message = "%d users with that email address already exist:"\
-                                            % len(existing_users)
+                        duplicate_message = f"{len(existing_users)} users with that email address already exist:"
+
                 else:
                     process_form = True
 
@@ -1436,10 +1433,10 @@ def booking_secretary_reports(request, year: int):
     export_start = datetime(year - 1, 11, 1)  # November previous year
     export_end = datetime(year, 10, 31)  # November this year
     export_data_link = (reverse('cciw-officers-export_payment_data') +
-                        "?start=%s&end=%s" % (export_start.strftime(EXPORT_PAYMENT_DATE_FORMAT),
-                                              export_end.strftime(EXPORT_PAYMENT_DATE_FORMAT)
-                                              )
-                        )
+                        "?start={start}&end={end}".format(
+                            start=export_start.strftime(EXPORT_PAYMENT_DATE_FORMAT),
+                            end=export_end.strftime(EXPORT_PAYMENT_DATE_FORMAT)
+                        ))
 
     return TemplateResponse(request, 'cciw/officers/booking_secretary_reports.html', {
         'year': year,
@@ -1461,8 +1458,7 @@ def export_payment_data(request):
     date_end = timezone.get_default_timezone().localize(datetime.strptime(date_end, EXPORT_PAYMENT_DATE_FORMAT))
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(payments_to_spreadsheet(date_start, date_end, formatter),
-                                "payments-%s-to-%s" % (date_start.strftime('%Y-%m-%d'),
-                                                       date_end.strftime('%Y-%m-%d')))
+                                f"payments-{date_start:%Y-%m-%d}-to-{date_end:%Y-%m-%d}")
 
 
 def _parse_year_or_camp_ids(start_year, end_year, camp_ids):

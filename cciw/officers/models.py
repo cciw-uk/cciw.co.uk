@@ -452,9 +452,7 @@ class DBSCheck(models.Model):
     objects = DBSCheckManager()
 
     def __str__(self):
-        return "DBS check for %s %s, %s" % (self.officer.first_name,
-                                            self.officer.last_name,
-                                            self.completed.strftime("%Y-%m-%d"))
+        return f"DBS check for {self.officer.full_name}, {self.completed:%Y-%m-%d}"
 
     class Meta:
         verbose_name = "DBS/CRB check"
@@ -512,8 +510,4 @@ class DBSActionLog(models.Model):
         verbose_name_plural = "DBS action logs"
 
     def __str__(self):
-        return "Log of DBS action '%s' for %s %s on %s" % (
-            self.get_action_type_display(),
-            self.officer.first_name,
-            self.officer.last_name,
-            self.timestamp.strftime("%Y-%m-%d"))
+        return f"Log of DBS action '{self.get_action_type_display()}' for {self.officer.full_name}, {self.timestamp:%Y-%m-%d}"

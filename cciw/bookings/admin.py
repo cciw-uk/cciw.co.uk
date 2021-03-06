@@ -378,13 +378,15 @@ class BookingAdmin(admin.ModelAdmin):
         if old_state == BookingState.INFO_COMPLETE and obj.state == BookingState.APPROVED:
             email_sent = send_booking_approved_mail(obj)
             if email_sent:
-                messages.info(request, "An email has been sent to %s telling "
-                              "them the place has been approved." % (obj.account.email))
+                messages.info(request,
+                              f"An email has been sent to {obj.account.email} telling "
+                              f"them the place has been approved.")
         if old_state != obj.state and obj.state == BookingState.BOOKED:
             email_sent = send_booking_confirmed_mail(obj)
             if email_sent:
-                messages.info(request, "A confirmation email has been sent to %s "
-                              "telling them the place has been booked." % obj.account.email)
+                messages.info(request,
+                              f"A confirmation email has been sent to {obj.account.email} "
+                              f"telling them the place has been booked.")
         return retval
 
 

@@ -878,12 +878,10 @@ class Booking(models.Model):
         camper_age = self.age_on_camp()
         age_base = self.age_base_date().strftime("%e %B %Y")
         if self.is_too_young():
-            errors.append("Camper will be %d which is below the minimum age (%d) on %s"
-                          % (camper_age, self.camp.minimum_age, age_base))
+            errors.append(f"Camper will be {camper_age} which is below the minimum age ({self.camp.minimum_age}) on {age_base}")
 
         if self.is_too_old():
-            errors.append("Camper will be %d which is above the maximum age (%d) on %s"
-                          % (camper_age, self.camp.maximum_age, age_base))
+            errors.append(f"Camper will be {camper_age} which is above the maximum age ({self.camp.maximum_age}) on {age_base}")
 
         # Check place availability
         places_left, places_left_male, places_left_female = self.camp.get_places_left()
@@ -963,9 +961,9 @@ class Booking(models.Model):
         warnings = []
 
         if self.account.bookings.filter(first_name=self.first_name, last_name=self.last_name, camp=self.camp).exclude(id=self.id):
-            warnings.append("You have entered another set of place details for a camper "
-                            "called '%s' on camp %s. Please ensure you don't book multiple "
-                            "places for the same camper!" % (self.name, self.camp.name))
+            warnings.append(f"You have entered another set of place details for a camper "
+                            f"called '{self.name}' on camp {self.camp.name}. Please ensure you don't book multiple "
+                            f"places for the same camper!")
 
         relevant_bookings = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
 
@@ -976,11 +974,9 @@ class Booking(models.Model):
                 pretty_names = ', '.join(names[1:]) + " and " + names[0]
                 warning = "You have multiple places at 'Full price'. "
                 if len(names) == 2:
-                    warning += ("If %s are from the same family, one is eligible "
-                                "for the 2nd child discount." % pretty_names)
+                    warning += f"If {pretty_names} are from the same family, one is eligible for the 2nd child discount."
                 else:
-                    warning += ("If %s are from the same family, one or more is eligible "
-                                "for the 2nd or 3rd child discounts." % pretty_names)
+                    warning += f"If {pretty_names} are from the same family, one or more is eligible for the 2nd or 3rd child discounts."
 
                 warnings.append(warning)
 
@@ -991,12 +987,11 @@ class Booking(models.Model):
                 pretty_names = ', '.join(names[1:]) + " and " + names[0]
                 warning = "You have multiple places at '2nd child discount'. "
                 if len(names) == 2:
-                    warning += ("If %s are from the same family, one is eligible "
-                                "for the 3rd child discount." % pretty_names)
+                    warning += (f"If {pretty_names} are from the same family, one is eligible "
+                                f"for the 3rd child discount.")
                 else:
-                    warning += ("If %s are from the same family, %d are eligible "
-                                "for the 3rd child discount." % (pretty_names,
-                                                                 len(names) - 1))
+                    warning += (f"If {pretty_names} are from the same family, {len(names) - 1} are eligible "
+                                f"for the 3rd child discount.")
 
                 warnings.append(warning)
 
@@ -1240,9 +1235,12 @@ class Payment(NoEditMixin, models.Model):
         if self.source_id is not None and hasattr(self.source, 'payment_description'):
             retval = self.source.payment_description
         else:
-            retval = "Payment: %s %s %s via %s" % (abs(self.amount),
-                                                   'from' if self.amount > 0 else 'to',
-                                                   self.account.name, self.payment_type)
+            retval = "Payment: {amount} {from_or_to} {name} via {type}".format(
+                amount=abs(self.amount),
+                from_or_to='from' if self.amount > 0 else 'to',
+                name=self.account.name,
+                type=self.payment_type,
+            )
 
         return retval
 

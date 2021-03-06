@@ -98,7 +98,7 @@ to CCiW. It is also attached to this email as an RTF file.
 
 def send_leader_email(leader_emails, application):
     subject = f"[CCIW] Application form from {application.full_name}"
-    url = 'https://%(domain)s%(path)s' % dict(
+    url = 'https://{domain}{path}'.format(
         domain=common.get_current_domain(),
         path=reverse('cciw-officers-view_application',
                      kwargs=dict(application_id=application.id)))
@@ -113,7 +113,7 @@ CCiW website:
 
 
 def make_update_email_url(application):
-    return 'https://%(domain)s%(path)s?t=%(token)s' % dict(
+    return 'https://{domain}{path}?t={token}'.format(
         domain=common.get_current_domain(),
         path=reverse('cciw-officers-correct_email'),
         token=signing.dumps([application.officer.username,
@@ -122,7 +122,7 @@ def make_update_email_url(application):
 
 
 def make_update_application_url(application, email):
-    return 'https://%(domain)s%(path)s?t=%(token)s' % dict(
+    return 'https://{domain}{path}?t={token}'.format(
         domain=common.get_current_domain(),
         path=reverse('cciw-officers-correct_application'),
         token=signing.dumps([application.id,
@@ -133,20 +133,20 @@ def make_update_application_url(application, email):
 def send_email_change_emails(officer, application):
     subject = "[CCIW] Email change on CCiW"
     user_email = formatted_email(officer)
-    user_msg = ("""%(name)s,
+    user_msg = ("""{name},
 
 In your most recently submitted application form, you entered your
-email address as %(new)s.  The email address stored against your
-account is %(old)s.  If you would like this to be updated to '%(new)s'
+email address as {new}.  The email address stored against your
+account is {old}.  If you would like this to be updated to '{new}'
 then click the link below:
 
- %(correct_email_url)s
+ {correct_email_url}
 
-If the email address you entered on your application form (%(new)s)
+If the email address you entered on your application form ({new})
 is, in fact, incorrect, then click the link below to correct
-your application form to %(old)s:
+your application form to {old}:
 
- %(correct_application_url)s
+ {correct_application_url}
 
 NB. This email has been sent to both the old and new email
 addresses, you only need to respond to one email.
@@ -157,7 +157,7 @@ Thanks,
 This was an automated response by the CCiW website.
 
 
-""" % dict(name=officer.first_name, old=officer.email,
+""".format(name=officer.first_name, old=officer.email,
            new=application.address_email,
            correct_email_url=make_update_email_url(application),
            correct_application_url=make_update_application_url(application, officer.email),
@@ -175,11 +175,13 @@ def make_ref_form_url_hash(referee_id, prev_ref_id):
 def make_ref_form_url(referee_id, prev_ref_id):
     if prev_ref_id is None:
         prev_ref_id = ""
-    return "https://%s%s" % (common.get_current_domain(),
-                             reverse('cciw-officers-create_reference_form',
-                                     kwargs=dict(referee_id=referee_id,
-                                                 prev_ref_id=prev_ref_id,
-                                                 hash=make_ref_form_url_hash(referee_id, prev_ref_id))))
+    return "https://{domain}{path}".format(
+        domain=common.get_current_domain(),
+        path=reverse('cciw-officers-create_reference_form',
+                     kwargs=dict(referee_id=referee_id,
+                                 prev_ref_id=prev_ref_id,
+                                 hash=make_ref_form_url_hash(referee_id, prev_ref_id)))
+    )
 
 
 def send_reference_request_email(message, referee, sending_officer, camp):
@@ -203,9 +205,10 @@ def send_leaders_reference_email(reference):
     app = referee.application
     officer = app.officer
 
-    view_reference_url = "https://%s%s" % (common.get_current_domain(),
-                                           reverse('cciw-officers-view_reference',
-                                                   kwargs=dict(reference_id=reference.id)))
+    view_reference_url = "https://{domain}{path}".format(
+        domain=common.get_current_domain(),
+        path=reverse('cciw-officers-view_reference',
+                     kwargs=dict(reference_id=reference.id)))
     subject = f"[CCIW] Reference form for {officer.full_name} from {referee.name}"
     body = f"""The following reference form has been submitted via the
 CCiW website for officer {officer.full_name}.

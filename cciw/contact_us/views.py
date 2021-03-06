@@ -95,11 +95,11 @@ def view_message(request, *, message_id: int):
 
 
 ----
-On {timestamp}, {name} <{email}> wrote:
+On {timestamp:%Y-%m-%d %H:%M}, {name} <{email}> wrote:
 
 {quoted_message_body}
 """.format(name=msg.name if msg.name else "user",
-           timestamp=msg.timestamp.strftime("%Y-%m-%d %H:%M"),
+           timestamp=msg.timestamp,
            quoted_message_body=quoted_message_body,
            email=msg.email)
     return TemplateResponse(request, 'cciw/officers/view_contact_us_message.html', {
@@ -111,6 +111,6 @@ On {timestamp}, {name} <{email}> wrote:
 
 
 def make_contact_us_view_url(msg):
-    return 'https://%(domain)s%(path)s' % dict(
+    return 'https://{domain}{path}'.format(
         domain=get_current_domain(),
         path=reverse('cciw-contact_us-view', args=(msg.id,)))

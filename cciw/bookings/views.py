@@ -646,8 +646,8 @@ def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amou
         "business": settings.PAYPAL_RECEIVER_EMAIL,
         "amount": str(balance),
         "item_name": "Camp place booking",
-        "invoice": "%s-%s-%s" % (account.id, balance,
-                                 timezone.now()),  # We don't need this, but must be unique
+        # We don't need this info, but invoice numbermust be unique
+        "invoice": f"{account.id}-{balance}-{timezone.now()}",
         "notify_url": f"{protocol}://{domain}{reverse('paypal-ipn')}",
         "return": f"{protocol}://{domain}{reverse('cciw-bookings-pay_done')}",
         "cancel_return": f"{protocol}://{domain}{reverse('cciw-bookings-pay_cancelled')}",
