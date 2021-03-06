@@ -99,6 +99,9 @@ class PriceQuerySet(models.QuerySet):
     def required_for_booking(self):
         return self.filter(price_type__in=REQUIRED_PRICE_TYPES)
 
+    def for_year(self, year):
+        return self.filter(year=year)
+
 
 class Price(models.Model):
     year = models.PositiveSmallIntegerField()

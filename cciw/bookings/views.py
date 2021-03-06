@@ -23,8 +23,8 @@ from paypal.standard.forms import PayPalPaymentsForm
 from cciw.bookings.email import send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
 from cciw.bookings.middleware import get_booking_account_from_request, unset_booking_account_cookie
-from cciw.bookings.models import (REQUIRED_PRICE_TYPES, Booking, BookingAccount, BookingState, Price, PriceChecker,
-                                  PriceType, any_bookings_possible, book_basket_now, build_paypal_custom_field,
+from cciw.bookings.models import (Booking, BookingAccount, BookingState, Price, PriceChecker, PriceType,
+                                  any_bookings_possible, book_basket_now, build_paypal_custom_field,
                                   early_bird_is_available, get_early_bird_cutoff_date, is_booking_open,
                                   is_booking_open_thisyear)
 from cciw.cciwmain import common
@@ -93,17 +93,17 @@ def index(request):
         context['bookingform'] = bookingform_relpath
     booking_open = is_booking_open(year)
     if booking_open:
-        prices = Price.objects.filter(year=year)
+        prices = Price.objects.for_year(year)
         now = timezone.now()
         early_bird_available = early_bird_is_available(year, now)
         context['early_bird_available'] = early_bird_available
         context['early_bird_date'] = get_early_bird_cutoff_date(year)
     else:
         # Show last year's prices
-        prices = Price.objects.filter(year=year - 1)
+        prices = Price.objects.for_year(year - 1)
         early_bird_available = False
 
-    prices = list(prices.filter(price_type__in=REQUIRED_PRICE_TYPES))
+    prices = list(prices.required_for_booking())
 
     def getp(v):
         try:
