@@ -29,7 +29,7 @@ from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from cciw.accounts.models import User
-from cciw.bookings.models import PriceChecker, most_recent_booking_year
+from cciw.bookings.models import most_recent_booking_year
 from cciw.bookings.stats import get_booking_ages_stats, get_booking_progress_stats, get_booking_summary_stats
 from cciw.bookings.utils import (addresses_for_mailing_list, camp_bookings_to_spreadsheet,
                                  camp_sharable_transport_details_to_spreadsheet, payments_to_spreadsheet,
@@ -1420,65 +1420,16 @@ def officer_info(request):
 
 @booking_secretary_required
 def booking_secretary_reports(request, year: int):
-    from cciw.bookings.models import Booking, Sex
+    from cciw.bookings.models import Booking, booking_report_by_camp, outstanding_bookings_with_fees
 
     # 1. Camps and their booking levels.
-
-    camps = Camp.objects.filter(year=year).prefetch_related(Prefetch('bookings',
-                                                                     queryset=Booking.objects.booked(),
-                                                                     to_attr='booked_places'))
-    # Do some filtering in Python to avoid multiple db hits
-    for c in camps:
-        c.confirmed_bookings = [b for b in c.booked_places if b.is_confirmed]
-        c.confirmed_bookings_boys = [b for b in c.confirmed_bookings if b.sex == Sex.MALE]
-        c.confirmed_bookings_girls = [b for b in c.confirmed_bookings if b.sex == Sex.FEMALE]
+    camps = booking_report_by_camp(year)
 
     # 2. Online bookings needing attention
-    to_approve = Booking.objects.need_approving().filter(camp__year__exact=year)
+    to_approve = Booking.objects.need_approving().for_year(year)
 
     # 3. Fees
-
-    bookings = Booking.objects.filter(camp__year__exact=year)
-    # We need to include 'full refund' cancelled bookings in case they overpaid,
-    # as well as all 'payable' bookings.
-    bookings = bookings.payable(confirmed_only=True) | bookings.cancelled()
-
-    # 3 concerns:
-    # 1) people who have overpaid. This must be calculated with respect to the total amount due
-    #    on the account.
-    # 2) people who have underpaid:
-    #    a) with respect to the total amount due
-    #    b) with respect to the total amount due at this point in time,
-    #       allowing for the fact that up to a certain point,
-    #       only the deposit is actually required.
-    #
-    # People in group 2b) possibly need to be chased. They are not highlighted here - TODO
-
-    bookings = bookings.order_by('account__name', 'account__id', 'first_name', 'last_name')
-    bookings = list(
-        bookings
-        .select_related('camp__camp_name', 'account')
-        .prefetch_related('account__bookings__camp')
-    )
-
-    counts = defaultdict(int)
-    for b in bookings:
-        counts[b.account_id] += 1
-
-    price_checker = PriceChecker(expected_years=[b.camp.year for b in bookings])
-    outstanding = []
-    for b in bookings:
-        b.count_for_account = counts[b.account_id]
-        if not hasattr(b.account, 'calculated_balance'):
-            b.account.calculated_balance = b.account.get_balance(confirmed_only=True,
-                                                                 allow_deposits=False,
-                                                                 price_checker=price_checker)
-            b.account.calculated_balance_due = b.account.get_balance(confirmed_only=True,
-                                                                     allow_deposits=True,
-                                                                     price_checker=price_checker)
-
-            if b.account.calculated_balance_due > 0 or b.account.calculated_balance < 0:
-                outstanding.append(b)
+    outstanding = outstanding_bookings_with_fees(year)
 
     export_start = datetime(year - 1, 11, 1)  # November previous year
     export_end = datetime(year, 10, 31)  # November this year
