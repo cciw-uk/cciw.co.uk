@@ -440,7 +440,7 @@ def booking_problems_json(request):
         # We will get errors later on if prices don't exist for the year chosen, so
         # we check that first.
         if not is_booking_open(instance.camp.year):
-            retval['problems'] = ['Prices have not been set for the year %d' % instance.camp.year]
+            retval['problems'] = [f'Prices have not been set for the year {instance.camp.year}']
         else:
             problems, warnings = instance.get_booking_problems(booking_sec=True)
             retval['problems'] = problems + warnings

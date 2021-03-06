@@ -7,21 +7,21 @@ from .cciwmain.common import CampId
 class FourDigitYearConverter:
     regex = '[0-9]{4}'
 
-    def to_python(self, value) -> int:
+    def to_python(self, value: str) -> int:
         return int(value)
 
-    def to_url(self, value):
-        return '%04d' % value
+    def to_url(self, value: int):
+        return f'{value:04}'
 
 
 class TwoDigitMonthConverter:
     regex = '[0-9]{2}'
 
-    def to_python(self, value) -> int:
+    def to_python(self, value: str) -> int:
         return int(value)
 
-    def to_url(self, value):
-        return '%02d' % value
+    def to_url(self, value: int):
+        return f'{value:02}'
 
 
 class CampIdConverter:

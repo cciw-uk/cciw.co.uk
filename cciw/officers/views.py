@@ -926,7 +926,7 @@ def export_camper_data(request, camp_id: CampId):
 def export_camper_data_for_year(request, year: int):
     formatter = get_spreadsheet_formatter(request)
     return spreadsheet_response(year_bookings_to_spreadsheet(year, formatter),
-                                "CCIW-bookings-%d" % year)
+                                f"CCIW-bookings-{year}")
 
 
 @staff_member_required
@@ -1006,7 +1006,7 @@ def officer_stats_download(request, year: int):
         formatter.add_sheet_from_dataframe(str(camp.url_id),
                                            get_camp_officer_stats(camp))
     return spreadsheet_response(formatter,
-                                "officer-stats-%d" % year)
+                                f"officer-stats-{year}")
 
 
 @staff_member_required

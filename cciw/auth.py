@@ -48,7 +48,7 @@ class CciwAuthBackend:
         else:
             perms = Permission.objects.filter(roles__members=user_obj)
         perms = perms.values_list('content_type__app_label', 'codename').order_by()
-        return {"%s.%s" % (ct, name) for ct, name in perms}
+        return {f"{ct}.{name}" for ct, name in perms}
 
     def get_all_permissions(self, user_obj, obj=None):
         if not user_obj.is_active or user_obj.is_anonymous or obj is not None:

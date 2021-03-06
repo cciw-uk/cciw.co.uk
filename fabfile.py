@@ -203,7 +203,7 @@ class Version(object):
                 run(f"ln -s {dest} {link}")
 
         # Perms for usermedia
-        run("find %s -type d -exec chmod ugo+rx {} ';'" % self.MEDIA_ROOT_SHARED)
+        run(f"find {self.MEDIA_ROOT_SHARED} -type d -exec chmod ugo+rx {{}} ';'")
 
 
 def secrets():
@@ -230,8 +230,7 @@ def secure(new_user=env.user):
         fabtools.user.create(new_user, group=new_user, ssh_public_keys=ssh_keys)
     run("sed -i 's:RootLogin yes:RootLogin without-password:' /etc/ssh/sshd_config")
     run("service ssh restart")
-    print("Security steps completed. Log in to the server as '%s' from "
-          "now on." % new_user)
+    print(f"Security steps completed. Log in to the server as '{new_user}' from now on.")
 
 
 @task
@@ -568,11 +567,7 @@ def push_sources(target):
             run("echo '[receive]' >> .git/config")
             run("echo 'denyCurrentBranch = ignore' >> .git/config")
 
-    local("git push ssh://%(user)s@%(host)s/%(path)s" %
-          dict(host=env.host,
-               user=env.user,
-               path=target_src_root,
-               ))
+    local(f"git push ssh://{env.user}@{env.host}/{target_src_root}")
     with cd(target_src_root):
         run(f"git reset --hard {target.version}")
 
@@ -628,8 +623,7 @@ def create_venv(target):
         return
 
     run(f"virtualenv --python={PYTHON_BIN} {venv_root}")
-    run("echo %s > %s/lib/%s/site-packages/projectsource.pth" %
-        (target.SRC_ROOT, target.VENV_ROOT, PYTHON_BIN))
+    run(f"echo {target.SRC_ROOT} > {target.VENV_ROOT}/lib/{PYTHON_BIN}/site-packages/projectsource.pth")
 
 
 def install_requirements(target):
@@ -881,10 +875,10 @@ def db_check_user_exists_remote(db):
 def db_create_commands(db):
     return [
         (True,
-         """ psql -p %s -U postgres -d template1 -c " """
-         """ CREATE DATABASE %s """
-         """ TEMPLATE = template0 ENCODING = 'UTF8' LC_CTYPE = '%s' LC_COLLATE = '%s';"""
-         """ " """ % (db['PORT'], db['NAME'], env.locale, env.locale)),
+         f""" psql -p {db['PORT']} -U postgres -d template1 -c " """
+         f""" CREATE DATABASE {db['NAME']} """
+         f""" TEMPLATE = template0 ENCODING = 'UTF8' LC_CTYPE = '{env.locale}' LC_COLLATE = '{env.locale}';"""
+         f""" " """),
 
         (True,
          f"psql -p {db['PORT']} -U postgres -d template1 -c \"GRANT ALL ON DATABASE {db['NAME']} TO {db['USER']};\" "),
@@ -959,8 +953,8 @@ def upload_usermedia():
     """
     target = Version.current()
     local(f"rsync -z -r --progress {LOCAL_USERMEDIA}/ {env.proj_user}@{env.hosts[0]}:{target.MEDIA_ROOT}", capture=False)
-    run("find -L %s -type f -exec chmod ugo+r {} ';'" % target.MEDIA_ROOT)
-    run("find %s -type d -exec chmod ugo+rx {} ';'" % target.MEDIA_ROOT_SHARED)
+    run(f"find -L {target.MEDIA_ROOT} -type f -exec chmod ugo+r {{}} ';'")
+    run(f"find {target.MEDIA_ROOT_SHARED} -type d -exec chmod ugo+rx {{}} ';'")
 
 
 @task

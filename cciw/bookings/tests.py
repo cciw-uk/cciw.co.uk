@@ -236,7 +236,7 @@ class PlaceDetailsMixin(CreateCampMixin):
             'first_name': 'Frédéric',
             'last_name': 'Bloggs',
             'sex': 'm',
-            'date_of_birth': '%d-01-01' % (self.camp.year - 14),
+            'date_of_birth': f'{self.camp.year - 14}-01-01',
             'address_line1': '123 My street',
             'address_city': 'Metrocity',
             'address_country': 'GB',
@@ -256,7 +256,7 @@ class PlaceDetailsMixin(CreateCampMixin):
             'medical_card_number': 'asdfasdf',
             'agreement': True,
             'price_type': '0',
-            'last_tetanus_injection_date': '%d-02-03' % (self.camp.year - 5),
+            'last_tetanus_injection_date': f'{self.camp.year - 5}-02-03',
         }
 
     def setUp(self):
@@ -459,7 +459,7 @@ class TestBookingIndex(BookingBaseMixin, CreatePricesMixin, CreateCampMixin, Web
 
     def test_show_with_no_prices(self):
         self.get_url('cciw-bookings-index')
-        self.assertTextPresent("Prices for %d have not been finalised yet" % self.camp.year)
+        self.assertTextPresent(f"Prices for {self.camp.year} have not been finalised yet")
 
     def test_show_with_prices(self):
         self.add_prices()  # need for booking to be open
@@ -2102,7 +2102,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         self.create_booking()
         acc = self.get_account()
         resp = self.get_literal_url(reverse('cciw-bookings-places_json') +
-                                    ("?exclude=%d" % acc.bookings.all()[0].id))
+                                    f"?exclude={acc.bookings.all()[0].id}")
         j = json.loads(resp.content.decode('utf-8'))
         self.assertEqual(j['places'], [])
 
@@ -2135,7 +2135,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
 
         # Now as booking secretary
         self.officer_login(BOOKING_SECRETARY)
-        resp = self.get_literal_url(reverse('cciw-bookings-all_accounts_json') + "?id=%d" % acc1.id)
+        resp = self.get_literal_url(reverse('cciw-bookings-all_accounts_json') + f"?id={acc1.id}")
         self.assertEqual(resp.status_code, 200)
 
         j = json.loads(resp.content.decode('utf-8'))

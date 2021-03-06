@@ -197,7 +197,7 @@ class Camp(models.Model):
 
     @property
     def nice_name(self):
-        return "Camp %s, year %d" % (self.name, self.year)
+        return f"Camp {self.name}, year {self.year}"
 
     @property
     def bracketted_old_name(self):
@@ -225,7 +225,7 @@ class Camp(models.Model):
 
     @property
     def age(self):
-        return "%d-%d" % (self.minimum_age, self.maximum_age)
+        return f"{self.minimum_age}-{self.maximum_age}"
 
     def get_places_left(self):
         """

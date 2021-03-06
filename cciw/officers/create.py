@@ -25,7 +25,7 @@ def make_username(first_name, last_name, guess_number=1):
     if guess_number == 1:
         guess = name
     else:
-        guess = "%s%d" % (name, guess_number)
+        guess = f"{name}{guess_number}"
     if User.objects.filter(username=guess).exists():
         return make_username(first_name, last_name, guess_number + 1)
     else:

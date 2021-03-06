@@ -55,7 +55,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
                                      kwargs=dict(camp_id=CampId(2000, "blue"))) +
-                             "?referee_id=%d" % referee.id)
+                             f"?referee_id={referee.id}")
         self.assertCode(200)
         self.assertTextAbsent("No email address")
         self.assertTextPresent("The following email")
@@ -76,7 +76,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
                                      kwargs=dict(camp_id=CampId(2000, "blue"))) +
-                             "?referee_id=%d" % referee.id)
+                             f"?referee_id={referee.id}")
         self.assertCode(200)
         self.assertTextPresent("No email address")
         self.assertTextAbsent("This field is required")  # Don't want errors on first view
@@ -103,7 +103,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
                                      kwargs=dict(camp_id=CampId(2000, "blue"))) +
-                             "?referee_id=%d" % referee.id)
+                             f"?referee_id={referee.id}")
         self.assertCode(200)
         self.submit('#id_request_reference_send [name=cancel]')
         self.assertEqual(len(mail.outbox), 0)
@@ -117,7 +117,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
                                      kwargs=dict(camp_id=CampId(2000, "blue"))) +
-                             "?referee_id=%d" % referee.id)
+                             f"?referee_id={referee.id}")
         self.assertCode(200)
         self.fill_by_name({'message': 'I removed the link! Haha'})
         self.submit('[name=send]')
@@ -186,7 +186,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
                                      kwargs=dict(camp_id=CampId(2000, "blue"))) +
-                             "?referee_id=%d" % referee.id)
+                             f"?referee_id={referee.id}")
         self.assertCode(200)
         self.fill_by_name({'how_long_known': "10 years",
                            'capacity_known': "Pastor",
@@ -208,7 +208,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-nag_by_officer",
                                      kwargs=dict(camp_id=CampId(2000, "blue"))) +
-                             "?referee_id=%d" % referee.id)
+                             f"?referee_id={referee.id}")
         self.assertCode(200)
         self.assertTextPresent("to nag their referee")
         self.submit('[name=send]')
