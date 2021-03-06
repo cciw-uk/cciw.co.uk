@@ -222,12 +222,12 @@ class BookingAccount(models.Model):
     objects = BookingAccountManager()
 
     def has_account_details(self):
-        return not any(getattr(self, f) == ""
-                       for f in ['name',
-                                 'address_line1',
-                                 'address_city',
-                                 'address_country',
-                                 'address_post_code'])
+        return not any(att == "" for att in
+                       [self.name,
+                        self.address_line1,
+                        self.address_city,
+                        self.address_country,
+                        self.address_post_code])
 
     def __str__(self):
         out = []
