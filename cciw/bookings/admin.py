@@ -202,7 +202,7 @@ class YearFilter(admin.SimpleListFilter):
         val = self.value()
         if val is None:
             return queryset
-        return queryset.filter(camp__year__exact=val)
+        return queryset.for_year(val)
 
 
 class ConfirmedFilter(admin.SimpleListFilter):
