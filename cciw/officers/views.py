@@ -57,6 +57,8 @@ from .utils import camp_serious_slacker_list, camp_slacker_list, officer_data_to
 
 EXPORT_PAYMENT_DATE_FORMAT = '%Y-%m-%d'
 
+BOOKING_STATS_PREVIOUS_YEARS = 4
+
 
 def _copy_application(application):
     new_obj = Application(id=None)
@@ -147,7 +149,7 @@ def index(request):
         booking_year = most_recent_booking_year()
         if booking_year is not None:
             context['booking_stats_end_year'] = booking_year
-            context['booking_stats_start_year'] = booking_year - 3
+            context['booking_stats_start_year'] = booking_year - BOOKING_STATS_PREVIOUS_YEARS
 
     return TemplateResponse(request, 'cciw/officers/index.html', context)
 
@@ -1441,7 +1443,7 @@ def booking_secretary_reports(request, year: int):
 
     return TemplateResponse(request, 'cciw/officers/booking_secretary_reports.html', {
         'year': year,
-        'stats_start_year': year - 4,
+        'stats_start_year': year - BOOKING_STATS_PREVIOUS_YEARS,
         'camps': camps,
         'bookings': outstanding,
         'to_approve': to_approve,
