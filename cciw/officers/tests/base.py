@@ -141,75 +141,20 @@ class ExtraOfficersSetupMixin(OfficersSetupMixin):
         self.default_camp_1.invitations.create(officer=self.officer3)
 
 
-class CreateApplicationMixin(object):
-    def create_application(self, officer, year,
-                           overrides=None,
-                           referee1_overrides=None,
-                           referee2_overrides=None):
-        fields = dict(
-            officer=officer,
-            address_country="UK",
-            address_county="Yorkshire",
-            address_email="hey@boo.com",
-            address_firstline="654 Stupid Way",
-            address_mobile="",
-            address_postcode="XY9 8WN",
-            address_tel="01048378569",
-            address_town="Bradford",
-            allegation_declaration=False,
-            birth_date="1911-02-07",
-            birth_place="Foobar",
-            christian_experience="Became a Christian at age 0.2 years",
-            concern_declaration=False,
-            concern_details="",
-            court_declaration=False,
-            court_details="",
-            dbs_check_consent=True,
-            dbs_number="",
-            crime_declaration=False,
-            crime_details="",
-            date_saved=datetime(year, 3, 1),
-            finished=True,
-            full_name="Joe Winston Bloggs",
-            illness_details="",
-            relevant_illness=False,
-            youth_experience="Lots",
-            youth_work_declined=False,
-            youth_work_declined_details="",
-        )
-        if overrides:
-            fields.update(overrides)
-        application = Application.objects.create(**fields)
-        for referee_number, ref_overrides in zip([1, 2], [referee1_overrides, referee2_overrides]):
-            referee_fields = dict(
-                referee_number=referee_number,
-                address=f"Referee {referee_number} Address\r\nLine 2",
-                email=f"referee{referee_number}@email.co.uk",
-                mobile="",
-                name=f"Referee{referee_number} Name",
-                tel="01222 666666",
-            )
-            if ref_overrides:
-                referee_fields.update(ref_overrides)
-
-            application.referee_set.create(**referee_fields)
-        return application
-
-
-class DefaultApplicationsMixin(CreateApplicationMixin, ExtraOfficersSetupMixin):
+class DefaultApplicationsMixin(ExtraOfficersSetupMixin):
 
     def create_default_applications(self):
         # Data: Applications 1 to 3 are in year 2000, for camps in summer 2000
         # Application 4 is for 2001
-        self.application1 = self.create_application(
-            self.officer1, 2000,
+        self.application1 = factories.create_application(
+            self.officer1, year=2000,
             referee2_overrides=dict(
                 address="1267a Somewhere Road\r\nThereyougo",
                 name="Mr Referee2 Name",
             ))
 
-        self.application2 = self.create_application(
-            self.officer2, 2000,
+        self.application2 = factories.create_application(
+            self.officer2, year=2000,
             overrides=dict(
                 full_name="Peter Smith",
             ),
@@ -224,8 +169,8 @@ class DefaultApplicationsMixin(CreateApplicationMixin, ExtraOfficersSetupMixin):
                 name="Mr Referee4 Name",
             ))
 
-        self.application3 = self.create_application(
-            self.officer3, 2000,
+        self.application3 = factories.create_application(
+            self.officer3, year=2000,
             overrides=dict(
                 full_name="Fred Jones",
             ),
@@ -344,6 +289,60 @@ class Factories:
     def _make_auto_email(self, username=None):
         username = username or self._make_auto_username()
         return f'{username}@example.com'
+
+    def create_application(self, officer, *,
+                           year=None,
+                           overrides=None,
+                           referee1_overrides=None,
+                           referee2_overrides=None):
+        fields = dict(
+            officer=officer,
+            address_country="UK",
+            address_county="Yorkshire",
+            address_email="hey@boo.com",
+            address_firstline="654 Stupid Way",
+            address_mobile="",
+            address_postcode="XY9 8WN",
+            address_tel="01048378569",
+            address_town="Bradford",
+            allegation_declaration=False,
+            birth_date="1911-02-07",
+            birth_place="Foobar",
+            christian_experience="Became a Christian at age 0.2 years",
+            concern_declaration=False,
+            concern_details="",
+            court_declaration=False,
+            court_details="",
+            dbs_check_consent=True,
+            dbs_number="",
+            crime_declaration=False,
+            crime_details="",
+            date_saved=datetime(year, 3, 1),
+            finished=True,
+            full_name="Joe Winston Bloggs",
+            illness_details="",
+            relevant_illness=False,
+            youth_experience="Lots",
+            youth_work_declined=False,
+            youth_work_declined_details="",
+        )
+        if overrides:
+            fields.update(overrides)
+        application = Application.objects.create(**fields)
+        for referee_number, ref_overrides in zip([1, 2], [referee1_overrides, referee2_overrides]):
+            referee_fields = dict(
+                referee_number=referee_number,
+                address=f"Referee {referee_number} Address\r\nLine 2",
+                email=f"referee{referee_number}@email.co.uk",
+                mobile="",
+                name=f"Referee{referee_number} Name",
+                tel="01222 666666",
+            )
+            if ref_overrides:
+                referee_fields.update(ref_overrides)
+
+            application.referee_set.create(**referee_fields)
+        return application
 
 
 factories = Factories()

@@ -11,10 +11,10 @@ from cciw.officers.views import get_officers_with_dbs_info_for_camps
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
-from .base import DBSOFFICER, CreateApplicationMixin, OfficersSetupMixin, SimpleOfficerSetupMixin
+from .base import DBSOFFICER, OfficersSetupMixin, SimpleOfficerSetupMixin, factories
 
 
-class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
+class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
     def setUp(self):
         super().setUp()
         self.camp = self.default_camp_1
@@ -34,19 +34,19 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.assertFalse(dbs_info.requires_action)
 
     def test_requires_action_with_application_form(self):
-        self.create_application(self.officer_user, self.year)
+        factories.create_application(self.officer_user, year=self.year)
         officer, dbs_info = self.get_officer_with_dbs_info()
         self.assertTrue(dbs_info.requires_action)
 
     def test_can_register_received_dbs_form(self):
         officer, dbs_info = self.get_officer_with_dbs_info()
         self.assertFalse(dbs_info.can_register_received_dbs_form)
-        self.create_application(self.officer_user, self.year)
+        factories.create_application(self.officer_user, year=self.year)
         officer, dbs_info = self.get_officer_with_dbs_info()
         self.assertTrue(dbs_info.can_register_received_dbs_form)
 
     def test_last_action_attributes(self):
-        self.create_application(self.officer_user, self.year)
+        factories.create_application(self.officer_user, year=self.year)
         officer, dbs_info = self.get_officer_with_dbs_info()
         self.assertEqual(dbs_info.last_dbs_form_sent, None)
         self.assertEqual(dbs_info.last_leader_alert_sent, None)
@@ -72,22 +72,22 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.assertEqual(dbs_info.last_leader_alert_sent, t2)
 
     def test_can_check_dbs_online_default(self):
-        self.create_application(self.officer_user, self.year)
+        factories.create_application(self.officer_user, year=self.year)
         officer, dbs_info = self.get_officer_with_dbs_info()
         self.assertFalse(dbs_info.can_check_dbs_online)
 
     def test_can_check_dbs_online_application_form_dbs_number(self):
         # If we only have a DBS number from application form, we can't do online
         # check.
-        self.create_application(self.officer_user, self.year,
-                                overrides={'dbs_number': '00123'})
+        factories.create_application(self.officer_user, year=self.year,
+                                     overrides={'dbs_number': '00123'})
         officer, dbs_info = self.get_officer_with_dbs_info()
         self.assertEqual(dbs_info.update_enabled_dbs_number.number, '00123')
         self.assertEqual(dbs_info.update_enabled_dbs_number.previous_check_good, None)
         self.assertFalse(dbs_info.can_check_dbs_online)
 
     def test_can_check_dbs_online_previous_check_dbs_number(self):
-        application = self.create_application(self.officer_user, self.year)
+        application = factories.create_application(self.officer_user, year=self.year)
         self.officer_user.dbs_checks.create(
             completed=application.date_saved - timedelta(365 * 10),
             dbs_number='001234',
@@ -102,8 +102,8 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
 
     def test_can_check_dbs_online_combined_info(self):
         # Application form indicates update-enabled DBS
-        application = self.create_application(self.officer_user, self.year,
-                                              overrides={'dbs_number': '00123'})
+        application = factories.create_application(self.officer_user, year=self.year,
+                                                   overrides={'dbs_number': '00123'})
 
         # DBS check indicates good DBS, but don't know if it is
         # registered as update-enabled
@@ -122,7 +122,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.assertEqual(dbs_info.update_enabled_dbs_number.previous_check_good, True)
 
     def test_applicant_rejected_recent(self):
-        application = self.create_application(self.officer_user, self.year)
+        application = factories.create_application(self.officer_user, year=self.year)
         self.officer_user.dbs_checks.create(
             completed=application.date_saved - timedelta(days=10),
             dbs_number='00123',
@@ -135,7 +135,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.assertEqual(dbs_info.applicant_rejected, True)
 
     def test_applicant_rejected_old(self):
-        application = self.create_application(self.officer_user, self.year)
+        application = factories.create_application(self.officer_user, year=self.year)
         self.officer_user.dbs_checks.create(
             completed=application.date_saved - timedelta(days=365 * 10),
             dbs_number='00123',
@@ -148,7 +148,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.assertEqual(dbs_info.applicant_rejected, True)
 
     def test_can_check_dbs_online_previous_check_bad(self):
-        application = self.create_application(self.officer_user, self.year)
+        application = factories.create_application(self.officer_user, year=self.year)
         self.officer_user.dbs_checks.create(
             completed=application.date_saved - timedelta(365 * 10),
             dbs_number='00123',
@@ -163,8 +163,8 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
 
     def test_update_enabled_dbs_number(self):
         # Test that data from Application/DBSCheck is prioritised by date
-        application = self.create_application(self.officer_user, self.year,
-                                              overrides={'dbs_number': '00123'})
+        application = factories.create_application(self.officer_user, year=self.year,
+                                                   overrides={'dbs_number': '00123'})
         self.officer_user.dbs_checks.create(
             completed=application.date_saved - timedelta(365 * 10),
             dbs_number='00456',
@@ -177,7 +177,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, CreateApplicationMixin, TestBase):
         self.assertEqual(dbs_info.update_enabled_dbs_number.previous_check_good, None)
 
 
-class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixin):
+class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
     def setUp(self):
         super().setUp()
         self.camp = self.default_camp_1
@@ -203,13 +203,13 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         self.assertTextPresent('Needs application form')
 
     def test_view_with_application_forms(self):
-        self.create_application(self.officer_user, self.year)
+        factories.create_application(self.officer_user, year=self.year)
         self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         self.assertTextAbsent('Needs application form')
 
     def test_log_dbs_sent(self):
-        self.create_application(self.officer_user, self.year)
+        factories.create_application(self.officer_user, year=self.year)
         officer = self.officer_user
         self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
@@ -235,8 +235,8 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
             self.assertUrlsEqual(url)
 
     def test_alert_leaders(self):
-        self.create_application(self.officer_user, self.year,
-                                overrides={'dbs_check_consent': False})
+        factories.create_application(self.officer_user, year=self.year,
+                                     overrides={'dbs_check_consent': False})
         self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
@@ -266,7 +266,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
                          "0 minutes ago")
 
     def test_request_dbs_form_sent(self):
-        self.create_application(self.officer_user, self.year)
+        factories.create_application(self.officer_user, year=self.year)
         self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
@@ -294,7 +294,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
                          "0 minutes ago")
 
     def test_register_received_dbs(self):
-        self.create_application(self.officer_user, self.year)
+        factories.create_application(self.officer_user, year=self.year)
         self.assertEqual(self.officer_user.dbs_checks.all().count(), 0)
         self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
@@ -320,7 +320,7 @@ class ManageDbsPageBase(OfficersSetupMixin, CreateApplicationMixin, FuncBaseMixi
         """
         Test the "DBS checked online" action and flow
         """
-        self.create_application(self.officer_user, self.year)
+        factories.create_application(self.officer_user, year=self.year)
 
         # Create old DBS check
         self.assertEqual(self.officer_user.dbs_checks.count(), 0)
