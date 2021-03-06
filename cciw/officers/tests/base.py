@@ -53,7 +53,7 @@ class SimpleOfficerSetupMixin(BasicSetupMixin):
     """
     def setUp(self):
         super().setUp()
-        self.officer_user = factories.make_officer(
+        self.officer_user = factories.create_officer(
             username=OFFICER_USERNAME,
             first_name="Joe",
             last_name="Bloggs",
@@ -69,7 +69,7 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
     def setUp(self):
         super().setUp()
         setup_auth_roles()
-        self.leader_user = factories.make_officer(
+        self.leader_user = factories.create_officer(
             username=LEADER_USERNAME,
             first_name="Kevin",
             last_name="Smith",
@@ -81,21 +81,21 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
         self.default_leader.users.add(self.leader_user)
 
         self.booking_secretary_role = Role.objects.get(name=BOOKING_SECRETARY_ROLE_NAME)
-        self.booking_secretary = factories.make_officer(
+        self.booking_secretary = factories.create_officer(
             username=BOOKING_SECRETARY_USERNAME,
             roles=[self.booking_secretary_role],
             password=BOOKING_SECRETARY_PASSWORD,
         )
 
         self.secretary_role = Role.objects.get(name=SECRETARY_ROLE_NAME)
-        self.secretary = factories.make_officer(
+        self.secretary = factories.create_officer(
             username=SECRETARY_USERNAME,
             roles=[self.secretary_role],
             password=SECRETARY_PASSWORD,
         )
 
         self.dbs_officer_group = Role.objects.get(name=DBS_OFFICER_ROLE_NAME)
-        self.dbs_officer = factories.make_officer(
+        self.dbs_officer = factories.create_officer(
             username=DBSOFFICER_USERNAME,
             email=DBSOFFICER_EMAIL,
             roles=[self.dbs_officer_group],
@@ -103,7 +103,7 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
         )
 
         self.reference_contact_group = Role.objects.get(name=REFERENCE_CONTACT_ROLE_NAME)
-        self.safeguarding_coordinator = factories.make_officer(
+        self.safeguarding_coordinator = factories.create_officer(
             username="safeguarder",
             first_name="Safe",
             last_name="Guarder",
@@ -122,14 +122,14 @@ class ExtraOfficersSetupMixin(OfficersSetupMixin):
         super().setUp()
 
         self.officer1 = self.officer_user
-        self.officer2 = factories.make_officer(
+        self.officer2 = factories.create_officer(
             username="petersmith",
             first_name="Peter",
             last_name="Smith",
             email="petersmith@somewhere.com",
         )
 
-        self.officer3 = factories.make_officer(
+        self.officer3 = factories.create_officer(
             username="fredjones",
             first_name="Fred",
             last_name="Jones",
@@ -305,7 +305,7 @@ class Factories:
     def __init__(self):
         self._user_counter = 0
 
-    def make_officer(
+    def create_officer(
             self,
             username=None,
             first_name='Joe',
