@@ -11,7 +11,7 @@ from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.officers.create import create_officer
 from cciw.officers.models import Application
-from cciw.officers.tests.base import DefaultApplicationsMixin, ReferenceHelperMixin
+from cciw.officers.tests.base import DefaultApplicationsMixin, factories
 from cciw.officers.utils import camp_serious_slacker_list, officer_data_to_spreadsheet
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.base import TestBase
@@ -86,7 +86,7 @@ class TestExport(DefaultApplicationsMixin, TestBase):
         self.assertTrue(app.address_firstline in wksh.col_values(4))
 
 
-class TestSlackers(BasicSetupMixin, ReferenceHelperMixin, TestBase):
+class TestSlackers(BasicSetupMixin, TestBase):
 
     def test_serious_slackers(self):
         camp1 = self.default_camp_1
@@ -110,8 +110,8 @@ class TestSlackers(BasicSetupMixin, ReferenceHelperMixin, TestBase):
         )
 
         # Officer 1 submitted references, but officer 2 did not
-        self.create_complete_reference(app.referees[0])
-        self.create_complete_reference(app.referees[1])
+        factories.create_complete_reference(app.referees[0])
+        factories.create_complete_reference(app.referees[1])
 
         # Officer 1 got a DBS done, but officer 2 did not
         officer1.dbs_checks.create(

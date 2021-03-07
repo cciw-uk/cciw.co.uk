@@ -207,23 +207,6 @@ class RequireApplicationsMixin(DefaultApplicationsMixin):
         self.create_default_applications()
 
 
-class ReferenceHelperMixin(object):
-
-    def create_complete_reference(self, referee):
-        return Reference.objects.create(
-            referee=referee,
-            referee_name="Referee1 Name",
-            how_long_known="A long time",
-            capacity_known="Pastor",
-            known_offences=False,
-            capability_children="Wonderful",
-            character="Almost sinless",
-            concerns="Perhaps too good for camp",
-            comments="",
-            date_created=datetime(2000, 2, 20),
-        )
-
-
 class CurrentCampsMixin(BasicSetupMixin):
     def setUp(self):
         super().setUp()
@@ -237,11 +220,11 @@ class CurrentCampsMixin(BasicSetupMixin):
         self.default_camp_2.save()
 
 
-class ReferenceSetupMixin(ReferenceHelperMixin, set_thisyear(2000), RequireApplicationsMixin):
+class ReferenceSetupMixin(set_thisyear(2000), RequireApplicationsMixin):
 
     def setUp(self):
         super().setUp()
-        self.reference1_1 = self.create_complete_reference(self.application1.referees[0])
+        self.reference1_1 = factories.create_complete_reference(self.application1.referees[0])
         self.application1.referees[1].log_request_made(None, timezone.now())
         self.application2.referees[1].log_request_made(None, timezone.now())
 
@@ -352,6 +335,20 @@ class Factories:
 
             application.referee_set.create(**referee_fields)
         return application
+
+    def create_complete_reference(self, referee):
+        return Reference.objects.create(
+            referee=referee,
+            referee_name="Referee1 Name",
+            how_long_known="A long time",
+            capacity_known="Pastor",
+            known_offences=False,
+            capability_children="Wonderful",
+            character="Almost sinless",
+            concerns="Perhaps too good for camp",
+            comments="",
+            date_created=datetime(2000, 2, 20),
+        )
 
 
 factories = Factories()
