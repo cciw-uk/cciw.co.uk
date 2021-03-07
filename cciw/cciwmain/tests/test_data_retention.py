@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 from typing import Optional
 
 import pytest
@@ -6,6 +6,8 @@ from time_machine import travel
 
 from cciw.contact_us.models import Message
 from cciw.data_retention import Group, ModelDetail, Policy, Rules, apply_data_retention, parse_keep
+from cciw.officers.models import Application
+from cciw.officers.tests.base import factories
 from cciw.utils.tests.base import TestBase
 
 
@@ -22,21 +24,25 @@ def test_parse_keep_other():
         parse_keep('abc 123')
 
 
-def make_policy(*, model: type, fields: list[str] = None, delete_after: Optional[timedelta] = None,
+def make_policy(*, model: type, fields: list[str] = None, erase_after: Optional[timedelta] = None,
                 delete_row=False):
-    if fields is not None:
-        raise NotImplementedError()
+    if fields is None:
+        fields = []
+    else:
+        model_field_list = model._meta.get_fields()
+        field_dict = {f.name: f for f in model_field_list}
+        fields = [field_dict[f] for f in fields]
     model_detail = ModelDetail(
         model=model,
-        fields=[],
+        fields=fields,
         delete_row=delete_row,
     )
     return Policy(source='test',
                   groups=[
                       Group(
                           rules=Rules(
-                              delete_after=delete_after,
-                              deletable_on_request=False
+                              erase_after=erase_after,
+                              erasable_on_request=False
                           ),
                           models=[model_detail]
                       )
@@ -52,7 +58,7 @@ class TestApplyDataRetentionPolicy(TestBase):
         policy = make_policy(
             model=Message,
             delete_row=True,
-            delete_after=timedelta(days=365),
+            erase_after=timedelta(days=365),
         )
 
         with travel("2017-01-01 00:00:00"):
@@ -76,3 +82,37 @@ class TestApplyDataRetentionPolicy(TestBase):
         with travel("2019-01-01 01:00:00"):
             apply_partial_policy(policy)
             assert Message.objects.count() == 0
+
+    def test_blank_data(self):
+        policy = make_policy(
+            model=Application,
+            fields=[
+                'address_firstline',  # string
+                'birth_date',  # nullable date
+            ],
+            erase_after=timedelta(days=365),
+        )
+
+        officer = factories.create_officer()
+        start = date.today()
+        application = factories.create_application(
+            officer,
+            date_saved=start,
+            full_name=(full_name := "Charlie Cook"),
+            birth_date=(dob := date(1960, 5, 6)),
+            address_firstline=(address := "1 The Way")
+        )
+        with travel(start + timedelta(days=360)):
+            apply_partial_policy(policy)
+            application.refresh_from_db()
+            assert application.birth_date == dob
+            assert application.address_firstline == address
+
+        with travel(start + timedelta(days=366)):
+            apply_partial_policy(policy)
+            application.refresh_from_db()
+            assert application.birth_date is None
+            assert application.address_firstline == "[deleted]"
+            assert application.full_name == full_name
+
+    # TODO Tests for contact_us.Message, mailer.Message, mailer.MessageLog

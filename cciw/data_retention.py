@@ -1,6 +1,22 @@
 # See config/data_retention.yaml
+#
+# Terminology:
+#
+# In data_retention.yaml, we use more "human friendly" terminology.
+# We translate that to more precise, useful terminology that we want
+# to use in code as part of load_data_retention_policy.
+
+# We use 'erase' in this code to distinguish from 'delete'
+#
+# - delete refers specifically to a database delete,
+#   in which the entire row is removed.
+#
+# - erasure is a more general concept that can refer
+#   to a range of different erasing methods.
+from __future__ import annotations
+
 import dataclasses
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING, Optional
 
 import parsy
@@ -13,9 +29,11 @@ from django.core.checks import Error
 from django.db import models
 from django.db.models.fields import Field
 from django.utils import timezone
+from mailer import models as mailer_models
 
 from cciw.bookings.models import Booking
 from cciw.contact_us.models import Message
+from cciw.officers.models import Application
 
 
 class DataclassConfig:
@@ -29,19 +47,34 @@ if TYPE_CHECKING:
     from dataclasses import dataclass
 
 
-class DeletionMethod:
-    def allowed_for_model(self, model):
-        raise NotImplementedError()
+# --- Policy and sub-components ---
 
-    def apply(self, queryset):
-        raise NotImplementedError()
+@dataclass
+class Policy:
+    source: str
+    groups: list[Group]
+
+
+@dataclass
+class Group:
+    rules: Rules
+    models: list[ModelDetail]
+
+
+@dataclass
+class Rules:
+    # We use 'keep' in YAML, with 'forever' as a special value, for human readability.
+    # To avoid ambiguity with `keep == None`, we use the name `erase_after`
+    # in code, so we have `erase_after == None` meaning keep forever.
+    erase_after: Optional[timedelta]
+    erasable_on_request: bool
 
 
 @dataclass
 class ModelDetail:
     model: type  # Model subclass
     fields: list[Field]
-    deletion_methods: dict[Field, DeletionMethod] = dataclasses.field(default_factory=dict)
+    custom_erasure_methods: dict[Field, ErasureMethod] = dataclasses.field(default_factory=dict)
     delete_row: bool = False
 
     @classmethod
@@ -49,7 +82,7 @@ class ModelDetail:
               name: str,
               field_names: Optional[list[str]] = None,
               all_fields: bool = False,
-              deletion_method_names: Optional[dict[str, str]] = None,
+              erasure_method_names: Optional[dict[str, str]] = None,
               delete_row: bool = False,
               ):
         model = apps.get_model(name)
@@ -60,13 +93,13 @@ class ModelDetail:
                 raise ValueError("If 'delete_row' is used, no columns should be specified.")
             if all_fields:
                 raise ValueError("No need to specify all column if 'delete_row' is used.")
-            if deletion_method_names:
-                raise ValueError("If 'delete_row' is used, no deletion methods should be specified.")
+            if erasure_method_names:
+                raise ValueError("If 'delete_row' is used, no erasure methods should be specified.")
             # We satisfy exhaustiveness checks easier with this:
             fields = [f for f in field_list if _field_requires_privacy_policy(f)]
 
-        if deletion_method_names is None:
-            deletion_method_names = {}
+        if erasure_method_names is None:
+            erasure_method_names = {}
         if all_fields:
             assert field_names is None
             fields = [f for f in field_list if _field_requires_privacy_policy(f)]
@@ -78,41 +111,39 @@ class ModelDetail:
                     raise ValueError(f'Model {model.__name__} does not have field {f}')
                 fields.append(field_dict[f])
 
-        deletion_methods = {}
-        for field_name, method_name in deletion_method_names.items():
+        erasure_methods = {}
+        for field_name, method_name in erasure_method_names.items():
+            field = field_dict[field_name]
             try:
-                deletion_method = DELETION_METHODS[method_name]
+                erasure_method = CUSTOM_ERASURE_METHODS[method_name]
             except KeyError:
-                raise ValueError(f'Deletion method "{method_name}" not found')
-            deletion_methods[field_dict[field_name]] = deletion_method
+                raise ValueError(f'Erasure method "{method_name}" not found')
+            if not erasure_method.allowed_for_field(field):
+                raise ValueError(f'Erasure method "{method_name}" not allowed for {model.__name__}.{field_name}')
+            erasure_methods[field] = erasure_method
         return cls(
             model=model,
             fields=fields,
-            deletion_methods=deletion_methods,
+            custom_erasure_methods=erasure_methods,
             delete_row=delete_row,
         )
 
 
-@dataclass
-class Rules:
-    # We use 'keep' in YAML, with 'forever' as a special value, for human readability.
-    # To avoid ambiguity with `keep == None`, we use the name `delete_after`
-    # in code, so we have `delete_after == None` meaning keep forever.
-    delete_after: Optional[timedelta]
-    deletable_on_request: bool
+class ErasureMethod:
+    def allowed_for_field(self, field: Field):
+        raise NotImplementedError()
+
+    def build_update_dict(self, field):
+        """
+        Returns a dict which can be passed as keyword arguments
+        to a QuerySet.update() call.
+        """
+        raise NotImplementedError()
 
 
-@dataclass
-class Group:
-    rules: Rules
-    models: list[ModelDetail]
-
-
-@dataclass
-class Policy:
-    source: str
-    groups: list[Group]
-
+Policy.__pydantic_model__.update_forward_refs()
+Group.__pydantic_model__.update_forward_refs()
+ModelDetail.__pydantic_model__.update_forward_refs()
 
 # --- Parsing and checking ---
 
@@ -122,7 +153,7 @@ def get_data_retention_policy_issues(policy: Optional[Policy] = None):
         policy = load_data_retention_policy()
     return (
         _check_exhaustiveness(policy) +
-        _check_deletable_records(policy)
+        _check_erasable_records(policy)
     )
 
 
@@ -137,14 +168,16 @@ def load_data_retention_policy() -> Policy:
     # A lot of complexity here is trying to keep the YAML human readable
     # and not redundant, and making sure we validate lots of possible errors.
 
-    # File format/validation errors are allowed to propogate
+    # File format/validity errors are allowed to propogate.
+    # Other errors are handled more gracefully by get_data_retention_policy_issues.
+    # Either way, we don't pass "manage.py check" if there are any problems.
     filename = settings.DATA_RETENTION_CONFIG_FILE
     policy_yaml = yaml.load(open(filename), Loader=yaml.SafeLoader)
     groups = []
     for yaml_group in policy_yaml:
         yaml_rules = yaml_group.pop('rules')
-        delete_after = parse_keep(yaml_rules.pop('keep'))
-        deletable_on_request = yaml_rules.pop('deletable on request from data subject')
+        erase_after = parse_keep(yaml_rules.pop('keep'))
+        erasable_on_request = yaml_rules.pop('deletable on request from data subject')
         if yaml_rules:
             raise ValueError(f'Unexpected keys in "rules" entry: {", ".join(yaml_rules.keys())}')
 
@@ -160,7 +193,7 @@ def load_data_retention_policy() -> Policy:
                 model_detail = ModelDetail.build(
                     name=yaml_model_name,
                     all_fields=True,
-                    deletion_method_names=yaml_deletion_methods
+                    erasure_method_names=yaml_deletion_methods
                 )
             else:
                 yaml_delete_row = yaml_table.pop('delete row', False)
@@ -170,7 +203,7 @@ def load_data_retention_policy() -> Policy:
                 model_detail = ModelDetail.build(
                     name=yaml_model_name,
                     field_names=yaml_columns,
-                    deletion_method_names=yaml_deletion_methods,
+                    erasure_method_names=yaml_deletion_methods,
                     delete_row=yaml_delete_row,
                 )
             models.append(model_detail)
@@ -180,8 +213,8 @@ def load_data_retention_policy() -> Policy:
         groups.append(
             Group(
                 rules=Rules(
-                    delete_after=delete_after,
-                    deletable_on_request=deletable_on_request,
+                    erase_after=erase_after,
+                    erasable_on_request=erasable_on_request,
                 ),
                 models=models
             )
@@ -244,16 +277,12 @@ def _check_exhaustiveness(policy: Policy) -> list[Error]:
     return issues
 
 
-def _check_deletable_records(policy: Policy) -> list[Error]:
+def _check_erasable_records(policy: Policy) -> list[Error]:
     seen_models = set()
     issues = []
-    if True:
-        # TODO - remove this when we are ready to deploy data retention for
-        # real.
-        return issues
     for group in policy.groups:
-        if group.rules.delete_after is None and not group.rules.deletable_on_request:
-            # Don't need deletion method
+        if group.rules.erase_after is None and not group.rules.erasable_on_request:
+            # Don't need erasure method
             continue
 
         for model_detail in group.models:
@@ -261,12 +290,24 @@ def _check_deletable_records(policy: Policy) -> list[Error]:
             if model in seen_models:
                 continue
             seen_models.add(model)
-            if model not in DELETABLE_RECORDS:
+            if model not in ERASABLE_RECORDS:
                 issues.append(Error(
-                    f'No method for defined to obtain deletable records for {model.__name__}',
+                    f'No method defined to obtain erasable records for {model.__name__}',
                     obj=policy.source,
                     id='dataretention.E003'
                 ))
+            if not model_detail.delete_row:
+                for field in model_detail.fields:
+                    if field in model_detail.custom_erasure_methods:
+                        continue
+                    try:
+                        _find_erasure_method(field)
+                    except LookupError:
+                        issues.append(Error(
+                            f'No method defined to erase field {field.model.__name__}.{field.name}',
+                            obj=policy.source,
+                            id='dataretention.E004'
+                        ))
     return issues
 
 
@@ -311,14 +352,6 @@ def apply_data_retention(policy=None, ignore_missing_models=False):
             issues = [issue for issue in issues if 'Missing models' not in issue.msg]
         if issues:
             raise AssertionError("Invalid data retention policy, aborting", issues)
-    # TODO the rest
-    # We need:
-    # - mechanisms for working out how to know how "old" data is for
-    #   every model, and whether data is still needed for business purposes.
-    #   (if we don't have it for a model, we should validate that when
-    #   loading the policy).
-    # - mechanisms to apply different kind of deletions, depending on field,
-    #   plus custom deletion mechanisms.
 
     now = timezone.now()
     retval = []
@@ -329,38 +362,109 @@ def apply_data_retention(policy=None, ignore_missing_models=False):
 
 
 def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_detail: ModelDetail):
-    if rules.delete_after is None:
+    if rules.erase_after is None:
         return []
 
-    delete_before_date = now - rules.delete_after
+    erase_before_date = now - rules.erase_after
     # TODO probably want separate method for manual erasure requests,
     # need to be careful about things that are still needed and
-    # how to respect `delete_after`
-    deletable_records = get_deletable(delete_before_date, model_detail.model)
+    # how to respect `erase_after`
+    # TODO do we want a log of things that have been erased?
+    erasable_records = get_erasable(erase_before_date, model_detail.model)
     if model_detail.delete_row:
-        retval = deletable_records.delete()
+        retval = erasable_records.delete()
     else:
-        raise NotImplementedError()
+        update_dict = {}
+        for field in model_detail.fields:
+            if field in model_detail.custom_erasure_methods:
+                raise NotImplementedError()
+            else:
+                method = _find_erasure_method(field)
+                update_dict.update(method.build_update_dict(field))
+        retval = erasable_records.update(**update_dict)
     return retval
 
 
-def get_deletable(before_date, model: type):
-    return DELETABLE_RECORDS[model](before_date)
-
-# --- Model specific knowledge ---
-
-
-class PreserveAgeOnCamp(DeletionMethod):
-    def allowed_for_model(self, model):
-        return model == Booking
+def get_erasable(before_date: date, model: type):
+    qs = ERASABLE_RECORDS[model](before_date)
+    assert qs.model == model
+    return qs
 
 
-DELETABLE_RECORDS = {
-    Message: lambda before_date: Message.objects.filter(timestamp__lt=before_date),
+# --- Default erasure methods ---
+
+
+DELETED_STRING = '[deleted]'
+
+
+class CharFieldErasure(ErasureMethod):
+    def allowed_for_field(self, field: Field):
+        return isinstance(field, models.CharField)
+
+    def build_update_dict(self, field: Field):
+        key = field.name
+        if field.null:
+            return {key: None}
+        elif field.max_length < len(DELETED_STRING):
+            return {key: ''}
+        else:
+            return {key: DELETED_STRING}
+
+
+class BooleanFieldErasure(ErasureMethod):
+    def allowed_for_field(self, field: Field):
+        return isinstance(field, models.BooleanField)
+
+    def build_update_dict(self, field: Field):
+        # Set to default value.
+        return {field.name: field.default}
+
+
+class NullableFieldErasure(ErasureMethod):
+    def allowed_for_field(self, field: Field):
+        return field.null
+
+    def build_update_dict(self, field: Field):
+        return {field.name: None}
+
+
+# This list is ordered to prioritise more specific methods
+DEFAULT_ERASURE_METHODS: list[ErasureMethod] = [
+    CharFieldErasure(),
+    BooleanFieldErasure(),
+    NullableFieldErasure(),
+]
+
+
+def _find_erasure_method(field):
+    for method in DEFAULT_ERASURE_METHODS:
+        if method.allowed_for_field(field):
+            return method
+    raise LookupError(f'No erasure method found for field {field.model.__name__}.{field.name}')
+
+
+# --- Domain specific knowledge ---
+
+
+ERASABLE_RECORDS = {
+    Message: lambda before_date: Message.objects.older_than(before_date),
+    Application: lambda before_date: Application.objects.older_than(before_date),
+    mailer_models.Message: lambda before_date: mailer_models.Message.objects.filter(
+        when_added__date__lt=before_date,
+    ),
+    mailer_models.MessageLog: lambda before_date: mailer_models.MessageLog.objects.filter(
+        when_added__date__lt=before_date,
+    ),
 }
-# TODO probably want other deletion methods implemented in similar ways?
-# Need to design how this will work
 
-DELETION_METHODS = {
+
+class PreserveAgeOnCamp(ErasureMethod):
+    def allowed_for_field(self, field):
+        return field.model == Booking and field.name == 'date_of_birth'
+
+    # TODO - implement and test build_update_dict
+
+
+CUSTOM_ERASURE_METHODS = {
     'preserve_age_on_camp': PreserveAgeOnCamp(),
 }

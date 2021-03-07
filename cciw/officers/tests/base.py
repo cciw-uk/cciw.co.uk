@@ -292,21 +292,30 @@ class Factories:
 
     def create_application(self, officer, *,
                            year=None,
+                           date_saved=None,
+                           full_name=None,
+                           address_firstline=None,
+                           birth_date=None,
                            overrides=None,
                            referee1_overrides=None,
                            referee2_overrides=None):
+        if year is not None:
+            date_saved = datetime(year, 3, 1)
+        elif date_saved is None:
+            date_saved = timezone.now().date()
+
         fields = dict(
             officer=officer,
             address_country="UK",
             address_county="Yorkshire",
             address_email="hey@boo.com",
-            address_firstline="654 Stupid Way",
+            address_firstline="654 Stupid Way" if address_firstline is None else address_firstline,
             address_mobile="",
             address_postcode="XY9 8WN",
             address_tel="01048378569",
             address_town="Bradford",
             allegation_declaration=False,
-            birth_date="1911-02-07",
+            birth_date=birth_date or "1911-02-07",
             birth_place="Foobar",
             christian_experience="Became a Christian at age 0.2 years",
             concern_declaration=False,
@@ -317,9 +326,9 @@ class Factories:
             dbs_number="",
             crime_declaration=False,
             crime_details="",
-            date_saved=datetime(year, 3, 1),
+            date_saved=date_saved,
             finished=True,
-            full_name="Joe Winston Bloggs",
+            full_name="Joe Winston Bloggs" if full_name is None else full_name,
             illness_details="",
             relevant_illness=False,
             youth_experience="Lots",

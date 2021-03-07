@@ -16,10 +16,17 @@ REFEREE_NUMBERS = [1, 2]
 REFEREE_DATA_FIELDS = ['name', 'capacity_known', 'address', 'tel', 'mobile', 'email']
 
 
-class ApplicationManager(models.Manager):
+class ApplicationQuerySet(models.QuerySet):
+    def older_than(self, before_date):
+        return self.filter(date_saved__lt=before_date)
 
+
+class ApplicationManagerBase(models.Manager):
     def get_queryset(self):
-        return super(ApplicationManager, self).get_queryset().select_related('officer')
+        return super(ApplicationManagerBase, self).get_queryset().select_related('officer')
+
+
+ApplicationManager = ApplicationManagerBase.from_queryset(ApplicationQuerySet)
 
 
 NAME_LENGTH = 100
