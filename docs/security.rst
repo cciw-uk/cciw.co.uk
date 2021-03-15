@@ -250,7 +250,7 @@ access being given to the wrong people, or sent to the wrong person), you should
   <https://ico.org.uk/for-organisations/report-a-breach/>`_
 
 * record the incident in
-  https://docs.google.com/document/d/1KFTIin9xxb0aN9lXtKRLk5q6aEw0DXOmCHamNT7s5Sw/edit#
+  https://docs.google.com/document/d/1ZtxOahH7ywNTPd2kuTtScn7OUPA5mloa
 
 Data rights
 ~~~~~~~~~~~
