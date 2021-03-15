@@ -6,6 +6,7 @@ from cciw.accounts.models import (BOOKING_SECRETARY_ROLE_NAME, DBS_OFFICER_ROLE_
                                   SECRETARY_ROLE_NAME, Role, User, setup_auth_roles)
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
+from cciw.contact_us.models import Message
 from cciw.officers.models import Application, QualificationType, Reference
 
 OFFICER_USERNAME = 'joebloggs'
@@ -348,6 +349,12 @@ class Factories:
             concerns="Perhaps too good for camp",
             comments="",
             date_created=datetime(2000, 2, 20),
+        )
+
+    def create_contact_us_message(self):
+        return Message.objects.create(
+            email='example@example.com',
+            message='hello',
         )
 
 

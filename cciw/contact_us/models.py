@@ -5,8 +5,8 @@ from cciw.bookings.models import BookingAccount
 
 
 class MessageQuerySet(models.QuerySet):
-    def older_than(self, before_date):
-        return self.filter(timestamp__lt=before_date)
+    def older_than(self, before_datetime):
+        return self.filter(timestamp__lt=before_datetime)
 
 
 class Message(models.Model):

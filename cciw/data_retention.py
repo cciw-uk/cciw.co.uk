@@ -353,11 +353,11 @@ def apply_data_retention(policy=None, ignore_missing_models=False):
         if issues:
             raise AssertionError("Invalid data retention policy, aborting", issues)
 
-    now = timezone.now()
+    today = timezone.now()
     retval = []
     for group in policy.groups:
         for model_detail in group.models:
-            retval.append(apply_data_retention_single_model(now, rules=group.rules, model_detail=model_detail))
+            retval.append(apply_data_retention_single_model(today, rules=group.rules, model_detail=model_detail))
     return retval
 
 
@@ -365,12 +365,12 @@ def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_deta
     if rules.erase_after is None:
         return []
 
-    erase_before_date = now - rules.erase_after
+    erase_before_datetime = now - rules.erase_after
     # TODO probably want separate method for manual erasure requests,
     # need to be careful about things that are still needed and
     # how to respect `erase_after`
     # TODO do we want a log of things that have been erased?
-    erasable_records = get_erasable(erase_before_date, model_detail.model)
+    erasable_records = get_erasable(erase_before_datetime, model_detail.model)
     if model_detail.delete_row:
         retval = erasable_records.delete()
     else:
@@ -385,8 +385,8 @@ def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_deta
     return retval
 
 
-def get_erasable(before_date: date, model: type):
-    qs = ERASABLE_RECORDS[model](before_date)
+def get_erasable(before_datetime: date, model: type):
+    qs = ERASABLE_RECORDS[model](before_datetime)
     assert qs.model == model
     return qs
 
@@ -447,13 +447,13 @@ def _find_erasure_method(field):
 
 
 ERASABLE_RECORDS = {
-    Message: lambda before_date: Message.objects.older_than(before_date),
-    Application: lambda before_date: Application.objects.older_than(before_date),
-    mailer_models.Message: lambda before_date: mailer_models.Message.objects.filter(
-        when_added__date__lt=before_date,
+    Message: lambda before_datetime: Message.objects.older_than(before_datetime),
+    Application: lambda before_datetime: Application.objects.older_than(before_datetime),
+    mailer_models.Message: lambda before_datetime: mailer_models.Message.objects.filter(
+        when_added__lt=before_datetime,
     ),
-    mailer_models.MessageLog: lambda before_date: mailer_models.MessageLog.objects.filter(
-        when_added__date__lt=before_date,
+    mailer_models.MessageLog: lambda before_datetime: mailer_models.MessageLog.objects.filter(
+        when_added__lt=before_datetime,
     ),
 }
 

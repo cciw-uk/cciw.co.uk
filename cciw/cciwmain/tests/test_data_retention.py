@@ -1,11 +1,15 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Optional
 
+import mailer as queued_mail
 import pytest
+from django.utils import timezone
+from mailer import models as mailer_models
 from time_machine import travel
 
 from cciw.contact_us.models import Message
 from cciw.data_retention import Group, ModelDetail, Policy, Rules, apply_data_retention, parse_keep
+from cciw.mail.tests import send_queued_mail
 from cciw.officers.models import Application
 from cciw.officers.tests.base import factories
 from cciw.utils.tests.base import TestBase
@@ -61,7 +65,7 @@ class TestApplyDataRetentionPolicy(TestBase):
             erase_after=timedelta(days=365),
         )
 
-        with travel("2017-01-01 00:00:00"):
+        with travel("2017-01-01 00:05:00"):
             Message.objects.create(email='bob@example.com', name='Bob', message='Hello')
             apply_partial_policy(policy)
             assert Message.objects.count() == 1
@@ -102,7 +106,7 @@ class TestApplyDataRetentionPolicy(TestBase):
             birth_date=(dob := date(1960, 5, 6)),
             address_firstline=(address := "1 The Way")
         )
-        with travel(start + timedelta(days=360)):
+        with travel(start + timedelta(days=365)):
             apply_partial_policy(policy)
             application.refresh_from_db()
             assert application.birth_date == dob
@@ -115,4 +119,47 @@ class TestApplyDataRetentionPolicy(TestBase):
             assert application.address_firstline == "[deleted]"
             assert application.full_name == full_name
 
-    # TODO Tests for contact_us.Message, mailer.Message, mailer.MessageLog
+    def test_erase_contact_us_Message(self):
+        policy = make_policy(
+            model=Message,
+            delete_row=True,
+            erase_after=timedelta(days=365),
+        )
+        start = timezone.now()
+        message = factories.create_contact_us_message()
+        self._assert_instance_deleted_after(instance=message, start=start, policy=policy, days=365)
+
+    def test_erase_mailer_Message(self):
+        policy = make_policy(
+            model=mailer_models.Message,
+            delete_row=True,
+            erase_after=timedelta(days=365),
+        )
+
+        queued_mail.send_mail('Subject', 'message', 'from@example.com', ['to@example.com'])
+        start = timezone.now()
+        message = mailer_models.Message.objects.get()
+        self._assert_instance_deleted_after(instance=message, start=start, policy=policy, days=365)
+
+    def test_erase_mailer_MessageLog(self):
+        policy = make_policy(
+            model=mailer_models.MessageLog,
+            delete_row=True,
+            erase_after=timedelta(days=365),
+        )
+
+        queued_mail.send_mail('Subject', 'message', 'from@example.com', ['to@example.com'])
+        send_queued_mail()
+        start = timezone.now()
+        message_log = mailer_models.MessageLog.objects.get()
+        self._assert_instance_deleted_after(instance=message_log, start=start, policy=policy, days=365)
+
+    def _assert_instance_deleted_after(self, *, instance: object, start: datetime, policy: Policy, days: int):
+        model = instance.__class__
+        with travel(start + timedelta(days=days) - timedelta(seconds=10)):
+            apply_partial_policy(policy)
+            assert model.objects.filter(id=instance.id).count() == 1
+
+        with travel(start + timedelta(days=days) + timedelta(seconds=10)):
+            apply_partial_policy(policy)
+            assert model.objects.filter(id=instance.id).count() == 0

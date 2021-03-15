@@ -17,8 +17,8 @@ REFEREE_DATA_FIELDS = ['name', 'capacity_known', 'address', 'tel', 'mobile', 'em
 
 
 class ApplicationQuerySet(models.QuerySet):
-    def older_than(self, before_date):
-        return self.filter(date_saved__lt=before_date)
+    def older_than(self, before_datetime):
+        return self.filter(date_saved__lt=before_datetime.date())
 
 
 class ApplicationManagerBase(models.Manager):
