@@ -108,7 +108,7 @@ Sending:
 Receiving:
 
 * In DNS (currently managed by DigitalOcean), we have an MX record pointing mail
-  to Amazon SES servers. Ssettings provided by Amazon - see
+  to Amazon SES servers. Settings provided by Amazon - see
   https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-mx-record.html
 
 * In SES, we have a "rule set" that matches various email addresses and

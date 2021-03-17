@@ -63,7 +63,7 @@ def verify_sns_notification(request):
 
     signing_cert_url = content["SigningCertURL"]
     if not furl.furl(signing_cert_url).host.endswith('.amazonaws.com'):
-        logger.info('Ignoring cert URL %s', signing_cert_url)
+        logger.debug('Ignoring cert URL %s', signing_cert_url)
         return False
 
     msg_type = request.headers.get("X-Amz-Sns-Message-Type", None)
@@ -80,8 +80,9 @@ def verify_sns_notification(request):
     cert = x509.load_pem_x509_certificate(load_resource_cached(signing_cert_url))
     pubkey = cert.public_key()
     try:
+        logger.debug('Verifying message %s', canonical_message)
         pubkey.verify(decoded_signature, canonical_message, padding.PKCS1v15(), hashes.SHA1())
-        logger.info('Valid SNS signature %s with SigningCertURL %s', decoded_signature, signing_cert_url)
+        logger.debug('Valid SNS signature %s with SigningCertURL %s', decoded_signature, signing_cert_url)
         return True
     except InvalidSignature:
         logger.warn('Invalid SNS sig, decoded_signature=%s, content=%s', decoded_signature, content)
@@ -95,6 +96,10 @@ def load_resource_cached(url):
 
 
 def ensure_from_aws_sns(view_func):
+    """
+    Checks the signature on the request to ensure it is genuinely
+    from Amazon SNS
+    """
     @wraps(view_func)
     def wrapper(request):
         if not verify_sns_notification(request):
@@ -104,6 +109,11 @@ def ensure_from_aws_sns(view_func):
 
 
 def confirm_sns_subscriptions(view_func):
+    """
+    Wraps a view in a handler that will automatically respond to 'confirmation'
+    requests that Amazon will send to any webhook we attempt to set up
+    for an SNS topic.
+    """
     @wraps(view_func)
     def wrapper(request):
         msg_type = request.headers.get("X-Amz-Sns-Message-Type", None)

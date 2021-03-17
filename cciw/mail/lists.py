@@ -6,6 +6,7 @@
 # module), and routing incoming mail to them.
 
 import email
+import fcntl
 import itertools
 import logging
 import os
@@ -27,6 +28,7 @@ from cciw.officers.email_utils import formatted_email
 from cciw.officers.models import Application
 from cciw.officers.utils import camp_officer_list, camp_slacker_list
 
+from .ses import download_ses_message_from_s3
 from .smtp import send_mime_message
 
 logger = logging.getLogger(__name__)
@@ -430,17 +432,41 @@ def mangle_from_address(address):
 INCOMING_MAIL_TEMPFILE_PREFIX = "mail-incoming-"
 
 
-def handle_mail_async(data, message_id=None):
-    prefix = INCOMING_MAIL_TEMPFILE_PREFIX
-    if message_id is not None:
-        prefix += message_id + '-'  # helps debugging
-    fd, name = tempfile.mkstemp(prefix=prefix)
-    os.write(fd, data)
-    os.close(fd)
+def handle_mail_from_s3_async(message_id):
     manage_py_path = os.path.join(settings.PROJECT_ROOT, "manage.py")
     # Poor man's async - use spawnlp which returns instantly.
-    # Indirectly calls handle_mail below.
-    os.spawnlp(os.P_NOWAIT, "nohup", "nohup", manage_py_path, "handle_message", name)
+    # Indirectly calls handle_mail_from_s3 below.
+    os.spawnlp(os.P_NOWAIT, "nohup", "nohup", manage_py_path, "handle_message", message_id)
+
+
+def handle_mail_from_s3(message_id):
+    # There is the possibility of this getting called multiple times with the
+    # same message_id, perhaps due to our endpoint not returning quickly enough
+    # to SNS, triggering a timeout and re-attempt. So, we dedupe using a
+    # filesystem based lock.
+
+    filename = tempfile.gettempdir() + '/' + INCOMING_MAIL_TEMPFILE_PREFIX + message_id
+    if os.path.exists(filename):
+        logger.info('Aborting mail handling, file %s already exists', filename)
+        return
+
+    # We have a potential race condition between checking for the file existing
+    # above, and opening it below. So after opening it we do a lock as well.
+    with open(filename, 'wb') as f:
+        try:
+            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            logger.info('Aborting mail handling, lock on file %s already exists', filename)
+            return
+
+        data = download_ses_message_from_s3(message_id)
+        # We don't technically need to write the data here, but it helps
+        # debugging later.
+        f.write(data)
+        handle_mail(data)
+
+    # We leave the file behind (to be cleaned by a cron job), so that later
+    # calls with the same message_id will see the file already exists and abort.
 
 
 def handle_mail(data):

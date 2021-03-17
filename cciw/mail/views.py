@@ -8,8 +8,7 @@ from cciw.aws import confirm_sns_subscriptions, ensure_from_aws_sns
 from cciw.officers.email import X_REFERENCE_REQUEST, handle_reference_bounce
 
 from . import X_CCIW_ACTION, X_CCIW_CAMP
-from .lists import handle_mail_async
-from .ses import download_ses_message_from_s3
+from .lists import handle_mail_from_s3_async
 
 
 @csrf_exempt
@@ -21,9 +20,8 @@ def ses_incoming_notification(request):
     message_id = json.loads(data['Message'])['mail']['messageId']
     # If we handle mail within the request/response cycle, we can easily end up
     # with timeouts - e.g. a 5 Mb attachment that gets sent to 30 people has to
-    # be sent 30 times. So we save and deal with it asynchronously.
-    data = download_ses_message_from_s3(message_id)
-    handle_mail_async(data, message_id=message_id)
+    # be sent 30 times. So we deal with it asynchronously.
+    handle_mail_from_s3_async(message_id)
     return HttpResponse('OK!')
 
 

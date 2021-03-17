@@ -147,6 +147,7 @@ SILENCED_SYSTEM_CHECKS = [
     '1_8.W001',
     'urlchecker.W001',
     'urlchecker.W003',
+    'dataretention.E003',  # Not ready yet
 ]
 
 # == AUTH ==
@@ -268,6 +269,11 @@ LOGGING = {
 
 if DEVBOX:
     LOGGING['loggers']['cciw.aws'] = {
+        'level': 'INFO',
+        'handlers': ['console'],
+        'propagate': False,
+    }
+    LOGGING['loggers']['cciw.mail.lists'] = {
         'level': 'INFO',
         'handlers': ['console'],
         'propagate': False,

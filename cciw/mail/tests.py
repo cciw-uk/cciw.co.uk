@@ -17,7 +17,7 @@ from cciw.utils.tests.base import TestBase
 
 from . import views
 from .lists import MailAccessDenied, NoSuchList, extract_email_addresses, find_list, handle_mail, mangle_from_address
-from .test_data import AWS_BOUNCE_NOTIFICATION, AWS_SNS_NOTIFICATION
+from .test_data import AWS_BOUNCE_NOTIFICATION, AWS_MESSAGE_ID, AWS_SNS_NOTIFICATION
 
 
 def b(s):
@@ -277,18 +277,14 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         request = make_plain_text_request(
             '/', AWS_SNS_NOTIFICATION['body'], AWS_SNS_NOTIFICATION['headers'])
         with mock.patch('cciw.aws.verify_sns_notification') as m1, \
-                mock.patch('cciw.mail.views.download_ses_message_from_s3') as m2, \
-                mock.patch('cciw.mail.views.handle_mail_async') as m3:
+                mock.patch('cciw.mail.views.handle_mail_from_s3_async') as m2:
             m1.side_effect = [True]  # fake verify
-            m2.side_effect = [b'fake_data']
             response = views.ses_incoming_notification(request)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(m1.call_count, 1)
         self.assertEqual(m2.call_count, 1)
-        self.assertEqual(m2.call_args[0][0], '2c9c57fhmj03rtht1mcq6gvpg9hijo77ju218ag1')
-        self.assertEqual(m3.call_count, 1)
-        self.assertEqual(m3.call_args[0][0], b'fake_data')
+        self.assertEqual(m2.call_args[0][0], AWS_MESSAGE_ID.decode('ascii'))
 
     # TODO it would be nice to have tests for cciw/aws.py functions,
     # to ensure no regressions.

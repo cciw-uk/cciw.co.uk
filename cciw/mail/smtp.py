@@ -24,6 +24,10 @@ class RawBytes:
     def as_bytes(self, **kwargs):
         return self.bytes_data
 
+    # To enable printing on console
+    def get_charset(self):
+        return None
+
 
 def send_mime_message(to_address, from_address, mime_message):
     logger.info("send_mime_message to=%s message=%s...", to_address, mime_message[0:50])
