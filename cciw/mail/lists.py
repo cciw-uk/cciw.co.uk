@@ -316,8 +316,13 @@ def is_superuser(email_address):
 # Handling incoming mail
 
 def _set_mail_header(mail, header, value):
-    # Unlike mail[header], this removes existing values. This can be important
-    # when duplicate headers are not allowed (and this can cause email sending
+    """
+    Overwrite a header in the email
+    """
+    # If you do `mail[header] = value`, you get a new $header header, without
+    # removing the old one if it existed. In many cases this can cause
+    # sending to fail, because duplicates are not allowed or don't make sense.
+    # This function by constrast ensures we first remove the header.
     # to fail)
     if header in mail:
         del mail[header]
@@ -326,14 +331,32 @@ def _set_mail_header(mail, header, value):
 
 def forward_email_to_list(mail, email_list: EmailList):
     orig_from_addr = mail['From']
+    # Use 'reply-to' header for reply-to, if it exists, falling back to 'From'
     reply_to = mail.get('Reply-To', orig_from_addr)
     if email_list.list_reply:
         _set_mail_header(mail, 'Sender', email_list.address)
         _set_mail_header(mail, 'List-Post', f'<mailto:{email_list.address}>')
     else:
         _set_mail_header(mail, 'Sender', settings.SERVER_EMAIL)
+
+    # If we leave 'From' as it is, e.g bob@example.com, we will be sending out a
+    # new email on behalf of bob@example.com. At some point in the chain of processing
+    # that follows, an email server will:
+    # - look up DKIM/SPF info about @example.com
+    # - realize that our email server is not a legitimate email server
+    #   for @example.com
+    # - conclude that this email is spam and bin it.
+    #
+    # This is all working as designed, and you can't work around it (unless you
+    # are a huge tech giant, like Google Groups and probably some others).
+    #
+    # So, we can't claim that this email is 'From' bob@example.com,
+    # and we instead put an `@cciw.co.uk` address in there, but
+    # with a mangled form of bob@example.com visible.
     _set_mail_header(mail, 'From', mangle_from_address(orig_from_addr))
+    # But we can set this debugging header to preserve the info:
     _set_mail_header(mail, 'X-Original-From', orig_from_addr)
+    # Return-Path: indicates how bounces should be handled
     _set_mail_header(mail, 'Return-Path', settings.SERVER_EMAIL)
     _set_mail_header(mail, 'Reply-To', reply_to)
     _set_mail_header(mail, 'X-Original-To', email_list.address)
@@ -361,7 +384,7 @@ def forward_email_to_list(mail, email_list: EmailList):
     mail._headers = [(name, val) for name, val in mail._headers
                      if name.lower() in good_headers]
 
-    # send individual emails.
+    # Send individual emails:
 
     # First, do as much work as possible before doing anything
     # with side effects. That way if an error occurs early,
