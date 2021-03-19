@@ -14,18 +14,22 @@ from cciw.officers.views import cciw_secretary_or_booking_secretary_required
 from .forms import AjaxContactUsForm, ContactType, ContactUsForm
 from .models import Message
 
+CONTACT_CHOICE_DESTS = {
+    ContactType.BOOKINGFORM: settings.BOOKING_FORMS_EMAILS,
+    ContactType.BOOKINGS: settings.BOOKING_SECRETARY_EMAILS,
+    ContactType.GENERAL: settings.GENERAL_CONTACT_EMAILS,
+    ContactType.WEBSITE: settings.WEBMASTER_EMAILS,
+}
+
+for val in ContactType:
+    assert val in CONTACT_CHOICE_DESTS, f"{val!r} missing form CONTACT_CHOICE_DESTS"
+
 
 @ajax_form_validate(AjaxContactUsForm)
 def contact_us(request):
     form_class = ContactUsForm
     ensure_booking_account_attr(request)
     # At module level, use of 'settings' seems to cause problems
-    CONTACT_CHOICE_DESTS = {
-        ContactType.BOOKINGFORM: settings.BOOKING_FORMS_EMAILS,
-        ContactType.BOOKINGS: settings.BOOKING_SECRETARY_EMAILS,
-        ContactType.GENERAL: settings.GENERAL_CONTACT_EMAILS,
-        ContactType.GENERAL: settings.WEBMASTER_EMAILS,
-    }
 
     if request.method == "POST":
         form = form_class(request.POST)
