@@ -14,17 +14,20 @@ def setup_ses_routes():
     Setup Amazon SES rule sets
     """
     # We want to enable testing in development, both of:
-    # - this function, which sets up rule sets
     #
-    # - incoming email handling, which we want to be able
-    #   to route to our development machine (via ngrok)
-    #   without interfering with production rules.
+    # - this function, which sets up rule sets.
     #
-    # We also don't want to disrupt production by temporarily having a broken
-    # set of rules.
+    # - incoming email handling, which we want to be able to route to our
+    #   development machine (via ngrok) without interfering with production
+    #   rules. This uses a different domain to the production domain, with
+    #   prefix 'mailtest.'
     #
-    # And we do need to clear out old rules (e.g. for old camps),
-    # and old rulesets
+    # However in Amazon SES we can only have one 'ruleset' active, and it needs
+    # to have both production and development rules in it. We don't want to
+    # disrupt production, even temporarily, by having a broken set of rules. For
+    # this reason, in development we have to be careful to keep the 'other
+    # domain' working (the 'other' domain is production if we are running this
+    # function in development environment, and vice versa)
     #
     # The following process is designed with these things in mind.
 
