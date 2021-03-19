@@ -73,4 +73,5 @@ These steps have only been tested on Ubuntu-based Linux installations.
     $ pre-commit install
 
 
-See also `<deployment.rst>`_ for docs on deploying.
+See also `<deployment.rst>`_ for docs on deploying, and setup you might
+want to do now for that.
