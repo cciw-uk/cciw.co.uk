@@ -102,7 +102,7 @@ class MailAccessDenied(ValueError):
 class EmailList(object):
     local_address: str
     get_members: Callable[[], List[User]]
-    has_permission: Callable[[], bool]
+    has_permission: Callable[[str], bool]
     list_reply: bool
 
     @property
@@ -133,7 +133,7 @@ class EmailList(object):
 
 # Definitions of EmailLists
 
-def camp_officers_list_generator(current_camps):
+def camp_officers_list_generator(current_camps: list[Camp]):
     for camp in current_camps:
         yield make_camp_officers_list(camp)
 
