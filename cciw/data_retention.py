@@ -165,8 +165,8 @@ def load_data_retention_policy() -> Policy:
     # from more "human readable" names like "tables", "columns" etc. into the
     # kind of things we actually want to use from code ("model", "fields").
 
-    # A lot of complexity here is trying to keep the YAML human readable
-    # and not redundant, and making sure we validate lots of possible errors.
+    # A lot of complexity here is trying to keep the YAML human readable and not
+    # redundant, and making sure we validate against lots of possible errors.
 
     # File format/validity errors are allowed to propogate.
     # Other errors are handled more gracefully by get_data_retention_policy_issues.
