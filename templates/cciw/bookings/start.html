@@ -7,7 +7,7 @@
 
 
   {% if not booking_open %}
-    <p><strong>PLEASE NOTE: Booking is not yet open for this year - you will not be
+    <p><strong>PLEASE NOTE: Booking is not yet open for this year — you will not be
       able to complete the booking process at this stage.</strong></p>
   {% endif %}
 
@@ -26,10 +26,15 @@
 
   <form method="POST" action="">
     {% csrf_token %}
-    {{ form.as_p }}
-    <p><input type="submit" name="submit" value="Submit" /></p>
+    <div class="form">
+      <div class="field">
+        <label class="required" for="id_email">Email address:</label>
+        {{ form.email }}
+        <input type="submit" name="submit" value="Submit" />
+      </div>
+    </div>
   </form>
-
+  <br>
   <p>If you have trouble receiving the email, you may need to <a href="/website/help/whitelist-email/">whitelist our email address</a>
     <strong>noreply@cciw.co.uk</strong> or our emails might be classified as junk mail.</p>
 
