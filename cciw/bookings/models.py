@@ -399,7 +399,7 @@ class BookingAccount(models.Model):
         pot = -existing_balance
         today = date.today()
         for booking in candidate_bookings:
-            if pot <= 0:
+            if pot < 0:
                 break
             amount = booking.amount_now_due(today, allow_deposits=True, price_checker=price_checker)
             if amount <= pot:

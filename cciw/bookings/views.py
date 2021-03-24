@@ -694,7 +694,8 @@ def pay(request):
     return TemplateResponse(request, 'cciw/bookings/pay.html', {
         'stage': BookingStage.PAY,
         'title': 'Booking - pay',
-        'unconfirmed_places': acc.bookings.unconfirmed(),
+        'unconfirmed_places': acc.bookings.for_year(this_year).unconfirmed(),
+        'confirmed_places': acc.bookings.for_year(this_year).confirmed(),
         'balance_due_now': balance_due_now,
         'balance_full': balance_full,
         'account_id': acc.id,

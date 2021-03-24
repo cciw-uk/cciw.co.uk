@@ -8,6 +8,21 @@
       and then pay for them all together.</p>
   {% endif %}
 
+  {% if price_deposit == 0 %}
+    <h2>Please note!</h2>
+    <p>
+      This year there is <b>no deposit to pay.</b>
+      {% if confirmed_places|length > 0 and unconfirmed_places|length == 0 %}
+        All of your bookings for {{ thisyear }} are already confirmed.
+      {% endif %}
+      We recommend that you <b>do not pay yet</b>, due to uncertainty regarding camp.
+      You will be notified when you need to pay.
+    </p>
+    <p>Thanks!</p>
+  {% endif %}
+
+  <h2>Payment methods</h2>
+
   <p>Payment is done via Paypal. You do not need to have a Paypal account - any
     credit card or debit card can be used.</p>
 
@@ -88,8 +103,12 @@
     <h2>Notes</h2>
 
     <h3>Refunds:</h3>
-    <p>If you cancel your place, your payment will be refunded, apart from the
-      deposit{% if price_deposit %} of £{{ price_deposit }}{% endif %}.</p>
+    {% if price_deposit > 0 %}
+      <p>If you cancel your place, your payment will be refunded, apart from the
+        deposit of £{{ price_deposit }}</p>
+    {% else %}
+      <p>If you cancel your place, your payment will be refunded.</p>
+    {% endif %}
 
     <p>If we are forced to cancel the camp for some reason, you will receive a full
       refund.</p>

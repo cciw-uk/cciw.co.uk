@@ -157,7 +157,11 @@ class CreateLeadersMixin(object):
 
 
 class CreatePricesMixin(object):
-    def add_prices(self):
+    def add_prices(self, deposit=None):
+        if deposit is None:
+            deposit = Decimal(20)
+        else:
+            deposit = Decimal(deposit)
         year = self.camp.year
         self.price_full = Price.objects.get_or_create(year=year,
                                                       price_type=PriceType.FULL,
@@ -170,7 +174,7 @@ class CreatePricesMixin(object):
                                                            price=Decimal('50'))[0].price
         self.price_deposit = Price.objects.get_or_create(year=year,
                                                          price_type=PriceType.DEPOSIT,
-                                                         price=Decimal('20'))[0].price
+                                                         defaults={'price': deposit})[0].price
         self.price_early_bird_discount = Price.objects.get_or_create(year=year,
                                                                      price_type=PriceType.EARLY_BIRD_DISCOUNT,
                                                                      price=Decimal('10'))[0].price
@@ -353,6 +357,7 @@ class BookingBaseMixin(AtomicChecksMixin):
     NO_PLACES_LEFT_FOR_GIRLS = "There are no places left for girls"
     PRICES_NOT_SET = "prices have not been set"
     LAST_TETANUS_INJECTION_DATE_REQUIRED = "last tetanus injection"
+    BOOKINGS_WILL_EXPIRE = 'you have 24 hours to complete payment online'
 
     def setUp(self):
         super().setUp()
@@ -1620,8 +1625,28 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit('[name=book_now]')
         acc = self.get_account()
         b = acc.bookings.all()[0]
-        self.assertEqual(b.state, BookingState.BOOKED)
+        assert b.state == BookingState.BOOKED
+        assert not b.is_confirmed
         self.assertUrlsEqual(reverse('cciw-bookings-pay'))
+        self.assertTextPresent(self.BOOKINGS_WILL_EXPIRE)
+
+    def test_book_with_zero_deposit(self):
+        """
+        Test that when deposit is zero, we confirm the place
+        immediately and don't ask for payment.
+        """
+        self.add_prices(deposit=0)
+        self.create_booking()
+        self.get_url(self.urlname)
+        self.submit('[name=book_now]')
+        acc = self.get_account()
+        b = acc.bookings.all()[0]
+        assert b.state == BookingState.BOOKED
+        assert b.is_confirmed
+        self.assertUrlsEqual(reverse('cciw-bookings-pay'))
+        self.assertTextAbsent(self.BOOKINGS_WILL_EXPIRE)
+        self.assertTextPresent('no deposit to pay')
+        self.assertTextPresent('do not pay yet')
 
     def test_book_unbookable(self):
         """
@@ -1764,8 +1789,6 @@ class TestListBookingsSL(ListBookingsBase, SeleniumBase):
 
 
 class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
-
-    url = reverse('cciw-bookings-list_bookings')
 
     def test_balance_empty(self):
         self.login()
