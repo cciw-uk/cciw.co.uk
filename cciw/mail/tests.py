@@ -338,7 +338,7 @@ def enable_email_sending():
 
 # Most mail is sent directly, but some is specifically put on a queue, to ensure
 # errors don't mess up payment processing. We 'send' and retrieve those here:
-def send_queued_mail():
+def send_queued_mail() -> list[mail.EmailMessage]:
     len_outbox_start = len(mail.outbox)
     sent_count = Message.objects.all().count()
     # mailer itself uses transactions for sending, triggering our AtomicChecksMixin

@@ -15,11 +15,10 @@ from django.utils.safestring import mark_safe
 from django_countries.fields import CountryField
 from paypal.standard.ipn.models import PayPalIPN
 
-from cciw.bookings.email import send_booking_expiry_mail
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 
-from .signals import places_confirmed
+from .email import send_booking_expiry_mail, send_places_confirmed_email
 
 # = Business rules =
 #
@@ -409,7 +408,7 @@ class BookingAccount(models.Model):
                 pot -= amount
 
         if confirmed_bookings:
-            places_confirmed.send(self, bookings=confirmed_bookings, payment_received=True)
+            places_confirmed_handler(bookings=confirmed_bookings)
 
     def get_pending_payment_total(self, now=None):
         if now is None:
@@ -1205,6 +1204,9 @@ class PaymentManager(models.Manager):
             'source__ipn_payment',
         )
 
+    def received_since(self, since: datetime):
+        return self.filter(created__gt=since)
+
     def create(self, source_instance=None, **kwargs):
         if source_instance is not None:
             source = PaymentSource.from_source_instance(source_instance)
@@ -1480,6 +1482,10 @@ def most_recent_booking_year():
         return booking.camp.year
     else:
         return None
+
+
+def places_confirmed_handler(*, bookings):
+    send_places_confirmed_email(bookings)
 
 
 from . import hooks  # NOQA isort:skip

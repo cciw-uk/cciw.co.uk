@@ -358,6 +358,7 @@ class BookingBaseMixin(AtomicChecksMixin):
     PRICES_NOT_SET = "prices have not been set"
     LAST_TETANUS_INJECTION_DATE_REQUIRED = "last tetanus injection"
     BOOKINGS_WILL_EXPIRE = 'you have 24 hours to complete payment online'
+    THANK_YOU_FOR_PAYMENT = 'Thank you for your payment'
 
     def setUp(self):
         super().setUp()
@@ -376,7 +377,9 @@ class CreateIPNMixin(object):
                         payment_date=timezone.now(),
                         )
         defaults.update(kwargs)
-        return PayPalIPN.objects.create(**defaults)
+        ipn = PayPalIPN.objects.create(**defaults)
+        ipn.send_signals()
+        return ipn
 
 
 # == Test cases ==
@@ -1648,6 +1651,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent('no deposit to pay')
         self.assertTextPresent('do not pay yet')
 
+        # We should have immediately send email confirming place in this case:
+        mails = send_queued_mail()
+        assert len(mails) == 1
+        mail, = mails
+        assert mail.subject == "[CCIW] Booking - place confirmed"
+        assert mail.to == [acc.email]
+        assert self.THANK_YOU_FOR_PAYMENT not in mail.body  # They didn't actually pay
+
     def test_book_unbookable(self):
         """
         Test that an unbookable place can't be booked
@@ -1874,14 +1885,15 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         # Check for emails sent
         # 1 to account
         mails = send_queued_mail()
-        self.assertEqual(len([m for m in mails if m.to == [self.email]]), 1)
+        account_mails = [m for m in mails if m.to == [self.email]]
+        assert len(account_mails) == 1
 
         # This is a late booking, therefore there is also:
         # 1 to camp leaders altogether
-        self.assertEqual(len([m for m in mails
-                              if sorted(m.to) == sorted([self.leader_1_user.email,
-                                                         self.leader_2_user.email])]),
-                         1)
+        leader_emails = [m for m in mails
+                         if sorted(m.to) == sorted([self.leader_1_user.email,
+                                                    self.leader_2_user.email])]
+        assert len(leader_emails) == 1
 
     def test_insufficient_receive_payment(self):
         # Need to move into region where deposits are not allowed.
@@ -1957,7 +1969,6 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         self.assertEqual(account.total_received, Decimal(0))
 
         ipn_1 = self.create_ipn(account)
-        ipn_1.send_signals()
 
         # Test for Payment objects
         self.assertEqual(Payment.objects.count(), 1)
@@ -1972,7 +1983,6 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
                                 parent_txn_id='1', txn_id='2',
                                 mc_gross=-1 * ipn_1.mc_gross,
                                 payment_status='Refunded')
-        ipn_2.send_signals()
 
         self.assertEqual(Payment.objects.count(), 2)
         self.assertEqual(Payment.objects.order_by('-created')[0].amount, ipn_2.mc_gross)
@@ -1981,22 +1991,19 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         self.assertEqual(account.total_received, Decimal(0))
 
     def test_email_for_good_payment(self):
-        # This email could be triggered by whenever BookingAccount.distribute_funds
-        # is called, which can be from multiple routes. So we test it directly.
-
         self.create_booking()
         acc = self.get_account()
         book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
 
         mail.outbox = []
-        acc.receive_payment(acc.bookings.all()[0].amount_due)
+        self.create_ipn(acc, mc_gross=acc.bookings.all()[0].amount_due)
 
         mails = send_queued_mail()
-        self.assertEqual(len(mails), 1)
+        assert len(mails) == 1
 
-        self.assertEqual(mails[0].subject, "[CCIW] Booking - place confirmed")
-        self.assertEqual(mails[0].to, [self.email])
-        self.assertTrue("Thank you for your payment" in mails[0].body)
+        assert mails[0].subject == "[CCIW] Booking - place confirmed"
+        assert mails[0].to == [self.email]
+        assert self.THANK_YOU_FOR_PAYMENT in mails[0].body
 
     def test_only_one_email_for_multiple_places(self):
         self.create_booking()
@@ -2054,7 +2061,6 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
                                 payment_status="Pending",
                                 pending_reason="echeck",
                                 custom=build_paypal_custom_field(account))
-        ipn_1.send_signals()
 
         # Money should not be counted as received
         account = refresh(account)
@@ -2086,23 +2092,21 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         # Once confirmed payment comes in, we consider that there are no pending payments.
 
         # A different payment doesn't affect whether pending ones are completed:
-        ipn_2 = self.create_ipn(account,
-                                txn_id="ABCDEF123",  # DIFFERENT txn_id
-                                mc_gross=Decimal("10.00"),
-                                payment_status="Completed",
-                                custom=build_paypal_custom_field(account))
-        ipn_2.send_signals()
+        self.create_ipn(account,
+                        txn_id="ABCDEF123",  # DIFFERENT txn_id
+                        mc_gross=Decimal("10.00"),
+                        payment_status="Completed",
+                        custom=build_paypal_custom_field(account))
         account = refresh(account)
         self.assertEqual(account.total_received, Decimal("10.00"))
         self.assertEqual(account.get_pending_payment_total(now=three_days_later), Decimal("20.00"))
 
         # But the same TXN id is recognised as cancelling the pending payment
-        ipn_3 = self.create_ipn(account,
-                                txn_id=ipn_1.txn_id,  # SAME txn_id
-                                mc_gross=ipn_1.mc_gross,
-                                payment_status="Completed",
-                                custom=build_paypal_custom_field(account))
-        ipn_3.send_signals()
+        self.create_ipn(account,
+                        txn_id=ipn_1.txn_id,  # SAME txn_id
+                        mc_gross=ipn_1.mc_gross,
+                        payment_status="Completed",
+                        custom=build_paypal_custom_field(account))
 
         account = refresh(account)
         self.assertEqual(account.total_received, Decimal("30.00"))
@@ -2656,9 +2660,8 @@ class TestExportPaymentData(CreateIPNMixin, TestBase):
         account2 = BookingAccount.objects.create(
             name="Mary Muddle",
             email='mary@foo.com')
-        ipn1 = self.create_ipn(account1,
-                               mc_gross=Decimal('10.00'))
-        ipn1.send_signals()
+        self.create_ipn(account1,
+                        mc_gross=Decimal('10.00'))
         ManualPayment.objects.create(account=account1,
                                      amount=Decimal('11.50'))
         RefundPayment.objects.create(account=account1,

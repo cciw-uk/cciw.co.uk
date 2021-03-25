@@ -1,6 +1,6 @@
 import base64
 import binascii
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import attr
 import mailer as queued_mail
@@ -110,18 +110,23 @@ def send_pending_payment_email(account, ipn_obj):
     mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
 
-def send_places_confirmed_email(bookings, **kwargs):
+def send_places_confirmed_email(bookings):
     if not bookings:
         return
     account = bookings[0].account
     if not account.email:
         return
 
+    # We can't use 'processed' here, because this email can be sent
+    # in the middle of processing before that flag is updated.
+    payment_received_recently = account.payments.received_since(
+        timezone.now() - timedelta(hours=1)
+    ).exists()
     c = {
         'domain': common.get_current_domain(),
         'account': account,
         'bookings': bookings,
-        'payment_received': 'payment_received' in kwargs,
+        'payment_received_recently': payment_received_recently,
         'early_bird_discount_missed': sum(b.early_bird_discount_missed() for b in bookings)
     }
     body = loader.render_to_string('cciw/bookings/place_confirmed_email.txt', c)
