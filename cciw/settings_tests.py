@@ -50,4 +50,10 @@ faulthandler.register(signal.SIGUSR1)
 
 CAPTCHA_TEST_MODE = True
 
+# Use normal values of these for tests:
+BOOKING_FULL_PAYMENT_DUE_DAYS = 3 * 30
+BOOKING_FULL_PAYMENT_DUE_TIME = "3 months"
+LATE_BOOKING_THRESHOLD = 30  # days
+
+
 TESTS_RUNNING = True

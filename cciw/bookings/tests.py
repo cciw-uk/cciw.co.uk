@@ -1651,7 +1651,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent('no deposit to pay')
         self.assertTextPresent('do not pay yet')
 
-        # We should have immediately send email confirming place in this case:
+        # We should immediately send email confirming place in this case:
         mails = send_queued_mail()
         assert len(mails) == 1
         mail, = mails
@@ -1894,6 +1894,7 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
                          if sorted(m.to) == sorted([self.leader_1_user.email,
                                                     self.leader_2_user.email])]
         assert len(leader_emails) == 1
+        assert leader_emails[0].subject.startswith('[CCIW] Late booking:')
 
     def test_insufficient_receive_payment(self):
         # Need to move into region where deposits are not allowed.

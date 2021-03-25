@@ -13,8 +13,6 @@ from django.utils import timezone
 from cciw.cciwmain import common
 from cciw.officers.email import admin_emails_for_camp
 
-LATE_BOOKING_THRESHOLD = 30  # days
-
 
 class VerifyFailed(object):
     pass
@@ -145,7 +143,7 @@ def send_places_confirmed_email(bookings):
     today = datetime.utcnow().date()
 
     for booking in bookings:
-        if (booking.camp.start_date - today).days < LATE_BOOKING_THRESHOLD:
+        if (booking.camp.start_date - today).days < settings.LATE_BOOKING_THRESHOLD:
 
             c = {
                 'domain': common.get_current_domain(),
