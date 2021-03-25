@@ -59,12 +59,13 @@
       <p>A camper booking to go on a second camp in the same year must pay the
         full price amount.</p>
 
-      <p>If you will struggle to pay the full fee, you can also apply for a custom
-        discount. The exact price will have to be arranged by the booking secretary,
-        and you will only be able to complete the booking process online after this
-        has been done if you choose this option.</p>
+      <p>If you will struggle to pay the full fee, you can also apply for a
+        custom discount. The exact price will have to be arranged by the booking
+        secretary: you will need to fill in this page, then contact the booking
+        secretary, and later complete the online booking process if you choose
+        this option.</p>
 
-      {% if early_bird_available %}
+      {% if early_bird_available and price_early_bird_discount > 0 %}
         <p><b>Please note — there is an early bird discount of £{{ price_early_bird_discount }}
           off the listed prices if you book before {{ early_bird_date|date:"jS F" }}!</b></p>
       {% endif %}

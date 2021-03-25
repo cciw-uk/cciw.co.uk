@@ -759,9 +759,10 @@ class Booking(models.Model):
     def get_available_discounts(self, now):
         retval = []
         if self.can_have_early_bird_discount(booked_at=now):
-            retval.append(("Early bird discount if booked now",
-                           Price.objects.get(year=self.camp.year,
-                                             price_type=PriceType.EARLY_BIRD_DISCOUNT).price))
+            discount_amount = Price.objects.get(year=self.camp.year,
+                                                price_type=PriceType.EARLY_BIRD_DISCOUNT).price
+            if discount_amount > 0:
+                retval.append(("Early bird discount if booked now", discount_amount))
         return retval
 
     def get_booking_problems(self, booking_sec=False):

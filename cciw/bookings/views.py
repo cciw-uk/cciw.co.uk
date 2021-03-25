@@ -120,7 +120,7 @@ def index(request):
     if any(p is None for caption, p in price_list):
         price_list = []
     # Add discounts:
-    price_list = [(caption, p, p - early_bird_discount if early_bird_discount is not None else None)
+    price_list = [(caption, p, p - early_bird_discount if early_bird_discount is not None else 0)
                   for caption, p in price_list]
 
     context.update({

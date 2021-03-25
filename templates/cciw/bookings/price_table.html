@@ -1,6 +1,6 @@
 <p>
   <table class="prices">
-    {% if price_early_bird_discount %}
+    {% if price_early_bird_discount > 0 %}
       <tr>
         <td></td>
         <td></td>
@@ -19,7 +19,7 @@
       <tr>
         <td>{{ caption }}</td>
         <td>£{{ price }}</td>
-        {% if discounted_price %}
+        {% if price_early_bird_discount > 0 %}
           <td>
             {% if booking_open and not early_bird_available %}
               <s>£{{ discounted_price }}</s>
@@ -32,3 +32,8 @@
     {% endfor %}
   </table>
 </p>
+{% if price_early_bird_discount == 0 and price_deposit == 0 %}
+  <p>This year, no deposit is required for booking.
+    We also unfortunately cannot offer a discount for early bookings.
+  </p>
+{% endif %}
