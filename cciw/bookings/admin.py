@@ -1,6 +1,8 @@
 from dal import autocomplete
 from django import forms
 from django.contrib import admin, messages
+from django.db.models import Value
+from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.html import escape, escapejs, format_html
@@ -249,7 +251,7 @@ def make_change_state_action(state, display_name):
 class BookingAdmin(admin.ModelAdmin):
     def camp(booking):
         return str(booking.camp.url_id)
-    camp.admin_order_field = 'camp__year'
+    camp.admin_order_field = Concat('camp__year', Value('-'), 'camp__camp_name__name')
 
     def confirmed(obj):
         return obj.is_confirmed
@@ -259,7 +261,7 @@ class BookingAdmin(admin.ModelAdmin):
     del camp
     del confirmed
     search_fields = ['first_name', 'last_name']
-    ordering = ['-camp__year', 'first_name', 'last_name']
+    ordering = ['-camp__id', 'first_name', 'last_name']
     date_hierarchy = 'created'
     list_filter = [YearFilter, 'sex', 'price_type', 'early_bird_discount', 'serious_illness', 'state', 'created_online', ConfirmedFilter]
     readonly_fields = ['booked_at', 'created_online']
