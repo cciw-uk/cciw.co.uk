@@ -916,7 +916,7 @@ class Booking(models.Model):
             # (if there is one place left, and two campers for it, we can't say that
             # there are enough places)
             same_camp_bookings = self.account.bookings.filter(camp=self.camp).in_basket()
-            places_to_be_booked = same_camp_bookings.count()
+            places_to_be_booked = len(same_camp_bookings)
 
             if places_left < places_to_be_booked:
                 errors.append("There are not enough places left on this camp "
@@ -926,7 +926,10 @@ class Booking(models.Model):
             if places_available:
                 for sex_const, sex_label, places_left_for_sex in SEXES:
                     if self.sex == sex_const:
-                        places_to_be_booked_for_sex = same_camp_bookings.filter(sex=sex_const).count()
+                        places_to_be_booked_for_sex = len([
+                            b for b in same_camp_bookings
+                            if b.sex == sex_const
+                        ])
                         if places_left_for_sex < places_to_be_booked_for_sex:
                             errors.append("There are not enough places for {0} left on this camp "
                                           "for the campers in this set of bookings.".format(sex_label))
