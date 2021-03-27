@@ -261,8 +261,7 @@ class BookingAdmin(admin.ModelAdmin):
     del camp
     del confirmed
     search_fields = ['first_name', 'last_name']
-    ordering = ['-camp__id', 'first_name', 'last_name']
-    date_hierarchy = 'created'
+    ordering = ['-created']
     list_filter = [YearFilter, 'sex', 'price_type', 'early_bird_discount', 'serious_illness', 'state', 'created_online', ConfirmedFilter]
     readonly_fields = ['booked_at', 'created_online']
 
