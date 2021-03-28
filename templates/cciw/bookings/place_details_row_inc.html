@@ -24,10 +24,10 @@
 <tr class="sectionbottom">
   <td colspan="3">
     {% if b.bookable %}
-      <img src="{% static "admin/img/icon-yes.svg" %}"> This place can be booked
+      <img class="booking-ok-icon" src="{% static "admin/img/icon-yes.svg" %}">This place can be booked
       {% if b.manually_approved %}<b> - MANUALLY APPROVED</b>{% endif %}
     {% else %}
-      <img src="{% static "admin/img/icon-no.svg" %}"> This place cannot be booked:
+      <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">This place cannot be booked:
       <ul>
         {% for p in b.booking_problems %}
           <li>{{ p }}</li>
@@ -36,7 +36,7 @@
     {% endif %}
     {% if b.booking_warnings %}
       <div>
-        <img src="{% static "admin/img/icon-alert.svg" %}">Warning:
+        <img class="booking-warning-icon" src="{% static "admin/img/icon-alert.svg" %}">Warning:
         <ul>
           {% for w in b.booking_warnings %}
             <li>{{ w }}</li>

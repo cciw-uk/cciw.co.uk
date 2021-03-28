@@ -10,7 +10,9 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import Prefetch
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django_countries.fields import CountryField
 from paypal.standard.ipn.models import PayPalIPN
@@ -894,9 +896,19 @@ class Booking(models.Model):
         # want to display message about there being no places for boys etc.
         places_available = True
 
+        def no_places_available_message(msg):
+            # Add a common message to each different "no places available" message
+            return format_html(
+                '''{0}
+                You can <a href="{1}" target="_new">contact the booking secretary</a>
+                to be put on a waiting list. ''',
+                msg,
+                reverse('cciw-contact_us-send') + '?bookings'
+            )
+
         # Simple - no places left
         if places_left <= 0:
-            errors.append("There are no places left on this camp.")
+            errors.append(no_places_available_message("There are no places left on this camp."))
             places_available = False
 
         SEXES = [
@@ -907,7 +919,8 @@ class Booking(models.Model):
         if places_available:
             for sex_const, sex_label, places_left_for_sex in SEXES:
                 if self.sex == sex_const and places_left_for_sex <= 0:
-                    errors.append(f"There are no places left for {sex_label} on this camp.")
+                    errors.append(no_places_available_message(
+                        f"There are no places left for {sex_label} on this camp."))
                     places_available = False
                     break
 
@@ -919,8 +932,9 @@ class Booking(models.Model):
             places_to_be_booked = len(same_camp_bookings)
 
             if places_left < places_to_be_booked:
-                errors.append("There are not enough places left on this camp "
-                              "for the campers in this set of bookings.")
+                errors.append(no_places_available_message(
+                    "There are not enough places left on this camp "
+                    "for the campers in this set of bookings."))
                 places_available = False
 
             if places_available:
@@ -931,8 +945,9 @@ class Booking(models.Model):
                             if b.sex == sex_const
                         ])
                         if places_left_for_sex < places_to_be_booked_for_sex:
-                            errors.append("There are not enough places for {0} left on this camp "
-                                          "for the campers in this set of bookings.".format(sex_label))
+                            errors.append(no_places_available_message(
+                                f"There are not enough places for {sex_label} left on this camp "
+                                "for the campers in this set of bookings."))
                             places_available = False
                             break
 
