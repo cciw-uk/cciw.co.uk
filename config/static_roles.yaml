@@ -31,7 +31,7 @@
 #
 # The names of the roles need to be synced with /cciw/accounts/models.py
 #
-# Format of permissions is: app name/table name/permission
+# Format of permissions is: app name.table name/permission
 #    where:
 #      app name: refers to a sub section of the website (officers, bookings etc)
 #      table: a name of a database table
@@ -44,84 +44,84 @@ Roles:
   Secretaries:
     Permissions:
       # Need to be able to view officer applications
-      - officers/application/view
-      - officers/qualificationtype/view
+      - officers.Application/view
+      - officers.QualificationType/view
   Booking secretaries:
     Permissions:
       # Need to be able to add and change bookings and their accounts
-      - bookings/booking/add
-      - bookings/booking/change
-      - bookings/booking/delete
-      - bookings/bookingaccount/add
-      - bookings/bookingaccount/change
-      - bookings/bookingaccount/delete
+      - bookings.Booking/add
+      - bookings.Booking/change
+      - bookings.Booking/delete
+      - bookings.BookingAccount/add
+      - bookings.BookingAccount/change
+      - bookings.BookingAccount/delete
       # Need to be able to record manual payments, refunds and transfers
-      - bookings/manualpayment/add
-      - bookings/manualpayment/change
-      - bookings/manualpayment/delete
-      - bookings/accounttransferpayment/add
-      - bookings/accounttransferpayment/change
-      - bookings/accounttransferpayment/delete
-      - bookings/refundpayment/add
-      - bookings/refundpayment/change
-      - bookings/refundpayment/delete
+      - bookings.ManualPayment/add
+      - bookings.ManualPayment/change
+      - bookings.ManualPayment/delete
+      - bookings.AccountTransferPayment/add
+      - bookings.AccountTransferPayment/change
+      - bookings.AccountTransferPayment/delete
+      - bookings.RefundPayment/add
+      - bookings.RefundPayment/change
+      - bookings.RefundPayment/delete
       # In order to view payment inlines, need this:
-      - bookings/payment/view
+      - bookings.Payment/view
       # Helpful for them to be able to manage prices
-      - bookings/price/add
-      - bookings/price/change
-      - bookings/price/delete
+      - bookings.Price/add
+      - bookings.Price/change
+      - bookings.Price/delete
       # To be able to change number of bookings allowed, they can edit camps
-      - cciwmain/camp/change
+      - cciwmain.Camp/change
   DBS Officers:
     Permissions:
-      - officers/dbscheck/add
-      - officers/dbscheck/change
-      - officers/dbscheck/delete
-      - officers/dbsactionlog/add
-      - officers/dbsactionlog/change
-      - officers/dbsactionlog/delete
+      - officers.DBSCheck/add
+      - officers.DBSCheck/change
+      - officers.DBSCheck/delete
+      - officers.DBSActionLog/add
+      - officers.DBSActionLog/change
+      - officers.DBSActionLog/delete
   Committee:
     Permissions:
       # Do general changes to camps, including setting leaders
-      - cciwmain/camp/change
-      - cciwmain/person/change
+      - cciwmain.Camp/change
+      - cciwmain.Person/change
       # Need to be able to view/manage application forms
-      - officers/application/change
-      - officers/qualificationtype/add
-      - officers/qualificationtype/change
-      - officers/qualificationtype/delete
+      - officers.Application/change
+      - officers.QualificationType/add
+      - officers.QualificationType/change
+      - officers.QualificationType/delete
       # View references
-      - officers/reference/change
+      - officers.Reference/change
   Chairperson:
     # This person will be a member of Committee as well. They additionally have
     # the rights to change User, which is effectively superuser rights. To avoid
     # giving this to too many users who will not understand that they have it,
     # this permission is separated out.
     Permissions:
-      - accounts/user/change
+      - accounts.User/change
   Site editors:
     # People with general permissions to manage the
     # site - enter camp information etc.
     Permissions:
-      - cciwmain/camp/add
-      - cciwmain/camp/change
-      - cciwmain/camp/delete
-      - cciwmain/campname/add
-      - cciwmain/campname/change
-      - cciwmain/campname/delete
-      - cciwmain/person/add
-      - cciwmain/person/change
-      - cciwmain/person/delete
-      - cciwmain/site/add
-      - cciwmain/site/change
-      - cciwmain/site/delete
-      - sitecontent/htmlchunk/add
-      - sitecontent/htmlchunk/change
-      - sitecontent/htmlchunk/delete
-      - sitecontent/menulink/add
-      - sitecontent/menulink/change
-      - sitecontent/menulink/delete
+      - cciwmain.Camp/add
+      - cciwmain.Camp/change
+      - cciwmain.Camp/delete
+      - cciwmain.CampName/add
+      - cciwmain.CampName/change
+      - cciwmain.CampName/delete
+      - cciwmain.Person/add
+      - cciwmain.Person/change
+      - cciwmain.Person/delete
+      - cciwmain.Site/add
+      - cciwmain.Site/change
+      - cciwmain.Site/delete
+      - sitecontent.HtmlChunk/add
+      - sitecontent.HtmlChunk/change
+      - sitecontent.HtmlChunk/delete
+      - sitecontent.MenuLink/add
+      - sitecontent.MenuLink/change
+      - sitecontent.MenuLink/delete
   Safeguarding co-ordinators:
     # No admin permisssions needed
     Permissions: []

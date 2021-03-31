@@ -467,7 +467,8 @@ def setup_auth_roles():
         permission_details = role_details['Permissions']
         perms = []
         for p in permission_details:
-            app_name, model, perm = p.split('/')
+            app_and_model, perm = p.split('/')
+            app_name, model = app_and_model.lower().split('.')
             perm = f'{perm}_{model}'
             perms.append(get_or_create_perm(app_name, model, perm))
         with transaction.atomic():
