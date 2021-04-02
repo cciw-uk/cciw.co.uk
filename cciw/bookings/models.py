@@ -219,6 +219,7 @@ class BookingAccount(models.Model):
     subscribe_to_newsletter = models.BooleanField("Subscribe to email newsletter", default=False,
                                                   help_text=MAILCHIMP_NOTICE)
     total_received = models.DecimalField(default=Decimal('0.00'), decimal_places=2, max_digits=10)
+    created = models.DateTimeField(blank=False)
     first_login = models.DateTimeField(null=True, blank=True)
     last_login = models.DateTimeField(null=True, blank=True)
     last_payment_reminder = models.DateTimeField(null=True, blank=True)
@@ -249,6 +250,7 @@ class BookingAccount(models.Model):
         # We have to ensure that only receive_payment touches the total_received
         # field when doing updates
         if self.id is None:
+            self.created = timezone.now()
             return super(BookingAccount, self).save(**kwargs)
         else:
             update_fields = [f.name for f in self._meta.fields if

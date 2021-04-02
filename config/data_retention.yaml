@@ -327,6 +327,7 @@
     - name: bookings.BookingAccount
       columns:
       - total_received
+      - created
       - first_login
       - last_login
       - last_payment_reminder
