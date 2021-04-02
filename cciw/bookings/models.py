@@ -9,7 +9,7 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models import Prefetch
+from django.db.models import Prefetch, functions
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
@@ -151,7 +151,32 @@ class PriceChecker:
 
 
 class BookingAccountQuerySet(models.QuerySet):
-    pass
+    def not_in_use(self):
+        return self.zero_final_balance().exclude(
+            id__in=Booking.objects.in_use().values_list('account_id', flat=True)
+        )
+
+    def older_than(self, before_datetime):
+        return self.filter(
+            last_login__isnull=False, last_login__lt=before_datetime
+        ) | self.filter(
+            last_login__isnull=True, created__lt=before_datetime
+        )
+
+    def _with_total_amount_due(self):
+        # Use 'alias' once Django 3.2 is out
+        return self.annotate(total_amount_due=functions.Coalesce(
+            models.Sum('bookings__amount_due'),
+            models.Value(0),
+        ))
+
+    def zero_final_balance(self):
+        # See also below
+        return self._with_total_amount_due().filter(total_amount_due=models.F('total_received'))
+
+    def non_zero_final_balance(self):
+        # See also above
+        return self._with_total_amount_due().exclude(total_amount_due=models.F('total_received'))
 
 
 class BookingAccountManagerBase(models.Manager):
@@ -162,11 +187,9 @@ class BookingAccountManagerBase(models.Manager):
         """
         # To limit the size of queries, we do a SQL query for people who might
         # owe money.
-        potentials = (
-            self.get_queryset()
-            .annotate(total_amount_due=models.Sum('bookings__amount_due'))
-            .exclude(total_amount_due=models.F('total_received'))
-        )
+        potentials = self.get_queryset().non_zero_final_balance()
+        # 'balance due now' can be less than 'final balance', because we accept
+        # deposit as sufficient in some cases.
         retval = []
         price_checker = PriceChecker()
         for account in potentials:
@@ -523,6 +546,23 @@ class BookingQuerySet(models.QuerySet):
         qs = qs_custom_price | qs_serious_illness | qs_too_old | qs_too_young
         return qs
 
+    # Data retention
+
+    def not_in_use(self):
+        return self.exclude(self._in_use_q())
+
+    def in_use(self):
+        return self.filter(self._in_use_q())
+
+    def _in_use_q(self):
+        today = date.today()
+        return models.Q(
+            camp__end_date__gte=today,
+        )
+
+    def older_than(self, before_datetime):
+        return self.filter(created__lt=before_datetime)
+
 
 class BookingManagerBase(models.Manager):
 
@@ -638,7 +678,7 @@ class Booking(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     # Main business rules here
-    def save_for_account(self, booking_account):
+    def save_for_account(self, booking_account: BookingAccount):
         """
         Saves the booking for an account that is creating/editing online
         """

@@ -28,6 +28,7 @@ from cciw.bookings.models import (AccountTransferPayment, Booking, BookingAccoun
                                   RefundPayment, book_basket_now, build_paypal_custom_field, expire_bookings)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp, CampName, Person, Site
+from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
 from cciw.mail.tests import send_queued_mail
 from cciw.officers.tests.base import (BOOKING_SECRETARY, BOOKING_SECRETARY_PASSWORD, BOOKING_SECRETARY_USERNAME,
@@ -42,24 +43,34 @@ from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 class Factories:
     def create_booking(
             self,
-            camp,
+            camp=None,
             sex='m',
             state=BookingState.INFO_COMPLETE,
             account=None,
-    ):
+            amount_due=100,
+            address_line1='',
+    ) -> Booking:
+        camp = camp or camps_factories.get_any_camp()
         account = account or self.create_booking_account()
         return Booking.objects.create(
             camp=camp,
             account=account,
             state=state,
             sex=sex,
-            date_of_birth=date(date.today().year - 15, 1, 1),
+            date_of_birth=date(date.today().year - camp.minimum_age - 2, 1, 1),
             price_type=PriceType.FULL,
-            amount_due=100,
+            amount_due=amount_due,
+            address_line1=address_line1,
         )
 
-    def create_booking_account(self):
-        return BookingAccount.objects.create(name='A Booker')
+    def create_booking_account(
+            self,
+            address_line1='',
+    ) -> BookingAccount:
+        return BookingAccount.objects.create(
+            name='A Booker',
+            address_line1=address_line1,
+        )
 
     def create_manual_payment(
             self,

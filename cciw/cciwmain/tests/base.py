@@ -1,10 +1,97 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.contrib.sites.models import Site as DjangoSite
 
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.sitecontent.models import HtmlChunk, MenuLink
+
+
+class Factories:
+    def create_camp(
+            self,
+            start_date=None,
+            end_date=None,
+            site=None,
+            camp_name=None,
+            minimum_age=None,
+            maximum_age=None,
+    ):
+        camp_name = camp_name or self.get_any_camp_name()
+        if start_date is None:
+            if end_date is not None:
+                start_date = end_date - timedelta(days=7)
+            else:
+                start_date = date.today()
+        if end_date is None:
+            end_date = start_date + timedelta(days=7)
+        site = site or self.get_any_site()
+        if minimum_age is None:
+            if maximum_age is not None:
+                minimum_age = maximum_age - 6
+            else:
+                minimum_age = 11
+        if maximum_age is None:
+            maximum_age = minimum_age + 6
+        year = start_date.year
+        if Camp.objects.filter(
+                camp_name=camp_name,
+                year=year
+        ).exists():
+            # Hack, need a better way to do this.
+            # This only works for 2 camps.
+            camp_name = self.create_camp_name(name='other')
+
+        return Camp.objects.create(
+            end_date=end_date,
+            camp_name=camp_name,
+            site=site,
+            minimum_age=minimum_age,
+            maximum_age=maximum_age,
+            year=year,
+            start_date=start_date,
+            chaplain=None,
+        )
+
+    def get_any_camp(self):
+        # TODO - a way to cache values - needs to work well with DB - i.e.
+        # should be flushed after each test is run, because otherwise
+        # the cached object won't exist in the DB.
+
+        # Also for other get_any_ below
+        camp = Camp.objects.order_by('id').first()
+        if camp is not None:
+            return camp
+        return self.create_camp()
+
+    def create_camp_name(self, name=None):
+        name = name or 'Violet'
+        camp_name = CampName.objects.create(
+            name=name,
+            slug=name.lower().replace(' ', '-'),
+            color='#ff0000',
+        )
+        return camp_name
+
+    def get_any_camp_name(self):
+        camp_name = CampName.objects.order_by('id').first()
+        if camp_name is not None:
+            return camp_name
+        return self.create_camp_name()
+
+    def create_site(self):
+        return Site.objects.create(
+            short_name='The Farm',
+            long_name='The Farm in the Valley',
+            slug_name='the-farm',
+            info='A really lovely farm.'
+        )
+
+    def get_any_site(self):
+        site = Site.objects.order_by('id').first()
+        if site is not None:
+            return site
+        return self.create_site()
 
 
 class BasicSetupMixin(object):
@@ -54,24 +141,19 @@ class BasicSetupMixin(object):
             color="#0000ff",
         )
 
-        self.default_camp_1 = Camp.objects.create(
-            end_date=date(2000, 7, 8),
+        self.default_camp_1 = factories.create_camp(
             camp_name=camp_name,
             site=self.default_site,
-            minimum_age=11,
-            maximum_age=17,
-            year=2000,
             start_date=date(2000, 7, 1),
-            chaplain=None)
+        )
         self.default_camp_1.leaders.set([self.default_leader])
 
-        self.default_camp_2 = Camp.objects.create(
-            end_date=date(2001, 7, 8),
+        self.default_camp_2 = factories.create_camp(
             camp_name=camp_name,
             site=self.default_site,
-            minimum_age=11,
-            maximum_age=17,
-            year=2001,
             start_date=date(2001, 7, 1),
-            chaplain=None)
+        )
         self.default_camp_2.leaders.set([self.default_leader])
+
+
+factories = Factories()

@@ -31,7 +31,7 @@ from django.db.models.fields import Field
 from django.utils import timezone
 from mailer import models as mailer_models
 
-from cciw.bookings.models import Booking
+from cciw.bookings.models import Booking, BookingAccount
 from cciw.contact_us.models import Message
 from cciw.officers.models import Application
 
@@ -455,6 +455,8 @@ ERASABLE_RECORDS = {
     mailer_models.MessageLog: lambda before_datetime: mailer_models.MessageLog.objects.filter(
         when_added__lt=before_datetime,
     ),
+    Booking: lambda before_datetime: Booking.objects.not_in_use().older_than(before_datetime),
+    BookingAccount: lambda before_datetime: BookingAccount.objects.not_in_use().older_than(before_datetime),
 }
 
 

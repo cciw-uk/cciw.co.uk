@@ -7,11 +7,14 @@ from django.utils import timezone
 from mailer import models as mailer_models
 from time_machine import travel
 
+from cciw.bookings import models as bookings_models
+from cciw.bookings.tests import factories as bookings_factories
+from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.contact_us.models import Message
 from cciw.data_retention import Group, ModelDetail, Policy, Rules, apply_data_retention, parse_keep
 from cciw.mail.tests import send_queued_mail
 from cciw.officers.models import Application
-from cciw.officers.tests.base import factories
+from cciw.officers.tests.base import factories as officers_factories
 from cciw.utils.tests.base import TestBase
 
 
@@ -97,9 +100,9 @@ class TestApplyDataRetentionPolicy(TestBase):
             erase_after=timedelta(days=365),
         )
 
-        officer = factories.create_officer()
+        officer = officers_factories.create_officer()
         start = date.today()
-        application = factories.create_application(
+        application = officers_factories.create_application(
             officer,
             date_saved=start,
             full_name=(full_name := "Charlie Cook"),
@@ -126,7 +129,7 @@ class TestApplyDataRetentionPolicy(TestBase):
             erase_after=timedelta(days=365),
         )
         start = timezone.now()
-        message = factories.create_contact_us_message()
+        message = officers_factories.create_contact_us_message()
         self._assert_instance_deleted_after(instance=message, start=start, policy=policy, days=365)
 
     def test_erase_mailer_Message(self):
@@ -153,6 +156,132 @@ class TestApplyDataRetentionPolicy(TestBase):
         start = timezone.now()
         message_log = mailer_models.MessageLog.objects.get()
         self._assert_instance_deleted_after(instance=message_log, start=start, policy=policy, days=365)
+
+    def test_erase_Booking(self):
+        policy = make_policy(
+            model=bookings_models.Booking,
+            delete_row=False,
+            erase_after=timedelta(days=365),
+            fields=[
+                'address_line1',
+            ],
+        )
+        with travel('2001-01-01'):
+            booking = bookings_factories.create_booking(address_line1='123 Main St')
+
+        with travel('2001-12-31'):
+            apply_partial_policy(policy)
+            booking.refresh_from_db()
+            assert booking.address_line1 == '123 Main St'
+
+        with travel('2002-01-01 01:00:00'):
+            apply_partial_policy(policy)
+            booking.refresh_from_db()
+            assert booking.address_line1 == '[deleted]'
+
+    # TODO PreserveAgeOnCamp test and implement
+
+    def test_erase_BookingAccount(self):
+        policy = make_policy(
+            model=bookings_models.BookingAccount,
+            delete_row=False,
+            erase_after=timedelta(days=365),
+            fields=[
+                'address_line1',
+            ],
+        )
+        with travel('2001-01-01'):
+            account = bookings_factories.create_booking_account(
+                address_line1='123 Main St',
+            )
+        with travel('2001-12-31'):
+            apply_partial_policy(policy)
+            account.refresh_from_db()
+            assert account.address_line1 == '123 Main St'
+        with travel('2002-01-01 01:00:00'):
+            apply_partial_policy(policy)
+            account.refresh_from_db()
+            assert account.address_line1 == '[deleted]'
+
+    def test_erase_BookingAccount_last_login(self):
+        policy = make_policy(
+            model=bookings_models.BookingAccount,
+            delete_row=False,
+            erase_after=timedelta(days=365),
+            fields=[
+                'address_line1',
+            ],
+        )
+        with travel('2001-01-01'):
+            account = bookings_factories.create_booking_account(
+                address_line1='123 Main St',
+            )
+        with travel('2001-10-01'):
+            account.last_login = timezone.now()
+            account.save()
+            assert account.address_line1 == '123 Main St'
+        with travel('2002-01-01 01:00:00'):
+            apply_partial_policy(policy)
+            account.refresh_from_db()
+            assert account.address_line1 == '123 Main St'
+        with travel('2002-10-02 01:00:00'):
+            apply_partial_policy(policy)
+            account.refresh_from_db()
+            assert account.address_line1 == '[deleted]'
+
+    def test_erase_BookingAccount_not_in_use_payment_outstanding(self):
+        policy = make_policy(
+            model=bookings_models.BookingAccount,
+            delete_row=False,
+            erase_after=timedelta(days=365),
+            fields=[
+                'address_line1',
+            ],
+        )
+        with travel('2001-01-01'):
+            account = bookings_factories.create_booking_account(
+                address_line1='123 Main St',
+            )
+            bookings_factories.create_booking(
+                account=account,
+                state=bookings_models.BookingState.BOOKED,
+                amount_due=100,
+            )
+        with travel('2011-01-01'):
+            # Should not be deleted despite age, because we have outstanding
+            # payments due.
+            apply_partial_policy(policy)
+            account.refresh_from_db()
+            assert account.address_line1 == '123 Main St'
+
+    def test_erase_BookingAccount_not_in_use_current_booking(self):
+        account = bookings_factories.create_booking_account()
+        assert account in bookings_models.BookingAccount.objects.not_in_use()
+        camp = camps_factories.create_camp(start_date=date.today())
+        bookings_factories.create_booking(
+            account=account,
+            state=bookings_models.BookingState.BOOKED,
+            camp=camp,
+            amount_due=0,
+        )
+        assert account not in bookings_models.BookingAccount.objects.not_in_use()
+
+        with travel(camp.end_date + timedelta(days=1)):
+            assert account in bookings_models.BookingAccount.objects.not_in_use()
+
+            # Now have past booking, one future booking - should be 'in use' again
+            camp2 = camps_factories.create_camp(start_date=date.today())
+            bookings_factories.create_booking(
+                account=account,
+                state=bookings_models.BookingState.BOOKED,
+                camp=camp2,
+                amount_due=0,
+            )
+
+            assert account not in bookings_models.BookingAccount.objects.not_in_use()
+
+        with travel(camp2.end_date + timedelta(days=1)):
+            assert account in bookings_models.BookingAccount.objects.not_in_use()
 
     def _assert_instance_deleted_after(self, *, instance: object, start: datetime, policy: Policy, days: int):
         model = instance.__class__
