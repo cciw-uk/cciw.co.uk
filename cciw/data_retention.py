@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import dataclasses
 from datetime import date, datetime, timedelta
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 
 import parsy
 import pydantic.dataclasses
@@ -63,10 +63,7 @@ class Group:
 
 @dataclass
 class Rules:
-    # We use 'keep' in YAML, with 'forever' as a special value, for human readability.
-    # To avoid ambiguity with `keep == None`, we use the name `erase_after`
-    # in code, so we have `erase_after == None` meaning keep forever.
-    erase_after: Optional[timedelta]
+    keep: Keep
     erasable_on_request: bool
 
 
@@ -141,8 +138,18 @@ class ErasureMethod:
         raise NotImplementedError()
 
 
+class _Forever:
+    pass
+
+
+Forever = _Forever()
+
+Keep = Union[timedelta, _Forever]
+
+
 Policy.__pydantic_model__.update_forward_refs()
 Group.__pydantic_model__.update_forward_refs()
+Rules.__pydantic_model__.update_forward_refs()
 ModelDetail.__pydantic_model__.update_forward_refs()
 
 # --- Parsing and checking ---
@@ -176,7 +183,7 @@ def load_data_retention_policy() -> Policy:
     groups = []
     for yaml_group in policy_yaml:
         yaml_rules = yaml_group.pop('rules')
-        erase_after = parse_keep(yaml_rules.pop('keep'))
+        keep = parse_keep(yaml_rules.pop('keep'))
         erasable_on_request = yaml_rules.pop('deletable on request from data subject')
         if yaml_rules:
             raise ValueError(f'Unexpected keys in "rules" entry: {", ".join(yaml_rules.keys())}')
@@ -213,7 +220,7 @@ def load_data_retention_policy() -> Policy:
         groups.append(
             Group(
                 rules=Rules(
-                    erase_after=erase_after,
+                    keep=keep,
                     erasable_on_request=erasable_on_request,
                 ),
                 models=models
@@ -281,7 +288,7 @@ def _check_erasable_records(policy: Policy) -> list[Error]:
     seen_models = set()
     issues = []
     for group in policy.groups:
-        if group.rules.erase_after is None and not group.rules.erasable_on_request:
+        if group.rules.keep is Forever and not group.rules.erasable_on_request:
             # Don't need erasure method
             continue
 
@@ -322,7 +329,7 @@ def _field_requires_privacy_policy(field: Field):
     return True
 
 
-forever = parsy.string('forever').result(None)
+forever = parsy.string('forever').result(Forever)
 years = (parsy.regex(r'\d+').map(int) << parsy.regex(" years?")).map(
     lambda y: timedelta(days=365 * y)
 )
@@ -332,7 +339,7 @@ days = (parsy.regex(r'\d+').map(int) << parsy.regex(" days?")).map(
 keep_parser = forever | years | days
 
 
-def parse_keep(keep_value: str) -> Optional[timedelta]:
+def parse_keep(keep_value: str) -> Keep:
     try:
         return keep_parser.parse(keep_value)
     except parsy.ParseError:
@@ -362,13 +369,13 @@ def apply_data_retention(policy=None, ignore_missing_models=False):
 
 
 def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_detail: ModelDetail):
-    if rules.erase_after is None:
+    if rules.keep is Forever:
         return []
 
-    erase_before_datetime = now - rules.erase_after
+    erase_before_datetime = now - rules.keep
     # TODO probably want separate method for manual erasure requests,
     # need to be careful about things that are still needed and
-    # how to respect `erase_after`
+    # how to respect `keep`
     # TODO do we want a log of things that have been erased?
     erasable_records = get_erasable(erase_before_datetime, model_detail.model)
     if model_detail.delete_row:

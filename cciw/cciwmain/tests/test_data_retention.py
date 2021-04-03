@@ -1,5 +1,4 @@
 from datetime import date, datetime, timedelta
-from typing import Optional
 
 import mailer as queued_mail
 import pytest
@@ -11,7 +10,7 @@ from cciw.bookings import models as bookings_models
 from cciw.bookings.tests import factories as bookings_factories
 from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.contact_us.models import Message
-from cciw.data_retention import Group, ModelDetail, Policy, Rules, apply_data_retention, parse_keep
+from cciw.data_retention import Forever, Group, Keep, ModelDetail, Policy, Rules, apply_data_retention, parse_keep
 from cciw.mail.tests import send_queued_mail
 from cciw.officers.models import Application
 from cciw.officers.tests.base import factories as officers_factories
@@ -19,7 +18,7 @@ from cciw.utils.tests.base import TestBase
 
 
 def test_parse_keep_forever():
-    assert parse_keep('forever') is None
+    assert parse_keep('forever') is Forever
 
 
 def test_parse_keep_years():
@@ -31,7 +30,7 @@ def test_parse_keep_other():
         parse_keep('abc 123')
 
 
-def make_policy(*, model: type, fields: list[str] = None, erase_after: Optional[timedelta] = None,
+def make_policy(*, model: type, fields: list[str] = None, keep: Keep,
                 delete_row=False):
     if fields is None:
         fields = []
@@ -48,7 +47,7 @@ def make_policy(*, model: type, fields: list[str] = None, erase_after: Optional[
                   groups=[
                       Group(
                           rules=Rules(
-                              erase_after=erase_after,
+                              keep=keep,
                               erasable_on_request=False
                           ),
                           models=[model_detail]
@@ -65,7 +64,7 @@ class TestApplyDataRetentionPolicy(TestBase):
         policy = make_policy(
             model=Message,
             delete_row=True,
-            erase_after=timedelta(days=365),
+            keep=timedelta(days=365),
         )
 
         with travel("2017-01-01 00:05:00"):
@@ -97,7 +96,7 @@ class TestApplyDataRetentionPolicy(TestBase):
                 'address_firstline',  # string
                 'birth_date',  # nullable date
             ],
-            erase_after=timedelta(days=365),
+            keep=timedelta(days=365),
         )
 
         officer = officers_factories.create_officer()
@@ -126,7 +125,7 @@ class TestApplyDataRetentionPolicy(TestBase):
         policy = make_policy(
             model=Message,
             delete_row=True,
-            erase_after=timedelta(days=365),
+            keep=timedelta(days=365),
         )
         start = timezone.now()
         message = officers_factories.create_contact_us_message()
@@ -136,7 +135,7 @@ class TestApplyDataRetentionPolicy(TestBase):
         policy = make_policy(
             model=mailer_models.Message,
             delete_row=True,
-            erase_after=timedelta(days=365),
+            keep=timedelta(days=365),
         )
 
         queued_mail.send_mail('Subject', 'message', 'from@example.com', ['to@example.com'])
@@ -148,7 +147,7 @@ class TestApplyDataRetentionPolicy(TestBase):
         policy = make_policy(
             model=mailer_models.MessageLog,
             delete_row=True,
-            erase_after=timedelta(days=365),
+            keep=timedelta(days=365),
         )
 
         queued_mail.send_mail('Subject', 'message', 'from@example.com', ['to@example.com'])
@@ -161,7 +160,7 @@ class TestApplyDataRetentionPolicy(TestBase):
         policy = make_policy(
             model=bookings_models.Booking,
             delete_row=False,
-            erase_after=timedelta(days=365),
+            keep=timedelta(days=365),
             fields=[
                 'address_line1',
             ],
@@ -185,7 +184,7 @@ class TestApplyDataRetentionPolicy(TestBase):
         policy = make_policy(
             model=bookings_models.BookingAccount,
             delete_row=False,
-            erase_after=timedelta(days=365),
+            keep=timedelta(days=365),
             fields=[
                 'address_line1',
             ],
@@ -207,7 +206,7 @@ class TestApplyDataRetentionPolicy(TestBase):
         policy = make_policy(
             model=bookings_models.BookingAccount,
             delete_row=False,
-            erase_after=timedelta(days=365),
+            keep=timedelta(days=365),
             fields=[
                 'address_line1',
             ],
@@ -233,7 +232,7 @@ class TestApplyDataRetentionPolicy(TestBase):
         policy = make_policy(
             model=bookings_models.BookingAccount,
             delete_row=False,
-            erase_after=timedelta(days=365),
+            keep=timedelta(days=365),
             fields=[
                 'address_line1',
             ],
