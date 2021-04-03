@@ -8,7 +8,7 @@ from paypal.standard.ipn.models import PayPalIPN
 from time_machine import travel
 
 from cciw.accounts.models import User
-from cciw.bookings import models as bookings_models
+from cciw.bookings.models import Booking, BookingAccount, BookingState
 from cciw.bookings.tests import factories as bookings_factories
 from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.contact_us.models import Message
@@ -182,7 +182,7 @@ class TestApplyDataRetentionPolicy(TestBase):
 
     def test_erase_Booking(self):
         policy = make_policy(
-            model=bookings_models.Booking,
+            model=Booking,
             delete_row=False,
             keep=timedelta(days=365),
             fields=[
@@ -204,7 +204,7 @@ class TestApplyDataRetentionPolicy(TestBase):
 
     def test_erase_Booking_PreserveAgeOnCamp(self):
         policy = make_policy(
-            model=bookings_models.Booking,
+            model=Booking,
             delete_row=False,
             keep=timedelta(days=365),
             fields=['date_of_birth'],
@@ -232,7 +232,7 @@ class TestApplyDataRetentionPolicy(TestBase):
 
     def test_erase_BookingAccount(self):
         policy = make_policy(
-            model=bookings_models.BookingAccount,
+            model=BookingAccount,
             delete_row=False,
             keep=timedelta(days=365),
             fields=[
@@ -254,7 +254,7 @@ class TestApplyDataRetentionPolicy(TestBase):
 
     def test_erase_BookingAccount_last_login(self):
         policy = make_policy(
-            model=bookings_models.BookingAccount,
+            model=BookingAccount,
             delete_row=False,
             keep=timedelta(days=365),
             fields=[
@@ -280,7 +280,7 @@ class TestApplyDataRetentionPolicy(TestBase):
 
     def test_erase_BookingAccount_not_in_use_payment_outstanding(self):
         policy = make_policy(
-            model=bookings_models.BookingAccount,
+            model=BookingAccount,
             delete_row=False,
             keep=timedelta(days=365),
             fields=[
@@ -293,7 +293,7 @@ class TestApplyDataRetentionPolicy(TestBase):
             )
             bookings_factories.create_booking(
                 account=account,
-                state=bookings_models.BookingState.BOOKED,
+                state=BookingState.BOOKED,
                 amount_due=100,
             )
         with travel('2011-01-01'):
@@ -305,32 +305,32 @@ class TestApplyDataRetentionPolicy(TestBase):
 
     def test_erase_BookingAccount_not_in_use_current_booking(self):
         account = bookings_factories.create_booking_account()
-        assert account in bookings_models.BookingAccount.objects.not_in_use()
+        assert account in BookingAccount.objects.not_in_use()
         camp = camps_factories.create_camp(start_date=date.today())
         bookings_factories.create_booking(
             account=account,
-            state=bookings_models.BookingState.BOOKED,
+            state=BookingState.BOOKED,
             camp=camp,
             amount_due=0,
         )
-        assert account not in bookings_models.BookingAccount.objects.not_in_use()
+        assert account not in BookingAccount.objects.not_in_use()
 
         with travel(camp.end_date + timedelta(days=1)):
-            assert account in bookings_models.BookingAccount.objects.not_in_use()
+            assert account in BookingAccount.objects.not_in_use()
 
             # Now have past booking, one future booking - should be 'in use' again
             camp2 = camps_factories.create_camp(start_date=date.today())
             bookings_factories.create_booking(
                 account=account,
-                state=bookings_models.BookingState.BOOKED,
+                state=BookingState.BOOKED,
                 camp=camp2,
                 amount_due=0,
             )
 
-            assert account not in bookings_models.BookingAccount.objects.not_in_use()
+            assert account not in BookingAccount.objects.not_in_use()
 
         with travel(camp2.end_date + timedelta(days=1)):
-            assert account in bookings_models.BookingAccount.objects.not_in_use()
+            assert account in BookingAccount.objects.not_in_use()
 
     def test_erase_BookingAccount_not_in_use_query_issue(self):
         # Had some issues with not_in_use() and older_than() combinations with
@@ -349,7 +349,7 @@ class TestApplyDataRetentionPolicy(TestBase):
                 for camp in (camp1, camp2):
                     bookings_factories.create_booking(
                         account=acc,
-                        state=bookings_models.BookingState.BOOKED,
+                        state=BookingState.BOOKED,
                         camp=camp,
                         amount_due=100,
                     )
@@ -358,16 +358,16 @@ class TestApplyDataRetentionPolicy(TestBase):
 
         with travel('2001-01-09'):
             # This has unfinished camps:
-            assert account not in bookings_models.BookingAccount.objects.not_in_use().older_than(
+            assert account not in BookingAccount.objects.not_in_use().older_than(
                 datetime(2001, 1, 9)
             )
         with travel('2002-01-01'):
             # Now has no outstanding fees, nor unfinished camps
-            assert account in bookings_models.BookingAccount.objects.not_in_use().older_than(
+            assert account in BookingAccount.objects.not_in_use().older_than(
                 datetime(2002, 1, 1)
             )
             # This one has outstanding fees
-            assert other_account not in bookings_models.BookingAccount.objects.not_in_use().older_than(
+            assert other_account not in BookingAccount.objects.not_in_use().older_than(
                 datetime(2002, 1, 1)
             )
 
