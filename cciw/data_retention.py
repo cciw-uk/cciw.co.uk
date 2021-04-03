@@ -319,6 +319,13 @@ def _check_erasable_records(policy: Policy) -> list[Error]:
                             obj=policy.source,
                             id='dataretention.E004'
                         ))
+                if ('erased_on' not in [f.name for f in model._meta.get_fields()] and
+                        model not in ERASED_ON_EXCEPTIONS):
+                    issues.append(Error(
+                        'No "erased_on" field present',
+                        obj=model,
+                        id='dataretention.E005',
+                    ))
     return issues
 
 
@@ -329,6 +336,8 @@ def _field_requires_privacy_policy(field: Field):
     if isinstance(field, (models.AutoField, models.ForeignKey, GenericForeignKey)):
         return False
     if field.auto_created:
+        return False
+    if field.name == 'erased_on' and isinstance(field, models.DateTimeField):
         return False
     return True
 
@@ -380,7 +389,6 @@ def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_deta
     # TODO probably want separate method for manual erasure requests,
     # need to be careful about things that are still needed and
     # how to respect `keep`
-    # TODO do we want a log of things that have been erased?
     erasable_records = get_erasable(erase_before_datetime, model_detail.model)
     if model_detail.delete_row:
         retval = erasable_records.delete()
@@ -392,6 +400,12 @@ def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_deta
             else:
                 method = _find_erasure_method(field)
             update_dict.update(method.build_update_dict(field))
+        if model_detail.model not in ERASED_ON_EXCEPTIONS:
+            update_dict['erased_on'] = RawSQL('''
+            CASE WHEN erased_on IS NULL THEN %s
+                 ELSE erased_on
+            END
+            ''', [now])
         retval = erasable_records.update(**update_dict)
     return retval
 
@@ -475,6 +489,13 @@ ERASABLE_RECORDS = {
         created_at__lt=before_datetime,
     ),
 }
+
+
+# Models for which we don't expect an 'erased_on' field:
+ERASED_ON_EXCEPTIONS = [
+    # This is in a 3rd party library, can't add a field to it:
+    PayPalIPN,
+]
 
 
 class PreserveAgeOnCamp(ErasureMethod):

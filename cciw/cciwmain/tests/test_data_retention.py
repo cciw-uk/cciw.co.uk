@@ -132,11 +132,18 @@ class TestApplyDataRetentionPolicy(TestBase):
             assert application.address_firstline == address
 
         with travel(start + timedelta(days=366)):
+            erased_date = date.today()
             apply_partial_policy(policy)
             application.refresh_from_db()
             assert application.birth_date is None
             assert application.address_firstline == "[deleted]"
             assert application.full_name == full_name
+            assert application.erased_on.date() == erased_date
+
+        with travel(start + timedelta(days=466)):
+            apply_partial_policy(policy)
+            application.refresh_from_db()
+            assert application.erased_on.date() == erased_date
 
     def test_erase_contact_us_Message(self):
         policy = make_policy(

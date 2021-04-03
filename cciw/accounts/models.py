@@ -131,6 +131,8 @@ class User(AbstractBaseUser):
     bad_password = models.BooleanField(default=False)
     password_validators_used = models.TextField(blank=True)
 
+    erased_on = models.DateTimeField(null=True, blank=True, default=None)
+
     objects = UserManager()
 
     EMAIL_FIELD = 'email'

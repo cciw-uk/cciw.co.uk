@@ -231,7 +231,7 @@ class BookingAdminForm(forms.ModelForm):
 
     class Meta:
         model = Booking
-        fields = "__all__"
+        fields = [f.name for f in Booking._meta.get_fields() if f.name not in ['erased_on']]
         widgets = {
             'account': bookingaccount_autocomplete_widget()
         }

@@ -97,6 +97,8 @@ class Application(models.Model):
     # True.
     date_saved = models.DateField('date saved', null=True, blank=True)
 
+    erased_on = models.DateTimeField(null=True, blank=True, default=None)
+
     objects = ApplicationManager()
 
     class Meta:
