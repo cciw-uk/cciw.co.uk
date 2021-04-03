@@ -49,15 +49,18 @@ class Factories:
             account=None,
             amount_due=100,
             address_line1='',
+            date_of_birth=None,
     ) -> Booking:
         camp = camp or camps_factories.get_any_camp()
         account = account or self.create_booking_account()
+        if date_of_birth is None:
+            date_of_birth = date(date.today().year - camp.minimum_age - 2, 1, 1)
         return Booking.objects.create(
             camp=camp,
             account=account,
             state=state,
             sex=sex,
-            date_of_birth=date(date.today().year - camp.minimum_age - 2, 1, 1),
+            date_of_birth=date_of_birth,
             price_type=PriceType.FULL,
             amount_due=amount_due,
             address_line1=address_line1,

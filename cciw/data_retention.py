@@ -27,6 +27,7 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.checks import Error
 from django.db import models
+from django.db.models.expressions import RawSQL
 from django.db.models.fields import Field
 from django.utils import timezone
 from mailer import models as mailer_models
@@ -128,14 +129,14 @@ class ModelDetail:
 
 class ErasureMethod:
     def allowed_for_field(self, field: Field):
-        raise NotImplementedError()
+        raise NotImplementedError(f'{self.__class__} needs to implement allowed_for_field')
 
     def build_update_dict(self, field):
         """
         Returns a dict which can be passed as keyword arguments
         to a QuerySet.update() call.
         """
-        raise NotImplementedError()
+        raise NotImplementedError(f'{self.__class__} needs to implement build_update_dict')
 
 
 class _Forever:
@@ -384,10 +385,10 @@ def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_deta
         update_dict = {}
         for field in model_detail.fields:
             if field in model_detail.custom_erasure_methods:
-                raise NotImplementedError()
+                method = model_detail.custom_erasure_methods[field]
             else:
                 method = _find_erasure_method(field)
-                update_dict.update(method.build_update_dict(field))
+            update_dict.update(method.build_update_dict(field))
         retval = erasable_records.update(**update_dict)
     return retval
 
@@ -471,7 +472,23 @@ class PreserveAgeOnCamp(ErasureMethod):
     def allowed_for_field(self, field):
         return field.model == Booking and field.name == 'date_of_birth'
 
-    # TODO - implement and test build_update_dict
+    def build_update_dict(self, field: Field):
+        return {
+            'date_of_birth':
+            # Birthdates after YYYY-08-31 get counted as next school year,
+            # so we anonymise those to YYYY-12-01, everything else to YYYY-01-01
+            # See also Booking.age_base_date
+            # See also BookingManager.need_approving
+            RawSQL('''
+            make_date(
+                EXTRACT(YEAR FROM date_of_birth)::int,
+                CASE WHEN EXTRACT(MONTH FROM date_of_birth) > 8 THEN 12
+                     ELSE 1
+                END,
+                1
+            )
+            ''', [], models.DateTimeField()),
+        }
 
 
 CUSTOM_ERASURE_METHODS = {

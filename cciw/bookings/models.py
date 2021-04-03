@@ -534,6 +534,8 @@ class BookingQuerySet(models.QuerySet):
         qs = self.filter(state=BookingState.INFO_COMPLETE).select_related('camp')
         qs_custom_price = qs.filter(price_type=PriceType.CUSTOM)
         qs_serious_illness = qs.filter(serious_illness=True)
+        # For -08-31 date:
+        # See also PreserveAgeOnCamp.build_update_dict()
         # See also Booking.age_on_camp()
         qs_too_young = qs.extra(where=[
             """ "bookings_booking"."date_of_birth" > """
@@ -771,11 +773,12 @@ class Booking(models.Model):
                                  year=self.camp.year).price
 
     def age_on_camp(self):
-        # Age is calculated based on school years, i.e. age on 31st August
-        # See also BookingManager.need_approving()
         return relativedelta(self.age_base_date(), self.date_of_birth).years
 
     def age_base_date(self):
+        # Age is calculated based on school years, i.e. age on 31st August
+        # See also PreserveAgeOnCamp.build_update_dict()
+        # See also BookingManager.need_approving()
         return date(self.camp.year, 8, 31)
 
     def is_too_young(self):

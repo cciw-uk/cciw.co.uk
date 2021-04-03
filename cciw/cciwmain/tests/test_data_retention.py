@@ -10,7 +10,8 @@ from cciw.bookings import models as bookings_models
 from cciw.bookings.tests import factories as bookings_factories
 from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.contact_us.models import Message
-from cciw.data_retention import Forever, Group, Keep, ModelDetail, Policy, Rules, apply_data_retention, parse_keep
+from cciw.data_retention import (ErasureMethod, Forever, Group, Keep, ModelDetail, Policy, PreserveAgeOnCamp, Rules,
+                                 apply_data_retention, parse_keep)
 from cciw.mail.tests import send_queued_mail
 from cciw.officers.models import Application
 from cciw.officers.tests.base import factories as officers_factories
@@ -35,17 +36,27 @@ def test_parse_keep_other():
 
 
 def make_policy(*, model: type, fields: list[str] = None, keep: Keep,
-                delete_row=False):
+                delete_row=False,
+                custom_erasure_methods: dict[str, ErasureMethod] = None,
+                ):
+    model_field_list = model._meta.get_fields()
+    field_dict = {f.name: f for f in model_field_list}
     if fields is None:
         fields = []
     else:
-        model_field_list = model._meta.get_fields()
-        field_dict = {f.name: f for f in model_field_list}
         fields = [field_dict[f] for f in fields]
+    if custom_erasure_methods is None:
+        custom_erasure_methods = {}
+    else:
+        custom_erasure_methods = {
+            field_dict[name]: method
+            for name, method in custom_erasure_methods.items()
+        }
     model_detail = ModelDetail(
         model=model,
         fields=fields,
         delete_row=delete_row,
+        custom_erasure_methods=custom_erasure_methods,
     )
     return Policy(source='test',
                   groups=[
@@ -182,7 +193,33 @@ class TestApplyDataRetentionPolicy(TestBase):
             booking.refresh_from_db()
             assert booking.address_line1 == '[deleted]'
 
-    # TODO PreserveAgeOnCamp test and implement
+    def test_erase_Booking_PreserveAgeOnCamp(self):
+        policy = make_policy(
+            model=bookings_models.Booking,
+            delete_row=False,
+            keep=timedelta(days=365),
+            fields=['date_of_birth'],
+            custom_erasure_methods={'date_of_birth': PreserveAgeOnCamp()}
+        )
+        for date_of_birth, age_on_camp in [
+                (date(1988, 8, 31), 13),
+                (date(1988, 9, 1), 12),
+        ]:
+            with travel('2001-01-01'):
+                camp = camps_factories.create_camp(start_date=date(2001, 8, 1))
+                booking = bookings_factories.create_booking(
+                    camp=camp,
+                    date_of_birth=date_of_birth,
+                )
+                assert booking.date_of_birth == date_of_birth
+                assert booking.age_on_camp() == age_on_camp
+
+            with travel('2002-01-02'):
+                apply_partial_policy(policy)
+                booking.refresh_from_db()
+                assert booking.age_on_camp() == age_on_camp
+                assert booking.date_of_birth.year == date_of_birth.year
+                assert booking.date_of_birth != date_of_birth
 
     def test_erase_BookingAccount(self):
         policy = make_policy(
