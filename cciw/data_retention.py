@@ -27,7 +27,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.checks import Error
-from django.db import models
+from django.db import models, transaction
 from django.db.models.expressions import RawSQL
 from django.db.models.fields import Field
 from django.utils import timezone
@@ -375,9 +375,10 @@ def apply_data_retention(policy=None, ignore_missing_models=False):
 
     today = timezone.now()
     retval = []
-    for group in policy.groups:
-        for model_detail in group.models:
-            retval.append(apply_data_retention_single_model(today, rules=group.rules, model_detail=model_detail))
+    with transaction.atomic():
+        for group in policy.groups:
+            for model_detail in group.models:
+                retval.append(apply_data_retention_single_model(today, rules=group.rules, model_detail=model_detail))
     return retval
 
 
