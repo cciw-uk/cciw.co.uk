@@ -2081,7 +2081,6 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
             mc_gross=Decimal('20.00'),
             payment_status="Pending",
             pending_reason="echeck",
-            custom=build_paypal_custom_field(account)
         )
 
         # Money should not be counted as received
@@ -2119,7 +2118,6 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
             txn_id="ABCDEF123",  # DIFFERENT txn_id
             mc_gross=Decimal("10.00"),
             payment_status="Completed",
-            custom=build_paypal_custom_field(account)
         )
         account = refresh(account)
         self.assertEqual(account.total_received, Decimal("10.00"))
@@ -2131,7 +2129,6 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
             txn_id=ipn_1.txn_id,  # SAME txn_id
             mc_gross=ipn_1.mc_gross,
             payment_status="Completed",
-            custom=build_paypal_custom_field(account)
         )
         account = refresh(account)
         self.assertEqual(account.total_received, Decimal("30.00"))
