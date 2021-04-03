@@ -4,6 +4,7 @@ import mailer as queued_mail
 import pytest
 from django.utils import timezone
 from mailer import models as mailer_models
+from paypal.standard.ipn.models import PayPalIPN
 from time_machine import travel
 
 from cciw.accounts.models import User
@@ -343,6 +344,26 @@ class TestApplyDataRetentionPolicy(TestBase):
             apply_partial_policy(policy)
             user.refresh_from_db()
             assert user.contact_phone_number == '[deleted]'
+
+    def test_erase_PayPalIPN(self):
+        policy = make_policy(
+            model=PayPalIPN,
+            delete_row=False,
+            keep=timedelta(days=365),
+            fields=[
+                'payer_business_name',
+            ],
+        )
+        with travel('2001-01-01'):
+            ipn = bookings_factories.create_ipn(payer_business_name=(name := 'Peter'))
+        with travel('2001-12-31'):
+            apply_partial_policy(policy)
+            ipn.refresh_from_db()
+            assert ipn.payer_business_name == name
+        with travel('2002-01-01 01:00:00'):
+            apply_partial_policy(policy)
+            ipn.refresh_from_db()
+            assert ipn.payer_business_name == '[deleted]'
 
     def _assert_instance_deleted_after(self, *, instance: object, start: datetime, policy: Policy, days: int):
         model = instance.__class__

@@ -32,6 +32,7 @@ from django.db.models.expressions import RawSQL
 from django.db.models.fields import Field
 from django.utils import timezone
 from mailer import models as mailer_models
+from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.accounts.models import User
 from cciw.bookings.models import Booking, BookingAccount
@@ -460,15 +461,19 @@ def _find_erasure_method(field):
 ERASABLE_RECORDS = {
     Message: lambda before_datetime: Message.objects.older_than(before_datetime),
     Application: lambda before_datetime: Application.objects.older_than(before_datetime),
+    Booking: lambda before_datetime: Booking.objects.not_in_use().older_than(before_datetime),
+    BookingAccount: lambda before_datetime: BookingAccount.objects.not_in_use().older_than(before_datetime),
+    User: lambda before_datetime: User.objects.older_than(before_datetime),
+    # 3rd party:
     mailer_models.Message: lambda before_datetime: mailer_models.Message.objects.filter(
         when_added__lt=before_datetime,
     ),
     mailer_models.MessageLog: lambda before_datetime: mailer_models.MessageLog.objects.filter(
         when_added__lt=before_datetime,
     ),
-    Booking: lambda before_datetime: Booking.objects.not_in_use().older_than(before_datetime),
-    BookingAccount: lambda before_datetime: BookingAccount.objects.not_in_use().older_than(before_datetime),
-    User: lambda before_datetime: User.objects.older_than(before_datetime),
+    PayPalIPN: lambda before_datetime: PayPalIPN.objects.filter(
+        created_at__lt=before_datetime,
+    ),
 }
 
 
