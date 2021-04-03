@@ -1,7 +1,8 @@
 import yaml
 from django.conf import settings
 from django.contrib import auth
-from django.contrib.auth.models import AbstractBaseUser, Permission, UserManager
+from django.contrib.auth.models import AbstractBaseUser, Permission
+from django.contrib.auth.models import UserManager as UserManagerDjango
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
@@ -73,6 +74,15 @@ def get_role_email_recipients(role_name):
 
 def get_reference_contact_users():
     return get_role_users(REFERENCE_CONTACT_ROLE_NAME)
+
+
+class UserQuerySet(models.QuerySet):
+    def older_than(self, before_datetime):
+        return self.filter(date_joined__lt=before_datetime)
+
+
+class UserManager(UserManagerDjango.from_queryset(UserQuerySet)):
+    pass
 
 
 # Our model is similar to AbstractUser, but our permissions are a bit different:

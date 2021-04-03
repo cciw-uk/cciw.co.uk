@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # See config/data_retention.yaml
 #
 # Terminology:
@@ -32,6 +33,7 @@ from django.db.models.fields import Field
 from django.utils import timezone
 from mailer import models as mailer_models
 
+from cciw.accounts.models import User
 from cciw.bookings.models import Booking, BookingAccount
 from cciw.contact_us.models import Message
 from cciw.officers.models import Application
@@ -454,6 +456,7 @@ def _find_erasure_method(field):
 # --- Domain specific knowledge ---
 
 
+# Dictionary from model to callable that retrieves the erasable records:
 ERASABLE_RECORDS = {
     Message: lambda before_datetime: Message.objects.older_than(before_datetime),
     Application: lambda before_datetime: Application.objects.older_than(before_datetime),
@@ -465,6 +468,7 @@ ERASABLE_RECORDS = {
     ),
     Booking: lambda before_datetime: Booking.objects.not_in_use().older_than(before_datetime),
     BookingAccount: lambda before_datetime: BookingAccount.objects.not_in_use().older_than(before_datetime),
+    User: lambda before_datetime: User.objects.older_than(before_datetime),
 }
 
 

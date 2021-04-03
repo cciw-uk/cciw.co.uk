@@ -6,6 +6,7 @@ from django.utils import timezone
 from mailer import models as mailer_models
 from time_machine import travel
 
+from cciw.accounts.models import User
 from cciw.bookings import models as bookings_models
 from cciw.bookings.tests import factories as bookings_factories
 from cciw.cciwmain.tests.base import factories as camps_factories
@@ -322,6 +323,26 @@ class TestApplyDataRetentionPolicy(TestBase):
 
         with travel(camp2.end_date + timedelta(days=1)):
             assert account in bookings_models.BookingAccount.objects.not_in_use()
+
+    def test_erase_User(self):
+        policy = make_policy(
+            model=User,
+            delete_row=False,
+            keep=timedelta(days=365),
+            fields=[
+                'contact_phone_number',
+            ],
+        )
+        with travel('2001-01-01'):
+            user = officers_factories.create_officer(contact_phone_number=(num := '01234 567 890'))
+        with travel('2001-12-31'):
+            apply_partial_policy(policy)
+            user.refresh_from_db()
+            assert user.contact_phone_number == num
+        with travel('2002-01-01 01:00:00'):
+            apply_partial_policy(policy)
+            user.refresh_from_db()
+            assert user.contact_phone_number == '[deleted]'
 
     def _assert_instance_deleted_after(self, *, instance: object, start: datetime, policy: Policy, days: int):
         model = instance.__class__
