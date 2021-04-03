@@ -332,6 +332,45 @@ class TestApplyDataRetentionPolicy(TestBase):
         with travel(camp2.end_date + timedelta(days=1)):
             assert account in bookings_models.BookingAccount.objects.not_in_use()
 
+    def test_erase_BookingAccount_not_in_use_query_issue(self):
+        # Had some issues with not_in_use() and older_than() combinations with
+        # more implementations of them. The error
+        # "django.db.utils.ProgrammingError: more than one row returned by a
+        # subquery used as an expression." was produced. Looking at the query
+        # created, which was rather suspect, it was possibly a Django bug. The
+        # following code produced the issue, which was worked around by
+        # structuring the query differently.
+        with travel('2001-01-01'):
+            account = bookings_factories.create_booking_account()
+            other_account = bookings_factories.create_booking_account()
+            camp1 = camps_factories.create_camp(start_date=date.today())
+            camp2 = camps_factories.create_camp(start_date=date.today() + timedelta(days=14))
+            for acc in (account, other_account):
+                for camp in (camp1, camp2):
+                    bookings_factories.create_booking(
+                        account=acc,
+                        state=bookings_models.BookingState.BOOKED,
+                        camp=camp,
+                        amount_due=100,
+                    )
+            account.receive_payment(200)
+            other_account.receive_payment(100)
+
+        with travel('2001-01-09'):
+            # This has unfinished camps:
+            assert account not in bookings_models.BookingAccount.objects.not_in_use().older_than(
+                datetime(2001, 1, 9)
+            )
+        with travel('2002-01-01'):
+            # Now has no outstanding fees, nor unfinished camps
+            assert account in bookings_models.BookingAccount.objects.not_in_use().older_than(
+                datetime(2002, 1, 1)
+            )
+            # This one has outstanding fees
+            assert other_account not in bookings_models.BookingAccount.objects.not_in_use().older_than(
+                datetime(2002, 1, 1)
+            )
+
     def test_erase_User(self):
         policy = make_policy(
             model=User,

@@ -10,6 +10,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import Prefetch, functions
+from django.db.models.expressions import RawSQL
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
@@ -157,11 +158,12 @@ class BookingAccountQuerySet(models.QuerySet):
         )
 
     def older_than(self, before_datetime):
-        return self.filter(
-            last_login__isnull=False, last_login__lt=before_datetime
-        ) | self.filter(
-            last_login__isnull=True, created__lt=before_datetime
-        )
+        return self.filter(models.ExpressionWrapper(RawSQL('''
+        (CASE WHEN bookings_bookingaccount.last_login IS NOT NULL THEN bookings_bookingaccount.last_login
+              ELSE bookings_bookingaccount.created
+         END) < %s
+        ''', [before_datetime]), output_field=models.BooleanField(),
+        ))
 
     def _with_total_amount_due(self):
         # Use 'alias' once Django 3.2 is out
