@@ -31,6 +31,7 @@ from django.db import models, transaction
 from django.db.models.expressions import RawSQL
 from django.db.models.fields import Field
 from django.utils import timezone
+from django_countries.fields import CountryField
 from mailer import models as mailer_models
 from paypal.standard.ipn.models import PayPalIPN
 
@@ -423,6 +424,33 @@ def get_erasable(before_datetime: date, model: type):
 DELETED_STRING = '[deleted]'
 
 
+# For EmailFieldErasure and CountryFieldErasure we avoid validation errors in
+# admin by setting something that is valid, rather than just deleting.
+
+class EmailFieldErasure(ErasureMethod):
+    def allowed_for_field(self, field: Field):
+        return isinstance(field, models.EmailField)
+
+    def build_update_dict(self, field: Field):
+        key = field.name
+        if field.null and field.blank:
+            return {key: None}
+        else:
+            return {key: 'deleted@example.com'}
+
+
+class CountryFieldErasure(ErasureMethod):
+    def allowed_for_field(self, field: Field):
+        return isinstance(field, CountryField)
+
+    def build_update_dict(self, field: Field):
+        key = field.name
+        if field.null and field.blank:
+            return {key: None}
+        else:
+            return {key: 'GB'}  # United Kingdom
+
+
 class CharFieldErasure(ErasureMethod):
     def allowed_for_field(self, field: Field):
         return isinstance(field, models.CharField)
@@ -456,6 +484,8 @@ class NullableFieldErasure(ErasureMethod):
 
 # This list is ordered to prioritise more specific methods
 DEFAULT_ERASURE_METHODS: list[ErasureMethod] = [
+    EmailFieldErasure(),
+    CountryFieldErasure(),
     CharFieldErasure(),
     BooleanFieldErasure(),
     NullableFieldErasure(),
