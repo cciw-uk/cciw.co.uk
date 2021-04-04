@@ -239,8 +239,16 @@ class BookingAdminForm(forms.ModelForm):
 
 def make_change_state_action(state, display_name):
     def change_state(modeladmin, request, queryset):
-        queryset.update(state=state)
-        messages.info(request, f"Changed {queryset.count()} bookings to '{display_name}'")
+        bookings = list(queryset)
+        count = 0
+        for booking in bookings:
+            if booking.state != state:
+                booking.state = state
+                booking.auto_set_amount_due()
+                booking.save()
+                count += 1
+
+        messages.info(request, f"Changed {count} bookings to '{display_name}'")
 
     change_state.short_description = f"Change to '{display_name}'"
     change_state.__name__ = f"change_state_{state}"
