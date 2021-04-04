@@ -134,9 +134,28 @@ class BookingsYearFilter(admin.SimpleListFilter):
         return queryset.filter(bookings__camp__year=val)
 
 
+class FinalBalanceFilter(admin.SimpleListFilter):
+    title = "Final balance"
+    parameter_name = "final_balance"
+
+    def lookups(self, request, model_admin):
+        return [
+            ('zero', 'Zero'),
+            ('non-zero', 'Non zero'),
+        ]
+
+    def queryset(self, request, queryset):
+        val = self.value()
+        if val == 'zero':
+            return queryset.zero_final_balance()
+        elif val == 'non-zero':
+            return queryset.non_zero_final_balance()
+        return queryset
+
+
 class BookingAccountAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'email', 'address_post_code', 'phone_number']
-    list_filter = [LoggedInFilter, BookingsYearFilter, 'subscribe_to_newsletter']
+    list_filter = [LoggedInFilter, BookingsYearFilter, FinalBalanceFilter, 'subscribe_to_newsletter']
     ordering = ['email']
     search_fields = ['email', 'name']
     readonly_fields = ['first_login', 'last_login', 'total_received', 'admin_balance']
