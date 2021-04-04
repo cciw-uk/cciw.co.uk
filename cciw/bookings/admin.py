@@ -387,11 +387,16 @@ class BookingAdmin(admin.ModelAdmin):
     def get_queryset(self, *args, **kwargs):
         return super().get_queryset(*args, **kwargs).select_related('camp__camp_name')
 
-    def save_model(self, request, obj, form, change):
+    def save_model(self, request, obj: Booking, form, change):
         if obj.id is not None:
             old_state = Booking.objects.get(id=obj.id).state
         else:
             old_state = None
+        if obj.state in [
+                BookingState.CANCELLED_FULL_REFUND,
+                BookingState.CANCELLED_DEPOSIT_KEPT
+        ]:
+            obj.auto_set_amount_due()
         retval = super(BookingAdmin, self).save_model(request, obj, form, change)
 
         # NB: do this handling here, not in BookingAdminForm.save(),
