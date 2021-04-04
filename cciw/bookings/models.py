@@ -168,7 +168,13 @@ class BookingAccountQuerySet(models.QuerySet):
     def _with_total_amount_due(self):
         # Use 'alias' once Django 3.2 is out
         return self.annotate(total_amount_due=functions.Coalesce(
-            models.Sum('bookings__amount_due'),
+            models.Sum(
+                'bookings__amount_due',
+                filter=~models.Q(bookings__state__in=[
+                    BookingState.CANCELLED_FULL_REFUND,
+                    BookingState.INFO_COMPLETE,
+                ]),
+            ),
             models.Value(0),
         ))
 
