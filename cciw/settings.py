@@ -147,7 +147,6 @@ SILENCED_SYSTEM_CHECKS = [
     '1_8.W001',
     'urlchecker.W001',
     'urlchecker.W003',
-    'dataretention.E003',  # Not ready yet
 ]
 
 # == AUTH ==
