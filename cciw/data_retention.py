@@ -403,11 +403,7 @@ def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_deta
                 method = _find_erasure_method(field)
             update_dict.update(method.build_update_dict(field))
         if model_detail.model not in ERASED_ON_EXCEPTIONS:
-            update_dict['erased_on'] = RawSQL('''
-            CASE WHEN erased_on IS NULL THEN %s
-                 ELSE erased_on
-            END
-            ''', [now])
+            update_dict['erased_on'] = update_erased_on_field(now)
         retval = erasable_records.update(**update_dict)
     return retval
 
@@ -417,6 +413,13 @@ def get_erasable(before_datetime: date, model: type):
     assert qs.model == model
     return qs
 
+
+def update_erased_on_field(now: datetime):
+    return RawSQL('''
+        CASE WHEN erased_on IS NULL THEN %s
+        ELSE erased_on
+        END
+    ''', [now])
 
 # --- Default erasure methods ---
 
