@@ -90,7 +90,7 @@ django-mptt==0.11.0
     # via wiki
 django-nyt==1.1.6
     # via wiki
-django-paypal==1.1
+django-paypal==1.1.1
     # via -r requirements.in
 django-plainpasswordhasher==0.3
     # via -r requirements-dev.in
