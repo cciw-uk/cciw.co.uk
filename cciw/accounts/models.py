@@ -436,18 +436,26 @@ class Role(models.Model):
         blank=True,
         related_name='roles',
     )
-    members = models.ManyToManyField(User, related_name='roles',
-                                     help_text='Users who have access rights for this role',
-                                     )
+    members = models.ManyToManyField(
+        User, related_name='roles',
+        help_text='This defines which users have access rights '
+        'to all the functionality on the website related to this role. ',
+    )
 
     # Email related
-    email = models.EmailField(help_text="Email address including domain", blank=True)
-    email_recipients = models.ManyToManyField(User, related_name='roles_as_email_recipient',
-                                              blank=True,
-                                              help_text='Users who will be emailed for email sent to the role '
-                                              'email address. Usually the same as "members", or a subset')
-    allow_emails_from_public = models.BooleanField(default=False)
-
+    email = models.EmailField(help_text="Email address including domain. Optional.", blank=True)
+    email_recipients = models.ManyToManyField(
+        User, related_name='roles_as_email_recipient',
+        blank=True,
+        help_text='This defines which users will be emailed for email sent to the role '
+        'email address above. Usually the same as "members", or a subset, but could have '
+        'additional people.'
+    )
+    allow_emails_from_public = models.BooleanField(
+        default=False,
+        help_text="If unchecked, the email address will be a group communication list, "
+        "usable only by other members of the list."
+    )
     objects = RoleManager()
 
     class Meta:
