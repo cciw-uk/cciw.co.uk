@@ -218,24 +218,6 @@ def make_camp_leaders_for_year_list(year, camps):
     )
 
 
-def debug_list_generator(current_camps):
-    return [EmailList(
-        local_address='camp-debug',
-        get_members=get_webmasters,
-        has_permission=lambda email_address: True,
-        list_reply=True,
-    )]
-
-
-def webmaster_list_generator(current_camps):
-    return [EmailList(
-        local_address='webmaster',
-        get_members=get_webmasters,
-        has_permission=lambda email_address: True,
-        list_reply=False,
-    )]
-
-
 def roles_list_generator(current_camps):
     for role in Role.objects.with_address():
         local_address, domain = role.email.rsplit('@', 1)
@@ -261,17 +243,11 @@ GENERATORS = [
     camp_slackers_list_generator,
     camp_leaders_list_generator,
     camp_leaders_for_year_list_generator,
-    debug_list_generator,
-    webmaster_list_generator,
     roles_list_generator,
 ]
 
 
 # Helper functions for lists:
-
-def get_webmasters():
-    return User.objects.filter(is_superuser=True)
-
 
 def get_leaders_for_camp(camp):
     retval = set()

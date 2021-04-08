@@ -1258,8 +1258,8 @@ class AccountTransferBase(fix_autocomplete_fields(['from_account', 'to_account']
                           OfficersSetupMixin, FuncBaseMixin):
     def test_add_account_transfer(self):
 
-        account_1 = BookingAccount.objects.create(email="account1@gmail.com", name="Joe")
-        account_2 = BookingAccount.objects.create(email="account2@gmail.com", name="Jane")
+        account_1 = BookingAccount.objects.create(email="account1@example.com", name="Joe")
+        account_2 = BookingAccount.objects.create(email="account2@example.com", name="Jane")
         account_1.manual_payments.create(amount="100.00")
         account_1 = refresh(account_1)
         self.assertEqual(account_1.total_received, Decimal('100.00'))

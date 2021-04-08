@@ -27,7 +27,8 @@
 # and has all and only the permissions specified here.
 #
 # The contents need to be agreed with the CCiW committee, as per the "CCiW
-# website security procedures" document.
+# website security procedures" document, which contains further important info
+# about access rights for certain people.
 #
 # The names of the roles need to be synced with /cciw/accounts/models.py
 #
@@ -94,12 +95,8 @@ Roles:
       # View references
       - officers.Reference/change
   Chairperson:
-    # This person will be a member of Committee as well. They additionally have
-    # the rights to change User, which is effectively superuser rights. To avoid
-    # giving this to too many users who will not understand that they have it,
-    # this permission is separated out.
-    Permissions:
-      - accounts.User/change
+    # This person will be a member of Committee as well
+    Permissions: []
   Site editors:
     # People with general permissions to manage the
     # site - enter camp information etc.
@@ -127,4 +124,10 @@ Roles:
     Permissions: []
   Wiki users:
     # No admin permisssions needed
+    Permissions: []
+  Webmasters:
+    # Have superuser rights
+    Permissions: []
+  Debug:
+    # For debugging email lists
     Permissions: []

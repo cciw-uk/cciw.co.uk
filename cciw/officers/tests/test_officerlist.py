@@ -23,7 +23,7 @@ from .base import LEADER, CurrentCampsMixin, OfficersSetupMixin
 class TestCreate(TestBase):
 
     def test_create(self):
-        user = create_officer("Joe", "Bloggs", "joebloggs@gmail.com")
+        user = create_officer("Joe", "Bloggs", "joebloggs@example.com")
 
         user = User.objects.get(id=user.id)
         self.assertTrue(user.is_staff)
@@ -332,7 +332,7 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
     def test_duplicate_name(self):
         self.create_officer('Mary',
                             'Andrews',
-                            'mary.andrews@gmail.com')
+                            'mary.andrews@example.com')
         self.officer_login(LEADER)
         self.get_page()
         self.fill({
