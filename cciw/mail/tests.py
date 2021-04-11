@@ -2,6 +2,7 @@ import re
 from unittest import mock
 
 import mailer.engine
+import pytest
 from django.core import mail
 from django.core.mail.backends.locmem import EmailBackend as LocMemEmailBackend
 from django.test.client import RequestFactory
@@ -9,7 +10,7 @@ from django.test.utils import override_settings
 from mailer.models import Message
 from requests.exceptions import ConnectionError
 
-from cciw.accounts.models import COMMITTEE_ROLE_NAME, Role, User
+from cciw.accounts.models import Role, User
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
 from cciw.utils.functional import partition
@@ -96,7 +97,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
             assert email_list.get_members() == members
             assert email_list.address == 'camp-2000-blue-leaders@mailtest.cciw.co.uk'
 
-    def _setup_role_for_email(self, *, name, email, allow_emails_from_public,
+    def _setup_role_for_email(self, *, name='Test', email, allow_emails_from_public,
                               recipients):
         role, _ = Role.objects.get_or_create(name=name)
         role.allow_emails_from_public = allow_emails_from_public
@@ -110,8 +111,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         return role
 
     def test_handle_role_list(self):
-        self._setup_role_for_email(
-            name=COMMITTEE_ROLE_NAME,
+        role = self._setup_role_for_email(
             allow_emails_from_public=False,
             email='committee@mailtest.cciw.co.uk',
             recipients=[('aperson1', 'a.person.1@example.com'),
@@ -119,15 +119,22 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         )
 
         # Email address without permission
-        msg = MSG_COMMITTEE_LIST.replace(b'a.person.2@example.com', b'joe@example.com')
-        handle_mail(msg)
+        msg1 = make_message(
+            to_email=role.email,
+            from_email='joe@example.com',
+        )
+        handle_mail(msg1)
 
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
         assert len(rejections) == 1
         assert len(sent_messages) == 0
 
         # Email address with permission
-        handle_mail(MSG_COMMITTEE_LIST)
+        msg2 = make_message(
+            to_email=role.email,
+            from_email='Me <a.person.1@example.com>',
+        )
+        handle_mail(msg2)
 
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
         assert len(rejections) == 1
@@ -141,9 +148,9 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
                    for m in sent_messages_bytes)
         assert all(b"List-Post: <mailto:committee@mailtest.cciw.co.uk>" in m
                    for m in sent_messages_bytes)
-        assert all(m.from_email == "Joe a.person.2(at)example.com via <noreply@cciw.co.uk>"
+        assert all(m.from_email == "Me a.person.1(at)example.com via <noreply@cciw.co.uk>"
                    for m in sent_messages)
-        assert all(b"\nX-Original-From: Joe <a.person.2@example.com>" in m
+        assert all(b"\nX-Original-From: Me <a.person.1@example.com>" in m
                    for m in sent_messages_bytes)
         assert all(b"Subject: Test" in m
                    for m in sent_messages_bytes)
@@ -151,18 +158,14 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
                    for m in sent_messages_bytes)
 
     def test_handle_public_role_list(self):
-        role = Role.objects.create(
-            name='Some role',
+        role = self._setup_role_for_email(
             email='myrole@mailtest.cciw.co.uk',
             allow_emails_from_public=True,
-        )
-        role.email_recipients.create(
-            username='test1',
-            email='test1@example.com'
+            recipients=[('test1', 'test1@example.com')],
         )
 
-        # Email address without permission
-        msg = MSG_COMMITTEE_LIST.replace(b'committee@mailtest', b'myrole@mailtest')
+        # Email address without membership
+        msg = make_message(to_email=role.email, from_email='someone@example.com')
         handle_mail(msg)
 
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
@@ -193,11 +196,14 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         self.assertTrue(any(True for m in mail.outbox if '"Fred Jones" <fredjones@somewhere.com>' in m.to))
 
     def test_spam_and_virus_checking(self):
-        for header in [b'X-SES-Spam-Verdict: FAIL',
-                       b'X-SES-Virus-Verdict: FAIL']:
-            # insert header:
-            msg = MSG_DEBUG_LIST.replace(b'Subject: Test',
-                                         header + b'\r\n' + b'Subject: Test')
+        role = self._setup_role_for_email(
+            name='Test',
+            email='test@mailtest.cciw.co.uk',
+            allow_emails_from_public=True,
+            recipients=[('test', 'test@example.com')])
+        for header in ['X-SES-Spam-Verdict: FAIL',
+                       'X-SES-Virus-Verdict: FAIL']:
+            msg = make_message(to_email=role.email, additional_headers=[header])
             handle_mail(msg)
             rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
             assert rejections == []
@@ -212,21 +218,23 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         Test that if an error always occurs trying to send, handle_mail raises
         Exception. (This means that we will get error logs about it.)
         """
-        self._setup_role_for_email(
-            name=COMMITTEE_ROLE_NAME,
+        role = self._setup_role_for_email(
             allow_emails_from_public=False,
             email='committee@mailtest.cciw.co.uk',
-            recipients=[('aperson2', 'a.person.2@example.com')]
+            recipients=[('aperson', 'a.person@example.com')]
         )
         with mock.patch('cciw.mail.lists.send_mime_message') as m_s:
             def connection_error():
                 raise ConnectionError("Connection refused")
             m_s.side_effect = connection_error
-            self.assertRaises(Exception, handle_mail, MSG_COMMITTEE_LIST)
+            with pytest.raises(Exception):
+                handle_mail(make_message(
+                    to_email=role.email,
+                    from_email='a.person@example.com'),
+                )
 
     def test_handle_invalid_list(self):
-        msg = MSG_DEBUG_LIST.replace(b'camp-debug@mailtest.cciw.co.uk',
-                                     b'camp-1990-blue-officers@mailtest.cciw.co.uk')
+        msg = make_message(to_email='camp-1990-blue-officers@mailtest.cciw.co.uk')
         handle_mail(msg)
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
         self.assertEqual(len(sent_messages), 0)
@@ -237,8 +245,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         Test what happens when there are SMTP errors with some recipients,
         but not all.
         """
-        self._setup_role_for_email(
-            name=COMMITTEE_ROLE_NAME,
+        role = self._setup_role_for_email(
             allow_emails_from_public=False,
             email='committee@mailtest.cciw.co.uk',
             recipients=[('aperson1', 'a.person.1@example.com'),
@@ -253,7 +260,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
                 # Otherwise succeed silently
             m_s.side_effect = sendmail
 
-            handle_mail(MSG_COMMITTEE_LIST)
+            handle_mail(make_message(to_email=role.email, from_email='a.person.1@example.com'))
         # We should have tried to send to all recipients
         self.assertEqual(m_s.call_count, 3)
 
@@ -265,7 +272,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         self.assertEqual(error_email.subject,
                          "[CCIW] Error with email to list committee@mailtest.cciw.co.uk")
         self.assertEqual(error_email.to,
-                         ["Joe <a.person.2@example.com>"])
+                         ["a.person.1@example.com"])
 
     def test_handle_mail_permission_denied(self):
         bad_mail = MSG_OFFICER_LIST.replace(b"leader@somewhere.com",
@@ -381,23 +388,43 @@ class TestMailBackend(LocMemEmailBackend):
         return super(TestMailBackend, self).send_messages(messages)
 
 
-MSG_DEBUG_LIST = emailify("""
+def make_message(
+        *,
+        from_email='Sam <a.person@example.com>',
+        to_email='someone@cciw.co.uk',
+        other_to_emails=None,
+        subject='Test',
+        additional_headers=None,
+):
+    if other_to_emails is None:
+        # This exists to check mail is handled properly in cases like this:
+        # To: someone@example.com, mylist@cciw.co.uk
+        other_to_emails = [
+            'Someone <someone@example.com>'
+            '"Someone Else" <someone_else@example.com>',
+        ]
+    else:
+        other_to_emails = []
+    all_to_emails = other_to_emails + [to_email]
+    if additional_headers is not None:
+        extra_headers = ''.join(header + '\n' for header in additional_headers)
+    else:
+        extra_headers = ''
+
+    return emailify(f"""
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Subject: Test
-From: Joe <joe@example.com>
-To: Someone <someone@example.com>, camp-debug@mailtest.cciw.co.uk, "Someone Else" <else@example.com>
+Subject: {subject}
+From: {from_email}
+To: {', '.join(all_to_emails)}
 Date: Sun, 28 Feb 2016 22:32:03 -0000
 Message-ID: <56CCDE2E.9030103@example.com>
+{extra_headers}
 
 Test message
-""")
+    """)
 
-MSG_COMMITTEE_LIST = (MSG_DEBUG_LIST
-                      .replace(b'camp-debug@mailtest.cciw.co.uk', b'committee@mailtest.cciw.co.uk')
-                      .replace(b'joe@example.com', b'a.person.2@example.com')
-                      )
 
 MSG_OFFICER_LIST = emailify("""
 MIME-Version: 1.0

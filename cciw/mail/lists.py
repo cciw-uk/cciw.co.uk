@@ -19,7 +19,7 @@ from django.conf import settings
 from django.core.mail import make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
-from cciw.accounts.models import (COMMITTEE_ROLE_NAME, DBS_OFFICER_ROLE_NAME, Role, User, get_camp_admin_role_users,
+from cciw.accounts.models import (DBS_OFFICER_ROLE_NAME, Role, User, get_camp_admin_role_users,
                                   get_role_email_recipients, get_role_users)
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
@@ -228,7 +228,7 @@ def roles_list_generator(current_camps):
             if role.allow_emails_from_public:
                 return True
             else:
-                return get_role_email_recipients(COMMITTEE_ROLE_NAME).filter(email__iexact=email_address).exists() or is_superuser(email_address)
+                return get_role_email_recipients(role.name).filter(email__iexact=email_address).exists() or is_superuser(email_address)
 
         yield EmailList(
             local_address=local_address,
