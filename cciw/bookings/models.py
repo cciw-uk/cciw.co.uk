@@ -590,12 +590,12 @@ BookingManager = BookingManagerBase.from_queryset(BookingQuerySet)
 
 class Booking(models.Model):
     account = models.ForeignKey(BookingAccount,
-                                on_delete=models.CASCADE,
+                                on_delete=models.PROTECT,
                                 related_name='bookings')
 
     # Booking details - from user
     camp = models.ForeignKey(Camp,
-                             on_delete=models.CASCADE,
+                             on_delete=models.PROTECT,
                              related_name='bookings')
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -1300,7 +1300,7 @@ class Payment(NoEditMixin, models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     account = models.ForeignKey(BookingAccount,
                                 related_name='payments',
-                                on_delete=models.CASCADE)
+                                on_delete=models.PROTECT)
     source = models.OneToOneField('PaymentSource',
                                   null=True, blank=True,
                                   on_delete=models.SET_NULL)
@@ -1352,7 +1352,7 @@ class ManualPaymentBase(NoEditMixin, models.Model):
 
 class ManualPayment(ManualPaymentBase):
     account = models.ForeignKey(BookingAccount,
-                                on_delete=models.CASCADE,
+                                on_delete=models.PROTECT,
                                 related_name='manual_payments')
 
     objects = ManualPaymentManager()
@@ -1366,7 +1366,7 @@ class ManualPayment(ManualPaymentBase):
 
 class RefundPayment(ManualPaymentBase):
     account = models.ForeignKey(BookingAccount,
-                                on_delete=models.CASCADE,
+                                on_delete=models.PROTECT,
                                 related_name='refund_payments')
 
     objects = ManualPaymentManager()
@@ -1380,10 +1380,10 @@ class RefundPayment(ManualPaymentBase):
 
 class AccountTransferPayment(NoEditMixin, models.Model):
     from_account = models.ForeignKey(BookingAccount,
-                                     on_delete=models.CASCADE,
+                                     on_delete=models.PROTECT,
                                      related_name='transfer_from_payments')
     to_account = models.ForeignKey(BookingAccount,
-                                   on_delete=models.CASCADE,
+                                   on_delete=models.PROTECT,
                                    related_name='transfer_to_payments')
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     created = models.DateTimeField(default=timezone.now)

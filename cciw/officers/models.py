@@ -351,7 +351,7 @@ class Qualification(models.Model):
     application = models.ForeignKey(Application, related_name='qualifications',
                                     on_delete=models.CASCADE)
     type = models.ForeignKey(QualificationType, related_name='qualifications',
-                             on_delete=models.CASCADE)
+                             on_delete=models.PROTECT)
     date_issued = models.DateField()
 
     def __str__(self):
@@ -381,7 +381,7 @@ class InvitationManager(models.Manager):
 
 class Invitation(models.Model):
     officer = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                on_delete=models.CASCADE,
+                                on_delete=models.PROTECT,
                                 related_name='invitations')
     camp = models.ForeignKey(Camp,
                              on_delete=models.CASCADE,
@@ -438,7 +438,7 @@ class DBSCheck(models.Model):
         ONLINE = 'online', 'Online check'
 
     officer = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                on_delete=models.CASCADE,
+                                on_delete=models.PROTECT,
                                 related_name='dbs_checks')
     dbs_number = models.CharField("Disclosure number", max_length=20)
     check_type = models.CharField("check type", max_length=20,
@@ -499,7 +499,7 @@ class DBSActionLog(models.Model):
 
     officer = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 related_name='dbsactionlogs',
-                                on_delete=models.CASCADE)
+                                on_delete=models.PROTECT)
     action_type = models.CharField("action type", max_length=40,
                                    choices=ACTION_CHOICES)
     timestamp = models.DateTimeField("Timestamp",
