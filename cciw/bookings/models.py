@@ -419,13 +419,13 @@ class BookingAccount(models.Model):
         """
         # To satisfy PriceChecker performance requirements it's easier
         # to get all bookings up front:
-        all_account_bookings = list(self.bookings.all().select_related('camp'))
+        all_payable_bookings = list(self.bookings.payable(confirmed_only=False).select_related('camp'))
 
         # Bookings we might want to confirm.
         # Order by booking_expires ascending i.e. earliest first.
-        candidate_bookings = sorted([b for b in all_account_bookings if not b.is_confirmed],
+        candidate_bookings = sorted([b for b in all_payable_bookings if b.is_booked and not b.is_confirmed],
                                     key=lambda b: b.booking_expires)
-        price_checker = PriceChecker(expected_years=[b.camp.year for b in all_account_bookings])
+        price_checker = PriceChecker(expected_years=[b.camp.year for b in all_payable_bookings])
         confirmed_bookings = []
         # In order to distribute funds, need to take into account the total
         # amount in the account that is not required by already confirmed places

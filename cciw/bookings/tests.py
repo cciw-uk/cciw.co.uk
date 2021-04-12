@@ -1675,6 +1675,32 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         assert mail.to == [acc.email]
         assert self.THANK_YOU_FOR_PAYMENT not in mail.body  # They didn't actually pay
 
+    def test_book_with_other_bookings(self):
+        """
+        Test that when we have other bookings which are not "booked",
+        distribute_balance doesn't fail.
+        """
+        self.add_prices(deposit=0)  # Zero deposit to allow confirmation without payment
+
+        def make_booking(state):
+            booking = self.create_booking(shortcut=True)
+            booking.state = state
+            booking.save()
+            return booking
+
+        make_booking(BookingState.CANCELLED_FULL_REFUND)
+        make_booking(BookingState.CANCELLED_HALF_REFUND)
+        make_booking(BookingState.INFO_COMPLETE)
+
+        booking = self.create_booking(shortcut=True)
+        self.get_url(self.urlname)
+        self.submit('[name=book_now]')
+        acc = self.get_account()
+        booking = acc.bookings.all()[0]
+        assert booking.state == BookingState.BOOKED
+        assert booking.is_confirmed
+        self.assertUrlsEqual(reverse('cciw-bookings-pay'))
+
     def test_book_unbookable(self):
         """
         Test that an unbookable place can't be booked
