@@ -537,7 +537,7 @@ if LIVEBOX and not CHECK_DEPLOY:
     sentry_sdk.init(
         dsn=SECRETS['PRODUCTION_SENTRY_CONFIG']['dsn'],
         integrations=[DjangoIntegration()],
-        traces_sample_rate=0.01,
+        traces_sample_rate=0.05,
         send_default_pii=True,
         release=release,
     )
