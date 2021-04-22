@@ -12,6 +12,11 @@
 
     {% if basket_bookings %}
 
+      {% if all_bookable %}
+        <p>The place below are ready to be booked — but not booked yet!
+          Contine by choosing from the options below.</p>
+      {% endif %}
+
       <table class="topheaders">
         <tr>
           <th scope="col">Name</th>
