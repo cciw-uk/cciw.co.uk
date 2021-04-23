@@ -25,8 +25,8 @@
           <th scope="col">Actions</th>
         </tr>
 
-        {% for b in basket_bookings %}
-          {% include "cciw/bookings/place_details_row_inc.html" with b=b basket=1 %}
+        {% for booking in basket_bookings %}
+          {% include "cciw/bookings/place_details_row_inc.html" with booking=booking basket=1 %}
         {% endfor %}
 
         {% if discounts_available %}
@@ -100,8 +100,8 @@
           <th scope="col">Price</th>
           <th scope="col">Actions</th>
         </tr>
-        {% for b in shelf_bookings %}
-          {% include "cciw/bookings/place_details_row_inc.html" with b=b shelf=1 %}
+        {% for booking in shelf_bookings %}
+          {% include "cciw/bookings/place_details_row_inc.html" with booking=booking shelf=1 %}
         {% endfor %}
       </table>
 

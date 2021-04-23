@@ -1,44 +1,44 @@
 {% load static %}
 <tr>
   <td>
-    {{ b.name }}
+    {{ booking.name }}
   </td>
   <td>
-    <span class="with-camp-colors-{{ b.camp.slug_name }}"><a href="{% url 'cciw-cciwmain-camps_detail' year=b.camp.year slug=b.camp.slug_name %}">Camp {{ b.camp.name }}</a></span> &nbsp;{{ b.camp.leaders_formatted }},
-    {{ b.camp.start_date|date:"j M Y" }}
+    <span class="with-camp-colors-{{ booking.camp.slug_name }}"><a href="{% url 'cciw-cciwmain-camps_detail' year=booking.camp.year slug=booking.camp.slug_name %}">Camp {{ booking.camp.name }}</a></span> &nbsp;{{ booking.camp.leaders_formatted }},
+    {{ booking.camp.start_date|date:"j M Y" }}
   </td>
   <td class="price">
-    {% if b.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ b.amount_due_normalised }}{% endif %}
+    {% if booking.amount_due_normalised|default_if_none:"None" == "None" %}TBA{% else %}£{{ booking.amount_due_normalised }}{% endif %}
   </td>
   <td rowspan="2" class="bookinglistaction">
-    <input type="submit" name="edit_{{ b.id }}" value="View/edit"><br/>
+    <input type="submit" name="edit_{{ booking.id }}" value="View/edit"><br/>
     {% if basket %}
-      <input type="submit" name="shelve_{{ b.id }}" value="Save for later"><br/>
+      <input type="submit" name="shelve_{{ booking.id }}" value="Save for later"><br/>
     {% endif %}
     {% if shelf %}
-      <input type="submit" name="unshelve_{{ b.id }}" value="Move to basket"><br/>
+      <input type="submit" name="unshelve_{{ booking.id }}" value="Move to basket"><br/>
     {% endif %}
-    <input type="submit" data-js-confirm data-js-confirm-message="Delete this booking?" name="delete_{{ b.id }}" value="Delete">
+    <input type="submit" data-js-confirm data-js-confirm-message="Delete this booking?" name="delete_{{ booking.id }}" value="Delete">
   </td>
 </tr>
 <tr class="sectionbottom">
   <td colspan="3">
-    {% if b.bookable %}
+    {% if booking.bookable %}
       <img class="booking-ok-icon" src="{% static "admin/img/icon-yes.svg" %}">This place can be booked
-      {% if b.manually_approved %}<b> - MANUALLY APPROVED</b>{% endif %}
+      {% if booking.manually_approved %}<b> - MANUALLY APPROVED</b>{% endif %}
     {% else %}
       <img class="booking-error-icon" src="{% static "admin/img/icon-no.svg" %}">This place cannot be booked:
       <ul>
-        {% for p in b.booking_problems %}
+        {% for p in booking.booking_problems %}
           <li>{{ p }}</li>
         {% endfor %}
       </ul>
     {% endif %}
-    {% if b.booking_warnings %}
+    {% if booking.booking_warnings %}
       <div>
         <img class="booking-warning-icon" src="{% static "admin/img/icon-alert.svg" %}">Warning:
         <ul>
-          {% for w in b.booking_warnings %}
+          {% for w in booking.booking_warnings %}
             <li>{{ w }}</li>
           {% endfor %}
         </ul>
