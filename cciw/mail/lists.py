@@ -407,14 +407,15 @@ def forward_email_to_list(mail, email_list: EmailList):
             f"{address}: {str(e)}"
             for address, e in errors
         ]
+        subject = decode_mail_header_value(mail['Subject'])
         msg = """
 You attempted to email the list {0}
-with an email title "{1}".
+with an email titled "{1}".
 
 There were problems with the following addresses:
 
 {2}
-""".format(email_list.address, mail['Subject'], '\n'.join(address_messages))
+""".format(email_list.address, subject, '\n'.join(address_messages))
         send_mail(f"[CCIW] Error with email to list {email_list.address}",
                   msg,
                   settings.DEFAULT_FROM_EMAIL,
@@ -502,10 +503,11 @@ def handle_mail(data):
                 # Don't bother sending bounce emails to addresses
                 # we've never seen before. This is highly likely to be spam.
                 continue
+            subject = decode_mail_header_value(mail['Subject'])
             send_mail(
                 f"[CCIW] Access to mailing list {address} denied",
                 f"You attempted to email the list {address}\n"
-                f"with an email titled \"{mail['Subject']}\".\n"
+                f"with an email titled \"{subject}\".\n"
                 f"\n"
                 f"However, you do not have permission to email this list, \n"
                 f"or the list does not exist. Sorry!",
@@ -520,6 +522,17 @@ def handle_mail(data):
             # for us because we only have routes created for the email
             # we expect.
             pass
+
+
+def decode_mail_header_value(text):
+    parts = email.header.decode_header(text)
+    output = []
+    for part in parts:
+        val, charset = part
+        if charset is not None:
+            val = val.decode(charset)
+        output.append(val)
+    return ''.join(output)
 
 
 def known_officer_email_address(address):

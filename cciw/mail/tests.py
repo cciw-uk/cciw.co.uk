@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+import email
 import re
 from unittest import mock
 
@@ -297,18 +299,21 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
                          ["a.person.1@example.com"])
 
     def test_handle_mail_permission_denied(self):
-        camp_factories.create_camp(year=2000, camp_name='Pink')
+        camp_factories.create_camp(year=2000, camp_name='Orange')
         officer_factories.create_officer(email='other.officer@example.com')
         bad_mail = make_message(
-            to_email='camp-2000-pink-officers@mailtest.cciw.co.uk',
+            to_email='camp-2000-orange-officers@mailtest.cciw.co.uk',
             from_email='Other Person <other.officer@example.com>',
+            subject="🍊 Orange camp 2000 🍊"
         )
         handle_mail(bad_mail)
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
         self.assertEqual(sent_messages, [])
         self.assertEqual(len(rejections), 1)
-        self.assertEqual(rejections[0].subject, "[CCIW] Access to mailing list camp-2000-pink-officers@mailtest.cciw.co.uk denied")
-        self.assertIn("you do not have permission", rejections[0].body)
+        self.assertEqual(rejections[0].subject, "[CCIW] Access to mailing list camp-2000-orange-officers@mailtest.cciw.co.uk denied")
+        body = rejections[0].body
+        self.assertIn("you do not have permission", body)
+        self.assertIn("🍊 Orange camp 2000 🍊", body)
 
     def test_handle_mail_permission_denied_for_unknown(self):
         camp_factories.create_camp(year=2000, camp_name='Pink')
@@ -437,7 +442,7 @@ def make_message(
         other_to_emails = []
     all_to_emails = other_to_emails + [to_email]
     if additional_headers is not None:
-        extra_headers = ''.join(header + '\n' for header in additional_headers)
+        extra_headers = ''.join(encode_email_header(header) + '\n' for header in additional_headers)
     else:
         extra_headers = ''
 
@@ -445,7 +450,7 @@ def make_message(
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Subject: {subject}
+Subject: {encode_email_header(subject)}
 From: {from_email}
 To: {', '.join(all_to_emails)}
 Date: Sun, 28 Feb 2016 22:32:03 -0000
@@ -454,6 +459,12 @@ Message-ID: <56CCDE2E.9030103@example.com>
 
 Test message
     """)
+
+
+def encode_email_header(header_value):
+    if any(ord(c) > 127 for c in header_value):
+        return email.header.Header(header_value, 'utf-8').encode()
+    return header_value
 
 
 MSG_BAD_CHARACTERS = b"""From: "spammer" <spammer@example.com>
