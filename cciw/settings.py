@@ -452,6 +452,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 262144
 COMPRESS_PRECOMPILERS = [
     ('text/less', 'lessc {infile} {outfile}'),
 ]
+COMPRESS_ENABLED = True
 
 ####################
 
