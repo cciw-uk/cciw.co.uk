@@ -297,17 +297,25 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
                          ["a.person.1@example.com"])
 
     def test_handle_mail_permission_denied(self):
-        bad_mail = MSG_OFFICER_LIST.replace(b"leader@somewhere.com",
-                                            b"joe@example.com")
+        camp_factories.create_camp(year=2000, camp_name='Pink')
+        officer_factories.create_officer(email='other.officer@example.com')
+        bad_mail = make_message(
+            to_email='camp-2000-pink-officers@mailtest.cciw.co.uk',
+            from_email='Other Person <other.officer@example.com>',
+        )
         handle_mail(bad_mail)
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
         self.assertEqual(sent_messages, [])
         self.assertEqual(len(rejections), 1)
-        self.assertEqual(rejections[0].subject, "[CCIW] Access to mailing list camp-2000-blue-officers@mailtest.cciw.co.uk denied")
+        self.assertEqual(rejections[0].subject, "[CCIW] Access to mailing list camp-2000-pink-officers@mailtest.cciw.co.uk denied")
         self.assertIn("you do not have permission", rejections[0].body)
 
     def test_handle_mail_permission_denied_for_unknown(self):
-        bad_mail = MSG_OFFICER_LIST.replace(b"leader@somewhere.com", b"randomer@random.com")
+        camp_factories.create_camp(year=2000, camp_name='Pink')
+        bad_mail = make_message(
+            to_email='camp-2000-pink-officers@mailtest.cciw.co.uk',
+            from_email='randomer@random.com',
+        )
         handle_mail(bad_mail)
         self.assertEqual(len(mail.outbox), 0)
 
@@ -446,20 +454,6 @@ Message-ID: <56CCDE2E.9030103@example.com>
 
 Test message
     """)
-
-
-MSG_OFFICER_LIST = emailify("""
-MIME-Version: 1.0
-Date: Thu, 30 Jul 2015 10:39:10 +0100
-To: "Camp 1 officers" <camp-2000-blue-officers@mailtest.cciw.co.uk>
-Subject: Minibus Drivers
-Content-Type: text/plain; charset="us-ascii"
-From: Kevin Smith <leader@somewhere.com>
-Content-Type: text/plain; charset=utf-8
-
-This is a message!
-
-""")
 
 
 MSG_BAD_CHARACTERS = b"""From: "spammer" <spammer@example.com>
