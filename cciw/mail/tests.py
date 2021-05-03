@@ -11,8 +11,10 @@ from mailer.models import Message
 from requests.exceptions import ConnectionError
 
 from cciw.accounts.models import Role, User
+from cciw.cciwmain.tests.base import factories as camp_factories
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.officers.tests.base import ExtraOfficersSetupMixin
+from cciw.officers.tests.base import factories as officer_factories
 from cciw.utils.functional import partition
 from cciw.utils.tests.base import TestBase
 
@@ -179,7 +181,27 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
                              for m in sent_messages_bytes))
 
     def test_handle_officer_list(self):
-        handle_mail(MSG_OFFICER_LIST)
+        camp = camp_factories.create_camp(
+            year=2000,
+            camp_name='Pink',
+            leader=officer_factories.create_officer(email=(leader_email := 'kevin.smith@example.com')),
+        )
+        officer_factories.add_officers_to_camp(
+            camp,
+            [
+                officer_factories.create_officer(
+                    first_name='Fred',
+                    last_name='Jones',
+                    email='fredjones@example.com',
+                ),
+                officer_factories.create_officer(),
+                officer_factories.create_officer(),
+            ],
+        )
+        handle_mail(make_message(
+            from_email=f'Kevin Smith <{leader_email}>',
+            to_email='camp-2000-pink-officers@mailtest.cciw.co.uk',
+        ))
 
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
         self.assertEqual(len(rejections), 0)
@@ -187,13 +209,13 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
 
         sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
 
-        self.assertTrue(all(b'\nX-Original-From: Kevin Smith <leader@somewhere.com>' in m
+        self.assertTrue(all(b'\nX-Original-From: Kevin Smith <kevin.smith@example.com>' in m
                             for m in sent_messages_bytes))
-        self.assertTrue(all(m.from_email == 'Kevin Smith leader(at)somewhere.com via <noreply@cciw.co.uk>'
+        self.assertTrue(all(m.from_email == 'Kevin Smith kevin.smith(at)example.com via <noreply@cciw.co.uk>'
                             for m in sent_messages))
         self.assertTrue(all(b"Sender: CCIW website <noreply@cciw.co.uk>" in m
                             for m in sent_messages_bytes))
-        self.assertTrue(any(True for m in mail.outbox if '"Fred Jones" <fredjones@somewhere.com>' in m.to))
+        self.assertTrue(any(True for m in mail.outbox if '"Fred Jones" <fredjones@example.com>' in m.to))
 
     def test_spam_and_virus_checking(self):
         role = self._setup_role_for_email(

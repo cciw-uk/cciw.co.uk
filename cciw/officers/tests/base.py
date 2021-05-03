@@ -274,6 +274,10 @@ class Factories:
         username = username or self._make_auto_username()
         return f'{username}@example.com'
 
+    def add_officers_to_camp(self, camp, officers):
+        for officer in officers:
+            camp.invitations.create(officer=officer)
+
     def create_application(self, officer, *,
                            year=None,
                            date_saved=None,

@@ -3,26 +3,37 @@ from datetime import date, timedelta
 from django.conf import settings
 from django.contrib.sites.models import Site as DjangoSite
 
+from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.sitecontent.models import HtmlChunk, MenuLink
 
 
 class Factories:
     def create_camp(
-            self,
+            self, *,
             start_date=None,
             end_date=None,
             site=None,
             camp_name=None,
             minimum_age=None,
             maximum_age=None,
+            year=None,
+            leader=None,
     ):
-        camp_name = camp_name or self.get_any_camp_name()
+        requested_camp_name = camp_name
+        if isinstance(camp_name, str):
+            camp_name = self.get_or_create_camp_name(camp_name)
+        elif camp_name is None:
+            camp_name = self.get_any_camp_name()
         if start_date is None:
             if end_date is not None:
                 start_date = end_date - timedelta(days=7)
             else:
-                start_date = date.today()
+                if year is not None:
+                    # Some date in the summer
+                    start_date = date(year, 8, 1)
+                else:
+                    start_date = date.today()
         if end_date is None:
             end_date = start_date + timedelta(days=7)
         site = site or self.get_any_site()
@@ -33,16 +44,19 @@ class Factories:
                 minimum_age = 11
         if maximum_age is None:
             maximum_age = minimum_age + 6
-        year = start_date.year
+        if year is not None:
+            assert year == start_date.year
+        else:
+            year = start_date.year
         if Camp.objects.filter(
                 camp_name=camp_name,
                 year=year
-        ).exists():
+        ).exists() and requested_camp_name is None:
             # Hack, need a better way to do this.
             # This only works for 2 camps.
             camp_name = self.create_camp_name(name='other')
 
-        return Camp.objects.create(
+        camp = Camp.objects.create(
             end_date=end_date,
             camp_name=camp_name,
             site=site,
@@ -52,6 +66,9 @@ class Factories:
             start_date=start_date,
             chaplain=None,
         )
+        if leader is not None:
+            self.set_camp_leader(camp, leader)
+        return camp
 
     def get_any_camp(self):
         # TODO - a way to cache values - needs to work well with DB - i.e.
@@ -79,6 +96,12 @@ class Factories:
             return camp_name
         return self.create_camp_name()
 
+    def get_or_create_camp_name(self, name):
+        try:
+            return CampName.objects.get(name=name)
+        except CampName.DoesNotExist:
+            return self.create_camp_name(name=name)
+
     def create_site(self):
         return Site.objects.create(
             short_name='The Farm',
@@ -92,6 +115,16 @@ class Factories:
         if site is not None:
             return site
         return self.create_site()
+
+    def set_camp_leader(self, camp, leader):
+        if isinstance(leader, User):
+            leader_person = Person.objects.create(
+                name=leader.full_name
+            )
+            leader_person.users.set([leader])
+            camp.leaders.set([leader_person])
+        else:
+            raise NotImplementedError(f"Don't know what to do with {leader}")
 
 
 class BasicSetupMixin(object):
