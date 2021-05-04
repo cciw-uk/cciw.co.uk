@@ -3,6 +3,7 @@ import django.contrib.staticfiles.views
 import django.views.static
 from django.conf import settings
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import include, path, register_converter
 
 import cciw.officers.views
@@ -19,6 +20,7 @@ register_converter(converters.OptStr, 'optstr')
 
 
 urlpatterns = [
+    path('health-check/', lambda request: HttpResponse('OK')),
     # Plug in the password reset views (before 'admin')
     path('admin/password_reset/', cciw.officers.views.cciw_password_reset, name="admin_password_reset"),
     path('admin/password_reset/done/', django.contrib.auth.views.PasswordResetDoneView.as_view(), name="password_reset_done"),
