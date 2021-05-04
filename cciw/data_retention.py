@@ -235,7 +235,7 @@ def load_data_retention_policy() -> Policy:
             raise ValueError(f'Unexpected keys in group entry: {", ".join(yaml_group.keys())}')
 
     return Policy(
-        source=filename,
+        source=str(filename),
         groups=groups
     )
 

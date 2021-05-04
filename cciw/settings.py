@@ -3,19 +3,21 @@
 # Settings file
 import json
 import os
+from pathlib import Path
 import socket
 import subprocess
 import sys
 
 hostname = socket.gethostname()
 
-basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # ../
-parentdir = os.path.dirname(basedir)
-SECRETS = json.load(open(os.path.join(basedir, 'config', 'secrets.json')))
+# resolve is important for removing symlinks, which can affect behaviour
+basepath = Path(os.path.abspath(__file__)).resolve().parent.parent
+parentpath = basepath.parent
+SECRETS = json.load(open(basepath / 'config' / 'secrets.json'))
 
-PROJECT_ROOT = basedir
-HOME_DIR = os.environ['HOME']
-BASE_DIR = basedir
+PROJECT_ROOT = basepath
+HOME_PATH = Path(os.environ['HOME']).resolve()
+BASE_PATH = basepath
 
 CHECK_DEPLOY = 'manage.py check --deploy' in ' '.join(sys.argv)
 if CHECK_DEPLOY:
@@ -28,9 +30,9 @@ TESTS_RUNNING = False
 
 
 if LIVEBOX and not CHECK_DEPLOY:
-    LOG_DIR = os.path.join(HOME_DIR, "logs")  # See fabfile
+    LOG_PATH = HOME_PATH / "logs"  # See fabfile
 else:
-    LOG_DIR = os.path.join(parentdir, "logs")
+    LOG_PATH = parentpath / "logs"
 
 
 if LIVEBOX:
@@ -73,7 +75,7 @@ ROOT_URLCONF = 'cciw.urls'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': f'unix:{HOME_DIR}/memcached.sock',
+        'LOCATION': f'unix:{HOME_PATH / "memcached.sock"}',
         'KEY_PREFIX': 'cciw.co.uk',
     }
 } if LIVEBOX else {
@@ -216,7 +218,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'cloghandler.ConcurrentRotatingFileHandler',
             'formatter': 'verbose',
-            'filename': os.path.join(LOG_DIR, 'info_cciw_django.log'),
+            'filename': LOG_PATH / 'info_cciw_django.log',
             'maxBytes': 1000000,
             'backupCount': 5,
         },
@@ -224,7 +226,7 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'cloghandler.ConcurrentRotatingFileHandler',
             'formatter': 'verbose',
-            'filename': os.path.join(LOG_DIR, 'paypal_debug_cciw_django.log'),
+            'filename': LOG_PATH / 'paypal_debug_cciw_django.log',
             'maxBytes': 1000000,
             'backupCount': 5,
         },
@@ -232,7 +234,7 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'cloghandler.ConcurrentRotatingFileHandler',
             'formatter': 'verbose',
-            'filename': os.path.join(LOG_DIR, 'aws_debug_cciw_django.log'),
+            'filename': LOG_PATH / 'aws_debug_cciw_django.log',
             'maxBytes': 1000000,
             'backupCount': 5,
         },
@@ -332,7 +334,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            basedir + r'/templates',
+            basepath / 'templates',
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -435,8 +437,8 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"
 
 # == MEDIA ==
 
-MEDIA_ROOT = os.path.join(parentdir, 'usermedia')
-STATIC_ROOT = os.path.join(parentdir, 'static')
+MEDIA_ROOT = parentpath / 'usermedia'
+STATIC_ROOT = parentpath / 'static'
 
 MEDIA_URL = '/usermedia/'
 STATIC_URL = '/static/'
@@ -473,8 +475,8 @@ BOOKINGFORMDIR = "downloads"
 
 ESV_KEY = 'IP'
 DBS_VALID_FOR = 365 * 3  # We consider a DBS check valid for 3 years
-ROLES_CONFIG_FILE = os.path.join(basedir, 'config', 'static_roles.yaml')
-DATA_RETENTION_CONFIG_FILE = os.path.join(basedir, 'config', 'data_retention.yaml')
+ROLES_CONFIG_FILE = basepath / 'config' / 'static_roles.yaml'
+DATA_RETENTION_CONFIG_FILE = basepath / 'config' / 'data_retention.yaml'
 
 # Referenced from style.less
 COLORS_LESS_DIR = "cciw/cciwmain/static/"
@@ -532,7 +534,7 @@ if LIVEBOX and not CHECK_DEPLOY:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
-    version = subprocess.check_output(['git', '-C', BASE_DIR, 'rev-parse', 'HEAD']).strip().decode('utf-8')
+    version = subprocess.check_output(['git', '-C', BASE_PATH, 'rev-parse', 'HEAD']).strip().decode('utf-8')
     release = "cciw@" + version
 
     sentry_sdk.init(
@@ -544,7 +546,7 @@ if LIVEBOX and not CHECK_DEPLOY:
     )
 
 # Captcha
-CAPTCHA_FONT_PATH = os.path.join(BASE_DIR, "cciw", "cciwmain", "static", "fonts", "Monoton-Regular.ttf")
+CAPTCHA_FONT_PATH = str(BASE_PATH / "cciw" / "cciwmain" / "static" / "fonts" / "Monoton-Regular.ttf")
 
 if not os.path.exists(CAPTCHA_FONT_PATH):
     raise ValueError(f"CAPTCHA_FONT_PATH is incorrect - file missing {CAPTCHA_FONT_PATH}")
