@@ -27,6 +27,7 @@ redirect_stderr=true
 environment=LANG="%(locale)s",LC_ALL="%(locale)s",LC_LANG="%(locale)s"
 
 [program:%(proj_name)s_memcached]
+# See also settings.py CACHES
 command=/usr/bin/memcached -m 24 -s /home/%(proj_user)s/%(proj_name)s_memcached.sock
 user=%(proj_user)s
 autostart=true

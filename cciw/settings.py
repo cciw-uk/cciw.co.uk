@@ -74,8 +74,9 @@ ROOT_URLCONF = 'cciw.urls'
 
 CACHES = {
     'default': {
+        # See also supervisor.conf.template
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': f'unix:{HOME_PATH / "memcached.sock"}',
+        'LOCATION': f'unix:{HOME_PATH / "cciw_memcached.sock"}',
         'KEY_PREFIX': 'cciw.co.uk',
     }
 } if LIVEBOX else {
