@@ -74,7 +74,7 @@ class ReadOnlyInline(object):
 # These inlines are used to display some info on BookingAccount admin
 class BookingAccountPaymentInline(ReadOnlyInline, admin.TabularInline):
     model = Payment
-    fields = ["amount", "payment_type", "created"]
+    fields = ["amount", "payment_type", "created_at"]
     readonly_fields = fields
 
 
@@ -284,11 +284,11 @@ class BookingAdmin(admin.ModelAdmin):
         return obj.is_confirmed
     confirmed.boolean = True
 
-    list_display = ['first_name', 'last_name', 'sex', 'account', camp, 'state', confirmed, 'created']
+    list_display = ['first_name', 'last_name', 'sex', 'account', camp, 'state', confirmed, 'created_at']
     del camp
     del confirmed
     search_fields = ['first_name', 'last_name']
-    ordering = ['-created']
+    ordering = ['-created_at']
     list_filter = [YearFilter, 'sex', 'price_type', 'early_bird_discount', 'serious_illness', 'state', 'created_online', ConfirmedFilter]
     readonly_fields = ['booked_at', 'created_online']
 
@@ -370,7 +370,7 @@ class BookingAdmin(admin.ModelAdmin):
          {'fields':
           ['state',
            'booking_expires',
-           'created',
+           'created_at',
            'shelved',
            'created_online']}),
         ('Add a payment for account (optional)',
@@ -440,12 +440,12 @@ class RefundPaymentAdminForm(forms.ModelForm):
 
 
 class ManualPaymentAdminBase(RerouteResponseAdminMixin, admin.ModelAdmin):
-    list_display = ['account', 'amount', 'payment_type', 'created']
+    list_display = ['account', 'amount', 'payment_type', 'created_at']
     search_fields = ['account__name']
-    date_hierarchy = 'created'
+    date_hierarchy = 'created_at'
     fieldsets = [(None,
                   {'fields':
-                   ['account', 'amount', 'created', 'payment_type']})]
+                   ['account', 'amount', 'created_at', 'payment_type']})]
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:
@@ -476,14 +476,14 @@ class AccountTransferPaymentAdmin(admin.ModelAdmin):
     form = AccountTransferPaymentForm
     list_display = ['id',
                     'from_account', 'to_account',
-                    'amount', 'created']
-    date_hierarchy = 'created'
+                    'amount', 'created_at']
+    date_hierarchy = 'created_at'
     search_fields = ['from_account__name',
                      'to_account__name']
 
     fieldsets = [(None,
                   {'fields':
-                   ['from_account', 'to_account', 'amount', 'created']})]
+                   ['from_account', 'to_account', 'amount', 'created_at']})]
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:

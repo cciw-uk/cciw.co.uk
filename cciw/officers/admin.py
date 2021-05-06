@@ -507,11 +507,11 @@ class DBSActionLogAdmin(admin.ModelAdmin):
     form = DBSActionLogModelForm
 
     search_fields = ('officer__first_name', 'officer__last_name')
-    list_display = ['action_type', 'first_name', 'last_name', 'timestamp', 'user']
+    list_display = ['action_type', 'first_name', 'last_name', 'created_at', 'user']
     list_display_links = ['action_type']
     list_filter = ['action_type']
-    ordering = ('-timestamp',)
-    date_hierarchy = 'timestamp'
+    ordering = ('-created_at',)
+    date_hierarchy = 'created_at'
 
     def first_name(self, obj):
         return obj.officer.first_name

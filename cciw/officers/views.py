@@ -1095,8 +1095,8 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None):
     # want to load everything into memory.
     relevant_action_logs = (DBSActionLog.objects
                             .filter(officer__in=all_officers)
-                            .filter(timestamp__gt=now - timedelta(365))
-                            .order_by('timestamp'))
+                            .filter(created_at__gt=now - timedelta(365))
+                            .order_by('created_at'))
     dbs_forms_sent = list(relevant_action_logs.filter(
         action_type=DBSActionLog.ACTION_FORM_SENT))
     requests_for_dbs_form_sent = list(relevant_action_logs.filter(
@@ -1120,9 +1120,9 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None):
     officer_apps = {a.officer_id: a for a in apps}
 
     def logs_to_dict(logs):
-        # NB: order_by('timestamp') above means that requests sent later will overwrite
+        # NB: order_by('created_at') above means that requests sent later will overwrite
         # those sent earlier in the following dictionary
-        return dict([(f.officer_id, f.timestamp) for f in logs])
+        return dict([(f.officer_id, f.created_at) for f in logs])
 
     dbs_forms_sent_for_officers = logs_to_dict(dbs_forms_sent)
     requests_for_dbs_form_sent_for_officers = logs_to_dict(requests_for_dbs_form_sent)

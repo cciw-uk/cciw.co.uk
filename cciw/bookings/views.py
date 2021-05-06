@@ -335,7 +335,7 @@ BOOKING_PLACE_PUBLIC_ATTRS = [
     'regular_medication_required',
     'learning_difficulties',
     'serious_illness',
-    'created',
+    'created_at',
 ]
 
 # Public attributes - i.e. that the account holder is allowed to see
@@ -422,7 +422,7 @@ def booking_problems_json(request):
     # Make it easy on front end:
     data = request.POST.copy()
     with contextlib.suppress(KeyError):
-        data['created'] = data['created_0'] + ' ' + data['created_1']
+        data['created_at'] = data['created_at_0'] + ' ' + data['created_at_1']
 
     if 'booking_id' in data:
         booking_obj = Booking.objects.get(id=int(data['booking_id']))

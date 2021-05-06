@@ -210,33 +210,33 @@ class Referee(models.Model):
                 actions = [a for a in self._prefetched_objects_cache['actions']
                            if a.action_type == ReferenceAction.ActionType.REQUESTED]
                 if actions:
-                    last = sorted(actions, key=lambda a: a.created)[-1]
+                    last = sorted(actions, key=lambda a: a.created_at)[-1]
                 else:
                     last = None
         else:
-            last = self.actions.filter(action_type=ReferenceAction.ActionType.REQUESTED).order_by('created').last()
+            last = self.actions.filter(action_type=ReferenceAction.ActionType.REQUESTED).order_by('created_at').last()
         if last:
-            return last.created
+            return last.created_at
         else:
             return None
 
     def log_reference_received(self, dt):
         self.actions.create(action_type=ReferenceAction.ActionType.RECEIVED,
-                            created=dt)
+                            created_at=dt)
 
     def log_reference_filled_in(self, user, dt):
         self.actions.create(action_type=ReferenceAction.ActionType.FILLED_IN,
-                            created=dt,
+                            created_at=dt,
                             user=user)
 
     def log_request_made(self, user, dt):
         self.actions.create(action_type=ReferenceAction.ActionType.REQUESTED,
-                            created=dt,
+                            created_at=dt,
                             user=user)
 
     def log_nag_made(self, user, dt):
         self.actions.create(action_type=ReferenceAction.ActionType.NAG,
-                            created=dt,
+                            created_at=dt,
                             user=user)
 
     class Meta:
@@ -257,7 +257,7 @@ class ReferenceAction(models.Model):
     referee = models.ForeignKey(Referee,
                                 on_delete=models.CASCADE,
                                 related_name="actions")
-    created = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(default=timezone.now)
     action_type = models.CharField(max_length=20, choices=ActionType.choices)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE,
@@ -269,10 +269,10 @@ class ReferenceAction(models.Model):
     inaccurate = models.BooleanField(default=False)
 
     class Meta:
-        ordering = [('created')]
+        ordering = [('created_at')]
 
     def __repr__(self):
-        return f"<ReferenceAction {self.action_type} {self.created} | {self.referee}>"
+        return f"<ReferenceAction {self.action_type} {self.created_at} | {self.referee}>"
 
 
 def empty_reference(reference):
@@ -502,8 +502,8 @@ class DBSActionLog(models.Model):
                                 on_delete=models.PROTECT)
     action_type = models.CharField("action type", max_length=40,
                                    choices=ACTION_CHOICES)
-    timestamp = models.DateTimeField("Timestamp",
-                                     default=timezone.now)
+    created_at = models.DateTimeField("Created at",
+                                      default=timezone.now)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              verbose_name="User who performed action",
                              related_name='dbsactions_performed',
@@ -519,4 +519,4 @@ class DBSActionLog(models.Model):
         verbose_name_plural = "DBS action logs"
 
     def __str__(self):
-        return f"Log of DBS action '{self.get_action_type_display()}' for {self.officer.full_name}, {self.timestamp:%Y-%m-%d}"
+        return f"Log of DBS action '{self.get_action_type_display()}' for {self.officer.full_name}, {self.created_at:%Y-%m-%d}"

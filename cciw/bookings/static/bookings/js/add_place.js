@@ -60,7 +60,7 @@
                          var place = places[i];
                          var html = ("<label><input type='radio' name='use_which_booking' value='" +
                              i.toString() + "'>" + escape(place.first_name + " " + place.last_name)
-                             + " " + place.created.substr(0,4) + "<br/>" +
+                             + " " + place.created_at.substr(0,4) + "<br/>" +
                              "&nbsp;&nbsp; Post code: " + escape(place.address_post_code) + "<br/>" +
                              "&nbsp;&nbsp; GP: " + escape(place.gp_name) + "</label>" );
                          cont.append(html);

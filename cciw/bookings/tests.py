@@ -2031,7 +2031,7 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         )
 
         self.assertEqual(Payment.objects.count(), 2)
-        self.assertEqual(Payment.objects.order_by('-created')[0].amount, ipn_2.mc_gross)
+        self.assertEqual(Payment.objects.order_by('-created_at')[0].amount, ipn_2.mc_gross)
 
         account = self.get_account()  # refresh
         self.assertEqual(account.total_received, Decimal(0))
@@ -2227,8 +2227,8 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
 
     def _initial_place_details(self):
         data = self.place_details.copy()
-        data['created_0'] = '1970-01-01'  # Simulate form, which doesn't supply created
-        data['created_1'] = '00:00:00'
+        data['created_at_0'] = '1970-01-01'  # Simulate form, which doesn't supply created
+        data['created_at_1'] = '00:00:00'
         return data
 
     def test_booking_problems(self):

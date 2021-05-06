@@ -327,7 +327,7 @@
     - name: bookings.BookingAccount
       columns:
       - total_received
-      - created
+      - created_at
       - first_login
       - last_login
       - last_payment_reminder
@@ -342,7 +342,7 @@
       - amount_due
       - shelved
       - state
-      - created
+      - created_at
       - booking_expires
       - created_online
 

@@ -99,11 +99,11 @@ def view_message(request, *, message_id: int):
 
 
 ----
-On {timestamp:%Y-%m-%d %H:%M}, {name} <{email}> wrote:
+On {created_at:%Y-%m-%d %H:%M}, {name} <{email}> wrote:
 
 {quoted_message_body}
 """.format(name=msg.name if msg.name else "user",
-           timestamp=msg.timestamp,
+           created_at=msg.created_at,
            quoted_message_body=quoted_message_body,
            email=msg.email)
     return TemplateResponse(request, 'cciw/officers/view_contact_us_message.html', {

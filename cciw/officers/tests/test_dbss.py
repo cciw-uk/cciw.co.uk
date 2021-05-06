@@ -54,7 +54,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
         # Now create an 'form sent' action log
         t1 = timezone.now()
         DBSActionLog.objects.create(officer=self.officer_user,
-                                    timestamp=t1,
+                                    created_at=t1,
                                     action_type=DBSActionLog.ACTION_FORM_SENT)
         officer, dbs_info = self.get_officer_with_dbs_info()
         self.assertNotEqual(dbs_info.last_dbs_form_sent, None)
@@ -63,7 +63,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
         # A leader alert action should not change last_dbs_form_sent
         t2 = timezone.now()
         DBSActionLog.objects.create(officer=self.officer_user,
-                                    timestamp=t2,
+                                    created_at=t2,
                                     action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT)
         officer, dbs_info = self.get_officer_with_dbs_info()
         self.assertEqual(dbs_info.last_dbs_form_sent, t1)

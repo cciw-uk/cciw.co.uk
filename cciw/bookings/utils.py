@@ -138,7 +138,7 @@ def year_bookings_to_spreadsheet(year, spreadsheet):
         ('Age', lambda b: b.age_on_camp()),
         ('Email (camper)', lambda b: b.email),
         ('Email (account)', lambda b: b.account.email if b.account_id else None),
-        ('Date created', lambda b: b.created),
+        ('Date created', lambda b: b.created_at),
     ]
 
     spreadsheet.add_sheet_with_header_row("All bookings",
@@ -153,20 +153,20 @@ def payments_to_spreadsheet(date_start, date_end, spreadsheet):
     date_end = date_end + timedelta(days=1)
 
     payments = (Payment.objects
-                .filter(created__gte=date_start,
-                        created__lt=date_end,
+                .filter(created_at__gte=date_start,
+                        created_at__lt=date_end,
                         # Ignore payments with deleted source - these always
                         # cancel out anyway:
                         source__isnull=False,
                         )
-                .order_by('created')
+                .order_by('created_at')
                 )
 
     columns = [
         ('Account name', lambda p: p.account.name),
         ('Account email', lambda p: p.account.email),
         ('Amount', lambda p: p.amount),
-        ('Date', lambda p: p.created),
+        ('Date', lambda p: p.created_at),
         ('Type', lambda p: p.payment_type),
     ]
 

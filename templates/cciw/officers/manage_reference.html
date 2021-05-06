@@ -12,8 +12,8 @@
         <table>
           {% for action in referee.actions.all %}
             <tr>
-              <td>{{ action.created|date:"Y-m-d H:i" }}</td>
-              <td>{{ action.created|timesince }} ago</td>
+              <td>{{ action.created_at|date:"Y-m-d H:i" }}</td>
+              <td>{{ action.created_at|timesince }} ago</td>
               <td>{{ action.get_action_type_display }}</td>
               <td>{% if action.user %}by {{ action.user.username }}{% endif %}</td>
             </tr>
