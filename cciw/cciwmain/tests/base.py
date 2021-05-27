@@ -27,7 +27,15 @@ class Factories(FactoriesBase):
             maximum_age=None,
             year=None,
             leader=None,
+            leaders=None,
+            chaplain=None,
     ):
+        assert not (leader is not None and leaders is not None), "Only supply one of 'leaders' and 'leader'"
+        if leader:
+            leaders = [leader]
+        elif not leaders:
+            leaders = []
+
         if start_date is None:
             if end_date is not None:
                 start_date = end_date - timedelta(days=7)
@@ -65,10 +73,10 @@ class Factories(FactoriesBase):
             maximum_age=maximum_age,
             year=year,
             start_date=start_date,
-            chaplain=None,
+            chaplain=self.make_into_person(chaplain) if chaplain else None,
         )
-        if leader is not None:
-            self.set_camp_leader(camp, leader)
+        if leaders:
+            self.set_camp_leaders(camp, leaders)
         self._camp_cache[year].append(camp)
         return camp
 
@@ -134,14 +142,14 @@ class Factories(FactoriesBase):
             return site
         return self.create_site()
 
-    def set_camp_leader(self, camp, leader):
-        if isinstance(leader, User):
-            camp.leaders.set([self.make_person_for_user(leader)])
-        elif isinstance(leader, Person):
-            camp.leaders.set([leader])
-        else:
-            raise NotImplementedError(f"Don't know what to do with {leader}")
+    def set_camp_leaders(self, camp, leaders):
+        for leader in leaders:
+            camp.leaders.set([
+                self.make_into_person(leader)
+                for leader in leaders
+            ])
 
+    @lru_cache()
     def get_any_camp_leader(self) -> Person:
         from cciw.officers.tests.base import factories as officer_factories
         person = Person.objects.first()
@@ -150,12 +158,20 @@ class Factories(FactoriesBase):
             person = self.make_person_for_user(user)
         return person
 
-    def make_person_for_user(self, user: User) -> Person:
-        person = Person.objects.create(
-            name=user.full_name
+    def make_into_person(self, user_or_person) -> Person:
+        if isinstance(user_or_person, User):
+            person = self.create_person(name=user_or_person.full_name)
+            person.users.set([user_or_person])
+            return person
+        elif isinstance(user_or_person, Person):
+            return user_or_person
+        else:
+            raise NotImplementedError(f"Don't know what to do with {user_or_person}")
+
+    def create_person(self, name=None) -> Person:
+        return Person.objects.create(
+            name=name,
         )
-        person.users.set([user])
-        return person
 
 
 class BasicSetupMixin(object):
@@ -226,6 +242,8 @@ factories = Factories()
 # Large list of names/colors we can use for creating CampName, especially for
 # cases where we create lots of camps for performance testing.
 COLORS = {
+    "Red": "#FF0000",
+    "Blue": "#0000FF",
     "Aero": "#7CB9E8",
     "Alabaster": "#EDEAE0",
     "Almond": "#EFDECD",

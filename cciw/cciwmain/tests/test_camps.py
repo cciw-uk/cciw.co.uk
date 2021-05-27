@@ -1,10 +1,7 @@
-from datetime import date
-
 from django.urls import reverse
-from django.utils.html import escape
 
 from cciw.cciwmain import common
-from cciw.cciwmain.models import Camp, CampName, Person, Site
+from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import FuzzyInt, init_query_caches
 from cciw.sitecontent.models import HtmlChunk
@@ -15,64 +12,29 @@ from .base import factories
 
 class CampModel(TestBase):
 
-    def setUp(self):
-        super().setUp()
-        l1 = Person.objects.create(name="John")
-        l2 = Person.objects.create(name="Mary")
-        l3 = Person.objects.create(name="Gregory")
-        site = Site.objects.create(short_name="farm",
-                                   slug_name="farm",
-                                   long_name="The Farm")
-        camp_name, _ = CampName.objects.get_or_create(
-            name="Blue",
-            slug="blue",
-            color="#0000ff",
-        )
-        camp = Camp.objects.create(
-            year=2013,
-            camp_name=camp_name,
-            minimum_age=11,
-            maximum_age=17,
-            start_date=date(2013, 6, 1),
-            end_date=date(2013, 6, 9),
-            max_campers=70,
-            max_male_campers=40,
-            max_female_campers=40,
-            chaplain=l3,
-            site=site,
-        )
-        camp.leaders.add(l1, l2)
-        self.camp = camp
-
-        camp_2 = Camp.objects.create(
-            year=2014,
-            camp_name=camp_name,
-            minimum_age=11,
-            maximum_age=17,
-            start_date=date(2014, 6, 2),
-            end_date=date(2014, 6, 10),
-            max_campers=70,
-            max_male_campers=40,
-            max_female_campers=40,
-            chaplain=l3,
-            site=site,
-        )
-        self.camp_2 = camp_2
-
-    def test_display(self):
-        self.assertEqual(str(self.camp), "2013-blue (John, Mary, Gregory)")
-
     def test_names(self):
-        self.assertEqual(self.camp.name, "Blue")
-        self.assertEqual(self.camp.slug_name, "blue")
-        self.assertEqual(str(self.camp.url_id), "2013-blue")
+        camp = factories.create_camp(
+            year=2013,
+            camp_name="Blue",
+            leaders=[
+                factories.create_person(name="John"),
+                factories.create_person(name="Mary"),
+            ],
+            chaplain=factories.create_person(name="Gregory"),
+        )
+        assert str(camp) == "2013-blue (John, Mary, Gregory)"
+        assert camp.name == "Blue"
+        assert camp.slug_name == "blue"
+        assert str(camp.url_id) == "2013-blue"
 
     def test_previous_and_next(self):
-        self.assertEqual(self.camp_2.previous_camp, self.camp)
-        self.assertEqual(self.camp.next_camp, self.camp_2)
+        camp = factories.create_camp(year=2013, camp_name="Blue")
+        camp_2 = factories.create_camp(year=2014, camp_name="Blue")
 
-        self.assertEqual(self.camp.previous_camp, None)
-        self.assertEqual(self.camp_2.next_camp, None)
+        assert camp.next_camp == camp_2
+        assert camp.previous_camp is None
+        assert camp_2.next_camp is None
+        assert camp_2.previous_camp == camp
 
 
 class ThisyearPage(BasicSetupMixin, TestBase):
@@ -113,9 +75,9 @@ class IndexPage(BasicSetupMixin, TestBase):
 class DetailPage(BasicSetupMixin, TestBase):
 
     def test_get(self):
-        camp = self.default_camp_1
+        camp = factories.create_camp(leader=factories.create_person((leader_name := "Joe Bloggs")))
         resp = self.client.get(reverse('cciw-cciwmain-camps_detail',
                                        kwargs=dict(year=camp.year,
                                                    slug=camp.slug_name)))
-        self.assertContains(resp, escape(camp.leaders.all()[0].name))
+        self.assertContains(resp, leader_name)
         self.assertContains(resp, camp.camp_name.name)
