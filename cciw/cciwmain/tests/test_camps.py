@@ -10,6 +10,8 @@ from cciw.cciwmain.tests.utils import FuzzyInt, init_query_caches
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.tests.base import TestBase
 
+from .base import factories
+
 
 class CampModel(TestBase):
 
@@ -73,26 +75,7 @@ class CampModel(TestBase):
         self.assertEqual(self.camp_2.next_camp, None)
 
 
-class MakeCampsMixin(object):
-
-    def make_camps(self, year, number):
-        site = Site.objects.first()
-
-        for i in range(1, number + 1):
-            cn = CampName.objects.create(name=chr(64 + i),
-                                         slug=chr(64 + i).lower(),
-                                         color="#0000" + hex(i)[2:])
-            c = Camp.objects.create(year=year, site=site,
-                                    camp_name=cn,
-                                    minimum_age=11,
-                                    maximum_age=17,
-                                    start_date=date(year, 6, 1),
-                                    end_date=date(year, 6, 8))
-            p = Person.objects.create(name=f"Leader {i}")
-            c.leaders.add(p)
-
-
-class ThisyearPage(MakeCampsMixin, BasicSetupMixin, TestBase):
+class ThisyearPage(BasicSetupMixin, TestBase):
 
     def setUp(self):
         super().setUp()
@@ -102,7 +85,8 @@ class ThisyearPage(MakeCampsMixin, BasicSetupMixin, TestBase):
     def test_get(self):
         init_query_caches()
         year = common.get_thisyear()
-        self.make_camps(year, 20)
+        for i in range(0, 20):
+            factories.create_camp(year=year, leader=factories.get_any_camp_leader())
         with self.assertNumQueries(FuzzyInt(1, 8)):
             resp = self.client.get(reverse('cciw-cciwmain-thisyear'))
 
@@ -110,12 +94,13 @@ class ThisyearPage(MakeCampsMixin, BasicSetupMixin, TestBase):
             self.assertContains(resp, c.get_absolute_url())
 
 
-class IndexPage(MakeCampsMixin, BasicSetupMixin, TestBase):
+class IndexPage(BasicSetupMixin, TestBase):
 
     def test_get(self):
         init_query_caches()
         year = common.get_thisyear()
-        self.make_camps(year, 20)
+        for i in range(0, 20):
+            factories.create_camp(year=year, leader=factories.get_any_camp_leader())
 
         with self.assertNumQueries(FuzzyInt(1, 6)):
             resp = self.client.get(reverse('cciw-cciwmain-camps_year_index',

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import date, timedelta
 from functools import lru_cache
 
@@ -11,6 +12,11 @@ from cciw.utils.tests.base import FactoriesBase
 
 
 class Factories(FactoriesBase):
+
+    def __init__(self):
+        # {year: [camp list]}
+        self._camp_cache = defaultdict(list)
+
     def create_camp(
             self, *,
             start_date=None,
@@ -22,11 +28,6 @@ class Factories(FactoriesBase):
             year=None,
             leader=None,
     ):
-        requested_camp_name = camp_name
-        if isinstance(camp_name, str):
-            camp_name = self.get_or_create_camp_name(camp_name)
-        elif camp_name is None:
-            camp_name = self.get_any_camp_name()
         if start_date is None:
             if end_date is not None:
                 start_date = end_date - timedelta(days=7)
@@ -50,14 +51,11 @@ class Factories(FactoriesBase):
             assert year == start_date.year
         else:
             year = start_date.year
-        if Camp.objects.filter(
-                camp_name=camp_name,
-                year=year
-        ).exists() and requested_camp_name is None:
-            # Problem with uniqueness checks here, can't create multiple camps
-            # with same CampName and same year. This is a hack, it only works
-            # for 2 camps, need a better way to do this,
-            camp_name = self.create_camp_name(name='other')
+
+        if isinstance(camp_name, str):
+            camp_name = self.get_or_create_camp_name(camp_name)
+        elif camp_name is None:
+            camp_name = self._get_non_clashing_camp_name(year)
 
         camp = Camp.objects.create(
             end_date=end_date,
@@ -71,7 +69,24 @@ class Factories(FactoriesBase):
         )
         if leader is not None:
             self.set_camp_leader(camp, leader)
+        self._camp_cache[year].append(camp)
         return camp
+
+    def _get_non_clashing_camp_name(self, year):
+        # We have a unique constraint on name/year that we
+        # need to respect to be able to create new camps.
+        years_camps = self._camp_cache[year]
+        name = self._get_next_camp_name(excluding=[
+            camp.camp_name.name
+            for camp in years_camps
+        ])
+        return self.get_or_create_camp_name(name)
+
+    def _get_next_camp_name(self, excluding=None) -> str:
+        available_names = set(COLORS.keys())
+        if excluding:
+            available_names -= set(excluding)
+        return sorted(available_names)[0]
 
     @lru_cache()
     def get_any_camp(self):
@@ -80,12 +95,13 @@ class Factories(FactoriesBase):
             return camp
         return self.create_camp()
 
-    def create_camp_name(self, name=None):
-        name = name or 'Violet'
+    def create_camp_name(self, name=None, color=None):
+        name = name or self._get_next_camp_name()
+        color = color or COLORS.get(name, '#ff0000')
         camp_name = CampName.objects.create(
             name=name,
             slug=name.lower().replace(' ', '-'),
-            color='#ff0000',
+            color=color,
         )
         return camp_name
 
@@ -96,6 +112,7 @@ class Factories(FactoriesBase):
             return camp_name
         return self.create_camp_name()
 
+    @lru_cache()
     def get_or_create_camp_name(self, name):
         try:
             return CampName.objects.get(name=name)
@@ -119,13 +136,26 @@ class Factories(FactoriesBase):
 
     def set_camp_leader(self, camp, leader):
         if isinstance(leader, User):
-            leader_person = Person.objects.create(
-                name=leader.full_name
-            )
-            leader_person.users.set([leader])
-            camp.leaders.set([leader_person])
+            camp.leaders.set([self.make_person_for_user(leader)])
+        elif isinstance(leader, Person):
+            camp.leaders.set([leader])
         else:
             raise NotImplementedError(f"Don't know what to do with {leader}")
+
+    def get_any_camp_leader(self) -> Person:
+        from cciw.officers.tests.base import factories as officer_factories
+        person = Person.objects.first()
+        if not person:
+            user = officer_factories.get_any_officer()
+            person = self.make_person_for_user(user)
+        return person
+
+    def make_person_for_user(self, user: User) -> Person:
+        person = Person.objects.create(
+            name=user.full_name
+        )
+        person.users.set([user])
+        return person
 
 
 class BasicSetupMixin(object):
@@ -191,3 +221,100 @@ class BasicSetupMixin(object):
 
 
 factories = Factories()
+
+
+# Large list of names/colors we can use for creating CampName, especially for
+# cases where we create lots of camps for performance testing.
+COLORS = {
+    "Aero": "#7CB9E8",
+    "Alabaster": "#EDEAE0",
+    "Almond": "#EFDECD",
+    "Amaranth": "#E52B50",
+    "Amazon": "#3B7A57",
+    "Amber": "#FFBF00",
+    "Amethyst": "#9966CC",
+    "Apricot": "#FBCEB1",
+    "Aqua": "#00FFFF",
+    "Aquamarine": "#7FFFD4",
+    "Artichoke": "#8F9779",
+    "Asparagus": "#87A96B",
+    "Auburn": "#A52A2A",
+    "Aureolin": "#FDEE00",
+    "Avocado": "#568203",
+    "Azure": "#007FFF",
+    "Beaver": "#9F8170",
+    "Beige": "#F5F5DC",
+    "Bisque": "#FFE4C4",
+    "Bistre": "#3D2B1F",
+    "Bittersweet": "#FE6F5E",
+    "Black": "#000000",
+    "Blond": "#FAF0BE",
+    "Blue": "#0000FF",
+    "Bluetiful": "#3C69E7",
+    "Blush": "#DE5D83",
+    "Bole": "#79443B",
+    "Bone": "#E3DAC9",
+    "Brandy": "#87413F",
+    "Bronze": "#CD7F32",
+    "Brown": "#88540B",
+    "Buff": "#FFC680",
+    "Burgundy": "#800020",
+    "Burlywood": "#DEB887",
+    "Byzantine": "#BD33A4",
+    "Byzantium": "#702963",
+    "Cadet": "#536872",
+    "Camel": "#C19A6B",
+    "Canary": "#FFFF99",
+    "Capri": "#00BFFF",
+    "Cardinal": "#C41E3A",
+    "Carmine": "#960018",
+    "Carnelian": "#B31B1B",
+    "Catawba": "#703642",
+    "Celadon": "#ACE1AF",
+    "Celeste": "#B2FFFF",
+    "Cerise": "#DE3163",
+    "Cerulean": "#007BA7",
+    "Champagne": "#F7E7CE",
+    "Charcoal": "#36454F",
+    "Chestnut": "#954535",
+    "Cinereous": "#98817B",
+    "Cinnabar": "#E34234",
+    "Citrine": "#E4D00A",
+    "Citron": "#9FA91F",
+    "Claret": "#7F1734",
+    "Coffee": "#6F4E37",
+    "Copper": "#B87333",
+    "Coquelicot": "#FF3800",
+    "Coral": "#FF7F50",
+    "Cordovan": "#893F45",
+    "Corn": "#FBEC5D",
+    "Cornsilk": "#FFF8DC",
+    "Cream": "#FFFDD0",
+    "Crimson": "#DC143C",
+    "Crystal": "#A7D8DE",
+    "Cultured": "#F5F5F5",
+    "Cyan": "#00FFFF",
+    "Cyclamen": "#F56FA1",
+    "Denim": "#1560BD",
+    "Desert": "#C19A6B",
+    "Drab": "#967117",
+    "Ebony": "#555D50",
+    "Ecru": "#C2B280",
+    "Eggplant": "#614051",
+    "Eggshell": "#F0EAD6",
+    "Eigengrau": "#16161D",
+    "Emerald": "#50C878",
+    "Eminence": "#6C3082",
+    "Erin": "#00FF40",
+    "Fallow": "#C19A6B",
+    "Fandango": "#B53389",
+    "Fawn": "#E5AA70",
+    "Feldgrau": "#4D5D53",
+    "Firebrick": "#B22222",
+    "Flame": "#E25822",
+    "Flax": "#EEDC82",
+    "Flirt": "#A2006D",
+    "Frostbite": "#E936A7",
+    "Fuchsia": "#FF00FF",
+    "Fulvous": "#E48400",
+}

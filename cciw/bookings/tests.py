@@ -166,9 +166,6 @@ class CreateCampMixin(object):
                                           start_date=start_date + timedelta(days=7),
                                           end_date=start_date + timedelta(days=14),
                                           site=site)
-        import cciw.cciwmain.common
-        cciw.cciwmain.common._thisyear = None
-        cciw.cciwmain.common._thisyear_timestamp = None
 
 
 class CreateLeadersMixin(object):

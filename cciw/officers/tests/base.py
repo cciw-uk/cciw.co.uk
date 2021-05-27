@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+from functools import lru_cache
 
 from django.utils import timezone
 
@@ -265,6 +266,13 @@ class Factories(FactoriesBase):
             user.save()
         if roles:
             user.roles.set(roles)
+        return user
+
+    @lru_cache()
+    def get_any_officer(self):
+        user = User.objects.filter(is_staff=True).first()
+        if not user:
+            return self.create_officer()
         return user
 
     def _make_auto_username(self):
