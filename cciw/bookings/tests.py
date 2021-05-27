@@ -1405,7 +1405,6 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     def test_minimum_age(self):
         # if born Aug 31st 2001, and thisyear == 2012, should be allowed on camp with
         # minimum_age == 11
-        Booking.objects.all().delete()
         self.create_booking({'date_of_birth': '%d-08-31' %
                              (self.camp.year - self.camp_minimum_age)})
         self.get_url(self.urlname)
@@ -1422,7 +1421,6 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     def test_maximum_age(self):
         # if born 1st Sept 2001, and thisyear == 2019, should be allowed on camp with
         # maximum_age == 17
-        Booking.objects.all().delete()
         self.create_booking({'date_of_birth': '%d-09-01' %
                              (self.camp.year - (self.camp_maximum_age + 1))})
         self.get_url(self.urlname)
