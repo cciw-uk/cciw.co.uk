@@ -8,6 +8,7 @@ from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.contact_us.models import Message
 from cciw.officers.models import Application, QualificationType, Reference
+from cciw.utils.tests.base import FactoriesBase
 
 OFFICER_USERNAME = 'joebloggs'
 OFFICER_PASSWORD = 'test_normaluser_password'
@@ -230,7 +231,7 @@ class ReferenceSetupMixin(set_thisyear(2000), RequireApplicationsMixin):
         self.application2.referees[1].log_request_made(None, timezone.now())
 
 
-class Factories:
+class Factories(FactoriesBase):
     def __init__(self):
         self._user_counter = 0
 

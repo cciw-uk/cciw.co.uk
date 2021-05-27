@@ -1,3 +1,6 @@
+"""
+Base classes and base utilities for all tests.
+"""
 import logging
 from unittest import mock
 
@@ -17,6 +20,10 @@ class TestBaseMixin:
         # To get our custom email backend to be used, we have to patch settings
         # at this point, due to how Django's test runner also sets this value:
         settings.EMAIL_BACKEND = "cciw.mail.tests.TestMailBackend"
+
+    def tearDown(self):
+        FactoriesBase.clear_instances()
+        super().tearDown()
 
 
 class AtomicChecksMixin(object):
@@ -77,3 +84,35 @@ class disable_logging(TestContextDecorator):
 
     def disable(self):
         logging.disable(logging.NOTSET)
+
+
+class FactoriesBase:
+    _all_factory_instances = []
+
+    def __new__(cls):
+        instance = super().__new__(cls)
+        FactoriesBase._all_factory_instances.append(instance)
+        return instance
+
+    @staticmethod
+    def clear_instances():
+        # Model factories cache created instances, which is problematic
+        # when the object is re-used for the next test, but the record
+        # doesn't exist in the database.
+
+        # We cannot easily delete instances, because there are references to
+        # them in other modules. But we can reset them to a pristine
+        # condition, by creating a new instance and assigning __dict__
+
+        # Avoid infinite loop by making a copy of _all_factory_instances
+        instances = FactoriesBase._all_factory_instances[:]
+        for instance in instances:
+            instance.__dict__ = instance.__class__().__dict__
+        # Discard the new instances we just created above
+        FactoriesBase._all_factory_instances = instances
+
+        # We also want to clear @lru_cache() on all methods
+        for subclass in FactoriesBase.__subclasses__():
+            for k, val in subclass.__dict__.items():
+                if hasattr(val, 'cache_clear'):
+                    val.cache_clear()

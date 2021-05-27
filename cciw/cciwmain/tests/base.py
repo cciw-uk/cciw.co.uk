@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from functools import lru_cache
 
 from django.conf import settings
 from django.contrib.sites.models import Site as DjangoSite
@@ -6,9 +7,10 @@ from django.contrib.sites.models import Site as DjangoSite
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp, CampName, Person, Site
 from cciw.sitecontent.models import HtmlChunk, MenuLink
+from cciw.utils.tests.base import FactoriesBase
 
 
-class Factories:
+class Factories(FactoriesBase):
     def create_camp(
             self, *,
             start_date=None,
@@ -52,8 +54,9 @@ class Factories:
                 camp_name=camp_name,
                 year=year
         ).exists() and requested_camp_name is None:
-            # Hack, need a better way to do this.
-            # This only works for 2 camps.
+            # Problem with uniqueness checks here, can't create multiple camps
+            # with same CampName and same year. This is a hack, it only works
+            # for 2 camps, need a better way to do this,
             camp_name = self.create_camp_name(name='other')
 
         camp = Camp.objects.create(
@@ -70,12 +73,8 @@ class Factories:
             self.set_camp_leader(camp, leader)
         return camp
 
+    @lru_cache()
     def get_any_camp(self):
-        # TODO - a way to cache values - needs to work well with DB - i.e.
-        # should be flushed after each test is run, because otherwise
-        # the cached object won't exist in the DB.
-
-        # Also for other get_any_ below
         camp = Camp.objects.order_by('id').first()
         if camp is not None:
             return camp
@@ -90,6 +89,7 @@ class Factories:
         )
         return camp_name
 
+    @lru_cache()
     def get_any_camp_name(self):
         camp_name = CampName.objects.order_by('id').first()
         if camp_name is not None:
@@ -110,6 +110,7 @@ class Factories:
             info='A really lovely farm.'
         )
 
+    @lru_cache()
     def get_any_site(self):
         site = Site.objects.order_by('id').first()
         if site is not None:

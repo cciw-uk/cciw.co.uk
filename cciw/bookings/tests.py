@@ -35,12 +35,12 @@ from cciw.officers.tests.base import (BOOKING_SECRETARY, BOOKING_SECRETARY_PASSW
                                       OFFICER, OfficersSetupMixin)
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
-from cciw.utils.tests.base import AtomicChecksMixin, TestBase, disable_logging
+from cciw.utils.tests.base import AtomicChecksMixin, FactoriesBase, TestBase, disable_logging
 from cciw.utils.tests.db import refresh
 from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
 
-class Factories:
+class Factories(FactoriesBase):
     def create_booking(
             self,
             camp=None,
