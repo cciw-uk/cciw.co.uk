@@ -152,6 +152,12 @@ SILENCED_SYSTEM_CHECKS = [
     'urlchecker.W003',
 ]
 
+if not CHECK_DEPLOY:
+    # It's annoying to have to fix data retention immediately
+    SILENCED_SYSTEM_CHECKS.extend([
+        'dataretention.E002',
+    ])
+
 # == AUTH ==
 
 AUTH_USER_MODEL = "accounts.User"
