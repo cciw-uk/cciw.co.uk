@@ -215,11 +215,7 @@ class BasicSetupMixin(object):
             info="Kevin and Tracey are members of Generic Baptist Church, London.  Kevin has been a leader or assistant leader on many camps (EMW, CCiW and church camps).",
             name="Kevin & Tracey Smith")
 
-        camp_name, _ = CampName.objects.get_or_create(
-            name="Blue",
-            slug="blue",
-            color="#0000ff",
-        )
+        camp_name = factories.get_or_create_camp_name("Blue")
 
         self.default_camp_1 = factories.create_camp(
             camp_name=camp_name,

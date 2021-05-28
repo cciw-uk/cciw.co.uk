@@ -4,8 +4,9 @@ from django.core import mail
 from django.urls import reverse
 
 from cciw.accounts.models import User
-from cciw.cciwmain.models import Camp, CampName, Site
+from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import BasicSetupMixin
+from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.officers import applications
 from cciw.officers.models import Application
 from cciw.officers.tests.base import (OFFICER, OFFICER_PASSWORD, OFFICER_USERNAME, CurrentCampsMixin,
@@ -160,27 +161,15 @@ class ApplicationUtils(BasicSetupMixin, TestBase):
         future_camp_start = date(date.today().year + 1, 8, 1)
         past_camp_start = future_camp_start - timedelta(30 * 11)
 
-        camp_name, _ = CampName.objects.get_or_create(
-            name="Blue",
-            slug="blue",
-            color="#0000ff",
-        )
-
-        site = Site.objects.first()
         Camp.objects.all().delete()
-        c1 = Camp.objects.create(year=past_camp_start.year,
-                                 camp_name=camp_name,
-                                 start_date=past_camp_start,
-                                 end_date=past_camp_start + timedelta(7),
-                                 minimum_age=11, maximum_age=17,
-                                 site=site)
-        c2 = Camp.objects.create(year=future_camp_start.year,
-                                 camp_name=camp_name,
-                                 start_date=future_camp_start,
-                                 end_date=future_camp_start + timedelta(7),
-                                 minimum_age=11, maximum_age=17,
-                                 site=site)
-
+        c1 = camps_factories.create_camp(
+            year=past_camp_start.year,
+            start_date=past_camp_start,
+        )
+        c2 = camps_factories.create_camp(
+            year=future_camp_start.year,
+            start_date=future_camp_start,
+        )
         u = User.objects.create(username='test')
         u.invitations.create(camp=c1)
         u.invitations.create(camp=c2)

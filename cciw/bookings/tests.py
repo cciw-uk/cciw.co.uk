@@ -27,7 +27,7 @@ from cciw.bookings.models import (AccountTransferPayment, Booking, BookingAccoun
                                   ManualPaymentType, Payment, PaymentSource, Price, PriceChecker, PriceType,
                                   RefundPayment, book_basket_now, build_paypal_custom_field, expire_bookings)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
-from cciw.cciwmain.models import Camp, CampName, Person, Site
+from cciw.cciwmain.models import Camp, Person
 from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
 from cciw.mail.tests import send_queued_mail
@@ -136,36 +136,22 @@ class CreateCampMixin(object):
         # We also need it so that payments can be made when only the deposit is due
         delta_days = 20 + settings.BOOKING_FULL_PAYMENT_DUE_DAYS
         start_date = self.today + timedelta(delta_days)
-        camp_name, _ = CampName.objects.get_or_create(
-            name="Blue",
-            slug="blue",
-            color="#0000ff",
+        camp_name = camps_factories.get_or_create_camp_name("Blue")
+        camp_name_2 = camps_factories.get_or_create_camp_name("Red")
+        self.camp = camps_factories.create_camp(
+            year=start_date.year,
+            camp_name=camp_name,
+            minimum_age=self.camp_minimum_age,
+            maximum_age=self.camp_maximum_age,
+            start_date=start_date,
         )
-        camp_name_2, _ = CampName.objects.get_or_create(
-            name="Red",
-            slug="red",
-            color="#ff0000",
+        self.camp_2 = camps_factories.create_camp(
+            year=start_date.year,
+            camp_name=camp_name_2,
+            minimum_age=self.camp_minimum_age,
+            maximum_age=self.camp_maximum_age,
+            start_date=start_date + timedelta(days=7),
         )
-        site, _ = Site.objects.get_or_create(
-            info="A camp site",
-            long_name="A really great camp site",
-            slug_name="a-camp-site",
-            short_name="A Camp Site")
-
-        self.camp = Camp.objects.create(year=start_date.year,
-                                        camp_name=camp_name,
-                                        minimum_age=self.camp_minimum_age,
-                                        maximum_age=self.camp_maximum_age,
-                                        start_date=start_date,
-                                        end_date=start_date + timedelta(days=7),
-                                        site=site)
-        self.camp_2 = Camp.objects.create(year=start_date.year,
-                                          camp_name=camp_name_2,
-                                          minimum_age=self.camp_minimum_age,
-                                          maximum_age=self.camp_maximum_age,
-                                          start_date=start_date + timedelta(days=7),
-                                          end_date=start_date + timedelta(days=14),
-                                          site=site)
 
 
 class CreateLeadersMixin(object):
