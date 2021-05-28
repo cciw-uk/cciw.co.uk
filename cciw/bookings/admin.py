@@ -8,8 +8,8 @@ from django.urls import reverse
 from django.utils.html import escape, escapejs, format_html
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
-from cciw.bookings.models import (AccountTransferPayment, Booking, BookingAccount, BookingState, ManualPayment, Payment,
-                                  Price, RefundPayment)
+from cciw.bookings.models import (AccountTransferPayment, Booking, BookingAccount, BookingState, CustomAgreement,
+                                  ManualPayment, Payment, Price, RefundPayment)
 from cciw.cciwmain import common
 from cciw.utils.admin import RerouteResponseAdminMixin
 
@@ -492,9 +492,20 @@ class AccountTransferPaymentAdmin(admin.ModelAdmin):
             return []
 
 
+class CustomAgreementAdmin(admin.ModelAdmin):
+    list_display = ['name', 'year', 'active', 'sort_order']
+    fieldsets = [
+        (None,
+         {
+             'fields': ['name', 'year', 'text_html', 'active', 'sort_order']
+         })
+    ]
+
+
 admin.site.register(Price, PriceAdmin)
 admin.site.register(BookingAccount, BookingAccountAdmin)
 admin.site.register(Booking, BookingAdmin)
 admin.site.register(ManualPayment, ManualPaymentAdmin)
 admin.site.register(RefundPayment, RefundPaymentAdmin)
 admin.site.register(AccountTransferPayment, AccountTransferPaymentAdmin)
+admin.site.register(CustomAgreement, CustomAgreementAdmin)

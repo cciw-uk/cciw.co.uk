@@ -151,6 +151,41 @@ class PriceChecker:
         return self._deposit_prices[year]
 
 
+class CustomAgreementQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(active=True)
+
+    def for_year(self, year):
+        return self.active().filter(year=year).order_by('sort_order')
+
+
+CustomAgreementManager = models.Manager.from_queryset(CustomAgreementQuerySet)
+
+
+class CustomAgreement(models.Model):
+    """
+    Defines an agreement that bookers must sign up to to confirm a booking.
+    (in addition to standard ones)
+    """
+    name = models.CharField(max_length=255, help_text="Appears as a title on 'Add place' page")
+    year = models.IntegerField(help_text="Camp year this applies to")
+    text_html = models.TextField(blank=False, help_text="Text of the agreement, in HTML format")
+    active = models.BooleanField(default=True)
+    sort_order = models.IntegerField(default=1)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    objects = CustomAgreementManager()
+
+    class Meta:
+        unique_together = [
+            ['name', 'year'],
+        ]
+        ordering = ['year', 'sort_order']
+
+    def __str__(self):
+        return f'{self.name} ({self.year})'
+
+
 class BookingAccountQuerySet(models.QuerySet):
     def not_in_use(self):
         return self.zero_final_balance().exclude(
