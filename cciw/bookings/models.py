@@ -3,6 +3,7 @@ import re
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+from functools import lru_cache
 from typing import Optional
 
 from dateutil.relativedelta import relativedelta
@@ -185,6 +186,19 @@ class CustomAgreement(models.Model):
 
     def __str__(self):
         return f'{self.name} ({self.year})'
+
+
+class AgreementFetcher:
+    """
+    Utility that looks up CustomAgreements, with caching
+    to reduce queries for the patterns we use.
+    """
+    def __init__(self):
+        # Per-instance caching:
+        self.fetch = lru_cache()(self.fetch)
+
+    def fetch(self, *, year):
+        return list(CustomAgreement.objects.for_year(year))
 
 
 class BookingAccountQuerySet(models.QuerySet):
@@ -525,6 +539,10 @@ class BookingAccount(models.Model):
             return self.subscribe_to_mailings
 
 
+class Array(models.Func):
+    function = 'ARRAY'
+
+
 class BookingQuerySet(models.QuerySet):
 
     def for_year(self, year):
@@ -593,6 +611,13 @@ class BookingQuerySet(models.QuerySet):
         ])
         qs = qs_custom_price | qs_serious_illness | qs_too_old | qs_too_young
         return qs
+
+    def missing_agreements(self):
+        return self.exclude(
+            custom_agreements_checked__contains=Array(
+                CustomAgreement.objects.active().for_year(models.OuterRef('camp__year')).values_list('id')
+            )
+        )
 
     # Data retention
 
@@ -687,8 +712,12 @@ class Booking(models.Model):
     # Agreement - from user
     agreement = models.BooleanField(default=False)
 
-    # Custom agreements - from user
-    # Array of CustomAgreement.id integers
+    # Custom agreements: Array of CustomAgreement.id integers, for the
+    # CustomAgreements that the booker has agreed to.
+    # This schema choice is based on:
+    # - need to be able to query for this in missing_agreements()
+    # - we only ever update this as a single field, we never need to
+    #   treat it as a table.
     custom_agreements_checked = ArrayField(models.IntegerField(), default=list, blank=True)
 
     # Price - partly from user (must fit business rules)
@@ -866,7 +895,7 @@ class Booking(models.Model):
                 retval.append(("Early bird discount if booked now", discount_amount))
         return retval
 
-    def get_booking_problems(self, booking_sec=False):
+    def get_booking_problems(self, booking_sec=False, agreement_fetcher=None):
         """
         Returns a two tuple (errors, warnings).
 
@@ -881,10 +910,10 @@ class Booking(models.Model):
         if self.state == BookingState.APPROVED and not booking_sec:
             return ([], [])
 
-        return (self.get_booking_errors(booking_sec=booking_sec),
+        return (self.get_booking_errors(booking_sec=booking_sec, agreement_fetcher=agreement_fetcher),
                 self.get_booking_warnings(booking_sec=booking_sec))
 
-    def get_booking_errors(self, booking_sec=False):
+    def get_booking_errors(self, booking_sec=False, agreement_fetcher=None):
         errors = []
 
         # Custom price - not auto bookable
@@ -1075,6 +1104,10 @@ class Booking(models.Model):
                 msg = "This camp is closed for bookings."
             errors.append(msg)
 
+        missing_agreements = self.get_missing_agreements(agreement_fetcher=agreement_fetcher)
+        for agreement in missing_agreements:
+            errors.append(f'You need to confirm your agreement in section "{agreement.name}"')
+
         return errors
 
     def get_booking_warnings(self, booking_sec=False):
@@ -1133,6 +1166,15 @@ class Booking(models.Model):
     def is_custom_discount(self):
         return self.price_type == PriceType.CUSTOM
 
+    def get_missing_agreements(self, *, agreement_fetcher=None):
+        if agreement_fetcher is None:
+            agreement_fetcher = AgreementFetcher()
+        return [
+            agreement
+            for agreement in agreement_fetcher.fetch(year=self.camp.year)
+            if agreement.id not in self.custom_agreements_checked
+        ]
+
     def get_contact_email(self):
         if self.email:
             return self.email
@@ -1178,7 +1220,8 @@ def book_basket_now(bookings):
 
     now = timezone.now()
     for b in bookings:
-        if len(b.get_booking_problems()[0]) > 0:
+        fetcher = AgreementFetcher()
+        if len(b.get_booking_problems(agreement_fetcher=fetcher)[0]) > 0:
             return False
 
     # Serialize access to this function, to stop more places than available

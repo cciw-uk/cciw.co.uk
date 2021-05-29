@@ -23,10 +23,10 @@ from paypal.standard.forms import PayPalPaymentsForm
 from cciw.bookings.email import send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
 from cciw.bookings.middleware import get_booking_account_from_request, unset_booking_account_cookie
-from cciw.bookings.models import (Booking, BookingAccount, BookingState, CustomAgreement, Price, PriceChecker,
-                                  PriceType, any_bookings_possible, book_basket_now, build_paypal_custom_field,
-                                  early_bird_is_available, get_early_bird_cutoff_date, is_booking_open,
-                                  is_booking_open_thisyear)
+from cciw.bookings.models import (AgreementFetcher, Booking, BookingAccount, BookingState, CustomAgreement, Price,
+                                  PriceChecker, PriceType, any_bookings_possible, book_basket_now,
+                                  build_paypal_custom_field, early_bird_is_available, get_early_bird_cutoff_date,
+                                  is_booking_open, is_booking_open_thisyear)
 from cciw.cciwmain import common
 from cciw.cciwmain.common import ajax_form_validate, get_current_domain
 from cciw.cciwmain.decorators import json_response
@@ -551,10 +551,11 @@ def list_bookings(request):
     total = Decimal('0.00')
     all_bookable = True
     all_unbookable = True
+    agreement_fetcher = AgreementFetcher()
     for booking_list in basket_bookings, shelf_bookings:
         for b in booking_list:
             # decorate object with some attributes to make it easier in template
-            b.booking_problems, b.booking_warnings = b.get_booking_problems()
+            b.booking_problems, b.booking_warnings = b.get_booking_problems(agreement_fetcher=agreement_fetcher)
             b.bookable = len(b.booking_problems) == 0
             b.manually_approved = b.state == BookingState.APPROVED
 

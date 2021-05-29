@@ -23,9 +23,10 @@ from cciw.bookings.hooks import paypal_payment_received, unrecognised_payment
 from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
-from cciw.bookings.models import (AccountTransferPayment, Booking, BookingAccount, BookingState, CustomAgreement,
-                                  ManualPayment, ManualPaymentType, Payment, PaymentSource, Price, PriceChecker,
-                                  PriceType, RefundPayment, book_basket_now, build_paypal_custom_field, expire_bookings)
+from cciw.bookings.models import (AccountTransferPayment, AgreementFetcher, Booking, BookingAccount, BookingState,
+                                  CustomAgreement, ManualPayment, ManualPaymentType, Payment, PaymentSource, Price,
+                                  PriceChecker, PriceType, RefundPayment, book_basket_now, build_paypal_custom_field,
+                                  expire_bookings)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp, Person
 from cciw.cciwmain.tests.base import factories as camps_factories
@@ -113,7 +114,7 @@ class Factories(FactoriesBase):
         ipn.send_signals()
         return ipn
 
-    def create_custom_agreement(self, *, year, name, text_html):
+    def create_custom_agreement(self, *, year, name, text_html='Text'):
         return CustomAgreement.objects.create(
             year=year,
             name=name,
@@ -292,6 +293,10 @@ class PlaceDetailsMixin(CreateCampMixin):
 
 
 class CreateBookingModelMixin(CreatePricesMixin, PlaceDetailsMixin):
+    """
+    Mixin that provides method to create bookings in the database,
+    similar to how they are created in public views
+    """
     email = 'booker@bookers.com'
 
     def create_booking_model(self, extra=None):
@@ -468,6 +473,33 @@ class TestBookingModels(CreateBookingModelMixin, AtomicChecksMixin, TestBase):
         # work.
         self.use_prefetch_related_for_get_account = True
         self.test_book_with_money_in_account()
+
+    def test_booking_missing_agreements(self):
+        booking = factories.create_booking(state=BookingState.BOOKED)
+        agreement = factories.create_custom_agreement(year=self.camp.year, name='test')
+        # Other agreement, different year so should be irrelevant:
+        factories.create_custom_agreement(year=self.camp.year - 1, name='x')
+        assert booking in Booking.objects.booked().missing_agreements()
+        assert booking.get_missing_agreements() == [agreement]
+
+        booking.custom_agreements_checked = [agreement.id]
+        booking.save()
+
+        assert booking not in Booking.objects.booked().missing_agreements()
+        assert booking.get_missing_agreements() == []
+
+    def test_get_missing_agreements_performance(self):
+        # We can use common AgreementFetcher with get_missing_agreements to get
+        # good performance:
+        bookings = []
+        for i in range(0, 20):
+            bookings.append(factories.create_booking())
+        agreement = factories.create_custom_agreement(year=self.camp.year, name='test')
+        agreement_fetcher = AgreementFetcher()
+        with self.assertNumQueries(2):
+            bookings = Booking.objects.filter(id__in=[booking.id for booking in bookings]).select_related('camp')
+            for booking in bookings:
+                assert booking.get_missing_agreements(agreement_fetcher=agreement_fetcher) == [agreement]
 
 
 class TestBookingIndex(BookingBaseMixin, CreatePricesMixin, CreateCampMixin, WebTestBase):
@@ -1841,6 +1873,23 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         b = acc.bookings.all()[0]
         self.assertEqual(b.state, BookingState.INFO_COMPLETE)
         self.assertTextPresent("Places were not booked due to modifications made")
+
+    def test_book_disallowed_if_missing_agreement(self):
+        # Test that we cannot book a place if an agreement is missing
+        self.create_booking()
+        self.get_url(self.urlname)
+
+        # Suppose an agreement is added split second later by admin:
+        # (test done this way to ensure we are not just relying
+        # on a disabled book button)
+        factories.create_custom_agreement(year=self.camp.year, name='COVID-19')
+
+        self.submit('[name=book_now]')
+        booking = self.get_account().bookings.get()
+        assert booking.state != BookingState.BOOKED
+
+        self.assertTextPresent('You need to confirm your agreement in section "COVID-19"')
+        self.assert_book_button_disabled()
 
 
 class TestListBookingsWT(ListBookingsBase, WebTestBase):
