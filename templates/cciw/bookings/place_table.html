@@ -11,11 +11,11 @@
     <tr>
       <td data-label="Name">{{ booking.name }}</td>
       <td data-label="Camp">
+        {% spaceless %}
         <span class="with-camp-colors-{{ booking.camp.slug_name }}">
-          <a href="{{ booking.camp.get_absolute_url }}">
-            {{ booking.camp.url_id }}
-          </a>
+          <a href="{{ booking.camp.get_absolute_url }}">{{ booking.camp.url_id }}</a>
         </span>
+        {% endspaceless %}
         &nbsp;({{ booking.camp.leaders_formatted }})
       </td>
       <td data-label="Dates">{{ booking.camp.nice_dates }}
