@@ -182,7 +182,31 @@
 
       <p>If both camper and parent/guardian agree to the above, tick the box to continue:</p>
 
-      {% cciw_form_field form 'agreement' 'Agree to above condtions' %}
+      {% cciw_form_field form 'agreement' 'Agree to above conditions' %}
+
+      {% for agreement in custom_agreements %}
+        <h3>{{ agreement.name }}</h3>
+
+        <div>
+          {{ agreement.text_html|safe }}
+        </div>
+
+        <div class="form">
+          <div id="div_id_agreement" class="formrow">
+            <div class="field">
+              <label class="required" for="id_custom_agreement_{{ agreement.id }}">Agree to above conditions:</label>
+              <input type="checkbox"
+                     name="custom_agreement_{{ agreement.id }}"
+                     id="id_custom_agreement_{{ agreement.id }}"
+                     {% if form.instance.id and agreement.id in form.instance.custom_agreements_checked %}
+                     checked="checked"
+                     {% endif %}
+                     >
+            </div>
+          </div>
+        </div>
+
+      {% endfor %}
 
       {% if not read_only %}
 

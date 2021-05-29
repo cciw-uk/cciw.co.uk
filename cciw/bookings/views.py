@@ -23,8 +23,8 @@ from paypal.standard.forms import PayPalPaymentsForm
 from cciw.bookings.email import send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
 from cciw.bookings.middleware import get_booking_account_from_request, unset_booking_account_cookie
-from cciw.bookings.models import (Booking, BookingAccount, BookingState, Price, PriceChecker, PriceType,
-                                  any_bookings_possible, book_basket_now, build_paypal_custom_field,
+from cciw.bookings.models import (Booking, BookingAccount, BookingState, CustomAgreement, Price, PriceChecker,
+                                  PriceType, any_bookings_possible, book_basket_now, build_paypal_custom_field,
                                   early_bird_is_available, get_early_bird_cutoff_date, is_booking_open,
                                   is_booking_open_thisyear)
 from cciw.cciwmain import common
@@ -266,11 +266,17 @@ def add_or_edit_place(request, context, booking_id=None):
         # Add
         booking = None
 
+    custom_agreements = CustomAgreement.objects.for_year(year)
     if request.method == "POST":
         form = form_class(request.POST, instance=booking)
         if form.is_valid():
             booking: Booking = form.instance
-            booking.save_for_account(request.booking_account)
+            custom_agreements_checked = [
+                agreement
+                for agreement in custom_agreements
+                if f'custom_agreement_{agreement.id}' in request.POST
+            ]
+            booking.save_for_account(request.booking_account, custom_agreements=custom_agreements_checked)
             messages.info(request, f'Details for "{booking.name}" were saved successfully')
             return HttpResponseRedirect(reverse('cciw-bookings-list_bookings'))
     else:
@@ -284,6 +290,7 @@ def add_or_edit_place(request, context, booking_id=None):
         'early_bird_date': get_early_bird_cutoff_date(year),
         'price_early_bird_discount': lambda: Price.objects.get(year=year, price_type=PriceType.EARLY_BIRD_DISCOUNT).price,
         'read_only': booking is not None and not booking.is_user_editable(),
+        'custom_agreements': custom_agreements,
     })
     return TemplateResponse(request, 'cciw/bookings/add_place.html', context)
 

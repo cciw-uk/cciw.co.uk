@@ -7,6 +7,7 @@ from typing import Optional
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import Prefetch, functions
@@ -686,6 +687,10 @@ class Booking(models.Model):
     # Agreement - from user
     agreement = models.BooleanField(default=False)
 
+    # Custom agreements - from user
+    # Array of CustomAgreement.id integers
+    custom_agreements_checked = ArrayField(models.IntegerField(), default=list, blank=True)
+
     # Price - partly from user (must fit business rules)
     price_type = models.PositiveSmallIntegerField(choices=[(pt, pt.label) for pt in BOOKING_PLACE_PRICE_TYPES])
     early_bird_discount = models.BooleanField(default=False, help_text="Online bookings only")
@@ -727,7 +732,7 @@ class Booking(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     # Main business rules here
-    def save_for_account(self, booking_account: BookingAccount):
+    def save_for_account(self, booking_account: BookingAccount, custom_agreements: list[CustomAgreement] = None):
         """
         Saves the booking for an account that is creating/editing online
         """
@@ -737,6 +742,8 @@ class Booking(models.Model):
         self.state = BookingState.INFO_COMPLETE
         if self.id is None:
             self.created_online = True
+        if custom_agreements is not None:
+            self.custom_agreements_checked = [agreement.id for agreement in custom_agreements]
         self.save()
 
     def is_payable(self, *, confirmed_only: bool):

@@ -23,9 +23,9 @@ from cciw.bookings.hooks import paypal_payment_received, unrecognised_payment
 from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
-from cciw.bookings.models import (AccountTransferPayment, Booking, BookingAccount, BookingState, ManualPayment,
-                                  ManualPaymentType, Payment, PaymentSource, Price, PriceChecker, PriceType,
-                                  RefundPayment, book_basket_now, build_paypal_custom_field, expire_bookings)
+from cciw.bookings.models import (AccountTransferPayment, Booking, BookingAccount, BookingState, CustomAgreement,
+                                  ManualPayment, ManualPaymentType, Payment, PaymentSource, Price, PriceChecker,
+                                  PriceType, RefundPayment, book_basket_now, build_paypal_custom_field, expire_bookings)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp, Person
 from cciw.cciwmain.tests.base import factories as camps_factories
@@ -112,6 +112,14 @@ class Factories(FactoriesBase):
         ipn = PayPalIPN.objects.create(**defaults)
         ipn.send_signals()
         return ipn
+
+    def create_custom_agreement(self, *, year, name, text_html):
+        return CustomAgreement.objects.create(
+            year=year,
+            name=name,
+            text_html=text_html,
+            active=True,
+        )
 
 
 factories = Factories()
@@ -876,6 +884,27 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # Check attributes set correctly
         self.assertEqual(b.amount_due, self.price_full)
         self.assertEqual(b.created_online, True)
+
+    def test_custom_agreement(self):
+        agreement = factories.create_custom_agreement(
+            name=(agreement_name := 'MONEY!!'),
+            year=self.camp.year,
+            text_html=(agreement_text := "Do you agree to give us all your money?")
+        )
+        self.login()
+        self.add_prices()
+        self.get_url(self.urlname)
+        self.assertTextPresent(agreement_name)
+        self.assertTextPresent(agreement_text)
+
+        self.fill_by_name(self.place_details.copy())
+        self.fill({f'#id_custom_agreement_{agreement.id}': True})
+        self.submit()
+        self.assertUrlsEqual(reverse('cciw-bookings-list_bookings'))
+
+        acc = self.get_account()
+        booking = acc.bookings.get()
+        assert booking.custom_agreements_checked == [agreement.id]
 
 
 class TestAddPlaceWT(AddPlaceBase, WebTestBase):
