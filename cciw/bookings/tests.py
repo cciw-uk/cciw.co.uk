@@ -299,7 +299,7 @@ class CreateBookingModelMixin(CreatePricesMixin, PlaceDetailsMixin):
     """
     email = 'booker@bookers.com'
 
-    def create_booking_model(self, extra=None):
+    def create_booking_model(self, extra=None) -> Booking:
         """
         Creates a complete Booking place in the database directly, without using public views
         """
@@ -317,7 +317,7 @@ class CreateBookingModelMixin(CreatePricesMixin, PlaceDetailsMixin):
         # Ensure we get a copy as it is from the DB
         return Booking.objects.get(id=booking.id)
 
-    def create_booking(self, extra=None, shortcut=True):
+    def create_booking(self, extra=None, shortcut=True) -> Booking:
         return self.create_booking_model(extra=extra)
 
     def get_account(self):
@@ -326,7 +326,7 @@ class CreateBookingModelMixin(CreatePricesMixin, PlaceDetailsMixin):
 
 class CreateBookingWebMixin(CreateBookingModelMixin, LogInMixin):
 
-    def create_booking(self, extra=None, shortcut=None):
+    def create_booking(self, extra=None, shortcut=None) -> Booking:
         """
         Logs in and creates a booking
         """
@@ -1909,10 +1909,9 @@ class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent('£0.00')
 
     def test_balance_after_booking(self):
-        self.create_booking()
-        self.create_booking()
-        acc = self.get_account()
-        acc.bookings.all().update(state=BookingState.BOOKED)
+        booking1 = self.create_booking()
+        booking2 = self.create_booking()
+        book_basket_now([booking1, booking2])
 
         self.get_url('cciw-bookings-pay')
 
