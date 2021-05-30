@@ -479,13 +479,13 @@ class TestBookingModels(CreateBookingModelMixin, AtomicChecksMixin, TestBase):
         agreement = factories.create_custom_agreement(year=self.camp.year, name='test')
         # Other agreement, different year so should be irrelevant:
         factories.create_custom_agreement(year=self.camp.year - 1, name='x')
-        assert booking in Booking.objects.booked().missing_agreements()
+        assert booking in Booking.objects.agreement_fix_required()
         assert booking.get_missing_agreements() == [agreement]
 
         booking.custom_agreements_checked = [agreement.id]
         booking.save()
 
-        assert booking not in Booking.objects.booked().missing_agreements()
+        assert booking not in Booking.objects.agreement_fix_required()
         assert booking.get_missing_agreements() == []
 
     def test_get_missing_agreements_performance(self):
@@ -686,7 +686,6 @@ class TestPaymentReminderEmails(CreateBookingModelMixin, BookingBaseMixin, WebTe
         book_basket_now(booking.account.bookings.all())
         booking = Booking.objects.get(id=booking.id)
         booking.confirm()
-        booking.save()
         self.assertEqual(len(BookingAccount.objects.payments_due()), 1)
         return booking
 
@@ -1928,6 +1927,15 @@ class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         expected_price = 2 * self.price_full
         self.assertTextPresent(f'£{expected_price}')
 
+    def test_redirect_if_missing_agreements(self):
+        booking = self.create_booking(shortcut=True)
+        book_basket_now([booking])
+        factories.create_custom_agreement(year=self.camp.year, name='COVID-19')
+        self.get_url('cciw-bookings-pay')
+        self.assertUrlsEqual(reverse('cciw-bookings-account_overview'))
+        self.assertTextPresent('There is an issue with your existing bookings')
+        self.assertTextPresent('COVID-19')
+
 
 class TestPayWT(PayBase, WebTestBase):
     pass
@@ -2422,6 +2430,58 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
         # Deposit for cancellation
         self.assertTextPresent("Cancelled places")
         self.assertTextPresent("£20")
+
+    def test_bookings_with_missing_agreements(self):
+        booking1 = self.create_booking()
+        booking2 = self.create_booking()
+        booking3 = self.create_booking()
+        book_basket_now([booking1, booking2, booking3])
+
+        account = self.get_account()
+        agreement = factories.create_custom_agreement(year=self.camp.year, name='COVID-19')
+
+        assert account.bookings.agreement_fix_required().count() == 3
+        self.get_url(self.urlname)
+
+        assert self.is_element_present(f'#id_edit_booking_{booking1.id}')
+        assert self.is_element_present(f'#id_edit_booking_{booking2.id}')
+
+        assert self.is_element_present(f'#id_cancel_booking_{booking1.id}')
+        assert self.is_element_present(f'#id_cancel_booking_{booking2.id}')
+
+        self.assertTextPresent('you need to confirm your agreement in section "COVID-19"')
+
+        # Cancel button for booking1
+        self.submit(f'#id_cancel_booking_{booking1.id}')
+        booking1.refresh_from_db()
+        assert not booking1.is_booked
+        assert booking1.shelved
+
+        assert account.bookings.agreement_fix_required().count() == 2
+
+        # booking1 buttons should now disappear
+        assert not self.is_element_present(f'#id_edit_booking_{booking1.id}')
+        assert not self.is_element_present(f'#id_cancel_booking_{booking1.id}')
+
+        # Edit button for booking2
+        # This is really a test for the edit booking page
+        # - it needs to allow edits in this case, even though the
+        #   place is already booked.
+        self.submit(f'#id_edit_booking_{booking2.id}')
+        self.assertUrlsEqual(reverse('cciw-bookings-edit_place',
+                                     kwargs={'booking_id': booking2.id}))
+        self.fill({f'#id_custom_agreement_{agreement.id}': True})
+        self.submit(AddPlaceBase.SAVE_BTN)
+
+        assert account.bookings.agreement_fix_required().count() == 1
+        booking2.refresh_from_db()
+
+        # This process should not have unbooked the booking:
+        assert booking2.is_booked
+
+        # We still have booking3 to sort out, we should be back at
+        # account overview
+        self.assertUrlsEqual(reverse('cciw-bookings-account_overview'))
 
 
 class TestAccountOverviewWT(AccountOverviewBase, WebTestBase):

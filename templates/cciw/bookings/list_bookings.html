@@ -18,12 +18,14 @@
       {% endif %}
 
       <table class="topheaders">
-        <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Camp</th>
-          <th scope="col">Price</th>
-          <th scope="col">Actions</th>
-        </tr>
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Camp</th>
+            <th scope="col">Price</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
 
         {% for booking in basket_bookings %}
           {% include "cciw/bookings/place_details_row_inc.html" with booking=booking basket=1 %}
@@ -94,12 +96,14 @@
         basket in order to book them.</p>
 
       <table class="topheaders">
-        <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Camp</th>
-          <th scope="col">Price</th>
-          <th scope="col">Actions</th>
-        </tr>
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Camp</th>
+            <th scope="col">Price</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
         {% for booking in shelf_bookings %}
           {% include "cciw/bookings/place_details_row_inc.html" with booking=booking shelf=1 %}
         {% endfor %}

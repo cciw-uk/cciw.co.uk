@@ -15,6 +15,7 @@ from django.db.models import Prefetch, functions
 from django.db.models.expressions import RawSQL
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django_countries.fields import CountryField
@@ -22,6 +23,7 @@ from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
+from cciw.utils.models import AfterFetchQuerySetMixin
 
 from .email import send_booking_expiry_mail, send_places_confirmed_email
 
@@ -169,6 +171,24 @@ class CustomAgreement(models.Model):
     Defines an agreement that bookers must sign up to to confirm a booking.
     (in addition to standard ones)
     """
+    # This was added to cover special situations where we need additional
+    # agreements from bookers e.g. changes due to COVID-19
+
+    # In particular, we may need to add these agreements after places have
+    # already been booked, which complicates matters:
+    #
+    # - for places which haven't been booked, they need to see the
+    #   additional conditions/agreements before booking, and be prevented
+    #   from booking if agreements are missing (similar to the Booking.agreement
+    #   field, but dynamically defined).
+    #
+    # - for places which have been booked, we need to obtain the additional
+    #   agreement, but without "unbooking" or "unconfirming", because that
+    #   would open an already booked place for someone else to take.
+
+    # Currently, we only support applying this rule to an entire year of campers,
+    # with some changes we could support specific camps perhaps.
+
     name = models.CharField(max_length=255, help_text="Appears as a title on 'Add place' page")
     year = models.IntegerField(help_text="Camp year this applies to")
     text_html = models.TextField(blank=False, help_text="Text of the agreement, in HTML format")
@@ -490,7 +510,6 @@ class BookingAccount(models.Model):
             amount = booking.amount_now_due(today, allow_deposits=True, price_checker=price_checker)
             if amount <= pot:
                 booking.confirm()
-                booking.save()
                 confirmed_bookings.append(booking)
                 pot -= amount
 
@@ -543,7 +562,7 @@ class Array(models.Func):
     function = 'ARRAY'
 
 
-class BookingQuerySet(models.QuerySet):
+class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
 
     def for_year(self, year):
         return self.filter(camp__year__exact=year)
@@ -612,12 +631,39 @@ class BookingQuerySet(models.QuerySet):
         qs = qs_custom_price | qs_serious_illness | qs_too_old | qs_too_young
         return qs
 
+    def future(self):
+        return self.filter(camp__start_date__gt=date.today())
+
     def missing_agreements(self):
         return self.exclude(
             custom_agreements_checked__contains=Array(
                 CustomAgreement.objects.active().for_year(models.OuterRef('camp__year')).values_list('id')
             )
         )
+
+    def agreement_fix_required(self):
+        # We need a fix if:
+        # - it is booked
+        # - it is missing an agreement (happens if the CustomAgreement was addded after
+        #   the place was booked)
+        # - it is a future camp. For past camps, there is nothing we can do about it.
+        return self.booked().missing_agreements().future()
+
+    # Performance
+    def with_prefetch_camp_info(self):
+        return self.select_related(
+            'camp',
+            'camp__camp_name',
+            'camp__chaplain',
+        ).prefetch_related(
+            'camp__leaders',
+        )
+
+    def with_prefetch_missing_agreements(self, agreement_fetcher):
+        def add_missing_agreements(booking_list):
+            for booking in booking_list:
+                booking.missing_agreements = booking.get_missing_agreements(agreement_fetcher=agreement_fetcher)
+        return self.register_after_fetch_callback(add_missing_agreements)
 
     # Data retention
 
@@ -761,14 +807,15 @@ class Booking(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     # Main business rules here
-    def save_for_account(self, booking_account: BookingAccount, custom_agreements: list[CustomAgreement] = None):
+    def save_for_account(self, *, account: BookingAccount, state_was_booked: bool, custom_agreements: list[CustomAgreement] = None):
         """
         Saves the booking for an account that is creating/editing online
         """
-        self.account = booking_account
-        self.early_bird_discount = False  # We only allow this to be True when booking
+        self.account = account
+        if not state_was_booked:
+            self.early_bird_discount = False  # We only allow this to be True when booking
+            self.state = BookingState.INFO_COMPLETE
         self.auto_set_amount_due()
-        self.state = BookingState.INFO_COMPLETE
         if self.id is None:
             self.created_online = True
         if custom_agreements is not None:
@@ -1152,19 +1199,38 @@ class Booking(models.Model):
 
     def confirm(self):
         self.booking_expires = None
+        self.save()
 
     def expire(self):
+        self._unbook()
+        self.save()
+
+    def cancel_and_move_to_shelf(self):
+        self._unbook()
+        self.shelved = True
+        self.save()
+
+    def _unbook(self):
         self.booking_expires = None
+        # Here we don't use BookingState.CANCELLED_FULL_REFUND,
+        # because we assume the user might want to edit and book
+        # again:
         self.state = BookingState.INFO_COMPLETE
         self.early_bird_discount = False
         self.booked_at = None
         self.auto_set_amount_due()
+        self.save()
 
     def is_user_editable(self):
-        return self.state == BookingState.INFO_COMPLETE
+        return (self.state == BookingState.INFO_COMPLETE or
+                self.state == BookingState.BOOKED and self.missing_agreements)
 
     def is_custom_discount(self):
         return self.price_type == PriceType.CUSTOM
+
+    @cached_property
+    def missing_agreements(self):
+        return self.get_missing_agreements()
 
     def get_missing_agreements(self, *, agreement_fetcher=None):
         if agreement_fetcher is None:
@@ -1603,7 +1669,6 @@ def expire_bookings(now=None):
             if expired:
                 for b in group:
                     b.expire()
-                    b.save()
             send_booking_expiry_mail(account, group, expired)
 
 

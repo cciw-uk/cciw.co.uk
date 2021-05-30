@@ -40,7 +40,7 @@
       <h2>Confirmed places</h2>
       <p>You have the following confirmed places on camps this year:</p>
 
-      {% with bookings=confirmed_places %}
+      {% with bookings=confirmed_places show_missing_agreements=True %}
         {% include "cciw/bookings/place_table.html" %}
       {% endwith %}
 
@@ -56,7 +56,7 @@
 
       <div class="actiongroup">
         <div class="actioninfo">
-          {% with bookings=unconfirmed_places %}
+          {% with bookings=unconfirmed_places show_missing_agreements=True %}
             {% include "cciw/bookings/place_table.html" %}
           {% endwith %}
         </div>

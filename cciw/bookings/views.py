@@ -80,6 +80,20 @@ booking_secretary_required = user_passes_test_improved(lambda user:
                                                        user.is_booking_secretary)
 
 
+def redirect_if_agreement_fix_required(view_func):
+    @wraps(view_func)
+    def view(request, *args, **kwargs):
+        ensure_booking_account_attr(request)
+        if request.booking_account.bookings.agreement_fix_required().exists():
+            messages.warning(
+                request,
+                'There is an issue with your existing bookings. Please address it before continuing.'
+            )
+            return HttpResponseRedirect(reverse('cciw-bookings-account_overview'))
+        return view_func(request, *args, **kwargs)
+    return view
+
+
 # Views
 
 def index(request):
@@ -257,6 +271,7 @@ def add_or_edit_place(request, context, booking_id=None):
         # Edit
         try:
             booking = request.booking_account.bookings.get(id=booking_id)
+            state_was_booked = booking.is_booked
         except (ValueError, Booking.DoesNotExist):
             raise Http404
         if request.method == "POST" and not booking.is_user_editable():
@@ -265,6 +280,7 @@ def add_or_edit_place(request, context, booking_id=None):
     else:
         # Add
         booking = None
+        state_was_booked = False
 
     custom_agreements = CustomAgreement.objects.for_year(year)
     if request.method == "POST":
@@ -276,7 +292,11 @@ def add_or_edit_place(request, context, booking_id=None):
                 for agreement in custom_agreements
                 if f'custom_agreement_{agreement.id}' in request.POST
             ]
-            booking.save_for_account(request.booking_account, custom_agreements=custom_agreements_checked)
+            booking.save_for_account(
+                account=request.booking_account,
+                state_was_booked=state_was_booked,
+                custom_agreements=custom_agreements_checked,
+            )
             messages.info(request, f'Details for "{booking.name}" were saved successfully')
             return HttpResponseRedirect(reverse('cciw-bookings-list_bookings'))
     else:
@@ -295,11 +315,13 @@ def add_or_edit_place(request, context, booking_id=None):
     return TemplateResponse(request, 'cciw/bookings/add_place.html', context)
 
 
+@booking_account_required
+@redirect_if_agreement_fix_required  # Don't allow to add new until booked places fixed
 def add_place(request):
     return add_or_edit_place(request, {'title': 'Booking - add new camper details'})
 
 
-def edit_place(request, booking_id):
+def edit_place(request, booking_id: int):
     return add_or_edit_place(request, {'title': 'Booking - edit camper details', 'edit_mode': True},
                              booking_id=booking_id)
 
@@ -514,10 +536,14 @@ def make_state_token(bookings):
 
 
 @booking_account_required
+@redirect_if_agreement_fix_required
 def list_bookings(request):
+    """
+    List bookings a.k.a. checkout
+    """
     year = common.get_thisyear()
     now = timezone.now()
-    bookings = request.booking_account.bookings.for_year(year).order_by('id')
+    bookings = request.booking_account.bookings.for_year(year).order_by('id').with_prefetch_camp_info()
     # NB - use lists here, not querysets, so that both state_token and book_now
     # functionality apply against same set of bookings.
     basket_bookings = list(bookings.in_basket())
@@ -639,9 +665,7 @@ def _handle_list_booking_actions(request, places):
                     b_id = int(m.groups()[0])
                     place = [p for p in places if p.id == b_id][0]
                 if place is not None:
-                    retval = action(place)
-                    if retval is not None:
-                        return retval
+                    return action(place)
 
 
 class CustomAmountPayPalForm(PayPalPaymentsForm):
@@ -682,6 +706,7 @@ def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amou
 
 
 @booking_account_required
+@redirect_if_agreement_fix_required
 def pay(request):
     acc: BookingAccount = request.booking_account
     this_year = common.get_thisyear()
@@ -746,17 +771,52 @@ def account_overview(request):
     year = common.get_thisyear()
     bookings = account.bookings.for_year(year)
     price_checker = PriceChecker(expected_years=[b.camp.year for b in bookings])
+    agreement_fetcher = AgreementFetcher()
+
+    if request.method == 'POST':
+        if (response := _handle_overview_booking_actions(request, bookings)):
+            return response
+
     return TemplateResponse(request, 'cciw/bookings/account_overview.html', {
         'title': 'Booking - account overview',
         'stage': BookingStage.OVERVIEW,
-        'confirmed_places': bookings.confirmed(),
-        'unconfirmed_places': bookings.unconfirmed(),
-        'cancelled_places': bookings.cancelled(),
-        'basket_or_shelf': (bookings.in_basket() | bookings.on_shelf()),
+        'confirmed_places': bookings.confirmed().with_prefetch_camp_info()
+        .with_prefetch_missing_agreements(agreement_fetcher),
+        'unconfirmed_places': bookings.unconfirmed().with_prefetch_camp_info()
+        .with_prefetch_missing_agreements(agreement_fetcher),
+        'cancelled_places': bookings.cancelled().with_prefetch_camp_info(),
+        'basket_or_shelf': (bookings.in_basket() | bookings.on_shelf()).with_prefetch_camp_info(),
         'balance_due_now': account.get_balance_due_now(price_checker=price_checker),
         'balance_full': account.get_balance_full(price_checker=price_checker),
         'pending_payment_total': account.get_pending_payment_total(),
     })
+
+
+def _handle_overview_booking_actions(request, bookings):
+    fixable_bookings = list(bookings.agreement_fix_required())
+
+    def edit(booking):
+        return HttpResponseRedirect(reverse('cciw-bookings-edit_place',
+                                            kwargs={'booking_id': str(booking.id)}))
+
+    def cancel(booking):
+        booking.cancel_and_move_to_shelf()
+        messages.info(request, f'Place for "{booking.name}" cancelled and put "on the shelf".')
+        return HttpResponseRedirect(reverse('cciw-bookings-account_overview'))
+
+    for key in request.POST.keys():
+        for regex, action in [
+                (r'edit_(\d+)', edit),
+                (r'cancel_(\d+)', cancel),
+        ]:
+            if (match := re.match(regex, key)):
+                booking = None
+                booking_id = int(match.groups()[0])
+                with contextlib.suppress(IndexError):
+                    booking = [b for b in fixable_bookings
+                               if b.id == booking_id][0]
+                if booking:
+                    return action(booking)
 
 
 class BookingAccountAutocomplete(autocomplete.Select2QuerySetView):

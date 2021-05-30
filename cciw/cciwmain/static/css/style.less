@@ -425,18 +425,17 @@ section.grouped {
 // Tables
 
 table.sideheaders,
-table.simpleform,
 table.topheaders {
     border-collapse: collapse;
 
 
-    th, td {
+    > * > tr > th, > tbody > tr > td {
         padding: 2px 5px;
         vertical-align: top;
         border: solid 1px #336633;
     }
 
-    th {
+    > * > tr > th {
         background-color: @primaryColorLighter;
         font-weight: bold;
         a:link {
@@ -444,7 +443,7 @@ table.topheaders {
         }
     }
 
-    td:not([class^=with-camp-colors-]) {
+    > tbody > tr > td:not([class^=with-camp-colors-]) {
         background-color: @contentBackgroundColor;
     }
     box-shadow: 0px 2px 4px #888;
@@ -454,26 +453,24 @@ table.topheaders {
 table.sideheaders,
 table.topheaders {
     width: 100%;
-    td {
+    > tbody > tr > td {
         overflow: hidden;
     }
 }
 
-table.sideheaders th,
-table.simpleform th {
+table.sideheaders > * > tr > th {
     text-align: left;
 }
 
-table.topheaders th {
+table.topheaders > thead > tr > th {
     white-space: nowrap;
 }
 
 
-table tr.spacer td {
+table > tbody > tr.spacer > td {
     border-left-width: 0px;
     border-right-width: 0px;
 }
-
 
 div.userError,
 div.validationErrors,
@@ -486,8 +483,20 @@ div.validationErrors {
     border: 1px solid #d00000;
 }
 
-table.topheaders tr.selected td {
+table.topheaders > tbody > tr.selected > td {
     background-color: #f8fff8;
+}
+
+table.actiongrid {
+    border-collapse: collapse;
+    > tbody > tr {
+        border-top: 1px solid #336633;
+        border-bottom: 1px solid #336633;
+   }
+    > tbody > tr > td {
+        padding: 6px;
+        vertical-align: middle;
+    }
 }
 
 
@@ -716,6 +725,7 @@ ul.messagelist {
         &.error{
             background-image: url(/static/admin/img/icon-no.svg);
         }
+        background-position-y: center;
     }
 }
 
@@ -974,23 +984,26 @@ table {
 @media screen and (max-width: @responsiveTablesScreenWidth) {
 
     table.responsive {
+        // To use this class, you must add `data-label` attributes
+        // to every `<td>` and ensure it contains all the information
+        // in the `thead` section, which will be hidden.
         box-shadow: none;
         margin-bottom: 2px;
 
-        thead {
+        > thead {
             display: none;
         }
-        tr {
+        > tbody > tr {
             display: block;
             margin-top: 0.8em;
             margin-bottom: 0.5em;
             box-shadow: 0 2px 2px rgba(0,0,0,0.5);
         }
-        td {
+        > tbody > tr > td {
             display: block;
-            text-align: right;
             border-bottom-width: 1px;
             border-top-width: 0px;
+            text-align: right;
             &:first-child {
                 border-top-width: 1px;
             }
@@ -1000,8 +1013,12 @@ table {
                 text-transform: uppercase;
                 font-weight: bold;
             }
+            > * {
+                // reset for nested tables
+                text-align: initial;
+            }
         }
-        th {
+        > tbody > tr > th {
             display: block;
             &.full-width {
                 width: 100%;
