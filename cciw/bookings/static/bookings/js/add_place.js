@@ -53,21 +53,18 @@
                 var places = json['places'];
                 userData['places'] = places;
                 if (places.length > 0) {
-                    var cont = $('#id_use_existing_radio_container');
-                    cont.empty();
+                    var select = $('#id_use_existing_select');
+                    select.empty();
                     $('.use_existing_btn').show();
                     for (var i = 0; i < places.length; i++) {
                         var place = places[i];
-                        var html = ("<option ><input type='radio' name='use_which_booking' value='" +
-                            i.toString() + "'>" + escape(place.first_name + " " + place.last_name)
-                            + " " + place.created_at.substr(0, 4) + "<br/>" +
-                            "&nbsp;&nbsp; Post code: " + escape(place.address_post_code) + "<br/>" +
-                            "&nbsp;&nbsp; GP: " + escape(place.gp_name) + "</label>");
-                        cont.append(html);
-                    }
-                    var btn = $('#id_use_existing_radio_container input');
-                    if (btn.length == 1) {
-                        btn.attr('checked', 'checked');
+                        var html = ("<option value='" + i.toString() + "'>"
+                            + escape(place.first_name + " " + place.last_name)
+                            + " " + place.created_at.substr(0, 4) + "; " +
+                            "Post code: " + escape(place.address_post_code) + "; " +
+                            "GP: " + escape(place.gp_name)
+                            + "</option>");
+                        select.append(html);
                     }
                 } else {
                     $('.use_existing_btn').hide();
@@ -163,34 +160,29 @@
             ];
 
             var useData = function(attrs) {
-                var radios = $('input[name=use_which_booking]');
-                var chosen = null;
-                for (var i = 0; i < radios.length; i++) {
-                    if (radios[i].checked) {
-                        chosen = parseInt(radios[i].value, 10);
-                        var place = userData['places'][chosen];
-                        var mainform = getAddPlaceForm();
-                        for (var j = 0; j < attrs.length; j++) {
-                            var attr = attrs[j];
-                            if (mainform[attr].type == 'checkbox') {
-                                mainform[attr].checked = place[attr];
-                            } else {
-                                if (place[attr] == null) {
-                                    place[attr] = "";
-                                }
-                                mainform[attr].value = place[attr];
-                            }
-                            // If details are copied from something saved,
-                            // value is guaranteed to be good. So we clear
-                            // errors.
-                            cciw.standardformClearError(mainform[attr].id);
-
-                        }
-                    }
-                }
-                if (chosen === null) {
-                    alert('Please select a set of details on the left');
+                var select = $('#id_use_existing_select');
+                var chosen = parseInt(select.val(), 10);
+                if (isNaN(chosen)) {
+                    alert('Please select a set of details to copy from.');
                 } else {
+                    var place = userData['places'][chosen];
+                    var mainform = getAddPlaceForm();
+                    for (var j = 0; j < attrs.length; j++) {
+                        var attr = attrs[j];
+                        if (mainform[attr].type == 'checkbox') {
+                            mainform[attr].checked = place[attr];
+                        } else {
+                            if (place[attr] == null) {
+                                place[attr] = "";
+                            }
+                            mainform[attr].value = place[attr];
+                        }
+                        // If details are copied from something saved,
+                        // value is guaranteed to be good. So we clear
+                        // errors.
+                        cciw.standardformClearError(mainform[attr].id);
+
+                    }
                     useExistingDataClose();
                 }
             };

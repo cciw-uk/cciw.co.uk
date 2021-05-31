@@ -12,28 +12,24 @@
       </li>
     </ul>
 
-    <table>
-      <tr>
-        <th>Select previous booking to copy from</th>
-        <th>Choose which information to copy</th>
-      </tr>
-      <tr>
-        <td>
-          <div style="max-height: 20em; overflow: auto;";>
-            <form name="select_place">
-              <div id="id_use_existing_radio_container">
-              </div>
-            </form>
-          </div>
-        </td>
-        <td style="vertical-align:top; text-align:center;">
-          <input type="submit" id="id_use_all_btn" value="Use all personal information" /> <br/>
-          <input type="submit" id="id_use_address_btn" value="Use address and contact information" /> <br/>
-          <input type="submit" id="id_use_gp_info_btn" value="Use GP information" />
-        </td>
-
-      </tr>
-    </table>
+    <div>
+      Select previous booking to copy from:
+    </div>
+    <div style="text-align:center;">
+      <form name="select_place">
+        <select id="id_use_existing_select">
+        </select>
+      </form>
+      <br>
+    </div>
+    <div>
+      Choose which information to copy:
+    </div>
+    <div style="text-align:center;">
+      <input type="submit" id="id_use_all_btn" value="Use all personal information" /> <br/>
+      <input type="submit" id="id_use_address_btn" value="Use address and contact information" /> <br/>
+      <input type="submit" id="id_use_gp_info_btn" value="Use GP information" />
+    </div>
   </div>
 </div>
 
