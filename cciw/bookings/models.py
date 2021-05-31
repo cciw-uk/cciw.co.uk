@@ -635,7 +635,14 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.filter(camp__start_date__gt=date.today())
 
     def missing_agreements(self):
-        return self.exclude(
+        # See also Booking.get_missing_agreements()
+        return self.exclude(self._agreements_complete_Q())
+
+    def no_missing_agreements(self):
+        return self.filter(self._agreements_complete_Q())
+
+    def _agreements_complete_Q(self):
+        return models.Q(
             custom_agreements_checked__contains=Array(
                 CustomAgreement.objects.active().for_year(models.OuterRef('camp__year')).values_list('id')
             )
@@ -764,7 +771,13 @@ class Booking(models.Model):
     # - need to be able to query for this in missing_agreements()
     # - we only ever update this as a single field, we never need to
     #   treat it as a table.
-    custom_agreements_checked = ArrayField(models.IntegerField(), default=list, blank=True)
+    custom_agreements_checked = ArrayField(
+        models.IntegerField(),
+        default=list,
+        blank=True,
+        help_text="Comma separated list of IDs of custom agreements "
+        "the user has agreed to."
+    )
 
     # Price - partly from user (must fit business rules)
     price_type = models.PositiveSmallIntegerField(choices=[(pt, pt.label) for pt in BOOKING_PLACE_PRICE_TYPES])

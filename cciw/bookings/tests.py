@@ -480,12 +480,15 @@ class TestBookingModels(CreateBookingModelMixin, AtomicChecksMixin, TestBase):
         # Other agreement, different year so should be irrelevant:
         factories.create_custom_agreement(year=self.camp.year - 1, name='x')
         assert booking in Booking.objects.agreement_fix_required()
+        assert booking not in Booking.objects.no_missing_agreements()
         assert booking.get_missing_agreements() == [agreement]
 
         booking.custom_agreements_checked = [agreement.id]
         booking.save()
 
         assert booking not in Booking.objects.agreement_fix_required()
+        assert booking not in Booking.objects.missing_agreements()
+        assert booking in Booking.objects.no_missing_agreements()
         assert booking.get_missing_agreements() == []
 
     def test_get_missing_agreements_performance(self):

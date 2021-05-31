@@ -240,6 +240,26 @@ class ConfirmedFilter(admin.SimpleListFilter):
             return queryset
 
 
+class CustomAgreementFilter(admin.SimpleListFilter):
+    title = "custom agreements"
+    parameter_name = "agreements"
+
+    def lookups(self, request, model_admin):
+        return [
+            ('0', 'No missing agreements'),
+            ('1', 'One or more missing agreements'),
+        ]
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value == '0':
+            return queryset.no_missing_agreements()
+        elif value == '1':
+            return queryset.missing_agreements()
+        else:
+            return queryset
+
+
 class BookingAdminForm(forms.ModelForm):
     manual_payment_amount = forms.DecimalField(label='Amount',
                                                decimal_places=2, max_digits=10,
@@ -289,7 +309,7 @@ class BookingAdmin(admin.ModelAdmin):
     del confirmed
     search_fields = ['first_name', 'last_name']
     ordering = ['-created_at']
-    list_filter = [YearFilter, 'sex', 'price_type', 'early_bird_discount', 'serious_illness', 'state', 'created_online', ConfirmedFilter]
+    list_filter = [YearFilter, 'sex', 'price_type', 'early_bird_discount', 'serious_illness', 'state', 'created_online', ConfirmedFilter, CustomAgreementFilter]
     readonly_fields = ['booked_at', 'created_online']
 
     form = BookingAdminForm
@@ -357,7 +377,9 @@ class BookingAdmin(admin.ModelAdmin):
            ]}),
         ('Camper/parent agree to terms',
          {'fields':
-          ['agreement']}),
+          ['agreement',
+           'custom_agreements_checked',
+           ]}),
         ('Price',
          {'fields':
           ['price_type',
