@@ -56,8 +56,8 @@
             })
         };
 
-        var getBookingId = function () {
-            var bookingId = document.location.pathname.split("/").slice(-3,-2)[0];
+        var getBookingId = function() {
+            var bookingId = document.location.pathname.split("/").slice(-3, -2)[0];
             if (bookingId === "booking") {
                 return null;
             } else {
@@ -89,10 +89,11 @@
                         }
                     } else {
                         $('#id_problems').html('<i>Form has validation errors, ' +
-                                               'please correct first. You can see validation errors ' +
-                                               'by pressing "Save"</i>');
+                            'please correct first. You can see validation errors ' +
+                            'by pressing "Save"</i>');
                     }
-                }});
+                }
+            });
         }
 
         var getPlaceAvailability = function() {
@@ -108,8 +109,8 @@
                 success: function(json) {
                     if (json.status == 'success') {
                         var html = ('Places available: total=' + json.result.total.toString() +
-                                    ', male=' + json.result.male.toString() +
-                                    ', female=' + json.result.female.toString())
+                            ', male=' + json.result.male.toString() +
+                            ', female=' + json.result.female.toString())
                         $('#place-availability').html(html);
                     }
                 }
@@ -147,9 +148,9 @@
         $('#id_first_name').parent().append('<input type="submit" class="use_existing_btn" value="Use previous data" style="display:none;">');
 
         $('#id_address_line1').parent().append('<input type="submit" value="Copy address details from account"' +
-                                               'id="id_use_account_for_camper">');
+            'id="id_use_account_for_camper">');
         $('#id_contact_name').parent().append('<input type="submit" value="Copy contact details from account"' +
-                                              'id="id_use_account_for_contact">');
+            'id="id_use_account_for_contact">');
         $('div.field-camp').append('<div id="place-availability">');
         $('#id_amount_due').after('<input type="submit" id="id_amount_due_auto" value="">');
         $('#id_amount_due_auto').hide();

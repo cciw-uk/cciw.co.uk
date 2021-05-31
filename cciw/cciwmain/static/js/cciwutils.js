@@ -2,11 +2,11 @@
 
 (function($) {
     // Define filteredDiv jQuery plugin
-    $.fn.filteredDiv = function (containerDivSelector) {
+    $.fn.filteredDiv = function(containerDivSelector) {
         var filterbox = this;
         var containerDiv = $(containerDivSelector);
 
-        var filter = function () {
+        var filter = function() {
             var term = $.trim(filterbox.val().toLowerCase());
             containerDiv.children().each(function(i, elem) {
                 var $elem = $(elem);
@@ -116,9 +116,9 @@ var cciw = (function(pub, $) {
             // insert <ul> inside it
             var content = $("<div class='fieldMessages'><ul class='errorlist'></ul></div>");
             $.each(errors, function(i, val) {
-                       content.find("ul").append($('<li></li>').html(val));
+                content.find("ul").append($('<li></li>').html(val));
 
-                   });
+            });
             row.prepend(content);
             row.addClass("validationErrors");
         }
@@ -170,7 +170,7 @@ var cciw = (function(pub, $) {
         return on_input_change;
     };
 
-    var genericAjaxErrorHandler = function (jqXHR, textStatus, errorThrown) {
+    var genericAjaxErrorHandler = function(jqXHR, textStatus, errorThrown) {
         if (jqXHR.status === 400) {
             var json = $.parseJSON(jqXHR.responseText);
             var message = "";
@@ -189,7 +189,7 @@ var cciw = (function(pub, $) {
         }
     };
 
-    var openTemporaryWindow = function (url, windowName, windowFeatures) {
+    var openTemporaryWindow = function(url, windowName, windowFeatures) {
         if (url.indexOf("?") < 0) {
             url += "?";
         } else {
@@ -213,7 +213,7 @@ var cciw = (function(pub, $) {
     return pub;
 })(cciw || {}, jQuery);
 
-(function ($) {
+(function($) {
     $(document).ready(function() {
 
         // Ajax callbacks for labelled forms
@@ -221,12 +221,12 @@ var cciw = (function(pub, $) {
             cciw.standardformAddOnchangeHandlers($(this));
         });
 
-        $('#menutoggle a').on('click', function (ev) {
+        $('#menutoggle a').on('click', function(ev) {
             $('#menubar ul li').toggleClass('expanded');
         })
 
         // JS confirmation for destructive actions
-        $('input[type=submit][data-js-confirm]').on('click', function (ev) {
+        $('input[type=submit][data-js-confirm]').on('click', function(ev) {
             var msg = $(ev.target).attr('data-js-confirm-message');
             if (msg == undefined) {
                 msg = "Are you sure?";

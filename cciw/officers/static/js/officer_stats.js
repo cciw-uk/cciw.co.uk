@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).ready(function() {
 
     Highcharts.setOptions({
         exporting: {
@@ -6,7 +6,7 @@ $(document).ready(function () {
         }
     });
 
-    $("[data-officer-stats-chart-placeholder]").each(function (index, elem) {
+    $("[data-officer-stats-chart-placeholder]").each(function(index, elem) {
         var $elem = $(elem);
         var data = JSON.parse($elem.attr('data-chart'));
         $.extend(data.legend, {
@@ -28,7 +28,7 @@ $(document).ready(function () {
         $elem.highcharts(data);
     });
 
-    $('[data-officer-stats-trend-chart-placeholder]').each(function (index, elem) {
+    $('[data-officer-stats-trend-chart-placeholder]').each(function(index, elem) {
         var $elem = $(elem);
         var data = JSON.parse($elem.attr('data-chart'));
         data.yAxis = [{
@@ -41,7 +41,7 @@ $(document).ready(function () {
         $elem.highcharts(data);
     });
 
-    $('[data-booking-progress-stats-chart-placeholder]').each(function (index, elem) {
+    $('[data-booking-progress-stats-chart-placeholder]').each(function(index, elem) {
         var $elem = $(elem);
         var data = JSON.parse($elem.attr('data-chart'));
         data.yAxis = [{
@@ -53,7 +53,7 @@ $(document).ready(function () {
         $elem.highcharts(data);
     });
 
-    $('[data-booking-summary-stats-chart-placeholder]').each(function (index, elem) {
+    $('[data-booking-summary-stats-chart-placeholder]').each(function(index, elem) {
         var $elem = $(elem);
         var data = JSON.parse($elem.attr('data-chart'));
         $.extend(data, {
@@ -89,7 +89,7 @@ $(document).ready(function () {
         $elem.highcharts(data);
     });
 
-    $('[data-booking-ages-stats-chart-placeholder]').each(function (index, elem) {
+    $('[data-booking-ages-stats-chart-placeholder]').each(function(index, elem) {
         var $elem = $(elem);
         var data = JSON.parse($elem.attr('data-chart'));
         var colors = JSON.parse($elem.attr('data-chart-colors'));
