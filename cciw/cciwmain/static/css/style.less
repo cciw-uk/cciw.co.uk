@@ -497,6 +497,9 @@ table.actiongrid {
         padding: 6px;
         vertical-align: middle;
     }
+    button {
+        .compactButton();
+    }
 }
 
 
@@ -581,7 +584,6 @@ div.formrow {
     }
 }
 
-
 div.userError {
     padding: 5px 9px;
     text-align: left;
@@ -639,6 +641,36 @@ input.placeholder {
 img.captcha {
     vertical-align: top;
 }
+
+// Buttons
+.normalButtonStyle() {
+    border: 1px solid #aaa;
+    background-image: linear-gradient(to bottom, #f0f0f0 0%, #e8e8e8 10%, #e8e8e8 90%, #d0d0d0 100%);
+    &:hover {
+        background-image: linear-gradient(to bottom, #ffffff 0%, #f0f0f0f0 10%, #f0f0f0f0 90%, #d8d8d8d8 100%);
+    }
+    &:active {
+        // Press down appearance
+        position:relative;
+        top:1px;
+    }
+}
+
+.normalButton() {
+    .normalButtonStyle();
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.compactButton() {
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+button, input[type=submit] {
+    .normalButton();
+}
+
 // Breadcrumbs
 
 div.breadcrumb {
@@ -745,6 +777,7 @@ ul.messagelist {
     -webkit-box-shadow:inset 0px 1px 0px 0px #729e48;
     box-shadow:inset 0px 1px 0px 0px #729e48;
     background-color: @primaryColor;
+    background-image: none;
     -moz-border-radius:6px;
     -webkit-border-radius:6px;
     border-radius:6px;
@@ -764,6 +797,7 @@ ul.messagelist {
 
     &:hover {
         background-color: @primaryColorLighter;
+        background-image: none;
         border-color:#f0fff0;
     }
     &:active {
@@ -856,7 +890,8 @@ a.booknow, a.bigaction, input.bigaction {
 
 // Add/edit place
 
-.copy_data_btn {
+input.copy_data_btn {
+    .compactButton();
     float: right;
     margin: -5px 0px 5px 5px;
     clear: both;
@@ -899,7 +934,7 @@ table.prices td {
 
 /* list bookings */
 
-table {
+table.bookinglist {
     td.total, td.discounts {
         text-align: right;
         font-weight: bold;
@@ -915,6 +950,14 @@ table {
 
     td.bookinglistaction {
         text-align: center;
+
+        @media screen and (max-width: @smallScreenWidth) {
+            padding: 1px;
+        }
+    }
+    input[type=submit] {
+        .compactButton();
+        margin-bottom: 1px;
     }
 }
 
