@@ -121,6 +121,11 @@
       - learning_difficulties
       - serious_illness
 
+      # Agreements
+      - agreement
+      - publicity_photos_agreement
+      - custom_agreements_checked
+
     - name: accounts.User  # These users are officers/leaders/other CCiW volunteers
       columns:
       - username
@@ -335,7 +340,6 @@
     - name: bookings.Booking
       columns:
       - south_wales_transport
-      - agreement
       - price_type
       - early_bird_discount
       - booked_at
@@ -383,6 +387,8 @@
     - name: bookings.RefundPayment
       columns: all
     - name: bookings.AccountTransferPayment
+      columns: all
+    - name: bookings.CustomAgreement
       columns: all
     - name: cciwmain.Site
       columns: all
