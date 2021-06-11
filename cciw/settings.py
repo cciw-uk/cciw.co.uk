@@ -63,6 +63,8 @@ if DEVBOX:
 else:
     DEBUG = False
 
+USE_DEBUG_TOOLBAR = False
+
 INTERNAL_IPS = ('127.0.0.1',)
 
 LANGUAGE_CODE = 'en-gb'
@@ -141,6 +143,10 @@ INSTALLED_APPS = [
 if DEVBOX and DEBUG:
     INSTALLED_APPS += [
         'django.contrib.admindocs',
+    ]
+
+if USE_DEBUG_TOOLBAR and DEBUG:
+    INSTALLED_APPS += [
         'debug_toolbar',
     ]
 
@@ -422,7 +428,7 @@ SECURE_DOWNLOAD_URL_BASE = "/protected/"  # See nginx conf
 _MIDDLEWARE = [
     (True, 'django.middleware.security.SecurityMiddleware'),
     (True, "django.middleware.gzip.GZipMiddleware"),
-    (DEVBOX and DEBUG, "debug_toolbar.middleware.DebugToolbarMiddleware"),
+    (USE_DEBUG_TOOLBAR and DEBUG, "debug_toolbar.middleware.DebugToolbarMiddleware"),
     (True, "django.contrib.sessions.middleware.SessionMiddleware"),
     (True, "django.middleware.common.CommonMiddleware"),
     (True, 'django.middleware.csrf.CsrfViewMiddleware'),
