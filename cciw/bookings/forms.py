@@ -136,7 +136,8 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
             'can_swim_25m',
             'learning_difficulties',
             'serious_illness',
-            'agreement'
+            'agreement',
+            'publicity_photos_agreement',
         ]
 
     def clean_camp(self):

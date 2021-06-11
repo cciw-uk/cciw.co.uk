@@ -172,13 +172,17 @@
         required to authorise the leadership team to act in their absence where urgent
         treatment becomes necessary.</p>
 
-      <p>Pictures taken during camp may be used for camp publicity purposes. If you
-        have any objections to this, please contact the CCiW booking officer by post or
-        email.</p>
-
       <p>If both camper and parent/guardian agree to the above, tick the box to continue:</p>
 
       {% cciw_form_field form 'agreement' 'Agree to above conditions' %}
+
+      <h3>Photographs</h3>
+
+      <p>We sometimes take photos during camp for use in camp publicity purposes. If you
+        give permission for photos taken of the camper to be used in this way, please
+        tick the box below. This is optional.</p>
+
+      {% cciw_form_field form 'publicity_photos_agreement' 'Agree to photos being taken and used for publicity.' %}
 
       {% for agreement in custom_agreements %}
         <h3>{{ agreement.name }}</h3>

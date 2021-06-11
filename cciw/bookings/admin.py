@@ -378,6 +378,7 @@ class BookingAdmin(admin.ModelAdmin):
         ('Camper/parent agree to terms',
          {'fields':
           ['agreement',
+           'publicity_photos_agreement',
            'custom_agreements_checked',
            ]}),
         ('Price',

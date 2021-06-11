@@ -764,6 +764,7 @@ class Booking(models.Model):
 
     # Agreement - from user
     agreement = models.BooleanField(default=False)
+    publicity_photos_agreement = models.BooleanField(default=False, blank=True)
 
     # Custom agreements: Array of CustomAgreement.id integers, for the
     # CustomAgreements that the booker has agreed to.

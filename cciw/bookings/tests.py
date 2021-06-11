@@ -918,6 +918,7 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # Check attributes set correctly
         self.assertEqual(b.amount_due, self.price_full)
         self.assertEqual(b.created_online, True)
+        assert not b.publicity_photos_agreement
 
     def test_custom_agreement(self):
         agreement = factories.create_custom_agreement(
