@@ -315,13 +315,18 @@
 
 # --- Group: Non-personal data ---
 
-# For exhaustiveness, we also include retention policy for non-personal data.
 # This includes:
 
 # - data related to bookings and officers that is not entered by the user themselves,
 #   but is internal book-keeping data (first section)
 #
 # - many other tables of data for various business purposes
+
+# The purpose of listing this is so that we have an exhaustive list of all
+# tables/columns. If any new tables or columns are added to the system, but a
+# policy is not defined in this file, an automatic check will stop deployment
+# until the policy is defined.
+
 
 - rules:
     keep: forever
