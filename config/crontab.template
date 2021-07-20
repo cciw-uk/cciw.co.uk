@@ -8,6 +8,10 @@ DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 0       2 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE cleanup
 # 0       7 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE payment_reminder_emails
 
+
+# Apply data retention daily
+0       1 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE apply_data_retention
+
 # expire_bookings must be run only once an hour
 30      * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE expire_bookings
 
