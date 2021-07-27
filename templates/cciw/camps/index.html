@@ -9,8 +9,14 @@
         <li><a href="{{ camp.get_absolute_url }}" title="{{ camp.nice_name }}">
           Camp {{ camp.name }}</a>
           {{ camp.bracketted_old_name }}
-          led by {{ camp.leaders.all|join:", " }},
-          chaplain {{ camp.chaplain }}
+          {% with leaders=camp.leaders.all %}
+            {% if leaders %}
+              led by {{ leaders|join:", " }}{% if camp.chaplain %}, {% endif %}
+            {% endif %}
+          {% endwith %}
+          {% if camp.chaplain %}
+            chaplain {{ camp.chaplain }}
+          {% endif %}
         </li>
       {% endfor %}
     </ul>
