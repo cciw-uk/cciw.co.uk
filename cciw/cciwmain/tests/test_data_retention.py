@@ -350,7 +350,7 @@ class TestApplyDataRetentionPolicy(TestBase):
                         camp=camp,
                         amount_due=100,
                     )
-            account.receive_payment(200)
+            account.receive_payment(2 * 100)
             other_account.receive_payment(100)
 
         with travel('2001-01-09'):
@@ -366,6 +366,31 @@ class TestApplyDataRetentionPolicy(TestBase):
             # This one has outstanding fees
             assert other_account not in BookingAccount.objects.not_in_use().older_than(
                 make_datetime(2002, 1, 1)
+            )
+
+    def test_BookingAccount_older_than_respects_last_payment_date(self):
+        """
+        BookingAccount 'older than' should consider payment as similar
+        to a login in terms of regarding the account as recent.
+        """
+        with travel('2001-01-01'):
+            account = bookings_factories.create_booking_account()
+
+        with travel('2001-02-01 01:00:00'):
+            bookings_factories.create_processed_payment(account=account, amount=100)
+            assert account not in BookingAccount.objects.not_in_use()  # due to non zero balance
+            bookings_factories.create_processed_payment(account=account, amount=-100)
+            assert account in BookingAccount.objects.not_in_use()  # due to zero balance
+
+            # Although it is 'not_in_use', it is not yet considered as 'older_than(2001-02-01)'
+            # because of payment
+            assert account not in BookingAccount.objects.not_in_use().older_than(
+                make_datetime(2001, 2, 1)
+            )
+
+            # It is older than 2001-02-02
+            assert account in BookingAccount.objects.not_in_use().older_than(
+                make_datetime(2001, 2, 2)
             )
 
     def test_erase_User(self):

@@ -76,23 +76,36 @@ class Factories(FactoriesBase):
             address_line1=address_line1,
         )
 
+    def create_processed_payment(
+            self,
+            account=None,
+            amount=1,
+    ):
+        manual_payment = self.create_manual_payment(account=account, amount=amount)
+        payment = manual_payment.paymentsource.payment
+        payment.refresh_from_db()
+        assert payment.processed  # should have been done via process_all_payments via signals
+        return payment
+
     def create_manual_payment(
             self,
             account=None,
+            amount=1,
     ):
         return ManualPayment.objects.create(
             account=account or self.create_booking_account(),
-            amount=1,
+            amount=amount,
             payment_type=ManualPaymentType.CHEQUE,
         )
 
     def create_refund_payment(
             self,
             account=None,
+            amount=1,
     ):
         return RefundPayment.objects.create(
             account=account or self.create_booking_account(),
-            amount=1,
+            amount=amount,
             payment_type=ManualPaymentType.CHEQUE,
         )
 

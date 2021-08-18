@@ -233,7 +233,11 @@ class BookingAccountQuerySet(models.QuerySet):
               ELSE bookings_bookingaccount.created_at
          END) < %s
         ''', [before_datetime]), output_field=models.BooleanField(),
-        ))
+        )).alias(
+            last_payment_at=models.Max('payments__created_at')
+        ).filter(
+            Q(last_payment_at__isnull=True) | Q(last_payment_at__lt=before_datetime)
+        )
 
     def _with_total_amount_due(self):
         return self.alias(total_amount_due=functions.Coalesce(
