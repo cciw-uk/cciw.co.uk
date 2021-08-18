@@ -164,6 +164,8 @@ if not CHECK_DEPLOY:
         'dataretention.E002',
     ])
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'  # to avoid warnings/migrations for existing 3rd party apps that haven't upgraded
+
 # == AUTH ==
 
 AUTH_USER_MODEL = "accounts.User"

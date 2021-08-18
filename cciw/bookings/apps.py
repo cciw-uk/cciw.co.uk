@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 
-class OfficersConfig(AppConfig):
+class BookingsConfig(AppConfig):
 
-    name = 'cciw.officers'
+    name = 'cciw.bookings'
     default_auto_field = 'django.db.models.BigAutoField'

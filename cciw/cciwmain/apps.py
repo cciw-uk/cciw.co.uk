@@ -11,6 +11,7 @@ from django.urls.resolvers import RoutePattern
 class CciwmainConfig(AppConfig):
     name = "cciw.cciwmain"
     verbose_name = "Camps"
+    default_auto_field = 'django.db.models.BigAutoField'
 
     def ready(self):
         # Setup signals
