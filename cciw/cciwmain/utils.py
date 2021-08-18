@@ -12,6 +12,7 @@ from datetime import date
 from django.conf import settings
 from django.core.validators import ValidationError, validate_email
 from django.http import HttpResponse
+from django.utils import timezone
 from django.utils.encoding import force_text
 from django.utils.functional import Promise
 
@@ -75,3 +76,10 @@ def get_protected_download(folder, filename):
     response['X-Accel-Redirect'] = settings.SECURE_DOWNLOAD_URL_BASE + folder + "/" + filename
     del response['Content-Type']  # Get nginx/upstream to set it
     return response
+
+
+def ensure_timezone_aware(datetime_obj):
+    if timezone.is_aware(datetime_obj):
+        return datetime_obj
+    else:
+        return timezone.make_aware(datetime_obj)

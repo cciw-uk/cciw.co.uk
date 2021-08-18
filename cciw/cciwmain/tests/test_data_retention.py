@@ -11,6 +11,7 @@ from cciw.accounts.models import User
 from cciw.bookings.models import Booking, BookingAccount, BookingState
 from cciw.bookings.tests import factories as bookings_factories
 from cciw.cciwmain.tests.base import factories as camps_factories
+from cciw.cciwmain.tests.utils import make_datetime
 from cciw.contact_us.models import Message
 from cciw.data_retention import (ErasureMethod, Forever, Group, Keep, ModelDetail, Policy, PreserveAgeOnCamp, Rules,
                                  apply_data_retention, parse_keep)
@@ -355,16 +356,16 @@ class TestApplyDataRetentionPolicy(TestBase):
         with travel('2001-01-09'):
             # This has unfinished camps:
             assert account not in BookingAccount.objects.not_in_use().older_than(
-                datetime(2001, 1, 9)
+                make_datetime(2001, 1, 9)
             )
         with travel('2002-01-01'):
             # Now has no outstanding fees, nor unfinished camps
             assert account in BookingAccount.objects.not_in_use().older_than(
-                datetime(2002, 1, 1)
+                make_datetime(2002, 1, 1)
             )
             # This one has outstanding fees
             assert other_account not in BookingAccount.objects.not_in_use().older_than(
-                datetime(2002, 1, 1)
+                make_datetime(2002, 1, 1)
             )
 
     def test_erase_User(self):

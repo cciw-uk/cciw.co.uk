@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models import Prefetch, functions
+from django.db.models import Prefetch, Q, functions
 from django.db.models.expressions import RawSQL
 from django.urls import reverse
 from django.utils import timezone
@@ -236,16 +236,15 @@ class BookingAccountQuerySet(models.QuerySet):
         ))
 
     def _with_total_amount_due(self):
-        # Use 'alias' once Django 3.2 is out
-        return self.annotate(total_amount_due=functions.Coalesce(
+        return self.alias(total_amount_due=functions.Coalesce(
             models.Sum(
                 'bookings__amount_due',
-                filter=~models.Q(bookings__state__in=[
+                filter=~Q(bookings__state__in=[
                     BookingState.CANCELLED_FULL_REFUND,
                     BookingState.INFO_COMPLETE,
                 ]),
             ),
-            models.Value(0),
+            models.Value(Decimal(0)),
         ))
 
     def zero_final_balance(self):
@@ -642,7 +641,7 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.filter(self._agreements_complete_Q())
 
     def _agreements_complete_Q(self):
-        return models.Q(
+        return Q(
             custom_agreements_checked__contains=Array(
                 CustomAgreement.objects.active().for_year(models.OuterRef('camp__year')).values_list('id')
             )
@@ -682,7 +681,7 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
 
     def _in_use_q(self):
         today = date.today()
-        return models.Q(
+        return Q(
             camp__end_date__gte=today,
         )
 

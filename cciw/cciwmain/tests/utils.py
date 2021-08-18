@@ -1,8 +1,10 @@
+from datetime import datetime
 from unittest import mock
 
 from django.contrib.sites.models import Site
 
 from cciw.cciwmain import common
+from cciw.cciwmain.utils import ensure_timezone_aware
 
 
 def init_query_caches():
@@ -56,3 +58,7 @@ def set_thisyear(year):
             super().tearDown()
 
     return ThisYearMixin
+
+
+def make_datetime(year, month, day, hour=0, minute=0, second=0):
+    return ensure_timezone_aware(datetime(year, month, day, hour, minute, second))
