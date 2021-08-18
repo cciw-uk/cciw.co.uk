@@ -231,6 +231,11 @@ class TestApplyDataRetentionPolicy(TestBase):
                 assert booking.date_of_birth != date_of_birth
 
     def test_erase_BookingAccount(self):
+        """
+        Test erasing BookingAccount works
+        """
+        # Implicitly checks the `not_in_use()` method,
+        # and the `created_at` check in `older_than()` method.
         policy = make_policy(
             model=BookingAccount,
             delete_row=False,
@@ -252,15 +257,10 @@ class TestApplyDataRetentionPolicy(TestBase):
             account.refresh_from_db()
             assert account.address_line1 == '[deleted]'
 
-    def test_erase_BookingAccount_last_login(self):
-        policy = make_policy(
-            model=BookingAccount,
-            delete_row=False,
-            keep=timedelta(days=365),
-            fields=[
-                'address_line1',
-            ],
-        )
+    def test_BookingAccount_older_than_respects_last_login(self):
+        # Use of `travel()` is not necessary here because `older_than()` takes
+        # explicit datetime object, but it helps keep all the tests consistent
+        # in style.
         with travel('2001-01-01'):
             account = bookings_factories.create_booking_account(
                 address_line1='123 Main St',
@@ -268,17 +268,12 @@ class TestApplyDataRetentionPolicy(TestBase):
         with travel('2001-10-01'):
             account.last_login = timezone.now()
             account.save()
-            assert account.address_line1 == '123 Main St'
         with travel('2002-01-01 01:00:00'):
-            apply_partial_policy(policy)
-            account.refresh_from_db()
-            assert account.address_line1 == '123 Main St'
+            assert account not in BookingAccount.objects.not_in_use().older_than(timezone.now() - timedelta(days=365))
         with travel('2002-10-02 01:00:00'):
-            apply_partial_policy(policy)
-            account.refresh_from_db()
-            assert account.address_line1 == '[deleted]'
+            assert account in BookingAccount.objects.not_in_use().older_than(timezone.now() - timedelta(days=365))
 
-    def test_erase_BookingAccount_not_in_use_payment_outstanding(self):
+    def test_BookingAccount_not_in_use_respects_payment_outstanding(self):
         policy = make_policy(
             model=BookingAccount,
             delete_row=False,
@@ -297,13 +292,14 @@ class TestApplyDataRetentionPolicy(TestBase):
                 amount_due=100,
             )
         with travel('2011-01-01'):
+            assert account not in BookingAccount.objects.not_in_use()
             # Should not be deleted despite age, because we have outstanding
             # payments due.
             apply_partial_policy(policy)
             account.refresh_from_db()
             assert account.address_line1 == '123 Main St'
 
-    def test_erase_BookingAccount_not_in_use_current_booking(self):
+    def test_BookingAccount_not_in_use_respects_current_booking(self):
         account = bookings_factories.create_booking_account()
         assert account in BookingAccount.objects.not_in_use()
         camp = camps_factories.create_camp(start_date=date.today())
@@ -332,7 +328,7 @@ class TestApplyDataRetentionPolicy(TestBase):
         with travel(camp2.end_date + timedelta(days=1)):
             assert account in BookingAccount.objects.not_in_use()
 
-    def test_erase_BookingAccount_not_in_use_query_issue(self):
+    def test_BookingAccount_not_in_use_query_issue(self):
         # Had some issues with not_in_use() and older_than() combinations with
         # more implementations of them. The error
         # "django.db.utils.ProgrammingError: more than one row returned by a
