@@ -228,15 +228,28 @@ class BookingAccountQuerySet(models.QuerySet):
         )
 
     def older_than(self, before_datetime):
-        return self.filter(models.ExpressionWrapper(RawSQL('''
-        (CASE WHEN bookings_bookingaccount.last_login IS NOT NULL THEN bookings_bookingaccount.last_login
-              ELSE bookings_bookingaccount.created_at
-         END) < %s
-        ''', [before_datetime]), output_field=models.BooleanField(),
-        )).alias(
-            last_payment_at=models.Max('payments__created_at')
+        """
+        Returns BookingAccounts that are considered 'older than' before_datetime
+        in terms of when they were last 'used'
+        """
+        return self.filter(
+            # last_login/created_at
+            models.ExpressionWrapper(RawSQL('''
+              (CASE WHEN bookings_bookingaccount.last_login IS NOT NULL THEN bookings_bookingaccount.last_login
+                    ELSE bookings_bookingaccount.created_at
+               END) < %s
+              ''', [before_datetime]), output_field=models.BooleanField(),
+            )
+        ).alias(
+            # payments
+            last_payment_at=models.Max('payments__created_at'),
         ).filter(
             Q(last_payment_at__isnull=True) | Q(last_payment_at__lt=before_datetime)
+        ).alias(
+            # bookings
+            last_booking_camp_end_date=models.Max('bookings__camp__end_date'),
+        ).filter(
+            Q(last_booking_camp_end_date__isnull=True) | Q(last_booking_camp_end_date__lt=before_datetime)
         )
 
     def _with_total_amount_due(self):

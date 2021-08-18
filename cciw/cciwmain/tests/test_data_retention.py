@@ -393,6 +393,27 @@ class TestApplyDataRetentionPolicy(TestBase):
                 make_datetime(2001, 2, 2)
             )
 
+    def test_BookingAccount_older_than_respects_last_booking_camp_date(self):
+        """
+        BookingAccount 'older than' should consider a booking as similar
+        to a login in terms of regarding the account as recent.
+        """
+        with travel('2001-01-01'):
+            account = bookings_factories.create_booking_account()
+            booking = bookings_factories.create_booking(account=account, state=BookingState.BOOKED, amount_due=0)
+
+        after_camp = booking.camp.end_date + timedelta(days=10)
+        with travel(after_camp):
+            assert account in BookingAccount.objects.not_in_use()  # due to zero balance, and being after camp
+
+            # But it is not older than end date of camp
+            assert account not in BookingAccount.objects.not_in_use().older_than(
+                booking.camp.end_date
+            )
+            assert account in BookingAccount.objects.not_in_use().older_than(
+                booking.camp.end_date + timedelta(days=1)
+            )
+
     def test_erase_User(self):
         policy = make_policy(
             model=User,
