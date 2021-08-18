@@ -11,7 +11,7 @@ from cciw.accounts.models import User
 from cciw.bookings.models import Booking, BookingAccount, BookingState
 from cciw.bookings.tests import factories as bookings_factories
 from cciw.cciwmain.tests.base import factories as camps_factories
-from cciw.cciwmain.tests.utils import make_datetime
+from cciw.cciwmain.tests.utils import date_to_datetime, make_datetime
 from cciw.contact_us.models import Message
 from cciw.data_retention import (ErasureMethod, Forever, Group, Keep, ModelDetail, Policy, PreserveAgeOnCamp, Rules,
                                  apply_data_retention, parse_keep)
@@ -193,12 +193,13 @@ class TestApplyDataRetentionPolicy(TestBase):
         with travel('2001-01-01'):
             booking = bookings_factories.create_booking(address_line1='123 Main St')
 
-        with travel('2001-12-31'):
+        end_of_camp = date_to_datetime(booking.camp.end_date) + timedelta(days=1)
+        with travel(end_of_camp + timedelta(days=365) - timedelta(seconds=10)):
             apply_partial_policy(policy)
             booking.refresh_from_db()
             assert booking.address_line1 == '123 Main St'
 
-        with travel('2002-01-01 01:00:00'):
+        with travel(end_of_camp + timedelta(days=365) + timedelta(seconds=10)):
             apply_partial_policy(policy)
             booking.refresh_from_db()
             assert booking.address_line1 == '[deleted]'
@@ -224,7 +225,7 @@ class TestApplyDataRetentionPolicy(TestBase):
                 assert booking.date_of_birth == date_of_birth
                 assert booking.age_on_camp() == age_on_camp
 
-            with travel('2002-01-02'):
+            with travel(booking.camp.end_date + timedelta(days=365 + 1)):
                 apply_partial_policy(policy)
                 booking.refresh_from_db()
                 assert booking.age_on_camp() == age_on_camp

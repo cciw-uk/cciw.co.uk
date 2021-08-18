@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 from unittest import mock
 
 from django.contrib.sites.models import Site
@@ -62,3 +62,9 @@ def set_thisyear(year):
 
 def make_datetime(year, month, day, hour=0, minute=0, second=0):
     return ensure_timezone_aware(datetime(year, month, day, hour, minute, second))
+
+
+def date_to_datetime(date_value):
+    if date_value is None:
+        return None
+    return ensure_timezone_aware(datetime.combine(date_value, time(0, 0, 0)))

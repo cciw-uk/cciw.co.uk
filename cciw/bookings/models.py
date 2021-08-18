@@ -703,7 +703,11 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         )
 
     def older_than(self, before_datetime):
-        return self.filter(created_at__lt=before_datetime)
+        return self.filter(
+            Q(created_at__lt=before_datetime) & Q(
+                Q(camp__isnull=True) | Q(camp__end_date__lt=before_datetime)
+            )
+        )
 
 
 class BookingManagerBase(models.Manager):
