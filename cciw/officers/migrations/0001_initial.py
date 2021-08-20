@@ -164,10 +164,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='reference',
-            unique_together=set([('application', 'referee_number')]),
+            unique_together={('application', 'referee_number')},
         ),
         migrations.AlterUniqueTogether(
             name='invitation',
-            unique_together=set([('officer', 'camp')]),
+            unique_together={('officer', 'camp')},
         ),
     ]
