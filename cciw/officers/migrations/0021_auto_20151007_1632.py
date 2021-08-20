@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterUniqueTogether(
             name='referee',
-            unique_together=set([('application', 'referee_number')]),
+            unique_together={('application', 'referee_number')},
         ),
     ]

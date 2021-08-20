@@ -78,7 +78,7 @@ class SendMessageForm(BaseForm):
         initial = kwargs.pop('initial', {})
         initial['message'] = msg
         kwargs['initial'] = initial
-        return super(SendMessageForm, self).__init__(*args, **kwargs)
+        super(SendMessageForm, self).__init__(*args, **kwargs)
 
     def get_message_template(self):
         raise NotImplementedError

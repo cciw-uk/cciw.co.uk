@@ -238,7 +238,6 @@ factories = Factories()
 # cases where we create lots of camps for performance testing.
 COLORS = {
     "Red": "#FF0000",
-    "Blue": "#0000FF",
     "Aero": "#7CB9E8",
     "Alabaster": "#EDEAE0",
     "Almond": "#EFDECD",

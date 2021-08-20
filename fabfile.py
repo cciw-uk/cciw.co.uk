@@ -148,9 +148,8 @@ def virtualenv(venv):
 
 @contextmanager
 def django_project(target):
-    with virtualenv(target.VENV_ROOT):
-        with cd(target.SRC_ROOT):
-            yield
+    with virtualenv(target.VENV_ROOT), cd(target.SRC_ROOT):
+        yield
 
 
 # Versions and conf:

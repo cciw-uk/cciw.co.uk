@@ -18,7 +18,7 @@ def create_reference_actions(apps, schema_editor):
             continue
 
         for l in r.comments.split("\n"):
-            m = re.match("Reference requested by user ([^ ]*).* on (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", l)
+            m = re.match(r"Reference requested by user ([^ ]*).* on (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", l)
             if m is not None:
                 dt = timezone.utc.localize(datetime.strptime(m.groups()[1], "%Y-%m-%d %H:%M:%S"))
                 username = m.groups()[0]
@@ -28,7 +28,7 @@ def create_reference_actions(apps, schema_editor):
                                                reference=r,
                                                user=user)
 
-            m = re.match("Reference received via online system on (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", l)
+            m = re.match(r"Reference received via online system on (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", l)
             if m is not None:
                 dt = timezone.utc.localize(datetime.strptime(m.groups()[0], "%Y-%m-%d %H:%M:%S"))
                 ReferenceAction.objects.create(action_type="received",

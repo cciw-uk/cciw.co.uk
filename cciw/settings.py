@@ -57,7 +57,7 @@ if DEVBOX:
 
     DEBUG = True
     DEBUG_TOOLBAR_CONFIG = {
-        'DISABLE_PANELS': set(['debug_toolbar.panels.redirects.RedirectsPanel']),
+        'DISABLE_PANELS': {'debug_toolbar.panels.redirects.RedirectsPanel'},
         'SHOW_TOOLBAR_CALLBACK': 'cciw.settings.show_toolbar',
     }
 else:

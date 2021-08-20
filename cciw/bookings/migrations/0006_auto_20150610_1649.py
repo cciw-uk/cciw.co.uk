@@ -32,7 +32,7 @@ def fix_ipn_dates(apps, schema_editor):
         if ipn.query:
             from django.http import QueryDict
             roughdecode = dict(item.split('=', 1) for item in ipn.query.split('&'))
-            encoding = roughdecode.get('charset', None)
+            encoding = roughdecode.get('charset')
             if encoding is not None:
                 query = ipn.query.encode('ascii')
                 data = QueryDict(query, encoding=encoding)

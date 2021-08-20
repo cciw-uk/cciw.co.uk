@@ -23,6 +23,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='qualification',
-            unique_together=set([('application', 'type')]),
+            unique_together={('application', 'type')},
         ),
     ]
