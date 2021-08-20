@@ -409,10 +409,10 @@ class TestApplyDataRetentionPolicy(TestBase):
 
             # But it is not older than end date of camp
             assert account not in BookingAccount.objects.not_in_use().older_than(
-                booking.camp.end_date
+                date_to_datetime(booking.camp.end_date)
             )
             assert account in BookingAccount.objects.not_in_use().older_than(
-                booking.camp.end_date + timedelta(days=1)
+                date_to_datetime(booking.camp.end_date) + timedelta(days=1)
             )
 
     def test_erase_User(self):
