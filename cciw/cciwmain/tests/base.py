@@ -143,11 +143,10 @@ class Factories(FactoriesBase):
         return self.create_site()
 
     def set_camp_leaders(self, camp, leaders):
-        for leader in leaders:
-            camp.leaders.set([
-                self.make_into_person(leader)
-                for leader in leaders
-            ])
+        camp.leaders.set([
+            self.make_into_person(leader)
+            for leader in leaders
+        ])
 
     @lru_cache()
     def get_any_camp_leader(self) -> Person:
