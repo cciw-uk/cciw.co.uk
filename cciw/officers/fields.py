@@ -7,7 +7,7 @@ class YyyyMmField(models.CharField):
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 7
         kwargs['help_text'] = 'Enter the date in YYYY/MM format.'
-        return super(YyyyMmField, self).__init__(*args, **kwargs)
+        super(YyyyMmField, self).__init__(*args, **kwargs)
 
     def formfield(self, *args, **kwargs):
         defaults = {'form_class': formfields.YyyyMmField}
@@ -18,7 +18,7 @@ class YyyyMmField(models.CharField):
 class AddressField(models.TextField):
     def __init__(self, *args, **kwargs):
         kwargs['help_text'] = 'Full address, including post code and country'
-        return super(AddressField, self).__init__(*args, **kwargs)
+        super(AddressField, self).__init__(*args, **kwargs)
 
 
 class ExplicitBooleanField(models.BooleanField):
