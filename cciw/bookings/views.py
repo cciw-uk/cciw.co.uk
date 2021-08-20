@@ -824,7 +824,7 @@ class BookingAccountAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_queryset(self):
         request = self.request
-        if request.user.is_authenticated and request.user.is_booking_secretary:
-            return BookingAccount.objects.order_by('name', 'address_post_code').filter(name__icontains=self.q)
-        else:
-            return BookingAccount.objects.none()
+        query = self.q.strip()
+        if request.user.is_authenticated and (request.user.is_booking_secretary or request.user.is_superuser) and query:
+            return BookingAccount.objects.order_by('name', 'address_post_code').filter(name__icontains=query)
+        return BookingAccount.objects.none()
