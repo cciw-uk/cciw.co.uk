@@ -161,9 +161,9 @@ def camp_serious_slacker_list(camp):
              'missing_application_forms': a,
              'missing_references': r,
              'missing_dbss': c,
-             'last_good_apps_year': officer_apps_last_good_year.get(o, None),
-             'last_good_refs_year': officer_refs_last_good_year.get(o, None),
-             'last_good_dbss_year': officer_dbss_last_good_year.get(o, None),
+             'last_good_apps_year': officer_apps_last_good_year.get(o),
+             'last_good_refs_year': officer_refs_last_good_year.get(o),
+             'last_good_dbss_year': officer_dbss_last_good_year.get(o),
              } for o, a, r, c in tmp1]
 
 
@@ -198,7 +198,7 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
     def data_rows():
         for inv in invites:
             user = inv.officer
-            app = app_dict.get(user.id, None)
+            app = app_dict.get(user.id)
             row = []
             for header, f in columns:
                 row.append(f(user, inv, app))

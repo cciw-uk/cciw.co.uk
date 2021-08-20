@@ -1138,13 +1138,13 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None):
             application_id=app.id if app is not None else None,
             has_dbs=o.id in all_dbs_officer_ids,
             has_recent_dbs=o.id in recent_dbs_officer_ids,
-            last_dbs_form_sent=dbs_forms_sent_for_officers.get(o.id, None),
-            last_leader_alert_sent=leader_alerts_sent_for_officers.get(o.id, None),
-            last_form_request_sent=requests_for_dbs_form_sent_for_officers.get(o.id, None),
+            last_dbs_form_sent=dbs_forms_sent_for_officers.get(o.id),
+            last_leader_alert_sent=leader_alerts_sent_for_officers.get(o.id),
+            last_form_request_sent=requests_for_dbs_form_sent_for_officers.get(o.id),
             address=app.one_line_address if app is not None else "",
             birth_date=app.birth_date if app is not None else None,
             dbs_check_consent=app.dbs_check_consent if app is not None else False,
-            update_enabled_dbs_number=update_service_dbs_numbers_for_officers.get(o.id, None),
+            update_enabled_dbs_number=update_service_dbs_numbers_for_officers.get(o.id),
             last_dbs_rejected=not last_dbs_status[o.id] if o.id in last_dbs_status else False,
         )
         retval.append((o, dbs_info))
@@ -1211,7 +1211,7 @@ def get_update_service_dbs_numbers(officers):
         # Most recent last means most recent wins in the case of more than one for officer:
         retval[officer_id] = DBSNumber(
             number=dbs_number.strip(),
-            previous_check_good=applicant_accepted_dict.get(dbs_number, None)
+            previous_check_good=applicant_accepted_dict.get(dbs_number)
         )
     return retval
 
