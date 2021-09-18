@@ -193,11 +193,15 @@ class CreateLeadersMixin:
 
 
 class CreatePricesMixin:
-    def add_prices(self, deposit=None):
+    def add_prices(self, deposit=None, early_bird_discount=None):
         if deposit is None:
             deposit = Decimal(20)
         else:
             deposit = Decimal(deposit)
+        if early_bird_discount is None:
+            early_bird_discount = Decimal(10)
+        else:
+            early_bird_discount = Decimal(early_bird_discount)
         year = self.camp.year
         self.price_full = Price.objects.get_or_create(year=year,
                                                       price_type=PriceType.FULL,
@@ -213,7 +217,7 @@ class CreatePricesMixin:
                                                          defaults={'price': deposit})[0].price
         self.price_early_bird_discount = Price.objects.get_or_create(year=year,
                                                                      price_type=PriceType.EARLY_BIRD_DISCOUNT,
-                                                                     price=Decimal('10'))[0].price
+                                                                     defaults={'price': early_bird_discount})[0].price
 
     def setUp(self):
         super().setUp()
@@ -1924,6 +1928,7 @@ class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent('£0.00')
 
     def test_balance_after_booking(self):
+        self.add_prices(early_bird_discount=0)
         booking1 = self.create_booking()
         booking2 = self.create_booking()
         book_basket_now([booking1, booking2])
