@@ -7,11 +7,11 @@ class UtilsTests(ExtraOfficersSetupMixin, TestBase):
 
     def test_camp_officer_list(self):
         c = self.default_camp_1
-        self.assertEqual([u.username for u in camp_officer_list(c)],
-                         ["fredjones", "joebloggs", "petersmith"])
+        assert [u.username for u in camp_officer_list(c)] == \
+            ["fredjones", "joebloggs", "petersmith"]
 
     def test_camp_slacker_list(self):
         c = self.default_camp_1
         self.officer1.applications.create(finished=True, date_saved="2000-01-01")
-        self.assertEqual([u.username for u in camp_slacker_list(c)],
-                         ["fredjones", "petersmith"])
+        assert [u.username for u in camp_slacker_list(c)] == \
+            ["fredjones", "petersmith"]

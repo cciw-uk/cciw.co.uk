@@ -50,7 +50,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         """
         # Application 3 has an email address for first referee
         app = self.application3
-        self.assertTrue(app.referees[0].email != '')
+        assert app.referees[0].email != ''
         referee = app.referees[0]
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
@@ -61,9 +61,9 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.assertTextPresent("The following email")
         self.submit('#id_request_reference_send input[name=send]')
         msgs = [e for e in mail.outbox if "Reference for" in e.subject]
-        self.assertEqual(len(msgs), 1)
-        self.assertEqual(msgs[0].extra_headers.get('Reply-To', ''), LEADER_EMAIL)
-        self.assertEqual(msgs[0].extra_headers.get('X-CCIW-Camp', ''), "2000-blue")
+        assert len(msgs) == 1
+        assert msgs[0].extra_headers.get('Reply-To', '') == LEADER_EMAIL
+        assert msgs[0].extra_headers.get('X-CCIW-Camp', '') == "2000-blue"
 
     def test_no_email(self):
         """
@@ -71,7 +71,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         """
         # Application 3 has no email address for second referee
         app = self.application3
-        self.assertTrue(app.referees[1].email == '')
+        assert app.referees[1].email == ''
         referee = app.referees[1]
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
@@ -91,14 +91,14 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
                            'name': 'Added Name'})
         self.submit('[name=setemail]')
         app = Application.objects.get(id=self.application3.id)
-        self.assertEqual(app.referees[1].email, 'addedemail@example.com')
-        self.assertEqual(app.referees[1].name, 'Added Name')
+        assert app.referees[1].email == 'addedemail@example.com'
+        assert app.referees[1].name == 'Added Name'
         self.assertTextPresent("Name/email address updated.")
 
     def test_cancel(self):
         # Application 3 has an email address for first referee
         app = self.application3
-        self.assertTrue(app.referees[0].email != '')
+        assert app.referees[0].email != ''
         referee = app.referees[0]
         self.officer_login(LEADER)
         self.get_literal_url(reverse("cciw-officers-request_reference",
@@ -106,7 +106,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
                              f"?referee_id={referee.id}")
         self.assertCode(200)
         self.submit('#id_request_reference_send [name=cancel]')
-        self.assertEqual(len(mail.outbox), 0)
+        assert len(mail.outbox) == 0
 
     def test_dont_remove_link(self):
         """
@@ -124,7 +124,7 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         url = make_ref_form_url(referee.id, None)
         self.assertTextPresent(url)
         self.assertTextPresent("You removed the link")
-        self.assertEqual(len(mail.outbox), 0)
+        assert len(mail.outbox) == 0
 
     def test_update_with_exact_match(self):
         """
@@ -148,12 +148,12 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
 
         # Modify to add "Rev."
         app2.referees[0].name = "Rev. " + app2.referees[0].name
-        self.assertTrue(close_enough_referee_match(app1.referees[0],
-                                                   app2.referees[0]))
+        assert close_enough_referee_match(app1.referees[0],
+                                          app2.referees[0])
 
         app2.referees[0].name = "Someone else entirely"
-        self.assertFalse(close_enough_referee_match(app1.referees[0],
-                                                    app2.referees[0]))
+        assert not close_enough_referee_match(app1.referees[0],
+                                              app2.referees[0])
 
     def test_update_with_no_exact_match(self):
         """
@@ -195,9 +195,9 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
                            'concerns': "No."})
         self.submit('#id_request_reference_manual [name=save]')
         msgs = [e for e in mail.outbox if "Reference form for" in e.subject]
-        self.assertTrue(len(msgs) >= 0)
+        assert len(msgs) >= 0
         app = Application.objects.get(id=app.id)
-        self.assertTrue(app.referees[0].reference_is_received())
+        assert app.referees[0].reference_is_received()
 
     def test_nag(self):
         """
@@ -213,9 +213,9 @@ class RequestReference(ReferenceSetupMixin, WebTestBase):
         self.assertTextPresent("to nag their referee")
         self.submit('[name=send]')
         msgs = [e for e in mail.outbox if "Need reference from" in e.subject]
-        self.assertEqual(len(msgs), 1)
-        self.assertEqual(msgs[0].extra_headers.get('Reply-To', ''), LEADER_EMAIL)
-        self.assertEqual(referee.actions.filter(action_type=ReferenceAction.ActionType.NAG).count(), 1)
+        assert len(msgs) == 1
+        assert msgs[0].extra_headers.get('Reply-To', '') == LEADER_EMAIL
+        assert referee.actions.filter(action_type=ReferenceAction.ActionType.NAG).count() == 1
 
 
 def make_local_url(url):
@@ -248,8 +248,8 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
         and that the name on the application form is updated.
         """
         app = self.application2
-        self.assertEqual(app.referees[0].name, "Mr Referee3 Name")
-        self.assertFalse(app.referees[0].reference_is_received())
+        assert app.referees[0].name == "Mr Referee3 Name"
+        assert not app.referees[0].reference_is_received()
         self.test_page_ok()
         self.fill_by_name({'referee_name': 'Referee3 Name',
                            'how_long_known': 'Forever',
@@ -262,18 +262,18 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
 
         # Check the data has been saved
         app = Application.objects.get(id=app.id)
-        self.assertTrue(app.referees[0].reference_is_received())
+        assert app.referees[0].reference_is_received()
         reference = app.referees[0].reference
-        self.assertEqual(reference.referee_name, "Referee3 Name")
-        self.assertEqual(reference.how_long_known, "Forever")
+        assert reference.referee_name == "Referee3 Name"
+        assert reference.how_long_known == "Forever"
 
         # Check the application has been updated with amended referee name
-        self.assertEqual(app.referees[0].name, "Referee3 Name")
+        assert app.referees[0].name == "Referee3 Name"
 
-        self.assertEqual(len(mail.outbox), 1)
+        assert len(mail.outbox) == 1
         m = mail.outbox[0]
-        self.assertIn("The following reference form has been submitted", m.body)
-        self.assertIn("https://www.cciw.co.uk/officers/leaders/reference/", m.body)
+        assert "The following reference form has been submitted" in m.body
+        assert "https://www.cciw.co.uk/officers/leaders/reference/" in m.body
 
     def test_reference_update(self):
         """
@@ -287,7 +287,7 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
 
         # We should be able to find an exact match for references
         add_previous_references(app2.referees[0])
-        self.assertEqual(app2.referees[0].previous_reference, app1.referees[0].reference)
+        assert app2.referees[0].previous_reference == app1.referees[0].reference
 
         # Go to the corresponding URL
         url = make_local_url(make_ref_form_url(app2.referees[0].id, app1.referees[0].reference.id))

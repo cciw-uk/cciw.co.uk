@@ -26,9 +26,9 @@ class TestCreate(TestBase):
         user = create_officer("Joe", "Bloggs", "joebloggs@example.com")
 
         user = User.objects.get(id=user.id)
-        self.assertTrue(user.is_staff)
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(user.last_login, None)
+        assert user.is_staff
+        assert len(mail.outbox) == 1
+        assert user.last_login is None
 
 
 class TestExport(DefaultApplicationsMixin, TestBase):
@@ -42,7 +42,7 @@ class TestExport(DefaultApplicationsMixin, TestBase):
         officers = list(c.officers.all())
         first_names = [o.first_name for o in officers]
 
-        self.assertEqual(Application.objects.all().count(), 0)
+        assert Application.objects.all().count() == 0
 
         for i, inv in enumerate(c.invitations.all()):
             inv.notes = f"Some notes {i}"
@@ -50,18 +50,18 @@ class TestExport(DefaultApplicationsMixin, TestBase):
 
         workbook = officer_data_to_spreadsheet(c, ExcelFormatter()).to_bytes()
 
-        self.assertTrue(workbook is not None)
+        assert workbook is not None
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh = wkbk.sheet_by_index(0)
 
         # Spot checks on different types of data
         # From User model
-        self.assertEqual(wksh.cell(0, 0).value, "First name")
-        self.assertTrue(wksh.cell(1, 0).value in first_names)
+        assert wksh.cell(0, 0).value == "First name"
+        assert wksh.cell(1, 0).value in first_names
 
         # From Invitation model
-        self.assertEqual(wksh.cell(0, 3).value, "Notes")
-        self.assertTrue(wksh.cell(1, 3).value.startswith('Some notes'))
+        assert wksh.cell(0, 3).value == "Notes"
+        assert wksh.cell(1, 3).value.startswith('Some notes')
 
     def test_export_with_application(self):
         """
@@ -82,8 +82,8 @@ class TestExport(DefaultApplicationsMixin, TestBase):
         wksh = wkbk.sheet_by_index(0)
 
         # Check data from Application model
-        self.assertEqual(wksh.cell(0, 4).value, "Address")
-        self.assertTrue(app.address_firstline in wksh.col_values(4))
+        assert wksh.cell(0, 4).value == "Address"
+        assert app.address_firstline in wksh.col_values(4)
 
 
 class TestSlackers(BasicSetupMixin, TestBase):
@@ -121,8 +121,7 @@ class TestSlackers(BasicSetupMixin, TestBase):
 
         serious_slackers = camp_serious_slacker_list(camp2)
 
-        self.assertEqual(
-            serious_slackers,
+        assert serious_slackers == \
             [{'officer': officer2,
               'missing_application_forms': [camp1],
               'missing_references': [camp1],
@@ -130,7 +129,7 @@ class TestSlackers(BasicSetupMixin, TestBase):
               'last_good_apps_year': None,
               'last_good_refs_year': None,
               'last_good_dbss_year': None,
-              }])
+              }]
 
 
 class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
@@ -155,8 +154,8 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
 
         # Check initial:
-        self.assertNotIn(officer, camp.officers.all())
-        self.assertFalse(self.is_element_present(self.remove_button_selector(officer)))
+        assert officer not in camp.officers.all()
+        assert not self.is_element_present(self.remove_button_selector(officer))
         self.assertTextPresent(officer.email)
 
         # Action:
@@ -164,9 +163,9 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.wait_for_ajax()
 
         # DB check:
-        self.assertIn(officer, camp.officers.all())
+        assert officer in camp.officers.all()
         # UI check:
-        self.assertTrue(self.is_element_present(self.remove_button_selector(officer)))
+        assert self.is_element_present(self.remove_button_selector(officer))
         self.assertTextPresent(officer.email)
 
     def test_remove(self):
@@ -178,8 +177,8 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
 
         # Check initial:
-        self.assertIn(officer, camp.officers.all())
-        self.assertFalse(self.is_element_present(self.add_button_selector(officer)))
+        assert officer in camp.officers.all()
+        assert not self.is_element_present(self.add_button_selector(officer))
         self.assertTextPresent(officer.email)
 
         # Action:
@@ -187,9 +186,9 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.wait_for_ajax()
 
         # DB check:
-        self.assertNotIn(officer, camp.officers.all())
+        assert officer not in camp.officers.all()
         # UI check:
-        self.assertTrue(self.is_element_present(self.add_button_selector(officer)))
+        assert self.is_element_present(self.add_button_selector(officer))
         self.assertTextPresent(officer.email)
 
     def test_resend_email(self):
@@ -204,10 +203,10 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.click_expecting_alert(self.resend_email_button_selector(officer))
         self.accept_alert()
 
-        self.assertEqual(len(mail.outbox), 1)
+        assert len(mail.outbox) == 1
         m = mail.outbox[0]
-        self.assertIn(officer.first_name, m.body)
-        self.assertIn("https://" + settings.PRODUCTION_DOMAIN + "/officers/", m.body)
+        assert officer.first_name in m.body
+        assert "https://" + settings.PRODUCTION_DOMAIN + "/officers/" in m.body
 
     def test_edit(self):
         camp = self.default_camp_1
@@ -216,10 +215,10 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
 
         self.officer_login(LEADER)
         self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
-        self.assertFalse(self.is_element_displayed('#id_officer_save'))
+        assert not self.is_element_displayed('#id_officer_save')
 
         self.click(self.edit_button_selector(officer))
-        self.assertTrue(self.is_element_displayed('#id_officer_save'))
+        assert self.is_element_displayed('#id_officer_save')
         self.fill({'#id_officer_first_name': 'Altered',
                    '#id_officer_last_name': 'Name',
                    '#id_officer_email': 'alteredemail@somewhere.com',
@@ -230,15 +229,15 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
 
         # Test DB
         officer = User.objects.get(id=officer.id)
-        self.assertEqual(officer.first_name, 'Altered')
-        self.assertEqual(officer.last_name, 'Name')
-        self.assertEqual(officer.email, 'alteredemail@somewhere.com')
+        assert officer.first_name == 'Altered'
+        assert officer.last_name == 'Name'
+        assert officer.email == 'alteredemail@somewhere.com'
         invitation = camp.invitations.get(officer=officer)
-        self.assertEqual(invitation.notes, "A New Note")
+        assert invitation.notes == "A New Note"
 
         # Test UI:
-        self.assertFalse(self.is_element_displayed('#id_officer_save'))
-        self.assertFalse(self.is_element_displayed('#id_officer_first_name'))
+        assert not self.is_element_displayed('#id_officer_save')
+        assert not self.is_element_displayed('#id_officer_first_name')
         self.assertTextPresent('alteredemail@somewhere.com')
 
     def test_edit_validation(self):
@@ -255,11 +254,11 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
 
         # Test DB
         officer = User.objects.get(id=officer.id)
-        self.assertNotEqual(officer.email, 'bademail')
+        assert officer.email != 'bademail'
 
         # Test UI:
         self.accept_alert()
-        self.assertTrue(self.is_element_displayed('#id_officer_save'))
+        assert self.is_element_displayed('#id_officer_save')
 
     def test_add_officer_button(self):
         camp = self.default_camp_1
@@ -268,11 +267,11 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         self.click('#id_new_officer_btn')
         self.wait_for_ajax()
         time.sleep(5.0)
-        self.assertTrue(self.is_element_displayed('#id_add_officer_popup'))
+        assert self.is_element_displayed('#id_add_officer_popup')
         self.click('#id_popup_close_btn')
         self.wait_for_ajax()
         time.sleep(1.5)
-        self.assertFalse(self.is_element_displayed('#id_add_officer_popup'))
+        assert not self.is_element_displayed('#id_add_officer_popup')
         # Functionality of "New officer" popup is tested separately.
 
 
@@ -297,10 +296,10 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
 
     def test_permissions(self):
         self.get_page()
-        self.assertTrue(self.is_element_present('body.login'))
+        assert self.is_element_present('body.login')
         self.officer_login(LEADER)
         self.get_page()
-        self.assertFalse(self.is_element_present('body.login'))
+        assert not self.is_element_present('body.login')
         self.assertTextPresent("Enter details for officer")
 
     def test_success(self):
@@ -327,7 +326,7 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         })
         self.submit('input[type=submit]')
         self.assertTextPresent("A user with that name and email address already exists")
-        self.assertFalse(self.is_element_present(self.CONFIRM_BUTTON))
+        assert not self.is_element_present(self.CONFIRM_BUTTON)
 
     def test_duplicate_name(self):
         self.create_officer('Mary',
@@ -363,15 +362,15 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
 
     def _assert_created(self):
         u = User.objects.get(email='mary@andrews.com', first_name='Mary')
-        self.assertEqual(u.first_name, 'Mary')
-        self.assertEqual(u.last_name, 'Andrews')
+        assert u.first_name == 'Mary'
+        assert u.last_name == 'Andrews'
         c = User.objects.filter(first_name='Mary',
                                 last_name='Andrews').count()
         username = 'maryandrews' + (str(c) if c > 1 else '')
 
-        self.assertEqual(u.username, username)
-        self.assertEqual(len(mail.outbox), 1)
+        assert u.username == username
+        assert len(mail.outbox) == 1
         m = mail.outbox[0]
-        self.assertIn("Hi Mary", m.body)
-        self.assertIn("https://" + settings.PRODUCTION_DOMAIN + "/officers/", m.body)
-        self.assertIn(u, self.default_camp_1.officers.all())
+        assert "Hi Mary" in m.body
+        assert "https://" + settings.PRODUCTION_DOMAIN + "/officers/" in m.body
+        assert u in self.default_camp_1.officers.all()

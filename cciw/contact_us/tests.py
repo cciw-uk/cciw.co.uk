@@ -33,8 +33,8 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
             '#id_cx_1': "PASSED",
         })
         self.submit('input[type="submit"]')
-        self.assertEqual(len(mail.outbox), 0)
-        self.assertEqual(Message.objects.count(), 0)
+        assert len(mail.outbox) == 0
+        assert Message.objects.count() == 0
 
     def test_cant_send_without_valid_email(self):
         self.get_url('cciw-contact_us-send')
@@ -46,8 +46,8 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
             '#id_cx_1': "PASSED",
         })
         self.submit('input[type="submit"]')
-        self.assertEqual(len(mail.outbox), 0)
-        self.assertEqual(Message.objects.count(), 0)
+        assert len(mail.outbox) == 0
+        assert Message.objects.count() == 0
 
     def test_cant_send_without_message(self):
         self.get_url('cciw-contact_us-send')
@@ -59,8 +59,8 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
             '#id_cx_1': "PASSED",
         })
         self.submit('input[type="submit"]')
-        self.assertEqual(len(mail.outbox), 0)
-        self.assertEqual(Message.objects.count(), 0)
+        assert len(mail.outbox) == 0
+        assert Message.objects.count() == 0
 
     def test_send(self):
         self.get_url('cciw-contact_us-send')
@@ -72,9 +72,9 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
             '#id_cx_1': "PASSED",
         })
         self.submit('input[type="submit"]')
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(Message.objects.count(), 1)
-        self.assertEqual(mail.outbox[0].to, settings.EMAIL_RECIPIENTS["GENERAL_CONTACT"])
+        assert len(mail.outbox) == 1
+        assert Message.objects.count() == 1
+        assert mail.outbox[0].to == settings.EMAIL_RECIPIENTS["GENERAL_CONTACT"]
 
     def test_send_to_booking_secretary(self):
         self.get_url('cciw-contact_us-send')
@@ -87,7 +87,7 @@ class ContactUsPage(BasicSetupMixin, WebTestBase):
             '#id_subject': "bookings",
         })
         self.submit('input[type="submit"]')
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(sorted(mail.outbox[0].to),
-                         sorted(settings.EMAIL_RECIPIENTS["BOOKING_SECRETARY"]))
-        self.assertEqual(Message.objects.count(), 1)
+        assert len(mail.outbox) == 1
+        assert sorted(mail.outbox[0].to) == \
+            sorted(settings.EMAIL_RECIPIENTS["BOOKING_SECRETARY"])
+        assert Message.objects.count() == 1

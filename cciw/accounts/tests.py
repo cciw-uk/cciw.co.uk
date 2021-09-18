@@ -13,46 +13,46 @@ class TestUserModel(OfficersSetupMixin, TestBase):
 
     def test_user_in_group_true(self):
         with self.assertNumQueries(1):
-            self.assertTrue(user_has_role(self.booking_secretary,
-                                          [BOOKING_SECRETARY_ROLE_NAME]))
+            assert user_has_role(self.booking_secretary,
+                                 [BOOKING_SECRETARY_ROLE_NAME])
 
     def test_user_in_group_true_for_one_item(self):
         with self.assertNumQueries(1):
-            self.assertTrue(user_has_role(self.booking_secretary,
-                                          CAMP_ADMIN_ROLES))
+            assert user_has_role(self.booking_secretary,
+                                 CAMP_ADMIN_ROLES)
 
     def test_user_in_group_false(self):
         with self.assertNumQueries(1):
-            self.assertFalse(user_has_role(self.officer_user,
-                                           [BOOKING_SECRETARY_ROLE_NAME]))
+            assert not user_has_role(self.officer_user,
+                                     [BOOKING_SECRETARY_ROLE_NAME])
 
     def test_user_in_group_multiple_performance(self):
         with self.assertNumQueries(1):
             # 1 query
-            self.assertFalse(user_has_role(self.officer_user,
-                                           [BOOKING_SECRETARY_ROLE_NAME]))
+            assert not user_has_role(self.officer_user,
+                                     [BOOKING_SECRETARY_ROLE_NAME])
         with self.assertNumQueries(0):
             # 0 query
-            self.assertFalse(user_has_role(self.officer_user,
-                                           [SECRETARY_ROLE_NAME]))
-            self.assertFalse(self.officer_user.is_booking_secretary)
+            assert not user_has_role(self.officer_user,
+                                     [SECRETARY_ROLE_NAME])
+            assert not self.officer_user.is_booking_secretary
 
     def test_user_role_performance(self):
         with self.assertNumQueries(1):
-            self.assertFalse(self.officer_user.is_booking_secretary)
+            assert not self.officer_user.is_booking_secretary
 
         # Delete the cache established by 'cached_property;
         del self.officer_user.is_booking_secretary
         # and it should still require zero queries, because it uses
         # user_has_role
         with self.assertNumQueries(0):
-            self.assertFalse(self.officer_user.is_booking_secretary)
+            assert not self.officer_user.is_booking_secretary
 
     def test_user_role_performance_2(self):
         with self.assertNumQueries(1):
             # Testing multiple different roles requires just one query
-            self.assertFalse(self.officer_user.is_booking_secretary)
-            self.assertFalse(self.officer_user.is_committee_member)
+            assert not self.officer_user.is_booking_secretary
+            assert not self.officer_user.is_committee_member
 
     def test_has_perm(self):
         # Depends on static_roles.yaml

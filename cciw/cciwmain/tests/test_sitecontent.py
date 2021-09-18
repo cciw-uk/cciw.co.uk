@@ -57,16 +57,16 @@ class HtmlChunkPage(BasicSetupMixin, TestBase):
         self._test_page(False)
 
     def test_page_normal_user(self):
-        self.assertTrue(self.client.login(username='normaluser', password='test_normaluser_password'))
+        assert self.client.login(username='normaluser', password='test_normaluser_password')
         self._test_page(False)
 
     def test_page_editor(self):
         self._create_site_editor()
-        self.assertTrue(self.client.login(username='editor', password='test_editor_password'))
+        assert self.client.login(username='editor', password='test_editor_password')
         self._test_page(True)
 
     def test_page_admin(self):
-        self.assertTrue(self.client.login(username='admin', password='test_admin_password'))
+        assert self.client.login(username='admin', password='test_admin_password')
         self._test_page(True)
 
     def _test_page(self, should_see_edit_link):

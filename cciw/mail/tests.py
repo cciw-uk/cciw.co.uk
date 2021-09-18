@@ -51,26 +51,26 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
                             email="joe@example.com")
 
     def test_invalid_list(self):
-        self.assertRaises(NoSuchList,
-                          lambda: find_list('everyone@mailtest.cciw.co.uk', 'joe@random.com'))
-        self.assertRaises(NoSuchList,
-                          lambda: find_list('x-camp-2000-blue-officers@mailtest.cciw.co.uk', 'joe@random.com'))
-        self.assertRaises(NoSuchList,
-                          lambda: find_list('camp-2000-neon-officers@mailtest.cciw.co.uk', 'joe@random.com'))
+        with pytest.raises(NoSuchList):
+            find_list('everyone@mailtest.cciw.co.uk', 'joe@random.com')
+        with pytest.raises(NoSuchList):
+            find_list('x-camp-2000-blue-officers@mailtest.cciw.co.uk', 'joe@random.com')
+        with pytest.raises(NoSuchList):
+            find_list('camp-2000-neon-officers@mailtest.cciw.co.uk', 'joe@random.com')
 
     def test_officer_list(self):
-        self.assertRaises(MailAccessDenied,
-                          lambda: find_list('camp-2000-blue-officers@mailtest.cciw.co.uk',
-                                            'joe@random.com'))
+        with pytest.raises(MailAccessDenied):
+            find_list('camp-2000-blue-officers@mailtest.cciw.co.uk',
+                      'joe@random.com')
 
-        self.assertRaises(MailAccessDenied,
-                          lambda: find_list('camp-2000-blue-officers@mailtest.cciw.co.uk',
-                                            self.officer1.email))
+        with pytest.raises(MailAccessDenied):
+            find_list('camp-2000-blue-officers@mailtest.cciw.co.uk',
+                      self.officer1.email)
 
         officer_list = find_list('camp-2000-blue-officers@mailtest.cciw.co.uk', 'LEADER@SOMEWHERE.COM')
 
-        self.assertEqual([u.username for u in officer_list.get_members()],
-                         ["fredjones", "joebloggs", "petersmith"])
+        assert [u.username for u in officer_list.get_members()] == \
+            ["fredjones", "joebloggs", "petersmith"]
 
     def test_leader_list(self):
         leader_user = self.leader_user
@@ -78,9 +78,9 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         # Permissions
 
         # Officer/non-privileged
-        self.assertRaises(MailAccessDenied,
-                          lambda: find_list('camps-2000-leaders@mailtest.cciw.co.uk',
-                                            self.officer1.email))
+        with pytest.raises(MailAccessDenied):
+            find_list('camps-2000-leaders@mailtest.cciw.co.uk',
+                      self.officer1.email)
 
         # superuser:
         l1 = find_list('camp-2000-blue-leaders@mailtest.cciw.co.uk', 'ADMIN1@ADMIN.COM')
@@ -172,14 +172,14 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         handle_mail(msg)
 
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
-        self.assertEqual(len(rejections), 0)
-        self.assertEqual(len(sent_messages), 1)
+        assert len(rejections) == 0
+        assert len(sent_messages) == 1
         sent_to_addresses = list(sorted(address for m in sent_messages for address in m.recipients()))
-        self.assertEqual(sent_to_addresses, ['test1@example.com'])
+        assert sent_to_addresses == ['test1@example.com']
 
         sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
-        self.assertFalse(any(b"List-Post: <mailto:myrole@mailtest.cciw.co.uk>" in m
-                             for m in sent_messages_bytes))
+        assert not any(b"List-Post: <mailto:myrole@mailtest.cciw.co.uk>" in m
+                       for m in sent_messages_bytes)
 
     def test_handle_officer_list(self):
         camp = camp_factories.create_camp(
@@ -205,18 +205,18 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         ))
 
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
-        self.assertEqual(len(rejections), 0)
-        self.assertEqual(len(sent_messages), 3)
+        assert len(rejections) == 0
+        assert len(sent_messages) == 3
 
         sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
 
-        self.assertTrue(all(b'\nX-Original-From: Kevin Smith <kevin.smith@example.com>' in m
-                            for m in sent_messages_bytes))
-        self.assertTrue(all(m.from_email == 'Kevin Smith kevin.smith(at)example.com via <noreply@cciw.co.uk>'
-                            for m in sent_messages))
-        self.assertTrue(all(b"Sender: CCIW website <noreply@cciw.co.uk>" in m
-                            for m in sent_messages_bytes))
-        self.assertTrue(any(True for m in mail.outbox if '"Fred Jones" <fredjones@example.com>' in m.to))
+        assert all(b'\nX-Original-From: Kevin Smith <kevin.smith@example.com>' in m
+                   for m in sent_messages_bytes)
+        assert all(m.from_email == 'Kevin Smith kevin.smith(at)example.com via <noreply@cciw.co.uk>'
+                   for m in sent_messages)
+        assert all(b"Sender: CCIW website <noreply@cciw.co.uk>" in m
+                   for m in sent_messages_bytes)
+        assert any(True for m in mail.outbox if '"Fred Jones" <fredjones@example.com>' in m.to)
 
     def test_spam_and_virus_checking(self):
         role = self._setup_role_for_email(
@@ -233,8 +233,8 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
             assert sent_messages == []
 
     def test_extract(self):
-        self.assertEqual(extract_email_addresses('Some Guy <A.Body@example.com>'),
-                         ['A.Body@example.com'])
+        assert extract_email_addresses('Some Guy <A.Body@example.com>') == \
+                         ['A.Body@example.com']
 
     def test_handle_mail_exception(self):
         """
@@ -260,8 +260,8 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         msg = make_message(to_email='camp-1990-blue-officers@mailtest.cciw.co.uk')
         handle_mail(msg)
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
-        self.assertEqual(len(sent_messages), 0)
-        self.assertEqual(len(rejections), 0)
+        assert len(sent_messages) == 0
+        assert len(rejections) == 0
 
     def test_handle_partial_sending_failure(self):
         """
@@ -285,17 +285,17 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
 
             handle_mail(make_message(to_email=role.email, from_email='a.person.1@example.com'))
         # We should have tried to send to all recipients
-        self.assertEqual(m_s.call_count, 3)
+        assert m_s.call_count == 3
 
         # Should have reported the error
-        self.assertEqual(len(mail.outbox), 1)
+        assert len(mail.outbox) == 1
         error_email = mail.outbox[0]
-        self.assertIn("person@faildomain.com",
-                      error_email.body)
-        self.assertEqual(error_email.subject,
-                         "[CCIW] Error with email to list committee@mailtest.cciw.co.uk")
-        self.assertEqual(error_email.to,
-                         ["a.person.1@example.com"])
+        assert "person@faildomain.com" in \
+            error_email.body
+        assert error_email.subject == \
+            "[CCIW] Error with email to list committee@mailtest.cciw.co.uk"
+        assert error_email.to == \
+            ["a.person.1@example.com"]
 
     def test_handle_mail_permission_denied(self):
         camp_factories.create_camp(year=2000, camp_name='Orange')
@@ -307,12 +307,12 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         )
         handle_mail(bad_mail)
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
-        self.assertEqual(sent_messages, [])
-        self.assertEqual(len(rejections), 1)
-        self.assertEqual(rejections[0].subject, "[CCIW] Access to mailing list camp-2000-orange-officers@mailtest.cciw.co.uk denied")
+        assert sent_messages == []
+        assert len(rejections) == 1
+        assert rejections[0].subject == "[CCIW] Access to mailing list camp-2000-orange-officers@mailtest.cciw.co.uk denied"
         body = rejections[0].body
-        self.assertIn("you do not have permission", body)
-        self.assertIn("🍊 Orange camp 2000 🍊", body)
+        assert "you do not have permission" in body
+        assert "🍊 Orange camp 2000 🍊" in body
 
     def test_handle_mail_permission_denied_for_unknown(self):
         camp_factories.create_camp(year=2000, camp_name='Pink')
@@ -321,7 +321,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
             from_email='randomer@random.com',
         )
         handle_mail(bad_mail)
-        self.assertEqual(len(mail.outbox), 0)
+        assert len(mail.outbox) == 0
 
     def test_ses_incoming(self):
         request = make_plain_text_request(
@@ -331,10 +331,10 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
             m1.side_effect = [True]  # fake verify
             response = views.ses_incoming_notification(request)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(m1.call_count, 1)
-        self.assertEqual(m2.call_count, 1)
-        self.assertEqual(m2.call_args[0][0], AWS_MESSAGE_ID.decode('ascii'))
+        assert response.status_code == 200
+        assert m1.call_count == 1
+        assert m2.call_count == 1
+        assert m2.call_args[0][0] == AWS_MESSAGE_ID.decode('ascii')
 
     # TODO it would be nice to have tests for cciw/aws.py functions,
     # to ensure no regressions.
@@ -346,29 +346,29 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
             m1.side_effect = [True]  # fake verify
             response = views.ses_bounce_notification(request)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(m1.call_count, 1)
+        assert response.status_code == 200
+        assert m1.call_count == 1
 
-        self.assertEqual(len(mail.outbox), 1)
+        assert len(mail.outbox) == 1
         m = mail.outbox[0]
-        self.assertEqual(m.to, ["a.camp.leader@example.com"])
-        self.assertIn("was not received", m.body)
-        self.assertIn("sent to a.referrer@example.com", m.body)
-        self.assertIn("Use the following link", m.body)
-        self.assertEqual(response.status_code, 200)
+        assert m.to == ["a.camp.leader@example.com"]
+        assert "was not received" in m.body
+        assert "sent to a.referrer@example.com" in m.body
+        assert "Use the following link" in m.body
+        assert response.status_code == 200
 
     def test_mangle_from_address(self):
-        self.assertEqual(mangle_from_address("foo@bar.com"),
-                         "foo(at)bar.com via <noreply@cciw.co.uk>")
-        self.assertEqual(mangle_from_address("Mr Foo <foo@bar.com>"),
-                         "Mr Foo foo(at)bar.com via <noreply@cciw.co.uk>")
+        assert mangle_from_address("foo@bar.com") == \
+                         "foo(at)bar.com via <noreply@cciw.co.uk>"
+        assert mangle_from_address("Mr Foo <foo@bar.com>") == \
+            "Mr Foo foo(at)bar.com via <noreply@cciw.co.uk>"
 
     def test_invalid_characters(self):
         bad_mail = MSG_BAD_CHARACTERS
         handle_mail(bad_mail)
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
-        self.assertEqual(sent_messages, [])
-        self.assertEqual(rejections, [])
+        assert sent_messages == []
+        assert rejections == []
 
 
 def emailify(msg):

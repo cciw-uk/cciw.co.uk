@@ -37,14 +37,14 @@ class CommonMixin:
     def assertNamedUrl(self, urlname):
         url = reverse(urlname)
         path = urlparse(self.current_url).path
-        self.assertEqual(path, url)
+        assert path == url
 
     def assertElementText(self, css_selector, text):
-        self.assertEqual(self.get_element_text(css_selector), text)
+        assert self.get_element_text(css_selector) == text
 
     def assert_html5_form_invalid(self):
-        self.assertTrue(len(self._driver.find_elements_by_css_selector('form:invalid')),
-                        1)
+        assert len(self._driver.find_elements_by_css_selector('form:invalid')), \
+                        1
 
     def submit_expecting_html5_validation_errors(self, submit_css_selector=None):
         """
@@ -80,7 +80,7 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
     setup_auth = False
 
     def assertCode(self, status_code):
-        self.assertEqual(self.last_response.status_code, status_code)
+        assert self.last_response.status_code == status_code
 
     def auto_follow(self):
         if str(self.last_response.status_code).startswith('3'):

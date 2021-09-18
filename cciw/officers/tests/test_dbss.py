@@ -31,25 +31,25 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
 
     def test_requires_action_no_application_form(self):
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertFalse(dbs_info.requires_action)
+        assert not dbs_info.requires_action
 
     def test_requires_action_with_application_form(self):
         factories.create_application(self.officer_user, year=self.year)
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertTrue(dbs_info.requires_action)
+        assert dbs_info.requires_action
 
     def test_can_register_received_dbs_form(self):
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertFalse(dbs_info.can_register_received_dbs_form)
+        assert not dbs_info.can_register_received_dbs_form
         factories.create_application(self.officer_user, year=self.year)
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertTrue(dbs_info.can_register_received_dbs_form)
+        assert dbs_info.can_register_received_dbs_form
 
     def test_last_action_attributes(self):
         factories.create_application(self.officer_user, year=self.year)
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertEqual(dbs_info.last_dbs_form_sent, None)
-        self.assertEqual(dbs_info.last_leader_alert_sent, None)
+        assert dbs_info.last_dbs_form_sent is None
+        assert dbs_info.last_leader_alert_sent is None
 
         # Now create an 'form sent' action log
         t1 = timezone.now()
@@ -57,8 +57,8 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
                                     created_at=t1,
                                     action_type=DBSActionLog.ACTION_FORM_SENT)
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertNotEqual(dbs_info.last_dbs_form_sent, None)
-        self.assertEqual(dbs_info.last_dbs_form_sent, t1)
+        assert dbs_info.last_dbs_form_sent is not None
+        assert dbs_info.last_dbs_form_sent == t1
 
         # A leader alert action should not change last_dbs_form_sent
         t2 = timezone.now()
@@ -66,15 +66,15 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
                                     created_at=t2,
                                     action_type=DBSActionLog.ACTION_LEADER_ALERT_SENT)
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertEqual(dbs_info.last_dbs_form_sent, t1)
+        assert dbs_info.last_dbs_form_sent == t1
 
         # But we should now have last_leader_alert_sent
-        self.assertEqual(dbs_info.last_leader_alert_sent, t2)
+        assert dbs_info.last_leader_alert_sent == t2
 
     def test_can_check_dbs_online_default(self):
         factories.create_application(self.officer_user, year=self.year)
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertFalse(dbs_info.can_check_dbs_online)
+        assert not dbs_info.can_check_dbs_online
 
     def test_can_check_dbs_online_application_form_dbs_number(self):
         # If we only have a DBS number from application form, we can't do online
@@ -82,9 +82,9 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
         factories.create_application(self.officer_user, year=self.year,
                                      overrides={'dbs_number': '00123'})
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertEqual(dbs_info.update_enabled_dbs_number.number, '00123')
-        self.assertEqual(dbs_info.update_enabled_dbs_number.previous_check_good, None)
-        self.assertFalse(dbs_info.can_check_dbs_online)
+        assert dbs_info.update_enabled_dbs_number.number == '00123'
+        assert dbs_info.update_enabled_dbs_number.previous_check_good is None
+        assert not dbs_info.can_check_dbs_online
 
     def test_can_check_dbs_online_previous_check_dbs_number(self):
         application = factories.create_application(self.officer_user, year=self.year)
@@ -96,9 +96,9 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
             applicant_accepted=True,
         )
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertTrue(dbs_info.can_check_dbs_online)
-        self.assertEqual(dbs_info.update_enabled_dbs_number.number, '001234')
-        self.assertEqual(dbs_info.update_enabled_dbs_number.previous_check_good, True)
+        assert dbs_info.can_check_dbs_online
+        assert dbs_info.update_enabled_dbs_number.number == '001234'
+        assert dbs_info.update_enabled_dbs_number.previous_check_good
 
     def test_can_check_dbs_online_combined_info(self):
         # Application form indicates update-enabled DBS
@@ -117,9 +117,9 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
         officer, dbs_info = self.get_officer_with_dbs_info()
 
         # We should be able to combine the above info:
-        self.assertTrue(dbs_info.can_check_dbs_online)
-        self.assertEqual(dbs_info.update_enabled_dbs_number.number, '00123')
-        self.assertEqual(dbs_info.update_enabled_dbs_number.previous_check_good, True)
+        assert dbs_info.can_check_dbs_online
+        assert dbs_info.update_enabled_dbs_number.number == '00123'
+        assert dbs_info.update_enabled_dbs_number.previous_check_good
 
     def test_applicant_rejected_recent(self):
         application = factories.create_application(self.officer_user, year=self.year)
@@ -131,8 +131,8 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
             applicant_accepted=False,
         )
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertFalse(dbs_info.can_check_dbs_online)
-        self.assertEqual(dbs_info.applicant_rejected, True)
+        assert not dbs_info.can_check_dbs_online
+        assert dbs_info.applicant_rejected
 
     def test_applicant_rejected_old(self):
         application = factories.create_application(self.officer_user, year=self.year)
@@ -144,8 +144,8 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
             applicant_accepted=False,
         )
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertFalse(dbs_info.can_check_dbs_online)
-        self.assertEqual(dbs_info.applicant_rejected, True)
+        assert not dbs_info.can_check_dbs_online
+        assert dbs_info.applicant_rejected
 
     def test_can_check_dbs_online_previous_check_bad(self):
         application = factories.create_application(self.officer_user, year=self.year)
@@ -157,9 +157,9 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
             applicant_accepted=False,
         )
         officer, dbs_info = self.get_officer_with_dbs_info()
-        self.assertFalse(dbs_info.can_check_dbs_online)
-        self.assertEqual(dbs_info.update_enabled_dbs_number.number, '00123')
-        self.assertEqual(dbs_info.update_enabled_dbs_number.previous_check_good, False)
+        assert not dbs_info.can_check_dbs_online
+        assert dbs_info.update_enabled_dbs_number.number == '00123'
+        assert not dbs_info.update_enabled_dbs_number.previous_check_good
 
     def test_update_enabled_dbs_number(self):
         # Test that data from Application/DBSCheck is prioritised by date
@@ -173,8 +173,8 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
         )
         officer, dbs_info = self.get_officer_with_dbs_info()
         # Application form data should win because it is more recent
-        self.assertEqual(dbs_info.update_enabled_dbs_number.number, '00123')
-        self.assertEqual(dbs_info.update_enabled_dbs_number.previous_check_good, None)
+        assert dbs_info.update_enabled_dbs_number.number == '00123'
+        assert dbs_info.update_enabled_dbs_number.previous_check_good is None
 
 
 class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
@@ -191,10 +191,10 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
         self.assertTextPresent("Manage DBSs 2000 | CCiW Officers")
 
         officers = [i.officer for i in self.camp.invitations.all()]
-        self.assertNotEqual(len(officers), 0)
+        assert len(officers) != 0
         for officer in officers:
             # Sanity check assumptions
-            self.assertEqual(officer.applications.count(), 0)
+            assert officer.applications.count() == 0
 
             # Actual test
             self.assertTextPresent(officer.first_name)
@@ -215,14 +215,14 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
 
-        self.assertEqual(officer.dbsactionlogs.count(), 0)
+        assert officer.dbsactionlogs.count() == 0
 
         self.click_dbs_sent_button(officer)
         # should be on same page
         self.assertUrlsEqual(url)
-        self.assertEqual(officer.dbsactionlogs.count(), 1)
-        self.assertEqual(officer.dbsactionlogs.get().user.username,
-                         DBSOFFICER[0])
+        assert officer.dbsactionlogs.count() == 1
+        assert officer.dbsactionlogs.get().user.username == \
+            DBSOFFICER[0]
 
         if self.is_full_browser_test:
             self.assertElementText(f'#id_last_dbs_form_sent_{officer.id}',
@@ -231,7 +231,7 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
         if self.is_full_browser_test:
             # Undo only works with Javascript at the moment
             self.click_dbs_sent_undo_button(officer)
-            self.assertEqual(officer.dbsactionlogs.count(), 0)
+            assert officer.dbsactionlogs.count() == 0
             self.assertUrlsEqual(url)
 
     def test_alert_leaders(self):
@@ -241,56 +241,56 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
         self.assertTextPresent('Officer does not consent')
-        self.assertEqual(self.get_element_text(f'#id_last_leader_alert_sent_{self.officer_user.id}').strip(),
-                         'No record')
+        assert self.get_element_text(f'#id_last_leader_alert_sent_{self.officer_user.id}').strip() == \
+            'No record'
         self.click_alert_leaders_button(self.officer_user)
         self.assertTextPresent("Report DBS problem to leaders")
         self.submit('input[name="send"]')
-        self.assertEqual(len(mail.outbox), 1)
+        assert len(mail.outbox) == 1
         m = mail.outbox[0]
-        self.assertIn("Dear camp leaders",
-                      m.body)
-        self.assertIn(f"{self.officer_user.full_name} indicated that they do NOT\nconsent to having a DBS check done",
-                      m.body)
+        assert "Dear camp leaders" in \
+            m.body
+        assert f"{self.officer_user.full_name} indicated that they do NOT\nconsent to having a DBS check done" in \
+            m.body
 
-        self.assertEqual(self.dbs_officer.dbsactions_performed.count(), 1)
-        self.assertEqual(self.dbs_officer.dbsactions_performed.get().action_type,
-                         DBSActionLog.ACTION_LEADER_ALERT_SENT)
+        assert self.dbs_officer.dbsactions_performed.count() == 1
+        assert self.dbs_officer.dbsactions_performed.get().action_type == \
+            DBSActionLog.ACTION_LEADER_ALERT_SENT
 
         self.handle_closed_window()
         self.assertUrlsEqual(url)
 
-        self.assertEqual(self.get_element_text(f'#id_last_leader_alert_sent_{self.officer_user.id}').strip().replace('\u00A0', ' '),
-                         "0 minutes ago")
+        assert self.get_element_text(f'#id_last_leader_alert_sent_{self.officer_user.id}').strip().replace('\u00A0', ' ') == \
+            "0 minutes ago"
 
     def test_request_dbs_form_sent(self):
         factories.create_application(self.officer_user, year=self.year)
         self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
-        self.assertEqual(self.get_element_text(f'#id_last_form_request_sent_{self.officer_user.id}').strip(),
-                         'No record')
+        assert self.get_element_text(f'#id_last_form_request_sent_{self.officer_user.id}').strip() == \
+            'No record'
         self.click_request_dbs_form_button(self.officer_user)
         self.assertTextPresent(f"Ask for DBS form to be sent to {self.officer_user.full_name}")
         self.submit('input[name="send"]')
-        self.assertEqual(len(mail.outbox), 1)
+        assert len(mail.outbox) == 1
         m = mail.outbox[0]
-        self.assertIn(f"{self.officer_user.full_name} needs a new DBS check",
-                      m.body)
+        assert f"{self.officer_user.full_name} needs a new DBS check" in \
+            m.body
 
-        self.assertEqual(self.dbs_officer.dbsactions_performed.count(), 1)
-        self.assertEqual(self.dbs_officer.dbsactions_performed.get().action_type,
-                         DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT)
+        assert self.dbs_officer.dbsactions_performed.count() == 1
+        assert self.dbs_officer.dbsactions_performed.get().action_type == \
+            DBSActionLog.ACTION_REQUEST_FOR_DBS_FORM_SENT
 
         self.handle_closed_window()
         self.assertUrlsEqual(url)
 
-        self.assertEqual(self.get_element_text(f'#id_last_form_request_sent_{self.officer_user.id}').strip().replace('\u00A0', ' '),
-                         "0 minutes ago")
+        assert self.get_element_text(f'#id_last_form_request_sent_{self.officer_user.id}').strip().replace('\u00A0', ' ') == \
+            "0 minutes ago"
 
     def test_register_received_dbs(self):
         factories.create_application(self.officer_user, year=self.year)
-        self.assertEqual(self.officer_user.dbs_checks.all().count(), 0)
+        assert self.officer_user.dbs_checks.all().count() == 0
         self.officer_login(DBSOFFICER)
         self.get_url('cciw-officers-manage_dbss', self.year)
         url = self.current_url
@@ -301,15 +301,15 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
         self.submit('input[name="_save"]')
 
         dbs_checks = list(self.officer_user.dbs_checks.all())
-        self.assertEqual(len(dbs_checks), 1)
+        assert len(dbs_checks) == 1
         dbs_check = dbs_checks[0]
-        self.assertEqual(dbs_check.dbs_number, '1234')
+        assert dbs_check.dbs_number == '1234'
 
         self.handle_closed_window()
         self.assertUrlsEqual(url)
 
         # DBS received - no need to have any action buttons.
-        self.assertFalse(self.is_element_present(self.register_received_button_selector(self.officer_user)))
+        assert not self.is_element_present(self.register_received_button_selector(self.officer_user))
 
     def test_dbs_checked_online(self):
         """
@@ -318,7 +318,7 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
         factories.create_application(self.officer_user, year=self.year)
 
         # Create old DBS check
-        self.assertEqual(self.officer_user.dbs_checks.count(), 0)
+        assert self.officer_user.dbs_checks.count() == 0
         self.officer_user.dbs_checks.create(
             dbs_number="00123400001",
             completed=date(1990, 1, 1),
@@ -337,20 +337,20 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
         self.submit('input[name="_save"]')
 
         # Check created DBS:
-        self.assertEqual(self.officer_user.dbs_checks.count(), 2)
+        assert self.officer_user.dbs_checks.count() == 2
         dbs_check = self.officer_user.dbs_checks.all().order_by('-completed')[0]
 
         # Should have copied other info from old DBS check automatically.
-        self.assertEqual(dbs_check.dbs_number, '00123400001')
-        self.assertEqual(dbs_check.check_type, DBSCheck.CheckType.ONLINE)
-        self.assertEqual(dbs_check.completed, today)
-        self.assertEqual(dbs_check.requested_by, DBSCheck.RequestedBy.CCIW)
-        self.assertEqual(dbs_check.registered_with_dbs_update, True)
+        assert dbs_check.dbs_number == '00123400001'
+        assert dbs_check.check_type == DBSCheck.CheckType.ONLINE
+        assert dbs_check.completed == today
+        assert dbs_check.requested_by == DBSCheck.RequestedBy.CCIW
+        assert dbs_check.registered_with_dbs_update
 
         self.handle_closed_window()
         self.assertUrlsEqual(url)
         # Check done - no need for any action buttons
-        self.assertFalse(self.is_element_present(self.dbs_checked_online_button_selector(self.officer_user)))
+        assert not self.is_element_present(self.dbs_checked_online_button_selector(self.officer_user))
 
     def click_register_received_button(self, officer):
         self.submit(self.register_received_button_selector(officer))
@@ -388,7 +388,7 @@ class ManageDbsPageWT(ManageDbsPageBase, WebTestBase):
 class ManageDbsPageSL(ManageDbsPageBase, SeleniumBase):
     def handle_closed_window(self):
         # Previous page opened in new window. It is closed now...
-        self.assertEqual(len(self._driver.window_handles), 1)
+        assert len(self._driver.window_handles) == 1
         # but we still need to switch back.
         self.switch_window()
         time.sleep(1)

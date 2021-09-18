@@ -22,8 +22,8 @@ class ApplicationModel(RequireApplicationsMixin, TestBase):
                       self.application2.id,
                       self.application3.id]:
             app = Application.objects.get(id=appid)
-            self.assertEqual(app.referees[0], app.referee_set.get(referee_number=1))
-            self.assertEqual(app.referees[1], app.referee_set.get(referee_number=2))
+            assert app.referees[0] == app.referee_set.get(referee_number=1)
+            assert app.referees[1] == app.referee_set.get(referee_number=2)
 
 
 class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQualificationTypesMixin,
@@ -41,7 +41,7 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQual
 
     def test_get(self):
         resp = self.client.get(self.url)
-        self.assertEqual(200, resp.status_code)
+        assert 200 == resp.status_code
         self.assertContains(resp, "Your applications")
 
     def test_no_existing_application(self):
@@ -78,23 +78,23 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQual
             type=self.first_aid_qualification,
             date_issued=date(2016, 1, 1))
         resp = self.client.post(self.url, {'new': 'Create'})
-        self.assertEqual(302, resp.status_code)
-        self.assertEqual(len(self.user.applications.all()), 2)
+        assert 302 == resp.status_code
+        assert len(self.user.applications.all()) == 2
         # New should be a copy of old:
         for a in self.user.applications.all():
-            self.assertEqual(a.full_name, app.full_name)
-            self.assertEqual(a.referee_set.get(referee_number=1).name,
-                             app.referee_set.get(referee_number=1).name)
-            self.assertEqual(list([q.type, q.date_issued] for q in a.qualifications.all()),
-                             list([q.type, q.date_issued] for q in app.qualifications.all()))
+            assert a.full_name == app.full_name
+            assert a.referee_set.get(referee_number=1).name == \
+                app.referee_set.get(referee_number=1).name
+            assert list([q.type, q.date_issued] for q in a.qualifications.all()) == \
+                list([q.type, q.date_issued] for q in app.qualifications.all())
 
     def test_create_when_already_done(self):
         # Should not create a new application if a recent one is submitted
         app = self.user.applications.create(finished=True,
                                             date_saved=date.today())
         resp = self.client.post(self.url, {'new': 'Create'})
-        self.assertEqual(200, resp.status_code)
-        self.assertEqual(list(self.user.applications.all()), [app])
+        assert 200 == resp.status_code
+        assert list(self.user.applications.all()) == [app]
 
 
 class PersonalApplicationView(RequireApplicationsMixin, WebTestBase):
@@ -107,8 +107,8 @@ class PersonalApplicationView(RequireApplicationsMixin, WebTestBase):
         self.fill({'#application': self.officer1.applications.all()[0].id,
                    '#format': 'txt'})
         self.submit()
-        self.assertEqual(self.last_response.content_type, 'text/plain')
-        self.assertIn(b"Joe Winston Bloggs", self.last_response.content)
+        assert self.last_response.content_type == 'text/plain'
+        assert b"Joe Winston Bloggs" in self.last_response.content
 
     def test_view_rtf(self):
         self.officer_login(OFFICER)
@@ -116,8 +116,8 @@ class PersonalApplicationView(RequireApplicationsMixin, WebTestBase):
         self.fill({'#application': self.officer1.applications.all()[0].id,
                    '#format': 'rtf'})
         self.submit()
-        self.assertEqual(self.last_response.content_type, 'text/rtf')
-        self.assertIn(b"\\cell Joe Winston Bloggs", self.last_response.content)
+        assert self.last_response.content_type == 'text/rtf'
+        assert b"\\cell Joe Winston Bloggs" in self.last_response.content
 
     def test_view_html(self):
         self.officer_login(OFFICER)
@@ -136,11 +136,11 @@ class PersonalApplicationView(RequireApplicationsMixin, WebTestBase):
         self.assertTextPresent("Email sent")
 
         m = mail.outbox[0]
-        self.assertIn("Joe Winston Bloggs", m.body)
+        assert "Joe Winston Bloggs" in m.body
         fname, fdata, ftype = m.attachments[0]
-        self.assertEqual(fname, "Application_joebloggs_2001-03-01.rtf")
-        self.assertIn("\\cell Joe Winston Bloggs", fdata)
-        self.assertEqual(ftype, "text/rtf")
+        assert fname == "Application_joebloggs_2001-03-01.rtf"
+        assert "\\cell Joe Winston Bloggs" in fdata
+        assert ftype == "text/rtf"
 
 
 class ApplicationUtils(BasicSetupMixin, TestBase):
@@ -179,7 +179,7 @@ class ApplicationUtils(BasicSetupMixin, TestBase):
                                           date_saved=past_camp_start - timedelta(1))
 
         # First, check we don't have any apps that are counted as 'this years'
-        self.assertFalse(applications.thisyears_applications(u).exists())
+        assert not applications.thisyears_applications(u).exists()
 
         # Create an application for this year
         app2 = Application.objects.create(officer=u,
@@ -187,16 +187,16 @@ class ApplicationUtils(BasicSetupMixin, TestBase):
                                           date_saved=past_camp_start + timedelta(10))
 
         # Now we should have one
-        self.assertTrue(applications.thisyears_applications(u).exists())
+        assert applications.thisyears_applications(u).exists()
 
         # Check that applications_for_camp agrees
-        self.assertEqual([app1], list(applications.applications_for_camp(c1)))
-        self.assertEqual([app2], list(applications.applications_for_camp(c2)))
+        assert [app1] == list(applications.applications_for_camp(c1))
+        assert [app2] == list(applications.applications_for_camp(c2))
 
         # Check that camps_for_application agrees
-        self.assertEqual([c1], list(applications.camps_for_application(app1)))
-        self.assertEqual([c2], list(applications.camps_for_application(app2)))
+        assert [c1] == list(applications.camps_for_application(app1))
+        assert [c2] == list(applications.camps_for_application(app2))
 
         # Check that thisyears_applications works if there are no future camps
         c2.delete()
-        self.assertTrue(applications.thisyears_applications(u).exists())
+        assert applications.thisyears_applications(u).exists()

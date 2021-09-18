@@ -1,8 +1,9 @@
 import json
 from datetime import date, datetime, timedelta
 from decimal import Decimal
-from unittest import TestCase, mock
+from unittest import mock
 
+import pytest
 import vcr
 import xlrd
 from django.conf import settings
@@ -435,13 +436,13 @@ class TestBookingModels(CreateBookingModelMixin, AtomicChecksMixin, TestBase):
             return BookingAccount.objects.get(email=self.email)
 
     def test_camp_open_for_bookings(self):
-        self.assertTrue(self.camp.open_for_bookings(self.today))
-        self.assertTrue(self.camp.open_for_bookings(self.camp.start_date))
-        self.assertFalse(self.camp.open_for_bookings(self.camp.start_date + timedelta(days=1)))
+        assert self.camp.open_for_bookings(self.today)
+        assert self.camp.open_for_bookings(self.camp.start_date)
+        assert not self.camp.open_for_bookings(self.camp.start_date + timedelta(days=1))
 
         self.camp.last_booking_date = self.today
-        self.assertTrue(self.camp.open_for_bookings(self.today))
-        self.assertFalse(self.camp.open_for_bookings(self.today + timedelta(days=1)))
+        assert self.camp.open_for_bookings(self.today)
+        assert not self.camp.open_for_bookings(self.today + timedelta(days=1))
 
     @mock.patch('cciw.bookings.models.early_bird_is_available', return_value=False)
     def test_book_with_money_in_account(self, m):
@@ -458,31 +459,31 @@ class TestBookingModels(CreateBookingModelMixin, AtomicChecksMixin, TestBase):
         # Place should be booked AND should not expire
         acc = self.get_account()
         b = acc.bookings.all()[0]
-        self.assertEqual(b.state, BookingState.BOOKED)
-        self.assertEqual(b.booking_expires, None)
+        assert b.state == BookingState.BOOKED
+        assert b.booking_expires is None
 
         acc = self.get_account()
         # balance should be zero
         price_checker = PriceChecker()
         price_checker._fetch_deposit_prices(b.camp.year)  # Force evaluation to check for zero queries later.
         with self.assertNumQueries(0 if getattr(self, 'use_prefetch_related_for_get_account', False) else 2):
-            self.assertEqual(acc.get_balance(
+            assert acc.get_balance(
                 confirmed_only=False,
                 allow_deposits=True,
                 price_checker=price_checker,
-            ), Decimal('0.00'))
-            self.assertEqual(acc.get_balance(
+            ) == Decimal('0.00')
+            assert acc.get_balance(
                 confirmed_only=True,
                 allow_deposits=True,
                 price_checker=price_checker,
-            ), Decimal('0.00'))
+            ) == Decimal('0.00')
 
         # But for full amount, they still owe 80 (full price minus deposit)
-        self.assertEqual(acc.get_balance_full(), Decimal('80.00'))
+        assert acc.get_balance_full() == Decimal('80.00')
 
         # Test some model methods:
-        self.assertEqual(len(acc.bookings.payable(confirmed_only=False)),
-                         1)
+        assert len(acc.bookings.payable(confirmed_only=False)) == \
+            1
 
     def test_get_balance_opts(self):
         # Tests that the other code paths in get_balance/BookingManager.payable
@@ -546,30 +547,30 @@ class BookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent('id_email')
 
     def test_complete_form(self):
-        self.assertEqual(BookingAccount.objects.all().count(), 0)
+        assert BookingAccount.objects.all().count() == 0
         self.get_url(self.urlname)
         self.fill_by_name({'email': 'booker@bookers.com'})
         self.submit()
-        self.assertEqual(BookingAccount.objects.all().count(), 0)
-        self.assertEqual(len(mail.outbox), 1)
+        assert BookingAccount.objects.all().count() == 0
+        assert len(mail.outbox) == 1
 
     def test_complete_form_existing_email(self):
         BookingAccount.objects.create(email="booker@bookers.com")
-        self.assertEqual(BookingAccount.objects.all().count(), 1)
+        assert BookingAccount.objects.all().count() == 1
         self.get_url(self.urlname)
         self.fill_by_name({'email': 'booker@bookers.com'})
         self.submit()
-        self.assertEqual(BookingAccount.objects.all().count(), 1)
-        self.assertEqual(len(mail.outbox), 1)
+        assert BookingAccount.objects.all().count() == 1
+        assert len(mail.outbox) == 1
 
     def test_complete_form_existing_email_different_case(self):
         BookingAccount.objects.create(email="booker@bookers.com")
-        self.assertEqual(BookingAccount.objects.all().count(), 1)
+        assert BookingAccount.objects.all().count() == 1
         self.get_url(self.urlname)
         self.fill_by_name({'email': 'BOOKER@bookers.com'})
         self.submit()
-        self.assertEqual(BookingAccount.objects.all().count(), 1)
-        self.assertEqual(len(mail.outbox), 1)
+        assert BookingAccount.objects.all().count() == 1
+        assert len(mail.outbox) == 1
 
     def test_skip_if_logged_in(self):
         # This assumes verification process works
@@ -623,8 +624,8 @@ class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         self.assertUrlsEqual(reverse('cciw-bookings-account_details'))
         self.assertTextPresent("Logged in as booker@bookers.com! You will stay logged in for two weeks")
         acc = BookingAccount.objects.get(email='booker@bookers.com')
-        self.assertTrue(acc.last_login is not None)
-        self.assertTrue(acc.first_login is not None)
+        assert acc.last_login is not None
+        assert acc.first_login is not None
 
     def _add_booking_account_address(self):
         acc, _ = BookingAccount.objects.get_or_create(email='booker@bookers.com')
@@ -705,17 +706,17 @@ class TestPaymentReminderEmails(CreateBookingModelMixin, BookingBaseMixin, WebTe
         book_basket_now(booking.account.bookings.all())
         booking = Booking.objects.get(id=booking.id)
         booking.confirm()
-        self.assertEqual(len(BookingAccount.objects.payments_due()), 1)
+        assert len(BookingAccount.objects.payments_due()) == 1
         return booking
 
     def test_payment_reminder_email(self):
         booking = self._create_booking()
         mail.outbox = []
         send_payment_reminder_emails()
-        self.assertEqual(len(mail.outbox), 1)
+        assert len(mail.outbox) == 1
         m = mail.outbox[0]
-        self.assertIn("You have payments due", m.body)
-        self.assertEqual("[CCIW] Payment due", m.subject)
+        assert "You have payments due" in m.body
+        assert "[CCIW] Payment due" == m.subject
         url, path, querydata = read_email_url(m, "https://.*/booking/p.*")
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertUrlsEqual(reverse('cciw-bookings-pay'))
@@ -733,7 +734,7 @@ class TestPaymentReminderEmails(CreateBookingModelMixin, BookingBaseMixin, WebTe
 
         # link expired, new email should be sent.
         self.assertUrlsEqual(reverse('cciw-bookings-link_expired_email_sent'))
-        self.assertEqual(len(mail.outbox), 2)
+        assert len(mail.outbox) == 2
         m2 = mail.outbox[1]
 
         url2, path2, querydata2 = read_email_url(m2, "https://.*/booking/p.*")
@@ -774,8 +775,8 @@ class AccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         self._fill_in_account_details()
         self.submit()
         acc = self.get_account()
-        self.assertEqual(acc.name, 'Mr Booker')
-        self.assertEqual(UNS_func.call_count, 0)
+        assert acc.name == 'Mr Booker'
+        assert UNS_func.call_count == 0
 
     @mock.patch('cciw.bookings.mailchimp.update_newsletter_subscription')
     def test_news_letter_subscribe(self, UNS_func):
@@ -785,24 +786,24 @@ class AccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         self.fill({'#id_subscribe_to_newsletter': True})
         self.submit()
         acc = self.get_account()
-        self.assertEqual(acc.subscribe_to_newsletter, True)
-        self.assertEqual(UNS_func.call_count, 1)
+        assert acc.subscribe_to_newsletter
+        assert UNS_func.call_count == 1
 
     def test_subscribe_to_mailings_unselected(self):
         self.login(add_account_details=False)
         self.get_url(self.urlname)
         acc = self.get_account()
         #  Initial value should be NULL - we haven't asked.
-        self.assertIs(acc.subscribe_to_mailings, None)
-        self.assertIs(acc.include_in_mailings, True)
+        assert acc.subscribe_to_mailings is None
+        assert acc.include_in_mailings is True
         self._fill_in_account_details()
         self.submit()
         acc = self.get_account()
         # The form should default to 'False'. As soon as this
         # page has been submitted, we *have* asked the question
         # and they have said 'no' by not selecting the box.
-        self.assertIs(acc.subscribe_to_mailings, False)
-        self.assertIs(acc.include_in_mailings, False)
+        assert acc.subscribe_to_mailings is False
+        assert acc.include_in_mailings is False
 
     def test_subscribe_to_mailings_selected(self):
         self.login(add_account_details=False)
@@ -812,8 +813,8 @@ class AccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         self.fill({'#id_subscribe_to_mailings': True})
         self.submit()
         acc = self.get_account()
-        self.assertIs(acc.subscribe_to_mailings, True)
-        self.assertIs(acc.include_in_mailings, True)
+        assert acc.subscribe_to_mailings is True
+        assert acc.include_in_mailings is True
 
     def _fill_in_account_details(self):
         self.fill_by_name({'name': 'Mr Booker',
@@ -834,8 +835,8 @@ class AccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         self.fill_by_name({'subscribe_to_newsletter': True})
         self.submit()
         acc = self.get_account()
-        self.assertEqual(acc.subscribe_to_newsletter, True)
-        self.assertEqual(get_status(acc), "subscribed")
+        assert acc.subscribe_to_newsletter
+        assert get_status(acc) == "subscribed"
 
     @vcr.use_cassette('cciw/bookings/fixtures/vcr_cassettes/unsubscribe.yaml', ignore_localhost=True)
     def test_unsubscribe(self):
@@ -846,8 +847,8 @@ class AccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         self.fill_by_name({'subscribe_to_newsletter': False})
         self.submit()
         acc = self.get_account()
-        self.assertEqual(acc.subscribe_to_newsletter, False)
-        self.assertEqual(get_status(acc), "unsubscribed")
+        assert not acc.subscribe_to_newsletter
+        assert get_status(acc) == "unsubscribed"
 
 
 class TestAccountDetailsWT(AccountDetailsBase, WebTestBase):
@@ -891,7 +892,7 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     def test_post_not_allowed_if_no_prices(self):
         self.login()
         self.get_url(self.urlname)
-        self.assertFalse(self.is_element_present(self.SAVE_BTN))
+        assert not self.is_element_present(self.SAVE_BTN)
 
         self.add_prices()
         self.get_url(self.urlname)
@@ -920,20 +921,20 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.add_prices()
         self.get_url(self.urlname)
         acc = self.get_account()
-        self.assertEqual(acc.bookings.count(), 0)
+        assert acc.bookings.count() == 0
         data = self.place_details.copy()
         self.fill_by_name(data)
         self.submit()
         self.assertUrlsEqual(reverse('cciw-bookings-list_bookings'))
 
         # Did we create it?
-        self.assertEqual(acc.bookings.count(), 1)
+        assert acc.bookings.count() == 1
 
         b = acc.bookings.get()
 
         # Check attributes set correctly
-        self.assertEqual(b.amount_due, self.price_full)
-        self.assertEqual(b.created_online, True)
+        assert b.amount_due == self.price_full
+        assert b.created_online
         assert not b.publicity_photos_agreement
 
     def test_custom_agreement(self):
@@ -972,7 +973,7 @@ class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
 
     def assertValues(self, data):
         for k, v in data.items():
-            self.assertEqual(self.value(k), v)
+            assert self.value(k) == v
 
     def test_use_existing_addresses(self):
         self._use_existing_start()
@@ -1110,7 +1111,7 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertUrlsEqual(reverse('cciw-bookings-list_bookings'))
 
         # Did we alter it?
-        self.assertEqual(self.get_account().bookings.all()[0].first_name, "A New Name")
+        assert self.get_account().bookings.all()[0].first_name == "A New Name"
 
     def test_edit_booked(self):
         """
@@ -1127,7 +1128,7 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
             # Check there is no save button
             self.edit_place(b)
-            self.assertFalse(self.is_element_present("#id_save_btn"))
+            assert not self.is_element_present("#id_save_btn")
             # Check for message
             self.assertTextPresent("can only be changed by an admin.")
 
@@ -1148,7 +1149,7 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
             self.fill_by_name(data)
             self.submit()
             # Check we didn't alter it
-            self.assertNotEqual(acc.bookings.get().first_name, "A New Name")
+            assert acc.bookings.get().first_name != "A New Name"
 
 
 class TestEditPlaceWT(EditPlaceBase, WebTestBase):
@@ -1207,7 +1208,7 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account']),
         self.submit('[name=_save]')
         self.assertTextPresent("An email has been sent")
         mails = send_queued_mail()
-        self.assertEqual(len(mails), 1)
+        assert len(mails) == 1
 
     def test_create(self):
         self.add_prices()
@@ -1231,11 +1232,11 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account']),
         self.assertTextPresent('Select booking')
         self.assertTextPresent('A confirmation email has been sent')
         booking = Booking.objects.get()
-        self.assertEqual(booking.created_online, False)
-        self.assertEqual(booking.account.manual_payments.count(), 1)
+        assert not booking.created_online
+        assert booking.account.manual_payments.count() == 1
         mp = booking.account.manual_payments.get()
-        self.assertEqual(mp.payment_type, ManualPaymentType.CHEQUE)
-        self.assertEqual(mp.amount, Decimal('100'))
+        assert mp.payment_type == ManualPaymentType.CHEQUE
+        assert mp.amount == Decimal('100')
 
 
 class TestEditPlaceAdminWT(EditPlaceAdminBase, WebTestBase):
@@ -1257,7 +1258,7 @@ class EditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreateBookingMo
         self.submit('[name=_save]')
         self.assertTextPresent("was added successfully")
         account = BookingAccount.objects.get(email=self.email)
-        self.assertEqual(account.name, 'Joe')
+        assert account.name == 'Joe'
 
     def test_edit(self):
         account = BookingAccount.objects.create(
@@ -1269,7 +1270,7 @@ class EditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreateBookingMo
             amount=Decimal('10.00'),
             payment_type=ManualPaymentType.CHEQUE,
         )
-        self.assertEqual(account.payments.count(), 1)
+        assert account.payments.count() == 1
         self.officer_login(BOOKING_SECRETARY)
         self.get_url("admin:bookings_bookingaccount_change", account.id)
         self.assertTextPresent("Payments")
@@ -1278,7 +1279,7 @@ class EditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, CreateBookingMo
         self.submit('[name=_save]')
         self.assertTextPresent("was changed successfully")
         account = refresh(account)
-        self.assertEqual(account.name, 'Mr New Name')
+        assert account.name == 'Mr New Name'
 
 
 class TestEditAccountAdminWT(EditAccountAdminBase, WebTestBase):
@@ -1303,9 +1304,9 @@ class EditPaymentAdminBase(fix_autocomplete_fields(['account']), BookingBaseMixi
         self.submit('[name=_save]')
         self.assertTextPresent("Manual payment of £12")
         self.assertTextPresent("was added successfully")
-        self.assertEqual(account.manual_payments.count(), 1)
+        assert account.manual_payments.count() == 1
         account = self.get_account()
-        self.assertEqual(account.total_received, Decimal('12'))
+        assert account.total_received == Decimal('12')
 
 
 class TestEditPaymentAdminWT(EditPaymentAdminBase, WebTestBase):
@@ -1325,9 +1326,9 @@ class AccountTransferBase(fix_autocomplete_fields(['from_account', 'to_account']
         account_2 = BookingAccount.objects.create(email="account2@example.com", name="Jane")
         account_1.manual_payments.create(amount="100.00")
         account_1 = refresh(account_1)
-        self.assertEqual(account_1.total_received, Decimal('100.00'))
+        assert account_1.total_received == Decimal('100.00')
 
-        self.assertEqual(account_1.payments.count(), 1)
+        assert account_1.payments.count() == 1
 
         self.officer_login(BOOKING_SECRETARY)
 
@@ -1343,11 +1344,11 @@ class AccountTransferBase(fix_autocomplete_fields(['from_account', 'to_account']
         account_1 = refresh(account_1)
         account_2 = refresh(account_2)
 
-        self.assertEqual(account_1.payments.count(), 2)
-        self.assertEqual(account_2.payments.count(), 1)
+        assert account_1.payments.count() == 2
+        assert account_2.payments.count() == 1
 
-        self.assertEqual(account_1.total_received, Decimal('85.00'))
-        self.assertEqual(account_2.total_received, Decimal('15.00'))
+        assert account_1.total_received == Decimal('85.00')
+        assert account_2.total_received == Decimal('15.00')
 
         # Deleting causes more payments to restore the original value
         account_1.transfer_from_payments.get().delete()
@@ -1355,11 +1356,11 @@ class AccountTransferBase(fix_autocomplete_fields(['from_account', 'to_account']
         account_1 = refresh(account_1)
         account_2 = refresh(account_2)
 
-        self.assertEqual(account_1.payments.count(), 3)
-        self.assertEqual(account_2.payments.count(), 2)
+        assert account_1.payments.count() == 3
+        assert account_2.payments.count() == 2
 
-        self.assertEqual(account_1.total_received, Decimal('100.00'))
-        self.assertEqual(account_2.total_received, Decimal('0.00'))
+        assert account_1.total_received == Decimal('100.00')
+        assert account_2.total_received == Decimal('0.00')
 
 
 class TestAccountTransferWT(AccountTransferBase, WebTestBase):
@@ -1376,12 +1377,12 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     urlname = 'cciw-bookings-list_bookings'
 
     def assert_book_button_enabled(self):
-        self.assertTrue(self.is_element_present('#id_book_now_btn'))
-        self.assertFalse(self.is_element_present('#id_book_now_btn[disabled]'))
+        assert self.is_element_present('#id_book_now_btn')
+        assert not self.is_element_present('#id_book_now_btn[disabled]')
 
     def assert_book_button_disabled(self):
-        self.assertTrue(self.is_element_present('#id_book_now_btn'))
-        self.assertTrue(self.is_element_present('#id_book_now_btn[disabled]'))
+        assert self.is_element_present('#id_book_now_btn')
+        assert self.is_element_present('#id_book_now_btn[disabled]')
 
     def enable_book_button(self):
         # Used for testing what happens if user enables button using browser
@@ -1463,7 +1464,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.get_url(self.urlname)
         self.assertTextPresent("Must be approved by leader due to serious illness/condition")
         self.assert_book_button_disabled()
-        self.assertIn(booking, Booking.objects.need_approving())
+        assert booking in Booking.objects.need_approving()
 
     def test_minimum_age(self):
         # if born Aug 31st 2001, and thisyear == 2012, should be allowed on camp with
@@ -1639,18 +1640,18 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.create_booking()
         acc = self.get_account()
         b = acc.bookings.all()[0]
-        self.assertEqual(b.shelved, False)
+        assert not b.shelved
         self.get_url(self.urlname)
 
         self.submit(f"[name=shelve_{b.id}]")
 
         # Should be changed
         b2 = acc.bookings.all()[0]
-        self.assertEqual(b2.shelved, True)
+        assert b2.shelved
 
         # Different button should appear
-        self.assertFalse(self.is_element_present(f"[name=shelve_{b.id}]"))
-        self.assertTrue(self.is_element_present(f"[name=unshelve_{b.id}]"))
+        assert not self.is_element_present(f"[name=shelve_{b.id}]")
+        assert self.is_element_present(f"[name=unshelve_{b.id}]")
 
         self.assertTextPresent("Shelf")
 
@@ -1666,7 +1667,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
         # Should be changed
         b2 = acc.bookings.all()[0]
-        self.assertEqual(b2.shelved, False)
+        assert not b2.shelved
 
         # Shelf section should disappear.
         self.assertTextAbsent("Shelf")
@@ -1685,7 +1686,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
             self.submit(f"[name=delete_{b.id}]")
 
         # Should be gone
-        self.assertEqual(0, acc.bookings.count())
+        assert 0 == acc.bookings.count()
 
     def test_edit_place_btn(self):
         self.create_booking()
@@ -1773,7 +1774,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit('[name=book_now]')
         acc = self.get_account()
         b = acc.bookings.all()[0]
-        self.assertEqual(b.state, BookingState.INFO_COMPLETE)
+        assert b.state == BookingState.INFO_COMPLETE
         self.assertTextPresent("These places cannot be booked")
 
     def test_book_one_unbookable(self):
@@ -1788,7 +1789,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit('[name=book_now]')
         acc = self.get_account()
         for b in acc.bookings.all():
-            self.assertEqual(b.state, BookingState.INFO_COMPLETE)
+            assert b.state == BookingState.INFO_COMPLETE
         self.assertTextPresent("These places cannot be booked")
 
     def test_same_name_same_camp(self):
@@ -1890,7 +1891,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.submit('[name=book_now]')
         # Should not be modified
         b = acc.bookings.all()[0]
-        self.assertEqual(b.state, BookingState.INFO_COMPLETE)
+        assert b.state == BookingState.INFO_COMPLETE
         self.assertTextPresent("Places were not booked due to modifications made")
 
     def test_book_disallowed_if_missing_agreement(self):
@@ -1974,7 +1975,7 @@ class TestPayReturnPoints(BookingBaseMixin, LogInMixin, WebTestBase):
         self.assertTextPresent("Payment complete!")
         # Paypal posts to these, check we support that
         resp = self.client.post(reverse('cciw-bookings-pay_done'), {})
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
 
     def test_pay_cancelled(self):
         self.login()
@@ -1982,7 +1983,7 @@ class TestPayReturnPoints(BookingBaseMixin, LogInMixin, WebTestBase):
         self.assertTextPresent("Payment cancelled")
         # Paypal posts to these, check we support that
         resp = self.client.post(reverse('cciw-bookings-pay_cancelled'), {})
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
 
 
 class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeadersMixin,
@@ -1996,7 +1997,7 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         self.create_leaders()
         acc = self.get_account()
         book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
-        self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
+        assert acc.bookings.all()[0].booking_expires is not None
 
         mail.outbox = []
         ManualPayment.objects.create(
@@ -2006,10 +2007,10 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         acc = self.get_account()
 
         # Check we updated the account
-        self.assertEqual(acc.total_received, self.price_full)
+        assert acc.total_received == self.price_full
 
         # Check we updated the bookings
-        self.assertTrue(acc.bookings.all()[0].booking_expires is None)
+        assert acc.bookings.all()[0].booking_expires is None
 
         # Check for emails sent
         # 1 to account
@@ -2033,23 +2034,23 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
                              'first_name': 'Mary'})
         acc = self.get_account()
         book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
-        self.assertTrue(acc.bookings.all()[0].booking_expires is not None)
+        assert acc.bookings.all()[0].booking_expires is not None
 
         # Between the two
         p = (self.price_full + self.price_2nd_child) / 2
         acc.receive_payment(p)
 
         # Check we updated the account
-        self.assertEqual(acc.total_received, p)
+        assert acc.total_received == p
 
         # Check we updated the one we had enough funds for
-        self.assertTrue(acc.bookings.filter(price_type=PriceType.SECOND_CHILD)[0].booking_expires is None)
+        assert acc.bookings.filter(price_type=PriceType.SECOND_CHILD)[0].booking_expires is None
         # but not the one which was too much.
-        self.assertTrue(acc.bookings.filter(price_type=PriceType.FULL)[0].booking_expires is not None)
+        assert acc.bookings.filter(price_type=PriceType.FULL)[0].booking_expires is not None
 
         # We can rectify it with a payment of the rest
         acc.receive_payment((self.price_full + self.price_2nd_child) - p)
-        self.assertTrue(acc.bookings.filter(price_type=PriceType.FULL)[0].booking_expires is None)
+        assert acc.bookings.filter(price_type=PriceType.FULL)[0].booking_expires is None
 
     def test_email_for_bad_payment_1(self):
         ipn_1 = IpnMock()
@@ -2058,12 +2059,12 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         ipn_1.custom = "x"  # wrong format
 
         mail.outbox = []
-        self.assertEqual(len(mail.outbox), 0)
+        assert len(mail.outbox) == 0
         paypal_payment_received(ipn_1)
 
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('/admin/ipn/paypal', mail.outbox[0].body)
-        self.assertIn('No associated account', mail.outbox[0].body)
+        assert len(mail.outbox) == 1
+        assert '/admin/ipn/paypal' in mail.outbox[0].body
+        assert 'No associated account' in mail.outbox[0].body
 
     def test_email_for_bad_payment_2(self):
         account = BookingAccount(id=1234567)  # bad ID, not in DB
@@ -2073,12 +2074,12 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         ipn_1.custom = build_paypal_custom_field(account)
 
         mail.outbox = []
-        self.assertEqual(len(mail.outbox), 0)
+        assert len(mail.outbox) == 0
         paypal_payment_received(ipn_1)
 
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('/admin/ipn/paypal', mail.outbox[0].body)
-        self.assertIn('No associated account', mail.outbox[0].body)
+        assert len(mail.outbox) == 1
+        assert '/admin/ipn/paypal' in mail.outbox[0].body
+        assert 'No associated account' in mail.outbox[0].body
 
     def test_email_for_bad_payment_3(self):
         ipn_1 = IpnMock()
@@ -2086,27 +2087,27 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         ipn_1.mc_gross = Decimal('1.00')
 
         mail.outbox = []
-        self.assertEqual(len(mail.outbox), 0)
+        assert len(mail.outbox) == 0
         unrecognised_payment(ipn_1)
 
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('/admin/ipn/paypal', mail.outbox[0].body)
-        self.assertIn('Invalid IPN', mail.outbox[0].body)
+        assert len(mail.outbox) == 1
+        assert '/admin/ipn/paypal' in mail.outbox[0].body
+        assert 'Invalid IPN' in mail.outbox[0].body
 
     def test_receive_payment_handler(self):
         # Use the actual signal handler, check the good path.
         account = self.get_account()
-        self.assertEqual(account.total_received, Decimal(0))
+        assert account.total_received == Decimal(0)
 
         ipn_1 = factories.create_ipn(account)
 
         # Test for Payment objects
-        self.assertEqual(Payment.objects.count(), 1)
-        self.assertEqual(Payment.objects.all()[0].amount, ipn_1.mc_gross)
+        assert Payment.objects.count() == 1
+        assert Payment.objects.all()[0].amount == ipn_1.mc_gross
 
         # Test account updated
         account = self.get_account()  # refresh
-        self.assertEqual(account.total_received, ipn_1.mc_gross)
+        assert account.total_received == ipn_1.mc_gross
 
         # Test refund is wired up
         ipn_2 = factories.create_ipn(
@@ -2117,11 +2118,11 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
             payment_status='Refunded',
         )
 
-        self.assertEqual(Payment.objects.count(), 2)
-        self.assertEqual(Payment.objects.order_by('-created_at')[0].amount, ipn_2.mc_gross)
+        assert Payment.objects.count() == 2
+        assert Payment.objects.order_by('-created_at')[0].amount == ipn_2.mc_gross
 
         account = self.get_account()  # refresh
-        self.assertEqual(account.total_received, Decimal(0))
+        assert account.total_received == Decimal(0)
 
     def test_email_for_good_payment(self):
         self.create_booking()
@@ -2150,12 +2151,12 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         acc.receive_payment(acc.get_balance_full())
 
         mails = send_queued_mail()
-        self.assertEqual(len(mails), 1)
+        assert len(mails) == 1
 
-        self.assertEqual(mails[0].subject, "[CCIW] Booking - place confirmed")
-        self.assertEqual(mails[0].to, [self.email])
-        self.assertTrue(self.place_details['first_name'] in mails[0].body)
-        self.assertTrue('Another Child' in mails[0].body)
+        assert mails[0].subject == "[CCIW] Booking - place confirmed"
+        assert mails[0].to == [self.email]
+        assert self.place_details['first_name'] in mails[0].body
+        assert 'Another Child' in mails[0].body
 
     def test_concurrent_save(self):
         acc1 = BookingAccount.objects.create(email='foo@foo.com')
@@ -2163,13 +2164,13 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
 
         acc1.receive_payment(Decimal('100.00'))
 
-        self.assertEqual(BookingAccount.objects.get(email='foo@foo.com').total_received,
-                         Decimal('100.00'))
+        assert BookingAccount.objects.get(email='foo@foo.com').total_received == \
+            Decimal('100.00')
 
         acc2.save()  # this will have total_received = 0.00
 
-        self.assertEqual(BookingAccount.objects.get(email='foo@foo.com').total_received,
-                         Decimal('100.00'))
+        assert BookingAccount.objects.get(email='foo@foo.com').total_received == \
+            Decimal('100.00')
 
     def test_pending_payment_handling(self):
         # This test is story-style - checks the whole process
@@ -2185,7 +2186,7 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         # Sanity check initial condition:
         mail.outbox = []
         booking.refresh_from_db()
-        self.assertNotEqual(booking.booking_expires, None)
+        assert booking.booking_expires is not None
 
         # Send payment that doesn't complete immediately
         ipn_1 = factories.create_ipn(
@@ -2198,22 +2199,22 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
 
         # Money should not be counted as received
         account = refresh(account)
-        self.assertEqual(account.total_received, Decimal("0.00"))
+        assert account.total_received == Decimal("0.00")
 
         # Custom email sent:
-        self.assertEqual(len(mail.outbox), 1)
+        assert len(mail.outbox) == 1
         m = mail.outbox[0]
-        self.assertIn("We have received a payment of £20.00 that is pending", m.body)
-        self.assertIn("echeck", m.body)
+        assert "We have received a payment of £20.00 that is pending" in m.body
+        assert "echeck" in m.body
 
         # Check that we can tell the account has pending payments
         # and how much.
         three_days_later = timezone.now() + timedelta(days=3)
-        self.assertEqual(account.get_pending_payment_total(now=three_days_later), Decimal("20.00"))
+        assert account.get_pending_payment_total(now=three_days_later) == Decimal("20.00")
 
         # But pending payments are considered abandoned after 3 months.
         three_months_later = three_days_later + timedelta(days=30 * 3)
-        self.assertEqual(account.get_pending_payment_total(now=three_months_later), Decimal("0.00"))
+        assert account.get_pending_payment_total(now=three_months_later) == Decimal("0.00")
 
         # Booking should not expire if they have pending payments against them.
         # This is the easiest way to handle this, we have no idea when the
@@ -2221,7 +2222,7 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
         mail.outbox = []
         expire_bookings(now=three_days_later)
         booking.refresh_from_db()
-        self.assertNotEqual(booking.booking_expires, None)
+        assert booking.booking_expires is not None
 
         # Once confirmed payment comes in, we consider that there are no pending payments.
 
@@ -2233,8 +2234,8 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
             payment_status="Completed",
         )
         account = refresh(account)
-        self.assertEqual(account.total_received, Decimal("10.00"))
-        self.assertEqual(account.get_pending_payment_total(now=three_days_later), Decimal("20.00"))
+        assert account.total_received == Decimal("10.00")
+        assert account.get_pending_payment_total(now=three_days_later) == Decimal("20.00")
 
         # But the same TXN id is recognised as cancelling the pending payment
         factories.create_ipn(
@@ -2244,8 +2245,8 @@ class TestPaymentReceived(BookingBaseMixin, CreateBookingModelMixin, CreateLeade
             payment_status="Completed",
         )
         account = refresh(account)
-        self.assertEqual(account.total_received, Decimal("30.00"))
-        self.assertEqual(account.get_pending_payment_total(now=three_days_later), Decimal("0.00"))
+        assert account.total_received == Decimal("30.00")
+        assert account.get_pending_payment_total(now=three_days_later) == Decimal("0.00")
 
 
 class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin, WebTestBase):
@@ -2258,7 +2259,7 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         self.create_booking()
         resp = self.get_url('cciw-bookings-places_json')
         j = json.loads(resp.content.decode('utf-8'))
-        self.assertEqual(j['places'][0]['first_name'], self.place_details['first_name'])
+        assert j['places'][0]['first_name'] == self.place_details['first_name']
 
     def test_places_json_with_exclusion(self):
         self.create_booking()
@@ -2266,13 +2267,13 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         resp = self.get_literal_url(reverse('cciw-bookings-places_json') +
                                     f"?exclude={acc.bookings.all()[0].id}")
         j = json.loads(resp.content.decode('utf-8'))
-        self.assertEqual(j['places'], [])
+        assert j['places'] == []
 
     def test_places_json_with_bad_exclusion(self):
         self.login()
         resp = self.get_literal_url(reverse('cciw-bookings-places_json') + "?exclude=x")
         j = json.loads(resp.content.decode('utf-8'))
-        self.assertEqual(j['places'], [])
+        assert j['places'] == []
 
     def test_account_json(self):
         self.login()
@@ -2283,8 +2284,8 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
 
         resp = self.get_url('cciw-bookings-account_json')
         j = json.loads(resp.content.decode('utf-8'))
-        self.assertEqual(j['account']['address_line1'], '123 Main Street')
-        self.assertEqual(j['account']['address_country'], 'FR')
+        assert j['account']['address_line1'] == '123 Main Street'
+        assert j['account']['address_country'] == 'FR'
 
     def test_all_accounts_json(self):
         acc1 = BookingAccount.objects.create(email="foo@foo.com",
@@ -2293,15 +2294,15 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
 
         self.officer_login(OFFICER)
         resp = self.get_literal_url(reverse('cciw-bookings-all_accounts_json'), expect_errors=True)
-        self.assertEqual(resp.status_code, 403)
+        assert resp.status_code == 403
 
         # Now as booking secretary
         self.officer_login(BOOKING_SECRETARY)
         resp = self.get_literal_url(reverse('cciw-bookings-all_accounts_json') + f"?id={acc1.id}")
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
 
         j = json.loads(resp.content.decode('utf-8'))
-        self.assertEqual(j['account']['address_post_code'], 'ABC')
+        assert j['account']['address_post_code'] == 'ABC'
 
     def _booking_problems_json(self, place_details):
         data = {}
@@ -2328,9 +2329,9 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
                                 {'account': str(acc1.id)})
 
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
         j = json.loads(resp.content.decode('utf-8'))
-        self.assertEqual(j['valid'], False)
+        assert not j['valid']
 
         data = self._initial_place_details()
         data['account'] = str(acc1.id)
@@ -2338,9 +2339,9 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         data['amount_due'] = '100.00'
         data['price_type'] = PriceType.CUSTOM
         j = self._booking_problems_json(data)
-        self.assertEqual(j['valid'], True)
-        self.assertTrue("A custom discount needs to be arranged by the booking secretary" in
-                        j['problems'])
+        assert j['valid']
+        assert "A custom discount needs to be arranged by the booking secretary" in \
+            j['problems']
 
     def test_booking_problems_price_check(self):
         # Test that the price is checked.
@@ -2358,8 +2359,8 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         data['amount_due'] = '0.00'
         data['price_type'] = PriceType.FULL
         j = self._booking_problems_json(data)
-        self.assertTrue(any(p.startswith(f"The 'amount due' is not the expected value of £{self.price_full}")
-                            for p in j['problems']))
+        assert any(p.startswith(f"The 'amount due' is not the expected value of £{self.price_full}")
+                   for p in j['problems'])
 
     def test_booking_problems_deposit_check(self):
         # Test that the price is checked.
@@ -2377,16 +2378,16 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         data['amount_due'] = '0.00'
         data['price_type'] = PriceType.FULL
         j = self._booking_problems_json(data)
-        self.assertTrue(any(p.startswith(f"The 'amount due' is not the expected value of £{self.price_deposit}")
-                            for p in j['problems']))
+        assert any(p.startswith(f"The 'amount due' is not the expected value of £{self.price_deposit}")
+                   for p in j['problems'])
 
         # Check 'full refund' cancellation.
         data['state'] = BookingState.CANCELLED_FULL_REFUND
         data['amount_due'] = '20.00'
         data['price_type'] = PriceType.FULL
         j = self._booking_problems_json(data)
-        self.assertTrue(any(p.startswith("The 'amount due' is not the expected value of £0.00")
-                            for p in j['problems']))
+        assert any(p.startswith("The 'amount due' is not the expected value of £0.00")
+                   for p in j['problems'])
 
     def test_booking_problems_early_bird_check(self):
         self.add_prices()
@@ -2401,8 +2402,8 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
         data['state'] = BookingState.BOOKED
         data['amount_due'] = '90.00'
         j = self._booking_problems_json(data)
-        self.assertIn("The early bird discount is only allowed for bookings created online.",
-                      j['problems'])
+        assert "The early bird discount is only allowed for bookings created online." in \
+            j['problems']
 
 
 class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
@@ -2548,7 +2549,7 @@ class TestExpireBookingsCommand(CreateBookingModelMixin, TestBase):
         mail.outbox = []
 
         ExpireBookingsCommand().handle()
-        self.assertEqual(len(mail.outbox), 0)
+        assert len(mail.outbox) == 0
 
     def test_warning(self):
         """
@@ -2564,12 +2565,12 @@ class TestExpireBookingsCommand(CreateBookingModelMixin, TestBase):
 
         mail.outbox = []
         ExpireBookingsCommand().handle()
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertTrue("warning" in mail.outbox[0].subject)
+        assert len(mail.outbox) == 1
+        assert "warning" in mail.outbox[0].subject
 
         b = acc.bookings.all()[0]
-        self.assertNotEqual(b.booking_expires, None)
-        self.assertEqual(b.state, BookingState.BOOKED)
+        assert b.booking_expires is not None
+        assert b.state == BookingState.BOOKED
 
     def test_expires(self):
         """
@@ -2586,13 +2587,13 @@ class TestExpireBookingsCommand(CreateBookingModelMixin, TestBase):
         mail.outbox = []
         ExpireBookingsCommand().handle()
         # NB - should get one, not two (shouldn't get warning)
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertTrue("expired" in mail.outbox[0].subject)
-        self.assertTrue("have expired" in mail.outbox[0].body)
+        assert len(mail.outbox) == 1
+        assert "expired" in mail.outbox[0].subject
+        assert "have expired" in mail.outbox[0].body
 
         b = acc.bookings.all()[0]
-        self.assertEqual(b.booking_expires, None)
-        self.assertEqual(b.state, BookingState.INFO_COMPLETE)
+        assert b.booking_expires is None
+        assert b.state == BookingState.INFO_COMPLETE
 
     def test_grouping(self):
         """
@@ -2611,42 +2612,42 @@ class TestExpireBookingsCommand(CreateBookingModelMixin, TestBase):
         ExpireBookingsCommand().handle()
 
         # Should get one, not two, because they will be grouped.
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertTrue("expired" in mail.outbox[0].subject)
-        self.assertTrue("have expired" in mail.outbox[0].body)
-        self.assertTrue("Child One" in mail.outbox[0].body)
-        self.assertTrue("Child Two" in mail.outbox[0].body)
+        assert len(mail.outbox) == 1
+        assert "expired" in mail.outbox[0].subject
+        assert "have expired" in mail.outbox[0].body
+        assert "Child One" in mail.outbox[0].body
+        assert "Child Two" in mail.outbox[0].body
 
         for b in acc.bookings.all():
-            self.assertEqual(b.booking_expires, None)
-            self.assertEqual(b.state, BookingState.INFO_COMPLETE)
+            assert b.booking_expires is None
+            assert b.state == BookingState.INFO_COMPLETE
 
 
 class TestManualPayment(TestBase):
 
     def test_create(self):
         acc = BookingAccount.objects.create(email='foo@foo.com')
-        self.assertEqual(Payment.objects.count(), 0)
+        assert Payment.objects.count() == 0
         ManualPayment.objects.create(account=acc,
                                      amount=Decimal('100.00'))
-        self.assertEqual(Payment.objects.count(), 1)
-        self.assertEqual(Payment.objects.all()[0].amount, Decimal('100.00'))
+        assert Payment.objects.count() == 1
+        assert Payment.objects.all()[0].amount == Decimal('100.00')
 
         acc = BookingAccount.objects.get(id=acc.id)
-        self.assertEqual(acc.total_received, Decimal('100.00'))
+        assert acc.total_received == Decimal('100.00')
 
     def test_delete(self):
         # Setup
         acc = BookingAccount.objects.create(email='foo@foo.com')
         cp = ManualPayment.objects.create(account=acc,
                                           amount=Decimal('100.00'))
-        self.assertEqual(Payment.objects.count(), 1)
+        assert Payment.objects.count() == 1
 
         # Test
         cp.delete()
-        self.assertEqual(Payment.objects.count(), 2)
+        assert Payment.objects.count() == 2
         acc = BookingAccount.objects.get(id=acc.id)
-        self.assertEqual(acc.total_received, Decimal('0.00'))
+        assert acc.total_received == Decimal('0.00')
 
     def test_edit(self):
         # Setup
@@ -2655,34 +2656,35 @@ class TestManualPayment(TestBase):
                                           amount=Decimal('100.00'))
 
         cp.amount = Decimal("101.00")
-        self.assertRaises(Exception, cp.save)
+        with pytest.raises(Exception):
+            cp.save()
 
 
 class TestRefundPayment(TestBase):
 
     def test_create(self):
         acc = BookingAccount.objects.create(email='foo@foo.com')
-        self.assertEqual(Payment.objects.count(), 0)
+        assert Payment.objects.count() == 0
         RefundPayment.objects.create(account=acc,
                                      amount=Decimal('100.00'))
-        self.assertEqual(Payment.objects.count(), 1)
-        self.assertEqual(Payment.objects.all()[0].amount, Decimal('-100.00'))
+        assert Payment.objects.count() == 1
+        assert Payment.objects.all()[0].amount == Decimal('-100.00')
 
         acc = BookingAccount.objects.get(id=acc.id)
-        self.assertEqual(acc.total_received, Decimal('-100.00'))
+        assert acc.total_received == Decimal('-100.00')
 
     def test_delete(self):
         # Setup
         acc = BookingAccount.objects.create(email='foo@foo.com')
         cp = RefundPayment.objects.create(account=acc,
                                           amount=Decimal('100.00'))
-        self.assertEqual(Payment.objects.count(), 1)
+        assert Payment.objects.count() == 1
 
         # Test
         cp.delete()
-        self.assertEqual(Payment.objects.count(), 2)
+        assert Payment.objects.count() == 2
         acc = BookingAccount.objects.get(id=acc.id)
-        self.assertEqual(acc.total_received, Decimal('0.00'))
+        assert acc.total_received == Decimal('0.00')
 
     def test_edit(self):
         # Setup
@@ -2691,7 +2693,8 @@ class TestRefundPayment(TestBase):
                                           amount=Decimal('100.00'))
 
         cp.amount = Decimal("101.00")
-        self.assertRaises(Exception, cp.save)
+        with pytest.raises(Exception):
+            cp.save()
 
 
 class TestCancel(CreateBookingModelMixin, TestBase):
@@ -2704,7 +2707,7 @@ class TestCancel(CreateBookingModelMixin, TestBase):
         acc = self.get_account()
         booking = acc.bookings.all()[0]
         booking.state = BookingState.CANCELLED_DEPOSIT_KEPT
-        self.assertEqual(booking.expected_amount_due(), self.price_deposit)
+        assert booking.expected_amount_due() == self.price_deposit
 
     def test_account_amount_due(self):
         self.create_booking()
@@ -2715,7 +2718,7 @@ class TestCancel(CreateBookingModelMixin, TestBase):
         booking.save()
 
         acc = self.get_account()
-        self.assertEqual(acc.get_balance_full(), booking.amount_due)
+        assert acc.get_balance_full() == booking.amount_due
 
 
 class TestCancelFullRefund(CreateBookingModelMixin, TestBase):
@@ -2729,7 +2732,7 @@ class TestCancelFullRefund(CreateBookingModelMixin, TestBase):
         acc = self.get_account()
         booking = acc.bookings.all()[0]
         booking.state = BookingState.CANCELLED_FULL_REFUND
-        self.assertEqual(booking.expected_amount_due(), Decimal('0.00'))
+        assert booking.expected_amount_due() == Decimal('0.00')
 
     def test_account_amount_due(self):
         self.create_booking()
@@ -2740,7 +2743,7 @@ class TestCancelFullRefund(CreateBookingModelMixin, TestBase):
         booking.save()
 
         acc = self.get_account()
-        self.assertEqual(acc.get_balance_full(), booking.amount_due)
+        assert acc.get_balance_full() == booking.amount_due
 
 
 class TestEarlyBird(CreateBookingModelMixin, TestBase):
@@ -2749,10 +2752,10 @@ class TestEarlyBird(CreateBookingModelMixin, TestBase):
         self.create_booking()
         acc = self.get_account()
         booking = acc.bookings.all()[0]
-        self.assertEqual(booking.expected_amount_due(), self.price_full)
+        assert booking.expected_amount_due() == self.price_full
 
         booking.early_bird_discount = True
-        self.assertEqual(booking.expected_amount_due(), self.price_full - self.price_early_bird_discount)
+        assert booking.expected_amount_due() == self.price_full - self.price_early_bird_discount
 
     def test_book_basket_applies_discount(self):
         self.create_booking()
@@ -2762,8 +2765,8 @@ class TestEarlyBird(CreateBookingModelMixin, TestBase):
             # Cut off date definitely in the future
             mock_f.return_value = timezone.get_default_timezone().localize(datetime(self.camp.year + 10, 1, 1))
             book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
-        self.assertTrue(acc.bookings.all()[0].early_bird_discount)
-        self.assertEqual(acc.bookings.all()[0].amount_due, self.price_full - self.price_early_bird_discount)
+        assert acc.bookings.all()[0].early_bird_discount
+        assert acc.bookings.all()[0].amount_due == self.price_full - self.price_early_bird_discount
 
     def test_book_basket_doesnt_apply_discount(self):
         self.create_booking()
@@ -2772,8 +2775,8 @@ class TestEarlyBird(CreateBookingModelMixin, TestBase):
             # Cut off date definitely in the past
             mock_f.return_value = timezone.get_default_timezone().localize(datetime(self.camp.year - 10, 1, 1))
             book_basket_now(acc.bookings.for_year(self.camp.year).in_basket())
-        self.assertFalse(acc.bookings.all()[0].early_bird_discount)
-        self.assertEqual(acc.bookings.all()[0].amount_due, self.price_full)
+        assert not acc.bookings.all()[0].early_bird_discount
+        assert acc.bookings.all()[0].amount_due == self.price_full
 
     def test_expire(self):
         self.test_book_basket_applies_discount()
@@ -2781,11 +2784,11 @@ class TestEarlyBird(CreateBookingModelMixin, TestBase):
         booking = acc.bookings.all()[0]
         booking.expire()
 
-        self.assertFalse(booking.early_bird_discount)
+        assert not booking.early_bird_discount
         # For the sake of 'list bookings' view, we need to display the
         # un-discounted price.
-        self.assertEqual(booking.amount_due, self.price_full)
-        self.assertEqual(booking.booked_at, None)
+        assert booking.amount_due == self.price_full
+        assert booking.booked_at is None
 
     def test_non_early_bird_booking_warning(self):
         self.create_booking()
@@ -2798,8 +2801,8 @@ class TestEarlyBird(CreateBookingModelMixin, TestBase):
         acc = self.get_account()
         mails = [m for m in send_queued_mail() if m.to == [self.email]]
         assert len(mails) == 1
-        self.assertIn("If you had booked earlier", mails[0].body)
-        self.assertIn("£10", mails[0].body)
+        assert "If you had booked earlier" in mails[0].body
+        assert "£10" in mails[0].body
 
 
 class TestExportPlaces(CreateBookingModelMixin, TestBase):
@@ -2813,8 +2816,8 @@ class TestExportPlaces(CreateBookingModelMixin, TestBase):
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh_all = wkbk.sheet_by_index(0)
 
-        self.assertEqual(wksh_all.cell(0, 0).value, "First name")
-        self.assertEqual(wksh_all.cell(1, 0).value, acc.bookings.all()[0].first_name)
+        assert wksh_all.cell(0, 0).value == "First name"
+        assert wksh_all.cell(1, 0).value == acc.bookings.all()[0].first_name
 
     def test_birthdays(self):
         bday = self.camp.start_date + timedelta(1)
@@ -2828,14 +2831,14 @@ class TestExportPlaces(CreateBookingModelMixin, TestBase):
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh_bdays = wkbk.sheet_by_index(2)
 
-        self.assertEqual(wksh_bdays.cell(0, 0).value, "First name")
-        self.assertEqual(wksh_bdays.cell(1, 0).value, acc.bookings.all()[0].first_name)
+        assert wksh_bdays.cell(0, 0).value == "First name"
+        assert wksh_bdays.cell(1, 0).value == acc.bookings.all()[0].first_name
 
-        self.assertEqual(wksh_bdays.cell(0, 2).value, "Birthday")
-        self.assertEqual(wksh_bdays.cell(1, 2).value, bday.strftime("%A %d %B"))
+        assert wksh_bdays.cell(0, 2).value == "Birthday"
+        assert wksh_bdays.cell(1, 2).value == bday.strftime("%A %d %B")
 
-        self.assertEqual(wksh_bdays.cell(0, 3).value, "Age")
-        self.assertEqual(wksh_bdays.cell(1, 3).value, "12")
+        assert wksh_bdays.cell(0, 3).value == "Age"
+        assert wksh_bdays.cell(1, 3).value == "12"
 
 
 class TestExportPaymentData(TestBase):
@@ -2870,40 +2873,40 @@ class TestExportPaymentData(TestBase):
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh = wkbk.sheet_by_index(0)
         data = [[c.value for c in r] for r in wksh.get_rows()]
-        self.assertEqual(data[0],
-                         ['Account name', 'Account email', 'Amount', 'Date', 'Type'])
+        assert data[0] == \
+            ['Account name', 'Account email', 'Amount', 'Date', 'Type']
 
         # Excel dates are a pain, so we ignore them
         data2 = [[c for i, c in enumerate(r) if i != 3] for r in data[1:]]
-        self.assertIn(['Joe Bloggs', 'joe@foo.com', 10.0, 'PayPal'],
-                      data2)
-        self.assertIn(['Joe Bloggs', 'joe@foo.com', 11.5, 'Cheque'],
-                      data2)
-        self.assertIn(['Joe Bloggs', 'joe@foo.com', -0.25, 'Refund Cheque'],
-                      data2)
-        self.assertIn(['Joe Bloggs', 'joe@foo.com', 100.00, 'Account transfer'],
-                      data2)
+        assert ['Joe Bloggs', 'joe@foo.com', 10.0, 'PayPal'] in \
+            data2
+        assert ['Joe Bloggs', 'joe@foo.com', 11.5, 'Cheque'] in \
+            data2
+        assert ['Joe Bloggs', 'joe@foo.com', -0.25, 'Refund Cheque'] in \
+            data2
+        assert ['Joe Bloggs', 'joe@foo.com', 100.00, 'Account transfer'] in \
+            data2
 
-        self.assertNotIn(['Joe Bloggs', 'joe@foo.com', 1.23, 'ManualPayment (deleted)'],
-                         data2)
-        self.assertNotIn(['Joe Bloggs', 'joe@foo.com', -1.23, 'ManualPayment (deleted)'],
-                         data2)
+        assert ['Joe Bloggs', 'joe@foo.com', 1.23, 'ManualPayment (deleted)'] not in \
+            data2
+        assert ['Joe Bloggs', 'joe@foo.com', -1.23, 'ManualPayment (deleted)'] not in \
+            data2
 
 
 class TestBookingModel(CreateBookingModelMixin, TestBase):
 
     def test_need_approving(self):
         self.create_booking()
-        self.assertEqual(len(Booking.objects.need_approving()), 0)
+        assert len(Booking.objects.need_approving()) == 0
 
         Booking.objects.update(serious_illness=True)
-        self.assertEqual(len(Booking.objects.need_approving()), 1)
+        assert len(Booking.objects.need_approving()) == 1
 
         Booking.objects.update(serious_illness=False)
         Booking.objects.update(date_of_birth=date(1980, 1, 1))
-        self.assertEqual(len(Booking.objects.need_approving()), 1)
+        assert len(Booking.objects.need_approving()) == 1
 
-        self.assertEqual(Booking.objects.get().approval_reasons(), ['Too old'])
+        assert Booking.objects.get().approval_reasons() == ['Too old']
 
 
 class TestPaymentModels(TestBase):
@@ -2911,48 +2914,46 @@ class TestPaymentModels(TestBase):
     def test_payment_source_save_bad(self):
         manual = factories.create_manual_payment()
         refund = factories.create_refund_payment()
-        self.assertRaises(AssertionError,
-                          lambda: PaymentSource.objects.create(
+        with pytest.raises(AssertionError):
+            PaymentSource.objects.create(
                               manual_payment=manual,
-                              refund_payment=refund))
+                              refund_payment=refund)
 
     def test_payment_source_save_good(self):
         manual = factories.create_manual_payment()
         PaymentSource.objects.all().delete()
         p = PaymentSource.objects.create(manual_payment=manual)
-        self.assertNotEqual(p.id, None)
+        assert p.id is not None
 
 
-class TestEmailVerifyTokenGenerator(TestCase):
-    @given(st.emails())
-    def test_decode_inverts_encode(self, email):
-        v = EmailVerifyTokenGenerator()
-        self.assertEqual(v.email_for_token(v.token_for_email(email)),
-                         email)
+@given(st.emails())
+def test_decode_inverts_encode(email):
+    v = EmailVerifyTokenGenerator()
+    assert v.email_for_token(v.token_for_email(email)) == email
 
-    @given(st.emails())
-    def test_truncated_returns_invalid(self, email):
-        v = EmailVerifyTokenGenerator()
-        self.assertEqual(v.email_for_token(v.token_for_email(email)[2:]),
-                         VerifyFailed)
 
-    @given(st.emails())
-    def test_expired_returns_expired(self, email):
-        v = EmailVerifyTokenGenerator()
-        self.assertEqual(v.email_for_token(v.token_for_email(email),
-                                           max_age=-1),
-                         VerifyExpired(email))
+@given(st.emails())
+def test_truncated_returns_invalid(email):
+    v = EmailVerifyTokenGenerator()
+    assert v.email_for_token(v.token_for_email(email)[2:]) == VerifyFailed
 
-    @given(email=st.text())
-    @example(email='abcdefgh')  # b64 encode results in trailing ==
-    def test_tolerate_truncated_trailing_equals(self, email):
-        v = EmailVerifyTokenGenerator()
 
-        # Either some silly people, or some dumb email programs, decide to strip
-        # trailing = from URLs (despite this being a supposedly URL safe
-        # character). Ensure that we tolerate this.
-        def remove_equals(s):
-            return s.rstrip('=')
+@given(st.emails())
+def test_expired_returns_expired(email):
+    v = EmailVerifyTokenGenerator()
+    assert v.email_for_token(v.token_for_email(email), max_age=-1) == VerifyExpired(email)
 
-        self.assertEqual(v.email_for_token(remove_equals(v.token_for_email(email))),
-                         email)
+
+@given(email=st.text())
+@example(email='abcdefgh')  # b64 encode results in trailing ==
+def test_tolerate_truncated_trailing_equals(email):
+    v = EmailVerifyTokenGenerator()
+
+    # Either some silly people, or some dumb email programs, decide to strip
+    # trailing = from URLs (despite this being a supposedly URL safe
+    # character). Ensure that we tolerate this.
+
+    def remove_equals(s):
+        return s.rstrip('=')
+
+        assert v.email_for_token(remove_equals(v.token_for_email(email))) == email
