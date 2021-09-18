@@ -70,9 +70,9 @@ def booking_token_login(get_response):
                 resp = HttpResponseRedirect(url.remove(['bt']).url)
                 set_booking_account_cookie(resp, account)
                 messages.info(request,
-                              "Logged in as {0}! You will stay logged in for two weeks. "
-                              "Remember to log out if you are using a "
-                              "public computer.".format(account.email))
+                              f"Logged in as {account.email}! "
+                              "You will stay logged in for two weeks. "
+                              "Remember to log out if you are using a public computer.")
                 return resp
 
         return get_response(request)

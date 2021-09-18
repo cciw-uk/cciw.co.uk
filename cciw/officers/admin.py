@@ -1,4 +1,3 @@
-
 import datetime
 
 from dal import autocomplete
@@ -54,7 +53,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
                 # else's.
                 initial['officer'] = user
                 # Fill out officer name
-                initial['full_name'] = f"{user.first_name} {user.last_name}"
+                initial['full_name'] = user.full_name
                 initial['address_email'] = user.email
 
         else:
@@ -63,7 +62,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
                 for f in REFEREE_DATA_FIELDS:
                     initial[referee_field(n, f)] = getattr(instance.referees[n - 1], f)
 
-        super(ApplicationAdminModelForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def clean(self):
         # Import here to avoid cycle
@@ -115,7 +114,7 @@ class ApplicationAdminModelForm(forms.ModelForm):
     def save(self, **kwargs):
         if not self.editing_old:
             self.instance.date_saved = datetime.date.today()
-        retval = super(ApplicationAdminModelForm, self).save(**kwargs)
+        retval = super().save(**kwargs)
         for n in REFEREE_NUMBERS:
             ref = self.instance.referees[n - 1]
             for f in REFEREE_DATA_FIELDS:
@@ -140,27 +139,27 @@ class QualificationInline(admin.TabularInline):
         if request.user.is_potential_camp_officer:
             return True
         else:
-            return super(QualificationInline, self).has_add_permission(request)
+            return super().has_add_permission(request)
 
     def has_change_permission(self, request, obj=None):
         if request.user.is_potential_camp_officer and (obj is None or obj.officer_id == request.user.id):
             return True
         else:
-            return super(QualificationInline, self).has_change_permission(request, obj)
+            return super().has_change_permission(request, obj)
 
     def has_delete_permission(self, request, obj=None):
         if request.user.is_potential_camp_officer and (obj is None or obj.officer_id == request.user.id):
             return True
         else:
-            return super(QualificationInline, self).has_delete_permission(request, obj)
+            return super().has_delete_permission(request, obj)
 
 
-class CampAdminPermissionMixin(object):
+class CampAdminPermissionMixin:
     # NB also CciwAuthBackend
     def has_change_permission(self, request, obj=None):
         if request.user.can_manage_application_forms:
             return True
-        return super(CampAdminPermissionMixin, self).has_change_permission(request, obj)
+        return super().has_change_permission(request, obj)
 
 
 class ApplicationAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
@@ -347,7 +346,7 @@ have to fill in another DBS form.</p> """, settings.EXTERNAL_DBS_OFFICER['organi
             defaults.update(kwargs)
             defaults.pop("request")
             return db_field.formfield(**defaults)
-        return super(ApplicationAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        return super().formfield_for_dbfield(db_field, **kwargs)
 
     def _force_no_add_another(self, request):
         if '_addanother' in request.POST:
@@ -372,7 +371,7 @@ have to fill in another DBS form.</p> """, settings.EXTERNAL_DBS_OFFICER['organi
         if request.method == "POST":
             self._force_post_vals(request)
 
-        return super(ApplicationAdmin, self).change_view(request, object_id)
+        return super().change_view(request, object_id)
 
     def has_change_permission(self, request, obj=None):
         # Normal users do not have change permission, unless they are editing
@@ -382,7 +381,7 @@ have to fill in another DBS form.</p> """, settings.EXTERNAL_DBS_OFFICER['organi
         if (obj is not None and
                 (obj.officer_id is not None and obj.officer_id == request.user.id)):
             return True
-        return super(ApplicationAdmin, self).has_change_permission(request, obj)
+        return super().has_change_permission(request, obj)
 
     def has_view_permission(self, request, obj=None):
         return self.has_change_permission(request, obj=obj)
@@ -395,11 +394,11 @@ have to fill in another DBS form.</p> """, settings.EXTERNAL_DBS_OFFICER['organi
         return response
 
     def response_change(self, request, new_object):
-        resp = super(ApplicationAdmin, self).response_change(request, new_object)
+        resp = super().response_change(request, new_object)
         return self._redirect(request, resp)
 
     def save_model(self, request, obj, form, change):
-        super(ApplicationAdmin, self).save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change)
         if obj.finished and obj.officer == request.user:
             # We clear out any unfinished application forms, as they will just
             # confuse the officer in future.
@@ -407,7 +406,7 @@ have to fill in another DBS form.</p> """, settings.EXTERNAL_DBS_OFFICER['organi
 
     def save_related(self, request, form, formsets, change):
         from cciw.officers import email
-        retval = super(ApplicationAdmin, self).save_related(request, form, formsets, change)
+        retval = super().save_related(request, form, formsets, change)
         email.send_application_emails(request, form.instance)
         return retval
 
@@ -418,7 +417,7 @@ class InvitationAdmin(admin.ModelAdmin):
     search_fields = ['officer__first_name', 'officer__last_name', 'officer__username']
 
     def get_queryset(self, *args, **kwargs):
-        return super(InvitationAdmin, self).get_queryset(*args, **kwargs).prefetch_related('camp__leaders')
+        return super().get_queryset(*args, **kwargs).prefetch_related('camp__leaders')
 
 
 class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
@@ -454,14 +453,14 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
             defaults.update(kwargs)
             defaults.pop("request")
             return db_field.formfield(**defaults)
-        return super(ReferenceAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        return super().formfield_for_dbfield(db_field, **kwargs)
 
     def response_change(self, request, obj):
         # Little hack to allow popups for changing References
         if '_popup' in request.POST:
             return close_window_response()
         else:
-            return super(ReferenceAdmin, self).response_change(request, obj)
+            return super().response_change(request, obj)
 
 
 class DBSCheckModelForm(forms.ModelForm):

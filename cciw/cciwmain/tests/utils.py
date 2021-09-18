@@ -19,7 +19,7 @@ def init_query_caches():
 
 class FuzzyInt(int):
     def __new__(cls, lowest, highest):
-        obj = super(FuzzyInt, cls).__new__(cls, highest)
+        obj = super().__new__(cls, highest)
         obj.lowest = lowest
         obj.highest = highest
         return obj
@@ -45,7 +45,7 @@ def set_thisyear(year):
     #
     #   from cciw.cciwmain.common import get_thisyear
 
-    class ThisYearMixin(object):
+    class ThisYearMixin:
         def setUp(self):
             super().setUp()
             thisyear_patcher = mock.patch('cciw.cciwmain.common.get_thisyear')

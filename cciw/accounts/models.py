@@ -158,8 +158,7 @@ class User(AbstractBaseUser):
         """
         Return the first_name plus the last_name, with a space in between.
         """
-        full_name = f'{self.first_name} {self.last_name}'
-        return full_name.strip()
+        return self.full_name
 
     def get_short_name(self):
         """Return the short name for the user."""
@@ -508,5 +507,6 @@ def _current_password_validators_as_string():
         else:
             raise AssertionError("Can't handle {type(val)}")
     return val_to_str(settings.AUTH_PASSWORD_VALIDATORS)
+
 
 from . import hooks  # noqa

@@ -1,5 +1,4 @@
 # URL path converters
-import typing
 
 from .cciwmain.common import CampId
 
@@ -41,7 +40,7 @@ class CampIdConverter:
 class CampIdListConverter:
     regex = f'{CampIdConverter.regex}(,{CampIdConverter.regex})*'
 
-    def to_python(self, value) -> typing.List[CampId]:
+    def to_python(self, value) -> list[CampId]:
         return [
             CampIdConverter.to_python(camp_id_str)
             for camp_id_str in value.split(',')

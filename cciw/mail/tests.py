@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import email
 import re
 from unittest import mock
@@ -143,7 +142,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
         assert len(rejections) == 1
         sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
-        sent_to_addresses = list(sorted([address for m in sent_messages for address in m.recipients()]))
+        sent_to_addresses = list(sorted(address for m in sent_messages for address in m.recipients()))
         assert sent_to_addresses == [
             "a.person.1@example.com",
             "a.person.2@example.com",
@@ -175,7 +174,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         rejections, sent_messages = partition_mailing_list_rejections(mail.outbox)
         self.assertEqual(len(rejections), 0)
         self.assertEqual(len(sent_messages), 1)
-        sent_to_addresses = list(sorted([address for m in sent_messages for address in m.recipients()]))
+        sent_to_addresses = list(sorted(address for m in sent_messages for address in m.recipients()))
         self.assertEqual(sent_to_addresses, ['test1@example.com'])
 
         sent_messages_bytes = [m.message().as_bytes() for m in sent_messages]
@@ -420,7 +419,7 @@ class TestMailBackend(LocMemEmailBackend):
                     b' via <noreply@cciw.co.uk>' not in m.message().as_bytes()):
                 raise AssertionError(f"Email with subject \"{m.subject}\" should start with [CCIW]")
 
-        return super(TestMailBackend, self).send_messages(messages)
+        return super().send_messages(messages)
 
 
 def make_message(

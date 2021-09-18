@@ -12,7 +12,7 @@ from cciw.officers.models import Invitation, Reference
 from cciw.officers.widgets import ExplicitBooleanFieldSelect
 
 
-class StripStringsMixin(object):
+class StripStringsMixin:
     def clean(self):
         for field, value in self.cleaned_data.items():
             if isinstance(value, str):
@@ -78,7 +78,7 @@ class SendMessageForm(BaseForm):
         initial = kwargs.pop('initial', {})
         initial['message'] = msg
         kwargs['initial'] = initial
-        super(SendMessageForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_message_template(self):
         raise NotImplementedError
@@ -131,7 +131,7 @@ class ReferenceForm(StripStringsMixin, forms.ModelForm):
                   'comments')
 
     def __init__(self, *args, **kwargs):
-        super(ReferenceForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         reference_contact_users = get_reference_contact_users()
         if reference_contact_users:
             contact_message = (" If you would prefer to discuss your concerns on the telephone "
@@ -141,7 +141,7 @@ class ReferenceForm(StripStringsMixin, forms.ModelForm):
             self.fields['concerns'].label += contact_message
 
     def save(self, referee, user=None):
-        obj = super(ReferenceForm, self).save(commit=False)
+        obj = super().save(commit=False)
         obj.referee = referee
         obj.date_created = date.today()
         obj.save()

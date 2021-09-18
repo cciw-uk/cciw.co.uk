@@ -26,7 +26,7 @@ class DummyLessCssFilter(CompilerFilter):
         return ''
 
 
-class CommonMixin(object):
+class CommonMixin:
     def officer_login(self, creds):
         self.shortcut_login(username=creds[0],
                             password=creds[1])

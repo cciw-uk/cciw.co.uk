@@ -27,7 +27,7 @@ class TestBaseMixin:
         super().tearDown()
 
 
-class AtomicChecksMixin(object):
+class AtomicChecksMixin:
     def setUp(self):
         super().setUp()
         # We want to ensure that inside transactions we don't send mail using

@@ -7,25 +7,25 @@ class YyyyMmField(models.CharField):
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 7
         kwargs['help_text'] = 'Enter the date in YYYY/MM format.'
-        super(YyyyMmField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def formfield(self, *args, **kwargs):
         defaults = {'form_class': formfields.YyyyMmField}
         defaults.update(kwargs)
-        return super(YyyyMmField, self).formfield(*args, **defaults)
+        return super().formfield(*args, **defaults)
 
 
 class AddressField(models.TextField):
     def __init__(self, *args, **kwargs):
         kwargs['help_text'] = 'Full address, including post code and country'
-        super(AddressField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class ExplicitBooleanField(models.BooleanField):
     def __init__(self, *args, **kwargs):
         kwargs['default'] = None
         kwargs['null'] = True
-        super(ExplicitBooleanField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 def required_field(field_class):
@@ -44,10 +44,10 @@ def required_field(field_class):
     class NewDBField(field_class):
         def __init__(self, *args, **kwargs):
             kwargs['blank'] = True
-            super(NewDBField, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
 
         def formfield(self, *args, **kwargs):
-            f = super(NewDBField, self).formfield(*args, **kwargs)
+            f = super().formfield(*args, **kwargs)
             f.required_field = True
             return f
 

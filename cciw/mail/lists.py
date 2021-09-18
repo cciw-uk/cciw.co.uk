@@ -12,7 +12,7 @@ import logging
 import os
 import re
 import tempfile
-from typing import Callable, List
+from typing import Callable
 
 import attr
 from django.conf import settings
@@ -45,8 +45,7 @@ def find_list(address, from_addr):
 def get_all_lists():
     current_camps = Camp.objects.all().filter(year__gte=common.get_thisyear() - 1)
     for generator in GENERATORS:
-        for email_list in generator(current_camps):
-            yield email_list
+        yield from generator(current_camps)
 
 
 def address_for_camp_officers(camp):
@@ -99,9 +98,9 @@ class MailAccessDenied(ValueError):
 
 
 @attr.s(auto_attribs=True)
-class EmailList(object):
+class EmailList:
     local_address: str
-    get_members: Callable[[], List[User]]
+    get_members: Callable[[], list[User]]
     has_permission: Callable[[str], bool]
     list_reply: bool
 
@@ -409,13 +408,13 @@ def forward_email_to_list(mail, email_list: EmailList):
         ]
         subject = decode_mail_header_value(mail['Subject'])
         msg = """
-You attempted to email the list {0}
-with an email titled "{1}".
+You attempted to email the list {address}
+with an email titled "{subject}".
 
 There were problems with the following addresses:
 
-{2}
-""".format(email_list.address, subject, '\n'.join(address_messages))
+{addresses}
+""".format(address=email_list.address, subject=subject, addresses='\n'.join(address_messages))
         send_mail(f"[CCIW] Error with email to list {email_list.address}",
                   msg,
                   settings.DEFAULT_FROM_EMAIL,
@@ -483,7 +482,7 @@ def handle_mail(data):
     if is_valid_email(to):
         addresses = [to]
     else:
-        addresses = set([a.lower() for a in extract_email_addresses(to)])
+        addresses = {a.lower() for a in extract_email_addresses(to)}
 
     if mail.get('X-SES-Spam-Verdict', '') == 'FAIL':
         logger.info('Discarding spam, message-id %s', mail.get('Message-ID', '<unknown>'))

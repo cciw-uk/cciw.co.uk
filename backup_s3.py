@@ -31,8 +31,7 @@ def main():
     ENV['PGHOST'] = DB_HOST
 
     OUTPUT_DIR = "/tmp"
-    filename = "db-cciw.django.{0}.pgdump".format(
-        datetime.now().strftime("%Y-%m-%d_%H.%M.%S"))
+    filename = f"db-cciw.django.{datetime.now().strftime('%Y-%m-%d_%H.%M.%S')}.pgdump"
     full_path = os.path.join(OUTPUT_DIR, filename)
 
     cmd = [

@@ -1,5 +1,3 @@
-# -*- coding: utf8 -*-
-
 from django.contrib.auth.models import Permission
 
 from cciw.accounts.models import Role, User

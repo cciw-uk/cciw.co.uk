@@ -77,6 +77,8 @@ def standard_subs(value):
     return value.replace('{{thisyear}}', str(get_thisyear()))\
                 .replace('{{media}}', settings.MEDIA_URL)\
                 .replace('{{static}}', settings.STATIC_URL)
+
+
 standard_subs.is_safe = True  # noqa:305 provided our substitutions don't introduce anything that must be escaped
 
 
@@ -105,7 +107,7 @@ def standard_processor(request):
     context['homepage'] = (request.path == "/")
 
     # Ugly special casing for 'thisyear' camps
-    m = re.match(r'/camps/{0}/(\d+)/'.format(thisyear), request.path)
+    m = re.match(fr'/camps/{thisyear}/(\d+)/', request.path)
     if m is not None:
         request_path = f'/thisyear/{m.groups()[0]}/'
     else:

@@ -381,9 +381,9 @@ ACCOUNT_PUBLIC_ATTRS = [
 ]
 
 handle_country = lambda v: v.code if isinstance(v, Country) else v
-booking_to_dict = lambda b: dict((k, handle_country(getattr(b, k))) for k in BOOKING_PLACE_PUBLIC_ATTRS)
-account_to_dict = lambda acc: dict((k, handle_country(getattr(acc, k)))
-                                   for k in ACCOUNT_PUBLIC_ATTRS)
+booking_to_dict = lambda b: {k: handle_country(getattr(b, k)) for k in BOOKING_PLACE_PUBLIC_ATTRS}
+account_to_dict = lambda acc: {k: handle_country(getattr(acc, k))
+                               for k in ACCOUNT_PUBLIC_ATTRS}
 
 
 @booking_account_required

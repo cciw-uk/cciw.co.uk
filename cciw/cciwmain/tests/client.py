@@ -6,7 +6,7 @@ from django.test import client
 class RequestFactory(client.RequestFactory):
 
     def request(self, **request):
-        retval = super(RequestFactory, self).request(**request)
+        retval = super().request(**request)
         retval.user = AnonymousUser()
         retval.session = SessionStore()
         return retval

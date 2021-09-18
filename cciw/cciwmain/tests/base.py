@@ -96,7 +96,7 @@ class Factories(FactoriesBase):
             available_names -= set(excluding)
         return sorted(available_names)[0]
 
-    @lru_cache()
+    @lru_cache
     def get_any_camp(self):
         camp = Camp.objects.order_by('id').first()
         if camp is not None:
@@ -113,14 +113,14 @@ class Factories(FactoriesBase):
         )
         return camp_name
 
-    @lru_cache()
+    @lru_cache
     def get_any_camp_name(self):
         camp_name = CampName.objects.order_by('id').first()
         if camp_name is not None:
             return camp_name
         return self.create_camp_name()
 
-    @lru_cache()
+    @lru_cache
     def get_or_create_camp_name(self, name):
         try:
             return CampName.objects.get(name=name)
@@ -135,7 +135,7 @@ class Factories(FactoriesBase):
             info='A really lovely farm.'
         )
 
-    @lru_cache()
+    @lru_cache
     def get_any_site(self):
         site = Site.objects.order_by('id').first()
         if site is not None:
@@ -148,7 +148,7 @@ class Factories(FactoriesBase):
             for leader in leaders
         ])
 
-    @lru_cache()
+    @lru_cache
     def get_any_camp_leader(self) -> Person:
         from cciw.officers.tests.base import factories as officer_factories
         person = Person.objects.first()
@@ -173,7 +173,7 @@ class Factories(FactoriesBase):
         )
 
 
-class BasicSetupMixin(object):
+class BasicSetupMixin:
     def setUp(self):
         super().setUp()
         DjangoSite.objects.all().delete()

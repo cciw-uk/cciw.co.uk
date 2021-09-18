@@ -39,7 +39,7 @@ DBSOFFICER_EMAIL = 'dbsofficer@somewhere.com'
 DBSOFFICER = (DBSOFFICER_USERNAME, DBSOFFICER_PASSWORD)
 
 
-class CreateQualificationTypesMixin(object):
+class CreateQualificationTypesMixin:
     def create_qualification_types(self):
         self.first_aid_qualification, _ = QualificationType.objects.get_or_create(name="First Aid (1 day)")
 
@@ -54,6 +54,7 @@ class SimpleOfficerSetupMixin(BasicSetupMixin):
     """
     Sets up a single officer with minimal permissions
     """
+
     def setUp(self):
         super().setUp()
         self.officer_user = factories.create_officer(
@@ -69,6 +70,7 @@ class OfficersSetupMixin(SimpleOfficerSetupMixin):
     """
     Sets up a suite of officers with correct permissions etc.
     """
+
     def setUp(self):
         super().setUp()
         setup_auth_roles()
@@ -268,7 +270,7 @@ class Factories(FactoriesBase):
             user.roles.set(roles)
         return user
 
-    @lru_cache()
+    @lru_cache
     def get_any_officer(self):
         user = User.objects.filter(is_staff=True).first()
         if not user:

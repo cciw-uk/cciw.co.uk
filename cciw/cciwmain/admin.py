@@ -111,7 +111,7 @@ class CampAdmin(admin.ModelAdmin):
     date_hierarchy = 'start_date'
 
     def get_queryset(self, request):
-        qs = super(CampAdmin, self).get_queryset(request).select_related('site', 'chaplain')
+        qs = super().get_queryset(request).select_related('site', 'chaplain')
         if request.user.has_perm('cciwmain.change_camp'):
             return qs
         else:
@@ -124,7 +124,7 @@ class CampAdmin(admin.ModelAdmin):
         else:
             if request.user.can_edit_camp(obj):
                 return True
-        return super(CampAdmin, self).has_change_permission(request, obj=obj)
+        return super().has_change_permission(request, obj=obj)
 
     def has_view_permission(self, request, obj=None):
         if obj is None:
@@ -133,7 +133,7 @@ class CampAdmin(admin.ModelAdmin):
         else:
             if request.user.can_view_camp(obj):
                 return True
-        return super(CampAdmin, self).has_view_permission(request, obj=obj)
+        return super().has_view_permission(request, obj=obj)
 
 
 admin.site.register(Site, SiteAdmin)

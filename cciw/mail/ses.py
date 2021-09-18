@@ -3,7 +3,6 @@ import io
 import re
 import warnings
 from datetime import datetime
-from typing import List
 
 import attr
 import boto3
@@ -77,8 +76,8 @@ class S3Action(Action):
 @attr.s(auto_attribs=True)
 class Rule:
     name: str
-    recipients: List[str]
-    actions: List[Action]
+    recipients: list[str]
+    actions: list[Action]
     enabled: bool
     scan_enabled: bool
     tls_policy: str = 'Optional'
@@ -122,6 +121,7 @@ class Missing:
     # This is to help avoid data loss bugs if a partially populated
     # object mistakenly gets passed back to the wrong API - hopefully
     # we'll get an error when we try to serialize.
+
     def __bool__(self):
         self._raise()
 
@@ -142,7 +142,7 @@ Missing = Missing()
 class RuleSet:
     name: str
     created_timestamp: datetime = Missing
-    rules: List[Rule] = attr.Factory(list)
+    rules: list[Rule] = attr.Factory(list)
 
     def __attrs_post_init__(self):
         self.name = _clean_name(self.name)

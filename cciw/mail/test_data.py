@@ -1,4 +1,3 @@
-
 AWS_MESSAGE_ID = b'2c9c57fhmj03rtht1mcq6gvpg9hijo77ju218ag1'
 # Data from a notification from a real email to webmaster@mailtest.cciw.co.uk, modified slightly
 AWS_SNS_NOTIFICATION = {

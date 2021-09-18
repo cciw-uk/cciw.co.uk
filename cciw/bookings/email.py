@@ -14,7 +14,7 @@ from cciw.cciwmain import common
 from cciw.officers.email import admin_emails_for_camp
 
 
-class VerifyFailed(object):
+class VerifyFailed:
     pass
 
 
@@ -22,15 +22,16 @@ VerifyFailed = VerifyFailed()
 
 
 @attr.s
-class VerifyExpired(object):
+class VerifyExpired:
     email = attr.ib()
 
 
-class EmailVerifyTokenGenerator(object):
+class EmailVerifyTokenGenerator:
     """
     Strategy object used to generate and check tokens for the email verification
     mechanism.
     """
+
     def __init__(self):
         self.signer = TimestampSigner(salt="cciw.bookings.EmailVerifyTokenGenerator")
 

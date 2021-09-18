@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 from datetime import date, datetime, timedelta
 from decimal import Decimal
@@ -139,13 +138,13 @@ class Factories(FactoriesBase):
 factories = Factories()
 
 
-class IpnMock(object):
+class IpnMock:
     payment_status = 'Completed'
     business = settings.PAYPAL_RECEIVER_EMAIL
 
 
 # == Mixins to reduce duplication ==
-class CreateCampMixin(object):
+class CreateCampMixin:
 
     camp_minimum_age = 11
     camp_maximum_age = 17
@@ -176,7 +175,7 @@ class CreateCampMixin(object):
         )
 
 
-class CreateLeadersMixin(object):
+class CreateLeadersMixin:
     def create_leaders(self):
         self.leader_1 = Person.objects.create(name="Mr Leader")
         self.leader_2 = Person.objects.create(name="Mrs Leaderess")
@@ -193,7 +192,7 @@ class CreateLeadersMixin(object):
         self.camp.leaders.add(self.leader_2)
 
 
-class CreatePricesMixin(object):
+class CreatePricesMixin:
     def add_prices(self, deposit=None):
         if deposit is None:
             deposit = Decimal(20)
@@ -221,7 +220,7 @@ class CreatePricesMixin(object):
         self.create_camps()
 
 
-class LogInMixin(object):
+class LogInMixin:
     email = 'booker@bookers.com'
 
     def login(self, add_account_details=True, shortcut=None):
@@ -376,7 +375,7 @@ class CreateBookingWebMixin(CreateBookingModelMixin, LogInMixin):
                 data2[k] = v.id
             else:
                 data2[k] = v
-        return super(CreateBookingWebMixin, self).fill(data2)
+        return super().fill(data2)
 
 
 class BookingBaseMixin(AtomicChecksMixin):
@@ -536,7 +535,7 @@ class BookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     urlname = 'cciw-bookings-start'
 
     def submit(self, css_selector='[type=submit]'):
-        return super(BookingStartBase, self).submit(css_selector)
+        return super().submit(css_selector)
 
     def test_show_form(self):
         self.get_url(self.urlname)
@@ -599,7 +598,7 @@ class TestBookingStartSL(BookingStartBase, SeleniumBase):
 class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
 
     def submit(self, css_selector='[type=submit]'):
-        return super(BookingVerifyBase, self).submit(css_selector)
+        return super().submit(css_selector)
 
     def _read_email_verify_email(self, email):
         return read_email_url(email, "https://.*/booking/v/.*")
@@ -744,7 +743,7 @@ class AccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
     submit_css_selector = '[type=submit]'
 
     def submit(self, css_selector=submit_css_selector):
-        return super(AccountDetailsBase, self).submit(css_selector)
+        return super().submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
         self.get_url(self.urlname)
@@ -864,7 +863,7 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     submit_css_selector = SAVE_BTN
 
     def submit(self, css_selector=submit_css_selector):
-        return super(AddPlaceBase, self).submit(css_selector)
+        return super().submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
         self.get_url(self.urlname)
@@ -1072,7 +1071,7 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
             self.assertCode(expect_code)
 
     def submit(self, css_selector=submit_css_selector):
-        return super(EditPlaceBase, self).submit(css_selector)
+        return super().submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
         self.get_url('cciw-bookings-edit_place', booking_id='1')
@@ -1157,7 +1156,7 @@ class TestEditPlaceSL(EditPlaceBase, SeleniumBase):
 
 
 def fix_autocomplete_fields(field_names):
-    class FixAutocompleteFieldMixin(object):
+    class FixAutocompleteFieldMixin:
         def fill_by_name(self, fields):
             new_fields = {}
             to_fix = []
@@ -1178,14 +1177,14 @@ def fix_autocomplete_fields(field_names):
                 else:
                     new_fields[field_name] = value
 
-            super(FixAutocompleteFieldMixin, self).fill_by_name(new_fields)
+            super().fill_by_name(new_fields)
 
             if self.is_full_browser_test:
                 for field_name, value in to_fix:
                     # Hack to cope with autocomplete_light widget and Selenium
                     self.execute_script(
-                        """django.jQuery('[name={0}]').append('<option value="{1}" selected="selected"></option>');"""
-                        .format(field_name, value))
+                        f"""django.jQuery('[name={field_name}]').append('<option value="{value}" selected="selected"></option>');"""
+                    )
 
     return FixAutocompleteFieldMixin
 

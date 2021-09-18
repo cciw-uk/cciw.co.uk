@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django import forms
 from django.utils.html import format_html
 
@@ -33,7 +32,7 @@ class AccountDetailsForm(CciwFormMixin, forms.ModelForm):
 
     def save(self, *args, **kwargs):
         old_subscription = BookingAccount.objects.get(id=self.instance.id).subscribe_to_newsletter
-        retval = super(AccountDetailsForm, self).save(*args, **kwargs)
+        retval = super().save(*args, **kwargs)
         if old_subscription != self.instance.subscribe_to_newsletter:
             from cciw.bookings.mailchimp import update_newsletter_subscription
             update_newsletter_subscription(self.instance)
@@ -47,14 +46,15 @@ for f in ['name', 'address_line1', 'address_city', 'address_country', 'address_p
 AccountDetailsForm.base_fields['subscribe_to_mailings'].widget = forms.CheckboxInput()
 
 
-class FixPriceMixin(object):
+class FixPriceMixin:
     """
     Changes the 'price_type' field to include prices from the current year.
     """
+
     def fix_price_choices(self):
         price_choices = self.fields['price_type'].choices
         year = common.get_thisyear()
-        prices = dict((p.price_type, p.price) for p in Price.objects.filter(year=year))
+        prices = {p.price_type: p.price for p in Price.objects.filter(year=year)}
 
         for i, (price_type, label) in enumerate(price_choices):
             if price_type in prices:
@@ -69,7 +69,7 @@ class AddPlaceForm(FixPriceMixin, CciwFormMixin, forms.ModelForm):
                              widget=forms.RadioSelect)
 
     def __init__(self, *args, **kwargs):
-        super(AddPlaceForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         def render_camp(c):
             availability_msg = (("Places available"

@@ -99,7 +99,7 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQual
 
 class PersonalApplicationView(RequireApplicationsMixin, WebTestBase):
     def submit(self):
-        super(PersonalApplicationView, self).submit('input[value="Get it"]')
+        super().submit('input[value="Get it"]')
 
     def test_view_txt(self):
         self.officer_login(OFFICER)

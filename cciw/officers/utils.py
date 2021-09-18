@@ -86,14 +86,14 @@ def camp_serious_slacker_list(camp):
     officer_dbss_last_good_year = {}
 
     for c in relevant_camps:
-        camp_officers = set([i.officer
-                             for i in all_invitations
-                             if i.camp == c])
+        camp_officers = {i.officer
+                         for i in all_invitations
+                         if i.camp == c}
         camp_applications = [a for a in all_apps if a.could_be_for_camp(c)]
-        officers_with_applications = set([a.officer for a in camp_applications])
-        officers_with_two_references = set([a.officer for a in camp_applications
-                                            if len(received_ref_dict[a.id]) >= 2])
-        officers_with_dbss = set([dbs.officer for dbs in all_dbss if dbs.could_be_for_camp(c)])
+        officers_with_applications = {a.officer for a in camp_applications}
+        officers_with_two_references = {a.officer for a in camp_applications
+                                        if len(received_ref_dict[a.id]) >= 2}
+        officers_with_dbss = {dbs.officer for dbs in all_dbss if dbs.could_be_for_camp(c)}
 
         for o in camp_officers:
             if o in officers_with_applications:
@@ -175,7 +175,7 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
     invites = camp.invitations.all().select_related('officer').order_by('officer__first_name',
                                                                         'officer__last_name')
     apps = applications_for_camp(camp).prefetch_related('qualifications')
-    app_dict = dict((app.officer.id, app) for app in apps)
+    app_dict = {app.officer.id: app for app in apps}
 
     # Attributes we need
     app_attr_getter = lambda attr: lambda user, inv, app: getattr(app, attr) if app is not None else ''

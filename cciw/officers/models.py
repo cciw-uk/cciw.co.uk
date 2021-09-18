@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import date, timedelta
 
 from django.conf import settings
@@ -23,7 +22,7 @@ class ApplicationQuerySet(models.QuerySet):
 
 class ApplicationManagerBase(models.Manager):
     def get_queryset(self):
-        return super(ApplicationManagerBase, self).get_queryset().select_related('officer')
+        return super().get_queryset().select_related('officer')
 
 
 ApplicationManager = ApplicationManagerBase.from_queryset(ApplicationQuerySet)
@@ -282,7 +281,7 @@ def empty_reference(reference):
 class ReferenceManager(models.Manager):
 
     def get_queryset(self):
-        return super(ReferenceManager, self).get_queryset().select_related('referee__application__officer')
+        return super().get_queryset().select_related('referee__application__officer')
 
 
 class Reference(models.Model):
@@ -320,7 +319,7 @@ class Reference(models.Model):
         return f"Reference form for {officer.full_name} by {self.referee_name}"
 
     def save(self, *args, **kwargs):
-        retval = super(Reference, self).save(*args, **kwargs)
+        retval = super().save(*args, **kwargs)
         # Update application form data with name of referee
         referee = self.referee
         referee.name = self.referee_name
@@ -376,7 +375,7 @@ class Qualification(models.Model):
 class InvitationManager(models.Manager):
 
     def get_queryset(self):
-        return super(InvitationManager, self).get_queryset().select_related('officer', 'camp', 'camp__chaplain')
+        return super().get_queryset().select_related('officer', 'camp', 'camp__chaplain')
 
 
 class Invitation(models.Model):
@@ -409,7 +408,7 @@ class Invitation(models.Model):
 class DBSCheckManager(models.Manager):
 
     def get_queryset(self):
-        return super(DBSCheckManager, self).get_queryset().select_related('officer')
+        return super().get_queryset().select_related('officer')
 
     def get_for_camp(self, camp, include_late=False):
         """
@@ -476,12 +475,12 @@ class DBSCheck(models.Model):
 class DBSActionLogManager(models.Manager):
 
     def get_queryset(self):
-        return super(DBSActionLogManager, self).get_queryset().select_related('officer')
+        return super().get_queryset().select_related('officer')
 
     def create(self, *args, **kwargs):
         if 'action_type' not in kwargs:
             raise TypeError("action_type is a required field")
-        return super(DBSActionLogManager, self).create(*args, **kwargs)
+        return super().create(*args, **kwargs)
 
 
 class DBSActionLog(models.Model):

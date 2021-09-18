@@ -3,7 +3,7 @@ from django.utils.encoding import force_str
 from django.utils.html import escape, mark_safe
 
 
-class CciwFormMixin(object):
+class CciwFormMixin:
     """Form mixin that provides the rendering methods used on the CCiW site"""
 
     normal_row_template = \

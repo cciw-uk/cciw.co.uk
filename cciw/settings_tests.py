@@ -33,7 +33,7 @@ ALLOWED_HOSTS = [
 
 
 # Hack to disable migrations for tests, for speed
-class DisableMigrations(object):
+class DisableMigrations:
 
     def __contains__(self, item):
         return True

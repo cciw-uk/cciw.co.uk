@@ -37,14 +37,14 @@ class BookingAccountForm(forms.ModelForm):
         return email
 
     def clean(self):
-        super(BookingAccountForm, self).clean()
+        super().clean()
         if (self.cleaned_data['name'] == '' and
                 self.cleaned_data['email'] is None):
             raise forms.ValidationError("Either name or email must be defined")
         return self.cleaned_data
 
 
-class ReadOnlyInline(object):
+class ReadOnlyInline:
     # Mixin for inlines that are readonly and for display purposes only.
     # You must also set 'readonly_fields = fields' on the inline
 
@@ -53,7 +53,7 @@ class ReadOnlyInline(object):
     max_num = 0
 
     def get_formset(self, request, obj):
-        FormSet = super(ReadOnlyInline, self).get_formset(request, obj)
+        FormSet = super().get_formset(request, obj)
 
         class ReadOnlyFormset(FormSet):
 
@@ -195,7 +195,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         # Distinct needed because of BookingsYearFilter
-        return super(BookingAccountAdmin, self).get_queryset(request).distinct()
+        return super().get_queryset(request).distinct()
 
     def response_change(self, request, obj):
         # Little hack to allow popups for changing BookingAccount
@@ -206,7 +206,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
                 # escape() calls force_text.
                 (escape(obj._get_pk_val()), escapejs(obj)))
         else:
-            return super(BookingAccountAdmin, self).response_change(request, obj)
+            return super().response_change(request, obj)
 
 
 class YearFilter(admin.SimpleListFilter):
@@ -420,7 +420,7 @@ class BookingAdmin(admin.ModelAdmin):
                 BookingState.CANCELLED_DEPOSIT_KEPT
         ]:
             obj.auto_set_amount_due()
-        retval = super(BookingAdmin, self).save_model(request, obj, form, change)
+        retval = super().save_model(request, obj, form, change)
 
         # NB: do this handling here, not in BookingAdminForm.save(),
         # because we want to make sure it is only done when the model is actually

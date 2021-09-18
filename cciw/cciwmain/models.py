@@ -28,7 +28,7 @@ class Site(models.Model):
         from django.template.defaultfilters import slugify
         if self.slug_name == "":
             self.slug_name = slugify(self.short_name)
-        super(Site, self).save(**kwargs)
+        super().save(**kwargs)
 
 
 class Person(models.Model):
@@ -59,7 +59,7 @@ class CampName(models.Model):
 class CampManager(models.Manager):
 
     def get_queryset(self):
-        return super(CampManager, self).get_queryset().select_related('chaplain', 'camp_name').prefetch_related('leaders')
+        return super().get_queryset().select_related('chaplain', 'camp_name').prefetch_related('leaders')
 
     def get_by_natural_key(self, year, slug):
         return self.get(year=year, camp_name__slug=slug)
@@ -206,12 +206,12 @@ class Camp(models.Model):
     @property
     def nice_dates(self):
         if self.start_date.month == self.end_date.month:
-            return "{0} - {1} {2}".format(self.start_date.strftime('%e').strip(),
-                                          self.end_date.strftime('%e').strip(),
-                                          self.start_date.strftime('%B'))
+            return "{} - {} {}".format(self.start_date.strftime('%e').strip(),
+                                       self.end_date.strftime('%e').strip(),
+                                       self.start_date.strftime('%B'))
         else:
-            return "{0} - {1}".format(self.start_date.strftime('%e %B').strip(),
-                                      self.end_date.strftime('%e %B').strip())
+            return "{} - {}".format(self.start_date.strftime('%e %B').strip(),
+                                    self.end_date.strftime('%e %B').strip())
 
     def get_link(self):
         return format_html("<a href='{0}'>{1}</a>", self.get_absolute_url(), self.nice_name)

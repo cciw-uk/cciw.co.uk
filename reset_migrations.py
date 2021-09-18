@@ -3,7 +3,6 @@
 # Ham-fisted approach to squashing migrations, to avoid including data
 # migrations, and various Django bugs with migration squashing.
 
-from __future__ import absolute_import, print_function, unicode_literals
 
 import glob
 import importlib
@@ -96,9 +95,9 @@ def get_existing_migration_files_for_apps(app_migration_modules):
 
     for app, migration_mod in app_migration_modules.items():
         p = path_for_migration_mod(migration_mod)
-        migrations = sorted([
+        migrations = sorted(
             f for f in os.listdir(p)
-            if f.endswith(".py") and not f == '__init__.py'])
+            if f.endswith(".py") and not f == '__init__.py')
         app_migrations[app] = migrations
 
     assert sorted(app_migration_modules.keys()) == sorted(app_migrations.keys())
@@ -210,8 +209,8 @@ def fix_renamed_dependencies(migration_contents, migration_name_changes):
         for (from_app, from_name), (to_app, to_name) in migration_name_changes.items():
             from_app_name = from_app.split('.')[-1]
             to_app_name = to_app.split('.')[-1]
-            needle = f"('{from_app_name}', '{from_name}'),".encode('utf-8')
-            replacement = f"('{to_app_name}', '{to_name}'),".encode('utf-8')
+            needle = f"('{from_app_name}', '{from_name}'),".encode()
+            replacement = f"('{to_app_name}', '{to_name}'),".encode()
             if line.endswith(needle):
                 line = line[0:-len(needle)] + replacement
         out.append(line)

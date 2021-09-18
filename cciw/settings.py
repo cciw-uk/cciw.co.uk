@@ -444,7 +444,7 @@ _MIDDLEWARE = [
     (True, "cciw.middleware.threadlocals.thread_locals"),
 ]
 
-MIDDLEWARE = tuple([val for (test, val) in _MIDDLEWARE if test])
+MIDDLEWARE = tuple(val for (test, val) in _MIDDLEWARE if test)
 
 # == MESSAGES ==
 

@@ -10,6 +10,7 @@ class YyyyMmField(forms.CharField):
     Form field class that validates its input to be in the form
     YYYY/MM
     """
+
     def clean(self, value):
         if not self.required and (value == "" or value is None):
             return ""

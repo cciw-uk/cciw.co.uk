@@ -7,7 +7,7 @@ class MenuLinkAdmin(admin.ModelAdmin):
     list_display = ('title', 'url', 'listorder', 'visible', 'parent_item')
 
     def get_queryset(self, *args):
-        return super(MenuLinkAdmin, self).get_queryset(*args).select_related('parent_item')
+        return super().get_queryset(*args).select_related('parent_item')
 
 
 class HtmlChunkAdmin(admin.ModelAdmin):

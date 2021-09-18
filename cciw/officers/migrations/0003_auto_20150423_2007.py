@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import re
 from datetime import datetime
 
-from django.db import migrations, models
+from django.db import migrations
 from django.utils import timezone
 
 

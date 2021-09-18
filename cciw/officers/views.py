@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
 import operator
-import typing
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from functools import reduce
@@ -713,7 +711,7 @@ def officer_list(request, camp_id: CampId):
     context = {}
     context['camp'] = camp
     invitation_list = camp.invitations.all()
-    officer_list_ids = set(i.officer_id for i in invitation_list)
+    officer_list_ids = {i.officer_id for i in invitation_list}
     context['invitations'] = invitation_list
     context['officers_noapplicationform'] = camp_slacker_list(camp)
     context['address_all'] = address_for_camp_officers(camp)
@@ -725,7 +723,7 @@ def officer_list(request, camp_id: CampId):
     # decorate with info about previous camp
     prev_camp = camp.previous_camp
     if prev_camp is not None:
-        prev_officer_list_ids = set(u.id for u in prev_camp.officers.all())
+        prev_officer_list_ids = {u.id for u in prev_camp.officers.all()}
         for u in available_officers:
             if u.id in prev_officer_list_ids:
                 u.on_previous_camp = True
@@ -1030,7 +1028,7 @@ def manage_dbss(request, year: int):
     # can permalink nicely.
     if 'camp' in request.GET:
         selected_camp_slugs = set(request.GET.getlist('camp'))
-        selected_camps = set([c for c in camps if c.slug_name in selected_camp_slugs])
+        selected_camps = {c for c in camps if c.slug_name in selected_camp_slugs}
     else:
         # Assume all, because having none is never useful
         selected_camps = set(camps)
@@ -1074,7 +1072,7 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None):
         camp_invitations = camp_invitations.filter(officer__id=officer_id)
     camp_invitations = list(camp_invitations)
 
-    all_officers = list(set(i.officer for i in camp_invitations))
+    all_officers = list({i.officer for i in camp_invitations})
     all_officers.sort(key=lambda o: (o.first_name, o.last_name))
     apps = list(applications_for_camps(camps))
     recent_dbs_officer_ids = set(reduce(operator.or_,
@@ -1122,7 +1120,7 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None):
     def logs_to_dict(logs):
         # NB: order_by('created_at') above means that requests sent later will overwrite
         # those sent earlier in the following dictionary
-        return dict([(f.officer_id, f.created_at) for f in logs])
+        return {f.officer_id: f.created_at for f in logs}
 
     dbs_forms_sent_for_officers = logs_to_dict(dbs_forms_sent)
     requests_for_dbs_form_sent_for_officers = logs_to_dict(requests_for_dbs_form_sent)
@@ -1152,7 +1150,7 @@ def get_officers_with_dbs_info_for_camps(camps, officer_id: int = None):
 
 
 @attr.s
-class DBSNumber(object):
+class DBSNumber:
     number = attr.ib()
     previous_check_good = attr.ib()  # True = good, False = bad, None = unknown
 
@@ -1217,7 +1215,7 @@ def get_update_service_dbs_numbers(officers):
 
 
 @attr.s
-class DbsInfo(object):
+class DbsInfo:
     camps = attr.ib()
     has_application_form = attr.ib()
     application_id = attr.ib()
@@ -1574,8 +1572,8 @@ def booking_ages_stats(request, start_year: int = None, end_year: int = None, ca
     colors = []
     if camps:
         colors = [color for (title, color) in
-                  sorted([(str(c.url_id), c.camp_name.color)
-                          for c in camps])]
+                  sorted((str(c.url_id), c.camp_name.color)
+                         for c in camps)]
         if len(set(colors)) != len(colors):
             # Not enough - fall back to auto
             colors = []
@@ -1596,7 +1594,7 @@ def booking_ages_stats(request, start_year: int = None, end_year: int = None, ca
 def booking_ages_stats_download(request,
                                 start_year: int = None,
                                 end_year: int = None,
-                                camp_ids: typing.List[CampId] = None):
+                                camp_ids: list[CampId] = None):
     start_year, end_year, camps, data = (
         _get_booking_ages_stats_from_params(start_year, end_year, camp_ids)
     )

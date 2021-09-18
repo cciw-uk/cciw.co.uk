@@ -17,3 +17,21 @@ repos:
     hooks:
       - id: djhtml
         entry: djhtml -t 2 -i
+  - repo: https://github.com/ikamensh/flynt/
+    rev: '0.69'
+    hooks:
+      - id: flynt
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.26.0
+    hooks:
+      - id: pyupgrade
+        entry: pyupgrade --py3-plus --py36-plus --py37-plus --py38-plus --py39-plus --keep-runtime-typing
+  - repo: https://github.com/myint/autoflake
+    rev: 'v1.4'
+    hooks:
+      - id: autoflake
+        args: ['--remove-all-unused-imports', '-i']
+  - repo: https://github.com/pre-commit/mirrors-autopep8
+    rev: 'v1.5.7'
+    hooks:
+      - id: autopep8

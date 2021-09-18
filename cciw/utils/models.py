@@ -6,6 +6,7 @@ class AfterFetchQuerySetMixin:
     # This is most useful for registering 'prefetch_related' like operations
     # that need to be run after fetching, while still allowing chaining of other
     # QuerySet methods.
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._after_fetch_callbacks = []

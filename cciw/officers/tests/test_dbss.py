@@ -250,9 +250,7 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
         m = mail.outbox[0]
         self.assertIn("Dear camp leaders",
                       m.body)
-        self.assertIn("{0} {1} indicated that they do NOT\nconsent to having a DBS check done"
-                      .format(self.officer_user.first_name,
-                              self.officer_user.last_name),
+        self.assertIn(f"{self.officer_user.full_name} indicated that they do NOT\nconsent to having a DBS check done",
                       m.body)
 
         self.assertEqual(self.dbs_officer.dbsactions_performed.count(), 1)
@@ -273,14 +271,11 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
         self.assertEqual(self.get_element_text(f'#id_last_form_request_sent_{self.officer_user.id}').strip(),
                          'No record')
         self.click_request_dbs_form_button(self.officer_user)
-        self.assertTextPresent("Ask for DBS form to be sent to {0} {1}".format(self.officer_user.first_name,
-                                                                               self.officer_user.last_name))
+        self.assertTextPresent(f"Ask for DBS form to be sent to {self.officer_user.full_name}")
         self.submit('input[name="send"]')
         self.assertEqual(len(mail.outbox), 1)
         m = mail.outbox[0]
-        self.assertIn("{0} {1} needs a new DBS check"
-                      .format(self.officer_user.first_name,
-                              self.officer_user.last_name),
+        self.assertIn(f"{self.officer_user.full_name} needs a new DBS check",
                       m.body)
 
         self.assertEqual(self.dbs_officer.dbsactions_performed.count(), 1)

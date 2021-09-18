@@ -159,7 +159,7 @@ def django_project(target):
 # switch the 'current' link to the new version.
 
 
-class Version(object):
+class Version:
     PROJECT_ROOT_BASE = os.path.join(WEBAPPS_ROOT, env.proj_name)
     VERSIONS_ROOT = os.path.join(PROJECT_ROOT_BASE, 'versions')
     MEDIA_ROOT_SHARED = PROJECT_ROOT_BASE + "/usermedia"
@@ -345,8 +345,8 @@ TEMPLATES = {
 
 
 def inject_template(data):
-    return dict([(k, v % env if isinstance(v, str) else v)
-                 for k, v in data.items()])
+    return {k: v % env if isinstance(v, str) else v
+            for k, v in data.items()}
 
 
 def get_templates(filter_func=None):
@@ -388,7 +388,7 @@ def upload_template_and_reload(name, target):
             remote_data = run(f"cat {remote_path}")
     env_data = env.copy()
     env_data.update(target.__dict__)
-    with open(local_path, "r") as f:
+    with open(local_path) as f:
         local_data = f.read()
         local_data %= env_data
     clean = lambda s: s.replace("\n", "").replace("\r", "").strip()
@@ -1045,7 +1045,7 @@ NGROK_LOG_MATCHERS = {
 def ngrok_helper(log_filename):
     matchers = NGROK_LOG_MATCHERS[get_ngrok_version()]
 
-    f = open(log_filename, "r")
+    f = open(log_filename)
     while True:
         line = f.readline()
         if line:

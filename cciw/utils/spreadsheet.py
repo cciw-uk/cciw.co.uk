@@ -8,7 +8,7 @@ import xlwt
 from cciw.utils import xl
 
 
-class ExcelFormatter(object):
+class ExcelFormatter:
     mimetype = "application/vnd.ms-excel"
     file_ext = "xls"
 
@@ -49,7 +49,7 @@ class ExcelFormatter(object):
             raise Exception("User either add_sheet_with_header_row or add_sheet_from_dataframe, not both")
 
 
-class OdsFormatter(object):
+class OdsFormatter:
     mimetype = "application/vnd.oasis.opendocument.spreadsheet"
     file_ext = "ods"
 

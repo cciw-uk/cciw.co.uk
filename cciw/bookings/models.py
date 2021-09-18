@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import re
 from collections import defaultdict
 from datetime import date, datetime, timedelta
@@ -82,11 +81,11 @@ class ManualPaymentType(models.IntegerChoices):
     BACS = 3, 'Bank transfer'
 
 
-class NoEditMixin(object):
+class NoEditMixin:
     def clean(self):
-        retval = super(NoEditMixin, self).clean()
+        retval = super().clean()
         if self.id is not None:
-            raise ValidationError("A {0} record cannot be changed "
+            raise ValidationError("A {} record cannot be changed "
                                   "after being created. If an error was made, "
                                   "delete this record and create a new one. "
                                   .format(self.__class__._meta.verbose_name))
@@ -97,7 +96,7 @@ class NoEditMixin(object):
             raise Exception("%s cannot be edited after it has been saved to DB" %
                             self.__class__.__name__)
         else:
-            return super(NoEditMixin, self).save(**kwargs)
+            return super().save(**kwargs)
 
 
 class PriceQuerySet(models.QuerySet):
@@ -137,6 +136,7 @@ class PriceChecker:
     # We don't look up prices immediately, but lazily, because there are
     # quite a few paths that don't need the deposit price at all,
     # and they can happen in a loop e.g. BookingAccount.get_balance_full()
+
     def __init__(self, expected_years=None):
         self._deposit_prices = {}
         self._expected_years = expected_years or []
@@ -213,9 +213,10 @@ class AgreementFetcher:
     Utility that looks up CustomAgreements, with caching
     to reduce queries for the patterns we use.
     """
+
     def __init__(self):
         # Per-instance caching:
-        self.fetch = lru_cache()(self.fetch)
+        self.fetch = lru_cache(self.fetch)
 
     def fetch(self, *, year):
         return list(CustomAgreement.objects.for_year(year))
@@ -370,11 +371,11 @@ class BookingAccount(models.Model):
         # field when doing updates
         if self.id is None:
             self.created_at = timezone.now()
-            return super(BookingAccount, self).save(**kwargs)
+            return super().save(**kwargs)
         else:
             update_fields = [f.name for f in self._meta.fields if
                              f.name != 'id' and f.name != 'total_received']
-            return super(BookingAccount, self).save(update_fields=update_fields, **kwargs)
+            return super().save(update_fields=update_fields, **kwargs)
 
     # Business methods:
 
@@ -509,7 +510,7 @@ class BookingAccount(models.Model):
 
         # Bookings we might want to confirm.
         # Order by booking_expires ascending i.e. earliest first.
-        candidate_bookings = sorted([b for b in all_payable_bookings if b.is_booked and not b.is_confirmed],
+        candidate_bookings = sorted((b for b in all_payable_bookings if b.is_booked and not b.is_confirmed),
                                     key=lambda b: b.booking_expires)
         price_checker = PriceChecker(expected_years=[b.camp.year for b in all_payable_bookings])
         confirmed_bookings = []
@@ -713,7 +714,7 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
 class BookingManagerBase(models.Manager):
 
     def get_queryset(self):
-        return super(BookingManagerBase, self).get_queryset().select_related(
+        return super().get_queryset().select_related(
             'camp',
             'account'
         )
@@ -1203,7 +1204,7 @@ class Booking(models.Model):
 
         if self.price_type == PriceType.FULL:
             full_pricers = relevant_bookings.filter(price_type=PriceType.FULL)
-            names = sorted(set([b.name for b in full_pricers]))
+            names = sorted({b.name for b in full_pricers})
             if len(names) > 1:
                 pretty_names = ', '.join(names[1:]) + " and " + names[0]
                 warning = "You have multiple places at 'Full price'. "
@@ -1216,7 +1217,7 @@ class Booking(models.Model):
 
         if self.price_type == PriceType.SECOND_CHILD:
             second_childers = relevant_bookings.filter(price_type=PriceType.SECOND_CHILD)
-            names = sorted(set([b.name for b in second_childers]))
+            names = sorted({b.name for b in second_childers})
             if len(names) > 1:
                 pretty_names = ', '.join(names[1:]) + " and " + names[0]
                 warning = "You have multiple places at '2nd child discount'. "
@@ -1326,7 +1327,7 @@ def book_basket_now(bookings):
 
     # Serialize access to this function, to stop more places than available
     # being booked:
-    years = set([b.camp.year for b in bookings])
+    years = {b.camp.year for b in bookings}
     assert len(years) == 1
     year_bookings = Booking.objects.for_year(list(years)[0]).select_for_update()
     list(year_bookings)  # evaluate query to apply lock, don't need the result
@@ -1456,7 +1457,7 @@ def outstanding_bookings_with_fees(year):
 class PaymentManager(models.Manager):
 
     def get_queryset(self):
-        return super(PaymentManager, self).get_queryset().select_related(
+        return super().get_queryset().select_related(
             'account',
             'source',
             'source__manual_payment',
@@ -1472,7 +1473,7 @@ class PaymentManager(models.Manager):
         if source_instance is not None:
             source = PaymentSource.from_source_instance(source_instance)
             kwargs['source'] = source
-        return super(PaymentManager, self).create(**kwargs)
+        return super().create(**kwargs)
 
 
 # The Payment object keeps track of all the payments that need to be or have
@@ -1521,7 +1522,7 @@ class Payment(NoEditMixin, models.Model):
 class ManualPaymentManager(models.Manager):
 
     def get_queryset(self):
-        return super(ManualPaymentManager, self).get_queryset().select_related('account')
+        return super().get_queryset().select_related('account')
 
 
 class ManualPaymentBase(NoEditMixin, models.Model):
@@ -1574,15 +1575,11 @@ class AccountTransferPayment(NoEditMixin, models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return "{0} from {1} to {2} on {3}".format(self.amount,
-                                                   self.from_account, self.to_account,
-                                                   self.created_at)
+        return f"{self.amount} from {self.from_account} to {self.to_account} on {self.created_at}"
 
     @property
     def payment_description(self):
-        return "Payment: {0} transferred from {1} to {2}".format(self.amount,
-                                                                 self.from_account,
-                                                                 self.to_account)
+        return "Payment: {self.amount} transferred from {self.from_account} to {self.to_account}"
 
 
 # This model abstracts the different types of payment that can be the source for
@@ -1613,7 +1610,7 @@ class PaymentSource(models.Model):
 
     def save(self, *args, **kwargs):
         self._assert_one_source()
-        super(PaymentSource, self).save()
+        super().save()
 
     @property
     def payment_type(self):
