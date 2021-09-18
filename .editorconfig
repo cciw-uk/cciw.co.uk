@@ -1,0 +1,30 @@
+root = true
+
+[*]
+indent_style = space
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+end_of_line = lf
+
+
+[*.{css,scss}]
+indent_size = 4
+
+[*.py]
+indent_size = 4
+
+[*.html]
+indent_size = 2
+
+[Makefile]
+indent_style = tab
+
+[package.json]
+indent_size = 2
+
+[*.yml]
+indent_size = 2
+
+[*.yaml]
+indent_size = 2
