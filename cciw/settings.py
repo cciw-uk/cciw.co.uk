@@ -63,7 +63,7 @@ if DEVBOX:
 else:
     DEBUG = False
 
-USE_DEBUG_TOOLBAR = False
+USE_DEBUG_TOOLBAR = True
 
 INTERNAL_IPS = ('127.0.0.1',)
 
