@@ -2,8 +2,8 @@
   <h3 class="referencestart">
     {{ referee.application.officer.full_name }}
     &nbsp;&nbsp;<a href="{% url 'cciw-officers-officer_history' officer_id=referee.application.officer.id %}"
-        target="_blank"
-       >full history</a>
+      target="_blank"
+    >full history</a>
   </h3>
   <div class="referenceactions">
     {% with actions=referee.actions.all %}
@@ -77,7 +77,7 @@
               {% endfor %}
             </select>
             <span class="referencebutton"><button
-    onclick="requestUpdateCustom({{ referee.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button></span>
+              onclick="requestUpdateCustom({{ referee.id }});">Request updated reference{% if mode == "requested" %} (again){% endif %}</button></span>
           </li>
         {% endif %}
 
@@ -85,7 +85,7 @@
           <li>{{ referee.name }} {% if referee.email %}&lt;{{ referee.email }}&gt;{% endif %}
             has not done an online reference for {{ referee.application.officer.first_name}} before, so:
             <span class="referencebutton"><button
-    onclick="requestReference({{ referee.id }});">Request reference{% if mode == "requested" %} (again){% endif %}</button></span>
+              onclick="requestReference({{ referee.id }});">Request reference{% if mode == "requested" %} (again){% endif %}</button></span>
           </li>
         {% endif %}
       </ul>

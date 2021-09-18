@@ -7,81 +7,81 @@
 {% block extrahead %}
   {{ block.super }}
   <script type="text/javascript">
-   //<![CDATA[
+    //<![CDATA[
 
-   function requestGeneric(query) {
-       cciw.openTemporaryWindow('{% url "cciw-officers-request_reference" camp_id=camp.url_id %}?' + query,
-                                '_blank',
-                                "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
-   }
+    function requestGeneric(query) {
+      cciw.openTemporaryWindow('{% url "cciw-officers-request_reference" camp_id=camp.url_id %}?' + query,
+        '_blank',
+        "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+    }
 
-   function refreshReferenceSection(referee_id) {
-       jQuery.ajax({
-           type: "GET",
-           url: "?referee_id=" + referee_id.toString() + "&" + Math.random().toString(),
-           dataType: 'text',
-           success: function(data, textStatus, xhr) {
-               // Replace existing div and move to correct place,
-               // which might be under a different 'mode'
-               var section = jQuery('#officerref' + referee_id.toString());
-               var officerName = section.find("h3.referencestart").text();
-               var refereeName = section.find(".refereename").text();
-               var mode = jQuery(data).find('div.referencemode').text();
+    function refreshReferenceSection(referee_id) {
+      jQuery.ajax({
+        type: "GET",
+        url: "?referee_id=" + referee_id.toString() + "&" + Math.random().toString(),
+        dataType: 'text',
+        success: function(data, textStatus, xhr) {
+          // Replace existing div and move to correct place,
+          // which might be under a different 'mode'
+          var section = jQuery('#officerref' + referee_id.toString());
+          var officerName = section.find("h3.referencestart").text();
+          var refereeName = section.find(".refereename").text();
+          var mode = jQuery(data).find('div.referencemode').text();
 
-               // Look through other officer names in same section
-               var allOfficerRefs = jQuery('#' + mode + 'refs .referencesection');
-               var dest = null;
-               allOfficerRefs.each(function(i, elem) {
-                   var oName = jQuery(elem).find('.referencestart').text();
-                   var rName = jQuery(elem).find('.refereename').text();
-                   // references are sorted alphabetical by officer names
-                   // and then by referee name.
-                   if (officerName < oName ||
-                       (officerName == oName && refereeName < rName)) {
-                           dest = jQuery(elem);
-                           return false;
-                   };
-               });
-               if (!dest) {
-                   dest = jQuery('#' + mode + 'end');
-               }
+          // Look through other officer names in same section
+          var allOfficerRefs = jQuery('#' + mode + 'refs .referencesection');
+          var dest = null;
+          allOfficerRefs.each(function(i, elem) {
+            var oName = jQuery(elem).find('.referencestart').text();
+            var rName = jQuery(elem).find('.refereename').text();
+            // references are sorted alphabetical by officer names
+            // and then by referee name.
+            if (officerName < oName ||
+              (officerName == oName && refereeName < rName)) {
+                dest = jQuery(elem);
+                return false;
+              };
+          });
+          if (!dest) {
+            dest = jQuery('#' + mode + 'end');
+          }
 
-               section.fadeOut('slow', function() {
-                   section.insertBefore(dest);
-                   // Don't use 'replaceWith' so we can control animation.
-                   section.html(jQuery(data).html());
-                   section.fadeIn('slow');
-               });
-           }
-       });
-   }
+          section.fadeOut('slow', function() {
+            section.insertBefore(dest);
+            // Don't use 'replaceWith' so we can control animation.
+            section.html(jQuery(data).html());
+            section.fadeIn('slow');
+          });
+        }
+      });
+    }
 
-   function requestReference(referee_id) {
-       requestGeneric('referee_id=' + referee_id.toString());
-   }
+    function requestReference(referee_id) {
+      requestGeneric('referee_id=' + referee_id.toString());
+    }
 
-   function requestUpdate(referee_id, prev_ref_id) {
-       requestGeneric('referee_id=' + referee_id.toString() + '&update=1&prev_ref_id=' + prev_ref_id.toString());
-   }
+    function requestUpdate(referee_id, prev_ref_id) {
+      requestGeneric('referee_id=' + referee_id.toString() + '&update=1&prev_ref_id=' + prev_ref_id.toString());
+    }
 
-   function requestUpdateCustom(referee_id) {
-       var s = document.getElementById('id_referee_opts_' + referee_id.toString());
-       if (s.selectedIndex == -1 || s.value == "") {
-           alert("Please select an option");
-       } else {
-           var val = s.options[s.selectedIndex].value;
-           requestGeneric('referee_id=' + referee_id.toString() + '&update=1&prev_ref_id=' + val);
-       }
-   }
+    function requestUpdateCustom(referee_id) {
+      var s = document.getElementById('id_referee_opts_' + referee_id.toString());
+      if (s.selectedIndex == -1 || s.value == "") {
+        alert("Please select an option");
+      } else {
+        var val = s.options[s.selectedIndex].value;
+        requestGeneric('referee_id=' + referee_id.toString() + '&update=1&prev_ref_id=' + val);
+      }
+    }
 
-   function nagByOfficer(referee_id) {
-       cciw.openTemporaryWindow('{% url "cciw-officers-nag_by_officer" camp_id=camp.url_id %}?referee_id=' + referee_id.toString(),
-                                '_blank',
-                                "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
-   }
+    function nagByOfficer(referee_id) {
+      cciw.openTemporaryWindow('{% url "cciw-officers-nag_by_officer" camp_id=camp.url_id %}?referee_id=' + referee_id.toString(),
+        '_blank',
+        "toolbar=yes,height=600,width=900,location=yes,menubar=yes,scrollbars=yes,resizable=yes");
+    }
 
 
-   //]]>
+    //]]>
   </script>
 {% endblock %}
 

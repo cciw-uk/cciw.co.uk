@@ -196,12 +196,12 @@
             <div class="field">
               <label class="required" for="id_custom_agreement_{{ agreement.id }}">Agree to above conditions:</label>
               <input type="checkbox"
-                     name="custom_agreement_{{ agreement.id }}"
-                     id="id_custom_agreement_{{ agreement.id }}"
-                     {% if form.instance.id and agreement.id in form.instance.custom_agreements_checked %}
-                     checked="checked"
-                     {% endif %}
-                     >
+                name="custom_agreement_{{ agreement.id }}"
+                id="id_custom_agreement_{{ agreement.id }}"
+                {% if form.instance.id and agreement.id in form.instance.custom_agreements_checked %}
+                  checked="checked"
+                {% endif %}
+              >
             </div>
           </div>
         </div>
@@ -221,13 +221,13 @@
       {# Put extra stuff at end so that CSS first-child selectors work #}
       {% csrf_token %}
       <script type="text/javascript">
-       var cciw = (function(pub) {
-           "use strict";
-           pub.placesJsonUrl = '{% url "cciw-bookings-places_json" %}';
-           pub.accountJsonUrl ='{% url "cciw-bookings-account_json" %}';
-           return pub;
+        var cciw = (function(pub) {
+          "use strict";
+          pub.placesJsonUrl = '{% url "cciw-bookings-places_json" %}';
+          pub.accountJsonUrl ='{% url "cciw-bookings-account_json" %}';
+          return pub;
 
-       })(cciw || {});
+        })(cciw || {});
       </script>
       <input id="readonly" type="hidden" value="{% if readonly %}1{% else %}0{% endif %}">
       <input id="formInstanceId" type="hidden" value='{{ form.instance.id }}'>

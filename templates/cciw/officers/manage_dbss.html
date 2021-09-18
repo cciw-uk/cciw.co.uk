@@ -66,15 +66,15 @@
     <form action="." method="GET">
       <p>Select camps: {% for camp in camps %}
         <label><input type="checkbox" name="camp" value="{{ camp.slug_name }}"
-                      {% if camp in selected_camps %}checked{% endif %}> {{ camp.slug_name }}</label>&nbsp;&nbsp;
+          {% if camp in selected_camps %}checked{% endif %}> {{ camp.slug_name }}</label>&nbsp;&nbsp;
       {% endfor %} <input type="submit" value="Update page">
       </p>
     </form>
   </div>
 
   <table id="id_officer_table"
-         data-url="{% url 'cciw-officers-manage_dbss' year=year %}"
-         >
+    data-url="{% url 'cciw-officers-manage_dbss' year=year %}"
+  >
     <thead>
       <tr>
         <th>Name</th>

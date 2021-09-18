@@ -3,9 +3,9 @@
 
 {% for officer, dbs_info in officers_and_dbs_info %}
   <tr data-officer-id="{{ officer.id }}"
-      class="officer_dbs_row {% if dbs_info.requires_action %}requires_action{% endif %}"
-      data-camps="{% for camp in dbs_info.camps %}{{ camp.slug_name }}{% if not forloop.last %},{% endif %}{% endfor %}"
-      >
+    class="officer_dbs_row {% if dbs_info.requires_action %}requires_action{% endif %}"
+    data-camps="{% for camp in dbs_info.camps %}{{ camp.slug_name }}{% if not forloop.last %},{% endif %}{% endfor %}"
+  >
     <td>{{ officer.full_name }}</td>
     <td>{% for camp in dbs_info.camps %}
       <a href="{% url 'cciw-officers-officer_list' camp_id=camp.url_id %}" target="_blank">{{ camp.slug_name }}</a>{% if not forloop.last %}, {% endif %}
@@ -26,8 +26,8 @@
         {% endif %}
         <br/>
         <a href="{% url "admin:officers_dbscheck_changelist" %}?officer_id={{ officer.id }}"
-           target="_blank"
-           >Details</a>
+          target="_blank"
+        >Details</a>
       {% endif %}
     </td>
     <td>
@@ -57,9 +57,9 @@
                 </td>
                 <td>
                   <form action="{% url 'cciw-officers-request_dbs_form_action' application_id=dbs_info.application_id %}"
-                        method="GET"
-                        class="request-dbs-form-action"
-                        >
+                    method="GET"
+                    class="request-dbs-form-action"
+                  >
                     {% return_to_here %}
                     <button id="id_request_form_to_be_sent_{{ officer.id }}">Ask {{ external_dbs_officer.organisation_short }} to send DBS form...</button>
                   </form>
@@ -87,15 +87,15 @@
                 </td>
                 <td>
                   <form action="{% url 'cciw-officers-mark_dbs_sent' %}"
-                        method="POST"
-                        class="dbs-form-sent">
+                    method="POST"
+                    class="dbs-form-sent">
                     {% csrf_token %}
                     <input type="hidden" name="officer_id" value="{{ officer.id }}" />
                     <button id="id_send_{{ officer.id }}">Mark DBS form sent</button>
                   </form>
                   <button id="id_undo_{{ officer.id }}"
-                          action="{% url 'cciw-officers-undo_mark_dbs_sent' %}"
-                          style="display: none;">Undo</button>
+                    action="{% url 'cciw-officers-undo_mark_dbs_sent' %}"
+                    style="display: none;">Undo</button>
                 </td>
                 <td>
                   DBS form sent:
@@ -118,9 +118,9 @@
                 </td>
                 <td>
                   <form action="{% url 'cciw-officers-dbs_consent_alert_leaders' application_id=dbs_info.application_id %}"
-                        method="GET"
-                        class="alert-leaders"
-                        >
+                    method="GET"
+                    class="alert-leaders"
+                  >
                     {% return_to_here %}
                     <button id="id_alert_leaders_{{ officer.id }}">Alert leaders</button>
                   </form>
@@ -155,9 +155,9 @@
             </td>
             <td colspan="2">
               <form action="{% url 'admin:officers_dbscheck_add' %}"
-                    method="GET"
-                    class="register-received-dbs"
-                    >
+                method="GET"
+                class="register-received-dbs"
+              >
                 <input type="hidden" name="officer" value="{{ officer.id }}">
                 <input type="hidden" name="check_type" value="{{ CheckType.FORM }}">
                 {% return_to_here %}
@@ -182,9 +182,9 @@
               </td>
               <td colspan="2">
                 <form action="{% url 'cciw-officers-dbs_checked_online' %}"
-                      method="GET"
-                      class="dbs-checked-online"
-                      >
+                  method="GET"
+                  class="dbs-checked-online"
+                >
                   <input type="hidden" name="officer_id" value="{{ officer.id }}">
                   <input type="hidden" name="dbs_number" value="{{ dbs_info.update_enabled_dbs_number.number }}">
                   {% return_to_here %}

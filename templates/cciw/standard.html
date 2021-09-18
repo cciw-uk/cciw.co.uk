@@ -34,10 +34,10 @@
           {% for menulink in menulinks %}
             <li>
               <a href="{{ menulink.url }}"
-                 {% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
-                 {% if menulink.is_current_page %} aria-current="page" {% endif %}
-                 {% if menulink.is_current_section %} class="currentSection" {% endif %}
-                 >{{ menulink.title }}</a>
+                {% if menulink.extra_title %} title="{{ menulink.extra_title }}" {% endif %}
+                {% if menulink.is_current_page %} aria-current="page" {% endif %}
+                {% if menulink.is_current_section %} class="currentSection" {% endif %}
+              >{{ menulink.title }}</a>
             </li>
           {% endfor %}
           <li aria-hidden="true" class="spacerend">

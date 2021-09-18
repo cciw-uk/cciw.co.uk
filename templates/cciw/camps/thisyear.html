@@ -28,15 +28,15 @@
             {% for camp in campgroup.list %}
               <tr>
                 <td data-label="Name"
-                    class="with-camp-colors-{{ camp.slug_name }}"
-                    >
+                  class="with-camp-colors-{{ camp.slug_name }}"
+                >
                   <a href="{{ camp.get_absolute_url }}"
-                     title="{{ camp.nice_name }}">{{ camp.name }}</a></td>
+                    title="{{ camp.nice_name }}">{{ camp.name }}</a></td>
                 <td data-label="Age">{{ camp.age  }}</td>
                 <td data-label="Dates">{{ camp.nice_dates }}</td>
                 <td data-label="Leaders">
                   <a href="{{ camp.get_absolute_url }}"
-                     title="{{ camp.nice_name }}">
+                    title="{{ camp.nice_name }}">
                     {{ camp.leaders.all|join:", " }}
                   </a>
                 </td>
