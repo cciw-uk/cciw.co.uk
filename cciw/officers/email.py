@@ -237,11 +237,12 @@ def send_dbs_consent_alert_leaders_email(message, officer, camps):
     emails = []
     for c in camps:
         emails.extend(admin_emails_for_camp(c))
-    send_mail(f"[CCIW] DBS consent problem for {officer.full_name}",
-              message,
-              settings.DEFAULT_FROM_EMAIL,
-              emails,
-              fail_silently=False)
+    if emails:
+        send_mail(f"[CCIW] DBS consent problem for {officer.full_name}",
+                  message,
+                  settings.DEFAULT_FROM_EMAIL,
+                  emails,
+                  fail_silently=False)
 
 
 def send_request_for_dbs_form_email(message, officer, sending_officer):

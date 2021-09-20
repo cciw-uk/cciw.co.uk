@@ -68,3 +68,12 @@ def date_to_datetime(date_value):
     if date_value is None:
         return None
     return ensure_timezone_aware(datetime.combine(date_value, time(0, 0, 0)))
+
+
+class _NotPassedType:
+    """
+    Sentinel value used when 'None' would be allowed due to a nullable database field.
+    """
+
+
+NotPassed = _NotPassedType()

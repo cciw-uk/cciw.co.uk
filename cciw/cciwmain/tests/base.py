@@ -29,12 +29,16 @@ class Factories(FactoriesBase):
             leader=None,
             leaders=None,
             chaplain=None,
-    ):
+            future=None,
+    ) -> Camp:
         assert not (leader is not None and leaders is not None), "Only supply one of 'leaders' and 'leader'"
         if leader:
             leaders = [leader]
         elif not leaders:
             leaders = []
+
+        if future is not None:
+            assert start_date is None and end_date is None and year is None
 
         if start_date is None:
             if end_date is not None:
@@ -44,7 +48,10 @@ class Factories(FactoriesBase):
                     # Some date in the summer
                     start_date = date(year, 8, 1)
                 else:
-                    start_date = date.today()
+                    if future:
+                        start_date = date.today() + timedelta(days=365)
+                    else:
+                        start_date = date.today()
         if end_date is None:
             end_date = start_date + timedelta(days=7)
         site = site or self.get_any_site()
@@ -171,6 +178,22 @@ class Factories(FactoriesBase):
         return Person.objects.create(
             name=name,
         )
+
+    def create_leaders(self, camp):
+        leader_1 = Person.objects.create(name="Mr Leader")
+        leader_2 = Person.objects.create(name="Mrs Leaderess")
+
+        leader_1_user = User.objects.create(username="leader1",
+                                            email="leader1@mail.com")
+        leader_2_user = User.objects.create(username="leader2",
+                                            email="leader2@mail.com")
+
+        leader_1.users.add(leader_1_user)
+        leader_2.users.add(leader_2_user)
+
+        camp.leaders.add(leader_1)
+        camp.leaders.add(leader_2)
+        return (leader_1, leader_1_user), (leader_2, leader_2_user)
 
 
 class BasicSetupMixin:

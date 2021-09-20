@@ -134,25 +134,40 @@ class PriceChecker:
     Utility that looks up prices, with caching to reduce queries
     """
     # We don't look up prices immediately, but lazily, because there are
-    # quite a few paths that don't need the deposit price at all,
+    # quite a few paths that don't need the price at all,
     # and they can happen in a loop e.g. BookingAccount.get_balance_full()
 
     def __init__(self, expected_years=None):
-        self._deposit_prices = {}
+        self._prices = defaultdict(dict)
         self._expected_years = expected_years or []
 
-    def _fetch_deposit_prices(self, year):
-        if year in self._deposit_prices:
+    def _fetch_prices(self, year):
+        if year in self._prices:
             return
         # Try to get everything we think we'll need in a single query,
         # and cache for later.
         years = set(self._expected_years + [year])
-        prices = Price.objects.filter(price_type=PriceType.DEPOSIT).filter(year__in=years)
-        self._deposit_prices.update({p.year: p.price for p in prices})
+        for price in Price.objects.filter(year__in=years):
+            self._prices[price.year][price.price_type] = price.price
+
+    def get_price(self, year, price_type):
+        self._fetch_prices(year)
+        return self._prices[year][price_type]
 
     def get_deposit_price(self, year):
-        self._fetch_deposit_prices(year)
-        return self._deposit_prices[year]
+        return self.get_price(year, PriceType.DEPOSIT)
+
+    def get_full_price(self, year):
+        return self.get_price(year, PriceType.FULL)
+
+    def get_second_child_price(self, year):
+        return self.get_price(year, PriceType.SECOND_CHILD)
+
+    def get_third_child_price(self, year):
+        return self.get_price(year, PriceType.THIRD_CHILD)
+
+    def get_early_bird_discount(self, year):
+        return self.get_price(year, PriceType.EARLY_BIRD_DISCOUNT)
 
 
 class CustomAgreementQuerySet(models.QuerySet):
@@ -1325,10 +1340,12 @@ def book_basket_now(bookings):
         if len(b.get_booking_problems(agreement_fetcher=fetcher)[0]) > 0:
             return False
 
+    years = {b.camp.year for b in bookings}
+    if len(years) != 1:
+        raise AssertionError(f'Expected 1 year in basket, found {years}')
+
     # Serialize access to this function, to stop more places than available
     # being booked:
-    years = {b.camp.year for b in bookings}
-    assert len(years) == 1
     year_bookings = Booking.objects.for_year(list(years)[0]).select_for_update()
     list(year_bookings)  # evaluate query to apply lock, don't need the result
 

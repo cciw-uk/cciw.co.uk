@@ -155,8 +155,9 @@ def send_places_confirmed_email(bookings):
             body = loader.render_to_string('cciw/bookings/late_place_confirmed_email.txt', c)
             subject = f"[CCIW] Late booking: {booking.name}"
 
-            queued_mail.send_mail(subject, body, settings.SERVER_EMAIL,
-                                  admin_emails_for_camp(booking.camp))
+            emails = admin_emails_for_camp(booking.camp)
+            if emails:
+                queued_mail.send_mail(subject, body, settings.SERVER_EMAIL, emails)
 
 
 def send_booking_expiry_mail(account, bookings, expired):
