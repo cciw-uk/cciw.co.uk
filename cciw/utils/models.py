@@ -3,6 +3,7 @@ class AfterFetchQuerySetMixin:
     QuerySet mixin to enable functions to run immediately
     after records have been fetched from the DB.
     """
+
     # This is most useful for registering 'prefetch_related' like operations
     # that need to be run after fetching, while still allowing chaining of other
     # QuerySet methods.

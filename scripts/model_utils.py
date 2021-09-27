@@ -16,17 +16,16 @@ from django.db.models.query import ValuesIterable, ValuesListIterable
 
 
 def get_main_attrs(instance):
-    if hasattr(instance, '_meta'):
+    if hasattr(instance, "_meta"):
         return meta_to_col_list(instance._meta)
-    elif hasattr(instance, '__attrs_attrs__'):
-        return [(field.name, field.type or visidata.anytype)
-                for field in instance.__attrs_attrs__]
+    elif hasattr(instance, "__attrs_attrs__"):
+        return [(field.name, field.type or visidata.anytype) for field in instance.__attrs_attrs__]
     return []
 
 
 def instance_list_table(instances, screen_width=None):
     if not instances:
-        return ''
+        return ""
     if screen_width is None:
         screen_width = shutil.get_terminal_size().columns
 
@@ -41,9 +40,9 @@ def instance_list_table(instances, screen_width=None):
 def meta_to_col_list(_meta):
     retval = []
     for field in _meta.get_fields():
-        if not hasattr(field, 'get_attname'):
+        if not hasattr(field, "get_attname"):
             continue
-        if getattr(field, 'many_to_many', False):
+        if getattr(field, "many_to_many", False):
             continue
         retval.append((field.get_attname(), django_to_vd_type(field)))
     return retval
@@ -51,24 +50,24 @@ def meta_to_col_list(_meta):
 
 def django_to_vd_type(field):
     return {
-        'AutoField': int,
-        'BigAutoField': int,
-        'BigIntegerField': int,
-        'BooleanField': int,
-        'DateField': date,
-        'DecimalField': float,
-        'FloatField': float,
-        'ForeignKey': int,  # good enough for now...
-        'PositiveIntegerField': int,
-        'PositiveSmallIntegerField': int,
-        'SmallIntegerField': int,
-        'CharField': str,
-        'TextField': str,
+        "AutoField": int,
+        "BigAutoField": int,
+        "BigIntegerField": int,
+        "BooleanField": int,
+        "DateField": date,
+        "DecimalField": float,
+        "FloatField": float,
+        "ForeignKey": int,  # good enough for now...
+        "PositiveIntegerField": int,
+        "PositiveSmallIntegerField": int,
+        "SmallIntegerField": int,
+        "CharField": str,
+        "TextField": str,
     }.get(field.get_internal_type(), visidata.anytype)
 
 
 class QuerySetSheet(visidata.Sheet):
-    rowtype = 'rows'  # rowdef: model instance
+    rowtype = "rows"  # rowdef: model instance
 
     @visidata.asyncthread
     def reload(self):
@@ -88,7 +87,7 @@ class QuerySetSheet(visidata.Sheet):
 
 
 class AutoSheet(visidata.TableSheet):
-    rowtype = 'rows'  # rowdef: attrs instance
+    rowtype = "rows"  # rowdef: attrs instance
 
     @visidata.asyncthread
     def reload(self):
@@ -116,10 +115,10 @@ def vd(objects):
         instance = objects[0]
         sheet = AutoSheet(instance.__class__.__name__, source=objects)
     if sheet is None:
-        sheet = visidata.load_pyobj('', objects)
+        sheet = visidata.load_pyobj("", objects)
 
     return visidata.run(sheet)
 
 
 def compare_iterables(obj1, obj2):
-    print('\n'.join(_compare_eq_iterable(obj1, obj2, verbose=True)))
+    print("\n".join(_compare_eq_iterable(obj1, obj2, verbose=True)))

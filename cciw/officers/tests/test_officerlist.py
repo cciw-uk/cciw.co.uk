@@ -21,7 +21,6 @@ from .base import LEADER, CurrentCampsMixin, OfficersSetupMixin
 
 
 class TestCreate(TestBase):
-
     def test_create(self):
         user = create_officer("Joe", "Bloggs", "joebloggs@example.com")
 
@@ -32,7 +31,6 @@ class TestCreate(TestBase):
 
 
 class TestExport(DefaultApplicationsMixin, TestBase):
-
     def test_export_no_application(self):
         """
         Test that the export data view generates an Excel file with all the data
@@ -61,7 +59,7 @@ class TestExport(DefaultApplicationsMixin, TestBase):
 
         # From Invitation model
         assert wksh.cell(0, 3).value == "Notes"
-        assert wksh.cell(1, 3).value.startswith('Some notes')
+        assert wksh.cell(1, 3).value.startswith("Some notes")
 
     def test_export_with_application(self):
         """
@@ -87,15 +85,12 @@ class TestExport(DefaultApplicationsMixin, TestBase):
 
 
 class TestSlackers(BasicSetupMixin, TestBase):
-
     def test_serious_slackers(self):
         camp1 = self.default_camp_1
         camp2 = self.default_camp_2
 
-        officer1 = User.objects.create(username="joe",
-                                       email="joe@example.com")
-        officer2 = User.objects.create(username="mary",
-                                       email="mary@example.com")
+        officer1 = User.objects.create(username="joe", email="joe@example.com")
+        officer2 = User.objects.create(username="mary", email="mary@example.com")
 
         camp1.invitations.create(officer=officer1)
         camp1.invitations.create(officer=officer2)
@@ -121,19 +116,20 @@ class TestSlackers(BasicSetupMixin, TestBase):
 
         serious_slackers = camp_serious_slacker_list(camp2)
 
-        assert serious_slackers == \
-            [{'officer': officer2,
-              'missing_application_forms': [camp1],
-              'missing_references': [camp1],
-              'missing_dbss': [camp1],
-              'last_good_apps_year': None,
-              'last_good_refs_year': None,
-              'last_good_dbss_year': None,
-              }]
+        assert serious_slackers == [
+            {
+                "officer": officer2,
+                "missing_application_forms": [camp1],
+                "missing_references": [camp1],
+                "missing_dbss": [camp1],
+                "last_good_apps_year": None,
+                "last_good_refs_year": None,
+                "last_good_dbss_year": None,
+            }
+        ]
 
 
 class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
-
     def add_button_selector(self, officer):
         return f'[data-officer-id="{officer.id}"] [data-add-button]'
 
@@ -151,7 +147,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         officer = self.officer_user
 
         self.officer_login(LEADER)
-        self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
+        self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
 
         # Check initial:
         assert officer not in camp.officers.all()
@@ -174,7 +170,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         camp.invitations.create(officer=officer)
 
         self.officer_login(LEADER)
-        self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
+        self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
 
         # Check initial:
         assert officer in camp.officers.all()
@@ -197,7 +193,7 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         camp.invitations.create(officer=officer)
 
         self.officer_login(LEADER)
-        self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
+        self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
 
         # Action:
         self.click_expecting_alert(self.resend_email_button_selector(officer))
@@ -214,31 +210,34 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         camp.invitations.create(officer=officer)
 
         self.officer_login(LEADER)
-        self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
-        assert not self.is_element_displayed('#id_officer_save')
+        self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
+        assert not self.is_element_displayed("#id_officer_save")
 
         self.click(self.edit_button_selector(officer))
-        assert self.is_element_displayed('#id_officer_save')
-        self.fill({'#id_officer_first_name': 'Altered',
-                   '#id_officer_last_name': 'Name',
-                   '#id_officer_email': 'alteredemail@somewhere.com',
-                   '#id_officer_notes': 'A New Note',
-                   })
-        self.click('#id_officer_save')
+        assert self.is_element_displayed("#id_officer_save")
+        self.fill(
+            {
+                "#id_officer_first_name": "Altered",
+                "#id_officer_last_name": "Name",
+                "#id_officer_email": "alteredemail@somewhere.com",
+                "#id_officer_notes": "A New Note",
+            }
+        )
+        self.click("#id_officer_save")
         self.wait_for_ajax()
 
         # Test DB
         officer = User.objects.get(id=officer.id)
-        assert officer.first_name == 'Altered'
-        assert officer.last_name == 'Name'
-        assert officer.email == 'alteredemail@somewhere.com'
+        assert officer.first_name == "Altered"
+        assert officer.last_name == "Name"
+        assert officer.email == "alteredemail@somewhere.com"
         invitation = camp.invitations.get(officer=officer)
         assert invitation.notes == "A New Note"
 
         # Test UI:
-        assert not self.is_element_displayed('#id_officer_save')
-        assert not self.is_element_displayed('#id_officer_first_name')
-        self.assertTextPresent('alteredemail@somewhere.com')
+        assert not self.is_element_displayed("#id_officer_save")
+        assert not self.is_element_displayed("#id_officer_first_name")
+        self.assertTextPresent("alteredemail@somewhere.com")
 
     def test_edit_validation(self):
         camp = self.default_camp_1
@@ -246,32 +245,32 @@ class TestOfficerListPage(CurrentCampsMixin, OfficersSetupMixin, SeleniumBase):
         camp.invitations.create(officer=officer)
 
         self.officer_login(LEADER)
-        self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
+        self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
 
         self.click(self.edit_button_selector(officer))
-        self.fill({'#id_officer_email': 'bademail'})
-        self.click_expecting_alert('#id_officer_save')
+        self.fill({"#id_officer_email": "bademail"})
+        self.click_expecting_alert("#id_officer_save")
 
         # Test DB
         officer = User.objects.get(id=officer.id)
-        assert officer.email != 'bademail'
+        assert officer.email != "bademail"
 
         # Test UI:
         self.accept_alert()
-        assert self.is_element_displayed('#id_officer_save')
+        assert self.is_element_displayed("#id_officer_save")
 
     def test_add_officer_button(self):
         camp = self.default_camp_1
         self.officer_login(LEADER)
-        self.get_url('cciw-officers-officer_list', camp_id=camp.url_id)
-        self.click('#id_new_officer_btn')
+        self.get_url("cciw-officers-officer_list", camp_id=camp.url_id)
+        self.click("#id_new_officer_btn")
         self.wait_for_ajax()
         time.sleep(5.0)
-        assert self.is_element_displayed('#id_add_officer_popup')
-        self.click('#id_popup_close_btn')
+        assert self.is_element_displayed("#id_add_officer_popup")
+        self.click("#id_popup_close_btn")
         self.wait_for_ajax()
         time.sleep(1.5)
-        assert not self.is_element_displayed('#id_add_officer_popup')
+        assert not self.is_element_displayed("#id_add_officer_popup")
         # Functionality of "New officer" popup is tested separately.
 
 
@@ -287,8 +286,7 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
         mail.outbox = []
 
     def get_page(self):
-        self.get_literal_url(reverse('cciw-officers-create_officer') +
-                             f"?camp_id={self.default_camp_1.id}")
+        self.get_literal_url(reverse("cciw-officers-create_officer") + f"?camp_id={self.default_camp_1.id}")
 
     def create_officer(self, *args):
         create_officer(*args)
@@ -296,77 +294,78 @@ class TestNewOfficerPopup(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
 
     def test_permissions(self):
         self.get_page()
-        assert self.is_element_present('body.login')
+        assert self.is_element_present("body.login")
         self.officer_login(LEADER)
         self.get_page()
-        assert not self.is_element_present('body.login')
+        assert not self.is_element_present("body.login")
         self.assertTextPresent("Enter details for officer")
 
     def test_success(self):
         self.officer_login(LEADER)
         self.get_page()
-        self.fill({
-            '#id_first_name': 'Mary',
-            '#id_last_name': 'Andrews',
-            '#id_email': 'mary@andrews.com',
-        })
-        self.submit('input[type=submit]')
+        self.fill(
+            {
+                "#id_first_name": "Mary",
+                "#id_last_name": "Andrews",
+                "#id_email": "mary@andrews.com",
+            }
+        )
+        self.submit("input[type=submit]")
         self._assert_created()
 
     def test_duplicate_user(self):
-        self.create_officer('Mary',
-                            'Andrews',
-                            'mary@andrews.com')
+        self.create_officer("Mary", "Andrews", "mary@andrews.com")
         self.officer_login(LEADER)
         self.get_page()
-        self.fill({
-            '#id_first_name': 'Mary',
-            '#id_last_name': 'Andrews',
-            '#id_email': 'mary@andrews.com',
-        })
-        self.submit('input[type=submit]')
+        self.fill(
+            {
+                "#id_first_name": "Mary",
+                "#id_last_name": "Andrews",
+                "#id_email": "mary@andrews.com",
+            }
+        )
+        self.submit("input[type=submit]")
         self.assertTextPresent("A user with that name and email address already exists")
         assert not self.is_element_present(self.CONFIRM_BUTTON)
 
     def test_duplicate_name(self):
-        self.create_officer('Mary',
-                            'Andrews',
-                            'mary.andrews@example.com')
+        self.create_officer("Mary", "Andrews", "mary.andrews@example.com")
         self.officer_login(LEADER)
         self.get_page()
-        self.fill({
-            '#id_first_name': 'Mary',
-            '#id_last_name': 'Andrews',
-            '#id_email': 'mary@andrews.com',
-        })
-        self.submit('input[type=submit]')
+        self.fill(
+            {
+                "#id_first_name": "Mary",
+                "#id_last_name": "Andrews",
+                "#id_email": "mary@andrews.com",
+            }
+        )
+        self.submit("input[type=submit]")
         self.assertTextPresent("A user with that first name and last name already exists")
         self.submit(self.CONFIRM_BUTTON)
         self._assert_created()
 
     def test_duplicate_email(self):
-        self.create_officer('Mike',
-                            'Andrews',
-                            'mary@andrews.com')
+        self.create_officer("Mike", "Andrews", "mary@andrews.com")
         self.officer_login(LEADER)
         self.get_page()
-        self.fill({
-            '#id_first_name': 'Mary',
-            '#id_last_name': 'Andrews',
-            '#id_email': 'mary@andrews.com',
-        })
-        self.submit('input[type=submit]')
+        self.fill(
+            {
+                "#id_first_name": "Mary",
+                "#id_last_name": "Andrews",
+                "#id_email": "mary@andrews.com",
+            }
+        )
+        self.submit("input[type=submit]")
         self.assertTextPresent("A user with that email address already exists")
         self.submit(self.CONFIRM_BUTTON)
         self._assert_created()
 
     def _assert_created(self):
-        u = User.objects.get(email='mary@andrews.com', first_name='Mary')
-        assert u.first_name == 'Mary'
-        assert u.last_name == 'Andrews'
-        c = User.objects.filter(first_name='Mary',
-                                last_name='Andrews').count()
-        username = 'maryandrews' + (str(c) if c > 1 else '')
+        u = User.objects.get(email="mary@andrews.com", first_name="Mary")
+        assert u.first_name == "Mary"
+        assert u.last_name == "Andrews"
+        c = User.objects.filter(first_name="Mary", last_name="Andrews").count()
+        username = "maryandrews" + (str(c) if c > 1 else "")
 
         assert u.username == username
         assert len(mail.outbox) == 1

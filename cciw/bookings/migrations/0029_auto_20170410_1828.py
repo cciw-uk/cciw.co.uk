@@ -6,24 +6,24 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0028_auto_20161118_1943'),
+        ("bookings", "0028_auto_20161118_1943"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='booking',
-            options={'base_manager_name': 'objects', 'ordering': ['-created']},
+            name="booking",
+            options={"base_manager_name": "objects", "ordering": ["-created"]},
         ),
         migrations.AlterModelOptions(
-            name='manualpayment',
-            options={'base_manager_name': 'objects'},
+            name="manualpayment",
+            options={"base_manager_name": "objects"},
         ),
         migrations.AlterModelOptions(
-            name='payment',
-            options={'base_manager_name': 'objects'},
+            name="payment",
+            options={"base_manager_name": "objects"},
         ),
         migrations.AlterModelOptions(
-            name='refundpayment',
-            options={'base_manager_name': 'objects'},
+            name="refundpayment",
+            options={"base_manager_name": "objects"},
         ),
     ]

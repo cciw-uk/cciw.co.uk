@@ -66,21 +66,20 @@ class EmailVerifyTokenGenerator:
     # See also TestEmailVerifyTokenGenerator.
 
     def url_safe_encode(self, value):
-        return base64.urlsafe_b64encode(value.encode('utf-8')).decode('utf-8').rstrip('=')
+        return base64.urlsafe_b64encode(value.encode("utf-8")).decode("utf-8").rstrip("=")
 
     def url_safe_decode(self, token):
         token = token + "=="
-        return base64.urlsafe_b64decode(token.encode('utf-8')).decode('utf-8')
+        return base64.urlsafe_b64decode(token.encode("utf-8")).decode("utf-8")
 
 
-def send_verify_email(request, booking_account_email,
-                      target_view_name=None):
+def send_verify_email(request, booking_account_email, target_view_name=None):
     if target_view_name is None:
-        target_view_name = 'cciw-bookings-verify_and_continue'
+        target_view_name = "cciw-bookings-verify_and_continue"
     c = {
-        'domain': common.get_current_domain(),
-        'token': EmailVerifyTokenGenerator().token_for_email(booking_account_email),
-        'target_view_name': target_view_name,
+        "domain": common.get_current_domain(),
+        "token": EmailVerifyTokenGenerator().token_for_email(booking_account_email),
+        "target_view_name": target_view_name,
     }
     body = loader.render_to_string("cciw/bookings/verification_email.txt", c)
     subject = "[CCIW] Booking account"
@@ -89,9 +88,9 @@ def send_verify_email(request, booking_account_email,
 
 def send_unrecognised_payment_email(ipn_obj, reason=None):
     c = {
-        'domain': common.get_current_domain(),
-        'ipn_obj': ipn_obj,
-        'reason': reason,
+        "domain": common.get_current_domain(),
+        "ipn_obj": ipn_obj,
+        "reason": reason,
     }
 
     body = loader.render_to_string("cciw/bookings/unrecognised_payment_email.txt", c)
@@ -101,8 +100,8 @@ def send_unrecognised_payment_email(ipn_obj, reason=None):
 
 def send_pending_payment_email(account, ipn_obj):
     c = {
-        'account': account,
-        'ipn_obj': ipn_obj,
+        "account": account,
+        "ipn_obj": ipn_obj,
     }
     body = loader.render_to_string("cciw/bookings/pending_payment_email.txt", c)
     subject = "[CCIW] Booking - pending payment"
@@ -118,17 +117,15 @@ def send_places_confirmed_email(bookings):
 
     # We can't use 'processed' here, because this email can be sent
     # in the middle of processing before that flag is updated.
-    payment_received_recently = account.payments.received_since(
-        timezone.now() - timedelta(hours=1)
-    ).exists()
+    payment_received_recently = account.payments.received_since(timezone.now() - timedelta(hours=1)).exists()
     c = {
-        'domain': common.get_current_domain(),
-        'account': account,
-        'bookings': bookings,
-        'payment_received_recently': payment_received_recently,
-        'early_bird_discount_missed': sum(b.early_bird_discount_missed() for b in bookings)
+        "domain": common.get_current_domain(),
+        "account": account,
+        "bookings": bookings,
+        "payment_received_recently": payment_received_recently,
+        "early_bird_discount_missed": sum(b.early_bird_discount_missed() for b in bookings),
     }
-    body = loader.render_to_string('cciw/bookings/place_confirmed_email.txt', c)
+    body = loader.render_to_string("cciw/bookings/place_confirmed_email.txt", c)
     subject = "[CCIW] Booking - place confirmed"
 
     # Use queued_mail, which uses DB storage, because this function gets
@@ -147,12 +144,12 @@ def send_places_confirmed_email(bookings):
         if (booking.camp.start_date - today).days < settings.LATE_BOOKING_THRESHOLD:
 
             c = {
-                'domain': common.get_current_domain(),
-                'account': account,
-                'booking': booking,
-                'camp': booking.camp,
+                "domain": common.get_current_domain(),
+                "account": account,
+                "booking": booking,
+                "camp": booking.camp,
             }
-            body = loader.render_to_string('cciw/bookings/late_place_confirmed_email.txt', c)
+            body = loader.render_to_string("cciw/bookings/late_place_confirmed_email.txt", c)
             subject = f"[CCIW] Late booking: {booking.name}"
 
             emails = admin_emails_for_camp(booking.camp)
@@ -165,13 +162,13 @@ def send_booking_expiry_mail(account, bookings, expired):
         return
 
     c = {
-        'domain': common.get_current_domain(),
-        'account': account,
-        'bookings': bookings,
-        'expired': expired,
-        'token': EmailVerifyTokenGenerator().token_for_email(account.email),
+        "domain": common.get_current_domain(),
+        "account": account,
+        "bookings": bookings,
+        "expired": expired,
+        "token": EmailVerifyTokenGenerator().token_for_email(account.email),
     }
-    body = loader.render_to_string('cciw/bookings/place_expired_mail.txt', c)
+    body = loader.render_to_string("cciw/bookings/place_expired_mail.txt", c)
     if expired:
         subject = "[CCIW] Booking expired"
     else:
@@ -185,12 +182,12 @@ def send_booking_approved_mail(booking):
         return False
 
     c = {
-        'domain': common.get_current_domain(),
-        'token': EmailVerifyTokenGenerator().token_for_email(account.email),
-        'account': account,
-        'booking': booking,
+        "domain": common.get_current_domain(),
+        "token": EmailVerifyTokenGenerator().token_for_email(account.email),
+        "account": account,
+        "booking": booking,
     }
-    body = loader.render_to_string('cciw/bookings/place_approved_email.txt', c)
+    body = loader.render_to_string("cciw/bookings/place_approved_email.txt", c)
     subject = "[CCIW] Booking - approved"
     queued_mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
@@ -203,10 +200,10 @@ def send_booking_confirmed_mail(booking):
         return False
 
     c = {
-        'account': account,
-        'booking': booking,
+        "account": account,
+        "booking": booking,
     }
-    body = loader.render_to_string('cciw/bookings/place_booked_email.txt', c)
+    body = loader.render_to_string("cciw/bookings/place_booked_email.txt", c)
     subject = "[CCIW] Booking - confirmed"
     queued_mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])
 
@@ -215,13 +212,16 @@ def send_booking_confirmed_mail(booking):
 
 def send_payment_reminder_emails():
     from cciw.bookings.models import BookingAccount
+
     accounts = BookingAccount.objects.payments_due()
 
     subject = "[CCIW] Payment due"
     now = timezone.now()
     for account in accounts:
-        if (account.last_payment_reminder is not None and
-                (now - account.last_payment_reminder).days < settings.BOOKING_EMAIL_REMINDER_FREQUENCY_DAYS):
+        if (
+            account.last_payment_reminder is not None
+            and (now - account.last_payment_reminder).days < settings.BOOKING_EMAIL_REMINDER_FREQUENCY_DAYS
+        ):
             continue
 
         if account.email is None:
@@ -231,9 +231,9 @@ def send_payment_reminder_emails():
         account.save()
 
         c = {
-            'domain': common.get_current_domain(),
-            'account': account,
-            'token': EmailVerifyTokenGenerator().token_for_email(account.email),
+            "domain": common.get_current_domain(),
+            "account": account,
+            "token": EmailVerifyTokenGenerator().token_for_email(account.email),
         }
-        body = loader.render_to_string('cciw/bookings/payments_due_email.txt', c)
+        body = loader.render_to_string("cciw/bookings/payments_due_email.txt", c)
         mail.send_mail(subject, body, settings.WEBMASTER_FROM_EMAIL, [account.email])

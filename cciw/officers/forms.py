@@ -34,50 +34,48 @@ class CreateOfficerForm(BaseForm):
     email = forms.EmailField()
 
     def save(self):
-        return create.create_officer(self.cleaned_data['first_name'],
-                                     self.cleaned_data['last_name'],
-                                     self.cleaned_data['email'])
+        return create.create_officer(
+            self.cleaned_data["first_name"], self.cleaned_data["last_name"], self.cleaned_data["email"]
+        )
 
 
 class UpdateOfficerForm(BaseForm):
-    first_name = forms.CharField(max_length=fml(User, 'first_name'))
-    last_name = forms.CharField(max_length=fml(User, 'last_name'))
-    email = forms.EmailField(max_length=fml(User, 'email'))
-    notes = forms.CharField(max_length=fml(Invitation, 'notes'),
-                            required=False)
+    first_name = forms.CharField(max_length=fml(User, "first_name"))
+    last_name = forms.CharField(max_length=fml(User, "last_name"))
+    email = forms.EmailField(max_length=fml(User, "email"))
+    notes = forms.CharField(max_length=fml(Invitation, "notes"), required=False)
 
     def save(self, officer_id, camp_id):
         User.objects.filter(pk=officer_id).update(
-            first_name=self.cleaned_data['first_name'],
-            last_name=self.cleaned_data['last_name'],
-            email=self.cleaned_data['email'])
-        notes = self.cleaned_data['notes']
-        Invitation.objects.filter(camp=camp_id,
-                                  officer=officer_id).update(notes=notes)
+            first_name=self.cleaned_data["first_name"],
+            last_name=self.cleaned_data["last_name"],
+            email=self.cleaned_data["email"],
+        )
+        notes = self.cleaned_data["notes"]
+        Invitation.objects.filter(camp=camp_id, officer=officer_id).update(notes=notes)
 
 
 class SetEmailForm(BaseForm):
-    name = forms.CharField(widget=forms.TextInput(attrs={'size': '50'}))
-    email = forms.EmailField(widget=forms.TextInput(attrs={'size': '50'}),
-                             required=False)
+    name = forms.CharField(widget=forms.TextInput(attrs={"size": "50"}))
+    email = forms.EmailField(widget=forms.TextInput(attrs={"size": "50"}), required=False)
 
     def save(self, referee):
-        referee.name = self.cleaned_data['name']
-        referee.email = self.cleaned_data['email']
+        referee.name = self.cleaned_data["name"]
+        referee.email = self.cleaned_data["email"]
         referee.save()
 
 
 class SendMessageForm(BaseForm):
-    message = forms.CharField(widget=forms.Textarea(attrs={'cols': 80, 'rows': 20}))
+    message = forms.CharField(widget=forms.Textarea(attrs={"cols": 80, "rows": 20}))
 
     def __init__(self, *args, **kwargs):
-        message_info = kwargs.pop('message_info', {})
+        message_info = kwargs.pop("message_info", {})
         self.message_info = message_info
         msg_template = self.get_message_template()
         msg = render_to_string(msg_template, message_info)
-        initial = kwargs.pop('initial', {})
-        initial['message'] = msg
-        kwargs['initial'] = initial
+        initial = kwargs.pop("initial", {})
+        initial["message"] = msg
+        kwargs["initial"] = initial
         super().__init__(*args, **kwargs)
 
     def get_message_template(self):
@@ -85,60 +83,62 @@ class SendMessageForm(BaseForm):
 
 
 class SendReferenceRequestForm(SendMessageForm):
-
     def get_message_template(self):
-        if self.message_info['update']:
-            return 'cciw/officers/request_reference_update.txt'
+        if self.message_info["update"]:
+            return "cciw/officers/request_reference_update.txt"
         else:
-            return 'cciw/officers/request_reference_new.txt'
+            return "cciw/officers/request_reference_new.txt"
 
     def clean(self):
         cleaned_data = self.cleaned_data
-        url = self.message_info['url']
-        if url not in cleaned_data.setdefault('message', ''):
+        url = self.message_info["url"]
+        if url not in cleaned_data.setdefault("message", ""):
             errmsg = f"You removed the link {url} from the message.  This link is needed for the referee to be able to submit their reference"
-            self._errors.setdefault('message', self.error_class([])).append(errmsg)
-            del cleaned_data['message']
+            self._errors.setdefault("message", self.error_class([])).append(errmsg)
+            del cleaned_data["message"]
         return cleaned_data
 
 
 class SendNagByOfficerForm(SendMessageForm):
     def get_message_template(self):
-        return 'cciw/officers/nag_by_officer_email.txt'
+        return "cciw/officers/nag_by_officer_email.txt"
 
 
 class DbsConsentProblemForm(SendMessageForm):
     def get_message_template(self):
-        return 'cciw/officers/dbs_consent_alert_leaders_email.txt'
+        return "cciw/officers/dbs_consent_alert_leaders_email.txt"
 
 
 class RequestDbsFormForm(SendMessageForm):
     def get_message_template(self):
-        return 'cciw/officers/request_dbs_form_email.txt'
+        return "cciw/officers/request_dbs_form_email.txt"
 
 
 class ReferenceForm(StripStringsMixin, forms.ModelForm):
     class Meta:
         model = Reference
-        fields = ('referee_name',
-                  'how_long_known',
-                  'capacity_known',
-                  'known_offences',
-                  'known_offences_details',
-                  'capability_children',
-                  'character',
-                  'concerns',
-                  'comments')
+        fields = (
+            "referee_name",
+            "how_long_known",
+            "capacity_known",
+            "known_offences",
+            "known_offences_details",
+            "capability_children",
+            "character",
+            "concerns",
+            "comments",
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         reference_contact_users = get_reference_contact_users()
         if reference_contact_users:
-            contact_message = (" If you would prefer to discuss your concerns on the telephone "
-                               "and in confidence, please contact: " +
-                               " or ".join(f"{user.full_name} on {user.contact_phone_number}"
-                                           for user in reference_contact_users))
-            self.fields['concerns'].label += contact_message
+            contact_message = (
+                " If you would prefer to discuss your concerns on the telephone "
+                "and in confidence, please contact: "
+                + " or ".join(f"{user.full_name} on {user.contact_phone_number}" for user in reference_contact_users)
+            )
+            self.fields["concerns"].label += contact_message
 
     def save(self, referee, user=None):
         obj = super().save(commit=False)
@@ -160,18 +160,18 @@ class AdminReferenceForm(ReferenceForm):
         referee.log_reference_filled_in(user, timezone.now())
 
 
-normal_textarea = forms.Textarea(attrs={'cols': 80, 'rows': 10})
-small_textarea = forms.Textarea(attrs={'cols': 80, 'rows': 5})
+normal_textarea = forms.Textarea(attrs={"cols": 80, "rows": 10})
+small_textarea = forms.Textarea(attrs={"cols": 80, "rows": 5})
 
 
 def fix_ref_form(form_class):
-    form_class.base_fields['capacity_known'].widget = small_textarea
-    form_class.base_fields['known_offences'].widget = ExplicitBooleanFieldSelect()
-    form_class.base_fields['known_offences_details'].widget = normal_textarea
-    form_class.base_fields['capability_children'].widget = normal_textarea
-    form_class.base_fields['character'].widget = normal_textarea
-    form_class.base_fields['concerns'].widget = normal_textarea
-    form_class.base_fields['comments'].widget = normal_textarea
+    form_class.base_fields["capacity_known"].widget = small_textarea
+    form_class.base_fields["known_offences"].widget = ExplicitBooleanFieldSelect()
+    form_class.base_fields["known_offences_details"].widget = normal_textarea
+    form_class.base_fields["capability_children"].widget = normal_textarea
+    form_class.base_fields["character"].widget = normal_textarea
+    form_class.base_fields["concerns"].widget = normal_textarea
+    form_class.base_fields["comments"].widget = normal_textarea
 
 
 fix_ref_form(ReferenceForm)
@@ -183,5 +183,4 @@ class CciwPasswordResetForm(PasswordResetForm):
         # Unlike base class, we allow users who have never set a password to
         # reset their password, otherwise our onboarding process (which involves
         # accounts being created by someone else) can get stuck.
-        return User._default_manager.filter(email__iexact=email,
-                                            is_active=True)
+        return User._default_manager.filter(email__iexact=email, is_active=True)

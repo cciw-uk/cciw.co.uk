@@ -7,32 +7,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0044_auto_20210528_1713'),
+        ("bookings", "0044_auto_20210528_1713"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='customagreement',
-            options={'ordering': ['year', 'sort_order']},
+            name="customagreement",
+            options={"ordering": ["year", "sort_order"]},
         ),
         migrations.AddField(
-            model_name='booking',
-            name='custom_agreements_checked',
+            model_name="booking",
+            name="custom_agreements_checked",
             field=django.contrib.postgres.fields.ArrayField(base_field=models.IntegerField(), default=list, size=None),
         ),
         migrations.AlterField(
-            model_name='customagreement',
-            name='name',
+            model_name="customagreement",
+            name="name",
             field=models.CharField(help_text="Appears as a title on 'Add place' page", max_length=255),
         ),
         migrations.AlterField(
-            model_name='customagreement',
-            name='text_html',
-            field=models.TextField(help_text='Text of the agreement, in HTML format'),
+            model_name="customagreement",
+            name="text_html",
+            field=models.TextField(help_text="Text of the agreement, in HTML format"),
         ),
         migrations.AlterField(
-            model_name='customagreement',
-            name='year',
-            field=models.IntegerField(help_text='Camp year this applies to'),
+            model_name="customagreement",
+            name="year",
+            field=models.IntegerField(help_text="Camp year this applies to"),
         ),
     ]

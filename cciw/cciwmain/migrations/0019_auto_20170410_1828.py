@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cciwmain', '0018_campname_color'),
+        ("cciwmain", "0018_campname_color"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='camp',
-            options={'base_manager_name': 'objects', 'ordering': ['-year', 'start_date']},
+            name="camp",
+            options={"base_manager_name": "objects", "ordering": ["-year", "start_date"]},
         ),
     ]

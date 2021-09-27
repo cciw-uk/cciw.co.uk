@@ -25,7 +25,7 @@ def get_booking_progress_stats(start_year=None, end_year=None, camps=None, overl
 
     for item in items:
         qs = Booking.objects.confirmed()
-        rows = query_filter(qs, item).select_related('camp').values_list('booked_at', 'created_at', 'camp__start_date')
+        rows = query_filter(qs, item).select_related("camp").values_list("booked_at", "created_at", "camp__start_date")
         rows2 = [[r[0] if r[0] else r[1], r[2]] for r in rows]  # prefer 'booked_at' to 'created_at'
         if rows2:
             if overlay_years:
@@ -53,12 +53,10 @@ def _fill_gaps(series):
             if isinstance(idx, pd.Timestamp):
                 current_dt = idx.date()
                 last_dt = last_idx.date()
-                missing_dates = [last_dt + timedelta(days=days)
-                                 for days in range(1, (current_dt - last_dt).days)]
+                missing_dates = [last_dt + timedelta(days=days) for days in range(1, (current_dt - last_dt).days)]
                 extra.extend((pd.Timestamp(dt), last_val) for dt in missing_dates)
             else:
-                missing_days = [last_idx + days
-                                for days in range(1, idx - last_idx)]
+                missing_days = [last_idx + days for days in range(1, idx - last_idx)]
                 extra.extend((day, last_val) for day in missing_days)
 
         last_idx = idx
@@ -71,18 +69,18 @@ def _fill_gaps(series):
 
 
 def get_booking_summary_stats(start_year, end_year):
-    rows = (Booking.objects.confirmed().select_related('camp')
-            .filter(camp__year__gte=start_year, camp__year__lte=end_year)
-            .values_list('camp__year', 'sex')
-            .order_by('camp__year', 'sex')
-            .annotate(count=models.Count('sex')))
-    data = {s1: [c for y, s, c in rows
-                 if s == s1[0].lower()]
-            for s1 in ['Male', 'Female']}
+    rows = (
+        Booking.objects.confirmed()
+        .select_related("camp")
+        .filter(camp__year__gte=start_year, camp__year__lte=end_year)
+        .values_list("camp__year", "sex")
+        .order_by("camp__year", "sex")
+        .annotate(count=models.Count("sex"))
+    )
+    data = {s1: [c for y, s, c in rows if s == s1[0].lower()] for s1 in ["Male", "Female"]}
     years = sorted(list({y for y, s, c in rows}))
-    df = pd.DataFrame(index=years,
-                      data=data)
-    df['Total'] = df['Male'] + df['Female']
+    df = pd.DataFrame(index=years, data=data)
+    df["Total"] = df["Male"] + df["Female"]
     return df
 
 
@@ -98,13 +96,11 @@ def get_booking_ages_stats(start_year=None, end_year=None, camps=None, include_t
 
     data = {}
     for item in items:
-        qs = (Booking.objects.confirmed()
-              .select_related(None).select_related('camp')
-              .only('date_of_birth', 'camp'))
+        qs = Booking.objects.confirmed().select_related(None).select_related("camp").only("date_of_birth", "camp")
         objs = query_filter(qs, item)
         vals = [b.age_on_camp() for b in objs]
         data[labeller(item)] = counts(vals)
     df = pd.DataFrame(data=data).fillna(0)
     if include_total:
-        df['Total'] = sum(df[col] for col in data)
+        df["Total"] = sum(df[col] for col in data)
     return df

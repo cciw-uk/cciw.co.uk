@@ -6,11 +6,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('mail', '0006_auto_20201216_0844'),
+        ("mail", "0006_auto_20201216_0844"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='EmailForward',
+            name="EmailForward",
         ),
     ]

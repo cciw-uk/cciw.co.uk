@@ -7,30 +7,29 @@ from .models import Role, User
 
 class MyUserAdmin(UserAdmin):
     fieldsets = (
-        (None,
-         {'fields': ('username', 'password')}),
-        ('Personal info',
-         {'fields': (
-             'first_name', 'last_name', 'email', 'contact_phone_number')
-          }),
-        ('Permissions',
-         {'fields': (
-             'is_active', 'is_staff', 'is_superuser',
-         )}),
-        ('Important dates',
-         {'fields': (
-             'last_login', 'date_joined')
-          }),
+        (None, {"fields": ("username", "password")}),
+        ("Personal info", {"fields": ("first_name", "last_name", "email", "contact_phone_number")}),
+        (
+            "Permissions",
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                )
+            },
+        ),
+        ("Important dates", {"fields": ("last_login", "date_joined")}),
     )
     filter_horizontal = []
-    list_filter = ['is_staff', 'is_superuser', 'is_active', 'roles']
+    list_filter = ["is_staff", "is_superuser", "is_active", "roles"]
 
 
 class RoleAdmin(admin.ModelAdmin):
-    search_fields = ['name']
-    ordering = ['name']
-    fields = ['name', 'members', 'email', 'email_recipients', 'allow_emails_from_public']
-    filter_horizontal = ['members', 'email_recipients']
+    search_fields = ["name"]
+    ordering = ["name"]
+    fields = ["name", "members", "email", "email_recipients", "allow_emails_from_public"]
+    filter_horizontal = ["members", "email_recipients"]
 
 
 admin.site.register(User, MyUserAdmin)

@@ -12,24 +12,24 @@ from cciw.utils.tests.base import FactoriesBase
 
 
 class Factories(FactoriesBase):
-
     def __init__(self):
         # {year: [camp list]}
         self._camp_cache = defaultdict(list)
 
     def create_camp(
-            self, *,
-            start_date=None,
-            end_date=None,
-            site=None,
-            camp_name=None,
-            minimum_age=None,
-            maximum_age=None,
-            year=None,
-            leader=None,
-            leaders=None,
-            chaplain=None,
-            future=None,
+        self,
+        *,
+        start_date=None,
+        end_date=None,
+        site=None,
+        camp_name=None,
+        minimum_age=None,
+        maximum_age=None,
+        year=None,
+        leader=None,
+        leaders=None,
+        chaplain=None,
+        future=None,
     ) -> Camp:
         assert not (leader is not None and leaders is not None), "Only supply one of 'leaders' and 'leader'"
         if leader:
@@ -91,10 +91,7 @@ class Factories(FactoriesBase):
         # We have a unique constraint on name/year that we
         # need to respect to be able to create new camps.
         years_camps = self._camp_cache[year]
-        name = self._get_next_camp_name(excluding=[
-            camp.camp_name.name
-            for camp in years_camps
-        ])
+        name = self._get_next_camp_name(excluding=[camp.camp_name.name for camp in years_camps])
         return self.get_or_create_camp_name(name)
 
     def _get_next_camp_name(self, excluding=None) -> str:
@@ -105,24 +102,24 @@ class Factories(FactoriesBase):
 
     @lru_cache
     def get_any_camp(self):
-        camp = Camp.objects.order_by('id').first()
+        camp = Camp.objects.order_by("id").first()
         if camp is not None:
             return camp
         return self.create_camp()
 
     def create_camp_name(self, name=None, color=None):
         name = name or self._get_next_camp_name()
-        color = color or COLORS.get(name, '#ff0000')
+        color = color or COLORS.get(name, "#ff0000")
         camp_name = CampName.objects.create(
             name=name,
-            slug=name.lower().replace(' ', '-'),
+            slug=name.lower().replace(" ", "-"),
             color=color,
         )
         return camp_name
 
     @lru_cache
     def get_any_camp_name(self):
-        camp_name = CampName.objects.order_by('id').first()
+        camp_name = CampName.objects.order_by("id").first()
         if camp_name is not None:
             return camp_name
         return self.create_camp_name()
@@ -136,28 +133,26 @@ class Factories(FactoriesBase):
 
     def create_site(self):
         return Site.objects.create(
-            short_name='The Farm',
-            long_name='The Farm in the Valley',
-            slug_name='the-farm',
-            info='A really lovely farm.'
+            short_name="The Farm",
+            long_name="The Farm in the Valley",
+            slug_name="the-farm",
+            info="A really lovely farm.",
         )
 
     @lru_cache
     def get_any_site(self):
-        site = Site.objects.order_by('id').first()
+        site = Site.objects.order_by("id").first()
         if site is not None:
             return site
         return self.create_site()
 
     def set_camp_leaders(self, camp, leaders):
-        camp.leaders.set([
-            self.make_into_person(leader)
-            for leader in leaders
-        ])
+        camp.leaders.set([self.make_into_person(leader) for leader in leaders])
 
     @lru_cache
     def get_any_camp_leader(self) -> Person:
         from cciw.officers.tests.base import factories as officer_factories
+
         person = Person.objects.first()
         if not person:
             user = officer_factories.get_any_officer()
@@ -183,10 +178,8 @@ class Factories(FactoriesBase):
         leader_1 = Person.objects.create(name="Mr Leader")
         leader_2 = Person.objects.create(name="Mrs Leaderess")
 
-        leader_1_user = User.objects.create(username="leader1",
-                                            email="leader1@mail.com")
-        leader_2_user = User.objects.create(username="leader2",
-                                            email="leader2@mail.com")
+        leader_1_user = User.objects.create(username="leader1", email="leader1@mail.com")
+        leader_2_user = User.objects.create(username="leader2", email="leader2@mail.com")
 
         leader_1.users.add(leader_1_user)
         leader_2.users.add(leader_2_user)
@@ -200,42 +193,36 @@ class BasicSetupMixin:
     def setUp(self):
         super().setUp()
         DjangoSite.objects.all().delete()
-        DjangoSite.objects.create(
-            domain=settings.PRODUCTION_DOMAIN,
-            name=settings.PRODUCTION_DOMAIN,
-            id=1)
+        DjangoSite.objects.create(domain=settings.PRODUCTION_DOMAIN, name=settings.PRODUCTION_DOMAIN, id=1)
 
-        m = MenuLink.objects.create(
-            visible=True,
-            extra_title="",
-            parent_item=None,
-            title="Home",
-            url="/",
-            listorder=0)
+        m = MenuLink.objects.create(visible=True, extra_title="", parent_item=None, title="Home", url="/", listorder=0)
 
         HtmlChunk.objects.create(
             menu_link=m,
             html="<p>CCiW is a charitable company...</p>",
             page_title="Christian Camps in Wales",
-            name='home_page',
+            name="home_page",
         )
 
         HtmlChunk.objects.create(
             pk="booking_secretary_address",
             menu_link=None,
             html="<p>Booking Secretary,<br/>\r\n      James Bloggs,<br/>\r\n      12 Main Street",
-            page_title="")
+            page_title="",
+        )
         HtmlChunk.objects.create(name="bookingform_post_to", menu_link=None)
 
         self.default_site = Site.objects.create(
             info="Lots of info about this camp site, including: <address>Llys Andreas Camp Site, Wales</address>",
             long_name="Llys Andreas, Barmouth",
             slug_name="llys-andreas",
-            short_name="Llys Andreas")
+            short_name="Llys Andreas",
+        )
 
         self.default_leader = Person.objects.create(
             info="Kevin and Tracey are members of Generic Baptist Church, London.  Kevin has been a leader or assistant leader on many camps (EMW, CCiW and church camps).",
-            name="Kevin & Tracey Smith")
+            name="Kevin & Tracey Smith",
+        )
 
         camp_name = factories.get_or_create_camp_name("Blue")
 

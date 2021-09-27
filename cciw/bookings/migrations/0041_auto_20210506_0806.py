@@ -6,42 +6,42 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0040_auto_20210412_0837'),
+        ("bookings", "0040_auto_20210412_0837"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='booking',
-            options={'base_manager_name': 'objects', 'ordering': ['-created_at']},
+            name="booking",
+            options={"base_manager_name": "objects", "ordering": ["-created_at"]},
         ),
         migrations.RenameField(
-            model_name='accounttransferpayment',
-            old_name='created',
-            new_name='created_at',
+            model_name="accounttransferpayment",
+            old_name="created",
+            new_name="created_at",
         ),
         migrations.RenameField(
-            model_name='booking',
-            old_name='created',
-            new_name='created_at',
+            model_name="booking",
+            old_name="created",
+            new_name="created_at",
         ),
         migrations.RenameField(
-            model_name='bookingaccount',
-            old_name='created',
-            new_name='created_at',
+            model_name="bookingaccount",
+            old_name="created",
+            new_name="created_at",
         ),
         migrations.RenameField(
-            model_name='manualpayment',
-            old_name='created',
-            new_name='created_at',
+            model_name="manualpayment",
+            old_name="created",
+            new_name="created_at",
         ),
         migrations.RenameField(
-            model_name='payment',
-            old_name='created',
-            new_name='created_at',
+            model_name="payment",
+            old_name="created",
+            new_name="created_at",
         ),
         migrations.RenameField(
-            model_name='refundpayment',
-            old_name='created',
-            new_name='created_at',
+            model_name="refundpayment",
+            old_name="created",
+            new_name="created_at",
         ),
     ]

@@ -16,8 +16,8 @@ def json_response(view_func):
                 errors[f] = [v.message for v in vs]
             code = 400
             data = {
-                'status': 'failure',
-                'errors': errors,
+                "status": "failure",
+                "errors": errors,
             }
         else:
             code = 200
@@ -27,9 +27,8 @@ def json_response(view_func):
 
         if not isinstance(data, (bytes, str)):
             data = python_to_json(data)
-        resp = HttpResponse(data,
-                            status=code,
-                            content_type="application/json")
-        resp['Cache-Control'] = "no-cache"
+        resp = HttpResponse(data, status=code, content_type="application/json")
+        resp["Cache-Control"] = "no-cache"
         return resp
+
     return wraps(view_func)(_inner)

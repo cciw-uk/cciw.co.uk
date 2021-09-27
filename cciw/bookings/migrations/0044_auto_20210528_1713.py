@@ -6,22 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0043_auto_20210528_1702'),
+        ("bookings", "0043_auto_20210528_1702"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='customagreement',
-            options={'ordering': ['sort_order']},
+            name="customagreement",
+            options={"ordering": ["sort_order"]},
         ),
         migrations.AddField(
-            model_name='customagreement',
-            name='sort_order',
+            model_name="customagreement",
+            name="sort_order",
             field=models.IntegerField(default=1),
         ),
         migrations.AlterField(
-            model_name='customagreement',
-            name='active',
+            model_name="customagreement",
+            name="active",
             field=models.BooleanField(default=True),
         ),
     ]

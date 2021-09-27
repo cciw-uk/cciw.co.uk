@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0011_auto_20160206_2214'),
+        ("bookings", "0011_auto_20160206_2214"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='bookingaccount',
-            name='subscribe_to_newsletter',
-            field=models.BooleanField(default=False, verbose_name='Subscribe to email newsletter'),
+            model_name="bookingaccount",
+            name="subscribe_to_newsletter",
+            field=models.BooleanField(default=False, verbose_name="Subscribe to email newsletter"),
         ),
     ]

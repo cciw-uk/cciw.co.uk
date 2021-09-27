@@ -7,26 +7,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0062_auto_20210412_0837'),
+        ("officers", "0062_auto_20210412_0837"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='referenceaction',
-            options={'ordering': ['created_at']},
+            name="referenceaction",
+            options={"ordering": ["created_at"]},
         ),
         migrations.RenameField(
-            model_name='referenceaction',
-            old_name='created',
-            new_name='created_at',
+            model_name="referenceaction",
+            old_name="created",
+            new_name="created_at",
         ),
         migrations.RemoveField(
-            model_name='dbsactionlog',
-            name='timestamp',
+            model_name="dbsactionlog",
+            name="timestamp",
         ),
         migrations.AddField(
-            model_name='dbsactionlog',
-            name='created_at',
-            field=models.DateTimeField(default=django.utils.timezone.now, verbose_name='Created at'),
+            model_name="dbsactionlog",
+            name="created_at",
+            field=models.DateTimeField(default=django.utils.timezone.now, verbose_name="Created at"),
         ),
     ]

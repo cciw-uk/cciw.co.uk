@@ -11,10 +11,10 @@ from django.test.utils import TestContextDecorator
 
 
 class TestBaseMixin:
-
     def setUp(self):
         super().setUp()
         import cciw.cciwmain.common
+
         cciw.cciwmain.common._thisyear = None
         cciw.cciwmain.common._thisyear_timestamp = None
 
@@ -62,10 +62,8 @@ class AtomicChecksMixin:
             enable_email_sending()
             original_Atomic_exit(self, exc_type, exc_value, traceback)
 
-        self.Atomic_enter_patcher = mock.patch('django.db.transaction.Atomic.__enter__',
-                                               replacement_Atomic_enter)
-        self.Atomic_exit_patcher = mock.patch('django.db.transaction.Atomic.__exit__',
-                                              replacement_Atomic_exit)
+        self.Atomic_enter_patcher = mock.patch("django.db.transaction.Atomic.__enter__", replacement_Atomic_enter)
+        self.Atomic_exit_patcher = mock.patch("django.db.transaction.Atomic.__exit__", replacement_Atomic_exit)
         self.Atomic_enter_patcher.start()
         self.Atomic_exit_patcher.start()
 
@@ -115,5 +113,5 @@ class FactoriesBase:
         # We also want to clear @lru_cache() on all methods
         for subclass in FactoriesBase.__subclasses__():
             for k, val in subclass.__dict__.items():
-                if hasattr(val, 'cache_clear'):
+                if hasattr(val, "cache_clear"):
                     val.cache_clear()

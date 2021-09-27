@@ -4,6 +4,5 @@ from cciw.mail.setup import setup_ses_routes
 
 
 class Command(BaseCommand):
-
     def handle(self, *args, **options):
         setup_ses_routes()

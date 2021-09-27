@@ -32,7 +32,7 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
     url_style.font.colour_index = 12  # blue
 
     date_style = deepcopy(normal_style)
-    date_style.num_format_str = 'YYYY/MM/DD'
+    date_style.num_format_str = "YYYY/MM/DD"
 
     style_header = deepcopy(normal_style)
     font_header = xlwt.Font()
@@ -47,7 +47,7 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
         for c, val in enumerate(row):
             if isinstance(val, str):
                 # normalise newlines to style expected by Excel
-                val = val.replace('\r\n', '\n')
+                val = val.replace("\r\n", "\n")
 
             if isinstance(val, (datetime, date)):
                 style = date_style
@@ -56,12 +56,12 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
                         val = timezone.make_naive(val, UTC)
             else:
                 style = normal_style
-                if isinstance(val, str) and '\n' in val:
+                if isinstance(val, str) and "\n" in val:
                     # This is needed or Excel displays box character for
                     # newlines.
                     style = wrapped_style
                     # Set height to be able to see all lines
-                    row_height = max(row_height, normal_style.font.height * (val.count('\n') + 1))
+                    row_height = max(row_height, normal_style.font.height * (val.count("\n") + 1))
                 if looks_like_url(val):
                     val = xlwt.Formula(f'HYPERLINK("{val}"; "{val}")')
                     style = url_style
@@ -70,11 +70,12 @@ def add_sheet_with_header_row(wkbk, name, headers, contents):
 
 
 def looks_like_url(val):
-    return (isinstance(val, str) and
-            " " not in val and
-            "\n" not in val and
-            (val.startswith("http://") or
-             val.startswith("https://")))
+    return (
+        isinstance(val, str)
+        and " " not in val
+        and "\n" not in val
+        and (val.startswith("http://") or val.startswith("https://"))
+    )
 
 
 def workbook_to_bytes(wkbk):

@@ -7,13 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0008_role_allow_emails_from_public'),
+        ("accounts", "0008_role_allow_emails_from_public"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='role',
-            name='email_recipients',
-            field=models.ManyToManyField(blank=True, help_text='Users who will be emailed for email sent to the role email address. Usually the same as "members", or a subset', related_name='roles_as_email_recipient', to=settings.AUTH_USER_MODEL),
+            model_name="role",
+            name="email_recipients",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text='Users who will be emailed for email sent to the role email address. Usually the same as "members", or a subset',
+                related_name="roles_as_email_recipient",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

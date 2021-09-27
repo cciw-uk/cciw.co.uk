@@ -8,13 +8,16 @@ import cciw.officers.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0049_auto_20170405_2330'),
+        ("officers", "0049_auto_20170405_2330"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='application',
-            name='dbs_check_consent',
-            field=cciw.officers.fields.RequiredExplicitBooleanField(default=None, verbose_name='Do you consent to the obtaining of a Disclosure and Barring Service check on yourself? '),
+            model_name="application",
+            name="dbs_check_consent",
+            field=cciw.officers.fields.RequiredExplicitBooleanField(
+                default=None,
+                verbose_name="Do you consent to the obtaining of a Disclosure and Barring Service check on yourself? ",
+            ),
         ),
     ]

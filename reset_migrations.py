@@ -10,7 +10,7 @@ import os
 import subprocess
 from datetime import datetime
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'cciw.settings'
+os.environ["DJANGO_SETTINGS_MODULE"] = "cciw.settings"
 import django  # NOQA isort:skip
 
 django.setup()
@@ -40,8 +40,7 @@ def main():
 
     # Rewrite migrations to respect renames and add 'replaces'
     # to make them squashed migrations.
-    rewrite_new_migrations(app_migration_modules, new_app_migrations,
-                           old_app_migrations, migration_name_changes)
+    rewrite_new_migrations(app_migration_modules, new_app_migrations, old_app_migrations, migration_name_changes)
 
     # Restore hidden migrations
     unhide_hidden_migrations(hidden_migrations)
@@ -51,8 +50,7 @@ def get_migration_modules_to_reset():
     apps = get_thisproject_apps()
     app_migrations = {}
     for app in apps:
-        migration_mod = settings.MIGRATION_MODULES.get(app,
-                                                       app + ".migrations")
+        migration_mod = settings.MIGRATION_MODULES.get(app, app + ".migrations")
         p = path_for_migration_mod(migration_mod)
         if not os.path.isdir(p):
             continue
@@ -77,7 +75,7 @@ def get_thisproject_apps():
             app_name = app
             mod = importlib.import_module(app_name)
         except ImportError:
-            mod_name, obj_name = app.rsplit('.', 1)
+            mod_name, obj_name = app.rsplit(".", 1)
             mod = importlib.import_module(mod_name)
             app_name = getattr(mod, obj_name).name
 
@@ -87,7 +85,7 @@ def get_thisproject_apps():
 
 
 def path_for_migration_mod(mod_name):
-    return os.path.join(PROJECT_PATH, mod_name.replace('.', '/'))
+    return os.path.join(PROJECT_PATH, mod_name.replace(".", "/"))
 
 
 def get_existing_migration_files_for_apps(app_migration_modules):
@@ -95,9 +93,7 @@ def get_existing_migration_files_for_apps(app_migration_modules):
 
     for app, migration_mod in app_migration_modules.items():
         p = path_for_migration_mod(migration_mod)
-        migrations = sorted(
-            f for f in os.listdir(p)
-            if f.endswith(".py") and not f == '__init__.py')
+        migrations = sorted(f for f in os.listdir(p) if f.endswith(".py") and not f == "__init__.py")
         app_migrations[app] = migrations
 
     assert sorted(app_migration_modules.keys()) == sorted(app_migrations.keys())
@@ -118,14 +114,14 @@ def hide_existing_migrations(app_migration_modules, old_app_migrations):
             f_hidden = f + ".hidden"
             os.rename(f, f_hidden)
             hidden.append((f, f_hidden))
-        for f in glob.glob(os.path.join(migration_mod_path, '*.pyc')):
+        for f in glob.glob(os.path.join(migration_mod_path, "*.pyc")):
             os.unlink(f)
 
     return hidden
 
 
 def make_new_migrations(app_migration_modules):
-    app_names = [app.rsplit('.')[-1] for app in app_migration_modules.keys()]
+    app_names = [app.rsplit(".")[-1] for app in app_migration_modules.keys()]
     subprocess.check_call(["./manage.py", "makemigrations"] + app_names)
 
 
@@ -139,19 +135,17 @@ def rename_migrations(app_migration_modules, new_app_migrations):
         migration_mod_path = path_for_migration_mod(migration_mod)
 
         for filename in new_app_migrations[app]:
-            f_start, f_end = filename.split('_', 1)
+            f_start, f_end = filename.split("_", 1)
             new_filename = f"{f_start}_{new_name_stem}_{f_end}"
             old_migration_name = filename.replace(".py", "")
             new_migration_name = new_filename.replace(".py", "")
             migration_name_changes[(app, old_migration_name)] = (app, new_migration_name)
-            os.rename(os.path.join(migration_mod_path, filename),
-                      os.path.join(migration_mod_path, new_filename))
+            os.rename(os.path.join(migration_mod_path, filename), os.path.join(migration_mod_path, new_filename))
 
     return migration_name_changes
 
 
-def rewrite_new_migrations(app_migration_modules, new_app_migrations,
-                           old_app_migrations, migration_name_changes):
+def rewrite_new_migrations(app_migration_modules, new_app_migrations, old_app_migrations, migration_name_changes):
 
     # Mostly there will be '0001_initial' migrations, but there will also be
     # 0002_* due to cyclic dependencies. Both types need to be marked as
@@ -166,10 +160,8 @@ def rewrite_new_migrations(app_migration_modules, new_app_migrations,
 
         new_migration_files = new_app_migrations[app]
 
-        app_name = app.split('.')[-1]
-        available_replaces = [(app_name,
-                               f.replace('.py', ''))
-                              for f in old_app_migrations[app]]
+        app_name = app.split(".")[-1]
+        available_replaces = [(app_name, f.replace(".py", "")) for f in old_app_migrations[app]]
 
         # If new_migration_files has more than one item, we need to split up
         # available_replaces between them.
@@ -188,10 +180,10 @@ def rewrite_new_migrations(app_migration_modules, new_app_migrations,
 
             # Now fix to make it actually a squashed migration
             replaces = replaces_for_file[m_file]
-            replaces_line = b'\n    replaces = %r\n' % replaces
+            replaces_line = b"\n    replaces = %r\n" % replaces
 
             # Add replaces:
-            needle = b'class Migration(migrations.Migration):\n'
+            needle = b"class Migration(migrations.Migration):\n"
             new_contents = contents.replace(needle, needle + replaces_line)
 
             # We also need to fix any dependencies
@@ -207,12 +199,12 @@ def fix_renamed_dependencies(migration_contents, migration_name_changes):
     out = []
     for line in migration_contents.split(b"\n"):
         for (from_app, from_name), (to_app, to_name) in migration_name_changes.items():
-            from_app_name = from_app.split('.')[-1]
-            to_app_name = to_app.split('.')[-1]
+            from_app_name = from_app.split(".")[-1]
+            to_app_name = to_app.split(".")[-1]
             needle = f"('{from_app_name}', '{from_name}'),".encode()
             replacement = f"('{to_app_name}', '{to_name}'),".encode()
             if line.endswith(needle):
-                line = line[0:-len(needle)] + replacement
+                line = line[0 : -len(needle)] + replacement
         out.append(line)
     return b"\n".join(out)
 
@@ -225,5 +217,5 @@ def unhide_hidden_migrations(hidden_migrations):
         os.rename(f_hidden, f)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

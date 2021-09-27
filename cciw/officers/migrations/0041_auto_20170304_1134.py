@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0040_auto_20170304_1134'),
+        ("officers", "0040_auto_20170304_1134"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dbsactionlog',
-            name='timestamp',
-            field=models.DateTimeField(verbose_name='Timestamp'),
+            model_name="dbsactionlog",
+            name="timestamp",
+            field=models.DateTimeField(verbose_name="Timestamp"),
         ),
     ]

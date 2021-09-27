@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0036_dbscheck_check_type'),
+        ("officers", "0036_dbscheck_check_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dbscheck',
-            name='completed',
-            field=models.DateField(help_text='For full forms, use the date of issue. For online checks, use the date of the check', verbose_name='Date of issue/check'),
+            model_name="dbscheck",
+            name="completed",
+            field=models.DateField(
+                help_text="For full forms, use the date of issue. For online checks, use the date of the check",
+                verbose_name="Date of issue/check",
+            ),
         ),
     ]

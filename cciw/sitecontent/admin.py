@@ -4,14 +4,14 @@ from cciw.sitecontent.models import HtmlChunk, MenuLink
 
 
 class MenuLinkAdmin(admin.ModelAdmin):
-    list_display = ('title', 'url', 'listorder', 'visible', 'parent_item')
+    list_display = ("title", "url", "listorder", "visible", "parent_item")
 
     def get_queryset(self, *args):
-        return super().get_queryset(*args).select_related('parent_item')
+        return super().get_queryset(*args).select_related("parent_item")
 
 
 class HtmlChunkAdmin(admin.ModelAdmin):
-    list_display = ('name', 'page_title', 'menu_link')
+    list_display = ("name", "page_title", "menu_link")
 
 
 admin.site.register(MenuLink, MenuLinkAdmin)

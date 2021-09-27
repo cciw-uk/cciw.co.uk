@@ -8,7 +8,7 @@ def camp_officer_list(camp):
     """
     Returns complete list of officers for a camp
     """
-    return list(camp.officers.all().order_by('first_name', 'last_name', 'email'))
+    return list(camp.officers.all().order_by("first_name", "last_name", "email"))
 
 
 def camp_slacker_list(camp):
@@ -16,8 +16,9 @@ def camp_slacker_list(camp):
     Returns list of officers who have not filled out an application form
     """
     from cciw.officers.applications import applications_for_camp
-    finished_apps_ids = applications_for_camp(camp).values_list('officer__id', flat=True)
-    return list(camp.officers.order_by('first_name', 'last_name', 'email').exclude(id__in=finished_apps_ids))
+
+    finished_apps_ids = applications_for_camp(camp).values_list("officer__id", flat=True)
+    return list(camp.officers.order_by("first_name", "last_name", "email").exclude(id__in=finished_apps_ids))
 
 
 def camp_serious_slacker_list(camp):
@@ -39,27 +40,21 @@ def camp_serious_slacker_list(camp):
     # We need to allow applications/references for the current year to 'fix' a
     # track record. However, when displaying past problems, don't include the
     # current year.
-    relevant_camps = list(Camp.objects
-                          .filter(year__lte=camp.start_date.year)
-                          .order_by('-start_date'))
+    relevant_camps = list(Camp.objects.filter(year__lte=camp.start_date.year).order_by("-start_date"))
 
     if len(relevant_camps) == 0:
         return []
 
     latest_camp = relevant_camps[0]
 
-    all_invitations = list(Invitation.objects
-                           .filter(camp__in=relevant_camps,
-                                   officer__in=officers)
-                           .select_related('camp', 'officer'))
-    all_apps = list(Application.objects
-                    .filter(finished=True,
-                            officer__in=officers,
-                            date_saved__lte=latest_camp.start_date))
+    all_invitations = list(
+        Invitation.objects.filter(camp__in=relevant_camps, officer__in=officers).select_related("camp", "officer")
+    )
+    all_apps = list(
+        Application.objects.filter(finished=True, officer__in=officers, date_saved__lte=latest_camp.start_date)
+    )
 
-    all_received_refs = list(Reference.objects
-                             .select_related('referee')
-                             .filter(referee__application__in=all_apps))
+    all_received_refs = list(Reference.objects.select_related("referee").filter(referee__application__in=all_apps))
 
     all_dbss = list(DBSCheck.objects.filter(officer__in=officers))
 
@@ -86,13 +81,10 @@ def camp_serious_slacker_list(camp):
     officer_dbss_last_good_year = {}
 
     for c in relevant_camps:
-        camp_officers = {i.officer
-                         for i in all_invitations
-                         if i.camp == c}
+        camp_officers = {i.officer for i in all_invitations if i.camp == c}
         camp_applications = [a for a in all_apps if a.could_be_for_camp(c)]
         officers_with_applications = {a.officer for a in camp_applications}
-        officers_with_two_references = {a.officer for a in camp_applications
-                                        if len(received_ref_dict[a.id]) >= 2}
+        officers_with_two_references = {a.officer for a in camp_applications if len(received_ref_dict[a.id]) >= 2}
         officers_with_dbss = {dbs.officer for dbs in all_dbss if dbs.could_be_for_camp(c)}
 
         for o in camp_officers:
@@ -125,10 +117,7 @@ def camp_serious_slacker_list(camp):
                 sort_camps(camps)
                 last_camp_with_item = camps[-1]
                 missing_camps = missing_dict[officer]
-                new_missing_camps = [
-                    c for c in missing_camps
-                    if c.start_date > last_camp_with_item.start_date
-                ]
+                new_missing_camps = [c for c in missing_camps if c.start_date > last_camp_with_item.start_date]
                 missing_dict[officer] = new_missing_camps
                 last_good_year_dict[officer] = last_camp_with_item.year
 
@@ -139,32 +128,30 @@ def camp_serious_slacker_list(camp):
         for officer, camps in missing_dict.items():
             missing_dict[officer] = [c for c in camps if c.year < camp.year]
 
-    get_missing_and_present_lists(officer_apps_present,
-                                  officer_apps_missing,
-                                  officer_apps_last_good_year)
-    get_missing_and_present_lists(officer_refs_present,
-                                  officer_refs_missing,
-                                  officer_refs_last_good_year)
-    get_missing_and_present_lists(officer_dbss_present,
-                                  officer_dbss_missing,
-                                  officer_dbss_last_good_year)
+    get_missing_and_present_lists(officer_apps_present, officer_apps_missing, officer_apps_last_good_year)
+    get_missing_and_present_lists(officer_refs_present, officer_refs_missing, officer_refs_last_good_year)
+    get_missing_and_present_lists(officer_dbss_present, officer_dbss_missing, officer_dbss_last_good_year)
 
-    tmp1 = [(o, officer_apps_missing[o], officer_refs_missing[o], officer_dbss_missing[o])
-            for o in (set(officer_apps_missing.keys()) |
-                      set(officer_refs_missing.keys()) |
-                      set(officer_dbss_missing.keys()))
-            ]
+    tmp1 = [
+        (o, officer_apps_missing[o], officer_refs_missing[o], officer_dbss_missing[o])
+        for o in (
+            set(officer_apps_missing.keys()) | set(officer_refs_missing.keys()) | set(officer_dbss_missing.keys())
+        )
+    ]
     # Remove empty items:
-    tmp1 = [(o, a, r, c) for (o, a, r, c) in tmp1
-            if len(a) > 0 or len(r) > 0 or len(c) > 0]
-    return [{'officer': o,
-             'missing_application_forms': a,
-             'missing_references': r,
-             'missing_dbss': c,
-             'last_good_apps_year': officer_apps_last_good_year.get(o),
-             'last_good_refs_year': officer_refs_last_good_year.get(o),
-             'last_good_dbss_year': officer_dbss_last_good_year.get(o),
-             } for o, a, r, c in tmp1]
+    tmp1 = [(o, a, r, c) for (o, a, r, c) in tmp1 if len(a) > 0 or len(r) > 0 or len(c) > 0]
+    return [
+        {
+            "officer": o,
+            "missing_application_forms": a,
+            "missing_references": r,
+            "missing_dbss": c,
+            "last_good_apps_year": officer_apps_last_good_year.get(o),
+            "last_good_refs_year": officer_refs_last_good_year.get(o),
+            "last_good_dbss_year": officer_dbss_last_good_year.get(o),
+        }
+        for o, a, r, c in tmp1
+    ]
 
 
 def officer_data_to_spreadsheet(camp, spreadsheet):
@@ -172,26 +159,26 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
     from cciw.officers.applications import applications_for_camp
 
     # All the data we need:
-    invites = camp.invitations.all().select_related('officer').order_by('officer__first_name',
-                                                                        'officer__last_name')
-    apps = applications_for_camp(camp).prefetch_related('qualifications')
+    invites = camp.invitations.all().select_related("officer").order_by("officer__first_name", "officer__last_name")
+    apps = applications_for_camp(camp).prefetch_related("qualifications")
     app_dict = {app.officer.id: app for app in apps}
 
     # Attributes we need
-    app_attr_getter = lambda attr: lambda user, inv, app: getattr(app, attr) if app is not None else ''
-    columns = [('First name', lambda u, inv, app: u.first_name),
-               ('Last name', lambda u, inv, app: u.last_name),
-               ('Email', lambda u, inv, app: u.email),
-               ('Notes', lambda u, inv, app: inv.notes),
-               ('Address', app_attr_getter('address_firstline')),
-               ('Town', app_attr_getter('address_town')),
-               ('County', app_attr_getter('address_county')),
-               ('Post code', app_attr_getter('address_postcode')),
-               ('Country', app_attr_getter('address_country')),
-               ('Tel', app_attr_getter('address_tel')),
-               ('Mobile', app_attr_getter('address_mobile')),
-               ('Birth date', app_attr_getter('birth_date')),
-               ]
+    app_attr_getter = lambda attr: lambda user, inv, app: getattr(app, attr) if app is not None else ""
+    columns = [
+        ("First name", lambda u, inv, app: u.first_name),
+        ("Last name", lambda u, inv, app: u.last_name),
+        ("Email", lambda u, inv, app: u.email),
+        ("Notes", lambda u, inv, app: inv.notes),
+        ("Address", app_attr_getter("address_firstline")),
+        ("Town", app_attr_getter("address_town")),
+        ("County", app_attr_getter("address_county")),
+        ("Post code", app_attr_getter("address_postcode")),
+        ("Country", app_attr_getter("address_country")),
+        ("Tel", app_attr_getter("address_tel")),
+        ("Mobile", app_attr_getter("address_mobile")),
+        ("Birth date", app_attr_getter("birth_date")),
+    ]
 
     header_row = [h for h, f in columns]
 
@@ -210,15 +197,16 @@ def officer_data_to_spreadsheet(camp, spreadsheet):
     spreadsheet.add_sheet_with_header_row(
         "Qualifications",
         ["First name", "Last name", "Qualification", "Date issued"],
-        [[a.officer.first_name, a.officer.last_name, q.type.name, q.date_issued]
-         for a in apps
-         for q in a.qualifications.all()]
+        [
+            [a.officer.first_name, a.officer.last_name, q.type.name, q.date_issued]
+            for a in apps
+            for q in a.qualifications.all()
+        ],
     )
 
     spreadsheet.add_sheet_with_header_row(
         "Dietary Requirements",
         ["First name", "Last name", "Requirements"],
-        [[a.officer.first_name, a.officer.last_name, a.dietary_requirements]
-         for a in apps if a.dietary_requirements]
+        [[a.officer.first_name, a.officer.last_name, a.dietary_requirements] for a in apps if a.dietary_requirements],
     )
     return spreadsheet

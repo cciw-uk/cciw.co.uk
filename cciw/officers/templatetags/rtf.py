@@ -9,12 +9,12 @@ register = template.Library()
 @stringfilter
 def rtflinebreaks(value):
     "Converts newlines into RTF \\lines"
-    return value.replace('\n', '{\\line}')
+    return value.replace("\n", "{\\line}")
 
 
 register.filter(rtflinebreaks)
 
-encoder = encodings.codecs.getencoder('1252')
+encoder = encodings.codecs.getencoder("1252")
 
 
 def unicode_to_rtf(u):
@@ -31,7 +31,7 @@ def unicode_to_rtf(u):
             try:
                 encoded = encoder(char)
             except UnicodeEncodeError:
-                encoded = encoder('?')
+                encoded = encoder("?")
             val = ord(encoded[0])
             if val < 256:
                 # use \' method:
@@ -44,14 +44,14 @@ def unicode_to_rtf(u):
         else:
             converted = str(char)
         output.append(converted)
-    return ''.join(output)
+    return "".join(output)
 
 
 @stringfilter
 def rtfescape(value):
     "Escapes RTF control characters"
 
-    return unicode_to_rtf(value.replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}'))
+    return unicode_to_rtf(value.replace("\\", "\\\\").replace("{", "\\{").replace("}", "\\}"))
 
 
 register.filter(rtfescape)

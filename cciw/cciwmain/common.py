@@ -31,16 +31,19 @@ def ajax_form_validate(form_class):
     Returns decorator that enables the returning of validation results by JSON
     if accessed with ?format=json.
     """
+
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            if request.method == 'POST' and request.GET.get('format', None) == 'json':
+            if request.method == "POST" and request.GET.get("format", None) == "json":
                 data = request.POST.copy()
                 form = form_class(data)
                 errors = form.errors.copy()
-                return HttpResponse(python_to_json(errors), content_type='text/javascript')
+                return HttpResponse(python_to_json(errors), content_type="text/javascript")
             return view_func(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -57,11 +60,11 @@ def get_thisyear():
     area after their camp is finished).
     """
     global _thisyear, _thisyear_timestamp
-    if (_thisyear is None or _thisyear_timestamp is None or
-            (timezone.now() - _thisyear_timestamp).seconds > 3600):
+    if _thisyear is None or _thisyear_timestamp is None or (timezone.now() - _thisyear_timestamp).seconds > 3600:
         from cciw.cciwmain.models import Camp
+
         try:
-            lastcamp = Camp.objects.prefetch_related(None).order_by('-end_date')[0]
+            lastcamp = Camp.objects.prefetch_related(None).order_by("-end_date")[0]
         except IndexError:
             return timezone.now().year
         if lastcamp.end_date + timedelta(days=30) <= date.today():
@@ -74,9 +77,11 @@ def get_thisyear():
 
 def standard_subs(value):
     """Standard substitutions made on HTML content"""
-    return value.replace('{{thisyear}}', str(get_thisyear()))\
-                .replace('{{media}}', settings.MEDIA_URL)\
-                .replace('{{static}}', settings.STATIC_URL)
+    return (
+        value.replace("{{thisyear}}", str(get_thisyear()))
+        .replace("{{media}}", settings.MEDIA_URL)
+        .replace("{{static}}", settings.STATIC_URL)
+    )
 
 
 standard_subs.is_safe = True  # noqa:305 provided our substitutions don't introduce anything that must be escaped
@@ -92,7 +97,7 @@ def standard_processor(request):
     pages.
     """
     context = {}
-    format = request.GET.get('format')
+    format = request.GET.get("format")
     if format is not None:
         # json or atom - we are not rendering typical pages, and don't want the
         # overhead of additional queries. This is especially important for Atom,
@@ -101,15 +106,16 @@ def standard_processor(request):
         return context
 
     from cciw.sitecontent.models import MenuLink
+
     thisyear = get_thisyear()
-    context['thisyear'] = thisyear
+    context["thisyear"] = thisyear
     assert type(request.path) is str
-    context['homepage'] = (request.path == "/")
+    context["homepage"] = request.path == "/"
 
     # Ugly special casing for 'thisyear' camps
-    m = re.match(fr'/camps/{thisyear}/(\d+)/', request.path)
+    m = re.match(fr"/camps/{thisyear}/(\d+)/", request.path)
     if m is not None:
-        request_path = f'/thisyear/{m.groups()[0]}/'
+        request_path = f"/thisyear/{m.groups()[0]}/"
     else:
         request_path = request.path
 
@@ -128,13 +134,13 @@ def standard_processor(request):
                 link.is_current_section = False
                 if link.url == request_path:
                     link.is_current_page = True
-                elif request_path.startswith(link.url) and link.url != '/':
+                elif request_path.startswith(link.url) and link.url != "/":
                     link.is_current_section = True
                 links_cache.append(link)
             return links_cache
 
-    context['menulinks'] = get_links
-    context['PRODUCTION'] = settings.LIVEBOX
+    context["menulinks"] = get_links
+    context["PRODUCTION"] = settings.LIVEBOX
 
     return context
 

@@ -34,6 +34,7 @@ def recreate_ses_routes_for_camp_creation(sender, created=None, **kwargs):
         return
     if created:
         from cciw.mail.setup import setup_ses_routes
+
         setup_ses_routes()
 
 

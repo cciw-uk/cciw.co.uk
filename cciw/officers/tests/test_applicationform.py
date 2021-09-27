@@ -8,15 +8,20 @@ from cciw.accounts.models import User
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.mailhelpers import read_email_url
 from cciw.officers.models import Application
-from cciw.officers.tests.base import (LEADER, OFFICER, OFFICER_EMAIL, CurrentCampsMixin, OfficersSetupMixin,
-                                      RequireQualificationTypesMixin)
+from cciw.officers.tests.base import (
+    LEADER,
+    OFFICER,
+    OFFICER_EMAIL,
+    CurrentCampsMixin,
+    OfficersSetupMixin,
+    RequireQualificationTypesMixin,
+)
 from cciw.utils.tests.webtest import WebTestBase
 
 
 class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualificationTypesMixin, WebTestBase):
-
     def _application_edit_url(self, app_id):
-        return reverse('admin:officers_application_change', args=[app_id])
+        return reverse("admin:officers_application_change", args=[app_id])
 
     def setUp(self):
         super().setUp()
@@ -39,56 +44,56 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         return a
 
     def _start_new(self):
-        self.get_url('cciw-officers-applications')
-        self.submit('input[name=new]')
+        self.get_url("cciw-officers-applications")
+        self.submit("input[name=new]")
         self.assertCode(200)
 
     def _finish_application_form(self, enter_dbs_number=False, override=None):
         # A full set of values that pass validation.
-        values = \
-            {'full_name': 'x',
-             'birth_date': '2000-01-01',
-             'birth_place': 'x',
-             'address_firstline': 'x',
-             'address_town': 'x',
-             'address_county': 'x',
-             'address_postcode': 'x',
-             'address_country': 'x',
-             'address_tel': 'x',
-             'address_mobile': 'x',
-             'address_email': 'foo@foo.com',
-             'christian_experience': 'x',
-             'youth_experience': 'x',
-             'youth_work_declined_details': 'x',
-             'illness_details': 'x',
-             'referee1_name': 'My Referee 1',
-             'referee1_capacity_known': 'Pastor',
-             'referee1_address': 'x',
-             'referee1_tel': 'x',
-             'referee1_mobile': 'x',
-             'referee1_email': 'foo1@foo1.com',
-             'referee2_name': 'My Referee 2',
-             'referee2_capacity_known': 'Boss',
-             'referee2_address': 'x',
-             'referee2_tel': 'x',
-             'referee2_mobile': 'x',
-             'referee2_email': 'foo2@foo2.com',
-             'crime_details': 'x',
-             'court_details': 'x',
-             'concern_details': 'x',
-             'youth_work_declined': '2',
-             'relevant_illness': '2',
-             'crime_declaration': '2',
-             'court_declaration': '2',
-             'concern_declaration': '2',
-             'allegation_declaration': '2',
-             'dbs_check_consent': '2',
-             'qualifications-0-type': str(self.first_aid_qualification.id),
-             'qualifications-0-date_issued': '2016-01-01',
-             'finished': True,
-             }
+        values = {
+            "full_name": "x",
+            "birth_date": "2000-01-01",
+            "birth_place": "x",
+            "address_firstline": "x",
+            "address_town": "x",
+            "address_county": "x",
+            "address_postcode": "x",
+            "address_country": "x",
+            "address_tel": "x",
+            "address_mobile": "x",
+            "address_email": "foo@foo.com",
+            "christian_experience": "x",
+            "youth_experience": "x",
+            "youth_work_declined_details": "x",
+            "illness_details": "x",
+            "referee1_name": "My Referee 1",
+            "referee1_capacity_known": "Pastor",
+            "referee1_address": "x",
+            "referee1_tel": "x",
+            "referee1_mobile": "x",
+            "referee1_email": "foo1@foo1.com",
+            "referee2_name": "My Referee 2",
+            "referee2_capacity_known": "Boss",
+            "referee2_address": "x",
+            "referee2_tel": "x",
+            "referee2_mobile": "x",
+            "referee2_email": "foo2@foo2.com",
+            "crime_details": "x",
+            "court_details": "x",
+            "concern_details": "x",
+            "youth_work_declined": "2",
+            "relevant_illness": "2",
+            "crime_declaration": "2",
+            "court_declaration": "2",
+            "concern_declaration": "2",
+            "allegation_declaration": "2",
+            "dbs_check_consent": "2",
+            "qualifications-0-type": str(self.first_aid_qualification.id),
+            "qualifications-0-date_issued": "2016-01-01",
+            "finished": True,
+        }
         if enter_dbs_number:
-            values['dbs_number'] = '001234'
+            values["dbs_number"] = "001234"
         if override:
             for k, v in override.items():
                 if v is None:
@@ -106,10 +111,12 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
     def _assert_finished_successful(self):
         self.assertNamedUrl("cciw-officers-applications")
 
-        self.assertTextPresent("The leaders (Kevin & Tracey Smith) have been notified of the completed application form by email.")
+        self.assertTextPresent(
+            "The leaders (Kevin & Tracey Smith) have been notified of the completed application form by email."
+        )
 
     def _save(self):
-        self.submit('[name=_save]')
+        self.submit("[name=_save]")
 
     def test_change_application(self):
         self.officer_login(OFFICER)
@@ -119,20 +126,19 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         assert u.applications.count() == 1
         self.get_literal_url(self._application_edit_url(a.id))
         self.assertCode(200)
-        self.assertTextPresent('Save and continue editing')
+        self.assertTextPresent("Save and continue editing")
         # Check that Referee initial values are set from model:
-        self.assertTextPresent('My Initial Referee 1')
-        self.assertTextAbsent('Save and add another')
-        self.fill_by_name({'full_name': 'Test full name'})
+        self.assertTextPresent("My Initial Referee 1")
+        self.assertTextAbsent("Save and add another")
+        self.fill_by_name({"full_name": "Test full name"})
         self._save()
         self.assertNamedUrl("cciw-officers-applications")
         assert u.applications.count() == 1
         app = u.applications.all()[0]
-        assert app.full_name == 'Test full name'
+        assert app.full_name == "Test full name"
 
         # Check that Referee was propagated properly
-        assert app.referee_set.get(referee_number=1).name == \
-            'My Initial Referee 1'
+        assert app.referee_set.get(referee_number=1).name == "My Initial Referee 1"
 
     def test_change_finished_application(self):
         """
@@ -149,11 +155,11 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         assert len(apps) == 1
         self.get_literal_url(self._application_edit_url(apps[0].id))
         self.assertCode(200)
-        self.fill_by_name({'full_name': 'Changed full name'})
+        self.fill_by_name({"full_name": "Changed full name"})
         self._save()
         self.assertNamedUrl("cciw-officers-applications")
         assert u.applications.count() == 1
-        assert u.applications.all()[0].full_name == 'Changed full name'
+        assert u.applications.all()[0].full_name == "Changed full name"
 
     def _change_email_setup(self):
         # setup
@@ -165,15 +171,14 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
 
         # email asserts
         orig_email = u.email
-        new_email = 'a_different_email@foo.com'
+        new_email = "a_different_email@foo.com"
         assert orig_email != new_email
 
         # visit page
         self.get_literal_url(self._application_edit_url(a.id))
         self.assertCode(200)
         self._finish_application_form()
-        self.fill_by_name({'full_name': 'Test full name',
-                           'address_email': new_email})
+        self.fill_by_name({"full_name": "Test full name", "address_email": new_email})
         self._save()
         self.assertNamedUrl("cciw-officers-applications")
         assert u.applications.count() == 1
@@ -194,20 +199,18 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         orig_email, new_email, emails = self._change_email_setup()
 
         # Read the email
-        url, path, querydata = read_email_url(emails[0], 'https?://.*/correct-email/.*')
+        url, path, querydata = read_email_url(emails[0], "https?://.*/correct-email/.*")
 
         # Check that nothing has changed yet
-        assert self._get_user(OFFICER).email == \
-            orig_email
+        assert self._get_user(OFFICER).email == orig_email
 
         # follow link - deliberately wrong first time
-        response = self.client.get(path, {'token': 'foo'})
+        response = self.client.get(path, {"token": "foo"})
         assert response.status_code == 200
         self.assertContains(response, "Update failed")
 
         # Check that nothing has changed yet
-        assert self._get_user(OFFICER).email == \
-            orig_email
+        assert self._get_user(OFFICER).email == orig_email
 
         # follow link, right this time
         response = self.client.get(path, querydata)
@@ -225,21 +228,19 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         user = self._get_user(OFFICER)
 
         # Read the email
-        url, path, querydata = read_email_url(emails[0], 'https?://.*/correct-application/.*')
+        url, path, querydata = read_email_url(emails[0], "https?://.*/correct-application/.*")
 
         # Check that nothing has changed yet
         assert user.email == user_email
-        assert user.applications.all()[0].address_email == \
-            application_email
+        assert user.applications.all()[0].address_email == application_email
 
         # follow link - deliberately wrong first time
-        response = self.client.get(path, {'token': 'foo'})
+        response = self.client.get(path, {"token": "foo"})
         assert response.status_code == 200
         self.assertContains(response, "Update failed")
 
         # Check that nothing has changed yet
-        assert user.applications.all()[0].address_email == \
-            application_email
+        assert user.applications.all()[0].address_email == application_email
 
         # follow link, right this time
         response = self.client.get(path, querydata)
@@ -247,8 +248,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self.assertContains(response, "Update successful")
 
         # check email address has changed
-        assert user.applications.all()[0].address_email == \
-            user_email
+        assert user.applications.all()[0].address_email == user_email
 
     def test_unchanged_email_address(self):
         """
@@ -260,7 +260,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         u = self._get_user(OFFICER)
         self._start_new()
         self._finish_application_form()
-        self.fill_by_name({'address_email': u.email.upper()})
+        self.fill_by_name({"address_email": u.email.upper()})
         self._save()
 
         # Check no emails have been sent
@@ -273,7 +273,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self.officer_login(OFFICER)
         self._start_new()
         url = self.current_url
-        self.fill_by_name({'finished': True})
+        self.fill_by_name({"finished": True})
         self._save()
         self.assertUrlsEqual(url)  # Same page
         self.assertTextPresent("Please correct the errors below")
@@ -301,14 +301,10 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         assert len(apps) == 1
         assert a.id == apps[0].id
 
-        assert apps[0].referee_set.get(referee_number=1).name == \
-            'My Referee 1'
-        assert apps[0].referee_set.get(referee_number=1).capacity_known == \
-            'Pastor'
-        assert apps[0].referee_set.get(referee_number=2).name == \
-            'My Referee 2'
-        assert apps[0].referee_set.get(referee_number=2).capacity_known == \
-            'Boss'
+        assert apps[0].referee_set.get(referee_number=1).name == "My Referee 1"
+        assert apps[0].referee_set.get(referee_number=1).capacity_known == "Pastor"
+        assert apps[0].referee_set.get(referee_number=2).name == "My Referee 2"
+        assert apps[0].referee_set.get(referee_number=2).capacity_known == "Boss"
 
         # There should be two emails in outbox, one to officer, one to
         # leader.  This assumes that there is a leader for the camp,
@@ -318,7 +314,7 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
 
         # Email should be sent when application is fully saved.
         for m in emails:
-            for txt in ['My Referee 1', 'First Aid']:
+            for txt in ["My Referee 1", "First Aid"]:
                 # One to officer should contain attachments, one to leader must
                 # not.
                 if any(OFFICER_EMAIL in a for a in m.to):
@@ -359,22 +355,21 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self.get_literal_url(self._application_edit_url(a.id))
         url = self.current_url
         self.assertCode(200)
-        self.fill_by_name({'full_name': 'A Changed Full Name'})
+        self.fill_by_name({"full_name": "A Changed Full Name"})
         self._save()
         # we should be on same page:
         self.assertUrlsEqual(url)
         self.assertTextPresent("You cannot change a submitted")
         # shouldn't have changed data:
         a = Application.objects.get(id=a.id)
-        assert a.full_name != 'A Changed Full Name'
+        assert a.full_name != "A Changed Full Name"
 
     def test_list_applications_officers(self):
         """
         Ensure that normal officers can't see the list of applications
         """
         self.officer_login(OFFICER)
-        self.get_literal_url(reverse("admin:officers_application_changelist"),
-                             expect_errors=[403])
+        self.get_literal_url(reverse("admin:officers_application_changelist"), expect_errors=[403])
         self.assertCode(403)
 
     def test_list_applications_leaders(self):
@@ -404,13 +399,13 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
     def test_save_partial(self):
         self.officer_login(OFFICER)
         self._start_new()
-        self.fill_by_name({'full_name': 'My Name Is ...'})
+        self.fill_by_name({"full_name": "My Name Is ..."})
         self._save()
         user = self._get_user(OFFICER)
         apps = user.applications.all()
         assert len(apps) == 1
         a = apps[0]
-        assert a.full_name == 'My Name Is ...'
+        assert a.full_name == "My Name Is ..."
         assert not a.finished
 
     def test_dbs_number_entered(self):
@@ -420,5 +415,5 @@ class ApplicationFormView(CurrentCampsMixin, OfficersSetupMixin, RequireQualific
         self._save()
         self._assert_finished_successful()
         a = self._get_user(OFFICER).applications.get()
-        assert a.dbs_number == '001234'
+        assert a.dbs_number == "001234"
         assert a.finished

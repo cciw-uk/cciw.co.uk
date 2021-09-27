@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0044_auto_20170304_1202'),
+        ("officers", "0044_auto_20170304_1202"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='dbsactionlog',
-            options={'verbose_name': 'DBS action log', 'verbose_name_plural': 'DBS action logs'},
+            name="dbsactionlog",
+            options={"verbose_name": "DBS action log", "verbose_name_plural": "DBS action logs"},
         ),
     ]

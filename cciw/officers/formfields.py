@@ -2,7 +2,7 @@ import re
 
 from django import forms
 
-yyyy_mm_re = re.compile(r'^\d{4}/\d{2}$')
+yyyy_mm_re = re.compile(r"^\d{4}/\d{2}$")
 
 
 class YyyyMmField(forms.CharField):

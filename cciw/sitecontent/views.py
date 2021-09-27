@@ -4,11 +4,11 @@ from django.template.response import TemplateResponse
 from cciw.sitecontent.models import MenuLink
 
 
-def find(request, path, template_name='cciw/chunk_page.html'):
-    if path in ('', '/'):
-        url = '/'
+def find(request, path, template_name="cciw/chunk_page.html"):
+    if path in ("", "/"):
+        url = "/"
     else:
-        url = '/' + path + '/'
+        url = "/" + path + "/"
 
     try:
         link = MenuLink.objects.get(url=url)
@@ -20,11 +20,15 @@ def find(request, path, template_name='cciw/chunk_page.html'):
     except IndexError:
         raise Http404()
 
-    return TemplateResponse(request, template_name, {
-        'title': chunk.page_title,
-        'chunk_html': chunk.render(request),
-    })
+    return TemplateResponse(
+        request,
+        template_name,
+        {
+            "title": chunk.page_title,
+            "chunk_html": chunk.render(request),
+        },
+    )
 
 
 def home(request):
-    return find(request, '', template_name='cciw/home.html')
+    return find(request, "", template_name="cciw/home.html")

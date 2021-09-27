@@ -17,23 +17,24 @@ class CciwAdminSite(admin.AdminSite):
         """
         from django.contrib.admin.forms import AdminPasswordChangeForm
         from django.contrib.auth.views import PasswordChangeView
-        url = furl(reverse('admin:password_change_done', current_app=self.name))
-        next_url = request.GET.get(REDIRECT_FIELD_NAME, '')
+
+        url = furl(reverse("admin:password_change_done", current_app=self.name))
+        next_url = request.GET.get(REDIRECT_FIELD_NAME, "")
         if next_url:
             url.args[REDIRECT_FIELD_NAME] = next_url
         defaults = {
-            'form_class': AdminPasswordChangeForm,
-            'success_url': url.url,
-            'extra_context': {**self.each_context(request), **(extra_context or {})},
+            "form_class": AdminPasswordChangeForm,
+            "success_url": url.url,
+            "extra_context": {**self.each_context(request), **(extra_context or {})},
         }
-        defaults['extra_context']['is_nav_sidebar_enabled'] = False
+        defaults["extra_context"]["is_nav_sidebar_enabled"] = False
         if self.password_change_template is not None:
-            defaults['template_name'] = self.password_change_template
+            defaults["template_name"] = self.password_change_template
         request.current_app = self.name
         return PasswordChangeView.as_view(**defaults)(request)
 
     def password_change_done(self, request, extra_context=None):
-        redirect_to = request.GET.get(REDIRECT_FIELD_NAME, '')
+        redirect_to = request.GET.get(REDIRECT_FIELD_NAME, "")
         url_is_safe = url_has_allowed_host_and_scheme(
             url=redirect_to,
             allowed_hosts=request.get_host(),

@@ -13,8 +13,18 @@ from cciw.bookings.tests import factories as bookings_factories
 from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.cciwmain.tests.utils import date_to_datetime, make_datetime
 from cciw.contact_us.models import Message
-from cciw.data_retention import (ErasureMethod, Forever, Group, Keep, ModelDetail, Policy, PreserveAgeOnCamp, Rules,
-                                 apply_data_retention, parse_keep)
+from cciw.data_retention import (
+    ErasureMethod,
+    Forever,
+    Group,
+    Keep,
+    ModelDetail,
+    Policy,
+    PreserveAgeOnCamp,
+    Rules,
+    apply_data_retention,
+    parse_keep,
+)
 from cciw.mail.tests import send_queued_mail
 from cciw.officers.models import Application
 from cciw.officers.tests.base import factories as officers_factories
@@ -22,26 +32,30 @@ from cciw.utils.tests.base import TestBase
 
 
 def test_parse_keep_forever():
-    assert parse_keep('forever') is Forever
+    assert parse_keep("forever") is Forever
 
 
 def test_parse_keep_years():
-    assert parse_keep('3 years') == timedelta(days=3 * 365)
+    assert parse_keep("3 years") == timedelta(days=3 * 365)
 
 
 def test_parse_keep_days():
-    assert parse_keep('4 days') == timedelta(days=4)
+    assert parse_keep("4 days") == timedelta(days=4)
 
 
 def test_parse_keep_other():
     with pytest.raises(ValueError):
-        parse_keep('abc 123')
+        parse_keep("abc 123")
 
 
-def make_policy(*, model: type, fields: list[str] = None, keep: Keep,
-                delete_row=False,
-                custom_erasure_methods: dict[str, ErasureMethod] = None,
-                ):
+def make_policy(
+    *,
+    model: type,
+    fields: list[str] = None,
+    keep: Keep,
+    delete_row=False,
+    custom_erasure_methods: dict[str, ErasureMethod] = None,
+):
     model_field_list = model._meta.get_fields()
     field_dict = {f.name: f for f in model_field_list}
     if fields is None:
@@ -51,26 +65,16 @@ def make_policy(*, model: type, fields: list[str] = None, keep: Keep,
     if custom_erasure_methods is None:
         custom_erasure_methods = {}
     else:
-        custom_erasure_methods = {
-            field_dict[name]: method
-            for name, method in custom_erasure_methods.items()
-        }
+        custom_erasure_methods = {field_dict[name]: method for name, method in custom_erasure_methods.items()}
     model_detail = ModelDetail(
         model=model,
         fields=fields,
         delete_row=delete_row,
         custom_erasure_methods=custom_erasure_methods,
     )
-    return Policy(source='test',
-                  groups=[
-                      Group(
-                          rules=Rules(
-                              keep=keep,
-                              erasable_on_request=False
-                          ),
-                          models=[model_detail]
-                      )
-                  ])
+    return Policy(
+        source="test", groups=[Group(rules=Rules(keep=keep, erasable_on_request=False), models=[model_detail])]
+    )
 
 
 def apply_partial_policy(policy):
@@ -86,14 +90,14 @@ class TestApplyDataRetentionPolicy(TestBase):
         )
 
         with travel("2017-01-01 00:05:00"):
-            Message.objects.create(email='bob@example.com', name='Bob', message='Hello')
+            Message.objects.create(email="bob@example.com", name="Bob", message="Hello")
             apply_partial_policy(policy)
             assert Message.objects.count() == 1
 
         with travel("2017-12-31 23:00:00"):
             apply_partial_policy(policy)
             assert Message.objects.count() == 1
-            Message.objects.create(email='bob@example.com', name='Bob', message='Hello 2')
+            Message.objects.create(email="bob@example.com", name="Bob", message="Hello 2")
             apply_partial_policy(policy)
             assert Message.objects.count() == 2  # neither is deleted
 
@@ -101,7 +105,7 @@ class TestApplyDataRetentionPolicy(TestBase):
             apply_partial_policy(policy)
             assert Message.objects.count() == 1
             message = Message.objects.get()
-            assert message.message == 'Hello 2'
+            assert message.message == "Hello 2"
 
         with travel("2019-01-01 01:00:00"):
             apply_partial_policy(policy)
@@ -111,8 +115,8 @@ class TestApplyDataRetentionPolicy(TestBase):
         policy = make_policy(
             model=Application,
             fields=[
-                'address_firstline',  # string
-                'birth_date',  # nullable date
+                "address_firstline",  # string
+                "birth_date",  # nullable date
             ],
             keep=timedelta(days=365),
         )
@@ -124,7 +128,7 @@ class TestApplyDataRetentionPolicy(TestBase):
             date_saved=start,
             full_name=(full_name := "Charlie Cook"),
             birth_date=(dob := date(1960, 5, 6)),
-            address_firstline=(address := "1 The Way")
+            address_firstline=(address := "1 The Way"),
         )
         with travel(start + timedelta(days=365)):
             apply_partial_policy(policy)
@@ -163,7 +167,7 @@ class TestApplyDataRetentionPolicy(TestBase):
             keep=timedelta(days=365),
         )
 
-        queued_mail.send_mail('Subject', 'message', 'from@example.com', ['to@example.com'])
+        queued_mail.send_mail("Subject", "message", "from@example.com", ["to@example.com"])
         start = timezone.now()
         message = mailer_models.Message.objects.get()
         self._assert_instance_deleted_after(instance=message, start=start, policy=policy, days=365)
@@ -175,7 +179,7 @@ class TestApplyDataRetentionPolicy(TestBase):
             keep=timedelta(days=365),
         )
 
-        queued_mail.send_mail('Subject', 'message', 'from@example.com', ['to@example.com'])
+        queued_mail.send_mail("Subject", "message", "from@example.com", ["to@example.com"])
         send_queued_mail()
         start = timezone.now()
         message_log = mailer_models.MessageLog.objects.get()
@@ -187,36 +191,36 @@ class TestApplyDataRetentionPolicy(TestBase):
             delete_row=False,
             keep=timedelta(days=365),
             fields=[
-                'address_line1',
+                "address_line1",
             ],
         )
-        with travel('2001-01-01'):
-            booking = bookings_factories.create_booking(address_line1='123 Main St')
+        with travel("2001-01-01"):
+            booking = bookings_factories.create_booking(address_line1="123 Main St")
 
         end_of_camp = date_to_datetime(booking.camp.end_date) + timedelta(days=1)
         with travel(end_of_camp + timedelta(days=365) - timedelta(seconds=10)):
             apply_partial_policy(policy)
             booking.refresh_from_db()
-            assert booking.address_line1 == '123 Main St'
+            assert booking.address_line1 == "123 Main St"
 
         with travel(end_of_camp + timedelta(days=365) + timedelta(seconds=10)):
             apply_partial_policy(policy)
             booking.refresh_from_db()
-            assert booking.address_line1 == '[deleted]'
+            assert booking.address_line1 == "[deleted]"
 
     def test_erase_Booking_PreserveAgeOnCamp(self):
         policy = make_policy(
             model=Booking,
             delete_row=False,
             keep=timedelta(days=365),
-            fields=['date_of_birth'],
-            custom_erasure_methods={'date_of_birth': PreserveAgeOnCamp()}
+            fields=["date_of_birth"],
+            custom_erasure_methods={"date_of_birth": PreserveAgeOnCamp()},
         )
         for date_of_birth, age_on_camp in [
-                (date(1988, 8, 31), 13),
-                (date(1988, 9, 1), 12),
+            (date(1988, 8, 31), 13),
+            (date(1988, 9, 1), 12),
         ]:
-            with travel('2001-01-01'):
+            with travel("2001-01-01"):
                 camp = camps_factories.create_camp(start_date=date(2001, 8, 1))
                 booking = bookings_factories.create_booking(
                     camp=camp,
@@ -243,36 +247,36 @@ class TestApplyDataRetentionPolicy(TestBase):
             delete_row=False,
             keep=timedelta(days=365),
             fields=[
-                'address_line1',
+                "address_line1",
             ],
         )
-        with travel('2001-01-01'):
+        with travel("2001-01-01"):
             account = bookings_factories.create_booking_account(
-                address_line1='123 Main St',
+                address_line1="123 Main St",
             )
-        with travel('2001-12-31'):
+        with travel("2001-12-31"):
             apply_partial_policy(policy)
             account.refresh_from_db()
-            assert account.address_line1 == '123 Main St'
-        with travel('2002-01-01 01:00:00'):
+            assert account.address_line1 == "123 Main St"
+        with travel("2002-01-01 01:00:00"):
             apply_partial_policy(policy)
             account.refresh_from_db()
-            assert account.address_line1 == '[deleted]'
+            assert account.address_line1 == "[deleted]"
 
     def test_BookingAccount_older_than_respects_last_login(self):
         # Use of `travel()` is not necessary here because `older_than()` takes
         # explicit datetime object, but it helps keep all the tests consistent
         # in style.
-        with travel('2001-01-01'):
+        with travel("2001-01-01"):
             account = bookings_factories.create_booking_account(
-                address_line1='123 Main St',
+                address_line1="123 Main St",
             )
-        with travel('2001-10-01'):
+        with travel("2001-10-01"):
             account.last_login = timezone.now()
             account.save()
-        with travel('2002-01-01 01:00:00'):
+        with travel("2002-01-01 01:00:00"):
             assert account not in BookingAccount.objects.not_in_use().older_than(timezone.now() - timedelta(days=365))
-        with travel('2002-10-02 01:00:00'):
+        with travel("2002-10-02 01:00:00"):
             assert account in BookingAccount.objects.not_in_use().older_than(timezone.now() - timedelta(days=365))
 
     def test_BookingAccount_not_in_use_respects_payment_outstanding(self):
@@ -281,25 +285,25 @@ class TestApplyDataRetentionPolicy(TestBase):
             delete_row=False,
             keep=timedelta(days=365),
             fields=[
-                'address_line1',
+                "address_line1",
             ],
         )
-        with travel('2001-01-01'):
+        with travel("2001-01-01"):
             account = bookings_factories.create_booking_account(
-                address_line1='123 Main St',
+                address_line1="123 Main St",
             )
             bookings_factories.create_booking(
                 account=account,
                 state=BookingState.BOOKED,
                 amount_due=100,
             )
-        with travel('2011-01-01'):
+        with travel("2011-01-01"):
             assert account not in BookingAccount.objects.not_in_use()
             # Should not be deleted despite age, because we have outstanding
             # payments due.
             apply_partial_policy(policy)
             account.refresh_from_db()
-            assert account.address_line1 == '123 Main St'
+            assert account.address_line1 == "123 Main St"
 
     def test_BookingAccount_not_in_use_respects_current_booking(self):
         account = bookings_factories.create_booking_account()
@@ -338,7 +342,7 @@ class TestApplyDataRetentionPolicy(TestBase):
         # created, which was rather suspect, it was possibly a Django bug. The
         # following code produced the issue, which was worked around by
         # structuring the query differently.
-        with travel('2001-01-01'):
+        with travel("2001-01-01"):
             account = bookings_factories.create_booking_account()
             other_account = bookings_factories.create_booking_account()
             camp1 = camps_factories.create_camp(start_date=date.today())
@@ -354,30 +358,24 @@ class TestApplyDataRetentionPolicy(TestBase):
             account.receive_payment(2 * 100)
             other_account.receive_payment(100)
 
-        with travel('2001-01-09'):
+        with travel("2001-01-09"):
             # This has unfinished camps:
-            assert account not in BookingAccount.objects.not_in_use().older_than(
-                make_datetime(2001, 1, 9)
-            )
-        with travel('2002-01-01'):
+            assert account not in BookingAccount.objects.not_in_use().older_than(make_datetime(2001, 1, 9))
+        with travel("2002-01-01"):
             # Now has no outstanding fees, nor unfinished camps
-            assert account in BookingAccount.objects.not_in_use().older_than(
-                make_datetime(2002, 1, 1)
-            )
+            assert account in BookingAccount.objects.not_in_use().older_than(make_datetime(2002, 1, 1))
             # This one has outstanding fees
-            assert other_account not in BookingAccount.objects.not_in_use().older_than(
-                make_datetime(2002, 1, 1)
-            )
+            assert other_account not in BookingAccount.objects.not_in_use().older_than(make_datetime(2002, 1, 1))
 
     def test_BookingAccount_older_than_respects_last_payment_date(self):
         """
         BookingAccount 'older than' should consider payment as similar
         to a login in terms of regarding the account as recent.
         """
-        with travel('2001-01-01'):
+        with travel("2001-01-01"):
             account = bookings_factories.create_booking_account()
 
-        with travel('2001-02-01 01:00:00'):
+        with travel("2001-02-01 01:00:00"):
             bookings_factories.create_processed_payment(account=account, amount=100)
             assert account not in BookingAccount.objects.not_in_use()  # due to non zero balance
             bookings_factories.create_processed_payment(account=account, amount=-100)
@@ -385,21 +383,17 @@ class TestApplyDataRetentionPolicy(TestBase):
 
             # Although it is 'not_in_use', it is not yet considered as 'older_than(2001-02-01)'
             # because of payment
-            assert account not in BookingAccount.objects.not_in_use().older_than(
-                make_datetime(2001, 2, 1)
-            )
+            assert account not in BookingAccount.objects.not_in_use().older_than(make_datetime(2001, 2, 1))
 
             # It is older than 2001-02-02
-            assert account in BookingAccount.objects.not_in_use().older_than(
-                make_datetime(2001, 2, 2)
-            )
+            assert account in BookingAccount.objects.not_in_use().older_than(make_datetime(2001, 2, 2))
 
     def test_BookingAccount_older_than_respects_last_booking_camp_date(self):
         """
         BookingAccount 'older than' should consider a booking as similar
         to a login in terms of regarding the account as recent.
         """
-        with travel('2001-01-01'):
+        with travel("2001-01-01"):
             account = bookings_factories.create_booking_account()
             booking = bookings_factories.create_booking(account=account, state=BookingState.BOOKED, amount_due=0)
 
@@ -421,19 +415,19 @@ class TestApplyDataRetentionPolicy(TestBase):
             delete_row=False,
             keep=timedelta(days=365),
             fields=[
-                'contact_phone_number',
+                "contact_phone_number",
             ],
         )
-        with travel('2001-01-01'):
-            user = officers_factories.create_officer(contact_phone_number=(num := '01234 567 890'))
-        with travel('2001-12-31'):
+        with travel("2001-01-01"):
+            user = officers_factories.create_officer(contact_phone_number=(num := "01234 567 890"))
+        with travel("2001-12-31"):
             apply_partial_policy(policy)
             user.refresh_from_db()
             assert user.contact_phone_number == num
-        with travel('2002-01-01 01:00:00'):
+        with travel("2002-01-01 01:00:00"):
             apply_partial_policy(policy)
             user.refresh_from_db()
-            assert user.contact_phone_number == '[deleted]'
+            assert user.contact_phone_number == "[deleted]"
 
     def test_erase_PayPalIPN(self):
         policy = make_policy(
@@ -441,19 +435,19 @@ class TestApplyDataRetentionPolicy(TestBase):
             delete_row=False,
             keep=timedelta(days=365),
             fields=[
-                'payer_business_name',
+                "payer_business_name",
             ],
         )
-        with travel('2001-01-01'):
-            ipn = bookings_factories.create_ipn(payer_business_name=(name := 'Peter'))
-        with travel('2001-12-31'):
+        with travel("2001-01-01"):
+            ipn = bookings_factories.create_ipn(payer_business_name=(name := "Peter"))
+        with travel("2001-12-31"):
             apply_partial_policy(policy)
             ipn.refresh_from_db()
             assert ipn.payer_business_name == name
-        with travel('2002-01-01 01:00:00'):
+        with travel("2002-01-01 01:00:00"):
             apply_partial_policy(policy)
             ipn.refresh_from_db()
-            assert ipn.payer_business_name == '[deleted]'
+            assert ipn.payer_business_name == "[deleted]"
 
     def _assert_instance_deleted_after(self, *, instance: object, start: datetime, policy: Policy, days: int):
         model = instance.__class__

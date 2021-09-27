@@ -2,8 +2,8 @@ from django.db import migrations
 
 
 def forwards(apps, schema_editor):
-    Camp = apps.get_model('cciwmain.Camp')
-    CampName = apps.get_model('cciwmain.CampName')
+    Camp = apps.get_model("cciwmain.Camp")
+    CampName = apps.get_model("cciwmain.CampName")
     if Camp.objects.count() == 0:
         # Empty DB
         return
@@ -16,11 +16,11 @@ def forwards(apps, schema_editor):
     Camp.objects.filter(year=2001, number=2).update(previous_camp=Camp.objects.get(year=2000, number=7))
 
     # One old camp has no successors
-    null_name = CampName.objects.create(name='Null', slug='null')
+    null_name = CampName.objects.create(name="Null", slug="null")
 
     last_year = 2015
 
-    last_year_camps = Camp.objects.filter(year=last_year).order_by('number')
+    last_year_camps = Camp.objects.filter(year=last_year).order_by("number")
     for i, c in enumerate(last_year_camps):
         name = chr(65 + i)
         cn = CampName.objects.create(name=name, slug=name.lower())
@@ -39,8 +39,8 @@ def forwards(apps, schema_editor):
 
 
 def backwards(apps, schema_editor):
-    Camp = apps.get_model('cciwmain.Camp')
-    CampName = apps.get_model('cciwmain.CampName')
+    Camp = apps.get_model("cciwmain.Camp")
+    CampName = apps.get_model("cciwmain.CampName")
     Camp.objects.all().update(camp_name=None)
     CampName.objects.all().delete()
 
@@ -48,7 +48,7 @@ def backwards(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cciwmain', '0007_camp_name'),
+        ("cciwmain", "0007_camp_name"),
     ]
 
     operations = [

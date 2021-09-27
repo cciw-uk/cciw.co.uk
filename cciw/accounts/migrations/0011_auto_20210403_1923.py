@@ -8,14 +8,14 @@ import cciw.accounts.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0010_auto_20210118_0700'),
+        ("accounts", "0010_auto_20210118_0700"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='user',
+            name="user",
             managers=[
-                ('objects', cciw.accounts.models.UserManager()),
+                ("objects", cciw.accounts.models.UserManager()),
             ],
         ),
     ]

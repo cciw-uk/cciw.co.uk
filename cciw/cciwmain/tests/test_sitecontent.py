@@ -7,7 +7,6 @@ from cciw.utils.tests.base import TestBase
 
 
 class HtmlChunkPage(BasicSetupMixin, TestBase):
-
     def setUp(self):
         super().setUp()
         self.admin_user = User.objects.create(
@@ -43,7 +42,7 @@ class HtmlChunkPage(BasicSetupMixin, TestBase):
             email="editor@somewhere.com",
             password="plain$$test_editor_password",
         )
-        site_editor_role, created = Role.objects.get_or_create(name='Site editors')
+        site_editor_role, created = Role.objects.get_or_create(name="Site editors")
         if created:
             site_editor_role.permissions.add(
                 Permission.objects.get_by_natural_key("add_htmlchunk", "sitecontent", "htmlchunk"),
@@ -57,21 +56,21 @@ class HtmlChunkPage(BasicSetupMixin, TestBase):
         self._test_page(False)
 
     def test_page_normal_user(self):
-        assert self.client.login(username='normaluser', password='test_normaluser_password')
+        assert self.client.login(username="normaluser", password="test_normaluser_password")
         self._test_page(False)
 
     def test_page_editor(self):
         self._create_site_editor()
-        assert self.client.login(username='editor', password='test_editor_password')
+        assert self.client.login(username="editor", password="test_editor_password")
         self._test_page(True)
 
     def test_page_admin(self):
-        assert self.client.login(username='admin', password='test_admin_password')
+        assert self.client.login(username="admin", password="test_admin_password")
         self._test_page(True)
 
     def _test_page(self, should_see_edit_link):
-        response = self.client.get('/')
-        self.assertContains(response, '<p>CCiW is a charitable company')
+        response = self.client.get("/")
+        self.assertContains(response, "<p>CCiW is a charitable company")
         if should_see_edit_link:
             self.assertContains(response, "Edit home_page")
         else:
@@ -80,9 +79,7 @@ class HtmlChunkPage(BasicSetupMixin, TestBase):
 
 class FindViewTests(BasicSetupMixin, TestBase):
     def test_find(self):
-        menu_link = MenuLink.objects.create(title="Menu link title",
-                                            listorder=0,
-                                            url="/my-page/")
+        menu_link = MenuLink.objects.create(title="Menu link title", listorder=0, url="/my-page/")
         menu_link.htmlchunk_set.create(
             name="my-page",
             html="<p>This is <b>my</b> page</p>",

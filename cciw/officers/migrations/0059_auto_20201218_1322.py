@@ -6,80 +6,80 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0058_referee_capacity_known'),
+        ("officers", "0058_referee_capacity_known"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='application',
-            name='address2_address',
+            model_name="application",
+            name="address2_address",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='address2_from',
+            model_name="application",
+            name="address2_from",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='address2_to',
+            model_name="application",
+            name="address2_to",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='address3_address',
+            model_name="application",
+            name="address3_address",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='address3_from',
+            model_name="application",
+            name="address3_from",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='address3_to',
+            model_name="application",
+            name="address3_to",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='address_since',
+            model_name="application",
+            name="address_since",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='employer1_from',
+            model_name="application",
+            name="employer1_from",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='employer1_job',
+            model_name="application",
+            name="employer1_job",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='employer1_leaving',
+            model_name="application",
+            name="employer1_leaving",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='employer1_name',
+            model_name="application",
+            name="employer1_name",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='employer1_to',
+            model_name="application",
+            name="employer1_to",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='employer2_from',
+            model_name="application",
+            name="employer2_from",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='employer2_job',
+            model_name="application",
+            name="employer2_job",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='employer2_leaving',
+            model_name="application",
+            name="employer2_leaving",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='employer2_name',
+            model_name="application",
+            name="employer2_name",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='employer2_to',
+            model_name="application",
+            name="employer2_to",
         ),
         migrations.RemoveField(
-            model_name='application',
-            name='full_maiden_name',
+            model_name="application",
+            name="full_maiden_name",
         ),
     ]

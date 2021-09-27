@@ -47,20 +47,18 @@ class CciwAuthBackend:
             perms = Permission.objects.all()
         else:
             perms = Permission.objects.filter(roles__members=user_obj)
-        perms = perms.values_list('content_type__app_label', 'codename').order_by()
+        perms = perms.values_list("content_type__app_label", "codename").order_by()
         return {f"{ct}.{name}" for ct, name in perms}
 
     def get_all_permissions(self, user_obj, obj=None):
         if not user_obj.is_active or user_obj.is_anonymous or obj is not None:
             return set()
-        if not hasattr(user_obj, '_perm_cache'):
+        if not hasattr(user_obj, "_perm_cache"):
             user_obj._perm_cache = self._get_all_permissions(user_obj)
         return user_obj._perm_cache
 
     def has_perm(self, user_obj, perm, obj=None):
-        return user_obj.is_active and (
-            perm in self.get_all_permissions(user_obj, obj=obj)
-        )
+        return user_obj.is_active and (perm in self.get_all_permissions(user_obj, obj=obj))
 
     def has_module_perms(self, user_obj, app_label):
         """
@@ -89,15 +87,14 @@ class CciwAuthBackend:
             # there is nothing they can edit.
             #
             # We fix that up with these exceptions:
-            if app_label == 'officers':
+            if app_label == "officers":
                 if user_obj.can_manage_application_forms:
                     return True
-            if app_label == 'cciwmain':
+            if app_label == "cciwmain":
                 if user_obj.can_edit_any_camps:
                     return True
         return user_obj.is_active and any(
-            perm[:perm.index('.')] == app_label
-            for perm in self.get_all_permissions(user_obj)
+            perm[: perm.index(".")] == app_label for perm in self.get_all_permissions(user_obj)
         )
 
     def check_password_validation(self, user, password):

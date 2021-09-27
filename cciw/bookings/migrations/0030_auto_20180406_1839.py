@@ -6,18 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0029_auto_20170410_1828'),
+        ("bookings", "0029_auto_20170410_1828"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='bookingaccount',
-            name='subscribe_to_mailings',
-            field=models.NullBooleanField(default=None, verbose_name='Receive mailings about future camps'),
+            model_name="bookingaccount",
+            name="subscribe_to_mailings",
+            field=models.NullBooleanField(default=None, verbose_name="Receive mailings about future camps"),
         ),
         migrations.AlterField(
-            model_name='bookingaccount',
-            name='subscribe_to_newsletter',
-            field=models.BooleanField(default=False, help_text="Your email address will be registered with a newsletter service, <a href='https://mailchimp.com/'>MailChimp</a>, if this is selected.", verbose_name='Subscribe to email newsletter'),
+            model_name="bookingaccount",
+            name="subscribe_to_newsletter",
+            field=models.BooleanField(
+                default=False,
+                help_text="Your email address will be registered with a newsletter service, <a href='https://mailchimp.com/'>MailChimp</a>, if this is selected.",
+                verbose_name="Subscribe to email newsletter",
+            ),
         ),
     ]

@@ -8,15 +8,15 @@ register = template.Library()
 class FixPermissions(template.Node):
     def render(self, context):
         for d in context.dicts:
-            if 'has_change_permission' in d:
+            if "has_change_permission" in d:
                 # We don't want 'Save and add another' to appear
-                d['has_add_permission'] = False
+                d["has_add_permission"] = False
 
-        return ''
+        return ""
 
 
 def fix_permissions(parser, token):
     return FixPermissions()
 
 
-register.tag('fix_permissions', fix_permissions)
+register.tag("fix_permissions", fix_permissions)

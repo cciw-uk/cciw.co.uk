@@ -27,16 +27,14 @@ def thisyears_applications(user):
     Returns a QuerySet containing the applications a user has that
     apply to 'this year', i.e. to camps still in the future.
     """
-    first_camp_thisyear = Camp.objects.filter(year=common.get_thisyear()).order_by('start_date').first()
+    first_camp_thisyear = Camp.objects.filter(year=common.get_thisyear()).order_by("start_date").first()
     apps = user.applications.all()
 
     if first_camp_thisyear is not None:
         apps = apps.filter(date_saved__gte=first_camp_thisyear.start_date - timedelta(365))
-        past_camp = (Camp.objects.filter(start_date__year=first_camp_thisyear.year - 1)
-                     .order_by('-end_date')
-                     .first())
+        past_camp = Camp.objects.filter(start_date__year=first_camp_thisyear.year - 1).order_by("-end_date").first()
     else:
-        past_camp = Camp.objects.order_by('-end_date').first()
+        past_camp = Camp.objects.order_by("-end_date").first()
 
     if past_camp is not None:
         apps = apps.filter(date_saved__gt=past_camp.end_date)
@@ -53,9 +51,9 @@ def camps_for_application(application):
     # submitted date.
     if application.date_saved is None:
         return []
-    invites = application.officer.invitations.filter(camp__start_date__gte=application.date_saved,
-                                                     camp__start_date__lt=application.date_saved +
-                                                     timedelta(365))
+    invites = application.officer.invitations.filter(
+        camp__start_date__gte=application.date_saved, camp__start_date__lt=application.date_saved + timedelta(365)
+    )
     # In some cases, the above query can catch two years of camps.  We only want
     # to the first year. (This doesn't matter very much, as
     # camps_for_application is used for notifications, and they only happen when
@@ -88,15 +86,14 @@ def applications_for_camps(camps, officer_ids=None):
     if officer_ids is None:
         # Use invitations to work out which officers we care about
         invitations = Invitation.objects.filter(camp__in=camps)
-        officer_ids = invitations.values_list('officer_id', flat=True)
-    apps = Application.objects.filter(finished=True,
-                                      officer__in=officer_ids)
+        officer_ids = invitations.values_list("officer_id", flat=True)
+    apps = Application.objects.filter(finished=True, officer__in=officer_ids)
 
     earliest_date = min(camp.start_date for camp in camps) - timedelta(365)
     latest_date = max(camp.start_date for camp in camps)
     apps = apps.filter(date_saved__lte=latest_date, date_saved__gt=earliest_date)
 
-    previous_years_last_camp = Camp.objects.filter(year=camps[0].year - 1).order_by('-end_date').first()
+    previous_years_last_camp = Camp.objects.filter(year=camps[0].year - 1).order_by("-end_date").first()
     if previous_years_last_camp is not None:
         # We have some previous camps
         apps = apps.filter(date_saved__gt=previous_years_last_camp.end_date)
@@ -104,13 +101,13 @@ def applications_for_camps(camps, officer_ids=None):
 
 
 def application_to_text(app):
-    t = loader.get_template('cciw/officers/application_email.txt')
-    return t.render({'app': app})
+    t = loader.get_template("cciw/officers/application_email.txt")
+    return t.render({"app": app})
 
 
 def application_to_rtf(app):
-    t = loader.get_template('cciw/officers/application.rtf')
-    return t.render({'app': app})
+    t = loader.get_template("cciw/officers/application.rtf")
+    return t.render({"app": app})
 
 
 def application_rtf_filename(app):
@@ -123,7 +120,7 @@ def application_txt_filename(app):
 
 def _application_filename_stem(app):
     if app.date_saved is None:
-        submitted = ''
+        submitted = ""
     else:
-        submitted = '_' + app.date_saved.strftime('%Y-%m-%d')
-    return f'Application_{app.officer.username}{submitted}'
+        submitted = "_" + app.date_saved.strftime("%Y-%m-%d")
+    return f"Application_{app.officer.username}{submitted}"

@@ -4,7 +4,7 @@ from django.template.defaultfilters import stringfilter
 register = template.Library()
 
 
-@register.filter(name='indent')
+@register.filter(name="indent")
 @stringfilter
 def indent(value, arg=1):
     """
@@ -15,5 +15,6 @@ def indent(value, arg=1):
     {{ content|indent:"2" }}
     """
     import re
+
     regex = re.compile("^", re.M)
     return re.sub(regex, " " * int(arg), value)

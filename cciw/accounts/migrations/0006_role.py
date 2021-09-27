@@ -9,26 +9,40 @@ import cciw.accounts.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0011_update_proxy_permissions'),
-        ('accounts', '0005_auto_20190131_0744'),
+        ("auth", "0011_update_proxy_permissions"),
+        ("accounts", "0005_auto_20190131_0744"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Role',
+            name="Role",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=150, unique=True)),
-                ('email', models.EmailField(blank=True, help_text='Email address including domain', max_length=254)),
-                ('email_recipients', models.ManyToManyField(help_text='Users who will be emailed for email sent to the role email address. Usually the same as "members", or a subset', related_name='roles_as_email_recipient', to=settings.AUTH_USER_MODEL)),
-                ('members', models.ManyToManyField(help_text='Users who have access rights for this group', related_name='roles', to=settings.AUTH_USER_MODEL)),
-                ('permissions', models.ManyToManyField(blank=True, to='auth.Permission')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=150, unique=True)),
+                ("email", models.EmailField(blank=True, help_text="Email address including domain", max_length=254)),
+                (
+                    "email_recipients",
+                    models.ManyToManyField(
+                        help_text='Users who will be emailed for email sent to the role email address. Usually the same as "members", or a subset',
+                        related_name="roles_as_email_recipient",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "members",
+                    models.ManyToManyField(
+                        help_text="Users who have access rights for this group",
+                        related_name="roles",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                ("permissions", models.ManyToManyField(blank=True, to="auth.Permission")),
             ],
             options={
-                'verbose_name_plural': 'roles',
+                "verbose_name_plural": "roles",
             },
             managers=[
-                ('objects', cciw.accounts.models.RoleManager()),
+                ("objects", cciw.accounts.models.RoleManager()),
             ],
         ),
     ]

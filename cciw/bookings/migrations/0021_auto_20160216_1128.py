@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0020_booking_gp_post_code'),
+        ("bookings", "0020_booking_gp_post_code"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='booking',
-            name='address_post_code',
-            field=models.CharField(max_length=10, verbose_name='post code'),
+            model_name="booking",
+            name="address_post_code",
+            field=models.CharField(max_length=10, verbose_name="post code"),
         ),
         migrations.AlterField(
-            model_name='booking',
-            name='gp_post_code',
-            field=models.CharField(max_length=10, verbose_name='post code'),
+            model_name="booking",
+            name="gp_post_code",
+            field=models.CharField(max_length=10, verbose_name="post code"),
         ),
     ]

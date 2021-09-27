@@ -53,6 +53,7 @@ if TYPE_CHECKING:
 
 # --- Policy and sub-components ---
 
+
 @dataclass
 class Policy:
     source: str
@@ -79,13 +80,15 @@ class ModelDetail:
     delete_row: bool = False
 
     @classmethod
-    def build(cls, *,
-              name: str,
-              field_names: Optional[list[str]] = None,
-              all_fields: bool = False,
-              erasure_method_names: Optional[dict[str, str]] = None,
-              delete_row: bool = False,
-              ):
+    def build(
+        cls,
+        *,
+        name: str,
+        field_names: Optional[list[str]] = None,
+        all_fields: bool = False,
+        erasure_method_names: Optional[dict[str, str]] = None,
+        delete_row: bool = False,
+    ):
         model = apps.get_model(name)
         field_list = model._meta.get_fields()
         field_dict = {f.name: f for f in field_list}
@@ -109,7 +112,7 @@ class ModelDetail:
             fields = []
             for f in field_names:
                 if f not in field_dict:
-                    raise ValueError(f'Model {model.__name__} does not have field {f}')
+                    raise ValueError(f"Model {model.__name__} does not have field {f}")
                 fields.append(field_dict[f])
 
         erasure_methods = {}
@@ -132,14 +135,14 @@ class ModelDetail:
 
 class ErasureMethod:
     def allowed_for_field(self, field: Field):
-        raise NotImplementedError(f'{self.__class__} needs to implement allowed_for_field')
+        raise NotImplementedError(f"{self.__class__} needs to implement allowed_for_field")
 
     def build_update_dict(self, field):
         """
         Returns a dict which can be passed as keyword arguments
         to a QuerySet.update() call.
         """
-        raise NotImplementedError(f'{self.__class__} needs to implement build_update_dict')
+        raise NotImplementedError(f"{self.__class__} needs to implement build_update_dict")
 
 
 class _Forever:
@@ -162,10 +165,7 @@ ModelDetail.__pydantic_model__.update_forward_refs()
 def get_data_retention_policy_issues(policy: Optional[Policy] = None):
     if policy is None:
         policy = load_data_retention_policy()
-    return (
-        _check_exhaustiveness(policy) +
-        _check_erasable_records(policy)
-    )
+    return _check_exhaustiveness(policy) + _check_erasable_records(policy)
 
 
 def load_data_retention_policy() -> Policy:
@@ -186,28 +186,26 @@ def load_data_retention_policy() -> Policy:
     policy_yaml = yaml.load(open(filename), Loader=yaml.SafeLoader)
     groups = []
     for yaml_group in policy_yaml:
-        yaml_rules = yaml_group.pop('rules')
-        keep = parse_keep(yaml_rules.pop('keep'))
-        erasable_on_request = yaml_rules.pop('deletable on request from data subject')
+        yaml_rules = yaml_group.pop("rules")
+        keep = parse_keep(yaml_rules.pop("keep"))
+        erasable_on_request = yaml_rules.pop("deletable on request from data subject")
         if yaml_rules:
             raise ValueError(f'Unexpected keys in "rules" entry: {", ".join(yaml_rules.keys())}')
 
-        yaml_tables = yaml_group.pop('tables')
+        yaml_tables = yaml_group.pop("tables")
         models = []
         for yaml_table in yaml_tables:
-            yaml_model_name = yaml_table.pop('name')
-            yaml_columns = yaml_table.pop('columns', None)
-            yaml_deletion_methods = yaml_table.pop('deletion methods', {})
-            if yaml_columns == 'all':
-                if 'delete row' in yaml_table:
+            yaml_model_name = yaml_table.pop("name")
+            yaml_columns = yaml_table.pop("columns", None)
+            yaml_deletion_methods = yaml_table.pop("deletion methods", {})
+            if yaml_columns == "all":
+                if "delete row" in yaml_table:
                     raise ValueError('You should specify either "columns: all" or "delete row", not both')
                 model_detail = ModelDetail.build(
-                    name=yaml_model_name,
-                    all_fields=True,
-                    erasure_method_names=yaml_deletion_methods
+                    name=yaml_model_name, all_fields=True, erasure_method_names=yaml_deletion_methods
                 )
             else:
-                yaml_delete_row = yaml_table.pop('delete row', False)
+                yaml_delete_row = yaml_table.pop("delete row", False)
                 if yaml_delete_row:
                     if yaml_columns is not None:
                         raise ValueError('You should specify either "columns" or "delete row: yes", not both')
@@ -227,16 +225,13 @@ def load_data_retention_policy() -> Policy:
                     keep=keep,
                     erasable_on_request=erasable_on_request,
                 ),
-                models=models
+                models=models,
             )
         )
         if yaml_group:
             raise ValueError(f'Unexpected keys in group entry: {", ".join(yaml_group.keys())}')
 
-    return Policy(
-        source=str(filename),
-        groups=groups
-    )
+    return Policy(source=str(filename), groups=groups)
 
 
 def _check_exhaustiveness(policy: Policy) -> list[Error]:
@@ -265,25 +260,29 @@ def _check_exhaustiveness(policy: Policy) -> list[Error]:
 
     issues = []
     if dupes:
-        issues.append(Error(
-            'Duplicate policies were found for some fields:\n' +
-            ''.join(f'   - {model.__name__}.{field}\n' for model, field in dupes),
-            obj=policy.source,
-            id='dataretention.E001'
-        ))
+        issues.append(
+            Error(
+                "Duplicate policies were found for some fields:\n"
+                + "".join(f"   - {model.__name__}.{field}\n" for model, field in dupes),
+                obj=policy.source,
+                id="dataretention.E001",
+            )
+        )
     if missing:
-        msg_parts = ['Missing models/fields:']
+        msg_parts = ["Missing models/fields:"]
         for model, missing_for_model in missing:
             # Mimic the format of data_retention.yaml for easy copy/paste
-            msg_parts.append(f'    - name: {model._meta.app_label}.{model.__name__}')
-            msg_parts.append('      columns:')
+            msg_parts.append(f"    - name: {model._meta.app_label}.{model.__name__}")
+            msg_parts.append("      columns:")
             for field in missing_for_model:
-                msg_parts.append(f'      - {field.name}')
-        issues.append(Error(
-            '\n'.join(msg_parts) + '\n',
-            obj=policy.source,
-            id='dataretention.E002',
-        ))
+                msg_parts.append(f"      - {field.name}")
+        issues.append(
+            Error(
+                "\n".join(msg_parts) + "\n",
+                obj=policy.source,
+                id="dataretention.E002",
+            )
+        )
 
     return issues
 
@@ -302,11 +301,13 @@ def _check_erasable_records(policy: Policy) -> list[Error]:
                 continue
             seen_models.add(model)
             if model not in ERASABLE_RECORDS:
-                issues.append(Error(
-                    f'No method defined to obtain erasable records for {model.__name__}',
-                    obj=policy.source,
-                    id='dataretention.E003'
-                ))
+                issues.append(
+                    Error(
+                        f"No method defined to obtain erasable records for {model.__name__}",
+                        obj=policy.source,
+                        id="dataretention.E003",
+                    )
+                )
             if not model_detail.delete_row:
                 for field in model_detail.fields:
                     if field in model_detail.custom_erasure_methods:
@@ -314,18 +315,21 @@ def _check_erasable_records(policy: Policy) -> list[Error]:
                     try:
                         _find_erasure_method(field)
                     except LookupError:
-                        issues.append(Error(
-                            f'No method defined to erase field {field.model.__name__}.{field.name}',
-                            obj=policy.source,
-                            id='dataretention.E004'
-                        ))
-                if ('erased_on' not in [f.name for f in model._meta.get_fields()] and
-                        model not in ERASED_ON_EXCEPTIONS):
-                    issues.append(Error(
-                        'No "erased_on" field present',
-                        obj=model,
-                        id='dataretention.E005',
-                    ))
+                        issues.append(
+                            Error(
+                                f"No method defined to erase field {field.model.__name__}.{field.name}",
+                                obj=policy.source,
+                                id="dataretention.E004",
+                            )
+                        )
+                if "erased_on" not in [f.name for f in model._meta.get_fields()] and model not in ERASED_ON_EXCEPTIONS:
+                    issues.append(
+                        Error(
+                            'No "erased_on" field present',
+                            obj=model,
+                            id="dataretention.E005",
+                        )
+                    )
     return issues
 
 
@@ -337,18 +341,14 @@ def _field_requires_privacy_policy(field: Field):
         return False
     if field.auto_created:
         return False
-    if field.name == 'erased_on' and isinstance(field, models.DateTimeField):
+    if field.name == "erased_on" and isinstance(field, models.DateTimeField):
         return False
     return True
 
 
-forever = parsy.string('forever').result(Forever)
-years = (parsy.regex(r'\d+').map(int) << parsy.regex(" years?")).map(
-    lambda y: timedelta(days=365 * y)
-)
-days = (parsy.regex(r'\d+').map(int) << parsy.regex(" days?")).map(
-    lambda d: timedelta(days=d)
-)
+forever = parsy.string("forever").result(Forever)
+years = (parsy.regex(r"\d+").map(int) << parsy.regex(" years?")).map(lambda y: timedelta(days=365 * y))
+days = (parsy.regex(r"\d+").map(int) << parsy.regex(" days?")).map(lambda d: timedelta(days=d))
 keep_parser = forever | years | days
 
 
@@ -369,7 +369,7 @@ def apply_data_retention(policy=None, ignore_missing_models=False):
     if issues:
         if ignore_missing_models:
             # Easier testing
-            issues = [issue for issue in issues if 'Missing models' not in issue.msg]
+            issues = [issue for issue in issues if "Missing models" not in issue.msg]
         if issues:
             raise AssertionError("Invalid data retention policy, aborting", issues)
 
@@ -402,7 +402,7 @@ def apply_data_retention_single_model(now: datetime, *, rules: Rules, model_deta
                 method = _find_erasure_method(field)
             update_dict.update(method.build_update_dict(field))
         if model_detail.model not in ERASED_ON_EXCEPTIONS:
-            update_dict['erased_on'] = update_erased_on_field(now)
+            update_dict["erased_on"] = update_erased_on_field(now)
         retval = erasable_records.update(**update_dict)
     return retval
 
@@ -414,20 +414,25 @@ def get_erasable(before_datetime: date, model: type):
 
 
 def update_erased_on_field(now: datetime):
-    return RawSQL('''
+    return RawSQL(
+        """
         CASE WHEN erased_on IS NULL THEN %s
         ELSE erased_on
         END
-    ''', [now])
+    """,
+        [now],
+    )
+
 
 # --- Default erasure methods ---
 
 
-DELETED_STRING = '[deleted]'
+DELETED_STRING = "[deleted]"
 
 
 # For EmailFieldErasure and CountryFieldErasure we avoid validation errors in
 # admin by setting something that is valid, rather than just deleting.
+
 
 class EmailFieldErasure(ErasureMethod):
     def allowed_for_field(self, field: Field):
@@ -438,7 +443,7 @@ class EmailFieldErasure(ErasureMethod):
         if field.null and field.blank:
             return {key: None}
         else:
-            return {key: 'deleted@example.com'}
+            return {key: "deleted@example.com"}
 
 
 class CountryFieldErasure(ErasureMethod):
@@ -450,7 +455,7 @@ class CountryFieldErasure(ErasureMethod):
         if field.null and field.blank:
             return {key: None}
         else:
-            return {key: 'GB'}  # United Kingdom
+            return {key: "GB"}  # United Kingdom
 
 
 class CharFieldErasure(ErasureMethod):
@@ -462,7 +467,7 @@ class CharFieldErasure(ErasureMethod):
         if field.null:
             return {key: None}
         elif field.max_length < len(DELETED_STRING):
-            return {key: ''}
+            return {key: ""}
         else:
             return {key: DELETED_STRING}
 
@@ -498,7 +503,7 @@ def _find_erasure_method(field):
     for method in DEFAULT_ERASURE_METHODS:
         if method.allowed_for_field(field):
             return method
-    raise LookupError(f'No erasure method found for field {field.model.__name__}.{field.name}')
+    raise LookupError(f"No erasure method found for field {field.model.__name__}.{field.name}")
 
 
 # --- Domain specific knowledge ---
@@ -533,16 +538,17 @@ ERASED_ON_EXCEPTIONS = [
 
 class PreserveAgeOnCamp(ErasureMethod):
     def allowed_for_field(self, field):
-        return field.model == Booking and field.name == 'date_of_birth'
+        return field.model == Booking and field.name == "date_of_birth"
 
     def build_update_dict(self, field: Field):
         return {
-            'date_of_birth':
+            "date_of_birth":
             # Birthdates after YYYY-08-31 get counted as next school year,
             # so we anonymise those to YYYY-12-01, everything else to YYYY-01-01
             # See also Booking.age_base_date
             # See also BookingManager.need_approving
-            RawSQL('''
+            RawSQL(
+                """
             make_date(
                 EXTRACT(YEAR FROM date_of_birth)::int,
                 CASE WHEN EXTRACT(MONTH FROM date_of_birth) > 8 THEN 12
@@ -550,10 +556,13 @@ class PreserveAgeOnCamp(ErasureMethod):
                 END,
                 1
             )
-            ''', [], models.DateTimeField()),
+            """,
+                [],
+                models.DateTimeField(),
+            ),
         }
 
 
 CUSTOM_ERASURE_METHODS = {
-    'preserve_age_on_camp': PreserveAgeOnCamp(),
+    "preserve_age_on_camp": PreserveAgeOnCamp(),
 }

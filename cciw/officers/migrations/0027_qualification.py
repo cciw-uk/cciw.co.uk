@@ -7,17 +7,31 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0026_qualificationtype'),
+        ("officers", "0026_qualificationtype"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Qualification',
+            name="Qualification",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date_issued', models.DateField()),
-                ('application', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='qualifications', to='officers.Application')),
-                ('type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='qualifications', to='officers.QualificationType')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("date_issued", models.DateField()),
+                (
+                    "application",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="qualifications",
+                        to="officers.Application",
+                    ),
+                ),
+                (
+                    "type",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="qualifications",
+                        to="officers.QualificationType",
+                    ),
+                ),
             ],
         ),
     ]

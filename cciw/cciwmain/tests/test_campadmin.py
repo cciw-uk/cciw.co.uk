@@ -18,7 +18,7 @@ class CampAdmin(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
     def test_leaders_can_edit_current_camp(self):
         self.officer_login(LEADER)
         leader = self.leader_user
-        camp, = leader.current_camps_as_admin_or_leader
+        (camp,) = leader.current_camps_as_admin_or_leader
         other_camps = Camp.objects.all().exclude(id=camp.id)
         self.get_url("admin:cciwmain_camp_changelist")
         for c in other_camps:
@@ -27,7 +27,7 @@ class CampAdmin(CurrentCampsMixin, OfficersSetupMixin, WebTestBase):
             else:
                 assert not self.is_element_present(f'[href="/admin/cciwmain/camp/{c.id}/change/"]')
         self.follow_link(f'[href="/admin/cciwmain/camp/{camp.id}/change/"]')
-        self.fill({'#id_max_campers': 47})
+        self.fill({"#id_max_campers": 47})
         self.submit('[name="_save"]')
         assert camp.max_campers != 47
         camp.refresh_from_db()

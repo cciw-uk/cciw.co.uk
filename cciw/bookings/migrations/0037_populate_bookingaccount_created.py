@@ -6,11 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0036_bookingaccount_created'),
+        ("bookings", "0036_bookingaccount_created"),
     ]
 
     operations = [
-        migrations.RunSQL('''
+        migrations.RunSQL(
+            """
         -- Populate 'created'.
         -- For online created records, it's easy:
         UPDATE bookings_bookingaccount
@@ -46,5 +47,7 @@ class Migration(migrations.Migration):
         UPDATE bookings_bookingaccount
         SET created = now()
         WHERE created IS NULL;
-        ''', '')
+        """,
+            "",
+        )
     ]

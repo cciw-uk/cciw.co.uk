@@ -7,18 +7,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0043_dbsactionlog_action_type'),
+        ("officers", "0043_dbsactionlog_action_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dbsactionlog',
-            name='action_type',
-            field=models.CharField(choices=[('form_sent', 'DBS form sent'), ('leader_alert_sent', 'Alert sent to leader')], max_length=20, verbose_name='action type'),
+            model_name="dbsactionlog",
+            name="action_type",
+            field=models.CharField(
+                choices=[("form_sent", "DBS form sent"), ("leader_alert_sent", "Alert sent to leader")],
+                max_length=20,
+                verbose_name="action type",
+            ),
         ),
         migrations.AlterField(
-            model_name='dbsactionlog',
-            name='timestamp',
-            field=models.DateTimeField(default=django.utils.timezone.now, verbose_name='Timestamp'),
+            model_name="dbsactionlog",
+            name="timestamp",
+            field=models.DateTimeField(default=django.utils.timezone.now, verbose_name="Timestamp"),
         ),
     ]

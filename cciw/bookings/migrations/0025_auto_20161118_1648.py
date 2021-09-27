@@ -7,24 +7,49 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ipn', '0007_auto_20160219_1135'),
-        ('bookings', '0024_auto_20160218_1622'),
+        ("ipn", "0007_auto_20160219_1135"),
+        ("bookings", "0024_auto_20160218_1622"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PaymentSource',
+            name="PaymentSource",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('account_transfer_payment', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='bookings.AccountTransferPayment')),
-                ('ipn_payment', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='ipn.PayPalIPN')),
-                ('manual_payment', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='bookings.ManualPayment')),
-                ('refund_payment', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='bookings.RefundPayment')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "account_transfer_payment",
+                    models.OneToOneField(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="bookings.AccountTransferPayment",
+                    ),
+                ),
+                (
+                    "ipn_payment",
+                    models.OneToOneField(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="ipn.PayPalIPN"
+                    ),
+                ),
+                (
+                    "manual_payment",
+                    models.OneToOneField(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="bookings.ManualPayment"
+                    ),
+                ),
+                (
+                    "refund_payment",
+                    models.OneToOneField(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="bookings.RefundPayment"
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='payment',
-            name='source',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='bookings.PaymentSource'),
+            model_name="payment",
+            name="source",
+            field=models.OneToOneField(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="bookings.PaymentSource"
+            ),
         ),
     ]

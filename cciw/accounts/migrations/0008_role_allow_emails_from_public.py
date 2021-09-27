@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0007_auto_20201221_1908'),
+        ("accounts", "0007_auto_20201221_1908"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='role',
-            name='allow_emails_from_public',
+            model_name="role",
+            name="allow_emails_from_public",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -5,13 +5,21 @@ from cciw.cciwmain.models import Site
 
 
 def index(request):
-    return TemplateResponse(request, 'cciw/sites/index.html', {
-        'title': 'Camp sites',
-        'sites': Site.objects.all(),
-    })
+    return TemplateResponse(
+        request,
+        "cciw/sites/index.html",
+        {
+            "title": "Camp sites",
+            "sites": Site.objects.all(),
+        },
+    )
 
 
 def detail(request, slug=None):
-    return TemplateResponse(request, 'cciw/sites/detail.html', {
-        'site': get_object_or_404(Site.objects.filter(slug_name=slug)),
-    })
+    return TemplateResponse(
+        request,
+        "cciw/sites/detail.html",
+        {
+            "site": get_object_or_404(Site.objects.filter(slug_name=slug)),
+        },
+    )

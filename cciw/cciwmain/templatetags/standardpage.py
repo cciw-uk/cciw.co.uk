@@ -17,8 +17,8 @@ class RenderHtmlChunk(template.Node):
                 raise
             chunk = None
         if chunk is None:
-            return ''
-        return chunk.render(context['request'])
+            return ""
+        return chunk.render(context["request"])
 
 
 def do_htmlchunk(parser, token):
@@ -32,10 +32,10 @@ def do_htmlchunk(parser, token):
     if len(bits) == 2:
         ignore_missing = False
     else:
-        ignore_missing = bits[2] == 'ignoremissing'
+        ignore_missing = bits[2] == "ignoremissing"
     return RenderHtmlChunk(bits[1], ignore_missing=ignore_missing)
 
 
 register = template.Library()
 register.filter(standard_subs)
-register.tag('htmlchunk', do_htmlchunk)
+register.tag("htmlchunk", do_htmlchunk)

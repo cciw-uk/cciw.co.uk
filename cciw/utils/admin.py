@@ -14,9 +14,7 @@ class RerouteResponseAdminMixin:
         return main_response
 
     def response_post_save_add(self, request, obj):
-        return self.conditional_reroute(request,
-                                        super().response_post_save_add(request, obj))
+        return self.conditional_reroute(request, super().response_post_save_add(request, obj))
 
     def response_post_save_change(self, request, obj):
-        return self.conditional_reroute(request,
-                                        super().response_post_save_change(request, obj))
+        return self.conditional_reroute(request, super().response_post_save_change(request, obj))

@@ -9,51 +9,61 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0011_update_proxy_permissions'),
-        ('accounts', '0006_role'),
+        ("auth", "0011_update_proxy_permissions"),
+        ("accounts", "0006_role"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='user',
+            name="user",
             options={},
         ),
         migrations.RemoveField(
-            model_name='user',
-            name='groups',
+            model_name="user",
+            name="groups",
         ),
         migrations.RemoveField(
-            model_name='user',
-            name='user_permissions',
+            model_name="user",
+            name="user_permissions",
         ),
         migrations.AlterField(
-            model_name='role',
-            name='members',
-            field=models.ManyToManyField(help_text='Users who have access rights for this role', related_name='roles', to=settings.AUTH_USER_MODEL),
+            model_name="role",
+            name="members",
+            field=models.ManyToManyField(
+                help_text="Users who have access rights for this role",
+                related_name="roles",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='role',
-            name='permissions',
-            field=models.ManyToManyField(blank=True, related_name='roles', to='auth.Permission'),
+            model_name="role",
+            name="permissions",
+            field=models.ManyToManyField(blank=True, related_name="roles", to="auth.Permission"),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='date_joined',
+            model_name="user",
+            name="date_joined",
             field=models.DateTimeField(default=django.utils.timezone.now),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='first_name',
+            model_name="user",
+            name="first_name",
             field=models.CharField(blank=True, max_length=30),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='last_name',
+            model_name="user",
+            name="last_name",
             field=models.CharField(blank=True, max_length=150),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='username',
-            field=models.CharField(error_messages={'unique': 'A user with that username already exists.'}, help_text='Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.', max_length=150, unique=True, validators=[django.contrib.auth.validators.UnicodeUsernameValidator()]),
+            model_name="user",
+            name="username",
+            field=models.CharField(
+                error_messages={"unique": "A user with that username already exists."},
+                help_text="Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+                max_length=150,
+                unique=True,
+                validators=[django.contrib.auth.validators.UnicodeUsernameValidator()],
+            ),
         ),
     ]

@@ -9,28 +9,38 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('officers', '0061_application_erased_on'),
+        ("officers", "0061_application_erased_on"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dbsactionlog',
-            name='officer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='dbsactionlogs', to=settings.AUTH_USER_MODEL),
+            model_name="dbsactionlog",
+            name="officer",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="dbsactionlogs", to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AlterField(
-            model_name='dbscheck',
-            name='officer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='dbs_checks', to=settings.AUTH_USER_MODEL),
+            model_name="dbscheck",
+            name="officer",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="dbs_checks", to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AlterField(
-            model_name='invitation',
-            name='officer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='invitations', to=settings.AUTH_USER_MODEL),
+            model_name="invitation",
+            name="officer",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="invitations", to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AlterField(
-            model_name='qualification',
-            name='type',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='qualifications', to='officers.qualificationtype'),
+            model_name="qualification",
+            name="type",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="qualifications",
+                to="officers.qualificationtype",
+            ),
         ),
     ]

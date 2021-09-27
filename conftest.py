@@ -9,4 +9,4 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     if config.option.show_browser:
-        os.environ['TESTS_SHOW_BROWSER'] = 'TRUE'
+        os.environ["TESTS_SHOW_BROWSER"] = "TRUE"

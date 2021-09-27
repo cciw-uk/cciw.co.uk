@@ -8,13 +8,18 @@ import cciw.officers.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0057_merge_20191211_1754'),
+        ("officers", "0057_merge_20191211_1754"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='referee',
-            name='capacity_known',
-            field=cciw.officers.fields.RequiredCharField(blank=True, help_text='In what capacity does the referee know you? (see above)', max_length=255, verbose_name='Capacity known'),
+            model_name="referee",
+            name="capacity_known",
+            field=cciw.officers.fields.RequiredCharField(
+                blank=True,
+                help_text="In what capacity does the referee know you? (see above)",
+                max_length=255,
+                verbose_name="Capacity known",
+            ),
         ),
     ]

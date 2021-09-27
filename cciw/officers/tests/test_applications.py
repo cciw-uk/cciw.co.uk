@@ -9,25 +9,28 @@ from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.officers import applications
 from cciw.officers.models import Application
-from cciw.officers.tests.base import (OFFICER, OFFICER_PASSWORD, OFFICER_USERNAME, CurrentCampsMixin,
-                                      OfficersSetupMixin, RequireApplicationsMixin, RequireQualificationTypesMixin)
+from cciw.officers.tests.base import (
+    OFFICER,
+    OFFICER_PASSWORD,
+    OFFICER_USERNAME,
+    CurrentCampsMixin,
+    OfficersSetupMixin,
+    RequireApplicationsMixin,
+    RequireQualificationTypesMixin,
+)
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import WebTestBase
 
 
 class ApplicationModel(RequireApplicationsMixin, TestBase):
-
     def test_referees(self):
-        for appid in [self.application1.id,
-                      self.application2.id,
-                      self.application3.id]:
+        for appid in [self.application1.id, self.application2.id, self.application3.id]:
             app = Application.objects.get(id=appid)
             assert app.referees[0] == app.referee_set.get(referee_number=1)
             assert app.referees[1] == app.referee_set.get(referee_number=2)
 
 
-class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQualificationTypesMixin,
-                              TestBase):
+class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQualificationTypesMixin, TestBase):
 
     _create_button = """<input type="submit" name="new" value="Create" """
     _edit_button = """<input type="submit" name="edit" value="Continue" """
@@ -35,7 +38,7 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQual
     def setUp(self):
         super().setUp()
         self.client.login(username=OFFICER_USERNAME, password=OFFICER_PASSWORD)
-        self.url = reverse('cciw-officers-applications')
+        self.url = reverse("cciw-officers-applications")
         self.user = User.objects.get(username=OFFICER_USERNAME)
         self.user.applications.all().delete()
 
@@ -50,49 +53,43 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQual
         self.assertNotContains(resp, self._edit_button)
 
     def test_finished_application(self):
-        self.user.applications.create(finished=True,
-                                      date_saved=date.today() - timedelta(365))
+        self.user.applications.create(finished=True, date_saved=date.today() - timedelta(365))
         resp = self.client.get(self.url)
         self.assertContains(resp, self._create_button)
 
     def test_finished_application_recent(self):
-        self.user.applications.create(finished=True,
-                                      date_saved=date.today())
+        self.user.applications.create(finished=True, date_saved=date.today())
         resp = self.client.get(self.url)
         self.assertNotContains(resp, self._create_button)
 
     def test_unfinished_application(self):
-        self.user.applications.create(finished=False,
-                                      date_saved=date.today())
+        self.user.applications.create(finished=False, date_saved=date.today())
         resp = self.client.get(self.url)
         self.assertContains(resp, self._edit_button)
 
     def test_create_from_old(self):
-        app = self.user.applications.create(finished=True,
-                                            full_name="My Full Name",
-                                            date_saved=date.today() - timedelta(365))
+        app = self.user.applications.create(
+            finished=True, full_name="My Full Name", date_saved=date.today() - timedelta(365)
+        )
         ref, _ = app.referee_set.get_or_create(referee_number=1)
         ref.name = "Last Years Referee"
         ref.save()
-        app.qualifications.create(
-            type=self.first_aid_qualification,
-            date_issued=date(2016, 1, 1))
-        resp = self.client.post(self.url, {'new': 'Create'})
+        app.qualifications.create(type=self.first_aid_qualification, date_issued=date(2016, 1, 1))
+        resp = self.client.post(self.url, {"new": "Create"})
         assert 302 == resp.status_code
         assert len(self.user.applications.all()) == 2
         # New should be a copy of old:
         for a in self.user.applications.all():
             assert a.full_name == app.full_name
-            assert a.referee_set.get(referee_number=1).name == \
-                app.referee_set.get(referee_number=1).name
-            assert list([q.type, q.date_issued] for q in a.qualifications.all()) == \
-                list([q.type, q.date_issued] for q in app.qualifications.all())
+            assert a.referee_set.get(referee_number=1).name == app.referee_set.get(referee_number=1).name
+            assert list([q.type, q.date_issued] for q in a.qualifications.all()) == list(
+                [q.type, q.date_issued] for q in app.qualifications.all()
+            )
 
     def test_create_when_already_done(self):
         # Should not create a new application if a recent one is submitted
-        app = self.user.applications.create(finished=True,
-                                            date_saved=date.today())
-        resp = self.client.post(self.url, {'new': 'Create'})
+        app = self.user.applications.create(finished=True, date_saved=date.today())
+        resp = self.client.post(self.url, {"new": "Create"})
         assert 200 == resp.status_code
         assert list(self.user.applications.all()) == [app]
 
@@ -103,35 +100,31 @@ class PersonalApplicationView(RequireApplicationsMixin, WebTestBase):
 
     def test_view_txt(self):
         self.officer_login(OFFICER)
-        self.get_url('cciw-officers-applications')
-        self.fill({'#application': self.officer1.applications.all()[0].id,
-                   '#format': 'txt'})
+        self.get_url("cciw-officers-applications")
+        self.fill({"#application": self.officer1.applications.all()[0].id, "#format": "txt"})
         self.submit()
-        assert self.last_response.content_type == 'text/plain'
+        assert self.last_response.content_type == "text/plain"
         assert b"Joe Winston Bloggs" in self.last_response.content
 
     def test_view_rtf(self):
         self.officer_login(OFFICER)
-        self.get_url('cciw-officers-applications')
-        self.fill({'#application': self.officer1.applications.all()[0].id,
-                   '#format': 'rtf'})
+        self.get_url("cciw-officers-applications")
+        self.fill({"#application": self.officer1.applications.all()[0].id, "#format": "rtf"})
         self.submit()
-        assert self.last_response.content_type == 'text/rtf'
+        assert self.last_response.content_type == "text/rtf"
         assert b"\\cell Joe Winston Bloggs" in self.last_response.content
 
     def test_view_html(self):
         self.officer_login(OFFICER)
-        self.get_url('cciw-officers-applications')
-        self.fill({'#application': self.officer1.applications.all()[0].id,
-                   '#format': 'html'})
+        self.get_url("cciw-officers-applications")
+        self.fill({"#application": self.officer1.applications.all()[0].id, "#format": "html"})
         self.submit()
         self.assertTextPresent("Joe Winston Bloggs")
 
     def test_view_email(self):
         self.officer_login(OFFICER)
-        self.get_url('cciw-officers-applications')
-        self.fill({'#application': self.officer1.applications.filter(date_saved__year=2001)[0].id,
-                   '#format': 'send'})
+        self.get_url("cciw-officers-applications")
+        self.fill({"#application": self.officer1.applications.filter(date_saved__year=2001)[0].id, "#format": "send"})
         self.submit()
         self.assertTextPresent("Email sent")
 
@@ -144,7 +137,6 @@ class PersonalApplicationView(RequireApplicationsMixin, WebTestBase):
 
 
 class ApplicationUtils(BasicSetupMixin, TestBase):
-
     def test_date_saved_logic(self):
 
         # Setup::
@@ -170,21 +162,17 @@ class ApplicationUtils(BasicSetupMixin, TestBase):
             year=future_camp_start.year,
             start_date=future_camp_start,
         )
-        u = User.objects.create(username='test')
+        u = User.objects.create(username="test")
         u.invitations.create(camp=c1)
         u.invitations.create(camp=c2)
 
-        app1 = Application.objects.create(officer=u,
-                                          finished=True,
-                                          date_saved=past_camp_start - timedelta(1))
+        app1 = Application.objects.create(officer=u, finished=True, date_saved=past_camp_start - timedelta(1))
 
         # First, check we don't have any apps that are counted as 'this years'
         assert not applications.thisyears_applications(u).exists()
 
         # Create an application for this year
-        app2 = Application.objects.create(officer=u,
-                                          finished=True,
-                                          date_saved=past_camp_start + timedelta(10))
+        app2 = Application.objects.create(officer=u, finished=True, date_saved=past_camp_start + timedelta(10))
 
         # Now we should have one
         assert applications.thisyears_applications(u).exists()

@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cciwmain', '0020_auto_20170626_2001'),
+        ("cciwmain", "0020_auto_20170626_2001"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='camp',
-            name='special_info_html',
-            field=models.TextField(default='', help_text='HTML, displayed at the top of the camp details page', verbose_name='Special information'),
+            model_name="camp",
+            name="special_info_html",
+            field=models.TextField(
+                default="",
+                help_text="HTML, displayed at the top of the camp details page",
+                verbose_name="Special information",
+            ),
         ),
     ]

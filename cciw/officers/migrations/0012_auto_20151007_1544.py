@@ -2,19 +2,19 @@ from django.db import migrations
 
 
 def forwards(apps, schema):
-    Application = apps.get_model('officers', 'Application')
-    Referee = apps.get_model('officers', 'Referee')
+    Application = apps.get_model("officers", "Application")
+    Referee = apps.get_model("officers", "Referee")
 
     for app in Application.objects.all():
         for i in [1, 2]:
             Referee.objects.create(
                 application=app,
                 referee_number=i,
-                name=getattr(app, f'referee{i}_name'),
-                address=getattr(app, f'referee{i}_address'),
-                tel=getattr(app, f'referee{i}_tel'),
-                mobile=getattr(app, f'referee{i}_mobile'),
-                email=getattr(app, f'referee{i}_email'),
+                name=getattr(app, f"referee{i}_name"),
+                address=getattr(app, f"referee{i}_address"),
+                tel=getattr(app, f"referee{i}_tel"),
+                mobile=getattr(app, f"referee{i}_mobile"),
+                email=getattr(app, f"referee{i}_email"),
             )
 
 
@@ -25,7 +25,7 @@ def backwards(apps, schema):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0011_referee'),
+        ("officers", "0011_referee"),
     ]
 
     operations = [

@@ -3,39 +3,46 @@ from functools import lru_cache
 
 from django.utils import timezone
 
-from cciw.accounts.models import (BOOKING_SECRETARY_ROLE_NAME, DBS_OFFICER_ROLE_NAME, REFERENCE_CONTACT_ROLE_NAME,
-                                  SECRETARY_ROLE_NAME, Role, User, setup_auth_roles)
+from cciw.accounts.models import (
+    BOOKING_SECRETARY_ROLE_NAME,
+    DBS_OFFICER_ROLE_NAME,
+    REFERENCE_CONTACT_ROLE_NAME,
+    SECRETARY_ROLE_NAME,
+    Role,
+    User,
+    setup_auth_roles,
+)
 from cciw.cciwmain.tests.base import BasicSetupMixin
 from cciw.cciwmain.tests.utils import set_thisyear
 from cciw.contact_us.models import Message
 from cciw.officers.models import Application, QualificationType, Reference
 from cciw.utils.tests.base import FactoriesBase
 
-OFFICER_USERNAME = 'joebloggs'
-OFFICER_PASSWORD = 'test_normaluser_password'
+OFFICER_USERNAME = "joebloggs"
+OFFICER_PASSWORD = "test_normaluser_password"
 OFFICER_EMAIL = "joebloggs@somewhere.com"
 OFFICER = (OFFICER_USERNAME, OFFICER_PASSWORD)
 
 
-LEADER_USERNAME = 'kevinsmith'
-LEADER_PASSWORD = 'test_normaluser_password'
-LEADER_EMAIL = 'leader@somewhere.com'
+LEADER_USERNAME = "kevinsmith"
+LEADER_PASSWORD = "test_normaluser_password"
+LEADER_EMAIL = "leader@somewhere.com"
 LEADER = (LEADER_USERNAME, LEADER_PASSWORD)
 
 
-BOOKING_SECRETARY_USERNAME = 'bookingsec'
-BOOKING_SECRETARY_PASSWORD = 'a_password'
+BOOKING_SECRETARY_USERNAME = "bookingsec"
+BOOKING_SECRETARY_PASSWORD = "a_password"
 BOOKING_SECRETARY = (BOOKING_SECRETARY_USERNAME, BOOKING_SECRETARY_PASSWORD)
 
 
-SECRETARY_USERNAME = 'mrsecretary'
-SECRETARY_PASSWORD = 'test_password'
+SECRETARY_USERNAME = "mrsecretary"
+SECRETARY_PASSWORD = "test_password"
 SECRETARY = (SECRETARY_USERNAME, SECRETARY_PASSWORD)
 
 
-DBSOFFICER_USERNAME = 'mrsdbsofficer'
-DBSOFFICER_PASSWORD = 'my_password'
-DBSOFFICER_EMAIL = 'dbsofficer@somewhere.com'
+DBSOFFICER_USERNAME = "mrsdbsofficer"
+DBSOFFICER_PASSWORD = "my_password"
+DBSOFFICER_EMAIL = "dbsofficer@somewhere.com"
 DBSOFFICER = (DBSOFFICER_USERNAME, DBSOFFICER_PASSWORD)
 
 
@@ -62,7 +69,7 @@ class SimpleOfficerSetupMixin(BasicSetupMixin):
             first_name="Joe",
             last_name="Bloggs",
             email=OFFICER_EMAIL,
-            password=OFFICER_PASSWORD
+            password=OFFICER_PASSWORD,
         )
 
 
@@ -147,19 +154,21 @@ class ExtraOfficersSetupMixin(OfficersSetupMixin):
 
 
 class DefaultApplicationsMixin(ExtraOfficersSetupMixin):
-
     def create_default_applications(self):
         # Data: Applications 1 to 3 are in year 2000, for camps in summer 2000
         # Application 4 is for 2001
         self.application1 = factories.create_application(
-            self.officer1, year=2000,
+            self.officer1,
+            year=2000,
             referee2_overrides=dict(
                 address="1267a Somewhere Road\r\nThereyougo",
                 name="Mr Referee2 Name",
-            ))
+            ),
+        )
 
         self.application2 = factories.create_application(
-            self.officer2, year=2000,
+            self.officer2,
+            year=2000,
             overrides=dict(
                 full_name="Peter Smith",
             ),
@@ -172,10 +181,12 @@ class DefaultApplicationsMixin(ExtraOfficersSetupMixin):
                 address="Referee 4 adddress",
                 email="referee4@email.co.uk",
                 name="Mr Referee4 Name",
-            ))
+            ),
+        )
 
         self.application3 = factories.create_application(
-            self.officer3, year=2000,
+            self.officer3,
+            year=2000,
             overrides=dict(
                 full_name="Fred Jones",
             ),
@@ -189,7 +200,8 @@ class DefaultApplicationsMixin(ExtraOfficersSetupMixin):
                 email="",
                 name="Mr Referee6 Name",
                 tel="01234 567890",
-            ))
+            ),
+        )
 
         # Application 4 is like 1 but a year later
 
@@ -200,10 +212,7 @@ class DefaultApplicationsMixin(ExtraOfficersSetupMixin):
 
         # Dupe referee info:
         for r in self.application1.referees:
-            self.application4.referee_set.create(
-                referee_number=r.referee_number,
-                name=r.name,
-                email=r.email)
+            self.application4.referee_set.create(referee_number=r.referee_number, name=r.name, email=r.email)
 
 
 class RequireApplicationsMixin(DefaultApplicationsMixin):
@@ -226,7 +235,6 @@ class CurrentCampsMixin(BasicSetupMixin):
 
 
 class ReferenceSetupMixin(set_thisyear(2000), RequireApplicationsMixin):
-
     def setUp(self):
         super().setUp()
         self.reference1_1 = factories.create_complete_reference(self.application1.referees[0])
@@ -239,17 +247,17 @@ class Factories(FactoriesBase):
         self._user_counter = 0
 
     def create_officer(
-            self,
-            username=None,
-            first_name='Joe',
-            last_name='Bloggs',
-            is_active=True,
-            is_superuser=False,
-            is_staff=True,
-            email=None,
-            password=None,
-            roles=None,
-            contact_phone_number='',
+        self,
+        username=None,
+        first_name="Joe",
+        last_name="Bloggs",
+        is_active=True,
+        is_superuser=False,
+        is_staff=True,
+        email=None,
+        password=None,
+        roles=None,
+        contact_phone_number="",
     ):
         username = username or self._make_auto_username()
         email = email or self._make_auto_email(username)
@@ -279,25 +287,29 @@ class Factories(FactoriesBase):
 
     def _make_auto_username(self):
         self._user_counter += 1
-        return f'auto_user_{self._user_counter}'
+        return f"auto_user_{self._user_counter}"
 
     def _make_auto_email(self, username=None):
         username = username or self._make_auto_username()
-        return f'{username}@example.com'
+        return f"{username}@example.com"
 
     def add_officers_to_camp(self, camp, officers):
         for officer in officers:
             camp.invitations.create(officer=officer)
 
-    def create_application(self, officer, *,
-                           year=None,
-                           date_saved=None,
-                           full_name=None,
-                           address_firstline=None,
-                           birth_date=None,
-                           overrides=None,
-                           referee1_overrides=None,
-                           referee2_overrides=None):
+    def create_application(
+        self,
+        officer,
+        *,
+        year=None,
+        date_saved=None,
+        full_name=None,
+        address_firstline=None,
+        birth_date=None,
+        overrides=None,
+        referee1_overrides=None,
+        referee2_overrides=None,
+    ):
         if year is not None:
             date_saved = datetime(year, 3, 1)
         elif date_saved is None:
@@ -368,8 +380,8 @@ class Factories(FactoriesBase):
 
     def create_contact_us_message(self):
         return Message.objects.create(
-            email='example@example.com',
-            message='hello',
+            email="example@example.com",
+            message="hello",
         )
 
 

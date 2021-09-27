@@ -8,17 +8,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0034_auto_20170303_2108'),
+        ("officers", "0034_auto_20170303_2108"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='dbscheck',
-            options={'verbose_name': 'DBS/CRB check', 'verbose_name_plural': 'DBS/CRB check'},
+            name="dbscheck",
+            options={"verbose_name": "DBS/CRB check", "verbose_name_plural": "DBS/CRB check"},
         ),
         migrations.AlterField(
-            model_name='dbscheck',
-            name='officer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dbs_checks', to=settings.AUTH_USER_MODEL),
+            model_name="dbscheck",
+            name="officer",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="dbs_checks", to=settings.AUTH_USER_MODEL
+            ),
         ),
     ]

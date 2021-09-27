@@ -11,7 +11,6 @@ from .base import factories
 
 
 class CampModel(TestBase):
-
     def test_names(self):
         camp = factories.create_camp(
             year=2013,
@@ -38,7 +37,6 @@ class CampModel(TestBase):
 
 
 class ThisyearPage(BasicSetupMixin, TestBase):
-
     def setUp(self):
         super().setUp()
         HtmlChunk.objects.create(name="camp_dates_intro_text")
@@ -50,14 +48,13 @@ class ThisyearPage(BasicSetupMixin, TestBase):
         for i in range(0, 20):
             factories.create_camp(year=year, leader=factories.get_any_camp_leader())
         with self.assertNumQueries(FuzzyInt(1, 8)):
-            resp = self.client.get(reverse('cciw-cciwmain-thisyear'))
+            resp = self.client.get(reverse("cciw-cciwmain-thisyear"))
 
         for c in Camp.objects.filter(year=year):
             self.assertContains(resp, c.get_absolute_url())
 
 
 class IndexPage(BasicSetupMixin, TestBase):
-
     def test_get(self):
         init_query_caches()
         year = common.get_thisyear()
@@ -65,19 +62,15 @@ class IndexPage(BasicSetupMixin, TestBase):
             factories.create_camp(year=year, leader=factories.get_any_camp_leader())
 
         with self.assertNumQueries(FuzzyInt(1, 6)):
-            resp = self.client.get(reverse('cciw-cciwmain-camps_year_index',
-                                           kwargs=dict(year=year)))
+            resp = self.client.get(reverse("cciw-cciwmain-camps_year_index", kwargs=dict(year=year)))
 
         for c in Camp.objects.filter(year=year):
             self.assertContains(resp, c.get_absolute_url())
 
 
 class DetailPage(BasicSetupMixin, TestBase):
-
     def test_get(self):
         camp = factories.create_camp(leader=factories.create_person(leader_name := "Joe Bloggs"))
-        resp = self.client.get(reverse('cciw-cciwmain-camps_detail',
-                                       kwargs=dict(year=camp.year,
-                                                   slug=camp.slug_name)))
+        resp = self.client.get(reverse("cciw-cciwmain-camps_detail", kwargs=dict(year=camp.year, slug=camp.slug_name)))
         self.assertContains(resp, leader_name)
         self.assertContains(resp, camp.camp_name.name)

@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0046_auto_20170403_1916'),
+        ("officers", "0046_auto_20170403_1916"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dbscheck',
-            name='applicant_accepted',
-            field=models.BooleanField(default=True, help_text="Enter 'No' if the applicant could not be accepted on the basis of this DBS check"),
+            model_name="dbscheck",
+            name="applicant_accepted",
+            field=models.BooleanField(
+                default=True,
+                help_text="Enter 'No' if the applicant could not be accepted on the basis of this DBS check",
+            ),
         ),
     ]

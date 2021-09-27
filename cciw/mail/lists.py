@@ -19,8 +19,14 @@ from django.conf import settings
 from django.core.mail import make_msgid, send_mail
 from django.utils.encoding import force_bytes
 
-from cciw.accounts.models import (DBS_OFFICER_ROLE_NAME, Role, User, get_camp_admin_role_users,
-                                  get_role_email_recipients, get_role_users)
+from cciw.accounts.models import (
+    DBS_OFFICER_ROLE_NAME,
+    Role,
+    User,
+    get_camp_admin_role_users,
+    get_role_email_recipients,
+    get_role_users,
+)
 from cciw.cciwmain import common
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.utils import is_valid_email
@@ -61,7 +67,10 @@ def address_for_camp_leaders(camp):
 
 
 # Reading mailboxes
-email_extract_re = re.compile(r"([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)", re.IGNORECASE)
+email_extract_re = re.compile(
+    r"([a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)",
+    re.IGNORECASE,
+)
 
 
 def extract_email_addresses(email_line):
@@ -106,7 +115,7 @@ class EmailList:
 
     @property
     def address(self):
-        return self.local_address + '@' + self.domain
+        return self.local_address + "@" + self.domain
 
     @property
     def domain(self):
@@ -132,6 +141,7 @@ class EmailList:
 
 # Definitions of EmailLists
 
+
 def camp_officers_list_generator(current_camps: list[Camp]):
     for camp in current_camps:
         yield make_camp_officers_list(camp)
@@ -145,7 +155,7 @@ def make_camp_officers_list(camp):
         return is_camp_leader_or_admin(email_address, [camp])
 
     return EmailList(
-        local_address=f'camp-{camp.url_id}-officers',
+        local_address=f"camp-{camp.url_id}-officers",
         get_members=get_members,
         has_permission=has_permission,
         list_reply=False,
@@ -165,7 +175,7 @@ def make_camp_slackers_list(camp):
         return is_camp_leader_or_admin(email_address, [camp])
 
     return EmailList(
-        local_address=f'camp-{camp.url_id}-slackers',
+        local_address=f"camp-{camp.url_id}-slackers",
         get_members=get_members,
         has_permission=has_permission,
         list_reply=False,
@@ -185,7 +195,7 @@ def make_camp_leaders_list(camp):
         return is_camp_leader_or_admin_or_dbs_officer_or_superuser(email_address, [camp])
 
     return EmailList(
-        local_address=f'camp-{camp.url_id}-leaders',
+        local_address=f"camp-{camp.url_id}-leaders",
         get_members=get_members,
         has_permission=has_permission,
         list_reply=False,
@@ -210,7 +220,7 @@ def make_camp_leaders_for_year_list(year, camps):
         return is_camp_leader_or_admin_or_dbs_officer_or_superuser(email_address, camps)
 
     return EmailList(
-        local_address=f'camps-{year}-leaders',
+        local_address=f"camps-{year}-leaders",
         get_members=get_members,
         has_permission=has_permission,
         list_reply=True,
@@ -219,7 +229,7 @@ def make_camp_leaders_for_year_list(year, camps):
 
 def roles_list_generator(current_camps):
     for role in Role.objects.with_address():
-        local_address, domain = role.email.rsplit('@', 1)
+        local_address, domain = role.email.rsplit("@", 1)
         if domain != settings.INCOMING_MAIL_DOMAIN:
             continue
 
@@ -227,13 +237,15 @@ def roles_list_generator(current_camps):
             if role.allow_emails_from_public:
                 return True
             else:
-                return get_role_email_recipients(role.name).filter(email__iexact=email_address).exists() or is_superuser(email_address)
+                return get_role_email_recipients(role.name).filter(
+                    email__iexact=email_address
+                ).exists() or is_superuser(email_address)
 
         yield EmailList(
             local_address=local_address,
             get_members=lambda role=role: role.email_recipients.all(),
             has_permission=has_permission,
-            list_reply=not role.allow_emails_from_public
+            list_reply=not role.allow_emails_from_public,
         )
 
 
@@ -248,9 +260,10 @@ GENERATORS = [
 
 # Helper functions for lists:
 
+
 def get_leaders_for_camp(camp):
     retval = set()
-    for p in camp.leaders.all().prefetch_related('users'):
+    for p in camp.leaders.all().prefetch_related("users"):
         for u in p.users.all():
             retval.add(u)
     return retval
@@ -290,6 +303,7 @@ def is_superuser(email_address):
 
 # Handling incoming mail
 
+
 def _set_mail_header(mail, header, value):
     """
     Overwrite a header in the email
@@ -305,14 +319,14 @@ def _set_mail_header(mail, header, value):
 
 
 def forward_email_to_list(mail, email_list: EmailList):
-    orig_from_addr = mail['From']
+    orig_from_addr = mail["From"]
     # Use 'reply-to' header for reply-to, if it exists, falling back to 'From'
-    reply_to = mail.get('Reply-To', orig_from_addr)
+    reply_to = mail.get("Reply-To", orig_from_addr)
     if email_list.list_reply:
-        _set_mail_header(mail, 'Sender', email_list.address)
-        _set_mail_header(mail, 'List-Post', f'<mailto:{email_list.address}>')
+        _set_mail_header(mail, "Sender", email_list.address)
+        _set_mail_header(mail, "List-Post", f"<mailto:{email_list.address}>")
     else:
-        _set_mail_header(mail, 'Sender', settings.SERVER_EMAIL)
+        _set_mail_header(mail, "Sender", settings.SERVER_EMAIL)
 
     # If we leave 'From' as it is, e.g bob@example.com, we will be sending out a
     # new email on behalf of bob@example.com. At some point in the chain of processing
@@ -328,36 +342,35 @@ def forward_email_to_list(mail, email_list: EmailList):
     # So, we can't claim that this email is 'From' bob@example.com,
     # and we instead put an `@cciw.co.uk` address in there, but
     # with a mangled form of bob@example.com visible.
-    _set_mail_header(mail, 'From', mangle_from_address(orig_from_addr))
+    _set_mail_header(mail, "From", mangle_from_address(orig_from_addr))
     # But we can set this debugging header to preserve the info:
-    _set_mail_header(mail, 'X-Original-From', orig_from_addr)
+    _set_mail_header(mail, "X-Original-From", orig_from_addr)
     # Return-Path: indicates how bounces should be handled
-    _set_mail_header(mail, 'Return-Path', settings.SERVER_EMAIL)
-    _set_mail_header(mail, 'Reply-To', reply_to)
-    _set_mail_header(mail, 'X-Original-To', email_list.address)
+    _set_mail_header(mail, "Return-Path", settings.SERVER_EMAIL)
+    _set_mail_header(mail, "Reply-To", reply_to)
+    _set_mail_header(mail, "X-Original-To", email_list.address)
 
     # Various headers seem to cause problems. We whitelist the ones
     # that are OK:
     good_headers = [
-        'content-type',
-        'content-transfer-encoding',
-        'subject',
-        'from',
-        'mime-version',
-        'user-agent',
-        'content-disposition',
-        'date',
-        'reply-to',
-        'sender',
-        'list-post',
-        'x-original-from',
-        'disposition-notification-to',
-        'return-receipt-to',
-        'return-path',
-        'x-original-to',
+        "content-type",
+        "content-transfer-encoding",
+        "subject",
+        "from",
+        "mime-version",
+        "user-agent",
+        "content-disposition",
+        "date",
+        "reply-to",
+        "sender",
+        "list-post",
+        "x-original-from",
+        "disposition-notification-to",
+        "return-receipt-to",
+        "return-path",
+        "x-original-to",
     ]
-    mail._headers = [(name, val) for name, val in mail._headers
-                     if name.lower() in good_headers]
+    mail._headers = [(name, val) for name, val in mail._headers if name.lower() in good_headers]
 
     # Send individual emails:
 
@@ -369,18 +382,16 @@ def forward_email_to_list(mail, email_list: EmailList):
     messages_to_send = []
     for user in email_list.get_members():
         addr = formatted_email(user)
-        _set_mail_header(mail, 'To', addr)
+        _set_mail_header(mail, "To", addr)
         # Need new message ID, or some mail servers will only send one
-        _set_mail_header(mail, 'Message-ID', make_msgid())
+        _set_mail_header(mail, "Message-ID", make_msgid())
         try:
             mail_as_bytes = force_bytes(mail.as_string())
         except UnicodeEncodeError:
             # Can happen for bad mail, usually spammers
             continue
-        from_address = mail['From']
-        messages_to_send.append(
-            (addr, from_address, mail_as_bytes)
-        )
+        from_address = mail["From"]
+        messages_to_send.append((addr, from_address, mail_as_bytes))
 
     if len(messages_to_send) == 0:
         return
@@ -402,11 +413,8 @@ def forward_email_to_list(mail, email_list: EmailList):
 
     if errors:
         # Attempt to report problem
-        address_messages = [
-            f"{address}: {str(e)}"
-            for address, e in errors
-        ]
-        subject = decode_mail_header_value(mail['Subject'])
+        address_messages = [f"{address}: {str(e)}" for address, e in errors]
+        subject = decode_mail_header_value(mail["Subject"])
         msg = """
 You attempted to email the list {address}
 with an email titled "{subject}".
@@ -414,12 +422,16 @@ with an email titled "{subject}".
 There were problems with the following addresses:
 
 {addresses}
-""".format(address=email_list.address, subject=subject, addresses='\n'.join(address_messages))
-        send_mail(f"[CCIW] Error with email to list {email_list.address}",
-                  msg,
-                  settings.DEFAULT_FROM_EMAIL,
-                  [orig_from_addr],
-                  fail_silently=True)
+""".format(
+            address=email_list.address, subject=subject, addresses="\n".join(address_messages)
+        )
+        send_mail(
+            f"[CCIW] Error with email to list {email_list.address}",
+            msg,
+            settings.DEFAULT_FROM_EMAIL,
+            [orig_from_addr],
+            fail_silently=True,
+        )
 
 
 def mangle_from_address(address):
@@ -444,18 +456,18 @@ def handle_mail_from_s3(message_id):
     # to SNS, triggering a timeout and re-attempt. So, we dedupe using a
     # filesystem based lock.
 
-    filename = tempfile.gettempdir() + '/' + INCOMING_MAIL_TEMPFILE_PREFIX + message_id
+    filename = tempfile.gettempdir() + "/" + INCOMING_MAIL_TEMPFILE_PREFIX + message_id
     if os.path.exists(filename):
-        logger.info('Aborting mail handling, file %s already exists', filename)
+        logger.info("Aborting mail handling, file %s already exists", filename)
         return
 
     # We have a potential race condition between checking for the file existing
     # above, and opening it below. So after opening it we do a lock as well.
-    with open(filename, 'wb') as f:
+    with open(filename, "wb") as f:
         try:
             fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
-            logger.info('Aborting mail handling, lock on file %s already exists', filename)
+            logger.info("Aborting mail handling, lock on file %s already exists", filename)
             return
 
         data = download_ses_message_from_s3(message_id)
@@ -474,7 +486,7 @@ def handle_mail(data):
     data is RFC822 formatted bytes
     """
     mail = email.message_from_bytes(data)
-    to = mail['To']
+    to = mail["To"]
     if to is None:
         # Some spam is like this.
         return
@@ -484,14 +496,14 @@ def handle_mail(data):
     else:
         addresses = {a.lower() for a in extract_email_addresses(to)}
 
-    if mail.get('X-SES-Spam-Verdict', '') == 'FAIL':
-        logger.info('Discarding spam, message-id %s', mail.get('Message-ID', '<unknown>'))
+    if mail.get("X-SES-Spam-Verdict", "") == "FAIL":
+        logger.info("Discarding spam, message-id %s", mail.get("Message-ID", "<unknown>"))
         return
-    if mail.get('X-SES-Virus-Verdict', '') == 'FAIL':
-        logger.info('Discarding virus, message-id %s', mail.get('Message-ID', '<unknown>'))
+    if mail.get("X-SES-Virus-Verdict", "") == "FAIL":
+        logger.info("Discarding virus, message-id %s", mail.get("Message-ID", "<unknown>"))
         return
 
-    from_email = extract_email_addresses(mail['From'])[0]
+    from_email = extract_email_addresses(mail["From"])[0]
 
     for address in addresses:
         try:
@@ -502,17 +514,18 @@ def handle_mail(data):
                 # Don't bother sending bounce emails to addresses
                 # we've never seen before. This is highly likely to be spam.
                 continue
-            subject = decode_mail_header_value(mail['Subject'])
+            subject = decode_mail_header_value(mail["Subject"])
             send_mail(
                 f"[CCIW] Access to mailing list {address} denied",
                 f"You attempted to email the list {address}\n"
-                f"with an email titled \"{subject}\".\n"
+                f'with an email titled "{subject}".\n'
                 f"\n"
                 f"However, you do not have permission to email this list, \n"
                 f"or the list does not exist. Sorry!",
                 settings.DEFAULT_FROM_EMAIL,
                 [from_email],
-                fail_silently=True)
+                fail_silently=True,
+            )
         except NoSuchList:
             # addresses can contain anything else on the 'to' line, which
             # can even included valid @cciw.co.uk that we don't know about
@@ -531,7 +544,7 @@ def decode_mail_header_value(text):
         if charset is not None:
             val = val.decode(charset)
         output.append(val)
-    return ''.join(output)
+    return "".join(output)
 
 
 def known_officer_email_address(address):

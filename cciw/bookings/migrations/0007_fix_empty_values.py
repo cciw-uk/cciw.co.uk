@@ -21,13 +21,14 @@ BAD_EMPTY_VALS = [
 ]
 
 FIELDS = [
-    'dietary_requirements',
-    'church',
-    'allergies',
-    'regular_medication_required',
-    'illnesses',
-    'learning_difficulties',
+    "dietary_requirements",
+    "church",
+    "allergies",
+    "regular_medication_required",
+    "illnesses",
+    "learning_difficulties",
 ]
+
 
 def fix_empty_values(apps, schema_editor):
     Booking = apps.get_model("bookings", "Booking")
@@ -37,8 +38,7 @@ def fix_empty_values(apps, schema_editor):
         for field in FIELDS:
             val = getattr(booking, field)
             norm_val = re.sub(r"[\/\\\.\-]*$", "", val.strip()).lower()
-            if ((norm_val in BAD_EMPTY_VALS) or
-                (norm_val == "" and val != "")):
+            if (norm_val in BAD_EMPTY_VALS) or (norm_val == "" and val != ""):
                 print(f"Booking: {booking.id} - discarding {field} value {repr(val)}")
                 setattr(booking, field, "")
                 dirty = True
@@ -50,11 +50,11 @@ def fix_empty_values(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0006_auto_20150610_1649'),
+        ("bookings", "0006_auto_20150610_1649"),
     ]
 
     operations = [
-        migrations.RunPython(fix_empty_values,
-                             lambda apps, schema_editor: None)  # allowing reverse migration is harmless)
-
+        migrations.RunPython(
+            fix_empty_values, lambda apps, schema_editor: None
+        )  # allowing reverse migration is harmless)
     ]

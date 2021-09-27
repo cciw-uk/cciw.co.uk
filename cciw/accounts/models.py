@@ -12,17 +12,16 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 
 # These names need to be synced with /config/static_roles.yaml
-WIKI_USERS_ROLE_NAME = 'Wiki users'
-SECRETARY_ROLE_NAME = 'Secretaries'
-DBS_OFFICER_ROLE_NAME = 'DBS Officers'
-COMMITTEE_ROLE_NAME = 'Committee'
-BOOKING_SECRETARY_ROLE_NAME = 'Booking secretaries'
+WIKI_USERS_ROLE_NAME = "Wiki users"
+SECRETARY_ROLE_NAME = "Secretaries"
+DBS_OFFICER_ROLE_NAME = "DBS Officers"
+COMMITTEE_ROLE_NAME = "Committee"
+BOOKING_SECRETARY_ROLE_NAME = "Booking secretaries"
 REFERENCE_CONTACT_ROLE_NAME = "Safeguarding co-ordinators"
 
 CAMP_ADMIN_ROLES = [SECRETARY_ROLE_NAME, COMMITTEE_ROLE_NAME, BOOKING_SECRETARY_ROLE_NAME]
 
-WIKI_ROLES = [WIKI_USERS_ROLE_NAME, COMMITTEE_ROLE_NAME,
-              BOOKING_SECRETARY_ROLE_NAME, SECRETARY_ROLE_NAME]
+WIKI_ROLES = [WIKI_USERS_ROLE_NAME, COMMITTEE_ROLE_NAME, BOOKING_SECRETARY_ROLE_NAME, SECRETARY_ROLE_NAME]
 
 
 # TODO:
@@ -30,6 +29,7 @@ WIKI_ROLES = [WIKI_USERS_ROLE_NAME, COMMITTEE_ROLE_NAME,
 # 1) users designated as 'admin' for a camp
 # 2) users with admin rights for a camp (includes 1. above and leaders)
 # 3) users with general admin rights (includes committee, secretaries)
+
 
 def active_staff(user):
     return user.is_staff and user.is_active
@@ -41,20 +41,18 @@ def user_has_role(user, role_names):
     # We generally use this multiple times, so it is usually going to be much
     # faster to fetch and cache all the roles once if not already fetched.
     roles = None
-    if hasattr(user, '_prefetched_objects_cache'):
-        if 'roles' in user._prefetched_objects_cache:
-            roles = user._prefetched_objects_cache['roles']
+    if hasattr(user, "_prefetched_objects_cache"):
+        if "roles" in user._prefetched_objects_cache:
+            roles = user._prefetched_objects_cache["roles"]
     else:
         user._prefetched_objects_cache = {}
     if roles is None:
         roles = user.roles.all()
         # Evaluate:
         list(roles)
-        user._prefetched_objects_cache['roles'] = roles
+        user._prefetched_objects_cache["roles"] = roles
 
-    return any(role.name == name
-               for name in role_names
-               for role in roles)
+    return any(role.name == name for name in role_names for role in roles)
 
 
 def get_camp_admin_role_users():
@@ -90,43 +88,46 @@ class UserManager(UserManagerDjango.from_queryset(UserQuerySet)):
 # 'Group' (and the M2M is on Role instead of User). So we inherit from
 # AbstractBaseUser instead, and copy-paste some fields and methods
 
+
 class User(AbstractBaseUser):
     username_validator = UnicodeUsernameValidator()
 
     username = models.CharField(
         max_length=150,
         unique=True,
-        help_text='Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.',
+        help_text="Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
         validators=[username_validator],
         error_messages={
-            'unique': "A user with that username already exists.",
+            "unique": "A user with that username already exists.",
         },
     )
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
-    email = models.EmailField('email address', blank=True)
+    email = models.EmailField("email address", blank=True)
     is_staff = models.BooleanField(
-        'staff status',
+        "staff status",
         default=False,
-        help_text='Designates whether the user can log into this admin site.',
+        help_text="Designates whether the user can log into this admin site.",
     )
     is_active = models.BooleanField(
-        'active',
+        "active",
         default=True,
-        help_text='Designates whether this user should be treated as active. '
-        'Unselect this instead of deleting accounts.',
+        help_text="Designates whether this user should be treated as active. "
+        "Unselect this instead of deleting accounts.",
     )
     date_joined = models.DateTimeField(default=timezone.now)
     is_superuser = models.BooleanField(
-        'superuser status',
+        "superuser status",
         default=False,
-        help_text='Designates that this user has all permissions without '
-        'explicitly assigning them.'
+        help_text="Designates that this user has all permissions without " "explicitly assigning them.",
     )
 
-    contact_phone_number = models.CharField("Phone number", max_length=40,
-                                            blank=True,
-                                            help_text="Required only for staff like CPO who need to be contacted.")
+    contact_phone_number = models.CharField(
+        "Phone number",
+        max_length=40,
+        blank=True,
+        help_text="Required only for staff like CPO who need to be contacted.",
+    )
 
     bad_password = models.BooleanField(default=False)
     password_validators_used = models.TextField(blank=True)
@@ -135,9 +136,9 @@ class User(AbstractBaseUser):
 
     objects = UserManager()
 
-    EMAIL_FIELD = 'email'
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']
+    EMAIL_FIELD = "email"
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ["email"]
 
     class Meta:
         pass
@@ -200,7 +201,7 @@ class User(AbstractBaseUser):
 
         # Otherwise we need to check the backends.
         for backend in auth.get_backends():
-            if not hasattr(backend, 'has_perm'):
+            if not hasattr(backend, "has_perm"):
                 continue
             try:
                 if backend.has_perm(self, perm, obj):
@@ -226,7 +227,7 @@ class User(AbstractBaseUser):
             return True
 
         for backend in auth.get_backends():
-            if not hasattr(backend, 'has_module_perms'):
+            if not hasattr(backend, "has_module_perms"):
                 continue
             try:
                 if backend.has_module_perms(self, app_label):
@@ -241,7 +242,7 @@ class User(AbstractBaseUser):
         self.password_validators_used = _current_password_validators_as_string()
 
     def mark_password_validation_not_done(self):
-        self.password_validators_used = ''
+        self.password_validators_used = ""
 
     def password_validation_needs_checking(self):
         return self.password_validators_used != _current_password_validators_as_string()
@@ -276,8 +277,7 @@ class User(AbstractBaseUser):
         """
         if not active_staff(self):
             return False
-        return user_has_role(self, CAMP_ADMIN_ROLES) or \
-            len(self.current_camps_as_admin_or_leader) > 0
+        return user_has_role(self, CAMP_ADMIN_ROLES) or len(self.current_camps_as_admin_or_leader) > 0
 
     @cached_property
     def is_potential_camp_officer(self):
@@ -309,7 +309,7 @@ class User(AbstractBaseUser):
 
     @cached_property
     def can_manage_application_forms(self):
-        if self.has_perm('officers.change_application'):
+        if self.has_perm("officers.change_application"):
             return True
         if self.is_camp_admin:
             return True
@@ -319,7 +319,7 @@ class User(AbstractBaseUser):
 
     # These methods control permissions in admin
     def can_view_any_camps(self):
-        if self.has_perm('cciwmain.view_camp'):
+        if self.has_perm("cciwmain.view_camp"):
             return True
         # They only get view permissions for old camps when they also have
         # edit permissions for at least one camp. i.e. current leaders
@@ -330,10 +330,10 @@ class User(AbstractBaseUser):
 
     def can_view_camp(self, camp):
         # NB also viewable_camps
-        if self.has_perm('cciwmain.view_camp'):
+        if self.has_perm("cciwmain.view_camp"):
             return True
 
-        if (self.can_view_any_camps and camp in self.viewable_camps):
+        if self.can_view_any_camps and camp in self.viewable_camps:
             return True
         return False
 
@@ -343,18 +343,17 @@ class User(AbstractBaseUser):
 
     @cached_property
     def can_edit_any_camps(self):
-        if self.has_perm('cciwmain.change_camp'):
+        if self.has_perm("cciwmain.change_camp"):
             return True
         if self.editable_camps:
             return True
         return False
 
     def can_edit_camp(self, camp):
-        if self.has_perm('cciwmain.change_camp'):
+        if self.has_perm("cciwmain.change_camp"):
             return True
 
-        if (self.can_edit_any_camps and
-                camp in self.editable_camps):
+        if self.can_edit_any_camps and camp in self.editable_camps:
             return True
         return False
 
@@ -390,20 +389,16 @@ class User(AbstractBaseUser):
         from cciw.cciwmain import common
 
         # re-use cached camps_as_admin_or_leader here.
-        return [c for c in self.camps_as_admin_or_leader
-                if c.year == common.get_thisyear()]
+        return [c for c in self.camps_as_admin_or_leader if c.year == common.get_thisyear()]
 
     @cached_property
     def can_search_officer_names(self):
-        return (self.is_dbs_officer or
-                self.is_committee_member or
-                self.is_cciw_secretary or
-                self.is_camp_admin)
+        return self.is_dbs_officer or self.is_committee_member or self.is_cciw_secretary or self.is_camp_admin
 
 
 class RoleQuerySet(models.QuerySet):
     def with_address(self):
-        return self.exclude(email='')
+        return self.exclude(email="")
 
 
 class RoleManager(models.Manager.from_queryset(RoleQuerySet)):
@@ -418,6 +413,7 @@ class Role(models.Model):
     Roles are a generic way of categorizing users to apply permissions,
     and define email groups.
     """
+
     # This is similar to django.contrib.auth.models.Group,
     # with some changes:
     #
@@ -433,32 +429,34 @@ class Role(models.Model):
     permissions = models.ManyToManyField(
         Permission,
         blank=True,
-        related_name='roles',
+        related_name="roles",
     )
     members = models.ManyToManyField(
-        User, related_name='roles',
-        help_text='This defines which users have access rights '
-        'to all the functionality on the website related to this role. ',
+        User,
+        related_name="roles",
+        help_text="This defines which users have access rights "
+        "to all the functionality on the website related to this role. ",
     )
 
     # Email related
     email = models.EmailField(help_text="Email address including domain. Optional.", blank=True)
     email_recipients = models.ManyToManyField(
-        User, related_name='roles_as_email_recipient',
+        User,
+        related_name="roles_as_email_recipient",
         blank=True,
-        help_text='This defines which users will be emailed for email sent to the role '
+        help_text="This defines which users will be emailed for email sent to the role "
         'email address above. Usually the same as "members", or a subset, but could have '
-        'additional people.'
+        "additional people.",
     )
     allow_emails_from_public = models.BooleanField(
         default=False,
         help_text="If unchecked, the email address will be a group communication list, "
-        "usable only by other members of the list."
+        "usable only by other members of the list.",
     )
     objects = RoleManager()
 
     class Meta:
-        verbose_name_plural = 'roles'
+        verbose_name_plural = "roles"
 
     def __str__(self):
         return self.name
@@ -473,22 +471,20 @@ def get_or_create_perm(app_label, model, codename):
         return Permission.objects.get(codename=codename, content_type=ct)
     except Permission.DoesNotExist:
         # This branch is generally only reached when running tests.
-        return Permission.objects.create(codename=codename,
-                                         name=codename,
-                                         content_type=ct)
+        return Permission.objects.create(codename=codename, name=codename, content_type=ct)
 
 
 def setup_auth_roles():
     permissions_conf = yaml.load(open(settings.ROLES_CONFIG_FILE), Loader=yaml.SafeLoader)
-    roles = permissions_conf['Roles']
+    roles = permissions_conf["Roles"]
     for role_name, role_details in roles.items():
         role, _ = Role.objects.get_or_create(name=role_name)
-        permission_details = role_details['Permissions']
+        permission_details = role_details["Permissions"]
         perms = []
         for p in permission_details:
-            app_and_model, perm = p.split('/')
-            app_name, model = app_and_model.lower().split('.')
-            perm = f'{perm}_{model}'
+            app_and_model, perm = p.split("/")
+            app_name, model = app_and_model.lower().split(".")
+            perm = f"{perm}_{model}"
             perms.append(get_or_create_perm(app_name, model, perm))
         with transaction.atomic():
             role.permissions.set(perms)
@@ -499,13 +495,14 @@ def _current_password_validators_as_string():
     # options. Applies canoninical ordering of dict keys for determinism.
     def val_to_str(val):
         if isinstance(val, dict):
-            return '{' + ','.join(f'{k!r}:{val_to_str(v)}' for k, v in sorted(val.items())) + '}'
+            return "{" + ",".join(f"{k!r}:{val_to_str(v)}" for k, v in sorted(val.items())) + "}"
         elif isinstance(val, (str, int)):
             return repr(val)
         elif isinstance(val, list):
-            return '[' + ','.join(f'{val_to_str(v)}' for v in val) + ']'
+            return "[" + ",".join(f"{val_to_str(v)}" for v in val) + "]"
         else:
             raise AssertionError("Can't handle {type(val)}")
+
     return val_to_str(settings.AUTH_PASSWORD_VALIDATORS)
 
 

@@ -5,26 +5,26 @@ from cciw.officers import formfields
 
 class YyyyMmField(models.CharField):
     def __init__(self, *args, **kwargs):
-        kwargs['max_length'] = 7
-        kwargs['help_text'] = 'Enter the date in YYYY/MM format.'
+        kwargs["max_length"] = 7
+        kwargs["help_text"] = "Enter the date in YYYY/MM format."
         super().__init__(*args, **kwargs)
 
     def formfield(self, *args, **kwargs):
-        defaults = {'form_class': formfields.YyyyMmField}
+        defaults = {"form_class": formfields.YyyyMmField}
         defaults.update(kwargs)
         return super().formfield(*args, **defaults)
 
 
 class AddressField(models.TextField):
     def __init__(self, *args, **kwargs):
-        kwargs['help_text'] = 'Full address, including post code and country'
+        kwargs["help_text"] = "Full address, including post code and country"
         super().__init__(*args, **kwargs)
 
 
 class ExplicitBooleanField(models.BooleanField):
     def __init__(self, *args, **kwargs):
-        kwargs['default'] = None
-        kwargs['null'] = True
+        kwargs["default"] = None
+        kwargs["null"] = True
         super().__init__(*args, **kwargs)
 
 
@@ -43,7 +43,7 @@ def required_field(field_class):
 
     class NewDBField(field_class):
         def __init__(self, *args, **kwargs):
-            kwargs['blank'] = True
+            kwargs["blank"] = True
             super().__init__(*args, **kwargs)
 
         def formfield(self, *args, **kwargs):
@@ -54,7 +54,7 @@ def required_field(field_class):
         def deconstruct(self):
             attname, field_path, posargs, kwargs = super().deconstruct()
             # Django 2.2 gets field_path wrong for some reason
-            field_path = 'cciw.officers.fields.' + name
+            field_path = "cciw.officers.fields." + name
             return attname, field_path, posargs, kwargs
 
     NewDBField.__name__ = name

@@ -9,16 +9,19 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('mail', '0002_delete_emailnotification'),
+        ("mail", "0002_delete_emailnotification"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='EmailForward',
+            name="EmailForward",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('address', models.EmailField(max_length=254)),
-                ('recipients', django.contrib.postgres.fields.ArrayField(base_field=models.EmailField(max_length=254), size=None)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("address", models.EmailField(max_length=254)),
+                (
+                    "recipients",
+                    django.contrib.postgres.fields.ArrayField(base_field=models.EmailField(max_length=254), size=None),
+                ),
             ],
         ),
     ]

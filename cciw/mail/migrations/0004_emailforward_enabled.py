@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('mail', '0003_emailforward'),
+        ("mail", "0003_emailforward"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='emailforward',
-            name='enabled',
+            model_name="emailforward",
+            name="enabled",
             field=models.BooleanField(default=True),
         ),
     ]

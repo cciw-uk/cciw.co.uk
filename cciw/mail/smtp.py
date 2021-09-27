@@ -8,8 +8,9 @@ logger = logging.getLogger("cciw.mail.smtp")
 # Wrappers for EmailMessage so that we can send our already constructed mime
 # message using Django's normal mailing sending routines.
 
+
 class RawEmailMessage(EmailMessage):
-    def __init__(self, mime_data=b'', **kwargs):
+    def __init__(self, mime_data=b"", **kwargs):
         super().__init__(**kwargs)
         self.mime_data = mime_data
 

@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0035_auto_20170303_2121'),
+        ("officers", "0035_auto_20170303_2121"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dbscheck',
-            name='check_type',
-            field=models.CharField(choices=[('form', 'Full form'), ('online', 'Online check')], default='form', max_length=20, verbose_name='check type'),
+            model_name="dbscheck",
+            name="check_type",
+            field=models.CharField(
+                choices=[("form", "Full form"), ("online", "Online check")],
+                default="form",
+                max_length=20,
+                verbose_name="check type",
+            ),
         ),
     ]

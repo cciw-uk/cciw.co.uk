@@ -28,21 +28,22 @@ def fix_ipn_dates(apps, schema_editor):
         posted_data_dict = None
         if ipn.query:
             from django.http import QueryDict
-            roughdecode = dict(item.split('=', 1) for item in ipn.query.split('&'))
-            encoding = roughdecode.get('charset')
+
+            roughdecode = dict(item.split("=", 1) for item in ipn.query.split("&"))
+            encoding = roughdecode.get("charset")
             if encoding is not None:
-                query = ipn.query.encode('ascii')
+                query = ipn.query.encode("ascii")
                 data = QueryDict(query, encoding=encoding)
                 posted_data_dict = data.dict()
         if posted_data_dict is None:
             continue
 
-        for field in ['time_created', 'payment_date', 'next_payment_date', 'subscr_date', 'subscr_effective']:
+        for field in ["time_created", "payment_date", "next_payment_date", "subscr_date", "subscr_effective"]:
             if field in posted_data_dict:
                 raw = posted_data_dict[field]
                 naive = parse_date(raw)
                 if naive is not None:
-                    aware = timezone.make_aware(naive, pytz.timezone('US/Pacific'))
+                    aware = timezone.make_aware(naive, pytz.timezone("US/Pacific"))
                     setattr(ipn, field, aware)
         ipn.save()
 
@@ -50,11 +51,10 @@ def fix_ipn_dates(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0005_auto_20150407_1333'),
-        ('ipn', '0003_auto_20141117_1647'),
+        ("bookings", "0005_auto_20150407_1333"),
+        ("ipn", "0003_auto_20141117_1647"),
     ]
 
     operations = [
-        migrations.RunPython(fix_ipn_dates,
-                             lambda apps, schema_editor: None)  # allowing reverse migration is harmless)
+        migrations.RunPython(fix_ipn_dates, lambda apps, schema_editor: None)  # allowing reverse migration is harmless)
     ]

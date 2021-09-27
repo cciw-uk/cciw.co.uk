@@ -22,18 +22,38 @@ from cciw.bookings.hooks import paypal_payment_received, unrecognised_payment
 from cciw.bookings.mailchimp import get_status
 from cciw.bookings.management.commands.expire_bookings import Command as ExpireBookingsCommand
 from cciw.bookings.middleware import BOOKING_COOKIE_SALT
-from cciw.bookings.models import (AccountTransferPayment, AgreementFetcher, Booking, BookingAccount, BookingState,
-                                  CustomAgreement, ManualPayment, ManualPaymentType, Payment, PaymentSource, Price,
-                                  PriceChecker, PriceType, RefundPayment, book_basket_now, build_paypal_custom_field,
-                                  expire_bookings)
+from cciw.bookings.models import (
+    AccountTransferPayment,
+    AgreementFetcher,
+    Booking,
+    BookingAccount,
+    BookingState,
+    CustomAgreement,
+    ManualPayment,
+    ManualPaymentType,
+    Payment,
+    PaymentSource,
+    Price,
+    PriceChecker,
+    PriceType,
+    RefundPayment,
+    book_basket_now,
+    build_paypal_custom_field,
+    expire_bookings,
+)
 from cciw.bookings.utils import camp_bookings_to_spreadsheet, payments_to_spreadsheet
 from cciw.cciwmain.models import Camp
 from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.cciwmain.tests.mailhelpers import path_and_query_to_url, read_email_url
 from cciw.cciwmain.tests.utils import NotPassed
 from cciw.mail.tests import send_queued_mail
-from cciw.officers.tests.base import (BOOKING_SECRETARY, BOOKING_SECRETARY_PASSWORD, BOOKING_SECRETARY_USERNAME,
-                                      OFFICER, OfficersSetupMixin)
+from cciw.officers.tests.base import (
+    BOOKING_SECRETARY,
+    BOOKING_SECRETARY_PASSWORD,
+    BOOKING_SECRETARY_USERNAME,
+    OFFICER,
+    OfficersSetupMixin,
+)
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.base import AtomicChecksMixin, FactoriesBase, TestBase, disable_logging
@@ -43,40 +63,40 @@ from cciw.utils.tests.webtest import SeleniumBase, WebTestBase
 
 class Factories(FactoriesBase):
     def create_booking(
-            self,
-            # From user fields, order same as booking form.
-            # TODO we are missing a few (non required) fields here
-            account=None,
-            camp=None,
-            price_type=PriceType.FULL,
-            first_name=None,
-            last_name=None,
-            name=None,
-            sex='m',
-            date_of_birth=None,
-            address_line1='123 My street',
-            address_city='Metrocity',
-            address_country='GB',
-            address_post_code='ABC 123',
-            contact_name='Mr Father',
-            contact_line1='98 Main Street',
-            contact_city='Metrocity',
-            contact_country='GB',
-            contact_post_code='ABC 456',
-            contact_phone_number='01982 987654',
-            gp_name='Doctor Who',
-            gp_line1='The Tardis',
-            gp_city='London',
-            gp_country='GB',
-            gp_post_code='SW1 1PQ',
-            gp_phone_number='01234 456789',
-            medical_card_number='asdfasdf',
-            last_tetanus_injection_date=NotPassed,
-            serious_illness=False,
-            agreement=True,
-            # Internal fields
-            state=BookingState.INFO_COMPLETE,
-            amount_due=None,
+        self,
+        # From user fields, order same as booking form.
+        # TODO we are missing a few (non required) fields here
+        account=None,
+        camp=None,
+        price_type=PriceType.FULL,
+        first_name=None,
+        last_name=None,
+        name=None,
+        sex="m",
+        date_of_birth=None,
+        address_line1="123 My street",
+        address_city="Metrocity",
+        address_country="GB",
+        address_post_code="ABC 123",
+        contact_name="Mr Father",
+        contact_line1="98 Main Street",
+        contact_city="Metrocity",
+        contact_country="GB",
+        contact_post_code="ABC 456",
+        contact_phone_number="01982 987654",
+        gp_name="Doctor Who",
+        gp_line1="The Tardis",
+        gp_city="London",
+        gp_country="GB",
+        gp_post_code="SW1 1PQ",
+        gp_phone_number="01234 456789",
+        medical_card_number="asdfasdf",
+        last_tetanus_injection_date=NotPassed,
+        serious_illness=False,
+        agreement=True,
+        # Internal fields
+        state=BookingState.INFO_COMPLETE,
+        amount_due=None,
     ) -> Booking:
         account = account or self.create_booking_account()
         camp = camp or camps_factories.get_any_camp()
@@ -87,13 +107,13 @@ class Factories(FactoriesBase):
         if name is not None:
             assert first_name is None
             assert last_name is None
-            first_name, last_name = name.split(' ')
+            first_name, last_name = name.split(" ")
         else:
-            first_name = first_name or 'Frédéric'
-            last_name = last_name or 'Bloggs'
+            first_name = first_name or "Frédéric"
+            last_name = last_name or "Bloggs"
         amount_due_not_passed = amount_due is None
         if last_tetanus_injection_date is NotPassed:
-            last_tetanus_injection_date = f'{camp.year - 5}-02-03'
+            last_tetanus_injection_date = f"{camp.year - 5}-02-03"
 
         booking: Booking = Booking.objects.create(
             account=account,
@@ -132,15 +152,15 @@ class Factories(FactoriesBase):
         return booking
 
     def create_booking_account(
-            self,
-            name='A Booker',
-            address_line1='',
-            address_post_code='XYZ',
-            email=None,
+        self,
+        name="A Booker",
+        address_line1="",
+        address_post_code="XYZ",
+        email=None,
     ) -> BookingAccount:
 
         if email is None:
-            email = f'booker_{self._get_next_booking_account_counter()}@example.com'
+            email = f"booker_{self._get_next_booking_account_counter()}@example.com"
         return BookingAccount.objects.create(
             name=name,
             email=email,
@@ -149,14 +169,14 @@ class Factories(FactoriesBase):
         )
 
     def _get_next_booking_account_counter(self):
-        num = getattr(self, '_booking_account_counter', 0) + 1
+        num = getattr(self, "_booking_account_counter", 0) + 1
         self._booking_account_counter = num
         return num
 
     def create_processed_payment(
-            self,
-            account=None,
-            amount=1,
+        self,
+        account=None,
+        amount=1,
     ):
         manual_payment = self.create_manual_payment(account=account, amount=amount)
         payment = manual_payment.paymentsource.payment
@@ -165,9 +185,9 @@ class Factories(FactoriesBase):
         return payment
 
     def create_manual_payment(
-            self,
-            account=None,
-            amount=1,
+        self,
+        account=None,
+        amount=1,
     ):
         return ManualPayment.objects.create(
             account=account or self.create_booking_account(),
@@ -176,9 +196,9 @@ class Factories(FactoriesBase):
         )
 
     def create_refund_payment(
-            self,
-            account=None,
-            amount=1,
+        self,
+        account=None,
+        amount=1,
     ):
         return RefundPayment.objects.create(
             account=account or self.create_booking_account(),
@@ -190,21 +210,22 @@ class Factories(FactoriesBase):
         if account is not None:
             custom = build_paypal_custom_field(account)
         else:
-            custom = ''
-        defaults = dict(mc_gross=Decimal('1.00'),
-                        custom=custom,
-                        ipaddress='127.0.0.1',
-                        payment_status='Completed',
-                        txn_id='1',
-                        business=settings.PAYPAL_RECEIVER_EMAIL,
-                        payment_date=timezone.now(),
-                        )
+            custom = ""
+        defaults = dict(
+            mc_gross=Decimal("1.00"),
+            custom=custom,
+            ipaddress="127.0.0.1",
+            payment_status="Completed",
+            txn_id="1",
+            business=settings.PAYPAL_RECEIVER_EMAIL,
+            payment_date=timezone.now(),
+        )
         defaults.update(kwargs)
         ipn = PayPalIPN.objects.create(**defaults)
         ipn.send_signals()
         return ipn
 
-    def create_custom_agreement(self, *, year, name, text_html='Text'):
+    def create_custom_agreement(self, *, year, name, text_html="Text"):
         return CustomAgreement.objects.create(
             year=year,
             name=name,
@@ -221,21 +242,19 @@ class Factories(FactoriesBase):
             early_bird_discount = Decimal(10)
         else:
             early_bird_discount = Decimal(early_bird_discount)
-        price_full = Price.objects.get_or_create(year=year,
-                                                 price_type=PriceType.FULL,
-                                                 price=Decimal('100'))[0].price
-        price_2nd_child = Price.objects.get_or_create(year=year,
-                                                      price_type=PriceType.SECOND_CHILD,
-                                                      price=Decimal('75'))[0].price
-        price_3rd_child = Price.objects.get_or_create(year=year,
-                                                      price_type=PriceType.THIRD_CHILD,
-                                                      price=Decimal('50'))[0].price
-        price_deposit = Price.objects.get_or_create(year=year,
-                                                    price_type=PriceType.DEPOSIT,
-                                                    defaults={'price': deposit})[0].price
-        price_early_bird_discount = Price.objects.get_or_create(year=year,
-                                                                price_type=PriceType.EARLY_BIRD_DISCOUNT,
-                                                                defaults={'price': early_bird_discount})[0].price
+        price_full = Price.objects.get_or_create(year=year, price_type=PriceType.FULL, price=Decimal("100"))[0].price
+        price_2nd_child = Price.objects.get_or_create(
+            year=year, price_type=PriceType.SECOND_CHILD, price=Decimal("75")
+        )[0].price
+        price_3rd_child = Price.objects.get_or_create(year=year, price_type=PriceType.THIRD_CHILD, price=Decimal("50"))[
+            0
+        ].price
+        price_deposit = Price.objects.get_or_create(
+            year=year, price_type=PriceType.DEPOSIT, defaults={"price": deposit}
+        )[0].price
+        price_early_bird_discount = Price.objects.get_or_create(
+            year=year, price_type=PriceType.EARLY_BIRD_DISCOUNT, defaults={"price": early_bird_discount}
+        )[0].price
         return price_full, price_2nd_child, price_3rd_child, price_deposit, price_early_bird_discount
 
 
@@ -243,7 +262,7 @@ factories = Factories()
 
 
 class IpnMock:
-    payment_status = 'Completed'
+    payment_status = "Completed"
     business = settings.PAYPAL_RECEIVER_EMAIL
 
 
@@ -254,7 +273,7 @@ class CreateCampMixin:
     camp_maximum_age = 17
 
     def create_camps(self):
-        if hasattr(self, 'camp'):
+        if hasattr(self, "camp"):
             return
         self.today = date.today()
         # Need to create a Camp that we can choose i.e. is in the future.
@@ -282,8 +301,13 @@ class CreateCampMixin:
 class CreatePricesMixin:
     def add_prices(self, deposit=None, early_bird_discount=None):
         year = self.camp.year
-        self.price_full, self.price_2nd_child, self.price_3rd_child, self.price_deposit, self.price_early_bird_discount = \
-            factories.create_prices(year, deposit=deposit, early_bird_discount=early_bird_discount)
+        (
+            self.price_full,
+            self.price_2nd_child,
+            self.price_3rd_child,
+            self.price_deposit,
+            self.price_early_bird_discount,
+        ) = factories.create_prices(year, deposit=deposit, early_bird_discount=early_bird_discount)
 
     def setUp(self):
         super().setUp()
@@ -291,10 +315,10 @@ class CreatePricesMixin:
 
 
 class LogInMixin:
-    email = 'booker@bookers.com'
+    email = "booker@bookers.com"
 
     def login(self, add_account_details=True, shortcut=None) -> BookingAccount:
-        if getattr(self, '_logged_in', False):
+        if getattr(self, "_logged_in", False):
             return
 
         if shortcut is None:
@@ -302,58 +326,55 @@ class LogInMixin:
 
         if shortcut:
             account, _ = BookingAccount.objects.get_or_create(email=self.email)
-            self._set_signed_cookie('bookingaccount', account.id,
-                                    salt=BOOKING_COOKIE_SALT,
-                                    max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS)
+            self._set_signed_cookie(
+                "bookingaccount", account.id, salt=BOOKING_COOKIE_SALT, max_age=settings.BOOKING_SESSION_TIMEOUT_SECONDS
+            )
         else:
             # Easiest way is to simulate what the user actually has to do
-            self.get_url('cciw-bookings-start')
-            self.fill_by_name({'email': self.email})
-            self.submit('[type=submit]')
+            self.get_url("cciw-bookings-start")
+            self.fill_by_name({"email": self.email})
+            self.submit("[type=submit]")
             url, path, querydata = read_email_url(mail.outbox.pop(), "https://.*/booking/v/.*")
             self.get_literal_url(path_and_query_to_url(path, querydata))
             account = BookingAccount.objects.get(email=self.email)
 
         if add_account_details:
-            account.name = 'Joe'
-            account.address_line1 = '456 My Street'
-            account.address_city = 'Metrocity'
-            account.address_country = 'GB'
-            account.address_post_code = 'XYZ'
-            account.phone_number = '0123 456789'
+            account.name = "Joe"
+            account.address_line1 = "456 My Street"
+            account.address_city = "Metrocity"
+            account.address_country = "GB"
+            account.address_post_code = "XYZ"
+            account.phone_number = "0123 456789"
             account.save()
         self._logged_in = True
         return account
 
-    def _set_signed_cookie(self, key, value, salt='', **kwargs):
+    def _set_signed_cookie(self, key, value, salt="", **kwargs):
         value = signing.get_cookie_signer(salt=key + salt).sign(value)
         if self.is_full_browser_test:
             if not self._have_visited_page():
-                self.get_url('django_functest.emptypage')
-            return self._add_cookie({'name': key,
-                                     'value': value,
-                                     'path': '/'})
+                self.get_url("django_functest.emptypage")
+            return self._add_cookie({"name": key, "value": value, "path": "/"})
         else:
             return self.app.set_cookie(key, value)
 
 
 class CreateBookingWebMixin(LogInMixin, CreatePricesMixin, CreateCampMixin):
-
     def setUp(self):
         super().setUp()
         self.create_camps()
 
     def create_booking(
-            self,
-            shortcut=None,
-            camp=None,
-            first_name=None,
-            last_name=None,
-            name=None,
-            sex='m',
-            date_of_birth=None,
-            serious_illness=False,
-            price_type=PriceType.FULL,
+        self,
+        shortcut=None,
+        camp=None,
+        first_name=None,
+        last_name=None,
+        name=None,
+        sex="m",
+        date_of_birth=None,
+        serious_illness=False,
+        price_type=PriceType.FULL,
     ) -> Booking:
         """
         Creates a booking, normally using views.
@@ -374,79 +395,82 @@ class CreateBookingWebMixin(LogInMixin, CreatePricesMixin, CreateCampMixin):
         )
         if shortcut:
             self.add_prices()
-            data.update({
-                'account': BookingAccount.objects.get(email=self.email),
-                'state': BookingState.INFO_COMPLETE,
-            })
+            data.update(
+                {
+                    "account": BookingAccount.objects.get(email=self.email),
+                    "state": BookingState.INFO_COMPLETE,
+                }
+            )
             return factories.create_booking(**data)
 
         # Otherwise, we use public views to create place, to ensure that they
         # are created in the same way that a user would.
-        old_booking_ids = list(Booking.objects.values_list('id', flat=True))
+        old_booking_ids = list(Booking.objects.values_list("id", flat=True))
         self.add_prices()
 
-        self.get_url('cciw-bookings-add_place')
+        self.get_url("cciw-bookings-add_place")
         # Sanity check:
         self.assertTextPresent("Please enter the details needed to book a place on a camp")
         self.fill_by_name(data)
-        self.submit('#id_save_btn')
-        self.assertUrlsEqual(reverse('cciw-bookings-list_bookings'))
+        self.submit("#id_save_btn")
+        self.assertUrlsEqual(reverse("cciw-bookings-list_bookings"))
         new_booking = Booking.objects.exclude(id__in=old_booking_ids).get()
         return new_booking
 
     def get_place_details(
-            self, *,
-            first_name=None,
-            last_name=None,
-            name=None,
-            camp=None,
-            date_of_birth=None,
-            serious_illness=False,
-            price_type=PriceType.FULL,
-            sex='m',
+        self,
+        *,
+        first_name=None,
+        last_name=None,
+        name=None,
+        camp=None,
+        date_of_birth=None,
+        serious_illness=False,
+        price_type=PriceType.FULL,
+        sex="m",
     ) -> dict:
 
         if name is not None:
             assert first_name is None
             assert last_name is None
-            first_name, last_name = name.split(' ')
+            first_name, last_name = name.split(" ")
         else:
-            first_name = first_name or 'Frédéric'
-            last_name = last_name or 'Bloggs'
+            first_name = first_name or "Frédéric"
+            last_name = last_name or "Bloggs"
         if camp is None:
             camp = self.camp
         if date_of_birth is None:
             date_of_birth = date(camp.year - 14, 1, 1)
         if sex is None:
-            sex = 'm'
+            sex = "m"
         return {
             # Order follows order in form.
-            'camp': camp,
-            'price_type': price_type,
-            'first_name': first_name,
-            'last_name': last_name,
-            'sex': sex,
-            'date_of_birth': date_of_birth,
-            'address_line1': '123 My street',
-            'address_city': 'Metrocity',
-            'address_country': 'GB',
-            'address_post_code': 'ABC 123',
-            'contact_name': 'Mr Father',
-            'contact_line1': '98 Main Street',
-            'contact_city': 'Metrocity',
-            'contact_country': 'GB',
-            'contact_post_code': 'ABC 456',
-            'contact_phone_number': '01982 987654',
-            'gp_name': 'Doctor Who',
-            'gp_line1': 'The Tardis',
-            'gp_city': 'London',
-            'gp_country': 'GB',
-            'gp_post_code': 'SW1 1PQ',
-            'gp_phone_number': '01234 456789',
-            'medical_card_number': 'asdfasdf',
-            'last_tetanus_injection_date': date(camp.year - 5, 2, 3),
-            'serious_illness': serious_illness,
-            'agreement': True,
+            "camp": camp,
+            "price_type": price_type,
+            "first_name": first_name,
+            "last_name": last_name,
+            "sex": sex,
+            "date_of_birth": date_of_birth,
+            "address_line1": "123 My street",
+            "address_city": "Metrocity",
+            "address_country": "GB",
+            "address_post_code": "ABC 123",
+            "contact_name": "Mr Father",
+            "contact_line1": "98 Main Street",
+            "contact_city": "Metrocity",
+            "contact_country": "GB",
+            "contact_post_code": "ABC 456",
+            "contact_phone_number": "01982 987654",
+            "gp_name": "Doctor Who",
+            "gp_line1": "The Tardis",
+            "gp_city": "London",
+            "gp_country": "GB",
+            "gp_post_code": "SW1 1PQ",
+            "gp_phone_number": "01234 456789",
+            "medical_card_number": "asdfasdf",
+            "last_tetanus_injection_date": date(camp.year - 5, 2, 3),
+            "serious_illness": serious_illness,
+            "agreement": True,
         }
 
     def fill(self, data):
@@ -484,8 +508,8 @@ class BookingBaseMixin(AtomicChecksMixin):
     NO_PLACES_LEFT_FOR_GIRLS = "There are no places left for girls"
     PRICES_NOT_SET = "prices have not been set"
     LAST_TETANUS_INJECTION_DATE_REQUIRED = "last tetanus injection"
-    BOOKINGS_WILL_EXPIRE = 'you have 24 hours to complete payment online'
-    THANK_YOU_FOR_PAYMENT = 'Thank you for your payment'
+    BOOKINGS_WILL_EXPIRE = "you have 24 hours to complete payment online"
+    THANK_YOU_FOR_PAYMENT = "Thank you for your payment"
 
     def setUp(self):
         super().setUp()
@@ -507,7 +531,6 @@ class BookingBaseMixin(AtomicChecksMixin):
 
 
 class TestBookingModels(AtomicChecksMixin, TestBase):
-
     def test_camp_open_for_bookings(self):
         today = date.today()
         camp = camps_factories.create_camp(start_date=today + timedelta(days=10))
@@ -519,7 +542,7 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
         assert camp.open_for_bookings(today)
         assert not camp.open_for_bookings(today + timedelta(days=1))
 
-    @mock.patch('cciw.bookings.models.early_bird_is_available', return_value=False)
+    @mock.patch("cciw.bookings.models.early_bird_is_available", return_value=False)
     def test_book_with_money_in_account(self, m, use_prefetch_related_for_get_account=True):
         booking = factories.create_booking(camp=camps_factories.create_camp(future=True))
 
@@ -544,23 +567,29 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
             if use_prefetch_related_for_get_account:
                 # Tests that the other code paths in get_balance/BookingManager.payable
                 # work.
-                account = BookingAccount.objects.filter(id=account.id).prefetch_related('bookings')[0]
+                account = BookingAccount.objects.filter(id=account.id).prefetch_related("bookings")[0]
             else:
                 account = BookingAccount.objects.get(id=account.id)
             with self.assertNumQueries(0 if use_prefetch_related_for_get_account else 2):
-                assert account.get_balance(
-                    confirmed_only=False,
-                    allow_deposits=True,
-                    price_checker=price_checker,
-                ) == Decimal('0.00')
-                assert account.get_balance(
-                    confirmed_only=True,
-                    allow_deposits=True,
-                    price_checker=price_checker,
-                ) == Decimal('0.00')
+                assert (
+                    account.get_balance(
+                        confirmed_only=False,
+                        allow_deposits=True,
+                        price_checker=price_checker,
+                    )
+                    == Decimal("0.00")
+                )
+                assert (
+                    account.get_balance(
+                        confirmed_only=True,
+                        allow_deposits=True,
+                        price_checker=price_checker,
+                    )
+                    == Decimal("0.00")
+                )
 
         # But for full amount, they still owe 80 (full price minus deposit)
-        assert account.get_balance_full() == Decimal('80.00')
+        assert account.get_balance_full() == Decimal("80.00")
 
         # Test some model methods:
         assert len(account.bookings.payable(confirmed_only=False)) == 1
@@ -568,9 +597,9 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
     def test_booking_missing_agreements(self):
         camp = camps_factories.create_camp(future=True)
         booking = factories.create_booking(state=BookingState.BOOKED, camp=camp)
-        agreement = factories.create_custom_agreement(year=booking.camp.year, name='test')
+        agreement = factories.create_custom_agreement(year=booking.camp.year, name="test")
         # Other agreement, different year so should be irrelevant:
-        factories.create_custom_agreement(year=booking.camp.year - 1, name='x')
+        factories.create_custom_agreement(year=booking.camp.year - 1, name="x")
         assert booking in Booking.objects.agreement_fix_required()
         assert booking not in Booking.objects.no_missing_agreements()
         assert booking.get_missing_agreements() == [agreement]
@@ -590,42 +619,41 @@ class TestBookingModels(AtomicChecksMixin, TestBase):
         camp = camps_factories.get_any_camp()
         for i in range(0, 20):
             bookings.append(factories.create_booking(camp=camp))
-        agreement = factories.create_custom_agreement(year=camp.year, name='test')
+        agreement = factories.create_custom_agreement(year=camp.year, name="test")
         agreement_fetcher = AgreementFetcher()
         with self.assertNumQueries(2):
-            bookings = Booking.objects.filter(id__in=[booking.id for booking in bookings]).select_related('camp')
+            bookings = Booking.objects.filter(id__in=[booking.id for booking in bookings]).select_related("camp")
             for booking in bookings:
                 assert booking.get_missing_agreements(agreement_fetcher=agreement_fetcher) == [agreement]
 
 
 class TestBookingIndex(BookingBaseMixin, CreatePricesMixin, CreateCampMixin, WebTestBase):
-
     def test_show_with_no_prices(self):
-        self.get_url('cciw-bookings-index')
+        self.get_url("cciw-bookings-index")
         self.assertTextPresent(f"Prices for {self.camp.year} have not been finalised yet")
 
     def test_show_with_prices(self):
         self.add_prices()  # need for booking to be open
-        self.get_url('cciw-bookings-index')
+        self.get_url("cciw-bookings-index")
         self.assertTextPresent("£100")
         self.assertTextPresent("£20")  # Deposit price
 
 
 class BookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
-    urlname = 'cciw-bookings-start'
+    urlname = "cciw-bookings-start"
 
-    def submit(self, css_selector='[type=submit]'):
+    def submit(self, css_selector="[type=submit]"):
         return super().submit(css_selector)
 
     def test_show_form(self):
         self.get_url(self.urlname)
-        self.assertTextPresent('id_email')
+        self.assertTextPresent("id_email")
 
     def test_complete_form(self):
         assert BookingAccount.objects.all().count() == 0
         self.get_url(self.urlname)
-        self.fill_by_name({'email': 'booker@bookers.com'})
+        self.fill_by_name({"email": "booker@bookers.com"})
         self.submit()
         assert BookingAccount.objects.all().count() == 0
         assert len(mail.outbox) == 1
@@ -634,7 +662,7 @@ class BookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         BookingAccount.objects.create(email="booker@bookers.com")
         assert BookingAccount.objects.all().count() == 1
         self.get_url(self.urlname)
-        self.fill_by_name({'email': 'booker@bookers.com'})
+        self.fill_by_name({"email": "booker@bookers.com"})
         self.submit()
         assert BookingAccount.objects.all().count() == 1
         assert len(mail.outbox) == 1
@@ -643,7 +671,7 @@ class BookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         BookingAccount.objects.create(email="booker@bookers.com")
         assert BookingAccount.objects.all().count() == 1
         self.get_url(self.urlname)
-        self.fill_by_name({'email': 'BOOKER@bookers.com'})
+        self.fill_by_name({"email": "BOOKER@bookers.com"})
         self.submit()
         assert BookingAccount.objects.all().count() == 1
         assert len(mail.outbox) == 1
@@ -653,20 +681,20 @@ class BookingStartBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # Check redirect to step 3 - account details
         self.login(add_account_details=False)
         self.get_url(self.urlname)
-        self.assertUrlsEqual(reverse('cciw-bookings-account_details'))
+        self.assertUrlsEqual(reverse("cciw-bookings-account_details"))
 
     def test_skip_if_account_details(self):
         # Check redirect to step 4 - add place
         self.login()
         self.get_url(self.urlname)
-        self.assertUrlsEqual(reverse('cciw-bookings-add_place'))
+        self.assertUrlsEqual(reverse("cciw-bookings-add_place"))
 
     def test_skip_if_has_place_details(self):
         # Check redirect to overview
         account = self.login()
         factories.create_booking(account=account)
         self.get_url(self.urlname)
-        self.assertUrlsEqual(reverse('cciw-bookings-account_overview'))
+        self.assertUrlsEqual(reverse("cciw-bookings-account_overview"))
 
 
 class TestBookingStartWT(BookingStartBase, WebTestBase):
@@ -678,33 +706,32 @@ class TestBookingStartSL(BookingStartBase, SeleniumBase):
 
 
 class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
-
-    def submit(self, css_selector='[type=submit]'):
+    def submit(self, css_selector="[type=submit]"):
         return super().submit(css_selector)
 
     def _read_email_verify_email(self, email):
         return read_email_url(email, "https://.*/booking/v/.*")
 
-    def _start(self, email='booker@bookers.com'):
+    def _start(self, email="booker@bookers.com"):
         # Assumes booking_start works:
-        self.get_url('cciw-bookings-start')
-        self.fill_by_name({'email': email})
+        self.get_url("cciw-bookings-start")
+        self.fill_by_name({"email": email})
         self.submit()
 
     def test_verify_correct(self):
         """
         Test the email verification stage when the URL is correct
         """
-        self._start(email='booker@bookers.com')
+        self._start(email="booker@bookers.com")
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         self.get_literal_url(path_and_query_to_url(path, querydata))
-        self.assertUrlsEqual(reverse('cciw-bookings-account_details'))
+        self.assertUrlsEqual(reverse("cciw-bookings-account_details"))
         self.assertTextPresent("Logged in as booker@bookers.com! You will stay logged in for two weeks")
-        account = BookingAccount.objects.get(email='booker@bookers.com')
+        account = BookingAccount.objects.get(email="booker@bookers.com")
         assert account.last_login is not None
         assert account.first_login is not None
 
-    def _add_booking_account_address(self, email='booker@bookers.com'):
+    def _add_booking_account_address(self, email="booker@bookers.com"):
         account, _ = BookingAccount.objects.get_or_create(email=email)
         account.name = "Joe"
         account.address_line1 = "Home"
@@ -722,7 +749,7 @@ class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         self._add_booking_account_address()
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         self.get_literal_url(path_and_query_to_url(path, querydata))
-        self.assertUrlsEqual(reverse('cciw-bookings-add_place'))
+        self.assertUrlsEqual(reverse("cciw-bookings-add_place"))
 
     def test_verify_correct_and_has_old_details(self):
         """
@@ -732,14 +759,14 @@ class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
         """
         self._start()
         self._add_booking_account_address()
-        account = BookingAccount.objects.get(email='booker@bookers.com')
+        account = BookingAccount.objects.get(email="booker@bookers.com")
         account.first_login = timezone.now() - timedelta(30 * 7)
         account.last_login = account.first_login
         account.save()
 
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
         self.get_literal_url(path_and_query_to_url(path, querydata))
-        self.assertUrlsEqual(reverse('cciw-bookings-account_details'))
+        self.assertUrlsEqual(reverse("cciw-bookings-account_details"))
         self.assertTextPresent("Welcome back!")
         self.assertTextPresent("Please check and update your account details")
 
@@ -751,19 +778,19 @@ class BookingVerifyBase(BookingBaseMixin, FuncBaseMixin):
 
         # The following will trigger a BadSignature
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
-        querydata['bt'] = 'a000' + querydata['bt']
+        querydata["bt"] = "a000" + querydata["bt"]
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertTextPresent("failed")
 
         # This will trigger a base64 decode error:
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
-        querydata['bt'] = 'XXX' + querydata['bt']
+        querydata["bt"] = "XXX" + querydata["bt"]
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertTextPresent("failed")
 
         # This will trigger a UnicodeDecodeError
         url, path, querydata = self._read_email_verify_email(mail.outbox[-1])
-        querydata['bt'] = 'xxxx'
+        querydata["bt"] = "xxxx"
         self.get_literal_url(path_and_query_to_url(path, querydata))
         self.assertTextPresent("failed")
 
@@ -777,7 +804,6 @@ class TestBookingVerifySL(BookingVerifyBase, SeleniumBase):
 
 
 class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
-
     def _create_booking(self):
         booking = factories.create_booking()
         book_basket_now([booking])
@@ -796,7 +822,7 @@ class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
         assert "[CCIW] Payment due" == m.subject
         url, path, querydata = read_email_url(m, "https://.*/booking/p.*")
         self.get_literal_url(path_and_query_to_url(path, querydata))
-        self.assertUrlsEqual(reverse('cciw-bookings-pay'))
+        self.assertUrlsEqual(reverse("cciw-bookings-pay"))
         self.assertTextPresent(booking.account.get_balance_due_now(price_checker=PriceChecker()))
 
     def test_payment_reminder_email_link_expired(self):
@@ -810,26 +836,26 @@ class TestPaymentReminderEmails(BookingBaseMixin, WebTestBase):
             self.get_literal_url(path_and_query_to_url(path, querydata))
 
         # link expired, new email should be sent.
-        self.assertUrlsEqual(reverse('cciw-bookings-link_expired_email_sent'))
+        self.assertUrlsEqual(reverse("cciw-bookings-link_expired_email_sent"))
         assert len(mail.outbox) == 2
         m2 = mail.outbox[1]
 
         url2, path2, querydata2 = read_email_url(m2, "https://.*/booking/p.*")
         self.get_literal_url(path_and_query_to_url(path2, querydata2))
-        self.assertUrlsEqual(reverse('cciw-bookings-pay'))
+        self.assertUrlsEqual(reverse("cciw-bookings-pay"))
 
 
 class AccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
 
-    urlname = 'cciw-bookings-account_details'
-    submit_css_selector = '[type=submit]'
+    urlname = "cciw-bookings-account_details"
+    submit_css_selector = "[type=submit]"
 
     def submit(self, css_selector=submit_css_selector):
         return super().submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
         self.get_url(self.urlname)
-        self.assertUrlsEqual(reverse('cciw-bookings-not_logged_in'))
+        self.assertUrlsEqual(reverse("cciw-bookings-not_logged_in"))
 
     def test_show_if_logged_in(self):
         self.login(add_account_details=False)
@@ -842,7 +868,7 @@ class AccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         self.submit_expecting_html5_validation_errors()
         self.assertTextPresent("This field is required")
 
-    @mock.patch('cciw.bookings.mailchimp.update_newsletter_subscription')
+    @mock.patch("cciw.bookings.mailchimp.update_newsletter_subscription")
     def test_complete(self, UNS_func):
         """
         Test that we can complete the account details page
@@ -852,15 +878,15 @@ class AccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         self._fill_in_account_details()
         self.submit()
         account.refresh_from_db()
-        assert account.name == 'Mr Booker'
+        assert account.name == "Mr Booker"
         assert UNS_func.call_count == 0
 
-    @mock.patch('cciw.bookings.mailchimp.update_newsletter_subscription')
+    @mock.patch("cciw.bookings.mailchimp.update_newsletter_subscription")
     def test_news_letter_subscribe(self, UNS_func):
         account = self.login(add_account_details=False)
         self.get_url(self.urlname)
         self._fill_in_account_details()
-        self.fill({'#id_subscribe_to_newsletter': True})
+        self.fill({"#id_subscribe_to_newsletter": True})
         self.submit()
         account.refresh_from_db()
         assert account.subscribe_to_newsletter
@@ -885,42 +911,45 @@ class AccountDetailsBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
         account = self.login(add_account_details=False)
         self.get_url(self.urlname)
         self._fill_in_account_details()
-        self.fill({'#id_subscribe_to_mailings': True})
+        self.fill({"#id_subscribe_to_mailings": True})
         self.submit()
         account.refresh_from_db()
         assert account.subscribe_to_mailings is True
         assert account.include_in_mailings is True
 
     def _fill_in_account_details(self):
-        self.fill_by_name({'name': 'Mr Booker',
-                           'address_line1': '123, A Street',
-                           'address_city': 'Metrocity',
-                           'address_country': 'GB',
-                           'address_post_code': 'XY1 D45',
-                           })
+        self.fill_by_name(
+            {
+                "name": "Mr Booker",
+                "address_line1": "123, A Street",
+                "address_city": "Metrocity",
+                "address_country": "GB",
+                "address_post_code": "XY1 D45",
+            }
+        )
 
     # For updating this, see:
     # https://vcrpy.readthedocs.org/en/latest/usage.html
 
-    @vcr.use_cassette('cciw/bookings/fixtures/vcr_cassettes/subscribe.yaml', ignore_localhost=True)
+    @vcr.use_cassette("cciw/bookings/fixtures/vcr_cassettes/subscribe.yaml", ignore_localhost=True)
     def test_subscribe(self):
         account = self.login(add_account_details=False)
         self.get_url(self.urlname)
         self._fill_in_account_details()
-        self.fill_by_name({'subscribe_to_newsletter': True})
+        self.fill_by_name({"subscribe_to_newsletter": True})
         self.submit()
         account.refresh_from_db()
         assert account.subscribe_to_newsletter
         assert get_status(account) == "subscribed"
 
-    @vcr.use_cassette('cciw/bookings/fixtures/vcr_cassettes/unsubscribe.yaml', ignore_localhost=True)
+    @vcr.use_cassette("cciw/bookings/fixtures/vcr_cassettes/unsubscribe.yaml", ignore_localhost=True)
     def test_unsubscribe(self):
         account = self.login()
         account.subscribe_to_newsletter = True
         account.save()
 
         self.get_url(self.urlname)
-        self.fill_by_name({'subscribe_to_newsletter': False})
+        self.fill_by_name({"subscribe_to_newsletter": False})
         self.submit()
         account.refresh_from_db()
         assert not account.subscribe_to_newsletter
@@ -937,9 +966,9 @@ class TestAccountDetailsSL(AccountDetailsBase, SeleniumBase):
 
 class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
-    urlname = 'cciw-bookings-add_place'
+    urlname = "cciw-bookings-add_place"
 
-    SAVE_BTN = '#id_save_btn'
+    SAVE_BTN = "#id_save_btn"
 
     submit_css_selector = SAVE_BTN
 
@@ -948,12 +977,12 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_redirect_if_not_logged_in(self):
         self.get_url(self.urlname)
-        self.assertUrlsEqual(reverse('cciw-bookings-not_logged_in'))
+        self.assertUrlsEqual(reverse("cciw-bookings-not_logged_in"))
 
     def test_redirect_if_no_account_details(self):
         self.login(add_account_details=False)
         self.get_url(self.urlname)
-        self.assertUrlsEqual(reverse('cciw-bookings-account_details'))
+        self.assertUrlsEqual(reverse("cciw-bookings-account_details"))
 
     def test_show_if_logged_in(self):
         self.login()
@@ -1000,7 +1029,7 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         data = self.get_place_details()
         self.fill_by_name(data)
         self.submit()
-        self.assertUrlsEqual(reverse('cciw-bookings-list_bookings'))
+        self.assertUrlsEqual(reverse("cciw-bookings-list_bookings"))
 
         # Did we create it?
         assert account.bookings.count() == 1
@@ -1014,9 +1043,9 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_custom_agreement(self):
         agreement = factories.create_custom_agreement(
-            name=(agreement_name := 'MONEY!!'),
+            name=(agreement_name := "MONEY!!"),
             year=self.camp.year,
-            text_html=(agreement_text := "Do you agree to give us all your money?")
+            text_html=(agreement_text := "Do you agree to give us all your money?"),
         )
         account = self.login()
         self.add_prices()
@@ -1025,9 +1054,9 @@ class AddPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assertTextPresent(agreement_text)
 
         self.fill_by_name(self.get_place_details())
-        self.fill({f'#id_custom_agreement_{agreement.id}': True})
+        self.fill({f"#id_custom_agreement_{agreement.id}": True})
         self.submit()
-        self.assertUrlsEqual(reverse('cciw-bookings-list_bookings'))
+        self.assertUrlsEqual(reverse("cciw-bookings-list_bookings"))
 
         booking = account.bookings.get()
         assert booking.custom_agreements_checked == [agreement.id]
@@ -1038,7 +1067,6 @@ class TestAddPlaceWT(AddPlaceBase, WebTestBase):
 
 
 class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
-
     def _use_existing_start(self):
         self.login()
         self.add_prices()
@@ -1052,94 +1080,105 @@ class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
     def test_use_existing_addresses(self):
         self._use_existing_start()
 
-        self.click('.use_existing_btn')
-        self.click('#id_use_address_btn')
+        self.click(".use_existing_btn")
+        self.click("#id_use_address_btn")
 
-        self.assertValues({'#id_address_line1': '123 My street',
-                           '#id_address_country': 'GB',
-                           '#id_address_post_code': 'ABC 123',
-
-                           '#id_contact_name': 'Mr Father',
-                           '#id_contact_line1': '98 Main Street',
-                           '#id_contact_country': 'GB',
-                           '#id_contact_post_code': 'ABC 456',
-
-                           '#id_first_name': '',
-
-                           '#id_gp_name': '',
-                           '#id_gp_line1': '',
-                           '#id_gp_country': ''})
+        self.assertValues(
+            {
+                "#id_address_line1": "123 My street",
+                "#id_address_country": "GB",
+                "#id_address_post_code": "ABC 123",
+                "#id_contact_name": "Mr Father",
+                "#id_contact_line1": "98 Main Street",
+                "#id_contact_country": "GB",
+                "#id_contact_post_code": "ABC 456",
+                "#id_first_name": "",
+                "#id_gp_name": "",
+                "#id_gp_line1": "",
+                "#id_gp_country": "",
+            }
+        )
 
     def test_use_existing_gp(self):
         self._use_existing_start()
 
-        self.click('.use_existing_btn')
-        self.click('#id_use_gp_info_btn')
+        self.click(".use_existing_btn")
+        self.click("#id_use_gp_info_btn")
 
-        self.assertValues({'#id_address_line1': '',
-                           '#id_address_country': '',
-                           '#id_address_post_code': '',
-
-                           '#id_contact_name': '',
-                           '#id_contact_line1': '',
-                           '#id_contact_country': '',
-                           '#id_contact_post_code': '',
-
-                           '#id_first_name': '',
-
-                           '#id_gp_name': 'Doctor Who',
-                           '#id_gp_line1': 'The Tardis',
-                           '#id_gp_country': 'GB'})
+        self.assertValues(
+            {
+                "#id_address_line1": "",
+                "#id_address_country": "",
+                "#id_address_post_code": "",
+                "#id_contact_name": "",
+                "#id_contact_line1": "",
+                "#id_contact_country": "",
+                "#id_contact_post_code": "",
+                "#id_first_name": "",
+                "#id_gp_name": "Doctor Who",
+                "#id_gp_line1": "The Tardis",
+                "#id_gp_country": "GB",
+            }
+        )
 
     def test_use_existing_all(self):
         self._use_existing_start()
 
-        self.click('.use_existing_btn')
-        self.click('#id_use_all_btn')
+        self.click(".use_existing_btn")
+        self.click("#id_use_all_btn")
 
-        self.assertValues({'#id_address_line1': '123 My street',
-                           '#id_address_country': 'GB',
-                           '#id_address_post_code': 'ABC 123',
-
-                           '#id_contact_name': 'Mr Father',
-                           '#id_contact_line1': '98 Main Street',
-                           '#id_contact_country': 'GB',
-                           '#id_contact_post_code': 'ABC 456',
-
-                           '#id_first_name': 'Frédéric',
-
-                           '#id_gp_name': 'Doctor Who',
-                           '#id_gp_line1': 'The Tardis',
-                           '#id_gp_country': 'GB'})
+        self.assertValues(
+            {
+                "#id_address_line1": "123 My street",
+                "#id_address_country": "GB",
+                "#id_address_post_code": "ABC 123",
+                "#id_contact_name": "Mr Father",
+                "#id_contact_line1": "98 Main Street",
+                "#id_contact_country": "GB",
+                "#id_contact_post_code": "ABC 456",
+                "#id_first_name": "Frédéric",
+                "#id_gp_name": "Doctor Who",
+                "#id_gp_line1": "The Tardis",
+                "#id_gp_country": "GB",
+            }
+        )
 
     def test_use_account_data(self):
         self._use_existing_start()
 
-        self.click('#id_use_account_1_btn')
-        self.assertValues({'#id_address_line1': '456 My Street',
-                           '#id_address_city': 'Metrocity',
-                           '#id_address_country': 'GB',
-                           '#id_phone_number': '0123 456789',
-                           '#id_address_post_code': 'XYZ'})
+        self.click("#id_use_account_1_btn")
+        self.assertValues(
+            {
+                "#id_address_line1": "456 My Street",
+                "#id_address_city": "Metrocity",
+                "#id_address_country": "GB",
+                "#id_phone_number": "0123 456789",
+                "#id_address_post_code": "XYZ",
+            }
+        )
 
-        self.click('#id_use_account_2_btn')
-        self.assertValues({'#id_contact_line1': '456 My Street',
-                           '#id_contact_name': 'Joe',
-                           '#id_contact_city': 'Metrocity',
-                           '#id_contact_country': 'GB',
-                           '#id_contact_phone_number': '0123 456789',
-                           '#id_contact_post_code': 'XYZ'})
+        self.click("#id_use_account_2_btn")
+        self.assertValues(
+            {
+                "#id_contact_line1": "456 My Street",
+                "#id_contact_name": "Joe",
+                "#id_contact_city": "Metrocity",
+                "#id_contact_country": "GB",
+                "#id_contact_phone_number": "0123 456789",
+                "#id_contact_post_code": "XYZ",
+            }
+        )
 
 
 class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     # Most functionality is shared with the 'add' form, so doesn't need testing separately.
 
-    submit_css_selector = '#id_save_btn'
+    submit_css_selector = "#id_save_btn"
 
     def edit_place(self, booking, expect_code=None):
-        url = reverse('cciw-bookings-edit_place', kwargs={'booking_id': str(booking.id)})
-        expect_errors = expect_code is not None and str(expect_code).startswith('4')
+        url = reverse("cciw-bookings-edit_place", kwargs={"booking_id": str(booking.id)})
+        expect_errors = expect_code is not None and str(expect_code).startswith("4")
         action = lambda: self.get_literal_url(url, expect_errors=expect_errors)
         if expect_errors:
             with disable_logging():  # suppress django.request warning
@@ -1153,8 +1192,8 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         return super().submit(css_selector)
 
     def test_redirect_if_not_logged_in(self):
-        self.get_url('cciw-bookings-edit_place', booking_id='1')
-        self.assertUrlsEqual(reverse('cciw-bookings-not_logged_in'))
+        self.get_url("cciw-bookings-edit_place", booking_id="1")
+        self.assertUrlsEqual(reverse("cciw-bookings-not_logged_in"))
 
     def test_show_if_owner(self):
         self.login()
@@ -1174,7 +1213,7 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.login()
         booking = self.create_booking()
         self.edit_place(booking)
-        self.fill_by_name({'first_name': ''})
+        self.fill_by_name({"first_name": ""})
         self.submit_expecting_html5_validation_errors()
         self.assertTextPresent("This field is required")
 
@@ -1183,10 +1222,10 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         booking = self.create_booking()
         self.edit_place(booking)
         data = self.get_place_details()
-        data['first_name'] = "A New Name"
+        data["first_name"] = "A New Name"
         self.fill_by_name(data)
         self.submit()
-        self.assertUrlsEqual(reverse('cciw-bookings-list_bookings'))
+        self.assertUrlsEqual(reverse("cciw-bookings-list_bookings"))
 
         # Did we alter it?
         booking.refresh_from_db()
@@ -1224,7 +1263,7 @@ class EditPlaceBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
             # Now submit
             data = self.get_place_details()
-            data['first_name'] = "A New Name"
+            data["first_name"] = "A New Name"
             self.fill_by_name(data)
             self.submit()
             # Check we didn't alter it
@@ -1253,10 +1292,10 @@ def fix_autocomplete_fields(field_names):
                         # Hack needed to cope with autocomplete_light widget and WebTest:
                         form, field, item = self._find_form_and_field_by_css_selector(
                             self.last_response,
-                            f'[name={field_name}]',
+                            f"[name={field_name}]",
                         )
                         # Modify the select widget so that it has the value we need
-                        form.fields[field_name][0].options.append((str(value), False, ''))
+                        form.fields[field_name][0].options.append((str(value), False, ""))
                         new_fields[field_name] = value
                 else:
                     new_fields[field_name] = value
@@ -1273,17 +1312,17 @@ def fix_autocomplete_fields(field_names):
     return FixAutocompleteFieldMixin
 
 
-class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account']),
-                         OfficersSetupMixin, CreateBookingWebMixin, FuncBaseMixin):
-
+class EditPlaceAdminBase(
+    BookingBaseMixin, fix_autocomplete_fields(["account"]), OfficersSetupMixin, CreateBookingWebMixin, FuncBaseMixin
+):
     def test_approve(self):
         self.login()
         booking = self.create_booking(price_type=PriceType.CUSTOM)
 
         self.officer_login(BOOKING_SECRETARY)
         self.get_url("admin:bookings_booking_change", booking.id)
-        self.fill_by_name({'state': BookingState.APPROVED})
-        self.submit('[name=_save]')
+        self.fill_by_name({"state": BookingState.APPROVED})
+        self.submit("[name=_save]")
         self.assertTextPresent("An email has been sent")
         mails = send_queued_mail()
         assert len(mails) == 1
@@ -1293,28 +1332,30 @@ class EditPlaceAdminBase(BookingBaseMixin, fix_autocomplete_fields(['account']),
         self.officer_login(BOOKING_SECRETARY)
         account = BookingAccount.objects.create(
             email=self.email,
-            name='Joe',
-            address_post_code='XYZ',
+            name="Joe",
+            address_post_code="XYZ",
         )
         self.get_url("admin:bookings_booking_add")
         fields = self.get_place_details()
-        fields.update({
-            'account': account.id,
-            'state': BookingState.BOOKED,
-            'amount_due': '130.00',
-            'manual_payment_amount': '100',
-            'manual_payment_payment_type': str(ManualPaymentType.CHEQUE),
-        })
+        fields.update(
+            {
+                "account": account.id,
+                "state": BookingState.BOOKED,
+                "amount_due": "130.00",
+                "manual_payment_amount": "100",
+                "manual_payment_payment_type": str(ManualPaymentType.CHEQUE),
+            }
+        )
         self.fill_by_name(fields)
-        self.submit('[name=_save]')
-        self.assertTextPresent('Select booking')
-        self.assertTextPresent('A confirmation email has been sent')
+        self.submit("[name=_save]")
+        self.assertTextPresent("Select booking")
+        self.assertTextPresent("A confirmation email has been sent")
         booking = Booking.objects.get()
         assert not booking.created_online
         assert booking.account.manual_payments.count() == 1
         mp = booking.account.manual_payments.get()
         assert mp.payment_type == ManualPaymentType.CHEQUE
-        assert mp.amount == Decimal('100')
+        assert mp.amount == Decimal("100")
 
 
 class TestEditPlaceAdminWT(EditPlaceAdminBase, WebTestBase):
@@ -1329,19 +1370,22 @@ class EditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, FuncBaseMixin):
     def test_create(self):
         self.officer_login(BOOKING_SECRETARY)
         self.get_url("admin:bookings_bookingaccount_add")
-        self.fill_by_name({'name': 'Joe',
-                           'email': 'joe@example.com',
-                           'address_post_code': 'XYZ',
-                           })
-        self.submit('[name=_save]')
+        self.fill_by_name(
+            {
+                "name": "Joe",
+                "email": "joe@example.com",
+                "address_post_code": "XYZ",
+            }
+        )
+        self.submit("[name=_save]")
         self.assertTextPresent("was added successfully")
-        account = BookingAccount.objects.get(email='joe@example.com')
-        assert account.name == 'Joe'
+        account = BookingAccount.objects.get(email="joe@example.com")
+        assert account.name == "Joe"
 
     def test_edit(self):
-        account = factories.create_booking_account(name='Joe')
+        account = factories.create_booking_account(name="Joe")
         account.manual_payments.create(
-            amount=Decimal('10.00'),
+            amount=Decimal("10.00"),
             payment_type=ManualPaymentType.CHEQUE,
         )
         assert account.payments.count() == 1
@@ -1349,11 +1393,11 @@ class EditAccountAdminBase(BookingBaseMixin, OfficersSetupMixin, FuncBaseMixin):
         self.get_url("admin:bookings_bookingaccount_change", account.id)
         self.assertTextPresent("Payments")
         self.assertTextPresent("Payment: 10.00 from Joe via Cheque")
-        self.fill_by_name({'name': 'Mr New Name'})
-        self.submit('[name=_save]')
+        self.fill_by_name({"name": "Mr New Name"})
+        self.submit("[name=_save]")
         self.assertTextPresent("was changed successfully")
         account = refresh(account)
-        assert account.name == 'Mr New Name'
+        assert account.name == "Mr New Name"
 
 
 class TestEditAccountAdminWT(EditAccountAdminBase, WebTestBase):
@@ -1364,23 +1408,24 @@ class TestEditAccountAdminSL(EditAccountAdminBase, SeleniumBase):
     pass
 
 
-class EditPaymentAdminBase(fix_autocomplete_fields(['account']), BookingBaseMixin,
-                           OfficersSetupMixin, FuncBaseMixin):
+class EditPaymentAdminBase(fix_autocomplete_fields(["account"]), BookingBaseMixin, OfficersSetupMixin, FuncBaseMixin):
     def test_add_manual_payment(self):
         booking = factories.create_booking()
         self.officer_login(BOOKING_SECRETARY)
         account = booking.account
         self.get_url("admin:bookings_manualpayment_add")
-        self.fill_by_name({
-            'account': account.id,
-            'amount': '12.00',
-        })
-        self.submit('[name=_save]')
+        self.fill_by_name(
+            {
+                "account": account.id,
+                "amount": "12.00",
+            }
+        )
+        self.submit("[name=_save]")
         self.assertTextPresent("Manual payment of £12")
         self.assertTextPresent("was added successfully")
         account.refresh_from_db()
         assert account.manual_payments.count() == 1
-        assert account.total_received == Decimal('12')
+        assert account.total_received == Decimal("12")
 
 
 class TestEditPaymentAdminWT(EditPaymentAdminBase, WebTestBase):
@@ -1391,28 +1436,30 @@ class TestEditPaymentAdminSL(EditPaymentAdminBase, SeleniumBase):
     pass
 
 
-class AccountTransferBase(fix_autocomplete_fields(['from_account', 'to_account']),
-                          AtomicChecksMixin,
-                          OfficersSetupMixin, FuncBaseMixin):
+class AccountTransferBase(
+    fix_autocomplete_fields(["from_account", "to_account"]), AtomicChecksMixin, OfficersSetupMixin, FuncBaseMixin
+):
     def test_add_account_transfer(self):
 
         account_1 = BookingAccount.objects.create(email="account1@example.com", name="Joe")
         account_2 = BookingAccount.objects.create(email="account2@example.com", name="Jane")
         account_1.manual_payments.create(amount="100.00")
         account_1 = refresh(account_1)
-        assert account_1.total_received == Decimal('100.00')
+        assert account_1.total_received == Decimal("100.00")
 
         assert account_1.payments.count() == 1
 
         self.officer_login(BOOKING_SECRETARY)
 
         self.get_url("admin:bookings_accounttransferpayment_add")
-        self.fill_by_name({
-            'from_account': account_1.id,
-            'to_account': account_2.id,
-            'amount': '15',
-        })
-        self.submit('[name=_save]')
+        self.fill_by_name(
+            {
+                "from_account": account_1.id,
+                "to_account": account_2.id,
+                "amount": "15",
+            }
+        )
+        self.submit("[name=_save]")
         self.assertTextPresent("was added successfully")
 
         account_1 = refresh(account_1)
@@ -1421,8 +1468,8 @@ class AccountTransferBase(fix_autocomplete_fields(['from_account', 'to_account']
         assert account_1.payments.count() == 2
         assert account_2.payments.count() == 1
 
-        assert account_1.total_received == Decimal('85.00')
-        assert account_2.total_received == Decimal('15.00')
+        assert account_1.total_received == Decimal("85.00")
+        assert account_2.total_received == Decimal("15.00")
 
         # Deleting causes more payments to restore the original value
         account_1.transfer_from_payments.get().delete()
@@ -1433,8 +1480,8 @@ class AccountTransferBase(fix_autocomplete_fields(['from_account', 'to_account']
         assert account_1.payments.count() == 3
         assert account_2.payments.count() == 2
 
-        assert account_1.total_received == Decimal('100.00')
-        assert account_2.total_received == Decimal('0.00')
+        assert account_1.total_received == Decimal("100.00")
+        assert account_2.total_received == Decimal("0.00")
 
 
 class TestAccountTransferWT(AccountTransferBase, WebTestBase):
@@ -1448,15 +1495,15 @@ class TestAccountTransferSL(AccountTransferBase, SeleniumBase):
 class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     # This includes tests for most of the business logic
 
-    urlname = 'cciw-bookings-list_bookings'
+    urlname = "cciw-bookings-list_bookings"
 
     def assert_book_button_enabled(self):
-        assert self.is_element_present('#id_book_now_btn')
-        assert not self.is_element_present('#id_book_now_btn[disabled]')
+        assert self.is_element_present("#id_book_now_btn")
+        assert not self.is_element_present("#id_book_now_btn[disabled]")
 
     def assert_book_button_disabled(self):
-        assert self.is_element_present('#id_book_now_btn')
-        assert self.is_element_present('#id_book_now_btn[disabled]')
+        assert self.is_element_present("#id_book_now_btn")
+        assert self.is_element_present("#id_book_now_btn[disabled]")
 
     def enable_book_button(self):
         # Used for testing what happens if user enables button using browser
@@ -1466,7 +1513,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_redirect_if_not_logged_in(self):
         self.get_url(self.urlname)
-        self.assertUrlsEqual(reverse('cciw-bookings-not_logged_in'))
+        self.assertUrlsEqual(reverse("cciw-bookings-not_logged_in"))
 
     def test_show_bookings(self):
         self.login()
@@ -1512,10 +1559,10 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         place is already booked.
         """
         account = self.login()
-        self.create_booking(first_name='Joe')
+        self.create_booking(first_name="Joe")
         account.bookings.update(state=BookingState.BOOKED)
 
-        self.create_booking(first_name='Mary', price_type=PriceType.SECOND_CHILD)
+        self.create_booking(first_name="Mary", price_type=PriceType.SECOND_CHILD)
 
         self.get_url(self.urlname)
         self.assert_book_button_enabled()
@@ -1548,14 +1595,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # if born Aug 31st 2001, and thisyear == 2012, should be allowed on camp with
         # minimum_age == 11
         self.login()
-        self.create_booking(date_of_birth='%d-08-31' % (self.camp.year - self.camp_minimum_age))
+        self.create_booking(date_of_birth="%d-08-31" % (self.camp.year - self.camp_minimum_age))
         self.get_url(self.urlname)
         self.assertTextAbsent(self.BELOW_MINIMUM_AGE)
 
         # if born 1st Sept 2001, and thisyear == 2012, should not be allowed on camp with
         # minimum_age == 11
         Booking.objects.all().delete()
-        self.create_booking(date_of_birth='%d-09-01' % (self.camp.year - self.camp_minimum_age))
+        self.create_booking(date_of_birth="%d-09-01" % (self.camp.year - self.camp_minimum_age))
         self.get_url(self.urlname)
         self.assertTextPresent(self.BELOW_MINIMUM_AGE)
 
@@ -1563,14 +1610,14 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # if born 1st Sept 2001, and thisyear == 2019, should be allowed on camp with
         # maximum_age == 17
         self.login()
-        self.create_booking(date_of_birth='%d-09-01' % (self.camp.year - (self.camp_maximum_age + 1)))
+        self.create_booking(date_of_birth="%d-09-01" % (self.camp.year - (self.camp_maximum_age + 1)))
         self.get_url(self.urlname)
         self.assertTextAbsent(self.ABOVE_MAXIMUM_AGE)
 
         # if born Aug 31st 2001, and thisyear == 2019, should not be allowed on camp with
         # maximum_age == 17
         Booking.objects.all().delete()
-        self.create_booking(date_of_birth='%d-08-31' % (self.camp.year - (self.camp_maximum_age + 1)))
+        self.create_booking(date_of_birth="%d-08-31" % (self.camp.year - (self.camp_maximum_age + 1)))
         self.get_url(self.urlname)
         self.assertTextPresent(self.ABOVE_MAXIMUM_AGE)
 
@@ -1579,7 +1626,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
             factories.create_booking(camp=self.camp, state=BookingState.BOOKED)
 
         self.login()
-        self.create_booking(sex='m')
+        self.create_booking(sex="m")
         self.get_url(self.urlname)
         self.assertTextPresent(self.NO_PLACES_LEFT)
         self.assert_book_button_disabled()
@@ -1589,62 +1636,62 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_no_male_places_left(self):
         for i in range(0, self.camp.max_male_campers):
-            factories.create_booking(camp=self.camp, sex='m', state=BookingState.BOOKED)
+            factories.create_booking(camp=self.camp, sex="m", state=BookingState.BOOKED)
 
         self.login()
-        self.create_booking(sex='m')
+        self.create_booking(sex="m")
         self.get_url(self.urlname)
         self.assertTextPresent(self.NO_PLACES_LEFT_FOR_BOYS)
         self.assert_book_button_disabled()
 
         # Check that we can still book female places
         Booking.objects.filter(state=BookingState.INFO_COMPLETE).delete()
-        self.create_booking(sex='f')
+        self.create_booking(sex="f")
         self.get_url(self.urlname)
         self.assertTextAbsent(self.NO_PLACES_LEFT)
         self.assert_book_button_enabled()
 
     def test_no_female_places_left(self):
         for i in range(0, self.camp.max_female_campers):
-            factories.create_booking(camp=self.camp, sex='f', state=BookingState.BOOKED)
+            factories.create_booking(camp=self.camp, sex="f", state=BookingState.BOOKED)
 
         self.login()
-        self.create_booking(sex='f')
+        self.create_booking(sex="f")
         self.get_url(self.urlname)
         self.assertTextPresent(self.NO_PLACES_LEFT_FOR_GIRLS)
         self.assert_book_button_disabled()
 
     def test_not_enough_places_left(self):
         for i in range(0, self.camp.max_campers - 1):
-            factories.create_booking(camp=self.camp, sex='m', state=BookingState.BOOKED)
+            factories.create_booking(camp=self.camp, sex="m", state=BookingState.BOOKED)
 
         self.login()
-        self.create_booking(sex='f')
-        self.create_booking(sex='f')
+        self.create_booking(sex="f")
+        self.create_booking(sex="f")
         self.get_url(self.urlname)
         self.assertTextPresent(self.NOT_ENOUGH_PLACES)
         self.assert_book_button_disabled()
 
     def test_not_enough_male_places_left(self):
         for i in range(0, self.camp.max_male_campers - 1):
-            factories.create_booking(camp=self.camp, sex='m', state=BookingState.BOOKED)
+            factories.create_booking(camp=self.camp, sex="m", state=BookingState.BOOKED)
         self.camp.bookings.update(state=BookingState.BOOKED)
 
         self.login()
-        self.create_booking(sex='m')
-        self.create_booking(sex='m')
+        self.create_booking(sex="m")
+        self.create_booking(sex="m")
         self.get_url(self.urlname)
         self.assertTextPresent(self.NOT_ENOUGH_PLACES_FOR_BOYS)
         self.assert_book_button_disabled()
 
     def test_not_enough_female_places_left(self):
         for i in range(0, self.camp.max_female_campers - 1):
-            factories.create_booking(camp=self.camp, sex='f', state=BookingState.BOOKED)
+            factories.create_booking(camp=self.camp, sex="f", state=BookingState.BOOKED)
         self.camp.bookings.update(state=BookingState.BOOKED)
 
         self.login()
-        self.create_booking(sex='f')
-        self.create_booking(sex='f')
+        self.create_booking(sex="f")
+        self.create_booking(sex="f")
         self.get_url(self.urlname)
         self.assertTextPresent(self.NOT_ENOUGH_PLACES_FOR_GIRLS)
         self.assert_book_button_disabled()
@@ -1663,13 +1710,10 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # Test the error we get for more than one problem booking
         self.login()
         self.create_booking(
-            name='Frédéric Bloggs',
+            name="Frédéric Bloggs",
             price_type=PriceType.CUSTOM,
         )
-        self.create_booking(
-            name='Another Child',
-            price_type=PriceType.CUSTOM
-        )
+        self.create_booking(name="Another Child", price_type=PriceType.CUSTOM)
         self.get_url(self.urlname)
 
         self.assertTextPresent("Camp Blue")
@@ -1683,8 +1727,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # Test the message we get if one place is bookable and the other is not
         self.login()
         self.create_booking()  # bookable
-        self.create_booking(name='Another Child',
-                            price_type=PriceType.CUSTOM)  # not bookable
+        self.create_booking(name="Another Child", price_type=PriceType.CUSTOM)  # not bookable
         self.get_url(self.urlname)
         self.assert_book_button_disabled()
         self.assertTextPresent("One or more of the places cannot be booked")
@@ -1700,10 +1743,8 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # manually approved places should appear as OK to book
         self.login()
         self.create_booking(name="Frédéric Bloggs")  # bookable
-        booking2 = self.create_booking(name='Another Child',
-                                       price_type=PriceType.CUSTOM)
-        Booking.objects.filter(id=booking2.id).update(state=BookingState.APPROVED,
-                                                      amount_due=Decimal('0.01'))
+        booking2 = self.create_booking(name="Another Child", price_type=PriceType.CUSTOM)
+        Booking.objects.filter(id=booking2.id).update(state=BookingState.APPROVED, amount_due=Decimal("0.01"))
         self.get_url(self.urlname)
 
         self.assertTextPresent("Camp Blue")
@@ -1722,8 +1763,8 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.login()
         self.create_booking()
         self.get_url(self.urlname)
-        self.submit('[name=add_another]')
-        self.assertUrlsEqual(reverse('cciw-bookings-add_place'))
+        self.submit("[name=add_another]")
+        self.assertUrlsEqual(reverse("cciw-bookings-add_place"))
 
     def test_move_to_shelf(self):
         self.login()
@@ -1767,7 +1808,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         if self.is_full_browser_test:
             self.click_expecting_alert(f"[name=delete_{booking.id}]")
             self.accept_alert()
-            self.wait_until_loaded('body')
+            self.wait_until_loaded("body")
         else:
             self.submit(f"[name=delete_{booking.id}]")
 
@@ -1780,7 +1821,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.get_url(self.urlname)
 
         self.submit(f"[name=edit_{booking.id}]")
-        self.assertUrlsEqual(reverse('cciw-bookings-edit_place', kwargs={'booking_id': booking.id}))
+        self.assertUrlsEqual(reverse("cciw-bookings-edit_place", kwargs={"booking_id": booking.id}))
 
     def test_book_ok(self):
         """
@@ -1789,11 +1830,11 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.login()
         booking = self.create_booking()
         self.get_url(self.urlname)
-        self.submit('[name=book_now]')
+        self.submit("[name=book_now]")
         booking.refresh_from_db()
         assert booking.state == BookingState.BOOKED
         assert not booking.is_confirmed
-        self.assertUrlsEqual(reverse('cciw-bookings-pay'))
+        self.assertUrlsEqual(reverse("cciw-bookings-pay"))
         self.assertTextPresent(self.BOOKINGS_WILL_EXPIRE)
 
     def test_book_with_zero_deposit(self):
@@ -1805,19 +1846,19 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         account = self.login()
         booking = self.create_booking()
         self.get_url(self.urlname)
-        self.submit('[name=book_now]')
+        self.submit("[name=book_now]")
         booking.refresh_from_db()
         assert booking.state == BookingState.BOOKED
         assert booking.is_confirmed
-        self.assertUrlsEqual(reverse('cciw-bookings-pay'))
+        self.assertUrlsEqual(reverse("cciw-bookings-pay"))
         self.assertTextAbsent(self.BOOKINGS_WILL_EXPIRE)
-        self.assertTextPresent('no deposit to pay')
-        self.assertTextPresent('do not pay yet')
+        self.assertTextPresent("no deposit to pay")
+        self.assertTextPresent("do not pay yet")
 
         # We should immediately send email confirming place in this case:
         mails = send_queued_mail()
         assert len(mails) == 1
-        mail, = mails
+        (mail,) = mails
         assert mail.subject == "[CCIW] Booking - place confirmed"
         assert mail.to == [account.email]
         assert self.THANK_YOU_FOR_PAYMENT not in mail.body  # They didn't actually pay
@@ -1842,11 +1883,11 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
         booking = self.create_booking(shortcut=True)
         self.get_url(self.urlname)
-        self.submit('[name=book_now]')
+        self.submit("[name=book_now]")
         booking.refresh_from_db()
         assert booking.state == BookingState.BOOKED
         assert booking.is_confirmed
-        self.assertUrlsEqual(reverse('cciw-bookings-pay'))
+        self.assertUrlsEqual(reverse("cciw-bookings-pay"))
 
     def test_book_unbookable(self):
         """
@@ -1857,7 +1898,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.get_url(self.urlname)
         self.assert_book_button_disabled()
         self.enable_book_button()
-        self.submit('[name=book_now]')
+        self.submit("[name=book_now]")
         booking.refresh_from_db()
         assert booking.state == BookingState.INFO_COMPLETE
         self.assertTextPresent("These places cannot be booked")
@@ -1872,7 +1913,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.get_url(self.urlname)
         self.assert_book_button_disabled()
         self.enable_book_button()
-        self.submit('[name=book_now]')
+        self.submit("[name=book_now]")
         for b in account.bookings.all():
             assert b.state == BookingState.INFO_COMPLETE
         self.assertTextPresent("These places cannot be booked")
@@ -1889,8 +1930,8 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
     def test_warn_about_multiple_full_price(self):
         self.login()
-        self.create_booking(name='Frédéric Bloggs')
-        self.create_booking(name='Mary Bloggs')
+        self.create_booking(name="Frédéric Bloggs")
+        self.create_booking(name="Mary Bloggs")
 
         self.get_url(self.urlname)
         self.assertTextPresent(self.MULTIPLE_FULL_PRICE_WARNING)
@@ -1899,17 +1940,15 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         self.assert_book_button_enabled()
 
         # Check for more than 2
-        self.create_booking(name='Peter Bloggs')
+        self.create_booking(name="Peter Bloggs")
         self.get_url(self.urlname)
         self.assertTextPresent("If Mary Bloggs, Peter Bloggs and Frédéric Bloggs")
 
     def test_warn_about_multiple_2nd_child(self):
         self.login()
-        self.create_booking(name='Frédéric Bloggs')
-        self.create_booking(name='Mary Bloggs',
-                            price_type=PriceType.SECOND_CHILD)
-        self.create_booking(name='Peter Bloggs',
-                            price_type=PriceType.SECOND_CHILD)
+        self.create_booking(name="Frédéric Bloggs")
+        self.create_booking(name="Mary Bloggs", price_type=PriceType.SECOND_CHILD)
+        self.create_booking(name="Peter Bloggs", price_type=PriceType.SECOND_CHILD)
 
         self.get_url(self.urlname)
         self.assertTextPresent(self.MULTIPLE_2ND_CHILD_WARNING)
@@ -1918,8 +1957,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # This is only a warning:
         self.assert_book_button_enabled()
 
-        self.create_booking(name='Zac Bloggs',
-                            price_type=PriceType.SECOND_CHILD)
+        self.create_booking(name="Zac Bloggs", price_type=PriceType.SECOND_CHILD)
         self.get_url(self.urlname)
         self.assertTextPresent("2 are eligible")
 
@@ -1935,8 +1973,7 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     def test_error_for_2nd_child_discount_for_same_camper(self):
         self.login()
         self.create_booking()
-        self.create_booking(camp=self.camp_2,
-                            price_type=PriceType.SECOND_CHILD)
+        self.create_booking(camp=self.camp_2, price_type=PriceType.SECOND_CHILD)
 
         self.get_url(self.urlname)
         self.assertTextPresent(self.CANNOT_USE_2ND_CHILD)
@@ -1945,15 +1982,12 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
     def test_error_for_multiple_2nd_child_discount(self):
         self.login()
         # Frederik x2
-        self.create_booking(name='Peter Bloggs')
-        self.create_booking(name='Peter Bloggs', camp=self.camp_2)
+        self.create_booking(name="Peter Bloggs")
+        self.create_booking(name="Peter Bloggs", camp=self.camp_2)
 
         # Mary x2
-        self.create_booking(name='Mary Bloggs',
-                            price_type=PriceType.SECOND_CHILD)
-        self.create_booking(name='Mary Bloggs',
-                            camp=self.camp_2,
-                            price_type=PriceType.SECOND_CHILD)
+        self.create_booking(name="Mary Bloggs", price_type=PriceType.SECOND_CHILD)
+        self.create_booking(name="Mary Bloggs", camp=self.camp_2, price_type=PriceType.SECOND_CHILD)
 
         self.get_url(self.urlname)
         self.assertTextPresent(self.CANNOT_USE_MULTIPLE_DISCOUNT_FOR_ONE_CAMPER)
@@ -1971,10 +2005,10 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
         # Now modify
         booking.refresh_from_db()
-        booking.amount_due = Decimal('35.01')
+        booking.amount_due = Decimal("35.01")
         booking.save()
 
-        self.submit('[name=book_now]')
+        self.submit("[name=book_now]")
         # Should not be modified
         booking.refresh_from_db()
         assert booking.state == BookingState.INFO_COMPLETE
@@ -1989,9 +2023,9 @@ class ListBookingsBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         # Suppose an agreement is added split second later by admin:
         # (test done this way to ensure we are not just relying
         # on a disabled book button)
-        factories.create_custom_agreement(year=self.camp.year, name='COVID-19')
+        factories.create_custom_agreement(year=self.camp.year, name="COVID-19")
 
-        self.submit('[name=book_now]')
+        self.submit("[name=book_now]")
         booking = account.bookings.get()
         assert booking.state != BookingState.BOOKED
 
@@ -2008,12 +2042,11 @@ class TestListBookingsSL(ListBookingsBase, SeleniumBase):
 
 
 class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
-
     def test_balance_empty(self):
         self.login()
         self.add_prices()
-        self.get_url('cciw-bookings-pay')
-        self.assertTextPresent('£0.00')
+        self.get_url("cciw-bookings-pay")
+        self.assertTextPresent("£0.00")
 
     def test_balance_after_booking(self):
         self.add_prices(early_bird_discount=0)
@@ -2022,30 +2055,30 @@ class PayBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
         booking2 = self.create_booking()
         book_basket_now([booking1, booking2])
 
-        self.get_url('cciw-bookings-pay')
+        self.get_url("cciw-bookings-pay")
 
         # 2 deposits
         expected_price = 2 * self.price_deposit
-        self.assertTextPresent(f'£{expected_price}')
+        self.assertTextPresent(f"£{expected_price}")
 
         # Move forward to after the time when just deposits are allowed:
         Camp.objects.update(start_date=date.today() + timedelta(10))
 
-        self.get_url('cciw-bookings-pay')
+        self.get_url("cciw-bookings-pay")
 
         # 2 full price
         expected_price = 2 * self.price_full
-        self.assertTextPresent(f'£{expected_price}')
+        self.assertTextPresent(f"£{expected_price}")
 
     def test_redirect_if_missing_agreements(self):
         self.login()
         booking = self.create_booking(shortcut=True)
         book_basket_now([booking])
-        factories.create_custom_agreement(year=self.camp.year, name='COVID-19')
-        self.get_url('cciw-bookings-pay')
-        self.assertUrlsEqual(reverse('cciw-bookings-account_overview'))
-        self.assertTextPresent('There is an issue with your existing bookings')
-        self.assertTextPresent('COVID-19')
+        factories.create_custom_agreement(year=self.camp.year, name="COVID-19")
+        self.get_url("cciw-bookings-pay")
+        self.assertUrlsEqual(reverse("cciw-bookings-account_overview"))
+        self.assertTextPresent("There is an issue with your existing bookings")
+        self.assertTextPresent("COVID-19")
 
 
 class TestPayWT(PayBase, WebTestBase):
@@ -2057,26 +2090,24 @@ class TestPaySL(PayBase, SeleniumBase):
 
 
 class TestPayReturnPoints(BookingBaseMixin, LogInMixin, WebTestBase):
-
     def test_pay_done(self):
         self.login()
-        self.get_url('cciw-bookings-pay_done')
+        self.get_url("cciw-bookings-pay_done")
         self.assertTextPresent("Payment complete!")
         # Paypal posts to these, check we support that
-        resp = self.client.post(reverse('cciw-bookings-pay_done'), {})
+        resp = self.client.post(reverse("cciw-bookings-pay_done"), {})
         assert resp.status_code == 200
 
     def test_pay_cancelled(self):
         self.login()
-        self.get_url('cciw-bookings-pay_cancelled')
+        self.get_url("cciw-bookings-pay_cancelled")
         self.assertTextPresent("Payment cancelled")
         # Paypal posts to these, check we support that
-        resp = self.client.post(reverse('cciw-bookings-pay_cancelled'), {})
+        resp = self.client.post(reverse("cciw-bookings-pay_cancelled"), {})
         assert resp.status_code == 200
 
 
 class TestPaymentReceived(BookingBaseMixin, TestBase):
-
     def test_receive_payment(self):
         # Late booking:
         Camp.objects.update(start_date=date.today() + timedelta(days=1))
@@ -2112,20 +2143,16 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
 
         # This is a late booking, therefore there is also:
         # 1 to camp leaders altogether
-        leader_emails = [m for m in mails
-                         if sorted(m.to) == sorted([leader_1_user.email,
-                                                    leader_2_user.email])]
+        leader_emails = [m for m in mails if sorted(m.to) == sorted([leader_1_user.email, leader_2_user.email])]
         assert len(leader_emails) == 1
-        assert leader_emails[0].subject.startswith('[CCIW] Late booking:')
+        assert leader_emails[0].subject.startswith("[CCIW] Late booking:")
 
     def test_insufficient_receive_payment(self):
         # Need to move into region where deposits are not allowed.
         Camp.objects.update(start_date=date.today() + timedelta(days=20))
-        booking1 = factories.create_booking(name='Peter Bloggs')
+        booking1 = factories.create_booking(name="Peter Bloggs")
         account = booking1.account
-        booking2 = factories.create_booking(price_type=PriceType.SECOND_CHILD,
-                                            name='Mary Bloggs',
-                                            account=account)
+        booking2 = factories.create_booking(price_type=PriceType.SECOND_CHILD, name="Mary Bloggs", account=account)
         book_basket_now([booking1, booking2])
         booking1.refresh_from_db()
         assert booking1.booking_expires is not None
@@ -2153,7 +2180,7 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
     def test_email_for_bad_payment_1(self):
         ipn_1 = IpnMock()
         ipn_1.id = 123
-        ipn_1.mc_gross = Decimal('1.00')
+        ipn_1.mc_gross = Decimal("1.00")
         ipn_1.custom = "x"  # wrong format
 
         mail.outbox = []
@@ -2161,14 +2188,14 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         paypal_payment_received(ipn_1)
 
         assert len(mail.outbox) == 1
-        assert '/admin/ipn/paypal' in mail.outbox[0].body
-        assert 'No associated account' in mail.outbox[0].body
+        assert "/admin/ipn/paypal" in mail.outbox[0].body
+        assert "No associated account" in mail.outbox[0].body
 
     def test_email_for_bad_payment_2(self):
         account = BookingAccount(id=1234567)  # bad ID, not in DB
         ipn_1 = IpnMock()
         ipn_1.id = 123
-        ipn_1.mc_gross = Decimal('1.00')
+        ipn_1.mc_gross = Decimal("1.00")
         ipn_1.custom = build_paypal_custom_field(account)
 
         mail.outbox = []
@@ -2176,21 +2203,21 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         paypal_payment_received(ipn_1)
 
         assert len(mail.outbox) == 1
-        assert '/admin/ipn/paypal' in mail.outbox[0].body
-        assert 'No associated account' in mail.outbox[0].body
+        assert "/admin/ipn/paypal" in mail.outbox[0].body
+        assert "No associated account" in mail.outbox[0].body
 
     def test_email_for_bad_payment_3(self):
         ipn_1 = IpnMock()
         ipn_1.id = 123
-        ipn_1.mc_gross = Decimal('1.00')
+        ipn_1.mc_gross = Decimal("1.00")
 
         mail.outbox = []
         assert len(mail.outbox) == 0
         unrecognised_payment(ipn_1)
 
         assert len(mail.outbox) == 1
-        assert '/admin/ipn/paypal' in mail.outbox[0].body
-        assert 'Invalid IPN' in mail.outbox[0].body
+        assert "/admin/ipn/paypal" in mail.outbox[0].body
+        assert "Invalid IPN" in mail.outbox[0].body
 
     def test_receive_payment_handler(self):
         # Use the actual signal handler, check the good path.
@@ -2210,14 +2237,14 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         # Test refund is wired up
         ipn_2 = factories.create_ipn(
             account,
-            parent_txn_id='1',
-            txn_id='2',
+            parent_txn_id="1",
+            txn_id="2",
             mc_gross=-1 * ipn_1.mc_gross,
-            payment_status='Refunded',
+            payment_status="Refunded",
         )
 
         assert Payment.objects.count() == 2
-        assert Payment.objects.order_by('-created_at')[0].amount == ipn_2.mc_gross
+        assert Payment.objects.order_by("-created_at")[0].amount == ipn_2.mc_gross
 
         account.refresh_from_db()
         assert account.total_received == Decimal(0)
@@ -2240,9 +2267,9 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         # TODO the rest of these tests
 
     def test_only_one_email_for_multiple_places(self):
-        booking1 = factories.create_booking(name='Princess Pearl')
+        booking1 = factories.create_booking(name="Princess Pearl")
         account = booking1.account
-        booking2 = factories.create_booking(name='Another Child', account=account)
+        booking2 = factories.create_booking(name="Another Child", account=account)
 
         book_basket_now([booking1, booking2])
 
@@ -2254,22 +2281,20 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
 
         assert mails[0].subject == "[CCIW] Booking - place confirmed"
         assert mails[0].to == [account.email]
-        assert 'Princess Pearl' in mails[0].body
-        assert 'Another Child' in mails[0].body
+        assert "Princess Pearl" in mails[0].body
+        assert "Another Child" in mails[0].body
 
     def test_concurrent_save(self):
-        acc1 = BookingAccount.objects.create(email='foo@foo.com')
-        acc2 = BookingAccount.objects.get(email='foo@foo.com')
+        acc1 = BookingAccount.objects.create(email="foo@foo.com")
+        acc2 = BookingAccount.objects.get(email="foo@foo.com")
 
-        acc1.receive_payment(Decimal('100.00'))
+        acc1.receive_payment(Decimal("100.00"))
 
-        assert BookingAccount.objects.get(email='foo@foo.com').total_received == \
-            Decimal('100.00')
+        assert BookingAccount.objects.get(email="foo@foo.com").total_received == Decimal("100.00")
 
         acc2.save()  # this will have total_received = 0.00
 
-        assert BookingAccount.objects.get(email='foo@foo.com').total_received == \
-            Decimal('100.00')
+        assert BookingAccount.objects.get(email="foo@foo.com").total_received == Decimal("100.00")
 
     def test_pending_payment_handling(self):
         # This test is story-style - checks the whole process
@@ -2290,8 +2315,8 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         # Send payment that doesn't complete immediately
         ipn_1 = factories.create_ipn(
             account,
-            txn_id='8DX10782PJ789360R',
-            mc_gross=Decimal('20.00'),
+            txn_id="8DX10782PJ789360R",
+            mc_gross=Decimal("20.00"),
             payment_status="Pending",
             pending_reason="echeck",
         )
@@ -2357,174 +2382,156 @@ class TestAjaxViews(BookingBaseMixin, OfficersSetupMixin, CreateBookingWebMixin,
     def test_places_json(self):
         self.login()
         self.create_booking()
-        resp = self.get_url('cciw-bookings-places_json')
-        j = json.loads(resp.content.decode('utf-8'))
-        assert j['places'][0]['first_name'] == self.get_place_details()['first_name']
+        resp = self.get_url("cciw-bookings-places_json")
+        j = json.loads(resp.content.decode("utf-8"))
+        assert j["places"][0]["first_name"] == self.get_place_details()["first_name"]
 
     def test_places_json_with_exclusion(self):
         self.login()
         booking = self.create_booking()
-        resp = self.get_literal_url(reverse('cciw-bookings-places_json') +
-                                    f"?exclude={booking.id}")
-        j = json.loads(resp.content.decode('utf-8'))
-        assert j['places'] == []
+        resp = self.get_literal_url(reverse("cciw-bookings-places_json") + f"?exclude={booking.id}")
+        j = json.loads(resp.content.decode("utf-8"))
+        assert j["places"] == []
 
     def test_places_json_with_bad_exclusion(self):
         self.login()
-        resp = self.get_literal_url(reverse('cciw-bookings-places_json') + "?exclude=x")
-        j = json.loads(resp.content.decode('utf-8'))
-        assert j['places'] == []
+        resp = self.get_literal_url(reverse("cciw-bookings-places_json") + "?exclude=x")
+        j = json.loads(resp.content.decode("utf-8"))
+        assert j["places"] == []
 
     def test_account_json(self):
         account = self.login()
-        account.address_line1 = '123 Main Street'
-        account.address_country = 'FR'
+        account.address_line1 = "123 Main Street"
+        account.address_country = "FR"
         account.save()
 
-        resp = self.get_url('cciw-bookings-account_json')
-        j = json.loads(resp.content.decode('utf-8'))
-        assert j['account']['address_line1'] == '123 Main Street'
-        assert j['account']['address_country'] == 'FR'
+        resp = self.get_url("cciw-bookings-account_json")
+        j = json.loads(resp.content.decode("utf-8"))
+        assert j["account"]["address_line1"] == "123 Main Street"
+        assert j["account"]["address_country"] == "FR"
 
     def test_all_accounts_json(self):
-        acc1 = BookingAccount.objects.create(email="foo@foo.com",
-                                             address_post_code="ABC",
-                                             name="Mr Foo")
+        acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
 
         self.officer_login(OFFICER)
-        resp = self.get_literal_url(reverse('cciw-bookings-all_accounts_json'), expect_errors=True)
+        resp = self.get_literal_url(reverse("cciw-bookings-all_accounts_json"), expect_errors=True)
         assert resp.status_code == 403
 
         # Now as booking secretary
         self.officer_login(BOOKING_SECRETARY)
-        resp = self.get_literal_url(reverse('cciw-bookings-all_accounts_json') + f"?id={acc1.id}")
+        resp = self.get_literal_url(reverse("cciw-bookings-all_accounts_json") + f"?id={acc1.id}")
         assert resp.status_code == 200
 
-        j = json.loads(resp.content.decode('utf-8'))
-        assert j['account']['address_post_code'] == 'ABC'
+        j = json.loads(resp.content.decode("utf-8"))
+        assert j["account"]["address_post_code"] == "ABC"
 
     def _booking_problems_json(self, place_details):
         data = {}
         for k, v in place_details.items():
             data[k] = v.id if isinstance(v, models.Model) else v
 
-        resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
-                                data)
-        return json.loads(resp.content.decode('utf-8'))
+        resp = self.client.post(reverse("cciw-bookings-booking_problems_json"), data)
+        return json.loads(resp.content.decode("utf-8"))
 
     def _initial_place_details(self):
         data = self.get_place_details()
-        data['created_at_0'] = '1970-01-01'  # Simulate form, which doesn't supply created
-        data['created_at_1'] = '00:00:00'
+        data["created_at_0"] = "1970-01-01"  # Simulate form, which doesn't supply created
+        data["created_at_1"] = "00:00:00"
         return data
 
     def test_booking_problems(self):
         self.add_prices()
-        acc1 = BookingAccount.objects.create(email="foo@foo.com",
-                                             address_post_code="ABC",
-                                             name="Mr Foo")
-        self.client.login(username=BOOKING_SECRETARY_USERNAME,
-                          password=BOOKING_SECRETARY_PASSWORD)
-        resp = self.client.post(reverse('cciw-bookings-booking_problems_json'),
-                                {'account': str(acc1.id)})
+        acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
+        self.client.login(username=BOOKING_SECRETARY_USERNAME, password=BOOKING_SECRETARY_PASSWORD)
+        resp = self.client.post(reverse("cciw-bookings-booking_problems_json"), {"account": str(acc1.id)})
 
         assert resp.status_code == 200
-        j = json.loads(resp.content.decode('utf-8'))
-        assert not j['valid']
+        j = json.loads(resp.content.decode("utf-8"))
+        assert not j["valid"]
 
         data = self._initial_place_details()
-        data['account'] = str(acc1.id)
-        data['state'] = BookingState.APPROVED
-        data['amount_due'] = '100.00'
-        data['price_type'] = PriceType.CUSTOM
+        data["account"] = str(acc1.id)
+        data["state"] = BookingState.APPROVED
+        data["amount_due"] = "100.00"
+        data["price_type"] = PriceType.CUSTOM
         j = self._booking_problems_json(data)
-        assert j['valid']
-        assert "A custom discount needs to be arranged by the booking secretary" in \
-            j['problems']
+        assert j["valid"]
+        assert "A custom discount needs to be arranged by the booking secretary" in j["problems"]
 
     def test_booking_problems_price_check(self):
         # Test that the price is checked.
         # This is a check that is only run for booking secretary
         self.add_prices()
-        acc1 = BookingAccount.objects.create(email="foo@foo.com",
-                                             address_post_code="ABC",
-                                             name="Mr Foo")
-        self.client.login(username=BOOKING_SECRETARY_USERNAME,
-                          password=BOOKING_SECRETARY_PASSWORD)
+        acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
+        self.client.login(username=BOOKING_SECRETARY_USERNAME, password=BOOKING_SECRETARY_PASSWORD)
 
         data = self._initial_place_details()
-        data['account'] = str(acc1.id)
-        data['state'] = BookingState.BOOKED
-        data['amount_due'] = '0.00'
-        data['price_type'] = PriceType.FULL
+        data["account"] = str(acc1.id)
+        data["state"] = BookingState.BOOKED
+        data["amount_due"] = "0.00"
+        data["price_type"] = PriceType.FULL
         j = self._booking_problems_json(data)
-        assert any(p.startswith(f"The 'amount due' is not the expected value of £{self.price_full}")
-                   for p in j['problems'])
+        assert any(
+            p.startswith(f"The 'amount due' is not the expected value of £{self.price_full}") for p in j["problems"]
+        )
 
     def test_booking_problems_deposit_check(self):
         # Test that the price is checked.
         # This is a check that is only run for booking secretary
         self.add_prices()
-        acc1 = BookingAccount.objects.create(email="foo@foo.com",
-                                             address_post_code="ABC",
-                                             name="Mr Foo")
-        self.client.login(username=BOOKING_SECRETARY_USERNAME,
-                          password=BOOKING_SECRETARY_PASSWORD)
+        acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
+        self.client.login(username=BOOKING_SECRETARY_USERNAME, password=BOOKING_SECRETARY_PASSWORD)
 
         data = self._initial_place_details()
-        data['account'] = str(acc1.id)
-        data['state'] = BookingState.CANCELLED_DEPOSIT_KEPT
-        data['amount_due'] = '0.00'
-        data['price_type'] = PriceType.FULL
+        data["account"] = str(acc1.id)
+        data["state"] = BookingState.CANCELLED_DEPOSIT_KEPT
+        data["amount_due"] = "0.00"
+        data["price_type"] = PriceType.FULL
         j = self._booking_problems_json(data)
-        assert any(p.startswith(f"The 'amount due' is not the expected value of £{self.price_deposit}")
-                   for p in j['problems'])
+        assert any(
+            p.startswith(f"The 'amount due' is not the expected value of £{self.price_deposit}") for p in j["problems"]
+        )
 
         # Check 'full refund' cancellation.
-        data['state'] = BookingState.CANCELLED_FULL_REFUND
-        data['amount_due'] = '20.00'
-        data['price_type'] = PriceType.FULL
+        data["state"] = BookingState.CANCELLED_FULL_REFUND
+        data["amount_due"] = "20.00"
+        data["price_type"] = PriceType.FULL
         j = self._booking_problems_json(data)
-        assert any(p.startswith("The 'amount due' is not the expected value of £0.00")
-                   for p in j['problems'])
+        assert any(p.startswith("The 'amount due' is not the expected value of £0.00") for p in j["problems"])
 
     def test_booking_problems_early_bird_check(self):
         self.add_prices()
-        acc1 = BookingAccount.objects.create(email="foo@foo.com",
-                                             address_post_code="ABC",
-                                             name="Mr Foo")
-        self.client.login(username=BOOKING_SECRETARY_USERNAME,
-                          password=BOOKING_SECRETARY_PASSWORD)
+        acc1 = BookingAccount.objects.create(email="foo@foo.com", address_post_code="ABC", name="Mr Foo")
+        self.client.login(username=BOOKING_SECRETARY_USERNAME, password=BOOKING_SECRETARY_PASSWORD)
         data = self._initial_place_details()
-        data['early_bird_discount'] = '1'
-        data['account'] = str(acc1.id)
-        data['state'] = BookingState.BOOKED
-        data['amount_due'] = '90.00'
+        data["early_bird_discount"] = "1"
+        data["account"] = str(acc1.id)
+        data["state"] = BookingState.BOOKED
+        data["amount_due"] = "90.00"
         j = self._booking_problems_json(data)
-        assert "The early bird discount is only allowed for bookings created online." in \
-            j['problems']
+        assert "The early bird discount is only allowed for bookings created online." in j["problems"]
 
 
 class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin):
 
-    urlname = 'cciw-bookings-account_overview'
+    urlname = "cciw-bookings-account_overview"
 
     def test_show(self):
         # Book a place and pay
         account = self.login()
-        booking1 = self.create_booking(name='Frédéric Bloggs')
+        booking1 = self.create_booking(name="Frédéric Bloggs")
         book_basket_now([booking1])
         account.receive_payment(self.price_deposit)
 
         # Book another
-        booking2 = self.create_booking(name='Another Child')
+        booking2 = self.create_booking(name="Another Child")
         book_basket_now([booking2])
 
         # 3rd place, not booked at all
-        self.create_booking(name='3rd Child')
+        self.create_booking(name="3rd Child")
 
         # 4th place, cancelled
-        booking4 = self.create_booking(name='4th Child')
+        booking4 = self.create_booking(name="4th Child")
         booking4.state = BookingState.CANCELLED_DEPOSIT_KEPT
         booking4.auto_set_amount_due()
         booking4.save()
@@ -2535,14 +2542,14 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
         self.get_url(self.urlname)
 
         # Confirmed place
-        self.assertTextPresent('Frédéric')
+        self.assertTextPresent("Frédéric")
 
         # Booked place
-        self.assertTextPresent('Another Child')
-        self.assertTextPresent('will expire soon')
+        self.assertTextPresent("Another Child")
+        self.assertTextPresent("will expire soon")
 
         # Basket/Shelf
-        self.assertTextPresent('Basket / shelf')
+        self.assertTextPresent("Basket / shelf")
 
         # Deposit for cancellation
         self.assertTextPresent("Cancelled places")
@@ -2555,21 +2562,21 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
         booking3 = self.create_booking()
         book_basket_now([booking1, booking2, booking3])
 
-        agreement = factories.create_custom_agreement(year=booking1.camp.year, name='COVID-19')
+        agreement = factories.create_custom_agreement(year=booking1.camp.year, name="COVID-19")
 
         assert account.bookings.agreement_fix_required().count() == 3
         self.get_url(self.urlname)
 
-        assert self.is_element_present(f'#id_edit_booking_{booking1.id}')
-        assert self.is_element_present(f'#id_edit_booking_{booking2.id}')
+        assert self.is_element_present(f"#id_edit_booking_{booking1.id}")
+        assert self.is_element_present(f"#id_edit_booking_{booking2.id}")
 
-        assert self.is_element_present(f'#id_cancel_booking_{booking1.id}')
-        assert self.is_element_present(f'#id_cancel_booking_{booking2.id}')
+        assert self.is_element_present(f"#id_cancel_booking_{booking1.id}")
+        assert self.is_element_present(f"#id_cancel_booking_{booking2.id}")
 
         self.assertTextPresent('you need to confirm your agreement in section "COVID-19"')
 
         # Cancel button for booking1
-        self.submit(f'#id_cancel_booking_{booking1.id}')
+        self.submit(f"#id_cancel_booking_{booking1.id}")
         booking1.refresh_from_db()
         assert not booking1.is_booked
         assert booking1.shelved
@@ -2577,17 +2584,16 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
         assert account.bookings.agreement_fix_required().count() == 2
 
         # booking1 buttons should now disappear
-        assert not self.is_element_present(f'#id_edit_booking_{booking1.id}')
-        assert not self.is_element_present(f'#id_cancel_booking_{booking1.id}')
+        assert not self.is_element_present(f"#id_edit_booking_{booking1.id}")
+        assert not self.is_element_present(f"#id_cancel_booking_{booking1.id}")
 
         # Edit button for booking2
         # This is really a test for the edit booking page
         # - it needs to allow edits in this case, even though the
         #   place is already booked.
-        self.submit(f'#id_edit_booking_{booking2.id}')
-        self.assertUrlsEqual(reverse('cciw-bookings-edit_place',
-                                     kwargs={'booking_id': booking2.id}))
-        self.fill({f'#id_custom_agreement_{agreement.id}': True})
+        self.submit(f"#id_edit_booking_{booking2.id}")
+        self.assertUrlsEqual(reverse("cciw-bookings-edit_place", kwargs={"booking_id": booking2.id}))
+        self.fill({f"#id_custom_agreement_{agreement.id}": True})
         self.submit(AddPlaceBase.SAVE_BTN)
 
         assert account.bookings.agreement_fix_required().count() == 1
@@ -2598,7 +2604,7 @@ class AccountOverviewBase(BookingBaseMixin, CreateBookingWebMixin, FuncBaseMixin
 
         # We still have booking3 to sort out, we should be back at
         # account overview
-        self.assertUrlsEqual(reverse('cciw-bookings-account_overview'))
+        self.assertUrlsEqual(reverse("cciw-bookings-account_overview"))
 
 
 class TestAccountOverviewWT(AccountOverviewBase, WebTestBase):
@@ -2610,16 +2616,15 @@ class TestAccountOverviewSL(AccountOverviewBase, SeleniumBase):
 
 
 class LogOutBase(BookingBaseMixin, LogInMixin, FuncBaseMixin):
-
     def test_logout(self):
         self.login()
-        self.get_url('cciw-bookings-account_overview')
-        self.submit('[name=logout]')
-        self.assertUrlsEqual(reverse('cciw-bookings-index'))
+        self.get_url("cciw-bookings-account_overview")
+        self.submit("[name=logout]")
+        self.assertUrlsEqual(reverse("cciw-bookings-index"))
 
         # Try accessing a page which is restricted
-        self.get_url('cciw-bookings-account_overview')
-        self.assertUrlsEqual(reverse('cciw-bookings-not_logged_in'))
+        self.get_url("cciw-bookings-account_overview")
+        self.assertUrlsEqual(reverse("cciw-bookings-not_logged_in"))
 
 
 class TestLogOutWT(LogOutBase, WebTestBase):
@@ -2631,7 +2636,6 @@ class TestLogOutSL(LogOutBase, SeleniumBase):
 
 
 class TestExpireBookingsCommand(TestBase):
-
     def test_just_created(self):
         """
         Test no mail if just created
@@ -2688,9 +2692,9 @@ class TestExpireBookingsCommand(TestBase):
         """
         Test the emails are grouped as we expect
         """
-        booking1 = factories.create_booking(name='Child One')
+        booking1 = factories.create_booking(name="Child One")
         account = booking1.account
-        booking2 = factories.create_booking(name='Child Two', account=account)
+        booking2 = factories.create_booking(name="Child Two", account=account)
 
         book_basket_now([booking1, booking2])
         account.bookings.update(booking_expires=timezone.now() - timedelta(1))
@@ -2711,36 +2715,32 @@ class TestExpireBookingsCommand(TestBase):
 
 
 class TestManualPayment(TestBase):
-
     def test_create(self):
-        account = BookingAccount.objects.create(email='foo@foo.com')
+        account = BookingAccount.objects.create(email="foo@foo.com")
         assert Payment.objects.count() == 0
-        ManualPayment.objects.create(account=account,
-                                     amount=Decimal('100.00'))
+        ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
         assert Payment.objects.count() == 1
-        assert Payment.objects.all()[0].amount == Decimal('100.00')
+        assert Payment.objects.all()[0].amount == Decimal("100.00")
 
         account = BookingAccount.objects.get(id=account.id)
-        assert account.total_received == Decimal('100.00')
+        assert account.total_received == Decimal("100.00")
 
     def test_delete(self):
         # Setup
-        account = BookingAccount.objects.create(email='foo@foo.com')
-        cp = ManualPayment.objects.create(account=account,
-                                          amount=Decimal('100.00'))
+        account = BookingAccount.objects.create(email="foo@foo.com")
+        cp = ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
         assert Payment.objects.count() == 1
 
         # Test
         cp.delete()
         assert Payment.objects.count() == 2
         account = BookingAccount.objects.get(id=account.id)
-        assert account.total_received == Decimal('0.00')
+        assert account.total_received == Decimal("0.00")
 
     def test_edit(self):
         # Setup
-        account = BookingAccount.objects.create(email='foo@foo.com')
-        cp = ManualPayment.objects.create(account=account,
-                                          amount=Decimal('100.00'))
+        account = BookingAccount.objects.create(email="foo@foo.com")
+        cp = ManualPayment.objects.create(account=account, amount=Decimal("100.00"))
 
         cp.amount = Decimal("101.00")
         with pytest.raises(Exception):
@@ -2748,36 +2748,32 @@ class TestManualPayment(TestBase):
 
 
 class TestRefundPayment(TestBase):
-
     def test_create(self):
-        account = BookingAccount.objects.create(email='foo@foo.com')
+        account = BookingAccount.objects.create(email="foo@foo.com")
         assert Payment.objects.count() == 0
-        RefundPayment.objects.create(account=account,
-                                     amount=Decimal('100.00'))
+        RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
         assert Payment.objects.count() == 1
-        assert Payment.objects.all()[0].amount == Decimal('-100.00')
+        assert Payment.objects.all()[0].amount == Decimal("-100.00")
 
         account = BookingAccount.objects.get(id=account.id)
-        assert account.total_received == Decimal('-100.00')
+        assert account.total_received == Decimal("-100.00")
 
     def test_delete(self):
         # Setup
-        account = BookingAccount.objects.create(email='foo@foo.com')
-        cp = RefundPayment.objects.create(account=account,
-                                          amount=Decimal('100.00'))
+        account = BookingAccount.objects.create(email="foo@foo.com")
+        cp = RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
         assert Payment.objects.count() == 1
 
         # Test
         cp.delete()
         assert Payment.objects.count() == 2
         account = BookingAccount.objects.get(id=account.id)
-        assert account.total_received == Decimal('0.00')
+        assert account.total_received == Decimal("0.00")
 
     def test_edit(self):
         # Setup
-        account = BookingAccount.objects.create(email='foo@foo.com')
-        cp = RefundPayment.objects.create(account=account,
-                                          amount=Decimal('100.00'))
+        account = BookingAccount.objects.create(email="foo@foo.com")
+        cp = RefundPayment.objects.create(account=account, amount=Decimal("100.00"))
 
         cp.amount = Decimal("101.00")
         with pytest.raises(Exception):
@@ -2814,7 +2810,7 @@ class TestCancelFullRefund(TestBase):
     def test_amount_due(self):
         booking = factories.create_booking()
         booking.state = BookingState.CANCELLED_FULL_REFUND
-        assert booking.expected_amount_due() == Decimal('0.00')
+        assert booking.expected_amount_due() == Decimal("0.00")
 
     def test_account_amount_due(self):
         booking = factories.create_booking()
@@ -2828,7 +2824,6 @@ class TestCancelFullRefund(TestBase):
 
 
 class TestEarlyBird(TestBase):
-
     def test_expected_amount_due(self):
         booking = factories.create_booking()
         price_checker = PriceChecker()
@@ -2836,12 +2831,14 @@ class TestEarlyBird(TestBase):
         assert booking.expected_amount_due() == price_checker.get_full_price(year)
 
         booking.early_bird_discount = True
-        assert booking.expected_amount_due() == price_checker.get_full_price(year) - price_checker.get_early_bird_discount(year)
+        assert booking.expected_amount_due() == price_checker.get_full_price(
+            year
+        ) - price_checker.get_early_bird_discount(year)
 
     def test_book_basket_applies_discount(self):
         booking = factories.create_booking()
         year = booking.camp.year
-        with mock.patch('cciw.bookings.models.get_early_bird_cutoff_date') as mock_f:
+        with mock.patch("cciw.bookings.models.get_early_bird_cutoff_date") as mock_f:
             # Cut off date definitely in the future
             mock_f.return_value = timezone.get_default_timezone().localize(datetime(year + 10, 1, 1))
             book_basket_now([booking])
@@ -2853,7 +2850,7 @@ class TestEarlyBird(TestBase):
 
     def test_book_basket_doesnt_apply_discount(self):
         booking = factories.create_booking()
-        with mock.patch('cciw.bookings.models.get_early_bird_cutoff_date') as mock_f:
+        with mock.patch("cciw.bookings.models.get_early_bird_cutoff_date") as mock_f:
             # Cut off date definitely in the past
             mock_f.return_value = timezone.get_default_timezone().localize(datetime(booking.camp.year - 10, 1, 1))
             book_basket_now([booking])
@@ -2875,7 +2872,7 @@ class TestEarlyBird(TestBase):
         booking = factories.create_booking()
         mail.outbox = []
         account = booking.account
-        with mock.patch('cciw.bookings.models.get_early_bird_cutoff_date') as mock_f:
+        with mock.patch("cciw.bookings.models.get_early_bird_cutoff_date") as mock_f:
             mock_f.return_value = timezone.now() - timedelta(days=10)
             book_basket_now([booking])
             account.receive_payment(booking.amount_due)
@@ -2886,7 +2883,6 @@ class TestEarlyBird(TestBase):
 
 
 class TestExportPlaces(TestBase):
-
     def test_summary(self):
         booking = factories.create_booking()
         booking.state = BookingState.BOOKED
@@ -2920,59 +2916,38 @@ class TestExportPlaces(TestBase):
 
 
 class TestExportPaymentData(TestBase):
-
     def test_export(self):
-        account1 = BookingAccount.objects.create(
-            name="Joe Bloggs",
-            email='joe@foo.com')
-        account2 = BookingAccount.objects.create(
-            name="Mary Muddle",
-            email='mary@foo.com')
-        factories.create_ipn(
-            account1,
-            mc_gross=Decimal('10.00')
-        )
-        ManualPayment.objects.create(account=account1,
-                                     amount=Decimal('11.50'))
-        RefundPayment.objects.create(account=account1,
-                                     amount=Decimal('0.25'))
-        AccountTransferPayment.objects.create(from_account=account2,
-                                              to_account=account1,
-                                              amount=Decimal("100.00"))
-        mp2 = ManualPayment.objects.create(account=account1,
-                                           amount=Decimal('1.23'))
+        account1 = BookingAccount.objects.create(name="Joe Bloggs", email="joe@foo.com")
+        account2 = BookingAccount.objects.create(name="Mary Muddle", email="mary@foo.com")
+        factories.create_ipn(account1, mc_gross=Decimal("10.00"))
+        ManualPayment.objects.create(account=account1, amount=Decimal("11.50"))
+        RefundPayment.objects.create(account=account1, amount=Decimal("0.25"))
+        AccountTransferPayment.objects.create(from_account=account2, to_account=account1, amount=Decimal("100.00"))
+        mp2 = ManualPayment.objects.create(account=account1, amount=Decimal("1.23"))
         mp2.delete()
 
         now = timezone.now()
-        workbook = payments_to_spreadsheet(now - timedelta(days=3),
-                                           now + timedelta(days=3),
-                                           ExcelFormatter()).to_bytes()
+        workbook = payments_to_spreadsheet(
+            now - timedelta(days=3), now + timedelta(days=3), ExcelFormatter()
+        ).to_bytes()
 
         wkbk = xlrd.open_workbook(file_contents=workbook)
         wksh = wkbk.sheet_by_index(0)
         data = [[c.value for c in r] for r in wksh.get_rows()]
-        assert data[0] == \
-            ['Account name', 'Account email', 'Amount', 'Date', 'Type']
+        assert data[0] == ["Account name", "Account email", "Amount", "Date", "Type"]
 
         # Excel dates are a pain, so we ignore them
         data2 = [[c for i, c in enumerate(r) if i != 3] for r in data[1:]]
-        assert ['Joe Bloggs', 'joe@foo.com', 10.0, 'PayPal'] in \
-            data2
-        assert ['Joe Bloggs', 'joe@foo.com', 11.5, 'Cheque'] in \
-            data2
-        assert ['Joe Bloggs', 'joe@foo.com', -0.25, 'Refund Cheque'] in \
-            data2
-        assert ['Joe Bloggs', 'joe@foo.com', 100.00, 'Account transfer'] in \
-            data2
+        assert ["Joe Bloggs", "joe@foo.com", 10.0, "PayPal"] in data2
+        assert ["Joe Bloggs", "joe@foo.com", 11.5, "Cheque"] in data2
+        assert ["Joe Bloggs", "joe@foo.com", -0.25, "Refund Cheque"] in data2
+        assert ["Joe Bloggs", "joe@foo.com", 100.00, "Account transfer"] in data2
 
-        assert ['Joe Bloggs', 'joe@foo.com', 1.23, 'ManualPayment (deleted)'] not in \
-            data2
-        assert ['Joe Bloggs', 'joe@foo.com', -1.23, 'ManualPayment (deleted)'] not in \
-            data2
+        assert ["Joe Bloggs", "joe@foo.com", 1.23, "ManualPayment (deleted)"] not in data2
+        assert ["Joe Bloggs", "joe@foo.com", -1.23, "ManualPayment (deleted)"] not in data2
 
 
 class TestBookingModel(TestBase):
-
     def test_need_approving(self):
         factories.create_booking()
         assert len(Booking.objects.need_approving()) == 0
@@ -2984,18 +2959,15 @@ class TestBookingModel(TestBase):
         Booking.objects.update(date_of_birth=date(1980, 1, 1))
         assert len(Booking.objects.need_approving()) == 1
 
-        assert Booking.objects.get().approval_reasons() == ['Too old']
+        assert Booking.objects.get().approval_reasons() == ["Too old"]
 
 
 class TestPaymentModels(TestBase):
-
     def test_payment_source_save_bad(self):
         manual = factories.create_manual_payment()
         refund = factories.create_refund_payment()
         with pytest.raises(AssertionError):
-            PaymentSource.objects.create(
-                              manual_payment=manual,
-                              refund_payment=refund)
+            PaymentSource.objects.create(manual_payment=manual, refund_payment=refund)
 
     def test_payment_source_save_good(self):
         manual = factories.create_manual_payment()
@@ -3023,7 +2995,7 @@ def test_expired_returns_expired(email):
 
 
 @given(email=st.text())
-@example(email='abcdefgh')  # b64 encode results in trailing ==
+@example(email="abcdefgh")  # b64 encode results in trailing ==
 def test_tolerate_truncated_trailing_equals(email):
     v = EmailVerifyTokenGenerator()
 
@@ -3032,6 +3004,6 @@ def test_tolerate_truncated_trailing_equals(email):
     # character). Ensure that we tolerate this.
 
     def remove_equals(s):
-        return s.rstrip('=')
+        return s.rstrip("=")
 
         assert v.email_for_token(remove_equals(v.token_for_email(email))) == email

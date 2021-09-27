@@ -4,6 +4,5 @@ from cciw.bookings.email import send_payment_reminder_emails
 
 
 class Command(BaseCommand):
-
     def handle(self, *args, **options):
         send_payment_reminder_emails()

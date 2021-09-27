@@ -23,4 +23,4 @@ def read_email_url(email, regex):
 
 
 def path_and_query_to_url(path, querydata):
-    return urlunsplit(('', '', path, urlencode(querydata), ''))
+    return urlunsplit(("", "", path, urlencode(querydata), ""))

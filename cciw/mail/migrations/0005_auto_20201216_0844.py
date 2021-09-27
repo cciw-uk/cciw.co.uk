@@ -8,22 +8,22 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('mail', '0004_emailforward_enabled'),
+        ("mail", "0004_emailforward_enabled"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='emailforward',
-            name='address',
-            field=models.EmailField(help_text='Email address including domain', max_length=254),
+            model_name="emailforward",
+            name="address",
+            field=models.EmailField(help_text="Email address including domain", max_length=254),
         ),
         migrations.RemoveField(
-            model_name='emailforward',
-            name='recipients',
+            model_name="emailforward",
+            name="recipients",
         ),
         migrations.AddField(
-            model_name='emailforward',
-            name='recipients',
+            model_name="emailforward",
+            name="recipients",
             field=models.ManyToManyField(to=settings.AUTH_USER_MODEL),
         ),
     ]

@@ -7,23 +7,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cciwmain', '0022_auto_20200729_1928'),
+        ("cciwmain", "0022_auto_20200729_1928"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='camp',
-            name='camp_name',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='camps', to='cciwmain.campname'),
+            model_name="camp",
+            name="camp_name",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, related_name="camps", to="cciwmain.campname"
+            ),
         ),
         migrations.AlterField(
-            model_name='camp',
-            name='chaplain',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='camps_as_chaplain', to='cciwmain.person', verbose_name='chaplain'),
+            model_name="camp",
+            name="chaplain",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="camps_as_chaplain",
+                to="cciwmain.person",
+                verbose_name="chaplain",
+            ),
         ),
         migrations.AlterField(
-            model_name='camp',
-            name='site',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='cciwmain.site'),
+            model_name="camp",
+            name="site",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="cciwmain.site"),
         ),
     ]

@@ -6,18 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0045_auto_20170403_1856'),
+        ("officers", "0045_auto_20170403_1856"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dbscheck',
-            name='other_organisation',
-            field=models.CharField(blank=True, help_text='If previous answer is not CCiW, please fill in', max_length=255),
+            model_name="dbscheck",
+            name="other_organisation",
+            field=models.CharField(
+                blank=True, help_text="If previous answer is not CCiW, please fill in", max_length=255
+            ),
         ),
         migrations.AlterField(
-            model_name='dbscheck',
-            name='requested_by',
-            field=models.CharField(choices=[('CCIW', 'CCiW'), ('other', 'Other organisation'), ('unknown', 'Unknown')], default='unknown', help_text='The organisation that asked for this DBS to be done, normally CCiW.', max_length=20),
+            model_name="dbscheck",
+            name="requested_by",
+            field=models.CharField(
+                choices=[("CCIW", "CCiW"), ("other", "Other organisation"), ("unknown", "Unknown")],
+                default="unknown",
+                help_text="The organisation that asked for this DBS to be done, normally CCiW.",
+                max_length=20,
+            ),
         ),
     ]

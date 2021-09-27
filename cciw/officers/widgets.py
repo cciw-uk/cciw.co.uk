@@ -9,27 +9,27 @@ class ExplicitBooleanFieldSelect(admin.widgets.AdminRadioSelect):
     def __init__(self, attrs=None):
         if attrs is None:
             attrs = {}
-        attrs.update({'class': 'radiolist inline'})
+        attrs.update({"class": "radiolist inline"})
         choices = [
-            ('2', 'Yes'),
-            ('3', 'No'),
+            ("2", "Yes"),
+            ("3", "No"),
         ]
         super().__init__(attrs, choices)
 
     def render(self, name, value, attrs=None, renderer=None):
         try:
-            value = {True: '2', False: '3', '2': '2', '3': '3'}[value]
+            value = {True: "2", False: "3", "2": "2", "3": "3"}[value]
         except KeyError:
-            value = '1'
+            value = "1"
         return super().render(name, value, attrs, renderer=renderer)
 
     def value_from_datadict(self, data, files, name):
         value = data.get(name)
         return {
-            '2': True,
+            "2": True,
             True: True,
-            'True': True,
-            '3': False,
-            'False': False,
+            "True": True,
+            "3": False,
+            "False": False,
             False: False,
         }.get(value)

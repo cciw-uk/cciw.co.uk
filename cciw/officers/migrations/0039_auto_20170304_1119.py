@@ -8,13 +8,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0038_auto_20170304_1118'),
+        ("officers", "0038_auto_20170304_1118"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dbsactionlog',
-            name='officer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dbsactionlogs', to=settings.AUTH_USER_MODEL),
+            model_name="dbsactionlog",
+            name="officer",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name="dbsactionlogs", to=settings.AUTH_USER_MODEL
+            ),
         ),
     ]

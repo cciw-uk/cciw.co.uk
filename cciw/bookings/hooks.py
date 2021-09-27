@@ -10,61 +10,60 @@ from .models import AccountTransferPayment, ManualPayment, RefundPayment, parse_
 # == Payments ==
 
 
-def unrecognised_payment(sender=None, reason='Invalid IPN', **kwargs):
+def unrecognised_payment(sender=None, reason="Invalid IPN", **kwargs):
     send_unrecognised_payment_email(sender, reason=reason)
 
 
 def paypal_payment_received(sender, **kwargs):
     ipn_obj = sender
     if ipn_obj.business != settings.PAYPAL_RECEIVER_EMAIL:
-        unrecognised_payment(ipn_obj, 'Incorrect receiver email')
+        unrecognised_payment(ipn_obj, "Incorrect receiver email")
         return
 
     account = parse_paypal_custom_field(ipn_obj.custom)
     if account is None:
-        unrecognised_payment(ipn_obj, 'No associated account')
+        unrecognised_payment(ipn_obj, "No associated account")
         return
 
     if ipn_obj.payment_status == "Pending":
         send_pending_payment_email(account, ipn_obj)
         return
 
-    if (ipn_obj.payment_status not in
-            ['Completed', 'Canceled_Reversal', 'Refunded']):
-        unrecognised_payment(ipn_obj, f'Unrecognised payment status {ipn_obj.payment_status}')
+    if ipn_obj.payment_status not in ["Completed", "Canceled_Reversal", "Refunded"]:
+        unrecognised_payment(ipn_obj, f"Unrecognised payment status {ipn_obj.payment_status}")
         return
 
     send_payment(ipn_obj.mc_gross, account, ipn_obj)
 
 
 def manual_payment_received(sender, **kwargs):
-    instance = kwargs['instance']
+    instance = kwargs["instance"]
     send_payment(instance.amount, instance.account, instance)
 
 
 def manual_payment_deleted(sender, **kwargs):
-    instance = kwargs['instance']
+    instance = kwargs["instance"]
     send_payment(-instance.amount, instance.account, None)
 
 
 def refund_payment_sent(sender, **kwargs):
-    instance = kwargs['instance']
+    instance = kwargs["instance"]
     send_payment(-instance.amount, instance.account, instance)
 
 
 def refund_payment_deleted(sender, **kwargs):
-    instance = kwargs['instance']
+    instance = kwargs["instance"]
     send_payment(instance.amount, instance.account, None)
 
 
 def account_transfer_payment_received(sender, **kwargs):
-    instance = kwargs['instance']
+    instance = kwargs["instance"]
     send_payment(-instance.amount, instance.from_account, instance)
     send_payment(instance.amount, instance.to_account, instance)
 
 
 def account_transfer_payment_deleted(sender, **kwargs):
-    instance = kwargs['instance']
+    instance = kwargs["instance"]
     send_payment(instance.amount, instance.from_account, None)
     send_payment(-instance.amount, instance.to_account, None)
 

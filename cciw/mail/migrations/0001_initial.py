@@ -9,21 +9,20 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='EmailNotification',
+            name="EmailNotification",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('email', models.EmailField(db_index=True, max_length=254)),
-                ('timestamp', models.DateTimeField(default=django.utils.timezone.now)),
-                ('event', models.CharField(max_length=50)),
-                ('data', jsonfield.fields.JSONField()),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("email", models.EmailField(db_index=True, max_length=254)),
+                ("timestamp", models.DateTimeField(default=django.utils.timezone.now)),
+                ("event", models.CharField(max_length=50)),
+                ("data", jsonfield.fields.JSONField()),
             ],
             options={
-                'ordering': ['-timestamp'],
+                "ordering": ["-timestamp"],
             },
         ),
     ]

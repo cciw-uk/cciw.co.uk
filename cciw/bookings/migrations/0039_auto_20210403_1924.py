@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0038_auto_20210402_1106'),
+        ("bookings", "0038_auto_20210402_1106"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='booking',
-            name='erased_on',
+            model_name="booking",
+            name="erased_on",
             field=models.DateTimeField(blank=True, default=None, null=True),
         ),
         migrations.AddField(
-            model_name='bookingaccount',
-            name='erased_on',
+            model_name="bookingaccount",
+            name="erased_on",
             field=models.DateTimeField(blank=True, default=None, null=True),
         ),
     ]

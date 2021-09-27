@@ -18,35 +18,43 @@ def update_newsletter_subscription(booking_account):
 
 def _update(booking_account, current_status, desired_status):
     if current_status is None:
-        return mailchimp_request('POST', f'/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/',
-                                 json={
-                                     "email_address": booking_account.email,
-                                     "status": desired_status,
-                                 })
+        return mailchimp_request(
+            "POST",
+            f"/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/",
+            json={
+                "email_address": booking_account.email,
+                "status": desired_status,
+            },
+        )
     else:
         mailchimp_id = email_to_mailchimp_id(booking_account.email)
-        return mailchimp_request('PATCH', f'/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/{mailchimp_id}',
-                                 json={
-                                     "status": desired_status,
-                                 })
+        return mailchimp_request(
+            "PATCH",
+            f"/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/{mailchimp_id}",
+            json={
+                "status": desired_status,
+            },
+        )
 
 
 def email_to_mailchimp_id(email):
-    return hashlib.md5(email.lower().encode('utf-8')).hexdigest()
+    return hashlib.md5(email.lower().encode("utf-8")).hexdigest()
 
 
 def get_status(booking_account):
     mailchimp_id = email_to_mailchimp_id(booking_account.email)
-    response = mailchimp_request_unchecked('GET', f'/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/{mailchimp_id}')
+    response = mailchimp_request_unchecked(
+        "GET", f"/lists/{settings.MAILCHIMP_NEWSLETTER_LIST_ID}/members/{mailchimp_id}"
+    )
     if response.status_code == 404:
         return None
 
-    return response.json()['status']
+    return response.json()["status"]
 
 
 def mailchimp_request_unchecked(method, path, **kwargs):
     url = settings.MAILCHIMP_URL_BASE + path
-    auth = HTTPBasicAuth('user', settings.MAILCHIMP_API_KEY)
+    auth = HTTPBasicAuth("user", settings.MAILCHIMP_API_KEY)
     return requests.request(method, url, auth=auth, **kwargs)
 
 

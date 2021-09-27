@@ -6,33 +6,55 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0048_auto_20170403_1952'),
+        ("officers", "0048_auto_20170403_1952"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='application',
-            options={'base_manager_name': 'objects', 'ordering': ('-date_submitted', 'officer__first_name', 'officer__last_name')},
+            name="application",
+            options={
+                "base_manager_name": "objects",
+                "ordering": ("-date_submitted", "officer__first_name", "officer__last_name"),
+            },
         ),
         migrations.AlterModelOptions(
-            name='dbsactionlog',
-            options={'base_manager_name': 'objects', 'verbose_name': 'DBS action log', 'verbose_name_plural': 'DBS action logs'},
+            name="dbsactionlog",
+            options={
+                "base_manager_name": "objects",
+                "verbose_name": "DBS action log",
+                "verbose_name_plural": "DBS action logs",
+            },
         ),
         migrations.AlterModelOptions(
-            name='dbscheck',
-            options={'base_manager_name': 'objects', 'verbose_name': 'DBS/CRB check', 'verbose_name_plural': 'DBS/CRB check'},
+            name="dbscheck",
+            options={
+                "base_manager_name": "objects",
+                "verbose_name": "DBS/CRB check",
+                "verbose_name_plural": "DBS/CRB check",
+            },
         ),
         migrations.AlterModelOptions(
-            name='invitation',
-            options={'base_manager_name': 'objects', 'ordering': ('-camp__year', 'officer__first_name', 'officer__last_name')},
+            name="invitation",
+            options={
+                "base_manager_name": "objects",
+                "ordering": ("-camp__year", "officer__first_name", "officer__last_name"),
+            },
         ),
         migrations.AlterModelOptions(
-            name='reference',
-            options={'base_manager_name': 'objects', 'verbose_name': 'Reference'},
+            name="reference",
+            options={"base_manager_name": "objects", "verbose_name": "Reference"},
         ),
         migrations.AlterField(
-            model_name='dbsactionlog',
-            name='action_type',
-            field=models.CharField(choices=[('form_sent', 'DBS form sent'), ('leader_alert_sent', 'Alert sent to leader'), ('request_for_dbs_form_sent', 'Request for DBS form sent')], max_length=40, verbose_name='action type'),
+            model_name="dbsactionlog",
+            name="action_type",
+            field=models.CharField(
+                choices=[
+                    ("form_sent", "DBS form sent"),
+                    ("leader_alert_sent", "Alert sent to leader"),
+                    ("request_for_dbs_form_sent", "Request for DBS form sent"),
+                ],
+                max_length=40,
+                verbose_name="action type",
+            ),
         ),
     ]

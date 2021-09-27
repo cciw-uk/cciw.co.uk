@@ -13,7 +13,7 @@ from pyquery import PyQuery
 
 from cciw.utils.tests.base import TestBase, TestBaseMixin
 
-TESTS_SHOW_BROWSER = os.environ.get('TESTS_SHOW_BROWSER', '')
+TESTS_SHOW_BROWSER = os.environ.get("TESTS_SHOW_BROWSER", "")
 
 
 # We don't need less compilation when running normal tests, and it adds a lot to
@@ -23,13 +23,12 @@ class DummyLessCssFilter(CompilerFilter):
         pass
 
     def input(self, **kwargs):
-        return ''
+        return ""
 
 
 class CommonMixin:
     def officer_login(self, creds):
-        self.shortcut_login(username=creds[0],
-                            password=creds[1])
+        self.shortcut_login(username=creds[0], password=creds[1])
 
     def officer_logout(self):
         self.shortcut_logout()
@@ -43,8 +42,7 @@ class CommonMixin:
         assert self.get_element_text(css_selector) == text
 
     def assert_html5_form_invalid(self):
-        assert len(self._driver.find_elements_by_css_selector('form:invalid')), \
-                        1
+        assert len(self._driver.find_elements_by_css_selector("form:invalid")), 1
 
     def submit_expecting_html5_validation_errors(self, submit_css_selector=None):
         """
@@ -69,12 +67,14 @@ class CommonMixin:
             self.submit(submit_css_selector)
 
 
-@override_settings(COMPRESS_PRECOMPILERS=[('text/less', 'cciw.utils.tests.webtest.DummyLessCssFilter')],
-                   )
+@override_settings(
+    COMPRESS_PRECOMPILERS=[("text/less", "cciw.utils.tests.webtest.DummyLessCssFilter")],
+)
 class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
     """
     Base class for integration tests that need more than Django's test Client.
     """
+
     # disable django-webtest's monkey business which doesn't work with our auth
     # backend:
     setup_auth = False
@@ -83,7 +83,7 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
         assert self.last_response.status_code == status_code
 
     def auto_follow(self):
-        if str(self.last_response.status_code).startswith('3'):
+        if str(self.last_response.status_code).startswith("3"):
             self.last_responses.append(self.last_response.follow())
         return self.last_response
 
@@ -91,17 +91,25 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
         self.assertContains(self.last_response, html, html=True)
 
     def get_element_text(self, css_selector):
-        pq = PyQuery(self.last_response.content.decode('utf-8'))
+        pq = PyQuery(self.last_response.content.decode("utf-8"))
         return pq.find(css_selector)[0].text_content()
 
 
 @pytest.mark.selenium
-@unittest.skipIf(os.environ.get('SKIP_SELENIUM_TESTS'), "Skipping Selenium tests")
-class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseMixin, MultiThreadedLiveServerMixin, StaticLiveServerTestCase):
+@unittest.skipIf(os.environ.get("SKIP_SELENIUM_TESTS"), "Skipping Selenium tests")
+class SeleniumBase(
+    ShortcutLoginMixin,
+    CommonMixin,
+    FuncSeleniumMixin,
+    TestBaseMixin,
+    MultiThreadedLiveServerMixin,
+    StaticLiveServerTestCase,
+):
     """
     Base class for Selenium tests.
     """
-    driver_name = os.environ.get('TEST_SELENIUM_DRIVER', 'Firefox')
+
+    driver_name = os.environ.get("TEST_SELENIUM_DRIVER", "Firefox")
     browser_window_size = (1024, 768)
     display = TESTS_SHOW_BROWSER
     default_timeout = 20
@@ -110,11 +118,12 @@ class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseM
     @classmethod
     def get_webdriver_options(cls):
         kwargs = {}
-        if cls.driver_name == 'Firefox':
-            firefox_binary = os.environ.get('TEST_SELENIUM_FIREFOX_BINARY', None)
+        if cls.driver_name == "Firefox":
+            firefox_binary = os.environ.get("TEST_SELENIUM_FIREFOX_BINARY", None)
             if firefox_binary is not None:
                 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-                kwargs['firefox_binary'] = FirefoxBinary(firefox_path=firefox_binary)
+
+                kwargs["firefox_binary"] = FirefoxBinary(firefox_path=firefox_binary)
         return kwargs
 
     def assertCode(self, status_code):
@@ -128,7 +137,9 @@ class SeleniumBase(ShortcutLoginMixin, CommonMixin, FuncSeleniumMixin, TestBaseM
 
     def wait_for_ajax(self):
         time.sleep(0.1)
-        self.wait_until(lambda driver: driver.execute_script('return (typeof(jQuery) == "undefined" || jQuery.active == 0)'))
+        self.wait_until(
+            lambda driver: driver.execute_script('return (typeof(jQuery) == "undefined" || jQuery.active == 0)')
+        )
 
     def accept_alert(self):
         self._driver.switch_to.alert.accept()

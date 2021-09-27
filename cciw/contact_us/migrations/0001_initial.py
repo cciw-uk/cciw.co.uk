@@ -13,19 +13,24 @@ class Migration(migrations.Migration):
         # For unknown reason, uncommenting this causes tests to fail to run with
         # django.db.migrations.exceptions.NodeNotFoundError: Migration contact_us.0001_initial dependencies reference nonexistent parent node ...
         # although the migration runs fine manually.
-        #('bookings', '0031_auto_20180513_1934'),
+        # ('bookings', '0031_auto_20180513_1934'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Message',
+            name="Message",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('email', models.EmailField(max_length=254, verbose_name='Email address')),
-                ('name', models.CharField(blank=True, max_length=200)),
-                ('message', models.TextField()),
-                ('timestamp', models.DateTimeField(default=django.utils.timezone.now)),
-                ('booking_account', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='bookings.BookingAccount')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("email", models.EmailField(max_length=254, verbose_name="Email address")),
+                ("name", models.CharField(blank=True, max_length=200)),
+                ("message", models.TextField()),
+                ("timestamp", models.DateTimeField(default=django.utils.timezone.now)),
+                (
+                    "booking_account",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="bookings.BookingAccount"
+                    ),
+                ),
             ],
         ),
     ]

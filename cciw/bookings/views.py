@@ -23,10 +23,23 @@ from paypal.standard.forms import PayPalPaymentsForm
 from cciw.bookings.email import send_verify_email
 from cciw.bookings.forms import AccountDetailsForm, AddPlaceForm, EmailForm
 from cciw.bookings.middleware import get_booking_account_from_request, unset_booking_account_cookie
-from cciw.bookings.models import (AgreementFetcher, Booking, BookingAccount, BookingState, CustomAgreement, Price,
-                                  PriceChecker, PriceType, any_bookings_possible, book_basket_now,
-                                  build_paypal_custom_field, early_bird_is_available, get_early_bird_cutoff_date,
-                                  is_booking_open, is_booking_open_thisyear)
+from cciw.bookings.models import (
+    AgreementFetcher,
+    Booking,
+    BookingAccount,
+    BookingState,
+    CustomAgreement,
+    Price,
+    PriceChecker,
+    PriceType,
+    any_bookings_possible,
+    book_basket_now,
+    build_paypal_custom_field,
+    early_bird_is_available,
+    get_early_bird_cutoff_date,
+    is_booking_open,
+    is_booking_open_thisyear,
+)
 from cciw.cciwmain import common
 from cciw.cciwmain.common import ajax_form_validate, get_current_domain
 from cciw.cciwmain.decorators import json_response
@@ -37,16 +50,16 @@ from cciw.utils.views import user_passes_test_improved
 
 
 class BookingStage:
-    LOGIN = 'login'
-    ACCOUNT = 'account'
-    OVERVIEW = 'overview'
-    PLACE = 'place'
-    LIST = 'list'
-    PAY = 'pay'
+    LOGIN = "login"
+    ACCOUNT = "account"
+    OVERVIEW = "overview"
+    PLACE = "place"
+    LIST = "list"
+    PAY = "pay"
 
 
 def ensure_booking_account_attr(request):
-    if not hasattr(request, 'booking_account'):
+    if not hasattr(request, "booking_account"):
         request.booking_account = get_booking_account_from_request(request)
 
 
@@ -56,12 +69,14 @@ def booking_account_required(view_func):
     redirecting if this is not satisfied,
     and attaches the BookingAccount object to the request.
     """
+
     @wraps(view_func)
     def view(request, *args, **kwargs):
         ensure_booking_account_attr(request)
         if request.booking_account is None:
-            return HttpResponseRedirect(reverse('cciw-bookings-not_logged_in'))
+            return HttpResponseRedirect(reverse("cciw-bookings-not_logged_in"))
         return view_func(request, *args, **kwargs)
+
     return view
 
 
@@ -72,12 +87,11 @@ def account_details_required(view_func):
         if not request.booking_account.has_account_details():
             return next_step(request.booking_account)
         return view_func(request, *args, **kwargs)
+
     return view
 
 
-booking_secretary_required = user_passes_test_improved(lambda user:
-                                                       user.is_superuser or
-                                                       user.is_booking_secretary)
+booking_secretary_required = user_passes_test_improved(lambda user: user.is_superuser or user.is_booking_secretary)
 
 
 def redirect_if_agreement_fix_required(view_func):
@@ -86,32 +100,33 @@ def redirect_if_agreement_fix_required(view_func):
         ensure_booking_account_attr(request)
         if request.booking_account.bookings.agreement_fix_required().exists():
             messages.warning(
-                request,
-                'There is an issue with your existing bookings. Please address it before continuing.'
+                request, "There is an issue with your existing bookings. Please address it before continuing."
             )
-            return HttpResponseRedirect(reverse('cciw-bookings-account_overview'))
+            return HttpResponseRedirect(reverse("cciw-bookings-account_overview"))
         return view_func(request, *args, **kwargs)
+
     return view
 
 
 # Views
+
 
 def index(request):
     ensure_booking_account_attr(request)
     year = common.get_thisyear()
     bookingform_relpath = f"{settings.BOOKINGFORMDIR}/booking_form_{year}.pdf"
     context = {
-        'title': 'Booking',
+        "title": "Booking",
     }
     if os.path.isfile(f"{settings.MEDIA_ROOT}/{bookingform_relpath}"):
-        context['bookingform'] = bookingform_relpath
+        context["bookingform"] = bookingform_relpath
     booking_open = is_booking_open(year)
     if booking_open:
         prices = Price.objects.for_year(year)
         now = timezone.now()
         early_bird_available = early_bird_is_available(year, now)
-        context['early_bird_available'] = early_bird_available
-        context['early_bird_date'] = get_early_bird_cutoff_date(year)
+        context["early_bird_available"] = early_bird_available
+        context["early_bird_date"] = get_early_bird_cutoff_date(year)
     else:
         # Show last year's prices
         prices = Price.objects.for_year(year - 1)
@@ -127,25 +142,28 @@ def index(request):
 
     early_bird_discount = getp(PriceType.EARLY_BIRD_DISCOUNT)
     price_list = [
-        ('Full price', getp(PriceType.FULL)),
-        ('2nd camper from the same family', getp(PriceType.SECOND_CHILD)),
-        ('Subsequent children from the same family', getp(PriceType.THIRD_CHILD))
+        ("Full price", getp(PriceType.FULL)),
+        ("2nd camper from the same family", getp(PriceType.SECOND_CHILD)),
+        ("Subsequent children from the same family", getp(PriceType.THIRD_CHILD)),
     ]
     if any(p is None for caption, p in price_list):
         price_list = []
     # Add discounts:
-    price_list = [(caption, p, p - early_bird_discount if early_bird_discount is not None else 0)
-                  for caption, p in price_list]
+    price_list = [
+        (caption, p, p - early_bird_discount if early_bird_discount is not None else 0) for caption, p in price_list
+    ]
 
-    context.update({
-        'price_list': price_list,
-        'price_deposit': getp(PriceType.DEPOSIT),
-        'price_early_bird_discount': early_bird_discount,
-        'booking_open': booking_open,
-        'any_bookings_possible': any_bookings_possible(common.get_thisyear()),
-        'full_payment_due_time': settings.BOOKING_FULL_PAYMENT_DUE_TIME,
-    })
-    return TemplateResponse(request, 'cciw/bookings/index.html', context)
+    context.update(
+        {
+            "price_list": price_list,
+            "price_deposit": getp(PriceType.DEPOSIT),
+            "price_early_bird_discount": early_bird_discount,
+            "booking_open": booking_open,
+            "any_bookings_possible": any_bookings_possible(common.get_thisyear()),
+            "full_payment_due_time": settings.BOOKING_FULL_PAYMENT_DUE_TIME,
+        }
+    )
+    return TemplateResponse(request, "cciw/bookings/index.html", context)
 
 
 def next_step(account):
@@ -155,11 +173,11 @@ def next_step(account):
     if account.has_account_details():
         bookings = account.bookings.for_year(common.get_thisyear())
         if (bookings.in_basket() | bookings.on_shelf() | bookings.booked()).exists():
-            return HttpResponseRedirect(reverse('cciw-bookings-account_overview'))
+            return HttpResponseRedirect(reverse("cciw-bookings-account_overview"))
         else:
-            return HttpResponseRedirect(reverse('cciw-bookings-add_place'))
+            return HttpResponseRedirect(reverse("cciw-bookings-add_place"))
     else:
-        return HttpResponseRedirect(reverse('cciw-bookings-account_details'))
+        return HttpResponseRedirect(reverse("cciw-bookings-account_details"))
 
 
 def start(request):
@@ -170,34 +188,46 @@ def start(request):
     if request.method == "POST":
         form = form_class(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email']
+            email = form.cleaned_data["email"]
             send_verify_email(request, email)
-            return HttpResponseRedirect(reverse('cciw-bookings-email_sent'))
+            return HttpResponseRedirect(reverse("cciw-bookings-email_sent"))
     else:
         form = form_class()
 
-    return TemplateResponse(request, 'cciw/bookings/start.html', {
-        'stage': BookingStage.LOGIN,
-        'title': 'Booking - log in',
-        'booking_open': is_booking_open_thisyear(),
-        'form': form,
-        'any_bookings_possible': any_bookings_possible(common.get_thisyear()),
-    })
+    return TemplateResponse(
+        request,
+        "cciw/bookings/start.html",
+        {
+            "stage": BookingStage.LOGIN,
+            "title": "Booking - log in",
+            "booking_open": is_booking_open_thisyear(),
+            "form": form,
+            "any_bookings_possible": any_bookings_possible(common.get_thisyear()),
+        },
+    )
 
 
 def email_sent(request):
-    return TemplateResponse(request, 'cciw/bookings/email_sent.html', {
-        'stage': BookingStage.LOGIN,
-        'title': 'Booking - log in',
-    })
+    return TemplateResponse(
+        request,
+        "cciw/bookings/email_sent.html",
+        {
+            "stage": BookingStage.LOGIN,
+            "title": "Booking - log in",
+        },
+    )
 
 
 def link_expired_email_sent(request):
-    return TemplateResponse(request, 'cciw/bookings/email_sent.html', {
-        'stage': BookingStage.LOGIN,
-        'title': 'Booking - log in',
-        'link_expired': True,
-    })
+    return TemplateResponse(
+        request,
+        "cciw/bookings/email_sent.html",
+        {
+            "stage": BookingStage.LOGIN,
+            "title": "Booking - log in",
+            "link_expired": True,
+        },
+    )
 
 
 @booking_account_required
@@ -214,25 +244,32 @@ def verify_and_continue(request):
     account.last_login = now
     account.save()
 
-    if last_login is not None and (
-            (now - last_login) > timedelta(30 * 6)):  # six months
+    if last_login is not None and ((now - last_login) > timedelta(30 * 6)):  # six months
         messages.info(request, "Welcome back! Please check and update your account details")
-        return HttpResponseRedirect(reverse('cciw-bookings-account_details'))
+        return HttpResponseRedirect(reverse("cciw-bookings-account_details"))
     else:
         return next_step(account)
 
 
 def verify_email_failed(request):
-    return TemplateResponse(request, 'cciw/bookings/email_verification_failed.html', {
-        'stage': BookingStage.LOGIN,
-        'title': 'Booking - account email verification failed',
-    })
+    return TemplateResponse(
+        request,
+        "cciw/bookings/email_verification_failed.html",
+        {
+            "stage": BookingStage.LOGIN,
+            "title": "Booking - account email verification failed",
+        },
+    )
 
 
 def not_logged_in(request):
-    return TemplateResponse(request, 'cciw/bookings/not_logged_in.html', {
-        'title': 'Booking - not logged in',
-    })
+    return TemplateResponse(
+        request,
+        "cciw/bookings/not_logged_in.html",
+        {
+            "title": "Booking - not logged in",
+        },
+    )
 
 
 @booking_account_required
@@ -244,15 +281,19 @@ def account_details(request):
         form = form_class(request.POST, instance=request.booking_account)
         if form.is_valid():
             form.save()
-            messages.info(request, 'Account details updated, thank you.')
+            messages.info(request, "Account details updated, thank you.")
             return next_step(request.booking_account)
     else:
         form = form_class(instance=request.booking_account)
-    return TemplateResponse(request, 'cciw/bookings/account_details.html', {
-        'title': 'Booking - account details',
-        'stage': BookingStage.ACCOUNT,
-        'form': form,
-    })
+    return TemplateResponse(
+        request,
+        "cciw/bookings/account_details.html",
+        {
+            "title": "Booking - account details",
+            "stage": BookingStage.ACCOUNT,
+            "form": form,
+        },
+    )
 
 
 @booking_account_required
@@ -288,9 +329,7 @@ def add_or_edit_place(request, context, booking_id=None):
         if form.is_valid():
             booking: Booking = form.instance
             custom_agreements_checked = [
-                agreement
-                for agreement in custom_agreements
-                if f'custom_agreement_{agreement.id}' in request.POST
+                agreement for agreement in custom_agreements if f"custom_agreement_{agreement.id}" in request.POST
             ]
             booking.save_for_account(
                 account=request.booking_account,
@@ -298,92 +337,96 @@ def add_or_edit_place(request, context, booking_id=None):
                 custom_agreements=custom_agreements_checked,
             )
             messages.info(request, f'Details for "{booking.name}" were saved successfully')
-            return HttpResponseRedirect(reverse('cciw-bookings-list_bookings'))
+            return HttpResponseRedirect(reverse("cciw-bookings-list_bookings"))
     else:
         form = form_class(instance=booking)
 
-    context.update({
-        'booking_open': is_booking_open_thisyear(),
-        'stage': BookingStage.PLACE,
-        'form': form,
-        'early_bird_available': early_bird_is_available(year, now),
-        'early_bird_date': get_early_bird_cutoff_date(year),
-        'price_early_bird_discount': lambda: Price.objects.get(year=year, price_type=PriceType.EARLY_BIRD_DISCOUNT).price,
-        'read_only': booking is not None and not booking.is_user_editable(),
-        'custom_agreements': custom_agreements,
-    })
-    return TemplateResponse(request, 'cciw/bookings/add_place.html', context)
+    context.update(
+        {
+            "booking_open": is_booking_open_thisyear(),
+            "stage": BookingStage.PLACE,
+            "form": form,
+            "early_bird_available": early_bird_is_available(year, now),
+            "early_bird_date": get_early_bird_cutoff_date(year),
+            "price_early_bird_discount": lambda: Price.objects.get(
+                year=year, price_type=PriceType.EARLY_BIRD_DISCOUNT
+            ).price,
+            "read_only": booking is not None and not booking.is_user_editable(),
+            "custom_agreements": custom_agreements,
+        }
+    )
+    return TemplateResponse(request, "cciw/bookings/add_place.html", context)
 
 
 @booking_account_required
 @redirect_if_agreement_fix_required  # Don't allow to add new until booked places fixed
 def add_place(request):
-    return add_or_edit_place(request, {'title': 'Booking - add new camper details'})
+    return add_or_edit_place(request, {"title": "Booking - add new camper details"})
 
 
 def edit_place(request, booking_id: int):
-    return add_or_edit_place(request, {'title': 'Booking - edit camper details', 'edit_mode': True},
-                             booking_id=booking_id)
+    return add_or_edit_place(
+        request, {"title": "Booking - edit camper details", "edit_mode": True}, booking_id=booking_id
+    )
 
 
 # Public attributes - i.e. that the account holder is allowed to see
 BOOKING_PLACE_PUBLIC_ATTRS = [
-    'id',
-    'first_name',
-    'last_name',
-    'sex',
-    'date_of_birth',
-    'address_line1',
-    'address_line2',
-    'address_city',
-    'address_county',
-    'address_country',
-    'address_post_code',
-    'phone_number',
-    'church',
-    'contact_name',
-    'contact_line1',
-    'contact_line2',
-    'contact_city',
-    'contact_county',
-    'contact_country',
-    'contact_post_code',
-    'contact_phone_number',
-    'dietary_requirements',
-    'gp_name',
-    'gp_line1',
-    'gp_line2',
-    'gp_city',
-    'gp_county',
-    'gp_country',
-    'gp_post_code',
-    'gp_phone_number',
-    'medical_card_number',
-    'last_tetanus_injection_date',
-    'allergies',
-    'regular_medication_required',
-    'learning_difficulties',
-    'serious_illness',
-    'created_at',
+    "id",
+    "first_name",
+    "last_name",
+    "sex",
+    "date_of_birth",
+    "address_line1",
+    "address_line2",
+    "address_city",
+    "address_county",
+    "address_country",
+    "address_post_code",
+    "phone_number",
+    "church",
+    "contact_name",
+    "contact_line1",
+    "contact_line2",
+    "contact_city",
+    "contact_county",
+    "contact_country",
+    "contact_post_code",
+    "contact_phone_number",
+    "dietary_requirements",
+    "gp_name",
+    "gp_line1",
+    "gp_line2",
+    "gp_city",
+    "gp_county",
+    "gp_country",
+    "gp_post_code",
+    "gp_phone_number",
+    "medical_card_number",
+    "last_tetanus_injection_date",
+    "allergies",
+    "regular_medication_required",
+    "learning_difficulties",
+    "serious_illness",
+    "created_at",
 ]
 
 # Public attributes - i.e. that the account holder is allowed to see
 ACCOUNT_PUBLIC_ATTRS = [
-    'email',
-    'name',
-    'address_line1',
-    'address_line2',
-    'address_city',
-    'address_county',
-    'address_country',
-    'address_post_code',
-    'phone_number',
+    "email",
+    "name",
+    "address_line1",
+    "address_line2",
+    "address_city",
+    "address_county",
+    "address_country",
+    "address_post_code",
+    "phone_number",
 ]
 
 handle_country = lambda v: v.code if isinstance(v, Country) else v
 booking_to_dict = lambda b: {k: handle_country(getattr(b, k)) for k in BOOKING_PLACE_PUBLIC_ATTRS}
-account_to_dict = lambda acc: {k: handle_country(getattr(acc, k))
-                               for k in ACCOUNT_PUBLIC_ATTRS}
+account_to_dict = lambda acc: {k: handle_country(getattr(acc, k)) for k in ACCOUNT_PUBLIC_ATTRS}
 
 
 @booking_account_required
@@ -396,22 +439,21 @@ def places_json(request):
 @json_response
 def all_places_json(request):
     try:
-        account_id = int(request.GET['id'])
+        account_id = int(request.GET["id"])
     except (KeyError, ValueError):
-        return {'status': 'success',
-                'places': []}
+        return {"status": "success", "places": []}
     acc = BookingAccount.objects.get(id=account_id)
     return _get_places_dict(request, acc)
 
 
 def _get_places_dict(request, account):
-    retval = {'status': 'success'}
+    retval = {"status": "success"}
     qs = account.bookings.all()
-    if 'exclude' in request.GET:
+    if "exclude" in request.GET:
         with contextlib.suppress(ValueError):
-            exclude_id = int(request.GET['exclude'])
+            exclude_id = int(request.GET["exclude"])
             qs = qs.exclude(id=exclude_id)
-    retval['places'] = [booking_to_dict(b) for b in qs]
+    retval["places"] = [booking_to_dict(b) for b in qs]
     return retval
 
 
@@ -425,16 +467,16 @@ def account_json(request):
 @json_response
 def all_accounts_json(request):
     try:
-        account_id = int(request.GET['id'])
+        account_id = int(request.GET["id"])
     except (KeyError, ValueError):
-        return {'status': 'failure'}
+        return {"status": "failure"}
     acc = BookingAccount.objects.get(id=account_id)
     return _get_account_dict(acc)
 
 
 def _get_account_dict(account):
-    retval = {'status': 'success'}
-    retval['account'] = account_to_dict(account)
+    retval = {"status": "success"}
+    retval["account"] = account_to_dict(account)
     return retval
 
 
@@ -451,43 +493,41 @@ def booking_problems_json(request):
     # Make it easy on front end:
     data = request.POST.copy()
     with contextlib.suppress(KeyError):
-        data['created_at'] = data['created_at_0'] + ' ' + data['created_at_1']
+        data["created_at"] = data["created_at_0"] + " " + data["created_at_1"]
 
-    if 'booking_id' in data:
-        booking_obj = Booking.objects.get(id=int(data['booking_id']))
-        if 'created_online' not in data:
+    if "booking_id" in data:
+        booking_obj = Booking.objects.get(id=int(data["booking_id"]))
+        if "created_online" not in data:
             # readonly field, data not included in form
-            data['created_online'] = booking_obj.created_online
+            data["created_online"] = booking_obj.created_online
         form = BookingAdminForm(data, instance=booking_obj)
     else:
         form = BookingAdminForm(data)
 
-    retval = {'status': 'success'}
+    retval = {"status": "success"}
     if form.is_valid():
-        retval['valid'] = True
+        retval["valid"] = True
         instance = form.save(commit=False)
         # We will get errors later on if prices don't exist for the year chosen, so
         # we check that first.
         if not is_booking_open(instance.camp.year):
-            retval['problems'] = [f'Prices have not been set for the year {instance.camp.year}']
+            retval["problems"] = [f"Prices have not been set for the year {instance.camp.year}"]
         else:
             problems, warnings = instance.get_booking_problems(booking_sec=True)
-            retval['problems'] = problems + warnings
+            retval["problems"] = problems + warnings
     else:
-        retval['valid'] = False
-        retval['errors'] = form.errors
+        retval["valid"] = False
+        retval["errors"] = form.errors
     return retval
 
 
 @json_response
 def place_availability_json(request):
-    retval = {'status': 'success'}
-    camp_id = int(request.GET['camp_id'])
+    retval = {"status": "success"}
+    camp_id = int(request.GET["camp_id"])
     camp = Camp.objects.get(id=camp_id)
     places = camp.get_places_left()
-    retval['result'] = dict(total=places[0],
-                            male=places[1],
-                            female=places[2])
+    retval["result"] = dict(total=places[0], male=places[1], female=places[2])
     return retval
 
 
@@ -495,22 +535,21 @@ def place_availability_json(request):
 @staff_member_required
 @booking_secretary_required
 def get_expected_amount_due(request):
-    fail = {'status': 'success',
-            'amount': None}
+    fail = {"status": "success", "amount": None}
     try:
         # If we use a form to construct an object, we won't get pass
         # validation. So we construct a partial object, doing manual parsing of
         # posted vars.
 
-        if 'id' in request.POST:
+        if "id" in request.POST:
             # Start with saved data if it is available
-            b = Booking.objects.get(id=int(request.POST['id']))
+            b = Booking.objects.get(id=int(request.POST["id"]))
         else:
             b = Booking()
-        b.price_type = int(request.POST['price_type'])
-        b.camp_id = int(request.POST['camp'])
-        b.early_bird_discount = 'early_bird_discount' in request.POST
-        b.state = int(request.POST['state'])
+        b.price_type = int(request.POST["price_type"])
+        b.camp_id = int(request.POST["camp"])
+        b.early_bird_discount = "early_bird_discount" in request.POST
+        b.state = int(request.POST["state"])
     except (ValueError, KeyError):  # not a valid price_type/camp, data missing
         return fail
     try:
@@ -520,8 +559,7 @@ def get_expected_amount_due(request):
 
     if amount is not None:
         amount = str(amount)  # convert decimal
-    return {'status': 'success',
-            'amount': amount}
+    return {"status": "success", "amount": amount}
 
 
 def make_state_token(bookings):
@@ -530,9 +568,13 @@ def make_state_token(bookings):
     # don't accidentally book something significantly different from what they
     # expect (due to, for example, changing a booking in a different tab). For
     # this reason we don't need all info.
-    data = '|'.join([':'.join(map(str, [b.id, b.camp.id, b.amount_due, b.name, b.price_type, b.state]))
-                     for b in sorted(bookings, key=lambda b: b.id)])
-    return salted_hmac('cciw.bookings.state_token', data.encode('utf-8')).hexdigest()
+    data = "|".join(
+        [
+            ":".join(map(str, [b.id, b.camp.id, b.amount_due, b.name, b.price_type, b.state]))
+            for b in sorted(bookings, key=lambda b: b.id)
+        ]
+    )
+    return salted_hmac("cciw.bookings.state_token", data.encode("utf-8")).hexdigest()
 
 
 @booking_account_required
@@ -543,38 +585,40 @@ def list_bookings(request):
     """
     year = common.get_thisyear()
     now = timezone.now()
-    bookings = request.booking_account.bookings.for_year(year).order_by('id').with_prefetch_camp_info()
+    bookings = request.booking_account.bookings.for_year(year).order_by("id").with_prefetch_camp_info()
     # NB - use lists here, not querysets, so that both state_token and book_now
     # functionality apply against same set of bookings.
     basket_bookings = list(bookings.in_basket())
     shelf_bookings = list(bookings.on_shelf())
 
     if request.method == "POST":
-        if 'add_another' in request.POST:
-            return HttpResponseRedirect(reverse('cciw-bookings-add_place'))
+        if "add_another" in request.POST:
+            return HttpResponseRedirect(reverse("cciw-bookings-add_place"))
 
         places = basket_bookings + shelf_bookings
         response = _handle_list_booking_actions(request, places)
         if response:
             return response
 
-        if 'book_now' in request.POST:
-            state_token = request.POST.get('state_token', '')
+        if "book_now" in request.POST:
+            state_token = request.POST.get("state_token", "")
             if make_state_token(basket_bookings) != state_token:
-                messages.error(request, "Places were not booked due to modifications made "
-                               "to the details. Please check the details and try again.")
+                messages.error(
+                    request,
+                    "Places were not booked due to modifications made "
+                    "to the details. Please check the details and try again.",
+                )
             else:
                 if book_basket_now(basket_bookings):
                     messages.info(request, "Places booked!")
-                    return HttpResponseRedirect(reverse('cciw-bookings-pay'))
+                    return HttpResponseRedirect(reverse("cciw-bookings-pay"))
                 else:
-                    messages.error(request, "These places cannot be booked for the reasons "
-                                   "given below.")
+                    messages.error(request, "These places cannot be booked for the reasons " "given below.")
         # Start over, because things may have changed.
         return HttpResponseRedirect(request.path)
 
     # Now apply business rules and other custom processing
-    total = Decimal('0.00')
+    total = Decimal("0.00")
     all_bookable = True
     all_unbookable = True
     agreement_fetcher = AgreementFetcher()
@@ -604,7 +648,7 @@ def list_bookings(request):
                 else:
                     total = total + b.amount_due_normalised
 
-    discounts = defaultdict(lambda: Decimal('0.00'))
+    discounts = defaultdict(lambda: Decimal("0.00"))
     for b in basket_bookings:
         for name, amount in b.get_available_discounts(now):
             discounts[name] += amount
@@ -615,22 +659,25 @@ def list_bookings(request):
     else:
         grand_total = None
 
-    return TemplateResponse(request, 'cciw/bookings/list_bookings.html', {
-        'title': 'Booking - checkout',
-        'stage': BookingStage.LIST,
-        'basket_bookings': basket_bookings,
-        'shelf_bookings': shelf_bookings,
-        'all_bookable': all_bookable,
-        'all_unbookable': all_unbookable,
-        'state_token': make_state_token(basket_bookings),
-        'total': total,
-        'grand_total': grand_total,
-        'discounts_available': discounts.items(),
-    })
+    return TemplateResponse(
+        request,
+        "cciw/bookings/list_bookings.html",
+        {
+            "title": "Booking - checkout",
+            "stage": BookingStage.LIST,
+            "basket_bookings": basket_bookings,
+            "shelf_bookings": shelf_bookings,
+            "all_bookable": all_bookable,
+            "all_unbookable": all_unbookable,
+            "state_token": make_state_token(basket_bookings),
+            "total": total,
+            "grand_total": grand_total,
+            "discounts_available": discounts.items(),
+        },
+    )
 
 
 def _handle_list_booking_actions(request, places):
-
     def shelve(place):
         place.shelved = True
         place.save()
@@ -646,21 +693,21 @@ def _handle_list_booking_actions(request, places):
         place.delete()
 
     def edit(place):
-        return HttpResponseRedirect(reverse('cciw-bookings-edit_place',
-                                            kwargs={'booking_id': str(place.id)}))
+        return HttpResponseRedirect(reverse("cciw-bookings-edit_place", kwargs={"booking_id": str(place.id)}))
 
     for k in request.POST.keys():
-        for r, action in [(r'shelve_(\d+)', shelve),
-                          (r'unshelve_(\d+)', unshelve),
-                          (r'delete_(\d+)', delete),
-                          (r'edit_(\d+)', edit),
-                          ]:
+        for r, action in [
+            (r"shelve_(\d+)", shelve),
+            (r"unshelve_(\d+)", unshelve),
+            (r"delete_(\d+)", delete),
+            (r"edit_(\d+)", edit),
+        ]:
             m = re.match(r, k)
             if m is not None:
                 place = None
                 with contextlib.suppress(
-                        ValueError,  # converting to string
-                        IndexError,  # not in list
+                    ValueError,  # converting to string
+                    IndexError,  # not in list
                 ):
                     b_id = int(m.groups()[0])
                     place = [p for p in places if p.id == b_id][0]
@@ -695,12 +742,10 @@ def mk_paypal_form(account, balance, protocol, domain, min_amount=None, max_amou
 
     form = cls(initial=paypal_dict)
     if min_amount is not None:
-        form.fields['amount'].widget.attrs.update(
-            {'min': str(min_amount),
-             'value': str(min_amount)})
+        form.fields["amount"].widget.attrs.update({"min": str(min_amount), "value": str(min_amount)})
 
     if max_amount is not None:
-        form.fields['amount'].widget.attrs['max'] = str(max_amount)
+        form.fields["amount"].widget.attrs["max"] = str(max_amount)
 
     return form
 
@@ -722,48 +767,63 @@ def pay(request):
         price_deposit = None
 
     domain = get_current_domain()
-    protocol = 'https' if request.is_secure() else 'http'
+    protocol = "https" if request.is_secure() else "http"
 
-    return TemplateResponse(request, 'cciw/bookings/pay.html', {
-        'stage': BookingStage.PAY,
-        'title': 'Booking - pay',
-        'unconfirmed_places': acc.bookings.for_year(this_year).unconfirmed(),
-        'confirmed_places': acc.bookings.for_year(this_year).confirmed(),
-        'balance_due_now': balance_due_now,
-        'balance_full': balance_full,
-        'account_id': acc.id,
-        'price_deposit': price_deposit,
-        'pending_payment_total': acc.get_pending_payment_total(),
-        'paypal_form': mk_paypal_form(acc, balance_due_now, protocol, domain),
-        'paypal_form_full': mk_paypal_form(acc, balance_full, protocol, domain),
-        'paypal_form_custom': mk_paypal_form(acc,
-                                             max(0, balance_due_now),
-                                             protocol, domain,
-                                             min_amount=max(balance_due_now, 0),
-                                             max_amount=balance_full)
-    })
+    return TemplateResponse(
+        request,
+        "cciw/bookings/pay.html",
+        {
+            "stage": BookingStage.PAY,
+            "title": "Booking - pay",
+            "unconfirmed_places": acc.bookings.for_year(this_year).unconfirmed(),
+            "confirmed_places": acc.bookings.for_year(this_year).confirmed(),
+            "balance_due_now": balance_due_now,
+            "balance_full": balance_full,
+            "account_id": acc.id,
+            "price_deposit": price_deposit,
+            "pending_payment_total": acc.get_pending_payment_total(),
+            "paypal_form": mk_paypal_form(acc, balance_due_now, protocol, domain),
+            "paypal_form_full": mk_paypal_form(acc, balance_full, protocol, domain),
+            "paypal_form_custom": mk_paypal_form(
+                acc,
+                max(0, balance_due_now),
+                protocol,
+                domain,
+                min_amount=max(balance_due_now, 0),
+                max_amount=balance_full,
+            ),
+        },
+    )
 
 
 @csrf_exempt  # PayPal will post to this
 def pay_done(request):
-    return TemplateResponse(request, 'cciw/bookings/pay_done.html', {
-        'title': 'Booking - payment complete',
-        'stage': BookingStage.PAY,
-    })
+    return TemplateResponse(
+        request,
+        "cciw/bookings/pay_done.html",
+        {
+            "title": "Booking - payment complete",
+            "stage": BookingStage.PAY,
+        },
+    )
 
 
 @csrf_exempt  # PayPal will post to this
 def pay_cancelled(request):
-    return TemplateResponse(request, 'cciw/bookings/pay_cancelled.html', {
-        'title': 'Booking - payment cancelled',
-        'stage': BookingStage.PAY,
-    })
+    return TemplateResponse(
+        request,
+        "cciw/bookings/pay_cancelled.html",
+        {
+            "title": "Booking - payment cancelled",
+            "stage": BookingStage.PAY,
+        },
+    )
 
 
 @booking_account_required
 def account_overview(request):
-    if 'logout' in request.POST:
-        response = HttpResponseRedirect(reverse('cciw-bookings-index'))
+    if "logout" in request.POST:
+        response = HttpResponseRedirect(reverse("cciw-bookings-index"))
         unset_booking_account_cookie(response)
         return response
 
@@ -773,58 +833,62 @@ def account_overview(request):
     price_checker = PriceChecker(expected_years=[b.camp.year for b in bookings])
     agreement_fetcher = AgreementFetcher()
 
-    if request.method == 'POST':
-        if (response := _handle_overview_booking_actions(request, bookings)):
+    if request.method == "POST":
+        if response := _handle_overview_booking_actions(request, bookings):
             return response
 
-    return TemplateResponse(request, 'cciw/bookings/account_overview.html', {
-        'title': 'Booking - account overview',
-        'stage': BookingStage.OVERVIEW,
-        'confirmed_places': bookings.confirmed().with_prefetch_camp_info()
-        .with_prefetch_missing_agreements(agreement_fetcher),
-        'unconfirmed_places': bookings.unconfirmed().with_prefetch_camp_info()
-        .with_prefetch_missing_agreements(agreement_fetcher),
-        'cancelled_places': bookings.cancelled().with_prefetch_camp_info(),
-        'basket_or_shelf': (bookings.in_basket() | bookings.on_shelf()).with_prefetch_camp_info(),
-        'balance_due_now': account.get_balance_due_now(price_checker=price_checker),
-        'balance_full': account.get_balance_full(price_checker=price_checker),
-        'pending_payment_total': account.get_pending_payment_total(),
-    })
+    return TemplateResponse(
+        request,
+        "cciw/bookings/account_overview.html",
+        {
+            "title": "Booking - account overview",
+            "stage": BookingStage.OVERVIEW,
+            "confirmed_places": bookings.confirmed()
+            .with_prefetch_camp_info()
+            .with_prefetch_missing_agreements(agreement_fetcher),
+            "unconfirmed_places": bookings.unconfirmed()
+            .with_prefetch_camp_info()
+            .with_prefetch_missing_agreements(agreement_fetcher),
+            "cancelled_places": bookings.cancelled().with_prefetch_camp_info(),
+            "basket_or_shelf": (bookings.in_basket() | bookings.on_shelf()).with_prefetch_camp_info(),
+            "balance_due_now": account.get_balance_due_now(price_checker=price_checker),
+            "balance_full": account.get_balance_full(price_checker=price_checker),
+            "pending_payment_total": account.get_pending_payment_total(),
+        },
+    )
 
 
 def _handle_overview_booking_actions(request, bookings):
     fixable_bookings = list(bookings.agreement_fix_required())
 
     def edit(booking):
-        return HttpResponseRedirect(reverse('cciw-bookings-edit_place',
-                                            kwargs={'booking_id': str(booking.id)}))
+        return HttpResponseRedirect(reverse("cciw-bookings-edit_place", kwargs={"booking_id": str(booking.id)}))
 
     def cancel(booking):
         booking.cancel_and_move_to_shelf()
         messages.info(request, f'Place for "{booking.name}" cancelled and put "on the shelf".')
-        return HttpResponseRedirect(reverse('cciw-bookings-account_overview'))
+        return HttpResponseRedirect(reverse("cciw-bookings-account_overview"))
 
     for key in request.POST.keys():
         for regex, action in [
-                (r'edit_(\d+)', edit),
-                (r'cancel_(\d+)', cancel),
+            (r"edit_(\d+)", edit),
+            (r"cancel_(\d+)", cancel),
         ]:
-            if (match := re.match(regex, key)):
+            if match := re.match(regex, key):
                 booking = None
                 booking_id = int(match.groups()[0])
                 with contextlib.suppress(IndexError):
-                    booking = [b for b in fixable_bookings
-                               if b.id == booking_id][0]
+                    booking = [b for b in fixable_bookings if b.id == booking_id][0]
                 if booking:
                     return action(booking)
 
 
 class BookingAccountAutocomplete(autocomplete.Select2QuerySetView):
-    search_fields = ['name']
+    search_fields = ["name"]
 
     def get_queryset(self):
         request = self.request
         query = self.q.strip()
         if request.user.is_authenticated and (request.user.is_booking_secretary or request.user.is_superuser) and query:
-            return BookingAccount.objects.order_by('name', 'address_post_code').filter(name__icontains=query)
+            return BookingAccount.objects.order_by("name", "address_post_code").filter(name__icontains=query)
         return BookingAccount.objects.none()

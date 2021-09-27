@@ -26,19 +26,15 @@ SNS_MESSAGE_TYPE_UNSUB_NOTIFICATION = "UnsubscribeConfirmation"
 
 
 def canonical_message_builder(content, fields):
-    """ Builds the canonical message to be verified.
-        Sorts the fields as a requirement from AWS
-        Args:
-            content (dict): Parsed body of the response
-            format (list): List of the fields that need to go into the message
-        Returns (str):
-            canonical message
+    """Builds the canonical message to be verified.
+    Sorts the fields as a requirement from AWS
+    Args:
+        content (dict): Parsed body of the response
+        format (list): List of the fields that need to go into the message
+    Returns (str):
+        canonical message
     """
-    return ''.join(
-        field + "\n" + content[field] + "\n"
-        for field in sorted(fields)
-        if field in content
-    ).encode('utf-8')
+    return "".join(field + "\n" + content[field] + "\n" for field in sorted(fields) if field in content).encode("utf-8")
 
 
 def verify_sns_notification(request):
@@ -55,14 +51,14 @@ def verify_sns_notification(request):
     try:
         content = json.loads(request.body)
     except json.JSONDecodeError:
-        logger.info('No valid JSON content')
+        logger.info("No valid JSON content")
         return False
 
     decoded_signature = b64decode(content["Signature"])
 
     signing_cert_url = content["SigningCertURL"]
-    if not furl.furl(signing_cert_url).host.endswith('.amazonaws.com'):
-        logger.debug('Ignoring cert URL %s', signing_cert_url)
+    if not furl.furl(signing_cert_url).host.endswith(".amazonaws.com"):
+        logger.debug("Ignoring cert URL %s", signing_cert_url)
         return False
 
     msg_type = request.headers.get("X-Amz-Sns-Message-Type", None)
@@ -72,25 +68,25 @@ def verify_sns_notification(request):
     elif msg_type == SNS_MESSAGE_TYPE_NOTIFICATION:
         canonical_message = canonical_message_builder(content, canonical_notification_format)
     else:
-        logger.info('Invalid Message Type %s', msg_type)
+        logger.info("Invalid Message Type %s", msg_type)
         raise ValueError(f"Message Type {msg_type} is not recognized")
 
     # Load the certificate and extract the public key
     cert = x509.load_pem_x509_certificate(load_resource_cached(signing_cert_url))
     pubkey = cert.public_key()
     try:
-        logger.debug('Verifying message %s', canonical_message)
+        logger.debug("Verifying message %s", canonical_message)
         pubkey.verify(decoded_signature, canonical_message, padding.PKCS1v15(), hashes.SHA1())
-        logger.debug('Valid SNS signature %s with SigningCertURL %s', decoded_signature, signing_cert_url)
+        logger.debug("Valid SNS signature %s with SigningCertURL %s", decoded_signature, signing_cert_url)
         return True
     except InvalidSignature:
-        logger.warn('Invalid SNS sig, decoded_signature=%s, content=%s', decoded_signature, content)
+        logger.warn("Invalid SNS sig, decoded_signature=%s, content=%s", decoded_signature, content)
         return False
 
 
 @lru_cache(maxsize=100)
 def load_resource_cached(url):
-    logger.info(f'Downloading {url}')
+    logger.info(f"Downloading {url}")
     return requests.get(url).content
 
 
@@ -99,11 +95,13 @@ def ensure_from_aws_sns(view_func):
     Checks the signature on the request to ensure it is genuinely
     from Amazon SNS
     """
+
     @wraps(view_func)
     def wrapper(request):
         if not verify_sns_notification(request):
-            return HttpResponse('Invalid or missing signature', status=400)
+            return HttpResponse("Invalid or missing signature", status=400)
         return view_func(request)
+
     return wrapper
 
 
@@ -113,14 +111,16 @@ def confirm_sns_subscriptions(view_func):
     requests that Amazon will send to any webhook we attempt to set up
     for an SNS topic.
     """
+
     @wraps(view_func)
     def wrapper(request):
         msg_type = request.headers.get("X-Amz-Sns-Message-Type", None)
         if msg_type == SNS_MESSAGE_TYPE_SUB_NOTIFICATION:
             subscribe_url = json.loads(request.body)["SubscribeURL"]
-            logger.info(f'Accessing {subscribe_url}')
+            logger.info(f"Accessing {subscribe_url}")
             requests.get(subscribe_url)
-            return HttpResponse('Subscribed')
+            return HttpResponse("Subscribed")
         else:
             return view_func(request)
+
     return wrapper

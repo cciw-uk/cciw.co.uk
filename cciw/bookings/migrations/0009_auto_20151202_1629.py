@@ -7,13 +7,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0008_auto_20150814_1150'),
+        ("bookings", "0008_auto_20150814_1150"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='payment',
-            name='origin_type',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='contenttypes.ContentType'),
+            model_name="payment",
+            name="origin_type",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="contenttypes.ContentType"),
         ),
     ]

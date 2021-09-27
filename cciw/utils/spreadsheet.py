@@ -33,7 +33,7 @@ class ExcelFormatter:
     def ensure_wkbk(self):
         self.ensure_not_pd_writer()
         if self.wkbk is None:
-            self.wkbk = xlwt.Workbook(encoding='utf8')
+            self.wkbk = xlwt.Workbook(encoding="utf8")
 
     def ensure_not_wkbk(self):
         if self.wkbk is not None:

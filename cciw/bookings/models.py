@@ -35,28 +35,29 @@ from .email import send_booking_expiry_mail, send_places_confirmed_email
 
 
 class Sex(models.TextChoices):
-    MALE = 'm', 'Male'
-    FEMALE = 'f', 'Female'
+    MALE = "m", "Male"
+    FEMALE = "f", "Female"
 
 
 # Price types that can be selected in a booking or appear in Prices table.
 class PriceType(models.IntegerChoices):
-    FULL = 0, 'Full price'
-    SECOND_CHILD = 1, '2nd child discount'
-    THIRD_CHILD = 2, '3rd child discount'
-    CUSTOM = 3, 'Custom discount'
-    SOUTH_WALES_TRANSPORT = 4, 'South wales transport surcharge (pre 2015)'
-    DEPOSIT = 5, 'Deposit'
-    EARLY_BIRD_DISCOUNT = 6, 'Early bird discount'
+    FULL = 0, "Full price"
+    SECOND_CHILD = 1, "2nd child discount"
+    THIRD_CHILD = 2, "3rd child discount"
+    CUSTOM = 3, "Custom discount"
+    SOUTH_WALES_TRANSPORT = 4, "South wales transport surcharge (pre 2015)"
+    DEPOSIT = 5, "Deposit"
+    EARLY_BIRD_DISCOUNT = 6, "Early bird discount"
 
 
 BOOKING_PLACE_PRICE_TYPES = [PriceType.FULL, PriceType.SECOND_CHILD, PriceType.THIRD_CHILD, PriceType.CUSTOM]
 
 # Price types that are used by Price model
-VALUED_PRICE_TYPES = (
-    [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceType.CUSTOM] +
-    [PriceType.SOUTH_WALES_TRANSPORT, PriceType.DEPOSIT, PriceType.EARLY_BIRD_DISCOUNT]
-)
+VALUED_PRICE_TYPES = [val for val in BOOKING_PLACE_PRICE_TYPES if val != PriceType.CUSTOM] + [
+    PriceType.SOUTH_WALES_TRANSPORT,
+    PriceType.DEPOSIT,
+    PriceType.EARLY_BIRD_DISCOUNT,
+]
 
 
 # Prices required to open bookings.
@@ -66,41 +67,40 @@ REQUIRED_PRICE_TYPES = [v for v in VALUED_PRICE_TYPES if v != PriceType.SOUTH_WA
 
 
 class BookingState(models.IntegerChoices):
-    INFO_COMPLETE = 0, 'Information complete'
-    APPROVED = 1, 'Manually approved'
-    BOOKED = 2, 'Booked'
-    CANCELLED_DEPOSIT_KEPT = 3, 'Cancelled - deposit kept'
-    CANCELLED_HALF_REFUND = 4, 'Cancelled - half refund (pre 2015 only)'
-    CANCELLED_FULL_REFUND = 5, 'Cancelled - full refund'
+    INFO_COMPLETE = 0, "Information complete"
+    APPROVED = 1, "Manually approved"
+    BOOKED = 2, "Booked"
+    CANCELLED_DEPOSIT_KEPT = 3, "Cancelled - deposit kept"
+    CANCELLED_HALF_REFUND = 4, "Cancelled - half refund (pre 2015 only)"
+    CANCELLED_FULL_REFUND = 5, "Cancelled - full refund"
 
 
 class ManualPaymentType(models.IntegerChoices):
-    CHEQUE = 0, 'Cheque'
-    CASH = 1, 'Cash'
-    ECHEQUE = 2, 'e-Cheque'
-    BACS = 3, 'Bank transfer'
+    CHEQUE = 0, "Cheque"
+    CASH = 1, "Cash"
+    ECHEQUE = 2, "e-Cheque"
+    BACS = 3, "Bank transfer"
 
 
 class NoEditMixin:
     def clean(self):
         retval = super().clean()
         if self.id is not None:
-            raise ValidationError("A {} record cannot be changed "
-                                  "after being created. If an error was made, "
-                                  "delete this record and create a new one. "
-                                  .format(self.__class__._meta.verbose_name))
+            raise ValidationError(
+                "A {} record cannot be changed "
+                "after being created. If an error was made, "
+                "delete this record and create a new one. ".format(self.__class__._meta.verbose_name)
+            )
         return retval
 
     def save(self, **kwargs):
         if self.id is not None:
-            raise Exception("%s cannot be edited after it has been saved to DB" %
-                            self.__class__.__name__)
+            raise Exception(f"{self.__class__.__name__} cannot be edited after it has been saved to DB")
         else:
             return super().save(**kwargs)
 
 
 class PriceQuerySet(models.QuerySet):
-
     def required_for_booking(self):
         return self.filter(price_type__in=REQUIRED_PRICE_TYPES)
 
@@ -116,7 +116,7 @@ class Price(models.Model):
     objects = models.Manager.from_queryset(PriceQuerySet)()
 
     class Meta:
-        unique_together = [('year', 'price_type')]
+        unique_together = [("year", "price_type")]
 
     def __str__(self):
         return f"{self.get_price_type_display()} {self.year} - {self.price}"
@@ -133,6 +133,7 @@ class PriceChecker:
     """
     Utility that looks up prices, with caching to reduce queries
     """
+
     # We don't look up prices immediately, but lazily, because there are
     # quite a few paths that don't need the price at all,
     # and they can happen in a loop e.g. BookingAccount.get_balance_full()
@@ -175,7 +176,7 @@ class CustomAgreementQuerySet(models.QuerySet):
         return self.filter(active=True)
 
     def for_year(self, year):
-        return self.active().filter(year=year).order_by('sort_order')
+        return self.active().filter(year=year).order_by("sort_order")
 
 
 CustomAgreementManager = models.Manager.from_queryset(CustomAgreementQuerySet)
@@ -186,6 +187,7 @@ class CustomAgreement(models.Model):
     Defines an agreement that bookers must sign up to to confirm a booking.
     (in addition to standard ones)
     """
+
     # This was added to cover special situations where we need additional
     # agreements from bookers e.g. changes due to COVID-19
 
@@ -215,12 +217,12 @@ class CustomAgreement(models.Model):
 
     class Meta:
         unique_together = [
-            ['name', 'year'],
+            ["name", "year"],
         ]
-        ordering = ['year', 'sort_order']
+        ordering = ["year", "sort_order"]
 
     def __str__(self):
-        return f'{self.name} ({self.year})'
+        return f"{self.name} ({self.year})"
 
 
 class AgreementFetcher:
@@ -239,54 +241,63 @@ class AgreementFetcher:
 
 class BookingAccountQuerySet(models.QuerySet):
     def not_in_use(self):
-        return self.zero_final_balance().exclude(
-            id__in=Booking.objects.in_use().values_list('account_id', flat=True)
-        )
+        return self.zero_final_balance().exclude(id__in=Booking.objects.in_use().values_list("account_id", flat=True))
 
     def older_than(self, before_datetime):
         """
         Returns BookingAccounts that are considered 'older than' before_datetime
         in terms of when they were last 'used'
         """
-        return self.filter(
-            # last_login/created_at
-            models.ExpressionWrapper(RawSQL('''
+        return (
+            self.filter(
+                # last_login/created_at
+                models.ExpressionWrapper(
+                    RawSQL(
+                        """
               (CASE WHEN bookings_bookingaccount.last_login IS NOT NULL THEN bookings_bookingaccount.last_login
                     ELSE bookings_bookingaccount.created_at
                END) < %s
-              ''', [before_datetime]), output_field=models.BooleanField(),
+              """,
+                        [before_datetime],
+                    ),
+                    output_field=models.BooleanField(),
+                )
             )
-        ).alias(
-            # payments
-            last_payment_at=models.Max('payments__created_at'),
-        ).filter(
-            Q(last_payment_at__isnull=True) | Q(last_payment_at__lt=before_datetime)
-        ).alias(
-            # bookings
-            last_booking_camp_end_date=models.Max('bookings__camp__end_date'),
-        ).filter(
-            Q(last_booking_camp_end_date__isnull=True) | Q(last_booking_camp_end_date__lt=before_datetime)
+            .alias(
+                # payments
+                last_payment_at=models.Max("payments__created_at"),
+            )
+            .filter(Q(last_payment_at__isnull=True) | Q(last_payment_at__lt=before_datetime))
+            .alias(
+                # bookings
+                last_booking_camp_end_date=models.Max("bookings__camp__end_date"),
+            )
+            .filter(Q(last_booking_camp_end_date__isnull=True) | Q(last_booking_camp_end_date__lt=before_datetime))
         )
 
     def _with_total_amount_due(self):
-        return self.alias(total_amount_due=functions.Coalesce(
-            models.Sum(
-                'bookings__amount_due',
-                filter=~Q(bookings__state__in=[
-                    BookingState.CANCELLED_FULL_REFUND,
-                    BookingState.INFO_COMPLETE,
-                ]),
-            ),
-            models.Value(Decimal(0)),
-        ))
+        return self.alias(
+            total_amount_due=functions.Coalesce(
+                models.Sum(
+                    "bookings__amount_due",
+                    filter=~Q(
+                        bookings__state__in=[
+                            BookingState.CANCELLED_FULL_REFUND,
+                            BookingState.INFO_COMPLETE,
+                        ]
+                    ),
+                ),
+                models.Value(Decimal(0)),
+            )
+        )
 
     def zero_final_balance(self):
         # See also below
-        return self._with_total_amount_due().filter(total_amount_due=models.F('total_received'))
+        return self._with_total_amount_due().filter(total_amount_due=models.F("total_received"))
 
     def non_zero_final_balance(self):
         # See also above
-        return self._with_total_amount_due().exclude(total_amount_due=models.F('total_received'))
+        return self._with_total_amount_due().exclude(total_amount_due=models.F("total_received"))
 
 
 class BookingAccountManagerBase(models.Manager):
@@ -317,7 +328,8 @@ class BookingAccountManagerBase(models.Manager):
 BookingAccountManager = BookingAccountManagerBase.from_queryset(BookingAccountQuerySet)
 
 
-MAILCHIMP_NOTICE = mark_safe("""<span class='mailchimp-notice'>We use a third party email service provider,
+MAILCHIMP_NOTICE = mark_safe(
+    """<span class='mailchimp-notice'>We use a third party email service provider,
 MailChimp, to send you these newsletter emails. We provide MailChimp with only
 your email address. MailChimp treats information about you in accordance with
 the provisions of its <a href='https://mailchimp.com/legal/privacy/'>Privacy
@@ -326,7 +338,8 @@ beacons, in the emails that are sent through MailChimp. These technologies allow
 MailChimp to track whether you have opened or clicked on our emails and if so,
 the date, time, and IP address associated with the open and/or click. For more
 information on MailChimp's use of these technologies, you can read their <a
-href='https://mailchimp.com/legal/cookies/'>Cookie Statement</a>.</span>""")
+href='https://mailchimp.com/legal/cookies/'>Cookie Statement</a>.</span>"""
+)
 
 
 class BookingAccount(models.Model):
@@ -343,15 +356,21 @@ class BookingAccount(models.Model):
     address_country = CountryField("country", null=True, blank=True)
     address_post_code = models.CharField("post code", blank=True, max_length=10)
     phone_number = models.CharField(blank=True, max_length=22)
-    share_phone_number = models.BooleanField("Allow this phone number to be passed on "
-                                             "to other parents to help organise transport",
-                                             blank=True, default=False)
-    email_communication = models.BooleanField("Receive all communication from CCiW by email where possible", blank=True, default=True)
-    subscribe_to_mailings = models.BooleanField("Receive mailings about future camps",
-                                                default=None, blank=True, null=True)
-    subscribe_to_newsletter = models.BooleanField("Subscribe to email newsletter", default=False,
-                                                  help_text=MAILCHIMP_NOTICE)
-    total_received = models.DecimalField(default=Decimal('0.00'), decimal_places=2, max_digits=10)
+    share_phone_number = models.BooleanField(
+        "Allow this phone number to be passed on " "to other parents to help organise transport",
+        blank=True,
+        default=False,
+    )
+    email_communication = models.BooleanField(
+        "Receive all communication from CCiW by email where possible", blank=True, default=True
+    )
+    subscribe_to_mailings = models.BooleanField(
+        "Receive mailings about future camps", default=None, blank=True, null=True
+    )
+    subscribe_to_newsletter = models.BooleanField(
+        "Subscribe to email newsletter", default=False, help_text=MAILCHIMP_NOTICE
+    )
+    total_received = models.DecimalField(default=Decimal("0.00"), decimal_places=2, max_digits=10)
     created_at = models.DateTimeField(blank=False)
     first_login = models.DateTimeField(null=True, blank=True)
     last_login = models.DateTimeField(null=True, blank=True)
@@ -362,12 +381,10 @@ class BookingAccount(models.Model):
     objects = BookingAccountManager()
 
     def has_account_details(self):
-        return not any(att == "" for att in
-                       [self.name,
-                        self.address_line1,
-                        self.address_city,
-                        self.address_country,
-                        self.address_post_code])
+        return not any(
+            att == ""
+            for att in [self.name, self.address_line1, self.address_city, self.address_country, self.address_post_code]
+        )
 
     def __str__(self):
         out = []
@@ -388,8 +405,7 @@ class BookingAccount(models.Model):
             self.created_at = timezone.now()
             return super().save(**kwargs)
         else:
-            update_fields = [f.name for f in self._meta.fields if
-                             f.name != 'id' and f.name != 'total_received']
+            update_fields = [f.name for f in self._meta.fields if f.name != "id" and f.name != "total_received"]
             return super().save(update_fields=update_fields, **kwargs)
 
     # Business methods:
@@ -409,32 +425,33 @@ class BookingAccount(models.Model):
         today = date.today()
         # Use of _prefetched_objects_cache is necessary to support the
         # booking_secretary_reports view efficiently
-        if hasattr(self, '_prefetched_objects_cache') and 'bookings' in self._prefetched_objects_cache:
+        if hasattr(self, "_prefetched_objects_cache") and "bookings" in self._prefetched_objects_cache:
             payable_bookings = [
-                booking for booking in self._prefetched_objects_cache['bookings']
+                booking
+                for booking in self._prefetched_objects_cache["bookings"]
                 if booking.is_payable(confirmed_only=confirmed_only)
             ]
         else:
             payable_bookings = list(self.bookings.payable(confirmed_only=confirmed_only))
 
-        total = Decimal('0.00')
+        total = Decimal("0.00")
         for booking in payable_bookings:
-            total += booking.amount_now_due(today,
-                                            allow_deposits=allow_deposits,
-                                            price_checker=price_checker)
+            total += booking.amount_now_due(today, allow_deposits=allow_deposits, price_checker=price_checker)
 
         return total - self.total_received
 
     def get_balance_full(self, *, price_checker: Optional[PriceChecker] = None):
-        return self.get_balance(confirmed_only=False, allow_deposits=False,
-                                price_checker=price_checker or PriceChecker())
+        return self.get_balance(
+            confirmed_only=False, allow_deposits=False, price_checker=price_checker or PriceChecker()
+        )
 
     def get_balance_due_now(self, *, price_checker: PriceChecker):
         return self.get_balance(confirmed_only=False, allow_deposits=True, price_checker=price_checker)
 
     def admin_balance(self):
         return self.get_balance_full()
-    admin_balance.short_description = 'balance'
+
+    admin_balance.short_description = "balance"
     admin_balance = property(admin_balance)
 
     def receive_payment(self, amount):
@@ -506,7 +523,7 @@ class BookingAccount(models.Model):
         # payment object which triggers the process.
 
         # Use update and F objects to avoid concurrency problems
-        BookingAccount.objects.filter(id=self.id).update(total_received=models.F('total_received') + amount)
+        BookingAccount.objects.filter(id=self.id).update(total_received=models.F("total_received") + amount)
 
         # Need new data from DB:
         acc = BookingAccount.objects.get(id=self.id)
@@ -521,12 +538,13 @@ class BookingAccount(models.Model):
         """
         # To satisfy PriceChecker performance requirements it's easier
         # to get all bookings up front:
-        all_payable_bookings = list(self.bookings.payable(confirmed_only=False).select_related('camp'))
+        all_payable_bookings = list(self.bookings.payable(confirmed_only=False).select_related("camp"))
 
         # Bookings we might want to confirm.
         # Order by booking_expires ascending i.e. earliest first.
-        candidate_bookings = sorted((b for b in all_payable_bookings if b.is_booked and not b.is_confirmed),
-                                    key=lambda b: b.booking_expires)
+        candidate_bookings = sorted(
+            (b for b in all_payable_bookings if b.is_booked and not b.is_confirmed), key=lambda b: b.booking_expires
+        )
         price_checker = PriceChecker(expected_years=[b.camp.year for b in all_payable_bookings])
         confirmed_bookings = []
         # In order to distribute funds, need to take into account the total
@@ -557,27 +575,31 @@ class BookingAccount(models.Model):
             custom=custom,
         )
         pending_payments = all_payments.filter(
-            payment_status='Pending',
+            payment_status="Pending",
             payment_date__gt=now - timedelta(days=3 * 30),  # old ones don't count
         )
         completed_payments = all_payments.filter(
-            payment_status='Completed',
+            payment_status="Completed",
         )
-        uncompleted_pending_payments = pending_payments.exclude(
-            txn_id__in=[ipn.txn_id for ipn in completed_payments])
+        uncompleted_pending_payments = pending_payments.exclude(txn_id__in=[ipn.txn_id for ipn in completed_payments])
 
-        total = uncompleted_pending_payments.aggregate(total=models.Sum('mc_gross'))['total']
+        total = uncompleted_pending_payments.aggregate(total=models.Sum("mc_gross"))["total"]
         if total is None:
-            return Decimal('0.00')
+            return Decimal("0.00")
         return total
 
     def get_address_display(self):
-        return "\n".join(v for v in [self.address_line1,
-                                     self.address_line2,
-                                     self.address_city,
-                                     self.address_county,
-                                     self.address_country.code if self.address_country else None,
-                                     ] if v)
+        return "\n".join(
+            v
+            for v in [
+                self.address_line1,
+                self.address_line2,
+                self.address_city,
+                self.address_county,
+                self.address_country.code if self.address_country else None,
+            ]
+            if v
+        )
 
     @property
     def include_in_mailings(self):
@@ -591,11 +613,10 @@ class BookingAccount(models.Model):
 
 
 class Array(models.Func):
-    function = 'ARRAY'
+    function = "ARRAY"
 
 
 class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
-
     def for_year(self, year):
         return self.filter(camp__year__exact=year)
 
@@ -616,12 +637,10 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
         return self.in_basket() | self.booked()
 
     def confirmed(self):
-        return self.filter(state=BookingState.BOOKED,
-                           booking_expires__isnull=True)
+        return self.filter(state=BookingState.BOOKED, booking_expires__isnull=True)
 
     def unconfirmed(self):
-        return self.filter(state=BookingState.BOOKED,
-                           booking_expires__isnull=False)
+        return self.filter(state=BookingState.BOOKED, booking_expires__isnull=False)
 
     def payable(self, *, confirmed_only: bool):
         """
@@ -635,31 +654,39 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
 
         # 'Full refund' cancelled bookings do not have payment expected, but the
         # others do.
-        return (self.filter(state__in=[BookingState.CANCELLED_DEPOSIT_KEPT,
-                                       BookingState.CANCELLED_HALF_REFUND]) |
-                (self.confirmed() if confirmed_only else self.booked()))
+        return self.filter(state__in=[BookingState.CANCELLED_DEPOSIT_KEPT, BookingState.CANCELLED_HALF_REFUND]) | (
+            self.confirmed() if confirmed_only else self.booked()
+        )
 
     def cancelled(self):
-        return self.filter(state__in=[BookingState.CANCELLED_DEPOSIT_KEPT,
-                                      BookingState.CANCELLED_HALF_REFUND,
-                                      BookingState.CANCELLED_FULL_REFUND])
+        return self.filter(
+            state__in=[
+                BookingState.CANCELLED_DEPOSIT_KEPT,
+                BookingState.CANCELLED_HALF_REFUND,
+                BookingState.CANCELLED_FULL_REFUND,
+            ]
+        )
 
     def need_approving(self):
         # See also Booking.approval_reasons()
-        qs = self.filter(state=BookingState.INFO_COMPLETE).select_related('camp')
+        qs = self.filter(state=BookingState.INFO_COMPLETE).select_related("camp")
         qs_custom_price = qs.filter(price_type=PriceType.CUSTOM)
         qs_serious_illness = qs.filter(serious_illness=True)
         # For -08-31 date:
         # See also PreserveAgeOnCamp.build_update_dict()
         # See also Booking.age_on_camp()
-        qs_too_young = qs.extra(where=[
-            """ "bookings_booking"."date_of_birth" > """
-            """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."minimum_age") as text) || '-08-31')"""
-        ])
-        qs_too_old = qs.extra(where=[
-            """ "bookings_booking"."date_of_birth" <= """
-            """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."maximum_age" - 1) as text) || '-08-31')"""
-        ])
+        qs_too_young = qs.extra(
+            where=[
+                """ "bookings_booking"."date_of_birth" > """
+                """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."minimum_age") as text) || '-08-31')"""
+            ]
+        )
+        qs_too_old = qs.extra(
+            where=[
+                """ "bookings_booking"."date_of_birth" <= """
+                """ date(CAST(("cciwmain_camp"."year" - "cciwmain_camp"."maximum_age" - 1) as text) || '-08-31')"""
+            ]
+        )
         qs = qs_custom_price | qs_serious_illness | qs_too_old | qs_too_young
         return qs
 
@@ -676,7 +703,7 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
     def _agreements_complete_Q(self):
         return Q(
             custom_agreements_checked__contains=Array(
-                CustomAgreement.objects.active().for_year(models.OuterRef('camp__year')).values_list('id')
+                CustomAgreement.objects.active().for_year(models.OuterRef("camp__year")).values_list("id")
             )
         )
 
@@ -690,18 +717,15 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
 
     # Performance
     def with_prefetch_camp_info(self):
-        return self.select_related(
-            'camp',
-            'camp__camp_name',
-            'camp__chaplain',
-        ).prefetch_related(
-            'camp__leaders',
+        return self.select_related("camp", "camp__camp_name", "camp__chaplain",).prefetch_related(
+            "camp__leaders",
         )
 
     def with_prefetch_missing_agreements(self, agreement_fetcher):
         def add_missing_agreements(booking_list):
             for booking in booking_list:
                 booking.missing_agreements = booking.get_missing_agreements(agreement_fetcher=agreement_fetcher)
+
         return self.register_after_fetch_callback(add_missing_agreements)
 
     # Data retention
@@ -720,33 +744,23 @@ class BookingQuerySet(AfterFetchQuerySetMixin, models.QuerySet):
 
     def older_than(self, before_datetime):
         return self.filter(
-            Q(created_at__lt=before_datetime) & Q(
-                Q(camp__isnull=True) | Q(camp__end_date__lt=before_datetime)
-            )
+            Q(created_at__lt=before_datetime) & Q(Q(camp__isnull=True) | Q(camp__end_date__lt=before_datetime))
         )
 
 
 class BookingManagerBase(models.Manager):
-
     def get_queryset(self):
-        return super().get_queryset().select_related(
-            'camp',
-            'account'
-        )
+        return super().get_queryset().select_related("camp", "account")
 
 
 BookingManager = BookingManagerBase.from_queryset(BookingQuerySet)
 
 
 class Booking(models.Model):
-    account = models.ForeignKey(BookingAccount,
-                                on_delete=models.PROTECT,
-                                related_name='bookings')
+    account = models.ForeignKey(BookingAccount, on_delete=models.PROTECT, related_name="bookings")
 
     # Booking details - from user
-    camp = models.ForeignKey(Camp,
-                             on_delete=models.PROTECT,
-                             related_name='bookings')
+    camp = models.ForeignKey(Camp, on_delete=models.PROTECT, related_name="bookings")
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     sex = models.CharField(max_length=1, choices=Sex.choices)
@@ -761,8 +775,7 @@ class Booking(models.Model):
     phone_number = models.CharField(blank=True, max_length=22)
     email = models.EmailField(blank=True)
     church = models.CharField("name of church", max_length=100, blank=True)
-    south_wales_transport = models.BooleanField("require transport from South Wales",
-                                                blank=True, default=False)
+    south_wales_transport = models.BooleanField("require transport from South Wales", blank=True, default=False)
 
     # Contact - from user
     contact_name = models.CharField("contact name", max_length=255, blank=True)
@@ -793,8 +806,7 @@ class Booking(models.Model):
     allergies = models.TextField(blank=True)
     regular_medication_required = models.TextField(blank=True)
     illnesses = models.TextField("Medical conditions", blank=True)
-    can_swim_25m = models.BooleanField(blank=True, default=False,
-                                       verbose_name="Can the camper swim 25m?")
+    can_swim_25m = models.BooleanField(blank=True, default=False, verbose_name="Can the camper swim 25m?")
     learning_difficulties = models.TextField(blank=True)
     serious_illness = models.BooleanField(blank=True, default=False)
 
@@ -812,8 +824,7 @@ class Booking(models.Model):
         models.IntegerField(),
         default=list,
         blank=True,
-        help_text="Comma separated list of IDs of custom agreements "
-        "the user has agreed to."
+        help_text="Comma separated list of IDs of custom agreements " "the user has agreed to.",
     )
 
     # Price - partly from user (must fit business rules)
@@ -823,17 +834,19 @@ class Booking(models.Model):
     amount_due = models.DecimalField(decimal_places=2, max_digits=10)
 
     # State - user driven
-    shelved = models.BooleanField(default=False,
-                                  help_text="Used by user to put on 'shelf'")
+    shelved = models.BooleanField(default=False, help_text="Used by user to put on 'shelf'")
 
     # State - internal
-    state = models.IntegerField(choices=BookingState.choices,
-                                help_text=mark_safe(
-                                    "<ul>"
-                                    "<li>To book, set to 'Booked' <b>and</b> ensure 'Booking expires' is empty</li>"
-                                    "<li>For people paying online who have been stopped (e.g. due to having a custom discount or serious illness or child too young etc.), set to 'Manually approved' to allow them to book and pay</li>"
-                                    "<li>If there are queries before it can be booked, set to 'Information complete'</li>"
-                                    "</ul>"))
+    state = models.IntegerField(
+        choices=BookingState.choices,
+        help_text=mark_safe(
+            "<ul>"
+            "<li>To book, set to 'Booked' <b>and</b> ensure 'Booking expires' is empty</li>"
+            "<li>For people paying online who have been stopped (e.g. due to having a custom discount or serious illness or child too young etc.), set to 'Manually approved' to allow them to book and pay</li>"
+            "<li>If there are queries before it can be booked, set to 'Information complete'</li>"
+            "</ul>"
+        ),
+    )
 
     created_at = models.DateTimeField(default=timezone.now)
     booking_expires = models.DateTimeField(null=True, blank=True)
@@ -844,8 +857,8 @@ class Booking(models.Model):
     objects = BookingManager()
 
     class Meta:
-        ordering = ['-created_at']
-        base_manager_name = 'objects'
+        ordering = ["-created_at"]
+        base_manager_name = "objects"
 
     # Methods
 
@@ -857,7 +870,9 @@ class Booking(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     # Main business rules here
-    def save_for_account(self, *, account: BookingAccount, state_was_booked: bool, custom_agreements: list[CustomAgreement] = None):
+    def save_for_account(
+        self, *, account: BookingAccount, state_was_booked: bool, custom_agreements: list[CustomAgreement] = None
+    ):
         """
         Saves the booking for an account that is creating/editing online
         """
@@ -874,9 +889,9 @@ class Booking(models.Model):
 
     def is_payable(self, *, confirmed_only: bool):
         # See also BookingQuerySet.payable()
-        return (self.state in [BookingState.CANCELLED_DEPOSIT_KEPT,
-                               BookingState.CANCELLED_HALF_REFUND] or
-                (self.is_confirmed if confirmed_only else self.is_booked))
+        return self.state in [BookingState.CANCELLED_DEPOSIT_KEPT, BookingState.CANCELLED_HALF_REFUND] or (
+            self.is_confirmed if confirmed_only else self.is_booked
+        )
 
     @property
     def is_booked(self):
@@ -890,22 +905,18 @@ class Booking(models.Model):
         if self.price_type == PriceType.CUSTOM:
             return None
         if self.state == BookingState.CANCELLED_DEPOSIT_KEPT:
-            return Price.objects.get(year=self.camp.year,
-                                     price_type=PriceType.DEPOSIT).price
+            return Price.objects.get(year=self.camp.year, price_type=PriceType.DEPOSIT).price
         elif self.state == BookingState.CANCELLED_FULL_REFUND:
-            return Decimal('0.00')
+            return Decimal("0.00")
         else:
-            amount = Price.objects.get(year=self.camp.year,
-                                       price_type=self.price_type).price
+            amount = Price.objects.get(year=self.camp.year, price_type=self.price_type).price
             # For booking 2015 and later, this is not needed, but it kept in
             # case we need to query the expected amount due for older bookings.
             if self.south_wales_transport:
-                amount += Price.objects.get(price_type=PriceType.SOUTH_WALES_TRANSPORT,
-                                            year=self.camp.year).price
+                amount += Price.objects.get(price_type=PriceType.SOUTH_WALES_TRANSPORT, year=self.camp.year).price
 
             if self.early_bird_discount:
-                amount -= Price.objects.get(price_type=PriceType.EARLY_BIRD_DISCOUNT,
-                                            year=self.camp.year).price
+                amount -= Price.objects.get(price_type=PriceType.EARLY_BIRD_DISCOUNT, year=self.camp.year).price
 
             # For booking 2015 and later, there are no half refunds,
             # but this is kept in in case we need to query the expected amount due for older
@@ -920,7 +931,7 @@ class Booking(models.Model):
         if amount is None:
             # This happens for PriceType.CUSTOM
             if self.amount_due is None:
-                self.amount_due = Decimal('0.00')
+                self.amount_due = Decimal("0.00")
             # Otherwise - should leave as it was.
         else:
             self.amount_due = amount
@@ -949,8 +960,7 @@ class Booking(models.Model):
         """
         if self.early_bird_discount or self.price_type == PriceType.CUSTOM:
             return Decimal(0)  # Got the discount, or it wasn't available.
-        return Price.objects.get(price_type=PriceType.EARLY_BIRD_DISCOUNT,
-                                 year=self.camp.year).price
+        return Price.objects.get(price_type=PriceType.EARLY_BIRD_DISCOUNT, year=self.camp.year).price
 
     def age_on_camp(self):
         return relativedelta(self.age_base_date(), self.date_of_birth).years
@@ -986,8 +996,7 @@ class Booking(models.Model):
     def get_available_discounts(self, now):
         retval = []
         if self.can_have_early_bird_discount(booked_at=now):
-            discount_amount = Price.objects.get(year=self.camp.year,
-                                                price_type=PriceType.EARLY_BIRD_DISCOUNT).price
+            discount_amount = Price.objects.get(year=self.camp.year, price_type=PriceType.EARLY_BIRD_DISCOUNT).price
             if discount_amount > 0:
                 retval.append(("Early bird discount if booked now", discount_amount))
         return retval
@@ -1007,8 +1016,10 @@ class Booking(models.Model):
         if self.state == BookingState.APPROVED and not booking_sec:
             return ([], [])
 
-        return (self.get_booking_errors(booking_sec=booking_sec, agreement_fetcher=agreement_fetcher),
-                self.get_booking_warnings(booking_sec=booking_sec))
+        return (
+            self.get_booking_errors(booking_sec=booking_sec, agreement_fetcher=agreement_fetcher),
+            self.get_booking_warnings(booking_sec=booking_sec),
+        )
 
     def get_booking_errors(self, booking_sec=False, agreement_fetcher=None):
         errors = []
@@ -1018,10 +1029,12 @@ class Booking(models.Model):
             errors.append("A custom discount needs to be arranged by the booking secretary")
 
         relevant_bookings = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
-        relevant_bookings_excluding_self = relevant_bookings.exclude(first_name=self.first_name,
-                                                                     last_name=self.last_name)
-        relevant_bookings_limited_to_self = relevant_bookings.filter(first_name=self.first_name,
-                                                                     last_name=self.last_name)
+        relevant_bookings_excluding_self = relevant_bookings.exclude(
+            first_name=self.first_name, last_name=self.last_name
+        )
+        relevant_bookings_limited_to_self = relevant_bookings.filter(
+            first_name=self.first_name, last_name=self.last_name
+        )
 
         # 2nd/3rd child discounts
 
@@ -1079,20 +1092,23 @@ class Booking(models.Model):
         # This is not exactly correct, but allows all legitimate discounts.
 
         if self.price_type == PriceType.SECOND_CHILD:
-            if not (relevant_bookings_excluding_self
-                    .filter(price_type=PriceType.FULL)
-                    ).exists():
-                errors.append("You cannot use a 2nd child discount unless you have "
-                              "another child at full price. Please edit the place details "
-                              "and choose an appropriate price type.")
+            if not (relevant_bookings_excluding_self.filter(price_type=PriceType.FULL)).exists():
+                errors.append(
+                    "You cannot use a 2nd child discount unless you have "
+                    "another child at full price. Please edit the place details "
+                    "and choose an appropriate price type."
+                )
 
         if self.price_type == PriceType.THIRD_CHILD:
-            qs = (relevant_bookings_excluding_self.filter(price_type=PriceType.FULL) |
-                  relevant_bookings_excluding_self.filter(price_type=PriceType.SECOND_CHILD))
+            qs = relevant_bookings_excluding_self.filter(
+                price_type=PriceType.FULL
+            ) | relevant_bookings_excluding_self.filter(price_type=PriceType.SECOND_CHILD)
             if qs.count() < 2:
-                errors.append("You cannot use a 3rd child discount unless you have "
-                              "two other children without this discount. Please edit the "
-                              "place details and choose an appropriate price type.")
+                errors.append(
+                    "You cannot use a 3rd child discount unless you have "
+                    "two other children without this discount. Please edit the "
+                    "place details and choose an appropriate price type."
+                )
 
         if self.price_type in [PriceType.SECOND_CHILD, PriceType.THIRD_CHILD]:
             qs = relevant_bookings_limited_to_self
@@ -1108,10 +1124,14 @@ class Booking(models.Model):
         camper_age = self.age_on_camp()
         age_base = self.age_base_date().strftime("%e %B %Y")
         if self.is_too_young():
-            errors.append(f"Camper will be {camper_age} which is below the minimum age ({self.camp.minimum_age}) on {age_base}")
+            errors.append(
+                f"Camper will be {camper_age} which is below the minimum age ({self.camp.minimum_age}) on {age_base}"
+            )
 
         if self.is_too_old():
-            errors.append(f"Camper will be {camper_age} which is above the maximum age ({self.camp.maximum_age}) on {age_base}")
+            errors.append(
+                f"Camper will be {camper_age} which is above the maximum age ({self.camp.maximum_age}) on {age_base}"
+            )
 
         # Check place availability
         places_left, places_left_male, places_left_female = self.camp.get_places_left()
@@ -1124,11 +1144,11 @@ class Booking(models.Model):
         def no_places_available_message(msg):
             # Add a common message to each different "no places available" message
             return format_html(
-                '''{0}
+                """{0}
                 You can <a href="{1}" target="_new">contact the booking secretary</a>
-                to be put on a waiting list. ''',
+                to be put on a waiting list. """,
                 msg,
-                reverse('cciw-contact_us-send') + '?bookings'
+                reverse("cciw-contact_us-send") + "?bookings",
             )
 
         # Simple - no places left
@@ -1137,15 +1157,16 @@ class Booking(models.Model):
             places_available = False
 
         SEXES = [
-            (Sex.MALE, 'boys', places_left_male),
-            (Sex.FEMALE, 'girls', places_left_female),
+            (Sex.MALE, "boys", places_left_male),
+            (Sex.FEMALE, "girls", places_left_female),
         ]
 
         if places_available:
             for sex_const, sex_label, places_left_for_sex in SEXES:
                 if self.sex == sex_const and places_left_for_sex <= 0:
-                    errors.append(no_places_available_message(
-                        f"There are no places left for {sex_label} on this camp."))
+                    errors.append(
+                        no_places_available_message(f"There are no places left for {sex_label} on this camp.")
+                    )
                     places_available = False
                     break
 
@@ -1157,27 +1178,31 @@ class Booking(models.Model):
             places_to_be_booked = len(same_camp_bookings)
 
             if places_left < places_to_be_booked:
-                errors.append(no_places_available_message(
-                    "There are not enough places left on this camp "
-                    "for the campers in this set of bookings."))
+                errors.append(
+                    no_places_available_message(
+                        "There are not enough places left on this camp " "for the campers in this set of bookings."
+                    )
+                )
                 places_available = False
 
             if places_available:
                 for sex_const, sex_label, places_left_for_sex in SEXES:
                     if self.sex == sex_const:
-                        places_to_be_booked_for_sex = len([
-                            b for b in same_camp_bookings
-                            if b.sex == sex_const
-                        ])
+                        places_to_be_booked_for_sex = len([b for b in same_camp_bookings if b.sex == sex_const])
                         if places_left_for_sex < places_to_be_booked_for_sex:
-                            errors.append(no_places_available_message(
-                                f"There are not enough places for {sex_label} left on this camp "
-                                "for the campers in this set of bookings."))
+                            errors.append(
+                                no_places_available_message(
+                                    f"There are not enough places for {sex_label} left on this camp "
+                                    "for the campers in this set of bookings."
+                                )
+                            )
                             places_available = False
                             break
 
         if self.south_wales_transport and not self.camp.south_wales_transport_available:
-            errors.append("Transport from South Wales is not available for this camp, or all places have been taken already.")
+            errors.append(
+                "Transport from South Wales is not available for this camp, or all places have been taken already."
+            )
 
         if booking_sec and self.price_type != PriceType.CUSTOM:
             expected_amount = self.expected_amount_due()
@@ -1210,10 +1235,14 @@ class Booking(models.Model):
     def get_booking_warnings(self, booking_sec=False):
         warnings = []
 
-        if self.account.bookings.filter(first_name=self.first_name, last_name=self.last_name, camp=self.camp).exclude(id=self.id):
-            warnings.append(f"You have entered another set of place details for a camper "
-                            f"called '{self.name}' on camp {self.camp.name}. Please ensure you don't book multiple "
-                            f"places for the same camper!")
+        if self.account.bookings.filter(first_name=self.first_name, last_name=self.last_name, camp=self.camp).exclude(
+            id=self.id
+        ):
+            warnings.append(
+                f"You have entered another set of place details for a camper "
+                f"called '{self.name}' on camp {self.camp.name}. Please ensure you don't book multiple "
+                f"places for the same camper!"
+            )
 
         relevant_bookings = self.account.bookings.for_year(self.camp.year).in_basket_or_booked()
 
@@ -1221,10 +1250,12 @@ class Booking(models.Model):
             full_pricers = relevant_bookings.filter(price_type=PriceType.FULL)
             names = sorted({b.name for b in full_pricers})
             if len(names) > 1:
-                pretty_names = ', '.join(names[1:]) + " and " + names[0]
+                pretty_names = ", ".join(names[1:]) + " and " + names[0]
                 warning = "You have multiple places at 'Full price'. "
                 if len(names) == 2:
-                    warning += f"If {pretty_names} are from the same family, one is eligible for the 2nd child discount."
+                    warning += (
+                        f"If {pretty_names} are from the same family, one is eligible for the 2nd child discount."
+                    )
                 else:
                     warning += f"If {pretty_names} are from the same family, one or more is eligible for the 2nd or 3rd child discounts."
 
@@ -1234,14 +1265,17 @@ class Booking(models.Model):
             second_childers = relevant_bookings.filter(price_type=PriceType.SECOND_CHILD)
             names = sorted({b.name for b in second_childers})
             if len(names) > 1:
-                pretty_names = ', '.join(names[1:]) + " and " + names[0]
+                pretty_names = ", ".join(names[1:]) + " and " + names[0]
                 warning = "You have multiple places at '2nd child discount'. "
                 if len(names) == 2:
-                    warning += (f"If {pretty_names} are from the same family, one is eligible "
-                                f"for the 3rd child discount.")
+                    warning += (
+                        f"If {pretty_names} are from the same family, one is eligible " f"for the 3rd child discount."
+                    )
                 else:
-                    warning += (f"If {pretty_names} are from the same family, {len(names) - 1} are eligible "
-                                f"for the 3rd child discount.")
+                    warning += (
+                        f"If {pretty_names} are from the same family, {len(names) - 1} are eligible "
+                        f"for the 3rd child discount."
+                    )
 
                 warnings.append(warning)
 
@@ -1272,8 +1306,7 @@ class Booking(models.Model):
         self.save()
 
     def is_user_editable(self):
-        return (self.state == BookingState.INFO_COMPLETE or
-                self.state == BookingState.BOOKED and self.missing_agreements)
+        return self.state == BookingState.INFO_COMPLETE or self.state == BookingState.BOOKED and self.missing_agreements
 
     def is_custom_discount(self):
         return self.price_type == PriceType.CUSTOM
@@ -1298,32 +1331,47 @@ class Booking(models.Model):
             return self.account.email
 
     def get_address_display(self):
-        return "\n".join(v for v in [self.address_line1,
-                                     self.address_line2,
-                                     self.address_city,
-                                     self.address_county,
-                                     self.address_country.code if self.address_country else None,
-                                     self.address_post_code,
-                                     ] if v)
+        return "\n".join(
+            v
+            for v in [
+                self.address_line1,
+                self.address_line2,
+                self.address_city,
+                self.address_county,
+                self.address_country.code if self.address_country else None,
+                self.address_post_code,
+            ]
+            if v
+        )
 
     def get_contact_address_display(self):
-        return "\n".join(v for v in [self.contact_name,
-                                     self.contact_line1,
-                                     self.contact_line2,
-                                     self.contact_city,
-                                     self.contact_county,
-                                     self.contact_country.code if self.contact_country else None,
-                                     self.contact_post_code,
-                                     ] if v)
+        return "\n".join(
+            v
+            for v in [
+                self.contact_name,
+                self.contact_line1,
+                self.contact_line2,
+                self.contact_city,
+                self.contact_county,
+                self.contact_country.code if self.contact_country else None,
+                self.contact_post_code,
+            ]
+            if v
+        )
 
     def get_gp_address_display(self):
-        return "\n".join(v for v in [self.gp_line1,
-                                     self.gp_line2,
-                                     self.gp_city,
-                                     self.gp_county,
-                                     self.gp_country.code if self.gp_country else None,
-                                     self.gp_post_code,
-                                     ] if v)
+        return "\n".join(
+            v
+            for v in [
+                self.gp_line1,
+                self.gp_line2,
+                self.gp_city,
+                self.gp_county,
+                self.gp_country.code if self.gp_country else None,
+                self.gp_post_code,
+            ]
+            if v
+        )
 
 
 @transaction.atomic
@@ -1342,7 +1390,7 @@ def book_basket_now(bookings):
 
     years = {b.camp.year for b in bookings}
     if len(years) != 1:
-        raise AssertionError(f'Expected 1 year in basket, found {years}')
+        raise AssertionError(f"Expected 1 year in basket, found {years}")
 
     # Serialize access to this function, to stop more places than available
     # being booked:
@@ -1385,17 +1433,16 @@ def early_bird_is_available(year, booked_at_date):
 
 def any_bookings_possible(year):
     camps = Camp.objects.filter(year=year)
-    return any(c.get_places_left()[0] > 0 and c.is_open_for_bookings
-               for c in camps)
+    return any(c.get_places_left()[0] > 0 and c.is_open_for_bookings for c in camps)
 
 
 def is_booking_open(year):
     """
     When passed a given year, returns True if booking is open.
     """
-    return ((Price.objects.required_for_booking().filter(year=year).count() ==
-             len(REQUIRED_PRICE_TYPES)) and
-            Camp.objects.filter(year=year).exists())
+    return (
+        Price.objects.required_for_booking().filter(year=year).count() == len(REQUIRED_PRICE_TYPES)
+    ) and Camp.objects.filter(year=year).exists()
 
 
 is_booking_open_thisyear = lambda: is_booking_open(common.get_thisyear())
@@ -1408,9 +1455,9 @@ def booking_report_by_camp(year):
       confirmed_bookings_boys
       confirmed_bookings_girls
     """
-    camps = Camp.objects.filter(year=year).prefetch_related(Prefetch('bookings',
-                                                                     queryset=Booking.objects.booked(),
-                                                                     to_attr='booked_places'))
+    camps = Camp.objects.filter(year=year).prefetch_related(
+        Prefetch("bookings", queryset=Booking.objects.booked(), to_attr="booked_places")
+    )
     # Do some filtering in Python to avoid multiple db hits
     for c in camps:
         c.confirmed_bookings = [b for b in c.booked_places if b.is_confirmed]
@@ -1440,12 +1487,8 @@ def outstanding_bookings_with_fees(year):
     #
     # People in group 2b) possibly need to be chased. They are not highlighted here - TODO
 
-    bookings = bookings.order_by('account__name', 'account__id', 'first_name', 'last_name')
-    bookings = list(
-        bookings
-        .select_related('camp__camp_name', 'account')
-        .prefetch_related('account__bookings__camp')
-    )
+    bookings = bookings.order_by("account__name", "account__id", "first_name", "last_name")
+    bookings = list(bookings.select_related("camp__camp_name", "account").prefetch_related("account__bookings__camp"))
 
     counts = defaultdict(int)
     for b in bookings:
@@ -1455,13 +1498,13 @@ def outstanding_bookings_with_fees(year):
     outstanding = []
     for b in bookings:
         b.count_for_account = counts[b.account_id]
-        if not hasattr(b.account, 'calculated_balance'):
-            b.account.calculated_balance = b.account.get_balance(confirmed_only=True,
-                                                                 allow_deposits=False,
-                                                                 price_checker=price_checker)
-            b.account.calculated_balance_due = b.account.get_balance(confirmed_only=True,
-                                                                     allow_deposits=True,
-                                                                     price_checker=price_checker)
+        if not hasattr(b.account, "calculated_balance"):
+            b.account.calculated_balance = b.account.get_balance(
+                confirmed_only=True, allow_deposits=False, price_checker=price_checker
+            )
+            b.account.calculated_balance_due = b.account.get_balance(
+                confirmed_only=True, allow_deposits=True, price_checker=price_checker
+            )
 
             if b.account.calculated_balance_due > 0 or b.account.calculated_balance < 0:
                 outstanding.append(b)
@@ -1471,16 +1514,20 @@ def outstanding_bookings_with_fees(year):
 
 # --- Payments ---
 
-class PaymentManager(models.Manager):
 
+class PaymentManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related(
-            'account',
-            'source',
-            'source__manual_payment',
-            'source__refund_payment',
-            'source__account_transfer_payment',
-            'source__ipn_payment',
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "account",
+                "source",
+                "source__manual_payment",
+                "source__refund_payment",
+                "source__account_transfer_payment",
+                "source__ipn_payment",
+            )
         )
 
     def received_since(self, since: datetime):
@@ -1489,7 +1536,7 @@ class PaymentManager(models.Manager):
     def create(self, source_instance=None, **kwargs):
         if source_instance is not None:
             source = PaymentSource.from_source_instance(source_instance)
-            kwargs['source'] = source
+            kwargs["source"] = source
         return super().create(**kwargs)
 
 
@@ -1499,29 +1546,26 @@ class PaymentManager(models.Manager):
 # modified or deleted - if, for example, a ManualPayment object is deleted
 # because of an entry error, a new (negative) Payment object is created.
 
+
 class Payment(NoEditMixin, models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
-    account = models.ForeignKey(BookingAccount,
-                                related_name='payments',
-                                on_delete=models.PROTECT)
-    source = models.OneToOneField('PaymentSource',
-                                  null=True, blank=True,
-                                  on_delete=models.SET_NULL)
+    account = models.ForeignKey(BookingAccount, related_name="payments", on_delete=models.PROTECT)
+    source = models.OneToOneField("PaymentSource", null=True, blank=True, on_delete=models.SET_NULL)
     processed = models.DateTimeField(null=True)
     created_at = models.DateTimeField()
 
     objects = PaymentManager()
 
     class Meta:
-        base_manager_name = 'objects'
+        base_manager_name = "objects"
 
     def __str__(self):
-        if self.source_id is not None and hasattr(self.source, 'payment_description'):
+        if self.source_id is not None and hasattr(self.source, "payment_description"):
             retval = self.source.payment_description
         else:
             retval = "Payment: {amount} {from_or_to} {name} via {type}".format(
                 amount=abs(self.amount),
-                from_or_to='from' if self.amount > 0 else 'to',
+                from_or_to="from" if self.amount > 0 else "to",
                 name=self.account.name,
                 type=self.payment_type,
             )
@@ -1537,57 +1581,47 @@ class Payment(NoEditMixin, models.Model):
 
 
 class ManualPaymentManager(models.Manager):
-
     def get_queryset(self):
-        return super().get_queryset().select_related('account')
+        return super().get_queryset().select_related("account")
 
 
 class ManualPaymentBase(NoEditMixin, models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     created_at = models.DateTimeField(default=timezone.now)
-    payment_type = models.PositiveSmallIntegerField(choices=ManualPaymentType.choices,
-                                                    default=ManualPaymentType.CHEQUE)
+    payment_type = models.PositiveSmallIntegerField(choices=ManualPaymentType.choices, default=ManualPaymentType.CHEQUE)
 
     class Meta:
         abstract = True
-        base_manager_name = 'objects'
+        base_manager_name = "objects"
 
 
 class ManualPayment(ManualPaymentBase):
-    account = models.ForeignKey(BookingAccount,
-                                on_delete=models.PROTECT,
-                                related_name='manual_payments')
+    account = models.ForeignKey(BookingAccount, on_delete=models.PROTECT, related_name="manual_payments")
 
     objects = ManualPaymentManager()
 
     class Meta:
-        base_manager_name = 'objects'
+        base_manager_name = "objects"
 
     def __str__(self):
         return f"Manual payment of £{self.amount} from {self.account}"
 
 
 class RefundPayment(ManualPaymentBase):
-    account = models.ForeignKey(BookingAccount,
-                                on_delete=models.PROTECT,
-                                related_name='refund_payments')
+    account = models.ForeignKey(BookingAccount, on_delete=models.PROTECT, related_name="refund_payments")
 
     objects = ManualPaymentManager()
 
     class Meta:
-        base_manager_name = 'objects'
+        base_manager_name = "objects"
 
     def __str__(self):
         return f"Refund payment of £{self.amount} to {self.account}"
 
 
 class AccountTransferPayment(NoEditMixin, models.Model):
-    from_account = models.ForeignKey(BookingAccount,
-                                     on_delete=models.PROTECT,
-                                     related_name='transfer_from_payments')
-    to_account = models.ForeignKey(BookingAccount,
-                                   on_delete=models.PROTECT,
-                                   related_name='transfer_to_payments')
+    from_account = models.ForeignKey(BookingAccount, on_delete=models.PROTECT, related_name="transfer_from_payments")
+    to_account = models.ForeignKey(BookingAccount, on_delete=models.PROTECT, related_name="transfer_to_payments")
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     created_at = models.DateTimeField(default=timezone.now)
 
@@ -1603,26 +1637,20 @@ class AccountTransferPayment(NoEditMixin, models.Model):
 # Payment. The real 'source' is the instance pointed to by one of the FKs it
 # contains.
 class PaymentSource(models.Model):
-    manual_payment = models.OneToOneField(ManualPayment,
-                                          null=True, blank=True,
-                                          on_delete=models.CASCADE)
-    refund_payment = models.OneToOneField(RefundPayment,
-                                          null=True, blank=True,
-                                          on_delete=models.CASCADE)
+    manual_payment = models.OneToOneField(ManualPayment, null=True, blank=True, on_delete=models.CASCADE)
+    refund_payment = models.OneToOneField(RefundPayment, null=True, blank=True, on_delete=models.CASCADE)
     # There are two PaymentSource items for each AccountTransferPayment
     # so this is FK not OneToOneField
-    account_transfer_payment = models.ForeignKey(AccountTransferPayment,
-                                                 null=True, blank=True,
-                                                 on_delete=models.CASCADE)
-    ipn_payment = models.OneToOneField(PayPalIPN,
-                                       null=True, blank=True,
-                                       on_delete=models.CASCADE)
+    account_transfer_payment = models.ForeignKey(
+        AccountTransferPayment, null=True, blank=True, on_delete=models.CASCADE
+    )
+    ipn_payment = models.OneToOneField(PayPalIPN, null=True, blank=True, on_delete=models.CASCADE)
 
     MODEL_MAP = {
-        ManualPayment: 'manual_payment',
-        RefundPayment: 'refund_payment',
-        AccountTransferPayment: 'account_transfer_payment',
-        PayPalIPN: 'ipn_payment',
+        ManualPayment: "manual_payment",
+        RefundPayment: "refund_payment",
+        AccountTransferPayment: "account_transfer_payment",
+        PayPalIPN: "ipn_payment",
     }
 
     def save(self, *args, **kwargs):
@@ -1643,7 +1671,7 @@ class PaymentSource(models.Model):
             raise ValueError(f"No related object for PaymentSource {self.id}")
 
     def _assert_one_source(self):
-        attrs = [f'{a}_id' for a in self.MODEL_MAP.values()]
+        attrs = [f"{a}_id" for a in self.MODEL_MAP.values()]
         if not [getattr(self, a) for a in attrs].count(None) == len(attrs) - 1:
             raise AssertionError("PaymentSource must have exactly one payment FK set")
 
@@ -1660,11 +1688,9 @@ class PaymentSource(models.Model):
 
 
 def send_payment(amount, to_account, from_obj):
-    Payment.objects.create(amount=amount,
-                           account=to_account,
-                           source_instance=from_obj,
-                           processed=None,
-                           created_at=timezone.now())
+    Payment.objects.create(
+        amount=amount, account=to_account, source_instance=from_obj, processed=None, created_at=timezone.now()
+    )
     process_all_payments()
 
 
@@ -1693,13 +1719,11 @@ def expire_bookings(now=None):
     nowplus12h = now + timedelta(0, 3600 * 12)
     nowplus13h = now + timedelta(0, 3600 * 13)
 
-    unconfirmed = Booking.objects.unconfirmed().order_by('account')
-    to_warn = unconfirmed.filter(booking_expires__lte=nowplus13h,
-                                 booking_expires__gte=nowplus12h)
+    unconfirmed = Booking.objects.unconfirmed().order_by("account")
+    to_warn = unconfirmed.filter(booking_expires__lte=nowplus13h, booking_expires__gte=nowplus12h)
     to_expire = unconfirmed.filter(booking_expires__lte=now)
 
-    for booking_set, expired in [(to_expire, True),
-                                 (to_warn, False)]:
+    for booking_set, expired in [(to_expire, True), (to_warn, False)]:
         groups = []
         last_account_id = None
         for b in booking_set:
@@ -1740,18 +1764,18 @@ def process_one_payment(payment):
 # uses 'cciw.bookings.models.send_payment', which creates Payment objects for
 # later processing, rather than calling BookingAccount.receive_payment directly.
 
+
 @transaction.atomic
 def process_all_payments():
     # Use select_for_update to serialize usages of this function.
-    for payment in (Payment.objects
-                    .select_related(None)
-                    .select_for_update()
-                    .filter(processed__isnull=True).order_by('created_at')):
+    for payment in (
+        Payment.objects.select_related(None).select_for_update().filter(processed__isnull=True).order_by("created_at")
+    ):
         process_one_payment(payment)
 
 
 def most_recent_booking_year():
-    booking = Booking.objects.booked().order_by('-camp__year').select_related('camp').first()
+    booking = Booking.objects.booked().order_by("-camp__year").select_related("camp").first()
     if booking:
         return booking.camp.year
     else:

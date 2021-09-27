@@ -11,6 +11,6 @@ class Command(BaseCommand):
     def handle(self, **options):
         start = pathlib.Path(tempfile.gettempdir())
         now = time.time()
-        for path in start.glob(INCOMING_MAIL_TEMPFILE_PREFIX + '*'):
+        for path in start.glob(INCOMING_MAIL_TEMPFILE_PREFIX + "*"):
             if (now - path.stat().st_ctime) > 24 * 60 * 60:
                 path.unlink()

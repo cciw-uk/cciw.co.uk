@@ -20,18 +20,12 @@ def create_reference_actions(apps, schema_editor):
                 dt = timezone.utc.localize(datetime.strptime(m.groups()[1], "%Y-%m-%d %H:%M:%S"))
                 username = m.groups()[0]
                 user = User.objects.get(username=username)
-                ReferenceAction.objects.create(action_type="requested",
-                                               created=dt,
-                                               reference=r,
-                                               user=user)
+                ReferenceAction.objects.create(action_type="requested", created=dt, reference=r, user=user)
 
             m = re.match(r"Reference received via online system on (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", l)
             if m is not None:
                 dt = timezone.utc.localize(datetime.strptime(m.groups()[0], "%Y-%m-%d %H:%M:%S"))
-                ReferenceAction.objects.create(action_type="received",
-                                               created=dt,
-                                               reference=r,
-                                               user=None)
+                ReferenceAction.objects.create(action_type="received", created=dt, reference=r, user=None)
 
 
 def remove(apps, schema_editor):
@@ -42,7 +36,7 @@ def remove(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0002_referenceaction'),
+        ("officers", "0002_referenceaction"),
     ]
 
     operations = [

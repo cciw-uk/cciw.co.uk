@@ -6,21 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0027_qualification'),
+        ("officers", "0027_qualification"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='qualification',
-            options={'ordering': ['application', 'type__name']},
+            name="qualification",
+            options={"ordering": ["application", "type__name"]},
         ),
         migrations.AlterField(
-            model_name='qualificationtype',
-            name='name',
+            model_name="qualificationtype",
+            name="name",
             field=models.CharField(max_length=255, unique=True),
         ),
         migrations.AlterUniqueTogether(
-            name='qualification',
-            unique_together={('application', 'type')},
+            name="qualification",
+            unique_together={("application", "type")},
         ),
     ]

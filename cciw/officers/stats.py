@@ -16,35 +16,31 @@ def get_camp_officer_stats(camp):
     graph_start_date = camp.start_date - timedelta(365)
     graph_end_date = min(camp.start_date, date.today())
 
-    invited_officers = list(camp.invitations.all()
-                            .order_by('date_added')
-                            .values_list('officer_id', 'date_added'))
-    application_forms = list(applications_for_camp(camp)
-                             .order_by('date_saved')
-                             .values_list('id', 'date_saved'))
+    invited_officers = list(camp.invitations.all().order_by("date_added").values_list("officer_id", "date_added"))
+    application_forms = list(applications_for_camp(camp).order_by("date_saved").values_list("id", "date_saved"))
 
     officer_ids = [o[0] for o in invited_officers]
     officer_dates = [o[1] for o in invited_officers]
     app_ids = [a[0] for a in application_forms]
     app_dates = [a[1] for a in application_forms]
-    ref_dates = list(Reference.objects
-                     .filter(referee__application__in=app_ids,
-                             date_created__lte=camp.start_date)
-                     .order_by('date_created')
-                     .values_list('date_created', flat=True))
-    all_dbs_info = list(DBSCheck.objects
-                        .filter(officer__in=officer_ids,
-                                completed__lte=camp.start_date)
-                        .order_by('completed')
-                        .values_list('completed', 'officer_id'))
+    ref_dates = list(
+        Reference.objects.filter(referee__application__in=app_ids, date_created__lte=camp.start_date)
+        .order_by("date_created")
+        .values_list("date_created", flat=True)
+    )
+    all_dbs_info = list(
+        DBSCheck.objects.filter(officer__in=officer_ids, completed__lte=camp.start_date)
+        .order_by("completed")
+        .values_list("completed", "officer_id")
+    )
     # There can be multiple DBSs for each officer. For 'all DBSs' and 'valid
     # DBSs', we only care about the first.
     any_dbs_dates = get_first(all_dbs_info)
-    recent_dbs_dates = get_first([(d, o) for (d, o) in all_dbs_info
-                                 if d >= camp.start_date - timedelta(days=settings.DBS_VALID_FOR)])
+    recent_dbs_dates = get_first(
+        [(d, o) for (d, o) in all_dbs_info if d >= camp.start_date - timedelta(days=settings.DBS_VALID_FOR)]
+    )
 
-    dr = pd.date_range(start=graph_start_date,
-                       end=graph_end_date)
+    dr = pd.date_range(start=graph_start_date, end=graph_end_date)
 
     def trim(ds):
         # this is needed for officer list dates, as officers can sometimes
@@ -53,25 +49,28 @@ def get_camp_officer_stats(camp):
         # simpler.
         return [max(min(d, graph_end_date), graph_start_date) for d in ds]
 
-    df = pd.DataFrame(
-        index=dr,
-        data={
-            'Officers': accumulate_dates(trim(officer_dates)),
-            'Applications': accumulate_dates(app_dates),
-            'References': accumulate_dates(ref_dates),
-            'Any DBS': accumulate_dates(trim(any_dbs_dates)),
-            'Recent DBS': accumulate_dates(trim(recent_dbs_dates)),
-        }
-        # Fill forward so that accumulated
-        # values get propagated to all rows,
-        # and then backwards with zeros.
-    ).fillna(method='ffill').fillna(value=0)
+    df = (
+        pd.DataFrame(
+            index=dr,
+            data={
+                "Officers": accumulate_dates(trim(officer_dates)),
+                "Applications": accumulate_dates(app_dates),
+                "References": accumulate_dates(ref_dates),
+                "Any DBS": accumulate_dates(trim(any_dbs_dates)),
+                "Recent DBS": accumulate_dates(trim(recent_dbs_dates)),
+            }
+            # Fill forward so that accumulated
+            # values get propagated to all rows,
+            # and then backwards with zeros.
+        )
+        .fillna(method="ffill")
+        .fillna(value=0)
+    )
 
     # In order to show the future values correctly (as nothing), we build up a
     # second DataFrame which a larger Index if necessary.
-    if (camp.start_date > graph_end_date):
-        dr2 = pd.date_range(start=graph_start_date,
-                            end=camp.start_date)
+    if camp.start_date > graph_end_date:
+        dr2 = pd.date_range(start=graph_start_date, end=camp.start_date)
         df = pd.DataFrame(index=dr2, data=df)
     return df
 
@@ -98,33 +97,35 @@ def get_camp_officer_stats_trend(start_year, end_year):
         # goes on two camps, and for one of them has a valid DBS and the other
         # he/she doesn't, due to dates.
         for camp in camps:
-            officer_ids = list(camp.invitations.values_list('officer_id', flat=True))
+            officer_ids = list(camp.invitations.values_list("officer_id", flat=True))
             officer_count += len(officer_ids)
-            application_form_ids = list(applications_for_camp(camp).values_list('id', flat=True))
+            application_form_ids = list(applications_for_camp(camp).values_list("id", flat=True))
             application_count += len(application_form_ids)
             reference_in_time_count += Reference.objects.filter(
-                referee__application__in=application_form_ids,
-                date_created__lte=camp.start_date
+                referee__application__in=application_form_ids, date_created__lte=camp.start_date
             ).count()
             dbs_in_time_count += DBSCheck.objects.filter(
                 officer__in=officer_ids,
                 completed__isnull=False,
                 completed__lte=camp.start_date,
-                completed__gte=camp.start_date - timedelta(days=settings.DBS_VALID_FOR)
+                completed__gte=camp.start_date - timedelta(days=settings.DBS_VALID_FOR),
             ).count()  # ignores the possibility that an officer can have more than one
         officer_counts.append(officer_count)
         application_counts.append(application_count)
         reference_in_time_counts.append(reference_in_time_count)
         dbs_in_time_counts.append(dbs_in_time_count)
-    df = pd.DataFrame(index=years,
-                      data={'Officer count': officer_counts,
-                            'Application count': application_counts,
-                            'References received in time': reference_in_time_counts,
-                            'Valid DBS received in time': dbs_in_time_counts,
-                            })
-    df['Application fraction'] = df['Application count'] / df['Officer count']
-    df['References fraction'] = df['References received in time'] / (df['Officer count'] * 2)
-    df['Valid DBS fraction'] = df['Valid DBS received in time'] / df['Officer count']
+    df = pd.DataFrame(
+        index=years,
+        data={
+            "Officer count": officer_counts,
+            "Application count": application_counts,
+            "References received in time": reference_in_time_counts,
+            "Valid DBS received in time": dbs_in_time_counts,
+        },
+    )
+    df["Application fraction"] = df["Application count"] / df["Officer count"]
+    df["References fraction"] = df["References received in time"] / (df["Officer count"] * 2)
+    df["Valid DBS fraction"] = df["Valid DBS received in time"] / df["Officer count"]
 
     return df
 

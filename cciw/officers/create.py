@@ -59,14 +59,18 @@ def _create_officer(username, first_name, last_name, email):
 
 def email_officer(user, update=False, token_generator=default_token_generator):
     subject = "[CCIW] Application form system"
-    msg = render_to_string('cciw/officers/add_officer_email.txt',
-                           {'username': user.username,
-                            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                            'token': token_generator.make_token(user),
-                            'PASSWORD_RESET_TIMEOUT_DAYS': settings.PASSWORD_RESET_TIMEOUT / (24 * 3600),
-                            'first_name': user.first_name,
-                            'webmasteremail': settings.WEBMASTER_FROM_EMAIL,
-                            'domain': common.get_current_domain(),
-                            'update': update})
+    msg = render_to_string(
+        "cciw/officers/add_officer_email.txt",
+        {
+            "username": user.username,
+            "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": token_generator.make_token(user),
+            "PASSWORD_RESET_TIMEOUT_DAYS": settings.PASSWORD_RESET_TIMEOUT / (24 * 3600),
+            "first_name": user.first_name,
+            "webmasteremail": settings.WEBMASTER_FROM_EMAIL,
+            "domain": common.get_current_domain(),
+            "update": update,
+        },
+    )
 
     send_mail(subject, msg, settings.WEBMASTER_FROM_EMAIL, [user.email])

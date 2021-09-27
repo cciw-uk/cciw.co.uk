@@ -7,18 +7,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('officers', '0055_auto_20170613_1208'),
+        ("officers", "0055_auto_20170613_1208"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='referee',
-            name='application',
-            field=models.ForeignKey(limit_choices_to={'finished': True}, on_delete=django.db.models.deletion.CASCADE, to='officers.Application'),
+            model_name="referee",
+            name="application",
+            field=models.ForeignKey(
+                limit_choices_to={"finished": True},
+                on_delete=django.db.models.deletion.CASCADE,
+                to="officers.Application",
+            ),
         ),
         migrations.AlterField(
-            model_name='reference',
-            name='known_offences',
-            field=models.BooleanField(blank=True, default=False, verbose_name='The position for which the applicant is applying requires substantial contact with children and young people. To the best of your knowledge, does the applicant have any convictions/cautions/bindovers, for any criminal offences?'),
+            model_name="reference",
+            name="known_offences",
+            field=models.BooleanField(
+                blank=True,
+                default=False,
+                verbose_name="The position for which the applicant is applying requires substantial contact with children and young people. To the best of your knowledge, does the applicant have any convictions/cautions/bindovers, for any criminal offences?",
+            ),
         ),
     ]

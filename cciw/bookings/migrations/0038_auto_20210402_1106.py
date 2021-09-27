@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0037_populate_bookingaccount_created'),
+        ("bookings", "0037_populate_bookingaccount_created"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='bookingaccount',
-            name='created',
+            model_name="bookingaccount",
+            name="created",
             field=models.DateTimeField(),
         ),
     ]

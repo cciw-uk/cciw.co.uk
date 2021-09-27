@@ -21,7 +21,9 @@ def close_window_response(request=None, clear_messages=False):
         list(messages.get_messages(request))
 
     # Closes the response via javascript:
-    return HttpResponse("""<!DOCTYPE html><html><head><title>Close</title><script type="text/javascript">window.close()</script></head><body></body></html>""")
+    return HttpResponse(
+        """<!DOCTYPE html><html><head><title>Close</title><script type="text/javascript">window.close()</script></head><body></body></html>"""
+    )
 
 
 def reroute_response(request, default_to_close=True):
@@ -30,12 +32,12 @@ def reroute_response(request, default_to_close=True):
     """
     # if '_temporary_window=1 in query string, that overrides everything
     # - we should close the window.
-    if request.GET.get('_temporary_window', '') == '1':
+    if request.GET.get("_temporary_window", "") == "1":
         return close_window_response(request=request, clear_messages=True)
 
     # if we have a safe return to URL, do a redirect
-    if '_return_to' in request.GET:
-        url = request.GET['_return_to']
+    if "_return_to" in request.GET:
+        url = request.GET["_return_to"]
         if url_has_allowed_host_and_scheme(url, settings.ALLOWED_HOSTS):
             return HttpResponseRedirect(url)
 
@@ -51,6 +53,7 @@ def user_passes_test_improved(test_func):
     Like user_passes_test, but doesn't redirect user to login screen if they are
     already logged in.
     """
+
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
@@ -64,7 +67,9 @@ def user_passes_test_improved(test_func):
             # All unauthenticated users are blocked access, and redirected to
             # login.
             return redirect_to_login_with_next(request)
+
         return _wrapped_view
+
     return decorator
 
 
@@ -75,7 +80,7 @@ def redirect_to_login_with_next(request):
 
 
 def redirect_to_password_change_with_next(request):
-    password_change_url = reverse('admin:password_change')
+    password_change_url = reverse("admin:password_change")
     if furl(request.build_absolute_uri()).path == password_change_url:
         return None  # loop breaker
     path = get_current_url_for_redirection(request, password_change_url)
@@ -88,8 +93,7 @@ def get_current_url_for_redirection(request, redirect_url):
     # use the path as the "next" url.
     login_scheme, login_netloc = urlparse(redirect_url)[:2]
     current_scheme, current_netloc = urlparse(url)[:2]
-    if ((not login_scheme or login_scheme == current_scheme) and
-            (not login_netloc or login_netloc == current_netloc)):
+    if (not login_scheme or login_scheme == current_scheme) and (not login_netloc or login_netloc == current_netloc):
         url = request.get_full_path()
     # Otherwise we need to include scheme and location
     return url
@@ -102,13 +106,13 @@ def redirect_to_url_with_next(next_url, url, redirect_field_name):
 
 
 formatters = {
-    'xls': ExcelFormatter,
-    'ods': OdsFormatter,
+    "xls": ExcelFormatter,
+    "ods": OdsFormatter,
 }
 
 
 def get_spreadsheet_formatter(request):
-    format = request.GET.get('format', 'xls')
+    format = request.GET.get("format", "xls")
     if format not in formatters:
         raise Http404()
     return formatters[format]()

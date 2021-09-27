@@ -25,7 +25,7 @@ class LazyEncoder(json.JSONEncoder):
             return force_text(obj)
         elif isinstance(obj, date):
             # The format we need for filling in date fields:
-            return obj.strftime('%Y-%m-%d')
+            return obj.strftime("%Y-%m-%d")
         return obj
 
 
@@ -55,25 +55,25 @@ def make_content_disposition_safe_filename(filename):
     #
     # Also throw away quotes (interferes with quoting in header) and other chars
     # that are tricky for file systems.
-    value = filename.split('/')[-1]
-    value = re.sub(r'[\\\/:\'"]', '', value)
-    value = unicodedata.normalize('NFKD', value)
-    value = value.encode('ascii', 'ignore')
-    return value.decode('utf-8')
+    value = filename.split("/")[-1]
+    value = re.sub(r'[\\\/:\'"]', "", value)
+    value = unicodedata.normalize("NFKD", value)
+    value = value.encode("ascii", "ignore")
+    return value.decode("utf-8")
 
 
 def get_protected_download(folder, filename):
 
     response = HttpResponse()
-    response['Content-Disposition'] = f'attachment; filename="{make_content_disposition_safe_filename(filename)}"'
+    response["Content-Disposition"] = f'attachment; filename="{make_content_disposition_safe_filename(filename)}"'
     # Using X-Accel-Redirect means:
     # 1. nginx does the heavy lifting of data
     # 2. we can add document permissions if we want to.
     # 3. we don't have to expose the underlying file name, so we can
     #    have permalinks, yet without requiring the document
     #    to keep the same file name on disk.
-    response['X-Accel-Redirect'] = settings.SECURE_DOWNLOAD_URL_BASE + folder + "/" + filename
-    del response['Content-Type']  # Get nginx/upstream to set it
+    response["X-Accel-Redirect"] = settings.SECURE_DOWNLOAD_URL_BASE + folder + "/" + filename
+    del response["Content-Type"]  # Get nginx/upstream to set it
     return response
 
 
