@@ -1,6 +1,7 @@
 import os
 import time
 import unittest
+from typing import Union
 from urllib.parse import urlparse
 
 import pytest
@@ -11,6 +12,8 @@ from django.urls import reverse
 from django_functest import FuncSeleniumMixin, FuncWebTestMixin, MultiThreadedLiveServerMixin, ShortcutLoginMixin
 from pyquery import PyQuery
 
+from cciw.accounts.models import User
+from cciw.cciwmain.models import Person
 from cciw.utils.tests.base import TestBase, TestBaseMixin
 
 TESTS_SHOW_BROWSER = os.environ.get("TESTS_SHOW_BROWSER", "")
@@ -27,8 +30,37 @@ class DummyLessCssFilter(CompilerFilter):
 
 
 class CommonMixin:
-    def officer_login(self, creds):
-        self.shortcut_login(username=creds[0], password=creds[1])
+    def officer_login(self, user_or_creds: Union[User, Person, tuple[str, str], None] = None):
+        """
+        Log in an officer, using the given User, Person, or (username, password) combo,
+        or None for any officer.
+        """
+        if user_or_creds is None:
+            from cciw.officers.tests.base import factories as officers_factories
+
+            user_or_creds = officers_factories.get_any_officer()
+        if isinstance(user_or_creds, User):
+            # Due to PlainPasswordHasher, we can get password from `password`
+            # field.
+            user = user_or_creds
+            algo, password = user.password.split("$$")
+            assert algo == "plain"
+            self.shortcut_login(username=user_or_creds.username, password=password)
+            return user
+        elif isinstance(user_or_creds, Person):
+            users = user_or_creds.users.all()
+            if not users:
+                raise AssertionError(f"Can't login for Person {user_or_creds}, no user associated")
+            elif len(users) > 1:
+                raise AssertionError(f"More than one user associated with Person {user_or_creds}, can't log in")
+            else:
+                return self.officer_login(users[0])
+        elif isinstance(user_or_creds, tuple):
+            username, password = user_or_creds
+            self.shortcut_login(username=username, password=password)
+            return User.objects.get(username=username)
+        else:
+            raise AssertionError(f"Don't know what to do with {type(user_or_creds)}")
 
     def officer_logout(self):
         self.shortcut_logout()
@@ -80,7 +112,9 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
     setup_auth = False
 
     def assertCode(self, status_code):
-        assert self.last_response.status_code == status_code
+        assert (
+            self.last_response.status_code == status_code
+        ), f"Expected {status_code}, got {self.last_response.status_code}"
 
     def auto_follow(self):
         if str(self.last_response.status_code).startswith("3"):

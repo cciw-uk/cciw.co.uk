@@ -76,7 +76,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
     def test_can_check_dbs_online_application_form_dbs_number(self):
         # If we only have a DBS number from application form, we can't do online
         # check.
-        factories.create_application(self.officer_user, year=self.year, overrides={"dbs_number": "00123"})
+        factories.create_application(self.officer_user, year=self.year, dbs_number="00123")
         officer, dbs_info = self.get_officer_with_dbs_info()
         assert dbs_info.update_enabled_dbs_number.number == "00123"
         assert dbs_info.update_enabled_dbs_number.previous_check_good is None
@@ -98,7 +98,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
 
     def test_can_check_dbs_online_combined_info(self):
         # Application form indicates update-enabled DBS
-        application = factories.create_application(self.officer_user, year=self.year, overrides={"dbs_number": "00123"})
+        application = factories.create_application(self.officer_user, year=self.year, dbs_number="00123")
 
         # DBS check indicates good DBS, but don't know if it is
         # registered as update-enabled
@@ -158,7 +158,7 @@ class DbsInfoTests(SimpleOfficerSetupMixin, TestBase):
 
     def test_update_enabled_dbs_number(self):
         # Test that data from Application/DBSCheck is prioritised by date
-        application = factories.create_application(self.officer_user, year=self.year, overrides={"dbs_number": "00123"})
+        application = factories.create_application(self.officer_user, year=self.year, dbs_number="00123")
         self.officer_user.dbs_checks.create(
             completed=application.date_saved - timedelta(365 * 10),
             dbs_number="00456",
@@ -227,7 +227,7 @@ class ManageDbsPageBase(OfficersSetupMixin, FuncBaseMixin):
             self.assertUrlsEqual(url)
 
     def test_alert_leaders(self):
-        factories.create_application(self.officer_user, year=self.year, overrides={"dbs_check_consent": False})
+        factories.create_application(self.officer_user, year=self.year, dbs_check_consent=False)
         self.officer_login(DBSOFFICER)
         self.get_url("cciw-officers-manage_dbss", self.year)
         url = self.current_url

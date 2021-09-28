@@ -10,22 +10,34 @@ from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.officers import applications
 from cciw.officers.models import Application
 from cciw.officers.tests.base import (
-    OFFICER,
     OFFICER_PASSWORD,
     OFFICER_USERNAME,
     CurrentCampsMixin,
     OfficersSetupMixin,
-    RequireApplicationsMixin,
     RequireQualificationTypesMixin,
+    factories,
 )
 from cciw.utils.tests.base import TestBase
 from cciw.utils.tests.webtest import WebTestBase
 
 
-class ApplicationModel(RequireApplicationsMixin, TestBase):
+class ApplicationModel(TestBase):
     def test_referees(self):
-        for appid in [self.application1.id, self.application2.id, self.application3.id]:
-            app = Application.objects.get(id=appid)
+        app1 = factories.create_application()
+        app2 = factories.create_application()
+        app3 = factories.create_application()
+
+        assert app1.referee_set.count() == 2
+        app3.referee_set.all().delete()
+        assert app3.referee_set.count() == 0
+
+        # Test that 'referees' property works with and without prefetch,
+        # and with no referees existing
+        app1 = Application.objects.prefetch_related("referee_set").get(id=app1.id)
+        app2 = Application.objects.get(id=app2.id)
+        app3 = Application.objects.get(id=app3.id)
+
+        for app in [app1, app2, app3]:
             assert app.referees[0] == app.referee_set.get(referee_number=1)
             assert app.referees[1] == app.referee_set.get(referee_number=2)
 
@@ -94,44 +106,51 @@ class PersonalApplicationList(CurrentCampsMixin, OfficersSetupMixin, RequireQual
         assert list(self.user.applications.all()) == [app]
 
 
-class PersonalApplicationView(RequireApplicationsMixin, WebTestBase):
+class PersonalApplicationView(WebTestBase):
     def submit(self):
         super().submit('input[value="Get it"]')
 
-    def test_view_txt(self):
-        self.officer_login(OFFICER)
+    def test_view_txt_rtf_html(self):
+        officer = self.officer_login()
+        application = factories.create_application(
+            officer=officer,
+            full_name="Joe Winston Bloggs",
+        )
+
         self.get_url("cciw-officers-applications")
-        self.fill({"#application": self.officer1.applications.all()[0].id, "#format": "txt"})
+        self.fill({"#application": application.id, "#format": "txt"})
         self.submit()
         assert self.last_response.content_type == "text/plain"
         assert b"Joe Winston Bloggs" in self.last_response.content
 
-    def test_view_rtf(self):
-        self.officer_login(OFFICER)
         self.get_url("cciw-officers-applications")
-        self.fill({"#application": self.officer1.applications.all()[0].id, "#format": "rtf"})
+        self.fill({"#application": application.id, "#format": "rtf"})
         self.submit()
         assert self.last_response.content_type == "text/rtf"
         assert b"\\cell Joe Winston Bloggs" in self.last_response.content
 
-    def test_view_html(self):
-        self.officer_login(OFFICER)
         self.get_url("cciw-officers-applications")
-        self.fill({"#application": self.officer1.applications.all()[0].id, "#format": "html"})
+        self.fill({"#application": application.id, "#format": "html"})
         self.submit()
         self.assertTextPresent("Joe Winston Bloggs")
 
     def test_view_email(self):
-        self.officer_login(OFFICER)
+        officer = self.officer_login()
+        application = factories.create_application(
+            officer=officer,
+            full_name="Joe Winston Bloggs",
+        )
         self.get_url("cciw-officers-applications")
-        self.fill({"#application": self.officer1.applications.filter(date_saved__year=2001)[0].id, "#format": "send"})
+        self.fill({"#application": application.id, "#format": "send"})
         self.submit()
         self.assertTextPresent("Email sent")
 
         m = mail.outbox[0]
         assert "Joe Winston Bloggs" in m.body
         fname, fdata, ftype = m.attachments[0]
-        assert fname == "Application_joebloggs_2001-03-01.rtf"
+        app_date = application.date_saved
+
+        assert fname == f"Application_{officer.username}_{app_date.year:04}-{app_date.month:02}-{app_date.day:02}.rtf"
         assert "\\cell Joe Winston Bloggs" in fdata
         assert ftype == "text/rtf"
 

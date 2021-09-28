@@ -13,7 +13,7 @@ from cciw.accounts.models import (
     setup_auth_roles,
 )
 from cciw.cciwmain.tests.base import BasicSetupMixin
-from cciw.cciwmain.tests.utils import set_thisyear
+from cciw.cciwmain.tests.utils import NotPassed, set_thisyear
 from cciw.contact_us.models import Message
 from cciw.officers.models import Application, QualificationType, Reference
 from cciw.utils.tests.base import FactoriesBase
@@ -169,9 +169,7 @@ class DefaultApplicationsMixin(ExtraOfficersSetupMixin):
         self.application2 = factories.create_application(
             self.officer2,
             year=2000,
-            overrides=dict(
-                full_name="Peter Smith",
-            ),
+            full_name="Peter Smith",
             referee1_overrides=dict(
                 address="Referee 3 Address\r\nLine 2",
                 email="referee3@email.co.uk",
@@ -187,9 +185,7 @@ class DefaultApplicationsMixin(ExtraOfficersSetupMixin):
         self.application3 = factories.create_application(
             self.officer3,
             year=2000,
-            overrides=dict(
-                full_name="Fred Jones",
-            ),
+            full_name="Fred Jones",
             referee1_overrides=dict(
                 address="Referee 5 Address\r\nLine 2",
                 email="referee5@email.co.uk",
@@ -255,13 +251,13 @@ class Factories(FactoriesBase):
         is_superuser=False,
         is_staff=True,
         email=None,
-        password=None,
+        password=NotPassed,
         roles=None,
         contact_phone_number="",
     ):
         username = username or self._make_auto_username()
         email = email or self._make_auto_email(username)
-        user = User.objects.create(
+        user = User(
             username=username,
             first_name=first_name,
             last_name=last_name,
@@ -271,9 +267,11 @@ class Factories(FactoriesBase):
             email=email,
             contact_phone_number=contact_phone_number,
         )
-        if password:
+        if password is NotPassed:
+            password = OFFICER_PASSWORD
+        if password is not None:
             user.set_password(password)
-            user.save()
+        user.save()
         if roles:
             user.roles.set(roles)
         return user
@@ -299,22 +297,29 @@ class Factories(FactoriesBase):
 
     def create_application(
         self,
-        officer,
+        officer=None,
         *,
         year=None,
         date_saved=None,
         full_name=None,
         address_firstline=None,
         birth_date=None,
-        overrides=None,
+        dbs_number=None,
+        dbs_check_consent=True,
         referee1_overrides=None,
         referee2_overrides=None,
-    ):
+    ) -> Application:
         if year is not None:
             date_saved = datetime(year, 3, 1)
         elif date_saved is None:
             date_saved = timezone.now().date()
 
+        if officer is None:
+            officer = self.get_any_officer()
+        if full_name is None:
+            full_name = "Joe Winston Bloggs"
+        if dbs_number is None:
+            dbs_number = ""
         fields = dict(
             officer=officer,
             address_country="UK",
@@ -333,21 +338,19 @@ class Factories(FactoriesBase):
             concern_details="",
             court_declaration=False,
             court_details="",
-            dbs_check_consent=True,
-            dbs_number="",
+            dbs_check_consent=dbs_check_consent,
+            dbs_number=dbs_number,
             crime_declaration=False,
             crime_details="",
             date_saved=date_saved,
             finished=True,
-            full_name="Joe Winston Bloggs" if full_name is None else full_name,
+            full_name=full_name,
             illness_details="",
             relevant_illness=False,
             youth_experience="Lots",
             youth_work_declined=False,
             youth_work_declined_details="",
         )
-        if overrides:
-            fields.update(overrides)
         application = Application.objects.create(**fields)
         for referee_number, ref_overrides in zip([1, 2], [referee1_overrides, referee2_overrides]):
             referee_fields = dict(

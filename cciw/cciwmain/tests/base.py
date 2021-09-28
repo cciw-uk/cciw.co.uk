@@ -156,7 +156,7 @@ class Factories(FactoriesBase):
         person = Person.objects.first()
         if not person:
             user = officer_factories.get_any_officer()
-            person = self.make_person_for_user(user)
+            person = self.make_into_person(user)
         return person
 
     def make_into_person(self, user_or_person) -> Person:
