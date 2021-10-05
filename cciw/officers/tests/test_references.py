@@ -3,39 +3,49 @@ from django.core import mail
 from django.urls import reverse
 
 from cciw.cciwmain.common import CampId
+from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application, ReferenceAction
-from cciw.officers.tests.base import ReferenceSetupMixin
+from cciw.officers.tests.base import ReferenceSetupMixin, factories
 from cciw.officers.views import add_previous_references, close_enough_referee_match
 from cciw.utils.tests.webtest import WebTestBase
 
-from .base import LEADER, LEADER_EMAIL, OFFICER
+from .base import LEADER, LEADER_EMAIL
 
 
-class ReferencesPage(ReferenceSetupMixin, WebTestBase):
+class ReferencesPage(WebTestBase):
     def test_page_ok(self):
-        # Value of this test lies in the test data.
-        self.officer_login(LEADER)
-        self.get_url("cciw-officers-manage_references", camp_id=CampId(2000, "blue"))
+        leader = factories.create_officer()
+        officer = factories.create_officer()
+        camp = camps_factories.create_camp(leaders=[leader], officers=[officer])
+        application = factories.create_application(officer=officer, year=camp.year)
+        factories.create_complete_reference(application.referees[0])  # Just one
+
+        self.officer_login(leader)
+        self.get_url("cciw-officers-manage_references", camp_id=camp.url_id)
         self.assertCode(200)
-        self.assertTextPresent("For camp 2000-blue")
-        self.assertTextAbsent("referee1@email.co.uk")  # Received
-        self.assertTextPresent("referee2@email.co.uk")  # Not received
-        self.assertTextPresent("referee3@email.co.uk")
-        self.assertTextPresent("referee4@email.co.uk")
+        self.assertTextPresent(f"For camp {camp.year}-{camp.name.lower()}")
+        # Received:
+        self.assertTextAbsent(application.referees[0].email)
+        # Not received
+        self.assertTextPresent(application.referees[1].email)
+        self.assertTextPresent(application.referees[1].name)
+        self.assertTextPresent("Ask for reference - choose from the options")
 
     def test_page_anonymous_denied(self):
+        camp = camps_factories.create_camp()
         self.get_literal_url(
-            reverse("cciw-officers-manage_references", kwargs=dict(camp_id=CampId(2000, "blue"))), auto_follow=False
+            reverse("cciw-officers-manage_references", kwargs=dict(camp_id=camp.url_id)), auto_follow=False
         )
         self.assertCode(302)
         self.auto_follow()
-        self.assertTextAbsent("For camp 2000-blue")
+        self.assertTextAbsent("For camp {camp.year}")
 
     def test_page_officers_denied(self):
-        self.officer_login(OFFICER)
+        camp = camps_factories.create_camp()
+        self.officer_login()
         self.get_literal_url(
-            reverse("cciw-officers-manage_references", kwargs=dict(camp_id=CampId(2000, "blue"))), expect_errors=[403]
+            reverse("cciw-officers-manage_references", kwargs=dict(camp_id=camp.url_id)), expect_errors=[403]
         )
         self.assertCode(403)
 

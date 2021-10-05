@@ -30,6 +30,7 @@ class Factories(FactoriesBase):
         leaders=None,
         chaplain=None,
         future=None,
+        officers=None,
     ) -> Camp:
         assert not (leader is not None and leaders is not None), "Only supply one of 'leaders' and 'leader'"
         if leader:
@@ -84,6 +85,10 @@ class Factories(FactoriesBase):
         )
         if leaders:
             self.set_camp_leaders(camp, leaders)
+        if officers:
+            from cciw.officers.tests.base import factories as officers_factories
+
+            officers_factories.add_officers_to_camp(camp, officers)
         self._camp_cache[year].append(camp)
         return camp
 
