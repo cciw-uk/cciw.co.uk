@@ -155,6 +155,4 @@ urlpatterns = [
         views.booking_ages_stats_download,
         name="cciw-officers-booking_ages_stats_custom_download",
     ),
-    # Autocomplete
-    path("officer-autocomplete/", views.UserAutocomplete.as_view(), name="officer-autocomplete"),
 ]

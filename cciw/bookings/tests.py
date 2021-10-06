@@ -1300,7 +1300,7 @@ def fix_autocomplete_fields(field_names):
                         # Fix later
                         to_fix.append((field_name, value))
                     else:
-                        # Hack needed to cope with autocomplete_light widget and WebTest:
+                        # Hack needed to cope with autocomplete widget and WebTest:
                         form, field, item = self._find_form_and_field_by_css_selector(
                             self.last_response,
                             f"[name={field_name}]",
@@ -1315,7 +1315,7 @@ def fix_autocomplete_fields(field_names):
 
             if self.is_full_browser_test:
                 for field_name, value in to_fix:
-                    # Hack to cope with autocomplete_light widget and Selenium
+                    # Hack to cope with autocomplete widget and Selenium
                     self.execute_script(
                         f"""django.jQuery('[name={field_name}]').append('<option value="{value}" selected="selected"></option>');"""
                     )

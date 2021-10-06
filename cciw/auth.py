@@ -58,7 +58,11 @@ class CciwAuthBackend:
         return user_obj._perm_cache
 
     def has_perm(self, user_obj, perm, obj=None):
-        return user_obj.is_active and (perm in self.get_all_permissions(user_obj, obj=obj))
+        if not user_obj.is_active:
+            return False
+        if perm == "accounts.view_user" and user_obj.can_manage_application_forms:
+            return True
+        return perm in self.get_all_permissions(user_obj, obj=obj)
 
     def has_module_perms(self, user_obj, app_label):
         """
@@ -66,9 +70,11 @@ class CciwAuthBackend:
         """
         if user_obj.is_staff:
             # Our permission system uses a mix of:
-            # * 'static' roles (DB defined) which uses permissions like the stock Django code,
-            #    which makes
-            #    get_all_permissions() return relevant permissions for Django admin.
+            #
+            # * static roles (defined in static_roles.yaml and loaded in the DB)
+            #   which use permissions similar to the stock Django code, but a
+            #   'Role' instead of 'Group'. This makes get_all_permissions()
+            #   return relevant permissions for Django admin.
             #
             # * other dynamic ones e.g. 'current camp leader', which do not
             #   contribute to get_all_permissions() (because the permissions

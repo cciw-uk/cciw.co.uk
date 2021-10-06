@@ -107,8 +107,6 @@ if DEVBOX:
 
 INSTALLED_APPS = [
     # 3rd party
-    "dal",
-    "dal_select2",  # dal and dal_select2 need to come before contrib.admin
     "django.contrib.auth",
     "cciw.apps.CciwAdminConfig",  # admin replacement
     "django.contrib.contenttypes",

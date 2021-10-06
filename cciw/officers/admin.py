@@ -1,6 +1,5 @@
 import datetime
 
-from dal import autocomplete
 from django import forms
 from django.conf import settings
 from django.contrib import admin
@@ -27,8 +26,6 @@ from cciw.officers.models import (
 from cciw.utils.admin import RerouteResponseAdminMixin
 from cciw.utils.views import close_window_response
 
-officer_autocomplete_widget = lambda: autocomplete.ModelSelect2(url="officer-autocomplete")
-
 
 def referee_field(n, f):
     """
@@ -39,11 +36,6 @@ def referee_field(n, f):
 
 
 class ApplicationAdminModelForm(forms.ModelForm):
-    class Meta:
-        widgets = {
-            "officer": officer_autocomplete_widget(),
-        }
-
     def __init__(self, *args, **kwargs):
         try:
             initial = kwargs["initial"]
@@ -363,6 +355,7 @@ have to fill in another DBS form.</p> """,
     camp_leader_application_fieldsets = [
         (None, {"fields": ["officer", "date_saved"], "classes": ["wide"]})
     ] + camp_officer_application_fieldsets
+    autocomplete_fields = ["officer"]
 
     inlines = [QualificationInline]
 
@@ -509,16 +502,7 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
             return super().response_change(request, obj)
 
 
-class DBSCheckModelForm(forms.ModelForm):
-    class Meta:
-        widgets = {
-            "officer": officer_autocomplete_widget(),
-        }
-
-
 class DBSCheckAdmin(RerouteResponseAdminMixin, admin.ModelAdmin):
-
-    form = DBSCheckModelForm
 
     search_fields = ["officer__first_name", "officer__last_name", "dbs_number"]
     list_display = ["first_name", "last_name", "dbs_number", "completed", "requested_by", "registered_with_dbs_update"]
@@ -526,6 +510,7 @@ class DBSCheckAdmin(RerouteResponseAdminMixin, admin.ModelAdmin):
     list_filter = ["requested_by", "registered_with_dbs_update", "check_type"]
     ordering = ("-completed",)
     date_hierarchy = "completed"
+    autocomplete_fields = ["officer"]
 
     def first_name(self, obj):
         return obj.officer.first_name
@@ -538,17 +523,7 @@ class DBSCheckAdmin(RerouteResponseAdminMixin, admin.ModelAdmin):
     last_name.admin_order_field = "officer__last_name"
 
 
-class DBSActionLogModelForm(forms.ModelForm):
-    class Meta:
-        widgets = {
-            "officer": officer_autocomplete_widget(),
-            "user": officer_autocomplete_widget(),
-        }
-
-
 class DBSActionLogAdmin(admin.ModelAdmin):
-
-    form = DBSActionLogModelForm
 
     search_fields = ("officer__first_name", "officer__last_name")
     list_display = ["action_type", "first_name", "last_name", "created_at", "user"]
@@ -556,6 +531,7 @@ class DBSActionLogAdmin(admin.ModelAdmin):
     list_filter = ["action_type"]
     ordering = ("-created_at",)
     date_hierarchy = "created_at"
+    autocomplete_fields = ["officer", "user"]
 
     def first_name(self, obj):
         return obj.officer.first_name
