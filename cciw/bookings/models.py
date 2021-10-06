@@ -1560,8 +1560,8 @@ class Payment(NoEditMixin, models.Model):
         base_manager_name = "objects"
 
     def __str__(self):
-        if self.source_id is not None and hasattr(self.source, "payment_description"):
-            retval = self.source.payment_description
+        if self.source_id is not None and hasattr(self.source.model_source, "payment_description"):
+            retval = self.source.model_source.payment_description
         else:
             retval = "Payment: {amount} {from_or_to} {name} via {type}".format(
                 amount=abs(self.amount),
@@ -1619,6 +1619,31 @@ class RefundPayment(ManualPaymentBase):
         return f"Refund payment of £{self.amount} to {self.account}"
 
 
+class WriteOffDebtManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related("account")
+
+
+class WriteOffDebt(NoEditMixin, models.Model):
+    account = models.ForeignKey(BookingAccount, on_delete=models.PROTECT, related_name="write_off_debt")
+    amount = models.DecimalField(decimal_places=2, max_digits=10)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    objects = WriteOffDebtManager()
+
+    def __str__(self):
+        return f"Write off debt of £{self.amount} for {self.account}"
+
+    @property
+    def payment_description(self):
+        return f"Debt of £{self.amount} written off for {self.account}"
+
+    class Meta:
+        base_manager_name = "objects"
+        verbose_name = "Write-off debt record"
+        verbose_name_plural = "Write-off debt records"
+
+
 class AccountTransferPayment(NoEditMixin, models.Model):
     from_account = models.ForeignKey(BookingAccount, on_delete=models.PROTECT, related_name="transfer_from_payments")
     to_account = models.ForeignKey(BookingAccount, on_delete=models.PROTECT, related_name="transfer_to_payments")
@@ -1630,7 +1655,7 @@ class AccountTransferPayment(NoEditMixin, models.Model):
 
     @property
     def payment_description(self):
-        return "Payment: {self.amount} transferred from {self.from_account} to {self.to_account}"
+        return f"Transfer: {self.amount} transferred from {self.from_account} to {self.to_account}"
 
 
 # This model abstracts the different types of payment that can be the source for
@@ -1639,6 +1664,7 @@ class AccountTransferPayment(NoEditMixin, models.Model):
 class PaymentSource(models.Model):
     manual_payment = models.OneToOneField(ManualPayment, null=True, blank=True, on_delete=models.CASCADE)
     refund_payment = models.OneToOneField(RefundPayment, null=True, blank=True, on_delete=models.CASCADE)
+    write_off_debt = models.OneToOneField(WriteOffDebt, null=True, blank=True, on_delete=models.CASCADE)
     # There are two PaymentSource items for each AccountTransferPayment
     # so this is FK not OneToOneField
     account_transfer_payment = models.ForeignKey(
@@ -1647,8 +1673,11 @@ class PaymentSource(models.Model):
     ipn_payment = models.OneToOneField(PayPalIPN, null=True, blank=True, on_delete=models.CASCADE)
 
     MODEL_MAP = {
+        # Map of model class to FK attribute (above) for each payment source
+        # Also add to `payment_type` when adding to this
         ManualPayment: "manual_payment",
         RefundPayment: "refund_payment",
+        WriteOffDebt: "write_off_debt",
         AccountTransferPayment: "account_transfer_payment",
         PayPalIPN: "ipn_payment",
     }
@@ -1663,12 +1692,20 @@ class PaymentSource(models.Model):
             return self.manual_payment.get_payment_type_display()
         elif self.refund_payment_id is not None:
             return "Refund " + self.refund_payment.get_payment_type_display()
+        elif self.write_off_debt_id is not None:
+            return "Write off debt"
         elif self.account_transfer_payment_id is not None:
             return "Account transfer"
         elif self.ipn_payment_id is not None:
             return "PayPal"
         else:
             raise ValueError(f"No related object for PaymentSource {self.id}")
+
+    @property
+    def model_source(self):
+        for att in self.MODEL_MAP.values():
+            if getattr(self, f"{att}_id") is not None:
+                return getattr(self, att)
 
     def _assert_one_source(self):
         attrs = [f"{a}_id" for a in self.MODEL_MAP.values()]

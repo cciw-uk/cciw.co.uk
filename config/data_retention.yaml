@@ -391,6 +391,8 @@
       columns: all
     - name: bookings.RefundPayment
       columns: all
+    - name: bookings.WriteOffDebt
+      columns: all
     - name: bookings.AccountTransferPayment
       columns: all
     - name: bookings.CustomAgreement

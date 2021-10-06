@@ -3,7 +3,14 @@ from django.db.models.signals import post_delete, post_save
 from paypal.standard.ipn.signals import invalid_ipn_received, valid_ipn_received
 
 from .email import send_pending_payment_email, send_unrecognised_payment_email
-from .models import AccountTransferPayment, ManualPayment, RefundPayment, parse_paypal_custom_field, send_payment
+from .models import (
+    AccountTransferPayment,
+    ManualPayment,
+    RefundPayment,
+    WriteOffDebt,
+    parse_paypal_custom_field,
+    send_payment,
+)
 
 # == Handlers ==
 
@@ -56,6 +63,16 @@ def refund_payment_deleted(sender, **kwargs):
     send_payment(instance.amount, instance.account, None)
 
 
+def write_off_debt_created(sender, **kwargs):
+    instance = kwargs["instance"]
+    send_payment(instance.amount, instance.account, instance)
+
+
+def write_off_debt_deleted(sender, **kwargs):
+    instance = kwargs["instance"]
+    send_payment(-instance.amount, instance.account, None)
+
+
 def account_transfer_payment_received(sender, **kwargs):
     instance = kwargs["instance"]
     send_payment(-instance.amount, instance.from_account, instance)
@@ -78,3 +95,5 @@ post_save.connect(refund_payment_sent, sender=RefundPayment)
 post_delete.connect(refund_payment_deleted, sender=RefundPayment)
 post_save.connect(account_transfer_payment_received, sender=AccountTransferPayment)
 post_delete.connect(account_transfer_payment_deleted, sender=AccountTransferPayment)
+post_save.connect(write_off_debt_created, sender=WriteOffDebt)
+post_delete.connect(write_off_debt_deleted, sender=WriteOffDebt)

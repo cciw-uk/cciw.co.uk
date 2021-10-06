@@ -37,6 +37,7 @@ from cciw.bookings.models import (
     PriceChecker,
     PriceType,
     RefundPayment,
+    WriteOffDebt,
     book_basket_now,
     build_paypal_custom_field,
     expire_bookings,
@@ -204,6 +205,16 @@ class Factories(FactoriesBase):
             account=account or self.create_booking_account(),
             amount=amount,
             payment_type=ManualPaymentType.CHEQUE,
+        )
+
+    def create_write_off_debt_payment(
+        self,
+        account=None,
+        amount=0,
+    ):
+        return WriteOffDebt.objects.create(
+            account=account or self.create_booking_account(),
+            amount=amount,
         )
 
     def create_ipn(self, account=None, **kwargs):
@@ -2974,6 +2985,19 @@ class TestPaymentModels(TestBase):
         PaymentSource.objects.all().delete()
         p = PaymentSource.objects.create(manual_payment=manual)
         assert p.id is not None
+
+    def test_write_off_debt_payment(self):
+        account = factories.create_booking_account()
+        factories.create_booking(account=account, state=BookingState.BOOKED)
+        account.refresh_from_db()
+
+        balance = account.get_balance_full()
+        assert balance > 0
+
+        factories.create_write_off_debt_payment(account=account, amount=balance)
+        account.refresh_from_db()
+
+        assert account.get_balance_full() == 0
 
 
 @given(st.emails())

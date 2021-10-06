@@ -66,6 +66,9 @@ Roles:
       - bookings.RefundPayment/add
       - bookings.RefundPayment/change
       - bookings.RefundPayment/delete
+      - bookings.WriteOffDebt/add
+      - bookings.WriteOffDebt/change
+      - bookings.WriteOffDebt/delete
       # In order to view payment inlines, need this:
       - bookings.Payment/view
       # Helpful for them to be able to manage prices

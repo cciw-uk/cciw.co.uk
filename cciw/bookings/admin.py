@@ -18,6 +18,7 @@ from cciw.bookings.models import (
     Payment,
     Price,
     RefundPayment,
+    WriteOffDebt,
 )
 from cciw.cciwmain import common
 from cciw.utils.admin import RerouteResponseAdminMixin
@@ -172,7 +173,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
     list_display = ["id", "name", "email", "address_post_code", "phone_number"]
     list_filter = [LoggedInFilter, BookingsYearFilter, FinalBalanceFilter, "subscribe_to_newsletter"]
     ordering = ["email"]
-    search_fields = ["email", "name"]
+    search_fields = ["email", "name", "address_post_code"]
     readonly_fields = ["first_login", "last_login", "total_received", "admin_balance"]
     form = BookingAccountForm
 
@@ -523,6 +524,20 @@ class RefundPaymentAdmin(ManualPaymentAdminBase):
     form = RefundPaymentAdminForm
 
 
+class WriteOffDebtAdmin(admin.ModelAdmin):
+    list_display = ["id", "account", "amount", "created_at"]
+    date_hierarchy = "created_at"
+    search_fields = ["account__name"]
+    autocomplete_fields = ["account"]
+    fieldsets = [(None, {"fields": ["account", "amount", "created_at"]})]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is not None:
+            return self.fieldsets[0][1]["fields"]
+        else:
+            return []
+
+
 class AccountTransferPaymentForm(forms.ModelForm):
     class Meta:
         model = AccountTransferPayment
@@ -558,5 +573,6 @@ admin.site.register(BookingAccount, BookingAccountAdmin)
 admin.site.register(Booking, BookingAdmin)
 admin.site.register(ManualPayment, ManualPaymentAdmin)
 admin.site.register(RefundPayment, RefundPaymentAdmin)
+admin.site.register(WriteOffDebt, WriteOffDebtAdmin)
 admin.site.register(AccountTransferPayment, AccountTransferPaymentAdmin)
 admin.site.register(CustomAgreement, CustomAgreementAdmin)
