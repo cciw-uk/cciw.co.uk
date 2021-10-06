@@ -15,6 +15,7 @@ from cciw.officers.fields import (
     RequiredTextField,
 )
 from cciw.officers.references import first_letter_cap, reference_present_val
+from cciw.utils.models import ClearCachedPropertyMixin
 
 REFEREE_NUMBERS = [1, 2]
 
@@ -38,7 +39,7 @@ NAME_LENGTH = 100
 REFEREE_NAME_HELP_TEXT = "Name only - please do not include job title or other information."
 
 
-class Application(models.Model):
+class Application(ClearCachedPropertyMixin, models.Model):
     officer = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, related_name="applications"
     )  # blank=True to get the admin to work

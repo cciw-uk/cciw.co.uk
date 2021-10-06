@@ -1,3 +1,6 @@
+from django.utils.functional import cached_property
+
+
 class AfterFetchQuerySetMixin:
     """
     QuerySet mixin to enable functions to run immediately
@@ -37,3 +40,16 @@ class AfterFetchQuerySetMixin:
         retval = super()._clone()
         retval._after_fetch_callbacks = self._after_fetch_callbacks[:]
         return retval
+
+
+class ClearCachedPropertyMixin:
+    """
+    Model mixin that makes `refresh_from_db` clear out `cached_property` items
+    """
+
+    def refresh_from_db(self, *args, **kwargs):
+        for attr, val in self.__class__.__dict__.items():
+            if isinstance(val, cached_property):
+                self.__dict__.pop(attr, None)
+
+        super().refresh_from_db(*args, **kwargs)

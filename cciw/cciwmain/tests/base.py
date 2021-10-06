@@ -34,6 +34,10 @@ class Factories(FactoriesBase):
     ) -> Camp:
         assert not (leader is not None and leaders is not None), "Only supply one of 'leaders' and 'leader'"
         if leader:
+            if leader is True:
+                from cciw.officers.tests.base import factories as officers_factories
+
+                leader = officers_factories.create_leader()
             leaders = [leader]
         elif not leaders:
             leaders = []
@@ -166,8 +170,9 @@ class Factories(FactoriesBase):
 
     def make_into_person(self, user_or_person) -> Person:
         if isinstance(user_or_person, User):
-            person = self.create_person(name=user_or_person.full_name)
-            person.users.set([user_or_person])
+            user = user_or_person
+            person = self.create_person(name=user.full_name)
+            person.users.set([user])
             return person
         elif isinstance(user_or_person, Person):
             return user_or_person
@@ -194,11 +199,16 @@ class Factories(FactoriesBase):
         return (leader_1, leader_1_user), (leader_2, leader_2_user)
 
 
-class BasicSetupMixin:
+class SiteSetupMixin:
     def setUp(self):
         super().setUp()
         DjangoSite.objects.all().delete()
         DjangoSite.objects.create(domain=settings.PRODUCTION_DOMAIN, name=settings.PRODUCTION_DOMAIN, id=1)
+
+
+class BasicSetupMixin(SiteSetupMixin):
+    def setUp(self):
+        super().setUp()
 
         m = MenuLink.objects.create(visible=True, extra_title="", parent_item=None, title="Home", url="/", listorder=0)
 

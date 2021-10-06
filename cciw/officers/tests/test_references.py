@@ -3,10 +3,11 @@ from django.core import mail
 from django.urls import reverse
 
 from cciw.cciwmain.common import CampId
+from cciw.cciwmain.tests.base import SiteSetupMixin
 from cciw.cciwmain.tests.base import factories as camps_factories
 from cciw.officers.email import make_ref_form_url
 from cciw.officers.models import Application, ReferenceAction
-from cciw.officers.tests.base import ReferenceSetupMixin, factories
+from cciw.officers.tests.base import ReferenceSetupMixin, RolesSetupMixin, factories
 from cciw.officers.views import add_previous_references, close_enough_referee_match
 from cciw.utils.tests.webtest import WebTestBase
 
@@ -15,7 +16,7 @@ from .base import LEADER, LEADER_EMAIL
 
 class ReferencesPage(WebTestBase):
     def test_page_ok(self):
-        leader = factories.create_officer()
+        leader = factories.create_leader()
         officer = factories.create_officer()
         camp = camps_factories.create_camp(leaders=[leader], officers=[officer])
         application = factories.create_application(officer=officer, year=camp.year)
@@ -244,7 +245,7 @@ def make_local_url(url):
     return url
 
 
-class CreateReference(ReferenceSetupMixin, WebTestBase):
+class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
     """
     Tests for page for referees submitting references
     """
@@ -253,27 +254,33 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
         """
         Test for 200 code if we get the right URL
         """
-        app = self.application2
-        url = make_local_url(make_ref_form_url(app.referees[0].id, None))
-        response = self.get_literal_url(url)
+        safeguarding_coordinator = factories.create_safeguarding_coordinator()
+        application = factories.create_application()
+        url = make_local_url(make_ref_form_url(application.referees[0].id, None))
+        self.get_literal_url(url)
         self.assertCode(200)
         # Safeguarding coordinator details should be present:
-        self.assertTextPresent("Safe Guarder")
-        self.assertTextPresent("01234 567890")
-        return response
+        self.assertTextPresent(safeguarding_coordinator.full_name)
+        self.assertTextPresent(safeguarding_coordinator.contact_phone_number)
 
     def test_page_submit(self):
         """
         Check that a reference can be created using the page,
         and that the name on the application form is updated.
         """
-        app = self.application2
-        assert app.referees[0].name == "Mr Referee3 Name"
-        assert not app.referees[0].reference_is_received()
-        self.test_page_ok()
+        camp = camps_factories.create_camp(leader=True)
+        officer = factories.create_officer()
+        factories.add_officers_to_camp(camp, [officer])
+        application = factories.create_application(
+            officer=officer, year=camp.year, referee1_overrides={"name": "Mr Referee Name"}
+        )
+        assert not application.referees[0].reference_is_received()
+        url = make_local_url(make_ref_form_url(application.referees[0].id, None))
+        self.get_literal_url(url)
+        self.assertCode(200)
         self.fill_by_name(
             {
-                "referee_name": "Referee3 Name",
+                "referee_name": "Referee Name",
                 "how_long_known": "Forever",
                 "capacity_known": "Minister",
                 "capability_children": "Fine",
@@ -284,14 +291,14 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
         self.submit("input[type=submit]")
 
         # Check the data has been saved
-        app = Application.objects.get(id=app.id)
-        assert app.referees[0].reference_is_received()
-        reference = app.referees[0].reference
-        assert reference.referee_name == "Referee3 Name"
+        application.refresh_from_db()
+        assert application.referees[0].reference_is_received()
+        reference = application.referees[0].reference
+        assert reference.referee_name == "Referee Name"
         assert reference.how_long_known == "Forever"
 
         # Check the application has been updated with amended referee name
-        assert app.referees[0].name == "Referee3 Name"
+        assert application.referees[0].name == "Referee Name"
 
         assert len(mail.outbox) == 1
         m = mail.outbox[0]
@@ -302,11 +309,10 @@ class CreateReference(ReferenceSetupMixin, WebTestBase):
         """
         Check that if we are updating a reference that previous data appears
         """
-        app1 = self.application1
-        # app1 already has a reference done
-        assert app1.referees[0].reference is not None
-        app2 = self.application4
-        assert app1.officer == app2.officer
+        officer = factories.create_officer()
+        app1 = factories.create_application(officer=officer, year=2000)
+        factories.create_complete_reference(app1.referees[0])
+        app2 = factories.create_application(officer=officer, year=2001)
 
         # We should be able to find an exact match for references
         add_previous_references(app2.referees[0])

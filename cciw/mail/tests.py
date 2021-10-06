@@ -166,7 +166,7 @@ class TestMailingLists(ExtraOfficersSetupMixin, set_thisyear(2000), TestBase):
         camp = camp_factories.create_camp(
             year=2000,
             camp_name="Pink",
-            leader=officer_factories.create_officer(email=(leader_email := "kevin.smith@example.com")),
+            leader=officer_factories.create_leader(email=(leader_email := "kevin.smith@example.com")),
         )
         officer_factories.add_officers_to_camp(
             camp,
