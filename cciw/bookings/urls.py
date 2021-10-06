@@ -28,8 +28,4 @@ urlpatterns = [
     path("pay/done/", views.pay_done, name="cciw-bookings-pay_done"),
     path("pay/cancelled/", views.pay_cancelled, name="cciw-bookings-pay_cancelled"),
     path("overview/", views.account_overview, name="cciw-bookings-account_overview"),
-    # Autocomplete
-    path(
-        "bookingaccount-autocomplete/", views.BookingAccountAutocomplete.as_view(), name="bookingaccount-autocomplete"
-    ),
 ]

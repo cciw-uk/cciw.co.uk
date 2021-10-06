@@ -6,7 +6,6 @@ from datetime import timedelta
 from decimal import Decimal
 from functools import wraps
 
-from dal import autocomplete
 from django import forms
 from django.conf import settings
 from django.contrib import messages
@@ -881,14 +880,3 @@ def _handle_overview_booking_actions(request, bookings):
                     booking = [b for b in fixable_bookings if b.id == booking_id][0]
                 if booking:
                     return action(booking)
-
-
-class BookingAccountAutocomplete(autocomplete.Select2QuerySetView):
-    search_fields = ["name"]
-
-    def get_queryset(self):
-        request = self.request
-        query = self.q.strip()
-        if request.user.is_authenticated and (request.user.is_booking_secretary or request.user.is_superuser) and query:
-            return BookingAccount.objects.order_by("name", "address_post_code").filter(name__icontains=query)
-        return BookingAccount.objects.none()

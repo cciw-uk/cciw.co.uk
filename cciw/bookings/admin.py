@@ -1,4 +1,3 @@
-from dal import autocomplete
 from django import forms
 from django.contrib import admin, messages
 from django.db.models import Value
@@ -24,9 +23,6 @@ from cciw.cciwmain import common
 from cciw.utils.admin import RerouteResponseAdminMixin
 
 FIRST_BOOKING_YEAR = 2012
-
-
-bookingaccount_autocomplete_widget = lambda: autocomplete.ModelSelect2(url="bookingaccount-autocomplete")
 
 
 class PriceAdmin(admin.ModelAdmin):
@@ -299,7 +295,6 @@ class BookingAdminForm(forms.ModelForm):
     class Meta:
         model = Booking
         fields = [f.name for f in Booking._meta.get_fields() if f.name not in ["erased_on"]]
-        widgets = {"account": bookingaccount_autocomplete_widget()}
 
 
 def make_change_state_action(state, display_name):
@@ -349,6 +344,7 @@ class BookingAdmin(admin.ModelAdmin):
         CustomAgreementFilter,
     ]
     readonly_fields = ["booked_at", "created_online"]
+    autocomplete_fields = ["account"]
 
     form = BookingAdminForm
 
@@ -493,21 +489,12 @@ class BookingAdmin(admin.ModelAdmin):
         return retval
 
 
-class ManualPaymentAdminForm(forms.ModelForm):
-    class Meta:
-        widgets = {"account": bookingaccount_autocomplete_widget()}
-
-
-class RefundPaymentAdminForm(forms.ModelForm):
-    class Meta:
-        widgets = {"account": bookingaccount_autocomplete_widget()}
-
-
 class ManualPaymentAdminBase(RerouteResponseAdminMixin, admin.ModelAdmin):
     list_display = ["account", "amount", "payment_type", "created_at"]
     search_fields = ["account__name"]
     date_hierarchy = "created_at"
     fieldsets = [(None, {"fields": ["account", "amount", "created_at", "payment_type"]})]
+    autocomplete_fields = ["account"]
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:
@@ -517,19 +504,19 @@ class ManualPaymentAdminBase(RerouteResponseAdminMixin, admin.ModelAdmin):
 
 
 class ManualPaymentAdmin(ManualPaymentAdminBase):
-    form = ManualPaymentAdminForm
+    pass
 
 
 class RefundPaymentAdmin(ManualPaymentAdminBase):
-    form = RefundPaymentAdminForm
+    pass
 
 
 class WriteOffDebtAdmin(admin.ModelAdmin):
     list_display = ["id", "account", "amount", "created_at"]
     date_hierarchy = "created_at"
     search_fields = ["account__name"]
-    autocomplete_fields = ["account"]
     fieldsets = [(None, {"fields": ["account", "amount", "created_at"]})]
+    autocomplete_fields = ["account"]
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:
@@ -538,23 +525,12 @@ class WriteOffDebtAdmin(admin.ModelAdmin):
             return []
 
 
-class AccountTransferPaymentForm(forms.ModelForm):
-    class Meta:
-        model = AccountTransferPayment
-        fields = "__all__"
-        widgets = {
-            "from_account": bookingaccount_autocomplete_widget(),
-            "to_account": bookingaccount_autocomplete_widget(),
-        }
-
-
 class AccountTransferPaymentAdmin(admin.ModelAdmin):
-    form = AccountTransferPaymentForm
     list_display = ["id", "from_account", "to_account", "amount", "created_at"]
     date_hierarchy = "created_at"
     search_fields = ["from_account__name", "to_account__name"]
-
     fieldsets = [(None, {"fields": ["from_account", "to_account", "amount", "created_at"]})]
+    autocomplete_fields = ["from_account", "to_account"]
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:
