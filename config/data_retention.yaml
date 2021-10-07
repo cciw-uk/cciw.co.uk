@@ -18,7 +18,7 @@
 # This format has some disadvantages - it is slightly unusual and harder to
 # understand at first - but it also has a lot of advantages:
 
-# - This actually is the data retention policy. Many organisations "data
+# - This actually is the data retention policy. Many organisations' "data
 #   retention policy" is in fact what their policy is supposed to be, and what
 #   actually happens could be completely different.
 
@@ -72,7 +72,7 @@
 # - future legal defence needs for criminal or civil cases
 #
 # - being able to cooperate fully and helpfully with any criminal investigations
-#   into allegations of abuse that happened on camp
+#   into allegations of abuse or neglect that happened on camp
 #
 # - being able to defend the good reputation of CCiW
 
@@ -110,7 +110,7 @@
 
       - camp
 
-      # Medical and dietary information:
+      # Medical/dietary/health information:
       - dietary_requirements
       - medical_card_number
       - last_tetanus_injection_date
@@ -242,12 +242,12 @@
       deletion methods:
         # It is useful for our statistics and records to know the approx age of
         # campers on camp. So we here configure a custom deletion method that
-        # chooses a date of birth that will preserves the calculated "age on
+        # chooses a date of birth that will preserve the calculated "age on
         # camp".
         date_of_birth: preserve_age_on_camp
 
     - name: ipn.PayPalIPN
-      # This contains all the data PayPal send to us about a payment,
+      # This contains all the data PayPal sends to us about a payment,
       # some of which are address details that we can remove
       columns:
       # Many of these names are badly chosen (by PayPal)
