@@ -35,7 +35,7 @@ from mailer import models as mailer_models
 from paypal.standard.ipn.models import PayPalIPN
 
 from cciw.accounts.models import User
-from cciw.bookings.models import Booking, BookingAccount
+from cciw.bookings.models import Booking, BookingAccount, SupportingInformation, SupportingInformationDocument
 from cciw.contact_us.models import Message
 from cciw.officers.models import Application
 
@@ -428,6 +428,7 @@ def update_erased_on_field(now: datetime):
 
 
 DELETED_STRING = "[deleted]"
+DELETED_BYTES = b"[deleted]"
 
 
 # For EmailFieldErasure and CountryFieldErasure we avoid validation errors in
@@ -472,6 +473,30 @@ class CharFieldErasure(ErasureMethod):
             return {key: DELETED_STRING}
 
 
+class TextFieldErasure(ErasureMethod):
+    def allowed_for_field(self, field: Field):
+        return isinstance(field, models.TextField)
+
+    def build_update_dict(self, field: Field):
+        key = field.name
+        if field.null:
+            return {key: None}
+        else:
+            return {key: DELETED_STRING}
+
+
+class BinaryFieldErasure(ErasureMethod):
+    def allowed_for_field(self, field: Field):
+        return isinstance(field, models.BinaryField)
+
+    def build_update_dict(self, field: Field):
+        key = field.name
+        if field.null:
+            return {key: None}
+        else:
+            return {key: DELETED_BYTES}
+
+
 class BooleanFieldErasure(ErasureMethod):
     def allowed_for_field(self, field: Field):
         return isinstance(field, models.BooleanField)
@@ -479,6 +504,14 @@ class BooleanFieldErasure(ErasureMethod):
     def build_update_dict(self, field: Field):
         # Set to default value.
         return {field.name: field.default}
+
+
+class IntegerFieldErasure(ErasureMethod):
+    def allowed_for_field(self, field: Field):
+        return isinstance(field, models.IntegerField)
+
+    def build_update_dict(self, field: Field):
+        return {field.name: 0}
 
 
 class NullableFieldErasure(ErasureMethod):
@@ -494,7 +527,10 @@ DEFAULT_ERASURE_METHODS: list[ErasureMethod] = [
     EmailFieldErasure(),
     CountryFieldErasure(),
     CharFieldErasure(),
+    TextFieldErasure(),
+    BinaryFieldErasure(),
     BooleanFieldErasure(),
+    IntegerFieldErasure(),
     NullableFieldErasure(),
 ]
 
@@ -516,6 +552,10 @@ ERASABLE_RECORDS = {
     Booking: lambda before_datetime: Booking.objects.not_in_use().older_than(before_datetime),
     BookingAccount: lambda before_datetime: BookingAccount.objects.not_in_use().older_than(before_datetime),
     User: lambda before_datetime: User.objects.older_than(before_datetime),
+    SupportingInformation: lambda before_datetime: SupportingInformation.objects.older_than(before_datetime),
+    SupportingInformationDocument: lambda before_datetime: SupportingInformationDocument.objects.older_than(
+        before_datetime
+    ),
     # 3rd party:
     mailer_models.Message: lambda before_datetime: mailer_models.Message.objects.filter(
         when_added__lt=before_datetime,

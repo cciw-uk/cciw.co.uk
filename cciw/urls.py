@@ -45,6 +45,7 @@ urlpatterns = [
     path("paypal/ipn/", include("paypal.standard.ipn.urls")),
     path("mail/", include("cciw.mail.urls")),
     path("contact/", include("cciw.contact_us.urls")),
+    path("documents/", include("cciw.documents.urls")),
 ]
 
 if settings.DEVBOX:

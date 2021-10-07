@@ -56,6 +56,17 @@ Roles:
       - bookings.BookingAccount/add
       - bookings.BookingAccount/change
       - bookings.BookingAccount/delete
+      # - "Supporting information" is used for bookings
+      #   that requires extra evidence of suitablility of camper
+      #   or regarding requests for discounts.
+      - bookings.SupportingInformation/add
+      - bookings.SupportingInformation/change
+      - bookings.SupportingInformation/delete
+      - bookings.SupportingInformationType/add
+      - bookings.SupportingInformationType/change
+      - bookings.SupportingInformationType/delete
+      - bookings.SupportingInformationDocument/delete
+      - bookings.SupportingInformationDocument/view
       # Need to be able to record manual payments, refunds and transfers
       - bookings.ManualPayment/add
       - bookings.ManualPayment/change

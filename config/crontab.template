@@ -11,6 +11,7 @@ DJANGO_MANAGE=%(SRC_ROOT)s/manage.py
 
 # Apply data retention daily
 0       1 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE apply_data_retention
+0       2 * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE clean_orphaned_data
 
 # expire_bookings must be run only once an hour
 30      * * * *  %(proj_user)s $PYTHON $DJANGO_MANAGE expire_bookings

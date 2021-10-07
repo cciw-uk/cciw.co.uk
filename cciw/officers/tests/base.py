@@ -86,7 +86,7 @@ class RolesSetupMixin:
         setup_auth_roles()
 
 
-class OfficersSetupMixin(RolesSetupMixin, SimpleOfficerSetupMixin):
+class OfficersSetupMixin(SimpleOfficerSetupMixin):
     """
     Sets up a suite of officers with correct permissions etc.
     """
@@ -286,39 +286,45 @@ class Factories(FactoriesBase):
         for officer in officers:
             camp.invitations.create(officer=officer)
 
+    def _get_standard_role(self, name):
+        try:
+            return Role.objects.get(name=name)
+        except Role.DoesNotExist:
+            # setup_auth_roles() is normally done on deployment, so we can rely
+            # on these Role objects normally existing in the database, like
+            # fixtures:
+            setup_auth_roles()
+            return Role.objects.get(name=name)
+
     def create_booking_secretary(self):
-        booking_secretary_role = Role.objects.get(name=BOOKING_SECRETARY_ROLE_NAME)  # relies on setup_auth_roles
         return self.create_officer(
             username=BOOKING_SECRETARY_USERNAME,
-            roles=[booking_secretary_role],
+            roles=[self._get_standard_role(BOOKING_SECRETARY_ROLE_NAME)],
             password=BOOKING_SECRETARY_PASSWORD,
         )
 
     def create_secretary(self):
-        secretary_role = Role.objects.get(name=SECRETARY_ROLE_NAME)
         return self.create_officer(
             username=SECRETARY_USERNAME,
-            roles=[secretary_role],
+            roles=[self._get_standard_role(SECRETARY_ROLE_NAME)],
             password=SECRETARY_PASSWORD,
         )
 
     def create_dbs_officer(self):
-        dbs_officer_group = Role.objects.get(name=DBS_OFFICER_ROLE_NAME)
         return self.create_officer(
             username=DBSOFFICER_USERNAME,
             email=DBSOFFICER_EMAIL,
-            roles=[dbs_officer_group],
+            roles=[self._get_standard_role(DBS_OFFICER_ROLE_NAME)],
             password=DBSOFFICER_PASSWORD,
         )
 
     def create_safeguarding_coordinator(self):
-        reference_contact_group = Role.objects.get(name=REFERENCE_CONTACT_ROLE_NAME)
         return self.create_officer(
             username="safeguarder",
             first_name="Safe",
             last_name="Guarder",
             contact_phone_number="01234 567890",
-            roles=[reference_contact_group],
+            roles=[self._get_standard_role(REFERENCE_CONTACT_ROLE_NAME)],
         )
 
     def create_application(

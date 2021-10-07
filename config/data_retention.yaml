@@ -264,6 +264,31 @@
       - contact_phone
 
 
+# A second set of camper-related information is "Supporting information". This
+# is almost always documents that relate to a camper's application for custom
+# discounts. We keep this for 3 years, because it relates to finances and as a
+# charity we should keep these records for 3 years.
+
+- rules:
+    keep: 3 years
+    deletable on request from data subject: no
+
+  tables:
+    - name: bookings.SupportingInformation
+      columns:
+      - from_name
+      - from_email
+      - from_telephone
+      - notes
+
+    - name: bookings.SupportingInformationDocument
+      columns:
+      - filename
+      - mimetype
+      - size
+      - content
+
+
 # --- Group: Deleteable officer data ----
 
 # It is usually most useful for us to keep officer data indefinitely, because
@@ -378,6 +403,16 @@
       columns:
       - date_saved
 
+    - name: bookings.SupportingInformation
+      columns:
+      - created_at
+      - date_received
+
+    - name: bookings.SupportingInformationDocument
+      columns:
+      - created_at
+
+
     # -- Entirely non-personal data --
 
     # Our tables
@@ -396,6 +431,8 @@
     - name: bookings.AccountTransferPayment
       columns: all
     - name: bookings.CustomAgreement
+      columns: all
+    - name: bookings.SupportingInformationType
       columns: all
     - name: cciwmain.Site
       columns: all

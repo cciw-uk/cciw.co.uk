@@ -12,7 +12,7 @@ from django.db import models
 from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils import timezone
-from django_functest import FuncBaseMixin
+from django_functest import FuncBaseMixin, Upload
 from hypothesis import example, given
 from hypothesis import strategies as st
 from paypal.standard.ipn.models import PayPalIPN
@@ -37,6 +37,9 @@ from cciw.bookings.models import (
     PriceChecker,
     PriceType,
     RefundPayment,
+    SupportingInformation,
+    SupportingInformationDocument,
+    SupportingInformationType,
     WriteOffDebt,
     book_basket_now,
     build_paypal_custom_field,
@@ -55,6 +58,7 @@ from cciw.officers.tests.base import (
     OFFICER,
     OfficersSetupMixin,
 )
+from cciw.officers.tests.base import factories as officers_factories
 from cciw.sitecontent.models import HtmlChunk
 from cciw.utils.spreadsheet import ExcelFormatter
 from cciw.utils.tests.base import AtomicChecksMixin, FactoriesBase, TestBase, disable_logging
@@ -268,6 +272,48 @@ class Factories(FactoriesBase):
         )[0].price
         return price_full, price_2nd_child, price_3rd_child, price_deposit, price_early_bird_discount
 
+    def create_supporting_information_type(self, name="Test"):
+        return SupportingInformationType.objects.create(name=name)
+
+    def get_or_create_supporting_information_type(self):
+        return SupportingInformationType.objects.first() or self.create_supporting_information_type()
+
+    def create_supporting_information(
+        self,
+        booking=None,
+        information_type=None,
+        from_name="Some Person",
+        document_filename=None,
+        document_content=None,
+        document_mimetype=None,
+    ):
+        if booking is None:
+            booking = self.create_booking()
+        if any([document_content, document_filename, document_mimetype]):
+            if document_filename is None:
+                document_filename = "test.txt"
+            if document_mimetype is None:
+                document_mimetype = "text/plain"
+            if document_content is None:
+                document_content = b"Hello"
+            doc = SupportingInformationDocument.objects.create(
+                filename=document_filename,
+                content=document_content,
+                mimetype=document_mimetype,
+            )
+        else:
+            doc = None
+        if information_type is None:
+            information_type = self.get_or_create_supporting_information_type()
+        supporting_information = SupportingInformation.objects.create(
+            booking=booking,
+            from_name=from_name,
+            information_type=information_type,
+            document=doc,
+        )
+
+        return supporting_information
+
 
 factories = Factories()
 
@@ -278,6 +324,10 @@ class IpnMock:
 
 
 # == Mixins to reduce duplication ==
+
+# TODO - we are moving away from these, to:
+# - explicitly using factories that create the thing you need
+# - factories that intelligently set up their own needed dependencies
 class CreateCampMixin:
 
     camp_minimum_age = 11
@@ -2998,6 +3048,155 @@ class TestPaymentModels(TestBase):
         account.refresh_from_db()
 
         assert account.get_balance_full() == 0
+
+
+class SupportingInformationAdminBase(fix_autocomplete_fields("booking"), FuncBaseMixin):
+    def test_separate_supporting_information_admin(self):
+        booking = factories.create_booking()
+        information_type = factories.create_supporting_information_type("test")
+        self.officer_login(officers_factories.create_booking_secretary())
+        self.get_url("admin:bookings_supportinginformation_add")
+        self.fill_by_name(
+            {
+                "booking": booking.id,
+                "information_type": information_type.id,
+                "from_name": "Zog",
+                "from_email": "zog@example.com",
+                "from_telephone": "1234 567890",
+                "notes": "These are some notes",
+                "document": Upload("hello.txt", b"Hello"),
+            }
+        )
+        self.submit("[name=_continue]")
+        self.assertTextPresent("was added successfully")
+        supporting_information = booking.supporting_information_records.get()
+        assert supporting_information.information_type == information_type
+        assert supporting_information.from_name == "Zog"
+        assert supporting_information.from_email == "zog@example.com"
+        assert supporting_information.from_telephone == "1234 567890"
+        assert supporting_information.notes == "These are some notes"
+        doc = supporting_information.document
+        assert doc.filename.endswith("hello.txt")  # functest limitation means we don't get exact name
+        assert bytes(doc.content) == b"Hello"
+        assert doc.size == 5
+        assert doc.mimetype == "text/plain"
+
+        # Save again, without upload, shouldn't clear the doc.
+        self.fill_by_name({"from_name": "Zog2"})
+        self.submit("[name=_continue]")
+        self.assertTextPresent("was changed successfully")
+        supporting_information.refresh_from_db()
+        assert supporting_information.from_name == "Zog2"
+        assert supporting_information.document is not None
+        assert supporting_information.document.filename.endswith("hello.txt")
+
+        # Test clear
+        self.fill_by_name({"document-clear": True})
+        self.submit("[name=_continue]")
+        self.assertTextPresent("was changed successfully")
+        supporting_information.refresh_from_db()
+        assert supporting_information.document is None
+        self.assertTextPresent("was changed successfully")
+
+        # Saving without upload (or file initially attached) should be allowed
+        self.fill_by_name({"from_name": "Zog3"})
+        self.submit("[name=_continue]")
+        self.assertTextPresent("was changed successfully")
+        supporting_information.refresh_from_db()
+        assert supporting_information.from_name == "Zog3"
+
+    def test_invalid_form_with_new_upload(self):
+        supporting_information = factories.create_supporting_information(document_filename="old.txt")
+        self.officer_login(officers_factories.create_booking_secretary())
+        self.get_url("admin:bookings_supportinginformation_change", object_id=supporting_information.id)
+        self.fill_by_name(
+            {
+                "from_name": "",  # Invalid, should block save
+                "document": Upload("new_doc.txt", b"Hello"),
+            }
+        )
+        self.submit("[name=_continue]")
+        self.assertTextAbsent("was changed successfully")
+        supporting_information.refresh_from_db()
+        assert supporting_information.document.filename == "old.txt"
+
+    def test_invalid_form_with_clear_upload(self):
+        supporting_information = factories.create_supporting_information(document_filename="old.txt")
+        self.officer_login(officers_factories.create_booking_secretary())
+        self.get_url("admin:bookings_supportinginformation_change", object_id=supporting_information.id)
+        self.fill_by_name(
+            {
+                "from_name": "",  # Invalid, should block save
+                "document-clear": True,
+            }
+        )
+        self.submit("[name=_continue]")
+        self.assertTextAbsent("was changed successfully")
+        supporting_information.refresh_from_db()
+        assert supporting_information.document is not None
+        assert supporting_information.document.filename == "old.txt"
+
+    def test_supporting_information_inline(self):
+        booking = factories.create_booking()
+        information_type = factories.create_supporting_information_type("test")
+        self.officer_login(officers_factories.create_booking_secretary())
+        self.get_url("admin:bookings_booking_change", booking.id)
+        if self.is_full_browser_test:
+            self.click("#supporting_information_records-group .collapse-toggle")
+            self.click("#supporting_information_records-group .add-row a")
+        else:
+            self.add_admin_inline_form_to_page("supporting_information_records")
+        self.fill_by_name(
+            {
+                f"supporting_information_records-0-{k}": v
+                for k, v in {
+                    "information_type": information_type.id,
+                    "from_name": "Zog",
+                    "document": Upload("hello.txt", b"Hello"),
+                }.items()
+            }
+        )
+        self.submit("[name=_continue]")
+        supporting_information = booking.supporting_information_records.get()
+        # For other fields tests are above, we care most about file upload, which is
+        # trickiest
+        doc = supporting_information.document
+        assert bytes(doc.content) == b"Hello"
+
+        # Test clear
+        if self.is_full_browser_test:
+            self.click("#supporting_information_records-group .collapse-toggle")
+        self.fill_by_name({"supporting_information_records-0-document-clear": True})
+        self.submit("[name=_continue]")
+        self.assertTextPresent("was changed successfully")
+        supporting_information.refresh_from_db()
+        assert supporting_information.document is None
+
+
+class SupportingInformationAdminWT(SupportingInformationAdminBase, WebTestBase):
+    pass
+
+
+class SupportingInformationAdminSL(SupportingInformationAdminBase, SeleniumBase):
+    pass
+
+
+class DocumentDownloadView(WebTestBase):
+    def test_deny_normal_user(self):
+        info = factories.create_supporting_information(document_filename="anything.txt")
+        self.officer_login(officers_factories.create_officer())
+        response = self.get_literal_url(info.document.url, expect_errors=True)
+        assert response.status_code == 404
+
+    def test_allow_for_authorised_user(self):
+        info = factories.create_supporting_information(
+            document_filename="temp.txt",
+            document_content=b"Hello",
+            document_mimetype="text/plain",
+        )
+        self.officer_login(officers_factories.create_booking_secretary())
+        response = self.get_literal_url(info.document.url)
+        assert response.status_code == 200
 
 
 @given(st.emails())

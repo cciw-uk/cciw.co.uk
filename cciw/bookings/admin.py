@@ -1,13 +1,17 @@
 from django import forms
 from django.contrib import admin, messages
-from django.db.models import Value
+from django.db.models import ManyToOneRel, Value
 from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.html import escape, escapejs, format_html
 
 from cciw.bookings.email import send_booking_approved_mail, send_booking_confirmed_mail
-from cciw.bookings.models import (
+from cciw.cciwmain import common
+from cciw.documents.admin import DocumentAdmin, DocumentRelatedModelAdminMixin
+from cciw.utils.admin import RerouteResponseAdminMixin
+
+from .models import (
     AccountTransferPayment,
     Booking,
     BookingAccount,
@@ -17,10 +21,11 @@ from cciw.bookings.models import (
     Payment,
     Price,
     RefundPayment,
+    SupportingInformation,
+    SupportingInformationDocument,
+    SupportingInformationType,
     WriteOffDebt,
 )
-from cciw.cciwmain import common
-from cciw.utils.admin import RerouteResponseAdminMixin
 
 FIRST_BOOKING_YEAR = 2012
 
@@ -236,7 +241,7 @@ class BookingAccountAdmin(admin.ModelAdmin):
 
 
 class YearFilter(admin.SimpleListFilter):
-    title = "Year"
+    title = "camp year"
     parameter_name = "year"
 
     def lookups(self, request, model_admin):
@@ -294,7 +299,12 @@ class BookingAdminForm(forms.ModelForm):
 
     class Meta:
         model = Booking
-        fields = [f.name for f in Booking._meta.get_fields() if f.name not in ["erased_on"]]
+        fields = []
+        fields = [
+            f.name
+            for f in Booking._meta.get_fields()
+            if f.name not in ["erased_on"] and not isinstance(f, ManyToOneRel)
+        ]
 
 
 def make_change_state_action(state, display_name):
@@ -314,6 +324,100 @@ def make_change_state_action(state, display_name):
     change_state.__name__ = f"change_state_{state}"
 
     return change_state
+
+
+class SupportingInformationAdmin(DocumentRelatedModelAdminMixin, admin.ModelAdmin):
+    @admin.display(ordering="document__filename")
+    def document(supporting_information):
+        if supporting_information.document:
+            return supporting_information.document.download_link
+        return ""
+
+    list_display = ["booking", "from_name", "information_type", document]
+    autocomplete_fields = ["booking"]
+    search_fields = ["booking__first_name", "booking__last_name"]
+    list_select_related = ["booking__account", "booking__camp__camp_name", "information_type", "document"]
+    list_filter = [YearFilter]
+    date_hierarchy = "date_received"
+    fields = [
+        "booking",
+        "information_type",
+        "date_received",
+        "from_name",
+        "from_email",
+        "from_telephone",
+        "notes",
+        "document",
+        "erased_on",
+    ]
+    readonly_fields = ["erased_on"]
+
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).defer("document__content")
+
+
+class SupportingInformationDocumentAdmin(DocumentAdmin):
+    def booking(document):
+        if hasattr(document, "supporting_information"):
+            booking = document.supporting_information.booking
+            return format_html(
+                "<a href={0}>{1}</a>",
+                reverse("admin:bookings_booking_change", kwargs=({"object_id": booking.id})),
+                booking.name,
+            )
+
+    @admin.display(ordering="supporting_information__information_type__name")
+    def supporting_information(document):
+        if hasattr(document, "supporting_information"):
+            return format_html(
+                "<a href={0}>{1}</a>",
+                reverse(
+                    "admin:bookings_supportinginformation_change",
+                    kwargs=({"object_id": document.supporting_information.id}),
+                ),
+                document.supporting_information.information_type.name,
+            )
+
+    list_display = DocumentAdmin.list_display + [supporting_information, booking]
+    list_select_related = ["supporting_information__booking", "supporting_information__information_type"]
+    list_filter = [YearFilter]
+    search_fields = [
+        "filename",
+        "supporting_information__booking__first_name",
+        "supporting_information__booking__last_name",
+    ]
+
+    readonly_fields = DocumentAdmin.readonly_fields + [supporting_information, booking]
+    fields = readonly_fields
+
+
+class SupportingInformationInline(DocumentRelatedModelAdminMixin, admin.StackedInline):
+    model = SupportingInformation
+    extra = 0
+    classes = ["collapse"]
+    fields = [
+        "booking",
+        "information_type",
+        "date_received",
+        "from_name",
+        "from_email",
+        "from_telephone",
+        "notes",
+        "document",
+    ]
+
+    def get_queryset(self, *args, **kwargs):
+        return (
+            super()
+            .get_queryset(*args, **kwargs)
+            .select_related(
+                "information_type",
+                "booking__account",
+                "booking__camp__camp_name",
+                "document",
+            )
+            .defer("document__content")
+        )
 
 
 class BookingAdmin(admin.ModelAdmin):
@@ -347,6 +451,8 @@ class BookingAdmin(admin.ModelAdmin):
     autocomplete_fields = ["account"]
 
     form = BookingAdminForm
+
+    inlines = [SupportingInformationInline]
 
     fieldsets = (
         (
@@ -552,3 +658,6 @@ admin.site.register(RefundPayment, RefundPaymentAdmin)
 admin.site.register(WriteOffDebt, WriteOffDebtAdmin)
 admin.site.register(AccountTransferPayment, AccountTransferPaymentAdmin)
 admin.site.register(CustomAgreement, CustomAgreementAdmin)
+admin.site.register(SupportingInformationType)
+admin.site.register(SupportingInformation, SupportingInformationAdmin)
+admin.site.register(SupportingInformationDocument, SupportingInformationDocumentAdmin)

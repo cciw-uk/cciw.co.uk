@@ -128,6 +128,24 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
         pq = PyQuery(self.last_response.content.decode("utf-8"))
         return pq.find(css_selector)[0].text_content()
 
+    def add_admin_inline_form_to_page(self, inline_name, count=1):
+        """
+        For Django admin pages that have a hidden form template for an inline,
+        converts it to a real form that can be used.  Needed for WebTest
+        tests as an equivalent to clicking "add new [thing]".
+        """
+        pq = PyQuery(self.last_response.body)
+        parent = pq.find(f"#{inline_name}-group")
+        total_forms_elem = pq.find(f"#id_{inline_name}-TOTAL_FORMS")
+        form_count = int(total_forms_elem.val())
+        template = pq.find(f"#{inline_name}-empty")
+        for i in range(0, count):
+            new_form_number = form_count + i
+            new_form = template.html().replace("__prefix__", str(new_form_number))
+            parent.append(new_form)
+        total_forms_elem.val(str(form_count + count))
+        self.last_response.body = pq.html().encode("utf-8")
+
 
 @pytest.mark.selenium
 @unittest.skipIf(os.environ.get("SKIP_SELENIUM_TESTS"), "Skipping Selenium tests")
