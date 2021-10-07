@@ -127,6 +127,7 @@ class ReferenceForm(StripStringsMixin, forms.ModelForm):
             "character",
             "concerns",
             "comments",
+            "given_in_confidence",
         )
 
     def __init__(self, *args, **kwargs):

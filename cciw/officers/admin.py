@@ -478,6 +478,7 @@ class ReferenceAdmin(CampAdminPermissionMixin, admin.ModelAdmin):
                     "character",
                     "concerns",
                     "comments",
+                    "given_in_confidence",
                     "date_created",
                     "referee",
                 ],

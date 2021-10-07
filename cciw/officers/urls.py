@@ -81,8 +81,8 @@ urlpatterns = [
     # References
     path(
         "ref/<int:referee_id>-<optstr:prev_ref_id>-<hash>/",
-        views.create_reference_form,
-        name="cciw-officers-create_reference_form",
+        views.create_reference,
+        name="cciw-officers-create_reference",
     ),
     path("ref/thanks/", views.create_reference_thanks, name="cciw-officers-create_reference_thanks"),
     path("add-officer/", views.create_officer, name="cciw-officers-create_officer"),

@@ -286,6 +286,7 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
                 "capability_children": "Fine",
                 "character": "Great",
                 "concerns": "No",
+                "given_in_confidence": True,
             }
         )
         self.submit("input[type=submit]")
@@ -296,6 +297,7 @@ class CreateReference(SiteSetupMixin, RolesSetupMixin, WebTestBase):
         reference = application.referees[0].reference
         assert reference.referee_name == "Referee Name"
         assert reference.how_long_known == "Forever"
+        assert reference.given_in_confidence
 
         # Check the application has been updated with amended referee name
         assert application.referees[0].name == "Referee Name"

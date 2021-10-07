@@ -688,7 +688,7 @@ def initial_reference_form_data(referee, prev_reference):
     return retval
 
 
-def create_reference_form(request, referee_id, hash, prev_ref_id=""):
+def create_reference(request, referee_id, hash, prev_ref_id=""):
     """
     View for allowing referee to submit reference (create the Reference object)
     """

@@ -322,6 +322,10 @@ class Reference(models.Model):
         "Have you ever had concerns about either this applicant's ability or suitability to work with children and young people?"
     )
     comments = models.TextField("Any other comments you wish to make", blank=True)
+    given_in_confidence = models.BooleanField(
+        help_text="""Is this reference given "in confidence"? If yes, in the case that the applicant wishes to see the contents of the references made about them under a GDPR "Right of access" request, we will exclude the contents of this reference. It is important to us that you feel at liberty to tell us any concerns you have about the applicant, so you may tick this box if you feel it is necessary.""",
+        default=False,
+    )
     date_created = models.DateField("date created")
     referee = models.OneToOneField(Referee, on_delete=models.CASCADE)
 

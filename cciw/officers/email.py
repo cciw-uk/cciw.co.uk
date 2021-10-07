@@ -178,7 +178,7 @@ This was an automated response by the CCiW website.
 
 
 def make_ref_form_url_hash(referee_id, prev_ref_id):
-    return salted_hmac("cciw.officers.create_reference_form", f"{referee_id}:{prev_ref_id}").hexdigest()[::2]
+    return salted_hmac("cciw.officers.create_reference", f"{referee_id}:{prev_ref_id}").hexdigest()[::2]
 
 
 def make_ref_form_url(referee_id, prev_ref_id):
@@ -187,7 +187,7 @@ def make_ref_form_url(referee_id, prev_ref_id):
     return "https://{domain}{path}".format(
         domain=common.get_current_domain(),
         path=reverse(
-            "cciw-officers-create_reference_form",
+            "cciw-officers-create_reference",
             kwargs=dict(
                 referee_id=referee_id, prev_ref_id=prev_ref_id, hash=make_ref_form_url_hash(referee_id, prev_ref_id)
             ),
