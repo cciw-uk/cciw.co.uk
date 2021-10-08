@@ -1,4 +1,13 @@
 {% extends "cciw/officers/base.html" %}
+
+{% block branding %}
+  <h1 id="site-name">CCiW officer references</h1>
+{% endblock %}
+
+{% block usertools %}{% endblock %}
+
+{% block bodyclass %}create-reference-page{% endblock %}
+
 {% block title %}Submit reference | CCiW Officers{% endblock %}
 {% block content %}
   <h1>Submit reference for {{ officer.full_name }}</h1>
@@ -33,9 +42,7 @@
       {% endif %}
 
       <form id="id_create_reference" method="post" action="">{% csrf_token %}
-        <table>
-          {{ form }}
-        </table>
+        {{ form.as_p }}
         <div><input type="submit" name="save" value="Submit reference" /></div>
       </form>
     {% endif %}

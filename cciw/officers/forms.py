@@ -161,8 +161,8 @@ class AdminReferenceForm(ReferenceForm):
         referee.log_reference_filled_in(user, timezone.now())
 
 
-normal_textarea = forms.Textarea(attrs={"cols": 80, "rows": 10})
-small_textarea = forms.Textarea(attrs={"cols": 80, "rows": 5})
+normal_textarea = forms.Textarea(attrs={"cols": 40, "rows": 10})
+small_textarea = forms.Textarea(attrs={"cols": 40, "rows": 5})
 
 
 def fix_ref_form(form_class):

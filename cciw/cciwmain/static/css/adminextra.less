@@ -183,25 +183,43 @@ tr.reference-list {
     }
 }
 
+/* Create reference */
+
+// Quick and dirty fixes to make the form work nicely on small screens
+
+.create-reference-page {
+    .main > .content {
+        max-width: 62em;
+    }
+    #container > .main {
+        justify-content: center;
+    }
+    #header {
+        justify-content: center;
+    }
+
+    #id_create_reference {
+        p > input:not([type=checkbox]), textarea {
+            display: block;
+        }
+        input[type=checkbox] + span.helptext {
+            display: block;
+        }
+        textarea {
+            width: 55em;
+            max-width: 90vw;
+        }
+        label, span.helptext {
+            max-width: 60em;
+            display: inline-block;
+        }
+        ul.radiolist li {
+            list-style-type: none;
+        }
+    }
+}
+
 /* Admin overrides */
-
-body, ul, li, td, th {
-    font-size: 13px;
-    line-height: 18px;
-}
-
-.mini {
-    font-size: 10px;
-    line-height: 12px;
-}
-
-.help, p.help {
-    font-size: 12px !important;
-}
-
-input, textarea, select, .form-row p, form .button {
-    font-size: 13px;
-}
 
 #user-tools {
     top: 1.4em;
