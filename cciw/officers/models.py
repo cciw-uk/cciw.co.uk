@@ -338,7 +338,7 @@ class Reference(models.Model):
 
     class Meta:
         base_manager_name = "objects"
-        verbose_name = "Reference"
+        verbose_name = "reference"
 
     @property
     def applicant_name(self):

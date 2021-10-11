@@ -1740,8 +1740,8 @@ class WriteOffDebt(NoEditMixin, models.Model):
 
     class Meta:
         base_manager_name = "objects"
-        verbose_name = "Write-off debt record"
-        verbose_name_plural = "Write-off debt records"
+        verbose_name = "write-off debt record"
+        verbose_name_plural = "write-off debt records"
 
 
 class AccountTransferPayment(NoEditMixin, models.Model):

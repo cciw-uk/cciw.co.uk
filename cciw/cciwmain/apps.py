@@ -10,7 +10,7 @@ from django.urls.resolvers import RoutePattern
 
 class CciwmainConfig(AppConfig):
     name = "cciw.cciwmain"
-    verbose_name = "Camps"
+    verbose_name = "camps"
     default_auto_field = "django.db.models.BigAutoField"
 
     def ready(self):
