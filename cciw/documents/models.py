@@ -150,4 +150,3 @@ class DocumentModelFile(File):
 
 # TODO:
 # - retention policies
-# - admin for just SupportingInformationDocument to allow it to be browsed

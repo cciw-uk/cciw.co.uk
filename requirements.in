@@ -1,4 +1,4 @@
-ConcurrentLogHandler==0.9.1
+concurrent-log-handler==0.9.19
 Django==3.2.6
 PyYAML==5.1.2
 attrs==19.3.0
@@ -21,7 +21,7 @@ pandas-highcharts==0.5.2
 pandas==1.2.2
 pip-tools==5.5
 psutil==5.6.7
-psycopg2-binary==2.8.5
+psycopg2-binary==2.9.1
 python-dateutil==2.8.1
 python-memcached==1.59
 pytz==2019.3
