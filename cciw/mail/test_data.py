@@ -22,7 +22,6 @@ AWS_SNS_NOTIFICATION = {
     + b'\\"},\\"dmarcPolicy\\":\\"none\\"}}", "Timestamp": "2020-12-09T09:19:30.864Z", "SignatureVersion": "1", "Signature": "hVx4gcXzQRTBlo6ZPKQEEDwh3JdeA9UQihB3lFbUYy/kcs5ulaVVp1Zq20jHqKRWvqvmFsae/NrcYqLkSYoTchL76kPySibOzuYU/uhEsZVOh1xKU7DhKCYdYsxnwduoF80bmVp/ISNDLfU0nP/cGqDp27ZSu9wTvHD8INgqNiszsTz2YFEVbT2fUfqSOqUoNTEm286jV27C2HbLd2J+ddpgHeFtC1zXIbPxxnAnlBhw09ch2KIg2Nv4qtb1glK4Cm6G1bAEQOLyQwcjDREADB5AEcW/RsCmzzRiRA0ip/4GIffSzz10nVb7Qcf2qIpK59wX79Zh31CtwJ2qCTwZ0Q==", "SigningCertURL": "https://sns.eu-west-1.amazonaws.com/SimpleNotificationService-010a507c1833636cd94bdb98bd93083a.pem", "UnsubscribeURL": "https://sns.eu-west-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-1:319777369186:ses-incoming-notification:3fa386c5-0a86-42f4-8d2f-25efbf305c97"}',
 }
 
-# TODO write a test using this data
 AWS_BOUNCE_NOTIFICATION = {
     "headers": {
         "Content-Length": "3052",

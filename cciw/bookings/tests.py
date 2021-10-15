@@ -2325,8 +2325,6 @@ class TestPaymentReceived(BookingBaseMixin, TestBase):
         assert mails[0].to == [account.email]
         assert self.THANK_YOU_FOR_PAYMENT in mails[0].body
 
-        # TODO the rest of these tests
-
     def test_only_one_email_for_multiple_places(self):
         booking1 = factories.create_booking(name="Princess Pearl")
         account = booking1.account
