@@ -1,6 +1,5 @@
 import os
 import time
-import unittest
 from typing import Union
 from urllib.parse import urlparse
 
@@ -12,11 +11,10 @@ from django.urls import reverse
 from django_functest import FuncSeleniumMixin, FuncWebTestMixin, MultiThreadedLiveServerMixin, ShortcutLoginMixin
 from pyquery import PyQuery
 
+import conftest
 from cciw.accounts.models import User
 from cciw.cciwmain.models import Person
 from cciw.utils.tests.base import TestBase, TestBaseMixin
-
-TESTS_SHOW_BROWSER = os.environ.get("TESTS_SHOW_BROWSER", "")
 
 
 # We don't need less compilation when running normal tests, and it adds a lot to
@@ -148,7 +146,6 @@ class WebTestBase(ShortcutLoginMixin, CommonMixin, FuncWebTestMixin, TestBase):
 
 
 @pytest.mark.selenium
-@unittest.skipIf(os.environ.get("SKIP_SELENIUM_TESTS"), "Skipping Selenium tests")
 class SeleniumBase(
     ShortcutLoginMixin,
     CommonMixin,
@@ -161,9 +158,9 @@ class SeleniumBase(
     Base class for Selenium tests.
     """
 
-    driver_name = os.environ.get("TEST_SELENIUM_DRIVER", "Firefox")
+    driver_name = conftest.BROWSER
     browser_window_size = (1024, 768)
-    display = TESTS_SHOW_BROWSER
+    display = conftest.SHOW_BROWSER
     default_timeout = 20
     page_load_timeout = 40
 
