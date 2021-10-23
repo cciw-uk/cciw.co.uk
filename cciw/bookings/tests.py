@@ -448,6 +448,8 @@ class CreateBookingWebMixin(LogInMixin, CreatePricesMixin, CreateCampMixin):
             # To speed up full browser test, we create booking using the shortcut
             shortcut = self.is_full_browser_test
 
+        # DWIM - we always want prices to existing if we call 'create_booking()'
+        self.add_prices()
         data = self.get_place_details(
             camp=camp,
             first_name=first_name,
@@ -459,7 +461,6 @@ class CreateBookingWebMixin(LogInMixin, CreatePricesMixin, CreateCampMixin):
             serious_illness=serious_illness,
         )
         if shortcut:
-            self.add_prices()
             data.update(
                 {
                     "account": BookingAccount.objects.get(email=self.email),
@@ -471,7 +472,6 @@ class CreateBookingWebMixin(LogInMixin, CreatePricesMixin, CreateCampMixin):
         # Otherwise, we use public views to create place, to ensure that they
         # are created in the same way that a user would.
         old_booking_ids = list(Booking.objects.values_list("id", flat=True))
-        self.add_prices()
 
         self.get_url("cciw-bookings-add_place")
         # Sanity check:
@@ -1136,7 +1136,6 @@ class TestAddPlaceWT(AddPlaceBase, WebTestBase):
 class TestAddPlaceSL(AddPlaceBase, SeleniumBase):
     def _use_existing_start(self):
         self.login()
-        self.add_prices()
         self.create_booking(shortcut=True)
         self.get_url(self.urlname)
 
